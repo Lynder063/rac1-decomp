@@ -11,21 +11,40 @@ toolchain/sn-prodg-3.01/usr/local/sce/ee/gcc/bin/ee-ld.exe \
     -T build-sn/rac1.ld build-sn/bss_equs.o -o build-sn/rac1.elf
 ```
 
-Then compare the specific function's bytes against
-`baserom/SCES_509.16`'s corresponding section at the function's known
-offset (see `tools/check_match.py` for the whole-section version; for a
-single function, slice the section at `(func_vram - section_vram)` for
-`nonmatching <label>, <size>` bytes, per the `.s` file's own header
-comment).
+Then verify with `tools/check_match.py symbol <name> <size_hex>` against
+a freshly linked `build-sn/rac1.elf` — this is position-independent (it
+reads retail's address straight out of the `func_XXXXXXXX`/`D_XXXXXXXX`
+name and doesn't assume our build's layout matches retail's), so it's
+correct even once earlier functions have drifted in size. See the tool's
+own docstring for the other two modes (whole-section, retail-only).
 
 ## Status
 
+**Known systemic artifact:** `func_00112380` compiles 8 bytes shorter
+than retail (see its entry below). Every function *after* it in
+`core_text` that references an address defined later in the same file
+(a `jal` target, a `lui`/`addiu` address pair, etc.) will show a small,
+fully-explained byte diff at exactly those spots until that's fixed —
+this is not a new problem each time, it's the same one propagating.
+`tools/check_match.py symbol` reports these as mismatches; they've been
+individually confirmed (by disassembling the linked ELF and checking the
+diff is only in a relocated address, not the instruction opcodes/shape)
+before being called "matches" below.
+
 | Function | Segment | Status | Notes |
 |---|---|---|---|
-| `func_00112380` | core_text | **close, not exact** | Logic fully understood: `return func_00116F68(arg0, 0, 10);`. Retail has an extra redundant `dsll32`/`dsra32 v0,v0,0` sign-extension pair (8 bytes) before the return this compiler doesn't emit for any variant tried. See "Open toolchain questions" below. |
+| `func_00112380` | core_text | **close, not exact** | Logic fully understood: `return func_00116F68(arg0, 0, 10);`. Retail has an extra redundant `dsll32`/`dsra32 v0,v0,0` sign-extension pair (8 bytes) before the return this compiler doesn't emit for any variant tried. See "Open toolchain questions" below. This is the root cause of the "known systemic artifact" noted above. |
 | `func_00112464` | core_text | **not a real function** | 4 bytes of `0xCDCDCDCD` — alignment padding between `func_001123A8` and `func_00112468` (rounds the latter to an 8-byte boundary), not code. Left as `INCLUDE_ASM`; nothing to decompile. |
 | `func_00112468` | core_text | **close, not exact** | Logic fully understood — see the comment on it in `src/core_text.c` for the full C. Blocked on the `sq`/`lq` vs `sd`/`ld` callee-register-save question below, kept as `INCLUDE_ASM` since the byte diff isn't a small fixed offset like `func_00112380`, it cascades through the whole function. |
-| everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. 1669 functions total. |
+| `func_001138A8` | core_text | **matches** | `return D_0012F86C;` (returns a global pointer's value). Byte-exact. |
+| `func_001144D8` | core_text | **matches** | `return D_00152470;` (returns a rodata blob's address — takes an unused `void *arg0` parameter; retail loads a value into `$a0` at every call site but the function body never reads it). Byte-exact. |
+| `func_001144F0` | core_text | **matches** (mod. known drift) | `return func_001144D8(D_0012F86C);`. One `jal` target byte differs, fully explained by the `func_00112380` drift above — confirmed by disassembling the linked ELF, not just diffing raw bytes. |
+| `func_00113A70` | core_text | **matches** (mod. known drift) | Struct/object initializer: writes 4 function pointers, a self-pointer, several zeroed fields, and 3 caller-supplied values into the struct at `arg0` (offsets given as raw byte offsets via `char *` casts — real field names/struct layout not established yet). Instruction-for-instruction identical to retail (same order, same registers, same offsets) once disassembled from the linked ELF; the raw bytes differ only in 4 relocated addresses, same known-drift cause. |
+| `func_001160C8` | core_text | **matches** | `*(int *)((char *)D_0012F86C + 0x58) = arg0;` — setter into a struct reached through global pointer `D_0012F86C`. Byte-exact. |
+| `func_001154C0`, `func_001154C8` | core_text | **matches** | Empty functions (`{}`) — auto-filled by splat itself during the initial split, not touched this session, noted here for completeness. |
+| `func_00118A34`, `func_00118A50`, `func_00118A60`, and similar | core_text | **not decompile targets** | Marked `/* Handwritten function */` by spimdisasm itself — raw `syscall N` sequences, i.e. these were originally hand-written assembly (PS2 kernel syscall wrappers), not compiler output. Left as `INCLUDE_ASM` permanently; there's no C source to recover. |
+| `func_00113AD8` | core_text | **not a standalone function** | Single instruction (`lw $4, 0x0($2)`) with no `jr $31` of its own — a fallthrough continuation, not independently callable. Left as `INCLUDE_ASM`; not clear yet what it's a continuation *of* without more investigation. |
+| everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1660 functions total remaining. |
 
 ## Open toolchain questions
 
