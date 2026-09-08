@@ -17,16 +17,25 @@ Usage:
   once everything in a section actually matches):
     python tools/check_match.py section build-sn/core_text.o core.text
 
-  One function, by its retail vram address + size (read straight from
-  its "nonmatching <label>, <size>" line in asm/nonmatchings/.../*.s --
-  this does NOT depend on where the function landed in our build, only
-  on where it's supposed to be in the retail binary):
+  One function, by symbol name, against a freshly linked build-sn/rac1.elf
+  (recommended -- this is the position-independent check: it looks up
+  where OUR build put the symbol, reads that many bytes from there, and
+  compares against retail's bytes at retail's own address for the same
+  symbol, so it works correctly even when an earlier function in the same
+  object has drifted in size):
+    python tools/check_match.py symbol func_001138A8 0xC
+
+  One function, by its retail vram address + size only, no build-sn/rac1.elf
+  needed (just prints retail's bytes -- useful before you've even compiled
+  anything yet, or to sanity-check what you're aiming for):
     python tools/check_match.py func 0x112380 0x28
 """
+import re
 import sys
 from elftools.elf.elffile import ELFFile
 
 BASEROM = "baserom/SCES_509.16"
+LINKED_ELF = "build-sn/rac1.elf"
 
 
 def diff_report(orig: bytes, ours: bytes, label: str) -> None:
@@ -72,6 +81,44 @@ def check_func(vram: int, size: int) -> None:
     print(f"  {orig.hex()}")
 
 
+def check_symbol(name: str, size: int) -> None:
+    """
+    Position-independent check: looks up `name`'s address in a freshly
+    linked build-sn/rac1.elf, reads `size` bytes from there, and compares
+    against retail's bytes at retail's own address for the same symbol
+    (parsed straight from the name -- func_XXXXXXXX/D_XXXXXXXX both
+    encode their retail vram, splat's own naming convention). This is
+    correct even when an earlier function in the same object has a
+    different size than retail and everything after it has shifted --
+    it never assumes our build's layout matches retail's.
+    """
+    m = re.match(r"^(?:func|D)_([0-9A-Fa-f]{8})$", name)
+    if not m:
+        print(f"'{name}' doesn't match func_XXXXXXXX/D_XXXXXXXX -- can't infer its retail address.")
+        raise SystemExit(1)
+    retail_vram = int(m.group(1), 16)
+
+    with open(LINKED_ELF, "rb") as f:
+        elf = ELFFile(f)
+        symtab = elf.get_section_by_name(".symtab")
+        sym = next((s for s in symtab.iter_symbols() if s.name == name), None)
+        if sym is None:
+            print(f"'{name}' not found in {LINKED_ELF}'s symbol table.")
+            raise SystemExit(1)
+        our_vram = sym["st_value"]
+        sec = elf.get_section(sym["st_shndx"])
+        ours = sec.data()[our_vram - sec["sh_addr"]: our_vram - sec["sh_addr"] + size]
+
+    with open(BASEROM, "rb") as f:
+        belf = ELFFile(f)
+        seg = next(s for s in belf.iter_segments() if s["p_type"] == "PT_LOAD")
+        delta = seg["p_vaddr"] - seg["p_offset"]
+        f.seek(retail_vram - delta)
+        orig = f.read(size)
+
+    diff_report(orig, ours, f"{name}: our_vram={our_vram:#x} retail_vram={retail_vram:#x}")
+
+
 def main() -> None:
     if len(sys.argv) < 2:
         print(__doc__)
@@ -81,6 +128,8 @@ def main() -> None:
         check_section(sys.argv[2], sys.argv[3])
     elif mode == "func":
         check_func(int(sys.argv[2], 16), int(sys.argv[3], 16))
+    elif mode == "symbol":
+        check_symbol(sys.argv[2], int(sys.argv[3], 16))
     else:
         print(__doc__)
         raise SystemExit(1)

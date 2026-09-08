@@ -42,7 +42,11 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001126D8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001138A4);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001138A8);
+extern void *D_0012F86C;
+
+int func_001138A8(void) {
+    return (int)D_0012F86C;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001138B4);
 
@@ -52,7 +56,27 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00113968);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00113A6C);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00113A70);
+extern void func_001162B8(void);
+extern void func_00116320(void);
+extern void func_001163A0(void);
+extern void func_00116408(void);
+
+void func_00113A70(void *arg0, int arg1, int arg2, int arg3) {
+    char *self = (char *)arg0;
+    *(int *)(self + 0x54) = arg3;
+    *(short *)(self + 0xC) = arg1;
+    *(short *)(self + 0xE) = arg2;
+    *(void **)(self + 0x20) = func_001162B8;
+    *(void **)(self + 0x24) = func_00116320;
+    *(void **)(self + 0x28) = func_001163A0;
+    *(void **)(self + 0x2C) = func_00116408;
+    *(int *)(self + 0x0) = 0;
+    *(int *)(self + 0x4) = 0;
+    *(int *)(self + 0x8) = 0;
+    *(int *)(self + 0x10) = 0;
+    *(int *)(self + 0x18) = 0;
+    *(void **)(self + 0x1C) = self;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00113AC8);
 
@@ -78,11 +102,19 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00114438);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001144CC);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001144D8);
+extern char D_00152470[];
+
+/* arg0 unused: retail loads it into $a0 for this call too but the
+   function body never reads it. */
+void *func_001144D8(void *arg0) {
+    return D_00152470;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001144E8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001144F0);
+void *func_001144F0(void) {
+    return func_001144D8(D_0012F86C);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00114514);
 
@@ -144,7 +176,9 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00116068);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00116078);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001160C8);
+void func_001160C8(int arg0) {
+    *(int *)((char *)D_0012F86C + 0x58) = arg0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001160D8);
 
