@@ -2,8 +2,8 @@
 nonmatching func_001F9D10, 0x38
 
 glabel func_001F9D10
-    /* FAC90 001F9D10 000081D8 */  lqc2       $vf1, 0x0($a0)
-    /* FAC94 001F9D14 0000A2D8 */  lqc2       $vf2, 0x0($a1)
+    /* FAC90 001F9D10 000081D8 */  lqc2       $vf1, 0x0($4)
+    /* FAC94 001F9D14 0000A2D8 */  lqc2       $vf2, 0x0($5)
     /* FAC98 001F9D18 C300C04B */  vaddw.xyz  $vf3, $vf0, $vf0w
     /* FAC9C 001F9D1C 6C08C24B */  vsub.xyz   $vf1, $vf1, $vf2
     /* FACA0 001F9D20 6A08C14B */  vmul.xyz   $vf1, $vf1, $vf1
@@ -12,8 +12,8 @@ glabel func_001F9D10
     /* FACAC 001F9D2C BD03014A */  .word      0x4A0103BD                    # vsqrt      Q, $vf1x # 00000000 <InstrIdType: R5900_COP2_SPECIAL2>
     /* FACB0 001F9D30 BF03004A */  .word      0x4A0003BF    # vwaitq
     /* FACB4 001F9D34 6000004B */  .word      0x4B000060    # vaddq.x    $vf1, $vf0, Q
-    /* FACB8 001F9D38 00082448 */  qmfc2.ni   $a0, $vf1
+    /* FACB8 001F9D38 00082448 */  qmfc2.ni   $4, $vf1
     /* FACBC 001F9D3C 00000000 */  nop
-    /* FACC0 001F9D40 0800E003 */  jr         $ra
-    /* FACC4 001F9D44 00008444 */   mtc1      $a0, $f0
+    /* FACC0 001F9D40 0800E003 */  jr         $31
+    /* FACC4 001F9D44 00008444 */   mtc1      $4, $f0
 endlabel func_001F9D10

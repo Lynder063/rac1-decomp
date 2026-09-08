@@ -2,6 +2,6 @@
 nonmatching func_00234D50, 0x4
 
 glabel func_00234D50
-    /* 135CD0 00234D50 20C082AF */  sw         $v0, -0x3FE0($gp)
+    /* 135CD0 00234D50 20C082AF */  sw         $2, -0x3FE0($28)
 endlabel func_00234D50
     /* 135CD4 00234D54 00000000 */  nop

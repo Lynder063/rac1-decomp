@@ -37,8 +37,12 @@ Scaffolding + toolchain proven, no real decompilation yet:
   disassembled function — VU0 macro-mode instructions included — back to
   byte-for-byte identical machine code once GPR names are numeric
   (`tools/sn_regnames.py`) and `.set noreorder`/`.set noat` are active.
-  The *compiler* side (matching C -> object) is not wired up or verified
-  yet, only the assembler round-trip on already-disassembled bytes.
+  The compiler side is now wired up too (`Makefile.sn`) — both objects
+  build clean, and `text.o` already lands at the **exact** original
+  section size with the remaining ~7% byte difference explained by
+  unresolved call/data relocations (nothing is linked yet). See
+  `docs/TOOLCHAIN.md` for the numbers and caveats — this is a strong
+  signal, not yet proof any single function matches.
 - The earlier modern-`ps2dev`-toolchain path (WSL, GCC 15.2) still works
   as a secondary/fallback build and needed a `.word`-encoding workaround
   for the ~4% of functions using VU0 macro-mode instructions

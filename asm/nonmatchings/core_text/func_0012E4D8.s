@@ -2,26 +2,26 @@
 nonmatching func_0012E4D8, 0x4C
 
 glabel func_0012E4D8
-    /* 2F458 0012E4D8 4000BD27 */  addiu      $sp, $sp, 0x40
+    /* 2F458 0012E4D8 4000BD27 */  addiu      $29, $29, 0x40
     /* 2F45C 0012E4DC 00000000 */  nop
-    /* 2F460 0012E4E0 4000BD27 */  addiu      $sp, $sp, 0x40
+    /* 2F460 0012E4E0 4000BD27 */  addiu      $29, $29, 0x40
     /* 2F464 0012E4E4 00000000 */  nop
-    /* 2F468 0012E4E8 2000BD27 */  addiu      $sp, $sp, 0x20
+    /* 2F468 0012E4E8 2000BD27 */  addiu      $29, $29, 0x20
     /* 2F46C 0012E4EC 00000000 */  nop
-    /* 2F470 0012E4F0 3000BD27 */  addiu      $sp, $sp, 0x30
+    /* 2F470 0012E4F0 3000BD27 */  addiu      $29, $29, 0x30
     /* 2F474 0012E4F4 00000000 */  nop
 .align 2
   alabel func_0012E4F8
-    /* 2F478 0012E4F8 F0FFBD27 */  addiu      $sp, $sp, -0x10
-    /* 2F47C 0012E4FC 18000424 */  addiu      $a0, $zero, 0x18
-    /* 2F480 0012E500 0000BF7F */  sq         $ra, 0x0($sp)
-    /* 2F484 0012E504 2D280000 */  daddu      $a1, $zero, $zero
-    /* 2F488 0012E508 2D300000 */  daddu      $a2, $zero, $zero
-    /* 2F48C 0012E50C 2D380000 */  daddu      $a3, $zero, $zero
+    /* 2F478 0012E4F8 F0FFBD27 */  addiu      $29, $29, -0x10
+    /* 2F47C 0012E4FC 18000424 */  addiu      $4, $0, 0x18
+    /* 2F480 0012E500 0000BF7F */  sq         $31, 0x0($29)
+    /* 2F484 0012E504 2D280000 */  daddu      $5, $0, $0
+    /* 2F488 0012E508 2D300000 */  daddu      $6, $0, $0
+    /* 2F48C 0012E50C 2D380000 */  daddu      $7, $0, $0
     /* 2F490 0012E510 08BA040C */  jal        func_0012E820
-    /* 2F494 0012E514 2D400000 */   daddu     $t0, $zero, $zero
-    /* 2F498 0012E518 0000BF7B */  lq         $ra, 0x0($sp)
-    /* 2F49C 0012E51C 0800E003 */  jr         $ra
-    /* 2F4A0 0012E520 1000BD27 */   addiu     $sp, $sp, 0x10
+    /* 2F494 0012E514 2D400000 */   daddu     $8, $0, $0
+    /* 2F498 0012E518 0000BF7B */  lq         $31, 0x0($29)
+    /* 2F49C 0012E51C 0800E003 */  jr         $31
+    /* 2F4A0 0012E520 1000BD27 */   addiu     $29, $29, 0x10
 endlabel func_0012E4D8
     /* 2F4A4 0012E524 00000000 */  nop

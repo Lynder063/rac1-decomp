@@ -2,6 +2,6 @@
 nonmatching func_00113AD8, 0x4
 
 glabel func_00113AD8
-    /* 14A58 00113AD8 0000448C */  lw         $a0, 0x0($v0)
+    /* 14A58 00113AD8 0000448C */  lw         $4, 0x0($2)
 endlabel func_00113AD8
     /* 14A5C 00113ADC 00000000 */  nop

@@ -2,10 +2,10 @@
 nonmatching func_001FA4A0, 0x50
 
 glabel func_001FA4A0
-    /* FB420 001FA4A0 0000A1D8 */  lqc2       $vf1, 0x0($a1)
-    /* FB424 001FA4A4 1000A2D8 */  lqc2       $vf2, 0x10($a1)
-    /* FB428 001FA4A8 2000A3D8 */  lqc2       $vf3, 0x20($a1)
-    /* FB42C 001FA4AC 300080F8 */  sqc2       $vf0, 0x30($a0)
+    /* FB420 001FA4A0 0000A1D8 */  lqc2       $vf1, 0x0($5)
+    /* FB424 001FA4A4 1000A2D8 */  lqc2       $vf2, 0x10($5)
+    /* FB428 001FA4A8 2000A3D8 */  lqc2       $vf3, 0x20($5)
+    /* FB42C 001FA4AC 300080F8 */  sqc2       $vf0, 0x30($4)
     /* FB430 001FA4B0 0001014B */  vaddx.x    $vf4, $vf0, $vf1x
     /* FB434 001FA4B4 4101824A */  vaddy.y    $vf5, $vf0, $vf2y
     /* FB438 001FA4B8 8201434A */  vaddz.z    $vf6, $vf0, $vf3z
@@ -18,8 +18,8 @@ glabel func_001FA4A0
     /* FB454 001FA4D4 0701204A */  vsubw.w    $vf4, $vf0, $vf0w
     /* FB458 001FA4D8 4701204A */  vsubw.w    $vf5, $vf0, $vf0w
     /* FB45C 001FA4DC 8701204A */  vsubw.w    $vf6, $vf0, $vf0w
-    /* FB460 001FA4E0 000084F8 */  sqc2       $vf4, 0x0($a0)
-    /* FB464 001FA4E4 100085F8 */  sqc2       $vf5, 0x10($a0)
-    /* FB468 001FA4E8 0800E003 */  jr         $ra
-    /* FB46C 001FA4EC 200086F8 */   sqc2      $vf6, 0x20($a0)
+    /* FB460 001FA4E0 000084F8 */  sqc2       $vf4, 0x0($4)
+    /* FB464 001FA4E4 100085F8 */  sqc2       $vf5, 0x10($4)
+    /* FB468 001FA4E8 0800E003 */  jr         $31
+    /* FB46C 001FA4EC 200086F8 */   sqc2      $vf6, 0x20($4)
 endlabel func_001FA4A0

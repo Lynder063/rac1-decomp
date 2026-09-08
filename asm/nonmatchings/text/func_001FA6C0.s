@@ -2,7 +2,7 @@
 nonmatching func_001FA6C0, 0x88
 
 glabel func_001FA6C0
-    /* FB640 001FA6C0 000088D8 */  lqc2       $vf8, 0x0($a0)
+    /* FB640 001FA6C0 000088D8 */  lqc2       $vf8, 0x0($4)
     /* FB644 001FA6C4 00000000 */  nop
     /* FB648 001FA6C8 9803E04B */  vmulx.xyzw $vf14, $vf0, $vf0x
     /* FB64C 001FA6CC D803E04B */  vmulx.xyzw $vf15, $vf0, $vf0x
@@ -30,10 +30,10 @@ glabel func_001FA6C0
     /* FB6A4 001FA724 86730D4B */  vsubz.x    $vf14, $vf14, $vf13z
     /* FB6A8 001FA728 C67B8D4A */  vsubz.y    $vf15, $vf15, $vf13z
     /* FB6AC 001FA72C 05844C4A */  vsuby.z    $vf16, $vf16, $vf12y
-    /* FB6B0 001FA730 0000AEF8 */  sqc2       $vf14, 0x0($a1)
-    /* FB6B4 001FA734 1000AFF8 */  sqc2       $vf15, 0x10($a1)
-    /* FB6B8 001FA738 2000B0F8 */  sqc2       $vf16, 0x20($a1)
-    /* FB6BC 001FA73C 3000B1F8 */  sqc2       $vf17, 0x30($a1)
-    /* FB6C0 001FA740 0800E003 */  jr         $ra
+    /* FB6B0 001FA730 0000AEF8 */  sqc2       $vf14, 0x0($5)
+    /* FB6B4 001FA734 1000AFF8 */  sqc2       $vf15, 0x10($5)
+    /* FB6B8 001FA738 2000B0F8 */  sqc2       $vf16, 0x20($5)
+    /* FB6BC 001FA73C 3000B1F8 */  sqc2       $vf17, 0x30($5)
+    /* FB6C0 001FA740 0800E003 */  jr         $31
     /* FB6C4 001FA744 00000000 */   nop
 endlabel func_001FA6C0

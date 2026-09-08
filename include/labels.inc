@@ -16,11 +16,13 @@
 .endm
 
 # An alternative entry to a function.
+# .aent isn't supported by the SN Systems ProDG GAS (2.9-ee-991111b) --
+# it's only a debug-info marker, doesn't affect emitted bytes, so this
+# just omits it rather than emitting the plain label twice.
 .macro alabel label, visibility=global
     .\visibility \label
     .type \label, @function
     \label:
-        .aent \label
 .endm
 
 # A label referenced by an error handler table.

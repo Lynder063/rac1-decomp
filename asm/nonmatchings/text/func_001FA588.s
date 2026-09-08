@@ -2,8 +2,8 @@
 nonmatching func_001FA588, 0x40
 
 glabel func_001FA588
-    /* FB508 001FA588 0000A1D8 */  lqc2       $vf1, 0x0($a1)
-    /* FB50C 001FA58C 0000C2D8 */  lqc2       $vf2, 0x0($a2)
+    /* FB508 001FA588 0000A1D8 */  lqc2       $vf1, 0x0($5)
+    /* FB50C 001FA58C 0000C2D8 */  lqc2       $vf2, 0x0($6)
     /* FB510 001FA590 4302C04B */  vaddw.xyz  $vf9, $vf0, $vf0w
     /* FB514 001FA594 EA10214A */  vmul.w     $vf3, $vf2, $vf1
     /* FB518 001FA598 2A11C14B */  vmul.xyz   $vf4, $vf2, $vf1
@@ -16,6 +16,6 @@ glabel func_001FA588
     /* FB534 001FA5B4 282AC64B */  vadd.xyz   $vf8, $vf5, $vf6
     /* FB538 001FA5B8 2842C74B */  vadd.xyz   $vf8, $vf8, $vf7
     /* FB53C 001FA5BC 041A244A */  vsubx.w    $vf8, $vf3, $vf4x
-    /* FB540 001FA5C0 0800E003 */  jr         $ra
-    /* FB544 001FA5C4 000088F8 */   sqc2      $vf8, 0x0($a0)
+    /* FB540 001FA5C0 0800E003 */  jr         $31
+    /* FB544 001FA5C4 000088F8 */   sqc2      $vf8, 0x0($4)
 endlabel func_001FA588
