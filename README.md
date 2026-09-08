@@ -37,12 +37,17 @@ Scaffolding + toolchain proven, no real decompilation yet:
   disassembled function — VU0 macro-mode instructions included — back to
   byte-for-byte identical machine code once GPR names are numeric
   (`tools/sn_regnames.py`) and `.set noreorder`/`.set noat` are active.
-  The compiler side is now wired up too (`Makefile.sn`) — both objects
-  build clean, and `text.o` already lands at the **exact** original
-  section size with the remaining ~7% byte difference explained by
-  unresolved call/data relocations (nothing is linked yet). See
-  `docs/TOOLCHAIN.md` for the numbers and caveats — this is a strong
-  signal, not yet proof any single function matches.
+  The compiler side is wired up (`Makefile.sn`), and there's now a real
+  linker script (`rac1.ld.sh`) placing everything at retail addresses.
+  Comparing the fully linked result against the retail binary section by
+  section: **every code section (`.core_text`, `.text`) is a 100% exact
+  byte match**; total mismatch across the whole linked binary is
+  85 bytes out of 1,168,232 (0.01%), all in data sections and all
+  explained (address-guessed bss placeholders feeding a handful of
+  count/size fields off by one — see `docs/TOOLCHAIN.md`). This proves
+  the toolchain and disassembly round-trip correctly — the precondition
+  for real decompilation work, not a substitute for it; no function has
+  actually been rewritten as real C yet.
 - The earlier modern-`ps2dev`-toolchain path (WSL, GCC 15.2) still works
   as a secondary/fallback build and needed a `.word`-encoding workaround
   for the ~4% of functions using VU0 macro-mode instructions

@@ -147,11 +147,76 @@ codegen itself (instruction selection, register allocation, scheduling)
 is landing very close to the original, not just "an object file that
 happens to assemble."
 
-Not yet done: a real linker script that reproduces the original's exact
-section layout and symbol addresses (needed before any function can be
-called "matching" rather than "plausible"); STL/runtime header
-availability for anything beyond plain C; actually decompiling any
-function into real (non-`INCLUDE_ASM`) C and confirming it matches.
+## Update: linked, whole-binary result — 99.99% byte-exact
+
+`rac1.ld.sh` generates `build-sn/rac1.ld` from the same addresses as
+`config/splat.yaml`, placing every object (both C files, all 8
+data/rodata objects, plus bss padding) at its real retail address, and
+`tools/gen_bss_equs.py` resolves the ~240 symbols that only exist as bss
+variables (never declared anywhere as real data) by parsing their address
+straight out of the splat-assigned name (`D_0015ED10` -> `0x0015ED10` —
+splat's naming convention makes the address self-describing for anything
+not yet manually analyzed).
+
+Two more toolchain bugs found and worked around along the way:
+
+- **`jlabel`'s default `local` visibility breaks cross-object jump
+  tables.** `include/labels.inc` had `jlabel` default to
+  `visibility=local` (splat's own default). A `.local` symbol can't
+  satisfy an undefined reference from a *different* object at link
+  time — and a function's jump table often lives in a separate rodata
+  object from the code that uses it. Changed the default to `global`.
+- **This `ee-ld.exe` (v2.3.7.513-era) doesn't advance the location
+  counter after a `NOLOAD` section.** An explicit `. = X;` placed right
+  after a `SECTIONS` entry marked `(NOLOAD)` is silently ignored — the
+  next real section lands back at the `NOLOAD` section's own start
+  address instead of `X`, silently overlapping everything after it.
+  Worked around by making bss regions **real, zero-filled loaded
+  sections** (`.skip N` in an assembled object) instead of `NOLOAD` — see
+  `core_bss_pad`/`bss_pad` in `tools/build_sn_data.sh`.
+
+Result, comparing every linked section's bytes directly against the
+retail ELF's corresponding section:
+
+```
+.core_text    0/119288   (0.00%) mismatch  -- EXACT
+.core_data    0/142656   (0.00%) mismatch  -- EXACT
+.core_rdata   0/7840     (0.00%) mismatch  -- EXACT
+.core_lit     0/608      (0.00%) mismatch  -- EXACT
+.lit          1/9008     (0.01%) mismatch
+.data         84/538920  (0.02%) mismatch
+.lvl_vtbl     0/12       (0.00%) mismatch  -- EXACT
+.lvl_camvtbl  0/20       (0.00%) mismatch  -- EXACT
+.lvl_sndvtbl  0/8        (0.00%) mismatch  -- EXACT
+.text         0/349872   (0.00%) mismatch  -- EXACT
+
+TOTAL: 85/1168232 (0.01%) mismatch
+```
+
+Every mismatched byte is a small integer off by exactly 1 (e.g. retail
+`0x01` vs. ours `0x00`, retail `0x80` vs. ours `0x7f`) — the signature of
+a count/size field computed as an address *difference* against one of
+`gen_bss_equs.py`'s approximated placeholder addresses, not a real
+codegen difference. **Every code section (`.text`/`.core_text`) is a
+100% exact match already.**
+
+To reproduce the full build + link + verify:
+
+```
+toolchain/sn-prodg-3.01/usr/local/sce/ee/gcc/bin/make.exe -f Makefile.sn
+bash tools/build_sn_data.sh
+bash rac1.ld.sh
+toolchain/sn-prodg-3.01/usr/local/sce/ee/gcc/bin/ee-ld.exe \
+    -T build-sn/rac1.ld build-sn/bss_equs.o -o build-sn/rac1.elf
+```
+
+Not yet done: chasing the remaining 85-byte residual to zero (would need
+real bss symbol declarations with correct sizes rather than
+address-guessed placeholders); STL/runtime header availability for
+anything beyond plain C; actually decompiling any function into real
+(non-`INCLUDE_ASM`) C and confirming it individually matches — this
+result proves the *toolchain and disassembly* are sound, not that any
+particular function has been understood/renamed/rewritten yet.
 
 ## Known gap: not era-accurate (superseded above for the assembler; compiler flags still unverified)
 
