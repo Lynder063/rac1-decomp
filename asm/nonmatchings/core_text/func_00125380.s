@@ -5,7 +5,7 @@ glabel func_00125380
     /* 26300 00125380 1300083C */  lui        $t0, %hi(D_00132F00)
     /* 26304 00125384 002F0825 */  addiu      $t0, $t0, %lo(D_00132F00)
     /* 26308 00125388 000005D9 */  lqc2       $vf5, 0x0($t0)
-    /* 2630C 0012538C 3D33264A */  vmr32.w    $vf6, $vf6
+    /* 2630C 0012538C 3D33264A */  .word      0x4A26333D    # vmr32.w    $vf6, $vf6
     /* 26310 00125390 0001064B */  vaddx.x    $vf4, $vf0, $vf6x
     /* 26314 00125394 AA31064B */  vmul.x     $vf6, $vf6, $vf6
     /* 26318 00125398 1821E04A */  vmulx.yzw  $vf4, $vf4, $vf0x
@@ -23,9 +23,9 @@ glabel func_00125380
     /* 26348 001253C8 EA21044B */  vmul.x     $vf7, $vf4, $vf4
     /* 2634C 001253CC C401274A */  vsubx.w    $vf7, $vf0, $vf7x
     /* 26350 001253D0 BD03874B */  .word      0x4B8703BD                    # vsqrt      Q, $vf7w # 00000000 <InstrIdType: R5900_COP2_SPECIAL2>
-    /* 26354 001253D4 BF03004A */  vwaitq
+    /* 26354 001253D4 BF03004A */  .word      0x4A0003BF    # vwaitq
     /* 26358 001253D8 0300E014 */  bnez       $a3, .L001253E8
-    /* 2635C 001253DC E001004B */   vaddq.x   $vf7, $vf0, Q
+    /* 2635C 001253DC E001004B */   .word      0x4B0001E0    # vaddq.x   $vf7, $vf0, Q
     /* 26360 001253E0 02000010 */  b          .L001253EC
     /* 26364 001253E4 0029074B */   vaddx.x   $vf4, $vf5, $vf7x
 .align 2

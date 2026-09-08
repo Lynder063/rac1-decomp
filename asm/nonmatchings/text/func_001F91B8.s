@@ -68,10 +68,10 @@ glabel func_001F91B8
     /* FA228 001F92A8 1000E2D8 */  lqc2       $vf2, 0x10($a3)
     /* FA22C 001F92AC 00000000 */  nop
     /* FA230 001F92B0 2000E3D8 */  lqc2       $vf3, 0x20($a3)
-    /* FA234 001F92B4 BC09E54B */  vmulax.xyzw ACC, $vf1, $vf5x
-    /* FA238 001F92B8 BD10E54B */  vmadday.xyzw ACC, $vf2, $vf5y
+    /* FA234 001F92B4 BC09E54B */  .word      0x4BE509BC    # vmulax.xyzw ACC, $vf1, $vf5x
+    /* FA238 001F92B8 BD10E54B */  .word      0x4BE510BD    # vmadday.xyzw ACC, $vf2, $vf5y
     /* FA23C 001F92BC 00000000 */  nop
-    /* FA240 001F92C0 BE18E54B */  vmaddaz.xyzw ACC, $vf3, $vf5z
+    /* FA240 001F92C0 BE18E54B */  .word      0x4BE518BE    # vmaddaz.xyzw ACC, $vf3, $vf5z
     /* FA244 001F92C4 00000000 */  nop
     /* FA248 001F92C8 8B01E54B */  vmaddw.xyzw $vf6, $vf0, $vf5w
     /* FA24C 001F92CC 00000000 */  nop

@@ -19,14 +19,14 @@ glabel func_0022D7E0
     /* 12E794 0022D814 10002CD8 */  lqc2       $vf12, 0x10($at)
     /* 12E798 0022D818 20002DD8 */  lqc2       $vf13, 0x20($at)
     /* 12E79C 0022D81C 30002ED8 */  lqc2       $vf14, 0x30($at)
-    /* 12E7A0 0022D820 BC31CB4B */  vmulax.xyz ACC, $vf6, $vf11x
-    /* 12E7A4 0022D824 BD38CB4B */  vmadday.xyz ACC, $vf7, $vf11y
+    /* 12E7A0 0022D820 BC31CB4B */  .word      0x4BCB31BC    # vmulax.xyz ACC, $vf6, $vf11x
+    /* 12E7A4 0022D824 BD38CB4B */  .word      0x4BCB38BD    # vmadday.xyz ACC, $vf7, $vf11y
     /* 12E7A8 0022D828 4A46CB4B */  vmaddz.xyz $vf25, $vf8, $vf11z
-    /* 12E7AC 0022D82C BC31CC4B */  vmulax.xyz ACC, $vf6, $vf12x
-    /* 12E7B0 0022D830 BD38CC4B */  vmadday.xyz ACC, $vf7, $vf12y
+    /* 12E7AC 0022D82C BC31CC4B */  .word      0x4BCC31BC    # vmulax.xyz ACC, $vf6, $vf12x
+    /* 12E7B0 0022D830 BD38CC4B */  .word      0x4BCC38BD    # vmadday.xyz ACC, $vf7, $vf12y
     /* 12E7B4 0022D834 8A46CC4B */  vmaddz.xyz $vf26, $vf8, $vf12z
-    /* 12E7B8 0022D838 BC31CD4B */  vmulax.xyz ACC, $vf6, $vf13x
-    /* 12E7BC 0022D83C BD38CD4B */  vmadday.xyz ACC, $vf7, $vf13y
+    /* 12E7B8 0022D838 BC31CD4B */  .word      0x4BCD31BC    # vmulax.xyz ACC, $vf6, $vf13x
+    /* 12E7BC 0022D83C BD38CD4B */  .word      0x4BCD38BD    # vmadday.xyz ACC, $vf7, $vf13y
     /* 12E7C0 0022D840 CA46CD4B */  vmaddz.xyz $vf27, $vf8, $vf13z
     /* 12E7C4 0022D844 01000320 */  addi       $v1, $zero, 0x1 /* handwritten instruction */
 .align 2
@@ -39,8 +39,8 @@ glabel func_0022D7E0
     /* 12E7DC 0022D85C 20008424 */  addiu      $a0, $a0, 0x20
     /* 12E7E0 0022D860 C700814A */  vsubw.y    $vf3, $vf0, $vf1w
     /* 12E7E4 0022D864 00000000 */  nop
-    /* 12E7E8 0022D868 BCC9C24B */  vmulax.xyz ACC, $vf25, $vf2x
-    /* 12E7EC 0022D86C BDD0C24B */  vmadday.xyz ACC, $vf26, $vf2y
+    /* 12E7E8 0022D868 BCC9C24B */  .word      0x4BC2C9BC    # vmulax.xyz ACC, $vf25, $vf2x
+    /* 12E7EC 0022D86C BDD0C24B */  .word      0x4BC2D0BD    # vmadday.xyz ACC, $vf26, $vf2y
     /* 12E7F0 0022D870 8AD8C24B */  vmaddz.xyz $vf2, $vf27, $vf2z
     /* 12E7F4 0022D874 0100C624 */  addiu      $a2, $a2, 0x1
     /* 12E7F8 0022D878 1BB2814B */  vmulw.xy   $vf8, $vf22, $vf1w

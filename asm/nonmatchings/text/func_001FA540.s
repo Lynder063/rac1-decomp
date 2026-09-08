@@ -13,9 +13,9 @@ glabel func_001FA540
   .L001FA558:
     /* FB4D8 001FA558 0000C8D8 */  lqc2       $vf8, 0x0($a2)
     /* FB4DC 001FA55C 1000C620 */  addi       $a2, $a2, 0x10 /* handwritten instruction */
-    /* FB4E0 001FA560 BC21E84B */  vmulax.xyzw ACC, $vf4, $vf8x
-    /* FB4E4 001FA564 BD28E84B */  vmadday.xyzw ACC, $vf5, $vf8y
-    /* FB4E8 001FA568 BE30E84B */  vmaddaz.xyzw ACC, $vf6, $vf8z
+    /* FB4E0 001FA560 BC21E84B */  .word      0x4BE821BC    # vmulax.xyzw ACC, $vf4, $vf8x
+    /* FB4E4 001FA564 BD28E84B */  .word      0x4BE828BD    # vmadday.xyzw ACC, $vf5, $vf8y
+    /* FB4E8 001FA568 BE30E84B */  .word      0x4BE830BE    # vmaddaz.xyzw ACC, $vf6, $vf8z
     /* FB4EC 001FA56C 4B3AE84B */  vmaddw.xyzw $vf9, $vf7, $vf8w
     /* FB4F0 001FA570 000089F8 */  sqc2       $vf9, 0x0($a0)
     /* FB4F4 001FA574 10008420 */  addi       $a0, $a0, 0x10 /* handwritten instruction */

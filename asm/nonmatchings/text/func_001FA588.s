@@ -9,9 +9,9 @@ glabel func_001FA588
     /* FB518 001FA598 2A11C14B */  vmul.xyz   $vf4, $vf2, $vf1
     /* FB51C 001FA59C 5B11C14B */  vmulw.xyz  $vf5, $vf2, $vf1w
     /* FB520 001FA5A0 9B09C24B */  vmulw.xyz  $vf6, $vf1, $vf2w
-    /* FB524 001FA5A4 FE0AC24B */  vopmula.xyz ACC, $vf1, $vf2
-    /* FB528 001FA5A8 EE11C14B */  vopmsub.xyz $vf7, $vf2, $vf1
-    /* FB52C 001FA5AC 3D20044B */  vadday.x   ACC, $vf4, $vf4y
+    /* FB524 001FA5A4 FE0AC24B */  .word      0x4BC20AFE    # vopmula.xyz ACC, $vf1, $vf2
+    /* FB528 001FA5A8 EE11C14B */  .word      0x4BC111EE    # vopmsub.xyz $vf7, $vf2, $vf1
+    /* FB52C 001FA5AC 3D20044B */  .word      0x4B04203D    # vadday.x   ACC, $vf4, $vf4y
     /* FB530 001FA5B0 0A49044B */  vmaddz.x   $vf4, $vf9, $vf4z
     /* FB534 001FA5B4 282AC64B */  vadd.xyz   $vf8, $vf5, $vf6
     /* FB538 001FA5B8 2842C74B */  vadd.xyz   $vf8, $vf8, $vf7

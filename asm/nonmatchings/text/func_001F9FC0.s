@@ -31,7 +31,7 @@ glabel func_001F9FC0
     /* FAFA0 001FA020 0C0027C4 */  lwc1       $f7, 0xC($at)
     /* FAFA4 001FA024 1E100646 */  madda.s    $f2, $f6
     /* FAFA8 001FA028 1C1A0746 */  madd.s     $f8, $f3, $f7
-    /* FAFAC 001FA02C 6000004B */  vaddq.x    $vf1, $vf0, Q
+    /* FAFAC 001FA02C 6000004B */  .word      0x4B000060    # vaddq.x    $vf1, $vf0, Q
     /* FAFB0 001FA030 C93F013C */  lui        $at, (0x3FC90FDB >> 16)
     /* FAFB4 001FA034 DB0F2134 */  ori        $at, $at, (0x3FC90FDB & 0xFFFF)
     /* FAFB8 001FA038 00108144 */  mtc1       $at, $f2

@@ -17,15 +17,15 @@ glabel func_00229838
     /* 12A7DC 0022985C 100042D9 */  lqc2       $vf2, (0x70000010 & 0xFFFF)($t2)
     /* 12A7E0 00229860 00000000 */  nop
     /* 12A7E4 00229864 EC10C14B */  vsub.xyz   $vf3, $vf2, $vf1
-    /* 12A7E8 00229868 BC03634B */  vdiv       Q, $vf0w, $vf3z
+    /* 12A7E8 00229868 BC03634B */  .word      0x4B6303BC    # vdiv       Q, $vf0w, $vf3z
     /* 12A7EC 0022986C 2C51414A */  vsub.z     $vf4, $vf10, $vf1
     /* 12A7F0 00229870 6C59424A */  vsub.z     $vf5, $vf11, $vf2
     /* 12A7F4 00229874 1A19C44B */  vmulz.xyz  $vf4, $vf3, $vf4z
     /* 12A7F8 00229878 5A19C54B */  vmulz.xyz  $vf5, $vf3, $vf5z
     /* 12A7FC 0022987C 00000000 */  nop
-    /* 12A800 00229880 BF03004A */  vwaitq
-    /* 12A804 00229884 1C21C04B */  vmulq.xyz  $vf4, $vf4, Q
-    /* 12A808 00229888 5C29C04B */  vmulq.xyz  $vf5, $vf5, Q
+    /* 12A800 00229880 BF03004A */  .word      0x4A0003BF    # vwaitq
+    /* 12A804 00229884 1C21C04B */  .word      0x4BC0211C    # vmulq.xyz  $vf4, $vf4, Q
+    /* 12A808 00229888 5C29C04B */  .word      0x4BC0295C    # vmulq.xyz  $vf5, $vf5, Q
     /* 12A80C 0022988C 6808C44B */  vadd.xyz   $vf1, $vf1, $vf4
     /* 12A810 00229890 A810C54B */  vadd.xyz   $vf2, $vf2, $vf5
     /* 12A814 00229894 000041F9 */  sqc2       $vf1, (0x70000000 & 0xFFFF)($t2)

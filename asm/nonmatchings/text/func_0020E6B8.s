@@ -75,10 +75,10 @@ glabel func_0020E6B8
     /* 10F72C 0020E7AC AA10C24B */   vmul.xyz  $vf2, $vf2, $vf2
     /* 10F730 0020E7B0 0B008311 */  beq        $t4, $v1, .L0020E7E0
     /* 10F734 0020E7B4 00000000 */   nop
-    /* 10F738 0020E7B8 BE1A034B */  vmula.x    ACC, $vf3, $vf3
+    /* 10F738 0020E7B8 BE1A034B */  .word      0x4B031ABE    # vmula.x    ACC, $vf3, $vf3
     /* 10F73C 0020E7BC 00000000 */  nop
-    /* 10F740 0020E7C0 FC20024B */  vmsubax.x  ACC, $vf4, $vf2x
-    /* 10F744 0020E7C4 FD20024B */  vmsubay.x  ACC, $vf4, $vf2y
+    /* 10F740 0020E7C0 FC20024B */  .word      0x4B0220FC    # vmsubax.x  ACC, $vf4, $vf2x
+    /* 10F744 0020E7C4 FD20024B */  .word      0x4B0220FD    # vmsubay.x  ACC, $vf4, $vf2y
     /* 10F748 0020E7C8 8E20024B */  vmsubz.x   $vf2, $vf4, $vf2z
     /* 10F74C 0020E7CC 00102248 */  qmfc2.ni   $v0, $vf2
     /* 10F750 0020E7D0 3C100200 */  dsll32     $v0, $v0, 0

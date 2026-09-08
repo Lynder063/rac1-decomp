@@ -61,15 +61,15 @@ glabel func_001F7C60
     /* F8CBC 001F7D3C 00000000 */  nop
     /* F8CC0 001F7D40 0028A848 */  qmtc2.ni   $t0, $vf5
     /* F8CC4 001F7D44 C2180046 */  mul.s      $f3, $f3, $f0
-    /* F8CC8 001F7D48 BF19E04B */  vmulaw.xyzw ACC, $vf3, $vf0w
+    /* F8CC8 001F7D48 BF19E04B */  .word      0x4BE019BF    # vmulaw.xyzw ACC, $vf3, $vf0w
     /* F8CCC 001F7D4C 00000000 */  nop
-    /* F8CD0 001F7D50 BC20E54B */  vmaddax.xyzw ACC, $vf4, $vf5x
+    /* F8CD0 001F7D50 BC20E54B */  .word      0x4BE520BC    # vmaddax.xyzw ACC, $vf4, $vf5x
     /* F8CD4 001F7D54 00000000 */  nop
     /* F8CD8 001F7D58 CC18E54B */  vmsubx.xyzw $vf3, $vf3, $vf5x
     /* F8CDC 001F7D5C 00000000 */  nop
-    /* F8CE0 001F7D60 BF09E04B */  vmulaw.xyzw ACC, $vf1, $vf0w
+    /* F8CE0 001F7D60 BF09E04B */  .word      0x4BE009BF    # vmulaw.xyzw ACC, $vf1, $vf0w
     /* F8CE4 001F7D64 00000000 */  nop
-    /* F8CE8 001F7D68 BC10E54B */  vmaddax.xyzw ACC, $vf2, $vf5x
+    /* F8CE8 001F7D68 BC10E54B */  .word      0x4BE510BC    # vmaddax.xyzw ACC, $vf2, $vf5x
     /* F8CEC 001F7D6C 00000000 */  nop
     /* F8CF0 001F7D70 00210546 */  add.s      $f4, $f4, $f5
     /* F8CF4 001F7D74 00000000 */  nop

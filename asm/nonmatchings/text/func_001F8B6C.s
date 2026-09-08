@@ -44,10 +44,10 @@ glabel func_001F8B6C
     /* F9B78 001F8BF8 20002120 */   addi      $at, $at, 0x20 /* handwritten instruction */
     /* F9B7C 001F8BFC F0FF21D8 */  lqc2       $vf1, -0x10($at)
     /* F9B80 001F8C00 E0FF22D8 */  lqc2       $vf2, -0x20($at)
-    /* F9B84 001F8C04 BC03E14B */  vdiv       Q, $vf0w, $vf1w
+    /* F9B84 001F8C04 BC03E14B */  .word      0x4BE103BC    # vdiv       Q, $vf0w, $vf1w
     /* F9B88 001F8C08 100061F8 */  sqc2       $vf1, 0x10($v1)
-    /* F9B8C 001F8C0C BF03004A */  vwaitq
-    /* F9B90 001F8C10 9C00204A */  vmulq.w    $vf2, $vf0, Q
+    /* F9B8C 001F8C0C BF03004A */  .word      0x4A0003BF    # vwaitq
+    /* F9B90 001F8C10 9C00204A */  .word      0x4A20009C    # vmulq.w    $vf2, $vf0, Q
     /* F9B94 001F8C14 000062F8 */  sqc2       $vf2, 0x0($v1)
     /* F9B98 001F8C18 01008420 */  addi       $a0, $a0, 0x1 /* handwritten instruction */
     /* F9B9C 001F8C1C F8E20708 */  j          func_001F8BE0
@@ -92,9 +92,9 @@ glabel func_001F8B6C
     /* F9C20 001F8CA0 20004220 */  addi       $v0, $v0, 0x20 /* handwritten instruction */
     /* F9C24 001F8CA4 100042D8 */  lqc2       $vf2, 0x10($v0)
     /* F9C28 001F8CA8 FFFF6320 */  addi       $v1, $v1, -0x1 /* handwritten instruction */
-    /* F9C2C 001F8CAC 3C18834A */  vaddax.y   ACC, $vf3, $vf3x
+    /* F9C2C 001F8CAC 3C18834A */  .word      0x4A83183C    # vaddax.y   ACC, $vf3, $vf3x
     /* F9C30 001F8CB0 00000000 */  nop
-    /* F9C34 001F8CB4 BE30834A */  vmaddaz.y  ACC, $vf6, $vf3z
+    /* F9C34 001F8CB4 BE30834A */  .word      0x4A8330BE    # vmaddaz.y  ACC, $vf6, $vf3z
     /* F9C38 001F8CB8 00000000 */  nop
     /* F9C3C 001F8CBC 4B39844A */  vmaddw.y   $vf5, $vf7, $vf4w
     /* F9C40 001F8CC0 00000000 */  nop
@@ -114,11 +114,11 @@ glabel func_001F8B6C
     /* F9C78 001F8CF8 00000000 */  nop
     /* F9C7C 001F8CFC 2C0AC84B */  vsub.xyz   $vf8, $vf1, $vf8
     /* F9C80 001F8D00 FF02004A */  vnop
-    /* F9C84 001F8D04 BF03004A */  vwaitq
+    /* F9C84 001F8D04 BF03004A */  .word      0x4A0003BF    # vwaitq
     /* F9C88 001F8D08 00000000 */  nop
-    /* F9C8C 001F8D0C 5C01204A */  vmulq.w    $vf5, $vf0, Q
+    /* F9C8C 001F8D0C 5C01204A */  .word      0x4A20015C    # vmulq.w    $vf5, $vf0, Q
     /* F9C90 001F8D10 00000000 */  nop
-    /* F9C94 001F8D14 5C4A204A */  vmulq.w    $vf9, $vf9, Q
+    /* F9C94 001F8D14 5C4A204A */  .word      0x4A204A5C    # vmulq.w    $vf9, $vf9, Q
     /* F9C98 001F8D18 00000000 */  nop
     /* F9C9C 001F8D1C 6C02294A */  vsub.w     $vf9, $vf0, $vf9
     /* F9CA0 001F8D20 00000000 */  nop

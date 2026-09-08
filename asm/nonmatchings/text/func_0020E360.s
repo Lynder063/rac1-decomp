@@ -29,7 +29,7 @@ glabel func_0020E360
     /* 10F334 0020E3B4 100042D8 */  lqc2       $vf2, 0x10($v0)
     /* 10F338 0020E3B8 3E19034B */  vitof12.x  $vf3, $vf3
     /* 10F33C 0020E3BC C400234A */  vsubx.w    $vf3, $vf0, $vf3x
-    /* 10F340 0020E3C0 BF09C34B */  vmulaw.xyz ACC, $vf1, $vf3w
+    /* 10F340 0020E3C0 BF09C34B */  .word      0x4BC309BF    # vmulaw.xyz ACC, $vf1, $vf3w
     /* 10F344 0020E3C4 4810C34B */  vmaddx.xyz $vf1, $vf2, $vf3x
     /* 10F348 0020E3C8 0800E003 */  jr         $ra
     /* 10F34C 0020E3CC 0000A1F8 */   sqc2      $vf1, 0x0($a1)

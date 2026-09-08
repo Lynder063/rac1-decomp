@@ -23,8 +23,8 @@ glabel func_001FA8F0
     /* FB8B4 001FA934 C300014B */  vaddw.x    $vf3, $vf0, $vf1w
     /* FB8B8 001FA938 0020A248 */  qmtc2.ni   $v0, $vf4
     /* FB8BC 001FA93C C700814A */  vsubw.y    $vf3, $vf0, $vf1w
-    /* FB8C0 001FA940 BCC9C24B */  vmulax.xyz ACC, $vf25, $vf2x
-    /* FB8C4 001FA944 BDD0C24B */  vmadday.xyz ACC, $vf26, $vf2y
+    /* FB8C0 001FA940 BCC9C24B */  .word      0x4BC2C9BC    # vmulax.xyz ACC, $vf25, $vf2x
+    /* FB8C4 001FA944 BDD0C24B */  .word      0x4BC2D0BD    # vmadday.xyz ACC, $vf26, $vf2y
     /* FB8C8 001FA948 8AD8C24B */  vmaddz.xyz $vf2, $vf27, $vf2z
     /* FB8CC 001FA94C DB24984A */  vmulw.y    $vf19, $vf4, $vf24w
     /* FB8D0 001FA950 1BB2814B */  vmulw.xy   $vf8, $vf22, $vf1w

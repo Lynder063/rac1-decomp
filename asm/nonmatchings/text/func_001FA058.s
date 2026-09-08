@@ -53,12 +53,12 @@ glabel func_001FA058
     /* FB08C 001FA10C AA08E44B */  vmul.xyzw  $vf2, $vf1, $vf4
     /* FB090 001FA110 6A08EE4B */  vmul.xyzw  $vf1, $vf1, $vf14
     /* FB094 001FA114 AA10EF4B */  vmul.xyzw  $vf2, $vf2, $vf15
-    /* FB098 001FA118 3D08014B */  vadday.x   ACC, $vf1, $vf1y
-    /* FB09C 001FA11C BE28014B */  vmaddaz.x  ACC, $vf5, $vf1z
-    /* FB0A0 001FA120 BF28014B */  vmaddaw.x  ACC, $vf5, $vf1w
-    /* FB0A4 001FA124 BC28024B */  vmaddax.x  ACC, $vf5, $vf2x
-    /* FB0A8 001FA128 BD28024B */  vmadday.x  ACC, $vf5, $vf2y
-    /* FB0AC 001FA12C BE28024B */  vmaddaz.x  ACC, $vf5, $vf2z
+    /* FB098 001FA118 3D08014B */  .word      0x4B01083D    # vadday.x   ACC, $vf1, $vf1y
+    /* FB09C 001FA11C BE28014B */  .word      0x4B0128BE    # vmaddaz.x  ACC, $vf5, $vf1z
+    /* FB0A0 001FA120 BF28014B */  .word      0x4B0128BF    # vmaddaw.x  ACC, $vf5, $vf1w
+    /* FB0A4 001FA124 BC28024B */  .word      0x4B0228BC    # vmaddax.x  ACC, $vf5, $vf2x
+    /* FB0A8 001FA128 BD28024B */  .word      0x4B0228BD    # vmadday.x  ACC, $vf5, $vf2y
+    /* FB0AC 001FA12C BE28024B */  .word      0x4B0228BE    # vmaddaz.x  ACC, $vf5, $vf2z
     /* FB0B0 001FA130 4B28024B */  vmaddw.x   $vf1, $vf5, $vf2w
     /* FB0B4 001FA134 493F013C */  lui        $at, (0x3F490FDB >> 16)
     /* FB0B8 001FA138 DB0F2134 */  ori        $at, $at, (0x3F490FDB & 0xFFFF)

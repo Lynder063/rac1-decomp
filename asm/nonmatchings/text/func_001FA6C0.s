@@ -6,7 +6,7 @@ glabel func_001FA6C0
     /* FB644 001FA6C4 00000000 */  nop
     /* FB648 001FA6C8 9803E04B */  vmulx.xyzw $vf14, $vf0, $vf0x
     /* FB64C 001FA6CC D803E04B */  vmulx.xyzw $vf15, $vf0, $vf0x
-    /* FB650 001FA6D0 3D03F04B */  vmr32.xyzw $vf16, $vf0
+    /* FB650 001FA6D0 3D03F04B */  .word      0x4BF0033D    # vmr32.xyzw $vf16, $vf0
     /* FB654 001FA6D4 3C03F14B */  vmove.xyzw $vf17, $vf0
     /* FB658 001FA6D8 8373004B */  vaddw.x    $vf14, $vf14, $vf0w
     /* FB65C 001FA6DC C37B804A */  vaddw.y    $vf15, $vf15, $vf0w

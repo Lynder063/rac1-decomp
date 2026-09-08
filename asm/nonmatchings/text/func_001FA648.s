@@ -5,7 +5,7 @@ glabel func_001FA648
     /* FB5C8 001FA648 000088D8 */  lqc2       $vf8, 0x0($a0)
     /* FB5CC 001FA64C 9803E04B */  vmulx.xyzw $vf14, $vf0, $vf0x
     /* FB5D0 001FA650 D803E04B */  vmulx.xyzw $vf15, $vf0, $vf0x
-    /* FB5D4 001FA654 3D03F04B */  vmr32.xyzw $vf16, $vf0
+    /* FB5D4 001FA654 3D03F04B */  .word      0x4BF0033D    # vmr32.xyzw $vf16, $vf0
     /* FB5D8 001FA658 8373004B */  vaddw.x    $vf14, $vf14, $vf0w
     /* FB5DC 001FA65C C37B804A */  vaddw.y    $vf15, $vf15, $vf0w
     /* FB5E0 001FA660 6842E84B */  vadd.xyzw  $vf9, $vf8, $vf8

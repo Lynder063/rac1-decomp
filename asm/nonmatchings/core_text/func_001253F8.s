@@ -29,7 +29,7 @@ glabel func_001253F8
     /* 263C4 00125444 3C2BE74B */  vmove.xyzw $vf7, $vf5
     /* 263C8 00125448 3C03E94B */  vmove.xyzw $vf9, $vf0
     /* 263CC 0012544C 6C4AC94B */  vsub.xyz   $vf9, $vf9, $vf9
-    /* 263D0 00125450 3D4BE84B */  vmr32.xyzw $vf8, $vf9
+    /* 263D0 00125450 3D4BE84B */  .word      0x4BE84B3D    # vmr32.xyzw $vf8, $vf9
     /* 263D4 00125454 2C21644A */  vsub.zw    $vf4, $vf4, $vf4
     /* 263D8 00125458 8029844A */  vaddx.y    $vf6, $vf5, $vf4x
     /* 263DC 0012545C 8129044B */  vaddy.x    $vf6, $vf5, $vf4y
@@ -39,9 +39,9 @@ glabel func_001253F8
 .align 2
   .L0012546C:
     /* 263EC 0012546C 0000A4D8 */  lqc2       $vf4, 0x0($a1)
-    /* 263F0 00125470 BC31E44B */  vmulax.xyzw ACC, $vf6, $vf4x
-    /* 263F4 00125474 BD38E44B */  vmadday.xyzw ACC, $vf7, $vf4y
-    /* 263F8 00125478 BE40E44B */  vmaddaz.xyzw ACC, $vf8, $vf4z
+    /* 263F0 00125470 BC31E44B */  .word      0x4BE431BC    # vmulax.xyzw ACC, $vf6, $vf4x
+    /* 263F4 00125474 BD38E44B */  .word      0x4BE438BD    # vmadday.xyzw ACC, $vf7, $vf4y
+    /* 263F8 00125478 BE40E44B */  .word      0x4BE440BE    # vmaddaz.xyzw ACC, $vf8, $vf4z
     /* 263FC 0012547C 4B49E44B */  vmaddw.xyzw $vf5, $vf9, $vf4w
     /* 26400 00125480 000085F8 */  sqc2       $vf5, 0x0($a0)
     /* 26404 00125484 FFFFE720 */  addi       $a3, $a3, -0x1 /* handwritten instruction */

@@ -78,11 +78,11 @@ glabel func_001EE9F8
     /* EFA90 001EEB10 0008C148 */  ctc2.ni    $at, $vi1
     /* EFA94 001EEB14 0010A248 */  qmtc2.ni   $v0, $vf2
     /* EFA98 001EEB18 0050C348 */  ctc2.ni    $v1, $vi10
-    /* EFA9C 001EEB1C 7D0BE14B */  vsqi.xyzw  $vf1, ($vi1++)
-    /* EFAA0 001EEB20 7DCBE14B */  vsqi.xyzw  $vf25, ($vi1++)
-    /* EFAA4 001EEB24 7DD3E14B */  vsqi.xyzw  $vf26, ($vi1++)
-    /* EFAA8 001EEB28 7DDBE14B */  vsqi.xyzw  $vf27, ($vi1++)
-    /* EFAAC 001EEB2C 7D13E14B */  vsqi.xyzw  $vf2, ($vi1++)
+    /* EFA9C 001EEB1C 7D0BE14B */  .word      0x4BE10B7D    # vsqi.xyzw  $vf1, ($vi1++)
+    /* EFAA0 001EEB20 7DCBE14B */  .word      0x4BE1CB7D    # vsqi.xyzw  $vf25, ($vi1++)
+    /* EFAA4 001EEB24 7DD3E14B */  .word      0x4BE1D37D    # vsqi.xyzw  $vf26, ($vi1++)
+    /* EFAA8 001EEB28 7DDBE14B */  .word      0x4BE1DB7D    # vsqi.xyzw  $vf27, ($vi1++)
+    /* EFAAC 001EEB2C 7D13E14B */  .word      0x4BE1137D    # vsqi.xyzw  $vf2, ($vi1++)
     /* EFAB0 001EEB30 00000000 */  nop
 .align 2
   .L001EEB34:
@@ -168,12 +168,12 @@ glabel func_001EE9F8
     /* EFBD8 001EEC58 1000C2D9 */  lqc2       $vf2, 0x10($t6)
     /* EFBDC 001EEC5C 2000C3D9 */  lqc2       $vf3, 0x20($t6)
     /* EFBE0 001EEC60 3000C4D9 */  lqc2       $vf4, 0x30($t6)
-    /* EFBE4 001EEC64 7D0BE14B */  vsqi.xyzw  $vf1, ($vi1++)
-    /* EFBE8 001EEC68 7D13E14B */  vsqi.xyzw  $vf2, ($vi1++)
-    /* EFBEC 001EEC6C 7D1BE14B */  vsqi.xyzw  $vf3, ($vi1++)
+    /* EFBE4 001EEC64 7D0BE14B */  .word      0x4BE10B7D    # vsqi.xyzw  $vf1, ($vi1++)
+    /* EFBE8 001EEC68 7D13E14B */  .word      0x4BE1137D    # vsqi.xyzw  $vf2, ($vi1++)
+    /* EFBEC 001EEC6C 7D1BE14B */  .word      0x4BE11B7D    # vsqi.xyzw  $vf3, ($vi1++)
     /* EFBF0 001EEC70 0200BD23 */  addi       $sp, $sp, 0x2 /* handwritten instruction */
     /* EFBF4 001EEC74 F1FF4015 */  bnez       $t2, .L001EEC3C
-    /* EFBF8 001EEC78 7D23E14B */   vsqi.xyzw $vf4, ($vi1++)
+    /* EFBF8 001EEC78 7D23E14B */   .word      0x4BE1237D    # vsqi.xyzw $vf4, ($vi1++)
 .align 2
   .L001EEC7C:
     /* EFBFC 001EEC7C 00002878 */  lq         $t0, 0x0($at)
@@ -218,7 +218,7 @@ glabel func_001EE9F8
     /* EFC98 001EED18 FC881170 */  psllw      $s1, $s1, 3
     /* EFC9C 001EED1C 3000C8D9 */  lqc2       $vf8, 0x30($t6)
     /* EFCA0 001EED20 A8CD2071 */  pextuh     $t9, $t1, $zero
-    /* EFCA4 001EED24 3800004A */  vcallms    0x0
+    /* EFCA4 001EED24 3800004A */  .word      0x4A000038    # vcallms    0x0
     /* EFCA8 001EED28 00000000 */  nop
     /* EFCAC 001EED2C 00000000 */  nop
     /* EFCB0 001EED30 00000000 */  nop
@@ -1164,7 +1164,7 @@ glabel func_001EE9F8
     /* F09E8 001EFA68 18E7C14B */  vmulx.xyz  $vf28, $vf28, $vf1x
     /* F09EC 001EFA6C 58EFC14B */  vmulx.xyz  $vf29, $vf29, $vf1x
     /* F09F0 001EFA70 98F7C14B */  vmulx.xyz  $vf30, $vf30, $vf1x
-    /* F09F4 001EFA74 3D1B3F4A */  vmr32.w    $vf31, $vf3
+    /* F09F4 001EFA74 3D1B3F4A */  .word      0x4A3F1B3D    # vmr32.w    $vf31, $vf3
     /* F09F8 001EFA78 C007C24B */  vaddx.xyz  $vf31, $vf0, $vf2x
 .align 2
   .L001EFA7C:

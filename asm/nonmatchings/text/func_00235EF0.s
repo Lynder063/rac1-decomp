@@ -42,9 +42,9 @@ glabel func_00235EF0
     /* 136EE8 00235F68 00000000 */  nop
     /* 136EEC 00235F6C 3C19034B */  vitof0.x   $vf3, $vf3
     /* 136EF0 00235F70 20082F00 */  add        $at, $at, $t7 /* handwritten instruction */
-    /* 136EF4 00235F74 BCE9C24B */  vmulax.xyz ACC, $vf29, $vf2x
+    /* 136EF4 00235F74 BCE9C24B */  .word      0x4BC2E9BC    # vmulax.xyz ACC, $vf29, $vf2x
     /* 136EF8 00235F78 00002480 */  lb         $a0, 0x0($at)
-    /* 136EFC 00235F7C BDF0C24B */  vmadday.xyz ACC, $vf30, $vf2y
+    /* 136EFC 00235F7C BDF0C24B */  .word      0x4BC2F0BD    # vmadday.xyz ACC, $vf30, $vf2y
     /* 136F00 00235F80 00000000 */  nop
     /* 136F04 00235F84 EFFF8004 */  bltz       $a0, func_00235F44
     /* 136F08 00235F88 8AF8C24B */   vmaddz.xyz $vf2, $vf31, $vf2z

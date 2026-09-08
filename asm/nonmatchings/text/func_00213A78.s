@@ -53,11 +53,11 @@ glabel func_00213A78
     /* 114A9C 00213B1C 000081D9 */  lqc2       $vf1, 0x0($t4)
     /* 114AA0 00213B20 00000000 */  nop
     /* 114AA4 00213B24 100082D9 */  lqc2       $vf2, 0x10($t4)
-    /* 114AA8 00213B28 BC09EA4B */  vmulax.xyzw ACC, $vf1, $vf10x
+    /* 114AA8 00213B28 BC09EA4B */  .word      0x4BEA09BC    # vmulax.xyzw ACC, $vf1, $vf10x
     /* 114AAC 00213B2C 200083D9 */  lqc2       $vf3, 0x20($t4)
-    /* 114AB0 00213B30 BD10EA4B */  vmadday.xyzw ACC, $vf2, $vf10y
+    /* 114AB0 00213B30 BD10EA4B */  .word      0x4BEA10BD    # vmadday.xyzw ACC, $vf2, $vf10y
     /* 114AB4 00213B34 300084D9 */  lqc2       $vf4, 0x30($t4)
-    /* 114AB8 00213B38 BE18EA4B */  vmaddaz.xyzw ACC, $vf3, $vf10z
+    /* 114AB8 00213B38 BE18EA4B */  .word      0x4BEA18BE    # vmaddaz.xyzw ACC, $vf3, $vf10z
     /* 114ABC 00213B3C 8B21EA4B */  vmaddw.xyzw $vf6, $vf4, $vf10w
     /* 114AC0 00213B40 00000000 */  nop
     /* 114AC4 00213B44 FF31C04B */  .word      0x4BC031FF                    # vclipw.xyz $vf6, $vf0w # 00000000 <InstrIdType: R5900_COP2_SPECIAL2>

@@ -34,7 +34,7 @@ glabel func_0020EF30
     /* 10FF20 0020EFA0 1400EDAC */  sw         $t5, 0x14($a3)
     /* 10FF24 0020EFA4 9800E04B */  vmulx.xyzw $vf2, $vf0, $vf0x
     /* 10FF28 0020EFA8 3400E68D */  lw         $a2, 0x34($t7)
-    /* 10FF2C 0020EFAC 3D03E34B */  vmr32.xyzw $vf3, $vf0
+    /* 10FF2C 0020EFAC 3D03E34B */  .word      0x4BE3033D    # vmr32.xyzw $vf3, $vf0
     /* 10FF30 0020EFB0 3000EC8D */  lw         $t4, 0x30($t7)
     /* 10FF34 0020EFB4 0301C04B */  vaddw.xyz  $vf4, $vf0, $vf0w
     /* 10FF38 0020EFB8 25580600 */  or         $t3, $zero, $a2
@@ -54,7 +54,7 @@ glabel func_0020EF30
     /* 10FF70 0020EFF0 2800E295 */  lhu        $v0, 0x28($t7)
     /* 10FF74 0020EFF4 8521074B */  vsuby.x    $vf6, $vf4, $vf7y
     /* 10FF78 0020EFF8 3800E595 */  lhu        $a1, 0x38($t7)
-    /* 10FF7C 0020EFFC 3D3BE74B */  vmr32.xyzw $vf7, $vf7
+    /* 10FF7C 0020EFFC 3D3BE74B */  .word      0x4BE73B3D    # vmr32.xyzw $vf7, $vf7
     /* 10FF80 0020F000 2C00E395 */  lhu        $v1, 0x2C($t7)
     /* 10FF84 0020F004 20082E00 */  add        $at, $at, $t6 /* handwritten instruction */
     /* 10FF88 0020F008 3C00E695 */  lhu        $a2, 0x3C($t7)
@@ -290,7 +290,7 @@ glabel func_0020EF30
     /* 1102A8 0020F328 2D106000 */   daddu     $v0, $v1, $zero
     /* 1102AC 0020F32C 000048D8 */  lqc2       $vf8, 0x0($v0)
     /* 1102B0 0020F330 100049D8 */  lqc2       $vf9, 0x10($v0)
-    /* 1102B4 0020F334 BC41C64B */  vmulax.xyz ACC, $vf8, $vf6x
+    /* 1102B4 0020F334 BC41C64B */  .word      0x4BC641BC    # vmulax.xyz ACC, $vf8, $vf6x
     /* 1102B8 0020F338 884AC74B */  vmaddx.xyz $vf10, $vf9, $vf7x
     /* 1102BC 0020F33C 0C00438C */  lw         $v1, 0xC($v0)
     /* 1102C0 0020F340 FF02004A */  vnop
@@ -306,7 +306,7 @@ glabel func_0020EF30
     /* 1102D8 0020F358 00000000 */   nop
     /* 1102DC 0020F35C 200048D8 */  lqc2       $vf8, 0x20($v0)
     /* 1102E0 0020F360 300049D8 */  lqc2       $vf9, 0x30($v0)
-    /* 1102E4 0020F364 BC41C64B */  vmulax.xyz ACC, $vf8, $vf6x
+    /* 1102E4 0020F364 BC41C64B */  .word      0x4BC641BC    # vmulax.xyz ACC, $vf8, $vf6x
     /* 1102E8 0020F368 884AC74B */  vmaddx.xyz $vf10, $vf9, $vf7x
     /* 1102EC 0020F36C 2C00438C */  lw         $v1, 0x2C($v0)
     /* 1102F0 0020F370 00000000 */  nop
@@ -352,19 +352,19 @@ glabel func_0020EF30
     /* 110380 0020F400 6A53EB4B */  vmul.xyzw  $vf13, $vf10, $vf11
     /* 110384 0020F404 984BE54B */  vmulx.xyzw $vf14, $vf9, $vf5x
     /* 110388 0020F408 D85BE54B */  vmulx.xyzw $vf15, $vf11, $vf5x
-    /* 11038C 0020F40C BC41E64B */  vmulax.xyzw ACC, $vf8, $vf6x
+    /* 11038C 0020F40C BC41E64B */  .word      0x4BE641BC    # vmulax.xyzw ACC, $vf8, $vf6x
     /* 110390 0020F410 084AE74B */  vmaddx.xyzw $vf8, $vf9, $vf7x
     /* 110394 0020F414 4872E74B */  vmaddx.xyzw $vf9, $vf14, $vf7x
     /* 110398 0020F418 10002120 */  addi       $at, $at, 0x10 /* handwritten instruction */
-    /* 11039C 0020F41C 3C608C4A */  vaddax.y   ACC, $vf12, $vf12x
-    /* 1103A0 0020F420 BE208C4A */  vmaddaz.y  ACC, $vf4, $vf12z
+    /* 11039C 0020F41C 3C608C4A */  .word      0x4A8C603C    # vaddax.y   ACC, $vf12, $vf12x
+    /* 1103A0 0020F420 BE208C4A */  .word      0x4A8C20BE    # vmaddaz.y  ACC, $vf4, $vf12z
     /* 1103A4 0020F424 0B238C4A */  vmaddw.y   $vf12, $vf4, $vf12w
     /* 1103A8 0020F428 10008420 */  addi       $a0, $a0, 0x10 /* handwritten instruction */
-    /* 1103AC 0020F42C 3C688D4A */  vaddax.y   ACC, $vf13, $vf13x
-    /* 1103B0 0020F430 BE208D4A */  vmaddaz.y  ACC, $vf4, $vf13z
+    /* 1103AC 0020F42C 3C688D4A */  .word      0x4A8D683C    # vaddax.y   ACC, $vf13, $vf13x
+    /* 1103B0 0020F430 BE208D4A */  .word      0x4A8D20BE    # vmaddaz.y  ACC, $vf4, $vf13z
     /* 1103B4 0020F434 4B238D4A */  vmaddw.y   $vf13, $vf4, $vf13w
     /* 1103B8 0020F438 00000000 */  nop
-    /* 1103BC 0020F43C BC51E64B */  vmulax.xyzw ACC, $vf10, $vf6x
+    /* 1103BC 0020F43C BC51E64B */  .word      0x4BE651BC    # vmulax.xyzw ACC, $vf10, $vf6x
     /* 1103C0 0020F440 00602748 */  qmfc2.ni   $a3, $vf12
     /* 1103C4 0020F444 885AE74B */  vmaddx.xyzw $vf10, $vf11, $vf7x
     /* 1103C8 0020F448 80008C21 */  addi       $t4, $t4, 0x80 /* handwritten instruction */
@@ -382,18 +382,18 @@ glabel func_0020EF30
     /* 1103F0 0020F470 EA5AEB4B */  vmul.xyzw  $vf11, $vf11, $vf11
 .align 2
   .L0020F474:
-    /* 1103F4 0020F474 3D48094B */  vadday.x   ACC, $vf9, $vf9y
-    /* 1103F8 0020F478 BE20094B */  vmaddaz.x  ACC, $vf4, $vf9z
+    /* 1103F4 0020F474 3D48094B */  .word      0x4B09483D    # vadday.x   ACC, $vf9, $vf9y
+    /* 1103F8 0020F478 BE20094B */  .word      0x4B0920BE    # vmaddaz.x  ACC, $vf4, $vf9z
     /* 1103FC 0020F47C 4B22094B */  vmaddw.x   $vf9, $vf4, $vf9w
-    /* 110400 0020F480 3D580B4B */  vadday.x   ACC, $vf11, $vf11y
-    /* 110404 0020F484 BE200B4B */  vmaddaz.x  ACC, $vf4, $vf11z
+    /* 110400 0020F480 3D580B4B */  .word      0x4B0B583D    # vadday.x   ACC, $vf11, $vf11y
+    /* 110404 0020F484 BE200B4B */  .word      0x4B0B20BE    # vmaddaz.x  ACC, $vf4, $vf11z
     /* 110408 0020F488 CB220B4B */  vmaddw.x   $vf11, $vf4, $vf11w
-    /* 11040C 0020F48C BE03694A */  vrsqrt     Q, $vf0w, $vf9x
-    /* 110410 0020F490 BF03004A */  vwaitq
-    /* 110414 0020F494 1C42E04B */  vmulq.xyzw $vf8, $vf8, Q
-    /* 110418 0020F498 BE036B4A */  vrsqrt     Q, $vf0w, $vf11x
-    /* 11041C 0020F49C BF03004A */  vwaitq
-    /* 110420 0020F4A0 9C52E04B */  vmulq.xyzw $vf10, $vf10, Q
+    /* 11040C 0020F48C BE03694A */  .word      0x4A6903BE    # vrsqrt     Q, $vf0w, $vf9x
+    /* 110410 0020F490 BF03004A */  .word      0x4A0003BF    # vwaitq
+    /* 110414 0020F494 1C42E04B */  .word      0x4BE0421C    # vmulq.xyzw $vf8, $vf8, Q
+    /* 110418 0020F498 BE036B4A */  .word      0x4A6B03BE    # vrsqrt     Q, $vf0w, $vf11x
+    /* 11041C 0020F49C BF03004A */  .word      0x4A0003BF    # vwaitq
+    /* 110420 0020F4A0 9C52E04B */  .word      0x4BE0529C    # vmulq.xyzw $vf10, $vf10, Q
     /* 110424 0020F4A4 000088F9 */  sqc2       $vf8, 0x0($t4)
     /* 110428 0020F4A8 00000000 */  nop
     /* 11042C 0020F4AC E73C0808 */  j          func_0020F39C
@@ -430,9 +430,9 @@ glabel func_0020EF30
     /* 110498 0020F518 10002120 */  addi       $at, $at, 0x10 /* handwritten instruction */
     /* 11049C 0020F51C 3F51EA4B */  vitof15.xyzw $vf10, $vf10
     /* 1104A0 0020F520 3F59EB4B */  vitof15.xyzw $vf11, $vf11
-    /* 1104A4 0020F524 BC41E64B */  vmulax.xyzw ACC, $vf8, $vf6x
+    /* 1104A4 0020F524 BC41E64B */  .word      0x4BE641BC    # vmulax.xyzw ACC, $vf8, $vf6x
     /* 1104A8 0020F528 084AE74B */  vmaddx.xyzw $vf8, $vf9, $vf7x
-    /* 1104AC 0020F52C BC51E64B */  vmulax.xyzw ACC, $vf10, $vf6x
+    /* 1104AC 0020F52C BC51E64B */  .word      0x4BE651BC    # vmulax.xyzw ACC, $vf10, $vf6x
     /* 1104B0 0020F530 885AE74B */  vmaddx.xyzw $vf10, $vf11, $vf7x
     /* 1104B4 0020F534 000088F9 */  sqc2       $vf8, 0x0($t4)
     /* 1104B8 0020F538 10008420 */  addi       $a0, $a0, 0x10 /* handwritten instruction */
@@ -621,24 +621,24 @@ glabel func_0020EF30
     /* 11071C 0020F79C E85ACE4B */  vadd.xyz   $vf11, $vf11, $vf14
     /* 110720 0020F7A0 2863CF4B */  vadd.xyz   $vf12, $vf12, $vf15
     /* 110724 0020F7A4 6A84F04B */  vmul.xyzw  $vf17, $vf16, $vf16
-    /* 110728 0020F7A8 3C90924A */  vaddax.y   ACC, $vf18, $vf18x
-    /* 11072C 0020F7AC BE20924A */  vmaddaz.y  ACC, $vf4, $vf18z
+    /* 110728 0020F7A8 3C90924A */  .word      0x4A92903C    # vaddax.y   ACC, $vf18, $vf18x
+    /* 11072C 0020F7AC BE20924A */  .word      0x4A9220BE    # vmaddaz.y  ACC, $vf4, $vf18z
     /* 110730 0020F7B0 8B24924A */  vmaddw.y   $vf18, $vf4, $vf18w
-    /* 110734 0020F7B4 3D88114B */  vadday.x   ACC, $vf17, $vf17y
-    /* 110738 0020F7B8 BE20114B */  vmaddaz.x  ACC, $vf4, $vf17z
+    /* 110734 0020F7B4 3D88114B */  .word      0x4B11883D    # vadday.x   ACC, $vf17, $vf17y
+    /* 110738 0020F7B8 BE20114B */  .word      0x4B1120BE    # vmaddaz.x  ACC, $vf4, $vf17z
     /* 11073C 0020F7BC 4B24114B */  vmaddw.x   $vf17, $vf4, $vf17w
     /* 110740 0020F7C0 00902248 */  qmfc2.ni   $v0, $vf18
     /* 110744 0020F7C4 07004104 */  bgez       $v0, .L0020F7E4
     /* 110748 0020F7C8 00000000 */   nop
     /* 11074C 0020F7CC 2C54ED4B */  vsub.xyzw  $vf16, $vf10, $vf13
     /* 110750 0020F7D0 6A84F04B */  vmul.xyzw  $vf17, $vf16, $vf16
-    /* 110754 0020F7D4 3D88114B */  vadday.x   ACC, $vf17, $vf17y
-    /* 110758 0020F7D8 BE20114B */  vmaddaz.x  ACC, $vf4, $vf17z
+    /* 110754 0020F7D4 3D88114B */  .word      0x4B11883D    # vadday.x   ACC, $vf17, $vf17y
+    /* 110758 0020F7D8 BE20114B */  .word      0x4B1120BE    # vmaddaz.x  ACC, $vf4, $vf17z
     /* 11075C 0020F7DC 4B24114B */  vmaddw.x   $vf17, $vf4, $vf17w
     /* 110760 0020F7E0 00000000 */  nop
 .align 2
   .L0020F7E4:
-    /* 110764 0020F7E4 BE03714A */  vrsqrt     Q, $vf0w, $vf17x
+    /* 110764 0020F7E4 BE03714A */  .word      0x4A7103BE    # vrsqrt     Q, $vf0w, $vf17x
     /* 110768 0020F7E8 00000000 */  nop
     /* 11076C 0020F7EC 10002BF8 */  sqc2       $vf11, 0x10($at)
     /* 110770 0020F7F0 20002CF8 */  sqc2       $vf12, 0x20($at)
@@ -650,8 +650,8 @@ glabel func_0020EF30
     /* 110788 0020F808 00000000 */  nop
 .align 2
   .L0020F80C:
-    /* 11078C 0020F80C BF03004A */  vwaitq
-    /* 110790 0020F810 9C82E04B */  vmulq.xyzw $vf10, $vf16, Q
+    /* 11078C 0020F80C BF03004A */  .word      0x4A0003BF    # vwaitq
+    /* 110790 0020F810 9C82E04B */  .word      0x4BE0829C    # vmulq.xyzw $vf10, $vf16, Q
     /* 110794 0020F814 D1FF2815 */  bne        $t1, $t0, .L0020F75C
     /* 110798 0020F818 00002AF8 */   sqc2      $vf10, 0x0($at)
     /* 11079C 0020F81C B2FF2017 */  bnez       $t9, func_0020F6E8
@@ -678,9 +678,9 @@ glabel func_0020EF30
     /* 1107E0 0020F860 EA4BC84B */  vmul.xyz   $vf15, $vf9, $vf8
     /* 1107E4 0020F864 1B4CC84B */  vmulw.xyz  $vf16, $vf9, $vf8w
     /* 1107E8 0020F868 5B44C94B */  vmulw.xyz  $vf17, $vf8, $vf9w
-    /* 1107EC 0020F86C FE42C94B */  vopmula.xyz ACC, $vf8, $vf9
-    /* 1107F0 0020F870 AE4CC84B */  vopmsub.xyz $vf18, $vf9, $vf8
-    /* 1107F4 0020F874 3D780F4B */  vadday.x   ACC, $vf15, $vf15y
+    /* 1107EC 0020F86C FE42C94B */  .word      0x4BC942FE    # vopmula.xyz ACC, $vf8, $vf9
+    /* 1107F0 0020F870 AE4CC84B */  .word      0x4BC84CAE    # vopmsub.xyz $vf18, $vf9, $vf8
+    /* 1107F4 0020F874 3D780F4B */  .word      0x4B0F783D    # vadday.x   ACC, $vf15, $vf15y
     /* 1107F8 0020F878 CA230F4B */  vmaddz.x   $vf15, $vf4, $vf15z
     /* 1107FC 0020F87C 2882D14B */  vadd.xyz   $vf8, $vf16, $vf17
     /* 110800 0020F880 2842D24B */  vadd.xyz   $vf8, $vf8, $vf18
@@ -705,27 +705,27 @@ glabel func_0020EF30
     /* 110844 0020F8C4 E854CB4B */  vadd.xyz   $vf19, $vf10, $vf11
     /* 110848 0020F8C8 2863CD4B */  vadd.xyz   $vf12, $vf12, $vf13
     /* 11084C 0020F8CC 6A84F04B */  vmul.xyzw  $vf17, $vf16, $vf16
-    /* 110850 0020F8D0 3C90924A */  vaddax.y   ACC, $vf18, $vf18x
-    /* 110854 0020F8D4 BE20924A */  vmaddaz.y  ACC, $vf4, $vf18z
+    /* 110850 0020F8D0 3C90924A */  .word      0x4A92903C    # vaddax.y   ACC, $vf18, $vf18x
+    /* 110854 0020F8D4 BE20924A */  .word      0x4A9220BE    # vmaddaz.y  ACC, $vf4, $vf18z
     /* 110858 0020F8D8 8B24924A */  vmaddw.y   $vf18, $vf4, $vf18w
-    /* 11085C 0020F8DC 3D88114B */  vadday.x   ACC, $vf17, $vf17y
-    /* 110860 0020F8E0 BE20114B */  vmaddaz.x  ACC, $vf4, $vf17z
+    /* 11085C 0020F8DC 3D88114B */  .word      0x4B11883D    # vadday.x   ACC, $vf17, $vf17y
+    /* 110860 0020F8E0 BE20114B */  .word      0x4B1120BE    # vmaddaz.x  ACC, $vf4, $vf17z
     /* 110864 0020F8E4 4B24114B */  vmaddw.x   $vf17, $vf4, $vf17w
     /* 110868 0020F8E8 00902248 */  qmfc2.ni   $v0, $vf18
     /* 11086C 0020F8EC 07004104 */  bgez       $v0, .L0020F90C
     /* 110870 0020F8F0 00000000 */   nop
     /* 110874 0020F8F4 2C44E94B */  vsub.xyzw  $vf16, $vf8, $vf9
     /* 110878 0020F8F8 6A84F04B */  vmul.xyzw  $vf17, $vf16, $vf16
-    /* 11087C 0020F8FC 3D88114B */  vadday.x   ACC, $vf17, $vf17y
-    /* 110880 0020F900 BE20114B */  vmaddaz.x  ACC, $vf4, $vf17z
+    /* 11087C 0020F8FC 3D88114B */  .word      0x4B11883D    # vadday.x   ACC, $vf17, $vf17y
+    /* 110880 0020F900 BE20114B */  .word      0x4B1120BE    # vmaddaz.x  ACC, $vf4, $vf17z
     /* 110884 0020F904 4B24114B */  vmaddw.x   $vf17, $vf4, $vf17w
     /* 110888 0020F908 00000000 */  nop
 .align 2
   .L0020F90C:
-    /* 11088C 0020F90C BE03714A */  vrsqrt     Q, $vf0w, $vf17x
+    /* 11088C 0020F90C BE03714A */  .word      0x4A7103BE    # vrsqrt     Q, $vf0w, $vf17x
     /* 110890 0020F910 00000000 */  nop
-    /* 110894 0020F914 BF03004A */  vwaitq
-    /* 110898 0020F918 1C82E04B */  vmulq.xyzw $vf8, $vf16, Q
+    /* 110894 0020F914 BF03004A */  .word      0x4A0003BF    # vwaitq
+    /* 110898 0020F918 1C82E04B */  .word      0x4BE0821C    # vmulq.xyzw $vf8, $vf16, Q
 .align 2
   alabel func_0020F91C
     /* 11089C 0020F91C 000028F8 */  sqc2       $vf8, 0x0($at)
@@ -810,18 +810,18 @@ glabel func_0020EF30
 .align 2
   alabel func_0020FA38
     /* 1109B8 0020FA38 E89CC94B */  vadd.xyz   $vf19, $vf19, $vf9
-    /* 1109BC 0020FA3C BC61F04B */  vmulax.xyzw ACC, $vf12, $vf16x
-    /* 1109C0 0020FA40 BD68F04B */  vmadday.xyzw ACC, $vf13, $vf16y
+    /* 1109BC 0020FA3C BC61F04B */  .word      0x4BF061BC    # vmulax.xyzw ACC, $vf12, $vf16x
+    /* 1109C0 0020FA40 BD68F04B */  .word      0x4BF068BD    # vmadday.xyzw ACC, $vf13, $vf16y
     /* 1109C4 0020FA44 0A75F04B */  vmaddz.xyzw $vf20, $vf14, $vf16z
-    /* 1109C8 0020FA48 BC61F14B */  vmulax.xyzw ACC, $vf12, $vf17x
-    /* 1109CC 0020FA4C BD68F14B */  vmadday.xyzw ACC, $vf13, $vf17y
+    /* 1109C8 0020FA48 BC61F14B */  .word      0x4BF161BC    # vmulax.xyzw ACC, $vf12, $vf17x
+    /* 1109CC 0020FA4C BD68F14B */  .word      0x4BF168BD    # vmadday.xyzw ACC, $vf13, $vf17y
     /* 1109D0 0020FA50 4A75F14B */  vmaddz.xyzw $vf21, $vf14, $vf17z
-    /* 1109D4 0020FA54 BC61F24B */  vmulax.xyzw ACC, $vf12, $vf18x
-    /* 1109D8 0020FA58 BD68F24B */  vmadday.xyzw ACC, $vf13, $vf18y
+    /* 1109D4 0020FA54 BC61F24B */  .word      0x4BF261BC    # vmulax.xyzw ACC, $vf12, $vf18x
+    /* 1109D8 0020FA58 BD68F24B */  .word      0x4BF268BD    # vmadday.xyzw ACC, $vf13, $vf18y
     /* 1109DC 0020FA5C 8A75F24B */  vmaddz.xyzw $vf22, $vf14, $vf18z
-    /* 1109E0 0020FA60 BC61F34B */  vmulax.xyzw ACC, $vf12, $vf19x
-    /* 1109E4 0020FA64 BD68F34B */  vmadday.xyzw ACC, $vf13, $vf19y
-    /* 1109E8 0020FA68 BE70F34B */  vmaddaz.xyzw ACC, $vf14, $vf19z
+    /* 1109E0 0020FA60 BC61F34B */  .word      0x4BF361BC    # vmulax.xyzw ACC, $vf12, $vf19x
+    /* 1109E4 0020FA64 BD68F34B */  .word      0x4BF368BD    # vmadday.xyzw ACC, $vf13, $vf19y
+    /* 1109E8 0020FA68 BE70F34B */  .word      0x4BF370BE    # vmaddaz.xyzw ACC, $vf14, $vf19z
     /* 1109EC 0020FA6C CB7DE04B */  vmaddw.xyzw $vf23, $vf15, $vf0w
     /* 1109F0 0020FA70 C0FFF4F8 */  sqc2       $vf20, -0x40($a3)
     /* 1109F4 0020FA74 D0FFF5F8 */  sqc2       $vf21, -0x30($a3)
@@ -844,7 +844,7 @@ glabel func_0020EF30
     /* 110A30 0020FAB0 000081D9 */  lqc2       $vf1, 0x0($t4)
     /* 110A34 0020FAB4 20586E01 */  add        $t3, $t3, $t6 /* handwritten instruction */
     /* 110A38 0020FAB8 100088D9 */  lqc2       $vf8, 0x10($t4)
-    /* 110A3C 0020FABC BC09C64B */  vmulax.xyz ACC, $vf1, $vf6x
+    /* 110A3C 0020FABC BC09C64B */  .word      0x4BC609BC    # vmulax.xyz ACC, $vf1, $vf6x
     /* 110A40 0020FAC0 4840C74B */  vmaddx.xyz $vf1, $vf8, $vf7x
     /* 110A44 0020FAC4 000062D9 */  lqc2       $vf2, 0x0($t3)
     /* 110A48 0020FAC8 100063D9 */  lqc2       $vf3, 0x10($t3)
@@ -907,18 +907,18 @@ glabel func_0020EF30
     /* 110B0C 0020FB8C 1000D5D9 */  lqc2       $vf21, (0x70000010 & 0xFFFF)($t6)
     /* 110B10 0020FB90 2000D6D9 */  lqc2       $vf22, (0x70000020 & 0xFFFF)($t6)
     /* 110B14 0020FB94 3000D7D9 */  lqc2       $vf23, (0x70000030 & 0xFFFF)($t6)
-    /* 110B18 0020FB98 BCA1EF4B */  vmulax.xyzw ACC, $vf20, $vf15x
-    /* 110B1C 0020FB9C BDA8EF4B */  vmadday.xyzw ACC, $vf21, $vf15y
-    /* 110B20 0020FBA0 BEB0EF4B */  vmaddaz.xyzw ACC, $vf22, $vf15z
+    /* 110B18 0020FB98 BCA1EF4B */  .word      0x4BEFA1BC    # vmulax.xyzw ACC, $vf20, $vf15x
+    /* 110B1C 0020FB9C BDA8EF4B */  .word      0x4BEFA8BD    # vmadday.xyzw ACC, $vf21, $vf15y
+    /* 110B20 0020FBA0 BEB0EF4B */  .word      0x4BEFB0BE    # vmaddaz.xyzw ACC, $vf22, $vf15z
     /* 110B24 0020FBA4 CBBCE04B */  vmaddw.xyzw $vf19, $vf23, $vf0w
-    /* 110B28 0020FBA8 BCA1EC4B */  vmulax.xyzw ACC, $vf20, $vf12x
-    /* 110B2C 0020FBAC BDA8EC4B */  vmadday.xyzw ACC, $vf21, $vf12y
+    /* 110B28 0020FBA8 BCA1EC4B */  .word      0x4BECA1BC    # vmulax.xyzw ACC, $vf20, $vf12x
+    /* 110B2C 0020FBAC BDA8EC4B */  .word      0x4BECA8BD    # vmadday.xyzw ACC, $vf21, $vf12y
     /* 110B30 0020FBB0 0AB4EC4B */  vmaddz.xyzw $vf16, $vf22, $vf12z
-    /* 110B34 0020FBB4 BCA1ED4B */  vmulax.xyzw ACC, $vf20, $vf13x
-    /* 110B38 0020FBB8 BDA8ED4B */  vmadday.xyzw ACC, $vf21, $vf13y
+    /* 110B34 0020FBB4 BCA1ED4B */  .word      0x4BEDA1BC    # vmulax.xyzw ACC, $vf20, $vf13x
+    /* 110B38 0020FBB8 BDA8ED4B */  .word      0x4BEDA8BD    # vmadday.xyzw ACC, $vf21, $vf13y
     /* 110B3C 0020FBBC 4AB4ED4B */  vmaddz.xyzw $vf17, $vf22, $vf13z
-    /* 110B40 0020FBC0 BCA1EE4B */  vmulax.xyzw ACC, $vf20, $vf14x
-    /* 110B44 0020FBC4 BDA8EE4B */  vmadday.xyzw ACC, $vf21, $vf14y
+    /* 110B40 0020FBC0 BCA1EE4B */  .word      0x4BEEA1BC    # vmulax.xyzw ACC, $vf20, $vf14x
+    /* 110B44 0020FBC4 BDA8EE4B */  .word      0x4BEEA8BD    # vmadday.xyzw ACC, $vf21, $vf14y
     /* 110B48 0020FBC8 8AB4EE4B */  vmaddz.xyzw $vf18, $vf22, $vf14z
     /* 110B4C 0020FBCC 0000D0F9 */  sqc2       $vf16, (0x70000000 & 0xFFFF)($t6)
     /* 110B50 0020FBD0 1000D1F9 */  sqc2       $vf17, (0x70000010 & 0xFFFF)($t6)
@@ -939,7 +939,7 @@ glabel func_0020EF30
     /* 110B84 0020FC04 5800E04B */  vmulx.xyzw $vf1, $vf0, $vf0x
     /* 110B88 0020FC08 00700E3C */  lui        $t6, (0x70000030 >> 16)
     /* 110B8C 0020FC0C 9800E04B */  vmulx.xyzw $vf2, $vf0, $vf0x
-    /* 110B90 0020FC10 3D03E34B */  vmr32.xyzw $vf3, $vf0
+    /* 110B90 0020FC10 3D03E34B */  .word      0x4BE3033D    # vmr32.xyzw $vf3, $vf0
     /* 110B94 0020FC14 4308004B */  vaddw.x    $vf1, $vf1, $vf0w
     /* 110B98 0020FC18 8310804A */  vaddw.y    $vf2, $vf2, $vf0w
     /* 110B9C 0020FC1C 0000C1F9 */  sqc2       $vf1, (0x70000000 & 0xFFFF)($t6)

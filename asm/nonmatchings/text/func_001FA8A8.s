@@ -13,7 +13,7 @@ glabel func_001FA8A8
     /* FB848 001FA8C8 4400214A */  vsubx.w    $vf1, $vf0, $vf1x
     /* FB84C 001FA8CC 3C11E24B */  vitof0.xyzw $vf2, $vf2
     /* FB850 001FA8D0 3C19E34B */  vitof0.xyzw $vf3, $vf3
-    /* FB854 001FA8D4 BF11E14B */  vmulaw.xyzw ACC, $vf2, $vf1w
+    /* FB854 001FA8D4 BF11E14B */  .word      0x4BE111BF    # vmulaw.xyzw ACC, $vf2, $vf1w
     /* FB858 001FA8D8 4818E14B */  vmaddx.xyzw $vf1, $vf3, $vf1x
     /* FB85C 001FA8DC 7C09E14B */  vftoi0.xyzw $vf1, $vf1
     /* FB860 001FA8E0 00082248 */  qmfc2.ni   $v0, $vf1

@@ -17,14 +17,14 @@ glabel func_00125298
     /* 26248 001252C8 4129054B */  vaddy.x    $vf5, $vf5, $vf5y
     /* 2624C 001252CC 4229054B */  vaddz.x    $vf5, $vf5, $vf5z
     /* 26250 001252D0 BD03054A */  .word      0x4A0503BD                    # vsqrt      Q, $vf5x # 00000000 <InstrIdType: R5900_COP2_SPECIAL2>
-    /* 26254 001252D4 BF03004A */  vwaitq
-    /* 26258 001252D8 6001004B */  vaddq.x    $vf5, $vf0, Q
+    /* 26254 001252D4 BF03004A */  .word      0x4A0003BF    # vwaitq
+    /* 26258 001252D8 6001004B */  .word      0x4B000160    # vaddq.x    $vf5, $vf0, Q
     /* 2625C 001252DC FF02004A */  vnop
     /* 26260 001252E0 FF02004A */  vnop
-    /* 26264 001252E4 BC03654A */  vdiv       Q, $vf0w, $vf5x
+    /* 26264 001252E4 BC03654A */  .word      0x4A6503BC    # vdiv       Q, $vf0w, $vf5x
     /* 26268 001252E8 AC01E04B */  vsub.xyzw  $vf6, $vf0, $vf0
-    /* 2626C 001252EC BF03004A */  vwaitq
-    /* 26270 001252F0 9C21C04B */  vmulq.xyz  $vf6, $vf4, Q
+    /* 2626C 001252EC BF03004A */  .word      0x4A0003BF    # vwaitq
+    /* 26270 001252F0 9C21C04B */  .word      0x4BC0219C    # vmulq.xyz  $vf6, $vf4, Q
     /* 26274 001252F4 0800E003 */  jr         $ra
     /* 26278 001252F8 000086F8 */   sqc2      $vf6, 0x0($a0)
 endlabel func_00125298

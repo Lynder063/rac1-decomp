@@ -22,12 +22,12 @@ glabel func_00229098
     /* 12A058 002290D8 03080246 */  div.s      $f0, $f1, $f2
     /* 12A05C 002290DC 00000144 */  mfc1       $at, $f0
     /* 12A060 002290E0 0008A148 */  qmtc2.ni   $at, $vf1
-    /* 12A064 002290E4 B864004A */  vcallms    0xC90
+    /* 12A064 002290E4 B864004A */  .word      0x4A0064B8    # vcallms    0xC90
     /* 12A068 002290E8 01082148 */  qmfc2.i    $at, $vf1
     /* 12A06C 002290EC C007014B */  vaddx.x    $vf31, $vf0, $vf1x
     /* 12A070 002290F0 00000144 */  mfc1       $at, $f0
     /* 12A074 002290F4 0008A148 */  qmtc2.ni   $at, $vf1
-    /* 12A078 002290F8 3864004A */  vcallms    0xC80
+    /* 12A078 002290F8 3864004A */  .word      0x4A006438    # vcallms    0xC80
     /* 12A07C 002290FC 01082148 */  qmfc2.i    $at, $vf1
     /* 12A080 00229100 C007814A */  vaddx.y    $vf31, $vf0, $vf1x
     /* 12A084 00229104 C5073F4A */  vsuby.w    $vf31, $vf0, $vf31y
@@ -65,8 +65,8 @@ glabel func_00229098
     /* 12A104 00229184 9BD6DB4B */  vmulw.xyz  $vf26, $vf26, $vf27w
 .align 2
   .L00229188:
-    /* 12A108 00229188 BC09DA4B */  vmulax.xyz ACC, $vf1, $vf26x
-    /* 12A10C 0022918C BD10DA4B */  vmadday.xyz ACC, $vf2, $vf26y
+    /* 12A108 00229188 BC09DA4B */  .word      0x4BDA09BC    # vmulax.xyz ACC, $vf1, $vf26x
+    /* 12A10C 0022918C BD10DA4B */  .word      0x4BDA10BD    # vmadday.xyz ACC, $vf2, $vf26y
     /* 12A110 00229190 8A1EDA4B */  vmaddz.xyz $vf26, $vf3, $vf26z
     /* 12A114 00229194 68D1DB4B */  vadd.xyz   $vf5, $vf26, $vf27
     /* 12A118 00229198 000045F9 */  sqc2       $vf5, (0x70000000 & 0xFFFF)($t2)

@@ -11,8 +11,8 @@ glabel func_001F9D78
     /* FAD0C 001F9D8C 00000000 */  nop
     /* FAD10 001F9D90 EA18C34B */  vmul.xyz   $vf3, $vf3, $vf3
     /* FAD14 001F9D94 2A21244A */  vmul.w     $vf4, $vf4, $vf4
-    /* FAD18 001F9D98 3C18834A */  vaddax.y   ACC, $vf3, $vf3x
-    /* FAD1C 001F9D9C BE28834A */  vmaddaz.y  ACC, $vf5, $vf3z
+    /* FAD18 001F9D98 3C18834A */  .word      0x4A83183C    # vaddax.y   ACC, $vf3, $vf3x
+    /* FAD1C 001F9D9C BE28834A */  .word      0x4A8328BE    # vmaddaz.y  ACC, $vf5, $vf3z
     /* FAD20 001F9DA0 CF28844A */  vmsubw.y   $vf3, $vf5, $vf4w
     /* FAD24 001F9DA4 00182248 */  qmfc2.ni   $v0, $vf3
     /* FAD28 001F9DA8 03004104 */  bgez       $v0, .L001F9DB8

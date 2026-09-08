@@ -40,9 +40,9 @@ glabel func_001254A0
 .align 2
   .L00125518:
     /* 26498 00125518 0000A4D8 */  lqc2       $vf4, 0x0($a1)
-    /* 2649C 0012551C BC31E44B */  vmulax.xyzw ACC, $vf6, $vf4x
-    /* 264A0 00125520 BD38E44B */  vmadday.xyzw ACC, $vf7, $vf4y
-    /* 264A4 00125524 BE40E44B */  vmaddaz.xyzw ACC, $vf8, $vf4z
+    /* 2649C 0012551C BC31E44B */  .word      0x4BE431BC    # vmulax.xyzw ACC, $vf6, $vf4x
+    /* 264A0 00125520 BD38E44B */  .word      0x4BE438BD    # vmadday.xyzw ACC, $vf7, $vf4y
+    /* 264A4 00125524 BE40E44B */  .word      0x4BE440BE    # vmaddaz.xyzw ACC, $vf8, $vf4z
     /* 264A8 00125528 4B49E44B */  vmaddw.xyzw $vf5, $vf9, $vf4w
     /* 264AC 0012552C 000085F8 */  sqc2       $vf5, 0x0($a0)
     /* 264B0 00125530 FFFFE720 */  addi       $a3, $a3, -0x1 /* handwritten instruction */

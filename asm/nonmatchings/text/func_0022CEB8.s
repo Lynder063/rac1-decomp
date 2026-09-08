@@ -21,7 +21,7 @@ glabel func_0022CEB8
     /* 12DE74 0022CEF4 B0003AD8 */  lqc2       $vf26, 0xB0($at)
     /* 12DE78 0022CEF8 E0013BD8 */  lqc2       $vf27, 0x1E0($at)
     /* 12DE7C 0022CEFC E0FF1823 */  addi       $t8, $t8, -0x20 /* handwritten instruction */
-    /* 12DE80 0022CF00 BCCB1A4A */  vdiv       Q, $vf25x, $vf26x
+    /* 12DE80 0022CF00 BCCB1A4A */  .word      0x4A1ACBBC    # vdiv       Q, $vf25x, $vf26x
     /* 12DE84 0022CF04 00005DD8 */  lqc2       $vf29, 0x0($v0)
     /* 12DE88 0022CF08 10005ED8 */  lqc2       $vf30, 0x10($v0)
     /* 12DE8C 0022CF0C 20005FD8 */  lqc2       $vf31, 0x20($v0)
@@ -29,8 +29,8 @@ glabel func_0022CEB8
     /* 12DE94 0022CF14 F09A92DB */  lqc2       $vf18, -0x6510($gp)
     /* 12DE98 0022CF18 009B93DB */  lqc2       $vf19, -0x6500($gp)
     /* 12DE9C 0022CF1C 209894DB */  lqc2       $vf20, -0x67E0($gp)
-    /* 12DEA0 0022CF20 BF03004A */  vwaitq
-    /* 12DEA4 0022CF24 6006004B */  vaddq.x    $vf25, $vf0, Q
+    /* 12DEA0 0022CF20 BF03004A */  .word      0x4A0003BF    # vwaitq
+    /* 12DEA4 0022CF24 6006004B */  .word      0x4B000660    # vaddq.x    $vf25, $vf0, Q
     /* 12DEA8 0022CF28 0000E07D */  sq         $zero, 0x0($t7)
     /* 12DEAC 0022CF2C 1000023C */  lui        $v0, %hi(D_00101070)
     /* 12DEB0 0022CF30 70104224 */  addiu      $v0, $v0, %lo(D_00101070)
@@ -83,9 +83,9 @@ glabel func_0022CEB8
     /* 12DF64 0022CFE4 20001823 */  addi       $t8, $t8, 0x20 /* handwritten instruction */
     /* 12DF68 0022CFE8 0050A148 */  qmtc2.ni   $at, $vf10
     /* 12DF6C 0022CFEC FFFF3923 */  addi       $t9, $t9, -0x1 /* handwritten instruction */
-    /* 12DF70 0022CFF0 BCE9C14B */  vmulax.xyz ACC, $vf29, $vf1x
+    /* 12DF70 0022CFF0 BCE9C14B */  .word      0x4BC1E9BC    # vmulax.xyz ACC, $vf29, $vf1x
     /* 12DF74 0022CFF4 01000A93 */  lbu        $t2, 0x1($t8)
-    /* 12DF78 0022CFF8 BDF0C14B */  vmadday.xyz ACC, $vf30, $vf1y
+    /* 12DF78 0022CFF8 BDF0C14B */  .word      0x4BC1F0BD    # vmadday.xyz ACC, $vf30, $vf1y
     /* 12DF7C 0022CFFC 02000983 */  lb         $t1, 0x2($t8)
     /* 12DF80 0022D000 8AF8C14B */  vmaddz.xyz $vf2, $vf31, $vf1z
     /* 12DF84 0022D004 0400078F */  lw         $a3, 0x4($t8)
@@ -105,7 +105,7 @@ glabel func_0022CEB8
     /* 12DFBC 0022D03C 0000A048 */  qmtc2.ni   $zero, $vf0
     /* 12DFC0 0022D040 EC18844B */  vsub.xy    $vf3, $vf3, $vf4
     /* 12DFC4 0022D044 00000000 */  nop
-    /* 12DFC8 0022D048 BC53024B */  vdiv       Q, $vf10x, $vf2z
+    /* 12DFC8 0022D048 BC53024B */  .word      0x4B0253BC    # vdiv       Q, $vf10x, $vf2z
     /* 12DFCC 0022D04C 00000000 */  nop
     /* 12DFD0 0022D050 00490900 */  sll        $t1, $t1, 4
     /* 12DFD4 0022D054 00000000 */  nop
@@ -123,7 +123,7 @@ glabel func_0022CEB8
     /* 12E004 0022D084 00000000 */  nop
     /* 12E008 0022D088 00182348 */  qmfc2.ni   $v1, $vf3
     /* 12E00C 0022D08C 00000000 */  nop
-    /* 12E010 0022D090 E002E04B */  vaddq.xyzw $vf11, $vf0, Q
+    /* 12E010 0022D090 E002E04B */  .word      0x4BE002E0    # vaddq.xyzw $vf11, $vf0, Q
     /* 12E014 0022D094 00000000 */  nop
     /* 12E018 0022D098 38006004 */  bltz       $v1, .L0022D17C
     /* 12E01C 0022D09C 3C180300 */   dsll32    $v1, $v1, 0
@@ -133,7 +133,7 @@ glabel func_0022CEB8
     /* 12E02C 0022D0AC 00000000 */  nop
     /* 12E030 0022D0B0 0008A548 */  qmtc2.ni   $a1, $vf1
     /* 12E034 0022D0B4 00000000 */  nop
-    /* 12E038 0022D0B8 3864004A */  vcallms    0xC80
+    /* 12E038 0022D0B8 3864004A */  .word      0x4A006438    # vcallms    0xC80
     /* 12E03C 0022D0BC 00000000 */  nop
     /* 12E040 0022D0C0 03004015 */  bnez       $t2, .L0022D0D0
     /* 12E044 0022D0C4 01000120 */   addi      $at, $zero, 0x1 /* handwritten instruction */
@@ -147,7 +147,7 @@ glabel func_0022CEB8
     /* 12E05C 0022D0DC 00000000 */  nop
     /* 12E060 0022D0E0 0008A548 */  qmtc2.ni   $a1, $vf1
     /* 12E064 0022D0E4 00000000 */  nop
-    /* 12E068 0022D0E8 B864004A */  vcallms    0xC90
+    /* 12E068 0022D0E8 B864004A */  .word      0x4A0064B8    # vcallms    0xC90
     /* 12E06C 0022D0EC 00000000 */  nop
     /* 12E070 0022D0F0 01082148 */  qmfc2.i    $at, $vf1
     /* 12E074 0022D0F4 00000000 */  nop
