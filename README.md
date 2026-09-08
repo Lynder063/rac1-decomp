@@ -12,8 +12,22 @@ and other PS2-era matching-decomp projects.
 
 ## Status
 
-Not started. This is scaffolding only — no disassembly or source has been
-produced yet.
+Scaffolding + toolchain proven, no real decompilation yet:
+
+- `splat` splits SCES-50916 v2.00 (PAL) into `core`/`main` segments using
+  the binary's own section names, producing `asm/nonmatchings/` (1669
+  functions) and `INCLUDE_ASM`-stubbed `src/{core_text,text}.c`.
+- A WSL-hosted `ps2dev` EE cross-compiler (see
+  [`docs/TOOLCHAIN.md`](docs/TOOLCHAIN.md)) reassembles both objects
+  cleanly (`tools/build.sh`) — `core_text.o`/`text.o` land within ~30
+  bytes of the original section sizes, with no real linker script yet.
+- Known gaps, both written up in `docs/TOOLCHAIN.md`: the toolchain is
+  modern GCC/binutils, not era-accurate, so true byte-matching isn't
+  possible yet; and ~4% of functions use VU0 macro-mode COP2 instructions
+  binutils 2.45.1 can't assemble (worked around as raw `.word` for now via
+  `tools/fix_vu0_macro.py`).
+- No symbol names, no linker script, no actual decompiled (matching) C
+  yet — every function is still `func_XXXXXXXX`.
 
 ## Plan
 
