@@ -1,9 +1,19 @@
 # rac1-decomp
 
-Matching decompilation of *Ratchet & Clank* (2002, PS2). Goal: C source
-that rebuilds to a byte-identical (or as close as achievable) copy of the
-original retail executable, in the tradition of sm64/papermario/mm-decomp
-and other PS2-era matching-decomp projects.
+Matching decompilation of *Ratchet & Clank* (2002, PS2). Two phases, in
+order:
+
+1. **Matching**: C source that rebuilds to a byte-identical (or as close
+   as achievable) copy of the original retail executable, in the tradition
+   of sm64/papermario/mm-decomp and other PS2-era matching-decomp
+   projects. This is what proves a function has been understood correctly
+   — the compiler is the judge, not a read-through.
+2. **Readable**: once a function/module matches, refactor it toward
+   idiomatic, human-readable C++ — real names, real types, real structure
+   — using the matching build as a safety net (re-run the diff after every
+   readability change; a mismatch means the "cleanup" actually changed
+   behavior). The end goal is a genuinely readable C++ codebase throughout,
+   not a permanent wall of `func_XXXXXXXX`/`D_XXXXXXXX`.
 
 > Read [`LEGAL.md`](LEGAL.md) first. This repo never contains the original
 > disc image, executable, or any asset extracted from it — only build
@@ -21,11 +31,19 @@ Scaffolding + toolchain proven, no real decompilation yet:
   [`docs/TOOLCHAIN.md`](docs/TOOLCHAIN.md)) reassembles both objects
   cleanly (`tools/build.sh`) — `core_text.o`/`text.o` land within ~30
   bytes of the original section sizes, with no real linker script yet.
-- Known gaps, both written up in `docs/TOOLCHAIN.md`: the toolchain is
-  modern GCC/binutils, not era-accurate, so true byte-matching isn't
-  possible yet; and ~4% of functions use VU0 macro-mode COP2 instructions
-  binutils 2.45.1 can't assemble (worked around as raw `.word` for now via
-  `tools/fix_vu0_macro.py`).
+- Found and verified the likely real era-accurate toolchain: SN Systems
+  ProDG GCC 2.95.3, mirrored at `toolchain/sn-prodg-3.01/` (gitignored,
+  local only — see `docs/TOOLCHAIN.md`). Its assembler round-trips a real
+  disassembled function — VU0 macro-mode instructions included — back to
+  byte-for-byte identical machine code once GPR names are numeric
+  (`tools/sn_regnames.py`) and `.set noreorder`/`.set noat` are active.
+  The *compiler* side (matching C -> object) is not wired up or verified
+  yet, only the assembler round-trip on already-disassembled bytes.
+- The earlier modern-`ps2dev`-toolchain path (WSL, GCC 15.2) still works
+  as a secondary/fallback build and needed a `.word`-encoding workaround
+  for the ~4% of functions using VU0 macro-mode instructions
+  (`tools/fix_vu0_macro.py`) since that binutils can't assemble them at
+  all — the SN toolchain doesn't need that workaround.
 - No symbol names, no linker script, no actual decompiled (matching) C
   yet — every function is still `func_XXXXXXXX`.
 

@@ -1,5 +1,9 @@
 # Never commit dumps, ROMs, or anything extracted from the original disc.
 baserom*/
+
+# Third-party toolchain mirrors (e.g. SN Systems ProDG) - local tooling only,
+# never committed. See docs/TOOLCHAIN.md.
+toolchain/
 *.iso
 *.bin
 *.cue
@@ -16,3 +20,7 @@ build/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
