@@ -1,6 +1,20 @@
 #include "common.h"
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00112380);
+extern int func_00116F68(int arg0, int arg1, int arg2);
+
+/*
+ * Close but not yet byte-matching: the retail binary has an extra
+ * dsll32/dsra32 v0,v0,0 pair (redundant 32->64 sign-extension of the
+ * call result) right before the return that this doesn't reproduce.
+ * Every source/flag variant tried (explicit vs. implicit declaration of
+ * func_00116F68, int/unsigned/pointer return type, -O0..-O3, -g, -G8,
+ * K&R-style declaration) either drops the pair entirely or changes
+ * unrelated codegen -- logic is understood and correct, this specific
+ * compiler idiom isn't reproduced yet. See docs/DECOMP_PROGRESS.md.
+ */
+int func_00112380(int arg0) {
+    return func_00116F68(arg0, 0, 10);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001123A8);
 
