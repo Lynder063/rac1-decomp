@@ -1,0 +1,33 @@
+# Build against the era-accurate SN Systems ProDG GCC 2.95.3 toolchain
+# (see docs/TOOLCHAIN.md). Local-only, gitignored -- get it yourself:
+#   git clone https://github.com/AngheloAlf/SN-Systems-ProDG_for_PS2_3.01 \
+#       toolchain/sn-prodg-3.01
+#
+# Unlike the modern-binutils Makefile, this one does NOT need
+# tools/fix_vu0_macro.py (this assembler supports VU0 macro-mode natively)
+# but DOES need tools/sn_regnames.py run over asm/ first (this assembler
+# only accepts numeric GPR names) -- both scripts are idempotent, safe to
+# re-run after every `splat split`.
+
+SN_ROOT := toolchain/sn-prodg-3.01/usr/local/sce/ee/gcc
+CC      := $(SN_ROOT)/bin/ee-gcc2953.exe
+SIZE    := $(SN_ROOT)/bin/ee-size.exe
+
+CFLAGS := -O2 -G0 -Iinclude -Wa,-I,.
+
+SRCS := $(wildcard src/*.c)
+OBJS := $(patsubst src/%.c,build-sn/%.o,$(SRCS))
+
+.PHONY: all clean regnames
+all: regnames $(OBJS)
+	$(SIZE) $(OBJS)
+
+regnames:
+	python tools/sn_regnames.py asm
+
+build-sn/%.o: src/%.c
+	@mkdir -p build-sn
+	$(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	rm -rf build-sn

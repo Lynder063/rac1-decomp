@@ -110,11 +110,48 @@ instruction. This is strong evidence this is the right toolchain family
 for actual matching decompilation of this game, not just something that
 happens to assemble.
 
-Not yet done: wiring this into the actual `src/*.c` build (the C
-*compiler* side — flags, STL/runtime headers, whether `ee-gcc2953.exe`'s
-codegen matches Insomniac's actual build settings — is unverified; only
-the assembler round-trip on already-disassembled bytes has been proven
-so far).
+## Update: the C compiler side is wired up and looks very promising
+
+`Makefile.sn` builds every `src/*.c` through `ee-gcc2953.exe` directly
+(`-O2 -G0 -Iinclude -Wa,-I,.` — the `-Wa,-I,.` is required: plain `-I`
+only affects the C preprocessor, not where the assembler resolves the
+`.include` paths inside each `INCLUDE_ASM`-pulled `.s` file). Run it with
+the SN toolchain's own bundled `make.exe` (this environment's git-bash has
+no `make` on PATH):
+
+```
+toolchain/sn-prodg-3.01/usr/local/sce/ee/gcc/bin/make.exe -f Makefile.sn
+```
+
+One more fixup was needed: `include/labels.inc`'s `alabel` macro (used for
+72 functions with an alternate entry point) emitted `.aent`, which this
+GAS build doesn't implement (`Unknown pseudo-op`) — removed it, since it's
+only a debug-info marker and doesn't affect emitted bytes.
+
+Both objects now build clean. `tools/check_match.py` compares an object's
+`.text` bytes directly against the retail baserom's corresponding ELF
+section:
+
+```
+build-sn/core_text.o vs retail 'core.text':  size 119296 vs 119288, 6.05% byte mismatch
+build-sn/text.o      vs retail '.text':      size 349872 vs 349872 (EXACT), 7.02% byte mismatch
+```
+
+`text.o`'s size is an **exact** match already. The remaining ~6-7% of
+bytes differ, but the very first mismatch in `core_text.o` is a `jal`
+target address — expected, since nothing is linked yet (every function is
+still assembled as an independent standalone object; call targets and
+data references have no real relocated address to encode). This is not
+proof of a full function match anywhere yet, but it's a strong signal the
+codegen itself (instruction selection, register allocation, scheduling)
+is landing very close to the original, not just "an object file that
+happens to assemble."
+
+Not yet done: a real linker script that reproduces the original's exact
+section layout and symbol addresses (needed before any function can be
+called "matching" rather than "plausible"); STL/runtime header
+availability for anything beyond plain C; actually decompiling any
+function into real (non-`INCLUDE_ASM`) C and confirming it matches.
 
 ## Known gap: not era-accurate (superseded above for the assembler; compiler flags still unverified)
 
