@@ -67,7 +67,56 @@ specific to this repo — worth checking whether the wider RC1 modding
 community (RatchetModding, Wrench) has already solved it with a patched
 binutils before re-inventing one here.
 
-## Known gap: not era-accurate
+## Update: found the real era-accurate compiler
+
+`toolchain/sn-prodg-3.01/` (gitignored — see below) is a clone of
+[AngheloAlf/SN-Systems-ProDG_for_PS2_3.01](https://github.com/AngheloAlf/SN-Systems-ProDG_for_PS2_3.01),
+a mirror of SN Systems' **ProDG for PS2 3.01**: `ee-gcc2953.exe`, a real
+2002-era **GCC 2.95.3 (SN BUILD v1.36)**, with its own native-Windows
+`ee-as.exe`/`ee-ld.exe`/`ee-objdump.exe`. This is the standard way PS2
+matching-decomp projects (this game very likely included — SN ProDG was
+extremely common for this era/region) obtain an era-correct compiler. It's
+a mirror of old **commercial** software, not open source — kept local only
+(`toolchain/` is gitignored, same treatment as `baserom/`), never
+committed.
+
+Two real findings testing `ee-as.exe` directly against our disassembly
+(see `tools/sn_regnames.py` and the verification below):
+
+1. **It natively supports VU0 macro-mode COP2 instructions** (`vaddq`,
+   `vmulax`, `vdiv`, the whole accumulate-register family) that modern
+   binutils 2.45.1 can't assemble at all. No `.word`-encoding workaround
+   needed with this toolchain — `tools/fix_vu0_macro.py` was a
+   modern-binutils-specific stopgap, not a fundamental limitation of the
+   game's instruction set.
+2. **It doesn't recognize symbolic GPR names** (`$ra`, `$sp`, `$t6`) —
+   only numeric (`$31`, `$29`, `$14`). `tools/sn_regnames.py` does that
+   translation (VU float regs like `$vf5`/`Q`/`ACC` are untouched, those
+   work symbolically already).
+3. **It reorders branch delay slots by default** unless `.set noreorder`
+   (and `.set noat`) are active — without them it happily moves a
+   *different* instruction into a delay slot than the original had. Every
+   nonmatching function needs those two directives active before its body
+   (`include/labels.inc`'s macros assume this is already the case, per its
+   own header comment: "This file is used by the original
+   compiler/assembler").
+
+**Verified**: took `func_00125298` (one of the VU0-instruction functions),
+applied `sn_regnames.py`, wrapped it in `.set noat` / `.set noreorder`,
+assembled with `ee-as.exe`, and diffed all 26 instruction words against
+the raw bytes spimdisasm recorded from the retail binary —
+**zero mismatches, byte-for-byte identical**, including every VU0
+instruction. This is strong evidence this is the right toolchain family
+for actual matching decompilation of this game, not just something that
+happens to assemble.
+
+Not yet done: wiring this into the actual `src/*.c` build (the C
+*compiler* side — flags, STL/runtime headers, whether `ee-gcc2953.exe`'s
+codegen matches Insomniac's actual build settings — is unverified; only
+the assembler round-trip on already-disassembled bytes has been proven
+so far).
+
+## Known gap: not era-accurate (superseded above for the assembler; compiler flags still unverified)
 
 GCC 15.2 will not produce byte-identical code to whatever Insomniac
 actually built RC1 with circa 2002 (almost certainly a much older
