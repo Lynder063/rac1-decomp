@@ -1,0 +1,18 @@
+# Never commit dumps, ROMs, or anything extracted from the original disc.
+baserom*/
+*.iso
+*.bin
+*.cue
+*.elf
+disks/
+
+# Build output
+build/
+*.o
+*.map
+
+# Editor/OS cruft
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

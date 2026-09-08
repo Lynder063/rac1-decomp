@@ -1,0 +1,27 @@
+.align 3
+nonmatching func_00116FA0, 0x44
+
+glabel func_00116FA0
+    /* 17F20 00116FA0 E0FFBD27 */  addiu      $sp, $sp, -0x20
+    /* 17F24 00116FA4 0000B0FF */  sd         $s0, 0x0($sp)
+    /* 17F28 00116FA8 1000BFFF */  sd         $ra, 0x10($sp)
+    /* 17F2C 00116FAC 2D80A000 */  daddu      $s0, $a1, $zero
+    /* 17F30 00116FB0 0800028E */  lw         $v0, 0x8($s0)
+    /* 17F34 00116FB4 03004014 */  bnez       $v0, .L00116FC4
+    /* 17F38 00116FB8 2D100000 */   daddu     $v0, $zero, $zero
+    /* 17F3C 00116FBC 05000010 */  b          .L00116FD4
+    /* 17F40 00116FC0 040000AE */   sw        $zero, 0x4($s0)
+.align 2
+  .L00116FC4:
+    /* 17F44 00116FC4 1850040C */  jal        func_00114060
+    /* 17F48 00116FC8 2D280002 */   daddu     $a1, $s0, $zero
+    /* 17F4C 00116FCC 040000AE */  sw         $zero, 0x4($s0)
+    /* 17F50 00116FD0 080000AE */  sw         $zero, 0x8($s0)
+.align 2
+  .L00116FD4:
+    /* 17F54 00116FD4 1000BFDF */  ld         $ra, 0x10($sp)
+    /* 17F58 00116FD8 0000B0DF */  ld         $s0, 0x0($sp)
+    /* 17F5C 00116FDC 0800E003 */  jr         $ra
+    /* 17F60 00116FE0 2000BD27 */   addiu     $sp, $sp, 0x20
+endlabel func_00116FA0
+    /* 17F64 00116FE4 00000000 */  nop

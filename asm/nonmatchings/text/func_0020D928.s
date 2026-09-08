@@ -1,0 +1,19 @@
+.align 3
+nonmatching func_0020D928, 0x34
+
+glabel func_0020D928
+    /* 10E8A8 0020D928 1000BD27 */  addiu      $sp, $sp, 0x10
+    /* 10E8AC 0020D92C 00000000 */  nop
+    /* 10E8B0 0020D930 1000BD27 */  addiu      $sp, $sp, 0x10
+    /* 10E8B4 0020D934 00000000 */  nop
+    /* 10E8B8 0020D938 0001BD27 */  addiu      $sp, $sp, 0x100
+    /* 10E8BC 0020D93C 00000000 */  nop
+    /* 10E8C0 0020D940 00000000 */  nop
+    /* 10E8C4 0020D944 00000000 */  nop
+    /* 10E8C8 0020D948 2000BD27 */  addiu      $sp, $sp, 0x20
+    /* 10E8CC 0020D94C 00000000 */  nop
+    /* 10E8D0 0020D950 2000BD27 */  addiu      $sp, $sp, 0x20
+    /* 10E8D4 0020D954 00000000 */  nop
+    /* 10E8D8 0020D958 1000BD27 */  addiu      $sp, $sp, 0x10
+endlabel func_0020D928
+    /* 10E8DC 0020D95C 00000000 */  nop

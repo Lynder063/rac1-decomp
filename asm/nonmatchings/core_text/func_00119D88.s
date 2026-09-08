@@ -1,0 +1,21 @@
+.align 3
+nonmatching func_00119D88, 0x38
+
+glabel func_00119D88
+    /* 1AD08 00119D88 0010033C */  lui        $v1, (0x1000F130 >> 16)
+    /* 1AD0C 00119D8C 30F16334 */  ori        $v1, $v1, (0x1000F130 & 0xFFFF)
+.align 2
+  .L00119D90:
+    /* 1AD10 00119D90 0000628C */  lw         $v0, 0x0($v1)
+    /* 1AD14 00119D94 00804230 */  andi       $v0, $v0, 0x8000
+    /* 1AD18 00119D98 00000000 */  nop
+    /* 1AD1C 00119D9C 00000000 */  nop
+    /* 1AD20 00119DA0 00000000 */  nop
+    /* 1AD24 00119DA4 FAFF4014 */  bnez       $v0, .L00119D90
+    /* 1AD28 00119DA8 00000000 */   nop
+    /* 1AD2C 00119DAC 0010033C */  lui        $v1, (0x1000F180 >> 16)
+    /* 1AD30 00119DB0 2D108000 */  daddu      $v0, $a0, $zero
+    /* 1AD34 00119DB4 80F16334 */  ori        $v1, $v1, (0x1000F180 & 0xFFFF)
+    /* 1AD38 00119DB8 0800E003 */  jr         $ra
+    /* 1AD3C 00119DBC 000064A0 */   sb        $a0, 0x0($v1)
+endlabel func_00119D88

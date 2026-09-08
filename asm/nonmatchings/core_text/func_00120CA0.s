@@ -1,0 +1,37 @@
+.align 3
+nonmatching func_00120CA0, 0x78
+
+glabel func_00120CA0
+    /* 21C20 00120CA0 C0FFBD27 */  addiu      $sp, $sp, -0x40
+    /* 21C24 00120CA4 2000B2FF */  sd         $s2, 0x20($sp)
+    /* 21C28 00120CA8 1000B1FF */  sd         $s1, 0x10($sp)
+    /* 21C2C 00120CAC 01001224 */  addiu      $s2, $zero, 0x1
+    /* 21C30 00120CB0 1300113C */  lui        $s1, %hi(D_001313E4)
+    /* 21C34 00120CB4 0000B0FF */  sd         $s0, 0x0($sp)
+    /* 21C38 00120CB8 3000BFFF */  sd         $ra, 0x30($sp)
+    /* 21C3C 00120CBC 5876040C */  jal        func_0011D960
+    /* 21C40 00120CC0 E41332AE */   sw        $s2, %lo(D_001313E4)($s1)
+    /* 21C44 00120CC4 1200053C */  lui        $a1, %hi(func_00120C58 + 0x8)
+    /* 21C48 00120CC8 0080043C */  lui        $a0, (0x80000012 >> 16)
+    /* 21C4C 00120CCC 2D804000 */  daddu      $s0, $v0, $zero
+    /* 21C50 00120CD0 600CA524 */  addiu      $a1, $a1, %lo(func_00120C58 + 0x8)
+    /* 21C54 00120CD4 12008434 */  ori        $a0, $a0, (0x80000012 & 0xFFFF)
+    /* 21C58 00120CD8 8E6A040C */  jal        func_0011AA38
+    /* 21C5C 00120CDC 2D300000 */   daddu     $a2, $zero, $zero
+    /* 21C60 00120CE0 04000012 */  beqz       $s0, .L00120CF4
+    /* 21C64 00120CE4 1300023C */   lui       $v0, %hi(D_001313FC)
+    /* 21C68 00120CE8 6A76040C */  jal        func_0011D9A8
+    /* 21C6C 00120CEC 00000000 */   nop
+    /* 21C70 00120CF0 1300023C */  lui        $v0, %hi(D_001313FC)
+.align 2
+  .L00120CF4:
+    /* 21C74 00120CF4 E41320AE */  sw         $zero, %lo(D_001313E4)($s1)
+    /* 21C78 00120CF8 FC1352AC */  sw         $s2, %lo(D_001313FC)($v0)
+    /* 21C7C 00120CFC 3000BFDF */  ld         $ra, 0x30($sp)
+    /* 21C80 00120D00 01000224 */  addiu      $v0, $zero, 0x1
+    /* 21C84 00120D04 2000B2DF */  ld         $s2, 0x20($sp)
+    /* 21C88 00120D08 1000B1DF */  ld         $s1, 0x10($sp)
+    /* 21C8C 00120D0C 0000B0DF */  ld         $s0, 0x0($sp)
+    /* 21C90 00120D10 0800E003 */  jr         $ra
+    /* 21C94 00120D14 4000BD27 */   addiu     $sp, $sp, 0x40
+endlabel func_00120CA0

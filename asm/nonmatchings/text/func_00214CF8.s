@@ -1,0 +1,17 @@
+.align 3
+nonmatching func_00214CF8, 0x2C
+
+glabel func_00214CF8
+    /* 115C78 00214CF8 0001BD27 */  addiu      $sp, $sp, 0x100
+    /* 115C7C 00214CFC 00000000 */  nop
+    /* 115C80 00214D00 4000BD27 */  addiu      $sp, $sp, 0x40
+    /* 115C84 00214D04 00000000 */  nop
+    /* 115C88 00214D08 E001BD27 */  addiu      $sp, $sp, 0x1E0
+    /* 115C8C 00214D0C 00000000 */  nop
+    /* 115C90 00214D10 5000BD27 */  addiu      $sp, $sp, 0x50
+    /* 115C94 00214D14 00000000 */  nop
+    /* 115C98 00214D18 2000BD27 */  addiu      $sp, $sp, 0x20
+    /* 115C9C 00214D1C 00000000 */  nop
+    /* 115CA0 00214D20 2000BD27 */  addiu      $sp, $sp, 0x20
+endlabel func_00214CF8
+    /* 115CA4 00214D24 00000000 */  nop

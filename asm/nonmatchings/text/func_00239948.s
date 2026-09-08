@@ -1,0 +1,29 @@
+.align 3
+nonmatching func_00239948, 0x58
+
+glabel func_00239948
+    /* 13A8C8 00239948 F0FFBD27 */  addiu      $sp, $sp, -0x10
+    /* 13A8CC 0023994C 2D200000 */  daddu      $a0, $zero, $zero
+    /* 13A8D0 00239950 0000BF7F */  sq         $ra, 0x0($sp)
+    /* 13A8D4 00239954 2D280000 */  daddu      $a1, $zero, $zero
+    /* 13A8D8 00239958 00020624 */  addiu      $a2, $zero, 0x200
+    /* 13A8DC 0023995C 80000724 */  addiu      $a3, $zero, 0x80
+    /* 13A8E0 00239960 00020824 */  addiu      $t0, $zero, 0x200
+    /* 13A8E4 00239964 80000924 */  addiu      $t1, $zero, 0x80
+    /* 13A8E8 00239968 AEEE070C */  jal        func_001FBAB8
+    /* 13A8EC 0023996C 2D500000 */   daddu     $t2, $zero, $zero
+    /* 13A8F0 00239970 1600033C */  lui        $v1, %hi(D_001611A8)
+    /* 13A8F4 00239974 A811638C */  lw         $v1, %lo(D_001611A8)($v1)
+    /* 13A8F8 00239978 01000224 */  addiu      $v0, $zero, 0x1
+    /* 13A8FC 0023997C 06006214 */  bne        $v1, $v0, .L00239998
+    /* 13A900 00239980 0000BF7B */   lq        $ra, 0x0($sp)
+    /* 13A904 00239984 1E00023C */  lui        $v0, %hi(D_001E66E4)
+    /* 13A908 00239988 01000524 */  addiu      $a1, $zero, 0x1
+    /* 13A90C 0023998C 6038080C */  jal        func_0020E180
+    /* 13A910 00239990 E466448C */   lw        $a0, %lo(D_001E66E4)($v0)
+    /* 13A914 00239994 0000BF7B */  lq         $ra, 0x0($sp)
+.align 2
+  .L00239998:
+    /* 13A918 00239998 0800E003 */  jr         $ra
+    /* 13A91C 0023999C 1000BD27 */   addiu     $sp, $sp, 0x10
+endlabel func_00239948

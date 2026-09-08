@@ -1,0 +1,27 @@
+.align 3
+nonmatching func_00215BA8, 0x54
+
+glabel func_00215BA8
+    /* 116B28 00215BA8 D000BD27 */  addiu      $sp, $sp, 0xD0
+    /* 116B2C 00215BAC 00000000 */  nop
+    /* 116B30 00215BB0 0001BD27 */  addiu      $sp, $sp, 0x100
+    /* 116B34 00215BB4 00000000 */  nop
+    /* 116B38 00215BB8 2001BD27 */  addiu      $sp, $sp, 0x120
+    /* 116B3C 00215BBC 00000000 */  nop
+    /* 116B40 00215BC0 4001BD27 */  addiu      $sp, $sp, 0x140
+    /* 116B44 00215BC4 00000000 */  nop
+    /* 116B48 00215BC8 D000BD27 */  addiu      $sp, $sp, 0xD0
+    /* 116B4C 00215BCC 00000000 */  nop
+    /* 116B50 00215BD0 3000BD27 */  addiu      $sp, $sp, 0x30
+    /* 116B54 00215BD4 00000000 */  nop
+    /* 116B58 00215BD8 4000BD27 */  addiu      $sp, $sp, 0x40
+    /* 116B5C 00215BDC 00000000 */  nop
+    /* 116B60 00215BE0 C000BD27 */  addiu      $sp, $sp, 0xC0
+    /* 116B64 00215BE4 00000000 */  nop
+    /* 116B68 00215BE8 5000BD27 */  addiu      $sp, $sp, 0x50
+    /* 116B6C 00215BEC 00000000 */  nop
+    /* 116B70 00215BF0 6000BD27 */  addiu      $sp, $sp, 0x60
+    /* 116B74 00215BF4 00000000 */  nop
+    /* 116B78 00215BF8 2001BD27 */  addiu      $sp, $sp, 0x120
+endlabel func_00215BA8
+    /* 116B7C 00215BFC 00000000 */  nop
