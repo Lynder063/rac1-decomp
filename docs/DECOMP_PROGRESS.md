@@ -75,9 +75,43 @@ sub-builds wouldn't help — this needs either a real flag not yet found,
 or Insomniac's actual build differs from all four of these in some other
 way (a patch, a different `-mcpu`/tuning value, something in how `sq`-
 eligible register classing gets decided that isn't exposed as a simple
-flag). Worth checking whether the wider PS2 decomp community has already
-solved this for another game before spending more time guessing flags
-blind.
+flag).
+
+**Researched (no fix found, but useful context):** searched public PS2
+decomp/homebrew sources for a known solution. None found. Findings:
+
+- The visible PS2 *matching*-decomp scene (Dark Cloud's `DCDecomp`,
+  Resident Evil Code: Veronica X's `recvx-decomp`) targets **Metrowerks
+  CodeWarrior**, not SN ProDG GCC — "most PS2 binaries are compiled with
+  Sony's proprietary GCC fork or with Metrowerks CodeWarrior" per Jacob
+  Harris's PS2 decomp devlog. That plausibly explains the silence on this
+  exact problem: public matching-decomp tooling effort has concentrated
+  on MWCC, not GCC 2.95.
+- `AngheloAlf` (this toolchain mirror's author) runs an active PS2 GCC
+  decomp project, `parappa2` (github.com/AngheloAlf/parappa2), but its
+  README lists a modern `gcc-mipsel-linux-gnu`/`binutils-mips-linux-gnu`
+  cross-toolchain as its build dependency, not SN ProDG — unclear if it
+  hits this same issue or sidesteps it (different game/build era, or
+  never needed to match this idiom). No sq/lq documentation found in that
+  repo. It links two Discord servers (a general PS1/PS2 decomp community,
+  and a PaRappa modding community) — likely where any real answer to this
+  lives, since it's exactly the kind of narrow tribal knowledge that
+  doesn't get blogged. Not asked yet (outside what an agent can do).
+- One real technical lead, unconfirmed: a 2013 GCC mailing-list thread
+  (Jeff Law, gcc.gnu.org/legacy-ml/gcc-patches/2013-01/msg00333.html)
+  shows mainline GCC's R5900 support was, as late as 2013, still getting
+  patches to *enable* TImode (128-bit) support for GPRs under the o32
+  ABI — implying whether GPRs are TImode-capable (spillable as
+  quadwords) is normally a **GCC build-time configuration choice**, not
+  a runtime flag. If that held for GCC 2.95's MIPS backend too, it would
+  explain why nothing in `-m*` flag space changed the behavior across
+  all 4 sub-builds tested: it may need a *differently-built* `cc1`, not
+  a different flag to an existing one. Not verified against 2.95's
+  actual source/config — a hypothesis, not a confirmed answer.
+
+Next step if anyone wants to pursue this further: ask in the PS1/PS2
+decomp Discord linked from `parappa2`'s README, rather than continuing
+to search indexed sources.
 
 ## Method
 
