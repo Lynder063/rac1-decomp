@@ -116,6 +116,13 @@ before being called "matches" below.
 | `func_001FB530` | text | **close, not exact** | Appends a 2-word GIF/DMA-style tag pair to the packet buffer `D_00161000` points at, then advances it by one qword. Confirmed via objdump: same fields/values/order/size (0x68 both), but retail re-derives `D_00161000`'s own *address* (a fresh `lui`/`lw` pair) before every field write, where this compiler computes the address once and only reloads the stored *value* each time. A new, more extreme variant of the redundant-global-reload pattern (previously only ever seen for a global's *value*, never its address, since a global's address is link-time-constant). Tried an explicit `*(unsigned int **)&D_00161000` reinterpret-cast to defeat the compiler's CSE confidence; no change. Kept as `INCLUDE_ASM`, diff too large/pervasive to call "close" C. |
 | `func_001FB598` | text | **skipped** | Same `D_00161000` cluster as `func_001FB530` (hits the same address-reload issue) plus a `$gp`-relative final store — two known-skip categories stacked. |
 | `func_002094E0` | text | **matches** (mod. known drift-adjacent issue) | If the struct at `D_0013D390`'s kind field (offset `0xDC`) is `2` and its status field (`0xE4`) is negative, resets status to `7`, zeroes field `0xE8`, and sets global error code `D_0015EFB0 = 0xB`. Needed an explicit `char *s` local (materializing the struct base address once via `addiu`, matching retail) to go from 58% mismatch down to 20.3% — without it the compiler folds each field offset directly into load/store immediates instead of forming a real pointer. Remaining 13/64 bytes are the established store-order/scratch-register-choice question (retail stores both struct fields before computing `D_0015EFB0`'s address; this compiler computes that address between the two field stores, and picks a different register for the constant `0xB`). Kept as documented-close C per the `func_00112380`/`func_001EBAF0` precedent (diff is comparable in relative size to those, not the much larger diffs that got reverted). |
+| `func_001FB848`, `func_001FB8A8` | text | **skipped, `$gp`-relative store** | Same `D_00161000`-derived-pointer GIF/DMA-tag-write shape (writes into `D_00151A00`/`D_00151C60` respectively via the value stored at `D_00161000`), each ending in a `sw $reg, <offset>($28)` — known skip category. |
+| `func_001FBAB8` | text | **skipped, callee-saved regs** | Uses `$16`-`$22` — hits the `sq`/`lq` open question, not attempted. |
+| `func_001FE4C0`, `func_001FE580`, `func_001FF660`, `func_001FF950` | text | **not standalone functions** | Single instruction each (`addiu $sp,$sp,N` / a bare `sw`), no `jr $31` — fallthrough fragments, same category as `func_00113AD8` in `core_text`. |
+| `func_001FDF10` | text | **attempted, reverted — new delay-slot instance** | `if (arg0 > 0x20000) { *arg1 = 0; *arg2 = 0; return -1; } *arg1 = D_001941C0.field4 + D_0016100C - arg0; *arg2 = D_001941C0.field8 + D_0016100C - arg0;` (`D_001941C0` fields at offsets `0x4`/`0x8`). Logic confirmed correct, but retail schedules the `t0=a1` pointer copy into the branch's delay slot where this compiler hoists it before the compare — tried an explicit early-local variant (same technique that fixed `func_0011AA68`), no change. 53% mismatch, reverted per the size-of-diff precedent rather than kept as misleading "close" C. |
+| `func_001FE4D0` | text | **attempted, reverted — real structural difference** | Linear search over an array of `0x10`-byte records (checking `elem.field4 == arg0`, first element special-cased via direct pointer deref before the loop, returning the matching index or `-1`), count field at `D_001997D0+0x2C`. Logic confirmed correct via careful disassembly reading, but two source-shape attempts (early-return guards, then `result` variable with `break`) both landed at 70-78% mismatch with differences starting from the very first instructions (not just register/scheduling — retail materializes values in a different *kind* of instruction, not just a different register for the same kind). This is a bigger structural gap than the usual near-miss categories, not just delay-slot/register-allocation; reverted rather than force it. Worth a fresh attempt later with more careful attention to instruction-level structure, not source-level logic. |
+| `func_001FF4F8` | text | **attempted, reverted — real structural difference** | Linear scan of a `short`-keyed table (stride 4 bytes) for `arg0`, with a `movn` (conditional-move) idiom picking between an accumulated fallback offset and `idx*4` depending on whether `arg1` is nonzero, then an optional output write through `arg2`. Logic reconstructed from the disassembly (including the exact conditional-move semantics) but the compiled C didn't reproduce the instruction shape at all (75% mismatch starting at byte 0xa) — this compiler's `if (arg1) off = idx*4;` doesn't appear to fold to the same `movn`-based shape retail's source did. Reverted; would need a specific idiom (possibly a ternary, or the `movn` genuinely requires source retail had that this rewrite didn't capture) to be worth another attempt. |
+| `func_001FF668` | text | **attempted, reverted — real structural difference** | Walks a linked-list-like array of `unsigned short` keys (stride 8 bytes) counting entries until hitting `arg0` or the `0xFFFF` end sentinel. Two source shapes tried (separate `if`s per early check; a combined single read with `\|\|`) — both landed at 52-63% mismatch. Retail's actual instruction shape (two independent `beq`s against the same first-read value, sharing one return target) isn't naturally produced by either the split-`if` or combined-`\|\|` C forms in this compiler. Reverted; the "read once, do two `beq`s to a shared tail" idiom needs a more specific source shape than tried here — not obviously a small delay-slot/register tweak like the earlier documented techniques, closer to `func_001FE4D0`'s "different kind of instruction" gap. |
 | everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1602 functions total remaining. |
 
 ## Open toolchain questions
@@ -207,6 +214,24 @@ not investigated as deeply as the other two questions above (no
 cross-sub-build check done for this one specifically) since the diffs
 it produces are small and clearly benign (verified logic-identical each
 time) rather than blocking anything.
+
+**Structural instruction-shape mismatches (tentative, not yet a confirmed
+category).** `func_001FE4D0`, `func_001FF4F8`, and `func_001FF668`
+(all attempted and reverted, see their table entries) each hit something
+that *looks* different from the three questions above: the mismatch
+isn't confined to a register number, a store's position, or a delay
+slot — the compiled instructions differ in *kind* from the very first
+few bytes, even though the overall logic (confirmed by careful
+disassembly reading) is right. Multiple plausible source shapes were
+tried for each (early-return vs. combined-condition, different
+variable-hoisting patterns) without landing on the one that reproduces
+retail's shape. This might just be three individually-hard functions
+(a `movn` idiom, a two-`beq`-shared-tail idiom, a search-loop shape) each
+needing more specific source-shape investigation than time allowed
+rather than one real underlying category — flagged here so a future
+round doesn't have to rediscover that these three are harder than the
+usual near-miss, but not promoted to a full open question until a
+pattern across more instances is clear.
 
 ## Solved techniques worth knowing (not open questions)
 
