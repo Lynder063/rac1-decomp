@@ -408,11 +408,39 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F9B50);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9B70);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F9B88);
+float func_001F9B88(float arg0) {
+    return __builtin_fabsf(arg0);
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F9B90);
+/*
+ * Close but not exact: this compiler doesn't fold `a > b ? a : b` into
+ * the single max.s instruction retail uses -- it falls back to a
+ * c.lt.s/branch/mov.s sequence, so this is written as inline asm for the
+ * single instruction instead (args already arrive in $f12/$f13, return
+ * in $f0, per the standard EE calling convention -- no extra moves
+ * generated). That gets the same 2 instructions retail has (max.s, then
+ * jr $31), just in the opposite order: retail schedules max.s into the
+ * jr's delay slot, this compiler emits jr first and max.s after (dead
+ * code position, not a delay slot) since inline asm is opaque to its
+ * scheduler. New instance of the delay-slot-scheduling open question
+ * (see docs/DECOMP_PROGRESS.md) -- tried hand-embedding `jr $31` before
+ * the max.s in the same asm block to force the ordering, but GCC's flow
+ * analysis doesn't understand hand-written control flow inside inline
+ * asm and silently dropped the max.s instead of emitting it (verified
+ * via the byte diff: got `jr / nop`, not `jr / max.s`) -- reverted that,
+ * not safe to rely on.
+ */
+float func_001F9B90(float arg0, float arg1) {
+    float result;
+    __asm__("max.s %0, %1, %2" : "=f"(result) : "f"(arg0), "f"(arg1));
+    return result;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F9B98);
+float func_001F9B98(float arg0, float arg1) {
+    float result;
+    __asm__("min.s %0, %1, %2" : "=f"(result) : "f"(arg0), "f"(arg1));
+    return result;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9BA0);
 
@@ -836,9 +864,13 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002081F8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00208208);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00208238);
+int func_00208238(void) {
+    return 1;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00208240);
+int func_00208240(void) {
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00208248);
 
@@ -1357,9 +1389,13 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0021B108);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021B138);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021B278);
+int func_0021B278(void) {
+    return 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021B280);
+int func_0021B280(void) {
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021B288);
 
@@ -1375,7 +1411,9 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0021C790);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021C840);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021CD98);
+int func_0021CD98(void) {
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021CDA0);
 
@@ -1405,7 +1443,9 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0021DE08);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021E170);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021E1F8);
+int func_0021E1F8(void) {
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021E200);
 
@@ -1421,7 +1461,9 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0021EDD8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021EE00);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021EF30);
+int func_0021EF30(void) {
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021EF38);
 
@@ -1497,7 +1539,9 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00222640);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00222708);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00222840);
+int func_00222840(void) {
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00222848);
 
