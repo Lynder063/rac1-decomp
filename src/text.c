@@ -1860,11 +1860,41 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00217860);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002178C0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00217920);
+extern short D_001517F0;
+
+void func_00217920(int arg0, long arg1) {
+    short *p = (short *)(int)arg1;
+    if (p != 0) {
+        *(int *)p = arg0;
+        if (arg0 != 0) {
+            short state = p[5];
+            if (state == 1) {
+                p[5] = 4;
+                if (p[8] != 0) {
+                    D_001517F0 = state;
+                }
+            }
+        } else {
+            p[5] = 0;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00217970);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002179C8);
+void func_002179C8(int arg0, long arg1) {
+    short *p = (short *)(int)arg1;
+    if (p != 0) {
+        *(int *)p = arg0;
+        if (arg0 != 0) {
+            if (p[5] == 1) {
+                p[5] = 8;
+            }
+        } else {
+            p[5] = 0;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00217A08);
 
