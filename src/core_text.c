@@ -59,7 +59,7 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00113A6C);
 extern void func_001162B8(void);
 extern void func_00116320(void);
 extern void func_001163A0(void);
-extern void func_00116408(void);
+extern void func_00116408(void *arg0);
 
 void func_00113A70(void *arg0, int arg1, int arg2, int arg3) {
     char *self = (char *)arg0;
@@ -78,6 +78,16 @@ void func_00113A70(void *arg0, int arg1, int arg2, int arg3) {
     *(void **)(self + 0x1C) = self;
 }
 
+/*
+ * Not a codegen-flag near-miss like func_00112380/func_00112468: retail
+ * is a bare 3-instruction tail jump (`j func_00114438`, no stack frame,
+ * no $ra save) -- true tail-call elimination for a void function whose
+ * last statement is a call. This compiler builds a full call frame
+ * instead (jal + sd/ld $ra + stack alloc, 0x20 bytes vs retail's 0xC)
+ * for the straightforward `func_00114438(arg0, func_00113968);` source.
+ * Not investigated further -- may need a specific flag/GCC version for
+ * sibcall elimination, or the real source differs. Kept as INCLUDE_ASM.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00113AC8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00113AD8);
@@ -148,7 +158,26 @@ void func_001154C8(void) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001154D0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00115578);
+/*
+ * Close but not exact, same register-allocation-choice category as
+ * func_001160D8 above (see its comment) -- identical operations, order,
+ * and count as retail, just a different scratch-register assignment
+ * among $v0/$v1/$a0 for the three live temporaries (idx, table/bucket,
+ * old head). See "Open toolchain questions" in docs/DECOMP_PROGRESS.md.
+ *
+ * Hash-bucket linked-list insertion: pushes arg1 onto the head of the
+ * bucket at table[idx], where idx is read from arg1 itself and table is
+ * a pointer stored at offset 0x4C of arg0.
+ */
+void func_00115578(void *arg0, void *arg1) {
+    if (arg1 != 0) {
+        int idx = *(int *)((char *)arg1 + 4);
+        void **table = *(void ***)((char *)arg0 + 0x4C);
+        void **bucket = table + idx;
+        *(void **)arg1 = *bucket;
+        *bucket = arg1;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001155A8);
 
@@ -180,7 +209,29 @@ void func_001160C8(int arg0) {
     *(int *)((char *)D_0012F86C + 0x58) = arg0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001160D8);
+/*
+ * Close but not exact: logic fully understood and correct (verified
+ * against retail instruction-for-instruction), but this compiler picks
+ * $v1/$a0 for the two independent temporaries (the LCG constant and the
+ * loaded game pointer) where retail picks $a0/$a1 -- same operations,
+ * same order, just a different register-allocator choice. Tried
+ * reordering the source statements and splitting into extra locals;
+ * neither changed the allocation. Same category as the other
+ * documented near-misses in this file -- a compiler-version-specific
+ * codegen detail, not a logic gap.
+ *
+ * Linear congruential PRNG (classic glibc-style constants: multiplier
+ * 0x41C64E6D, increment 12345, 31-bit mask) reading/updating a seed
+ * field at offset 0x58 of the struct pointed to by the D_0012F86C
+ * global -- the same field func_001160C8 above sets directly.
+ */
+int func_001160D8(void) {
+    char *game = (char *)D_0012F86C;
+    int seed = *(int *)(game + 0x58);
+    seed = seed * 0x41C64E6D + 0x3039;
+    *(int *)(game + 0x58) = seed;
+    return seed & 0x7FFFFFFF;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00116108);
 
@@ -200,7 +251,12 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00116320);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001163A0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00116408);
+extern int func_00112468(int *errOut, int arg1);
+
+void func_00116408(void *arg0) {
+    char *self = (char *)arg0;
+    func_00112468(*(int **)(self + 0x54), *(short *)(self + 0xE));
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00116428);
 
