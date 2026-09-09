@@ -27,9 +27,44 @@ from elftools.elf.elffile import ELFFile
 BASEROM = "baserom/SCES_509.16"
 LINKED_ELF = "build-sn/rac1.elf"
 
-FUNC_DEF = re.compile(r"^[A-Za-z_].*\b(func_[0-9A-Fa-f]{8})\s*\(", re.M)
+# (?!extern\b) so forward declarations aren't mistaken for definitions --
+# they used to be, which made a declared-but-not-defined function report
+# "could not check" forever.
+FUNC_DEF = re.compile(r"^(?!extern\b)[A-Za-z_].*\b(func_[0-9A-Fa-f]{8})\s*\(", re.M)
 STUB = re.compile(r"INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\)")
 NONMATCHING = re.compile(r"nonmatching\s+(func_[0-9A-Fa-f]{8}),\s*(0x[0-9A-Fa-f]+)")
+
+
+def trailing_padding(name: str) -> int:
+    """
+    Bytes of padding a function's .s file carries AFTER its `endlabel`.
+
+    729 of the .s files have some, because retail aligns the next function
+    to 16 bytes while splat only emits `.align 3`. While a function is
+    still an INCLUDE_ASM stub its .s supplies that padding; the moment it
+    is decompiled to C, the padding silently disappears and every later
+    function in the object shifts, producing spurious 1-byte `jal` diffs
+    far away from the actual cause. One instance of this shifted 179
+    functions at once -- 179 apparent problems, one real cause.
+
+    The fix in the C is an explicit alignment directive, e.g.
+        __asm__(".align 4");
+    after the function. This reports which decompiled functions need that
+    so the trap is visible instead of being rediscovered.
+    """
+    for seg in ("core_text", "text"):
+        p = Path(f"asm/nonmatchings/{seg}/{name}.s")
+        if not p.exists():
+            continue
+        t = p.read_text(errors="replace")
+        i = t.rfind("endlabel")
+        if i == -1:
+            return 0
+        rest = t[i:].split("\n", 1)
+        body = rest[1] if len(rest) > 1 else ""
+        # each remaining instruction-comment line is one 4-byte word
+        return 4 * len(re.findall(r"/\*.*?\*/", body))
+    return 0
 
 
 def retail_size(name: str) -> int | None:
@@ -90,12 +125,32 @@ def main() -> None:
         else:
             exact.append(name)
 
+    # Decompiled functions whose .s carried post-endlabel padding need an
+    # explicit alignment directive in the C, or everything after them
+    # shifts. Report them so the trap stays visible.
+    # Only >4 bytes is worth reporting. 4 bytes is the common case and is
+    # normally harmless: the *next* function's .s starts with its own
+    # `.align 3`, which re-establishes 8-byte alignment anyway. It only
+    # actually bites when retail wanted 16-byte alignment, i.e. more
+    # padding than `.align 3` can account for -- which is the 8-byte case
+    # that shifted 179 functions. Verified: ~30 decompiled functions carry
+    # exactly 4 bytes and are all exact with zero drift, so flagging those
+    # would be pure false alarm.
+    needs_align = [(n, trailing_padding(n)) for n in decompiled]
+    needs_align = [(n, b) for n, b in needs_align if b > 4]
+
     print(f"\n=== {len(decompiled)} decompiled functions audited ===")
     print(f"  exact (size AND bytes): {len(exact)}")
-    print(f"  size mismatch:          {len(size_bad)}")
+    print(f"  size mismatch:          {len(size_bad)}   (always revert these -- see docs)")
     print(f"  byte mismatch:          {len(byte_bad)}")
     if missing:
         print(f"  could not check:        {len(missing)} {missing}")
+    if needs_align:
+        print(f"\n  {len(needs_align)} decompiled function(s) had post-endlabel padding in")
+        print(f"  their .s and so need an explicit alignment directive in the C")
+        print(f"  (omitting it shifts every later function). Confirm each has one:")
+        for n, b in needs_align:
+            print(f"    {n}: {b} bytes of padding")
     sys.exit(0 if not (size_bad or byte_bad) else 1)
 
 
