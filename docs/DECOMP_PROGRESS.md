@@ -183,6 +183,8 @@ before being called "matches" below.
 | `func_00219E60` | text | **close, not exact** (23/44), reverted | Sets `D_001D5F70` (an object) field `0` to `0x2D` and fields `0xC`/`0x10`/`0x110` to 0, plus the separate global `D_0015F6E8 = 3`. Instruction count and size are right; the register assignment differs from the very first instruction (retail `lui $4`, this compiler `lui $5`) and cascades through. Also establishes that **the store-order rotation rule is base-pointer-scoped**: this function's stores go through two different bases, and the compiler reordered them non-rotationally (source `0x110, global, 0xC, 0x10, 0` â†’ emitted `0, global, 0x10, 0x110, 0xC`); writing the source in retail's own emitted order changed nothing. |
 | `func_0023CD30` | text | **matches** | `int *p = (int *)(arg0 + 0x50000); int d = p[2] - p[1]; if (d != 0) { *arg1 = (int)(arg0 + p[0]); } return d;` — same `+0x50000` page-offset shape as `func_0023CD10`/`func_0023CDF0` (see the big-constant-splitting technique). Byte-exact first attempt. |
 | `func_00216EF0` | text | **matches** | Writes `-0x8000`/`0` pairs into `D_001517D0` at short-indices `0x2E`/`0x2F` (guarded by `arg0 != 0`) and `0x3C`/`0x3D`/`0x20`/`0x21` (unconditional). Two things were needed: the store-order rotation rule *per group* (source `0x2F,0x2E` and `0x3D,0x20,0x21,0x3C` to get retail's emitted `0x2E,0x2F` and `0x3C,0x3D,0x20,0x21`), and indexing the global **directly** rather than through a shared `short *p` local — see "Global-address materialization: direct indexing vs. a base-pointer local" below. Byte-exact. |
+| `func_00222D70` | text | **close, not exact** (24/60) | `*(int *)((char *)arg0+0x34) = D_001D48A8[D_0015EE84 % 19]; return 0;`. Right size and shape including the real `divu` + trap guard; held entirely by the `%hi`-register-reuse allocator sub-case. Reverted. |
+| `func_0021DB00` | text | **close, not exact** (15/48) | `D_0013E6A0 = (D_0015EEF0 * 8) / 10; return 0;`. Same story as `func_00222D70` — correct shape, held by `%hi`-register reuse plus the divisor `addiu`'s position. Reverted. |
 | everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1532 functions total remaining. |
 
 ## Open toolchain questions
@@ -507,6 +509,30 @@ materialize the whole constant into a register first, a visibly different
 instruction shape). When a near-match's opening instructions differ
 around a big structure offset, try splitting it at a round boundary the
 way a real `struct`/array-of-pages access would.
+
+**Constant integer division/modulo is *not* strength-reduced.** Unlike
+a modern compiler, this one emits a real `div`/`divu` plus MIPS's
+div-by-zero trap guard (`beql $r,$0` over a `break 0,7`) even when the
+divisor is a plain literal constant — it never converts `x % 19` or
+`x / 10` into a magic-multiply sequence. So retail code containing a
+real `div` with an immediate divisor does **not** imply the original
+source had a variable divisor; a plain `% 19` in C reproduces that shape
+exactly. Confirmed on `func_00222D70` (`% 19`, `divu`+`mfhi`) and
+`func_0021DB00` (`/ 10`, `div`+`mflo`), both of which come out the right
+size and shape, differing only by the register-allocation issue below.
+Worth knowing because a real `div` looks like a red flag at first
+glance and would otherwise get skipped as un-reproducible.
+
+**Recurring sub-case of the allocator question: `%hi` register reuse on
+a global load.** Retail frequently loads a global with the `%hi` and the
+loaded value in the *same* register (`lui $3, %hi(X)` / `lw $3, %lo(X)($3)`),
+where this compiler always uses a separate register for the `%hi`
+(`lui $2, %hi(X)` / `lw $3, %lo(X)($2)`). Seen in `func_00222D70`,
+`func_0021DB00` and `func_0021B108`. Retail is not consistent about it
+either — `func_0021DA98` uses the split-register form and matched
+byte-exact — so this is retail's allocator varying rather than a rule
+being missed, and no source form has been found that steers it. Two
+otherwise-perfect functions are held at 15/48 and 24/60 by this alone.
 
 **Global-address materialization: direct indexing vs. a base-pointer
 local.** These two forms are *not* interchangeable, and which one is
