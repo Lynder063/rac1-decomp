@@ -181,6 +181,8 @@ before being called "matches" below.
 | `func_0022F0F0` | text | **skipped, known sign-extension gap** | Would be `if (arg1 != 0) { *(int*)arg1 = arg0; if (arg0 == 0) { ((char*)arg1)[4] = 0; *(int*)((char*)arg1+0x18) = 0; *(int*)((char*)arg1+0x1C) = 0; } }` â€” but opens with `dsll32 $5,$5,0` / `dsra32 $5,$5,0`, the 32â†’64 sign-extension of the pointer parameter that is the `func_00112380`/`func_0022F090` open question. Not attempted; blocked before the interesting part. (It also has an unfilled `beqz` delay slot and does the first store in the *second* branch's delay slot so it runs either way â€” worth revisiting if the sign-extension question is ever solved.) |
 | `func_0021DA60` | text | **matches** | Copies 8 `int`s from `arg0+0x30` into the global array `D_00141FA0`, returns 0. Written as a `do { *dst++ = *src++; } while (--i >= 0);` with `i` starting at 7. Byte-exact **first attempt**, including retail's unfilled `nop` inside the loop body â€” worth noting since loops had been avoided as risky: a simple counted copy loop reproduced exactly, so loop shapes are not inherently a problem. |
 | `func_00219E60` | text | **close, not exact** (23/44), reverted | Sets `D_001D5F70` (an object) field `0` to `0x2D` and fields `0xC`/`0x10`/`0x110` to 0, plus the separate global `D_0015F6E8 = 3`. Instruction count and size are right; the register assignment differs from the very first instruction (retail `lui $4`, this compiler `lui $5`) and cascades through. Also establishes that **the store-order rotation rule is base-pointer-scoped**: this function's stores go through two different bases, and the compiler reordered them non-rotationally (source `0x110, global, 0xC, 0x10, 0` â†’ emitted `0, global, 0x10, 0x110, 0xC`); writing the source in retail's own emitted order changed nothing. |
+| `func_0023CD30` | text | **matches** | `int *p = (int *)(arg0 + 0x50000); int d = p[2] - p[1]; if (d != 0) { *arg1 = (int)(arg0 + p[0]); } return d;` — same `+0x50000` page-offset shape as `func_0023CD10`/`func_0023CDF0` (see the big-constant-splitting technique). Byte-exact first attempt. |
+| `func_00216EF0` | text | **matches** | Writes `-0x8000`/`0` pairs into `D_001517D0` at short-indices `0x2E`/`0x2F` (guarded by `arg0 != 0`) and `0x3C`/`0x3D`/`0x20`/`0x21` (unconditional). Two things were needed: the store-order rotation rule *per group* (source `0x2F,0x2E` and `0x3D,0x20,0x21,0x3C` to get retail's emitted `0x2E,0x2F` and `0x3C,0x3D,0x20,0x21`), and indexing the global **directly** rather than through a shared `short *p` local — see "Global-address materialization: direct indexing vs. a base-pointer local" below. Byte-exact. |
 | everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1532 functions total remaining. |
 
 ## Open toolchain questions
@@ -505,6 +507,25 @@ materialize the whole constant into a register first, a visibly different
 instruction shape). When a near-match's opening instructions differ
 around a big structure offset, try splitting it at a round boundary the
 way a real `struct`/array-of-pages access would.
+
+**Global-address materialization: direct indexing vs. a base-pointer
+local.** These two forms are *not* interchangeable, and which one is
+right differs per function — check both before calling a near-miss a
+scheduling gap:
+- Writing `short *p = D_GLOBAL; p[i] = ...;` forces the address
+  materialization to happen as its own statement up front, so it lands
+  *before* any following branch.
+- Writing `D_GLOBAL[i] = ...;` directly lets the compiler materialize
+  the address where it likes — including scheduling the `lui` into a
+  preceding branch's delay slot, and rematerializing the `addiu` twice
+  (once per basic block) rather than keeping one base register live.
+`func_00216EF0` needed the *direct* form (retail has `beqz` first with
+the `lui` in its delay slot; the local-base form put the `lui` first and
+scored 33/56 instead of an exact match). `func_002094E0` needed the
+*opposite* — an explicit `char *s` local, without which the compiler
+folded each field offset into load/store immediates instead of forming
+a real base pointer. So: if a near-miss's opening instructions differ
+around a global's address, try the other form before anything else.
 
 **`unsigned char *`, not `char *`, for byte-field base pointers.** Seen
 fixing `func_0020CC88`/`func_0020CDB8`: when dereferencing a `char *`
