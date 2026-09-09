@@ -1662,17 +1662,36 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00214F78);
 INCLUDE_ASM("asm/nonmatchings/text", func_00215038);
 
 /*
- * Close but not exact (16/48 bytes, both func_00215048/func_00215078):
- * if (arg0 == 0) return 0; flags = *(u16*)(arg0+0x34);
- * if ((flags & 0x20) == 0) return 0;
- * return *(int*)(*(int**)(arg0+0x78) + N);  (N = 0x0 / 0x10 resp.)
- * Logic confirmed correct via objdump, same overall shape, but retail
- * has two literal nop instructions between the `andi` mask and the
- * following `beqz` that this compiler doesn't emit (schedules straight
- * through instead) -- a scheduling difference, not a logic gap, but
- * not one of the previously-documented delay-slot/register-allocation
- * patterns exactly (this is nop *insertion*, not a different
- * instruction choice). Not investigated further.
+ * Close but not exact, 16/48 (both func_00215048 and func_00215078,
+ * which are the same shape with a +0x0 vs +0x10 final field offset).
+ * This exact source form gets the first 5 instructions byte-identical,
+ * including retail's `bnel`-with-the-load-in-its-delay-slot and its
+ * unusual block layout (the shared `return 0` placed *before* the main
+ * body), so start from here rather than re-deriving it:
+ *
+ *   int func(void *arg0) {
+ *       if (arg0 == 0) { return 0; }
+ *       else if ((*(unsigned short *)((char *)arg0+0x34) & 0x20) == 0) {
+ *           return 0;
+ *       } else { return **(int **)((char *)arg0+0x78); }
+ *   }
+ *
+ * The if/else-if/else shape is what produces the `bnel`: GCC fills the
+ * guard's delay slot from the *target* block using a likely branch, and
+ * can only do that when the branch points at the body. The plain
+ * `if (arg0 != 0) { ... } return 0;` form points the branch at the tail
+ * instead, whose first instruction is a `jr` and so unfillable, giving
+ * a plain `beqz` + nop (that form scores 33/48, much worse).
+ * Two deltas remain, both after the `andi`:
+ *   1. Retail has two literal `nop`s between the `andi` and the `beqz`
+ *      that this compiler never emits -- see the backward-branch
+ *      padding observation in docs/DECOMP_PROGRESS.md.
+ *   2. Retail's `beqz` branches *backward* into the already-emitted
+ *      shared `return 0` block; GCC emits a second copy at the end
+ *      instead (no cross-jumping between the two identical blocks).
+ * Tried and rejected: `volatile` on the flags read (loses the `bnel`
+ * entirely, worse), and `-Wa,-g`/`-Wa,-O0` to stop the assembler
+ * removing nops (no effect -- cc1 never emits them in the first place).
  */
 INCLUDE_ASM("asm/nonmatchings/text", func_00215048);
 
