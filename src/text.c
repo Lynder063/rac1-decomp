@@ -1351,9 +1351,22 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002096D8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209750);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209808);
-
 extern int D_0015EFB4;
+
+/* Byte-identical to func_00209858; see its comment. Same 9/80 residual. */
+void func_00209808(void) {
+    char *s = D_0013D390;
+    int idx = *(int *)(s + 0xCC);
+    int *rec;
+    s += 0xB0;
+    rec = (int *)(s + 0xC0 * idx);
+    if (*rec == 2) {
+        *rec = 0;
+    }
+    if ((D_0015EFB4 & 0x40) == 0) {
+        D_0015EFB0 = 3;
+    }
+}
 
 /*
  * Close but not exact (9/80, 11.3%). Instruction-for-instruction
@@ -1405,9 +1418,35 @@ void func_00209858(void) {
  */
 INCLUDE_ASM("asm/nonmatchings/text", func_002098A8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002098C8);
+/* Byte-identical to func_00209858; see its comment. Same 9/80 residual. */
+void func_002098C8(void) {
+    char *s = D_0013D390;
+    int idx = *(int *)(s + 0xCC);
+    int *rec;
+    s += 0xB0;
+    rec = (int *)(s + 0xC0 * idx);
+    if (*rec == 2) {
+        *rec = 0;
+    }
+    if ((D_0015EFB4 & 0x40) == 0) {
+        D_0015EFB0 = 3;
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209918);
+/* Byte-identical to func_00209858; see its comment. Same 9/80 residual. */
+void func_00209918(void) {
+    char *s = D_0013D390;
+    int idx = *(int *)(s + 0xCC);
+    int *rec;
+    s += 0xB0;
+    rec = (int *)(s + 0xC0 * idx);
+    if (*rec == 2) {
+        *rec = 0;
+    }
+    if ((D_0015EFB4 & 0x40) == 0) {
+        D_0015EFB0 = 3;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209968);
 
