@@ -1771,7 +1771,11 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00213F28);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00214080);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002140B0);
+extern int func_001160D8(void);
+
+int func_002140B0(int arg0) {
+    return ((func_001160D8() >> 16) & 0x7FFF) % arg0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002140F0);
 
@@ -1966,7 +1970,21 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00216F48);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00217130);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00217588);
+extern void func_0012EFE8(void);
+
+/*
+ * 2/64: retail reuses the register that held the loaded halfword ($3)
+ * for the constant 1, this compiler takes a fresh $2 -- the documented
+ * scratch-register-allocation-choice question. Tried forcing reuse via
+ * a single int local reassigned to 1; that made it worse (4/64).
+ */
+void func_00217588(void) {
+    short *p = D_001517D0;
+    if (p[4] != 0) {
+        func_0012EFE8();
+        ((char *)p)[0xA] = 1;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002175C8);
 
@@ -2289,13 +2307,21 @@ int func_0021EF38(void *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021EF60);
+int func_0021EF60(char *arg0) {
+    *(int *)(arg0 + 0x44) = func_002267C0(*(int *)(arg0 + 0x44));
+    *(int *)(arg0 + 0x48) = func_002267C0(*(int *)(arg0 + 0x48));
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021EFA0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021F118);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021F200);
+extern float func_001FA748(float, float);
+
+void func_0021F200(char *arg0) {
+    *(float *)(arg0 + 0x48) = func_001FA748(*(float *)(arg0 + 0x48), 0.01f);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021F238);
 
