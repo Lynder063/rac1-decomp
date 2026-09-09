@@ -2301,9 +2301,15 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023CDA8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023CDF0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023CE18);
+int func_0023CE18(int *arg0, int arg1, int arg2) {
+    arg0[1] = arg1;
+    arg0[0] = arg2;
+    return 1;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023CE28);
+int func_0023CE28(void) {
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023CE30);
 
@@ -2351,15 +2357,35 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023DFC0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023DFE0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E000);
+void func_0023E000(int *arg0) {
+    *(arg0 + (0xA8 / 4)) = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E008);
 
+/*
+ * Close but not exact: `arg0[42] = 1; return 1;`. Retail materializes
+ * the constant 1 once (`li $v0,1`) and reuses it for both the store and
+ * the return value; this compiler materializes it twice into separate
+ * registers ($v1 for the store, $v0 for the return) regardless of
+ * whether the source uses a shared local, an assignment-expression
+ * (`return arg0[42] = 1;`), or a bare duplicate literal -- all three
+ * tried, none changed it. New instance of the scratch-register-
+ * allocation-choice open question, this time as "fails to CSE an
+ * identical constant" rather than picking a different register for two
+ * genuinely different values. See docs/DECOMP_PROGRESS.md.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E040);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E050);
+int func_0023E050(int *arg0) {
+    return *(arg0 + (0xA8 / 4));
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E058);
+int func_0023E058(int *arg0, int arg1) {
+    int old = *(arg0 + (0xA8 / 4));
+    *(arg0 + (0xA8 / 4)) = arg1;
+    return old;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E068);
 
@@ -2390,15 +2416,30 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023E560);
 void func_0023E5B0(void) {
 }
 
+/*
+ * Close but not exact: `arg0[3]=0; arg0[2]=0;` (retail's actual store
+ * order). Logic/operations match, but this compiler schedules the
+ * second store into jr's delay slot, making the compiled function 3
+ * instructions (12 bytes) instead of retail's 4 (16 bytes, sw, sw, jr,
+ * a real unfilled nop) -- retail chose NOT to fill that delay slot here,
+ * this compiler does. New instance of the delay-slot-scheduling open
+ * question, this time as "retail leaves a delay slot empty where this
+ * compiler doesn't" rather than the usual "different thing lands there".
+ * See docs/DECOMP_PROGRESS.md.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E5B8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E5C8);
+int func_0023E5C8(int *arg0) {
+    return (arg0[3] ^ arg0[4]) == 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E5E0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E658);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E698);
+int func_0023E698(int *arg0) {
+    return arg0[3] == 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E6A8);
 
