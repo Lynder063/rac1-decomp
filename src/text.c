@@ -819,7 +819,28 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FFC48);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FFCB0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FFD30);
+extern int func_001FF668(int);
+
+/* tbl[7] is volatile: retail re-loads that pointer field before each of
+   the three record accesses rather than caching it, while keeping the
+   r*8 offset in a register. */
+void func_001FFD30(void *arg0, int arg1) {
+    char *self = (char *)arg0;
+    volatile int *tbl;
+    int r;
+    unsigned short v;
+
+    r = func_001FF668(arg1);
+    /* base materialized only after the call, so it lands in a temp
+       register rather than a callee-saved one; tbl[7] is volatile because
+       retail re-loads that pointer field before each record access. */
+    tbl = (volatile int *)&D_0019A4E8;
+    v = *(unsigned short *)((char *)tbl[7] + r * 8);
+    *(short *)(self + 0x40) = r;
+    *(int *)(self + 0) = v;
+    *(char *)(self + 0x42) = *(unsigned char *)((char *)tbl[7] + r * 8 + 6);
+    *(int *)(self + 0x44) = *(unsigned short *)((char *)tbl[7] + r * 8 + 4);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FFD98);
 
@@ -1518,6 +1539,21 @@ int func_0020BAD8(int *p) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020BB10);
 
+/*
+ * Attempted and reverted at 15/60 (25%). Logic is confirmed:
+ *   int n = arg0[1];
+ *   result = 0; if (n) result = (func_0020BB10(arg0 + 2, arg0[0]) == n);
+ *   return result;
+ * Correct size and the right instructions, but retail emits the
+ * `result = 0` (`daddu $2,$0,$0`) in the *prologue*, between the stack
+ * adjust and the register spills, whereas this compiler always places it
+ * after the spills -- shifting the rest of the stream. Tried: single
+ * result variable, early-return form, if/else form, and both
+ * declaration orders (the last-statement-emits-first rotation rule does
+ * not reach into prologue scheduling). Prologue placement of a constant
+ * looks unsteerable from source shape, same family as the other
+ * scheduling sub-cases.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_0020BB88);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020BBC8);
