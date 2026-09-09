@@ -51,11 +51,50 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **158 functions
-have real C; 142 are exact on size and bytes; 3 are size-mismatched and
-13 byte-mismatched** — all 16 being deliberately-kept documented
+Current audited state (from `tools/sweep_matches.py`): **173 functions
+have real C; 161 are exact on size and bytes; 1 is size-mismatched and
+11 byte-mismatched** — the 12 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
-change rather than trusting this number or any single entry.
+change rather than trusting this number or any single entry. (An earlier
+run of the sweep reported 177/164; its `FUNC_DEF` regex was counting
+`extern` forward declarations as definitions, so the real figure was
+slightly *lower* than advertised. Fixed.)
+
+**Three more rules the sweep enforces, all learned the hard way:**
+
+**Size mismatches must ALWAYS be reverted, never kept as
+"documented-close".** A byte mismatch is inert — it is wrong in place. A
+size mismatch shifts every later function in the object, so it damages
+*other* functions' results. Demonstrated twice: reverting one
+size-mismatched function made a different, untouched function become
+exact. So: byte-mismatch *may* be kept as documented-close;
+size-mismatch is always reverted.
+
+**Post-`endlabel` padding: one cause that presents as ~179 problems.**
+729 of the `.s` files carry padding *after* their `endlabel`, because
+retail aligns the next function to 16 bytes while splat only emits
+`.align 3`. While a function is an `INCLUDE_ASM` stub its `.s` supplies
+that padding; decompiling it to C silently drops it, shifting every
+later function and producing spurious 1-byte `jal` diffs *far from the
+real cause*. One such function shifted 179 others at once. The fix is an
+explicit directive after the function:
+
+```c
+__asm__(".align 4");
+```
+
+Nuance, so nobody chases ghosts: the common 4-byte case is normally
+harmless, because the next function's own `.align 3` re-establishes
+8-byte alignment anyway (~30 decompiled functions carry exactly 4 bytes
+and are all exact with zero drift). It only bites when retail wanted
+16-byte alignment — more than `.align 3` can account for.
+`sweep_matches.py` therefore reports only the >4-byte cases.
+
+**Varargs: only *definitions* are blocked, not callers.** The skip
+category further down overstates this. Functions that *call* a varargs
+function match fine — `func_0023BF48` and `func_0023E450` both call the
+varargs `func_001E9730` and are exact. Only *defining* one needs
+`stdarg.h`, which this bare toolchain lacks.
 
 | Function | Segment | Status | Notes |
 |---|---|---|---|
