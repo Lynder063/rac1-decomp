@@ -2440,11 +2440,26 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0022EF68);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022EFE8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022F090);
+void func_0022F090(int arg0, long arg1) {
+    int *p = (int *)(int)arg1;
+    if (p != 0) {
+        *p = arg0;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022F0A8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022F0F0);
+void func_0022F0F0(int arg0, long arg1) {
+    char *p = (char *)(int)arg1;
+    if (p != 0) {
+        *(int *)p = arg0;
+        if (arg0 == 0) {
+            *(int *)(p + 0x18) = 0;
+            *(int *)(p + 0x1C) = 0;
+            p[4] = 0;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022F120);
 
