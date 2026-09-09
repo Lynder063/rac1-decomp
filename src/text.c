@@ -203,7 +203,18 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001EC5B8);
    pointer loaded from a per-type dispatch table, wrapped in an
    sq-for-lone-$ra save this compiler doesn't reproduce (see
    func_001E9E70's comment). Not attempted. */
-INCLUDE_ASM("asm/nonmatchings/text", func_001EC780);
+/* Same vtable dispatch as func_001EC270, on the +0x10 slot instead of
+   +8; identical 1/68 operand-order residual, same cause. */
+void func_001EC780(void *arg0) {
+    int idx = *(short *)((char *)arg0 + 0x8C) * 0x14;
+    char *rec = D_001E8F80;
+    void (*fn)(void *);
+    rec = rec + idx;
+    fn = *(void (**)(void *))(rec + 0x10);
+    if (fn != 0) {
+        fn(arg0);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC7C8);
 
@@ -311,7 +322,19 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F2B10);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F2BC8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F2FB8);
+extern void func_001F99B0(void *arg0, int arg1, int arg2);
+extern void func_001F2BC8(void);
+extern int D_0018C434;
+extern char D_001940C0[];
+
+void func_001F2FB8(void) {
+    int state = D_0018C434;
+    if (state == 0) {
+        func_001F99B0(D_001940C0, -1, 0x80);
+    } else if (state == 2) {
+        func_001F2BC8();
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F3008);
 
