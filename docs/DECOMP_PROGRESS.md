@@ -169,7 +169,11 @@ before being called "matches" below.
 | `func_0022F090` | text | **close, not exact** | `if (arg1 != 0) *arg1 = arg0;` (void). Missing the known `dsll32`/`dsra32` sign-extension pair on the pointer parameter before use — same open-question category as `func_00112380`, not a new instance worth re-investigating (already extensively tried there). Reverted. |
 | `func_001FA888` | text | **matches** | `return (float)arg0;` — int-to-float conversion (`mtc1`/`cvt.s.w`). Byte-exact. |
 | `func_001FA898` | text | **close, not exact** | The float-to-int inverse of `func_001FA888`. Retail's `cvt.w.s` converts in place (dest == src == `$f12`, the incoming argument register); this compiler always allocates a fresh destination register for the conversion result. Only 2/16 bytes differ — that one instruction's register field. Small new instance of the scratch-register-allocation-choice question. An extra `(float)(int)` round-trip to nudge it toward reusing `$f12` made it worse (50% mismatch), reverted. |
-| everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1543 functions total remaining. |
+| `func_00216F28` | text | **matches** | Writes the `short` value `4` to offsets `0x5C`/`0x40`/`0x78` of `D_001517D0`. First attempt (source in retail's own store order) came out 3/28 with the stores rotated; fixed predictively via the store-order rotation rule — see "Independent-store order: last source statement emits first" below, which this function established. Byte-exact. |
+| `func_0021EF38` | text | **matches** | Resets 4 fields of `arg0`: float `0x38` = pi (`3.14159274f` = `0x40490FDB`), ints `0x34`/`0x44`/`0x48` = 0, returns 0. Byte-exact **first attempt** by applying the store-order rotation rule predictively (wrote source as `0x38, 0x34, 0x44, 0x48` to get retail's emitted `0x48, 0x38, 0x34, 0x44`) — confirms the rule holds across 4 stores and with a mixed float/int store set, not just the 3-int case it was derived from. |
+| `func_0023E710` | text | **matches** | `if (arg0[3] > 0) arg0[3] = arg0[3] - 1;` — a clamped decrement, with `arg0` typed `volatile int *`. Retail reloads the field after the branch instead of reusing the already-loaded value, *and* leaves the `blez`'s delay slot empty; a non-`volatile` version compiles 8 bytes shorter (reuses the loaded value, fills the delay slot with the decrement). Adding `volatile` reproduced both retail behaviours exactly. Byte-exact. See "Redundant reload + unfilled delay slot = `volatile`" below — this is a notable finding, since it means some previously-documented "delay-slot-scheduling" near-misses may actually be volatile accesses. |
+| `func_0023CDF0` | text | **close, not exact** | `int *p = (int*)((char*)arg0+0x50000); int avail = p[1]; int taken = (arg1 < avail) ? arg1 : avail; p[1] = avail - taken;` — a saturating subtract (deduct `arg1` from a counter, floor at 0), retail using `slt`+`movn` for the `min`. Logic and instruction sequence confirmed correct, and the `0x50000` pointer advance + `+4` field offset split was needed to reproduce retail's `lui 0x5`/`addu`/`lw 4($4)` shape (a single `+0x50004` offset instead materialises the whole constant first — worth knowing for other big-offset cases). Remaining diff is the scratch-register-allocation-choice question: retail reuses `$2` for both the `lui` scratch and the loaded value where this compiler takes `$3` for the scratch, and in a 9-instruction function that shifts nearly every register field (20/36 bytes). Tried the in-place-accumulate technique (`avail -= taken;`) as well; no change. Reverted per the size-of-diff precedent. |
+| everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1540 functions total remaining. |
 
 ## Open toolchain questions
 
@@ -385,6 +389,47 @@ normalize) instead of retail's explicit branch-with-literal-return —
 worked for 8 of 9 attempts in this cluster; the one that didn't
 (`func_0020CBA8`) had 3 chained conditions instead of 2, so this
 technique may not scale past 2.
+
+**Independent-store order: last source statement emits first.** For a run
+of N independent same-shape stores through one already-materialized base
+pointer, this compiler emits the **last** source statement first, then
+the remaining ones in source order: source `(A, B, C)` compiles to
+`(C, A, B)`. So to obtain retail's emitted order `(X, Y, Z)`, write the
+source as `(Y, Z, X)` — rotate retail's order left by one. Derived from
+`func_00216F28` (3 `short` stores) and then confirmed *predictively* on
+`func_0021EF38` (4 stores, mixed float/int, byte-exact first attempt).
+This supersedes the earlier "try permutations empirically" advice from
+`func_001F7648`/`func_00223478` for this shape — check the rule first, it
+appears deterministic. (It also retroactively explains `func_0023CE18`'s
+2-store case, where retail's order was the reverse of the source's.)
+Note the rule is about the *store* statements; a trailing `return`, and
+the base-pointer setup, sit outside the rotation.
+
+**Redundant reload + unfilled delay slot = `volatile`.** Seen fixing
+`func_0023E710`: where retail re-loads a field it already has in a
+register *and* leaves a nearby branch delay slot empty, the original
+source almost certainly declared that pointer/field `volatile` — not a
+scheduling quirk to work around. A plain (non-`volatile`) version of the
+same C reuses the loaded value and fills the delay slot, coming out
+several bytes shorter; adding `volatile` reproduced both retail
+behaviours at once, byte-exact. **This is worth re-checking against the
+existing "delay-slot-scheduling" open-question entries** — some of those
+near-misses (particularly any where retail also re-reads a value it
+already had, or leaves a slot unfilled, e.g. `func_0023E5B8`) may be
+volatile accesses misfiled as a codegen gap rather than genuine open
+questions. Hardware/MMIO-adjacent code is the obvious place to suspect
+it, but `func_0023E710` is a plain counter field, so it's not limited to
+MMIO.
+
+**Splitting a large constant offset into pointer-advance + field
+offset.** Seen while working `func_0023CDF0`: retail reaching a field at
+`base + 0x50004` compiles as `lui $r, 0x5` / `addu` / `lw 4($r)` — i.e.
+the source advanced a pointer by `0x50000` and then indexed a field at
+`+4`, rather than using one `+0x50004` offset (which makes this compiler
+materialize the whole constant into a register first, a visibly different
+instruction shape). When a near-match's opening instructions differ
+around a big structure offset, try splitting it at a round boundary the
+way a real `struct`/array-of-pages access would.
 
 **`unsigned char *`, not `char *`, for byte-field base pointers.** Seen
 fixing `func_0020CC88`/`func_0020CDB8`: when dereferencing a `char *`
