@@ -1231,7 +1231,27 @@ void func_00209040(void) {
  * near-misses, a pure instruction-selection choice for the same
  * boolean-from-sign-bit pattern; not investigated further.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_00209048);
+/*
+ * 4/36 (one instruction): 2D cross-product orientation test — is (x2,y2)
+ * left of the (x0,y0)->(x1,y1) edge. Every register and all 7 arithmetic
+ * instructions match retail exactly; the sole diff is the final sign
+ * test, where this compiler emits `srl $2,$2,31` and retail has
+ * `slti $2,$2,0`. Identical result, different instruction selection, and
+ * it is not steerable from source: `< 0`, `<= -1`, `< 1-1`, a named
+ * local, and `?1:0` all canonicalize to the same `srl`; only widening to
+ * `long` changes it (to `dsrl32`, which is worse).
+ *
+ * The subtractions must be written in this order (x2/y2 before x1/y1) —
+ * the last-source-statement-emits-first rotation applies to runs of
+ * independent *arithmetic* statements, not just stores.
+ */
+int func_00209048(int x1, int y1, int x0, int y0, int x2, int y2) {
+    x2 -= x0;
+    y2 -= y0;
+    x1 -= x0;
+    y1 -= y0;
+    return (x2 * y1 - y2 * x1) < 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209070);
 
