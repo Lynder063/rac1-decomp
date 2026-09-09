@@ -560,17 +560,9 @@ float func_001F9B88(float arg0) {
  * via the byte diff: got `jr / nop`, not `jr / max.s`) -- reverted that,
  * not safe to rely on.
  */
-float func_001F9B90(float arg0, float arg1) {
-    float result;
-    __asm__("max.s %0, %1, %2" : "=f"(result) : "f"(arg0), "f"(arg1));
-    return result;
-}
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9B90);
 
-float func_001F9B98(float arg0, float arg1) {
-    float result;
-    __asm__("min.s %0, %1, %2" : "=f"(result) : "f"(arg0), "f"(arg1));
-    return result;
-}
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9B98);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9BA0);
 
@@ -1904,7 +1896,12 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00216198);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002161E0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00216270);
+extern void func_0012F068(void *);
+extern void func_002177F0(void);
+
+void func_00216270(void) {
+    func_0012F068(func_002177F0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00216290);
 
@@ -2060,7 +2057,11 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00218188);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002181F0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00218908);
+extern void func_00217F68(void *);
+
+void func_00218908(void) {
+    func_00217F68(D_0013CA40);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00218928);
 
@@ -2201,7 +2202,12 @@ int func_0021DAC8(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021DAE0);
+extern void func_00226D50(int);
+
+int func_0021DAE0(void) {
+    func_00226D50(1);
+    return 0;
+}
 
 /*
  * Close but not exact (15/48): int func(void) {
