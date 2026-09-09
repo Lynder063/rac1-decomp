@@ -1353,7 +1353,40 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00209750);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209808);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209858);
+extern int D_0015EFB4;
+
+/*
+ * Close but not exact (9/80, 11.3%). Instruction-for-instruction
+ * identical to retail apart from two documented-unsteerable register
+ * choices: retail loads D_0015EFB4 with the %hi and the value in the
+ * *same* register (`lui $2` / `lw $2,%lo($2)`) where this compiler uses
+ * a separate temp, and retail uses $1/$at for D_0015EFB0's %hi (putting
+ * the literal 3 before it) where this compiler uses a normal register
+ * after. Both are the established %hi-reuse / $at sub-cases of the
+ * allocator question -- same cause as func_002094E0/func_00209698.
+ *
+ * Getting here needed the pointer-advance form: reading the index off
+ * the base *before* advancing it by 0xB0 as its own statement. Folding
+ * it (`D_0013D390 + 0xB0` in the declaration) makes the compiler
+ * materialize one combined address constant instead, which was 51/80.
+ * Worth noting the `beql` for `if (*rec == 2) *rec = 0;` matched
+ * exactly -- so a branch-likely *is* reachable from plain C for a
+ * single-statement `if` whose body fits the delay slot, unlike the FP
+ * bc1fl case in func_00208208.
+ */
+void func_00209858(void) {
+    char *s = D_0013D390;
+    int idx = *(int *)(s + 0xCC);
+    int *rec;
+    s += 0xB0;
+    rec = (int *)(s + 0xC0 * idx);
+    if (*rec == 2) {
+        *rec = 0;
+    }
+    if ((D_0015EFB4 & 0x40) == 0) {
+        D_0015EFB0 = 3;
+    }
+}
 
 /*
  * Close but not exact (7/32 bytes): if (D_0013D3AC != 0) D_0015EFB0 = 3;
@@ -1396,7 +1429,16 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0020BA00);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020BAA8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020BAD8);
+int func_0020BAD8(int *p) {
+    int n = 8;
+    while (p[0] != 0) {
+        n += 8;
+        n += p[1];
+        p += 4;
+        n = (n + 3) & ~3;
+    }
+    return n + 8;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020BB10);
 
