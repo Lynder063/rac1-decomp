@@ -106,8 +106,24 @@ def check_symbol(name: str, size: int) -> None:
             print(f"'{name}' not found in {LINKED_ELF}'s symbol table.")
             raise SystemExit(1)
         our_vram = sym["st_value"]
+        our_size = sym["st_size"]
         sec = elf.get_section(sym["st_shndx"])
         ours = sec.data()[our_vram - sec["sh_addr"]: our_vram - sec["sh_addr"] + size]
+
+    # A function that is CORRECT in its first `size` bytes but LONGER than
+    # retail used to report a clean 0/N "match", because only `size` bytes
+    # were ever compared -- the surplus fell outside the window entirely.
+    # That produced at least three false "match" records (func_0011AE1C,
+    # func_001F9B90, func_001F9B98), so size disagreement is now a loud
+    # failure in its own right. `st_size` comes from the `.size` directive
+    # that labels.inc's glabel/endlabel macros emit, so it is our real
+    # compiled extent, not an assumption.
+    if our_size and our_size != size:
+        verdict = "LONGER THAN RETAIL" if our_size > size else "SHORTER THAN RETAIL"
+        print(f"{name}: *** SIZE MISMATCH -- NOT A MATCH ***")
+        print(f"  retail={size} (0x{size:X}) bytes, ours={our_size} (0x{our_size:X}) bytes -- {verdict}")
+        print(f"  The byte comparison below only covers retail's {size} bytes, so it can")
+        print(f"  still read 0/{size}. That is NOT a match while the sizes differ.")
 
     with open(BASEROM, "rb") as f:
         belf = ELFFile(f)

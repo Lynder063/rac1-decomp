@@ -1,19 +1,9 @@
 #include "common.h"
 
-extern int func_00116F68(int arg0, int arg1, int arg2);
+extern long func_00116F68(int arg0, int arg1, int arg2);
 
-/*
- * Close but not yet byte-matching: the retail binary has an extra
- * dsll32/dsra32 v0,v0,0 pair (redundant 32->64 sign-extension of the
- * call result) right before the return that this doesn't reproduce.
- * Every source/flag variant tried (explicit vs. implicit declaration of
- * func_00116F68, int/unsigned/pointer return type, -O0..-O3, -g, -G8,
- * K&R-style declaration) either drops the pair entirely or changes
- * unrelated codegen -- logic is understood and correct, this specific
- * compiler idiom isn't reproduced yet. See docs/DECOMP_PROGRESS.md.
- */
 int func_00112380(int arg0) {
-    return func_00116F68(arg0, 0, 10);
+    return (int)func_00116F68(arg0, 0, 10);
 }
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001123A8);
@@ -70,12 +60,12 @@ void func_00113A70(void *arg0, int arg1, int arg2, int arg3) {
     *(void **)(self + 0x24) = func_00116320;
     *(void **)(self + 0x28) = func_001163A0;
     *(void **)(self + 0x2C) = func_00116408;
-    *(int *)(self + 0x0) = 0;
     *(int *)(self + 0x4) = 0;
     *(int *)(self + 0x8) = 0;
     *(int *)(self + 0x10) = 0;
     *(int *)(self + 0x18) = 0;
     *(void **)(self + 0x1C) = self;
+    *(int *)(self + 0x0) = 0;
 }
 
 /*
@@ -731,8 +721,21 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AC48);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AD70);
 
-void func_0011AE1C(void) {
-}
+/*
+ * NOT a match, despite being recorded as one until now. Retail is a bare
+ * 4-byte `jr $31` with nothing in its delay slot (the next function's
+ * first instruction sits there). `void f(void) {}` emits `jr $ra; nop`
+ * -- 8 bytes -- and GCC additionally force-aligns a compiled function to
+ * 8 bytes where retail sits at a 4-aligned address, so this cost 8 bytes
+ * of core_text layout drift in total.
+ *
+ * It read as a match only because tools/check_match.py compares exactly
+ * `retail_size` bytes: the first 4 bytes (`jr`) matched, and the extra
+ * nop was invisible to the comparison. Any function that is CORRECT in
+ * its first N bytes but LONGER than retail will report a false match the
+ * same way -- see docs/DECOMP_PROGRESS.md.
+ */
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AE1C);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AE20);
 
