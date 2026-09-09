@@ -52,6 +52,14 @@ before being called "matches" below.
 | `func_00115EE0` | core_text | **not a standalone function** | Single `addiu $sp,$sp,0x70`, no `jr $31` — fallthrough fragment, same category as `func_00113AD8`. |
 | `func_00112464`-style padding (`func_001138A4`, `func_00113A6C`, `func_00113B6C`, `func_00113FFC`, `func_0011405C`, `func_00114514`, `func_001154BC`, `func_00116244`, `func_00116D2C`) | core_text | **not real functions** | All 4 bytes of `0xCDCDCDCD` alignment padding, same as `func_00112464`. Left as `INCLUDE_ASM`; nothing to decompile. Not exhaustively enumerated — there are likely more of these throughout the file; recognize the pattern (single `pref 0x0D, -0x3233($14)` instruction, `nonmatching ..., 0x4`) rather than re-deriving it each time. |
 | `func_001151B4` | core_text | **not attempted, needs intrinsics** | Hand-optimized `memcmp`-shaped routine using 128-bit quadword loads and COP2 SIMD tricks (`pxor`/`pcpyud`) for a fast path, byte loop fallback. Not a plausible target for plain scalar C to reproduce exactly — would need compiler intrinsics/vector support this toolchain likely doesn't expose the same way. Skipped rather than force a bad attempt. |
+| `func_0011A728` | core_text | **matches** | `arr[idx] = val;` where `idx`/`val` come from `arg0+0x10`/`arg0+0x14` and `arr` from `*(int **)(arg1+0x1C)`. Byte-exact. |
+| `func_0011A748` | core_text | **matches** | `int v = *(int*)(arg0+0x10); *(int*)(arg1+0x8) = v; return v;`. Byte-exact. |
+| `func_0011B090` | core_text | **matches** | Clears a flag bit (`flags &= ~1`) and zeroes a field. Needed `unsigned int`/`0xFFFFFFFEu` rather than plain `int`/`~1` to match — see "Unsigned-mask materialization" below, a solved instance of a technique worth knowing, not an open question. Byte-exact. |
+| `func_0011A758` | core_text | **matches** | `return D_00155080[arg0];` — indexes a global `int` array. Byte-exact. |
+| `func_0011AA68` | core_text | **matches** | Picks `D_00154F64` or `D_00154F6C` as a base pointer depending on `arg0`'s sign, adds `arg0<<3`, zeroes the `int` there. Needed two source-shape adjustments to match retail's scheduling/register choices: computing `offset = arg0 << 3` as its own statement *before* the `if` (so the compiler schedules it into the branch's delay slot using the original `$a0`, same as retail, instead of copying `arg0` to a temp first) and reassigning into `arg0` itself for the picked base rather than a separate `int base` local, plus `offset += arg0;` (in-place accumulate) rather than a separate final expression, matching retail's choice to accumulate into the same register it makes the final store from. Byte-exact — the last of these three source-shape changes was the difference between a 2-byte residual and an exact match. |
+| `func_00119798`, `func_00119840` | core_text | **matches** (mod. known drift) | Both are `{ int local = argN; func_00118E90(<tag>, &local); }` — a small typed value gets stashed on the stack and handed to `func_00118E90` by address along with a type tag (`0x4` / `0x10`). One `jal`-target byte each, same known drift. |
+| `func_0011D078` | core_text | **matches** (mod. known drift) | `return func_0011CE70(arg0, arg1, arg2, buf);` with a 16-byte stack scratch buffer (`buf[0x10]`) passed by address as the 4th arg. Getting the frame size (`buf[0x10]`, not `0x20`) and the real 3-argument-plus-passthrough signature (not 2) both took a byte-diff-guided iteration — first attempt used the wrong buffer size (retail's frame was 0x20 total, not 0x30) and wrong arg count (retail puts the buffer pointer in `$a3`, meaning `arg2` is a real third parameter this function forwards, not dead). One `jal`-target byte remains, known drift. |
+| `func_00119868` | core_text | **close, not exact** | Sets `D_00154A40` (a global first-class field) to `arg0`, then sets three more fields of the struct it's part of. Logic fully understood (full C given in the source comment) but this compiler schedules the three independent field-stores in a different order than retail (which one lands in the branch's delay slot differs) — confirmed source-order-independent, tried all orderings. Same open-question category as `func_001160D8`/`func_00115578`, manifesting as store reordering instead of register choice. |
 | everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1655 functions total remaining. |
 
 ## Open toolchain questions
@@ -135,6 +143,33 @@ not investigated as deeply as the other two questions above (no
 cross-sub-build check done for this one specifically) since the diffs
 it produces are small and clearly benign (verified logic-identical each
 time) rather than blocking anything.
+
+## Solved techniques worth knowing (not open questions)
+
+**Unsigned-mask materialization.** For a bit-clear like `flags &= ~1`,
+this compiler compiles `~1` (an `int`, value `-2`) to a single `li`/
+`addiu` instruction — but if retail materializes the same mask via a
+`lui`/`ori` pair instead, the original source almost certainly used an
+*unsigned* mask (`flags &= 0xFFFFFFFEu`, or equivalently `~1u`), which
+this compiler can't represent as a compact sign-extended immediate and
+falls back to full `lui`/`ori` construction for, matching retail. Seen
+in `func_0011B090`. Worth checking for on any near-match involving a
+bitmask constant before writing it off as unexplained.
+
+**Delay-slot/schedule steering via source shape.** Two small patterns
+that changed retail-matching scheduling, seen fixing `func_0011AA68`:
+(1) if retail's branch delay slot holds a computation using a function's
+*original* argument register unmodified, make sure the source computes
+that value from the parameter directly and as its own statement *before*
+any conditional that also reads the parameter — introducing an
+intermediate copy (even one that looks harmless, like `int v1 = arg0;`)
+can push the compiler toward copying the argument to a scratch register
+first instead of scheduling the real computation into the delay slot.
+(2) if retail accumulates a final result back into the same register it
+just used as an operand (e.g. `addu $3,$3,$4` — read and write `$3`),
+write the equivalent C as an in-place update (`x += y;`) rather than
+introducing a new variable for the sum (`z = x + y;`) — this measurably
+changed which register the compiler picked in that case.
 
 ## Method
 

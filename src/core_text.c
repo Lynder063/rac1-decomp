@@ -490,7 +490,12 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00119760);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119768);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119798);
+extern void func_00118E90(int arg0, void *arg1);
+
+void func_00119798(int arg0) {
+    int local = arg0;
+    func_00118E90(0x4, &local);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001197C0);
 
@@ -498,10 +503,38 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001197F8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119830);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119840);
+void func_00119840(int arg0) {
+    int local = arg0;
+    func_00118E90(0x10, &local);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119864);
 
+/*
+ * Close but not exact, same open-question category as func_001160D8/
+ * func_00115578 (scratch-register/scheduling choice) but manifesting as
+ * store reordering instead: retail schedules `self->field8 = ...;
+ * self->field4 = 0;` before the branch and puts `self->fieldC = ...` in
+ * the delay slot; this compiler schedules fieldC and field8 before the
+ * branch and puts field4's store in the delay slot instead. Confirmed
+ * source-order independent -- tried every permutation of the 3
+ * assignments, all four produced the identical instruction sequence, so
+ * this is the scheduler's own choice, not something this source
+ * controls. Logic (D_00154A40's first field = arg0, then fields at
+ * 0x4/0x8/0xC of the pointed-to struct get 0/self+0x10/self+0x10, return
+ * self) is fully understood and correct either way.
+ *
+ * extern void *D_00154A40;
+ *
+ * void *func_00119868(void *arg0) {
+ *     char *self = (char *)&D_00154A40;
+ *     D_00154A40 = arg0;
+ *     *(void **)(self + 0x8) = self + 0x10;
+ *     *(int *)(self + 0x4) = 0;
+ *     *(void **)(self + 0xC) = self + 0x10;
+ *     return self;
+ * }
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119868);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119890);
@@ -534,11 +567,24 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011A690);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011A6C8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011A728);
+void func_0011A728(void *arg0, void *arg1) {
+    int idx = *(int *)((char *)arg0 + 0x10);
+    int val = *(int *)((char *)arg0 + 0x14);
+    int *arr = *(int **)((char *)arg1 + 0x1C);
+    arr[idx] = val;
+}
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011A748);
+int func_0011A748(void *arg0, void *arg1) {
+    int v = *(int *)((char *)arg0 + 0x10);
+    *(int *)((char *)arg1 + 0x8) = v;
+    return v;
+}
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011A758);
+extern int D_00155080[];
+
+int func_0011A758(int arg0) {
+    return D_00155080[arg0];
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011A770);
 
@@ -548,7 +594,19 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AA00);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AA38);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AA68);
+extern int D_00154F64;
+extern int D_00154F6C;
+
+void func_0011AA68(int arg0) {
+    int offset = arg0 << 3;
+    if (arg0 < 0) {
+        arg0 = D_00154F64;
+    } else {
+        arg0 = D_00154F6C;
+    }
+    offset += arg0;
+    *(int *)offset = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AA90);
 
@@ -568,7 +626,12 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AFC0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AFE8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B090);
+void func_0011B090(void *arg0) {
+    char *self = (char *)arg0;
+    unsigned int flags = *(unsigned int *)(self + 0x10);
+    *(int *)(self + 0x18) = 0;
+    *(unsigned int *)(self + 0x10) = flags & 0xFFFFFFFEu;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B0B0);
 
@@ -638,7 +701,12 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011CDE0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011CE70);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D078);
+extern int func_0011CE70(int arg0, int arg1, int arg2, void *arg3);
+
+int func_0011D078(int arg0, int arg1, int arg2) {
+    char buf[0x10];
+    return func_0011CE70(arg0, arg1, arg2, buf);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D098);
 
