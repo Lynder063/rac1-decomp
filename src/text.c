@@ -2793,7 +2793,14 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00236A98);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00236B58);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00236BB0);
+extern void func_00238688(void *);
+extern char D_001E3500[];
+extern char D_001E4700[];
+
+void func_00236BB0(void) {
+    func_00238688(D_001E3500);
+    func_00238688(D_001E4700);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00236BE0);
 
@@ -2842,7 +2849,15 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023A5E0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023A948);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023AA08);
+extern void func_001FB498(void);
+extern void func_001F3008(void);
+extern void func_001F3140(void);
+
+void func_0023AA08(void) {
+    func_001FB498();
+    func_001F3008();
+    func_001F3140();
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023AA38);
 
@@ -2868,6 +2883,15 @@ int func_0023BB40(void) {
     return func_00118BC0(1);
 }
 
+/*
+ * Reverted (9/44). Logic is certainly `func_0023C2B0((char *)D_0016130C
+ * + 0xD9100);`. Held by the documented %hi-register-reuse allocator
+ * sub-case: retail does `lui $2` / `lw $2,lo($2)` reusing the same
+ * register, this compiler emits `lui $2` / `lw $3,lo($2)` and also
+ * hoists the constant's lui one slot earlier. Tried a base-pointer
+ * local plus &p[off] indexing (the documented two-sided lever); no
+ * change, which confirms allocator rather than source shape.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023BB60);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023BB90);
@@ -3085,7 +3109,12 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023E1F8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E298);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E450);
+extern char D_00161328[];
+
+int func_0023E450(int arg0, void *arg1) {
+    func_001E9730(D_00161328, *(int *)((char *)arg1 + 4));
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E478);
 
