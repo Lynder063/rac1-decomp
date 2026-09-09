@@ -2313,7 +2313,13 @@ int func_0023CE28(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023CE30);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023CEC8);
+int func_0023CEC8(int *self, int arg1) {
+    int v1 = ((self[2] << 4) + self[1] + 0x10) & 0xFFFFFFF;
+    if (arg1 == v1) {
+        return 0;
+    }
+    return (unsigned int)(arg1 - self[0]) >> 11;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023CF10);
 

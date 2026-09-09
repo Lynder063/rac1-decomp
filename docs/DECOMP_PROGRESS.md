@@ -132,7 +132,13 @@ before being called "matches" below.
 | `func_0023E5C8` | text | **matches** | `return (arg0[3] ^ arg0[4]) == 0;`. Byte-exact first attempt. |
 | `func_0023E5B8` | text | **close, not exact** | `arg0[3] = 0; arg0[2] = 0;` (void, retail's real store order). Logic/operations match, but this compiler schedules the second store into `jr`'s delay slot, making the compiled function 3 instructions (12 bytes) instead of retail's 4 (16 bytes: two straight-line stores, `jr`, a real *unfilled* delay-slot `nop`) — retail chose not to fill that delay slot here; this compiler does. New instance of the delay-slot-scheduling question: "retail leaves a delay slot empty where this compiler doesn't fill it", the mirror image of the usual "different thing lands there" instances. |
 | `func_0023E040` | text | **close, not exact** | `arg0[42] = 1; return 1;`. Retail materializes the constant `1` once and reuses the same register for both the store and the return value; this compiler materializes it twice into two different registers regardless of source shape (shared local, assignment-expression `return arg0[42]=1;`, bare duplicate literal — all three tried). New instance of the scratch-register-allocation-choice question, this time as "fails to reuse an identical constant" rather than picking different registers for genuinely different values. |
-| everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1594 functions total remaining. |
+| `func_0023CEC8` | text | **matches** | `int v1 = ((self[2] << 4) + self[1] + 0x10) & 0xFFFFFFF; if (arg1 == v1) return 0; return (unsigned int)(arg1 - self[0]) >> 11;`. Byte-exact first attempt. |
+| `func_0023CFF0` | text | **not attempted, compiler limitation** | Packs `arg1<<32 \| arg2<<28 \| arg3` into a 64-bit store. This compiler's C frontend cannot compile **any** 64-bit shift by a constant that isn't a multiple of 32** — confirmed with multiple isolated single-line test cases (`(unsigned long long)x << 28`, `x << 32 >> 4` as one expression, and even a shift-by-4 alone on an already-64-bit local variable in its own statement all fail identically: `unsupported wide integer operation`, a hard compile error from `cc1`, not a codegen quirk). Retail achieves the `<<28` via `dsll32`(by 32)+`dsrl`(by 4) — a real 64-bit shift-by-4 instruction the assembler accepts fine, so the *original* C source for this function almost certainly used inline asm for that step, not a plain C shift operator. New, real toolchain limitation, distinct from the four existing open-question categories (it's a hard compiler error, not a near-miss) — added to "Open toolchain questions" below. Not worth attempting further without inline asm. |
+| `func_001EE6D0`, `func_001EE850`, `func_001EE9E8`, `func_001F0F70`, `func_001F0FF0`, `func_001F2410`, `func_001F2550`, `func_001F6CE0`, `func_001F7C50` | text | **not standalone functions** | More single/double `addiu $sp,$sp,N` (or a bare `sw`) fragments with no `jr $31` — same fallthrough-fragment category as `func_00113AD8` and friends in `core_text`. |
+| `func_0023CF10`, `func_0023CF80`, `func_001F6600`, `func_001F6620`, `func_001F6640`, `func_001F7B40` | text | **skipped, callee-saved/sq-lq** | All save `$16` or `$31` via `sq`/`lq` — hits the open `sq`/`lq` question, not attempted. |
+| `func_001F9850`, `func_001F9878`, `func_001F9888`, `func_001F98B0` | text | **skipped, `$gp`-relative** | FP constant loads via `($28)` offsets — known skip category (`-G0` build, no SDA support configured). |
+| `func_001F9AF0`-`func_001FA898` (`func_001F9B20`, `func_001F9B50`, `func_001F9C30`, `func_001F9C48`-`func_001FA898` and neighbors) | text | **VU0 cluster, not attempted** | Spot-checked several (e.g. `func_001F9C30`: `lqc2`/`qmtc2.ni`/`vmulx.xyz`/`sqc2`) — this whole address range is the same vec3/matrix VU0 math cluster already noted for `func_001FA168`-`func_001FA4A0`, just a wider span than previously scoped. Not individually re-verified one by one; recognize the range and skip rather than re-deriving per-function. |
+| everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1592 functions total remaining. |
 
 ## Open toolchain questions
 
@@ -223,6 +229,24 @@ not investigated as deeply as the other two questions above (no
 cross-sub-build check done for this one specifically) since the diffs
 it produces are small and clearly benign (verified logic-identical each
 time) rather than blocking anything.
+
+**64-bit shift by a non-multiple-of-32 constant: hard compile error.**
+Confirmed while attempting `func_0023CFF0`: this compiler's `cc1`
+cannot compile *any* C-level 64-bit (`long long`) shift whose amount
+isn't a multiple of 32 — not a codegen quirk, a hard `unsupported wide
+integer operation` error, reproduced with several isolated single-line
+test cases (a direct `<<28`, an equivalent `<<32` then `>>4` as one
+expression, and even `>>4` alone on an already-64-bit local in its own
+statement). Shifts by exactly 0 or 32 work fine (those compile to a
+single `dsll32`/`dsrl32`/`dsra32`). Retail contains real 64-bit
+shift-by-4 (`dsrl`) instructions — the assembler accepts and executes
+them without issue — so the original source for any function needing a
+64-bit shift by a non-32-multiple amount must have used inline asm for
+that step; it's not reachable from plain C with this compiler. Distinct
+from the other four questions below: this is a hard error blocking any
+attempt at all, not a near-miss to iterate on. If a function needs this,
+skip it (or write the specific shift as inline asm, unverified whether
+that's viable here — not tried).
 
 **Structural instruction-shape mismatches (tentative, not yet a confirmed
 category).** `func_001FE4D0`, `func_001FF4F8`, and `func_001FF668`
