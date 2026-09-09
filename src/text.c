@@ -2286,11 +2286,24 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0021FB28);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021FF80);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00220128);
+extern float func_001FA748(float, float);
+
+void func_00220128(void *arg0) {
+    *(float *)((char *)arg0 + 0x40) =
+        func_001FA748(*(float *)((char *)arg0 + 0x40), 0.02f);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00220160);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00220338);
+extern void func_00234C98(int, int);
+extern void func_00205E70(void);
+
+int func_00220338(void) {
+    func_00234C98(0x42, 0x44);
+    func_00234C98(0x47, 0xB);
+    func_00205E70();
+    return 8;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00220370);
 
@@ -2349,11 +2362,24 @@ int func_00222950(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00222978);
+extern void func_001FDF78(int, int, int, int);
+
+int func_00222978(void *arg0) {
+    int *p = (int *)arg0;
+    func_001FDF78(p[6], p[6] + p[8], p[7], p[7] + p[9]);
+    return 2;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002229B0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00222A90);
+extern int func_00226EA8(int);
+extern char *D_001D5F74;
+
+int func_00222A90(void *arg0) {
+    *(int *)(D_001D5F74 + 0x84) = 0;
+    *(int *)((char *)arg0 + 0x54) = func_00226EA8(0);
+    return 0;
+}
 
 extern int func_00226F68(int);
 
