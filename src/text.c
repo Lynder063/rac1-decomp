@@ -165,7 +165,15 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001EC208);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC210);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EC270);
+extern char D_001E8F80[];
+
+void func_001EC270(void *arg0) {
+    void (*fn)(void *) = *(void (**)(void *))(
+        D_001E8F80 + *(short *)((char *)arg0 + 0x8C) * 0x14 + 8);
+    if (fn != 0) {
+        fn(arg0);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC2B8);
 
@@ -409,6 +417,23 @@ int func_001F6640(unsigned char *arg0, int arg1) {
     return func_001F65B0(arg0, arg1, D_001DFB10);
 }
 
+/*
+ * Retail has 8 bytes of nop padding between func_001F6640 and
+ * func_001F6668, and it lives *after* `endlabel` in
+ * asm/nonmatchings/text/func_001F6640.s -- so the INCLUDE_ASM stub was
+ * supplying it, and replacing that stub with C silently dropped it,
+ * shifting every later function in the segment by -8 and corrupting
+ * their `jal` targets (func_001F7B40 read 1/44 while being
+ * instruction-for-instruction identical to retail). Emitted explicitly
+ * to preserve the layout.
+ *
+ * Check for this whenever converting a stub: content after a .s file's
+ * `endlabel` is inter-function padding the stub was carrying, and it has
+ * to be reproduced or everything downstream drifts. Alignment directives
+ * do not cover it -- both boundaries here are already 8-byte aligned.
+ */
+__asm__(".section .text\n\tnop\n\tnop\n");
+
 INCLUDE_ASM("asm/nonmatchings/text", func_001F6668);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F68E8);
@@ -463,7 +488,15 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F7868);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F7A50);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F7B40);
+extern void func_001FB498(void);
+extern void func_001F3008(void);
+extern void func_001F3140(void);
+
+void func_001F7B40(void) {
+    func_001FB498();
+    func_001F3008();
+    func_001F3140();
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F7B70);
 
@@ -554,34 +587,33 @@ float func_001F9B88(float arg0) {
 }
 
 /*
- * Close but not exact: this compiler doesn't fold `a > b ? a : b` into
- * the single max.s instruction retail uses -- it falls back to a
- * c.lt.s/branch/mov.s sequence, so this is written as inline asm for the
- * single instruction instead (args already arrive in $f12/$f13, return
- * in $f0, per the standard EE calling convention -- no extra moves
- * generated). That gets the same 2 instructions retail has (max.s, then
- * jr $31), just in the opposite order: retail schedules max.s into the
- * jr's delay slot, this compiler emits jr first and max.s after (dead
- * code position, not a delay slot) since inline asm is opaque to its
- * scheduler. New instance of the delay-slot-scheduling open question
- * (see docs/DECOMP_PROGRESS.md) -- tried hand-embedding `jr $31` before
- * the max.s in the same asm block to force the ordering, but GCC's flow
- * analysis doesn't understand hand-written control flow inside inline
- * asm and silently dropped the max.s instead of emitting it (verified
- * via the byte diff: got `jr / nop`, not `jr / max.s`) -- reverted that,
- * not safe to rely on.
+ * REVERTED to INCLUDE_ASM deliberately, and this one matters beyond
+ * these two functions.
+ *
+ * They are max.s/min.s single-instruction wrappers. Retail is 8 bytes
+ * each (max.s scheduled into the jr's delay slot). Written as inline asm
+ * this compiler emits 12 bytes -- jr first, then the asm in dead-code
+ * position, because inline asm is opaque to its scheduler. So they were
+ * never matches; they were 4 bytes LONGER than retail each.
+ *
+ * A non-matching function that is *longer* than retail shifts every
+ * later function in the segment, so these two were silently adding 8
+ * bytes of drift to every downstream address reference in text.c --
+ * func_001F7B40, for instance, was instruction-for-instruction identical
+ * to retail yet reported 1/44 purely because its `jal` target had moved.
+ * Reverting them restores the stubs' exact retail bytes and removes that
+ * drift.
+ *
+ * General rule this establishes: a size-mismatched function should be
+ * reverted to INCLUDE_ASM, not kept as documented-close C. Byte-diff
+ * near-misses of the same size are harmless to keep; longer ones corrupt
+ * verification for everything after them. (This is the same failure mode
+ * as the old core_text func_00112380 drift, which is why that one was
+ * worth fixing rather than tolerating.)
  */
-float func_001F9B90(float arg0, float arg1) {
-    float result;
-    __asm__("max.s %0, %1, %2" : "=f"(result) : "f"(arg0), "f"(arg1));
-    return result;
-}
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9B90);
 
-float func_001F9B98(float arg0, float arg1) {
-    float result;
-    __asm__("min.s %0, %1, %2" : "=f"(result) : "f"(arg0), "f"(arg1));
-    return result;
-}
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9B98);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9BA0);
 
