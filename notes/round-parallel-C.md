@@ -56,3 +56,56 @@ not a local problem — it silently corrupts verification for everything
 after it in the same object.** Worth treating any surviving size
 mismatch as high priority rather than as a documented curiosity. The one
 remaining (`func_00115098`, -4, in `core_text`) is outside my range.
+
+## Second batch (7 more exact, 1 documented-close)
+
+| Function | Size | Result | Note |
+|---|---|---|---|
+| `func_0020E040` | 0x28 | 0/40 | `func_001F99B0(0x70003A00, 0x40000000, 0x380)` — scratchpad address + length |
+| `func_0020E068` | 0x2C | 0/44 | `func_001F9A98(D_001B3200, 0x70003A00, 0x380)` |
+| `func_0020E098` | 0x2C | 0/44 | same callee, buffer/scratchpad args swapped — a to/from pair |
+| `func_0021FAF8` | 0x30 | 0/48 | **first true s-register spill match** (`$16`) |
+| `func_0021F200` | 0x38 | 0/56 | float field via `func_001FA748(field, 0.01f)`; `0x3C23D70A` is `0.01f`, and it lands in `$f13` = 2nd float arg |
+| `func_0021EF60` | 0x3C | 0/60 | two-field sibling of `func_0021FAF8` |
+| `func_002140B0` | 0x3C | 0/60 | `((func_001160D8() >> 16) & 0x7FFF) % arg0` — real `div` from a plain `%`, per the no-strength-reduction finding |
+| `func_00217588` | 0x40 | 2/64 | allocator register-choice; kept documented-close |
+
+## Third batch (3 more exact) + a skip-category correction
+
+| Function | Size | Result | Note |
+|---|---|---|---|
+| `func_00217A60` | 0x6C | 0/108 | see correction below |
+| `func_00217860` | 0x5C | 0/92 | needed branch polarity flipped |
+| `func_002178C0` | 0x5C | 0/92 | sibling of the above |
+
+### Correction: `func_00217A60`'s `movn` was never a real blocker
+
+It had been filed under the `movz`/`movn` recognise-and-move-on skip
+category. It is not a codegen-heuristic case at all — the
+`slt`/`addiu +3`/`movn`/`sra 2` sequence is just the **standard signed
+divide-by-4 idiom**, which a plain `x / 4` in C reproduces exactly.
+Byte-exact 0/108 first attempt once written that way.
+
+**So the `movz`/`movn` skip category is over-broad and is hiding viable
+functions.** Before skipping on `movn`, check whether it is one of the
+signed-division idioms (`/ 2`, `/ 4`, `/ 8`...: `slt` against -1, add
+`divisor-1`, conditional-move, arithmetic shift). Range C alone still
+lists 13 `movnz,sq` + 11 `gp,movnz,sq` + 6 `movnz` stubs, some of which
+are probably this same idiom.
+
+### Branch polarity, restated usefully
+
+`func_00217860`/`func_002178C0` were size-mismatched (54/92) with the
+`arg0 == 0` case written as the `then` arm, and byte-exact once flipped
+so the `then` arm is the path retail **falls through to** (here
+`arg0 != 0`), with the branch-taken case as the `else`. This is the
+existing branch-polarity technique, but the reliable way to read it off
+the disassembly is: whichever path directly follows the conditional
+branch is the `then` arm.
+
+## Cumulative for this round: 13 exact, 1 documented-close (2/64)
+
+Whole-project sweep at end of round: **172 decompiled, 158 exact**, 1
+size mismatch (`func_00115098`, `core_text`, pre-existing), 13 byte
+mismatches (all pre-existing documented near-misses; nothing I added
+regressed).
