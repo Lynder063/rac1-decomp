@@ -154,7 +154,7 @@ before being called "matches" below.
 | `func_0020CDB8` | text | **matches** | `if (base[0x1F] != 0) return 2; return base[0x21] != 0;` on `D_0013D5C8` — same `unsigned char *` fix as `func_0020CC88`. |
 | `func_0020CBA8` | text | **close, not exact** | Same 3-value `&&`-chained shared-tail shape as the `func_0020CB80` cluster (`D_0013D9B4 != 0 && base[0x20] != 0 && base[0x21] != 0`), but with 3 conditions instead of 2. Retail reuses one register across the `D_0013D9B4` check and the `D_0013D490`-base computation (materializing the second lazily in the first branch's delay slot); this compiler keeps them in separate registers. The 2-condition version of this exact technique worked for 8 other functions in this cluster; the 3-condition version didn't carry over. 16/56 bytes differ. |
 | `func_00209048` | text | **close, not exact** | 2D cross-product orientation test, 6 `int` params. Same operations/order/in-place-subtraction register reuse as retail (confirmed via objdump), but the final `(cross) < 0` boolean compiles to `srl $2,$2,0x1f` here vs. retail's `slti $2,$2,0` — two different instructions for the identical result, not a scheduling/register question. 16/36 bytes differ. |
-| `func_00209160` | text | **close, not exact** | Struct field shuffle (`D_0013D390`): read field `0xC4` into a temp, zero field `0xFC`, write the temp to field `0x1C`, plus `D_0015EFB0 = 3`. Confirmed correct logic; tried both statement orders for the final two independent stores, neither matched retail's scheduling. New instance of the delay-slot-scheduling question. |
+| `func_00209160` | text | **close, not exact** (18/36) | Struct field shuffle (`D_0013D390`): read field `0xC4` into a temp, zero field `0xFC`, write the temp to field `0x1C`, plus `D_0015EFB0 = 3`. Confirmed correct logic. Re-tested against the store-order rotation rule (source `0x1C` then `0xFC`, to obtain retail's emitted `0xFC` then `0x1C`): **no change, still 18/36** — a real negative result for the rule, and consistent with it being base-pointer-scoped, since the `D_0015EFB0` store goes through a second base (same failure mode as `func_00219E60`). Residual is retail materializing the literal `3` early (into `$3`, before the base's own `addiu`) and using `$1`/`$at` for `D_0015EFB0`'s `%hi`, where this compiler orders those differently and uses a normal temp. |
 | `func_002098A8` | text | **close, not exact** (7/32) | `if (D_0013D3AC != 0) D_0015EFB0 = 3;`. Retail schedules the literal `3` into the branch's delay slot; this compiler schedules the `D_0015EFB0` address computation there instead. Same open question as `func_00209160` right above. Since re-checked against both newer techniques and neither helps: a `*(volatile int *)&D_0015EFB0 = 3;` store (the signature that fixed `func_0023E710`/`func_0023E5B8`) and hoisting the constant into its own local before the `if` (the documented delay-slot-steering technique) both leave it at exactly 7/32. Genuinely the scheduling question here, not a volatile or statement-order artifact. |
 | `func_0020C210` | text | **close, not exact** | DMAC register setup at fixed base `0x1000D400` (writes `arg2`/`arg1`/`arg0`/`0x100` to offsets `0x80`/`0x20`/`0x10`/`0x0`, same MMIO category as `func_001F3D00`/`func_001F9AF0`). Retail computes the base address once and reuses it for all four stores; this compiler recomputes a fresh `lui $at` before every store even with an explicit `char *base` local in source. New variant of the redundant-address-reload pattern (previously only seen for a *global*'s address; this is the first instance for a bare integer-constant address). 27/32 bytes differ. |
 | `func_0020E340` | text | **close, not exact** | Packs 4 values into a 64-bit field (`(arg1<<32) \| arg2 \| (arg3<<8) \| (arg4<<16)`, stored to `arg0+0x38`). Same instruction sequence/order as retail, but the widened `arg1` lands in a different register. 13/32 bytes differ. |
@@ -290,6 +290,52 @@ from the other four questions below: this is a hard error blocking any
 attempt at all, not a near-miss to iterate on. If a function needs this,
 skip it (or write the specific shift as inline asm, unverified whether
 that's viable here — not tried).
+
+**Retail pads short backward branches; this toolchain doesn't (stray
+`nop`s).** Found while working `func_00215048`/`func_00215078`, whose
+entire 16/48 residual is two literal `nop`s retail has between an `andi`
+and the `beqz` that consumes it. With those nops, the backward branch
+spans exactly 6 instructions from target to branch inclusive; without
+them it would span 4. Measuring every backward branch across all 1669
+disassembled functions shows this is systematic, not incidental:
+
+```
+span (instrs, target..branch inclusive) -> count
+   3 :   4        7 : 137
+   4 :   7        8 :  45
+   5 :  13        9 :  44
+   6 : 309       10 :  25   ... smooth decay onwards
+```
+
+309 branches at exactly 6 against 137 at 7 and only 24 total below 6 is a
+sharp discontinuity — a natural distribution would decay smoothly through
+the low numbers, not pile up at a boundary. The pile-up at 6 is
+consistent with everything that would naturally have been 3-5
+instructions being padded up to 6, which is exactly what the **R5900
+short-loop erratum** workaround does (mainline binutils spells it
+`-mfix-r5900`).
+
+Not reproducible with what's available here, and not cleanly a rule:
+- `-mfix-r5900` is rejected by this `cc1` (`Invalid option`), and this
+  assembler has no equivalent (checked `ee-as.exe --help` and a string
+  dump of the binary — nothing for nop/loop/errata/fix).
+- The assembler *does* document nop-removal (`-O` "remove unneeded NOPs",
+  `-g` "do not remove uneeded NOPs"), which looked promising, but
+  `-Wa,-g` and `-Wa,-O0` both change nothing: `cc1` never emits these
+  nops in the first place, so there is nothing for the assembler to keep.
+- The 24 sub-6 backward branches are all in *compiled* (not
+  `/* Handwritten */`) functions, so it isn't an absolute invariant.
+  `func_00116CBC` has a 3-instruction backward `beqz` into a 2-instruction
+  return block — structurally the same shape as `func_00215048`'s padded
+  one, and unpadded. So the precise trigger is narrower than "any short
+  backward branch" and hasn't been isolated.
+
+Practical takeaway: if a near-miss's only residual is unexplained `nop`s
+sitting before a **backward** branch, this is very likely the cause —
+recognise it and don't hunt for a source shape, because no source shape
+produces them. Worth revisiting if a differently-built `cc1` ever turns
+up (see the TImode note in the `sq`/`lq` question — same "build-time
+config, not a flag" shape of problem).
 
 **Conditional-move vs. branch heuristics differ in both directions.**
 For a trivial "select one of two values, then use it" shape, retail's
@@ -481,6 +527,22 @@ types, only single-byte loads.
    `src/*.c` with real C. Forward-declare any not-yet-decompiled callee
    (`extern int func_XXXXXXXX(...);`) — its own `INCLUDE_ASM` stub
    elsewhere in the file still provides the actual symbol at link time.
+3a. **Always confirm the compile actually succeeded before trusting a
+   verification result.** A failed compile leaves the *previous*
+   `build-sn/*.o` in place, and because the function is still an
+   `INCLUDE_ASM` stub in that stale object, it contains retail's own
+   bytes — so `check_match.py` reports a perfect `0/N` "match" that is
+   entirely fictional. This has nearly been recorded as a real match
+   twice now. Two specific hazards:
+   - Redirect to a file and check the exit status directly
+     (`$CC ... > /tmp/cc.log 2>&1; echo $?`). Piping the compiler into
+     `tail` and then testing `$?` reports **`tail`'s** status, not the
+     compiler's, and will happily print `0` for a failed build.
+   - The easiest way to trigger it accidentally: adding an `extern`
+     declaration for a global that is *already* declared elsewhere in
+     the same file with a different type (e.g. `extern int D_X;` when
+     `extern char D_X[];` already exists further down). That is a hard
+     error in this compiler, not a warning.
 4. Rebuild (`Makefile.sn`) and diff the function's bytes against the
    retail baserom at its exact address (`tools/check_match.py func
    <vram_hex> <size_hex>`, both straight from the `.s` file's own
