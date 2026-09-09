@@ -4,7 +4,7 @@ Tracks per-function status now that real (non-`INCLUDE_ASM`) C has
 started. Verify with the SN toolchain build (`docs/TOOLCHAIN.md`):
 
 ```
-toolchain/sn-prodg-3.01/usr/local/sce/ee/gcc/bin/make.exe -f Makefile.sn
+toolchain/sn-prodg-3.01/usr/local/sce/ee/gcc/bin/make.exe -f Makefile.sn   # per-segment compilers, see sq/lq section
 bash tools/build_sn_data.sh
 bash rac1.ld.sh
 toolchain/sn-prodg-3.01/usr/local/sce/ee/gcc/bin/ee-ld.exe \
@@ -262,7 +262,56 @@ documented and does not block plain `long` shifts. **Use `long`, not
 `long long`, and just try the shift.** The stale entry below should be
 read as historical, not as guidance.
 
-**RESOLVED (question was mischaracterised) — `sq`/`lq` vs `sd`/`ld` is
+**SOLVED — `sq`/`lq` was never a flag: retail's two segments were built
+by two different compilers, and we already have both.** This was the
+dominant blocker for 23 rounds. Final answer:
+
+| Retail segment | s-reg spills via `sq` | via `sd` | Matching sub-build |
+|---|---|---|---|
+| `text` | **428** | 34 | GCC 2.95.3 **SN BUILD v1.14** |
+| `core_text` | 14 | **234** | GCC 2.95.3 **SN BUILD v1.36** |
+
+Plus 520 `text` functions save `$ra` via `sq`, which v1.36 never emits.
+Given identical input and `-O2 -G0`, the *only* codegen difference
+between the sub-builds is the spill pair — every other instruction
+agrees, verified at byte level.
+
+**`Makefile.sn` now compiles per segment**: `src/core_text.c` with v1.36
+(`toolchain/sn-prodg-3.01/...`), `src/text.c` with v1.14
+(`toolchain/sn-prodg-24/local/sce/ee/gcc/...`). Both mirrors were
+already cloned. Verified: **zero regressions and two immediate gains**
+(`func_00233FF8` 2/28 → exact, `func_0023DFC0` 3/28 → 1/28); the sweep
+went 142 → 143 exact. It's safe because every currently-matched `text`
+function is a leaf with no spill — which is also precisely why this hid
+for so long.
+
+**The flag search is an exhaustive negative, which is what makes the
+two-builds reading solid rather than merely plausible.** The complete
+`target_switches` table was extracted from `cc1.exe` (not grepped as
+strings) and every plausible option tested in *both* directions,
+including the one-way `-m5900`, all `-mabi=` values and all `-mips`
+levels via `-S` to bypass the assembler that blocked earlier attempts.
+Neither direction is reachable. `PRODG_MANUAL.pdf` turned out to be the
+*debugger* manual and documents no compiler options at all.
+
+**⚠ The "`sq`/`lq` blocked" category was substantially a
+MISCLASSIFICATION — those functions need re-examining.** Range surveys
+counted stubs as blocked by comparing our output against this file's
+(wrong) "retail always uses `sd`" generalisation rather than against
+retail's actual bytes for that function. Range A's report of *95 of 165
+blocked* is the clearest case: that range lives in `text`, where retail
+uses `sq` — exactly what we already emit. Six were sampled and
+confirmed. Re-survey any range whose "blocked" count leaned on this.
+
+**Genuinely still blocked, and now far narrower:** the 234 `core_text`
+functions that need s-registers, where retail wants `sd` and no
+available compiler emits it. One segment, one register class — instead
+of "most of the codebase".
+
+The earlier (superseded but still-valid) segment-correlation analysis
+follows.
+
+**Superseded framing — `sq`/`lq` vs `sd`/`ld` is
 SEGMENT-CORRELATED, not a missing flag.** The long-standing entry below
 asserts "retail always spills callee-saved registers as `sd`/`ld`". That
 was generalised from a single `core_text` function and is wrong. Counting

@@ -9,14 +9,28 @@
 # only accepts numeric GPR names) -- both scripts are idempotent, safe to
 # re-run after every `splat split`.
 
-SN_ROOT := toolchain/sn-prodg-3.01/usr/local/sce/ee/gcc
-CC      := $(SN_ROOT)/bin/ee-gcc2953.exe
-SIZE    := $(SN_ROOT)/bin/ee-size.exe
+# PER-SEGMENT COMPILERS. Retail's two segments were built with two
+# different SN sub-builds, which is why no single compiler ever matched
+# both (see docs/DECOMP_PROGRESS.md, the sq/lq section). Measured across
+# all of retail's disassembly:
+#
+#   core_text: 234 s-reg spills via sd,  14 via sq  -> matches v1.36
+#   text:       34 s-reg spills via sd, 428 via sq  -> matches v1.14
+#   (plus 520 text functions saving $ra via sq, which v1.36 never emits)
+#
+# Both compilers are already in the toolchain mirrors, so the fix is just
+# to use the right one per file. Identical everything else (-O2 -G0); the
+# only codegen difference between the sub-builds is the spill pair.
+SN_136  := toolchain/sn-prodg-3.01/usr/local/sce/ee/gcc
+SN_114  := toolchain/sn-prodg-24/local/sce/ee/gcc
+
+CC_CORE := $(SN_136)/bin/ee-gcc2953.exe
+CC_TEXT := $(SN_114)/bin/ee-gcc2953.exe
+SIZE    := $(SN_136)/bin/ee-size.exe
 
 CFLAGS := -O2 -G0 -Iinclude -Wa,-I,.
 
-SRCS := $(wildcard src/*.c)
-OBJS := $(patsubst src/%.c,build-sn/%.o,$(SRCS))
+OBJS := build-sn/core_text.o build-sn/text.o
 
 .PHONY: all clean regnames
 all: regnames $(OBJS)
@@ -25,9 +39,13 @@ all: regnames $(OBJS)
 regnames:
 	python tools/sn_regnames.py asm
 
-build-sn/%.o: src/%.c
+build-sn/core_text.o: src/core_text.c
 	@mkdir -p build-sn
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC_CORE) $(CFLAGS) -c $< -o $@
+
+build-sn/text.o: src/text.c
+	@mkdir -p build-sn
+	$(CC_TEXT) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm -rf build-sn
