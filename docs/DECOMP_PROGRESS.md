@@ -86,7 +86,15 @@ before being called "matches" below.
 | `func_001E9088` | text | **not attempted, too complex** | ~0x414 bytes: floats, integer div/mod, a jump table (`jtbl_001E7940`), and 7 callee-saved registers (`$16`-`$22`). Hits the `sq`/`lq` open question on its own merits even before considering the complexity; not a good target until that's resolved regardless. |
 | `func_001E94A8`, `func_001F65A8` | text | **skipped, gp-relative store** | Both end with `sw $reg, <negative offset>($28)` — a small-data-area (`$gp`-relative) store. This project builds with `-G0` (no SDA optimization) so this compiler never emits `$gp`-relative addressing; reproducing these would need knowing retail's actual `$gp` base value and enabling SDA, neither set up yet. Not attempted. |
 | `func_001F9BC0` | text | **not attempted, no plain-C representation** | `sq $0, 0x0($4)` — zeroes a 128-bit quadword at a pointer. No 128-bit integer type is available to express this as a single plain C store (unlike the `sq`/`lq` *spill* issue elsewhere, this is source code actually needing a quadword op, not a compiler codegen choice) — would need a vector/COP2 intrinsic this toolchain may not expose the same way retail's source did. Not attempted. |
-| everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1627 functions total remaining. |
+| `func_001E97C8`, `func_001E97E8` | text | **matches** | Both `int func(void) { return 0; }` — trivial constant-return stubs, distinct addresses. Byte-exact. |
+| `func_001E9E70` | text | **close, not exact** (new sq/lq evidence) | 5 sequential calls, no branches: `func_0022C7E0(); func_0022C188(); func_0022C870(); func_00234C98(0x47, 0x5360B); func_00234C98(0x4E, 0x1000000 \| (D_0015EF88 >> 13));`. Logic/instructions confirmed identical via objdump. Only saves `$ra` (no `$s0`-`$s7` at all) yet retail *still* spills it as `sq` here — the first case seen where retail uses `sq` for a lone `$ra` save with no s-regs involved; every other function so far had retail use `sd` for `$ra` alone. This compiler always uses `sd` for `$ra`, no exceptions found. Means the `sq`/`lq` choice isn't cleanly "s-regs vs ra" as the open question was previously framed — something more granular (per-function, maybe per-translation-unit) decides it. Open question below updated with this finding. |
+| `func_001EC780` | text | **skipped, sq/lq + indirect call** | Same shape as `func_001EC270`/`func_001EC108`-adjacent dispatch-table pattern: `jalr` through a function pointer loaded from a per-type table, wrapped in the same lone-`$ra`-as-`sq` pattern as `func_001E9E70`. Not attempted. |
+| `func_001ECC10` | text | **not attempted, no plain-C representation** | Two conditional 16-byte block copies via bare `lq`/`sq` — same category as `func_001F9BC0`. |
+| `func_001EC030`, `func_001EC108`, `func_001EC208` | text | **not standalone functions** | Single `addiu $sp,$sp,N` (or dead-value computation + a store for `func_001EC108`), no `jr $31` — fallthrough fragments, same category as `func_00113AD8` in `core_text`. |
+| `func_001F0F00` | text | **not a decompile target** | Marked "Handwritten function" by spimdisasm (uses `addi`, not `addiu`) — same category as the syscall wrappers in `core_text`. No C source ever existed for it. |
+| `func_001F0F30` | text | **matches** | Fills 20 consecutive `int`s (offsets `0x00`-`0x4C` of `D_0018A3B0`) with `1`, iterating backwards. First attempt had the right logic but wrong instruction *scheduling* (the loop-setup instructions landed in a different order than retail — variable-initialization order in the source, not a branch or delay-slot issue); reordering the C statements to match retail's init sequence (base pointer, then the fill value, then the loop bound, then the offset add) fixed it. Byte-exact. |
+| `func_001EBAF0` | text | **close, not exact** | `if (arg0 >= 0) { p = D_0013E650 + arg0*0x70; if (*(short*)(p+0x7E) == arg1 + D_0015F694 && (unsigned char)(*(unsigned char*)(p+0x74) - 1) < 2) return 1; } return 0;`. Needed the shared-tail-merging technique (single `&&`-combined condition instead of two separate early-return guard clauses) to get from 78% mismatch down to 8/88 bytes — the remaining diff is the scratch-register-allocation-choice issue (`$v1` vs `$a2` for a delay-slot copy of `arg1`), confirmed by trying the delay-slot-precompute technique too (no change). Kept as `INCLUDE_ASM`. |
+| everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1622 functions total remaining. |
 
 ## Open toolchain questions
 
@@ -118,6 +126,14 @@ or Insomniac's actual build differs from all four of these in some other
 way (a patch, a different `-mcpu`/tuning value, something in how `sq`-
 eligible register classing gets decided that isn't exposed as a simple
 flag).
+
+**Update:** the question isn't cleanly "s-regs use sq, ra uses sd" as
+first framed. `func_001E9E70` (text segment) saves *only* `$ra` — no
+`$s0`-`$s7` at all — and retail still spills it as `sq` there, unlike
+every other lone-`$ra`-save function seen so far (which all use `sd`,
+matching this compiler). Whatever decides `sq` vs `sd` in retail is more
+granular than "which registers", possibly per-function or per-translation-
+unit — not yet isolated further.
 
 **Researched (no fix found, but useful context):** searched public PS2
 decomp/homebrew sources for a known solution. None found. Findings:
@@ -220,6 +236,16 @@ per branch, even if character-for-character identical) makes the
 compiler treat them as unrelated and compile both separately, costing
 real bytes. Restructure so both paths fall through to one instance of
 the shared code instead of returning from within each branch.
+
+**Loop-setup statement order.** Seen fixing `func_001F0F30`: for a
+counted loop initializing a pointer/bound/fill-value before the loop
+body, this compiler's *instruction scheduling* for those independent
+setup values can follow a different order than retail even when the
+final code is otherwise identical — not a register choice, just which
+setup instruction comes first. Writing the C statements in the same
+order retail computes them (check the `.s` disassembly's instruction
+order before the loop) fixed it directly; no restructuring needed beyond
+matching statement order to retail's computation order.
 
 ## Method
 

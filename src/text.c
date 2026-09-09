@@ -54,7 +54,9 @@ void func_001E97B8(void) {
 void func_001E97C0(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001E97C8);
+int func_001E97C8(void) {
+    return 0;
+}
 
 void func_001E97D0(void) {
 }
@@ -65,7 +67,9 @@ void func_001E97D8(void) {
 void func_001E97E0(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001E97E8);
+int func_001E97E8(void) {
+    return 0;
+}
 
 void func_001E97F0(void) {
 }
@@ -80,6 +84,23 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001E9808);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001E99D8);
 
+/*
+ * Close but not yet byte-matching, new evidence for the sq/lq open
+ * question below: this function only saves $ra (no $s0-$s7 at all), and
+ * retail STILL spills it as `sq` here -- unlike every other function
+ * seen so far, where retail consistently uses `sd` for a lone $ra save.
+ * This compiler always uses `sd` for $ra regardless. Logic/instructions
+ * otherwise identical (return func_0022C7E0(); ... 5 calls in a row,
+ * body confirmed correct via objdump before reverting this to
+ * INCLUDE_ASM):
+ *   func_0022C7E0(); func_0022C188(); func_0022C870();
+ *   func_00234C98(0x47, 0x5360B);
+ *   func_00234C98(0x4E, 0x1000000 | (D_0015EF88 >> 13));
+ * Means the sq/lq choice isn't purely "s-regs vs ra", it's something
+ * more granular retail decides per-function (maybe per translation
+ * unit, or some other property not yet isolated). See "Open toolchain
+ * questions" in docs/DECOMP_PROGRESS.md.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_001E9E70);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001E9EC8);
@@ -94,20 +115,52 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001EB458);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EB7C0);
 
+extern char D_0013E650[];
+extern int D_0015F694;
+
+/*
+ * Close but not yet byte-matching (8/88 bytes): same scratch-register-
+ * allocation-choice open question as func_001160D8/func_00115578 in
+ * core_text -- retail copies arg1 into $v1 for the delay slot of the
+ * `bltz arg0` branch, this compiler copies it into $a2 instead. Same
+ * operations, same order, same instruction count, only the register
+ * differs (and downstream instructions that read it). Tried
+ * precomputing arg1 into its own local before the guard clause (per the
+ * delay-slot-steering technique) -- no change, confirms this is the
+ * register-allocator-heuristic category, not the fixable delay-slot-
+ * shape category. Kept as INCLUDE_ASM since the diff isn't a small fixed
+ * offset. Logic:
+ *   if (arg0 >= 0) {
+ *       char *p = D_0013E650 + arg0 * 0x70;
+ *       if (*(short *)(p + 0x7E) == arg1 + D_0015F694 &&
+ *           (unsigned char)(*(unsigned char *)(p + 0x74) - 1) < 2) {
+ *           return 1;
+ *       }
+ *   }
+ *   return 0;
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_001EBAF0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EBB48);
 
+/* Not a standalone function: single `addiu $sp,$sp,0x30`, no `jr $31` --
+   fallthrough fragment, same category as func_00113AD8 in core_text. */
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC030);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC038);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC098);
 
+/* Not a standalone function: no `jr $31` -- dead-value computation
+   (`$v0 = 0` twice with intervening nops) then a store, falling through
+   to whatever follows. Same fallthrough-fragment category as
+   func_00113AD8 in core_text. */
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC108);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC120);
 
+/* Not a standalone function: single `addiu $sp,$sp,0x50`, no `jr $31` --
+   fallthrough fragment, same category as func_00113AD8 in core_text. */
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC208);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC210);
@@ -118,6 +171,10 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001EC2B8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC5B8);
 
+/* Same shape/blocker as func_001EC270: indirect call via a function
+   pointer loaded from a per-type dispatch table, wrapped in an
+   sq-for-lone-$ra save this compiler doesn't reproduce (see
+   func_001E9E70's comment). Not attempted. */
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC780);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC7C8);
@@ -128,6 +185,9 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001ECAB8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001ECB98);
 
+/* Two conditional 16-byte block copies via bare `lq`/`sq` -- no plain-C
+   representation available (same "not attempted, no plain-C
+   representation" category as func_001F9BC0 in core_text). */
 INCLUDE_ASM("asm/nonmatchings/text", func_001ECC10);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001ECC48);
@@ -172,9 +232,22 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001EFD70);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EFE10);
 
+/* Marked "Handwritten function" by spimdisasm (uses `addi`, not `addiu`)
+   -- same category as the syscall wrappers in core_text, not a decompile
+   target, no C source ever existed for it. */
 INCLUDE_ASM("asm/nonmatchings/text", func_001F0F00);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F0F30);
+extern int D_0018A3B0[];
+
+void func_001F0F30(void) {
+    int *p = D_0018A3B0;
+    int val = 1;
+    int i = 0x13;
+    p = (int *)((char *)p + 0x4C);
+    for (; i >= 0; i--, p--) {
+        *p = val;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F0F70);
 
