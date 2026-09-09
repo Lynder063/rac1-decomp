@@ -1307,6 +1307,13 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00209858);
  * D_0015EFB0 address computation there instead and materializes 3
  * separately later. New instance of the delay-slot-scheduling open
  * question (same family as func_00209160 right below).
+ *
+ * Additionally ruled out since: `*(volatile int *)&D_0015EFB0 = 3;`
+ * (the volatile-signature technique that fixed func_0023E710 /
+ * func_0023E5B8 -- no change here, still 7/32) and hoisting the
+ * constant into its own local before the `if` (the documented
+ * delay-slot-steering technique -- also no change). Genuinely the
+ * scheduling question, not a volatile or statement-order artifact.
  */
 INCLUDE_ASM("asm/nonmatchings/text", func_002098A8);
 
@@ -1808,7 +1815,13 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00217AD0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00217AE8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00217EC0);
+extern char D_0013CA40[];
+
+void func_00217EC0(void) {
+    char *p = D_0013CA40;
+    *(short *)(p + 0x18E) = 0;
+    *(int *)(p + 0x190) = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00217ED8);
 
@@ -2676,7 +2689,10 @@ void func_0023E5B0(void) {
  * compiler doesn't" rather than the usual "different thing lands there".
  * See docs/DECOMP_PROGRESS.md.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E5B8);
+void func_0023E5B8(volatile int *arg0) {
+    arg0[3] = 0;
+    arg0[2] = 0;
+}
 
 int func_0023E5C8(int *arg0) {
     return (arg0[3] ^ arg0[4]) == 0;
