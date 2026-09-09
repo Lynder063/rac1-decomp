@@ -138,7 +138,13 @@ before being called "matches" below.
 | `func_0023CF10`, `func_0023CF80`, `func_001F6600`, `func_001F6620`, `func_001F6640`, `func_001F7B40` | text | **skipped, callee-saved/sq-lq** | All save `$16` or `$31` via `sq`/`lq` — hits the open `sq`/`lq` question, not attempted. |
 | `func_001F9850`, `func_001F9878`, `func_001F9888`, `func_001F98B0` | text | **skipped, `$gp`-relative** | FP constant loads via `($28)` offsets — known skip category (`-G0` build, no SDA support configured). |
 | `func_001F9AF0`-`func_001FA898` (`func_001F9B20`, `func_001F9B50`, `func_001F9C30`, `func_001F9C48`-`func_001FA898` and neighbors) | text | **VU0 cluster, not attempted** | Spot-checked several (e.g. `func_001F9C30`: `lqc2`/`qmtc2.ni`/`vmulx.xyz`/`sqc2`) — this whole address range is the same vec3/matrix VU0 math cluster already noted for `func_001FA168`-`func_001FA4A0`, just a wider span than previously scoped. Not individually re-verified one by one; recognize the range and skip rather than re-deriving per-function. |
-| everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1592 functions total remaining. |
+| `func_00207E60`, `func_00207E70`, `func_00207E80`, `func_00207E90`, `func_00207EA0`, `func_00207EB0`, `func_00207F00`, `func_00207F10`, `func_00207F20`, `func_00207F30`, `func_00207F40`, `func_002081F8`, `func_002082E8`, `func_002082F8`, `func_00208308`, `func_00208318`, `func_00208328` | text | **matches** | All `int func(void) { return D_XXXXXXXX_byte != 0; }` — same shape as the `func_0020xxxx` cluster matched earlier (`func_002071D0` etc), just a later cluster of the same per-flag getter pattern. 17 functions, all byte-exact first attempt, distinct flag addresses. |
+| `func_00200190`, `func_002008B0` | text | **not standalone functions** | Single `addiu $sp,$sp,N`, no `jr $31` — fallthrough fragments, same category as `func_00113AD8`. |
+| `func_00200198` | text | **skipped, callee-saved regs** | Uses `$16` via `sq`/`lq` — hits the open `sq`/`lq` question. |
+| `func_001FFA90` neighbor cluster (`func_001FFC48`, `func_00208248`, `func_00208338`) | text | **skipped, callee-saved regs** | All use `$16`/`$17` via `sq`/`lq` — hits the open `sq`/`lq` question. |
+| `func_001FFFA0` | text | **skipped, `$gp`-relative** | `lw`/`sw` via `($28)` offset — known skip category (`-G0` build, no SDA support). |
+| `func_00208160`, `func_00208208` | text | **not attempted, known open question** | Float-threshold-to-bool materialization (`c.le.s`/`bc1f`/`bc1tl` scheme) — same delay-slot-scheduling issue already documented and reverted for `func_00207E28`/`func_00207EC0`; not re-attempted. |
+| everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1575 functions total remaining. |
 
 ## Open toolchain questions
 

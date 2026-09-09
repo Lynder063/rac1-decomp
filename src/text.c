@@ -1049,17 +1049,36 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00207DB0);
  */
 INCLUDE_ASM("asm/nonmatchings/text", func_00207E28);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207E60);
+extern unsigned char D_0013D4C0;
+extern unsigned char D_0013D4C1;
+extern unsigned char D_0013D4C2;
+extern unsigned char D_0013D4D3;
+extern unsigned char D_0013D4D4;
+extern unsigned char D_0013D4D5;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207E70);
+int func_00207E60(void) {
+    return D_0013D4C0 != 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207E80);
+int func_00207E70(void) {
+    return D_0013D4C1 != 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207E90);
+int func_00207E80(void) {
+    return D_0013D4C2 != 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207EA0);
+int func_00207E90(void) {
+    return D_0013D4D3 != 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207EB0);
+int func_00207EA0(void) {
+    return D_0013D4D4 != 0;
+}
+
+int func_00207EB0(void) {
+    return D_0013D4D5 != 0;
+}
 
 extern unsigned char D_0013D4E0;
 
@@ -1075,15 +1094,31 @@ extern unsigned char D_0013D4E0;
  */
 INCLUDE_ASM("asm/nonmatchings/text", func_00207EC0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207F00);
+extern unsigned char D_0013D4DC;
+extern unsigned char D_0013D4DD;
+extern unsigned char D_0013D4DE;
+extern unsigned char D_0013D4DF;
+extern unsigned char D_0013D4E1;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207F10);
+int func_00207F00(void) {
+    return D_0013D4DC != 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207F20);
+int func_00207F10(void) {
+    return D_0013D4DD != 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207F30);
+int func_00207F20(void) {
+    return D_0013D4DE != 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207F40);
+int func_00207F30(void) {
+    return D_0013D4DF != 0;
+}
+
+int func_00207F40(void) {
+    return D_0013D4E1 != 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207F50);
 
@@ -1095,7 +1130,11 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002080B0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00208160);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002081F8);
+extern unsigned char D_0013D4E9;
+
+int func_002081F8(void) {
+    return D_0013D4E9 != 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00208208);
 
@@ -1109,15 +1148,33 @@ int func_00208240(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00208248);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002082E8);
+extern unsigned char D_0013D502;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002082F8);
+int func_002082E8(void) {
+    return D_0013D502 != 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00208308);
+extern unsigned char D_0013D503;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00208318);
+int func_002082F8(void) {
+    return D_0013D503 != 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00208328);
+extern unsigned char D_0013D504;
+extern unsigned char D_0013D505;
+extern unsigned char D_0013D50F;
+
+int func_00208308(void) {
+    return D_0013D504 != 0;
+}
+
+int func_00208318(void) {
+    return D_0013D505 != 0;
+}
+
+int func_00208328(void) {
+    return D_0013D50F != 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00208338);
 
