@@ -543,34 +543,22 @@ float func_001F9B88(float arg0) {
 }
 
 /*
- * Close but not exact: this compiler doesn't fold `a > b ? a : b` into
- * the single max.s instruction retail uses -- it falls back to a
- * c.lt.s/branch/mov.s sequence, so this is written as inline asm for the
- * single instruction instead (args already arrive in $f12/$f13, return
- * in $f0, per the standard EE calling convention -- no extra moves
- * generated). That gets the same 2 instructions retail has (max.s, then
- * jr $31), just in the opposite order: retail schedules max.s into the
- * jr's delay slot, this compiler emits jr first and max.s after (dead
- * code position, not a delay slot) since inline asm is opaque to its
- * scheduler. New instance of the delay-slot-scheduling open question
- * (see docs/DECOMP_PROGRESS.md) -- tried hand-embedding `jr $31` before
- * the max.s in the same asm block to force the ordering, but GCC's flow
- * analysis doesn't understand hand-written control flow inside inline
- * asm and silently dropped the max.s instead of emitting it (verified
- * via the byte diff: got `jr / nop`, not `jr / max.s`) -- reverted that,
- * not safe to rely on.
+ * Deliberately left as INCLUDE_ASM. Retail is 8 bytes: `jr $31` with
+ * `max.s $f0,$f12,$f13` in its DELAY SLOT. This compiler will not put
+ * inline asm in a delay slot (it's opaque to the scheduler), so any C
+ * or inline-asm rendering comes out 12 bytes -- a size mismatch, which
+ * is not a match. Worse, those extra 4 bytes each shifted every
+ * function after them in this file, so the two of them together put 8
+ * bytes of drift into the whole rest of text.c and left downstream
+ * functions showing spurious 1-byte `jal`-target diffs. Reverting them
+ * removed that drift. Do not re-add a C version unless it is genuinely
+ * 8 bytes; a "close" version here is actively harmful, not neutral.
+ * (Hand-embedding `jr $31` inside the asm block was tried: GCC's flow
+ * analysis silently dropped the max.s, verified via the byte diff.)
  */
-float func_001F9B90(float arg0, float arg1) {
-    float result;
-    __asm__("max.s %0, %1, %2" : "=f"(result) : "f"(arg0), "f"(arg1));
-    return result;
-}
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9B90);
 
-float func_001F9B98(float arg0, float arg1) {
-    float result;
-    __asm__("min.s %0, %1, %2" : "=f"(result) : "f"(arg0), "f"(arg1));
-    return result;
-}
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9B98);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9BA0);
 
@@ -2719,6 +2707,17 @@ int func_00234350(unsigned int arg0) {
     rec = rec + arg0 * 16;
     return *(int *)(rec + 4);
 }
+
+/*
+ * Retail aligns func_00234380 to 16 bytes, and func_00234350's .s file
+ * carried two trailing nops after its endlabel to supply that padding.
+ * Those nops sit OUTSIDE the declared function size (0x28), so they were
+ * silently lost when this function became C, shifting all 179 later
+ * text functions by -8 and giving them spurious 1-byte jal-target diffs.
+ * The .s files only ever .align 3 (8 bytes), so the 16-byte alignment
+ * has to be restored explicitly here.
+ */
+__asm__(".align 4");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234380);
 
