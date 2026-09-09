@@ -1856,7 +1856,10 @@ int func_0021B280(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021B288);
+int func_0021B288(void *arg0) {
+    *(int *)((char *)arg0 + 0x44) = -1;
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021B298);
 
@@ -1890,7 +1893,12 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0021DA60);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021DA98);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021DAC8);
+extern int D_001A0418;
+
+int func_0021DAC8(void) {
+    D_001A0418 = -1;
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021DAE0);
 
@@ -2030,7 +2038,12 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00223140);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002232E0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00223478);
+int func_00223478(void *arg0) {
+    *(int *)((char *)arg0 + 0x40) = 0;
+    *(int *)((char *)arg0 + 0x50) = 0;
+    *(int *)((char *)arg0 + 0x3C) = 0;
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00223490);
 
@@ -2462,7 +2475,9 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023C128);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C1F8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C2B0);
+int func_0023C2B0(void *arg0) {
+    return *(int *)((char *)arg0 + 0x50) >= 0x1000;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C2C0);
 
@@ -2486,7 +2501,12 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023CAF8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023CBE0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023CD10);
+void func_0023CD10(void *arg0) {
+    char *p = (char *)arg0 + 0x50000;
+    *(int *)(p + 8) = 0x50000;
+    *(int *)p = 0;
+    *(int *)(p + 4) = 0;
+}
 
 void func_0023CD28(void) {
 }
