@@ -136,7 +136,29 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001146C8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00114920);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00115098);
+/*
+ * Close but not yet byte-matching: logic and every instruction/operand
+ * match retail (fixed two real bugs getting here -- needed unsigned char
+ * for the byte loads to get lbu not lb, and this exact nesting to get
+ * beqz's polarity/target right). The remaining diff is retail reusing
+ * the `bnel arg3,0` branch's delay slot as the *first instruction of the
+ * branch target* (the arg2 byte load) -- a scheduling trick this
+ * compiler doesn't reproduce for the equivalent C. Same open-question
+ * category as func_00119868 (store/branch scheduling), see
+ * docs/DECOMP_PROGRESS.md.
+ */
+int func_00115098(void *arg0, int *out, unsigned char *arg2, int arg3) {
+    int junk;
+    int *dst = out ? out : &junk;
+    if (arg2 != 0) {
+        if (arg3 != 0) {
+            *dst = *arg2;
+            return *arg2 != 0;
+        }
+        return -1;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001150D4);
 
@@ -181,7 +203,34 @@ void func_00115578(void *arg0, void *arg1) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001155A8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001156C0);
+int func_001156C0(unsigned int arg0) {
+    int count;
+    if ((arg0 & 0xFFFF0000u) != 0) {
+        count = 0;
+    } else {
+        count = 0x10;
+        arg0 <<= 16;
+    }
+    if ((arg0 & 0xFF000000u) == 0) {
+        count += 8;
+        arg0 <<= 8;
+    }
+    if ((arg0 & 0xF0000000u) == 0) {
+        count += 4;
+        arg0 <<= 4;
+    }
+    if ((arg0 & 0xC0000000u) == 0) {
+        count += 2;
+        arg0 <<= 2;
+    }
+    if ((int)arg0 >= 0) {
+        count += 1;
+        if ((arg0 & 0x40000000u) == 0) {
+            return 0x20;
+        }
+    }
+    return count;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00115748);
 
