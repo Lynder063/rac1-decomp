@@ -101,6 +101,27 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001E99D8);
  * unit, or some other property not yet isolated). See "Open toolchain
  * questions" in docs/DECOMP_PROGRESS.md.
  */
+/*
+ * Reverted at 20/88, logic confirmed. Would be:
+ *   func_0022C7E0(); func_0022C188(); func_0022C870();
+ *   func_00234C98(0x47, 0x5360B);
+ *   func_00234C98(0x4E, 0x1000000 | (D_0015EF88 >> 13));
+ * (D_0015EF88 an int, >> 13 arithmetic.)
+ *
+ * The instruction multiset is right; the order isn't. For each of the
+ * two calls retail schedules the *first* argument's `addiu $4` into the
+ * jal's delay slot and materializes $5 before it, while this compiler
+ * does the reverse. That's argument-materialization order feeding delay
+ * slot choice -- an instance of the delay-slot-scheduling question, not
+ * a logic error, and not reachable by reordering the C (the arguments
+ * are constants in one call expression, so there are no statements to
+ * reorder). Reverted per the large-diff rule rather than kept.
+ *
+ * Note ~2 of those bytes are not this function's fault: both jal targets
+ * point at func_00234C98, which sits 8 bytes early in our build due to
+ * the pre-existing -8 drift starting around func_00234380 (outside this
+ * range).
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_001E9E70);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001E9EC8);
@@ -165,7 +186,35 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001EC208);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC210);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EC270);
+extern char D_001E8F80[];
+
+/*
+ * 1/68, and the residual is one commutative-operand-order byte: retail
+ * emits `addu $2,$2,$3` (base + index), this compiler `addu $2,$3,$2`
+ * (index + base). Same instruction, same destination, same size.
+ *
+ * Getting here took two real fixes worth reusing. Writing the field read
+ * as `... * 0x14 + 8` folds the +8 into the %lo address constant instead
+ * of leaving it as a `lw` offset (7/68); computing the record pointer
+ * first and reading `rec + 8` separately fixes that. And building the
+ * pointer with `rec += idx` rather than in the initialiser makes the sum
+ * land in the base's register as retail does, rather than the index's
+ * (3/68 -> 1/68) -- the documented in-place-accumulate lever.
+ *
+ * The last byte resisted an explicit index local and both `rec += idx`
+ * and `rec = rec + idx`, which is the known scratch-register/operand
+ * choice question. Kept per the same-size-tiny-diff precedent.
+ */
+void func_001EC270(void *arg0) {
+    int idx = *(short *)((char *)arg0 + 0x8C) * 0x14;
+    char *rec = D_001E8F80;
+    void (*fn)(void *);
+    rec = rec + idx;
+    fn = *(void (**)(void *))(rec + 8);
+    if (fn != 0) {
+        fn(arg0);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC2B8);
 
@@ -175,7 +224,18 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001EC5B8);
    pointer loaded from a per-type dispatch table, wrapped in an
    sq-for-lone-$ra save this compiler doesn't reproduce (see
    func_001E9E70's comment). Not attempted. */
-INCLUDE_ASM("asm/nonmatchings/text", func_001EC780);
+/* Same vtable dispatch as func_001EC270, on the +0x10 slot instead of
+   +8; identical 1/68 operand-order residual, same cause. */
+void func_001EC780(void *arg0) {
+    int idx = *(short *)((char *)arg0 + 0x8C) * 0x14;
+    char *rec = D_001E8F80;
+    void (*fn)(void *);
+    rec = rec + idx;
+    fn = *(void (**)(void *))(rec + 0x10);
+    if (fn != 0) {
+        fn(arg0);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC7C8);
 
@@ -283,7 +343,19 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F2B10);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F2BC8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F2FB8);
+extern void func_001F99B0(void *arg0, int arg1, int arg2);
+extern void func_001F2BC8(void);
+extern int D_0018C434;
+extern char D_001940C0[];
+
+void func_001F2FB8(void) {
+    int state = D_0018C434;
+    if (state == 0) {
+        func_001F99B0(D_001940C0, -1, 0x80);
+    } else if (state == 2) {
+        func_001F2BC8();
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F3008);
 
@@ -392,11 +464,39 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F65A8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F65B0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F6600);
+extern int func_001F65B0(unsigned char *arg0, int arg1, void *arg2);
+extern unsigned char D_001DF3D0[];
+extern unsigned char D_001DF770[];
+extern unsigned char D_001DFB10[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F6620);
+int func_001F6600(unsigned char *arg0, int arg1) {
+    return func_001F65B0(arg0, arg1, D_001DF3D0);
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F6640);
+int func_001F6620(unsigned char *arg0, int arg1) {
+    return func_001F65B0(arg0, arg1, D_001DF770);
+}
+
+int func_001F6640(unsigned char *arg0, int arg1) {
+    return func_001F65B0(arg0, arg1, D_001DFB10);
+}
+
+/*
+ * Retail has 8 bytes of nop padding between func_001F6640 and
+ * func_001F6668, and it lives *after* `endlabel` in
+ * asm/nonmatchings/text/func_001F6640.s -- so the INCLUDE_ASM stub was
+ * supplying it, and replacing that stub with C silently dropped it,
+ * shifting every later function in the segment by -8 and corrupting
+ * their `jal` targets (func_001F7B40 read 1/44 while being
+ * instruction-for-instruction identical to retail). Emitted explicitly
+ * to preserve the layout.
+ *
+ * Check for this whenever converting a stub: content after a .s file's
+ * `endlabel` is inter-function padding the stub was carrying, and it has
+ * to be reproduced or everything downstream drifts. Alignment directives
+ * do not cover it -- both boundaries here are already 8-byte aligned.
+ */
+__asm__(".section .text\n\tnop\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F6668);
 
@@ -452,7 +552,15 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F7868);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F7A50);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F7B40);
+extern void func_001FB498(void);
+extern void func_001F3008(void);
+extern void func_001F3140(void);
+
+void func_001F7B40(void) {
+    func_001FB498();
+    func_001F3008();
+    func_001F3140();
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F7B70);
 
@@ -543,18 +651,29 @@ float func_001F9B88(float arg0) {
 }
 
 /*
- * Deliberately left as INCLUDE_ASM. Retail is 8 bytes: `jr $31` with
- * `max.s $f0,$f12,$f13` in its DELAY SLOT. This compiler will not put
- * inline asm in a delay slot (it's opaque to the scheduler), so any C
- * or inline-asm rendering comes out 12 bytes -- a size mismatch, which
- * is not a match. Worse, those extra 4 bytes each shifted every
- * function after them in this file, so the two of them together put 8
- * bytes of drift into the whole rest of text.c and left downstream
- * functions showing spurious 1-byte `jal`-target diffs. Reverting them
- * removed that drift. Do not re-add a C version unless it is genuinely
- * 8 bytes; a "close" version here is actively harmful, not neutral.
- * (Hand-embedding `jr $31` inside the asm block was tried: GCC's flow
- * analysis silently dropped the max.s, verified via the byte diff.)
+ * REVERTED to INCLUDE_ASM deliberately, and this one matters beyond
+ * these two functions.
+ *
+ * They are max.s/min.s single-instruction wrappers. Retail is 8 bytes
+ * each (max.s scheduled into the jr's delay slot). Written as inline asm
+ * this compiler emits 12 bytes -- jr first, then the asm in dead-code
+ * position, because inline asm is opaque to its scheduler. So they were
+ * never matches; they were 4 bytes LONGER than retail each.
+ *
+ * A non-matching function that is *longer* than retail shifts every
+ * later function in the segment, so these two were silently adding 8
+ * bytes of drift to every downstream address reference in text.c --
+ * func_001F7B40, for instance, was instruction-for-instruction identical
+ * to retail yet reported 1/44 purely because its `jal` target had moved.
+ * Reverting them restores the stubs' exact retail bytes and removes that
+ * drift.
+ *
+ * General rule this establishes: a size-mismatched function should be
+ * reverted to INCLUDE_ASM, not kept as documented-close C. Byte-diff
+ * near-misses of the same size are harmless to keep; longer ones corrupt
+ * verification for everything after them. (This is the same failure mode
+ * as the old core_text func_00112380 drift, which is why that one was
+ * worth fixing rather than tolerating.)
  */
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9B90);
 
