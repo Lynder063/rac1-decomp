@@ -127,28 +127,37 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001146C8);
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00114920);
 
 /*
- * Close but not yet byte-matching: logic and every instruction/operand
- * match retail (fixed two real bugs getting here -- needed unsigned char
- * for the byte loads to get lbu not lb, and this exact nesting to get
- * beqz's polarity/target right). The remaining diff is retail reusing
- * the `bnel arg3,0` branch's delay slot as the *first instruction of the
- * branch target* (the arg2 byte load) -- a scheduling trick this
- * compiler doesn't reproduce for the equivalent C. Same open-question
- * category as func_00119868 (store/branch scheduling), see
- * docs/DECOMP_PROGRESS.md.
+ * REVERTED to INCLUDE_ASM, despite the logic being fully understood.
+ *
+ * The C below (kept here for whoever picks this up) is
+ * instruction-for-instruction correct -- two real bugs were fixed to get
+ * there: `unsigned char *` for the byte loads so they emit lbu not lb,
+ * and this exact nesting to get beqz's polarity and target right:
+ *
+ *   int func_00115098(void *arg0, int *out, unsigned char *arg2, int arg3) {
+ *       int junk;
+ *       int *dst = out ? out : &junk;
+ *       if (arg2 != 0) {
+ *           if (arg3 != 0) { *dst = *arg2; return *arg2 != 0; }
+ *           return -1;
+ *       }
+ *       return 0;
+ *   }
+ *
+ * It compiles to 56 bytes where retail is 60, because retail reuses the
+ * `bnel arg3,0` delay slot as the *first instruction of the branch
+ * target* (the arg2 byte load) -- a scheduling trick this compiler will
+ * not reproduce from the equivalent C.
+ *
+ * It is reverted rather than kept as documented-close because it is
+ * SIZE-mismatched, and a size mismatch shifts every later function in
+ * the object -- it was putting -4 bytes of drift through the rest of
+ * core_text.c and giving downstream functions spurious address diffs.
+ * Byte-diff near-misses of the same size are harmless to keep; shorter
+ * or longer ones actively corrupt verification for everything after
+ * them. Do not re-add this without getting it to exactly 60 bytes.
  */
-int func_00115098(void *arg0, int *out, unsigned char *arg2, int arg3) {
-    int junk;
-    int *dst = out ? out : &junk;
-    if (arg2 != 0) {
-        if (arg3 != 0) {
-            *dst = *arg2;
-            return *arg2 != 0;
-        }
-        return -1;
-    }
-    return 0;
-}
+INCLUDE_ASM("asm/nonmatchings/core_text", func_00115098);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001150D4);
 

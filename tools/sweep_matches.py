@@ -146,9 +146,15 @@ def main() -> None:
     if missing:
         print(f"  could not check:        {len(missing)} {missing}")
     if needs_align:
-        print(f"\n  {len(needs_align)} decompiled function(s) had post-endlabel padding in")
-        print(f"  their .s and so need an explicit alignment directive in the C")
-        print(f"  (omitting it shifts every later function). Confirm each has one:")
+        print(f"\n  DIAGNOSTIC ONLY -- NOT a to-do list. {len(needs_align)} decompiled")
+        print(f"  function(s) had >4 bytes of post-endlabel padding in their .s.")
+        print(f"  Consult this ONLY when the sweep above already shows unexplained")
+        print(f"  drift, to help locate its cause. Do NOT add alignment directives")
+        print(f"  to these pre-emptively: doing that broke 7 of 13 verified-exact")
+        print(f"  functions in one round (0/N -> 1-2/N in address fields), because")
+        print(f"  at most sizes the padding is already accounted for. And .align 4")
+        print(f"  cannot even express some of these gaps (one starts 16-byte aligned")
+        print(f"  and ends unaligned, needing explicit nops instead).")
         for n, b in needs_align:
             print(f"    {n}: {b} bytes of padding")
     sys.exit(0 if not (size_bad or byte_bad) else 1)
