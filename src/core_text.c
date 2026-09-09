@@ -639,7 +639,16 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00119864);
  *     return self;
  * }
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119868);
+extern void *D_00154A40;
+
+void *func_00119868(void *arg0) {
+    char *self = (char *)&D_00154A40;
+    D_00154A40 = arg0;
+    *(int *)(self + 0x4) = 0;
+    *(void **)(self + 0xC) = self + 0x10;
+    *(void **)(self + 0x8) = self + 0x10;
+    return self;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119890);
 
