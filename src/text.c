@@ -392,11 +392,22 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F65A8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F65B0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F6600);
+extern int func_001F65B0(unsigned char *arg0, int arg1, void *arg2);
+extern unsigned char D_001DF3D0[];
+extern unsigned char D_001DF770[];
+extern unsigned char D_001DFB10[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F6620);
+int func_001F6600(unsigned char *arg0, int arg1) {
+    return func_001F65B0(arg0, arg1, D_001DF3D0);
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F6640);
+int func_001F6620(unsigned char *arg0, int arg1) {
+    return func_001F65B0(arg0, arg1, D_001DF770);
+}
+
+int func_001F6640(unsigned char *arg0, int arg1) {
+    return func_001F65B0(arg0, arg1, D_001DFB10);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F6668);
 
