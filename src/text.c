@@ -908,7 +908,25 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00203808);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00203958);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00203B18);
+void func_00203B18(char *arg0, int idx) {
+    char *obj;
+    int *p;
+    int i;
+    arg0 += idx * 4;
+    obj = *(char **)(arg0 + 0x48);
+    if (*(int *)(obj + 0x14) != 0) {
+        *(int *)(obj + 0x14) = (int)(obj + *(int *)(obj + 0x14));
+    }
+    if (*(unsigned char *)(obj + 0x10) != 0) {
+        i = 0;
+        p = (int *)(obj + 0x1C);
+        do {
+            *p = (int)(obj + *p);
+            i++;
+            p++;
+        } while (i < *(unsigned char *)(obj + 0x10));
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00203B70);
 

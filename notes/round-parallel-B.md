@@ -40,6 +40,10 @@ fallthrough fragments with no `jr $31` (e.g. `func_00208D30` is a lone
 
 | Function | Status | Notes |
 |---|---|---|
+| `func_0020BAD8` | **matches** (0/56) | Byte-exact, first attempt. Pointer-walk loop over a record list: running total starts at 8, each iteration adds 8 plus the record's length field at `+4`, advances the pointer `0x10`, and 4-byte-aligns the total (`(n + 3) & ~3`); loop continues while the record's first word is nonzero; returns total + 8. Plain `int`/`& ~3` gave retail's `addiu $6,$0,-4` mask directly (no unsigned form needed here). |
+| `func_00203B18` | **matches** (0/88) | Byte-exact after two documented-technique fixes. Relocation/fixup routine: takes a table base and index, loads the object pointer at `+0x48`, rebases the `+0x14` field if nonzero, then rebases each of the `[0x10]`-count pointers starting at `+0x1C`. The count is legitimately re-loaded every iteration (the `int *` stores can alias the byte count — natural aliasing, **not** a `volatile` case, worth distinguishing from the documented volatile signature). First attempt was 11/88 with only 3 words differing; both were textbook: (1) retail accumulates the index into `arg0`'s own register (`addu $4,$4,$5`), fixed by writing `arg0 += idx * 4;` as an in-place accumulate rather than indexing a cast array — the `func_0011AA68` technique; (2) retail puts `i = 0` in the `beqz` delay slot rather than the `p = obj + 0x1C` setup, fixed by ordering `i = 0;` before `p = ...` in the source. |
+| `func_00209808`, `func_002098C8`, `func_00209918` | **close, not exact (9/80, 11.3% each)** — kept as documented-close | All three are **byte-for-byte identical to `func_00209858`** in retail — four copies of the same function. Same C body, same residual, same cause. Includes the `func_00209808` retry the directive requested: the prior round's 24/80 was **not** a register-steering problem, it was the folded address constant (see `func_00209858` below). |
+| `func_00209858` | **close, not exact (9/80, 11.3%)** — kept as documented-close | Zeroes a record's status field if it equals 2, then sets an error code unless a flag bit is set. **The fix worth propagating:** retail reads the index off the struct base and *then* advances that base by `0xB0` as a separate `addiu`; writing the advance into the declaration (`char *s = D_0013D390 + 0xB0;`) makes this compiler fold both into a single combined address constant, a visibly different instruction — that alone was the difference between 51/80 and 9/80. All 9 remaining bytes are the two established unsteerable register sub-cases (`%hi`-reuse on the `D_0015EFB4` load; `$at` for `D_0015EFB0`'s `%hi` with the literal ordered before it), same as the `func_002094E0`/`func_00209698` family. |
 | `func_00209698` | **close, not exact (13/64, 20.3%)** — kept as documented-close C | Direct sibling of `func_002094E0`: same guard (field `0xDC == 2` && status field `0xE4 < 0`), same three writes, only the constants differ (9 / `0xF` here vs 7 / `0xB` there). Landed on *exactly* the same residual and cause as that function — retail stores the two struct fields first, then computes `D_0015EFB0`'s address using `$1`/`$at` for its `%hi`; this compiler materializes that address earlier and stores it before the second struct field. Established two-base store-order/`%hi` question. Not re-tried against source reordering because `func_002094E0`'s entry already records that as ineffective. Kept on that sibling's precedent (identical ratio). |
 | `func_00208208` | **reverted** (best 16/48, 33%) | Logic confirmed correct: `return arg1 >= 0x141 \|\| 63.5f <= f2;` — an int bound OR a float threshold, where the float is the **third** float parameter (lands in `$f14`; the 2nd float lands in `$f13`, so the signature is `(int, int, float, float, float)`). Two source-shape fixes did land real progress: writing the comparison constant-first (`63.5f <= f2`, not `f2 >= 63.5f`) reproduced retail's `c.le.s $f0,$f14` operand order exactly, and using `if (...) return 0; return 1;` (rather than a direct boolean return) fixed the branch polarity so `1` is the fall-through default. Reverted at 33% per the threshold rule — see the new open-question note below for what's left. |
 | `func_0020C210` | **skipped, likely handwritten** | Writes DMAC MMIO at `0x1000D400` using `$1`/`$at` as the base register (`lui $1` / `ori $1` / `sw` with offsets). A compiler never allocates `$at`; this is the same signal that got `func_0023C9B0` classified as hand-written, and it sits in the same DMAC/hardware cluster as the spimdisasm-marked handwritten functions. Not attempted. |
@@ -79,3 +83,35 @@ shape tried produced a likely branch; a direct boolean return was worse
 (19/48). Plausibly a `-mbranch-likely`-style codegen setting rather than
 anything reachable from source, but that was not tested since the build
 flags are fixed.
+
+**Important narrowing of that finding:** branch-likely *is* reachable
+from plain C in general — `func_00209858`'s `beql` implementing
+`if (*rec == 2) *rec = 0;` matched retail exactly, no coaxing needed.
+So the rule is not "this compiler won't emit likely branches". It emits
+them for an integer `if` whose entire body fits the delay slot; it did
+not emit one for the FP-condition case where the delay slot holds the
+*default* value for a path that isn't the `if` body. Whoever picks this
+up should treat it as an FP-branch / value-materialization question
+rather than a general branch-likely gap.
+
+## Suggested additions to the techniques library
+
+Both of these are existing techniques whose *scope* this round extended,
+rather than new ones — worth folding into the existing entries:
+
+1. **Pointer-advance must be its own statement, not part of the
+   declaration.** The existing "Splitting a large constant offset into
+   pointer-advance + field offset" entry describes the retail shape; add
+   that the C has to *separate* the advance (`s = base; ...; s += 0xB0;`)
+   because putting it in the initializer (`char *s = base + 0xB0;`) lets
+   the compiler fold it into one address constant. This was a 51/80 →
+   9/80 swing on `func_00209858` and, retroactively, the real reason the
+   earlier `func_00209808` attempt sat at 24/80.
+2. **Re-loads forced by genuine aliasing are not the `volatile`
+   signature.** The "Redundant reload + unfilled delay slot = volatile"
+   entry is worth qualifying: in `func_00203B18` retail re-loads a byte
+   count on every loop iteration purely because the loop's `int *`
+   stores may alias it. Plain C reproduces that reload exactly with no
+   `volatile`. So check for a legitimate aliasing explanation before
+   reaching for `volatile`, or you will add a qualifier that changes
+   other codegen.
