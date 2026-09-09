@@ -787,19 +787,15 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FF950);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FF958);
 
-/*
- * Close but not exact: logic fully confirmed via disassembly --
- * int v = D_001941CC; D_0019A4E8+0x10 = v; D_0019A4E8+0x14 = v + 0x64000;
- * -- same size (0x28) and same operations, but this compiler's scratch-
- * register choice differs from retail throughout this short function
- * (v0/v1/a0/a1 swapped around), so nearly every instruction's register
- * field differs even though every opcode matches. Same open-question
- * category as func_001160D8/func_00115578/func_00115098; the diff here
- * (14/40 bytes) is large enough relative to the function's size to
- * follow the func_00112468/func_001F49B0 precedent and stay INCLUDE_ASM
- * rather than be kept as documented-close C.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_001FFA90);
+extern int D_001941CC;
+extern int D_0019A4E8;
+
+void func_001FFA90(void) {
+    int *p = &D_0019A4E8;
+    int v = D_001941CC;
+    p[5] = v + 0x64000;
+    p[4] = v;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FFAB8);
 
@@ -1402,20 +1398,12 @@ int func_0020CB80(void) {
 }
 
 extern int D_0013D9B4;
+extern unsigned char D_0013D490[];
 
-/*
- * Close but not exact (16/56 bytes): if (D_0013D9B4 != 0 &&
- * D_0013D490_base[0x20] != 0 && D_0013D490_base[0x21] != 0) return 1;
- * else return 0. Same 3-value shared-tail predicate shape as
- * func_0020CB80 and neighbors (which all matched with this &&-combined
- * form), but retail reuses ONE register across both the D_0013D9B4
- * check and the D_0013D490-base computation (materializing the second
- * lazily, in the first branch's delay slot); this compiler keeps them
- * in separate registers throughout instead. Not fixed -- the technique
- * that worked for the simpler 2-value cases in this cluster didn't
- * carry over to this 3-value one.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_0020CBA8);
+int func_0020CBA8(void) {
+    if (D_0013D9B4 != 0 && D_0013D490[0x20] != 0 && D_0013D490[0x21] != 0) return 1;
+    return 0;
+}
 
 extern int D_0013D6B8;
 
