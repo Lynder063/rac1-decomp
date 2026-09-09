@@ -697,6 +697,25 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FB470);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FB498);
 
+/*
+ * Close but not exact: appends a 2-word GIF/DMA-style tag pair
+ * (0x30000015 / &D_00152140 / 0 / 0x50000015) to the packet buffer
+ * D_00161000 points at, then advances D_00161000 by one qword (0x10).
+ * Confirmed via objdump -- same fields, same values, same order, same
+ * overall size (0x68 both). The only difference: retail re-derives
+ * D_00161000's own ADDRESS (a fresh lui/lw pair) before every single
+ * field write; this compiler computes &D_00161000 once into a register
+ * and only reloads the *value* stored there each time (a strictly
+ * cheaper, and here inequivalent, choice). This is a new, more extreme
+ * variant of the redundant-global-reload pattern already seen elsewhere
+ * (those only ever re-fetch a global's *value*, never its address, since
+ * a global's address is a link-time constant with nothing to alias) --
+ * tried an explicit `*(unsigned int **)&D_00161000` reinterpret-cast
+ * idiom to see if defeating the compiler's confidence that it's "the
+ * same" symbol reference would force a fresh lui each time; no change.
+ * Not fixed via source shape; not yet clear whether this needs its own
+ * open-question entry or is explained by something not yet identified.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_001FB530);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FB598);
@@ -1149,7 +1168,33 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00209448);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002094A8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002094E0);
+extern char D_0013D390[];
+extern int D_0015EFB0;
+
+/*
+ * Close but not exact (13/64 bytes, 20.3%): if the struct at D_0013D390
+ * has kind field 0xDC == 2 and status field 0xE4 is negative, reset it
+ * (status=7, field 0xE8=0) and set the global error code D_0015EFB0=0xB.
+ * Needed an explicit `char *s` local (materializing the struct's base
+ * address once via addiu, matching retail) to get from 58% down to this
+ * -- without it the compiler folds each field offset directly into its
+ * load/store immediate instead. Remaining diff is the established
+ * store-order/scratch-register-choice open question: retail stores the
+ * two struct fields, *then* computes D_0015EFB0's address and stores to
+ * it; this compiler computes D_0015EFB0's address right after loading
+ * the two constants and stores to it before the second struct field,
+ * and picks $a0 for the constant 0xB where retail picks $v1. Tried
+ * reordering the source statements; no further change.
+ */
+void func_002094E0(void) {
+    char *s = D_0013D390;
+    if (*(int *)(s + 0xDC) == 2 && *(int *)(s + 0xE4) < 0) {
+        int a = 7, b = 0xB;
+        *(int *)(s + 0xE4) = a;
+        *(int *)(s + 0xE8) = 0;
+        D_0015EFB0 = b;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209520);
 
