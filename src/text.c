@@ -2434,7 +2434,14 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00223B40);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00223E40);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00223FD0);
+extern void func_00226D50(int);
+
+int func_00223FD0(void *arg0) {
+    func_00226D50(1);
+    *(int *)((char *)arg0 + 0x48) = func_00226EA8(0);
+    *(int *)((char *)arg0 + 0x4C) = 0;
+    return 0;
+}
 
 int func_00224010(void *arg0) {
     *(int *)((char *)arg0 + 0x48) = func_00226F68(*(int *)((char *)arg0 + 0x48));
@@ -2811,6 +2818,15 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00235118);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00235218);
 
+/*
+ * Reverted: SIZE MISMATCH (36/52) -- my reading was wrong, and a
+ * size-mismatched function actively harms everything after it (it shifted
+ * func_0023D988, giving func_0023E008 a spurious 1-byte jal diff). Shape
+ * is a DMA/GIF packet append on D_00161000: bump the global by 0x10,
+ * store arg0+0x90000000 at [0] and zero [1]..[3], but the emitted store
+ * order ([0],[3],[1],[2]) did not come out of the rotation rule and the
+ * pointer bump is materialized differently. Needs a fresh look.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00235290);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002352C8);
@@ -2855,6 +2871,14 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00238F98);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00239180);
 
+/*
+ * Reverted (14/60). Logic is func_00116248(*(int*)(D_001E66C0+0x2C),
+ * D_001E8DA0, arg0) then *(int*)(D_001E66C0+0x44) = 0, with arg0 moved
+ * to $6 up front. Retail materializes &D_001E66C0 into $16 and reuses it
+ * for both the argument load and the trailing store; needs the
+ * base-pointer-local lever plus argument-ordering work. Not chased
+ * further this round.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_002391A8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002391E8);
@@ -3099,7 +3123,14 @@ void func_0023E000(int *arg0) {
     *(arg0 + (0xA8 / 4)) = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E008);
+extern void func_0023D988(void *);
+extern void func_0012BB20(void *);
+
+int func_0023E008(void *arg0) {
+    func_0023D988((char *)arg0 + 0x48);
+    func_0012BB20(arg0);
+    return 1;
+}
 
 /*
  * Close but not exact: `arg0[42] = 1; return 1;`. Retail materializes
