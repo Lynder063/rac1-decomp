@@ -560,17 +560,20 @@ float func_001F9B88(float arg0) {
  * via the byte diff: got `jr / nop`, not `jr / max.s`) -- reverted that,
  * not safe to rely on.
  */
-float func_001F9B90(float arg0, float arg1) {
-    float result;
-    __asm__("max.s %0, %1, %2" : "=f"(result) : "f"(arg0), "f"(arg1));
-    return result;
-}
+/*
+ * REVERTED to INCLUDE_ASM deliberately -- see the comment above. The
+ * inline-asm version compiled to 12 bytes against retail's 8 (retail
+ * puts the max.s/min.s in the `jr` delay slot; inline asm is opaque to
+ * the scheduler, so it emits max.s / jr / nop instead). They were never
+ * matches -- the sweep flags them SIZE -- and while present they cost
+ * every later text function +16 bytes of address drift (+4 each, rounded
+ * to +8 by `.align 3`), which showed up as spurious relocated-jal-target
+ * diffs and made otherwise-exact functions unverifiable. The stub gives
+ * retail's exact 8 bytes, so reverting strictly improves the build.
+ */
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9B90);
 
-float func_001F9B98(float arg0, float arg1) {
-    float result;
-    __asm__("min.s %0, %1, %2" : "=f"(result) : "f"(arg0), "f"(arg1));
-    return result;
-}
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9B98);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9BA0);
 
