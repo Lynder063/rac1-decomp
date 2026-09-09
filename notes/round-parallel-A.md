@@ -1,147 +1,142 @@
-# Parallel round, range A — vram 0x1E9080 to 0x1F9B00 (src/text.c)
+# Range A (`src/text.c`, vram 0x1E9080-0x1F9B00)
 
-## Conclusion up front: this range is essentially exhausted
+## This file's previous contents were WRONG - corrected here
 
-165 `INCLUDE_ASM` stubs remain in range A. Automated categorisation
-against the established skip categories (script logic: `Handwritten
-function` marker → size-4 `pref`/`0xCDCDCDCD` padding → missing
-`jr $31` → VU0/COP2 mnemonics → any `sq`/`lq` → `$28` use → `movz`/
-`movn`) gives:
+An earlier survey in this file concluded that **95 of 165** remaining
+stubs in this range were "`sq`/`lq`-blocked", that only **6 candidates**
+existed, and that the range was **93% exhausted and should not be
+re-scanned**. Anyone acting on that would have written off most of the
+range.
 
-| Count | Category | Blocked by |
+**Why it was wrong.** It compared our compiler's output against the
+project's then-current claim that "retail always spills callee-saved
+registers as `sd`/`ld`" - itself a bad generalisation from a single
+`core_text` function. Retail's two segments were built by two different
+SN sub-builds: `core_text` by v1.36 (`sd`/`ld`), and **`text` - this
+range - by v1.14, which uses `sq`/`lq`**, exactly what we now emit for
+`text.c`. So a `sq`/`lq` spill here is *correct output*, never a
+blocker. The survey was measuring against a sentence in the docs
+instead of against retail's actual bytes.
+
+## Corrected survey
+
+Produced mechanically by the new `tools/survey_range.py`, which reports
+spill style as information and never as a blocking category:
+
+| Count | Category | Old count |
 |---|---|---|
-| 95 | `sq`/`lq` callee-saved spill | open question (unsolved) |
-| 22 | no `jr $31` — fallthrough fragment | not standalone functions |
-| 21 | handwritten (spimdisasm-marked) | never had C source |
-| 16 | `$gp`-relative | no SDA configured |
-| 3 | `movz`/`movn` heuristic | recognise-and-move-on category |
-| 2 | VU0/COP2 SIMD | not plain-C-representable |
-| **6** | **candidate** | — |
+| **65** | **candidate** | 6 |
+| 46 | `$gp`-relative addressing | 16 |
+| 22 | fallthrough fragment (no `jr $31`) | 22 |
+| 21 | handwritten asm (spimdisasm-marked) | 21 |
+| 7 | `movz`/`movn` heuristic | 3 |
+| 2 | SIMD/COP2 | 2 |
+| 1 | varargs prologue | - |
+| 1 | bare quadword | - |
 
-**57% of the range is blocked by the single `sq`/`lq` question**, and
-another 36% is not compilable-from-C in principle (fragments, handwritten
-asm, `$gp`, SIMD). Only 6 of 165 were even candidates, and 4 of those 6
-are already-documented near-misses. So range A is not worth re-scanning
-in future rounds: the remaining work here is gated almost entirely on the
-`sq`/`lq` open question, and solving that single question would unblock
-~95 functions in this range alone — by far the highest-leverage thing
-anyone could do for this range, worth far more than further per-function
-effort here.
+**6 candidates -> 65.** The old 95-strong `sq`/`lq` bucket splits
+roughly: about 30 are genuinely `$gp`-relative (that check now runs
+*before* the spill check, whereas the old survey tested spills first and
+stopped there), and the remainder are real candidates.
 
-### The sign-extension solution does NOT unlock anything in range A
+`$gp`-relative is now the largest genuine blocker here at 46, and it
+covers **loads as well as stores** - at `-G0` neither is reachable from
+plain C.
 
-Checked explicitly, since it was flagged as newly reclaiming a category:
-exactly 6 functions in range A contain the `dsll32`/`dsra32` pair
-(`func_001F7680`, `func_001F6668`, `func_001F69F0`, `func_001F7070`,
-`func_001F7EF8`, `func_001F856C`) — and **all 6 are also `sq`/`lq`
-blocked**, and all are large (0x1e8–0x5fc bytes). The sign-extension fix
-is real but is not the binding constraint for any function here.
+## Matched this round
 
-## Candidates and their disposition
-
-| Function | Size | Status |
+| Function | Result | Notes |
 |---|---|---|
-| `func_001F9AF0` | 0x30 | already documented — scratch-register-allocation-choice question |
-| `func_001E9730` | 0x38 | already documented — varargs prologue, needs `stdarg.h` this toolchain lacks |
-| `func_001F49B0` | 0x50 | already documented — attempted, reverted at ~30% (register-allocation) |
-| `func_001EBAF0` | 0x58 | already documented — got to 8/88, held by register-allocation choice |
-| `func_001F4B68` | 0x50 | **fresh, not previously documented** — see below |
-| `func_001F2A38` | 0xd4 | **fresh** (named as the live candidate) — see below |
+| `func_001F6600` | **0/32** | Wrapper: `func_001F65B0(arg0, arg1, D_001DF3D0)`. First attempt. |
+| `func_001F6620` | **0/32** | Same, `D_001DF770`. |
+| `func_001F6640` | **0/32** | Same, `D_001DFB10`. |
+| `func_001F7B40` | **0/44** | Three sequential void calls. Needed the padding fix below. |
+| `func_001F2FB8` | **0/80** | Dispatch on `D_0018C434`: 0 -> `func_001F99B0(D_001940C0,-1,0x80)`, 2 -> `func_001F2BC8()`. |
+| `func_001EC270` | 1/68 | Vtable dispatch, kept as documented-close. |
+| `func_001EC780` | 1/68 | Identical twin on the `+0x10` slot; residual predicted before compiling, then confirmed. |
 
-## Candidate attempts (both reverted, logic confirmed)
+All three `func_001F66xx` wrappers spill `$ra` via `sq`/`lq` and sat in
+the old "blocked" pile - direct proof the category was misclassified
+rather than merely doubtful.
 
-### `func_001F4B68` (0x50) — reverted at 24/80 (30%)
+Sweep went **143 -> 148 exact**, size mismatches **3 -> 1**, no
+regressions.
 
-Bounded append into two parallel arrays. Logic confirmed correct; our
-build is instruction-for-instruction identical in structure and lands at
-exactly the right size, only register *names* differ.
+## Two layout traps (both corrupt *other* functions, not their own)
 
-```c
-extern int D_0015F568;
-extern int D_0018DE40[];
-extern int D_0018DF40[];
+**1. Content after `endlabel` is inter-function padding the stub was
+supplying.** `func_001F6640.s` carries two trailing `nop`s after its
+`endlabel`. While it was an `INCLUDE_ASM` stub those 8 bytes were part
+of the object; converting it to C dropped them and shifted every later
+`text` function by -8, so `func_001F7B40` reported 1/44 despite being
+instruction-for-instruction identical to retail. Fixed by emitting the
+padding explicitly next to the function.
 
-void func_001F4B68(int arg0, int arg1) {
-    int count = D_0015F568;
-    if (count < 0x40) {
-        D_0018DE40[count] = arg0;
-        D_0018DF40[count] = arg1;
-        D_0015F568 = count + 1;
-    }
-}
-```
+Two refinements worth knowing:
 
-Held by two documented-unsteerable things at once:
-- **`%hi` register reuse**: retail does `lui $6,%hi(D_0015F568)` /
-  `lw $6,%lo(...)($6)` (same register); this compiler always splits it.
-- Because retail does *not* keep that base live, it re-materialises the
-  address into `$at` (`lui $1`) for the final store, whereas we keep the
-  register live and reuse it — so retail is one `lui` "longer" in a way
-  no source form reproduces.
-- Arg spill registers are exactly swapped (`arg0`→`$7`/`arg1`→`$8` in
-  retail vs `$t0`/`$a3` here).
+- The *following* stub's `.align 3` absorbs such padding automatically
+  when the gap ends at the next 8-byte boundary - `func_001EC270.s`'s
+  single trailing `nop` at a non-aligned address needed no fix at all.
+  Explicit padding is only required when the gap *starts* already
+  8-byte aligned, as `func_001F6640`'s did.
+- `tools/sweep_matches.py` in the main checkout now detects this class
+  and suggests `__asm__(".align 4")` as the general fix. That is right
+  for the common case (retail aligning the next function to 16 bytes)
+  but does **not** cover this instance: the gap here runs 0x1F6660 ->
+  0x1F6668, and 0x1F6660 is already 16-byte aligned while 0x1F6668 is
+  not, so no alignment directive can produce it. Explicit `nop`s are
+  needed when the gap is not an alignment artifact.
 
-**Tried and did not help:** declaring `D_0015F568` `volatile` (the
-documented redundant-reload signature — retail's re-materialised address
-looked like a match for it). No codegen change at all; the reload here is
-of the *address*, not the value, so the volatile technique doesn't apply.
-Worth knowing: address re-derivation and value re-loading are different
-signatures, and only the latter indicates `volatile`.
+**2. A non-matching function that is LONGER than retail poisons every
+downstream address.** `func_001F9B90`/`func_001F9B98` (max.s/min.s
+inline-asm wrappers) were kept as documented-close C while each ran 4
+bytes long, quietly adding 8 bytes of drift to the whole segment.
+Reverted to `INCLUDE_ASM`, restoring the stubs' exact retail bytes.
 
-### `func_001F2A38` (0xd4) — reverted at 149/212 (70%)
+**Rule this establishes:** same-size byte-diff near-misses are harmless
+to keep; **size-mismatched ones must be reverted**, because they break
+verification for every function after them. Same failure mode as the old
+`core_text` `func_00112380` drift.
 
-Three-level bounds-checked nested table walk (one level per coordinate,
-consumed `arg2`, `arg1`, `arg0` in that order). **Compiles to exactly the
-right size (212 bytes) with identical structure**, so the logic below is
-confirmed correct — it is held purely by register allocation.
+## Reverted, logic confirmed
 
-```c
-extern unsigned char *D_0015F720;
+`func_001E9E70` at 20/88. Body is
+`func_0022C7E0(); func_0022C188(); func_0022C870();
+func_00234C98(0x47, 0x5360B);
+func_00234C98(0x4E, 0x1000000 | (D_0015EF88 >> 13));`.
+The instruction multiset is correct but the order is not: for both calls
+retail schedules the *first* argument's `addiu $4` into the `jal` delay
+slot and materializes `$5` beforehand, while this compiler does the
+reverse. Argument-materialization order driving delay-slot choice - an
+instance of the delay-slot question, and not reachable by reordering the
+C, since the arguments are constants inside a single call expression.
 
-void *func_001F2A38(int arg0, int arg1, int arg2) {
-    unsigned char *base = D_0015F720;
-    unsigned char *data = base + *(int *)base;
-    unsigned short *p2 = (unsigned short *)(base + 4);
-    unsigned short *p1;
-    unsigned short *p0;
-    unsigned short t;
+## Reusable technique notes
 
-    arg2 -= p2[0];
-    if (arg2 < 0) return 0;
-    if (arg2 >= p2[1]) return 0;
-    t = p2[2 + arg2];
-    if (t == 0) return 0;
-    p1 = (unsigned short *)(base + t * 4);
+- **Don't fold a field offset into a computed address.** Writing
+  `base + idx * stride + 8` folds the `+8` into the `%lo` constant;
+  retail keeps it as a `lw` offset. Compute the record pointer, then
+  read `rec + 8` separately (`func_001EC270`: 7/68 -> 3/68).
+- **`rec += idx` puts the sum in the base's register**, where an
+  initialiser puts it in the index's (3/68 -> 1/68). Confirms the
+  documented in-place-accumulate lever.
+- **Twin functions let you predict the residual.** `func_001EC780` is
+  `func_001EC270` with a different slot; predicting 1/68 before
+  compiling and having it confirmed is a cheap check that the residual
+  really is the allocator question and not a misread.
 
-    arg1 -= p1[0];
-    if (arg1 < 0) return 0;
-    if (arg1 >= p1[1]) return 0;
-    t = p1[2 + arg1];
-    if (t == 0) return 0;
-    p0 = (unsigned short *)(base + t * 4);
+## Recommendations beyond this range
 
-    arg0 -= p0[0];
-    if (arg0 < 0) return 0;
-    if (arg0 >= p0[1]) return 0;
-    t = p0[2 + arg0];
-    if (t == 0xFFFF) return 0;
-    return data + (t << 7);
-}
-```
-
-Each level's node layout is `{u16 lo; u16 count; u16 child[]}` reached at
-`base + index*4`; the leaf value is rejected on `0` at levels 1-2 and on
-`0xFFFF` at level 3, and the hit returns `data + (leaf << 7)`.
-
-Retail keeps the three arguments untouched in `$4`-`$6` and uses
-`$7`-`$9` as temps. This compiler picks `$a0` for the level pointer,
-which clobbers `arg0` and forces extra `move`s to save the arguments —
-that difference then propagates through nearly every instruction.
-
-**Steering attempted:** a single reused `p` variable scored 183/212
-(86%); splitting it into three separate per-level locals (`p2`/`p1`/`p0`)
-improved it to 149/212 (70%) and did move `base` into `$t0` matching
-retail, but the level pointer stayed in `$a0`. Recorded because the
-improvement shows per-level locals *are* a real allocation lever worth
-trying elsewhere, even though it wasn't enough here. Still also carries
-the `%hi`-reuse sub-case in its opening two instructions.
+- **`func_00115098` (core_text) should be reverted.** Still
+  size-mismatched (retail 60, ours 56), causing -4 drift through
+  `core_text` by trap (2). Untouched only because `core_text.c` is
+  outside this range's remit.
+- **A -8 drift exists in `text` from about `func_00234380` onward**,
+  predating this round and originating outside this range. It currently
+  costs `func_00234350` and `func_0023DFC0` a byte each, and about 2 of
+  `func_001E9E70`'s 20. Likely a converted stub that dropped
+  post-`endlabel` padding.
+- **`tools/survey_range.py` is reusable** for any range/segment. Other
+  ranges whose "blocked" counts leaned on the `sq`/`lq` generalisation
+  should be re-run through it - range B reported 69 `sq`/`lq` and range
+  D reported 209, and both are `text`.

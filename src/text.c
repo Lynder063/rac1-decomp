@@ -101,6 +101,27 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001E99D8);
  * unit, or some other property not yet isolated). See "Open toolchain
  * questions" in docs/DECOMP_PROGRESS.md.
  */
+/*
+ * Reverted at 20/88, logic confirmed. Would be:
+ *   func_0022C7E0(); func_0022C188(); func_0022C870();
+ *   func_00234C98(0x47, 0x5360B);
+ *   func_00234C98(0x4E, 0x1000000 | (D_0015EF88 >> 13));
+ * (D_0015EF88 an int, >> 13 arithmetic.)
+ *
+ * The instruction multiset is right; the order isn't. For each of the
+ * two calls retail schedules the *first* argument's `addiu $4` into the
+ * jal's delay slot and materializes $5 before it, while this compiler
+ * does the reverse. That's argument-materialization order feeding delay
+ * slot choice -- an instance of the delay-slot-scheduling question, not
+ * a logic error, and not reachable by reordering the C (the arguments
+ * are constants in one call expression, so there are no statements to
+ * reorder). Reverted per the large-diff rule rather than kept.
+ *
+ * Note ~2 of those bytes are not this function's fault: both jal targets
+ * point at func_00234C98, which sits 8 bytes early in our build due to
+ * the pre-existing -8 drift starting around func_00234380 (outside this
+ * range).
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_001E9E70);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001E9EC8);
