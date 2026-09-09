@@ -1790,11 +1790,22 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0020DEB0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020DFF8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020E040);
+extern void func_001F99B0(void *, void *, int);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020E068);
+void func_0020E040(void) {
+    func_001F99B0((void *)0x70003A00, (void *)0x40000000, 0x380);
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020E098);
+extern void func_001F9A98(void *, void *, int);
+extern char D_001B3200[];
+
+void func_0020E068(void) {
+    func_001F9A98(D_001B3200, (void *)0x70003A00, 0x380);
+}
+
+void func_0020E098(void) {
+    func_001F9A98((void *)0x70003A00, D_001B3200, 0x380);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020E0C8);
 
@@ -1875,7 +1886,11 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00213F28);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00214080);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002140B0);
+extern int func_001160D8(void);
+
+int func_002140B0(int arg0) {
+    return ((func_001160D8() >> 16) & 0x7FFF) % arg0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002140F0);
 
@@ -2011,7 +2026,12 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00216198);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002161E0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00216270);
+extern void func_0012F068(void *);
+extern void func_002177F0(void);
+
+void func_00216270(void) {
+    func_0012F068(func_002177F0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00216290);
 
@@ -2065,7 +2085,21 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00216F48);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00217130);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00217588);
+extern void func_0012EFE8(void);
+
+/*
+ * 2/64: retail reuses the register that held the loaded halfword ($3)
+ * for the constant 1, this compiler takes a fresh $2 -- the documented
+ * scratch-register-allocation-choice question. Tried forcing reuse via
+ * a single int local reassigned to 1; that made it worse (4/64).
+ */
+void func_00217588(void) {
+    short *p = D_001517D0;
+    if (p[4] != 0) {
+        func_0012EFE8();
+        ((char *)p)[0xA] = 1;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002175C8);
 
@@ -2084,9 +2118,41 @@ void func_00217830(int arg0, long arg1) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00217860);
+extern void func_002167C0(short, short, short);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002178C0);
+void func_00217860(int arg0, long arg1) {
+    short *p = (short *)(int)arg1;
+    if (p == 0) {
+        return;
+    }
+    *(int *)p = arg0;
+    if (arg0 != 0) {
+        if (p[5] == 1) {
+            p[5] = 2;
+        }
+    } else {
+        short *b = D_001517D0;
+        func_002167C0(b[0x2A], b[0x2C], b[0x2B]);
+    }
+}
+
+extern void func_002169B8(short, short, short);
+
+void func_002178C0(int arg0, long arg1) {
+    short *p = (short *)(int)arg1;
+    if (p == 0) {
+        return;
+    }
+    *(int *)p = arg0;
+    if (arg0 != 0) {
+        if (p[5] == 1) {
+            p[5] = 2;
+        }
+    } else {
+        short *b = D_001517D0;
+        func_002169B8(b[0x1C], b[0x1E], b[0x1D]);
+    }
+}
 
 extern short D_001517F0;
 
@@ -2143,7 +2209,27 @@ void func_002179C8(int arg0, long arg1) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00217A08);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00217A60);
+void func_00217A60(int arg0, long arg1) {
+    char *p = (char *)(int)arg1;
+    short *b;
+    if (p == 0) {
+        return;
+    }
+    *(int *)(p + 0x18) = arg0;
+    if (*(short *)(p + 0x10) == 0) {
+        return;
+    }
+    b = D_001517D0;
+    if (b[0x10] != 1) {
+        return;
+    }
+    if (arg0 == 0) {
+        return;
+    }
+    b[0x10] = 2;
+    *(int *)((char *)b + 0x24) = *(int *)(p + 0x18);
+    *(int *)((char *)b + 0x28) = *(int *)(p + 0x18) / 4;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00217AD0);
 
@@ -2167,7 +2253,11 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00218188);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002181F0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00218908);
+extern void func_00217F68(void *);
+
+void func_00218908(void) {
+    func_00217F68(D_0013CA40);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00218928);
 
@@ -2308,7 +2398,12 @@ int func_0021DAC8(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021DAE0);
+extern void func_00226D50(int);
+
+int func_0021DAE0(void) {
+    func_00226D50(1);
+    return 0;
+}
 
 /*
  * Close but not exact (15/48): int func(void) {
@@ -2379,13 +2474,21 @@ int func_0021EF38(void *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021EF60);
+int func_0021EF60(char *arg0) {
+    *(int *)(arg0 + 0x44) = func_002267C0(*(int *)(arg0 + 0x44));
+    *(int *)(arg0 + 0x48) = func_002267C0(*(int *)(arg0 + 0x48));
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021EFA0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021F118);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021F200);
+extern float func_001FA748(float, float);
+
+void func_0021F200(char *arg0) {
+    *(float *)(arg0 + 0x48) = func_001FA748(*(float *)(arg0 + 0x48), 0.01f);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021F238);
 
@@ -2399,7 +2502,12 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0021F898);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021FA50);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021FAF8);
+extern int func_002267C0(int);
+
+int func_0021FAF8(char *arg0) {
+    *(int *)(arg0 + 0x44) = func_002267C0(*(int *)(arg0 + 0x44));
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021FB28);
 
