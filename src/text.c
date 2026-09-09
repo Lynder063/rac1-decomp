@@ -329,6 +329,19 @@ extern int D_0015F564;
 extern int D_0018DD40[];
 extern int D_0018DC40[];
 
+/*
+ * Close but not exact (24/80), re-tested this round against the newer
+ * techniques with no improvement. Logic confirmed:
+ *   int count = D_0015F564;
+ *   if (count < 0x40) { D_0018DC40[count]=arg0; D_0018DD40[count]=arg1;
+ *                       D_0015F564 = count+1; }
+ * Held by the `%hi`-register-reuse allocator sub-case at the very first
+ * two instructions (retail `lui $6,%hi(X)` / `lw $6,%lo(X)($6)` reusing
+ * one register; this compiler always splits it across two), which then
+ * shifts the rest. Direct array indexing is already the right form here
+ * -- switching it changes nothing, since the blocker precedes the array
+ * accesses entirely. See that sub-case under "Open toolchain questions".
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_001F49B0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F4A00);
@@ -504,18 +517,16 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F9A98);
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9AC0);
 
 /*
- * Close but not exact: DMAC channel register setup (base 0x1000D000,
- * offsets 0x10/0x20/0x80 are D_STAT/D_TADR/D_MADR-shaped registers,
- * 0x0 is D_CHCR set to 0x100 = STR bit; final read is INTC_STAT at
- * fixed address 0x20100000, ORed with 0x1). Logic confirmed correct
- * via objdump, but retail computes the 0x1000D000 base once into a
- * single scratch register ($1) and defers the 0x20100000 address
- * computation to right before its use; this compiler hoists that
- * second address earlier and uses different registers throughout.
- * New instance of the scratch-register-allocation-choice open
- * question (previously only seen with 2 independent temporaries, this
- * is more instructions/registers than prior instances). See
- * docs/DECOMP_PROGRESS.md.
+ * Not a decompile target: hand-written assembly, same idioms as the
+ * func_0020C210/func_0020C230 DMAC block. It keeps the 0x1000D000 base
+ * live in $1/$at across all four stores (assembler-reserved, never
+ * allocated by GCC), materializes 0x100 with `ori $2,$0,0x100` rather
+ * than `addiu`, has a bare `nop` between two stores, and leaves its
+ * final value in $3 -- not $2, the ABI return register -- which no
+ * compiler would emit for a value-returning function. An earlier
+ * revision of this comment treated it as compiler output and filed the
+ * diff under the scratch-register-allocation open question; that was a
+ * misread.
  */
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9AF0);
 
@@ -1358,16 +1369,17 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0020BD70);
 INCLUDE_ASM("asm/nonmatchings/text", func_0020BFC8);
 
 /*
- * Close but not exact (27/32 bytes): DMAC channel register setup at
- * fixed base 0x1000D400 (same memory-mapped-I/O category as
- * func_001F3D00/func_001F9AF0). Writes arg2/arg1/arg0/0x100 to
- * offsets 0x80/0x20/0x10/0x0. Retail computes the base address ONCE
- * (lui+ori) and reuses that register for all four stores; this
- * compiler recomputes a fresh `lui $at` before every store regardless
- * of an explicit `char *base` local materializing it once in source --
- * new variant of the redundant-address-reload pattern (previously only
- * seen for a *global*'s address, e.g. func_001FB530; this is the first
- * instance for a bare integer-constant address). Not fixed.
+ * Not a decompile target: hand-written assembly, like the rest of this
+ * DMAC block (func_0020C268/func_0020C2F8 are explicitly marked
+ * "Handwritten function" by spimdisasm; this one and func_0020C230 use
+ * the same idioms but escaped that heuristic). It keeps the base
+ * address 0x1000D400 live in $1/$at across all four stores -- $at is
+ * assembler-reserved on MIPS and GCC will never allocate it -- and
+ * materializes 0x100 with `ori $2,$0,0x100` where a compiler emits
+ * `addiu`. An earlier revision of this comment read the same
+ * disassembly as compiler output and invented a "redundant address
+ * reload for constant addresses" codegen category to explain it; that
+ * category was never real.
  */
 INCLUDE_ASM("asm/nonmatchings/text", func_0020C210);
 
