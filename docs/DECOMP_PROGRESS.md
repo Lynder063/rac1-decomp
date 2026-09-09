@@ -106,7 +106,13 @@ before being called "matches" below.
 | `func_002071D0`, `func_002071E0`, `func_002071F0`, `func_002073B8`, `func_002073C8`, `func_002073D8`, `func_002073E8`, `func_002073F8` | text | **matches** | All `int func(void) { return D_XXXXXXXX_byte != 0; }` — boolean-from-byte-flag, same shape (`lbu` a byte global, `sltu $2,$0,$2` to normalize to 0/1), distinct flag addresses. Byte-exact, all 8 first attempt. `func_002073A8` is the same shape but via a `$gp`-relative load — left alone, known skip category. |
 | `func_001F3D00` | text | **matches** | GS privileged-register setup (`0x1200_00XX` = the GS's memory-mapped register block): CSR ack, PMODE, then SMODE2/DISPFB1/DISPFB2/DISPLAY1/DISPLAY2/BGCOLOR set from a 3-entry table (`D_00151888`). First attempt had 45% mismatch from one wrong address: `a0`'s `ori` (completing `0x1200_0000` to `0x1200_00A0`) is scheduled *after* an earlier store that reuses `a0` while it still only holds the upper 16 bits — that store's real target is `0x12000000` (PMODE), not `0x120000A0` (DISPLAY2) as a first read of the register's *final* value suggested. Fixed by reading each store's address off the register's value *at that point in program order*, not its eventual fully-formed value. Byte-exact after the fix. |
 | `func_001FFA90` | text | **close, not exact** | `int v = D_001941CC; D_0019A4E8+0x10 = v; D_0019A4E8+0x14 = v + 0x64000;` — logic fully confirmed via disassembly, same size (0x28), but another instance of the scratch-register-allocation-choice question; being such a short function, nearly every instruction's register field differs even though every opcode matches (14/40 bytes). Followed the `func_00112468`/`func_001F49B0` precedent for a diff this large relative to function size: documented, not kept as C. |
-| everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1611 functions total remaining. |
+| `func_001FB448` | text | **matches** | `D_00152178 = (long)arg0 \| ((long)arg1<<8) \| ((long)arg2<<16) \| 0x80000000L;` (64-bit `sd` store, packs 3 small values + a flag bit into a global). First attempt used explicit `(unsigned int)` casts before widening to 64-bit, which made this compiler insert extra `dsll32`/`dsrl32`/`dsrl` masking retail doesn't have; retail just sign-extends each `int` parameter directly into 64-bit and shifts/ORs with no masking. Removing the unsigned casts (plain `(long)arg0` etc.) fixed it. Byte-exact. |
+| `func_00207CB0` | text | **matches** | `if (arg1 >= 0x101) return D_001414DC == 0xF; return D_0013D4C5 != 0;` (`arg0` unused — never referenced in the disassembly). First attempt had the condition inverted (`if (arg1 < 0x101) ... else ...`) — logically equivalent but produced the opposite branch polarity from retail; flipping to match retail's actual `beqz`-tests-the-"else"-case sense fixed it. Byte-exact. |
+| `func_00207E28` | text | **close, not exact** | `result = (arg0 < 0xE0 && arg1 <= 38.0f) ? 1 : 0;` (`38.0f` = `0x42180000`). Confirmed correct via objdump (same operations/registers/constant), but retail's FP-condition-to-integer materialization (`bc1t` with both the "set 1" and "reset to 0" as literal delay-slot/fallthrough instructions) isn't reproduced by any source shape tried (single `&&` expression, nested `if`, default-then-override) — all compile to a `bc1f`/`bc1tl`-based scheme instead. New instance of the delay-slot-scheduling open question, this time on FP-condition materialization rather than store/branch-target ordering. 26/52 bytes differ — too large to keep as documented-close C per the `func_00112468` precedent, left as `INCLUDE_ASM`. |
+| `func_00207EC0` | text | **close, not exact** | `if (arg0 >= 0xBE) return D_0013D4E0 != 0; return (arg1 >= 58.5f) ? 1 : 0;` (`58.5f` = `0x426A0000`). The early-return half matches exactly once written with the right branch polarity (`arg0 >= 0xBE` as the `if`, not `arg0 < 0xBE`) — same fix as `func_00207CB0`. The float-threshold half hits the identical delay-slot-scheduling issue as `func_00207E28` right above. 19/64 bytes differ, left as `INCLUDE_ASM` for the same reason. |
+| `func_001F9AF0` | text | **close, not exact** | DMAC channel register setup (base `0x1000D000`; `0x1200_0000`-style memory-mapped I/O, same category as `func_001F3D00`) plus a fixed-address `INTC_STAT` read at `0x20100000`, ORed with 1. Logic confirmed correct via objdump, but retail computes the `0x1000D000` base once into a single scratch register and defers the `0x20100000` address computation to right before its use; this compiler hoists that second address earlier and spreads the work across more registers. New (larger) instance of the scratch-register-allocation-choice question. Left as `INCLUDE_ASM`. |
+| `func_001FA748`, `func_001FA790` | text | **close, not exact** | Angle-wrap-to-`[-pi,pi]` on `arg0+arg1` / `arg0-arg1` respectively (retail's `else if` shape confirmed by the delay-slot second-compare testing the *original* sum, only meaningful when the first branch wasn't taken). Logic and instruction sequence confirmed correct via objdump, but this compiler allocates the sum/diff into `$f12` (reusing `arg0`'s register) where retail uses a fresh `$f0` — scratch-register-allocation-choice question, now confirmed to apply to FP registers too, not just integer. Tried a separate-assignment-then-accumulate source shape instead of one combined expression; no change. Left as `INCLUDE_ASM`. |
+| everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1604 functions total remaining. |
 
 ## Open toolchain questions
 
@@ -258,6 +264,18 @@ setup instruction comes first. Writing the C statements in the same
 order retail computes them (check the `.s` disassembly's instruction
 order before the loop) fixed it directly; no restructuring needed beyond
 matching statement order to retail's computation order.
+
+**Avoid unnecessary unsigned casts on values that get widened.** Seen
+fixing `func_001FB448`: when a group of `int` parameters gets widened to
+a 64-bit type and combined (shifted/ORed) into a packed value, adding
+explicit `(unsigned int)` casts before the widening — even though the
+values are conceptually just bit patterns, not really "numbers" — makes
+this compiler insert extra masking instructions (`dsrl32`/`dsrl` to
+clear the sign-extended upper bits) that retail doesn't have. Retail
+just lets each `int` sign-extend naturally into the 64-bit register and
+combines directly with no masking. If a near-match's extra bytes are
+masking/clearing instructions right after a parameter is widened, try
+removing an unsigned cast before assuming it's a deeper issue.
 
 ## Method
 
