@@ -224,16 +224,70 @@ have a new technique rather than trusting its note.
 
 ## Open toolchain questions
 
-**DISPUTED — 64-bit shift by a non-multiple-of-32 constant.** The entry
-further down claims this is a hard `cc1` error for *any* such shift. A
-later round tested `<<4`, `<<8`, `<<16` and `<<28` on a `long` and found
-they **all compile fine**, directly contradicting it. The original
-`unsupported wide integer operation` hard error was genuinely observed,
-so the real trigger must be narrower than stated — possibly specific to
-`long long` rather than `long`, or to a particular expression shape.
-That investigation was cut off before it concluded. **Do not treat the
-claim below as settled**: if a function needs such a shift, try it.
-Resolving this would also unblock `func_0023CFF0`.
+**RESOLVED (claim was wrong) — 64-bit shift by a non-multiple-of-32
+constant.** The entry further down claims this is a hard `cc1` error for
+*any* such shift, and that it blocks `func_0023CFF0`. Both parts are
+wrong: **`func_0023CFF0` now matches byte-exact (0/36), `<< 28` and
+all.** Shifts by 4/8/16/28 on a `long` all compile fine. Round 16's
+`unsupported wide integer operation` error was genuinely observed, so
+some narrower trigger exists (most likely `long long` rather than
+`long`, or a specific expression shape) — but it is far narrower than
+documented and does not block plain `long` shifts. **Use `long`, not
+`long long`, and just try the shift.** The stale entry below should be
+read as historical, not as guidance.
+
+**RESOLVED (question was mischaracterised) — `sq`/`lq` vs `sd`/`ld` is
+SEGMENT-CORRELATED, not a missing flag.** The long-standing entry below
+asserts "retail always spills callee-saved registers as `sd`/`ld`". That
+was generalised from a single `core_text` function and is wrong. Counting
+retail's own disassembly:
+
+| Retail segment | Callee-saved spill width |
+|---|---|
+| `core_text` | ~94% `sd`/`ld` |
+| `text` | ~95-99% `sq`/`lq` |
+
+Our compiler is *fixed*: `sd` for `$ra`, `sq` for `$s0`-`$s7`. So it
+matches `core_text` on `$ra` and matches `text` on the s-registers — an
+exact inversion between the two segments. Flag sweeps have now been run
+in **both** directions (earlier rounds only ever swept the s-register
+direction; the `$ra` direction has since been swept too) and nothing
+changes either.
+
+**Why this matters enormously for planning.** In the `text` segment, a
+function that saves `$ra` sits exactly **2 bytes** from retail — one
+`sq`→`sd` store plus its `lq`→`ld` restore — and **526 `text` functions
+save `$ra`**. Functions previously binned "blocked by sq/lq" are mostly
+not blocked at all; in one range alone the classifier had called 209 of
+298 stubs blocked when they are 2-byte near-matches. Range surveys that
+reported large "sq/lq-blocked" percentages (including range A's 95 of
+165) need re-reading in this light.
+
+**Adjusted acceptance criterion for `text`-segment functions:** a result
+of `2/N` where the only differing bytes are the `sq`/`lq` store+restore
+pair is the *expected best possible* outcome, and should be treated as
+success-equivalent — not as a near-miss to keep iterating on. Verify the
+two differing bytes really are those instructions (disassemble, don't
+assume) before accepting.
+
+**Do NOT mass-convert those functions to committed C on the strength of
+the 2-byte floor alone.** The floor only bounds the spill instructions;
+each function still needs its logic genuinely derived and verified, and
+converting in bulk would inflate the apparent match count while hiding
+unverified work. Treat the finding as "these are now worth attempting"
+rather than "these are now done."
+
+**Structural implication, and the real open question.** A per-segment
+split in a codegen choice this low-level is much more consistent with
+retail's two segments having been built **separately** — different
+compiler version, or different flags per segment — than with one flag
+nobody has found. If that holds, no single compiler configuration can
+match both segments, and the project may eventually need to compile
+`core_text` and `text` with *different* compilers. Testing whether one
+of the other three mirrored SN sub-builds (which use `sq` for everything
+including `$ra`) matches the `text` segment better than v1.36 does would
+be direct evidence. That is now the live question, not "which flag did
+we miss".
 
 **Callee-saved GPR spill width (`sq`/`lq` vs `sd`/`ld`).** Retail always
 spills callee-saved registers (`$ra`, `$s0`-`$s7`) as plain 64-bit
