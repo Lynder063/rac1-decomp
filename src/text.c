@@ -2873,7 +2873,11 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023DF98);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023DFA0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023DFC0);
+extern int func_0023D1F0(void *);
+
+int func_0023DFC0(void *arg0) {
+    return func_0023D1F0((char *)arg0 + 0x48);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023DFE0);
 
