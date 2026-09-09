@@ -1323,7 +1323,29 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002095E8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209620);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209698);
+/*
+ * Close but not exact (13/64, 20.3%) -- a direct sibling of
+ * func_002094E0 above: same guard (kind field 0xDC == 2 and status field
+ * 0xE4 negative), same three writes, only the constants differ (status 9
+ * and error code 0xF here, vs 7 and 0xB there). Landed on exactly the
+ * same residual as that function, from exactly the same cause: retail
+ * stores the two struct fields first and only then computes
+ * D_0015EFB0's address (using $1/$at for its %hi), where this compiler
+ * materializes that address earlier and stores to it before the second
+ * struct field. That's the established two-base store-order/%hi
+ * register-choice question; func_002094E0's entry already records that
+ * reordering the source statements doesn't move it, so not re-tried.
+ * Kept as documented-close on that function's precedent (same 20.3%).
+ */
+void func_00209698(void) {
+    char *s = D_0013D390;
+    if (*(int *)(s + 0xDC) == 2 && *(int *)(s + 0xE4) < 0) {
+        int a = 9, b = 0xF;
+        *(int *)(s + 0xE4) = a;
+        *(int *)(s + 0xE8) = 0;
+        D_0015EFB0 = b;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002096D8);
 
