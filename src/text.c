@@ -2010,6 +2010,17 @@ int func_0021DAC8(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021DAE0);
 
+/*
+ * Close but not exact (15/48): int func(void) {
+ *   D_0013E6A0 = (D_0015EEF0 * 8) / 10; return 0; }
+ * Shape exactly right (real signed `div` plus its trap guard -- see the
+ * constant-division note in the techniques section). Residual is the
+ * same recurring pair as func_00222D70/func_0021B108: retail loads the
+ * global into the very register it put the `%hi` in (`lui $3` /
+ * `lw $3`), this compiler uses a separate register for the `%hi`, and
+ * the divisor's `addiu` is ordered before the load rather than after.
+ * Reverted per the size-of-diff precedent.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_0021DB00);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021DB30);
@@ -2169,6 +2180,19 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00222B00);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00222B98);
 
+/*
+ * Close but not exact (24/60): int func(void *arg0) {
+ *   *(int *)((char *)arg0+0x34) = D_001D48A8[D_0015EE84 % 19];
+ *   return 0; }
+ * Notably the *shape* is exactly right, including the real `divu` and
+ * its div-by-zero trap guard -- see the constant-division note in the
+ * techniques section. The residual is the known allocator-varying
+ * issue: retail does `lui $5` / `lw $5` (loading into the register it
+ * just built the address in), this compiler does `lui $3` / `lw $5`,
+ * and it orders the divisor's `addiu` before the load rather than
+ * after. Same as func_0021B108's entry. Reverted per the size-of-diff
+ * precedent.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00222D70);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00222DB0);
