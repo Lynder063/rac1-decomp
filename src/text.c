@@ -1201,10 +1201,30 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00208FA0);
 void func_00209040(void) {
 }
 
+/*
+ * Close but not exact (16/36 bytes): 2D cross-product orientation test.
+ * arg0 -= arg2; arg1 -= arg3; arg4 -= arg2; arg5 -= arg3;
+ * return (arg4*arg1 - arg5*arg0) < 0;
+ * Same operations/order/register reuse (in-place subtraction) as
+ * retail, confirmed via objdump, but the final sign test compiles to
+ * `srl $2,$2,0x1f` here where retail uses `slti $2,$2,0` -- two
+ * different instructions computing the identical 0/1 result for
+ * "value < 0". Not a scheduling/register question like the usual
+ * near-misses, a pure instruction-selection choice for the same
+ * boolean-from-sign-bit pattern; not investigated further.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00209048);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209070);
 
+/*
+ * Close but not exact (18/36 bytes): materializes &D_0013D390 into a
+ * base pointer, sets D_0015EFB0 = 3, reads base+0xC4 into a temp, zeroes
+ * base+0xFC, writes the temp to base+0x1C. Logic confirmed correct via
+ * objdump; tried both statement orders for the final two independent
+ * stores, neither reproduced retail's exact scheduling. Same
+ * delay-slot-scheduling open question as func_002098A8 above.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00209160);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209188);
@@ -1269,6 +1289,14 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00209808);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209858);
 
+/*
+ * Close but not exact (7/32 bytes): if (D_0013D3AC != 0) D_0015EFB0 = 3;
+ * Logic confirmed correct via objdump. Retail schedules the literal 3
+ * into the branch's delay slot; this compiler schedules the
+ * D_0015EFB0 address computation there instead and materializes 3
+ * separately later. New instance of the delay-slot-scheduling open
+ * question (same family as func_00209160 right below).
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_002098A8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002098C8);
@@ -1309,6 +1337,18 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0020BD70);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020BFC8);
 
+/*
+ * Close but not exact (27/32 bytes): DMAC channel register setup at
+ * fixed base 0x1000D400 (same memory-mapped-I/O category as
+ * func_001F3D00/func_001F9AF0). Writes arg2/arg1/arg0/0x100 to
+ * offsets 0x80/0x20/0x10/0x0. Retail computes the base address ONCE
+ * (lui+ori) and reuses that register for all four stores; this
+ * compiler recomputes a fresh `lui $at` before every store regardless
+ * of an explicit `char *base` local materializing it once in source --
+ * new variant of the redundant-address-reload pattern (previously only
+ * seen for a *global*'s address, e.g. func_001FB530; this is the first
+ * instance for a bare integer-constant address). Not fixed.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_0020C210);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020C230);
@@ -1329,33 +1369,112 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0020C940);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020CA50);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020CB80);
+extern int D_0013D844;
+extern unsigned char D_0013D4A8;
 
+int func_0020CB80(void) {
+    if (D_0013D844 != 0 && D_0013D4A8 != 0) return 1;
+    return 0;
+}
+
+extern int D_0013D9B4;
+
+/*
+ * Close but not exact (16/56 bytes): if (D_0013D9B4 != 0 &&
+ * D_0013D490_base[0x20] != 0 && D_0013D490_base[0x21] != 0) return 1;
+ * else return 0. Same 3-value shared-tail predicate shape as
+ * func_0020CB80 and neighbors (which all matched with this &&-combined
+ * form), but retail reuses ONE register across both the D_0013D9B4
+ * check and the D_0013D490-base computation (materializing the second
+ * lazily, in the first branch's delay slot); this compiler keeps them
+ * in separate registers throughout instead. Not fixed -- the technique
+ * that worked for the simpler 2-value cases in this cluster didn't
+ * carry over to this 3-value one.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_0020CBA8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020CBE0);
+extern int D_0013D6B8;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020CC10);
+int func_0020CBE0(void) {
+    char *base = (char *)&D_0013D6B8;
+    if (*(int *)(base + 0x40C) != 0 && *(int *)(base + 0x3FC) != 0) return 1;
+    return 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020CC38);
+extern int D_0013DAE4;
+extern unsigned char D_0013D4E5;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020CC60);
+int func_0020CC10(void) {
+    if (D_0013DAE4 != 0 && D_0013D4E5 != 0) return 1;
+    return 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020CC88);
+extern int D_0013DB24;
+extern unsigned char D_0013D4F1;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020CCB8);
+int func_0020CC38(void) {
+    if (D_0013DB24 != 0 && D_0013D4F1 != 0) return 1;
+    return 0;
+}
+
+extern int D_0013DC34;
+extern unsigned char D_0013D605;
+
+int func_0020CC60(void) {
+    if (D_0013DC34 != 0 && D_0013D605 != 0) return 1;
+    return 0;
+}
+
+extern int D_0013D5C8;
+
+int func_0020CC88(void) {
+    unsigned char *base = (unsigned char *)&D_0013D5C8;
+    if (base[0x21] != 0 && base[0x1F] != 0) return 1;
+    return 0;
+}
+
+int func_0020CCB8(int arg0) {
+    unsigned char *base = (unsigned char *)&D_0013D5C8;
+    return base[arg0] != 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020CCD0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020CD28);
+extern int D_0013D9B4;
+extern unsigned char D_0013D4B0;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020CD58);
+int func_0020CD28(void) {
+    if (D_0013D9B4 != 0) {
+        return D_0013D4B0 ? 2 : 1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020CD80);
+extern unsigned char D_0013DE55;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020CDA8);
+int func_0020CD58(void) {
+    if (D_0013D4F1 != 0 && D_0013DE55 != 0) return 1;
+    return 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020CDB8);
+extern unsigned char D_0013D5DD;
+
+int func_0020CD80(void) {
+    if (D_0013D5DD != 0) return 2;
+    return D_0013DC34 != 0;
+}
+
+extern unsigned char D_0013D5E7;
+
+int func_0020CDA8(void) {
+    return D_0013D5E7 != 0;
+}
+
+int func_0020CDB8(void) {
+    unsigned char *base = (unsigned char *)&D_0013D5C8;
+    if (base[0x1F] != 0) return 2;
+    return base[0x21] != 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020CDE0);
 
@@ -1415,6 +1534,15 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0020E2B0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020E330);
 
+/*
+ * Close but not exact (13/32 bytes): packs 4 values into a 64-bit
+ * field: *(long*)(arg0+0x38) = (arg1<<32) | arg2 | (arg3<<8) | (arg4<<16).
+ * Same operations/order as retail (confirmed via objdump: same dsll32/
+ * dsll/or sequence), but the widen-and-shift-by-32 for arg1 lands in a
+ * different register than retail. Not investigated to a fix -- same
+ * general family as the scratch-register-allocation-choice question,
+ * on the widening step specifically.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_0020E340);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020E360);
@@ -1515,6 +1643,19 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00214F78);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215038);
 
+/*
+ * Close but not exact (16/48 bytes, both func_00215048/func_00215078):
+ * if (arg0 == 0) return 0; flags = *(u16*)(arg0+0x34);
+ * if ((flags & 0x20) == 0) return 0;
+ * return *(int*)(*(int**)(arg0+0x78) + N);  (N = 0x0 / 0x10 resp.)
+ * Logic confirmed correct via objdump, same overall shape, but retail
+ * has two literal nop instructions between the `andi` mask and the
+ * following `beqz` that this compiler doesn't emit (schedules straight
+ * through instead) -- a scheduling difference, not a logic gap, but
+ * not one of the previously-documented delay-slot/register-allocation
+ * patterns exactly (this is nop *insertion*, not a different
+ * instruction choice). Not investigated further.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00215048);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215078);

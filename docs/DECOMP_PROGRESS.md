@@ -144,7 +144,22 @@ before being called "matches" below.
 | `func_001FFA90` neighbor cluster (`func_001FFC48`, `func_00208248`, `func_00208338`) | text | **skipped, callee-saved regs** | All use `$16`/`$17` via `sq`/`lq` — hits the open `sq`/`lq` question. |
 | `func_001FFFA0` | text | **skipped, `$gp`-relative** | `lw`/`sw` via `($28)` offset — known skip category (`-G0` build, no SDA support). |
 | `func_00208160`, `func_00208208` | text | **not attempted, known open question** | Float-threshold-to-bool materialization (`c.le.s`/`bc1f`/`bc1tl` scheme) — same delay-slot-scheduling issue already documented and reverted for `func_00207E28`/`func_00207EC0`; not re-attempted. |
-| everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1575 functions total remaining. |
+| `func_0020CB80`, `func_0020CC10`, `func_0020CC38`, `func_0020CC60`, `func_0020CD58` | text | **matches** | All `if (D_int_flag != 0 && D_byte_flag != 0) return 1; return 0;` — distinct global addresses, same shape. Needed the `&&`-combined single-condition form (shared-tail merging), not a `!= 0` boolean-cast return or a `==0`-guard-then-cast — see "Shared-tail merging with a boolean cast" below, a refinement of the existing shared-tail technique. |
+| `func_0020CBE0` | text | **matches** | Same shape as the cluster above but on two fields of one struct (`D_0013D6B8+0x40C`, `+0x3FC`) instead of two separate globals: `if (base[0x40C] != 0 && base[0x3FC] != 0) return 1; return 0;`. |
+| `func_0020CC88` | text | **matches** | Same shape again, on `D_0013D5C8`'s byte fields `0x21`/`0x1F`. Needed `unsigned char *` for the base pointer (not `char *`) — see "lbu vs lb" note below. |
+| `func_0020CCB8` | text | **matches** | `return D_0013D5C8_bytes[arg0] != 0;` — indexes the same global as `func_0020CC88`, byte-exact first attempt, no gotchas. |
+| `func_0020CD28` | text | **matches** | `if (D_0013D9B4 != 0) { return D_0013D4B0 ? 2 : 1; } return 0;` (compiles the ternary to a `movz`). Needed the explicit `if (main-case) {...} return 0;` form (main case as the `if`-body, not `if (guard) return 0;` early-return) — same branch-polarity-family fix as `func_00207CB0`, applied to which arm is "inline" vs "jumped to" rather than `beqz`-vs-`bnez` sense. |
+| `func_0020CD80` | text | **matches** | `if (D_0013D5DD != 0) return 2; return D_0013DC34 != 0;` — matched first attempt with the straightforward form (no shared-tail merge needed: this one's two "return 0" cases don't actually converge in retail, it's a plain sequential two-guard shape, not the converging-boolean shape the `&&`-cluster needed). |
+| `func_0020CDA8` | text | **matches** | `return D_0013D5E7 != 0;` — simple byte-flag getter, byte-exact first attempt. |
+| `func_0020CDB8` | text | **matches** | `if (base[0x1F] != 0) return 2; return base[0x21] != 0;` on `D_0013D5C8` — same `unsigned char *` fix as `func_0020CC88`. |
+| `func_0020CBA8` | text | **close, not exact** | Same 3-value `&&`-chained shared-tail shape as the `func_0020CB80` cluster (`D_0013D9B4 != 0 && base[0x20] != 0 && base[0x21] != 0`), but with 3 conditions instead of 2. Retail reuses one register across the `D_0013D9B4` check and the `D_0013D490`-base computation (materializing the second lazily in the first branch's delay slot); this compiler keeps them in separate registers. The 2-condition version of this exact technique worked for 8 other functions in this cluster; the 3-condition version didn't carry over. 16/56 bytes differ. |
+| `func_00209048` | text | **close, not exact** | 2D cross-product orientation test, 6 `int` params. Same operations/order/in-place-subtraction register reuse as retail (confirmed via objdump), but the final `(cross) < 0` boolean compiles to `srl $2,$2,0x1f` here vs. retail's `slti $2,$2,0` — two different instructions for the identical result, not a scheduling/register question. 16/36 bytes differ. |
+| `func_00209160` | text | **close, not exact** | Struct field shuffle (`D_0013D390`): read field `0xC4` into a temp, zero field `0xFC`, write the temp to field `0x1C`, plus `D_0015EFB0 = 3`. Confirmed correct logic; tried both statement orders for the final two independent stores, neither matched retail's scheduling. New instance of the delay-slot-scheduling question. |
+| `func_002098A8` | text | **close, not exact** | `if (D_0013D3AC != 0) D_0015EFB0 = 3;`. Retail schedules the literal `3` into the branch's delay slot; this compiler schedules the `D_0015EFB0` address computation there instead. Same open question as `func_00209160` right above (found together, same underlying pattern). |
+| `func_0020C210` | text | **close, not exact** | DMAC register setup at fixed base `0x1000D400` (writes `arg2`/`arg1`/`arg0`/`0x100` to offsets `0x80`/`0x20`/`0x10`/`0x0`, same MMIO category as `func_001F3D00`/`func_001F9AF0`). Retail computes the base address once and reuses it for all four stores; this compiler recomputes a fresh `lui $at` before every store even with an explicit `char *base` local in source. New variant of the redundant-address-reload pattern (previously only seen for a *global*'s address; this is the first instance for a bare integer-constant address). 27/32 bytes differ. |
+| `func_0020E340` | text | **close, not exact** | Packs 4 values into a 64-bit field (`(arg1<<32) \| arg2 \| (arg3<<8) \| (arg4<<16)`, stored to `arg0+0x38`). Same instruction sequence/order as retail, but the widened `arg1` lands in a different register. 13/32 bytes differ. |
+| `func_00215048`, `func_00215078` | text | **close, not exact** | Both: null-check `arg0`, read a flags halfword at `+0x34`, test bit `0x20`, then return `*(int*)(*(int**)(arg0+0x78) + N)` (`N` = `0x0`/`0x10` respectively). Logic and overall shape confirmed correct, but retail has two literal `nop` instructions between the mask and the following branch that this compiler doesn't emit — schedules straight through instead. Not one of the previously-documented delay-slot/register-allocation patterns exactly (nop *insertion*, not a different instruction choice). 16/48 bytes differ each. |
+| everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1550 functions total remaining. |
 
 ## Open toolchain questions
 
@@ -344,6 +359,32 @@ just lets each `int` sign-extend naturally into the 64-bit register and
 combines directly with no masking. If a near-match's extra bytes are
 masking/clearing instructions right after a parameter is widened, try
 removing an unsigned cast before assuming it's a deeper issue.
+
+**Shared-tail merging with a boolean cast.** A variant of the existing
+shared-tail-merging technique, seen fixing the `func_0020CB80` cluster:
+when a function's retail shape is "two (or more) independent conditions
+must ALL be true for the result to be 1, otherwise 0" and both/all the
+"false" outcomes converge to one shared `return 0`, write it as a single
+`&&`-chained condition (`if (a != 0 && b != 0) return 1; return 0;`),
+not as sequential early-return guards (`if (a == 0) return 0; return b
+!= 0;`) and not as a boolean-cast expression (`return a != 0 && b !=
+0;`, or worse, `if (a==0) return 0; return b != 0;` which drops the
+literal-1-vs-0 distinction entirely). The early-return-guard form
+compiles the second comparison as a plain boolean cast (`sltu`
+normalize) instead of retail's explicit branch-with-literal-return —
+worked for 8 of 9 attempts in this cluster; the one that didn't
+(`func_0020CBA8`) had 3 chained conditions instead of 2, so this
+technique may not scale past 2.
+
+**`unsigned char *`, not `char *`, for byte-field base pointers.** Seen
+fixing `func_0020CC88`/`func_0020CDB8`: when dereferencing a `char *`
+that's really an unsigned byte flag/field (compared against 0, not used
+as a signed value), a plain `char *` may compile to `lb` (sign-extending
+load) where retail uses `lbu` (zero-extending) — a real difference in
+which load opcode gets encoded, not just a value/register question, even
+though the *comparison result* against 0 is identical either way.
+`unsigned char *` fixes it directly. Doesn't affect `int`/other wider
+types, only single-byte loads.
 
 ## Method
 
