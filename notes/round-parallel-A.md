@@ -47,3 +47,101 @@ is real but is not the binding constraint for any function here.
 | `func_001EBAF0` | 0x58 | already documented — got to 8/88, held by register-allocation choice |
 | `func_001F4B68` | 0x50 | **fresh, not previously documented** — see below |
 | `func_001F2A38` | 0xd4 | **fresh** (named as the live candidate) — see below |
+
+## Candidate attempts (both reverted, logic confirmed)
+
+### `func_001F4B68` (0x50) — reverted at 24/80 (30%)
+
+Bounded append into two parallel arrays. Logic confirmed correct; our
+build is instruction-for-instruction identical in structure and lands at
+exactly the right size, only register *names* differ.
+
+```c
+extern int D_0015F568;
+extern int D_0018DE40[];
+extern int D_0018DF40[];
+
+void func_001F4B68(int arg0, int arg1) {
+    int count = D_0015F568;
+    if (count < 0x40) {
+        D_0018DE40[count] = arg0;
+        D_0018DF40[count] = arg1;
+        D_0015F568 = count + 1;
+    }
+}
+```
+
+Held by two documented-unsteerable things at once:
+- **`%hi` register reuse**: retail does `lui $6,%hi(D_0015F568)` /
+  `lw $6,%lo(...)($6)` (same register); this compiler always splits it.
+- Because retail does *not* keep that base live, it re-materialises the
+  address into `$at` (`lui $1`) for the final store, whereas we keep the
+  register live and reuse it — so retail is one `lui` "longer" in a way
+  no source form reproduces.
+- Arg spill registers are exactly swapped (`arg0`→`$7`/`arg1`→`$8` in
+  retail vs `$t0`/`$a3` here).
+
+**Tried and did not help:** declaring `D_0015F568` `volatile` (the
+documented redundant-reload signature — retail's re-materialised address
+looked like a match for it). No codegen change at all; the reload here is
+of the *address*, not the value, so the volatile technique doesn't apply.
+Worth knowing: address re-derivation and value re-loading are different
+signatures, and only the latter indicates `volatile`.
+
+### `func_001F2A38` (0xd4) — reverted at 149/212 (70%)
+
+Three-level bounds-checked nested table walk (one level per coordinate,
+consumed `arg2`, `arg1`, `arg0` in that order). **Compiles to exactly the
+right size (212 bytes) with identical structure**, so the logic below is
+confirmed correct — it is held purely by register allocation.
+
+```c
+extern unsigned char *D_0015F720;
+
+void *func_001F2A38(int arg0, int arg1, int arg2) {
+    unsigned char *base = D_0015F720;
+    unsigned char *data = base + *(int *)base;
+    unsigned short *p2 = (unsigned short *)(base + 4);
+    unsigned short *p1;
+    unsigned short *p0;
+    unsigned short t;
+
+    arg2 -= p2[0];
+    if (arg2 < 0) return 0;
+    if (arg2 >= p2[1]) return 0;
+    t = p2[2 + arg2];
+    if (t == 0) return 0;
+    p1 = (unsigned short *)(base + t * 4);
+
+    arg1 -= p1[0];
+    if (arg1 < 0) return 0;
+    if (arg1 >= p1[1]) return 0;
+    t = p1[2 + arg1];
+    if (t == 0) return 0;
+    p0 = (unsigned short *)(base + t * 4);
+
+    arg0 -= p0[0];
+    if (arg0 < 0) return 0;
+    if (arg0 >= p0[1]) return 0;
+    t = p0[2 + arg0];
+    if (t == 0xFFFF) return 0;
+    return data + (t << 7);
+}
+```
+
+Each level's node layout is `{u16 lo; u16 count; u16 child[]}` reached at
+`base + index*4`; the leaf value is rejected on `0` at levels 1-2 and on
+`0xFFFF` at level 3, and the hit returns `data + (leaf << 7)`.
+
+Retail keeps the three arguments untouched in `$4`-`$6` and uses
+`$7`-`$9` as temps. This compiler picks `$a0` for the level pointer,
+which clobbers `arg0` and forces extra `move`s to save the arguments —
+that difference then propagates through nearly every instruction.
+
+**Steering attempted:** a single reused `p` variable scored 183/212
+(86%); splitting it into three separate per-level locals (`p2`/`p1`/`p0`)
+improved it to 149/212 (70%) and did move `base` into `$t0` matching
+retail, but the level pointer stayed in `$a0`. Recorded because the
+improvement shows per-level locals *are* a real allocation lever worth
+trying elsewhere, even though it wasn't enough here. Still also carries
+the `%hi`-reuse sub-case in its opening two instructions.
