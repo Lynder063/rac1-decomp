@@ -671,8 +671,19 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FA7D8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FA850);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FA888);
+float func_001FA888(int arg0) {
+    return (float)arg0;
+}
 
+/*
+ * Close but not exact: retail's cvt.w.s converts in place (dest fs ==
+ * src fs, both $f12, the incoming arg register); this compiler always
+ * allocates a fresh dest register for the conversion result. 2/16 bytes
+ * differ (just that one instruction's register-field encoding). New,
+ * small instance of the scratch-register-allocation-choice open
+ * question. Tried an extra (float)(int) round-trip to nudge it toward
+ * reusing $f12 -- made it worse (50% mismatch), reverted.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_001FA898);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FA8A8);
