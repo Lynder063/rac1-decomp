@@ -343,7 +343,11 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F2B10);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F2BC8);
 
-extern void func_001F99B0(void *arg0, int arg1, int arg2);
+/* Unprototyped deliberately: two call sites need incompatible arg1
+   types (-1 and a pointer) and both callers are byte-exact, so
+   neither may be edited. Codegen is identical either way -- int and
+   pointer are both 32-bit in the same arg register. */
+extern void func_001F99B0();
 extern void func_001F2BC8(void);
 extern int D_0018C434;
 extern char D_001940C0[];
@@ -1790,7 +1794,6 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0020DEB0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020DFF8);
 
-extern void func_001F99B0(void *, void *, int);
 
 void func_0020E040(void) {
     func_001F99B0((void *)0x70003A00, (void *)0x40000000, 0x380);
