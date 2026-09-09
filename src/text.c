@@ -297,7 +297,21 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F3B90);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F3C10);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F3D00);
+extern long D_00151888[3];
+
+/* GS privileged-register writes (0x1200_00XX = the GS's memory-mapped
+   register block): CSR ack, PMODE, then SMODE2/DISPFB1/DISPFB2/DISPLAY1/
+   DISPLAY2/BGCOLOR set from a 3-entry table. */
+void func_001F3D00(void) {
+    *(volatile long *)0x120000E0 = 0;
+    *(volatile long *)0x12000000 = 0xFFA1;
+    *(volatile long *)0x12000020 = D_00151888[0];
+    *(volatile long *)0x12000070 = D_00151888[1];
+    *(volatile long *)0x12000090 = D_00151888[1];
+    *(volatile long *)0x12000080 = D_00151888[2];
+    *(volatile long *)0x120000A0 = D_00151888[2];
+    *(volatile long *)0x120000D0 = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F3D78);
 
@@ -711,6 +725,18 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FF950);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FF958);
 
+/*
+ * Close but not exact: logic fully confirmed via disassembly --
+ * int v = D_001941CC; D_0019A4E8+0x10 = v; D_0019A4E8+0x14 = v + 0x64000;
+ * -- same size (0x28) and same operations, but this compiler's scratch-
+ * register choice differs from retail throughout this short function
+ * (v0/v1/a0/a1 swapped around), so nearly every instruction's register
+ * field differs even though every opcode matches. Same open-question
+ * category as func_001160D8/func_00115578/func_00115098; the diff here
+ * (14/40 bytes) is large enough relative to the function's size to
+ * follow the func_00112468/func_001F49B0 precedent and stay INCLUDE_ASM
+ * rather than be kept as documented-close C.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_001FFA90);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FFAB8);
@@ -867,11 +893,23 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00207090);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002071A8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002071D0);
+extern unsigned char D_0013D49C;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002071E0);
+int func_002071D0(void) {
+    return D_0013D49C != 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002071F0);
+extern unsigned char D_0013D49D;
+
+int func_002071E0(void) {
+    return D_0013D49D != 0;
+}
+
+extern unsigned char D_0013D4A5;
+
+int func_002071F0(void) {
+    return D_0013D4A5 != 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207200);
 
@@ -881,15 +919,35 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00207340);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002073A8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002073B8);
+extern unsigned char D_0013D4AC;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002073C8);
+int func_002073B8(void) {
+    return D_0013D4AC != 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002073D8);
+extern unsigned char D_0013D4AD;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002073E8);
+int func_002073C8(void) {
+    return D_0013D4AD != 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002073F8);
+extern unsigned char D_0013D4AE;
+
+int func_002073D8(void) {
+    return D_0013D4AE != 0;
+}
+
+extern unsigned char D_0013D4AF;
+
+int func_002073E8(void) {
+    return D_0013D4AF != 0;
+}
+
+extern unsigned char D_0013D4B5;
+
+int func_002073F8(void) {
+    return D_0013D4B5 != 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207408);
 
