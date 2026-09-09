@@ -179,7 +179,9 @@ before being called "matches" below.
 | `func_0021DA98` | text | **matches** | `*(char**)((char*)arg0+0x34) = (D_0013D5CA != 0) ? D_001D0A50 : D_001D0A88; return 0;` — picks one of two fixed buffers by a byte flag and stores it into the object. Byte-exact first attempt with a plain ternary. Note retail *branches* here (with an explicit join `b`) rather than using a cmov, and this compiler agrees — selecting between two **addresses** (each needing its own `lui`/`addiu`) isn't cmov-able, so the cmov-vs-branch divergence documented for `func_0021EDD8` doesn't bite for address selects. Useful: this shape is reliably matchable. |
 | `func_0021B108` | text | **matches** except 2/44 bytes | Identical shape to `func_0021DA98` above (`(D_0015EF90 != 0) ? D_001D4B90 : D_001D4BC0` into `arg0+0x34`), on an `int` flag rather than a byte one. The only diff is which register holds the flag global's address: retail does `lui $2` / `lw $2,lo($2)` (loads into the same register), this compiler `lui $3` / `lw $2,lo($3)`. Notably retail itself is inconsistent between the two — `func_0021DA98` uses `lui $3`/`lbu $2` (matching this compiler exactly, hence that one being byte-exact) while this one reuses `$2`. So it's retail's allocator varying, not a rule we're failing to follow: the scratch-register-allocation-choice question. Kept as C per the tiny-isolated-diff precedent. |
 | `func_0022F0F0` | text | **skipped, known sign-extension gap** | Would be `if (arg1 != 0) { *(int*)arg1 = arg0; if (arg0 == 0) { ((char*)arg1)[4] = 0; *(int*)((char*)arg1+0x18) = 0; *(int*)((char*)arg1+0x1C) = 0; } }` — but opens with `dsll32 $5,$5,0` / `dsra32 $5,$5,0`, the 32→64 sign-extension of the pointer parameter that is the `func_00112380`/`func_0022F090` open question. Not attempted; blocked before the interesting part. (It also has an unfilled `beqz` delay slot and does the first store in the *second* branch's delay slot so it runs either way — worth revisiting if the sign-extension question is ever solved.) |
-| everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1534 functions total remaining. |
+| `func_0021DA60` | text | **matches** | Copies 8 `int`s from `arg0+0x30` into the global array `D_00141FA0`, returns 0. Written as a `do { *dst++ = *src++; } while (--i >= 0);` with `i` starting at 7. Byte-exact **first attempt**, including retail's unfilled `nop` inside the loop body — worth noting since loops had been avoided as risky: a simple counted copy loop reproduced exactly, so loop shapes are not inherently a problem. |
+| `func_00219E60` | text | **close, not exact** (23/44), reverted | Sets `D_001D5F70` (an object) field `0` to `0x2D` and fields `0xC`/`0x10`/`0x110` to 0, plus the separate global `D_0015F6E8 = 3`. Instruction count and size are right; the register assignment differs from the very first instruction (retail `lui $4`, this compiler `lui $5`) and cascades through. Also establishes that **the store-order rotation rule is base-pointer-scoped**: this function's stores go through two different bases, and the compiler reordered them non-rotationally (source `0x110, global, 0xC, 0x10, 0` → emitted `0, global, 0x10, 0x110, 0xC`); writing the source in retail's own emitted order changed nothing. |
+| everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1532 functions total remaining. |
 
 ## Open toolchain questions
 
@@ -425,7 +427,12 @@ This supersedes the earlier "try permutations empirically" advice from
 appears deterministic. (It also retroactively explains `func_0023CE18`'s
 2-store case, where retail's order was the reverse of the source's.)
 Note the rule is about the *store* statements; a trailing `return`, and
-the base-pointer setup, sit outside the rotation.
+the base-pointer setup, sit outside the rotation. **The rule is
+base-pointer-scoped**: it held for 3- and 4-store runs through a single
+base, but `func_00219E60` (stores split between an object base *and* a
+separate standalone global) reordered non-rotationally and did not
+respond to source order at all — so don't expect it to apply once more
+than one base is in play.
 
 **Redundant reload + unfilled delay slot = `volatile`.** Seen fixing
 `func_0023E710`: where retail re-loads a field it already has in a

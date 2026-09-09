@@ -1859,6 +1859,23 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00219C70);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00219E48);
 
+/*
+ * Close but not exact (23/44), reverted. Logic:
+ *   char *p = D_001D5F70;
+ *   *(int*)p = 0x2D; *(int*)(p+0x110) = 0; D_0015F6E8 = 3;
+ *   *(int*)(p+0xC) = 0; *(int*)(p+0x10) = 0;
+ * Instruction count/size are right (44 both) but the register
+ * assignment differs from the very first instruction (retail `lui $4`,
+ * this compiler `lui $5`) and cascades. The store *order* also doesn't
+ * follow the usual rotation rule -- unlike the single-base cases, this
+ * function's stores go through two different bases (the D_001D5F70
+ * object and the standalone global D_0015F6E8), and the compiler
+ * reorders them more freely: source (0x110, global, 0xC, 0x10, 0) came
+ * out as (0, global, 0x10, 0x110, 0xC), which is not a rotation.
+ * Writing the source in retail's own emitted order changes nothing.
+ * So: the rotation rule is base-pointer-scoped, and this is the
+ * register-allocation-choice question on top.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00219E60);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00219E90);
@@ -1928,7 +1945,17 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0021D7A0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021D9C8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021DA60);
+extern int D_00141FA0[];
+
+int func_0021DA60(void *arg0) {
+    int *src = (int *)((char *)arg0 + 0x30);
+    int *dst = D_00141FA0;
+    int i = 7;
+    do {
+        *dst++ = *src++;
+    } while (--i >= 0);
+    return 0;
+}
 
 extern unsigned char D_0013D5CA;
 extern char D_001D0A50[];
