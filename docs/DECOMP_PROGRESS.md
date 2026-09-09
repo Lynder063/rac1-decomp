@@ -187,7 +187,53 @@ before being called "matches" below.
 | `func_0021DB00` | text | **close, not exact** (15/48) | `D_0013E6A0 = (D_0015EEF0 * 8) / 10; return 0;`. Same story as `func_00222D70` � correct shape, held by `%hi`-register reuse plus the divisor `addiu`'s position. Reverted. |
 | everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1532 functions total remaining. |
 
+## SOLVED: the `dsll32`/`dsra32` sign-extension question
+
+**It's a 64-bit `long` parameter narrowed to `int` at the use site.**
+This was filed as an unsolved open question from the very first
+decompiled function (`func_00112380`) onward, repeatedly described as a
+codegen artifact no source shape reproduced. That was wrong. The pair is
+exactly what this compiler emits for a parameter declared `long`
+(64-bit here) and narrowed to `int` where it is used:
+
+```c
+void func_00217830(int arg0, long arg1) {
+    short *p = (short *)(int)arg1;   /* <- emits dsll32/dsra32 */
+    ...
+}
+```
+
+Verified byte-exact (0/48) on `func_00217830`, with the compiler's own
+exit code confirmed 0 before trusting the result.
+
+**This reclaims a whole category.** Every entry filed under the old
+sign-extension question is worth retrying with a `long` parameter
+narrowed at the use site. Known candidates: `func_00112380` (the
+original — and the root cause of the "known systemic artifact" 8-byte
+drift noted at the top of this file, so fixing it may re-align many
+downstream `jal` targets and turn several "matches (mod. known drift)"
+entries into clean exact matches), `func_0022F090`, and `func_0022F0F0`
+(whose entry explicitly says "worth revisiting if the sign-extension
+question is ever solved").
+
+Broader lesson, now twice-confirmed: entries in this file asserting
+"tried everything" have twice proven wrong — this one, and the
+store-order case where a note claimed "all four" orderings were tried
+for what is actually six permutations. Re-test a blocked entry when you
+have a new technique rather than trusting its note.
+
 ## Open toolchain questions
+
+**DISPUTED — 64-bit shift by a non-multiple-of-32 constant.** The entry
+further down claims this is a hard `cc1` error for *any* such shift. A
+later round tested `<<4`, `<<8`, `<<16` and `<<28` on a `long` and found
+they **all compile fine**, directly contradicting it. The original
+`unsupported wide integer operation` hard error was genuinely observed,
+so the real trigger must be narrower than stated — possibly specific to
+`long long` rather than `long`, or to a particular expression shape.
+That investigation was cut off before it concluded. **Do not treat the
+claim below as settled**: if a function needs such a shift, try it.
+Resolving this would also unblock `func_0023CFF0`.
 
 **Callee-saved GPR spill width (`sq`/`lq` vs `sd`/`ld`).** Retail always
 spills callee-saved registers (`$ra`, `$s0`-`$s7`) as plain 64-bit
