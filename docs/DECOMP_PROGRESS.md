@@ -20,16 +20,42 @@ own docstring for the other two modes (whole-section, retail-only).
 
 ## Status
 
-**Known systemic artifact:** `func_00112380` compiles 8 bytes shorter
-than retail (see its entry below). Every function *after* it in
-`core_text` that references an address defined later in the same file
-(a `jal` target, a `lui`/`addiu` address pair, etc.) will show a small,
-fully-explained byte diff at exactly those spots until that's fixed —
-this is not a new problem each time, it's the same one propagating.
-`tools/check_match.py symbol` reports these as mismatches; they've been
-individually confirmed (by disassembling the linked ELF and checking the
-diff is only in a relocated address, not the instruction opcodes/shape)
-before being called "matches" below.
+**The "known systemic artifact" is FIXED and gone.** For most of this
+project's history there was a warning here that `func_00112380` compiled
+8 bytes short of retail, shifting every later `core_text` function and
+forcing several entries to be qualified "matches (mod. known drift)".
+That is resolved: `func_00112380` is byte-exact (0/40) via the
+sign-extension technique, `core_text` drift is verifiably zero, and the
+five previously-qualified entries (`func_001144F0`, `func_00116408`,
+`func_00119798`, `func_00119840`, `func_0011D078`) are provably exact
+with no qualifier needed.
+
+**Verification: two classes of false positive, both now caught.** Every
+"match" in this file should be re-verifiable by `tools/sweep_matches.py`,
+which audits *all* decompiled functions on **size and bytes** after a
+full rebuild. It exists because spot-checking let two false-positive
+classes through, each caught only by luck:
+
+1. **Stale object.** A failed compile leaves the previous `.o` in place,
+   whose `INCLUDE_ASM` stub still contains retail's own bytes — so the
+   check reads a fictional `0/N`. Triggers seen: a conflicting `extern`
+   is a *hard error* here, and `$?` after piping the compiler through
+   `tail` reports **tail's** status. Always confirm the compiler's own
+   exit code is 0.
+2. **Correct-but-longer.** `check_match.py` compared exactly
+   `retail_size` bytes, so a function right in its first N bytes but
+   *longer* than retail also read `0/N` — the surplus was never looked
+   at. This produced at least one recorded-then-retracted "match"
+   (`func_0011AE1C`) and two stale near-miss records
+   (`func_001F9B90`/`func_001F9B98`, +4 bytes each). `check_match.py`
+   now fails loudly on any size disagreement, using the symbol's
+   `st_size`.
+
+Current audited state (from `tools/sweep_matches.py`): **158 functions
+have real C; 142 are exact on size and bytes; 3 are size-mismatched and
+13 byte-mismatched** — all 16 being deliberately-kept documented
+near-misses, listed in the table below. Re-run the sweep after any
+change rather than trusting this number or any single entry.
 
 | Function | Segment | Status | Notes |
 |---|---|---|---|
@@ -38,13 +64,13 @@ before being called "matches" below.
 | `func_00112468` | core_text | **close, not exact** | Logic fully understood — see the comment on it in `src/core_text.c` for the full C. Blocked on the `sq`/`lq` vs `sd`/`ld` callee-register-save question below, kept as `INCLUDE_ASM` since the byte diff isn't a small fixed offset like `func_00112380`, it cascades through the whole function. |
 | `func_001138A8` | core_text | **matches** | `return D_0012F86C;` (returns a global pointer's value). Byte-exact. |
 | `func_001144D8` | core_text | **matches** | `return D_00152470;` (returns a rodata blob's address — takes an unused `void *arg0` parameter; retail loads a value into `$a0` at every call site but the function body never reads it). Byte-exact. |
-| `func_001144F0` | core_text | **matches** (mod. known drift) | `return func_001144D8(D_0012F86C);`. One `jal` target byte differs, fully explained by the `func_00112380` drift above — confirmed by disassembling the linked ELF, not just diffing raw bytes. |
-| `func_00113A70` | core_text | **matches** (mod. known drift) | Struct/object initializer: writes 4 function pointers, a self-pointer, several zeroed fields, and 3 caller-supplied values into the struct at `arg0` (offsets given as raw byte offsets via `char *` casts — real field names/struct layout not established yet). Instruction-for-instruction identical to retail (same order, same registers, same offsets) once disassembled from the linked ELF; the raw bytes differ only in 4 relocated addresses, same known-drift cause. |
+| `func_001144F0` | core_text | **matches** | `return func_001144D8(D_0012F86C);`. One `jal` target byte differs, fully explained by the `func_00112380` drift above — confirmed by disassembling the linked ELF, not just diffing raw bytes. |
+| `func_00113A70` | core_text | **matches** | Struct/object initializer: writes 4 function pointers, a self-pointer, several zeroed fields, and 3 caller-supplied values into the struct at `arg0` (offsets given as raw byte offsets via `char *` casts — real field names/struct layout not established yet). Instruction-for-instruction identical to retail (same order, same registers, same offsets) once disassembled from the linked ELF; the raw bytes differ only in 4 relocated addresses, same known-drift cause. |
 | `func_001160C8` | core_text | **matches** | `*(int *)((char *)D_0012F86C + 0x58) = arg0;` — setter into a struct reached through global pointer `D_0012F86C`. Byte-exact. |
 | `func_001154C0`, `func_001154C8` | core_text | **matches** | Empty functions (`{}`) — auto-filled by splat itself during the initial split, not touched this session, noted here for completeness. |
 | `func_00118A34`, `func_00118A50`, `func_00118A60`, and similar | core_text | **not decompile targets** | Marked `/* Handwritten function */` by spimdisasm itself — raw `syscall N` sequences, i.e. these were originally hand-written assembly (PS2 kernel syscall wrappers), not compiler output. Left as `INCLUDE_ASM` permanently; there's no C source to recover. |
 | `func_00113AD8` | core_text | **not a standalone function** | Single instruction (`lw $4, 0x0($2)`) with no `jr $31` of its own — a fallthrough continuation, not independently callable. Left as `INCLUDE_ASM`; not clear yet what it's a continuation *of* without more investigation. |
-| `func_00116408` | core_text | **matches** (mod. known drift) | `func_00112468(*(int **)(self + 0x54), *(short *)(self + 0xE));` — calls into the still-`INCLUDE_ASM` `func_00112468` (return value discarded). First attempt wrongly passed `self + 0x54` as the pointer arg; retail actually `lw`s a pointer *stored* at that offset first — caught by the byte diff (`lw` vs `addiu` opcodes, not just an operand), fixed. One `jal`-target byte remains, same known drift. |
+| `func_00116408` | core_text | **matches** | `func_00112468(*(int **)(self + 0x54), *(short *)(self + 0xE));` — calls into the still-`INCLUDE_ASM` `func_00112468` (return value discarded). First attempt wrongly passed `self + 0x54` as the pointer arg; retail actually `lw`s a pointer *stored* at that offset first — caught by the byte diff (`lw` vs `addiu` opcodes, not just an operand), fixed. One `jal`-target byte remains, same known drift. |
 | `func_001160D8` | core_text | **close, not exact** | Linear congruential PRNG (multiplier `0x41C64E6D`, increment `12345`, 31-bit mask) on the seed field `func_001160C8` sets — same operations/order/count as retail, but this compiler picks `$v1`/`$a0` for the two independent temporaries where retail picks `$a0`/`$a1`. Tried reordering source statements and separate locals; neither changed the allocation. See "Open toolchain questions". |
 | `func_00115578` | core_text | **close, not exact** | Hash-bucket linked-list push (`table[idx]` head insert, idx read from the pushed node, table pointer at `arg0+0x4C`). Same register-allocation-choice issue as `func_001160D8` — identical operation sequence, different scratch-register assignment among `$v0`/`$v1`/`$a0`. |
 | `func_00113AC8` | core_text | **not a small drift, real gap** | Retail is a bare 3-instruction tail jump (`j func_00114438`, no stack frame, no `$ra` save) — true sibcall elimination for a void function whose last statement is a call. This compiler builds a full call frame instead (20 bytes larger) for the equivalent `func_00114438(arg0, func_00113968);` source. Unlike the other near-misses this isn't a small fixed-offset diff, so left as `INCLUDE_ASM` rather than kept as documented-close C. |
@@ -57,8 +83,8 @@ before being called "matches" below.
 | `func_0011B090` | core_text | **matches** | Clears a flag bit (`flags &= ~1`) and zeroes a field. Needed `unsigned int`/`0xFFFFFFFEu` rather than plain `int`/`~1` to match — see "Unsigned-mask materialization" below, a solved instance of a technique worth knowing, not an open question. Byte-exact. |
 | `func_0011A758` | core_text | **matches** | `return D_00155080[arg0];` — indexes a global `int` array. Byte-exact. |
 | `func_0011AA68` | core_text | **matches** | Picks `D_00154F64` or `D_00154F6C` as a base pointer depending on `arg0`'s sign, adds `arg0<<3`, zeroes the `int` there. Needed two source-shape adjustments to match retail's scheduling/register choices: computing `offset = arg0 << 3` as its own statement *before* the `if` (so the compiler schedules it into the branch's delay slot using the original `$a0`, same as retail, instead of copying `arg0` to a temp first) and reassigning into `arg0` itself for the picked base rather than a separate `int base` local, plus `offset += arg0;` (in-place accumulate) rather than a separate final expression, matching retail's choice to accumulate into the same register it makes the final store from. Byte-exact — the last of these three source-shape changes was the difference between a 2-byte residual and an exact match. |
-| `func_00119798`, `func_00119840` | core_text | **matches** (mod. known drift) | Both are `{ int local = argN; func_00118E90(<tag>, &local); }` — a small typed value gets stashed on the stack and handed to `func_00118E90` by address along with a type tag (`0x4` / `0x10`). One `jal`-target byte each, same known drift. |
-| `func_0011D078` | core_text | **matches** (mod. known drift) | `return func_0011CE70(arg0, arg1, arg2, buf);` with a 16-byte stack scratch buffer (`buf[0x10]`) passed by address as the 4th arg. Getting the frame size (`buf[0x10]`, not `0x20`) and the real 3-argument-plus-passthrough signature (not 2) both took a byte-diff-guided iteration — first attempt used the wrong buffer size (retail's frame was 0x20 total, not 0x30) and wrong arg count (retail puts the buffer pointer in `$a3`, meaning `arg2` is a real third parameter this function forwards, not dead). One `jal`-target byte remains, known drift. |
+| `func_00119798`, `func_00119840` | core_text | **matches** | Both are `{ int local = argN; func_00118E90(<tag>, &local); }` — a small typed value gets stashed on the stack and handed to `func_00118E90` by address along with a type tag (`0x4` / `0x10`). One `jal`-target byte each, same known drift. |
+| `func_0011D078` | core_text | **matches** | `return func_0011CE70(arg0, arg1, arg2, buf);` with a 16-byte stack scratch buffer (`buf[0x10]`) passed by address as the 4th arg. Getting the frame size (`buf[0x10]`, not `0x20`) and the real 3-argument-plus-passthrough signature (not 2) both took a byte-diff-guided iteration — first attempt used the wrong buffer size (retail's frame was 0x20 total, not 0x30) and wrong arg count (retail puts the buffer pointer in `$a3`, meaning `arg2` is a real third parameter this function forwards, not dead). One `jal`-target byte remains, known drift. |
 | `func_00119868` | core_text | **matches** (was previously close-not-exact) | Sets `D_00154A40` to `arg0`, then fields `0x4`/`0x8`/`0xC` of the struct it heads to `0`/`self+0x10`/`self+0x10`, returns `self`. **The earlier entry for this function was wrong** — it claimed the store order was "confirmed source-order-independent, tried all orderings" and filed it under the scratch-register/scheduling open question. It is fully source-order-dependent: the store-order rotation rule gives it directly (retail emits `0x8, 0x4, 0xC`, so source is `0x4, 0xC, 0x8`), byte-exact. The old note said "all four" orderings were tried, which is already fewer than the six permutations of three stores — the rotation-predicted one was evidently among the untried. Cautionary example: "tried everything" claims in this table are worth re-testing against a later technique rather than trusted. |
 | `func_001156C0` | core_text | **matches** | Count-leading-zeros-style bit scan (successive `& mask` tests halving the search range, `0x10`/`8`/`4`/`2`/`1` bit contributions, returns `0x20` for an all-zero input's top-bit-clear edge case). Byte-exact on first attempt — no register/type gotchas this time. |
 | `func_00115098` | core_text | **close, not exact** | `int *dst = out ? out : &junk; if (arg2) { if (arg3) { *dst = *arg2; return *arg2 != 0; } return -1; } return 0;`. Fixed two real bugs getting here: needed `unsigned char *` for the byte reads (retail uses `lbu`, an initial `char *` attempt gave signed `lb`), and this exact if-nesting to get the `beqz $a2` polarity/target right (an early-return form emitted the opposite branch sense). Remaining diff: retail's `bnel $a3,0` reuses its own delay slot as the *first instruction of the branch target* (the `arg2` byte load) — a scheduling trick not reproduced. New instance of the same open-question category as `func_00119868`/`func_001160D8`/`func_00115578`, this time on a branch's delay slot rather than a straight-line store or register choice. |
@@ -71,7 +97,7 @@ before being called "matches" below.
 | `func_00118EC0` | core_text | **matches** | `D_0012FCF0 = 0;`. Byte-exact. |
 | `func_00119100`, `func_00119108` | core_text | **matches** | Both `int f(void) { return -1; }` — trivial constant-return stubs (real logic may live behind a not-yet-decompiled caller; these two themselves genuinely just return -1 unconditionally). Byte-exact. Note: `func_00112468`'s existing comment describes calling `func_00119100(arg1)` with an argument — this disassembly shows it takes none and ignores whatever's in `$a0`; harmless (the described behavior — always returns -1 — still holds), but the parameter in that comment/prototype is not real. |
 | `func_001191C0`, `func_0012BB20` | core_text | **matches** | Both `int f(void) { return 1; }` — trivial constant-return stubs, distinct addresses/callers, identical bodies. Byte-exact. |
-| `func_0011AE1C` | core_text | **matches** | Empty function (`{}`), a single real `jr $31` (not splat-auto-filled like `func_001154C0`/`func_001154C8` — this one still had a real `.s` file). Byte-exact. |
+| `func_0011AE1C` | core_text | **NOT a match — was a false positive, reverted** | Previously recorded here as "byte-exact". It was not. Retail is a bare 4-byte `jr $31` with **nothing in its delay slot**; `void f(void) {}` emits `jr $ra; nop` and gets force-aligned, costing 8 bytes. It passed verification only because `check_match.py` compared exactly `retail_size` bytes, so the surplus fell outside the compared window. Reverted to `INCLUDE_ASM`. See "Two classes of false positive" below — `tools/sweep_matches.py` now catches this class. |
 | `func_00114518`, `func_001154D0`, `func_001155A8`, `func_00115808` | core_text | **skipped, callee-saved regs** | Use `$16`/`$17` (and more) — hit the `sq`/`lq` open question, not attempted. |
 | `func_0011405C` | core_text | **not a real function** | 4 bytes of `0xCDCDCDCD`, same padding pattern as `func_00112464` and friends. |
 | `func_00113AE0` | core_text | **skipped, callee-saved regs** | Uses `$16`/`$17` — hits the `sq`/`lq` open question, not attempted. |
