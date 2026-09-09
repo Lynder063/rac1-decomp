@@ -927,7 +927,28 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FFC48);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FFCB0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FFD30);
+extern int func_001FF668(int);
+
+/* tbl[7] is volatile: retail re-loads that pointer field before each of
+   the three record accesses rather than caching it, while keeping the
+   r*8 offset in a register. */
+void func_001FFD30(void *arg0, int arg1) {
+    char *self = (char *)arg0;
+    volatile int *tbl;
+    int r;
+    unsigned short v;
+
+    r = func_001FF668(arg1);
+    /* base materialized only after the call, so it lands in a temp
+       register rather than a callee-saved one; tbl[7] is volatile because
+       retail re-loads that pointer field before each record access. */
+    tbl = (volatile int *)&D_0019A4E8;
+    v = *(unsigned short *)((char *)tbl[7] + r * 8);
+    *(short *)(self + 0x40) = r;
+    *(int *)(self + 0) = v;
+    *(char *)(self + 0x42) = *(unsigned char *)((char *)tbl[7] + r * 8 + 6);
+    *(int *)(self + 0x44) = *(unsigned short *)((char *)tbl[7] + r * 8 + 4);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FFD98);
 
@@ -995,7 +1016,19 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00202260);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002023E0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00202790);
+extern void func_002023E0(int);
+extern void func_002027C0(int);
+
+void func_00202790(int arg0) {
+    func_002027C0(arg0);
+    func_002023E0(arg0);
+}
+/* Retail aligns the next function to 16 bytes, and this function's .s
+   stub carried one padding word to do it. Decompiling to C drops that
+   padding, shifting every later function in the object by -4 and
+   producing spurious `jal` diffs far from the cause -- so restore it
+   explicitly. */
+__asm__(".align 4");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002027C0);
 
@@ -1057,7 +1090,18 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00204FC0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00205218);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00205220);
+extern void func_00204FC0(void *);
+extern int D_0018CC20;
+extern int D_001941C8;
+extern int D_0016100C;
+
+void func_00205220(int arg0) {
+    char *base = (char *)&D_0018CC20;
+    char *p = base + arg0 * 4;
+    *(int *)(base + 0x5C) = *(int *)(p + 0x60);
+    func_00204FC0(p);
+    *(int *)(base + 0x5C) = D_0016100C + D_001941C8;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00205270);
 
@@ -1089,7 +1133,9 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00206F40);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207090);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002071A8);
+int func_002071A8(int x1, int y1) {
+    return func_00209048(x1, y1, 0xD3, 0xDB, 0x129, 0xF9);
+}
 
 extern unsigned char D_0013D49C;
 
@@ -1595,7 +1641,21 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00209E68);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020BA00);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020BAA8);
+extern int func_001236F0(void);
+/* Unprototyped deliberately: this is the varargs function, so callers
+   legitimately pass different argument counts/types, and two agents
+   declared it incompatibly. Both callers are byte-exact and must not
+   be edited; an unprototyped declaration satisfies all call sites
+   with identical codegen. (Only varargs *definitions* need stdarg.h;
+   calling one is fine.) */
+extern int func_001E9730();
+extern char D_001E8690[];
+
+void func_0020BAA8(void) {
+    if (func_001236F0()) {
+        func_001E9730(D_001E8690);
+    }
+}
 
 int func_0020BAD8(int *p) {
     int n = 8;
@@ -1610,6 +1670,21 @@ int func_0020BAD8(int *p) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020BB10);
 
+/*
+ * Attempted and reverted at 15/60 (25%). Logic is confirmed:
+ *   int n = arg0[1];
+ *   result = 0; if (n) result = (func_0020BB10(arg0 + 2, arg0[0]) == n);
+ *   return result;
+ * Correct size and the right instructions, but retail emits the
+ * `result = 0` (`daddu $2,$0,$0`) in the *prologue*, between the stack
+ * adjust and the register spills, whereas this compiler always places it
+ * after the spills -- shifting the rest of the stream. Tried: single
+ * result variable, early-return form, if/else form, and both
+ * declaration orders (the last-statement-emits-first rotation rule does
+ * not reach into prologue scheduling). Prologue placement of a constant
+ * looks unsteerable from source shape, same family as the other
+ * scheduling sub-cases.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_0020BB88);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020BBC8);
@@ -3186,7 +3261,6 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023BB90);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023BE38);
 
-extern int func_001E9730(char *, int);
 extern char D_001612F8[];
 
 int func_0023BF48(int arg0) {
