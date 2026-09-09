@@ -167,9 +167,29 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001EC210);
 
 extern char D_001E8F80[];
 
+/*
+ * 1/68, and the residual is one commutative-operand-order byte: retail
+ * emits `addu $2,$2,$3` (base + index), this compiler `addu $2,$3,$2`
+ * (index + base). Same instruction, same destination, same size.
+ *
+ * Getting here took two real fixes worth reusing. Writing the field read
+ * as `... * 0x14 + 8` folds the +8 into the %lo address constant instead
+ * of leaving it as a `lw` offset (7/68); computing the record pointer
+ * first and reading `rec + 8` separately fixes that. And building the
+ * pointer with `rec += idx` rather than in the initialiser makes the sum
+ * land in the base's register as retail does, rather than the index's
+ * (3/68 -> 1/68) -- the documented in-place-accumulate lever.
+ *
+ * The last byte resisted an explicit index local and both `rec += idx`
+ * and `rec = rec + idx`, which is the known scratch-register/operand
+ * choice question. Kept per the same-size-tiny-diff precedent.
+ */
 void func_001EC270(void *arg0) {
-    void (*fn)(void *) = *(void (**)(void *))(
-        D_001E8F80 + *(short *)((char *)arg0 + 0x8C) * 0x14 + 8);
+    int idx = *(short *)((char *)arg0 + 0x8C) * 0x14;
+    char *rec = D_001E8F80;
+    void (*fn)(void *);
+    rec = rec + idx;
+    fn = *(void (**)(void *))(rec + 8);
     if (fn != 0) {
         fn(arg0);
     }
