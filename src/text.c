@@ -1817,7 +1817,12 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00217748);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002177F0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00217830);
+void func_00217830(int arg0, long arg1) {
+    short *p = (short *)(int)arg1;
+    if (p != 0 && arg0 != 0 && p[5] == 2) {
+        p[5] = 3;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00217860);
 
