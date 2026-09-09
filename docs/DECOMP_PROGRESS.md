@@ -72,7 +72,11 @@ before being called "matches" below.
 | `func_00119100`, `func_00119108` | core_text | **matches** | Both `int f(void) { return -1; }` — trivial constant-return stubs (real logic may live behind a not-yet-decompiled caller; these two themselves genuinely just return -1 unconditionally). Byte-exact. Note: `func_00112468`'s existing comment describes calling `func_00119100(arg1)` with an argument — this disassembly shows it takes none and ignores whatever's in `$a0`; harmless (the described behavior — always returns -1 — still holds), but the parameter in that comment/prototype is not real. |
 | `func_001191C0`, `func_0012BB20` | core_text | **matches** | Both `int f(void) { return 1; }` — trivial constant-return stubs, distinct addresses/callers, identical bodies. Byte-exact. |
 | `func_0011AE1C` | core_text | **matches** | Empty function (`{}`), a single real `jr $31` (not splat-auto-filled like `func_001154C0`/`func_001154C8` — this one still had a real `.s` file). Byte-exact. |
-| everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1645 functions total remaining. |
+| `func_00114518`, `func_001154D0`, `func_001155A8`, `func_00115808` | core_text | **skipped, callee-saved regs** | Use `$16`/`$17` (and more) — hit the `sq`/`lq` open question, not attempted. |
+| `func_0011405C` | core_text | **not a real function** | 4 bytes of `0xCDCDCDCD`, same padding pattern as `func_00112464` and friends. |
+| `func_00113AE0` | core_text | **skipped, callee-saved regs** | Uses `$16`/`$17` — hits the `sq`/`lq` open question, not attempted. |
+| `func_00115748` | core_text | **matches** | Bit-scan/shift helper on `*arg0`: a 2-bit fast path for the low 3 bits nonzero case (shift by 1 or 2, or return 0 untouched if bit 0 is set), falling back to the same binary-search bit-scan shape as `func_001156C0` for the low-3-bits-zero case, storing the shifted value back through `arg0` and returning the shift count (or `0x20` for input `0`). Took two branch-polarity fixes (writing `if (cond) {A} else {B}` instead of `if (!cond) {B} return; A`, in two different spots — see "Branch polarity via if/else shape" below) plus merging two textually-duplicate `*arg0 = v; return count;` tail statements into one shared one (the duplication cost 8 extra bytes vs. retail, which reuses a single tail via a jump — GCC only found that reuse once the C had one textual copy to reuse, not two identical ones). Byte-exact. |
+| everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1643 functions total remaining. |
 
 ## Open toolchain questions
 
@@ -182,6 +186,30 @@ just used as an operand (e.g. `addu $3,$3,$4` — read and write `$3`),
 write the equivalent C as an in-place update (`x += y;`) rather than
 introducing a new variable for the sum (`z = x + y;`) — this measurably
 changed which register the compiler picked in that case.
+
+**Branch polarity via if/else shape.** Seen fixing `func_00115748`: for a
+two-way branch where both arms do real work (not an early-return guard),
+writing `if (cond) { A } B` (early return inside the `if`, `B` falls
+through after) can make this compiler pick the opposite branch sense
+(`beqz` vs `bnez`, or their likely variants) from what retail chose for
+logically-equivalent code — even though the *behavior* is identical
+either way. Writing the full two-armed `if (cond) { A } else { B }`
+instead fixed it in both instances hit so far. When a near-match's only
+diff is an inverted branch condition (same target semantics, opposite
+polarity — e.g. `beqzl` where retail has `bnezl` targeting the same
+logical case), try the explicit `if/else` form before anything else.
+
+**Shared-tail merging via literal C duplication.** Also seen fixing
+`func_00115748`: if two different control-flow paths both end in the
+exact same few statements (e.g. `*ptr = v; return v;` after two separate
+branches), and retail implements that as a shared tail block both paths
+jump into (fewer total bytes than duplicating it), this compiler will
+only find that reuse if the C *itself* has just one textual copy of the
+shared statements for both paths to fall into — writing it twice (once
+per branch, even if character-for-character identical) makes the
+compiler treat them as unrelated and compile both separately, costing
+real bytes. Restructure so both paths fall through to one instance of
+the shared code instead of returning from within each branch.
 
 ## Method
 
