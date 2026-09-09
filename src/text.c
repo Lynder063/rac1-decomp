@@ -1955,6 +1955,25 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0021E4B0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021E950);
 
+/*
+ * Close but not exact, reverted: conditional-move vs. branch.
+ * Logic is `short v = (D_001414F4 == 1) ? 0 : 3;
+ * *(short*)(*(char**)(arg0+0x34) + 2) = v; return 0;`.
+ *
+ * Retail branches (`addiu $3,$0,1` / `beq $4,$3`, the 0 materialized in
+ * the delay slot and the 3 on the fall-through) and stores once at the
+ * join. This compiler won't produce that shape:
+ *  - single-store forms (`v=0; if (cond) v=3;`, an if/else assigning v,
+ *    and a ternary) all compile branchlessly to `xori`/`movz` -- 23/40.
+ *  - a two-store form (`if (cond) p[1]=0; else p[1]=3;`) does branch,
+ *    and with the polarity written as `!= 1` even gets retail's exact
+ *    `beq`, but then needs an extra `b` to join, so it's 15/40.
+ * So: retail's compiler chose a branch where this one prefers a
+ * conditional move for the same select-then-store. This is the mirror
+ * image of func_001FF4F8, where retail used `movn` and this compiler
+ * would not produce it -- the cmov heuristics differ in both
+ * directions, which is worth knowing before spending long on either.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_0021EDD8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021EE00);
@@ -2050,7 +2069,16 @@ int func_00222840(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00222848);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00222950);
+extern int D_0013CC04;
+extern char D_001D2678[];
+extern char *D_001D5F78;
+
+int func_00222950(void) {
+    if (D_0013CC04 & 0x40) {
+        D_001D5F78 = D_001D2678;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00222978);
 
@@ -2342,7 +2370,28 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00234158);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234238);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234350);
+extern int D_001DD568[];
+
+/*
+ * 1/40 bytes: the final `addu` has its two (commutative) operands the
+ * other way round from retail -- retail encodes `addu $3,$3,$2`
+ * (base + offset, base as rs), this compiler `addu $3,$2,$3`. Same
+ * registers, same result, just GCC's canonical operand order for a
+ * commutative add. Tried `rec += off`, `rec = rec + off`,
+ * `&D_001DD568[arg0*4]`, and an integer-cast form; the latter two are
+ * worse (3/40, they also swap which register holds base vs offset),
+ * the first two both give this 1-byte residual. Kept as C per the
+ * tiny-isolated-diff precedent.
+ */
+int func_00234350(unsigned int arg0) {
+    char *rec;
+    if (arg0 >= 0x40) {
+        return -3;
+    }
+    rec = (char *)D_001DD568;
+    rec = rec + arg0 * 16;
+    return *(int *)(rec + 4);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234380);
 

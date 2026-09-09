@@ -173,7 +173,10 @@ before being called "matches" below.
 | `func_0021EF38` | text | **matches** | Resets 4 fields of `arg0`: float `0x38` = pi (`3.14159274f` = `0x40490FDB`), ints `0x34`/`0x44`/`0x48` = 0, returns 0. Byte-exact **first attempt** by applying the store-order rotation rule predictively (wrote source as `0x38, 0x34, 0x44, 0x48` to get retail's emitted `0x48, 0x38, 0x34, 0x44`) — confirms the rule holds across 4 stores and with a mixed float/int store set, not just the 3-int case it was derived from. |
 | `func_0023E710` | text | **matches** | `if (arg0[3] > 0) arg0[3] = arg0[3] - 1;` — a clamped decrement, with `arg0` typed `volatile int *`. Retail reloads the field after the branch instead of reusing the already-loaded value, *and* leaves the `blez`'s delay slot empty; a non-`volatile` version compiles 8 bytes shorter (reuses the loaded value, fills the delay slot with the decrement). Adding `volatile` reproduced both retail behaviours exactly. Byte-exact. See "Redundant reload + unfilled delay slot = `volatile`" below — this is a notable finding, since it means some previously-documented "delay-slot-scheduling" near-misses may actually be volatile accesses. |
 | `func_0023CDF0` | text | **close, not exact** | `int *p = (int*)((char*)arg0+0x50000); int avail = p[1]; int taken = (arg1 < avail) ? arg1 : avail; p[1] = avail - taken;` — a saturating subtract (deduct `arg1` from a counter, floor at 0), retail using `slt`+`movn` for the `min`. Logic and instruction sequence confirmed correct, and the `0x50000` pointer advance + `+4` field offset split was needed to reproduce retail's `lui 0x5`/`addu`/`lw 4($4)` shape (a single `+0x50004` offset instead materialises the whole constant first — worth knowing for other big-offset cases). Remaining diff is the scratch-register-allocation-choice question: retail reuses `$2` for both the `lui` scratch and the loaded value where this compiler takes `$3` for the scratch, and in a 9-instruction function that shifts nearly every register field (20/36 bytes). Tried the in-place-accumulate technique (`avail -= taken;`) as well; no change. Reverted per the size-of-diff precedent. |
-| everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1540 functions total remaining. |
+| `func_00222950` | text | **matches** | `if (D_0013CC04 & 0x40) { D_001D5F78 = D_001D2678; } return 0;` — sets a global pointer to a fixed buffer's address when a flag bit is set. Byte-exact first attempt; notably retail schedules the pointee's `lui` into the branch delay slot, which is what this compiler does naturally (contrast `func_002098A8`, where retail wanted a *constant* in the slot and this compiler puts the address `lui` there — so the two aren't a single consistent preference). |
+| `func_00234350` | text | **matches** except 1/40 bytes | `if (arg0 >= 0x40) return -3;` then returns field `+4` of the `arg0`'th 16-byte record of `D_001DD568`. Needed the `>= 0x40` guard-first polarity (the `< 0x40`-first form inverts the branch and inlines the wrong arm), and the field access written as a record-offset pointer (`rec + 4`) rather than index arithmetic (`base[arg0*4+1]`, which folds the `+4` into an `ori` instead of the load's offset). Remaining single byte is the final `addu`'s commutative operand order — see the comment on it in `src/text.c` for the four forms tried. Kept as C per the tiny-isolated-diff precedent. |
+| `func_0021EDD8` | text | **close, not exact — cmov vs branch** | `short v = (D_001414F4 == 1) ? 0 : 3;` stored to `+2` of the pointer at `arg0+0x34`, returns 0. Retail *branches* and stores once at the join; every single-store C form tried here (default-then-override, if/else assigning a temp, ternary) compiles branchlessly to `xori`/`movz` (23/40), and the two-store form that does branch (and even reproduces retail's exact `beq` polarity when written `!= 1`) then needs an extra `b` to join (15/40). Reverted. **Mirror image of `func_001FF4F8`**, where retail used `movn` and this compiler wouldn't produce it — so the conditional-move heuristics differ from retail's in *both* directions. Worth recognising early rather than iterating: if retail branches over a trivial value-select, or uses a cmov where plain C won't, that's this. |
+| everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1537 functions total remaining. |
 
 ## Open toolchain questions
 
@@ -282,6 +285,22 @@ from the other four questions below: this is a hard error blocking any
 attempt at all, not a near-miss to iterate on. If a function needs this,
 skip it (or write the specific shift as inline asm, unverified whether
 that's viable here — not tried).
+
+**Conditional-move vs. branch heuristics differ in both directions.**
+For a trivial "select one of two values, then use it" shape, retail's
+compiler and this one sometimes disagree about whether to emit a branch
+or a conditional move (`movz`/`movn`) — and it goes both ways, so it
+isn't a matter of one compiler simply preferring cmovs:
+- `func_0021EDD8`: retail *branches*; every single-store C form here
+  compiles to `xori`/`movz`. Forcing a branch (by storing in both arms)
+  works but costs an extra join `b`.
+- `func_001FF4F8`: retail uses `movn`; no plain-C form tried here
+  produced it at all.
+Recognise this early. If a near-miss's diff is "retail has a branch
+where we have `movz`" (or vice versa) rather than a register/scheduling
+difference, iterating on source shape is unlikely to close it — the two
+known instances each resisted 3+ distinct formulations. Both are
+documented in their table entries with the exact forms already tried.
 
 **Structural instruction-shape mismatches (tentative, not yet a confirmed
 category).** `func_001FE4D0`, `func_001FF4F8`, and `func_001FF668`
