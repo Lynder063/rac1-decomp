@@ -109,3 +109,60 @@ Whole-project sweep at end of round: **172 decompiled, 158 exact**, 1
 size mismatch (`func_00115098`, `core_text`, pre-existing), 13 byte
 mismatches (all pre-existing documented near-misses; nothing I added
 regressed).
+
+## Attempted and reverted: `func_0021D9C8` (best 18/152)
+
+Logic is fully worked out, recorded here for whoever picks it up:
+
+```c
+int func_0021D9C8(char *arg0) {
+    int *dst = (int *)(arg0 + 0x30);
+    int *src = D_00141FA0;
+    int i = 7;
+    int n;
+    do { *dst++ = *src++; } while (--i >= 0);   /* 8 words */
+    *(int *)(arg0 + 0x50) = 0;
+    if (*(int *)(arg0 + 0x30) != 0) {
+        int *base = (int *)(arg0 + 0x30);
+        do {
+            n = *(int *)(arg0 + 0x50) + 1;
+            *(int *)(arg0 + 0x50) = n;
+            if (base[n] == 0) break;
+        } while (n < 8);
+    }
+    *(int *)(arg0 + 0x50) = *(int *)(arg0 + 0x50) % 8;   /* the div idiom */
+    return 0;
+}
+```
+
+The tail `% 8` confirms the div-idiom reading again (`slt` vs -1, `+7`,
+`movn`, `sra 3`, `sll 3`, `subu`). The residual 18/152 is in the two loop
+bodies, not the tail. Reverted rather than kept, since 12% is not a
+small isolated diff. Note retail re-loads `arg0+0x50` every iteration
+rather than caching it, which is the redundant-reload signature — worth
+trying a `volatile` field here.
+
+## ⚠ Finding: the `.align 4` padding fix is NOT universally correct
+
+The hardened `sweep_matches.py` (from the coordinator) reports functions
+whose `.s` carried post-`endlabel` padding and advises adding
+`__asm__(".align 4");` after the C, on the grounds that the padding
+vanishes when the function stops being an `INCLUDE_ASM` stub and
+everything after it shifts.
+
+7 of my 13 functions were flagged that way. **Adding the directive broke
+them**: they went from 0/N to 1-2/N, with the diffs being `jal`/`%lo`
+address fields — i.e. the directive *introduced* drift rather than
+removing it. Removing it again restored all 13 to byte-exact, with the
+whole-project sweep showing 158 exact and no regressions either way.
+
+So on this evidence the padding is already accounted for (presumably by
+the compiler's own function alignment, given these sizes), and the
+advice should be applied **only when verification actually shows drift**,
+not pre-emptively on the basis of the `.s` having had padding. Treating
+the sweep's padding list as a to-do list would silently damage working
+matches.
+
+Recommend the sweep's wording be softened from "confirm each has one" to
+"check whether one is needed", since the flag is a heuristic, not a
+defect.
