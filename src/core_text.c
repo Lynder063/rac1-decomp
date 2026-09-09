@@ -232,7 +232,52 @@ int func_001156C0(unsigned int arg0) {
     return count;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00115748);
+int func_00115748(unsigned int *arg0) {
+    unsigned int v = *arg0;
+    unsigned int count;
+
+    if ((v & 7) != 0) {
+        if ((v & 1) != 0) {
+            return 0;
+        }
+        if ((v & 2) != 0) {
+            v >>= 1;
+            *arg0 = v;
+            return 1;
+        } else {
+            v >>= 2;
+            *arg0 = v;
+            return 2;
+        }
+    }
+
+    count = 0;
+    if ((v & 0xFFFF) == 0) {
+        count = 0x10;
+        v >>= 16;
+    }
+    if ((v & 0xFF) == 0) {
+        count += 8;
+        v >>= 8;
+    }
+    if ((v & 0xF) == 0) {
+        count += 4;
+        v >>= 4;
+    }
+    if ((v & 3) == 0) {
+        count += 2;
+        v >>= 2;
+    }
+    if ((v & 1) == 0) {
+        v >>= 1;
+        count += 1;
+        if (v == 0) {
+            return 0x20;
+        }
+    }
+    *arg0 = v;
+    return count;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00115808);
 
