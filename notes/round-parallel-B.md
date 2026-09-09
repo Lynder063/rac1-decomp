@@ -2,7 +2,17 @@
 
 Findings for the coordinator to merge into `docs/DECOMP_PROGRESS.md`.
 
-## Range survey (useful in its own right)
+## ⚠ The survey immediately below is WRONG — see "Corrected survey" at the end
+
+Its headline claim, "~79% of this range is blocked", rests on counting
+69 functions as blocked by `sq`/`lq`. They were never blocked. Retail's
+`text` segment was built with SN v1.14, which spills callee-saved
+registers as `sq`/`lq` — exactly what we now emit. They were being
+compared against this project's since-corrected "retail always uses
+`sd`" generalisation rather than against retail's actual bytes. Kept
+below only to show what the mistake looked like.
+
+## Range survey (SUPERSEDED — see the correction above and below)
 
 189 `INCLUDE_ASM` stubs remain in this range. Classified them all
 mechanically (by grepping each `.s` for the relevant signature) rather
@@ -115,3 +125,100 @@ rather than new ones — worth folding into the existing entries:
    `volatile`. So check for a legitimate aliasing explanation before
    reaching for `volatile`, or you will add a qualifier that changes
    other codegen.
+
+---
+
+# Second round (post-`sq`/`lq` fix, text.c now built with SN v1.14)
+
+## Corrected survey
+
+The `sq`/`lq` category was never a blocker for `text`. Honest breakdown
+of the 177 stubs remaining in range now:
+
+| Count | Category |
+|---|---|
+| 52 | `$gp`-relative addressing (loads *and* stores; unreachable at `-G0`) |
+| **50** | **has `sq`/`lq` spill — NOW VIABLE, not blocked** |
+| 33 | plain candidate (no known blocker) |
+| 20 | `movz`/`movn` conditional-move heuristic |
+| 17 | fragment (no `jr $31` of its own) |
+| 5 | spimdisasm-marked handwritten asm |
+
+So this range holds **~83 workable functions** (50 newly-unblocked + 33
+plain), not the ~40 the old survey implied. **`$gp`-relative addressing
+is now the single largest genuine blocker here** — 52 functions in this
+range alone — and is plausibly worth the same focused attack that
+cracked `sq`/`lq`.
+
+## Matched
+
+| Function | Result | Notes |
+|---|---|---|
+| `func_001FFD30` | **0/104 exact** | `volatile` on the reloaded pointer field **plus** materializing the global base *after* the call (see new technique). |
+| `func_0020BAA8` | **0/48 exact** | `if (func_001236F0()) func_001E9730(D_001E8690);` |
+| `func_00202790` | **0/44 exact** | `s0`-preserves-arg-across-two-calls. Needed a trailing `.align 4` — see padding trap. |
+| `func_002071A8` | **0/40 exact** | 6-arg call (EABI passes args 5/6 in `$8`/`$9`) into the `func_00209048` orientation predicate with fixed screen coords. |
+
+## New technique: where a global base is materialized, relative to a call
+
+For a global used only *after* a call, the placement of its
+materialization is itself a register-allocation lever:
+
+- Initialized **before** the call → live range crosses the call → gets a
+  **callee-saved** register and the function grows an extra spill pair.
+  On `func_001FFD30` that was 85% mismatch and the wrong frame size.
+- Assigned **after** the call → lands in a **temp** register, matching
+  retail.
+
+Combined with the `volatile` and direct-vs-base-pointer levers, this
+took `func_001FFD30` from 85% to exact.
+
+## Confirmed negative: v1.14 does NOT rescue the leaf near-misses
+
+Rechecked as directed. `func_00209808`/`func_00209858`/`func_002098C8`/
+`func_00209918` unchanged at 9/80; `func_002094E0`/`func_00209698`
+unchanged at 13/64. Reason: all six contain **zero** spill instructions
+(grep for `sq|lq|sd|ld` returns 0 — they are leaves), so which sub-build
+compiles them cannot matter. The earlier `%hi`-reuse/`$at` diagnosis
+stands; "they were compiled with the wrong compiler" does not apply to
+leaves.
+
+## Attempted and reverted
+
+- `func_0020BB88` — 15/60 (25%), over threshold. Logic confirmed:
+  `n = arg0[1]; result = 0; if (n) result = (func_0020BB10(arg0+2, arg0[0]) == n); return result;`
+  Right size and instructions, but retail emits the `result = 0`
+  (`daddu $2,$0,$0`) **inside the prologue**, between the stack adjust
+  and the spills; this compiler always places it after the spills,
+  shifting the rest. Tried single-result, early-return and if/else forms
+  and both declaration orders — the last-statement-emits-first rotation
+  rule does not reach prologue scheduling.
+
+## Kept as documented-close
+
+- `func_00205220` — 9/80 (11.25%), the same ratio as the already-kept
+  `func_00209858` family. Logic confirmed; swapping the two globals'
+  addition order took it 11/80 → 9/80. Residual is which registers the
+  two global-address materializations land in (retail `$v1`/`$a0`, ours
+  `$a0`/`$a1`).
+
+## Traps
+
+**Trailing padding vanishes when you decompile a function.**
+`func_00202790`'s `.s` carried one padding word after `endlabel` (retail
+aligns the next function to 16 bytes; splat emits only `.align 3`).
+Decompiling drops it, shifting every later function by -4 and producing
+spurious relocated-`jal` diffs *far from the cause*. Fixed with
+`__asm__(".align 4");` after the function.
+
+**Drift makes exact functions look wrong.** With +16 bytes of upstream
+drift, `func_002071A8` read 1/40 and `func_00202790` 2/44 while being
+instruction-for-instruction identical to retail; both went exact with no
+source change once the drift source was removed. When the only differing
+bytes lie inside `jal` targets, suspect drift before suspecting your C.
+
+## Remaining lead
+
+Something between 0x20BAA8 and 0x23DFC0 is still **8 bytes short**
+(`func_0023DFC0` shows -8 drift) and it is not one of the sweep's
+reported size mismatches — most likely another lost-padding case.

@@ -915,6 +915,12 @@ void func_00202790(int arg0) {
     func_002027C0(arg0);
     func_002023E0(arg0);
 }
+/* Retail aligns the next function to 16 bytes, and this function's .s
+   stub carried one padding word to do it. Decompiling to C drops that
+   padding, shifting every later function in the object by -4 and
+   producing spurious `jal` diffs far from the cause -- so restore it
+   explicitly. */
+__asm__(".align 4");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002027C0);
 
@@ -976,7 +982,18 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00204FC0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00205218);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00205220);
+extern void func_00204FC0(void *);
+extern int D_0018CC20;
+extern int D_001941C8;
+extern int D_0016100C;
+
+void func_00205220(int arg0) {
+    char *base = (char *)&D_0018CC20;
+    char *p = base + arg0 * 4;
+    *(int *)(base + 0x5C) = *(int *)(p + 0x60);
+    func_00204FC0(p);
+    *(int *)(base + 0x5C) = D_0016100C + D_001941C8;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00205270);
 
