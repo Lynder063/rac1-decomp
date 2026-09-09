@@ -153,7 +153,7 @@ before being called "matches" below.
 | `func_0020CDA8` | text | **matches** | `return D_0013D5E7 != 0;` — simple byte-flag getter, byte-exact first attempt. |
 | `func_0020CDB8` | text | **matches** | `if (base[0x1F] != 0) return 2; return base[0x21] != 0;` on `D_0013D5C8` — same `unsigned char *` fix as `func_0020CC88`. |
 | `func_0020CBA8` | text | **matches** (was previously close-not-exact) | `if (D_0013D9B4 != 0 && D_0013D490[0x20] != 0 && D_0013D490[0x21] != 0) return 1; return 0;` with `extern unsigned char D_0013D490[];`. **The earlier entry for this function was wrong** — it concluded the `&&`-chain technique "didn't carry over" from 2 conditions to 3. The condition count was irrelevant; the problem was the byte-array access form. Retail materializes `D_0013D490`'s address *lazily in the first branch's delay slot*, which is precisely the documented behaviour of **direct** global indexing (`D_GLOBAL[i]`) — the previous attempt used a base-pointer local (`unsigned char *base = ...`), which forces the address up front instead. Switching to direct indexing gives it byte-exact. Note the neighbours `func_0020CC88`/`func_0020CDB8` need the *opposite* form, so this is the two-sided lever behaving as documented, not an inconsistency. |
-| `func_00209048` | text | **close, not exact** | 2D cross-product orientation test, 6 `int` params. Same operations/order/in-place-subtraction register reuse as retail (confirmed via objdump), but the final `(cross) < 0` boolean compiles to `srl $2,$2,0x1f` here vs. retail's `slti $2,$2,0` — two different instructions for the identical result, not a scheduling/register question. 16/36 bytes differ. |
+| `func_00209048` | text | **close, not exact — 4/36, one instruction** (was 16/36) | 2D cross-product orientation test (is `(x2,y2)` left of the `(x0,y0)->(x1,y1)` edge), 6 `int` params, kept as C. **The earlier entry claimed the instruction order already matched retail; it didn't** — the four independent in-place subtractions were rotated, and fixing that (writing `x2`/`y2` before `x1`/`y1`) brought it from 16/36 to 4/36 with every register now identical. This extends the store-order rotation rule: **it applies to runs of independent *arithmetic* statements, not only stores.** The sole remaining diff is the final sign test — this compiler emits `srl $2,$2,31`, retail has `slti $2,$2,0`; same result, different instruction selection, and not steerable from source (`< 0`, `<= -1`, `< 1-1`, a named local, and `?1:0` all canonicalize to `srl`; widening to `long` gives `dsrl32`, which is worse). See the new sign-test entry under "Open toolchain questions". |
 | `func_00209160` | text | **close, not exact** (18/36) | Struct field shuffle (`D_0013D390`): read field `0xC4` into a temp, zero field `0xFC`, write the temp to field `0x1C`, plus `D_0015EFB0 = 3`. Confirmed correct logic. Re-tested against the store-order rotation rule (source `0x1C` then `0xFC`, to obtain retail's emitted `0xFC` then `0x1C`): **no change, still 18/36** — a real negative result for the rule, and consistent with it being base-pointer-scoped, since the `D_0015EFB0` store goes through a second base (same failure mode as `func_00219E60`). Residual is retail materializing the literal `3` early (into `$3`, before the base's own `addiu`) and using `$1`/`$at` for `D_0015EFB0`'s `%hi`, where this compiler orders those differently and uses a normal temp. |
 | `func_002098A8` | text | **close, not exact** (7/32) | `if (D_0013D3AC != 0) D_0015EFB0 = 3;`. Retail schedules the literal `3` into the branch's delay slot; this compiler schedules the `D_0015EFB0` address computation there instead. Same open question as `func_00209160` right above. Since re-checked against both newer techniques and neither helps: a `*(volatile int *)&D_0015EFB0 = 3;` store (the signature that fixed `func_0023E710`/`func_0023E5B8`) and hoisting the constant into its own local before the `if` (the documented delay-slot-steering technique) both leave it at exactly 7/32. Genuinely the scheduling question here, not a volatile or statement-order artifact. |
 | `func_0020C210`, `func_0020C230` | text | **not decompile targets** (was previously "close, not exact") | Hand-written assembly, part of the same DMAC block as `func_0020C268`/`func_0020C2F8`, which spimdisasm *does* explicitly mark `/* Handwritten function */`. These two use identical idioms but escaped the marker heuristic (which keys on things like `addi` vs `addiu`), so a marker's absence is not evidence of compiler origin. Tells: the base address `0x1000D400` is kept live in **`$1`/`$at`** across all four stores — `$at` is assembler-reserved on MIPS and GCC will never allocate it — and `0x100` is materialized with `ori $2,$0,0x100` where a compiler emits `addiu`. `func_0020C230` is conclusive on its own: hand-inserted `nop` delay padding after an MMIO load, an `alabel` alternate entry point mid-function, and a hand-coded spin loop (`j func_0020C238`) back to it. **The earlier `func_0020C210` entry was wrong** — it read this as compiler output and invented a "redundant address reload, now also for bare constant addresses" codegen category to explain the 27/32 diff. That category never existed; retiring it. Cautionary example: an unexplained *large* diff in MMIO-adjacent code is worth checking against the hand-written-asm tells (`$at` as a live base, `ori` for small constants, `nop` padding, `alabel` entries) before positing a new compiler gap. |
@@ -375,6 +375,18 @@ round doesn't have to rediscover that these three are harder than the
 usual near-miss, but not promoted to a full open question until a
 pattern across more instances is clear.
 
+**Sign-test boolean materialization: `srl`-31 vs `slti`-0.** For a
+function returning `x < 0` as a boolean, this compiler always emits
+`srl $2,$2,31` (extract the sign bit); retail sometimes has
+`slti $2,$2,0` instead. Identical result, one instruction either way,
+but it is not steerable from source — on `func_00209048` every
+equivalent formulation tried (`< 0`, `<= -1`, `< 1-1`, via a named
+local, and `? 1 : 0`) canonicalizes to the same `srl`, and widening the
+compared value to `long` only changes it to `dsrl32`, which is further
+off. A minimal, self-contained category: it costs exactly 4 bytes in one
+instruction and can't cascade, so a function held *only* by this is
+worth keeping as documented-close C rather than reverting.
+
 ## Solved techniques worth knowing (not open questions)
 
 **Unsigned-mask materialization.** For a bit-clear like `flags &= ~1`,
@@ -464,11 +476,16 @@ worked for 8 of 9 attempts in this cluster; the one that didn't
 (`func_0020CBA8`) had 3 chained conditions instead of 2, so this
 technique may not scale past 2.
 
-**Independent-store order: last source statement emits first.** For a run
-of N independent same-shape stores through one already-materialized base
-pointer, this compiler emits the **last** source statement first, then
-the remaining ones in source order: source `(A, B, C)` compiles to
-`(C, A, B)`. So to obtain retail's emitted order `(X, Y, Z)`, write the
+**Independent-statement order: last source statement emits first.** For a
+run of N independent same-shape statements — originally derived for
+stores through one already-materialized base pointer, but **confirmed on
+independent arithmetic too** (`func_00209048`'s four in-place
+subtractions) — this compiler emits the **last** source statement first,
+then the remaining ones in source order: source `(A, B, C)` compiles to
+`(C, A, B)`. For a 4-statement run it rotated by *two* in one case
+(`func_00209048`: source `(a,b,c,d)` emitted `(c,d,a,b)`), so for runs
+longer than 3 treat the rotation amount as something to determine
+empirically rather than assuming exactly one. So to obtain retail's emitted order `(X, Y, Z)`, write the
 source as `(Y, Z, X)` — rotate retail's order left by one. Derived from
 `func_00216F28` (3 `short` stores) and then confirmed *predictively* on
 `func_0021EF38` (4 stores, mixed float/int, byte-exact first attempt).
