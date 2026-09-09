@@ -503,6 +503,20 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F9A98);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9AC0);
 
+/*
+ * Close but not exact: DMAC channel register setup (base 0x1000D000,
+ * offsets 0x10/0x20/0x80 are D_STAT/D_TADR/D_MADR-shaped registers,
+ * 0x0 is D_CHCR set to 0x100 = STR bit; final read is INTC_STAT at
+ * fixed address 0x20100000, ORed with 0x1). Logic confirmed correct
+ * via objdump, but retail computes the 0x1000D000 base once into a
+ * single scratch register ($1) and defers the 0x20100000 address
+ * computation to right before its use; this compiler hoists that
+ * second address earlier and uses different registers throughout.
+ * New instance of the scratch-register-allocation-choice open
+ * question (previously only seen with 2 independent temporaries, this
+ * is more instructions/registers than prior instances). See
+ * docs/DECOMP_PROGRESS.md.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9AF0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9B20);
@@ -635,8 +649,22 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FA648);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FA6C0);
 
+/*
+ * Close but not exact: angle-wrap-to-[-pi,pi] on arg0+arg1 (retail's
+ * else-if shape confirmed by the delay-slot second-compare testing the
+ * *original* sum, only meaningful when the first branch wasn't taken).
+ * Logic and instruction sequence confirmed correct via objdump, but
+ * this compiler allocates the sum into $f12 (reusing arg0's register)
+ * where retail uses a fresh $f0 -- same scratch-register-allocation-
+ * choice open question as elsewhere, now confirmed to apply to FP
+ * registers too, not just integer. Tried forcing a fresh local via a
+ * separate assignment+accumulate instead of one combined expression;
+ * no change. See docs/DECOMP_PROGRESS.md.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_001FA748);
 
+/* Same register-allocation-choice issue as func_001FA748 above (its
+   arg0-arg1 sibling); logic confirmed identical shape via objdump. */
 INCLUDE_ASM("asm/nonmatchings/text", func_001FA790);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FA7D8);
@@ -659,7 +687,11 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FAB20);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FAB40);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FB448);
+extern long D_00152178;
+
+void func_001FB448(int arg0, int arg1, int arg2) {
+    D_00152178 = (long)arg0 | ((long)arg1 << 8) | ((long)arg2 << 16) | 0x80000000L;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FB470);
 
@@ -965,7 +997,15 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00207B30);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207BE8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207CB0);
+extern unsigned char D_0013D4C5;
+extern int D_001414DC;
+
+int func_00207CB0(int arg0, int arg1) {
+    if (arg1 >= 0x101) {
+        return D_001414DC == 0xF;
+    }
+    return D_0013D4C5 != 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207CE0);
 
@@ -973,6 +1013,21 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00207D38);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207DB0);
 
+/*
+ * Close but not exact: `result = (arg0 < 0xE0 && arg1 <= 38.0) ? 1 : 0;`
+ * -- confirmed via objdump: same operations, same registers, same
+ * threshold constant (0x42180000 = 38.0), same shape (default 0, set 1
+ * if arg0<0xE0, reset to 0 if arg1>38.0). Retail encodes the inner
+ * boolean-to-branch conversion as bc1t with both the "set 1" and
+ * "reset to 0" as literal delay-slot/fallthrough instructions; every
+ * source shape tried (single &&-expression, nested if, result-default-
+ * then-override) compiles to a bc1f/bc1tl-based scheme instead --
+ * logically identical, different instruction encoding/ordering. New
+ * instance of the delay-slot-scheduling open question (previously seen
+ * as store/branch-target reordering, this is the FP-condition
+ * materialization case). 26/52 bytes differ, too large a diff to keep
+ * as documented-close C per the func_00112468 precedent.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00207E28);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207E60);
@@ -987,6 +1042,18 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00207EA0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207EB0);
 
+extern unsigned char D_0013D4E0;
+
+/*
+ * Close but not exact: if (arg0>=0xBE) return D_0013D4E0!=0; else return
+ * (arg1>=58.5) ? 1 : 0. Confirmed via objdump: the arg0>=0xBE early
+ * return matches exactly (same bnez polarity as retail once written as
+ * `if (arg0 >= 0xBE)` rather than the inverted `if (arg0 < 0xBE)`), but
+ * the float-threshold boolean materialization hits the same delay-slot-
+ * scheduling issue as func_00207E28 just above -- same category, not
+ * re-explained in full here. 19/64 bytes differ, too large a diff to
+ * keep as documented-close C per the func_00112468 precedent.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00207EC0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207F00);
