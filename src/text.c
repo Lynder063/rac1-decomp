@@ -311,6 +311,10 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F4748);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F4868);
 
+extern int D_0015F564;
+extern int D_0018DD40[];
+extern int D_0018DC40[];
+
 INCLUDE_ASM("asm/nonmatchings/text", func_001F49B0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F4A00);
@@ -399,7 +403,21 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F75D0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F7640);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F7648);
+void func_001F7648(void *arg0, int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8) {
+    short *s = (short *)arg0;
+    s[0] = a1;
+    s[1] = a2;
+    s[2] = a3;
+    s[3] = a4;
+    s[4] = a5;
+    s[5] = a6;
+    s[8] = a7;
+    s[9] = a8;
+    s[6] = 0;
+    s[7] = 0;
+    s[10] = 0;
+    s[11] = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F7680);
 
