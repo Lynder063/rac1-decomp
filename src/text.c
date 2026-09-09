@@ -1229,13 +1229,22 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00209048);
 INCLUDE_ASM("asm/nonmatchings/text", func_00209070);
 
 /*
- * Close but not exact (18/36 bytes): materializes &D_0013D390 into a
- * base pointer, sets D_0015EFB0 = 3, reads base+0xC4 into a temp, zeroes
+ * Close but not exact (18/36): materializes &D_0013D390 into a base
+ * pointer, sets D_0015EFB0 = 3, reads base+0xC4 into a temp, zeroes
  * base+0xFC, writes the temp to base+0x1C. Logic confirmed correct via
- * objdump; tried both statement orders for the final two independent
- * stores, neither reproduced retail's exact scheduling. Same
- * delay-slot-scheduling open question as func_002098A8 above.
+ * objdump. Re-tested against the store-order rotation rule this round
+ * (source 0x1C-then-0xFC to obtain retail's emitted 0xFC-then-0x1C):
+ * no change, still 18/36. Consistent with the rule being documented as
+ * base-pointer-scoped -- the D_0015EFB0 store is through a second base,
+ * and as with func_00219E60 the presence of two bases makes the
+ * scheduling unresponsive to source order. The residual is retail
+ * putting the literal 3 early (materialized into $3 before the base's
+ * own addiu) and using $1/$at for D_0015EFB0's hi, where this compiler
+ * orders those differently and uses a normal temp register.
  */
+extern char D_0013D390[];
+extern int D_0015EFB0;
+
 INCLUDE_ASM("asm/nonmatchings/text", func_00209160);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209188);
@@ -1255,9 +1264,6 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00209418);
 INCLUDE_ASM("asm/nonmatchings/text", func_00209448);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002094A8);
-
-extern char D_0013D390[];
-extern int D_0015EFB0;
 
 /*
  * Close but not exact (13/64 bytes, 20.3%): if the struct at D_0013D390
