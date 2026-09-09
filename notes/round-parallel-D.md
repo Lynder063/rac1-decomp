@@ -121,3 +121,110 @@ functions, same category as the existing `func_00113AD8` entry:
 Useful for planning: 209 `sq`/`lq` (**see headline — these are
 near-matches, not blocked**), 26 handwritten, 21 genuinely-viable
 untouched, 20 fragments, 15 `$gp`-relative, 5 `movz`/`movn`.
+
+---
+
+# SECOND ROUND (after the sq/lq fix landed)
+
+## Headline
+
+The `sq`/`lq` unblock is real and large. **19 functions decompiled, 18
+exact, 1 reverted**; project sweep went **143 -> 164 exact** (the extra
+gain beyond my 18 comes from a drift fix below that reclaimed
+`func_0023DFC0`).
+
+Crucially this includes functions that **spill callee-saved registers** --
+the exact category written off as blocked for 23 rounds. Under the v1.14
+`text` compiler they match **exactly**, not with a 2-byte floor. Most
+landed on the first attempt.
+
+## CORRECTION to my own first-round classification (above)
+
+My first round binned ~209 of 298 in-range stubs as "blocked by
+`sq`/`lq`". **That classification was wrong and must not be trusted.**
+Those are ordinary work; I matched them freely this round. The same
+correction almost certainly applies to every other range survey with a
+large "`sq`/`lq` blocked" bucket. Honest count for this range: 292 stubs,
+~195 with no disqualifying feature -- candidates, not blockers.
+
+## Fixed: 8 bytes of drift affecting 179 `text` functions (general trap)
+
+`func_00234350.s` declares size `0x28` but carries **two trailing `nop`s
+after its `endlabel`**, because retail aligns the *following* function to
+**16 bytes** while the `.s` files only ever `.align 3` (8 bytes).
+
+Those `nop`s are *outside* the declared size. While the function was an
+`INCLUDE_ASM` stub the `.s` supplied that padding; decompiling it to C
+silently dropped it, shifting all 179 later `text` functions by -8 and
+giving them **spurious 1-byte `jal`-target diffs** -- 179 apparent
+problems, one cause.
+
+Fix: explicit `__asm__(".align 4");` after the function, commented so it
+isn't removed as noise.
+
+**Generalisation:** any function whose `.s` has content after `endlabel`
+will do this when decompiled. Worth grepping for globally.
+
+## Size mismatches are actively harmful, not neutral
+
+Shown twice this round. A size-mismatched function shifts everything
+after it, so its real cost is a smear of fake 1-byte diffs downstream:
+
+- `func_001F9B90`/`func_001F9B98` (`max.s`/`min.s`, +4 each) -- reverted.
+  Retail is 8 bytes: `jr $31` with the instruction in the **delay slot**,
+  which this compiler won't do with inline asm, so any rendering is 12.
+- `func_00235290` (mine, 36/52 + size) -- reverted. Its shift alone gave
+  `func_0023E008` a phantom 1-byte diff; reverting it made
+  `func_0023E008` exact with no change to `func_0023E008`.
+
+**Rule worth adopting:** never leave a size-mismatched function as
+committed C. Byte-mismatch-only may be kept as documented-close;
+size-mismatch must be reverted.
+
+## Matched (18, each verified with the compiler's own exit code 0)
+
+| Function | Size | Shape |
+|---|---|---|
+| `func_0023BB40` | 0x1C | `return func_00118BC0(1);` |
+| `func_0023DFE0` | 0x1C | `return func_0023D2E8(arg0 + 0x48);` |
+| `func_0023E0B0` | 0x1C | `return func_0023D9E0(arg0 + 0x48);` |
+| `func_0023C060` | 0x20 | call, `return 1` |
+| `func_0023DFA0` | 0x20 | call, `return 1` |
+| `func_0023BF48` | 0x24 | `func_001E9730(D_001612F8, arg0)` (varargs callee) |
+| `func_0023C2C0` | 0x24 | guarded call on `*arg0` |
+| `func_0023E450` | 0x28 | varargs call w/ field load, `return 1` |
+| `func_00236BB0` | 0x2C | two calls w/ global args |
+| `func_0023AA08` | 0x2C | three void calls |
+| `func_00222AD0` | 0x30 | **s-reg**: field 0x54 read -> call -> write |
+| `func_00224010` | 0x30 | **s-reg**: same, field 0x48 |
+| `func_00220128` | 0x38 | **s-reg**, float: field 0x40 with `0.02f` |
+| `func_00220338` | 0x38 | 3 calls, `return 8` |
+| `func_00222978` | 0x38 | 4-arg call from struct fields, `return 2` |
+| `func_00222A90` | 0x3C | **s-reg**: global field zero + call result |
+| `func_00223FD0` | 0x3C | **s-reg**: 2 calls, 2 field writes |
+| `func_0023E008` | 0x34 | **s-reg**: 2 calls, `return 1` |
+
+## Reverted / genuinely still blocked
+
+- `func_0023BB60` (9/44), plus `func_0023E4B0`/`func_0023E4E0` by
+  inspection -- all the `D_0016130C + <big constant>` shape, held by the
+  documented **`%hi`-register-reuse** sub-case (retail `lui $2`/`lw $2`
+  reusing one register; ours `lui $2`/`lw $3` plus the constant's `lui`
+  hoisted a slot earlier). The base-pointer-local + `&p[off]` lever
+  changed nothing, confirming allocator over source shape. There is a
+  **cluster** of these around 0x23E4xx.
+- `func_002391A8` (14/60) -- needs base-pointer-local plus
+  argument-ordering work; logic recorded in its source comment.
+- `func_00235290` -- DMA/GIF packet append on `D_00161000`; emitted store
+  order didn't follow the rotation rule. Needs a fresh look.
+
+## Two things for the coordinator
+
+1. **`tools/sweep_matches.py` counts a declaration as a definition.** Its
+   `FUNC_DEF` regex matches `extern void func_0012F220(void);`, so that
+   name reports as "could not check". It fails safe (no false match) but
+   will accumulate noise as externs are added -- the regex should skip
+   lines beginning `extern`.
+2. **Varargs *callers* are fine.** `func_0023BF48` and `func_0023E450`
+   both call the varargs `func_001E9730` and match exactly. Only varargs
+   *definitions* need `stdarg.h`; the skip category should say so.
