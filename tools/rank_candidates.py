@@ -50,6 +50,16 @@ def already_attempted() -> set[str]:
         if d.is_dir():
             for f in d.glob("*.md"):
                 seen |= set(FUNCNAME.findall(f.read_text(errors="replace")))
+
+    # Also: a stub in src/ with a block comment immediately above it is a
+    # documented revert -- someone decoded it, failed, and wrote down why.
+    # Those live in source comments rather than in docs/notes, so scanning
+    # only the markdown missed them and handed them straight back as top
+    # candidates. (Caught when func_0012AAA8, reverted minutes earlier for
+    # a delay-slot difference, reappeared at rank 25.)
+    for f in Path("src").glob("*.c"):
+        src = f.read_text(errors="replace")
+        seen |= set(re.findall(r"\*/\s*INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\)", src))
     return seen
 
 
