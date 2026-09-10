@@ -1154,7 +1154,22 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00205520);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00205660);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00205728);
+extern int D_001A0468[];
+
+int func_00205728(int arg0) {
+    int *a = D_001A0468;
+    int *b = D_001A0468 + 5;
+    int i = 0;
+    do {
+        int idx = 4 - i;
+        if (arg0 == 0) idx = i;
+        if (a[idx] != 0 && b[idx] == -1) {
+            return idx;
+        }
+        i++;
+    } while (i < 5);
+    return -1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00205790);
 
