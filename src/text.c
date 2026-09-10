@@ -497,7 +497,14 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F62C8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F6410);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F6598);
+/* gp-relative: declared as a 2-byte type purely so -G2 places it in the
+   small-data area (placement is decided by DECLARED size), then accessed
+   as the 4-byte word it really is. gp base 0x166D00 - 0x7764 = 0x15F59C. */
+extern short D_0015F59C;
+
+void func_001F6598(void) {
+    *(int *)&D_0015F59C = 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F65A8);
 

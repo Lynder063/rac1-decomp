@@ -28,7 +28,16 @@ CC_CORE := $(SN_136)/bin/ee-gcc2953.exe
 CC_TEXT := $(SN_114)/bin/ee-gcc2953.exe
 SIZE    := $(SN_136)/bin/ee-size.exe
 
-CFLAGS := -O2 -G0 -Iinclude -Wa,-I,.
+# -G2, NOT -G0. The small-data threshold has to sit in 1..3:
+#   -G0        no $gp addressing at all -> the ~244 text functions that
+#              use $gp can never match
+#   -G1..-G3   small globals go via $gp AND float constants stay inline
+#              (lui/ori/mtc1), which is what retail does
+#   -G4+       float constants get pooled into .lit4 and addressed via
+#              $gp, which retail never does -- and .lit4 has nowhere to
+#              live, since the SDA window is fully occupied
+# Verified: -G1/-G2/-G3 all link clean with zero regressions vs -G0.
+CFLAGS := -O2 -G2 -Iinclude -Wa,-I,.
 
 OBJS := build-sn/core_text.o build-sn/text.o
 

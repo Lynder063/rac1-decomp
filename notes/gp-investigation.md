@@ -1,5 +1,69 @@
 # $gp / small-data-area (SDA) investigation
 
+# SOLVED. The answer was the -G threshold: use -G2.
+
+Everything below this banner is the historical trail, and **two of its
+conclusions were wrong** -- kept deliberately, because both were stated
+confidently and someone re-reading them would otherwise repeat the dead
+ends.
+
+## The answer
+
+Retail's small-data threshold sits in **1..3**; the build now uses
+**`-G2`** (`Makefile.sn`). Measured behaviour of this compiler:
+
+| `-G` | FP constants | small globals via `$gp` |
+|---|---|---|
+| `-G0` | inline (`lui`/`ori`/`mtc1`) | never -- so no `$gp` function can match |
+| `-G1`..`-G3` | **inline** | **yes** |
+| `-G4`+ | pooled into `.lit4` | yes |
+
+Retail inlines FP constants *and* uses `$gp`, so it must be 1..3. At
+`-G4`+ the pooling is not just wrong, it is unbuildable: `.lit4` is
+addressed via `$gp` and the SDA window is fully occupied, so it has
+nowhere to live.
+
+**Proven end-to-end.** `func_001F6598` -- `sw $2, -0x7764($28)` -- is
+byte-exact (0/12), the first `$gp` function ever matched here. Switching
+to `-G2` cost nothing: 195 exact, zero regressions.
+
+## The one trick you need
+
+Placement is decided by an extern's **declared** size, and `-G2` only
+admits variables of 1-2 bytes. Retail reaches plenty of *4-byte* globals
+via `$gp`. Declare those as a small type and cast at the point of use:
+
+```c
+extern short D_0015F59C;              /* declared small -> lands in SDA */
+*(int *)&D_0015F59C = 1;              /* accessed as the word it is */
+```
+
+`NOT_SDA` (in `include/common.h`) is the opposite lever, for variables
+that must stay *out* -- needed for the ~60 that live outside the
+window's +-32KB reach.
+
+## Two wrong conclusions recorded below -- do not act on them
+
+1. **"The literal pool needs somewhere to live."** It does not. Retail
+   has no literal pool; at `-G2` neither do we. This was solving a
+   problem created by choosing `-G8`.
+2. **"Retail was built from multiple translation units with different
+   `-G`."** Refuted twice over. It rested on treating inline-FP as proof
+   of `-G0`, which is only true at `-G4`+. And measuring it directly
+   found **13 pairs of immediately adjacent functions** that would need
+   different `-G` -- impossible, since a linker lays each TU's `.text`
+   out contiguously. A single `-G2` explains every observation with no
+   split at all.
+
+The lesson, which this project has now learned four separate times: a
+confidently-worded conclusion in these notes is worth re-testing when
+you have a new lever, because several have been wrong.
+
+---
+
+# Historical trail (superseded)
+
+
 Status: **mechanism confirmed, blocker reduced to a defined task.** Not
 yet applied — the build is still `-G0` and unaffected.
 
