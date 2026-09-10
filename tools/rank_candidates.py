@@ -205,6 +205,19 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
 
     # ---- risky signatures (near-miss generators, not hard blockers) ----
 
+    # Short-loop erratum, second form: retail leaves the loop branch's
+    # DELAY SLOT unfilled where this compiler fills it, so we come out
+    # 4 bytes short. Same erratum as the two-nop form above, which is
+    # blocked; this one is only marked risky because there is a single
+    # confirmation so far (func_0011D370) -- blanket-blocking on thin
+    # evidence has cost this project real matches twice.
+    for idx, i in enumerate(ins[:-1]):
+        m = re.match(r"b(ne|eq|nez|eqz|gez|ltz|gtz|lez)l?\s.*?(\.L[0-9A-Fa-f]+)\s*$", i)
+        if m and ins[idx + 1] == "nop":
+            t2 = labels.get(m.group(2))
+            if t2 is not None and t2 <= idx and idx - t2 <= 7:
+                return "risky", "loop delay slot nop", "erratum: unfilled delay slot"
+
     # Allocator destination-reuse: `lw $x, %lo(sym)($x)`. This is THE
     # signature that predicted the $gp near-misses; filtering it out is
     # what produced a 4-of-5 hit rate.
