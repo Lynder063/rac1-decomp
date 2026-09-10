@@ -54,7 +54,9 @@ void func_001E97B8(void) {
 void func_001E97C0(void) {
 }
 
-int func_001E97C8(void) {
+/* Takes an argument (callers pass one, e.g. func_001EC210) and ignores
+   it -- the unused parameter costs no codegen, still 0/8. */
+int func_001E97C8(void *arg0) {
     return 0;
 }
 
@@ -168,8 +170,41 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001EBB48);
    fallthrough fragment, same category as func_00113AD8 in core_text. */
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC030);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EC038);
+/* Same signature as the declaration further down this file; duplicate
+   identical declarations are legal and avoid a signature clash. */
+extern void func_001F9A98(void *, void *, int);
+extern char D_00189310[];
+extern char D_001899D0[];
+extern void *D_001871C0;
 
+void func_001EC038(void) {
+    func_001F9A98(D_00189310, D_001871C0, 0xA0);
+    func_001F9A98(D_001899D0, D_001899D0 - 0x500, 0x280);
+    *(void **)(D_00189310 + 0x70) = D_001899D0;
+}
+
+/*
+ * REVERTED. Logic is certain and the loop body compiles
+ * instruction-for-instruction identical to retail:
+ *
+ *   extern int D_0015F08C;
+ *   extern void (*D_001893B0[])(void);
+ *   void func_001EC098(void) {
+ *       int i = 0;
+ *       void (**p)(void) = D_001893B0;
+ *       while (i < D_0015F08C) { i++; (*p++)(); }
+ *       D_0015F08C = 0;
+ *   }
+ *
+ * Right size (108) but 83/108. The entire difference is global-address
+ * materialization: retail re-derives `&D_0015F08C` with a fresh `lui`
+ * at each of its three uses (and falls back to `$at` for the final
+ * store, the documented `%hi`-reuse/`$at` allocator sub-case), whereas
+ * this compiler hoists the address into a third callee-saved register
+ * as a loop invariant -- so our frame is 0x40 against retail's 0x30.
+ * Marking the global `volatile` makes it worse (0x50 frame, four
+ * callee-saved regs), confirming it is allocation, not access semantics.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC098);
 
 /* Not a standalone function: no `jr $31` -- dead-value computation
