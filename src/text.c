@@ -3757,7 +3757,15 @@ void func_0023CD60(void *arg0, int n) {
     b[0] = r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023CDA8);
+int func_0023CDA8(char *arg0, int *arg1) {
+    char *base = arg0 + 0x50000;
+    int v = *(int *)(base + 4);
+    if (v != 0) {
+        int d = *(int *)(base + 8);
+        *arg1 = (int)(arg0 + (*(int *)base - v + d) % d);
+    }
+    return *(int *)(base + 4);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023CDF0);
 
@@ -3919,7 +3927,16 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023E0D0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E0D8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E1B0);
+extern int func_0023E0B0(void *);
+extern int func_0012BB98(void *);
+
+int func_0023E1B0(void *arg0) {
+    int r = 0;
+    if (func_0023E0B0(arg0) == 0) {
+        r = func_0012BB98(arg0) != 0;
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E1F8);
 
