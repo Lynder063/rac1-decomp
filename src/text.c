@@ -1612,7 +1612,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00209070);
  * orders those differently and uses a normal temp register.
  */
 extern char D_0013D390[];
-extern int D_0015EFB0;
+extern short D_0015EFB0;   /* SDA: retail reaches 0x15EFB0 via $gp in some TUs */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209160);
 
@@ -1628,7 +1628,15 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00209358);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209398);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209418);
+void func_00209418(void) {
+    char *s = D_0013D390;
+    *(int *)(s + 0x1C) = 0;
+    if (*(int *)(s + 0xE4) < 0) {
+        *(int *)(s + 0xE8) = 0;
+        *(int *)(s + 0xE4) = 3;
+    }
+    *(int *)&D_0015EFB0 = 8;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209448);
 
@@ -1649,15 +1657,16 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002094A8);
  * and picks $a0 for the constant 0xB where retail picks $v1. Tried
  * reordering the source statements; no further change.
  */
-void func_002094E0(void) {
-    char *s = D_0013D390;
-    if (*(int *)(s + 0xDC) == 2 && *(int *)(s + 0xE4) < 0) {
-        int a = 7, b = 0xB;
-        *(int *)(s + 0xE4) = a;
-        *(int *)(s + 0xE8) = 0;
-        D_0015EFB0 = b;
-    }
-}
+/* Stubbed: with D_0015EFB0 declared SDA (needed for func_00209418,
+   which reaches 0x15EFB0 via $gp) this function compiles 4 bytes
+   SHORT of retail, because retail reaches the same address here via
+   the non-SDA lui/%hi form instead. Retail evidently declared it
+   differently per translation unit; one .c file cannot express both.
+   It was already a documented near-miss blocked by the global-STORE
+   addressing question, so nothing exact is lost -- but a SIZE
+   mismatch would drift everything after it, so it is stubbed.
+   Decoded semantics are in the comment above. */
+INCLUDE_ASM("asm/nonmatchings/text", func_002094E0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209520);
 
@@ -1679,15 +1688,16 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00209620);
  * reordering the source statements doesn't move it, so not re-tried.
  * Kept as documented-close on that function's precedent (same 20.3%).
  */
-void func_00209698(void) {
-    char *s = D_0013D390;
-    if (*(int *)(s + 0xDC) == 2 && *(int *)(s + 0xE4) < 0) {
-        int a = 9, b = 0xF;
-        *(int *)(s + 0xE4) = a;
-        *(int *)(s + 0xE8) = 0;
-        D_0015EFB0 = b;
-    }
-}
+/* Stubbed: with D_0015EFB0 declared SDA (needed for func_00209418,
+   which reaches 0x15EFB0 via $gp) this function compiles 4 bytes
+   SHORT of retail, because retail reaches the same address here via
+   the non-SDA lui/%hi form instead. Retail evidently declared it
+   differently per translation unit; one .c file cannot express both.
+   It was already a documented near-miss blocked by the global-STORE
+   addressing question, so nothing exact is lost -- but a SIZE
+   mismatch would drift everything after it, so it is stubbed.
+   Decoded semantics are in the comment above. */
+INCLUDE_ASM("asm/nonmatchings/text", func_00209698);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002096D8);
 
@@ -1696,19 +1706,16 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00209750);
 extern int D_0015EFB4;
 
 /* Byte-identical to func_00209858; see its comment. Same 9/80 residual. */
-void func_00209808(void) {
-    char *s = D_0013D390;
-    int idx = *(int *)(s + 0xCC);
-    int *rec;
-    s += 0xB0;
-    rec = (int *)(s + 0xC0 * idx);
-    if (*rec == 2) {
-        *rec = 0;
-    }
-    if ((D_0015EFB4 & 0x40) == 0) {
-        D_0015EFB0 = 3;
-    }
-}
+/* Stubbed: with D_0015EFB0 declared SDA (needed for func_00209418,
+   which reaches 0x15EFB0 via $gp) this function compiles 4 bytes
+   SHORT of retail, because retail reaches the same address here via
+   the non-SDA lui/%hi form instead. Retail evidently declared it
+   differently per translation unit; one .c file cannot express both.
+   It was already a documented near-miss blocked by the global-STORE
+   addressing question, so nothing exact is lost -- but a SIZE
+   mismatch would drift everything after it, so it is stubbed.
+   Decoded semantics are in the comment above. */
+INCLUDE_ASM("asm/nonmatchings/text", func_00209808);
 
 /*
  * Close but not exact (9/80, 11.3%). Instruction-for-instruction
@@ -1729,19 +1736,16 @@ void func_00209808(void) {
  * single-statement `if` whose body fits the delay slot, unlike the FP
  * bc1fl case in func_00208208.
  */
-void func_00209858(void) {
-    char *s = D_0013D390;
-    int idx = *(int *)(s + 0xCC);
-    int *rec;
-    s += 0xB0;
-    rec = (int *)(s + 0xC0 * idx);
-    if (*rec == 2) {
-        *rec = 0;
-    }
-    if ((D_0015EFB4 & 0x40) == 0) {
-        D_0015EFB0 = 3;
-    }
-}
+/* Stubbed: with D_0015EFB0 declared SDA (needed for func_00209418,
+   which reaches 0x15EFB0 via $gp) this function compiles 4 bytes
+   SHORT of retail, because retail reaches the same address here via
+   the non-SDA lui/%hi form instead. Retail evidently declared it
+   differently per translation unit; one .c file cannot express both.
+   It was already a documented near-miss blocked by the global-STORE
+   addressing question, so nothing exact is lost -- but a SIZE
+   mismatch would drift everything after it, so it is stubbed.
+   Decoded semantics are in the comment above. */
+INCLUDE_ASM("asm/nonmatchings/text", func_00209858);
 
 /*
  * Close but not exact (7/32 bytes): if (D_0013D3AC != 0) D_0015EFB0 = 3;
@@ -1761,34 +1765,28 @@ void func_00209858(void) {
 INCLUDE_ASM("asm/nonmatchings/text", func_002098A8);
 
 /* Byte-identical to func_00209858; see its comment. Same 9/80 residual. */
-void func_002098C8(void) {
-    char *s = D_0013D390;
-    int idx = *(int *)(s + 0xCC);
-    int *rec;
-    s += 0xB0;
-    rec = (int *)(s + 0xC0 * idx);
-    if (*rec == 2) {
-        *rec = 0;
-    }
-    if ((D_0015EFB4 & 0x40) == 0) {
-        D_0015EFB0 = 3;
-    }
-}
+/* Stubbed: with D_0015EFB0 declared SDA (needed for func_00209418,
+   which reaches 0x15EFB0 via $gp) this function compiles 4 bytes
+   SHORT of retail, because retail reaches the same address here via
+   the non-SDA lui/%hi form instead. Retail evidently declared it
+   differently per translation unit; one .c file cannot express both.
+   It was already a documented near-miss blocked by the global-STORE
+   addressing question, so nothing exact is lost -- but a SIZE
+   mismatch would drift everything after it, so it is stubbed.
+   Decoded semantics are in the comment above. */
+INCLUDE_ASM("asm/nonmatchings/text", func_002098C8);
 
 /* Byte-identical to func_00209858; see its comment. Same 9/80 residual. */
-void func_00209918(void) {
-    char *s = D_0013D390;
-    int idx = *(int *)(s + 0xCC);
-    int *rec;
-    s += 0xB0;
-    rec = (int *)(s + 0xC0 * idx);
-    if (*rec == 2) {
-        *rec = 0;
-    }
-    if ((D_0015EFB4 & 0x40) == 0) {
-        D_0015EFB0 = 3;
-    }
-}
+/* Stubbed: with D_0015EFB0 declared SDA (needed for func_00209418,
+   which reaches 0x15EFB0 via $gp) this function compiles 4 bytes
+   SHORT of retail, because retail reaches the same address here via
+   the non-SDA lui/%hi form instead. Retail evidently declared it
+   differently per translation unit; one .c file cannot express both.
+   It was already a documented near-miss blocked by the global-STORE
+   addressing question, so nothing exact is lost -- but a SIZE
+   mismatch would drift everything after it, so it is stubbed.
+   Decoded semantics are in the comment above. */
+INCLUDE_ASM("asm/nonmatchings/text", func_00209918);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209968);
 
