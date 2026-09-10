@@ -587,3 +587,20 @@ Rewrote the pattern to use `\s` instead, and scanned every file in
 `tools/` plus `rac1.ld.sh` for stray 0x08 bytes — none remain. **If a
 newly-added detector reports zero hits, check for this before assuming
 the signature is absent.**
+
+## Lever: pointer-arithmetic associativity is observable
+
+`func_00119890`/`func_001198D0` sat at 8/60 until the parenthesisation
+changed. Retail computes the offset first and then adds the base:
+
+```c
+if (p == self + (*(int *)self + 0x10))     /* addiu then addu  -> matches */
+if (p == self + *(int *)self + 0x10)       /* addu then addiu  -> 8/60   */
+```
+
+C's left-to-right grouping makes the second form `(self + x) + 0x10`,
+which emits the `addu` before the `addiu`. Both are arithmetically
+identical and the instruction *set* is the same either way, so this
+shows up purely as two swapped instructions — easy to misread as a
+scheduling problem when it is really source shape. Worth trying whenever
+a near-miss is an adjacent add/addiu pair in the wrong order.
