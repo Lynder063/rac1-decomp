@@ -921,7 +921,20 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B0E0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B198);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B1F8);
+void *func_0011B1F8(int key, void *arg1) {
+    void *outer = *(void **)((char *)arg1 + 0x28);
+    while (outer != 0) {
+        void *inner = *(void **)((char *)outer + 8);
+        while (inner != 0) {
+            if (*(int *)inner == key) {
+                return inner;
+            }
+            inner = *(void **)((char *)inner + 0x38);
+        }
+        outer = *(void **)((char *)outer + 0x14);
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B248);
 

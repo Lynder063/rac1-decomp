@@ -2236,6 +2236,23 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002140F0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002140F8);
 
+/*
+ * REVERTED -- size mismatch (76 vs retail's 80). Semantics are certain:
+ *
+ *   float func_00214158(void) {
+ *       int v = ((func_001160D8() >> 16) & 0xFFF) - 0x800;
+ *       return (float)v * 3.14159274f * 0.00048828125f;
+ *   }
+ *
+ * i.e. a random angle in radians: take 12 bits out of the PRNG, centre
+ * them on zero, and scale by pi * 2^-11. Every instruction matches
+ * including both constant materializations (0x40490FDB and 0x3A000000).
+ * The single missing instruction is a hazard `nop` retail carries
+ * between `mtc1 $2,$f0` and the `cvt.s.w` that consumes $f0 -- the same
+ * class as the lwc1 load-delay nop, from the GPR->FPU transfer side.
+ * Not reachable from C. tools/rank_candidates.py had ranked this a
+ * candidate; it now detects this pattern too.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00214158);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002141A8);
@@ -4015,7 +4032,22 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023E4E0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E510);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E560);
+void func_0023E560(void *arg0, int arg1, int arg2, int arg3) {
+    char *s = (char *)arg0;
+    *(int *)(s + 0xC) = 0;
+    *(int *)(s + 0x0) = arg1;
+    *(int *)(s + 0x4) = arg2;
+    *(int *)(s + 0x10) = arg3;
+    *(int *)(s + 0x8) = 0;
+    if (arg3 > 0) {
+        int off = 0;
+        do {
+            *(int *)(off + *(int *)(s + 4)) = 0;
+            arg3--;
+            off += 0x138C0;
+        } while (arg3 != 0);
+    }
+}
 
 void func_0023E5B0(void) {
 }
