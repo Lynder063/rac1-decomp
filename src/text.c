@@ -3377,7 +3377,23 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00234948);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002349B8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234AC8);
+extern short D_00160FE0;              /* SDA, gp -0x5D20 */
+extern char D_001E8D10[];
+extern void func_001F9988(int);
+extern void func_001F2568(void);
+
+void func_00234AC8(int mask) {
+    int i = 0;
+    while ((*(int *)&D_00160FE0 & mask) != 0) {
+        func_001F9988(0x400);
+        if (i > 100000) {
+            func_001E9730(D_001E8D10);
+            func_001F2568();
+            break;
+        }
+        i++;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234B48);
 

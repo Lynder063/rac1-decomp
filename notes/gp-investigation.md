@@ -357,3 +357,18 @@ source-shape problem as far as I could tell.
   signature on the pointer `D_00161000`, but that pointer is loaded via
   `lui`/`%lo` and stored back via `$gp` in the same function: the same
   collision. Declaring it either way breaks the other half.
+
+**New technique — don't put `++` inside the comparison.** `func_00234AC8`
+(a timeout-wait loop) sat at 34/128 with exactly one surplus instruction:
+`i++ > 100000` makes the compiler emit `move $v0,$s1` to hold the old
+value before `slt`. Retail compares the counter register directly and
+increments in the branch delay slot, which is what
+
+```c
+if (i > 100000) { ...; break; }
+i++;
+```
+
+produces. Splitting the increment out of the condition took it from
+34/128 to **0/128**. Worth trying wherever a near-miss is exactly one
+instruction long inside a loop.
