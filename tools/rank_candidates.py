@@ -105,6 +105,15 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
         return "blocked", "handwritten asm", "spimdisasm marker"
     if not re.search(r"\bjr\s+\$31\b", text):
         return "blocked", "fallthrough fragment", "no jr $31"
+    # Tail call: retail jumps straight to another function instead of
+    # `jal` + return. GCC 2.95 has no sibling-call optimisation, so this
+    # compiler always emits jal and a real return -- different size and
+    # different bytes, unreachable from C. Two independent confirmations
+    # (func_00113AC8 earlier, func_0011DFC8 when the ranker offered it as
+    # a top candidate). 99 stubs carry this, so it was worth detecting.
+    if re.search(r"(?m)^j\s+func_[0-9A-Fa-f]{8}", text):
+        return "blocked", "tail call", "j func_...; GCC 2.95 has no sibcall"
+
     if len(ins) == 1 and "0xCDCDCDCD" in body:
         return "blocked", "padding", ""
     if VU0_LO <= vram <= VU0_HI:
