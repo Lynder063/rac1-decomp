@@ -2171,7 +2171,13 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00215F80);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00216028);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00216098);
+int func_00216098(void) {
+    int a = func_002160E0();
+    int b = func_00216150();
+    int v = a - b * 4;
+    if (v < 0) v = 0;
+    return (v < 0x29) ? v : 0x28;
+}
 
 extern unsigned char D_0014BFC0[];
 
@@ -3482,7 +3488,18 @@ int func_0023CD30(char *arg0, int *arg1) {
     return d;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023CD60);
+void func_0023CD60(void *arg0, int n) {
+    int *b = (int *)((char *)arg0 + 0x50000);
+    int cap = b[2];
+    int pos = b[1];
+    int acc = b[0];
+    int d = cap - pos;
+    int r;
+    if (n < d) d = n;
+    r = (acc + d) % cap;
+    b[1] = pos + d;
+    b[0] = r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023CDA8);
 
