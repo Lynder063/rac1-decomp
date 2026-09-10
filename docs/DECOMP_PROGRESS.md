@@ -755,6 +755,16 @@ size and shape, differing only by the register-allocation issue below.
 Worth knowing because a real `div` looks like a red flag at first
 glance and would otherwise get skipped as un-reproducible.
 
+**Important qualifier: powers of two ARE strength-reduced**, and the
+result is one of the commonest `movn` sources in this codebase. A signed
+`x / 8` or `x % 8` compiles to a bias-and-shift idiom — materialize
+`x + 7`, `slt` against `-1`, `movn` to pick the unbiased value when
+`x >= 0`, then `sra 3` (and for the modulo, `sll 3` + `subu`). Seen in
+`func_0021D9C8` (`% 8`) and `func_0023DA30` (`/ 0x800`). So the rule
+above is specifically about *non*-power-of-two divisors; do not read a
+`movn`+`sra` pair as an exotic conditional move when a plain `% 8` in C
+produces it exactly.
+
 **Recurring sub-case of the allocator question: `%hi` register reuse on
 a global load.** Retail frequently loads a global with the `%hi` and the
 loaded value in the *same* register (`lui $3, %hi(X)` / `lw $3, %lo(X)($3)`),
