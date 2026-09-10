@@ -2310,7 +2310,28 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002150A8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002150B0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00215328);
+extern void func_001FA460(void *);
+extern void func_002150B0(void *, void *);
+extern void func_001FA480(void *, void *);
+
+/*
+ * Close, not exact (15/76), same size so harmless to everything after
+ * it. Logic is certain: fill a 64-byte stack buffer, then hand it to two
+ * consumers. Instruction shape is identical to retail; the entire
+ * residual is that retail puts arg0 in $s1 and arg1 in $s0 (saving $s1
+ * first), while this compiler assigns them the other way round and the
+ * save order follows. Tried aliasing the parameters through locals
+ * declared in the reverse order -- the declaration-order lever that
+ * worked for func_0020DA68/func_0020DAB0 -- but the compiler coalesces
+ * the aliases with the parameters, so that lever steers LOCALS only, not
+ * incoming parameter registers. Known allocator question.
+ */
+void func_00215328(void *arg0, void *arg1) {
+    char buf[0x40];
+    func_001FA460(buf);
+    func_002150B0(arg0, buf);
+    func_001FA480(arg1, buf);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215378);
 
@@ -2939,7 +2960,17 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00220C90);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00220D08);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00220DA0);
+extern int func_00226F68(int);
+
+int func_00220DA0(void *arg0) {
+    char *s = (char *)arg0;
+    *(int *)(s + 0x48) = func_00226F68(*(int *)(s + 0x48));
+    *(int *)(s + 0x4C) = func_00226F68(*(int *)(s + 0x4C));
+    *(int *)(s + 0x50) = -1;
+    *(int *)(s + 0x54) = -1;
+    *(int *)(s + 0x44) = -1;
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00220DF0);
 

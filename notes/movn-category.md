@@ -409,3 +409,59 @@ Also checked and skipped, with reasons, so they aren't re-attempted:
 `func_00205660` (GS packet builder, `$at`, 8+ args), `func_00226380`
 (contains a bare `lq`/`sq` 16-byte copy with no plain-C form),
 `func_00201D58` (its loop carries the R5900 short-loop `nop` padding).
+
+# Classifier round: tools/rank_candidates.py
+
+Built `tools/rank_candidates.py` to encode every confirmed blocker as a
+detectable signature and rank remaining stubs blocked / risky /
+candidate. Of 1453 stubs: **342 candidate, 125 risky, 986 blocked.**
+
+## Scorecard — 10 attempted, 9 matched, 1 documented-close
+
+| Function | Result | Needed |
+|---|---|---|
+| `func_0023E658` | 0/64 | first attempt |
+| `func_0020DA68` | 0/68 | declaration order |
+| `func_00227068` | 0/68 | base local + decl order + branch inversion |
+| `func_0022DB00` | 0/68 | first attempt |
+| `func_0023C0E0` | 0/68 | rotation rule |
+| `func_0020DAB0` | 0/72 | sentinel constant as a local, declared first |
+| `func_0023E1B0` | 0/72 | first attempt |
+| `func_0023CDA8` | 0/72 | first attempt |
+| `func_00220DA0` | 0/76 | rotation rule |
+| `func_00215328` | 15/76 | kept documented-close, allocator |
+
+Five landed on the first attempt and nothing was reverted. Candidate
+selection really is the dominant lever: the same effort spent on
+unfiltered stubs previously produced three consecutive failures.
+
+## New technique: declaration order steers register allocation
+
+The order in which **locals** are declared decides which register each
+gets, and retail's prologue shows the intended order directly — read it
+off and match it. This closed three functions here, at one edit each,
+and is worth trying before any structural rework when registers look
+merely permuted.
+
+**Bound on it:** it steers locals only. `func_00215328` needed its two
+*parameters* swapped between `$s0`/`$s1`; aliasing them through locals
+declared in reverse order does not work, because the compiler coalesces
+the aliases with the parameters. Parameter registers are not steerable
+this way.
+
+## Rotation rule: now three data points, still per-function
+
+Applied cleanly to `func_0023C0E0` and `func_00220DA0` (write the source
+so retail's *first* store is written *last*). It previously hurt
+`func_00227A30`. Cheap to test either way, so test rather than assume.
+
+## Two classifier bugs found by attempting its own top candidates
+
+- The load-delay-nop detector only inspected the instruction immediately
+  after the FP load, but the `nop` sits *between* load and use, so those
+  functions were being offered as candidates.
+- Epilogue fragments that open with a positive `addiu $sp` end in `jr`,
+  so the "no `jr $31`" test did not catch them.
+
+Both are fixed. Worth noting the general point: the fastest way to find
+a classifier's blind spots is to attempt the functions it ranks highest.
