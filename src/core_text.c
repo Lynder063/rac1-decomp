@@ -1705,7 +1705,9 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F280);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F2B8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F2E0);
+int func_0012F2E0(int arg0) {
+    return (arg0 * 0x5F4) / 0x2E5;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F308);
 
