@@ -372,3 +372,16 @@ i++;
 produces. Splitting the increment out of the condition took it from
 34/128 to **0/128**. Worth trying wherever a near-miss is exactly one
 instruction long inside a loop.
+
+**A 32-bit constant built as `ori`/`dsll`/`ori` means the parameter is
+64-bit.** `func_002208F8` passes `0x80FFA888` in `$8`. For an `int` this
+compiler emits `lui`/`ori`; retail's `ori $8,$0,0x80FF` / `dsll $8,$8,16`
+/ `ori $8,$8,0xA888` is the 64-bit build, which avoids sign-extending a
+constant with bit 31 set. Declaring that parameter `long` and writing the
+literal as `0x80FFA888L` reproduced it, and the function matched 0/164
+first attempt. Useful tell: `dsll` in a constant build = the callee takes
+a 64-bit argument there.
+
+Also a reminder this function confirms: EABI passes the first eight
+integer arguments in `$4`-`$11`, so six-argument calls are normal here
+and `$8`/`$9` in a call setup are arguments, not scratch.
