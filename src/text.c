@@ -603,7 +603,17 @@ void func_001F7B40(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F7B70);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F7BF8);
+extern int D_0018E840[];
+
+void func_001F7BF8(void) {
+    int i;
+    for (i = 0; i < 0x100; i++) {
+        int v = i & 0xE7;
+        if (i & 0x8)  v |= 0x10;
+        if (i & 0x10) v |= 0x8;
+        D_0018E840[v] = (i >> 1) << 24;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F7C50);
 
@@ -3473,7 +3483,27 @@ extern void func_00118C90(int);
    limit, i.e. unfinished rather than a documented near-miss, and
    over the revert threshold. The partial C is preserved in branch
    history (parallel-A/B/C) for whoever resumes it. */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023DA30);
+extern void func_00118CB0(int);
+extern void func_00118C90(int);
+
+/*
+ * Close, not exact (13/84), same size so harmless to everything after
+ * it. Logic is confirmed: rounds field 0x14 up to the next multiple of
+ * 2048 via the signed-division idiom retail uses, bracketed by the two
+ * calls. The residual is purely the known scratch-register-allocation
+ * question -- retail loads field 0x14 into $3 and materializes -1 into
+ * $2, this compiler picks them the other way round, and every later
+ * register follows from that. Hoisting the load into an explicit local
+ * to change evaluation order was tried and changes nothing.
+ */
+void func_0023DA30(void *arg0) {
+    char *s = (char *)arg0;
+    int v;
+    func_00118CB0(*(int *)(s + 0x40));
+    v = *(int *)(s + 0x14);
+    *(int *)(s + 0x14) = ((v + 0x7FF) / 0x800) * 0x800;
+    func_00118C90(*(int *)(s + 0x40));
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023DA88);
 
