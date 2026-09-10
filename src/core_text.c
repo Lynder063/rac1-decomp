@@ -598,6 +598,32 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00119678);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119710);
 
+/*
+ * REVERTED (30/68, same size). Semantics are certain -- it is the same
+ * "stash a tagged struct on the stack and hand it to func_00118E90"
+ * forwarder as func_001197C0/func_001197F8, with four fields:
+ *
+ *   extern int D_00154A10;
+ *   void func_00119718(unsigned short arg0, int arg1, int arg2) {
+ *       int buf[4];
+ *       buf[1] = arg1;
+ *       buf[0] = arg0;                  // andi 0xFFFF from the short
+ *       buf[2] = arg2;
+ *       buf[3] = (int)&D_00154A10 | 0x20000000;
+ *       func_00118E90(1, buf);
+ *   }
+ *
+ * Retail computes the buf[3] tag completely (lui/addiu/lui/or) before
+ * any store, then stores 0x4, 0x0, 0x8 and puts 0xC in the call's delay
+ * slot. This compiler interleaves the tag arithmetic with the stores and
+ * spends the delay slot on the &buf move instead. Tried: natural store
+ * order, retail's store order, and hoisting the tag into a leading local
+ * (the declaration-order lever) -- all three give 30-32/68, so the
+ * scheduling is not reachable from source shape here. The sibling
+ * func_001197C0 matches with source order == retail's emitted order,
+ * which is why that was tried first; the difference is that this one's
+ * buf[3] needs runtime arithmetic and theirs does not.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119718);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119760);
@@ -1692,7 +1718,17 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BDD0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BF40);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C058);
+extern void func_0012C0A0(void *);
+extern void func_0012BF40(void *);
+
+void func_0012C058(void *arg0) {
+    int inner = *(int *)((char *)arg0 + 0x40);
+    if (*(int *)(inner + 0x174) != 3) {
+        func_0012C0A0(arg0);
+    } else {
+        func_0012BF40(arg0);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C0A0);
 
