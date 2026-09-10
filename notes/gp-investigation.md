@@ -226,3 +226,44 @@ been confirmed. If step 3 leaves residual mismatches concentrated in
 gp-relative accesses, try other `-G` values before assuming the source
 shape is wrong. Note the build already uses per-segment compilers, so a
 per-segment `-G` is available if the two segments disagree.
+
+## $gp harvest: decoded-but-unmatched (semantics banked)
+
+Both reverted; the reading is certain, the residual is the known
+allocator `%hi`-destination-reuse question, not source shape.
+
+**`func_002348B8`** (9/44, 20%) — table lookup with a clamp:
+```c
+extern int D_0015EE84;
+extern int D_001DE338[];
+int i = D_0015EE84;
+if (i >= 0x13) i = 0;          /* this is the movz */
+*(int *)&D_0016100C = D_001DE338[i];   /* SDA store, gp -0x5CF4 */
+```
+Residual: retail loads `D_0015EE84` with `lui $2` / `lw $2,%lo($2)`
+(reusing the destination as the address register); this compiler emits
+`lui $3` / `lw $2,%lo($3)` and hoists both `lui`s to the top. Note
+retail does it the *other* way in `func_001138A8` (separate register,
+which we match), so this is genuinely allocation-dependent.
+
+**`func_001EB300`** (22/56, 39%) — double indirection through two
+globals:
+```c
+extern int D_0015F064, D_0015F060, D_001997FC;
+extern short D_0015F780;       /* SDA, gp -0x7580 */
+char *p = (char *)(D_0015F060 + *(int *)(D_0015F064 + arg0 * 4));
+D_001997FC = *(int *)p;
+*(int *)&D_0015F780 = (int)(p + 8);
+```
+Worth noting its store to the non-SDA `D_001997FC` uses a normal
+register in retail (`sw $4,%lo(D_001997FC)($6)`), **not** `$at` — so the
+global-STORE blocker is not universal: retail uses the `$at` macro form
+only for standalone stores, and the split form when the address register
+is already materialized for other reasons.
+
+**Cost of the SDA collision here:** declaring `D_0016100C` as SDA (to
+try `func_002348B8`) made the already-near-miss `func_00205220` 4 bytes
+short. Since neither new function matched, the whole batch was reverted
+rather than trading a real near-miss for nothing. The general rule from
+the previous batch stands: only take the collision when it buys an exact
+match.
