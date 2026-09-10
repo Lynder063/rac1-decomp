@@ -465,3 +465,42 @@ so retail's *first* store is written *last*). It previously hurt
 
 Both are fixed. Worth noting the general point: the fastest way to find
 a classifier's blind spots is to attempt the functions it ranks highest.
+
+## Two more levers (coordinator round, ranked-list harvest)
+
+**Bind a constant to a local when it is both stored and returned.**
+`func_00129C78` came out 4 bytes long because GCC materialized `1`
+twice — `li $v1,1` for the store and `li $v0,1` for the return — where
+retail computes it once and uses the same register for both. Writing
+
+```c
+int r = 1;
+...
+*(int *)(p + 0x820) = r;
+return r;
+```
+
+made them share a register and the function landed exact. Worth trying
+whenever a function is exactly one instruction long and the same
+constant appears as both a stored value and the return value.
+
+**Frame size tells you the SHAPE of a local, not just its liveness.**
+`func_0012BCC8` reserves 0x30 in retail; a single `int` local gives
+0x20. Declaring it `int local[8]` — the callee only ever writes element
+0, but retail clearly reserves 0x20 for it — produced an exact match.
+The existing note says a wrong frame size signals a global's live range
+crossing a call; it also signals that a local is bigger than it looks.
+
+### Gotcha: NOT_SDA declarations cannot be repeated
+
+Two *identical* `extern int D_xxxxxxxx NOT_SDA;` declarations in one
+file are rejected by this compiler as "conflicting types" — the section
+attribute makes a redeclaration illegal rather than redundant. If a
+variable is already declared later in the file, hoist that declaration
+above your function rather than adding a second one.
+
+This one bit hard: the failed compile left the previous object in place
+and `check_match.py` then reported a clean `0/N` for **three** functions
+at once, all fictional. Only checking the compiler's own exit code
+caught it. That is now the seventh occurrence of this trap in the
+project's history.
