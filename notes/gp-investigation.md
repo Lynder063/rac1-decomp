@@ -267,3 +267,33 @@ short. Since neither new function matched, the whole batch was reverted
 rather than trading a real near-miss for nothing. The general rule from
 the previous batch stands: only take the collision when it buys an exact
 match.
+
+**`func_00213C78`** (reverted; 4 bytes short, 41%) — walks a linked list
+of objects, calling into each. Prologue matches retail instruction for
+instruction; the divergence is inside the loop.
+```c
+extern char *func_0020E6B8(void);
+extern void func_0020E3D0(void *);
+extern void func_0020ED48(void *);
+extern short D_00160024;               /* SDA, gp -0x6CDC */
+
+char *e = func_0020E6B8();
+*(int *)&D_00160024 = (int)e;
+while (e != 0) {
+    if (*(signed char *)(e + 0x20) >= 0) {
+        void (*fn)(void *);
+        if ((*(unsigned short *)(e + 0x34) & 0x40) == 0) func_0020E3D0(e);
+        fn = *(void (**)(void *))(e + 0x74);
+        if (fn != 0) fn(e);
+        if ((*(unsigned short *)(e + 0x34) & 0x4) == 0) func_0020ED48(e);
+    }
+    e = *(char **)(e + 0x28);
+}
+```
+Two things a future attempt should know. Retail stores the *raw return
+value* to the global (`sw $2,-0x6CDC($28)`) while this shape stores the
+copy in `$s0` — so the global assignment may want to come from the call
+expression rather than from the local. And retail uses branch-likely
+forms (`bltzl`, `bnel`) throughout the loop, with the pointer advance
+`e = e->0x28` sitting in their delay slots; reproducing that scheduling
+is where the 4-byte shortfall lives.
