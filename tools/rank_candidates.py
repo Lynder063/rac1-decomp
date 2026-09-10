@@ -191,6 +191,13 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
                 if "nop" in ins[idx + 1: idx + 3]:
                     return "blocked", "load-delay nop", "MIPS I interlock, not reachable from C"
 
+    # --- alternate entry point: splat emits `alabel` for a second,
+    # separately-callable label inside one function body. C has no way to
+    # express two entry points into one function, so these can never
+    # match no matter how the body is written. 72 .s files carry one.
+    if "alabel" in text:
+        return "blocked", "alternate entry point", "alabel: two entries, not expressible in C"
+
     # --- GPR->FPU move delay: `mtc1 $x, $fN` / `nop` / <use of $fN>.
     # Same class as the lwc1 rule above but a different source: retail
     # carries the hazard nop between the transfer and the first FPU use,
