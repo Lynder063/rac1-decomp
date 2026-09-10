@@ -254,3 +254,69 @@ downstream shifts from there, hence 70%.
 non-power-of-two divisors, which get a real `div`. Powers of two *are*
 strength-reduced, into exactly this bias-and-shift idiom, and a plain
 `v % 8` in C reproduces it.
+
+# func_0021C790 — decoded, reverted (best 44%)
+
+A linked-list walk gated by two global flags. Semantics are certain and
+the instruction *sequence* was brought into agreement with retail; what
+remains is register allocation, so it stays `INCLUDE_ASM`.
+
+```c
+extern int D_001D5F70[];
+
+int func_0021C790(void *arg0, int flag) {
+    char *obj = (char *)arg0;
+    int found = 0, any = 0, c1;
+
+    if (flag != 0) return 0;
+
+    c1 = D_001D5F70[0x134 / 4];
+    if (c1 != 0) { int t = *(int *)(obj + 0x30) & 8; found = (t != 0); }
+    if (D_001D5F70[0x138 / 4] != 0) {
+        int t = *(int *)(obj + 0x30) & 4;
+        if (t) found = 1;
+    }
+
+    if (found) {
+        any = 1;
+        obj = *(char **)(obj + 0x4C);          /* advance once before loop */
+        for (;;) {
+            found = 0;
+            if (c1 != 0) {
+                int t = *(int *)(obj + 0x30) & 8;
+                found = 1;
+                if (t == 0) found = 0;         /* movz */
+            }
+            if (D_001D5F70[0x138 / 4] != 0) {
+                int t = *(int *)(obj + 0x30) & 4;
+                if (t) found = 1;              /* movn */
+            }
+            if (found == 0) break;
+            obj = *(char **)(obj + 0x4C);      /* bnel's delay slot */
+        }
+    }
+    if (any) *(int *)(D_001D5F70[1] + 0x80) = (int)obj;
+    return 0;
+}
+```
+
+**One technique confirmed here, worth reusing.** The first flag test
+originally compiled to `srl`/`andi` (a single-bit *extract*) where retail
+has `andi`/`sltu` (a *nonzero test*). Writing the mask into its own local
+first — `int t = x & 8; found = (t != 0);` instead of
+`found = (x & 8) != 0;` — stops the compiler recognising the single-bit
+extract and produces retail's `andi`/`sltu`. That took it 48% -> 44% and
+made the opening instruction sequence match retail exactly. Generally
+useful for any `(x & BIT) != 0` near-miss.
+
+**Why it still doesn't match.** Purely register assignment. Retail reuses
+`$5` (the now-dead `flag` argument) for the global's base address and
+puts `any` in `$7`; this compiler puts the base in `$7` and pushes `any`
+out to `$12`. Everything downstream renumbers from there.
+
+**Tried and failed:** the base-pointer-local form (`int *g = D_001D5F70;`
+and index `g[...]`), which the doc lists as a lever for exactly this kind
+of opening difference. It made things clearly worse here (44% -> 62%), so
+this function wants the *direct-indexing* form. Another data point that
+the direct-vs-local choice is genuinely per-function and must be tested
+both ways rather than assumed.
