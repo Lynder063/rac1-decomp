@@ -61,6 +61,29 @@ SECTIONS
 
   . = 0x1e9080;
   .text : { build-sn/text.o(.text) }
+
+  /* Sections a nonzero -G makes the compiler emit.
+
+     .sdata/.sbss come out empty -- our C defines no data of its own,
+     every global is extern and resolved from the retail data objects or
+     bss_equs -- so they are parked past the end of the image.
+
+     .lit4/.lit8 are different: FP literals are addressed via $gp too
+     (R_MIPS_LITERAL), so they MUST live inside the small-data window
+     0x15ED00..0x16ED00 or their references cannot reach. They go in the
+     128-byte gap below .core_lit, which is the only free space in the
+     window (everything from 0x15ED80 up is occupied by core_lit/.lit/
+     .bss/.data). Currently 12 bytes are needed (3 float literals, all in
+     text.o), so this fits -- but it is a tight spot, and if the literal
+     pool grows past 128 bytes this placement has to be rethought rather
+     than nudged. Note these literals land at OUR addresses, not the ones
+     retail's own .lit pool uses, so any function referencing one may
+     differ from retail in that operand. */
+  . = 0x2400000;
+  .lit4  : { *(.lit4) }
+  .lit8  : { *(.lit8) }
+  .sdata : { *(.sdata) }
+  .sbss  : { *(.sbss) *(.scommon) }
 }
 EOF
 echo "wrote build-sn/rac1.ld"
