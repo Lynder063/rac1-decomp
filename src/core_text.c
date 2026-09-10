@@ -1727,10 +1727,39 @@ int func_0012BC50(void *arg0, int arg1, int arg2, int arg3) {
     return old;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BC78);
+/*
+ * Close, not exact (12/80, same size so harmless). Dispatches through a
+ * table hanging off arg0+0x40: index it by *arg1 (8-byte entries), take
+ * the handler at +0xC, and if non-null call it with the entry's +0x10
+ * field as a third argument, returning ITS result.
+ *
+ * The result-is-the-call's-return-value reading matters: a first attempt
+ * returned the entry address instead, which kept `entry` live across the
+ * call, forced a callee-saved register and made the function 8 bytes
+ * long. Retail's `daddu $7,$2,$0` sits AFTER the jalr, so $2 there is
+ * the callee's return value, not the entry pointer.
+ *
+ * Residual is the allocator: retail holds `result` in $7 (a3), this
+ * compiler in $6 (a2), and the final move follows.
+ */
+void *func_0012BC78(void *arg0, int *arg1) {
+    void *result = 0;
+    if (arg0 != 0) {
+        char *tbl = *(char **)((char *)arg0 + 0x40);
+        if (tbl != 0) {
+            char *entry = tbl + (*arg1 << 3);
+            void *(*fn)() = *(void *(**)())(entry + 0xC);
+            if (fn != 0) {
+                result = fn(arg0, arg1, *(int *)(entry + 0x10));
+            }
+        }
+    }
+    return result;
+}
 
-extern void func_0012BC78(int, void *);
-
+/* No declaration needed: the definition above precedes this caller. The
+   extern that used to sit here guessed `void (int, void *)` and now
+   conflicts with the real signature. */
 void func_0012BCC8(int arg0) {
     int local[8];
     local[0] = 1;
