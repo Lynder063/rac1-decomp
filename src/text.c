@@ -1166,17 +1166,12 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00205918);
 
 extern int *D_001602E0;
 
-int func_00205A50(int arg0) {
-    int *chk = D_001602E0;
-    int *val = chk;
-    int i;
-    for (i = 0; *chk != 0 && i < 0x14; i++, chk++, val++) {
-        if (*val == arg0) {
-            return i;
-        }
-    }
-    return -1;
-}
+/* Mid-iteration work-in-progress reverted to INCLUDE_ASM: it was at
+   19/84 when the agent working it was cut off by an API session
+   limit, i.e. unfinished rather than a documented near-miss, and
+   over the revert threshold. The partial C is preserved in branch
+   history (parallel-A/B/C) for whoever resumes it. */
+INCLUDE_ASM("asm/nonmatchings/text", func_00205A50);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00205AA8);
 
@@ -3356,29 +3351,12 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023C0E0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C128);
 
-void func_0023C1F8(void *arg0, int arg1) {
-    char *s = (char *)arg0;
-    int n = arg1;
-    int avail;
-    int take;
-    if (*(int *)s == 0) {
-        if (*(int *)(s + 4) == 4) {
-            *(int *)s = 1;
-        } else {
-            avail = 0x28 - *(int *)(s + 0x30);
-            take = (avail < n) ? avail : n;
-            *(int *)(s + 0x30) += take;
-            if (*(int *)(s + 0x30) >= 0x28) {
-                *(int *)s = 1;
-            }
-            n -= take;
-        }
-    }
-    *(int *)(s + 0x40) = (*(int *)(s + 0x40) / 0x400) * 0x400;
-    *(int *)(s + 0x38) = (*(int *)(s + 0x38) + n) % *(int *)(s + 0x40);
-    *(int *)(s + 0x3C) += n;
-    *(int *)(s + 0x44) += n;
-}
+/* Mid-iteration work-in-progress reverted to INCLUDE_ASM: it was at
+   57/180 when the agent working it was cut off by an API session
+   limit, i.e. unfinished rather than a documented near-miss, and
+   over the revert threshold. The partial C is preserved in branch
+   history (parallel-A/B/C) for whoever resumes it. */
+INCLUDE_ASM("asm/nonmatchings/text", func_0023C1F8);
 
 int func_0023C2B0(void *arg0) {
     return *(int *)((char *)arg0 + 0x50) >= 0x1000;
@@ -3490,14 +3468,12 @@ extern void func_00118C90(int);
 /* The movn here is signed /2048 inside an align-up-to-2048:
    (x + 0x7FF) / 0x800 * 0x800. Filed under the movz/movn skip category
    for many rounds; it is an arithmetic idiom, not a conditional move. */
-void func_0023DA30(void *arg0) {
-    char *s = (char *)arg0;
-    int x;
-    func_00118CB0(*(int *)(s + 0x40));
-    x = *(int *)(s + 0x14);
-    *(int *)(s + 0x14) = ((x + 0x7FF) / 0x800) * 0x800;
-    func_00118C90(*(int *)(s + 0x40));
-}
+/* Mid-iteration work-in-progress reverted to INCLUDE_ASM: it was at
+   13/84 when the agent working it was cut off by an API session
+   limit, i.e. unfinished rather than a documented near-miss, and
+   over the revert threshold. The partial C is preserved in branch
+   history (parallel-A/B/C) for whoever resumes it. */
+INCLUDE_ASM("asm/nonmatchings/text", func_0023DA30);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023DA88);
 
