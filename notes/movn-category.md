@@ -212,3 +212,45 @@ So the blocker is that retail's compiler did *not* CSE two loads through
 `str` and `p` that this one does. That is not obviously reachable from
 source shape — it would need the two pointers to be un-provably-equal,
 which they are not.
+
+# func_0021D9C8 — decoded, reverted (70%)
+
+Not attempted further, but the semantics are worked out so a later
+attempt starts from meaning rather than disassembly:
+
+```c
+extern int D_00141FA0[];
+void func_0021D9C8(void *arg0) {
+    char *s = (char *)arg0;
+    int *dst = (int *)(s + 0x30);       /* 8-int table at +0x30 */
+    int *src = D_00141FA0, *p = dst;
+    int k, v;
+    for (k = 7; k >= 0; k--) { *p = *src; src++; p++; }   /* copy 8 ints */
+    *(int *)(s + 0x50) = 0;             /* runs unconditionally (delay slot) */
+    if (dst[0] != 0) {
+        v = *(int *)(s + 0x50);
+        for (;;) {                      /* scan for first zero entry, cap 8 */
+            v = v + 1;
+            *(int *)(s + 0x50) = v;
+            if (dst[v] == 0) break;
+            if (v >= 8) break;
+            v = *(int *)(s + 0x50);     /* retail really does reload here */
+        }
+    }
+    v = *(int *)(s + 0x50);
+    *(int *)(s + 0x50) = v % 8;         /* the movn is this signed %8 */
+}
+```
+
+Diverges from instruction zero: retail opens `daddu $6,$4,$0` (copies
+`arg0` into a second register, keeping `$4` live) before touching the
+global, where this compiler starts with the `lui` and works out of `$4`
+directly. The `char *s` local does not reproduce that copy. Everything
+downstream shifts from there, hence 70%.
+
+**Worth noting for the technique list:** the `movn`/`sra 3`/`sll 3`/
+`subu` tail here is a signed `% 8`. That is not a contradiction of
+"constant division is not strength-reduced" — that rule is about
+non-power-of-two divisors, which get a real `div`. Powers of two *are*
+strength-reduced, into exactly this bias-and-shift idiom, and a plain
+`v % 8` in C reproduces it.
