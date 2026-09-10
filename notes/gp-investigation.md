@@ -86,6 +86,60 @@ our own, instead of finding somewhere to park a second copy. Placing
 differ from retail in that operand anyway, so parking it is not a real
 fix even if space existed.
 
+## The literal pool is NOT a placement problem -- it is structural
+
+Investigated further; the conclusion changes the plan, so read this
+before attempting the "suggested order of work" below (which is now
+partly obsolete).
+
+**Retail does not use an FP literal pool at all.** It materializes float
+constants inline, e.g. `func_0021EF38`:
+
+    lui  $1, 0x4049
+    ori  $1, $1, 0x0FDB      /* 0x40490FDB = 3.14159265f */
+    mtc1 $1, $f0
+
+That is THREE instructions where a pool load would be one
+(`lwc1 $f0, off($gp)`) -- retail chose the more expensive form despite
+demonstrably having `$gp` set up. So there is nowhere to "place" our
+`.lit4`: retail has no counterpart section for it to correspond to, and
+any pooled reference is wrong regardless of where it lands.
+
+**No flag and no sub-build separates the two behaviours.** At `-G8` this
+compiler always pools FP constants AND uses `$gp` for data; at `-G0` it
+does neither. Tried `-mno-embedded-data`, `-membedded-data`,
+`-mno-gpopt`, `-msoft-float` -- none change it. All three available SN
+sub-builds (v1.36, v1.14, v2.73a) pool identically at `-G8`, so unlike
+the `sq`/`lq` question this is **not** a sub-build difference.
+
+**What that implies.** A function that inlines an FP constant cannot
+have been compiled at `-G8` by this compiler family, and a function
+using `$gp` cannot have been compiled at `-G0`. Retail contains both.
+Therefore retail was built from **multiple translation units with
+different `-G` settings**, and our single monolithic `src/text.c` cannot
+reproduce both at once -- `-G` is per-TU, not per-function.
+
+Measured, consistent with this: 244 of 1036 `text` functions use `$gp`,
+and they interleave with non-`$gp` functions throughout the segment
+rather than forming clean blocks. (Interleaving alone doesn't prove
+multiple TUs -- a single `-G8` TU also yields both, since only *small*
+globals go via `$gp` -- but combined with the inline-FP evidence it
+does: an inlining function and a `$gp` function cannot share a TU.)
+
+**The real fix is architectural: split the sources per original
+translation unit**, each compiled with its own `-G`, which is what
+mature decomp projects do anyway (one `.c` per original TU). Since TU
+boundaries are unknown, they must be inferred -- and there is a usable
+heuristic: a function inlining an FP constant belongs to a `-G0` TU, a
+function using `$gp` belongs to a `-G>0` TU. Placement would need either
+contiguous per-TU address ranges or per-function
+`__attribute__((section(".text.func_XXXXXXXX")))` with a generated
+linker script.
+
+That is a substantial change and should not be attempted piecemeal. The
+`NOT_SDA` groundwork below remains correct and is already committed;
+it will be needed whenever the split happens.
+
 ## Suggested order of work
 
 1. Add `.sdata`/`.sbss`/`.lit4` output sections to `rac1.ld.sh`, placed
