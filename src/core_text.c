@@ -725,7 +725,24 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011A770);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011A780);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AA00);
+extern void func_001193F8(int);
+extern void func_00118AD0(int, int);
+extern int D_00154F54;
+extern int D_0012FD04;
+
+/*
+ * Close, not exact (4/52, same size so harmless). Every instruction
+ * matches; the two `lui` instructions that hold the globals' addresses
+ * land in $2 where retail uses $3, and nothing else differs. Tried
+ * binding the loaded value to a local and adding a second local to
+ * shift allocation -- neither moved it. Same open scratch-register
+ * question as func_001160D8.
+ */
+void func_0011AA00(void) {
+    func_001193F8(0x5);
+    func_00118AD0(0x5, D_00154F54);
+    D_0012FD04 = 0;
+}
 
 extern int D_00154F64 NOT_SDA;
 extern int D_00154F6C NOT_SDA;
@@ -869,7 +886,15 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011BCB0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011BEB8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011BF48);
+extern void func_001153FC(void *, int, int);
+extern int D_0012FD94;
+extern char D_001580A8[];
+
+int func_0011BF48(void) {
+    D_0012FD94 = 0;
+    func_001153FC(D_001580A8, 0, 0x4);
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011BF80);
 
