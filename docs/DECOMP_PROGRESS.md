@@ -51,9 +51,9 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **211 functions
+Current audited state (from `tools/sweep_matches.py`): **212 functions
 have real C; 199 are exact on size and bytes; 0 are size-mismatched and
-12 byte-mismatched** — the 12 being deliberately-kept documented
+13 byte-mismatched** — the 13 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
 

@@ -2053,7 +2053,27 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0020DE20);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020DEB0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020DFF8);
+extern void func_00118D80(int);
+extern void func_00212578(int, int);
+extern char D_00165600[];
+extern int D_0015F718;
+extern short D_0015F71C;              /* SDA, gp -0x75E4 */
+
+/*
+ * Close, not exact (9/68), same size so harmless to anything after it.
+ * Same instructions as retail; the residual is the allocator's
+ * destination-reuse choice again -- retail emits lui $4 /
+ * lw $4,%lo(D_0015F718)($4) and schedules the SDA load into the jal
+ * delay slot, while this compiler materializes into $2, loads the SDA
+ * value into $5 first and puts the %lo load in the delay slot.
+ * Binding the first argument to a local to force its evaluation order
+ * was tried and changed nothing.
+ */
+void func_0020DFF8(void) {
+    func_00118D80(0);
+    func_001F9A98((void *)0x70003800, D_00165600, 0x800);
+    func_00212578(D_0015F718, *(int *)&D_0015F71C);
+}
 
 
 void func_0020E040(void) {
