@@ -753,7 +753,13 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AE1C);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AE20);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AFC0);
+extern void func_0011AA00(void);
+extern int D_0012FD08 NOT_SDA;
+
+void func_0011AFC0(void) {
+    func_0011AA00();
+    D_0012FD08 = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AFE8);
 
@@ -1433,7 +1439,21 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C430);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C468);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C4C0);
+/*
+ * Close, not exact (4/32), same size so harmless. Logic and every
+ * instruction match; retail puts the `0x8` store in the `jr` delay slot
+ * and `0x4` before it, this compiler chooses the opposite. Tried three
+ * source orderings -- all three produced the identical schedule, so the
+ * scheduler fixes this independently of statement order.
+ */
+int func_0012C4C0(void *arg0, int arg1, int arg2) {
+    char *p = (char *)arg0;
+    *(int *)(p + 0xC) = arg1 >> 4;
+    *(int *)(p + 0x10) = arg2 >> 4;
+    *(int *)(p + 0x4) = arg1;
+    *(int *)(p + 0x8) = arg2;
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C4E0);
 
@@ -1491,6 +1511,22 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D448);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D4B0);
 
+/*
+ * REVERTED (size mismatch: ours 28 bytes, retail 32). Semantics certain
+ * -- BCD byte to binary:
+ *
+ *   int func_0012D4E0(int arg0) {
+ *       unsigned int v = arg0 & 0xFF;
+ *       return (v - (v >> 4) * 6) & 0xFF;
+ *   }
+ *
+ * (`unsigned` matters: it gives retail's `srl`, not `sra`.) Everything
+ * matches except the multiply: retail uses the generic two-operand
+ * `mult $0,$3,$4` followed by `mflo $3`, while this compiler uses the
+ * EE three-operand `mult $v1,$v1,$a0` which writes the result directly
+ * and needs no mflo -- one instruction fewer, hence 4 bytes short. That
+ * is an ISA/codegen choice, not something the source can steer.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D4E0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D500);
@@ -1584,7 +1620,19 @@ void func_0012EC30(void) {
     *(int *)&D_0015EDC4 = 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EC40);
+extern void func_0012DDC0(void);
+
+/*
+ * Close, not exact (2/32), same size. Retail saves/restores $ra with
+ * sq/lq here; v1.36 (correctly for core_text overall) emits sd/ld, so
+ * the two spill instructions differ and nothing else does. This is one
+ * of the ~14 core_text functions on the sq side of that split -- the
+ * still-open half of the sq/lq question, not a source-shape problem.
+ */
+void func_0012EC40(void) {
+    *(int *)&D_0015EDC4 = 0;
+    func_0012DDC0();
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EC60);
 
