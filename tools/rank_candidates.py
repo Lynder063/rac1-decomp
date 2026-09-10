@@ -34,6 +34,24 @@ from pathlib import Path
 
 STUB = re.compile(r"INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\)")
 SEGMENTS = {"text": "src/text.c", "core_text": "src/core_text.c"}
+FUNCNAME = re.compile(r"\b(func_[0-9A-Fa-f]{8})\b")
+
+
+def already_attempted() -> set[str]:
+    """
+    Functions named anywhere in docs/ or notes/. A stub discussed in
+    prose has almost always been attempted and reverted with its reason
+    recorded, so it should not resurface at the top of a "fresh
+    candidates" list. Re-attempting one is fine, but that should be a
+    deliberate choice backed by a new idea, not an accident of ranking.
+    """
+    seen: set[str] = set()
+    for d in (Path("docs"), Path("notes")):
+        if d.is_dir():
+            for f in d.glob("*.md"):
+                seen |= set(FUNCNAME.findall(f.read_text(errors="replace")))
+    return seen
+
 
 # gp base from retail's own .reginfo (Elf32_RegInfo.ri_gp_value)
 GP_BASE = 0x00166D00
@@ -117,13 +135,23 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     if gp_syms & hi_syms:
         return "blocked", "gp/hi collision", f"same var both ways: {sorted(gp_syms & hi_syms)[:2]}"
 
-    # --- assembler load-delay: tiny leaf loads an FP global then uses it
-    # immediately; retail has a load-delay nop the compiler won't emit.
-    if len(ins) <= 6 and re.search(r"\bl[wd]c1\b", text) and "jal" not in text:
-        for a, b in zip(ins, ins[1:]):
-            if re.match(r"l[wd]c1\s+\$(f\d+)", a):
-                reg = re.match(r"l[wd]c1\s+\$(f\d+)", a).group(1)
-                if reg in b:
+    # --- an epilogue fragment: a real function opens by RESERVING stack
+    # (addiu $sp,$sp,-N). Opening with a positive adjustment means this
+    # is the tail of some other function that splat gave its own label,
+    # often several merged together. It ends in a jr, so the "no jr $31"
+    # check above does not catch it.
+    if re.match(r"addiu\s+\$29,\s*\$29,\s*0x", ins[0]):
+        return "blocked", "epilogue fragment", "opens by releasing stack"
+
+    # --- assembler load-delay: a tiny leaf loads an FP global and then
+    # uses it, with retail carrying a load-delay nop the compiler won't
+    # emit. The nop sits BETWEEN the load and the use, so look past it
+    # rather than only at the next instruction.
+    if len(ins) <= 8 and re.search(r"\bl[wd]c1\b", text) and "jal" not in text:
+        for idx, a in enumerate(ins):
+            m = re.match(r"l[wd]c1\s+\$(f\d+)", a)
+            if m and any(m.group(1) in b for b in ins[idx + 1: idx + 4]):
+                if "nop" in ins[idx + 1: idx + 3]:
                     return "blocked", "load-delay nop", "MIPS I interlock, not reachable from C"
 
     # --- R5900 short-loop erratum: nop padding before a tight backward
@@ -164,6 +192,7 @@ def main() -> None:
     segs = [a for a in args if a in SEGMENTS] or list(SEGMENTS)
     topn = next((int(a) for a in args if a.isdigit()), 25)
 
+    attempted = already_attempted()
     rows = []
     for seg in segs:
         src = Path(SEGMENTS[seg])
@@ -175,6 +204,9 @@ def main() -> None:
             m = re.search(r"nonmatching\s+\S+,\s*(0x[0-9A-Fa-f]+)", body)
             size = int(m.group(1), 16) if m else 0
             verdict, cat, detail = classify(name, body, seg, size)
+            if verdict == "candidate" and name in attempted:
+                verdict, cat = "risky", "already attempted"
+                detail = "discussed in docs/notes -- see reason there"
             rows.append((verdict, cat, name, seg, size, detail))
 
     counts: dict[tuple[str, str], int] = {}
