@@ -1393,11 +1393,38 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BBA8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BBF8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BC50);
+/*
+ * Close, not exact (12/36), same size. Logic verified: fetch the table
+ * at arg0+0x40, index it by arg1*8, store arg3 at +0x10, then return
+ * the old value at +0xC while overwriting it with arg2.
+ *
+ * Retail forms the second pointer as (base + 0xC) + arg1*8; this
+ * compiler reassociates to base + (arg1*8 + 0xC). Writing it with the
+ * parenthesisation retail uses does not help -- GCC reassociates anyway
+ * -- and hoisting `base + 0xC` into its own local makes it WORSE
+ * (12/36 -> 17/36). Same associativity/allocation class as the other
+ * documented near-misses.
+ */
+int func_0012BC50(void *arg0, int arg1, int arg2, int arg3) {
+    char *base = *(char **)((char *)arg0 + 0x40);
+    char *p = base + arg1 * 8;
+    char *q = (base + 0xC) + arg1 * 8;
+    int old;
+    *(int *)(p + 0x10) = arg3;
+    old = *(int *)q;
+    *(int *)q = arg2;
+    return old;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BC78);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BCC8);
+extern void func_0012BC78(int, void *);
+
+void func_0012BCC8(int arg0) {
+    int local[8];
+    local[0] = 1;
+    func_0012BC78(arg0, local);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BCF0);
 
