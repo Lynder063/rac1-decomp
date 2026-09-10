@@ -380,3 +380,32 @@ the `lui` and made the overall result worse (28% -> 35%), so it is not a
 source-shape lever here. This matches the constant-hoisting behaviour
 already noted for `func_001F0FF8`: this compiler sinks constants to their
 use, retail hoists them, and source position does not steer it.
+
+# Remaining movn/movz pool — classified (so it isn't re-surveyed)
+
+Mechanically classified every stubbed `text` function still carrying a
+`movn`/`movz`:
+
+| Count | Category |
+|---|---|
+| 55 | `$gp`-relative — blocked by the SDA question, **not** by `movn` |
+| 31 | genuine candidates |
+| 18 | uses `$1`/`$at` (likely handwritten) |
+| 9  | already decoded/reverted |
+| 8  | short-loop `nop` padding |
+| 1  | marked handwritten |
+
+The headline: **more than half the "movn pool" is really the `$gp` pool.**
+Solving the SDA/translation-unit question would release 55 of these,
+which is far more than any amount of per-function work on this category.
+
+Fresh candidates by size, for whoever continues:
+`func_00213D28` (0xb8), `func_001FF0C8`, `func_00216B68`, `func_0023CAF8`
+(0xe4 each), `func_00228160` (0x100), `func_00234238` (0x118),
+`func_0020CA50` (0x12c), `func_00206F40` (0x150), `func_0023DA88`
+(0x154), `func_00205AA8` (0x160), `func_00227B00` (0x178).
+
+Also checked and skipped, with reasons, so they aren't re-attempted:
+`func_00205660` (GS packet builder, `$at`, 8+ args), `func_00226380`
+(contains a bare `lq`/`sq` 16-byte copy with no plain-C form),
+`func_00201D58` (its loop carries the R5900 short-loop `nop` padding).

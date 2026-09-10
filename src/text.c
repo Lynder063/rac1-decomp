@@ -1043,7 +1043,33 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00201948);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00201960);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00201A38);
+extern int func_001F6FD8(int, int, int, int, int);
+extern void func_00201960(int, int, int, int, int);
+
+/*
+ * Close, not exact (32/168, 19%), same size so harmless to anything
+ * after it -- kept on the func_002094E0 precedent (13/64, 20%). Logic is
+ * certain: clamp the top byte of `c` to 0x50, draw once with the colour
+ * masked to its alpha byte, then a second pass offset from the first
+ * call's return, then draw again unmasked. Five-argument calls -- EABI
+ * passes the first eight integer args in $4-$11.
+ *
+ * Residual is the known allocator/constant-scheduling question, not
+ * source shape: retail hoists the `lui $6,0xFF00` mask in among the
+ * register spills and assigns $17-$20 to a,b,c,d in argument order,
+ * where this compiler schedules the `slti` into that slot and picks a
+ * different arg-to-saved-register mapping. Hoisting the mask into its
+ * own local was tried and changed nothing at all.
+ */
+void func_00201A38(int a, int b, int c, int d) {
+    int hi = c >> 24;
+    int m = c & 0xFF000000;
+    int t;
+    if (hi >= 0x51) hi = 0x50;
+    t = func_001F6FD8(a + 1, b + 1, m, d, -1) - 0x20;
+    func_00201960(t, b - 8, (a - t) * 2, 0x20, hi);
+    func_001F6FD8(a, b, c, d, -1);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00201AE0);
 
