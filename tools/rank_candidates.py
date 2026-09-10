@@ -195,7 +195,7 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     # separately-callable label inside one function body. C has no way to
     # express two entry points into one function, so these can never
     # match no matter how the body is written. 72 .s files carry one.
-    if "alabel" in text:
+    if "alabel" in body:   # raw body: `alabel` is a bare directive, not an instruction line
         return "blocked", "alternate entry point", "alabel: two entries, not expressible in C"
 
     # --- GPR->FPU move delay: `mtc1 $x, $fN` / `nop` / <use of $fN>.
