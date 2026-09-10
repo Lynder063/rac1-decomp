@@ -1022,7 +1022,11 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00121A80);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00121B78);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00121D08);
+extern char D_00132E40[];
+
+void *func_00121D08(void) {
+    return D_00132E40;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00121D14);
 
@@ -1344,7 +1348,10 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BB28);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BB78);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BB98);
+int func_0012BB98(void *arg0) {
+    char *p = (char *)arg0;
+    return *(int *)(*(char **)(p + 0x40) + 4) == 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BBA8);
 
@@ -1360,9 +1367,15 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BCF0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BD28);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BD40);
+void func_0012BD40(void *arg0) {
+    char *p = (char *)arg0;
+    *(int *)(p + 0xC) = *(int *)(p + 0x8);
+}
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BD50);
+void func_0012BD50(void *arg0) {
+    char *p = (char *)arg0;
+    *(int *)(p + 0x8) = *(int *)(p + 0xC);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BD60);
 
@@ -1524,7 +1537,13 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EAE0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EB18);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EC30);
+/* gp-relative: declared small so -G2 places it in the small-data area,
+   accessed as the word it really is. gp 0x166D00 - 0x7F3C = 0x15EDC4. */
+extern short D_0015EDC4;
+
+void func_0012EC30(void) {
+    *(int *)&D_0015EDC4 = 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EC40);
 
