@@ -15,6 +15,12 @@ OUTPUT_ARCH(mips)
 
 SECTIONS
 {
+  /* Retail's gp base, read straight out of its own .reginfo section
+     (Elf32_RegInfo.ri_gp_value). The 0x7f80-byte window below it is the
+     small-data area: core.lit, .lit, .bss and the bottom of .data. All
+     1011 gp-relative references in the disassembly land inside it. */
+  _gp = 0x00166D00;
+
   /* core segment (vram 0x100080, rom 0x1000) */
   /* vutext (0x100080-0x112380) is VU0 microcode, not linked here yet */
 
