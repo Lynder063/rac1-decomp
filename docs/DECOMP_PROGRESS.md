@@ -51,9 +51,9 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **266 functions
-have real C; 242 are exact on size and bytes; 0 are size-mismatched and
-24 byte-mismatched** — the 24 being deliberately-kept documented
+Current audited state (from `tools/sweep_matches.py`): **268 functions
+have real C; 243 are exact on size and bytes; 0 are size-mismatched and
+25 byte-mismatched** — the 25 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
 
@@ -97,6 +97,9 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 |---|---|---|---|
 | `func_0012C058` | core_text | **close, not exact** (7/68) | `if (*(int*)(*(int*)(arg0+0x40) + 0x174) != 3) func_0012C0A0(arg0); else func_0012BF40(arg0);`. Structure is instruction-for-instruction identical including both delay slots and the shared epilogue; only the register assignment differs (retail saves `arg0` in `$7` and holds the constant `3` in `$3`, this compiler uses `$5` and `$2`, and the two loads follow). Allocator destination-reuse question. Hoisting the inner load into its own local changed nothing. Same size, so kept. |
 | `func_00119718` | core_text | **reverted (30/68)** | Four-field forwarder to `func_00118E90` — full semantics recorded above its stub in `src/core_text.c`. Retail computes the `buf[3]` tag entirely before storing anything and spends the call's delay slot on that store; this compiler interleaves the tag arithmetic with the stores. Natural order, retail's emitted order, and hoisting the tag into a leading local all give 30-32/68. |
+| `func_0011D9C0` | core_text | **matches** | Builds two 32-byte stack structs (`int a[8]`, `int b[8]`), sets field 1 and 2 of each to 1, and passes each to `func_00118C70`, storing the results into `D_00130420`/`D_00130424`. **A clean confirmation of the rotation rule:** with the four stores written in retail's *emitted* order the result was 4/72 with the stores rotated; writing them in plain source order (`a[1], a[2], b[1], b[2]`) produced retail's emitted order exactly. Byte-exact. |
+| `func_00116168` | core_text | **close, not exact** (27/72) | Bit classifier on a 64-bit argument, same family as `func_001161B0`: `hi &= 0x7FFFFFFF; hi \|= (unsigned)(lo \| -lo) >> 31; hi = 0x7FF00000 - hi; return 1 - ((unsigned)(hi \| -hi) >> 31);`. Blocked identically to its sibling — every instruction and operand matches, the allocator just assigns the low-word and mask registers the other way round. Same size, so kept. |
+| `func_002270B0` | text | **reverted, size mismatch** (72 vs 76) | 5-entry `{key,flags}` table search that clears bit 2 of the match — semantics recorded in full above its stub. Retail splits the address setup into `addiu %lo` plus `addiu +4` where this compiler folds them into one, and hoists the `-5` mask before the loop where this compiler sinks it into the taken branch. A `base` local and a `mask` local were tried to force each; the compiler folds and sinks regardless. |
 | `func_00120670` | core_text | **matches** | Marshals three `int` args plus a 64-bit one into an on-stack `int buf[8]` (offsets 0/4/8 and a `sd` at 0x10) and passes its address to `func_0011FA38`. Byte-exact, first attempt. |
 | `func_00128560` | core_text | **matches** | Writes `arg1` to hardware register `0x10002000`, then stores `D_00132F70[arg1 >> 28]` into `arg0+0x818`. Needed a **`volatile int *` pointer local** for the register address — see the new lever below. Byte-exact. |
 | `func_0012AC50` | core_text | **matches** | Ring-buffer wrap: `v = *(int*)(arg0+8) + (arg1 >> 3);` then `if (v >= *(unsigned*)(arg0+0x24)) v -= *(int*)(arg0+0x28);`. The compare is `sltu`, so `v` must be `unsigned`. Byte-exact, first attempt. |
