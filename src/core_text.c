@@ -1824,7 +1824,22 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C420);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C430);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C468);
+extern void func_0012C420(void *);
+
+void func_0012C468(void *arg0, void *arg1) {
+    char *a = (char *)arg0;
+    void *t = *(void **)(a + 0x858);
+    /* the arg0 null test is retail's, after it has already dereferenced
+       arg0 -- one of the "dead-looking guards" that must be written out */
+    if (t != 0 && arg0 != 0 && *(int *)(a + 0xC) != 0) {
+        int buf[4];
+        buf[0] = 0;
+        buf[1] = (int)arg1;
+        func_0012BC78(t, buf);
+    } else {
+        func_0012C420(arg1);
+    }
+}
 
 /*
  * Close, not exact (4/32), same size so harmless. Logic and every
