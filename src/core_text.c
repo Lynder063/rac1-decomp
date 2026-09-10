@@ -1702,7 +1702,17 @@ int func_0012BB98(void *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BBA8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BBF8);
+int func_0012BBF8(void *arg0) {
+    char *b = *(char **)((char *)arg0 + 0x40);
+    char *p;
+    p = *(char **)(b + 0x1B8); if (p != 0) *(int *)(p + 0x28) = 0;
+    p = *(char **)(b + 0x1C8); if (p != 0) *(int *)(p + 0x28) = 0;
+    p = *(char **)(b + 0x1D8); if (p != 0) *(int *)(p + 0x28) = 0;
+    p = *(char **)(b + 0x1BC); if (p != 0) *(int *)(p + 0x28) = 0;
+    p = *(char **)(b + 0x1CC); if (p != 0) *(int *)(p + 0x28) = 0;
+    p = *(char **)(b + 0x1DC); if (p != 0) *(int *)(p + 0x28) = 0;
+    return 1;
+}
 
 /*
  * Close, not exact (12/36), same size. Logic verified: fetch the table
