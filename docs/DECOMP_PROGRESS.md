@@ -51,9 +51,9 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **211 functions
-have real C; 194 are exact on size and bytes; 0 are size-mismatched and
-17 byte-mismatched** — the 16 being deliberately-kept documented
+Current audited state (from `tools/sweep_matches.py`): **212 functions
+have real C; 195 are exact on size and bytes; 0 are size-mismatched and
+17 byte-mismatched** — the 17 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
 
@@ -252,6 +252,42 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 | `func_00222D70` | text | **close, not exact** (24/60) | `*(int *)((char *)arg0+0x34) = D_001D48A8[D_0015EE84 % 19]; return 0;`. Right size and shape including the real `divu` + trap guard; held entirely by the `%hi`-register-reuse allocator sub-case. Reverted. |
 | `func_0021DB00` | text | **close, not exact** (15/48) | `D_0013E6A0 = (D_0015EEF0 * 8) / 10; return 0;`. Same story as `func_00222D70` � correct shape, held by `%hi`-register reuse plus the divisor `addiu`'s position. Reverted. |
 | everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1532 functions total remaining. |
+
+## SOLVED: the `$gp` small-data question — the answer was `-G2`
+
+The largest remaining blocker (~244 `text` functions using `$gp`, plus
+more elsewhere) is resolved. The build now uses **`-G2`**, not `-G0`.
+
+| `-G` | FP constants | small globals via `$gp` |
+|---|---|---|
+| `-G0` | inline | never — so no `$gp` function can match |
+| `-G1`..`-G3` | **inline** | **yes** |
+| `-G4`+ | pooled to `.lit4` | yes |
+
+Retail does both, so its threshold is 1..3. `-G4`+ is not merely wrong
+but unbuildable: `.lit4` is `$gp`-addressed and the SDA window is full.
+
+**Proven:** `func_001F6598` (`sw $2, -0x7764($28)`) is byte-exact 0/12,
+the first `$gp` function matched in this project. The switch cost
+nothing — 195 exact, zero regressions.
+
+**The trick you need:** placement follows an extern's *declared* size,
+and `-G2` admits only 1-2 byte variables, while retail reaches plenty of
+4-byte globals via `$gp`. Declare small, cast at use:
+
+```c
+extern short D_0015F59C;        /* declared small -> lands in SDA */
+*(int *)&D_0015F59C = 1;        /* accessed as the word it really is */
+```
+
+`NOT_SDA` in `include/common.h` is the opposite lever, for the ~60
+variables that must stay out because they live beyond the window's
+±32KB reach.
+
+Full detail, including two confidently-worded conclusions that turned
+out to be wrong (a literal pool needing placement; retail being built
+from multiple translation units with different `-G`), is in
+`notes/gp-investigation.md`.
 
 ## SOLVED: the `dsll32`/`dsra32` sign-extension question
 
