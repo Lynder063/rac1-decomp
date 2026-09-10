@@ -159,3 +159,56 @@ Everything else — the prologue, the whole loop body, the `sra`/`subu`,
 the call, the epilogue — matches instruction for instruction; the byte
 count is inflated because differences 1-3 shift every subsequent
 register number.
+
+# func_001F65B0 — decoded, reverted (best 56%)
+
+A per-character width accumulator, and the fifth `movn` function looked
+at this pass. Semantics are certain; the shape is not reproducible with
+the forms tried, so it stays `INCLUDE_ASM`.
+
+```c
+/* NB: an existing `extern` at the call sites declares arg2 as void *,
+   so the definition must match that and cast internally. */
+int func_001F65B0(unsigned char *str, int limit, void *arg2) {
+    signed char *table = (signed char *)arg2;
+    int total = 0, n = 0;
+    if (limit != 0 && *str != 0) {
+        unsigned char *p = str;
+        int c;
+        while ((c = *p) != 0) {
+            signed char w;
+            p++; n++;
+            w = table[c * 4 + 3];
+            if (w != 0) total += w;      /* this is the movn */
+            if (n == limit) break;
+        }
+    }
+    return total;
+}
+```
+
+Note `if (w != 0) total += w;` is a no-op guard semantically (adding 0
+changes nothing) but retail emits the `movn`, so the guard must be in
+the source — same situation as the dead `if (count < 0)` clamp in
+`func_00216150`.
+
+**Why it doesn't match.** Retail reads the character **three** times:
+once for the entry guard (through `$4`, i.e. `str`), once in the loop
+preheader (through `$7`, i.e. `p`), and once at the loop bottom for the
+back-edge test. This compiler CSEs the first two into one load, because
+`p = str` makes them provably the same address.
+
+Three attempts, all reverted:
+- plain (non-volatile), top-tested `while` — **78%**; two loads, not three.
+- `volatile unsigned char *p` — **56%**, the best. The volatile does
+  reproduce the redundant guard read, but it then *prevents* loop
+  rotation (a volatile load cannot be duplicated into a preheader), so
+  the loop stays top-tested with an `andi`/`beqz` inside it where retail
+  has the bottom test. Volatile fixes one half and breaks the other.
+- explicitly hand-rotated `for(;;)` with the three reads written out —
+  **81%**, worse; the compiler re-CSEs them anyway.
+
+So the blocker is that retail's compiler did *not* CSE two loads through
+`str` and `p` that this one does. That is not obviously reachable from
+source shape — it would need the two pointers to be un-provably-equal,
+which they are not.
