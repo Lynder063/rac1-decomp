@@ -596,18 +596,36 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00119718);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119760);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119768);
-
 extern void func_00118E90(int arg0, void *arg1);
+
+void func_00119768(int arg0, signed char arg1) {
+    int buf[4];
+    buf[0] = arg0;
+    buf[1] = arg1;
+    func_00118E90(0x3, buf);
+}
+
 
 void func_00119798(int arg0) {
     int local = arg0;
     func_00118E90(0x4, &local);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001197C0);
+void func_001197C0(int arg0, int arg1, unsigned short arg2) {
+    int buf[4];
+    buf[0] = arg0;
+    buf[1] = arg1;
+    buf[2] = arg2;
+    func_00118E90(-0x5, buf);
+}
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001197F8);
+void func_001197F8(int arg0, int arg1, unsigned short arg2) {
+    int buf[4];
+    buf[0] = arg0;
+    buf[1] = arg1;
+    buf[2] = arg2;
+    func_00118E90(-0x6, buf);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119830);
 
@@ -787,6 +805,23 @@ void func_0011B090(void *arg0) {
     *(unsigned int *)(self + 0x10) = flags & 0xFFFFFFFEu;
 }
 
+/*
+ * REVERTED at 20/48 (same size). Semantics are certain:
+ *
+ *   int rem = *(int *)(arg0 + 0x24) % *(int *)(arg0 + 0x18);
+ *   *(int *)(arg0 + 0x24) = rem + 1;
+ *   return *(int *)(arg0 + 0x14) + (rem << 6);
+ *
+ * A wrapping counter: takes the modulo of field 0x24 by field 0x18,
+ * writes back rem+1, and returns field 0x14 + rem*64 (a 64-byte-stride
+ * table index). Every instruction matches retail including the div trap
+ * guard; the residual is the allocator picking the opposite registers
+ * for the divisor and the mfhi result ($2/$3 swapped versus retail),
+ * which then reorders the tail so the store lands in the jr delay slot
+ * where retail puts the addu. Tried: hoisting the base load into a
+ * local, and naming rem+1 as a separate local -- neither changed the
+ * allocation. Same open scratch-register question as func_001160D8.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B0B0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B0E0);
