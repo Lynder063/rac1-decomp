@@ -51,8 +51,8 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **214 functions
-have real C; 197 are exact on size and bytes; 0 are size-mismatched and
+Current audited state (from `tools/sweep_matches.py`): **215 functions
+have real C; 198 are exact on size and bytes; 0 are size-mismatched and
 17 byte-mismatched** — the 17 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
@@ -252,6 +252,36 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 | `func_00222D70` | text | **close, not exact** (24/60) | `*(int *)((char *)arg0+0x34) = D_001D48A8[D_0015EE84 % 19]; return 0;`. Right size and shape including the real `divu` + trap guard; held entirely by the `%hi`-register-reuse allocator sub-case. Reverted. |
 | `func_0021DB00` | text | **close, not exact** (15/48) | `D_0013E6A0 = (D_0015EEF0 * 8) / 10; return 0;`. Same story as `func_00222D70` � correct shape, held by `%hi`-register reuse plus the divisor `addiu`'s position. Reverted. |
 | everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1532 functions total remaining. |
+
+## Open: global STORE addressing (`$at` macro form vs split `%hi`/`%lo`)
+
+Found while harvesting `$gp` functions. Retail uses **two different
+addressing forms** for non-SDA globals, and this compiler cannot produce
+both under one setting:
+
+| access | retail | this compiler (default `-msplit-addresses`) |
+|---|---|---|
+| load | `lui $3,%hi(D)` / `lw $2,%lo(D)($3)` | **same** — matches |
+| store | `lui $1,%hi(D)` / `sw $x,%lo(D)($1)` (`$at`, i.e. the assembler's macro expansion) | `lui $3,%hi(D)` / `sw $x,%lo(D)($3)` (allocated register) |
+
+`-mno-split-addresses` makes the compiler emit the bare macro form
+(`sw $0,D`), which the assembler expands using `$at` — **exactly
+retail's store form**. But it applies to loads too, turning a matching
+`lui $3` / `lw $2,%lo($3)` into destination-reuse `lui $2` / `lw $2`,
+which breaks currently-exact functions (verified on `func_001138A8`) and
+grew `core_text` enough to overlap sections.
+
+So: neither setting reproduces retail's combination. Same shape as the
+`sq`/`lq` and FP-pooling questions — two behaviours coupled to one flag.
+**Any function that stores directly to a non-SDA global is currently
+blocked**, and this very likely explains the recurring "`%hi` register
+reuse" sub-case that has been showing up in near-miss residuals for
+several rounds. Functions that only *load* globals are unaffected.
+
+Not yet tried: whether the two forms can be separated some other way
+(a different sub-build, or per-file compilation with mixed flags — note
+`-mno-split-addresses` would have to apply only to store-only functions,
+which is not how translation units divide).
 
 ## SOLVED: the `$gp` small-data question — the answer was `-G2`
 
