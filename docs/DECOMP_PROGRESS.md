@@ -51,9 +51,9 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **215 functions
-have real C; 198 are exact on size and bytes; 0 are size-mismatched and
-17 byte-mismatched** — the 17 being deliberately-kept documented
+Current audited state (from `tools/sweep_matches.py`): **210 functions
+have real C; 199 are exact on size and bytes; 0 are size-mismatched and
+11 byte-mismatched** — the 11 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
 
@@ -252,6 +252,25 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 | `func_00222D70` | text | **close, not exact** (24/60) | `*(int *)((char *)arg0+0x34) = D_001D48A8[D_0015EE84 % 19]; return 0;`. Right size and shape including the real `divu` + trap guard; held entirely by the `%hi`-register-reuse allocator sub-case. Reverted. |
 | `func_0021DB00` | text | **close, not exact** (15/48) | `D_0013E6A0 = (D_0015EEF0 * 8) / 10; return 0;`. Same story as `func_00222D70` � correct shape, held by `%hi`-register reuse plus the divisor `addiu`'s position. Reverted. |
 | everything else in `core_text`/`text` | core_text, text | not started | Still `INCLUDE_ASM` stubs. ~1532 functions total remaining. |
+
+## A variable's SDA placement is per-translation-unit, and we have one file
+
+`D_0015EFB0` (0x15EFB0) is reached **two different ways in retail**:
+via `$gp` in `func_00209418`, and via the non-SDA `lui`/`%hi` form in
+the `func_00209xxx` cluster. Both cannot be true of one declaration, so
+retail must have declared it differently in different source files —
+which is ordinary C, but our single `src/text.c` cannot express it.
+
+Declaring it SDA (`extern short`) gains `func_00209418` (0/44 exact) and
+costs the six `func_00209xxx` near-misses, which become **4 bytes short**
+each. They were already non-exact (blocked by the global-STORE
+addressing question above), so nothing exact was lost — but a size
+mismatch drifts everything after it, so those six are now stubbed with
+their decoded semantics kept in comments.
+
+Expect more of these collisions as the `$gp` harvest continues. When one
+appears, prefer whichever declaration yields an exact match and stub the
+casualties; do not keep a size-mismatched function.
 
 ## Open: global STORE addressing (`$at` macro form vs split `%hi`/`%lo`)
 
