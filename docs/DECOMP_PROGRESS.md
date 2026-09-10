@@ -51,8 +51,8 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **207 functions
-have real C; 191 are exact on size and bytes; 0 are size-mismatched and
+Current audited state (from `tools/sweep_matches.py`): **208 functions
+have real C; 192 are exact on size and bytes; 0 are size-mismatched and
 16 byte-mismatched** — the 16 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
@@ -210,6 +210,7 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 | `func_00216150`, `func_00216198` | text | **matches** | Two more functions reclaimed from the over-broad `movz`/`movn` skip category, both byte-exact first attempt. Same shape: count the nonzero bytes in a fixed-length global byte array (`0x25` of `D_0013E620` / `0x20` of `D_0013D510`), clamp negative to 0, then `return (count < LIMIT) ? count : LIMIT-1;`. All three `movn`/`movz` instructions come from ordinary C — `if (arr[i] != 0) count = count + 1;` in the loop (which lands in the branch's delay slot), the `if (count < 0) count = 0;` clamp, and the final ternary. The `if (count < 0)` guard is dead code in practice (the count cannot go negative) but retail has it, so it belongs in the source. |
 | `func_002160E0` | text | **matches** | Nested-loop variant of the `func_00216150` counting shape: outer loop over 20 rows of `D_0014BFC0`, inner loop over 4 bytes per row (`for (k = 3; k >= 0; k--)`, which the compiler rotates into the `bgez` do-while retail has), counting nonzero bytes, then the same negative-clamp and `(count < 0x29) ? count : 0x28` tail. Byte-exact first attempt. |
 | `func_00227018` | text | **matches** | Linear search of a 5-entry table of `{int key; int flags;}` pairs at `D_001D6448` (stride 8): returns `(e[1] & 1) ? 0x4F000 : 0x11800` on a key hit, `-1` if none of the 5 match. The `movn` is just that ternary. Written as a `do`/`while (i < 5)` with the key test first — the `i++` sits in retail's `bne` delay slot so it runs every iteration regardless. Byte-exact first attempt. |
+| `func_00205728` | text | **matches** | Bidirectional slot search over `D_001A0468`: walks `i` from 0 to 4 picking `idx = arg0 ? (4 - i) : i` (that reversal is the `movz`), returning the first `idx` where `D[idx] != 0 && D[idx+5] == -1`, else `-1`. Needed **two separate base pointers** (`int *a = D_001A0468; int *b = D_001A0468 + 5;`) rather than indexing `D_001A0468[idx + 5]` — retail hoists a second base at `+0x14` and indexes both by the same scaled offset, which the `idx + 5` form doesn't produce. 42% -> byte-exact from that one change; another instance of the documented pointer-advance-vs-index lever. |
 | `func_0020CBE0` | text | **matches** | Same shape as the cluster above but on two fields of one struct (`D_0013D6B8+0x40C`, `+0x3FC`) instead of two separate globals: `if (base[0x40C] != 0 && base[0x3FC] != 0) return 1; return 0;`. |
 | `func_0020CC88` | text | **matches** | Same shape again, on `D_0013D5C8`'s byte fields `0x21`/`0x1F`. Needed `unsigned char *` for the base pointer (not `char *`) — see "lbu vs lb" note below. |
 | `func_0020CCB8` | text | **matches** | `return D_0013D5C8_bytes[arg0] != 0;` — indexes the same global as `func_0020CC88`, byte-exact first attempt, no gotchas. |
