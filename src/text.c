@@ -2890,7 +2890,19 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00220600);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00220690);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002208F8);
+extern short D_001602B0;              /* SDA, gp -0x6A50 */
+extern void func_00201640(int, int, int, int, long, long);
+extern int func_00200198(int, int);
+extern void func_00200468(int, int, int, int, int, int);
+
+void func_002208F8(int x, int y, int flag) {
+    func_00201640(x - 5, y - 5, x + 5, y + 5, 0x80FFA888L, 0);
+    func_00201640(x - 4, y - 4, x + 4, y + 4, *(int *)&D_001602B0, 0);
+    if (flag != 0) {
+        int c = func_00200198(0xE99E, 1);
+        func_00200468(c, x - 0xD, y - 0x12, 0x1E, 0x1E, 0x80);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002209A0);
 
