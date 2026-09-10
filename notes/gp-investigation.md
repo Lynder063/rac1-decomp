@@ -297,3 +297,63 @@ expression rather than from the local. And retail uses branch-likely
 forms (`bltzl`, `bnel`) throughout the loop, with the pointer advance
 `e = e->0x28` sitting in their delay slots; reproducing that scheduling
 is where the 4-byte shortfall lives.
+
+## $gp harvest round 2 (coordinator-directed)
+
+**Candidate filter that predicts success.** Two same-size near-misses
+(`func_001F45F0` 10/52, `func_0020DFF8` 9/68) were both stuck on the
+allocator's *destination-reuse* choice, and that question only surfaces
+when a `$gp` function ALSO loads a non-SDA global through a
+`lw $x, %lo(sym)($x)` pair. Excluding that pattern -- on top of "no `$at`
+store form" and "no variable needing both `$gp` and `%hi`" -- leaves 10
+candidates, and the first two attempts from that list matched exactly.
+Selecting candidates is a better lever here than iterating source shape.
+
+**`func_00209290` (0/88) needed two techniques stacked**, neither
+sufficient alone:
+1. the rotation rule *did* apply (our build emitted the last source store
+   first), so the seven `-1` stores were rotated to put `b+0x90` last;
+2. retail hoists the slot base `b + 0xB0` into its own register before
+   the stores -- computing it as an explicit early local rather than
+   inline at the point of use took it from 25/88 to exact.
+
+Note (2) is the same lever that worked for `func_00205728`, and (1) is a
+counter-example to `func_00227A30`, where rotation made things worse. The
+rotation rule is genuinely per-function; test it, don't assume.
+
+**`func_001F0F78` -- decoded, reverted at 69%.** Ring-buffer append plus
+a counter update. Semantics are certain:
+```c
+extern char D_0018AC00[];      /* 16-byte entries */
+extern char D_0015F108[];
+extern short D_0015F104;       /* SDA, gp -0x7BFC -- entry index */
+extern short D_0015F100;       /* SDA, gp -0x7C00 -- running count */
+extern int func_00116248(int, void *, int);
+
+int idx = D_0015F104;
+char *e = D_0018AC00 + idx * 16;
+int n = D_0015F100;
+e[0x0] = a0; e[0x4] = a1; e[0x8] = a2; e[0xC] = n;   /* all int stores */
+D_0015F104 = idx + 1;
+D_0015F100 += func_00116248(n, D_0015F108, a3) + 1;  /* reloads D_0015F100 */
+```
+The divergence is scheduling, not meaning: retail interleaves the two
+SDA loads with the address arithmetic and the stack adjust (loading the
+index into `$10` and the count into `$11` several instructions apart),
+while this compiler emits both SDA loads back to back at the top. Retail
+also recomputes the entry address into three different registers
+(`$8`/`$9`/`$4`) across the four stores rather than reusing one. Not a
+source-shape problem as far as I could tell.
+
+**Blocked clusters confirmed (don't re-attempt without a new idea):**
+- `func_002094A8` / `func_002095E8` / `func_00209358` -- same variable
+  `D_0015EFB0` reached via `$gp` early and via `lui $at`/`%lo` later
+  *within one function*. Verified this compiler never emits the `$at`
+  macro form (it always allocates a normal register, e.g. `lui $v1`), so
+  an aliased second symbol would not help either -- the difference is
+  register *allocation*, not symbol placement.
+- `func_00234C50` / `func_00234E80` / `func_00234EE0` / `func_00234F40` /
+  `func_00234FA8` -- DMA packet writers with a clear `volatile` reload
+  signature on the pointer `D_00161000`, but that pointer is loaded via
+  `lui`/`%lo` and stored back via `$gp` in the same function: the same
+  collision. Declaring it either way breaks the other half.
