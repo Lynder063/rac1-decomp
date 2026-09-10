@@ -328,7 +328,20 @@ int func_001160D8(void) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00116108);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00116168);
+/*
+ * Close, not exact (27/72, same size so harmless). Same bit-classifier
+ * family as func_001161B0, and blocked the same way: every instruction
+ * and operand matches, but the allocator assigns the low-word and mask
+ * registers the other way round from retail and the rest follows.
+ */
+int func_00116168(long arg0) {
+    int lo = (int)arg0;
+    int hi = (int)(arg0 >> 32);
+    hi &= 0x7FFFFFFF;
+    hi |= (unsigned int)(lo | -lo) >> 31;
+    hi = 0x7FF00000 - hi;
+    return 1 - ((unsigned int)(hi | -hi) >> 31);
+}
 
 int func_001161B0(long arg0) {
     int lo = (int)arg0;
@@ -1081,7 +1094,20 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D960);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D9A8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D9C0);
+extern int func_00118C70(void *);
+extern int D_00130420;
+extern int D_00130424;
+
+void func_0011D9C0(void) {
+    int a[8];
+    int b[8];
+    a[1] = 1;
+    a[2] = 1;
+    b[1] = 1;
+    b[2] = 1;
+    D_00130420 = func_00118C70(a);
+    D_00130424 = func_00118C70(b);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DA08);
 

@@ -3185,6 +3185,33 @@ int func_00227068(int arg0) {
     return 1;
 }
 
+/*
+ * REVERTED -- size mismatch (72 vs retail's 76), so it cannot be kept.
+ * Semantics are certain: a 5-entry table of {key, flags} pairs at
+ * D_001D6448; find the entry whose key matches, clear bit 2 of its
+ * flags, return 0; return 1 if no entry matches.
+ *
+ *   int func_002270B0(int key) {
+ *       int *p = &D_001D6448[1];
+ *       int i = 0;
+ *       do {
+ *           if (p[-1] == key) { p[0] &= ~4; return 0; }
+ *           i++;                      // in the bne's delay slot
+ *           p += 2;                   // in the loop branch's delay slot
+ *       } while (i < 5);
+ *       return 1;
+ *   }
+ *
+ * The missing instruction is in the address setup: retail emits
+ * `addiu $2,$2,%lo(D)` and then `addiu $5,$2,4` separately, where this
+ * compiler folds %lo+4 into a single addiu. Retail also hoists the
+ * `-5` mask into a register before the loop while this compiler sinks
+ * it into the taken branch (both must materialize it, since 0xFFFFFFFB
+ * is not an andi-able immediate -- only the placement differs).
+ * Tried: a separate `int *base` local to force the pointer split, and
+ * a `mask` local to hoist the constant; the compiler folds and sinks
+ * both regardless. Same one-instruction-short shape as func_0011D370.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_002270B0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00227100);
