@@ -1000,7 +1000,17 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FE4C0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FE4D0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FE540);
+extern int func_001FE4D0(void);
+extern char D_00199A68[];
+extern short D_0015F780;              /* SDA, gp -0x7580 */
+
+void *func_001FE540(void) {
+    int i = func_001FE4D0();
+    if (i >= 0) {
+        return *(void **)(*(int *)&D_0015F780 + i * 16);
+    }
+    return D_00199A68;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FE580);
 
@@ -1641,7 +1651,24 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00209188);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209238);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209290);
+void func_00209290(void) {
+    char *b = D_0013D390;
+    char *base = b + 0xB0;
+    int idx = *(int *)(b + 0xCC);
+    int *slot;
+    *(int *)(b + 0xE4) = -1;
+    *(int *)(b + 0xE8) = -1;
+    *(int *)(b + 0x20) = -1;
+    *(int *)(b + 0x3C) = -1;
+    *(int *)(b + 0x58) = -1;
+    *(int *)(b + 0x74) = -1;
+    *(int *)(b + 0x90) = -1;
+    slot = (int *)(base + idx * 0xC0);
+    if (*slot == 2) {
+        *slot = 0;
+    }
+    *(int *)&D_0015EFB0 = 4;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002092E8);
 
