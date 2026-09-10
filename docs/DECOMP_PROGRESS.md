@@ -51,8 +51,8 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **208 functions
-have real C; 192 are exact on size and bytes; 0 are size-mismatched and
+Current audited state (from `tools/sweep_matches.py`): **210 functions
+have real C; 194 are exact on size and bytes; 0 are size-mismatched and
 16 byte-mismatched** — the 16 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
@@ -764,6 +764,28 @@ result is one of the commonest `movn` sources in this codebase. A signed
 above is specifically about *non*-power-of-two divisors; do not read a
 `movn`+`sra` pair as an exotic conditional move when a plain `% 8` in C
 produces it exactly.
+
+**Hoist a division/modulo into its own local to move the trap guard.**
+Seen fixing `func_0023CD60`. This compiler emits MIPS's div-by-zero trap
+guard (`beql $r,$0` over a `break 0,7`) wherever the division gets
+expanded, and that position is schedulable. Writing the division inline
+in a store (`b[0] = (acc + d) % cap;`) left the guard *after* the `div`,
+where retail has it immediately after the loads, before any arithmetic —
+45% mismatch. Assigning the result to a local first:
+
+```c
+int r;
+...
+r = (acc + d) % cap;   /* guard now expands here, early */
+b[1] = pos + d;
+b[0] = r;
+```
+
+moved the guard to retail's position and took it to byte-exact. Note it
+also fixed a register-allocation difference (retail had `cap`/`pos` in
+`$7`/`$8`, this compiler had them swapped) as a side effect — so a
+cap/pos-style register swap alongside a misplaced trap guard is worth
+treating as *one* problem, not two, and attacking via the guard.
 
 **Recurring sub-case of the allocator question: `%hi` register reuse on
 a global load.** Retail frequently loads a global with the `%hi` and the
