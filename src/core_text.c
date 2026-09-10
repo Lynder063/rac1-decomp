@@ -999,7 +999,16 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00120538);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001205D0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00120670);
+extern void func_0011FA38(void *);
+
+void func_00120670(int arg0, int arg1, int arg2, long arg3) {
+    int buf[8];
+    buf[0] = arg0;
+    buf[1] = arg1;
+    buf[2] = arg2;
+    *(long *)&buf[4] = arg3;
+    func_0011FA38(buf);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001206A0);
 
@@ -1295,7 +1304,13 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00128270);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00128410);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00128560);
+extern int D_00132F70[];
+
+void func_00128560(char *arg0, unsigned int arg1) {
+    volatile int *reg = (volatile int *)0x10002000;
+    *reg = arg1;
+    *(int *)(arg0 + 0x818) = D_00132F70[arg1 >> 28];
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00128590);
 
@@ -1406,7 +1421,13 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012ABB0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012ABF8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012AC50);
+unsigned int func_0012AC50(char *arg0, int arg1) {
+    unsigned int v = *(int *)(arg0 + 0x8) + (arg1 >> 3);
+    if (v >= *(unsigned int *)(arg0 + 0x24)) {
+        v -= *(int *)(arg0 + 0x28);
+    }
+    return v;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012AC7C);
 
@@ -1586,7 +1607,10 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D440);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D448);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D4B0);
+int func_0012D4B0(int arg0) {
+    unsigned int v = arg0 & 0xFF;
+    return ((v / 10) * 6 + v) & 0xFF;
+}
 
 /*
  * REVERTED (size mismatch: ours 28 bytes, retail 32). Semantics certain

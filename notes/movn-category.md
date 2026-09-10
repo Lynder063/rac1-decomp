@@ -504,3 +504,32 @@ and `check_match.py` then reported a clean `0/N` for **three** functions
 at once, all fictional. Only checking the compiler's own exit code
 caught it. That is now the seventh occurrence of this trap in the
 project's history.
+
+## New lever: `volatile` pointer local forces a constant address into a register
+
+Found on `func_00128560`, which writes hardware register `0x10002000`.
+
+Retail materializes the full constant address into a normal register
+(`lui`/`ori`, then `sw $5, 0x0($2)`) — three instructions. Writing the
+store the obvious way, `*(int *)0x10002000 = arg1;`, instead lets the
+*assembler* fold it into its `$at` macro form (`lui $at, 0x1000` /
+`sw $a1, 0x2000($at)`) — two instructions, so the function came out
+4 bytes short and 84% mismatched.
+
+Binding the address to a **`volatile`** pointer local fixes it:
+
+```c
+volatile int *reg = (volatile int *)0x10002000;
+*reg = arg1;
+```
+
+A plain (non-`volatile`) pointer local does **not** work — verified, it
+still folds to the `$at` form. So this is specifically `volatile`
+suppressing the fold, not the local variable.
+
+Note this is the *inverse* of the documented "`$at` macro store"
+blocker, where retail uses the `$at` form and this compiler will not
+emit it. Here retail uses the register form and the compiler prefers
+`$at`. That direction IS fixable, so a `$at`-form store in **our**
+output next to a register-form store in retail is not a blocker —
+reach for `volatile` first.
