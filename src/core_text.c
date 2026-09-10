@@ -709,10 +709,27 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011A780);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AA00);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AA38);
-
 extern int D_00154F64 NOT_SDA;
 extern int D_00154F6C NOT_SDA;
+
+/*
+ * Close, not exact (6/44), same size, and instruction-for-instruction
+ * identical to retail -- same opcodes, same order, same operands. The
+ * whole residual is register choice: retail reuses arg0's own register
+ * ($4) for the loaded base once arg0 is dead and accumulates into $3,
+ * while this compiler puts the base in $v0. Hoisting the shift into an
+ * `off` local and ordering the two stores took it from 20/44 to 6/44;
+ * the rest is the scratch-register question, and specifically the half
+ * of it the declaration-order lever cannot reach, since that steers
+ * locals and this is a parameter's register being reused.
+ */
+void func_0011AA38(int arg0, int arg1, int arg2) {
+    int off = arg0 * 8;
+    char *base = (char *)((arg0 >= 0) ? D_00154F6C : D_00154F64);
+    char *p = base + off;
+    *(int *)(p + 0x0) = arg1;
+    *(int *)(p + 0x4) = arg2;
+}
 
 void func_0011AA68(int arg0) {
     int offset = arg0 << 3;
@@ -800,7 +817,14 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B868);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011BBF0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011BC40);
+extern void func_0011BBF0(void);
+extern int D_0012FD9C NOT_SDA;
+
+int func_0011BC40(void) {
+    func_0011BBF0();
+    func_00118CB0(D_0012FD9C);
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011BC70);
 
@@ -1319,7 +1343,17 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00129948);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001299E8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00129C78);
+int func_00129C78(void *arg0) {
+    char *p = (char *)arg0;
+    int r = 1;
+    if (*(int *)(p + 0x8) != 2) {
+        int v = *(int *)(p + 0x118);
+        *(int *)(p + 0x8) = 2;
+        *(int *)(p + 0xAC) = v;
+    }
+    *(int *)(p + 0x820) = r;
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00129CA0);
 
