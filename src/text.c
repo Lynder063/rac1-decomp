@@ -2160,9 +2160,29 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00216098);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002160E0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00216150);
+extern unsigned char D_0013E620[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00216198);
+int func_00216150(void) {
+    int count = 0;
+    int i;
+    for (i = 0; i < 0x25; i++) {
+        if (D_0013E620[i] != 0) count = count + 1;
+    }
+    if (count < 0) count = 0;
+    return (count < 0xB) ? count : 0xA;
+}
+
+extern unsigned char D_0013D510[];
+
+int func_00216198(void) {
+    int count = 0;
+    int i;
+    for (i = 0; i < 0x20; i++) {
+        if (D_0013D510[i] != 0) count = count + 1;
+    }
+    if (count < 0) count = 0;
+    return (count < 0x1F) ? count : 0x1E;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002161E0);
 

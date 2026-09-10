@@ -51,8 +51,8 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **203 functions
-have real C; 187 are exact on size and bytes; 0 are size-mismatched and
+Current audited state (from `tools/sweep_matches.py`): **205 functions
+have real C; 189 are exact on size and bytes; 0 are size-mismatched and
 16 byte-mismatched** — the 16 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
@@ -207,6 +207,7 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 | `func_001FFFA0` | text | **skipped, `$gp`-relative** | `lw`/`sw` via `($28)` offset — known skip category (`-G0` build, no SDA support). |
 | `func_00208160`, `func_00208208` | text | **not attempted, known open question** | Float-threshold-to-bool materialization (`c.le.s`/`bc1f`/`bc1tl` scheme) — same delay-slot-scheduling issue already documented and reverted for `func_00207E28`/`func_00207EC0`; not re-attempted. |
 | `func_0020CB80`, `func_0020CC10`, `func_0020CC38`, `func_0020CC60`, `func_0020CD58` | text | **matches** | All `if (D_int_flag != 0 && D_byte_flag != 0) return 1; return 0;` — distinct global addresses, same shape. Needed the `&&`-combined single-condition form (shared-tail merging), not a `!= 0` boolean-cast return or a `==0`-guard-then-cast — see "Shared-tail merging with a boolean cast" below, a refinement of the existing shared-tail technique. |
+| `func_00216150`, `func_00216198` | text | **matches** | Two more functions reclaimed from the over-broad `movz`/`movn` skip category, both byte-exact first attempt. Same shape: count the nonzero bytes in a fixed-length global byte array (`0x25` of `D_0013E620` / `0x20` of `D_0013D510`), clamp negative to 0, then `return (count < LIMIT) ? count : LIMIT-1;`. All three `movn`/`movz` instructions come from ordinary C — `if (arr[i] != 0) count = count + 1;` in the loop (which lands in the branch's delay slot), the `if (count < 0) count = 0;` clamp, and the final ternary. The `if (count < 0)` guard is dead code in practice (the count cannot go negative) but retail has it, so it belongs in the source. |
 | `func_0020CBE0` | text | **matches** | Same shape as the cluster above but on two fields of one struct (`D_0013D6B8+0x40C`, `+0x3FC`) instead of two separate globals: `if (base[0x40C] != 0 && base[0x3FC] != 0) return 1; return 0;`. |
 | `func_0020CC88` | text | **matches** | Same shape again, on `D_0013D5C8`'s byte fields `0x21`/`0x1F`. Needed `unsigned char *` for the base pointer (not `char *`) — see "lbu vs lb" note below. |
 | `func_0020CCB8` | text | **matches** | `return D_0013D5C8_bytes[arg0] != 0;` — indexes the same global as `func_0020CC88`, byte-exact first attempt, no gotchas. |
