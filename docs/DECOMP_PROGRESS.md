@@ -51,8 +51,8 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **276 functions
-have real C; 249 are exact on size and bytes; 0 are size-mismatched and
+Current audited state (from `tools/sweep_matches.py`): **277 functions
+have real C; 250 are exact on size and bytes; 0 are size-mismatched and
 27 byte-mismatched** — the 27 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
@@ -110,6 +110,8 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 | `func_00228400` | text | **reverted, size mismatch** (80 vs 84) | Dispatch on a leading short — semantics recorded above its stub. Retail keeps `arg0` in `$16` and spends the first `jal`'s delay slot on `addiu $16,$16,0x20`, making the pointer advance free; this compiler emits a `nop` there. Three source shapes tried (offset expression at the return, advancing a separate `char *p` after the call, and advancing it before the call — best at 20/84); none put the advance in the call's delay slot. |
 | `func_00236B58` | text | **matches** | Brackets two `func_001F9A98(dst, src, len)` block copies between a pair of `func_00236A98()` calls. Byte-exact, first attempt. |
 | `func_0012BBF8` | core_text | **matches** | Clears field `+0x28` of six sub-objects hanging off `arg0->0x40` at offsets `0x1B8/0x1C8/0x1D8/0x1BC/0x1CC/0x1DC`, skipping null ones, returns 1. Retail uses six `bnel` branch-likelies with the store in the delay slot; a plain `if (p != 0) *(int *)(p + 0x28) = 0;` per slot reproduces every one. Byte-exact, first attempt — second case this round confirming branch-likely density is not a warning sign. |
+| `func_0012C468` | core_text | **matches** | Guarded dispatch: if `arg0->0x858`, `arg0` and `arg0->0xC` are all non-null, build a 2-field stack struct `{0, arg1}` and hand it to `func_0012BC78`; otherwise call `func_0012C420(arg1)`. Note the `arg0 != 0` test is retail's own and comes *after* it has already dereferenced `arg0` — one of the dead-looking guards that must be written out. Byte-exact, first attempt. |
+| `func_0020CCD0` | text | **reverted (66/84)** | Three-global predicate — semantics recorded in full above its stub. Blocked on the `%hi`-register-reuse sub-case, and heavily: retail keeps the `%hi` of `D_0013D6B8` alive in a spare register across the whole function and re-adds `%lo` a second time on the late path, where this compiler materializes the full address once up front. That one choice re-registers most of the body, which is why the residual is large despite the logic being right. |
 | `func_00120670` | core_text | **matches** | Marshals three `int` args plus a 64-bit one into an on-stack `int buf[8]` (offsets 0/4/8 and a `sd` at 0x10) and passes its address to `func_0011FA38`. Byte-exact, first attempt. |
 | `func_00128560` | core_text | **matches** | Writes `arg1` to hardware register `0x10002000`, then stores `D_00132F70[arg1 >> 28]` into `arg0+0x818`. Needed a **`volatile int *` pointer local** for the register address — see the new lever below. Byte-exact. |
 | `func_0012AC50` | core_text | **matches** | Ring-buffer wrap: `v = *(int*)(arg0+8) + (arg1 >> 3);` then `if (v >= *(unsigned*)(arg0+0x24)) v -= *(int*)(arg0+0x28);`. The compare is `sltu`, so `v` must be `unsigned`. Byte-exact, first attempt. |

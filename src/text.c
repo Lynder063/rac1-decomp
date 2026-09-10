@@ -1957,6 +1957,7 @@ int func_0020CBA8(void) {
     return 0;
 }
 
+extern unsigned char D_0013D5CA NOT_SDA;
 extern int D_0013D6B8 NOT_SDA;
 
 int func_0020CBE0(void) {
@@ -2002,6 +2003,27 @@ int func_0020CCB8(int arg0) {
     return base[arg0] != 0;
 }
 
+/*
+ * REVERTED (66/84). Semantics are certain -- a three-global predicate,
+ * with a/b/d fields of the struct at D_0013D6B8 and c the byte
+ * D_0013D5CA:
+ *
+ *   a = *(int *)(D_0013D6B8 + 0x14C);
+ *   b = *(int *)(D_0013D6B8 + 0x18C);
+ *   d = *(int *)(D_0013D6B8 + 0x16C);
+ *   if (a != 0) { if (b == 0) return 1; }
+ *   else        { if (b == 0) return 0; }
+ *   if (D_0013D5CA == 0) return 0;
+ *   if (d == 0) return 2;
+ *   return 0;
+ *
+ * Blocked on the documented %hi-register-reuse sub-case of the allocator
+ * question, and heavily: retail keeps the %hi of D_0013D6B8 alive in a
+ * spare register across the whole function and re-adds %lo a second time
+ * on the late path, where this compiler materializes the full address
+ * once up front. That single choice re-registers most of the body, hence
+ * the large residual despite the logic being right.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_0020CCD0);
 
 extern int D_0013D9B4 NOT_SDA;
@@ -2800,7 +2822,6 @@ int func_0021DA60(void *arg0) {
     return 0;
 }
 
-extern unsigned char D_0013D5CA NOT_SDA;
 extern char D_001D0A50[];
 extern char D_001D0A88[];
 
