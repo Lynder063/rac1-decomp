@@ -23,6 +23,10 @@ and materializes `-1` into `$2`; this compiler picks them the other way
 and everything downstream follows. **Tried and failed:** hoisting the
 load into an explicit local to change evaluation order (no change).
 
+`func_001F0FF8` — **re-attempted, 77% -> 31%, still reverted.** See the
+"second attempt" section at the end of this file for the refined
+findings; the original note follows.
+
 `func_001F0FF8` — reverted at 77%. A text-centring routine: sums
 per-character widths from `D_00189EC0` (index `(unsigned char)(c-0x20)`,
 clamped to `0x20` when `>= 0x60`, which is where its `movn` comes from),
@@ -92,3 +96,66 @@ question, and larger functions where the win comes from understanding
 the code rather than from pattern-matching a shape. The latter is real,
 tractable work — it is just not cheap per function, so it suits agents
 with a budget rather than opportunistic manual passes.
+
+
+# Second attempt at func_001F0FF8 (sole-agent pass)
+
+Got it from 77% down to **44/140 (31%)** and confirmed the semantics at
+instruction level. Still reverted (31% is over the revert threshold and
+the precedent — 30% and 34% cases were reverted, 20% kept), but the
+remaining gap is now fully characterised rather than vague.
+
+**Confirmed C (logic is right, verified instruction-by-instruction):**
+
+```c
+extern int D_00189EC0[];
+extern void func_001F0F78(int, int);
+
+int func_001F0FF8(int x, int a1, int a2, unsigned char *str) {
+    int total = 0;                       /* a2 is a real but unused param */
+    if (*str != 0) {
+        unsigned char *p = str;
+        do {
+            unsigned int idx = (unsigned char)(*p - 0x20);
+            unsigned int v = 0x20;
+            p++;
+            if (idx < 0x60) v = idx;
+            total += D_00189EC0[v];
+        } while (*p != 0);
+    }
+    x -= total >> 1;
+    func_001F0F78(x, a1);
+    return x;
+}
+```
+
+**The one big win, worth reusing elsewhere: don't let the index
+expression sink the shift into the select.** Writing the clamp inline as
+`D_00189EC0[(idx < 0x60) ? idx : 0x20]` makes this compiler select
+between `idx*4` and `0x80` (i.e. it moves the `<<2` *inside* the
+conditional move, materialising the pre-scaled constant). Retail selects
+the raw index and shifts afterwards. Assigning the clamp to its own
+local variable first, then indexing with it, restores retail's
+select-then-shift order — that single change was 71% -> 31%.
+
+**The three differences that remain, none source-steerable:**
+
+1. **Compare canonicalisation.** Retail: `sltiu $2,$4,0x60` + `movn`
+   (one instruction, no register needed). This compiler: hoists `95`
+   into a register outside the loop and emits `sltu $v0,$t0,$a0` +
+   `movz` — the complementary encoding, computing `95 < idx` instead of
+   `idx < 0x60`. Identical semantics, strictly more registers. Tried
+   `if`-form, ternary-form, and ternary-into-a-variable: all three give
+   the same `sltu`/`movz` pair, so it is not a source-shape choice.
+2. **Delay-slot filler.** Retail puts `p = str` in the `beqz`'s delay
+   slot and sets `total = 0` before the branch; this compiler coalesces
+   `p` into `str`'s register (so no copy instruction exists to schedule)
+   and fills the slot with `total = 0` instead.
+3. **Constant hoisting.** Retail hoists `0x20` into `$11` outside the
+   loop and copies it in per iteration; this compiler re-materialises
+   `li $v1,32` inside the loop. Same instruction count, different shape.
+
+Everything else — the prologue, the whole loop body, the `sra`/`subu`,
+the call, the epilogue — matches instruction for instruction; the byte
+count is inflated because differences 1-3 shift every subsequent
+register number.
