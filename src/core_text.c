@@ -678,9 +678,25 @@ void *func_00119868(void *arg0) {
     return self;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119890);
+void func_00119890(char *self) {
+    char *p;
+    *(int *)(self + 0x4) += 1;
+    p = *(char **)(self + 0xC) + 1;
+    *(char **)(self + 0xC) = p;
+    if (p == self + (*(int *)self + 0x10)) {
+        *(char **)(self + 0xC) = self + 0x10;
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001198D0);
+void func_001198D0(char *self) {
+    char *p;
+    *(int *)(self + 0x4) -= 1;
+    p = *(char **)(self + 0x8) + 1;
+    *(char **)(self + 0x8) = p;
+    if (p == self + (*(int *)self + 0x10)) {
+        *(char **)(self + 0x8) = self + 0x10;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119910);
 
@@ -785,9 +801,24 @@ void func_0011AA68(int arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AA90);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011ABC8);
+/* EABI passes the first eight integer args in $4-$11, so this forwards
+   seven of them.
+ *
+ * func_0011ABC8/func_0011AC08 are close, not exact (11/60 each, same
+ * size). Every move and the call match retail; only the position of the
+ * `addiu $sp,$sp,-0x10` differs -- retail emits it fourth, after three
+ * of the argument moves, while this compiler emits it second. That is
+ * scheduling, not source shape, and nothing in the source can express
+ * where the prologue's stack adjust lands. */
+extern void func_0011AA90(int, int, int, int, int, int, int);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AC08);
+void func_0011ABC8(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5) {
+    func_0011AA90(arg0, 0, arg1, arg2, arg3, arg4, arg5);
+}
+
+void func_0011AC08(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5) {
+    func_0011AA90(arg0, 0x1, arg1, arg2, arg3, arg4, arg5);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AC48);
 

@@ -51,9 +51,9 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **259 functions
-have real C; 239 are exact on size and bytes; 0 are size-mismatched and
-20 byte-mismatched** — the 20 being deliberately-kept documented
+Current audited state (from `tools/sweep_matches.py`): **263 functions
+have real C; 241 are exact on size and bytes; 0 are size-mismatched and
+22 byte-mismatched** — the 22 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
 
@@ -108,6 +108,8 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 | `func_0011D210` | core_text | **matches** | `if (func_00118E70(4) & 0x40000) { func_00118EC0(); return 1; } return 0;`. Byte-exact, first attempt. |
 | `func_0011D370` | core_text | **reverted, size mismatch** | Word-at-a-time copy — semantics recorded above its stub. 52 bytes vs retail's 56: retail leaves the loop branch's *delay slot* unfilled where this compiler fills it with the pointer bump. Short-loop erratum in a second form; see the classifier note. |
 | `func_001161B0` | core_text | **close, not exact** (28/56) | `isnan`-shaped bit classifier on a 64-bit argument: `hi &= 0x7FFFFFFF; hi \|= (unsigned)(lo \| -lo) >> 31; return (unsigned)(0x7FF00000 - hi) >> 31;`. Same 14 instructions in the same order as retail apart from where the `dsra32` for the high word is scheduled; registers for the low word and the mask are swapped ($3/$2 vs retail's $2/$3). Allocator question. |
+| `func_00119890`, `func_001198D0` | core_text | **matches** | Ring-buffer advance: bump a counter at `+4` (up / down respectively), advance the pointer at `+0xC` / `+0x8`, and wrap it back to `self+0x10` on reaching the end. Needed `self + (*(int *)self + 0x10)` rather than `self + *(int *)self + 0x10` — see the associativity lever below. Byte-exact. |
+| `func_0011ABC8`, `func_0011AC08` | core_text | **close, not exact** (11/60) | Forward six arguments to `func_0011AA90` with `0` / `1` injected as the second, seven arguments in total (EABI passes eight in `$4`-`$11`). Every move and the call match; only the prologue's `addiu $sp` lands second instead of fourth. Scheduling, not expressible in source. Same size, so kept. |
 | `func_00112380` | core_text | **close, not exact** | Logic fully understood: `return func_00116F68(arg0, 0, 10);`. Retail has an extra redundant `dsll32`/`dsra32 v0,v0,0` sign-extension pair (8 bytes) before the return this compiler doesn't emit for any variant tried. See "Open toolchain questions" below. This is the root cause of the "known systemic artifact" noted above. |
 | `func_00112464` | core_text | **not a real function** | 4 bytes of `0xCDCDCDCD` — alignment padding between `func_001123A8` and `func_00112468` (rounds the latter to an 8-byte boundary), not code. Left as `INCLUDE_ASM`; nothing to decompile. |
 | `func_00112468` | core_text | **close, not exact** | Logic fully understood — see the comment on it in `src/core_text.c` for the full C. Blocked on the `sq`/`lq` vs `sd`/`ld` callee-register-save question below, kept as `INCLUDE_ASM` since the byte diff isn't a small fixed offset like `func_00112380`, it cascades through the whole function. |
