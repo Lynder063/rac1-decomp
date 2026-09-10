@@ -3337,13 +3337,48 @@ int func_0023C060(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C080);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C088);
+extern void func_0012F248(int, int, int, int, int);
+
+/* movn here is plain signed /1024 (round down to a 1024 multiple), an
+   arithmetic idiom rather than a conditional move. Five args: EABI
+   passes the first eight integer args in $4-$11, so $8 is the fifth. */
+void func_0023C088(void *arg0) {
+    char *s = (char *)arg0;
+    func_0012F248(*(int *)(s + 0x48),
+                  (*(int *)(s + 0x4C) / 0x400) * 0x400,
+                  *(int *)(s + 0x5C),
+                  *(int *)(s + 0x14),
+                  *(int *)(s + 0x18));
+    *(int *)s = 2;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C0E0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C128);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C1F8);
+void func_0023C1F8(void *arg0, int arg1) {
+    char *s = (char *)arg0;
+    int n = arg1;
+    int avail;
+    int take;
+    if (*(int *)s == 0) {
+        if (*(int *)(s + 4) == 4) {
+            *(int *)s = 1;
+        } else {
+            avail = 0x28 - *(int *)(s + 0x30);
+            take = (avail < n) ? avail : n;
+            *(int *)(s + 0x30) += take;
+            if (*(int *)(s + 0x30) >= 0x28) {
+                *(int *)s = 1;
+            }
+            n -= take;
+        }
+    }
+    *(int *)(s + 0x40) = (*(int *)(s + 0x40) / 0x400) * 0x400;
+    *(int *)(s + 0x38) = (*(int *)(s + 0x38) + n) % *(int *)(s + 0x40);
+    *(int *)(s + 0x3C) += n;
+    *(int *)(s + 0x44) += n;
+}
 
 int func_0023C2B0(void *arg0) {
     return *(int *)((char *)arg0 + 0x50) >= 0x1000;
@@ -3449,7 +3484,20 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023D988);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023D9E0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023DA30);
+extern void func_00118CB0(int);
+extern void func_00118C90(int);
+
+/* The movn here is signed /2048 inside an align-up-to-2048:
+   (x + 0x7FF) / 0x800 * 0x800. Filed under the movz/movn skip category
+   for many rounds; it is an arithmetic idiom, not a conditional move. */
+void func_0023DA30(void *arg0) {
+    char *s = (char *)arg0;
+    int x;
+    func_00118CB0(*(int *)(s + 0x40));
+    x = *(int *)(s + 0x14);
+    *(int *)(s + 0x14) = ((x + 0x7FF) / 0x800) * 0x800;
+    func_00118C90(*(int *)(s + 0x40));
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023DA88);
 
