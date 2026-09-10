@@ -533,3 +533,27 @@ emit it. Here retail uses the register form and the compiler prefers
 `$at`. That direction IS fixable, so a `$at`-form store in **our**
 output next to a register-form store in retail is not a blocker —
 reach for `volatile` first.
+
+## Classifier corrections (two detector bugs, found by attempting top candidates)
+
+**`short-loop erratum` measured the wrong span.** The detector computed
+`span = idx` — the branch's index from the *start of the function* —
+where it needed the distance back to the branch *target*. Any tight loop
+appearing later than instruction 7 therefore escaped it. `func_001232A8`
+(a byte-fill loop whose `bne` sits at index 9, with the erratum's two
+`nop`s right before it) was offered as a top candidate because of this.
+Fixed with a `label_positions()` helper that maps each `.L` label to the
+instruction index it precedes. Detections: **3 → 21**.
+
+**Padding-prefixed functions weren't caught.** The padding rule only
+matched functions that are *nothing but* `0xCDCDCDCD`
+(`len(ins) == 1`). But splat sometimes folds 4 bytes of inter-function
+padding into the *start* of a real function's extent — the body is
+ordinary code, yet C cannot emit that leading word, so it can never
+match. `func_0011DD64` was a top candidate. Detections: **4**.
+
+Both were verified on concrete examples before being trusted, since a
+3 → 21 jump is exactly the shape of an over-blocking bug, and blanket
+skips have cost this project real matches twice.
+
+Candidates 219 → 205, blocked 1011 → 1032.

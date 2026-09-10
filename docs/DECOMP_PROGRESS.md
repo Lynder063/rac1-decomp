@@ -51,9 +51,9 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **254 functions
-have real C; 236 are exact on size and bytes; 0 are size-mismatched and
-18 byte-mismatched** — the 18 being deliberately-kept documented
+Current audited state (from `tools/sweep_matches.py`): **256 functions
+have real C; 237 are exact on size and bytes; 0 are size-mismatched and
+19 byte-mismatched** — the 19 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
 
@@ -102,6 +102,8 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 | `func_00119768` | core_text | **matches** | Marshals `arg0` and a sign-extended `signed char arg1` into an on-stack `int buf[4]`, calls `func_00118E90(3, buf)`. The `sll`/`sra` 24 pair comes from declaring the parameter `signed char`. Byte-exact. |
 | `func_001197C0`, `func_001197F8` | core_text | **matches** | Same forwarder shape as `func_00119768` with an extra `unsigned short arg2` field, calling `func_00118E90(-5, buf)` and `(-6, buf)` respectively. Byte-exact, both first attempt. |
 | `func_0011B0B0` | core_text | **close, reverted (20/48)** | Wrapping counter — semantics recorded in full above its stub in `src/core_text.c`. Every instruction matches including the div trap guard; the allocator picks the opposite registers for the divisor and `mfhi` result, which reorders the tail. Same open scratch-register question as `func_001160D8`. |
+| `func_0011BF48` | core_text | **matches** | Zeroes global `D_0012FD94`, then `func_001153FC(D_001580A8, 0, 4)` (a memset-shaped call), returns 0. Byte-exact, first attempt. |
+| `func_0011AA00` | core_text | **close, not exact** (4/52) | `func_001193F8(5); func_00118AD0(5, D_00154F54); D_0012FD04 = 0;`. Every instruction matches; the two `lui`s holding the globals' addresses land in `$2` where retail uses `$3`. Tried a value local and a second local — neither moved it. Same open scratch-register question as `func_001160D8`. Same size, so kept. |
 | `func_00112380` | core_text | **close, not exact** | Logic fully understood: `return func_00116F68(arg0, 0, 10);`. Retail has an extra redundant `dsll32`/`dsra32 v0,v0,0` sign-extension pair (8 bytes) before the return this compiler doesn't emit for any variant tried. See "Open toolchain questions" below. This is the root cause of the "known systemic artifact" noted above. |
 | `func_00112464` | core_text | **not a real function** | 4 bytes of `0xCDCDCDCD` — alignment padding between `func_001123A8` and `func_00112468` (rounds the latter to an 8-byte boundary), not code. Left as `INCLUDE_ASM`; nothing to decompile. |
 | `func_00112468` | core_text | **close, not exact** | Logic fully understood — see the comment on it in `src/core_text.c` for the full C. Blocked on the `sq`/`lq` vs `sd`/`ld` callee-register-save question below, kept as `INCLUDE_ASM` since the byte diff isn't a small fixed offset like `func_00112380`, it cascades through the whole function. |

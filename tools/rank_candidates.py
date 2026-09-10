@@ -69,6 +69,18 @@ SDA_LO, SDA_HI = GP_BASE - 0x8000, GP_BASE + 0x8000
 VU0_LO, VU0_HI = 0x1F9B20, 0x1FB598
 
 
+def label_positions(body):
+    """Maps each .L label to the index of the instruction it precedes."""
+    pos, n = {}, 0
+    for line in body.splitlines():
+        m = re.match(r"^(\.L[0-9A-Fa-f]+):", line.strip())
+        if m:
+            pos[m.group(1)] = n
+        elif "/*" in line and "*/" in line and line.split("*/", 1)[1].strip():
+            n += 1
+    return pos
+
+
 def instructions(body: str) -> list[str]:
     out = []
     for line in body.splitlines():
@@ -116,6 +128,12 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
 
     if len(ins) == 1 and "0xCDCDCDCD" in body:
         return "blocked", "padding", ""
+    # A real function whose extent *begins* with 4 bytes of 0xCDCDCDCD
+    # inter-function padding (splat folded the padding into its extent).
+    # The body is ordinary code, but C cannot emit that leading word, so
+    # it can never match. func_0011DD64 was a top candidate until this.
+    if ins and ins[0].startswith("pref") and "CDCDCDCD" in body:
+        return "blocked", "padding-prefixed", "leading 0xCDCDCDCD not from C"
     if VU0_LO <= vram <= VU0_HI:
         return "blocked", "VU0 cluster", "0x1F9B20-0x1FB598"
     if re.search(r"\b(v[a-z]+\.[xyzw]+|vcallms|qmfc2|qmtc2|pxor|pcpyud|pextlw|pnor)\b", text):
@@ -174,10 +192,14 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
                     return "blocked", "load-delay nop", "MIPS I interlock, not reachable from C"
 
     # --- R5900 short-loop erratum: nop padding before a tight backward
-    # branch. No source shape fixes it.
+    # branch. No source shape fixes it. `span` is the distance back to the
+    # branch TARGET; it used to be the index from the start of the
+    # function, which let any tight loop past instruction 7 escape.
+    labels = label_positions(body)
     for idx, i in enumerate(ins):
         if re.match(r"b(ne|eq|gtz|ltz|gez|lez|nez|eqz)l?\b", i) and idx >= 2:
-            span = idx
+            tgt = labels.get(i.rsplit(",", 1)[-1].strip())
+            span = idx - tgt if tgt is not None and tgt <= idx else 99
             if span <= 7 and ins[idx - 1] == "nop" and ins[idx - 2] == "nop":
                 return "blocked", "short-loop erratum", "double nop before tight branch"
 
