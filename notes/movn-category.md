@@ -320,3 +320,63 @@ of opening difference. It made things clearly worse here (44% -> 62%), so
 this function wants the *direct-indexing* form. Another data point that
 the direct-vs-local choice is genuinely per-function and must be tested
 both ways rather than assumed.
+
+# func_00200198 — decoded, reverted (best 28%, from 63%)
+
+A two-level table lookup with validity checks. Semantics certain; frame
+and structure were brought to agreement, residual is constant-hoist
+scheduling.
+
+```c
+/* NB: existing declarations in text.c constrain this --
+   `extern int func_001FF668(int);` (ONE arg) and
+   `extern int D_0019A4E8 NOT_SDA;` used via `&D_0019A4E8`.
+   Contradicting either is a hard compile error, not a warning. */
+int func_00200198(int a0, int a1) {
+    int *p; int n; unsigned short *e; short *t; int i, v, r;
+
+    n = func_001FF668(a0);
+    p = &D_0019A4E8;                 /* AFTER the call -- see below */
+    e = (unsigned short *)(n * 8 + p[7]);
+
+    if (e[0] == 0xFFFF) return 0;
+    if (a1 >= (int)e[1]) return 0;
+
+    i = e[2] + a1;
+    t = (short *)(p[8] + i * 4);
+    if (*(int *)(p[10] + t[0] * 8) < 0) return 0;   /* bltzl */
+
+    v = *(int *)(p[9] + t[1] * 8);
+    r = 0;
+    if ((v & 0x80000000) == 0) r = i;               /* the movz */
+    return r;
+}
+```
+
+**Two techniques confirmed, both worth reusing:**
+
+1. **Materialize a global's base AFTER a call, not before** — the single
+   biggest win here, 63% -> 29%. Assigning `p = &D_0019A4E8;` before the
+   call kept it live across the call, so it needed a *second*
+   callee-saved register and the frame grew to 0x30 where retail uses
+   0x20. Moving the assignment after the call dropped it to one saved
+   register and the right frame size. **A wrong frame size is a strong
+   tell for exactly this**: something is live across a call that
+   shouldn't be.
+2. **`addu` operand order is observable even though the operation is
+   commutative.** `p[7] + n * 8` emitted `addu $3,$3,$2` where retail has
+   `addu $3,$2,$3`; writing it as `n * 8 + p[7]` matched. Cheap to try on
+   any near-miss whose first diff is an `addu`/`or`/`and` with the same
+   registers in the other order.
+
+**Why it still doesn't match.** Retail hoists the `0x80000000` mask
+(`lui $8`) very early — right after the `lhu` of `e[2]`, roughly 20
+instructions before its only use — where this compiler materializes it at
+the point of use. Every register from there renumbers.
+
+**Tried and failed:** binding the mask to its own local
+(`unsigned int mask = 0x80000000u;`) assigned early. It did *not* hoist
+the `lui` and made the overall result worse (28% -> 35%), so it is not a
+source-shape lever here. This matches the constant-hoisting behaviour
+already noted for `func_001F0FF8`: this compiler sinks constants to their
+use, retail hoists them, and source position does not steer it.
