@@ -51,8 +51,8 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **273 functions
-have real C; 246 are exact on size and bytes; 0 are size-mismatched and
+Current audited state (from `tools/sweep_matches.py`): **274 functions
+have real C; 247 are exact on size and bytes; 0 are size-mismatched and
 27 byte-mismatched** — the 27 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
@@ -106,6 +106,8 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 | `func_00228268` | text | **matches** | Three back-to-back `func_001F99B0(buf, 0, len)` clears over `D_001D6860`/`D_001D74C0`/`D_001D6760`. Byte-exact, first attempt. Relies on the existing unprototyped `extern void func_001F99B0();` — see the note on shared callees with incompatible call sites. |
 | `func_00226CF8` | text | **matches** | Walks 24 pointer slots from `arg0+0x44`, calling `func_0020E180(*p, 1)` for each non-null one, returns 4. The counter runs `0x17` down to `-1` (`bgez`), so it is a `do/while (i >= 0)` with the decrement before the pointer bump. Byte-exact, first attempt. |
 | `func_0012BC78` | core_text | **close, not exact** (12/80) | Table dispatch through `arg0+0x40`, indexed by `*arg1` with 8-byte entries; calls the handler at `+0xC` with the entry's `+0x10` field and returns **its** result. A first attempt returned the entry address instead, which kept `entry` live across the call, forced a callee-saved register and made the function 8 bytes too long — retail's `daddu $7,$2,$0` sits *after* the `jalr`, so `$2` is the callee's return value. Residual is the allocator holding `result` in `$7` vs `$6`. Same size, kept. Removing this function's stale `extern void func_0012BC78(int, void *);` (a wrong-signature guess by an earlier caller) was needed to compile; `func_0012BCC8` still matches. |
+| `func_0022EAB0` | text | **matches** | State-machine step over `0x70`-byte entries of `D_0013E650`: on state 7 clear the state byte and two words, on any other non-zero state except 6 set the state to 4. **Third clean rotation-rule case:** the three stores written in natural order came out rotated by one (5/84); moving the first store to last gave retail's order exactly. Byte-exact. |
+| `func_00228400` | text | **reverted, size mismatch** (80 vs 84) | Dispatch on a leading short — semantics recorded above its stub. Retail keeps `arg0` in `$16` and spends the first `jal`'s delay slot on `addiu $16,$16,0x20`, making the pointer advance free; this compiler emits a `nop` there. Three source shapes tried (offset expression at the return, advancing a separate `char *p` after the call, and advancing it before the call — best at 20/84); none put the advance in the call's delay slot. |
 | `func_00120670` | core_text | **matches** | Marshals three `int` args plus a 64-bit one into an on-stack `int buf[8]` (offsets 0/4/8 and a `sd` at 0x10) and passes its address to `func_0011FA38`. Byte-exact, first attempt. |
 | `func_00128560` | core_text | **matches** | Writes `arg1` to hardware register `0x10002000`, then stores `D_00132F70[arg1 >> 28]` into `arg0+0x818`. Needed a **`volatile int *` pointer local** for the register address — see the new lever below. Byte-exact. |
 | `func_0012AC50` | core_text | **matches** | Ring-buffer wrap: `v = *(int*)(arg0+8) + (arg1 >> 3);` then `if (v >= *(unsigned*)(arg0+0x24)) v -= *(int*)(arg0+0x28);`. The compare is `sltu`, so `v` must be `unsigned`. Byte-exact, first attempt. |

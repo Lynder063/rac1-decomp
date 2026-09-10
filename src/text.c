@@ -3282,6 +3282,29 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002282B8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002282D0);
 
+/*
+ * REVERTED -- size mismatch (80 vs retail's 84). Semantics are certain:
+ *
+ *   void *func_00228400(void *arg0) {
+ *       short v = *(short *)arg0;
+ *       if (v == 0) { func_00229098(arg0); return (char *)arg0 + 0x20; }
+ *       if (v == 1) { func_002291E8(arg0); return (char *)arg0 + 0x30; }
+ *       return arg0;
+ *   }
+ *
+ * Dispatch on a leading short: 0 and 1 each call a handler and return a
+ * differently-advanced pointer, anything else returns the argument
+ * unchanged.
+ *
+ * The missing instruction is a delay slot. Retail keeps arg0 in $16 and
+ * spends the first `jal`'s delay slot on `addiu $16,$16,0x20`, so the
+ * advance is free; this compiler emits a `nop` there and computes the
+ * return value in the following branch's delay slot instead. Tried
+ * three shapes: returning the offset expression directly, advancing a
+ * separate `char *p` after the call, and advancing it before the call
+ * (best, 20/84 but still 4 bytes short). The scheduler will not put the
+ * advance in the call's delay slot from any of them.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00228400);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00228458);
@@ -3373,7 +3396,19 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0022DD68);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022EA20);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022EAB0);
+void func_0022EAB0(int idx) {
+    if (idx >= 0) {
+        char *e = D_0013E650 + idx * 0x70;
+        unsigned char st = *(unsigned char *)(e + 0x74);
+        if (st == 7) {
+            *(int *)(e + 0x88) = 0;
+            *(int *)(e + 0x8C) = 0;
+            *(unsigned char *)(e + 0x74) = 0;
+        } else if (st != 0 && st != 6) {
+            *(unsigned char *)(e + 0x74) = 4;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022EB08);
 
