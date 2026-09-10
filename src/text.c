@@ -506,7 +506,9 @@ void func_001F6598(void) {
     *(int *)&D_0015F59C = 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F65A8);
+void func_001F65A8(void) {
+    *(int *)&D_0015F59C = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F65B0);
 
@@ -648,10 +650,38 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F9810);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9850);
 
+/*
+ * Reverted (SIZE mismatch: ours 12, retail 16). Semantics are
+ * certain and trivial: return *(float *)&D_0015EE64 * x;  (gp 0x15EE64)
+ * The residual is NOT source shape. Retail is
+ *   lwc1 $f0,off($28) / nop / jr $31 / mul.s $f0,$f0,$f12
+ * -- a load-delay nop between the FP load and its use. This
+ * toolchain omits it, so the function comes out 4 bytes short.
+ * The compiler emits `l.s` under `.set reorder` and leaves slot
+ * filling to the assembler, so this is an assembler ISA-semantics
+ * difference (MIPS I load delay vs MIPS II+ interlocks), not
+ * something a C rewrite can reach. Very likely affects every tiny
+ * leaf that loads a global then immediately uses it -- there is a
+ * cluster of these around 0x1F98xx.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9878);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9888);
 
+/*
+ * Reverted (SIZE mismatch: ours 12, retail 16). Semantics are
+ * certain and trivial: return *(float *)&D_0015EE68 * x;  (gp 0x15EE68)
+ * The residual is NOT source shape. Retail is
+ *   lwc1 $f0,off($28) / nop / jr $31 / mul.s $f0,$f0,$f12
+ * -- a load-delay nop between the FP load and its use. This
+ * toolchain omits it, so the function comes out 4 bytes short.
+ * The compiler emits `l.s` under `.set reorder` and leaves slot
+ * filling to the assembler, so this is an assembler ISA-semantics
+ * difference (MIPS I load delay vs MIPS II+ interlocks), not
+ * something a C rewrite can reach. Very likely affects every tiny
+ * leaf that loads a global then immediately uses it -- there is a
+ * cluster of these around 0x1F98xx.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_001F98B0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F98C0);
@@ -1271,7 +1301,11 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002072C0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207340);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002073A8);
+extern short D_0015FE24;   /* declared small so -G2 puts it in SDA */
+
+int func_002073A8(void) {
+    return *(int *)&D_0015FE24 == 0;
+}
 
 extern unsigned char D_0013D4AC NOT_SDA;
 
