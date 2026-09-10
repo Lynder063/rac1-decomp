@@ -330,7 +330,13 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00116108);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00116168);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001161B0);
+int func_001161B0(long arg0) {
+    int lo = (int)arg0;
+    int hi = (int)(arg0 >> 32);
+    hi &= 0x7FFFFFFF;
+    hi |= (unsigned int)(lo | -lo) >> 31;
+    return (unsigned int)(0x7FF00000 - hi) >> 31;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001161E8);
 
@@ -937,7 +943,16 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D098);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D0D0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D210);
+extern int func_00118E70(int);
+extern void func_00118EC0(void);
+
+int func_0011D210(void) {
+    if (func_00118E70(0x4) & 0x40000) {
+        func_00118EC0();
+        return 1;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D248);
 
@@ -945,6 +960,23 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D358);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D360);
 
+/*
+ * REVERTED: size mismatch, 52 bytes against retail's 56. Semantics are
+ * certain:
+ *
+ *   unsigned int n = nbytes >> 2, i = 0;
+ *   if (n) do { *dst = *src; src++; i++; dst++; } while (i < n);
+ *   return 0;
+ *
+ * A word-at-a-time copy. Every instruction matches; the missing 4 bytes
+ * are a `nop` retail leaves in the loop branch's DELAY SLOT, where this
+ * compiler fills the slot with the `addiu $4,$4,4` pointer bump. That is
+ * the R5900 short-loop erratum again, in a form the classifier did not
+ * look for (it checked for two nops *before* the branch, not an
+ * unfilled delay slot after it). No source shape fixes it, and
+ * -malign-loops/-falign-loops do nothing here: the former is accepted
+ * but is x86-oriented in 2.95, the latter is rejected outright.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D370);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D3A8);
@@ -1205,7 +1237,16 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001238A8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001238B0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001239D8);
+extern int func_001238B0(int, int, int, int);
+extern int D_00132EA8;
+
+int func_001239D8(int arg0, int arg1, int arg2) {
+    int r = func_001238B0(arg0, arg1, arg2, 0x40);
+    if (r == 0) {
+        D_00132EA8 = 0xB;
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00123A10);
 

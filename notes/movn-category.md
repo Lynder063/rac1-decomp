@@ -557,3 +557,33 @@ Both were verified on concrete examples before being trusted, since a
 skips have cost this project real matches twice.
 
 Candidates 219 → 205, blocked 1011 → 1032.
+
+## Short-loop erratum has a SECOND form: an unfilled branch delay slot
+
+Found on `func_0011D370` (word copy). Retail's loop branch has a `nop`
+in its **delay slot**; this compiler fills that slot with the pointer
+bump, so the function comes out exactly 4 bytes short. Same R5900
+erratum as the already-blocked two-nop-before-the-branch form, just
+mitigated differently.
+
+Not reachable from C, and not a flag: `-falign-loops` is rejected
+outright by GCC 2.95, and `-malign-loops=3` is accepted but changes
+nothing (it is x86-oriented in this version) — verified by full rebuild
+and sweep, identical results with and without.
+
+Classified **risky, not blocked** — 10 candidates carry it, but there is
+only one confirmation so far, and blanket-blocking on thin evidence has
+already cost this project real matches twice.
+
+## The `\b`-in-a-heredoc trap bit again — check with `cat -A`
+
+Writing this detector, `\b` in the regex became a literal backspace byte
+(0x08) exactly as the previous round documented. The rule silently never
+fired: the classifier reported 0 hits where a standalone test of the
+same logic found 4. It renders identically to `\b` in every normal view;
+only `cat -A` shows it as `^H`.
+
+Rewrote the pattern to use `\s` instead, and scanned every file in
+`tools/` plus `rac1.ld.sh` for stray 0x08 bytes — none remain. **If a
+newly-added detector reports zero hits, check for this before assuming
+the signature is absent.**
