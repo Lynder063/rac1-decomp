@@ -1077,11 +1077,24 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00123208);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00123278);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00123280);
+int func_00123280(int arg0) {
+    if ((unsigned int)arg0 >> 28 == 7) {
+        arg0 &= 0x0FFFFFFF;
+        arg0 |= 0x80000000;
+    }
+    return arg0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001232A8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001232E0);
+extern int D_00132E70[];
+
+int func_001232E0(unsigned int arg0) {
+    if (arg0 >= 0xA) {
+        return 0;
+    }
+    return D_00132E70[arg0];
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00123308);
 
@@ -1225,7 +1238,10 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001272B8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00127318);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00127378);
+void func_00127378(int arg0) {
+    unsigned int *p = (unsigned int *)0x10002010;
+    *p = (*p & 0xFF7FFFFF) | (arg0 << 23);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001273A0);
 
