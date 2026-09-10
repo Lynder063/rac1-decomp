@@ -52,3 +52,43 @@ parameters.
 425 stubbed `text` functions remain that are not handwritten, not
 `$gp`-relative, not in the dead VU0 cluster (0x1F9B20-0x1FB598), and not
 COP2 — so there is plenty left that needs no toolchain breakthrough.
+
+## Where the remaining easy work actually is (measured, not guessed)
+
+After the `func_001F7BF8` win I kept going and hit the same wall three
+times in a row. That pattern is the useful result, so it is recorded
+here rather than left as three isolated failures.
+
+Mechanically classified every remaining `text` stub. Excluding
+handwritten asm, `$gp` users, the dead VU0 cluster (0x1F9B20-0x1FB598)
+and COP2 code, and requiring an actual `jr` (so not a fallthrough
+fragment), the population of **straight-line leaf functions — the shape
+that has historically matched first try — is down to six**, and four of
+those are already-known dead ends (`func_0023E040`, `func_0020E340`,
+`func_0023CDF0`, and the varargs `func_001E9730`).
+
+I attempted the two fresh ones and both failed on the **same**
+scratch-register-allocation question, not on misreading the assembly:
+
+- `func_0020E340` (34%) — instruction set exactly right; retail emits
+  all shifts then all ORs, this compiler interleaves, and hoisting the
+  shifts into locals does not change it. Retail ORs into a fresh `$2`,
+  this compiler accumulates in place into `$5`.
+- `func_00227A30` (45%) — straight-line field init. Structure matches
+  from the first instruction; the entire residual is register *numbers*
+  (retail materializes the `0x10` constant into `$6`, this compiler into
+  `$7`, and everything follows).
+
+Also a concrete negative on a documented technique: the "last source
+statement emits first" rotation rule **did not apply** to
+`func_00227A30`. Rotating the stores made it worse (45% -> 55%) and the
+compiler emitted them in plain source order. So that rule is
+context-dependent, not general — worth checking rather than assuming.
+
+**Conclusion for planning.** The cheap, shape-driven wins in `text` are
+essentially exhausted; 425 stubs remain but the ones that are *easy* are
+gone. What is left divides into work gated on the register-allocation
+question, and larger functions where the win comes from understanding
+the code rather than from pattern-matching a shape. The latter is real,
+tractable work — it is just not cheap per function, so it suits agents
+with a budget rather than opportunistic manual passes.
