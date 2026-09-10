@@ -51,8 +51,8 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **247 functions
-have real C; 229 are exact on size and bytes; 0 are size-mismatched and
+Current audited state (from `tools/sweep_matches.py`): **251 functions
+have real C; 233 are exact on size and bytes; 0 are size-mismatched and
 18 byte-mismatched** — the 18 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
@@ -95,6 +95,10 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 
 | Function | Segment | Status | Notes |
 |---|---|---|---|
+| `func_00120670` | core_text | **matches** | Marshals three `int` args plus a 64-bit one into an on-stack `int buf[8]` (offsets 0/4/8 and a `sd` at 0x10) and passes its address to `func_0011FA38`. Byte-exact, first attempt. |
+| `func_00128560` | core_text | **matches** | Writes `arg1` to hardware register `0x10002000`, then stores `D_00132F70[arg1 >> 28]` into `arg0+0x818`. Needed a **`volatile int *` pointer local** for the register address — see the new lever below. Byte-exact. |
+| `func_0012AC50` | core_text | **matches** | Ring-buffer wrap: `v = *(int*)(arg0+8) + (arg1 >> 3);` then `if (v >= *(unsigned*)(arg0+0x24)) v -= *(int*)(arg0+0x28);`. The compare is `sltu`, so `v` must be `unsigned`. Byte-exact, first attempt. |
+| `func_0012D4B0` | core_text | **matches** | Binary-to-packed-BCD: `((v / 10) * 6 + v) & 0xFF` on `v = arg0 & 0xFF`. `divu` so `v` is unsigned; retail keeps the div-by-zero trap guard even for the constant divisor 10. Byte-exact, first attempt. |
 | `func_00112380` | core_text | **close, not exact** | Logic fully understood: `return func_00116F68(arg0, 0, 10);`. Retail has an extra redundant `dsll32`/`dsra32 v0,v0,0` sign-extension pair (8 bytes) before the return this compiler doesn't emit for any variant tried. See "Open toolchain questions" below. This is the root cause of the "known systemic artifact" noted above. |
 | `func_00112464` | core_text | **not a real function** | 4 bytes of `0xCDCDCDCD` — alignment padding between `func_001123A8` and `func_00112468` (rounds the latter to an 8-byte boundary), not code. Left as `INCLUDE_ASM`; nothing to decompile. |
 | `func_00112468` | core_text | **close, not exact** | Logic fully understood — see the comment on it in `src/core_text.c` for the full C. Blocked on the `sq`/`lq` vs `sd`/`ld` callee-register-save question below, kept as `INCLUDE_ASM` since the byte diff isn't a small fixed offset like `func_00112380`, it cascades through the whole function. |
