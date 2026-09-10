@@ -1150,11 +1150,33 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00205790);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00205830);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002058D0);
+extern int D_001A01F0[];
+
+int func_002058D0(int arg0) {
+    int i;
+    for (i = 0; i < 5; i++) {
+        if (D_001A01F0[0x9E + i] != 0 && D_001A01F0[0xA3 + i] == arg0) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00205918);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00205A50);
+extern int *D_001602E0;
+
+int func_00205A50(int arg0) {
+    int *chk = D_001602E0;
+    int *val = chk;
+    int i;
+    for (i = 0; *chk != 0 && i < 0x14; i++, chk++, val++) {
+        if (*val == arg0) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00205AA8);
 
