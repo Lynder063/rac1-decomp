@@ -32,7 +32,7 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001126D8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001138A4);
 
-extern void *D_0012F86C;
+extern void *D_0012F86C NOT_SDA;
 
 int func_001138A8(void) {
     return (int)D_0012F86C;
@@ -535,7 +535,7 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00118EA0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00118EB0);
 
-extern int D_0012FCF0;
+extern int D_0012FCF0 NOT_SDA;
 
 void func_00118EC0(void) {
     D_0012FCF0 = 0;
@@ -638,7 +638,7 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00119864);
  *     return self;
  * }
  */
-extern void *D_00154A40;
+extern void *D_00154A40 NOT_SDA;
 
 void *func_00119868(void *arg0) {
     char *self = (char *)&D_00154A40;
@@ -706,8 +706,8 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AA00);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AA38);
 
-extern int D_00154F64;
-extern int D_00154F6C;
+extern int D_00154F64 NOT_SDA;
+extern int D_00154F6C NOT_SDA;
 
 void func_0011AA68(int arg0) {
     int offset = arg0 << 3;

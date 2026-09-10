@@ -43,6 +43,49 @@ exactly two ways — both fixable, neither mysterious:
    script places at `0x1E8F00`, colliding with `.lvl_vtbl`. Fix: give
    `.lit4`/`.sdata`/`.sbss` explicit placement in `rac1.ld.sh`.
 
+## Progress: two of the three obstacles are now solved
+
+**1. The 60 wrongly-gp-relative externs: SOLVED.** `NOT_SDA` (in
+`include/common.h`) is `__attribute__((section(".data")))`, which tells
+the compiler the variable is not in `.sdata` so it falls back to
+`lui`/`%lo`. Crucially this leaves every use site untouched, unlike the
+incomplete-array trick, which matters because many of these are scalars
+used inside already-matching functions. All 61 declarations are tagged.
+Verified directly: a plain `extern unsigned char x;` compiles to
+`lbu $v0,0($gp)` at `-G8`; the same declaration with `NOT_SDA` compiles
+to `lui`/`lbu`. (`__attribute__((aligned))` does NOT work -- still
+gp-relative.) With this applied, `-G8` produces **zero** GPREL16
+truncations.
+
+**2. Section placement for `.sdata`/`.sbss`: SOLVED.** They come out
+empty, because our C defines no data of its own -- every global is
+extern. Parked past the end of the image in `rac1.ld.sh`.
+
+**3. The FP literal pool: NOT solved, and this is what still blocks
+`-G8`.** At `-G8` the compiler puts float constants in `.lit4` and
+addresses them via `$gp` (`R_MIPS_LITERAL`), so `.lit4` must live inside
+the 0x15ED00..0x16ED00 window -- but **the window is completely full**:
+
+    core.bss  0x154200..0x15ED7F   (runs right up to core.lit)
+    core.lit  0x15ED80
+    .lit      0x15F000
+    .bss      0x161380
+    .data     0x165580..
+
+There is no free space, so there is nowhere to put a
+compiler-generated literal pool. Currently only 12 bytes are needed
+(3 float literals, all in `text.o`; `core_text.o` needs none).
+
+The likely correct resolution, not yet attempted: retail evidently
+compiled with a nonzero `-G` too, so **retail's `.lit`/`core.lit` ARE
+its literal pools** -- our generated literals are duplicates of entries
+already sitting at known addresses. The right fix is probably to make
+our references resolve to retail's existing pool rather than emitting
+our own, instead of finding somewhere to park a second copy. Placing
+`.lit4` at our own address would make any function referencing a literal
+differ from retail in that operand anyway, so parking it is not a real
+fix even if space existed.
+
 ## Suggested order of work
 
 1. Add `.sdata`/`.sbss`/`.lit4` output sections to `rac1.ld.sh`, placed
