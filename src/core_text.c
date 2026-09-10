@@ -892,6 +892,23 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B438);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B4C8);
 
+/*
+ * REVERTED: size mismatch, 56 bytes against retail's 60. Semantics are
+ * certain:
+ *
+ *   char *p = *(char **)arg0;
+ *   if (p == 0) return 0;
+ *   if (*(int *)(arg0 + 4) != *(int *)(p + 0x18)) return 0;
+ *   if (*(int *)(p + 0x10) & 1) return 1;
+ *   return 0;
+ *
+ * Retail keeps TWO exit blocks -- a shared `return 0` and a separate
+ * `return 1`, each with its own `jr` -- which is 15 instructions. This
+ * compiler merges them into a single exit and sets $v0 in the branch
+ * delay slots, 14 instructions. Tried both the && chain and explicit
+ * early returns; both merge. The exit structure is not expressible from
+ * C here.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B6B8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B6F8);
@@ -1018,7 +1035,17 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D3C8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D490);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D4A0);
+extern int func_00118EA0(void);
+extern void func_0011D4E0(void);
+extern void func_00118EB0(void);
+
+void func_0011D4A0(void) {
+    if (func_00118EA0() == 0x2000000) {
+        func_0011D4E0();
+    } else {
+        func_00118EB0();
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D4E0);
 
@@ -1139,7 +1166,23 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001206B0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120740);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00120778);
+extern void func_001206B0(float *, int *);
+
+/*
+ * Close, not exact (8/64, same size). Instruction-for-instruction
+ * identical to retail apart from which of two instructions takes the
+ * call's delay slot: retail emits the `swc1` of the float argument
+ * fourth and puts `daddu $5,$29,$0` (the second argument) in the slot;
+ * this compiler does the reverse. Pure scheduling -- the store of `f`
+ * is the last computation before the call, so it sinks into the slot.
+ */
+void func_00120778(float arg0) {
+    int buf[4];
+    float f = arg0;
+    func_001206B0(&f, buf);
+    func_00120670(buf[0], buf[1], buf[2],
+                  (long)(((unsigned long)buf[3] << 32) >> 2));
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001207B8);
 
