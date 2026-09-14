@@ -1588,7 +1588,14 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00128E68);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00128F90);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00129180);
+extern void func_00128968(void *, int);
+extern int func_00128A58(void *, int);
+
+void func_00129180(void *arg0) {
+    while (func_00128A58(arg0, 1) != 0) {
+        func_00128968(arg0, 8);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001291C8);
 
@@ -1669,7 +1676,25 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012AAC8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012AB60);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012ABB0);
+extern int func_0012AAA8(void *, int);
+extern void func_0012AAC8(void *, int);
+
+/*
+ * Close, not exact (8/68), same size so harmless to everything after it.
+ * Logic confirmed. The residual is purely which instruction fills the
+ * first jal's delay slot: retail emits the three saves consecutively
+ * ($16@0, $17@16, $31@32) and schedules `move $16,$4` into the slot,
+ * while this compiler interleaves the $16 save with the move and puts
+ * `sd $17,16` in the slot instead. Same instruction multiset, different
+ * schedule. Hoisting the result into a pre-declared local (the usual
+ * declaration-order lever) changes nothing.
+ */
+int func_0012ABB0(void *arg0) {
+    int r;
+    r = func_0012AAA8(arg0, 1);
+    func_0012AAC8(arg0, 1);
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012ABF8);
 
