@@ -53,7 +53,7 @@ classes through, each caught only by luck:
 
 Current audited state (from `tools/sweep_matches.py`): **284 functions
 have real C; 255 are exact on size and bytes; 0 are size-mismatched and
-29 byte-mismatched** — the 27 being deliberately-kept documented
+29 byte-mismatched** — the 29 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
 
