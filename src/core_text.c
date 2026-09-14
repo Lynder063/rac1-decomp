@@ -985,7 +985,18 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B7F8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B868);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011BBF0);
+extern int D_0012FD9C;
+extern int func_00118C70(void *);
+
+void func_0011BBF0(void) {
+    int buf[8];
+    if (D_0012FD9C == -1) {
+        buf[5] = 0;
+        buf[2] = 1;
+        buf[1] = 1;
+        D_0012FD9C = func_00118C70(buf);
+    }
+}
 
 extern void func_0011BBF0(void);
 extern int D_0012FD9C NOT_SDA;
@@ -1674,7 +1685,19 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012AAA8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012AAC8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012AB60);
+/*
+ * Close, not exact (8/76), same size. Two-argument sibling of
+ * func_0012ABB0 above and blocked identically: the instruction multiset
+ * is right, but retail schedules `move $16,$4` into the first jal's
+ * delay slot while this compiler puts a register save there. Not
+ * source-steerable -- see func_0012ABB0's comment for the variants
+ * already tried.
+ */
+int func_0012AB60(void *arg0, int arg1) {
+    int r = func_0012AAA8(arg0, arg1);
+    func_0012AAC8(arg0, arg1);
+    return r;
+}
 
 extern int func_0012AAA8(void *, int);
 extern void func_0012AAC8(void *, int);
