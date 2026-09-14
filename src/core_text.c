@@ -1229,7 +1229,32 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001201B0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120318);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00120430);
+/*
+ * Close, not exact (10/76), same size. Logic confirmed: spills both
+ * 64-bit args to locals, converts each into a 32-byte buffer via
+ * func_0011FB68, then compares the two buffers. Frame layout, all
+ * offsets and every instruction match retail.
+ *
+ * The whole residual is WHERE the $s0 save sits: retail stores it in
+ * the prologue alongside $ra and spends the first jal's delay slot on
+ * the argument setup (daddu $a1,$sp,$0); this compiler emits the
+ * argument setup before the jal and sinks the $s0 save into the delay
+ * slot instead. Both fill the slot, the scheduler just picks the other
+ * instruction. Hoisting buf1 into an explicit pointer local to make
+ * $s0 live earlier was tried and is clearly worse (23/76).
+ */
+extern void func_0011FB68(long *v, void *buf);
+extern int func_00120318(void *a, void *b);
+
+int func_00120430(long arg0, long arg1) {
+    int buf0[8];
+    int buf1[8];
+    long a = arg0;
+    long b = arg1;
+    func_0011FB68(&a, buf0);
+    func_0011FB68(&b, buf1);
+    return func_00120318(buf0, buf1);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120480);
 
@@ -1426,7 +1451,16 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00123EE8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00123F30);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124010);
+extern int *D_00159B28;
+extern int *D_00159B2C;
+extern int *D_00159B30;
+
+void func_00124010(int arg0) {
+    char *p = (char *)(arg0 | 0x20000000);
+    if (D_00159B28 != 0) *D_00159B28 = *(int *)(p + 0x0);
+    if (D_00159B2C != 0) *D_00159B2C = *(int *)(p + 0x4);
+    if (D_00159B30 != 0) *D_00159B30 = *(int *)(p + 0x90);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124068);
 
@@ -1438,7 +1472,15 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00124410);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124528);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001245F8);
+extern int func_0011B4C8();
+extern char D_0015B108[];
+extern int D_0015B180;
+
+int func_001245F8(void) {
+    func_0011B4C8(D_0015B108, 0x80000963, 0, &D_0015B180, 0x400,
+                  &D_0015B180, 0x400, 0, 0);
+    return D_0015B180;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124650);
 
@@ -1464,7 +1506,34 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00124DF0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124EE0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00125020);
+extern int func_00124920(int);
+extern char D_0015B640[];
+
+/*
+ * Close, not exact (28/84), same size. Logic confirmed: call
+ * func_00124920(arg0); if it returns >= 0, mark entry arg0 of the
+ * 0x330-stride table D_0015B640 as {+4 = 1, +8 = result}; return the
+ * result either way.
+ *
+ * Retail computes the entry address once into $5, copies it to $3, and
+ * stores with displacements 8($5) and 4($3) -- a redundant register
+ * copy. Writing the address once into a `char *e` local coalesces to a
+ * single register and comes out 4 bytes SHORT (a size mismatch, so not
+ * keepable); recomputing the address per store restores the right size
+ * but makes the compiler fold the +4 into the address constant instead
+ * of using a store displacement. Two pointer locals (`f = e`) coalesce
+ * straight back to one register. So the size and the addressing form
+ * are reachable separately here but not together.
+ */
+
+int func_00125020(int arg0) {
+    int t = func_00124920(arg0);
+    if (t >= 0) {
+        *(int *)(D_0015B640 + arg0 * 0x330 + 0x4) = 1;
+        *(int *)(D_0015B640 + arg0 * 0x330 + 0x8) = t;
+    }
+    return t;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00125078);
 

@@ -51,9 +51,9 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **284 functions
-have real C; 255 are exact on size and bytes; 0 are size-mismatched and
-29 byte-mismatched** — the 29 being deliberately-kept documented
+Current audited state (from `tools/sweep_matches.py`): **288 functions
+have real C; 257 are exact on size and bytes; 0 are size-mismatched and
+31 byte-mismatched** — the 31 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
 
@@ -95,6 +95,10 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 
 | Function | Segment | Status | Notes |
 |---|---|---|---|
+| `func_00124010` | core_text | **matches** | Copies three words out of an uncached-mirror view of `arg0` (`arg0 \| 0x20000000`) into whatever `D_00159B28`/`D_00159B2C`/`D_00159B30` point at, each guarded by a null check on the destination pointer. Byte-exact, first attempt. |
+| `func_001245F8` | core_text | **matches** | Nine-argument call to `func_0011B4C8` (eight in `$4`-`$11`, the ninth at `0($sp)`), then returns `D_0015B180`. Confirms the EABI eight-register argument convention plus stack spill for the ninth. Byte-exact, first attempt. |
+| `func_00125020` | core_text | **close, not exact** (28/84) | Marks entry `arg0` of the `0x330`-stride table `D_0015B640` — see the comment above it in `src/core_text.c`. Size and addressing form are each reachable but not together: one `char *e` local coalesces to a single register and is 4 bytes short; recomputing the address per store gives the right size but folds `+4` into the address constant instead of a store displacement; two pointer locals coalesce back to one. |
+| `func_00120430` | core_text | **close, not exact** (10/76) | Converts two 64-bit args into 32-byte buffers via `func_0011FB68` and compares them with `func_00120318`. Frame, offsets and every instruction match; the entire residual is that retail saves `$s0` in the prologue and spends the first call's delay slot on the argument setup, where this compiler does the reverse. Hoisting `buf1` into a pointer local to lengthen `$s0`'s live range is clearly worse (23/76). |
 | `func_0012C058` | core_text | **close, not exact** (7/68) | `if (*(int*)(*(int*)(arg0+0x40) + 0x174) != 3) func_0012C0A0(arg0); else func_0012BF40(arg0);`. Structure is instruction-for-instruction identical including both delay slots and the shared epilogue; only the register assignment differs (retail saves `arg0` in `$7` and holds the constant `3` in `$3`, this compiler uses `$5` and `$2`, and the two loads follow). Allocator destination-reuse question. Hoisting the inner load into its own local changed nothing. Same size, so kept. |
 | `func_00119718` | core_text | **reverted (30/68)** | Four-field forwarder to `func_00118E90` — full semantics recorded above its stub in `src/core_text.c`. Retail computes the `buf[3]` tag entirely before storing anything and spends the call's delay slot on that store; this compiler interleaves the tag arithmetic with the stores. Natural order, retail's emitted order, and hoisting the tag into a leading local all give 30-32/68. |
 | `func_0011D9C0` | core_text | **matches** | Builds two 32-byte stack structs (`int a[8]`, `int b[8]`), sets field 1 and 2 of each to 1, and passes each to `func_00118C70`, storing the results into `D_00130420`/`D_00130424`. **A clean confirmation of the rotation rule:** with the four stores written in retail's *emitted* order the result was 4/72 with the stores rotated; writing them in plain source order (`a[1], a[2], b[1], b[2]`) produced retail's emitted order exactly. Byte-exact. |
