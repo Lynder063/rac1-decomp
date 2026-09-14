@@ -107,12 +107,12 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     if size and size <= 4:
         return "blocked", "bare jr (4 bytes)", "C cannot emit under 8 bytes"
 
-    # core_text still needs `sd` for callee-saved s-registers and no
-    # available sub-build emits it -- v1.36 gets $ra right but uses
-    # sq/lq for $s0-$s7. text is unaffected (v1.14 matches retail there).
-    # This is the one part of the sq/lq question that is still open.
-    if seg == "core_text" and re.search(r"\b(sq|sd)\s+\$(1[6-9]|2[0-3])\b", text):
-        return "blocked", "core_text s-reg spill", "retail wants sd, v1.36 emits sq"
+    # RESOLVED: core_text s-register spills are no longer blocked.
+    # core_text is now built with v1.14 (which reproduces retail's
+    # exact save-slot layout) and post-processed by
+    # tools/fix_core_spills.py to narrow the spills to sd/ld.
+    # Proven byte-exact on func_00116FA0. The old rule blocked ~247
+    # functions on the assumption v1.36 was the core_text compiler.
     if "Handwritten function" in body:
         return "blocked", "handwritten asm", "spimdisasm marker"
     if not re.search(r"\bjr\s+\$31\b", text):
