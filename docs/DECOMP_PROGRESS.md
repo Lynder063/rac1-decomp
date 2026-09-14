@@ -51,9 +51,9 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **291 functions
-have real C; 260 are exact on size and bytes; 0 are size-mismatched and
-31 byte-mismatched** — the 31 being deliberately-kept documented
+Current audited state (from `tools/sweep_matches.py`): **294 functions
+have real C; 262 are exact on size and bytes; 0 are size-mismatched and
+32 byte-mismatched** — the 32 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
 
@@ -95,6 +95,9 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 
 | Function | Segment | Status | Notes |
 |---|---|---|---|
+| `func_00116108` | core_text | **matches** | Four-argument member of the `func_00112468` errno-wrapper family, forwarding three args to `func_00119088`. Byte-exact, first attempt. |
+| `func_00120978` | core_text | **matches** | Swaps a global handler pointer: bail returning 0 if `func_00120F30(1)` is non-zero, otherwise capture the old `D_00159840`, install `arg0`, and call `func_0011D9A8` only when `func_0011D960()` was non-zero. The old value is captured and the new one stored unconditionally — the store sits in the branch's delay slot. Byte-exact, first attempt. |
+| `func_0011B710` | core_text | **close, not exact** (8/92) | One-shot init guarded on `D_0012FDA0 == -1` — see the comment above it in `src/core_text.c`. Residual is only which of three stack-descriptor stores lands in the first call's delay slot. Notable as a **rotation-rule counter-example**: source order `(5,1,2)` rotated exactly as documented while `(1,2,5)` did not, so the rule is still per-function even after its promotion. |
 | `func_00112468` | core_text | **matches** | **Reclaimed from a stale revert.** Its comment said it was blocked because this compiler spilled `$s0`/`$s1` as `sq`/`lq` where retail used `sd`/`ld` — true when written, obsolete since `tools/fix_core_spills.py`. The logic recorded in that comment was right all along and now compiles byte-exact unchanged. A reminder that reverts recorded against a since-solved blocker are worth re-running wholesale. |
 | `func_00114000` | core_text | **matches** | Same errno-style wrapper as `func_00112468`, forwarding two args to `func_001191C8`. Byte-exact. |
 | `func_001161E8` | core_text | **matches** | Same family again, calling `func_00119110`. **New signal:** retail materialised the sentinel with `lui`/`ori` (0xFFFFFFFF) rather than `addiu $2,$0,-1`, which made it one instruction — and so 4 bytes — longer than an `int` comparison produces. That is the tell for an **unsigned** comparison: `unsigned r; if (r == 0xFFFFFFFF)`. Byte-exact once the type was changed. |

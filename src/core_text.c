@@ -330,7 +330,17 @@ int func_001160D8(void) {
     return seed & 0x7FFFFFFF;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00116108);
+extern int func_00119088();
+
+int func_00116108(int *errOut, void *a, void *b, void *c) {
+    int r;
+    D_0015ED10 = 0;
+    r = func_00119088(a, b, c);
+    if (r == -1 && D_0015ED10 != 0) {
+        *errOut = D_0015ED10;
+    }
+    return r;
+}
 
 /*
  * Close, not exact (27/72, same size so harmless). Same bit-classifier
@@ -993,7 +1003,35 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B6B8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B6F8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B710);
+extern int func_00118C70(void *);
+extern int D_0012FDA0;
+extern int D_0012FDA4;
+
+/*
+ * Close, not exact (8/92), same size. Logic confirmed: one-shot init --
+ * if D_0012FDA0 is still -1, build a stack descriptor {[1]=1, [2]=1,
+ * [5]=0} and register it twice via func_00118C70, storing the two
+ * results into D_0012FDA0 and D_0012FDA4.
+ *
+ * Residual is purely which of the three stores lands in the first
+ * call's delay slot: retail puts buf[2] there and emits buf[5], buf[1]
+ * ahead of it; this compiler puts buf[1] there. Two source orders were
+ * tried -- (1,2,5) gives 10/92, (5,1,2) gives 8/92 -- and the rotation
+ * rule does not predict this one consistently: (5,1,2) rotated as
+ * documented, (1,2,5) did not. Note buf[1] and buf[2] both take the
+ * value 1, so they are interchangeable semantically and only their
+ * emission order distinguishes the two.
+ */
+void func_0011B710(void) {
+    int buf[8];
+    if (D_0012FDA0 == -1) {
+        buf[5] = 0;
+        buf[1] = 1;
+        buf[2] = 1;
+        D_0012FDA0 = func_00118C70(buf);
+        D_0012FDA4 = func_00118C70(buf);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B770);
 
@@ -1321,7 +1359,25 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001208E4);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120910);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00120978);
+extern int func_00120F30(int);
+extern int func_0011D960(void);
+extern void func_0011D9A8(void);
+extern void *D_00159840;
+
+void *func_00120978(void *arg0) {
+    void *old;
+    int r;
+    if (func_00120F30(1) != 0) {
+        return 0;
+    }
+    r = func_0011D960();
+    old = D_00159840;
+    D_00159840 = arg0;
+    if (r != 0) {
+        func_0011D9A8();
+    }
+    return old;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001209D8);
 
