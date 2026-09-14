@@ -42,7 +42,7 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00113968);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00113A6C);
 
-extern void func_001162B8(void);
+extern int func_001162B8(void *arg0, void *arg1, void *arg2);
 extern void func_00116320(void);
 extern void func_001163A0(void);
 extern void func_00116408(void *arg0);
@@ -389,6 +389,26 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00116244);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00116248);
 
+/*
+ * REVERTED (size mismatch). Logic decoded and believed correct:
+ *
+ *   int func_001162B8(void *arg0, void *arg1, void *arg2) {
+ *       char *s = (char *)arg0;
+ *       int r = func_00116108(*(int **)(s + 0x54),
+ *                             (short)*(short *)(s + 0xE), arg1, arg2);
+ *       if (r < 0) *(short *)(s + 0xC) &= 0xEFFF;
+ *       else       *(int *)(s + 0x50) += r;
+ *       return r;
+ *   }
+ *
+ * Retail sign-extends the call result with dsll32/dsra32 before using
+ * it, which this compiler does not emit for an int-returning callee --
+ * func_00116108 is defined in this file as returning int, and it is
+ * itself byte-exact, so its return type cannot be widened to chase
+ * this. That pair is 8 bytes and makes the function size-mismatched,
+ * which drifts every later core_text function (it cost 41 exact
+ * matches when left in), so it is reverted rather than kept.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001162B8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00116320);
@@ -2037,6 +2057,27 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C268);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C278);
 
+/*
+ * REVERTED (size mismatch: ours 88, retail 96). Logic is certain:
+ *
+ *   void func_0012C2F8(void *arg0) {
+ *       char *p = (char *)arg0;
+ *       func_00127378(1);
+ *       *(int *)(p + 0x590) = 0x70000000;   // scratchpad pointers
+ *       *(int *)(p + 0x594) = 0x70001800;
+ *       *(int *)(p + 0x6D0) = 0x70001B00;
+ *       *(int *)(p + 0x6D4) = 0x70003300;
+ *       *(int *)(p + 0x810) = 0;
+ *   }
+ *
+ * Retail holds 0x70000000 in $17 and therefore pays a sd/ld $17 pair,
+ * 8 bytes this compiler does not emit because it materialises each
+ * constant into a temp just before its store instead of keeping four
+ * live at once. Binding all four to locals declared after the call was
+ * tried and changes nothing -- GCC folds them straight back into the
+ * stores. Reverted rather than kept, because a short function drifts
+ * everything after it.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C2F8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C358);
