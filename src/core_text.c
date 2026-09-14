@@ -1834,7 +1834,13 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C358);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C420);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C430);
+extern void func_00116248(void *);
+
+void func_0012C430(void *arg0) {
+    char buf[0x100];
+    func_00116248(buf);
+    func_0012C468(arg0, buf);
+}
 
 extern void func_0012C420(void *);
 
@@ -1911,7 +1917,15 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D068);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D2A0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D340);
+extern void func_0012D2A0(void);
+extern signed char D_001331D8[];
+
+int func_0012D340(void) {
+    if (D_001331D8[0] == 0) {
+        func_0012D2A0();
+    }
+    return D_001331D8[4] == 0x54;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D380);
 
