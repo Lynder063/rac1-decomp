@@ -1647,7 +1647,32 @@ int func_00125020(int arg0) {
     return t;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00125078);
+extern void func_00119288(void *a, void *b);
+
+/*
+ * Close, not exact (3/100), same size. Logic confirmed: take entry
+ * arg0 of the 0x330-stride table D_0015B640, follow its +0xC pointer,
+ * record that pointer and pointer+0x80 in a two-slot stack array, call
+ * func_00119288(p, p+0x100), then return whichever slot has the smaller
+ * +0x7C field -- retail indexes the array with the `slt` result
+ * directly, which plain C reproduces.
+ *
+ * The three differing bytes are one instruction: retail forms the entry
+ * address as `addu $2,$2,$4` (sum into the base register) where this
+ * compiler emits `addu $a0,$a0,$v0` (sum into the index register).
+ * Writing the addition the other way round (`arg0 * 0x330 +
+ * D_0015B640`) changes nothing -- GCC canonicalises it -- so this is
+ * the allocator's destination choice, not operand order.
+ */
+void *func_00125078(int arg0) {
+    char *e = D_0015B640 + arg0 * 0x330;
+    char *p = *(char **)(e + 0xC);
+    char *slot[2];
+    slot[0] = p;
+    slot[1] = p + 0x80;
+    func_00119288(p, p + 0x100);
+    return slot[*(int *)(slot[0] + 0x7C) < *(int *)(slot[1] + 0x7C)];
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001250E0);
 
@@ -1770,7 +1795,19 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00128A58);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00128BA8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00128C28);
+extern void func_00128968(void *, int);
+extern int func_00128A58(void *, int);
+extern void func_00129180(void *);
+
+int func_00128C28(void *arg0) {
+    *(int *)((char *)arg0 + 0x1B4) = func_00128A58(arg0, 5);
+    if (func_00128A58(arg0, 1) != 0) {
+        func_00128A58(arg0, 1);
+        func_00128968(arg0, 7);
+        func_00129180(arg0);
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00128C90);
 
