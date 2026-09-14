@@ -24,7 +24,9 @@
 SN_136  := toolchain/sn-prodg-3.01/usr/local/sce/ee/gcc
 SN_114  := toolchain/sn-prodg-24/local/sce/ee/gcc
 
-CC_CORE := $(SN_136)/bin/ee-gcc2953.exe
+# core_text is built with v1.14 too -- NOT v1.36 -- then post-processed.
+# See the core_text.o rule below for why.
+CC_CORE := $(SN_114)/bin/ee-gcc2953.exe
 CC_TEXT := $(SN_114)/bin/ee-gcc2953.exe
 SIZE    := $(SN_136)/bin/ee-size.exe
 
@@ -48,9 +50,23 @@ all: regnames $(OBJS)
 regnames:
 	python tools/sn_regnames.py asm
 
-build-sn/core_text.o: src/core_text.c
+# core_text: compile to assembly with v1.14, narrow the callee-saved
+# spills to sd/ld, then assemble. Neither compiler reproduces retail's
+# core_text alone:
+#   v1.36  spills $ra as sd but $s0-$s7 as sq, AND mirrors the save-slot
+#          layout ($31 at offset 0, s-regs descending)
+#   v1.14  lays slots out EXACTLY as retail does ($16 at 0, s-regs
+#          ascending, $31 at top) but spills everything as sq
+# Retail core_text == v1.14's layout + sd/ld mnemonics. Since the layout
+# already matches, this is a pure mnemonic substitution -- frame size,
+# the 16-byte slot stride (which retail keeps even for 8-byte stores)
+# and every offset are left exactly as v1.14 emitted them. No offset
+# arithmetic, which is what makes it safe.
+build-sn/core_text.o: src/core_text.c tools/fix_core_spills.py
 	@mkdir -p build-sn
-	$(CC_CORE) $(CFLAGS) -c $< -o $@
+	$(CC_CORE) $(CFLAGS) -S -o build-sn/core_text.s $<
+	python tools/fix_core_spills.py build-sn/core_text.s build-sn/core_text_fixed.s
+	$(CC_CORE) $(CFLAGS) -c build-sn/core_text_fixed.s -o $@
 
 build-sn/text.o: src/text.c
 	@mkdir -p build-sn

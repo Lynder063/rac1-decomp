@@ -392,7 +392,19 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00116F68);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00116F9C);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00116FA0);
+extern int func_00114060(int, void *);
+
+int func_00116FA0(int arg0, void *arg1) {
+    char *s = (char *)arg1;
+    if (*(int *)(s + 8) != 0) {
+        int r = func_00114060(arg0, s);
+        *(int *)(s + 8) = 0;
+        *(int *)(s + 4) = 0;
+        return r;
+    }
+    *(int *)(s + 4) = 0;
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00116FE8);
 
