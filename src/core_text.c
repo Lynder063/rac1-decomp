@@ -1313,7 +1313,38 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011FB68);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011FC08);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011FE48);
+extern void func_0011FB68(long *v, void *buf);
+extern void *func_0011FC08(void *a, void *b, void *c);
+extern void func_0011FA38(void *);
+
+/*
+ * Close, not exact (18/88), same size so inert. Semantics confirmed:
+ * spills both 64-bit args, converts each into a 32-byte buffer via
+ * func_0011FB68, combines them into a third buffer with func_0011FC08
+ * and hands that to func_0011FA38. Frame size, all three buffer
+ * addresses and every instruction match.
+ *
+ * The entire residual is prologue save ORDER: retail stores $16 before
+ * $31 and spends the first jal's delay slot on the argument setup; this
+ * compiler saves $31 first and sinks the setup into the delay slot.
+ * Both fill the slot -- the scheduler just picks the other instruction.
+ *
+ * This is the THIRD member of the func_0011FB68 family blocked on
+ * exactly this ($s0/$ra save position), after func_00120430 (10/76) and
+ * func_0012AAA8 (10/76). The buffers cannot be reordered to steer it
+ * because their stack addresses already match retail, and the
+ * declaration-order lever only moves locals, not prologue save order.
+ * Treat the rest of this family as the same known residual rather than
+ * re-deriving it each time.
+ */
+void func_0011FE48(long a, long b) {
+    char buf0[0x20];
+    char buf1[0x20];
+    char buf2[0x20];
+    func_0011FB68(&a, buf0);
+    func_0011FB68(&b, buf1);
+    func_0011FA38(func_0011FC08(buf0, buf1, buf2));
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011FEA0);
 
