@@ -29,6 +29,8 @@ Usage:
   python tools/rank_candidates.py text 40    # + show top N candidates
 """
 import re
+
+SPILL_ARG_RE = re.compile(r"s[dwq]\s+\$([5-9]|1[01])\s*,\s*(0x[0-9A-Fa-f]+|[0-9]+)\(\$29\)")
 import sys
 from pathlib import Path
 
@@ -140,8 +142,28 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
         return "blocked", "SIMD/COP2", ""
     if re.search(r"\b(adda|madd|msub)\.s\b", text):
         return "blocked", "FPU accumulate", "adda.s/madd.s not plain-C"
-    # Varargs *definition* spills a1-t3 on entry. Callers are fine.
-    if len(ins) > 4 and sum(1 for i in ins[:9] if re.match(r"s[dwq]\s+\$([5-9]|1[01])\b", i)) >= 4:
+    # Varargs *definition*: the prologue spills the argument registers
+    # $5..$11 into a CONTIGUOUS save area so va_arg can walk it, i.e.
+    # consecutive registers at stack offsets rising by 8. Callers are fine.
+    #
+    # Both halves of that test matter. Looking only at the first 9
+    # instructions missed func_0011A6C8, whose save area starts around
+    # instruction 8. But merely counting distinct $5-$11 spills anywhere
+    # over-blocks badly -- it flagged 92 functions including a
+    # 1139-instruction one that just spills temps around calls, which
+    # would have hidden ~70 real candidates. Requiring the regular
+    # ascending run keeps it to actual save areas.
+    spills = [(int(r), int(off, 0)) for r, off in
+              SPILL_ARG_RE.findall(text)]
+    run = 1
+    best = 1
+    for a, b in zip(spills, spills[1:]):
+        if b[0] == a[0] + 1 and b[1] == a[1] + 8:
+            run += 1
+            best = max(best, run)
+        else:
+            run = 1
+    if len(ins) > 4 and best >= 4:
         return "blocked", "varargs definition", "needs stdarg.h"
     if re.search(r"\b(sq|lq)\s+\$(?!29\b|1[6-9]\b|2[0-3]\b|31\b)", text):
         return "blocked", "bare quadword", ""
