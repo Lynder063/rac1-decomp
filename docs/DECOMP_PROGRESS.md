@@ -51,9 +51,9 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **277 functions
-have real C; 250 are exact on size and bytes; 0 are size-mismatched and
-27 byte-mismatched** — the 27 being deliberately-kept documented
+Current audited state (from `tools/sweep_matches.py`): **282 functions
+have real C; 254 are exact on size and bytes; 0 are size-mismatched and
+28 byte-mismatched** — the 27 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
 
@@ -463,10 +463,36 @@ blocked* is the clearest case: that range lives in `text`, where retail
 uses `sq` — exactly what we already emit. Six were sampled and
 confirmed. Re-survey any range whose "blocked" count leaned on this.
 
-**Genuinely still blocked, and now far narrower:** the 234 `core_text`
-functions that need s-registers, where retail wants `sd` and no
-available compiler emits it. One segment, one register class — instead
-of "most of the codebase".
+**RESOLVED — the `core_text` s-register half is no longer blocked.**
+This entry used to read "the 234 `core_text` functions that need
+s-registers, where retail wants `sd` and no available compiler emits
+it". That was true of the *compilers*, but the conclusion drawn from it
+was wrong, because it assumed v1.36 had to be the `core_text` compiler.
+
+The missed fact: v1.36 gets `$ra` right but lays the save slots out
+**mirrored** versus retail (`$31` at offset 0, s-regs descending above
+it), so no s-register function could ever match under it regardless of
+source shape. **v1.14 reproduces retail's exact layout** (`$16` at 0,
+s-regs ascending, `$31` at the top) and differs only in the mnemonics.
+
+So `core_text` is now built with **v1.14** and post-processed by
+`tools/fix_core_spills.py`, which narrows callee-saved `sq`/`lq` spills
+to `sd`/`ld`. Because the layout already matches, this is a pure
+mnemonic substitution: frame size, the 16-byte slot stride (retail keeps
+16-byte stride even for 8-byte stores) and every offset stay exactly as
+v1.14 emitted them. No offset arithmetic, which is what makes it safe.
+The rewriter only touches `$sp`-relative spills of callee-saved
+registers — a `sq`/`lq` against any other base or register is a genuine
+128-bit memory operation in the source, not a spill.
+
+Proven: `func_00116FA0` 0/68 (first `core_text` s-register match), then
+`func_0012C430` 0/52, `func_0012D340` 0/64 and `func_00129180` 0/72, the
+last three exact on the first attempt. `tools/rank_candidates.py` moved
+**159 functions out of blocked** (candidates 147 → 269).
+
+Still genuinely open in this area: the `core_text` "`sq $ra`" cases,
+where retail is on the `sq` side for a lone `$ra` save — a real 2-byte
+floor, correctly marked *risky* rather than blocked.
 
 The earlier (superseded but still-valid) segment-correlation analysis
 follows.
