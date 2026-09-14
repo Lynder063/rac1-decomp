@@ -51,8 +51,8 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **294 functions
-have real C; 262 are exact on size and bytes; 0 are size-mismatched and
+Current audited state (from `tools/sweep_matches.py`): **296 functions
+have real C; 264 are exact on size and bytes; 0 are size-mismatched and
 32 byte-mismatched** — the 32 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
@@ -95,6 +95,7 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 
 | Function | Segment | Status | Notes |
 |---|---|---|---|
+| `func_00114518`, `func_001188C8` | core_text | **matches** | Last two of the `D_0015ED10` errno-wrapper family, forwarding three args to `func_00119108`/`func_00119008`. Both byte-exact, first attempt. **The family is now fully harvested — six functions, all exact**, found by grepping the remaining stubs for `D_0015ED10` rather than waiting for the ranking to surface them one at a time. Worth repeating for other shared globals: once one member of a family matches, the rest are usually near-free. |
 | `func_00116108` | core_text | **matches** | Four-argument member of the `func_00112468` errno-wrapper family, forwarding three args to `func_00119088`. Byte-exact, first attempt. |
 | `func_00120978` | core_text | **matches** | Swaps a global handler pointer: bail returning 0 if `func_00120F30(1)` is non-zero, otherwise capture the old `D_00159840`, install `arg0`, and call `func_0011D9A8` only when `func_0011D960()` was non-zero. The old value is captured and the new one stored unconditionally — the store sits in the branch's delay slot. Byte-exact, first attempt. |
 | `func_0011B710` | core_text | **close, not exact** (8/92) | One-shot init guarded on `D_0012FDA0 == -1` — see the comment above it in `src/core_text.c`. Residual is only which of three stack-descriptor stores lands in the first call's delay slot. Notable as a **rotation-rule counter-example**: source order `(5,1,2)` rotated exactly as documented while `(1,2,5)` did not, so the rule is still per-function even after its promotion. |

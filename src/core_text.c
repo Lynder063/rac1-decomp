@@ -122,7 +122,15 @@ void *func_001144F0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00114514);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00114518);
+int func_00114518(int *errOut, void *a, void *b, void *c) {
+    int r;
+    D_0015ED10 = 0;
+    r = func_00119108(a, b, c);
+    if (r == -1 && D_0015ED10 != 0) {
+        *errOut = D_0015ED10;
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00114578);
 
@@ -442,7 +450,17 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001187E0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001188C0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001188C8);
+extern int func_00119008();
+
+int func_001188C8(int *errOut, void *a, void *b, void *c) {
+    int r;
+    D_0015ED10 = 0;
+    r = func_00119008(a, b, c);
+    if (r == -1 && D_0015ED10 != 0) {
+        *errOut = D_0015ED10;
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00118928);
 
@@ -610,7 +628,9 @@ int func_00119100(int arg0) {
     return -1;
 }
 
-int func_00119108(void) {
+/* Takes the three arguments its callers pass (e.g. func_00114518) and
+   ignores them; unused parameters cost no codegen. */
+int func_00119108(void *a, void *b, void *c) {
     return -1;
 }
 
