@@ -51,9 +51,9 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **296 functions
-have real C; 264 are exact on size and bytes; 0 are size-mismatched and
-32 byte-mismatched** — the 32 being deliberately-kept documented
+Current audited state (from `tools/sweep_matches.py`): **298 functions
+have real C; 265 are exact on size and bytes; 0 are size-mismatched and
+33 byte-mismatched** — the 33 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
 
@@ -95,6 +95,8 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 
 | Function | Segment | Status | Notes |
 |---|---|---|---|
+| `func_00128C28` | core_text | **matches** | Init sequence: store `func_00128A58(arg0, 5)` into `+0x1B4`, then if `func_00128A58(arg0, 1)` is non-zero run a second `(arg0,1)` call, `func_00128968(arg0, 7)` and `func_00129180(arg0)`. Returns 0 on both paths. Byte-exact, first attempt. |
+| `func_00125078` | core_text | **close, not exact** (3/100) | Picks whichever of `p` and `p+0x80` has the smaller `+0x7C` field, indexing a two-slot stack array with the `slt` result directly. Three bytes — one instruction: retail sums into the base register (`addu $2,$2,$4`), this compiler sums into the index register. **Writing the addition the other way round changes nothing (GCC canonicalises it), so this is the allocator's destination choice rather than the documented operand-order lever.** |
 | `func_00114518`, `func_001188C8` | core_text | **matches** | Last two of the `D_0015ED10` errno-wrapper family, forwarding three args to `func_00119108`/`func_00119008`. Both byte-exact, first attempt. **The family is now fully harvested — six functions, all exact**, found by grepping the remaining stubs for `D_0015ED10` rather than waiting for the ranking to surface them one at a time. Worth repeating for other shared globals: once one member of a family matches, the rest are usually near-free. |
 | `func_00116108` | core_text | **matches** | Four-argument member of the `func_00112468` errno-wrapper family, forwarding three args to `func_00119088`. Byte-exact, first attempt. |
 | `func_00120978` | core_text | **matches** | Swaps a global handler pointer: bail returning 0 if `func_00120F30(1)` is non-zero, otherwise capture the old `D_00159840`, install `arg0`, and call `func_0011D9A8` only when `func_0011D960()` was non-zero. The old value is captured and the new one stored unconditionally — the store sits in the branch's delay slot. Byte-exact, first attempt. |
