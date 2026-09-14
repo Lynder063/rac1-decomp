@@ -2056,7 +2056,13 @@ void func_0012BCC8(int arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BCF0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BD28);
+void func_0012BD28(void *arg0, int arg1, int arg2) {
+    int *p = (int *)arg0;
+    p[1] = arg2;
+    p[0] = arg1;
+    p[2] = arg1;
+    p[3] = arg1;
+}
 
 void func_0012BD40(void *arg0) {
     char *p = (char *)arg0;

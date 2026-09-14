@@ -51,8 +51,8 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **298 functions
-have real C; 265 are exact on size and bytes; 0 are size-mismatched and
+Current audited state (from `tools/sweep_matches.py`): **300 functions
+have real C; 267 are exact on size and bytes; 0 are size-mismatched and
 33 byte-mismatched** — the 33 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
@@ -95,6 +95,9 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 
 | Function | Segment | Status | Notes |
 |---|---|---|---|
+| `func_0012BD28` | core_text | **matches** | Four-store struct setter (`p[1]=arg2; p[0]=arg1; p[2]=arg1; p[3]=arg1`). Retail emits `0xC,0x4,0x0,0x8`; the **rotation rule predicted the source order exactly** — writing them `0x4,0x0,0x8,0xC` produced retail's emitted order. Byte-exact, first attempt. |
+| `func_00214D28` | text | **matches** | Float clamp-and-step: `d = target - *p`, clamp to ±`maxstep`, `*p += d`, return `fabsf(target - *p)`. The `else if (d < -maxstep)` arm shares its assignment with the first clamp via retail's negate-then-fall-through, which plain C reproduces. Calls the already-decompiled `func_001F9B88` (`fabsf`), so no extern needed. Byte-exact, first attempt. |
+| `func_00216D30` | text | **reverted (30/84)** | Flag update on the `D_001517D0` global struct — full semantics recorded above its stub in `src/text.c`. **Nested ifs beat the `&&`/`||` form** (38→30) because short-circuit operators let the compiler hoist the `0x3E` load above the first branch. Residual is the allocator: retail keeps `%hi` in `$7` and re-materializes the base inside the branch targets, spending the first delay slot on that copy; this compiler keeps one base in `$6` and uses a branch-likely instead. Direct `D_001517D0[...]` indexing was tried to force re-materialization and is **clearly worse (74%)** — another data point that the indexing lever is per-function. |
 | `func_00128C28` | core_text | **matches** | Init sequence: store `func_00128A58(arg0, 5)` into `+0x1B4`, then if `func_00128A58(arg0, 1)` is non-zero run a second `(arg0,1)` call, `func_00128968(arg0, 7)` and `func_00129180(arg0)`. Returns 0 on both paths. Byte-exact, first attempt. |
 | `func_00125078` | core_text | **close, not exact** (3/100) | Picks whichever of `p` and `p+0x80` has the smaller `+0x7C` field, indexing a two-slot stack array with the `slt` result directly. Three bytes — one instruction: retail sums into the base register (`addu $2,$2,$4`), this compiler sums into the index register. **Writing the addition the other way round changes nothing (GCC canonicalises it), so this is the allocator's destination choice rather than the documented operand-order lever.** |
 | `func_00114518`, `func_001188C8` | core_text | **matches** | Last two of the `D_0015ED10` errno-wrapper family, forwarding three args to `func_00119108`/`func_00119008`. Both byte-exact, first attempt. **The family is now fully harvested — six functions, all exact**, found by grepping the remaining stubs for `D_0015ED10` rather than waiting for the ranking to surface them one at a time. Worth repeating for other shared globals: once one member of a family matches, the rest are usually near-free. |
