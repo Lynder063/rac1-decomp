@@ -51,8 +51,8 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **288 functions
-have real C; 257 are exact on size and bytes; 0 are size-mismatched and
+Current audited state (from `tools/sweep_matches.py`): **291 functions
+have real C; 260 are exact on size and bytes; 0 are size-mismatched and
 31 byte-mismatched** — the 31 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
@@ -95,6 +95,9 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 
 | Function | Segment | Status | Notes |
 |---|---|---|---|
+| `func_00112468` | core_text | **matches** | **Reclaimed from a stale revert.** Its comment said it was blocked because this compiler spilled `$s0`/`$s1` as `sq`/`lq` where retail used `sd`/`ld` — true when written, obsolete since `tools/fix_core_spills.py`. The logic recorded in that comment was right all along and now compiles byte-exact unchanged. A reminder that reverts recorded against a since-solved blocker are worth re-running wholesale. |
+| `func_00114000` | core_text | **matches** | Same errno-style wrapper as `func_00112468`, forwarding two args to `func_001191C8`. Byte-exact. |
+| `func_001161E8` | core_text | **matches** | Same family again, calling `func_00119110`. **New signal:** retail materialised the sentinel with `lui`/`ori` (0xFFFFFFFF) rather than `addiu $2,$0,-1`, which made it one instruction — and so 4 bytes — longer than an `int` comparison produces. That is the tell for an **unsigned** comparison: `unsigned r; if (r == 0xFFFFFFFF)`. Byte-exact once the type was changed. |
 | `func_00124010` | core_text | **matches** | Copies three words out of an uncached-mirror view of `arg0` (`arg0 \| 0x20000000`) into whatever `D_00159B28`/`D_00159B2C`/`D_00159B30` point at, each guarded by a null check on the destination pointer. Byte-exact, first attempt. |
 | `func_001245F8` | core_text | **matches** | Nine-argument call to `func_0011B4C8` (eight in `$4`-`$11`, the ninth at `0($sp)`), then returns `D_0015B180`. Confirms the EABI eight-register argument convention plus stack spill for the ninth. Byte-exact, first attempt. |
 | `func_00125020` | core_text | **close, not exact** (28/84) | Marks entry `arg0` of the `0x330`-stride table `D_0015B640` — see the comment above it in `src/core_text.c`. Size and addressing form are each reachable but not together: one `char *e` local coalesces to a single register and is 4 bytes short; recomputing the address per store gives the right size but folds `+4` into the address constant instead of a store displacement; two pointer locals coalesce back to one. |
@@ -753,6 +756,14 @@ instruction and can't cascade, so a function held *only* by this is
 worth keeping as documented-close C rather than reverting.
 
 ## Solved techniques worth knowing (not open questions)
+
+**Unsigned comparison tell: `lui`/`ori` sentinel vs `addiu $rt,$0,-1`.**
+Seen on `func_001161E8`. Comparing an `int` against `-1` gives a single
+`addiu $2,$0,-1`; comparing an **unsigned** against `0xFFFFFFFF` forces
+the full 32-bit constant via `lui`+`ori`, one instruction more. So if a
+sentinel comparison leaves the function exactly 4 bytes short and retail
+builds the constant with `lui`/`ori`, change the variable to `unsigned`
+rather than hunting for a missing statement.
 
 **Unsigned-mask materialization.** For a bit-clear like `flags &= ~1`,
 this compiler compiles `~1` (an `int`, value `-2`) to a single `li`/

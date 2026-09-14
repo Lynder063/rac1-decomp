@@ -10,21 +10,17 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001123A8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00112464);
 
-/*
- * Close but not yet byte-matching, same status as func_00112380 above:
- * logic is right (return func_00119100(arg1); D_0015ED10 = 0 before the
- * call, *errOut = D_0015ED10 after if the call returned -1 and
- * D_0015ED10 is nonzero) but this compiler saves the two callee-saved
- * GPRs it uses ($16/$17) as 128-bit quadwords (sq/lq) where retail uses
- * plain 64-bit (sd/ld) for every callee-saved register including $ra.
- * Tried all 4 SN ProDG sub-builds AngheloAlf mirrors (2.95.2 SN BUILD
- * v2.73a/v2.74, 2.95.3 SN BUILD v1.14/v1.36) -- 3 of 4 use sq/lq for
- * *every* callee-saved register including $ra; this repo's v1.36 is
- * actually the closest (matches retail on $ra, only differs on $s0-$s7).
- * No -m flag found that changes it. Kept as INCLUDE_ASM pending that;
- * see docs/DECOMP_PROGRESS.md.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00112468);
+extern int D_0015ED10;
+
+int func_00112468(int *errOut, int arg1) {
+    int r;
+    D_0015ED10 = 0;
+    r = func_00119100(arg1);
+    if (r == -1 && D_0015ED10 != 0) {
+        *errOut = D_0015ED10;
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001124C0);
 
@@ -92,7 +88,15 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00113E90);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00113FFC);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00114000);
+int func_00114000(int *errOut, void *arg1, void *arg2) {
+    int r;
+    D_0015ED10 = 0;
+    r = func_001191C8(arg1, arg2);
+    if (r == -1 && D_0015ED10 != 0) {
+        *errOut = D_0015ED10;
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011405C);
 
@@ -351,7 +355,17 @@ int func_001161B0(long arg0) {
     return (unsigned int)(0x7FF00000 - hi) >> 31;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001161E8);
+extern int func_00119110();
+
+int func_001161E8(int *errOut, int arg1) {
+    unsigned int r;
+    D_0015ED10 = 0;
+    r = func_00119110(arg1);
+    if (r == 0xFFFFFFFF && D_0015ED10 != 0) {
+        *errOut = D_0015ED10;
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00116244);
 
@@ -580,7 +594,9 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00119008);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119088);
 
-int func_00119100(void) {
+/* Takes an argument its callers pass (e.g. func_00112468) and ignores
+   it; an unused parameter costs no codegen. */
+int func_00119100(int arg0) {
     return -1;
 }
 
