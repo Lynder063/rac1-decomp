@@ -51,9 +51,9 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **300 functions
-have real C; 267 are exact on size and bytes; 0 are size-mismatched and
-33 byte-mismatched** — the 33 being deliberately-kept documented
+Current audited state (from `tools/sweep_matches.py`): **303 functions
+have real C; 269 are exact on size and bytes; 0 are size-mismatched and
+34 byte-mismatched** — the 34 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
 
@@ -95,6 +95,9 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 
 | Function | Segment | Status | Notes |
 |---|---|---|---|
+| `func_00216960` | text | **matches** | Guarded state transition on the `D_001517D0` global: if the pointer at `+0x50` is non-null and the state at `+0x5A` is 3, call `func_0012EDE0(p)`, set the state to 4 and return 1; otherwise 0. Byte-exact, first attempt. A `char *d` base local is right here (retail keeps the base in `$16`), the opposite of `func_00216D30` in the same family. |
+| `func_002177F0` | text | **matches** | `D_001517D0` family: when `arg0 == 1`, zero the field at `+0x8`, then set it to 2 if `func_0012F030()` is non-zero. The zeroing store sits in the call's delay slot. Byte-exact. **Its forward declaration said `(void)` but retail reads `$4`** — the declaration was only ever used to take the function's address for a `func_0012F068` callback registration, so correcting it to `(int)` changed no codegen and left the registering function `func_00216270` exact. |
+| `func_0011FE48` | core_text | **close, not exact** (18/88) | Third member of the `func_0011FB68` family — see the comment above it in `src/core_text.c`. Blocked identically to `func_00120430` and `func_0012AAA8`: prologue save **order** ($16 before $31 in retail, the reverse here), with the first call's delay slot taking the other instruction. Buffers cannot be reordered to steer it (their stack addresses already match) and the declaration-order lever moves locals, not prologue saves. **Treat the rest of this family as the same known residual.** |
 | `func_0012BD28` | core_text | **matches** | Four-store struct setter (`p[1]=arg2; p[0]=arg1; p[2]=arg1; p[3]=arg1`). Retail emits `0xC,0x4,0x0,0x8`; the **rotation rule predicted the source order exactly** — writing them `0x4,0x0,0x8,0xC` produced retail's emitted order. Byte-exact, first attempt. |
 | `func_00214D28` | text | **matches** | Float clamp-and-step: `d = target - *p`, clamp to ±`maxstep`, `*p += d`, return `fabsf(target - *p)`. The `else if (d < -maxstep)` arm shares its assignment with the first clamp via retail's negate-then-fall-through, which plain C reproduces. Calls the already-decompiled `func_001F9B88` (`fabsf`), so no extern needed. Byte-exact, first attempt. |
 | `func_00216D30` | text | **reverted (30/84)** | Flag update on the `D_001517D0` global struct — full semantics recorded above its stub in `src/text.c`. **Nested ifs beat the `&&`/`||` form** (38→30) because short-circuit operators let the compiler hoist the `0x3E` load above the first branch. Residual is the allocator: retail keeps `%hi` in `$7` and re-materializes the base inside the branch targets, spending the first delay slot on that copy; this compiler keeps one base in `$6` and uses a branch-likely instead. Direct `D_001517D0[...]` indexing was tried to force re-materialization and is **clearly worse (74%)** — another data point that the indexing lever is per-function. |
