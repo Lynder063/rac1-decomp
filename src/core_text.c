@@ -2295,7 +2295,13 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CC40);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CC50);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CC60);
+extern char D_00153CC8[];
+
+/* Tail call: arg0 passes straight through, arg1 is &D_00153CC8 whose
+   %lo half retail schedules into the jump's delay slot. */
+void func_0012CC60(void *arg0) {
+    func_0012C468(arg0, D_00153CC8);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CC6C);
 
@@ -2433,7 +2439,12 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D818);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D868);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DA28);
+extern void func_0011DDA0(int);
+
+/* Tail call: `j func_0011DDA0` with the argument zeroed in the delay slot. */
+void func_0012DA28(void) {
+    func_0011DDA0(0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DA30);
 

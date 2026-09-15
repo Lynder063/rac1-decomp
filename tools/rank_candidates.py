@@ -117,14 +117,22 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     # functions on the assumption v1.36 was the core_text compiler.
     if "Handwritten function" in body:
         return "blocked", "handwritten asm", "spimdisasm marker"
-    # Tail call: retail jumps straight to another function instead of
-    # `jal` + return. GCC 2.95 has no sibling-call optimisation, so this
-    # compiler always emits jal and a real return -- different size and
-    # different bytes, unreachable from C. Two independent confirmations
-    # (func_00113AC8 earlier, func_0011DFC8 when the ranker offered it as
-    # a top candidate). 99 stubs carry this, so it was worth detecting.
+    # RESOLVED: tail calls are no longer blocked. GCC 2.95 still has no
+    # sibling-call optimisation (the flag does not exist in either SN
+    # sub-build and -O3 does not help), but tools/fix_tail_calls.py
+    # rewrites the compiled call-and-return into retail's bare `j target`
+    # for the functions in tools/tail_call_functions.txt. Proven
+    # byte-exact on func_0011DD98 (0/8) and func_0012CC80 (0/12).
+    #
+    # Ranked "risky" rather than plain candidate because the rewriter only
+    # fires on a strict shape: the frame instructions must be the only $sp
+    # references, the $31 spill must be at offset 0, and nothing may happen
+    # after the call returns. A tail-call function that keeps its own
+    # locals, or does work after the call, is deliberately refused -- of
+    # the 99, 47 touch $sp and 22 contain a second call, so expect a large
+    # share not to convert.
     if re.search(r"(?m)^j\s+func_[0-9A-Fa-f]{8}", text):
-        return "blocked", "tail call", "j func_...; GCC 2.95 has no sibcall"
+        return "risky", "tail call", "needs fix_tail_calls.py; strict shape"
     # Must come AFTER the tail-call test: a tail-called function ends in
     # `j`, not `jr $31`, so this rule would otherwise claim every tail call
     # is a fragment. Same verdict, but the category is what tells a future
