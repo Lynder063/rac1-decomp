@@ -1616,7 +1616,15 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00207780);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207930);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002079F0);
+extern int D_001A04B4 NOT_SDA;
+
+/* Same hit test as func_002071A8, run against two boxes. */
+int func_002079F0(int x1, int y1) {
+    int a = func_00209048(x1, y1, 0x99, 0xED, 0x160, 0x117);
+    int b = func_00209048(x1, y1, 0x10E, 0xF7, 0x13D, 0x119);
+
+    return D_001A04B4 != 0 && (a != 0 || b != 0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207A80);
 
@@ -2400,7 +2408,23 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0020DC40);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020DD48);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020DE20);
+extern int D_001414D0 NOT_SDA;
+extern float D_001CAE00[] NOT_SDA;
+extern void func_0020E360(void *, void *);
+extern float func_001FA058(float, float);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+
+void func_0020DE20(void) {
+    float buf[4];
+    float a;
+
+    func_0020E360((void *)D_001414D0, buf);
+    a = func_001FA058(buf[0], buf[1]);
+    D_001CAE00[0] = func_001F9F90(a) * 0.14f;
+    D_001CAE00[1] = func_001F9FA8(a) * 0.14f;
+    D_001CAE00[2] = -0.99f;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020DEB0);
 
@@ -3176,6 +3200,23 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0021A1A0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021A610);
 
+/*
+ * REVERTED (size mismatch). Logic is certain; written straight from the
+ * branch chain it comes out several instructions short, and the tail
+ * collapses into a `movn` where retail keeps two separate returns.
+ *
+ *   int func_0021ACD8(int arg0) {
+ *       int v;
+ *       if (*(int *)(*(char **)(D_001D5F70 + 4) + 0x40) != arg0) return 0;
+ *       if ((*(int *)(D_0013CA40 + 0x1C4) & 0xD00) != 0
+ *               && *(int *)(D_001D5F70 + 0x124) == 0) return 1;
+ *       if ((*(int *)(D_0013CA40 + 0x1C4) & 0x10) == 0) return 0;
+ *       v = *(int *)(*(char **)(D_001D5F70 + 4) + 0x38);
+ *       if (v != 0) { *(int *)(D_001D5F70 + 8) = v; return 0; }
+ *       if (*(int *)(D_001D5F70 + 0x124) == 0) return -1;
+ *       return 0;
+ *   }
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_0021ACD8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021AD68);
