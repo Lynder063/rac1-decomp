@@ -3761,7 +3761,39 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002279D0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00227A30);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00227A70);
+extern char D_001D5F70[] NOT_SDA;
+extern char D_001D5D58[] NOT_SDA;
+extern unsigned char D_001B3E40[] NOT_SDA;
+extern char *D_001B3580[] NOT_SDA;
+
+/* Drain the pending list at D_001D5F70+0xA8/+0xAC, clearing +0x48 on each
+   referenced object, then reset the count. Both the start and the count
+   are re-read every iteration.
+
+   Near-miss (30/36), size-exact. The instruction sequence is right and
+   the loop's offsets came good once the base was taken into a local
+   pointer instead of indexed off the extern array -- that is the lever
+   for this shape, worth remembering. What is left is the allocator
+   permutation documented in DECOMP_PROGRESS.md plus the two-base
+   pattern from func_00219E60's note: retail keeps the raw %hi in $t2
+   and rebuilds the pointer for the final store, which is a second
+   address expression we cannot spell without gcc folding it back into
+   the first. */
+void func_00227A70(void) {
+    char *g = D_001D5F70;
+    int i = *(int *)(g + 0xA8);
+    char *p = D_001D5D58 + i * 8;
+
+    while (i < *(int *)(g + 0xA8) + *(int *)(g + 0xAC)) {
+        int a = *(int *)p;
+        int b = *(int *)(p + 4);
+
+        i++;
+        *(int *)(D_001B3580[D_001B3E40[a]] + b * 4 + 0x48) = 0;
+        p += 8;
+    }
+    *(int *)(D_001D5F70 + 0xAC) = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00227B00);
 
