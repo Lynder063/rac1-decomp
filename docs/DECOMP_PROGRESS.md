@@ -51,9 +51,9 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **325 functions
+Current audited state (from `tools/sweep_matches.py`): **327 functions
 have real C; 286 are exact on size and bytes; 0 are size-mismatched and
-39 byte-mismatched** — the 39 being deliberately-kept documented
+41 byte-mismatched** — the 41 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
 
@@ -137,6 +137,8 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 | `func_0022EAB0` | text | **matches** | State-machine step over `0x70`-byte entries of `D_0013E650`: on state 7 clear the state byte and two words, on any other non-zero state except 6 set the state to 4. **Third clean rotation-rule case:** the three stores written in natural order came out rotated by one (5/84); moving the first store to last gave retail's order exactly. Byte-exact. |
 | `func_001162B8`, `func_001163A0` | core_text | **matches** | Reclaimed from a banked revert. Retail's `dsll32`/`dsra32` pairs are not sign-extensions of an `int` — they are the DImode→SImode narrowing GCC emits when a 64-bit return value is assigned to an `int`. `long` is 64 bits for this target while `word_mode` stays SI, so the callees were prototyped `long` at the call site and defined `int` at the definition — an inconsistency retail could carry because the two sides lived in different translation units. We merge a whole segment into one file, so the two views are reconciled with an asm-labelled alias (`extern long func_00116108_wide(...) __asm__("func_00116108");`), which still emits a plain `jal`. See the new lever below. |
 | `func_00116320` | core_text | close, not exact (8/128, same size) | Third member of the same vtable family, same `long` aliasing. Every instruction and operand matches; retail schedules `andi $2,$2,0xEFFF` ahead of the argument load `lw $4,0x54($16)` and this build emits them the other way round — a list-scheduler tie between two independent instructions. The `&=` idiom and a named local for the handle load both leave it unchanged. |
+| `func_0011DC50` | core_text | close, not exact (10/104, same size) | Reads a word through `func_00118CF0`, rewrites bits 13..15 to 1, pushes it back, re-reads and restores the original; returns whether the field read back as 0. `srl` rather than `sra` is the tell that the scratch word is `unsigned`. Residual is entirely prologue scheduling — see the gcc 2.9-ee section below. |
+| `func_00120910` | core_text | close, not exact (24/104, same size) | Same stack-descriptor idiom as `func_0011BBF0`. `unsigned short arg0` is confirmed: it is what puts `andi $17,$4,0xFFFF` in the prologue instead of at the call site (an `int` parameter masked at the call is 4 bytes worse). The second argument to `func_00118B20` is one `%hi`/`%lo` pair on `func_001208E4 + 4`, i.e. a code address the source names by symbol. Residual is the same prologue-scheduling class. |
 | `func_00228400` | text | **reverted, size mismatch** (80 vs 84) | Dispatch on a leading short — semantics recorded above its stub. Retail keeps `arg0` in `$16` and spends the first `jal`'s delay slot on `addiu $16,$16,0x20`, making the pointer advance free; this compiler emits a `nop` there. Three source shapes tried (offset expression at the return, advancing a separate `char *p` after the call, and advancing it before the call — best at 20/84); none put the advance in the call's delay slot. |
 | `func_00236B58` | text | **matches** | Brackets two `func_001F9A98(dst, src, len)` block copies between a pair of `func_00236A98()` calls. Byte-exact, first attempt. |
 | `func_0012BBF8` | core_text | **matches** | Clears field `+0x28` of six sub-objects hanging off `arg0->0x40` at offsets `0x1B8/0x1C8/0x1D8/0x1BC/0x1CC/0x1DC`, skipping null ones, returns 1. Retail uses six `bnel` branch-likelies with the store in the delay slot; a plain `if (p != 0) *(int *)(p + 0x28) = 0;` per slot reproduces every one. Byte-exact, first attempt — second case this round confirming branch-likely density is not a warning sign. |
@@ -512,6 +514,57 @@ Broader lesson, now twice-confirmed: entries in this file asserting
 store-order case where a note claimed "all four" orderings were tried
 for what is actually six permutations. Re-test a blocked entry when you
 have a new technique rather than trusting its note.
+
+## Open: core_text prologue scheduling — we schedule against `sq`, retail didn't
+
+A recurring residual in `core_text` is a same-size, all-operands-match
+near-miss where the only difference is *where the callee-saved spills sit*
+relative to the surrounding code — retail emits `sd $16` and `sd $31` back
+to back and fills the first call's delay slot with an argument, while we
+sink one save into the delay slot.
+
+The cause is the build pipeline, not the C. `tools/fix_core_spills.py`
+rewrites `sq`/`lq` to `sd`/`ld` *after* the compiler has already run, so
+the instruction scheduler made its decisions believing those were 16-byte
+stores. Retail's compiler emitted 8-byte stores natively and scheduled
+accordingly.
+
+**Evidence, and a compiler that demonstrates it.** The SN mirror contains
+more than the two 2.95.3 sub-builds we use. `toolchain/sn-prodg-24/local/
+sce/ee/gcc/bin/ee-gcc.exe` is Sony's own **gcc 2.9-ee-991111b/r4**, and it
+emits `sd $16,16($sp); sd $31,32($sp)` natively, in retail's ascending slot
+layout, with no post-processing at all. Rebuilding `core_text.c` with it
+unchanged moves exactly the functions this section is about:
+
+| function | 2.95.3 + `fix_core_spills` | gcc 2.9-ee, same C |
+|---|---|---|
+| `func_00116320` | 8/128 | **1/128** |
+| `func_0011DC50` | 10/104 | 4/104 |
+| `func_0011B710` | 8/92 | 4/92 |
+
+(The `func_001162B8` / `func_001163A0` pair stays 0/0 under both.)
+
+**It is not a drop-in replacement, and it was not adopted.** A whole-segment
+rebuild scores 228 exact / 8 size-mismatched against 286 exact / 0
+size-mismatched, and most of that gap is drift: gcc 2.9-ee performs tail-call
+optimisation *natively*, and does it in eight places where retail did not
+(`func_00116408`, `func_0011ABC8`, `func_0011AC08`, `func_0011CCB0`,
+`func_0011D4A0`, `func_001275A0`, `func_0012C058`, `func_0012EC40` — each
+one 20-28 bytes short, a whole frame gone). `func_0011D4A0` is the clearest:
+its C is byte-exact at 64 bytes under 2.95.3, and 2.9-ee turns both arms of
+its `if` into tail jumps for 44. So retail is not straightforwardly 2.9-ee
+either — retail tail-calls in some places and not others.
+
+Worth noting the corollary: 2.9-ee emitting tail calls natively is the first
+independent explanation of *why* retail's `core_text` contains bare tail
+jumps at all, which is the thing `tools/fix_tail_calls.py` exists to
+reproduce by deletion.
+
+Next step for whoever picks this up: the eight size mismatches are the whole
+obstacle, and they are all the same shape. If they can be suppressed (a flag,
+or a source form 2.9-ee will not tail-call), re-run the sweep before
+concluding anything — the current 228 number is drift-poisoned and says
+nothing about how many functions 2.9-ee would actually match.
 
 ## Open toolchain questions
 
