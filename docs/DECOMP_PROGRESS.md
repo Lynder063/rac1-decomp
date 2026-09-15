@@ -51,11 +51,63 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **327 functions
-have real C; 286 are exact on size and bytes; 0 are size-mismatched and
-41 byte-mismatched** — the 41 being deliberately-kept documented
+Current audited state (from `tools/sweep_matches.py`): **345 functions
+have real C; 308 are exact on size and bytes; 0 are size-mismatched and
+37 byte-mismatched** — the 37 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
+
+Two tools carry most of the weight when closing a near-miss:
+
+- `tools/diff_words.py` prints every still-differing word of every
+  decompiled function as retail-vs-ours, decoded. The useful unit is
+  "which instruction, and how" rather than "N bytes differ": several
+  functions whose residuals decode to the same instruction pair are
+  usually one fix, not several investigations.
+- `tools/permute.py` answers "same instructions, wrong order" by
+  compiling every ordering of the marked source lines at once and saying
+  which ones reproduce retail. Reasoning about the scheduler loses to
+  enumerating against it.
+
+### Levers that close near-misses
+
+Collected as they were found; each one closed at least one function.
+
+**Swapped `addu` operands — type the table, don't rewrite the addition.**
+Retail `addu $2,$2,$3` (base, index) against our `addu $2,$3,$2` was the
+entire residual of five functions. Reordering the C addition never helps:
+GCC canonicalises the PLUS before operand order is chosen. What does help
+is the form of the access. Three variants of the same move:
+
+    extern char T[]; p = T + i * STRIDE;   ->  index first
+    extern Rec  T[]; T[i].field            ->  base first
+
+    void **b = table + idx; *b;            ->  index first
+    table[idx]                             ->  base first
+
+The third is worth noting because `table` was already correctly typed:
+parking the address in its own local and dereferencing it is enough to
+flip the order. But the lever is not "base first always" — it is that the
+indexing form selects the order, and which one retail wants depends on
+which operand it materialises last. `func_0011AA38` wants index-first,
+because it computes its shift in a branch delay slot before the base is
+loaded, and the typed form takes it from 6/44 to 32/44.
+
+**`slti reg,reg,0` vs `srl reg,reg,31` — it's how the boolean is
+consumed.** Both extract a sign bit. Returning the comparison gives the
+cheap `srl`; feeding it to a branch gives the `slti`:
+
+    return (a*b - c*d) < 0;                       ->  srl  $v0,$v0,31
+    t = a*b - c*d; if (t < 0) return 1; return 0;  ->  slti $v0,$v0,0
+
+**A misplaced pointer increment — name the next pointer.** When a loop
+near-miss is one instruction of pointer advance in the wrong slot,
+neither `p++` at the body end nor `p++` in the for-increment will move
+it. Writing the schedule out does:
+
+    next = mask + 1;      /* where retail schedules it */
+    ... body reads *mask ...
+    mask = next;
 
 **Three more rules the sweep enforces, all learned the hard way:**
 
