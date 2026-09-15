@@ -1672,12 +1672,26 @@ void func_00209040(void) {
  * the last-source-statement-emits-first rotation applies to runs of
  * independent *arithmetic* statements, not just stores.
  */
+/* Sign of the 2D cross product (x2-x0,y2-y0) x (x1-x0,y1-y0): true when
+   the second vector is clockwise from the first.
+
+   The `< 0` has to be written as an explicit if/return pair. Returning
+   the comparison directly makes GCC emit the cheap sign-bit extract
+   `srl $v0,$v0,31`; retail has `slti $v0,$v0,0`, which is what you get
+   when the comparison feeds a branch rather than being the return value
+   itself. That one instruction was this function's entire residual. */
 int func_00209048(int x1, int y1, int x0, int y0, int x2, int y2) {
+    int cross;
+
     x2 -= x0;
     y2 -= y0;
     x1 -= x0;
     y1 -= y0;
-    return (x2 * y1 - y2 * x1) < 0;
+    cross = x2 * y1 - y2 * x1;
+    if (cross < 0) {
+        return 1;
+    }
+    return 0;
 }
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209070);
@@ -3695,27 +3709,21 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00234158);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234238);
 
-extern int D_001DD568[];
+/* 0x10-stride records. Typed array, not `char[]` + byte offset -- see
+   the addu-order lever on D_001E8F80 above. */
+typedef struct {
+    int unk_00;
+    int unk_04;
+    int unk_08;
+    int unk_0C;
+} Rec10;
+extern Rec10 D_001DD568[];
 
-/*
- * 1/40 bytes: the final `addu` has its two (commutative) operands the
- * other way round from retail -- retail encodes `addu $3,$3,$2`
- * (base + offset, base as rs), this compiler `addu $3,$2,$3`. Same
- * registers, same result, just GCC's canonical operand order for a
- * commutative add. Tried `rec += off`, `rec = rec + off`,
- * `&D_001DD568[arg0*4]`, and an integer-cast form; the latter two are
- * worse (3/40, they also swap which register holds base vs offset),
- * the first two both give this 1-byte residual. Kept as C per the
- * tiny-isolated-diff precedent.
- */
 int func_00234350(unsigned int arg0) {
-    char *rec;
     if (arg0 >= 0x40) {
         return -3;
     }
-    rec = (char *)D_001DD568;
-    rec = rec + arg0 * 16;
-    return *(int *)(rec + 4);
+    return D_001DD568[arg0].unk_04;
 }
 
 /*
