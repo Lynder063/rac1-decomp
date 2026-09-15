@@ -1298,7 +1298,12 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DCB8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DD64);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DD98);
+/* Tail call: retail is `j func_0011D4A0` + nop, with no frame at all.
+   Reached via tools/fix_tail_calls.py, which rewrites the compiler's
+   call-and-return for the functions listed in tools/tail_call_functions.txt. */
+void func_0011DD98(void) {
+    func_0011D4A0();
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DDA0);
 
@@ -2294,7 +2299,13 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CC60);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CC6C);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CC80);
+extern int func_0012CE48(void *);
+
+/* Tail call with argument setup: retail is
+   `lw $4,0x40($4)` / `j func_0012CE48` / `addiu $4,$4,0x4C`. */
+int func_0012CC80(char *a) {
+    return func_0012CE48(*(char **)(a + 0x40) + 0x4C);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CC8C);
 
