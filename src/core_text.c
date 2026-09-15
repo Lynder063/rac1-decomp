@@ -2563,14 +2563,14 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00129948);
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001299E8);
 
 int func_00129C78(void *arg0) {
-    char *p = (char *)arg0;
+    Obj40 *s = (Obj40 *)arg0;
     int r = 1;
-    if (*(int *)(p + 0x8) != 2) {
-        int v = *(int *)(p + 0x118);
-        *(int *)(p + 0x8) = 2;
-        *(int *)(p + 0xAC) = v;
+    if (s->unk008 != 2) {
+        int v = s->unk118;
+        s->unk008 = 2;
+        s->unk0AC = v;
     }
-    *(int *)(p + 0x820) = r;
+    s->unk820 = r;
     return r;
 }
 
@@ -2846,8 +2846,8 @@ extern void func_0012C0A0(void *);
 extern void func_0012BF40(void *);
 
 void func_0012C058(void *arg0) {
-    int inner = *(int *)((char *)arg0 + 0x40);
-    if (*(int *)(inner + 0x174) != 3) {
+    Obj40 *inner = *(Obj40 **)((char *)arg0 + 0x40);
+    if (inner->unk174 != 3) {
         func_0012C0A0(arg0);
     } else {
         func_0012BF40(arg0);
@@ -2860,13 +2860,13 @@ extern void func_0012C278(void *);
 
 int func_0012C200(void *arg0) {
     char *p = (char *)arg0;
-    int inner = *(int *)(p + 0x40);
+    Obj40 *inner = *(Obj40 **)(p + 0x40);
     int ret = 0;
 
-    if (*(int *)(inner + 0x4) != 0 && *(int *)(inner + 0x8) != 0) {
+    if (inner->unk004 != 0 && inner->unk008 != 0) {
         func_0012C278((void *)inner);
-        *(int *)(p + 0x8) = *(int *)(inner + 0x118) - *(int *)(inner + 0xAC);
-        *(int *)(inner + 0x4) = 0;
+        *(int *)(p + 0x8) = inner->unk118 - inner->unk0AC;
+        inner->unk004 = 0;
         ret = 1;
     }
     return ret;
@@ -2884,17 +2884,17 @@ extern void func_00129F40();
 extern char D_00153BB8[];
 
 void func_0012C278(void *arg0) {
-    char *s = (char *)arg0;
-    int n = *(int *)(s + 0x118);
+    Obj40 *s = (Obj40 *)arg0;
+    int n = s->unk118;
 
-    if (*(int *)(s + 0x120) != 0) {
+    if (s->unk120 != 0) {
         func_0012C468(s, D_00153BB8);
-    } else if (*(int *)(s + 0x174) == 3) {
-        func_00129E30(s, *(int *)(s + 0x1BC), n - 1, n - 1);
+    } else if (s->unk174 == 3) {
+        func_00129E30(s, (int)s->slots[0].unk04, n - 1, n - 1);
     } else {
-        func_00129F40(s, *(int *)(s + 0x1CC), *(int *)(s + 0x1DC));
+        func_00129F40(s, (int)s->slots[1].unk04, (int)s->slots[2].unk04);
     }
-    *(int *)(s + 0x120) = 0;
+    s->unk120 = 0;
 }
 
 /*
