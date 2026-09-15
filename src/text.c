@@ -235,6 +235,31 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001EC120);
    fallthrough fragment, same category as func_00113AD8 in core_text. */
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC208);
 
+/*
+ * REVERTED (size mismatch: ours 92, retail 96). Logic is certain:
+ *
+ *   void func_001EC210(void *arg0) {
+ *       if (*(short *)((char *)arg0 + 0x86) != 0) {
+ *           if (*(int *)(D_001871D0 + 0xC4) == 0) return;
+ *           func_0020D678();
+ *           *(int *)(D_001871D0 + 0xC4) = 0;
+ *           return;
+ *       }
+ *       if (*(int *)(D_001871D0 + 0xC4) != 0) return;
+ *       *(int *)(D_001871D0 + 0xC4) = func_001E97C8(D_001871D0 - 0x50);
+ *   }
+ *
+ * (`D_001871D0 - 0x50` is the enclosing struct's base; the global is a
+ * field 0x50 into it.)
+ *
+ * The missing 4 bytes are one instruction: retail restores `$31` in the
+ * delay slot of BOTH early-exit branches as well as at the end, i.e. it
+ * duplicates the epilogue reload, while GCC branches to a single shared
+ * epilogue. Writing it as nested ifs and as mirrored early returns both
+ * give 92 -- the early-return form matches retail's control flow exactly
+ * and still shares the epilogue, so this is the delay-slot filler, not
+ * the source shape.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC210);
 
 extern char D_001E8F80[];
@@ -3813,15 +3838,14 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00238F98);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00239180);
 
-/*
- * Reverted (14/60). Logic is func_00116248(*(int*)(D_001E66C0+0x2C),
- * D_001E8DA0, arg0) then *(int*)(D_001E66C0+0x44) = 0, with arg0 moved
- * to $6 up front. Retail materializes &D_001E66C0 into $16 and reuses it
- * for both the argument load and the trailing store; needs the
- * base-pointer-local lever plus argument-ordering work. Not chased
- * further this round.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_002391A8);
+extern char D_001E66C0[];
+extern char D_001E8DA0[];
+
+void func_002391A8(int arg0) {
+    char *b = D_001E66C0;
+    func_00116248(*(int *)(b + 0x2C), D_001E8DA0, arg0);
+    *(int *)(b + 0x44) = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002391E8);
 
@@ -3833,7 +3857,18 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00239838);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00239948);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002399A0);
+extern char D_00161178[];
+extern char D_00161180[];
+/* Unprototyped: the two call sites pass different argument counts. */
+extern void func_00116248();
+
+void func_002399A0(void *arg0, int arg1) {
+    if (arg1 >= 1000) {
+        func_00116248(arg0, D_00161178, arg1 / 1000, arg1 % 1000);
+    } else {
+        func_00116248(arg0, D_00161180, arg1);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00239A00);
 
