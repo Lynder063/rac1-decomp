@@ -2313,9 +2313,45 @@ int func_0012D4B0(int arg0) {
  */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D4E0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D500);
+extern int func_0012D4E0(int);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D568);
+/*
+ * Close, not exact (4/104), same size so inert. The ONLY divergence is
+ * prologue save order: retail emits `sd $16, 0($sp)` then
+ * `sd $31, 0x10($sp)`, this compiler emits them the other way round.
+ * Identical offsets, identical everything else including every delay
+ * slot. Not expressible from C -- these are compiler-emitted prologue
+ * stores, not source statements, so neither statement order nor the
+ * declaration-order lever reaches them.
+ */
+void func_0012D500(unsigned char *p) {
+    p[7] = func_0012D4E0(p[7]);
+    p[6] = func_0012D4E0(p[6]);
+    p[5] = func_0012D4E0(p[5]);
+    p[3] = func_0012D4E0(p[3]);
+    p[2] = func_0012D4E0(p[2]);
+    p[1] = func_0012D4E0(p[1]);
+}
+
+extern int func_0012D4B0(int);
+
+/*
+ * Close, not exact (4/104), same size so inert. The ONLY divergence is
+ * prologue save order: retail emits `sd $16, 0($sp)` then
+ * `sd $31, 0x10($sp)`, this compiler emits them the other way round.
+ * Identical offsets, identical everything else including every delay
+ * slot. Not expressible from C -- these are compiler-emitted prologue
+ * stores, not source statements, so neither statement order nor the
+ * declaration-order lever reaches them.
+ */
+void func_0012D568(unsigned char *p) {
+    p[7] = func_0012D4B0(p[7]);
+    p[6] = func_0012D4B0(p[6]);
+    p[5] = func_0012D4B0(p[5]);
+    p[3] = func_0012D4B0(p[3]);
+    p[2] = func_0012D4B0(p[2]);
+    p[1] = func_0012D4B0(p[1]);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D5D0);
 
