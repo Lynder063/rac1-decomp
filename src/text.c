@@ -263,7 +263,20 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001EC208);
  */
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC210);
 
-extern char D_001E8F80[];
+/* 0x14-byte dispatch records, indexed by the type id at +0x8C.
+   Declared as a real struct array, not `char[]` + byte offset: the two
+   forms are not codegen-equivalent here. Retail emits `addu $2,$2,$3`
+   (base, index); a char-pointer form emits `addu $2,$3,$2` (index,
+   base) and no amount of reordering the C addition changes it, because
+   GCC canonicalises the PLUS before operand order is chosen. Indexing
+   a typed array puts the base first. See func_001EC270/func_001EC780. */
+typedef struct {
+    char unk_00[8];
+    void (*fn_08)(void *);
+    char unk_0C[4];
+    void (*fn_10)(void *);
+} DispatchRec;
+extern DispatchRec D_001E8F80[];
 
 /*
  * 1/68, and the residual is one commutative-operand-order byte: retail
@@ -283,11 +296,7 @@ extern char D_001E8F80[];
  * choice question. Kept per the same-size-tiny-diff precedent.
  */
 void func_001EC270(void *arg0) {
-    int idx = *(short *)((char *)arg0 + 0x8C) * 0x14;
-    char *rec = D_001E8F80;
-    void (*fn)(void *);
-    rec = rec + idx;
-    fn = *(void (**)(void *))(rec + 8);
+    void (*fn)(void *) = D_001E8F80[*(short *)((char *)arg0 + 0x8C)].fn_08;
     if (fn != 0) {
         fn(arg0);
     }
@@ -304,11 +313,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001EC5B8);
 /* Same vtable dispatch as func_001EC270, on the +0x10 slot instead of
    +8; identical 1/68 operand-order residual, same cause. */
 void func_001EC780(void *arg0) {
-    int idx = *(short *)((char *)arg0 + 0x8C) * 0x14;
-    char *rec = D_001E8F80;
-    void (*fn)(void *);
-    rec = rec + idx;
-    fn = *(void (**)(void *))(rec + 0x10);
+    void (*fn)(void *) = D_001E8F80[*(short *)((char *)arg0 + 0x8C)].fn_10;
     if (fn != 0) {
         fn(arg0);
     }
