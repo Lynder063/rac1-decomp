@@ -1362,7 +1362,31 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DC08);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DC40);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DC50);
+extern void func_00118CF0(void *);
+extern void func_00118CE0(void *);
+
+/* Reads a word through func_00118CF0, rewrites its 13..15 bit field to 1,
+   pushes it back, re-reads it and restores the original. Returns whether
+   the field read back as 0. `srl` (not `sra`) at the end is the tell that
+   the scratch word is unsigned.
+
+   Not exact: 10/104, same size. Every instruction and operand matches;
+   the residual is entirely prologue scheduling -- retail emits
+   `sd $16,0x10; sd $31,0x20` back to back and spends the first call's
+   delay slot on the argument, this build sinks the `$16` save into the
+   delay slot instead. See the gcc 2.9-ee note in docs/DECOMP_PROGRESS.md:
+   this is the sq-then-substitute pipeline scheduling against the wrong
+   store width, not a source-shape problem. */
+int func_0011DC50(void) {
+    unsigned int saved;
+    unsigned int cur;
+    func_00118CF0(&saved);
+    cur = (saved & 0xFFFF1FFF) | 0x2000;
+    func_00118CE0(&cur);
+    func_00118CF0(&cur);
+    func_00118CE0(&saved);
+    return ((cur >> 13) & 7) == 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DCB8);
 
@@ -1547,7 +1571,32 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00120858);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001208E4);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00120910);
+extern void func_001208E4();
+extern void func_00118B20(int, void *, int);
+extern void func_00118C80(int);
+
+/* Same stack-descriptor idiom as func_0011BBF0. The second argument to
+   func_00118B20 is the address of func_001208E4's *second* instruction --
+   retail builds it as one %hi/%lo pair on `func_001208E4 + 4`, so it is a
+   code address the source names by symbol, not a separate label.
+
+   Not exact: 24/104, same size. `unsigned short arg0` is confirmed -- it
+   is what puts `andi $17,$4,0xFFFF` in the prologue rather than at the
+   call site (declaring it `int` and masking at the call costs 4 more
+   bytes of mismatch). The rest is the same prologue-scheduling residual
+   as func_0011DC50: retail interleaves the three descriptor stores
+   between the `$16` and `$31` saves, this build front-loads `sd $31`. */
+void func_00120910(unsigned short arg0) {
+    int buf[8];
+    int h;
+    buf[5] = 0;
+    buf[2] = 0;
+    buf[1] = 1;
+    h = func_00118C70(buf);
+    func_00118B20(arg0, (char *)func_001208E4 + 4, h);
+    func_00118CB0(h);
+    func_00118C80(h);
+}
 
 extern int func_00120F30(int);
 extern int func_0011D960(void);
