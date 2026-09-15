@@ -507,7 +507,40 @@ int func_00116FA0(int arg0, void *arg1) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00116FE8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001170A0);
+extern void func_00113AE0(void *);
+extern void func_00117118(void *, void *, int, int);
+
+/*
+ * Close, not exact (20/120), same size. Logic is certain: fault in the
+ * default object from D_0012F86C if the slot at +0x54 is empty, make
+ * sure it is initialised (field +0x38), then hand it to func_00117118
+ * together with the caller's two arguments.
+ *
+ * Two things were needed to get the size right. Every reference has to
+ * be written through *(s + 0x54) rather than through a local `p`: with
+ * a local, GCC decided the value it passed to func_00113AE0 was still
+ * live in $4 afterwards and dropped the reload for func_00117118's
+ * first argument, four bytes short (and, incidentally, wrong -- $4 is
+ * call-clobbered). Spelling out the field access makes it reload, as
+ * retail does.
+ *
+ * The residual is only that $17 and $18 hold arg1 and arg2 the other
+ * way round from retail. Both pseudos have identical live ranges and
+ * use counts, so the allocator is breaking a tie; introducing explicit
+ * locals in the opposite order changes nothing (GCC coalesces them).
+ * Same class as the destination-choice residuals documented elsewhere.
+ */
+void func_001170A0(void *arg0, int arg1, int arg2) {
+    char *s = (char *)arg0;
+
+    if (*(char **)(s + 0x54) == 0) {
+        *(char **)(s + 0x54) = (char *)D_0012F86C;
+    }
+    if (*(int *)(*(char **)(s + 0x54) + 0x38) == 0) {
+        func_00113AE0(*(char **)(s + 0x54));
+    }
+    func_00117118(*(char **)(s + 0x54), s, arg1, arg2);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00117118);
 
@@ -1266,9 +1299,27 @@ int func_0011CBC8(int arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011CC38);
+/* Sibling of func_0011CBC8 with command id 2 and -1 as the RPC failure
+   result, so the two failure exits cannot share a return.
 
-extern void func_0011CC38(void);
+   Defined old-style ON PURPOSE. func_0011CCB0 just below calls this with
+   NO argument at all -- retail's call has a bare nop in its delay slot --
+   which a prototype would reject. A K&R definition creates no prototype,
+   so both functions compile as retail's source evidently did. */
+int func_0011CC38(arg0)
+int arg0;
+{
+    if (D_0012FDAC < 0) {
+        return 0;
+    }
+    D_001581C0 = arg0;
+    if (func_0011B4C8(D_00158140, 2, 0, &D_001581C0, 4,
+                      &D_00158180, 4, 0, 0) >= 0) {
+        return D_00158180;
+    } else {
+        return -1;
+    }
+}
 
 void func_0011CCB0(void) {
     func_0011CC38();
