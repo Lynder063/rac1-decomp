@@ -2292,7 +2292,14 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012B008);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012B100);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012B250);
+int func_0012B250(void *arg0) {
+    func_0012AB60(arg0, 0x38);
+    func_0012AB60(arg0, 0x28);
+    while (func_0012AAA8(arg0, 1) == 1) {
+        func_0012AB60(arg0, 0x18);
+    }
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012B2C0);
 
@@ -2409,7 +2416,27 @@ void func_0012BD50(void *arg0) {
     *(int *)(p + 0x8) = *(int *)(p + 0xC);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BD60);
+extern void func_0012C468(void *, void *);
+extern char D_00153B38[];
+
+/* Bump allocator out of a region {base, size, used}: round `used` up to
+   `align`, reserve `size` bytes, and hand back the aligned offset. On
+   overflow it reports through func_0012C468 and returns 0 WITHOUT
+   touching `used`. */
+unsigned int func_0012BD60(void *arg0, char *r, unsigned int size,
+                           unsigned int align) {
+    unsigned int aligned;
+    unsigned int end;
+
+    aligned = ((*(unsigned int *)(r + 0x8) + align - 1) / align) * align;
+    end = aligned + size;
+    if (*(unsigned int *)(r + 0x0) + *(unsigned int *)(r + 0x4) < end) {
+        func_0012C468(arg0, D_00153B38);
+        return 0;
+    }
+    *(unsigned int *)(r + 0x8) = end;
+    return aligned;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BDD0);
 
