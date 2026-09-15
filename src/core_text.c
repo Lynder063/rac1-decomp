@@ -2716,14 +2716,13 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BB28);
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BB78);
 
 int func_0012BB98(void *arg0) {
-    char *p = (char *)arg0;
-    return *(int *)(*(char **)(p + 0x40) + 4) == 0;
+    return ((Wrapper *)arg0)->obj->unk004 == 0;
 }
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BBA8);
 
 int func_0012BBF8(void *arg0) {
-    Slot1B8 *slots = (Slot1B8 *)(*(char **)((char *)arg0 + 0x40) + 0x1B8);
+    Slot1B8 *slots = ((Wrapper *)arg0)->obj->slots;
     char *p;
     p = (char *)slots[0].unk00; if (p != 0) *(int *)(p + 0x28) = 0;
     p = (char *)slots[1].unk00; if (p != 0) *(int *)(p + 0x28) = 0;
@@ -2747,13 +2746,11 @@ int func_0012BBF8(void *arg0) {
  * documented near-misses.
  */
 int func_0012BC50(void *arg0, int arg1, int arg2, int arg3) {
-    char *base = *(char **)((char *)arg0 + 0x40);
-    char *p = base + arg1 * 8;
-    char *q = (base + 0xC) + arg1 * 8;
+    Handler *h = &((Wrapper *)arg0)->obj->handlers[arg1];
     int old;
-    *(int *)(p + 0x10) = arg3;
-    old = *(int *)q;
-    *(int *)q = arg2;
+    h->data = arg3;
+    old = (int)h->fn;
+    h->fn = (void *)arg2;
     return old;
 }
 
@@ -2775,12 +2772,12 @@ int func_0012BC50(void *arg0, int arg1, int arg2, int arg3) {
 void *func_0012BC78(void *arg0, int *arg1) {
     void *result = 0;
     if (arg0 != 0) {
-        char *tbl = *(char **)((char *)arg0 + 0x40);
+        Obj40 *tbl = ((Wrapper *)arg0)->obj;
         if (tbl != 0) {
-            char *entry = tbl + (*arg1 << 3);
-            void *(*fn)() = *(void *(**)())(entry + 0xC);
+            Handler *entry = &tbl->handlers[*arg1];
+            void *(*fn)() = (void *(*)())entry->fn;
             if (fn != 0) {
-                result = fn(arg0, arg1, *(int *)(entry + 0x10));
+                result = fn(arg0, arg1, entry->data);
             }
         }
     }
@@ -2846,7 +2843,7 @@ extern void func_0012C0A0(void *);
 extern void func_0012BF40(void *);
 
 void func_0012C058(void *arg0) {
-    Obj40 *inner = *(Obj40 **)((char *)arg0 + 0x40);
+    Obj40 *inner = ((Wrapper *)arg0)->obj;
     if (inner->unk174 != 3) {
         func_0012C0A0(arg0);
     } else {
@@ -2859,13 +2856,13 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C0A0);
 extern void func_0012C278(void *);
 
 int func_0012C200(void *arg0) {
-    char *p = (char *)arg0;
-    Obj40 *inner = *(Obj40 **)(p + 0x40);
+    Wrapper *w = (Wrapper *)arg0;
+    Obj40 *inner = w->obj;
     int ret = 0;
 
     if (inner->unk004 != 0 && inner->unk008 != 0) {
         func_0012C278((void *)inner);
-        *(int *)(p + 0x8) = inner->unk118 - inner->unk0AC;
+        w->unk08 = inner->unk118 - inner->unk0AC;
         inner->unk004 = 0;
         ret = 1;
     }
@@ -3042,7 +3039,7 @@ extern int func_0012CE48(void *);
 /* Tail call with argument setup: retail is
    `lw $4,0x40($4)` / `j func_0012CE48` / `addiu $4,$4,0x4C`. */
 int func_0012CC80(char *a) {
-    return func_0012CE48(*(char **)(a + 0x40) + 0x4C);
+    return func_0012CE48((char *)&((Wrapper *)a)->obj->handlers[8]);
 }
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CC8C);
