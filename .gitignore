@@ -28,3 +28,7 @@ build-sn/
 
 # Editor/tool configs that are not part of the project
 opencode.json
+
+# Ghidra reference decompilation -- regenerate with tools/ghidra/run_headless.sh.
+# The table and the tooling are tracked; the multi-megabyte dumps are not.
+docs/ghidra/*.c
