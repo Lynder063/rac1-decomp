@@ -1369,3 +1369,19 @@ clear to `por $2,$0,$0` / `sq $2,off($base)`, which is both wrong and one
 instruction longer than retail's `sd $0,off($base)`. Use `long` for
 64-bit values. Found while converting `func_0023D018`, where it was the
 whole size mismatch.
+
+## Operand order in C does not steer `addu`'s destination register
+
+"allocator destination-reuse" is the largest risky bucket (71 stubs): the
+instruction sequence is right, but retail accumulates into one operand's
+register and we accumulate into the other's — `addu $v1,$v1,$a0` against
+`addu $a0,$a0,$v1`.
+
+Writing the operands in the other order does **not** move it. Tested on
+`func_0020D960` and `func_0021F610`: swapping `base + index` to
+`index + base` produced byte-identical output both times, because the
+compiler canonicalises the expression tree before register allocation.
+The choice is made by the allocator, not by the source. Don't spend
+another round on operand order — if a residual is only a destination
+register, the lever is elsewhere (which pseudo is created first, or how
+long each value stays live), not the `+`.

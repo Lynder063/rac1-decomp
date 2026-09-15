@@ -2704,7 +2704,19 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00215A10);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215A98);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00215B18);
+extern float func_0020D830(void);
+extern float func_00215A98(int, float);
+
+int func_00215B18(char *arg0, float arg1) {
+    float now = func_0020D830();
+    float a = func_00215A98(4, now - arg1);
+    float b = func_00215A98(4, *(float *)(arg0 + 0x58) * *(float *)(arg0 + 0x5C));
+
+    if (arg1 <= now && a < b) {
+        return 1;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215BA8);
 
@@ -3345,7 +3357,27 @@ void func_0021F200(char *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021F238);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021F610);
+extern char *D_001D5F74 NOT_SDA;
+extern void func_0020E180(int, int);
+
+int func_0021F610(char *arg0) {
+    char *p = *(char **)(D_001D5F74 + 0x40);
+    char *e = *(int *)(p + 0x3C) * 10 + *(char **)(p + 0x48);
+    int v;
+
+    if (((unsigned char *)&D_0013D5C8)[*(short *)(e + 6)] == 0) {
+        return 0;
+    }
+    v = *(int *)(arg0 + 0x44);
+    if (v != 0) {
+        func_0020E180(v, 1);
+    }
+    v = *(int *)(arg0 + 0x48);
+    if (v != 0) {
+        func_0020E180(v, 1);
+    }
+    return 8;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021F6A0);
 
@@ -3828,7 +3860,33 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0022DBE8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022DD68);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022EA20);
+extern void func_00120F30(int);
+extern int func_0012E060(void *, int);
+extern void func_0012EE70(int);
+extern void func_0012EF48(int);
+extern void func_0012E2E8(void);
+
+/* Reentrancy-guarded: base+0x44 is held at 1 for the duration. The
+   return value is func_0012E060's, captured in the delay slot of the
+   *next* call. */
+int func_0022EA20(void *arg0) {
+    char *base = D_0013E650;
+    int r = 0;
+
+    if (*(int *)(base + 0x44) == 0) {
+        *(int *)(base + 0x44) = 1;
+        func_00120F30(0);
+        r = func_0012E060(arg0, 0);
+        func_0012EE70(1);
+        func_0012EF48(0);
+        func_0012E2E8();
+        *(int *)(base + 0x44) = 0;
+    }
+    return r;
+}
+
+/* 12 bytes of post-endlabel nop padding in retail -- see func_001F6668. */
+__asm__(".section .text\n\tnop\n\tnop\n\tnop\n");
 
 void func_0022EAB0(int idx) {
     if (idx >= 0) {
