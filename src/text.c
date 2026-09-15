@@ -1094,7 +1094,37 @@ void func_001FFA90(void) {
     p[4] = v;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FFAB8);
+/* Bump allocator out of the D_0019A4E8 arena: p[4] is the cursor,
+   p[5] the limit. Rounds the request up to 16 bytes. */
+int func_001FFAB8(int size) {
+    int *p = &D_0019A4E8;
+    int cur;
+
+    if (p[4] == 0) {
+        func_001FFA90();
+    }
+    if (p[5] - p[4] < size) {
+        return 0;
+    }
+    cur = p[4];
+    size = (size + 15) & 0xFFFFFFF0;
+    p[4] = cur + size;
+    return cur;
+}
+
+/*
+ * 12 bytes of nop padding follow func_001FFAB8 in retail, after
+ * `endlabel` in asm/nonmatchings/text/func_001FFAB8.s -- the same trap
+ * documented above func_001F6668. Dropping it shifted the rest of the
+ * segment by -8 (the next .align 3 only recovered 4 of the 12) and broke
+ * func_00202790 and func_002208F8, both of which were exact and are
+ * instruction-for-instruction identical apart from their jal targets.
+ */
+__asm__(".section .text
+	nop
+	nop
+	nop
+");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FFB38);
 
@@ -1127,6 +1157,32 @@ void func_001FFD30(void *arg0, int arg1) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FFD98);
 
+/* func_001FFDA0: 28 of retail's 29 instructions reproduce exactly from
+   the C below; the one missing instruction is a standalone load-delay
+   `nop` retail carries between the loop's `lw $2,0($3)` and the `bnel`
+   consuming it. This compiler prints that slot as `#nop` (commented out)
+   at every one of its 101 sites, so the class is unreachable from C with
+   our flags -- same family as the FPU load-delay nops rank_candidates.py
+   already blocks. Recovered source, for the readability phase:
+
+     typedef struct { int unk00, unk04; char pad08[0x1C];
+                      int unk24; char pad28[0x3C];
+                      int unk64, unk68; char pad6C[0x24]; } Rec90;
+     extern Rec90 D_00199C60[] NOT_SDA;
+
+     void func_001FFDA0(int arg0, int arg1) {
+         int i;
+         for (i = 0; i < 13; i++)
+             if (D_00199C60[i].unk64 == arg0) break;
+         if (i < 13) {
+             D_00199C60[i].unk24 = arg1;
+             if (D_00199C60[i].unk68 == 0) D_00199C60[i].unk04 = arg1;
+         }
+     }
+
+   Indexing the extern array directly (rather than caching a base pointer
+   in a local) is what reproduces retail's per-access %lo
+   re-materialization -- worth remembering for the next table walker. */
 INCLUDE_ASM("asm/nonmatchings/text", func_001FFDA0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FFE18);
@@ -1638,7 +1694,24 @@ int func_00208328(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00208338);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002083E0);
+extern int D_001A0218[] NOT_SDA;
+extern void func_00208458(void *, unsigned char *, int);
+extern void func_00208688(void *, unsigned char *);
+
+void func_002083E0(void *arg0, unsigned char *arg1, int arg2) {
+    /* func_00209040 is empty in retail and takes no arguments; $4/$5/$6
+       still hold our own incoming arguments across it, which is why retail
+       saves them into $16-$18 rather than reloading. */
+    func_00209040();
+    if (!D_001A0218[0]) {
+        return;
+    }
+    if (*arg1 & 1) {
+        func_00208458(arg0, arg1, arg2);
+    } else {
+        func_00208688(arg0, arg1);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00208458);
 
@@ -2163,7 +2236,32 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0020D830);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020D928);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020D960);
+/* Attach a fresh node to arg0's list at +0x64, seeded with 1.0f scales. */
+void func_0020D960(char *arg0, int arg1, unsigned char *arg2) {
+    char *e;
+    char *f;
+    char *tbl;
+    int idx;
+
+    if (arg2[1] != 0) {
+        return;
+    }
+    arg2[0] = (char)arg1;
+    arg2[1] = 1;
+    *(float *)(arg2 + 0x1C) = 1.0f;
+    *(float *)(arg2 + 0x20) = 1.0f;
+    *(float *)(arg2 + 0x24) = 1.0f;
+    *(float *)(arg2 + 0x28) = 1.0f;
+
+    tbl = *(char **)(*(char **)(arg0 + 0x24) + 0x1C);
+    idx = arg2[0];
+    e = *(char **)(tbl + idx * 4 + 4);
+    f = *(unsigned char *)e + e;
+    *(int *)(arg2 + 4) = (*(unsigned char *)(f + 4) << 6) + 0x70000000;
+
+    *(int *)(arg2 + 8) = *(int *)(arg0 + 0x64);
+    *(int *)(arg0 + 0x64) = (int)arg2;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020D9D8);
 
@@ -2360,7 +2458,16 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002140F8);
  */
 INCLUDE_ASM("asm/nonmatchings/text", func_00214158);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002141A8);
+extern float func_00214158(void);
+extern float func_002140F8(float, float);
+extern void func_00215C00(void *, float, float, float);
+
+void func_002141A8(void *arg0, float arg1, float arg2) {
+    float r1 = func_00214158();
+    float r2 = func_00214158();
+
+    func_00215C00(arg0, func_002140F8(arg1, arg2), r1, r2);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00214220);
 
