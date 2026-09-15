@@ -2469,6 +2469,51 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001294A0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00129530);
 
+/*
+ * REVERTED (size mismatch: ours 148, retail 144). Logic is certain:
+ *
+ *   void func_00129600(void *arg0, int arg1, int arg2) {
+ *       char *s = (char *)arg0;
+ *       int v, w;
+ *
+ *       if (arg2 != 0) {
+ *           if (*(int *)(s + 0x174) == 3) {
+ *               if (*(int *)(s + 0x150) == 3) {
+ *                   v = *(int *)(s + 0x1C4);
+ *               } else {
+ *                   v = *(int *)(s + 0x1B8);
+ *               }
+ *               func_00129E30(s, v, arg1 - 1, arg1);
+ *           } else {
+ *               if (*(int *)(s + 0x150) == 3) {
+ *                   v = *(int *)(s + 0x1D4);
+ *                   w = *(int *)(s + 0x1E4);
+ *               } else {
+ *                   v = *(int *)(s + 0x1C8);
+ *                   w = *(int *)(s + 0x1D8);
+ *               }
+ *               func_00129F40(s, v, w, arg1 - 1);
+ *           }
+ *       }
+ *       if (*(int *)(s + 0xF8) == 1) {
+ *           *(int *)(s + 0xF8) = 2;
+ *       }
+ *   }
+ *
+ * Note the arity evidence: func_00129F40 takes FOUR arguments here but
+ * only three at its call in func_0012C278, so whichever declaration is
+ * in scope must be prototype-less (see the K&R note in
+ * docs/DECOMP_PROGRESS.md).
+ *
+ * One instruction over, and it is register choice again. arg1 has to
+ * move out of $5 because $5 becomes an outgoing argument. Retail moves
+ * it to $7 with a single `daddu $7,$5,$0` -- $7 is free until it is
+ * needed, and it is exactly where the E30 call wants arg1 anyway, while
+ * the F40 path overwrites it in place with arg1 - 1. This compiler
+ * parks it in $8 instead and then needs a second `move $7,$8` for the
+ * E30 call. Hoisting arg1 or arg1 - 1 into named locals does not move
+ * it.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00129600);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00129690);
@@ -2776,7 +2821,7 @@ void func_0012C268(void *arg0) {
 }
 
 extern void func_00129E30(void *, int, int, int);
-extern void func_00129F40(void *, int, int);
+extern void func_00129F40();
 extern char D_00153BB8[];
 
 void func_0012C278(void *arg0) {
