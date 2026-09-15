@@ -2616,6 +2616,25 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012AA70);
  */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012AAA8);
 
+/*
+ * Reverted: decoded but not compilable as written. Banking the decode
+ * because that is the expensive part.
+ *
+ * It is a bitstream reader. Consume n bits from the 64-bit accumulator
+ * at +0x0, then refill it a byte at a time from the cursor at +0xC
+ * until at least 0x39 bits are available, wrapping the cursor back to
+ * +0x20 when it reaches the end pointer at +0x24. +0x10 holds the bit
+ * count, +0x18 the running total.
+ *
+ * Why it does not build: the refill needs a 64-bit shift by a VARIABLE
+ * amount (`(long long)*p << (0x38 - bits)`), and this compiler rejects
+ * that outright -- `unsupported wide integer operation`. That is the
+ * same limitation already recorded for ordered 64-bit compares; shifts
+ * by a constant are fine, by a variable are not. So this needs either
+ * inline asm for the shift, or a reformulation that keeps the shift
+ * amount constant. Do not simply retype the locals -- the operation
+ * itself is what is refused.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012AAC8);
 
 /*
