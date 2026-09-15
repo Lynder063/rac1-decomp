@@ -198,4 +198,47 @@ typedef struct Wrapper {
     /* 0x40 */ Obj40 *obj;
 } Wrapper;
 
+/*
+ * The object func_0023E560 initialises: five contiguous ints, with a
+ * pointer at +0x04 to `count` blocks of 0x138C0 bytes each, whose first
+ * word the constructor zeroes.
+ *
+ * Only one decompiled function touches this so far, which normally is
+ * too thin to justify a struct. It is defined anyway because the layout
+ * is not inferred: all five fields are written back to back by a single
+ * constructor, so there is no padding to guess at and no ambiguity
+ * about the stride.
+ *
+ * `count` is named because it is used as one -- it is the loop trip
+ * count for walking the blocks. The rest keep unkNN; in particular
+ * unk04 is a pointer to something 0x138C0 bytes per element and there
+ * is no evidence yet for what that is.
+ */
+typedef struct Obj23E {
+    /* 0x00 */ int   unk00;
+    /* 0x04 */ int   unk04;   /* base of `count` blocks, stride 0x138C0 */
+    /* 0x08 */ int   unk08;
+    /* 0x0C */ int   unk0C;
+    /* 0x10 */ int   count;
+} Obj23E;
+
+/*
+ * OPEN QUESTION -- deliberately NOT defined: the global at D_0013D390.
+ *
+ * Two functions touch it. func_00209290 gives 0xB0, 0xCC, 0xE4, 0xE8
+ * and 0x20/0x3C/0x58/0x74/0x90; func_00209418 gives 0x1C, 0xE4, 0xE8.
+ * The 0x20..0x90 run is a clean stride-0x1C array of five elements,
+ * each with a sentinel of -1 in its first word.
+ *
+ * The blocker is that func_00209290 also indexes `(b + 0xB0) + idx *
+ * 0xC0`, and a 0xC0 stride starting at 0xB0 swallows 0xCC, 0xE4 and
+ * 0xE8, which the same function writes as plain fields. Those two
+ * readings cannot both be siblings in one struct, and two functions is
+ * not enough to say which is wrong -- 0xB0 may not be the true array
+ * base, or the index may be bounded in a way neither function shows.
+ *
+ * Forcing a layout here would bake in a guess, so this stays raw until
+ * a third user of D_0013D390 is decompiled and settles it.
+ */
+
 #endif /* STRUCTS_H */
