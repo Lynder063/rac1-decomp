@@ -669,11 +669,36 @@ void func_001F6E18(char *a, void *b, void *c, unsigned char *d, int e) {
     func_001F6668(p, b, c, d, (void *)e, mode, D_001DFB10);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F6EA8);
+/* func_001F6EA8/func_001F6F40/func_001F6FD8 are the func_001F6CF8 triple
+   centred instead of left-aligned: the step-back is half the measured
+   value, and the adjusted position is returned. Typed all-int to match
+   the extern func_001F7288 already declares for func_001F6FD8. */
+int func_001F6EA8(int a, int b, int c, int d, int e) {
+    int p = a - (func_001F6600((unsigned char *)d, e) >> 1);
+    int mode = func_001F4868(1);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F6F40);
+    func_001F6668((void *)p, (void *)b, (void *)c, (void *)d, (void *)e,
+                  mode, D_001DF3D0);
+    return p;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F6FD8);
+int func_001F6F40(int a, int b, int c, int d, int e) {
+    int p = a - (func_001F6620((unsigned char *)d, e) >> 1);
+    int mode = func_001F4868(2);
+
+    func_001F6668((void *)p, (void *)b, (void *)c, (void *)d, (void *)e,
+                  mode, D_001DF770);
+    return p;
+}
+
+int func_001F6FD8(int a, int b, int c, int d, int e) {
+    int p = a - (func_001F6640((unsigned char *)d, e) >> 1);
+    int mode = func_001F4868(3);
+
+    func_001F6668((void *)p, (void *)b, (void *)c, (void *)d, (void *)e,
+                  mode, D_001DFB10);
+    return p;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F7070);
 
@@ -1273,7 +1298,6 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00201948);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00201960);
 
-extern int func_001F6FD8(int, int, int, int, int);
 extern void func_00201960(int, int, int, int, int);
 
 /*
