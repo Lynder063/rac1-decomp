@@ -138,11 +138,37 @@ typedef struct Slot1B8 {
  * not embed this by value, allocate it, or index an array of it -- it is
  * only ever used through a pointer to memory the game already owns.
  */
+/*
+ * One entry of the handler table at Obj40 +0x0C.
+ *
+ * This is what explains a shape that looks wrong in the raw offsets.
+ * func_0012BC50 indexes with a stride of 8 but writes at +0x0C and
+ * +0x10, which overlaps the next entry and reads as nonsense; so does
+ * func_0012BC78, which loads a function pointer from +0x0C and calls it
+ * with the value at +0x10. Both make sense the moment the array is
+ * based at +0x0C instead of at +0x00: entry i is at 0x0C + i*8, fn at
+ * its +0x00 and data at its +0x04. The two functions then line up
+ * exactly -- func_0012BC50 installs the pair that func_0012BC78 later
+ * loads and invokes.
+ *
+ * The array LENGTH (0x14) is not established. It is the span between
+ * +0x0C and the next known field at +0xAC, so it is an upper bound on
+ * what fits, not a count anything observed. The two indexed accessors
+ * take their index from the caller and never bound it. func_0012CC80
+ * is the one place a constant index appears -- it passes +0x4C, which
+ * is exactly &handlers[8] -- and that is the only direct evidence the
+ * array reaches even that far.
+ */
+typedef struct Handler {
+    /* 0x00 */ void *fn;
+    /* 0x04 */ int   data;
+} Handler;  /* 0x8 */
+
 typedef struct Obj40 {
     /* 0x000 */ char    unk000[0x4];
     /* 0x004 */ int     unk004;
     /* 0x008 */ int     unk008;
-    /* 0x00C */ char    unk00C[0xA0];
+    /* 0x00C */ Handler handlers[0x14];
     /* 0x0AC */ int     unk0AC;
     /* 0x0B0 */ char    unk0B0[0x68];
     /* 0x118 */ int     unk118;
@@ -157,5 +183,19 @@ typedef struct Obj40 {
     /* 0x1E8 */ char    unk1E8[0x638];
     /* 0x820 */ int     unk820;
 } Obj40;
+
+/*
+ * The wrapper that holds an Obj40 at its +0x40. Small, but it is the
+ * object most of the func_0012Bxxx/func_0012Cxxx entry points actually
+ * receive -- they immediately load ->obj and work through that, which
+ * is the indirection func_0012C200 makes explicit by loading it and
+ * passing it straight to func_0012C278.
+ */
+typedef struct Wrapper {
+    /* 0x00 */ char   unk00[0x8];
+    /* 0x08 */ int    unk08;
+    /* 0x0C */ char   unk0C[0x34];
+    /* 0x40 */ Obj40 *obj;
+} Wrapper;
 
 #endif /* STRUCTS_H */
