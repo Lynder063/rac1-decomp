@@ -51,9 +51,9 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **310 functions
-have real C; 272 are exact on size and bytes; 0 are size-mismatched and
-38 byte-mismatched** — the 34 being deliberately-kept documented
+Current audited state (from `tools/sweep_matches.py`): **314 functions
+have real C; 276 are exact on size and bytes; 0 are size-mismatched and
+38 byte-mismatched** — the 38 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
 
@@ -355,6 +355,41 @@ Not yet tried: whether the two forms can be separated some other way
 (a different sub-build, or per-file compilation with mixed flags — note
 `-mno-split-addresses` would have to apply only to store-only functions,
 which is not how translation units divide).
+
+## SOLVED: tail calls — post-process the call-and-return
+
+Retail forwards with a bare `j target` and no frame. GCC 2.95 has no
+sibling-call optimisation — confirmed, not assumed:
+`-foptimize-sibling-calls` is rejected by both SN sub-builds and `-O3`
+does not help — so it compiles `return f(x);` to frame + `jal` + return.
+
+`tools/fix_tail_calls.py` runs on the `-S` output and drops the prologue,
+turns `jal` into `j`, and drops the epilogue. The body and delay slot
+already match retail, because GCC schedules argument setup into the delay
+slot exactly as retail does, so nothing is moved or synthesised.
+
+Proven byte-exact on four: `func_0011DD98` (0/8), `func_0012DA28` (0/8),
+`func_0012CC80` (0/12), `func_0012CC60` (0/12). **55 functions moved from
+blocked to risky.**
+
+**Two mistakes this cost, both silent, both worth knowing:**
+
+1. **Shape-matching our own output is wrong and destructive.** The first
+   version fired on any call-and-return in *our* assembly. But retail's
+   compiler had no sibcall either, so `return f(x);` is call-and-return on
+   **both** sides — 8 already-matching functions were rewritten into size
+   mismatches and the drift took **272 exact down to 217**. The rewrite is
+   now gated on `tools/tail_call_functions.txt`, the 99 functions whose
+   *retail* form is a bare tail jump. Retail is the only valid authority.
+2. **Do not emit a `nop` for the emptied delay slot.** The assembler runs
+   under `.set reorder` and fills it; an explicit `nop` becomes a third
+   instruction, giving 12 bytes against retail's 8. Retail's `nop` there
+   is the assembler's, not the compiler's.
+
+Ranked *risky* rather than candidate because the rewriter only fires on a
+strict shape — of the 99, **47 touch `$sp`** (they keep a real frame) and
+**22 contain a second call**, so a large share will not convert. Those
+need something else.
 
 ## SOLVED: the `$gp` small-data question — the answer was `-G2`
 

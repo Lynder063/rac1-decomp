@@ -90,11 +90,15 @@ def rewrite_function(lines: list[str]) -> list[str] | None:
     if len(code) < 5:
         return None
 
-    # --- prologue: exactly `subu $sp,$sp,N` then `$31` spilled at offset 0.
+    # --- prologue: `subu $sp,$sp,N`, and a `$31` spill at offset 0 somewhere
+    # before the call. The spill is NOT required to sit immediately after the
+    # push: GCC interleaves argument setup with it (e.g. `lui $5,%hi(..)`
+    # lands between the two), so requiring adjacency rejects real tail calls.
+    #
     # Offset 0 with nothing else in the frame is what says "no locals": a
     # function with its own stack slots spills $ra above them (e.g. at 16),
     # and deleting its frame would corrupt those slots.
-    if not FRAME_PUSH.match(code[0]) or not RA_SAVE.match(code[1]):
+    if not FRAME_PUSH.match(code[0]):
         return None
     push = int(FRAME_PUSH.match(code[0]).group(1))
 
@@ -103,6 +107,11 @@ def rewrite_function(lines: list[str]) -> list[str] | None:
         return None
     j = jal_positions[0]
     after = code[j + 1:]
+
+    saves = [i for i in range(1, j) if RA_SAVE.match(code[i])]
+    if len(saves) != 1:
+        return None
+    save_at = saves[0]
 
     # --- two accepted tails, and nothing else.
     #   (a) [$31 reload, j $31, frame pop]        -- no argument setup, so
@@ -122,7 +131,7 @@ def rewrite_function(lines: list[str]) -> list[str] | None:
     if int(FRAME_POP.match(epilogue[-1]).group(1)) != push:
         return None
 
-    body = code[2:j]
+    body = [code[i] for i in range(1, j) if i != save_at]
     checked = body + ([delay] if delay else [])
     # The frame instructions must be the ONLY stack references, and there
     # must be no other control flow in the function.
@@ -135,7 +144,7 @@ def rewrite_function(lines: list[str]) -> list[str] | None:
     lead, gap, target = m.group(1), m.group(2), m.group(3)
     tail = f"{lead}j{gap}{target}\n"
 
-    drop = {idx[0], idx[1]} | {idx[j + 1 + k] for k in range(len(after))
+    drop = {idx[0], idx[save_at]} | {idx[j + 1 + k] for k in range(len(after))
                                if after[k] in epilogue and
                                (delay is None or k > 0)}
     jal_line = idx[j]
