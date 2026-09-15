@@ -1245,7 +1245,26 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011C820);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011CAE0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011CBC8);
+extern int D_0012FDAC;
+extern char D_00158140[];
+extern int D_00158180;
+extern int D_001581C0;
+
+/* Another func_0011B4C8 RPC (see func_001245F8), guarded on the handle
+   D_0012FDAC being valid. Both failure exits share the single `return 0`
+   that the early guard branches to. */
+int func_0011CBC8(int arg0) {
+    if (D_0012FDAC < 0) {
+        return 0;
+    }
+    D_001581C0 = arg0;
+    if (func_0011B4C8(D_00158140, 1, 0, &D_001581C0, 4,
+                      &D_00158180, 4, 0, 0) >= 0) {
+        return D_00158180;
+    } else {
+        return 0;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011CC38);
 
@@ -1728,7 +1747,43 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00122AD4);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00123164);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00123208);
+extern void func_00123650(void *);
+extern char D_001534E0[];
+
+/*
+ * Close, not exact (24/112), same size. Logic is certain: spin while
+ * bit 8 of *arg0 is set, and once a 0xFFFFFF countdown goes negative,
+ * report through func_0011A6C8(D_001534E0) and kick func_00123650 on
+ * every further iteration.
+ *
+ * The residual is the countdown's initial constant, and it is NOT
+ * reachable from C. Retail builds 0x00FFFFFF as
+ *     lui $17,0x100 ; addiu $17,$17,-1
+ * (the signed %hi/%lo split, which is why splat invented a bogus
+ * "D_FFFFFF" symbol for it). Both SN sub-builds emit the logical split
+ *     lui $16,0xff  ; ori $16,$16,0xffff
+ * instead, for every spelling tried: int, unsigned, long, and a
+ * (char *)0xFFFFFF pointer. gcc 2.95's mips_move_1word hands a plain
+ * CONST_INT to the assembler as `li`, and gas expands `li` with ori.
+ * The lui/addiu pair is what gcc emits for a SYMBOL address, so retail
+ * most likely got this value from an absolute/linker-defined symbol
+ * rather than a literal.
+ *
+ * The register roles are swapped with it ($16/$17 exchanged) as a knock
+ * -on of which value is materialised first; fixing that alone would not
+ * make this exact, so it was not chased.
+ */
+void func_00123208(void *arg0) {
+    int n = 0xFFFFFF;
+
+    while ((*(int *)arg0 & 0x100) != 0) {
+        if (n < 0) {
+            func_0011A6C8(D_001534E0);
+            func_00123650(arg0);
+        }
+        n--;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00123278);
 
