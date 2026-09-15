@@ -2722,14 +2722,14 @@ int func_0012BB98(void *arg0) {
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BBA8);
 
 int func_0012BBF8(void *arg0) {
-    Slot1B8 *slots = ((Wrapper *)arg0)->obj->slots;
+    char *b = *(char **)((char *)arg0 + 0x40);
     char *p;
-    p = (char *)slots[0].unk00; if (p != 0) *(int *)(p + 0x28) = 0;
-    p = (char *)slots[1].unk00; if (p != 0) *(int *)(p + 0x28) = 0;
-    p = (char *)slots[2].unk00; if (p != 0) *(int *)(p + 0x28) = 0;
-    p = (char *)slots[0].unk04; if (p != 0) *(int *)(p + 0x28) = 0;
-    p = (char *)slots[1].unk04; if (p != 0) *(int *)(p + 0x28) = 0;
-    p = (char *)slots[2].unk04; if (p != 0) *(int *)(p + 0x28) = 0;
+    p = *(char **)(b + 0x1B8); if (p != 0) *(int *)(p + 0x28) = 0;
+    p = *(char **)(b + 0x1C8); if (p != 0) *(int *)(p + 0x28) = 0;
+    p = *(char **)(b + 0x1D8); if (p != 0) *(int *)(p + 0x28) = 0;
+    p = *(char **)(b + 0x1BC); if (p != 0) *(int *)(p + 0x28) = 0;
+    p = *(char **)(b + 0x1CC); if (p != 0) *(int *)(p + 0x28) = 0;
+    p = *(char **)(b + 0x1DC); if (p != 0) *(int *)(p + 0x28) = 0;
     return 1;
 }
 
@@ -2746,11 +2746,13 @@ int func_0012BBF8(void *arg0) {
  * documented near-misses.
  */
 int func_0012BC50(void *arg0, int arg1, int arg2, int arg3) {
-    Handler *h = &((Wrapper *)arg0)->obj->handlers[arg1];
+    char *base = *(char **)((char *)arg0 + 0x40);
+    char *p = base + arg1 * 8;
+    char *q = (base + 0xC) + arg1 * 8;
     int old;
-    h->data = arg3;
-    old = (int)h->fn;
-    h->fn = (void *)arg2;
+    *(int *)(p + 0x10) = arg3;
+    old = *(int *)q;
+    *(int *)q = arg2;
     return old;
 }
 
@@ -2772,12 +2774,12 @@ int func_0012BC50(void *arg0, int arg1, int arg2, int arg3) {
 void *func_0012BC78(void *arg0, int *arg1) {
     void *result = 0;
     if (arg0 != 0) {
-        Obj40 *tbl = ((Wrapper *)arg0)->obj;
+        char *tbl = *(char **)((char *)arg0 + 0x40);
         if (tbl != 0) {
-            Handler *entry = &tbl->handlers[*arg1];
-            void *(*fn)() = (void *(*)())entry->fn;
+            char *entry = tbl + (*arg1 << 3);
+            void *(*fn)() = *(void *(**)())(entry + 0xC);
             if (fn != 0) {
-                result = fn(arg0, arg1, entry->data);
+                result = fn(arg0, arg1, *(int *)(entry + 0x10));
             }
         }
     }
