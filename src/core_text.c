@@ -1,4 +1,5 @@
 #include "common.h"
+#include "structs.h"
 
 extern long func_00116F68(int arg0, int arg1, int arg2);
 
@@ -48,20 +49,20 @@ extern long func_001163A0(void *arg0, void *arg1, void *arg2);
 extern void func_00116408(void *arg0);
 
 void func_00113A70(void *arg0, int arg1, int arg2, int arg3) {
-    char *self = (char *)arg0;
-    *(int *)(self + 0x54) = arg3;
-    *(short *)(self + 0xC) = arg1;
-    *(short *)(self + 0xE) = arg2;
-    *(void **)(self + 0x20) = func_001162B8;
-    *(void **)(self + 0x24) = func_00116320;
-    *(void **)(self + 0x28) = func_001163A0;
-    *(void **)(self + 0x2C) = func_00116408;
-    *(int *)(self + 0x4) = 0;
-    *(int *)(self + 0x8) = 0;
-    *(int *)(self + 0x10) = 0;
-    *(int *)(self + 0x18) = 0;
-    *(void **)(self + 0x1C) = self;
-    *(int *)(self + 0x0) = 0;
+    Node1E4 *self = (Node1E4 *)arg0;
+    self->unk54 = arg3;
+    self->unk0C = arg1;
+    self->unk0E = arg2;
+    self->fn20 = func_001162B8;
+    self->fn24 = func_00116320;
+    self->fn28 = func_001163A0;
+    self->fn2C = func_00116408;
+    self->unk04 = 0;
+    self->unk08 = 0;
+    self->unk10 = 0;
+    self->unk18 = 0;
+    self->owner = self;
+    self->unk00 = 0;
 }
 
 extern void func_00113968(void);
