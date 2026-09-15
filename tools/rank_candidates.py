@@ -117,8 +117,6 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     # functions on the assumption v1.36 was the core_text compiler.
     if "Handwritten function" in body:
         return "blocked", "handwritten asm", "spimdisasm marker"
-    if not re.search(r"\bjr\s+\$31\b", text):
-        return "blocked", "fallthrough fragment", "no jr $31"
     # Tail call: retail jumps straight to another function instead of
     # `jal` + return. GCC 2.95 has no sibling-call optimisation, so this
     # compiler always emits jal and a real return -- different size and
@@ -127,6 +125,14 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     # a top candidate). 99 stubs carry this, so it was worth detecting.
     if re.search(r"(?m)^j\s+func_[0-9A-Fa-f]{8}", text):
         return "blocked", "tail call", "j func_...; GCC 2.95 has no sibcall"
+    # Must come AFTER the tail-call test: a tail-called function ends in
+    # `j`, not `jr $31`, so this rule would otherwise claim every tail call
+    # is a fragment. Same verdict, but the category is what tells a future
+    # reader whether a real function is there -- a fragment is not
+    # independently callable, a tail call is a complete function blocked
+    # only by a missing compiler optimisation.
+    if not re.search(r"\bjr\s+\$31\b", text):
+        return "blocked", "fallthrough fragment", "no jr $31"
 
     if len(ins) == 1 and "0xCDCDCDCD" in body:
         return "blocked", "padding", ""
