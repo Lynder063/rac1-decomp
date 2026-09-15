@@ -2977,10 +2977,10 @@ void func_0012C468(void *arg0, void *arg1) {
  */
 int func_0012C4C0(void *arg0, int arg1, int arg2) {
     char *p = (char *)arg0;
-    *(int *)(p + 0xC) = arg1 >> 4;
-    *(int *)(p + 0x10) = arg2 >> 4;
     *(int *)(p + 0x4) = arg1;
     *(int *)(p + 0x8) = arg2;
+    *(int *)(p + 0xC) = arg1 >> 4;
+    *(int *)(p + 0x10) = arg2 >> 4;
     return 1;
 }
 
