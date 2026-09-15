@@ -908,6 +908,47 @@ worth keeping as documented-close C rather than reverting.
 
 ## Solved techniques worth knowing (not open questions)
 
+**Spell the comparison the way you want the blocks laid out.** GCC 2.95
+emits a two-way branch by testing the condition as *written* and letting
+the other side fall through, so when a near-match differs only in which
+arm is inline and which sits behind the label, invert the test in the
+source instead of restructuring the function. `if (x >= 0) { A } else
+{ B }` and `if (x < 0) { B } else { A }` are the same predicate but not
+the same code: the first makes B the fall-through. Proven on
+`func_0011B7F8` (`< 0x20` vs `>= 0x20`), `func_001247E8` and
+`func_0011CBC8` (`>= 0` vs `< 0` on an RPC result). Try this before
+anything else when the only remaining difference is a branch sense --
+it is a one-character edit and it also decides which instruction the
+delay slot can steal, so it often fixes a scheduling difference at the
+same time.
+
+**A `lui`/`addiu` constant is a symbol load, not a literal.** If splat
+has invented a `D_xxxxxx` name for a `lui %hi` / `addiu %lo` pair whose
+"address" is not in any section, the original was a symbolic value --
+an absolute or linker-defined symbol -- not an integer constant. Both
+SN sub-builds hand a plain `CONST_INT` to the assembler as `li`, and
+gas expands that to `lui`+**`ori`**, never `lui`+`addiu`. No integer
+spelling (`int`, `unsigned`, `long`, or a cast pointer) changes this.
+Seen on `func_00123208` (`0x00FFFFFF` timeout). Don't spend rounds
+rephrasing the literal.
+
+**Sometimes you must NOT hoist a repeated load into a local.** The
+usual advice is to cache a repeated field access in a variable. On
+`func_001170A0` that made GCC believe the pointer it had just passed to
+a call was still live in `$4` afterwards, so it dropped the reload for
+the next call's argument -- four bytes short of retail, and wrong, since
+`$4` is call-clobbered. Writing `*(s + 0x54)` out at each use restored
+the reload and the size. If a function comes out exactly one load short
+around a call, un-hoist.
+
+**A caller that passes no arguments is telling you about the header.**
+`func_0011CCB0` calls `func_0011CC38` with a bare `nop` in the delay
+slot, while `func_0011CC38` plainly reads `$4`. That call cannot compile
+with a prototype in scope, so retail's translation unit did not have
+one. Define the callee K&R-style (`int f(a) int a; { ... }`) -- an
+old-style definition creates no prototype -- and both functions match.
+
+
 **Unsigned comparison tell: `lui`/`ori` sentinel vs `addiu $rt,$0,-1`.**
 Seen on `func_001161E8`. Comparing an `int` against `-1` gives a single
 `addiu $2,$0,-1`; comparing an **unsigned** against `0xFFFFFFFF` forces
