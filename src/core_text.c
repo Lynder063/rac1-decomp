@@ -1287,7 +1287,31 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011BC80);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011BCB0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011BEB8);
+extern int func_001151B4();
+extern char D_0012FCEC[];
+extern char D_001580A8[];
+extern int D_0012FDA8;
+
+/* Three-way compare-and-confirm: the slot D_001580A8 has to agree with
+   the scratch buffer D_0012FCEC, then with the handle D_0012FDA8, and
+   finally the two of those with each other. Only the last comparison's
+   result is reported, as a 0/1.
+
+   The two globals are bound to locals, buffer first, purely to fix the
+   order the compiler materialises their %hi halves in: used directly,
+   the slot's lui comes first and the function is 4/140. Declaration
+   order of the locals decides it. */
+int func_0011BEB8(void) {
+    char *buf = D_0012FCEC;
+    char *slot = D_001580A8;
+    int r = 0;
+
+    if (func_001151B4(slot, buf, 4) != 0 &&
+        func_001151B4(slot, D_0012FDA8, 4) != 0) {
+        r = func_001151B4(buf, D_0012FDA8, 4) != 0;
+    }
+    return r;
+}
 
 extern void func_001153FC(void *, int, int);
 extern int D_0012FD94;
@@ -1362,7 +1386,21 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011CCD0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011CCE0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011CDE0);
+extern char D_00158528[];
+extern int D_0012FDB4;
+
+/* Twin of func_0011BEB8 on a different slot/handle pair. */
+int func_0011CDE0(void) {
+    char *buf = D_0012FCEC;
+    char *slot = D_00158528;
+    int r = 0;
+
+    if (func_001151B4(slot, buf, 4) != 0 &&
+        func_001151B4(slot, D_0012FDB4, 4) != 0) {
+        r = func_001151B4(buf, D_0012FDB4, 4) != 0;
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011CE70);
 
