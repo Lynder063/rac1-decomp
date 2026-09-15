@@ -1778,6 +1778,45 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001209D8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120A78);
 
+extern int D_001313E0;
+extern int D_001313E8;
+extern int D_001313EC;
+extern int D_001313F0;
+
+/*
+ * REVERTED (size mismatch: ours 136, retail 148). Logic is certain --
+ * the same one-shot registration idiom as func_0011B710, run only while
+ * either handle is still -1:
+ *
+ *   void func_00120B28(void) {
+ *       int buf[8];
+ *
+ *       if (D_001313E8 == -1 || D_001313EC == -1) {
+ *           buf[5] = 0;
+ *           buf[1] = 1;
+ *           buf[2] = 1;
+ *           D_001313E8 = func_00118C70(buf);
+ *           D_001313EC = func_00118C70(buf);
+ *           buf[2] = 0;
+ *           D_001313E0 = func_00118C70(buf);
+ *           D_001313F0 = 0;
+ *       }
+ *   }
+ *
+ * Three instructions short, and all three are retail's compiler being
+ * WORSE at tail merging rather than anything in the source: retail
+ * materialises %hi(D_001313EC) separately in each arm of the ||, keeps
+ * a separate `addiu $2,$0,1` per arm, and needs a `b` to rejoin. This
+ * compiler hoists the lui above the test and merges the two arms into
+ * one block. Writing the guard inverted with an early return
+ * (`if (a != -1 && b != -1) return;`) produces the identical 34
+ * instructions, so the block duplication is not reachable from the
+ * condition's spelling.
+ *
+ * The buf store order is also rotated (ours 2,5,1 against retail's
+ * 5,1,2) -- the same unexplained rotation already documented on
+ * func_0011B710, which is this function's twin.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120B28);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120BC0);
