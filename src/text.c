@@ -4067,7 +4067,18 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023D540);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023D650);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023D988);
+extern void func_0023CF80(int);
+extern void func_00118C80(int);
+
+int func_0023D988(void *arg0) {
+    char *s = (char *)arg0;
+    func_0023CF80(5);
+    *(volatile int *)0x1000B420 = 0;
+    *(volatile int *)0x1000B410 = 0;
+    *(volatile int *)0x1000B430 = 0;
+    func_00118C80(*(int *)(s + 0x40));
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023D9E0);
 
@@ -4137,7 +4148,7 @@ void func_0023E000(int *arg0) {
     *(arg0 + (0xA8 / 4)) = 0;
 }
 
-extern void func_0023D988(void *);
+extern int func_0023D988(void *);
 extern void func_0012BB20(void *);
 
 int func_0023E008(void *arg0) {
