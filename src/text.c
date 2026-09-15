@@ -4287,16 +4287,16 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023E4E0);
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E510);
 
 void func_0023E560(void *arg0, int arg1, int arg2, int arg3) {
-    char *s = (char *)arg0;
-    *(int *)(s + 0xC) = 0;
-    *(int *)(s + 0x0) = arg1;
-    *(int *)(s + 0x4) = arg2;
-    *(int *)(s + 0x10) = arg3;
-    *(int *)(s + 0x8) = 0;
+    Obj23E *s = (Obj23E *)arg0;
+    s->unk0C = 0;
+    s->unk00 = arg1;
+    s->unk04 = arg2;
+    s->count = arg3;
+    s->unk08 = 0;
     if (arg3 > 0) {
         int off = 0;
         do {
-            *(int *)(off + *(int *)(s + 4)) = 0;
+            *(int *)(off + s->unk04) = 0;
             arg3--;
             off += 0x138C0;
         } while (arg3 != 0);
