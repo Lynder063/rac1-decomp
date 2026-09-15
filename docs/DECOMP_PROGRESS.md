@@ -1244,3 +1244,44 @@ types, only single-byte loads.
 5. Once matching, the readability pass (real names/types/structure) can
    proceed on that function using the still-matching build as a
    regression check, per the plan in `README.md`.
+
+## Rejected lever: reordering callee-saved spills to v1.36's order
+
+Seven-plus core_text near-misses share one residual shape: retail saves
+`$s0` before `$ra`, we save `$ra` first and sink the `$s0` store past a
+couple of instructions. v1.36 emits retail's order here, and v1.14
+already gives retail's slot *offsets*, so "take v1.14's layout and
+v1.36's emission order" looked like a clean second sibling to
+`fix_core_spills.py` (which is "v1.14's layout + v1.36's mnemonics").
+
+Measured before building it, over the 43 core_text functions with two or
+more callee-saved spills (`tools/diff_words.py` plus a one-off ordering
+comparison):
+
+    would fix    8   (v1.14 wrong, v1.36 right)
+    would break 10   (v1.14 right, v1.36 wrong)
+
+Net -2. Not adopted.
+
+The reason it can't work as a blanket rule is visible in retail itself.
+Surveying the 374 undecompiled functions with two or more spills:
+
+    s-regs first, $ra last   283
+    $ra first, s-regs after   91
+
+Retail uses both orders, and neither sub-build reproduces both -- v1.14
+emits `[31,16]` for every one of these and v1.36 emits `[16,31]` for
+every one, while retail picks per function. So the order is decided by
+something in the source, not by the compiler build, and no rewriter
+keyed on compiler output can recover it. (A rewriter keyed on *retail's*
+bytes would "work" and would also be circular -- the same mistake as the
+tail-call rewriter that was keyed on our own output and cost 55 matches.)
+
+Left as-is. If the source-level trigger is ever identified, these eight
+come back for free; until then they stay byte mismatches rather than
+being forced.
+
+One thing the survey did establish, with no counterexamples in 374
+functions: the slot *layout* always ascends by register number
+(`$s0` lowest, `$ra` highest). That is v1.14's layout, which is why
+`fix_core_spills.py` never has to touch an offset.
