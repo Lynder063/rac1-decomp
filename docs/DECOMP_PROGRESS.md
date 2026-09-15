@@ -932,6 +932,17 @@ spelling (`int`, `unsigned`, `long`, or a cast pointer) changes this.
 Seen on `func_00123208` (`0x00FFFFFF` timeout). Don't spend rounds
 rephrasing the literal.
 
+**Spell the zero-trip guard yourself to place a loop invariant.** GCC
+hoists a loop-invariant address ABOVE the `for`'s entry test; retail's
+compiler puts it BETWEEN the test and the loop head. Rewriting the loop
+as an explicit `if (i < n) { invariant = ...; do { ... } while (i < n); }`
+puts it where retail has it. This is not cosmetic: the extra word before
+the loop head is what forces retail's alignment nop, so the wrong
+position costs TWO instructions per loop, not one. Took `func_00123BA0`
+from 16 bytes short to exact (its two copy loops). Related: keeping the
+`p + 0x10` base in its own variable instead of letting GCC fold the
+offset into the `lbu` was worth another 8 bytes there.
+
 **Bind globals to locals to order their `%hi` halves.** When a function
 takes the addresses of two globals and the only difference from retail
 is which `lui` comes first, assign them to locals in the order you want
