@@ -159,6 +159,27 @@ typedef struct Slot1B8 {
  * is exactly &handlers[8] -- and that is the only direct evidence the
  * array reaches even that far.
  */
+/*
+ * WARNING -- converting callers to this struct is NOT byte-neutral.
+ *
+ * The three functions in this family (func_0012BBF8, func_0012BC50,
+ * func_0012BC78) were converted to struct access and all three changed
+ * size against retail: 84->88, 36->32, 80->84. They have been restored
+ * to raw offset arithmetic and are byte-exact again. A size mismatch is
+ * the most expensive mistake in this project -- it shifts every later
+ * function -- so this is not a near-miss to tolerate.
+ *
+ * The layout below is still believed correct and is kept for reading:
+ * basing the array at +0x0C rather than +0x00 is what makes
+ * func_0012BC50's stride-8 indexing with writes at +0xC/+0x10 stop
+ * overlapping the next entry, and func_0012BC78 loads and calls exactly
+ * the pair func_0012BC50 installs. But "the layout explains the code"
+ * and "the struct compiles to the same instructions" are different
+ * claims, and only the first one is established here.
+ *
+ * Before reusing this for conversion, rebuild and check the sweep --
+ * do not assume byte-neutrality from the layout being right.
+ */
 typedef struct Handler {
     /* 0x00 */ void *fn;
     /* 0x04 */ int   data;
