@@ -1343,7 +1343,30 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00205A50);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00205AA8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00205C08);
+void func_00205C08(unsigned char *dst, unsigned char *a, unsigned char *b,
+                   unsigned char *mask) {
+    int i;
+    int j;
+    int bit;
+    unsigned char *next;
+
+    for (i = 0; i <= 0x7FFF; i++) {
+        bit = 1;
+        next = mask + 1;
+        for (j = 7; j >= 0; j--) {
+            if (*mask & bit) {
+                *dst = *a;
+            } else {
+                *dst = *b;
+            }
+            bit <<= 1;
+            a++;
+            b++;
+            dst++;
+        }
+        mask = next;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00205C70);
 
