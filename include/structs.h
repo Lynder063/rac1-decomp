@@ -117,4 +117,45 @@ typedef struct Slot1B8 {
     /* 0x0C */ void *unk0C;
 } Slot1B8;  /* 0x10 */
 
+/*
+ * The object a wrapper holds at its +0x40, and the owner of the Slot1B8
+ * array above.
+ *
+ * The identification is by call site, not by pattern-matching offsets:
+ * func_0012C200 computes `inner = *(p + 0x40)` and then calls
+ * func_0012C278(inner) directly, which is what proves func_0012C278's
+ * argument is this object and not the wrapper. func_00129C78 shares the
+ * 0x08/0xAC/0x118 field set with it, so it takes this object too.
+ *
+ * Nothing here is named -- the field roles are not established yet.
+ * unk118 and unk0AC are subtracted from each other in func_0012C200 to
+ * produce the wrapper's 0x08, and unk008 is compared against 2 as a
+ * state, but that is suggestive rather than settled.
+ *
+ * SIZE IS NOT KNOWN. The trailing padding runs to 0x820 only because
+ * that is the highest field anything decompiled so far touches
+ * (func_00129C78), so sizeof(Obj40) is a floor, not the real size. Do
+ * not embed this by value, allocate it, or index an array of it -- it is
+ * only ever used through a pointer to memory the game already owns.
+ */
+typedef struct Obj40 {
+    /* 0x000 */ char    unk000[0x4];
+    /* 0x004 */ int     unk004;
+    /* 0x008 */ int     unk008;
+    /* 0x00C */ char    unk00C[0xA0];
+    /* 0x0AC */ int     unk0AC;
+    /* 0x0B0 */ char    unk0B0[0x68];
+    /* 0x118 */ int     unk118;
+    /* 0x11C */ char    unk11C[0x4];
+    /* 0x120 */ int     unk120;
+    /* 0x124 */ char    unk124[0x2C];
+    /* 0x150 */ int     unk150;
+    /* 0x154 */ char    unk154[0x20];
+    /* 0x174 */ int     unk174;
+    /* 0x178 */ char    unk178[0x40];
+    /* 0x1B8 */ Slot1B8 slots[3];
+    /* 0x1E8 */ char    unk1E8[0x638];
+    /* 0x820 */ int     unk820;
+} Obj40;
+
 #endif /* STRUCTS_H */
