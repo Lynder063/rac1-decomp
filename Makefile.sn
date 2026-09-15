@@ -62,15 +62,20 @@ regnames:
 # the 16-byte slot stride (which retail keeps even for 8-byte stores)
 # and every offset are left exactly as v1.14 emitted them. No offset
 # arithmetic, which is what makes it safe.
-build-sn/core_text.o: src/core_text.c tools/fix_core_spills.py
+build-sn/core_text.o: src/core_text.c tools/fix_core_spills.py tools/fix_tail_calls.py
 	@mkdir -p build-sn
 	$(CC_CORE) $(CFLAGS) -S -o build-sn/core_text.s $<
-	python tools/fix_core_spills.py build-sn/core_text.s build-sn/core_text_fixed.s
+	python tools/fix_core_spills.py build-sn/core_text.s build-sn/core_text_sp.s
+	python tools/fix_tail_calls.py build-sn/core_text_sp.s build-sn/core_text_fixed.s
 	$(CC_CORE) $(CFLAGS) -c build-sn/core_text_fixed.s -o $@
 
-build-sn/text.o: src/text.c
+# text also needs the tail-call rewrite (it does NOT need fix_core_spills:
+# retail's text segment uses sq/lq, which v1.14 already emits).
+build-sn/text.o: src/text.c tools/fix_tail_calls.py
 	@mkdir -p build-sn
-	$(CC_TEXT) $(CFLAGS) -c $< -o $@
+	$(CC_TEXT) $(CFLAGS) -S -o build-sn/text.s $<
+	python tools/fix_tail_calls.py build-sn/text.s build-sn/text_fixed.s
+	$(CC_TEXT) $(CFLAGS) -c build-sn/text_fixed.s -o $@
 
 clean:
 	rm -rf build-sn
