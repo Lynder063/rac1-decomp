@@ -1151,7 +1151,22 @@ void func_0011B710(void) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B770);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B7F8);
+extern char D_00157E80[];
+
+/* The out-of-range test is written >= 0x20 so the compiler branches on
+   the true side to the in-range block, as retail does (sltiu/bnez). */
+void *func_0011B7F8(unsigned int arg0) {
+    func_0011B710();
+    func_00118CB0(D_0012FDA0);
+    if (arg0 < 0x20) {
+        void *ret = &D_00157E80[arg0 * 0x10];
+        func_00118C90(D_0012FDA0);
+        return ret;
+    } else {
+        func_00118C90(D_0012FDA0);
+        return 0;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B868);
 
@@ -2371,7 +2386,21 @@ void func_0012C058(void *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C0A0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C200);
+extern void func_0012C278(void *);
+
+int func_0012C200(void *arg0) {
+    char *p = (char *)arg0;
+    int inner = *(int *)(p + 0x40);
+    int ret = 0;
+
+    if (*(int *)(inner + 0x4) != 0 && *(int *)(inner + 0x8) != 0) {
+        func_0012C278((void *)inner);
+        *(int *)(p + 0x8) = *(int *)(inner + 0x118) - *(int *)(inner + 0xAC);
+        *(int *)(inner + 0x4) = 0;
+        ret = 1;
+    }
+    return ret;
+}
 
 /* Tail call: the constant argument setup lands in the jump's delay slot,
    so the field store precedes it. func_00127378 is defined above. */
