@@ -1192,6 +1192,16 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FFB38);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FFC48);
 
+/*
+ * Same 13-entry walk over D_00199C60 as func_001FFDA0 below, and blocked
+ * at the same instruction -- the standalone nop between the loop's
+ * `lw $2,0($3)` and the `bnel`. Not attempted past that point; if
+ * func_001FFDA0's site is ever cracked, this one falls with it.
+ *
+ * Semantics: find the record whose +0x64 field is arg0; if none of the
+ * 13 matched, return 0, otherwise call
+ * func_001FFB38(record_index_result, 0xFFFF, 0, 0, 0, 0, 0) and return 1.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_001FFCB0);
 
 extern int func_001FF668(int);
@@ -1222,10 +1232,14 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FFD98);
 /* func_001FFDA0: 28 of retail's 29 instructions reproduce exactly from
    the C below; the one missing instruction is a standalone load-delay
    `nop` retail carries between the loop's `lw $2,0($3)` and the `bnel`
-   consuming it. This compiler prints that slot as `#nop` (commented out)
-   at every one of its 101 sites, so the class is unreachable from C with
-   our flags -- same family as the FPU load-delay nops rank_candidates.py
-   already blocks. Recovered source, for the readability phase:
+   consuming it. gcc prints that slot as `#nop` (commented out) and the
+   assembler does not insert one here either.
+
+   Do NOT generalise this into "standalone nops are unreachable" -- that
+   was measured and is false: 145 of the byte-exact functions have a
+   standalone nop in their retail body, so the assembler does emit them
+   in other contexts. It is this particular site that we cannot make it
+   produce. Recovered source, for the readability phase:
 
      typedef struct { int unk00, unk04; char pad08[0x1C];
                       int unk24; char pad28[0x3C];
@@ -1249,7 +1263,24 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FFDA0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FFE18);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FFE88);
+typedef struct {
+    char b[0x13];
+} Cfg13;
+
+extern Cfg13 D_0019A540 NOT_SDA;
+extern Cfg13 D_001E7DD8 NOT_SDA;
+extern int func_00116810(void);
+extern void func_001166FC(Cfg13 *, void *);
+
+/* The struct copy is a plain assignment: at alignment 1 this compiler
+   expands the 0x13 bytes as unaligned ldl/ldr + sdl/sdr pairs with the
+   trailing three bytes done singly, which is exactly retail's shape. */
+void func_001FFE88(void *arg0) {
+    if ((unsigned int)func_00116810() < 0x50) {
+        D_0019A540 = D_001E7DD8;
+    }
+    func_001166FC(&D_0019A540, arg0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FFF08);
 
