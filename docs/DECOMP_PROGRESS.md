@@ -51,8 +51,8 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **320 functions
-have real C; 282 are exact on size and bytes; 0 are size-mismatched and
+Current audited state (from `tools/sweep_matches.py`): **322 functions
+have real C; 284 are exact on size and bytes; 0 are size-mismatched and
 38 byte-mismatched** — the 38 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
@@ -95,6 +95,9 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 
 | Function | Segment | Status | Notes |
 |---|---|---|---|
+| `func_002399A0` | text | **matches** | Thousands formatter: `arg1 >= 1000 ? func_00116248(arg0, D_00161178, arg1/1000, arg1%1000) : func_00116248(arg0, D_00161180, arg1)`. The `>= 1000` arm is the fall-through, as retail's `slti`/`bnez` polarity says. `func_00116248` declared unprototyped since the two call sites pass different argument counts. Byte-exact, first attempt. |
+| `func_002391A8` | text | **matches** | **Reclaimed from a banked revert** (was 14/60). The old note had the logic right and named the fix — "needs the base-pointer-local lever" — and that is exactly what it needed: hoisting `char *b = D_001E66C0;` so one materialized base serves both the argument load at `+0x2C` and the trailing store at `+0x44`. Byte-exact. **A banked revert that names a specific untried lever is close to a free match; worth sweeping the table for others.** |
+| `func_001EC210` | text | **reverted (size 92 vs 96)** | Logic certain and recorded above its stub. The missing instruction is retail restoring `$31` in the delay slot of *both* early-exit branches as well as at the end — it duplicates the epilogue reload where GCC branches to a single shared epilogue. Nested-if and mirrored-early-return forms both give 92; the latter reproduces retail's control flow exactly and still shares the epilogue, so it is the delay-slot filler rather than the source shape. |
 | `func_0012C420` | core_text | **matches** | Tail call forwarding `(D_00153BD8, arg0)` to the varargs `func_0011A6C8`. Confirms again that varargs *callers* are fine — only definitions need `stdarg.h` — declared unprototyped so the call site isn't type-checked against a signature we don't know. Byte-exact. |
 | `func_00218928` | text | **reverted (2/8)** | Right size and shape, and the rewriter produced the bare `j` correctly — but the `.s` carries spimdisasm's "Handwritten function" marker and its delay slot is the **trapping `addi $5,$0,0`** where GCC emits the non-trapping `addiu`. Instruction selection, so no C reaches it. A reminder to check the handwritten marker before attempting a tail call: shape filters alone don't catch these. |
 | `func_00113AC8` | core_text | **matches** | **Reclaimed from a stale revert** — the old comment said retail was a bare tail jump this compiler could not produce, true when written and obsolete since `tools/fix_tail_calls.py`. `func_00114438(arg0, func_00113968)`, passing the second function's address. Compiles byte-exact from exactly the source that comment recorded. |
