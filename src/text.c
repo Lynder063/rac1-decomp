@@ -2590,7 +2590,44 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002175C8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00217628);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002176C8);
+extern int func_00217628(void);
+extern void func_00122598(int);
+extern void func_00217130(void);
+extern void func_0012EC40(void);
+extern void func_0012DDC0(void);
+extern void func_0012EC30(void);
+
+/*
+ * Close, not exact (15/124), same size so inert. Semantics confirmed:
+ * call func_00217628, and while it succeeded and the flag at
+ * D_001517D0+0x8 stays set, pump the five service calls; return the
+ * original result either way.
+ *
+ * Residual is purely which callee-saved register holds what: retail puts
+ * the result in $s0 and the D_001517D0 base in $s1, this compiler the
+ * other way round, and the prologue save order follows from that.
+ * Tried and did not move it: swapping the two local declarations (the
+ * documented declaration-order lever -- it does not apply when a local
+ * is initialised straight from a call, since the live range starts at
+ * the call regardless), and restructuring the loop as guard + do/while
+ * so the base local is assigned late exactly as retail does. Allocator
+ * destination-choice question, not source shape.
+ */
+int func_002176C8(void) {
+    char *d;
+    int r = func_00217628();
+    if (r != 0) {
+        d = (char *)D_001517D0;
+        while (*(short *)(d + 0x8) != 0) {
+            func_00122598(0);
+            func_00217130();
+            func_0012EC40();
+            func_0012DDC0();
+            func_0012EC30();
+        }
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00217748);
 
