@@ -1,0 +1,51 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "colibri": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Colibri (local DeepSeek V4 Flash)",
+      "options": {
+        "baseURL": "http://127.0.0.1:8000/v1",
+        "apiKey": "local"
+      },
+      "models": {
+        "deepseek-v4-colibri": {
+          "name": "DeepSeek V4 Flash (local)",
+          "limit": {
+            "context": 32768,
+            "output": 4096
+          }
+        }
+      }
+    },
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama (local, GPU)",
+      "options": {
+        "baseURL": "http://127.0.0.1:11434/v1",
+        "apiKey": "ollama"
+      },
+      "models": {
+        "qwen3-agent": {
+          "name": "Qwen3 14B (GPU, 40k ctx)",
+          "limit": {
+            "context": 40960,
+            "output": 8192
+          }
+        }
+      }
+    }
+  },
+  "mcp": {
+    "duckduckgo": {
+      "type": "local",
+      "command": ["uvx", "duckduckgo-mcp-server"],
+      "enabled": true,
+      "timeout": 120000,
+      "environment": {
+        "UV_NATIVE_TLS": "1"
+      }
+    }
+  },
+  "model": "ollama/qwen3-agent"
+}

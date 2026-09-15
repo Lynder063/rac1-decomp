@@ -2015,6 +2015,55 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00128638);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001286E8);
 
+/*
+ * REVERTED -- decode is complete and believed correct; blocked on
+ * register allocation, and the overage is a SIZE mismatch (0x114 vs
+ * retail's 0x108) that overflows .core_text into .core_data, so it
+ * cannot be left in as documented-close.
+ *
+ * A bitstream refill-and-extract: if the cache is empty or holds fewer
+ * than n bits, wait for the DMA channel to go idle, refill from the
+ * table, then return the top n bits.
+ *
+ *   extern long func_00128638_wide(void *, int *) __asm__("func_00128638");
+ *
+ *   int func_00128860(void *arg0, int n) {
+ *       char *s = (char *)arg0;
+ *       int bits;
+ *       if (*(int *)(s + 0x818) != 0 || *(int *)(s + 0x83C) < n) {
+ *           int *tbl = D_00132F70;
+ *           int counter = 0;
+ *           while ((*(volatile int *)0x10002010 & 0x80004000) == 0x80000000) {
+ *               if (counter++ >= 0x1389) {
+ *                   func_0012BCC8(*(int *)(s + 0x858));
+ *                   counter = 0;
+ *               }
+ *           }
+ *           *(volatile int *)0x10002000 = 0x40000000;
+ *           *(int *)(s + 0x818) = tbl[4];
+ *           *(int *)(s + 0x838) = (int)func_00128638_wide(s, tbl);
+ *           *(int *)(s + 0x83C) = 0x20;
+ *       }
+ *       bits = *(int *)(s + 0x838);
+ *       return (unsigned int)bits >> -n;
+ *   }
+ *
+ * Confirmed right along the way: `counter++ >= 0x1389` is correct, not a
+ * violation of the don't-put-++-in-a-comparison lever -- retail carries
+ * the `daddu $2,$6,$0` spare move that lever warns about, so here the
+ * move is EVIDENCE the ++ belongs inside the comparison. The dsll32/dsra32
+ * after the jal is the 64-bit-return narrowing, handled by the _wide alias.
+ *
+ * Why it fails: retail keeps only $16/$17/$18 across the call (object,
+ * D_00132F70 base, n) in a 0x40 frame and REMATERIALISES the hardware
+ * constants 0x10002010 / 0x80004000 / 0x80000000 with lui/ori at each
+ * use. This compiler hoists all three into callee-saved registers, which
+ * forces three extra save/restore pairs and a 0x70 frame. Tried: tbl
+ * hoisted before vs after the wait loop (0x114 vs 0x118), and `if` +
+ * do/while vs a plain while (identical). The allocator's
+ * rematerialise-vs-keep choice is not reachable from C -- same class as
+ * the documented destination-choice question.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00128860);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00128968);
