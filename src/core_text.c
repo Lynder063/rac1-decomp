@@ -205,9 +205,8 @@ void func_00115578(void *arg0, void *arg1) {
     if (arg1 != 0) {
         int idx = *(int *)((char *)arg1 + 4);
         void **table = *(void ***)((char *)arg0 + 0x4C);
-        void **bucket = table + idx;
-        *(void **)arg1 = *bucket;
-        *bucket = arg1;
+        *(void **)arg1 = table[idx];
+        table[idx] = arg1;
     }
 }
 
@@ -2184,7 +2183,20 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00124DF0);
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124EE0);
 
 extern int func_00124920(int);
-extern char D_0015B640[];
+/* 0x330-stride entry table. Declared as a real struct array, not
+   `char[]` + byte offset: the two are not codegen-equivalent. Indexing a
+   typed array emits `addu base,index`; the char-pointer form emits
+   `addu index,base`, and reordering the C addition cannot change it
+   because GCC canonicalises the PLUS first. See func_00125078 and the
+   same lever on D_001E8F80 in text.c. */
+typedef struct {
+    char unk_00[4];
+    int  unk_04;
+    int  unk_08;
+    char *unk_0C;
+    char unk_10[0x320];
+} Ent330;
+extern Ent330 D_0015B640[];
 
 /*
  * Close, not exact (28/84), same size. Logic confirmed: call
@@ -2206,8 +2218,8 @@ extern char D_0015B640[];
 int func_00125020(int arg0) {
     int t = func_00124920(arg0);
     if (t >= 0) {
-        *(int *)(D_0015B640 + arg0 * 0x330 + 0x4) = 1;
-        *(int *)(D_0015B640 + arg0 * 0x330 + 0x8) = t;
+        D_0015B640[arg0].unk_04 = 1;
+        D_0015B640[arg0].unk_08 = t;
     }
     return t;
 }
@@ -2222,17 +2234,18 @@ extern void func_00119288(void *a, void *b);
  * +0x7C field -- retail indexes the array with the `slt` result
  * directly, which plain C reproduces.
  *
- * The three differing bytes are one instruction: retail forms the entry
- * address as `addu $2,$2,$4` (sum into the base register) where this
- * compiler emits `addu $a0,$a0,$v0` (sum into the index register).
- * Writing the addition the other way round (`arg0 * 0x330 +
- * D_0015B640`) changes nothing -- GCC canonicalises it -- so this is
- * the allocator's destination choice, not operand order.
+ * The three differing bytes were one instruction: retail forms the entry
+ * address as `addu $2,$2,$4` (base, index) where we emitted
+ * `addu $a0,$a0,$v0` (index, base). Writing the addition the other way
+ * round changes nothing -- GCC canonicalises the PLUS -- and this was
+ * recorded here as "the allocator's destination choice, not operand
+ * order", which was wrong. It is operand order, and it is steerable:
+ * give the table a real element type and index it. See Ent330 above.
  */
 void *func_00125078(int arg0) {
-    char *e = D_0015B640 + arg0 * 0x330;
-    char *p = *(char **)(e + 0xC);
+    char *p = D_0015B640[arg0].unk_0C;
     char *slot[2];
+
     slot[0] = p;
     slot[1] = p + 0x80;
     func_00119288(p, p + 0x100);
