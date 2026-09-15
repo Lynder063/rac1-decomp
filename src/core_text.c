@@ -50,9 +50,9 @@ extern void func_00116408(void *arg0);
 
 void func_00113A70(void *arg0, int arg1, int arg2, int arg3) {
     Node1E4 *self = (Node1E4 *)arg0;
-    self->unk54 = arg3;
-    self->unk0C = arg1;
-    self->unk0E = arg2;
+    self->owner = (void *)arg3;
+    self->flags = arg1;
+    self->handle = arg2;
     self->fn20 = func_001162B8;
     self->fn24 = func_00116320;
     self->fn28 = func_001163A0;
@@ -61,7 +61,7 @@ void func_00113A70(void *arg0, int arg1, int arg2, int arg3) {
     self->unk08 = 0;
     self->unk10 = 0;
     self->unk18 = 0;
-    self->owner = self;
+    self->self = self;
     self->unk00 = 0;
 }
 
@@ -408,13 +408,13 @@ extern long func_00116108_wide(int *errOut, void *a, void *b, void *c)
     __asm__("func_00116108");
 
 int func_001162B8(void *arg0, void *arg1, void *arg2) {
-    char *s = (char *)arg0;
-    int r = func_00116108_wide(*(int **)(s + 0x54),
-                               (void *)(int)*(short *)(s + 0xE), arg1, arg2);
+    Node1E4 *s = (Node1E4 *)arg0;
+    int r = func_00116108_wide((int *)s->owner,
+                               (void *)(int)s->handle, arg1, arg2);
     if (r >= 0) {
-        *(int *)(s + 0x50) += r;
+        s->pos += r;
     } else {
-        *(short *)(s + 0xC) = *(unsigned short *)(s + 0xC) & 0xEFFF;
+        s->flags = (unsigned short)s->flags & 0xEFFF;
     }
     return r;
 }
@@ -451,14 +451,14 @@ extern long func_00114518_wide(int *errOut, void *a, void *b, void *c)
     __asm__("func_00114518");
 
 long func_001163A0(void *arg0, void *arg1, void *arg2) {
-    char *s = (char *)arg0;
-    long r = func_00114518_wide(*(int **)(s + 0x54),
-                                (void *)(int)*(short *)(s + 0xE), arg1, arg2);
+    Node1E4 *s = (Node1E4 *)arg0;
+    long r = func_00114518_wide((int *)s->owner,
+                                (void *)(int)s->handle, arg1, arg2);
     if (r == -1) {
-        *(short *)(s + 0xC) = *(unsigned short *)(s + 0xC) & 0xEFFF;
+        s->flags = (unsigned short)s->flags & 0xEFFF;
     } else {
-        *(int *)(s + 0x50) = r;
-        *(short *)(s + 0xC) = *(unsigned short *)(s + 0xC) | 0x1000;
+        s->pos = r;
+        s->flags = (unsigned short)s->flags | 0x1000;
     }
     return r;
 }
