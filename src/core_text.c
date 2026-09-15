@@ -993,6 +993,21 @@ void func_0011B090(void *arg0) {
  * local, and naming rem+1 as a separate local -- neither changed the
  * allocation. Same open scratch-register question as func_001160D8.
  */
+/*
+ * Attempted, reverted at 20/48 (same size). Semantics certain:
+ *     int f(void *arg0) {
+ *         char *p = arg0;
+ *         int rem = *(int *)(p + 0x24) % *(int *)(p + 0x18);
+ *         *(int *)(p + 0x24) = rem + 1;
+ *         return *(int *)(p + 0x14) + (rem << 6);
+ *     }
+ * The div, its trap guard, the mfhi and all four offsets match. Residual
+ * is two scheduling/allocation choices: retail keeps the remainder in $2
+ * and the divisor in $3 where this compiler picks $v1/$v0, and retail
+ * emits `addiu rem+1` before `sll rem,6` where this compiler emits the
+ * shift first. Statement order does not steer it -- the store already
+ * precedes the return expression in the source.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B0B0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B0E0);
@@ -1038,6 +1053,20 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B4C8);
  * delay slots, 14 instructions. Tried both the && chain and explicit
  * early returns; both merge. The exit structure is not expressible from
  * C here.
+ */
+/*
+ * Attempted, reverted at 27/60. Semantics certain:
+ *     int f(void *arg0) {
+ *         char *p = arg0, *q = *(char **)p;
+ *         if (q != 0 && *(int *)(p + 4) == *(int *)(q + 0x18) &&
+ *             (*(int *)(q + 0x10) & 1) != 0) return 1;
+ *         return 0;
+ *     }
+ * Retail jumps all three failing conditions to one shared `return 0`
+ * tail. Writing it as early returns was worse (36/60) because it emitted
+ * branch-likely (`bnezl`); the combined condition above improved it to
+ * 27/60 and is the right shape, but this compiler still fills the branch
+ * delay slots differently from retail's plain `beqz`+`nop`.
  */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B6B8);
 
@@ -2325,6 +2354,17 @@ int func_0012D4B0(int arg0) {
  * EE three-operand `mult $v1,$v1,$a0` which writes the result directly
  * and needs no mflo -- one instruction fewer, hence 4 bytes short. That
  * is an ISA/codegen choice, not something the source can steer.
+ */
+/*
+ * Attempted, reverted at 14/32. Semantics certain -- BCD to binary,
+ * callee of func_0012D500/func_0012D568:
+ *     int f(int arg0) { unsigned v = arg0 & 0xFF;
+ *                       return (v - (v >> 4) * 6) & 0xFF; }
+ * Every instruction matches except the multiply FORM: retail emits the
+ * generic `mult $0, $3, $4` + `mflo $3`, this compiler picks the R5900
+ * three-operand `mult $v1, $v1, $a0` which writes rd directly and needs
+ * no mflo. Same operands, same order, different instruction selection --
+ * not reachable by reshaping the C.
  */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D4E0);
 
