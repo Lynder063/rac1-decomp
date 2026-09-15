@@ -47,7 +47,9 @@ sys.path.insert(0, str(Path(__file__).parent))
 from diff_words import decode  # noqa: E402
 
 BASEROM = "baserom/SCES_509.16"
-CC = "toolchain/sn-prodg-24/local/sce/ee/gcc/bin/ee-gcc2953.exe"
+# Resolved to a native absolute path: CreateProcess fails with WinError 2
+# on the forward-slash relative spelling even though the file is there.
+CC = str(Path("toolchain/sn-prodg-24/local/sce/ee/gcc/bin/ee-gcc2953.exe").resolve())
 CFLAGS = ["-O2", "-G2", "-Iinclude"]
 
 
@@ -81,10 +83,13 @@ def main():
         raise SystemExit("%d marked lines is %d permutations -- too many"
                          % (len(marked), len(list(itertools.permutations(range(len(marked)))))))
 
-    body = "\n".join(lines)
-    header, fname = body[:body.index("(")].rsplit("\n", 1)[0], None
-    m = re.search(r"^\s*(?:\w[\w \*]*?)\b(\w+)\s*\(", body, re.M)
-    fname = m.group(1)
+    # Rename the function under test, not whatever identifier happens to
+    # appear first -- an extern declaration above the definition used to
+    # win the regex, and every variant then kept the same name, so the
+    # translation unit was 24 redefinitions of one function.
+    fname = name
+    if fname not in "\n".join(lines):
+        raise SystemExit("%s does not appear in %s" % (fname, src))
 
     variants, out = [], []
     for k, perm in enumerate(itertools.permutations(range(len(marked)))):

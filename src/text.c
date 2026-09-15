@@ -640,9 +640,24 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F6FD8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F7070);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F7560);
+extern int func_001F4868(int);
+extern void func_001F7070(void *, void *, void *, void *, int, unsigned char *);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F75D0);
+/* func_001F7560 and func_001F75D0 are the same call with a different
+   mode (1 vs 2) and a different table. Six arguments: EABI passes the
+   fifth and sixth in $8/$9, which is why they appear alongside $4-$7
+   rather than on the stack. */
+void func_001F7560(void *a, void *b, void *c, void *d) {
+    int mode = func_001F4868(1);
+
+    func_001F7070(a, b, c, d, mode, D_001DF3D0);
+}
+
+void func_001F75D0(void *a, void *b, void *c, void *d) {
+    int mode = func_001F4868(2);
+
+    func_001F7070(a, b, c, d, mode, D_001DF770);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F7640);
 
@@ -2451,7 +2466,20 @@ void func_00215328(void *arg0, void *arg1) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215378);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00215380);
+extern float func_001F9FA8(float);  /* sin of a half-angle */
+extern float func_001F9F90(float);  /* cos of a half-angle */
+extern void func_001F9C30(void *, void *, float);
+
+/* Axis-angle -> quaternion: the xyz part is axis scaled by sin(angle/2)
+   (done by func_001F9C30, which writes through arg0), and w at +0xC is
+   cos(angle/2). Both trig calls take the same half-angle, which is why
+   it lives in $f20 across all three calls. */
+void func_00215380(void *arg0, void *axis, float angle) {
+    float half = angle * 0.5f;
+
+    func_001F9C30(arg0, axis, func_001F9FA8(half));
+    *(float *)((char *)arg0 + 0xC) = func_001F9F90(half);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002153E8);
 
@@ -4375,7 +4403,31 @@ int func_0023E698(int *arg0) {
     return arg0[3] == 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E6A8);
+/* 4/100, same size: retail loads +8 before +0xC, we load +0xC first. Two
+   independent loads, pure scheduling. tools/permute.py says it is not
+   source-steerable -- all six orderings of the three field loads compile
+   to byte-identical output, so the order is not coming from the source.
+   Kept as C.
+
+   Ring buffer index -> element address. arg0 holds {+4 base, +8 head,
+   +0xC tail, +0x10 capacity}; returns base + ((head - tail + capacity)
+   %% capacity) * 0x138C0, or 0 when the buffer is empty. The empty test
+   is func_0023E698, which is why its result is branched on rather than
+   the field being read twice. */
+int func_0023E6A8(void *arg0) {
+    char *s = (char *)arg0;
+    int head;
+    int tail;
+    int cap;
+
+    if (func_0023E698((int *)arg0) != 0) {
+        return 0;
+    }
+    head = *(int *)(s + 0x8);
+    tail = *(int *)(s + 0xC);
+    cap = *(int *)(s + 0x10);
+    return *(int *)(s + 0x4) + ((head - tail + cap) % cap) * 0x138C0;
+}
 
 void func_0023E710(volatile int *arg0) {
     if (arg0[3] > 0) {
