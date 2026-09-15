@@ -32,3 +32,7 @@ opencode.json
 # Ghidra reference decompilation -- regenerate with tools/ghidra/run_headless.sh.
 # The table and the tooling are tracked; the multi-megabyte dumps are not.
 docs/ghidra/*.c
+
+# Stray artifacts from tool bootstrap scripts -- never part of the project.
+Python/
+python_install_*.log
