@@ -2723,14 +2723,14 @@ int func_0012BB98(void *arg0) {
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BBA8);
 
 int func_0012BBF8(void *arg0) {
-    char *b = *(char **)((char *)arg0 + 0x40);
+    Slot1B8 *slots = (Slot1B8 *)(*(char **)((char *)arg0 + 0x40) + 0x1B8);
     char *p;
-    p = *(char **)(b + 0x1B8); if (p != 0) *(int *)(p + 0x28) = 0;
-    p = *(char **)(b + 0x1C8); if (p != 0) *(int *)(p + 0x28) = 0;
-    p = *(char **)(b + 0x1D8); if (p != 0) *(int *)(p + 0x28) = 0;
-    p = *(char **)(b + 0x1BC); if (p != 0) *(int *)(p + 0x28) = 0;
-    p = *(char **)(b + 0x1CC); if (p != 0) *(int *)(p + 0x28) = 0;
-    p = *(char **)(b + 0x1DC); if (p != 0) *(int *)(p + 0x28) = 0;
+    p = (char *)slots[0].unk00; if (p != 0) *(int *)(p + 0x28) = 0;
+    p = (char *)slots[1].unk00; if (p != 0) *(int *)(p + 0x28) = 0;
+    p = (char *)slots[2].unk00; if (p != 0) *(int *)(p + 0x28) = 0;
+    p = (char *)slots[0].unk04; if (p != 0) *(int *)(p + 0x28) = 0;
+    p = (char *)slots[1].unk04; if (p != 0) *(int *)(p + 0x28) = 0;
+    p = (char *)slots[2].unk04; if (p != 0) *(int *)(p + 0x28) = 0;
     return 1;
 }
 

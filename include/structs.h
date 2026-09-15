@@ -88,4 +88,33 @@ typedef struct Obj23C {
     /* 0x5C */ int  unk5C;
 } Obj23C;
 
+/*
+ * A 3-element array at +0x1B8 of some parent object, stride 0x10.
+ *
+ * The stride is not a guess from one function: func_0012BBF8 walks
+ * +0x1B8/+0x1C8/+0x1D8 and then +0x1BC/+0x1CC/+0x1DC (the +0x00 and
+ * +0x04 fields, column-major), while the banked decode of func_00129600
+ * independently uses +0x1B8/+0x1C4, +0x1C8/+0x1D4, +0x1D8/+0x1E4 -- the
+ * +0x00 and +0x0C fields of the same three bases. Two unrelated
+ * functions agreeing on the same 0x10 grid is what makes this a real
+ * layout rather than a pattern in one function's offsets.
+ *
+ * Nothing is named. unk00 and unk04 are pointers to objects that have
+ * something at their own +0x28 (func_0012BBF8 zeroes it). unk0C is
+ * chosen *instead of* unk00 in func_00129600 depending on a mode field,
+ * so it is probably a pointer of the same kind -- "probably" is why it
+ * keeps its unk name. unk08 is never touched by anything decompiled so
+ * far and is a placeholder holding the stride, not an observed field.
+ *
+ * Note the array runs 0x1B8..0x1E8, so its last element covers 0x1E4.
+ * That is NOT the Node1E4 above: a different parent object happens to
+ * have a node at the same offset. Do not conflate them.
+ */
+typedef struct Slot1B8 {
+    /* 0x00 */ void *unk00;
+    /* 0x04 */ void *unk04;
+    /* 0x08 */ int   unk08;
+    /* 0x0C */ void *unk0C;
+} Slot1B8;  /* 0x10 */
+
 #endif /* STRUCTS_H */
