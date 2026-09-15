@@ -1182,6 +1182,39 @@ void func_0011B710(void) {
     }
 }
 
+/*
+ * REVERTED (size mismatch: ours 132, retail 136). Logic is certain:
+ * claim the first free slot of the 32-entry, 0x10-byte table
+ * D_00157E80 -- the table func_0011B7F8 below indexes -- under the
+ * func_00118CB0/func_00118C90 lock. A slot is free when its +4 word is
+ * zero; claiming it writes 0x10000000 there and returns the slot, and
+ * a full table returns 0. Both exits drop the lock first.
+ *
+ *   void *func_0011B770(void) {
+ *       char *p;
+ *
+ *       func_0011B710();
+ *       func_00118CB0(D_0012FDA0);
+ *       for (p = D_00157E80; p < D_00157E80 + 0x200; p += 0x10) {
+ *           if (*(int *)(p + 0x4) == 0) {
+ *               *(int *)(p + 0x4) = 0x10000000;
+ *               func_00118C90(D_0012FDA0);
+ *               return p;
+ *           }
+ *       }
+ *       func_00118C90(D_0012FDA0);
+ *       return 0;
+ *   }
+ *
+ * Exactly one instruction short, and it is a register-allocation
+ * choice, not a source-shape one. Retail spends a THIRD callee-saved
+ * register: $17 holds %hi(D_0012FDA0) for the whole function, costing
+ * an sd/ld pair in the prologue and epilogue. This compiler keeps the
+ * loop pointer in $16 and parks the same %hi in $4 with a single
+ * `move $4,$16`, saving the pair and coming out one instruction ahead.
+ * Nothing in the source decides that -- the same C is what retail's
+ * compiler turned into the three-register form.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B770);
 
 extern char D_00157E80[];
