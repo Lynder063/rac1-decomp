@@ -1559,6 +1559,35 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001235C0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00123630);
 
+/*
+ * Attempted and reverted at 70/152 (same size, so inert). Semantics are
+ * confirmed and the instruction sequence is structurally identical to
+ * retail; the residual is the allocator destination-choice question plus
+ * prologue scheduling, neither source-steerable. Decoded C, so a later
+ * attempt starts from the meaning:
+ *
+ *   int func_00123650(int *arg0) {
+ *       int en, prev, old;
+ *       en = func_0011D960();
+ *       prev = *(volatile int *)0x1000F520;          // D_ENABLER
+ *       if ((prev & 0x10000) == 0)
+ *           *(volatile int *)0x1000F590 = prev | 0x10000;
+ *       *(volatile int *)0x1000E000;                 // D_CTRL, discarded
+ *       old = *arg0;
+ *       *arg0 = old & ~0x100;
+ *       *(volatile int *)0x1000F590 = prev;          // restore
+ *       if (en != 0) func_0011D9A8();
+ *       return old;
+ *   }
+ *
+ * Divergences: retail holds the func_0011D960 result in $7 and the
+ * enabler in $6 where this compiler picks $a2/$a1; retail copies the
+ * parameter to $17 after both prologue saves where this compiler
+ * interleaves it between them; and this compiler hoists the
+ * non-volatile *arg0 load above the volatile D_CTRL read (legal, but
+ * retail has them the other way). The D_CTRL read is genuinely
+ * discarded -- a volatile read for its side effect only.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00123650);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001236E8);
