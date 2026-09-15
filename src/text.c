@@ -4044,9 +4044,28 @@ int func_0023CEC8(int *self, int arg1) {
     return (unsigned int)(arg1 - self[0]) >> 11;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023CF10);
+extern void func_0011D960(void);
+extern void func_0011D9A8(void);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023CF80);
+/* D_ENABLER 0x1000F520 / D_ENABLEW 0x1000F590; bit 16 is the DMA
+   disable. Sets a channel's CHCR with DMA transfers suspended. */
+void func_0023CF10(int arg0) {
+    func_0011D960();
+    *(volatile int *)0x1000F590 = *(volatile int *)0x1000F520 | 0x10000;
+    *(volatile int *)0x1000B000 = arg0;
+    *(volatile int *)0x1000F590 = *(volatile int *)0x1000F520 & ~0x10000;
+    func_0011D9A8();
+}
+
+/* D_ENABLER 0x1000F520 / D_ENABLEW 0x1000F590; bit 16 is the DMA
+   disable. Sets a channel's CHCR with DMA transfers suspended. */
+void func_0023CF80(int arg0) {
+    func_0011D960();
+    *(volatile int *)0x1000F590 = *(volatile int *)0x1000F520 | 0x10000;
+    *(volatile int *)0x1000B400 = arg0;
+    *(volatile int *)0x1000F590 = *(volatile int *)0x1000F520 & ~0x10000;
+    func_0011D9A8();
+}
 
 void func_0023CFF0(long *arg0, int arg1, int arg2, int arg3) {
     *arg0 = ((long)arg1 << 32) | ((unsigned long)(unsigned int)arg2 << 28) |
