@@ -51,8 +51,8 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **319 functions
-have real C; 281 are exact on size and bytes; 0 are size-mismatched and
+Current audited state (from `tools/sweep_matches.py`): **320 functions
+have real C; 282 are exact on size and bytes; 0 are size-mismatched and
 38 byte-mismatched** — the 38 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
@@ -95,6 +95,8 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 
 | Function | Segment | Status | Notes |
 |---|---|---|---|
+| `func_0012C420` | core_text | **matches** | Tail call forwarding `(D_00153BD8, arg0)` to the varargs `func_0011A6C8`. Confirms again that varargs *callers* are fine — only definitions need `stdarg.h` — declared unprototyped so the call site isn't type-checked against a signature we don't know. Byte-exact. |
+| `func_00218928` | text | **reverted (2/8)** | Right size and shape, and the rewriter produced the bare `j` correctly — but the `.s` carries spimdisasm's "Handwritten function" marker and its delay slot is the **trapping `addi $5,$0,0`** where GCC emits the non-trapping `addiu`. Instruction selection, so no C reaches it. A reminder to check the handwritten marker before attempting a tail call: shape filters alone don't catch these. |
 | `func_00113AC8` | core_text | **matches** | **Reclaimed from a stale revert** — the old comment said retail was a bare tail jump this compiler could not produce, true when written and obsolete since `tools/fix_tail_calls.py`. `func_00114438(arg0, func_00113968)`, passing the second function's address. Compiles byte-exact from exactly the source that comment recorded. |
 | `func_0012C268` | core_text | **matches** | Clears the field at `+0x848` then tail-calls `func_00127378(1)`; the constant argument setup is the jump's delay slot, so the store precedes it. Byte-exact, first attempt. |
 | `func_0012CC30`, `func_0012CC40`, `func_0012CC50` | core_text | **matches** | Three more of the `func_0012C468` forwarder family (globals `D_00153C48`/`D_00153C78`/`D_00153C90`), same shape as the already-matching `func_0012CC60`. All byte-exact first attempt — family-grep again, found by the shared callee rather than by the ranking. |

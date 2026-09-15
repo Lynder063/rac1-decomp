@@ -2792,6 +2792,14 @@ void func_00218908(void) {
     func_00217F68(D_0013CA40);
 }
 
+/*
+ * REVERTED (2/8). Right size and right shape -- `func_00218930()` as a
+ * tail call, with the rewriter producing the bare `j` correctly -- but
+ * the .s carries spimdisasm's "Handwritten function" marker, and its
+ * delay slot is the trapping `addi $5,$0,0` where GCC emits the
+ * non-trapping `addiu`.
+ * Instruction selection, not source shape, so nothing in C reaches it.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00218928);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00218930);

@@ -2260,7 +2260,14 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C2F8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C358);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C420);
+extern char D_00153BD8[];
+/* Unprototyped: func_0011A6C8 is a varargs definition (blocked as such),
+   but calling one is fine -- only defining one needs stdarg.h. */
+extern void func_0011A6C8();
+
+void func_0012C420(void *arg0) {
+    func_0011A6C8(D_00153BD8, arg0);
+}
 
 extern void func_00116248(void *);
 
