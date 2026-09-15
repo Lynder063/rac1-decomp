@@ -51,8 +51,8 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **314 functions
-have real C; 276 are exact on size and bytes; 0 are size-mismatched and
+Current audited state (from `tools/sweep_matches.py`): **319 functions
+have real C; 281 are exact on size and bytes; 0 are size-mismatched and
 38 byte-mismatched** — the 38 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
@@ -95,6 +95,10 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 
 | Function | Segment | Status | Notes |
 |---|---|---|---|
+| `func_00113AC8` | core_text | **matches** | **Reclaimed from a stale revert** — the old comment said retail was a bare tail jump this compiler could not produce, true when written and obsolete since `tools/fix_tail_calls.py`. `func_00114438(arg0, func_00113968)`, passing the second function's address. Compiles byte-exact from exactly the source that comment recorded. |
+| `func_0012C268` | core_text | **matches** | Clears the field at `+0x848` then tail-calls `func_00127378(1)`; the constant argument setup is the jump's delay slot, so the store precedes it. Byte-exact, first attempt. |
+| `func_0012CC30`, `func_0012CC40`, `func_0012CC50` | core_text | **matches** | Three more of the `func_0012C468` forwarder family (globals `D_00153C48`/`D_00153C78`/`D_00153C90`), same shape as the already-matching `func_0012CC60`. All byte-exact first attempt — family-grep again, found by the shared callee rather than by the ranking. |
+| `func_0011BC70` | core_text | **reverted (size 16 vs 12)** | Documents a real limit of `fix_tail_calls.py` rather than a source problem — see the comment above its stub. Retail schedules the argument load into the jump's delay slot; GCC spends the call's delay slot on the epilogue reload instead, so the rewriter's case (a) emits nothing and the assembler fills the slot with a `nop`. Fixing it would require the rewriter to *move* an instruction into the delay slot, which it never does — every transformation it performs is a deletion, and that is what makes it safe. |
 | `func_00216960` | text | **matches** | Guarded state transition on the `D_001517D0` global: if the pointer at `+0x50` is non-null and the state at `+0x5A` is 3, call `func_0012EDE0(p)`, set the state to 4 and return 1; otherwise 0. Byte-exact, first attempt. A `char *d` base local is right here (retail keeps the base in `$16`), the opposite of `func_00216D30` in the same family. |
 | `func_002177F0` | text | **matches** | `D_001517D0` family: when `arg0 == 1`, zero the field at `+0x8`, then set it to 2 if `func_0012F030()` is non-zero. The zeroing store sits in the call's delay slot. Byte-exact. **Its forward declaration said `(void)` but retail reads `$4`** — the declaration was only ever used to take the function's address for a `func_0012F068` callback registration, so correcting it to `(int)` changed no codegen and left the registering function `func_00216270` exact. |
 | `func_0011FE48` | core_text | **close, not exact** (18/88) | Third member of the `func_0011FB68` family — see the comment above it in `src/core_text.c`. Blocked identically to `func_00120430` and `func_0012AAA8`: prologue save **order** ($16 before $31 in retail, the reverse here), with the first call's delay slot taking the other instruction. Buffers cannot be reordered to steer it (their stack addresses already match) and the declaration-order lever moves locals, not prologue saves. **Treat the rest of this family as the same known residual.** |

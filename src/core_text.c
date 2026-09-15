@@ -64,17 +64,15 @@ void func_00113A70(void *arg0, int arg1, int arg2, int arg3) {
     *(int *)(self + 0x0) = 0;
 }
 
-/*
- * Not a codegen-flag near-miss like func_00112380/func_00112468: retail
- * is a bare 3-instruction tail jump (`j func_00114438`, no stack frame,
- * no $ra save) -- true tail-call elimination for a void function whose
- * last statement is a call. This compiler builds a full call frame
- * instead (jal + sd/ld $ra + stack alloc, 0x20 bytes vs retail's 0xC)
- * for the straightforward `func_00114438(arg0, func_00113968);` source.
- * Not investigated further -- may need a specific flag/GCC version for
- * sibcall elimination, or the real source differs. Kept as INCLUDE_ASM.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00113AC8);
+extern void func_00113968(void);
+extern void func_00114438(void *, void *);
+
+/* Reclaimed from a stale revert: the old comment correctly said retail is
+   a bare tail jump that this compiler could not produce. tools/fix_tail_calls.py
+   removes that limitation, and the source it recorded compiles unchanged. */
+void func_00113AC8(void *arg0) {
+    func_00114438(arg0, func_00113968);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00113AD8);
 
@@ -1130,6 +1128,29 @@ int func_0011BC40(void) {
     return 0;
 }
 
+/*
+ * REVERTED (size mismatch: ours 16, retail 12). Logic is certain and the
+ * tail-call rewrite does fire:
+ *
+ *   void func_0011BC70(void) { func_00118C90(D_0012FD9C); }
+ *
+ * It exposes a real limit of tools/fix_tail_calls.py rather than a source
+ * problem. Retail schedules the argument load into the jump's delay slot:
+ *
+ *   lui $2,%hi(D_0012FD9C) / j func_00118C90 / lw $4,%lo(D_0012FD9C)($2)
+ *
+ * GCC instead spends the call's delay slot on the epilogue reload, so the
+ * rewriter hits its case (a) -- no argument setup to carry down -- emits
+ * nothing for the slot, and the assembler fills it with a nop. Three
+ * instructions plus that nop is 16 bytes.
+ *
+ * Fixing it would mean the rewriter MOVING a body instruction into the
+ * delay slot, which it deliberately never does: every transformation it
+ * performs today is a deletion, and that is what makes it safe. Sinking
+ * an arbitrary instruction past a jump needs real hazard analysis.
+ * Reverted rather than kept, because a size mismatch drifts every later
+ * function in the object.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011BC70);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011BC80);
@@ -2205,7 +2226,12 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C0A0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C200);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C268);
+/* Tail call: the constant argument setup lands in the jump's delay slot,
+   so the field store precedes it. func_00127378 is defined above. */
+void func_0012C268(void *arg0) {
+    *(int *)((char *)arg0 + 0x848) = 0;
+    func_00127378(1);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C278);
 
@@ -2289,11 +2315,22 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CA70);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CBA0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CC30);
+extern char D_00153C48[];
+extern char D_00153C78[];
+extern char D_00153C90[];
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CC40);
+/* Three more of the func_0012C468 family, same shape as func_0012CC60. */
+void func_0012CC30(void *arg0) {
+    func_0012C468(arg0, D_00153C48);
+}
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CC50);
+void func_0012CC40(void *arg0) {
+    func_0012C468(arg0, D_00153C78);
+}
+
+void func_0012CC50(void *arg0) {
+    func_0012C468(arg0, D_00153C90);
+}
 
 extern char D_00153CC8[];
 

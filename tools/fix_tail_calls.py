@@ -98,17 +98,26 @@ def rewrite_function(lines: list[str]) -> list[str] | None:
     # Offset 0 with nothing else in the frame is what says "no locals": a
     # function with its own stack slots spills $ra above them (e.g. at 16),
     # and deleting its frame would corrupt those slots.
-    if not FRAME_PUSH.match(code[0]):
-        return None
-    push = int(FRAME_PUSH.match(code[0]).group(1))
-
     jal_positions = [i for i, l in enumerate(code) if JAL.match(l)]
     if len(jal_positions) != 1:
         return None
     j = jal_positions[0]
     after = code[j + 1:]
 
-    saves = [i for i in range(1, j) if RA_SAVE.match(code[i])]
+    # The push is NOT required to be the first instruction, for the same
+    # reason the $31 spill isn't: GCC interleaves argument setup with the
+    # prologue, so `lui $2,%hi(sym)` can precede `subu $sp,$sp,N`.
+    # Requiring position 0 silently rejected real tail calls (measured on
+    # func_0011BC70, which compiled to 36 bytes against retail's 12).
+    # Exactly one push before the call is still required, so a function
+    # touching $sp more than once is refused.
+    pushes = [i for i in range(0, j) if FRAME_PUSH.match(code[i])]
+    if len(pushes) != 1:
+        return None
+    push_at = pushes[0]
+    push = int(FRAME_PUSH.match(code[push_at]).group(1))
+
+    saves = [i for i in range(0, j) if i != push_at and RA_SAVE.match(code[i])]
     if len(saves) != 1:
         return None
     save_at = saves[0]
@@ -131,7 +140,7 @@ def rewrite_function(lines: list[str]) -> list[str] | None:
     if int(FRAME_POP.match(epilogue[-1]).group(1)) != push:
         return None
 
-    body = [code[i] for i in range(1, j) if i != save_at]
+    body = [code[i] for i in range(0, j) if i not in (push_at, save_at)]
     checked = body + ([delay] if delay else [])
     # The frame instructions must be the ONLY stack references, and there
     # must be no other control flow in the function.
@@ -144,7 +153,7 @@ def rewrite_function(lines: list[str]) -> list[str] | None:
     lead, gap, target = m.group(1), m.group(2), m.group(3)
     tail = f"{lead}j{gap}{target}\n"
 
-    drop = {idx[0], idx[save_at]} | {idx[j + 1 + k] for k in range(len(after))
+    drop = {idx[push_at], idx[save_at]} | {idx[j + 1 + k] for k in range(len(after))
                                if after[k] in epilogue and
                                (delay is None or k > 0)}
     jal_line = idx[j]
