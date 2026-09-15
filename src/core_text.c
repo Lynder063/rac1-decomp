@@ -1653,7 +1653,24 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00120E98);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120F30);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00120FD0);
+extern void func_0011A6C8();
+extern int func_0011B6B8(void *);
+extern char D_00153000[];
+extern char D_00132E08[];
+extern int D_001313D0;
+
+int func_00120FD0(int arg0) {
+    if (arg0 == 0) {
+        if (D_001313D0 > 0) {
+            func_0011A6C8(D_00153000);
+        }
+        while (func_0011B6B8(D_00132E08) != 0) {
+            func_00120910(0x3C);
+        }
+        return 0;
+    }
+    return func_0011B6B8(D_00132E08);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00121040);
 
@@ -1839,7 +1856,33 @@ int func_001245F8(void) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124650);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001247E8);
+extern void func_00124B60(void *);
+extern char D_00153658[];
+
+/* Same RPC shape as func_001245F8 above (9 args: $4-$11 plus one stack
+   slot), but with a different command id and an error path.
+
+   The request word goes into the buffer at +4. It has to be written
+   through a local pointer, not as (&D_0015B180)[1]: the latter folds to
+   the symbol D_0015B180+4, so the compiler builds THAT address and then
+   subtracts 4 to pass the buffer. With `buf`, one lui/addiu serves both
+   the store and the two pointer arguments, as retail does.
+
+   The test is written >= 0 so the error path is the fall-through and the
+   success path is the branch target, letting the result load sit in the
+   bgez delay slot. */
+int func_001247E8(int arg0) {
+    int *buf = &D_0015B180;
+
+    buf[1] = arg0;
+    if (func_0011B4C8(D_0015B108, 0x80000904, 0, buf, 0x400,
+                      buf, 0x400, 0, 0) >= 0) {
+        return D_0015B180;
+    } else {
+        func_00124B60(D_00153658);
+        return 0;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124858);
 
