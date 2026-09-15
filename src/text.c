@@ -640,11 +640,34 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F69F0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F6CE0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F6CF8);
+extern int func_001F6600(unsigned char *, int);
+extern int func_001F6620(unsigned char *, int);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F6D88);
+/* func_001F6CF8/func_001F6D88/func_001F6E18 are func_001F68E8's family
+   with a leading measure call: the same mode/table triple (1, 2, 3 and
+   D_001DF3D0, D_001DF770, D_001DFB10), each paired with its own
+   measuring helper, and the first argument stepped back by whatever that
+   helper returns. */
+void func_001F6CF8(char *a, void *b, void *c, unsigned char *d, int e) {
+    char *p = a - func_001F6600(d, e);
+    int mode = func_001F4868(1);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F6E18);
+    func_001F6668(p, b, c, d, (void *)e, mode, D_001DF3D0);
+}
+
+void func_001F6D88(char *a, void *b, void *c, unsigned char *d, int e) {
+    char *p = a - func_001F6620(d, e);
+    int mode = func_001F4868(2);
+
+    func_001F6668(p, b, c, d, (void *)e, mode, D_001DF770);
+}
+
+void func_001F6E18(char *a, void *b, void *c, unsigned char *d, int e) {
+    char *p = a - func_001F6640(d, e);
+    int mode = func_001F4868(3);
+
+    func_001F6668(p, b, c, d, (void *)e, mode, D_001DFB10);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F6EA8);
 
