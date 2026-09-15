@@ -25,3 +25,6 @@ Thumbs.db
 __pycache__/
 *.pyc
 build-sn/
+
+# Editor/tool configs that are not part of the project
+opencode.json
