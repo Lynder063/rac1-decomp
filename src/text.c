@@ -616,9 +616,23 @@ __asm__(".section .text\n\tnop\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F6668);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F68E8);
+extern void func_001F6668(void *, void *, void *, void *, void *, int,
+                          unsigned char *);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F6968);
+/* Same shape as func_001F7560/func_001F75D0 below, one argument wider:
+   mode 1 vs 2, D_001DF3D0 vs D_001DF770. Seven arguments, so EABI puts
+   the fifth through seventh in $8/$9/$10. */
+void func_001F68E8(void *a, void *b, void *c, void *d, void *e) {
+    int mode = func_001F4868(1);
+
+    func_001F6668(a, b, c, d, e, mode, D_001DF3D0);
+}
+
+void func_001F6968(void *a, void *b, void *c, void *d, void *e) {
+    int mode = func_001F4868(2);
+
+    func_001F6668(a, b, c, d, e, mode, D_001DF770);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F69E8);
 
@@ -2981,7 +2995,25 @@ void func_00217EC0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00217ED8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00217EE8);
+extern int D_001CDAE0 NOT_SDA;
+extern char D_0013CA40[];
+extern void func_00124650(void);
+extern void func_00124B88(int);
+extern int func_00124BC8(void *, void *);
+
+void func_00217EE8(void) {
+    int *p = &D_001CDAE0;
+
+    func_00124650();
+    func_00124B88(0);
+    D_001CDAE0 = 2;
+    p[1] = 0;
+    *(int *)(D_0013CA40 + 0x194) = func_00124BC8(p, D_0013CA40);
+    D_001CDAE0 = 2;
+    p[1] = 1;
+    *(int *)(D_0013CA40 + 0x198) = 0;
+    *(int *)(D_0013CA40 + 0x19C) = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00217F68);
 
