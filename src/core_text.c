@@ -1713,7 +1713,23 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00120BC0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120C58);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00120CA0);
+extern int D_001313E4;
+extern int D_001313FC;
+extern void func_00120C58(void);
+
+int func_00120CA0(void) {
+    int r;
+
+    D_001313E4 = 1;
+    r = func_0011D960();
+    func_0011AA38(0x80000012, (int)((char *)func_00120C58 + 8), 0);
+    if (r != 0) {
+        func_0011D9A8();
+    }
+    D_001313E4 = 0;
+    D_001313FC = 1;
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120D18);
 
@@ -2585,7 +2601,23 @@ void func_0012C268(void *arg0) {
     func_00127378(1);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C278);
+extern void func_00129E30(void *, int, int, int);
+extern void func_00129F40(void *, int, int);
+extern char D_00153BB8[];
+
+void func_0012C278(void *arg0) {
+    char *s = (char *)arg0;
+    int n = *(int *)(s + 0x118);
+
+    if (*(int *)(s + 0x120) != 0) {
+        func_0012C468(s, D_00153BB8);
+    } else if (*(int *)(s + 0x174) == 3) {
+        func_00129E30(s, *(int *)(s + 0x1BC), n - 1, n - 1);
+    } else {
+        func_00129F40(s, *(int *)(s + 0x1CC), *(int *)(s + 0x1DC));
+    }
+    *(int *)(s + 0x120) = 0;
+}
 
 /*
  * REVERTED (size mismatch: ours 88, retail 96). Logic is certain:
