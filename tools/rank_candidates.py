@@ -27,6 +27,22 @@ Usage:
   python tools/rank_candidates.py            # both segments
   python tools/rank_candidates.py text       # one segment
   python tools/rank_candidates.py text 40    # + show top N candidates
+  python tools/rank_candidates.py --check func_00218928 func_001F84AC
+  grep -rl 'dsll32' asm/nonmatchings | ... | python tools/rank_candidates.py --check -
+
+SCREEN YOUR FAMILY-GREPS THROUGH --check.
+
+Family-grep (find one match, then grep asm/nonmatchings for siblings
+sharing a global or call) has repeatedly outperformed this ranking for
+FINDING candidates -- but it reads the .s files directly and so bypasses
+every blocker rule below. That is a real hole in the method, not in the
+tool: one round burned two attempts on functions marked
+`/* Handwritten function */`, both of which this tool had already
+classified `blocked`, and then misreported the tool as lacking the check.
+It has had that check since its first commit; 213 stubs carry it.
+
+So: grep to FIND, then `--check` to SCREEN, then attempt. One pipe is
+cheaper than one wasted decode.
 """
 import re
 
@@ -306,8 +322,66 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     return "candidate", "candidate", detail
 
 
+def check_names(names: list[str]) -> None:
+    """
+    Screens an explicit list of function names through the same rules.
+
+    Exists so family-grep results can be filtered before any decoding
+    effort is spent -- grepping .s files directly is the fastest way to
+    FIND siblings, but it sees none of the blockers above.
+    """
+    attempted = already_attempted()
+    width = max((len(n) for n in names), default=20)
+    for name in names:
+        hit = None
+        for seg in SEGMENTS:
+            p = Path(f"asm/nonmatchings/{seg}/{name}.s")
+            if p.exists():
+                hit = (seg, p)
+                break
+        if hit is None:
+            print(f"  {name:<{width}}  ?         not found in asm/nonmatchings")
+            continue
+        seg, p = hit
+        body = p.read_text(errors="replace")
+        m = re.search(r"nonmatching\s+\S+,\s*(0x[0-9A-Fa-f]+)", body)
+        size = int(m.group(1), 16) if m else 0
+        verdict, cat, detail = classify(name, body, seg, size)
+        if verdict == "candidate" and name in attempted:
+            verdict, cat = "risky", "already attempted"
+            detail = "discussed in docs/notes -- see reason there"
+        stub = re.search(
+            r"INCLUDE_ASM\([^)]*\b" + name + r"\)",
+            Path(SEGMENTS[seg]).read_text(errors="replace"),
+        )
+        done = "" if stub else "  [already decompiled]"
+        print(f"  {name:<{width}}  {verdict:<9} {size:#7x}  {cat}"
+              f"{' -- ' + detail if detail else ''}{done}")
+
+
 def main() -> None:
     args = [a for a in sys.argv[1:]]
+
+    if "--check" in args:
+        rest = [a for a in args if a != "--check"]
+        if rest == ["-"] or not rest:
+            raw = sys.stdin.read().split()
+        else:
+            raw = rest
+        names = []
+        for tok in raw:
+            names += FUNCNAME.findall(tok)  # tolerates paths like .../func_X.s
+        seen_once: list[str] = []
+        for n in names:
+            if n not in seen_once:
+                seen_once.append(n)
+        if not seen_once:
+            print("no func_XXXXXXXX names found on the command line or stdin")
+            return
+        print(f"--- screening {len(seen_once)} function(s) ---")
+        check_names(seen_once)
+        return
+
     segs = [a for a in args if a in SEGMENTS] or list(SEGMENTS)
     topn = next((int(a) for a in args if a.isdigit()), 25)
 
