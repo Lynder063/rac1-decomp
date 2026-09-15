@@ -31,9 +31,36 @@ are touched. A `sq`/`lq` against any other base register, or of any other
 register, is left alone: those are genuine 128-bit memory operations in
 the source (block copies, quadword clears), not register spills, and
 narrowing them would silently change behaviour.
+
+Address guard
+-------------
+`core_text` is not one translation unit. Everything from 0x12DB18 to the
+end of the segment spills with `sq`, exactly like the `text` segment, and
+everything below it spills with `sd`. Measured over the whole of retail's
+core_text disassembly the split is clean -- 290 functions below the
+boundary use `sd`, 49 at or above it use `sq`, and not one function sits
+on the wrong side.
+
+The two apparent counterexamples are not spills at all:
+
+  func_0011D6D4  `sq $1, 0x10($26)` and friends -- handwritten assembly
+                 saving the register file against $k0, and already marked
+                 as handwritten in the disassembly
+  func_0012E1B8  `sd $18, %lo(D_0015EDD8)($1)` -- a store to a global,
+                 not a $sp-relative spill
+
+So the boundary is a translation-unit boundary that survived into the
+link: the same kind of fact as core_text and text having been built by
+different sub-builds, and the same kind of authority. Functions at or
+above it are left alone.
 """
 import re
 import sys
+
+# First address of core_text's `sq` region; see "Address guard" above.
+SQ_REGION_START = 0x12DB18
+
+LABEL = re.compile(r"^(func_([0-9A-Fa-f]{8})):")
 
 # Callee-saved GPRs: $s0-$s7, plus $fp/$s8 and $ra. Both the numeric and
 # the symbolic spellings appear depending on how the compiler emits them.
@@ -49,9 +76,13 @@ NARROW = {"sq": "sd", "lq": "ld"}
 
 def rewrite(text: str) -> tuple[str, int]:
     out, n = [], 0
+    in_sq_region = False
     for line in text.splitlines(keepends=True):
+        lab = LABEL.match(line)
+        if lab:
+            in_sq_region = int(lab.group(2), 16) >= SQ_REGION_START
         m = SPILL.match(line.rstrip("\n"))
-        if m and m.group("reg") in SAVED:
+        if m and m.group("reg") in SAVED and not in_sq_region:
             nl = "\n" if line.endswith("\n") else ""
             out.append(
                 f"{m.group('lead')}{NARROW[m.group('op')]}{m.group('gap')}"
