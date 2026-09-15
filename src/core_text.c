@@ -1346,7 +1346,22 @@ void func_0011FE48(long a, long b) {
     func_0011FA38(func_0011FC08(buf0, buf1, buf2));
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011FEA0);
+/*
+ * Fourth member of the func_0011FB68 family, and the same known residual
+ * as func_0011FE48 above -- see that comment. Identical shape, with one
+ * extra step: the sign flag in the second buffer is flipped before the
+ * combine (retail's `xori $2, $2, 1` on the word at buf1+4), which makes
+ * this the subtract to func_0011FE48's add.
+ */
+void func_0011FEA0(long a, long b) {
+    char buf0[0x20];
+    char buf1[0x20];
+    char buf2[0x20];
+    func_0011FB68(&a, buf0);
+    func_0011FB68(&b, buf1);
+    *(int *)(buf1 + 4) ^= 1;
+    func_0011FA38(func_0011FC08(buf0, buf1, buf2));
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011FF08);
 
