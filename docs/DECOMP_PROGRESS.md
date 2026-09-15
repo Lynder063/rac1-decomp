@@ -1337,3 +1337,35 @@ One thing the survey did establish, with no counterexamples in 374
 functions: the slot *layout* always ascends by register number
 (`$s0` lowest, `$ra` highest). That is v1.14's layout, which is why
 `fix_core_spills.py` never has to touch an offset.
+
+## Rejected: unfilling call delay slots
+
+Three candidates in a row (`func_0022EF68`, `func_0023E5E0`, and earlier
+`func_0012ABB0`) came out 4 bytes short for the same reason: retail
+leaves a call's delay slot as a bare `nop` while this compiler schedules
+the following load or store into it. That looked like a compiler-policy
+difference worth a post-processing rewriter, in the style of
+`tools/fix_tail_calls.py`.
+
+It is not. Counting every call site in retail's own disassembly:
+
+| delay slot | `jal` | `jalr` |
+|---|---|---|
+| holds a load/store | 1012 | 11 |
+| bare `nop`         |  676 |  9 |
+| anything else      | 3714 | 47 |
+
+Retail fills call delay slots with memory operations more often than it
+leaves them empty, so there is no rule for a rewriter to key on — the
+choice is per-site. Functions blocked this way stay blocked. Recorded so
+the idea does not get re-derived; `tools/fix_tail_calls.py`'s first
+version was keyed off our own output rather than retail's and broke 8
+matching functions, which is the same mistake in a different costume.
+
+## `long` is the 64-bit type, `long long` is 128-bit
+
+This compiler's `long long` is a 128-bit type: it compiles a 64-bit
+clear to `por $2,$0,$0` / `sq $2,off($base)`, which is both wrong and one
+instruction longer than retail's `sd $0,off($base)`. Use `long` for
+64-bit values. Found while converting `func_0023D018`, where it was the
+whole size mismatch.

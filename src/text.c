@@ -3744,6 +3744,37 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0022EEB8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022EF50);
 
+/*
+ * BLOCKED (4 bytes short): every instruction reproduces from the C
+ * below except retail's bare `nop` in the `jalr $2` delay slot -- this
+ * compiler fills it with the following `lw $2,0xD90($18)`.
+ *
+ * Checked whether retail's build simply never scheduled memory into a
+ * call delay slot, which would have justified a post-processing
+ * rewriter like tools/fix_tail_calls.py. It does not: across all of
+ * retail, 1012 `jal` and 11 `jalr` delay slots hold a load or store,
+ * against 676 and 9 bare nops. The choice is per-site, so there is no
+ * rule to key a rewriter on. Recorded so nobody re-derives it.
+ *
+ * Recovered source, for the readability phase -- walks the 0x90-byte
+ * entry table at base+0xD94 and invokes each entry's +4 callback. Both
+ * the count and the table pointer are re-read every iteration, so a
+ * callback may grow the table.
+ *
+ *   void func_0022EF68(void) {
+ *       char *base = D_0013E650;
+ *       int i, off = 0;
+ *       for (i = 0; i < *(int *)(base + 0xD90); i++) {
+ *           char *e = off + *(char **)(base + 0xD94);
+ *           void (*fn)(char *) = *(void (**)(char *))(e + 4);
+ *           if (fn != 0) fn(e);
+ *           off += 0x90;
+ *       }
+ *   }
+ *
+ * Retail also carries 8 bytes of post-endlabel nop padding here, which
+ * a future conversion has to emit explicitly -- see func_001F6668.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_0022EF68);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022EFE8);
@@ -4287,7 +4318,29 @@ void func_0023CFF0(long *arg0, int arg1, int arg2, int arg3) {
             (unsigned int)arg3;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023D018);
+extern int func_00118C70(void *);
+extern void func_0023D090(char *);
+
+/* NOTE: `long` is the 64-bit type in this compiler -- `long long` is
+   128-bit and compiles the +0x48 clear to `por`/`sq`, which is both
+   wrong and one instruction too many. */
+int func_0023D018(char *arg0, int arg1, unsigned int arg2, int arg3,
+                  int arg4, int arg5) {
+    int buf[8];
+
+    *(int *)(arg0 + 0x00) = arg1;
+    *(int *)(arg0 + 0x50) = arg4;
+    *(int *)(arg0 + 0x54) = arg5;
+    buf[2] = 1;
+    *(int *)(arg0 + 0x04) = (arg2 & 0x0FFFFFFF) | 0x20000000;
+    *(int *)(arg0 + 0x18) = arg3 << 11;
+    buf[1] = 1;
+    *(int *)(arg0 + 0x08) = arg3;
+    *(int *)(arg0 + 0x40) = func_00118C70(buf);
+    func_0023D090(arg0);
+    *(long *)(arg0 + 0x48) = 0;
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023D090);
 
@@ -4497,6 +4550,23 @@ int func_0023E5C8(int *arg0) {
     return (arg0[3] ^ arg0[4]) == 0;
 }
 
+/*
+ * BLOCKED, same cause as func_0022EF68: retail leaves the
+ * `jal func_0011D9A8` delay slot as a bare `nop` and puts the
+ * `sw $v1,0x8($16)` before the call; this compiler schedules that store
+ * into the slot, leaving us 4 bytes short. Recovered source -- marks the
+ * current 0x138C0-byte frame buffer as state 2, bumps the frame counter
+ * and advances the ring index. The `beql`/`break 0,7` pair before the
+ * `div` is this compiler's own divide-by-zero trap, not source code.
+ *
+ *   void func_0023E5E0(char *arg0) {
+ *       func_0011D960();
+ *       *(int *)(*(int *)(arg0 + 8) * 0x138C0 + *(int *)(arg0 + 4)) = 2;
+ *       *(int *)(arg0 + 0xC) = *(int *)(arg0 + 0xC) + 1;
+ *       *(int *)(arg0 + 8) = (*(int *)(arg0 + 8) + 1) % *(int *)(arg0 + 0x10);
+ *       func_0011D9A8();
+ *   }
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E5E0);
 
 int func_0023E658(int *arg0) {
