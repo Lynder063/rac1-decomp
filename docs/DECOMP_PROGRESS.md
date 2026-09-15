@@ -51,9 +51,9 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **322 functions
-have real C; 284 are exact on size and bytes; 0 are size-mismatched and
-38 byte-mismatched** — the 38 being deliberately-kept documented
+Current audited state (from `tools/sweep_matches.py`): **325 functions
+have real C; 286 are exact on size and bytes; 0 are size-mismatched and
+39 byte-mismatched** — the 39 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
 
@@ -135,6 +135,8 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 | `func_00226CF8` | text | **matches** | Walks 24 pointer slots from `arg0+0x44`, calling `func_0020E180(*p, 1)` for each non-null one, returns 4. The counter runs `0x17` down to `-1` (`bgez`), so it is a `do/while (i >= 0)` with the decrement before the pointer bump. Byte-exact, first attempt. |
 | `func_0012BC78` | core_text | **close, not exact** (12/80) | Table dispatch through `arg0+0x40`, indexed by `*arg1` with 8-byte entries; calls the handler at `+0xC` with the entry's `+0x10` field and returns **its** result. A first attempt returned the entry address instead, which kept `entry` live across the call, forced a callee-saved register and made the function 8 bytes too long — retail's `daddu $7,$2,$0` sits *after* the `jalr`, so `$2` is the callee's return value. Residual is the allocator holding `result` in `$7` vs `$6`. Same size, kept. Removing this function's stale `extern void func_0012BC78(int, void *);` (a wrong-signature guess by an earlier caller) was needed to compile; `func_0012BCC8` still matches. |
 | `func_0022EAB0` | text | **matches** | State-machine step over `0x70`-byte entries of `D_0013E650`: on state 7 clear the state byte and two words, on any other non-zero state except 6 set the state to 4. **Third clean rotation-rule case:** the three stores written in natural order came out rotated by one (5/84); moving the first store to last gave retail's order exactly. Byte-exact. |
+| `func_001162B8`, `func_001163A0` | core_text | **matches** | Reclaimed from a banked revert. Retail's `dsll32`/`dsra32` pairs are not sign-extensions of an `int` — they are the DImode→SImode narrowing GCC emits when a 64-bit return value is assigned to an `int`. `long` is 64 bits for this target while `word_mode` stays SI, so the callees were prototyped `long` at the call site and defined `int` at the definition — an inconsistency retail could carry because the two sides lived in different translation units. We merge a whole segment into one file, so the two views are reconciled with an asm-labelled alias (`extern long func_00116108_wide(...) __asm__("func_00116108");`), which still emits a plain `jal`. See the new lever below. |
+| `func_00116320` | core_text | close, not exact (8/128, same size) | Third member of the same vtable family, same `long` aliasing. Every instruction and operand matches; retail schedules `andi $2,$2,0xEFFF` ahead of the argument load `lw $4,0x54($16)` and this build emits them the other way round — a list-scheduler tie between two independent instructions. The `&=` idiom and a named local for the handle load both leave it unchanged. |
 | `func_00228400` | text | **reverted, size mismatch** (80 vs 84) | Dispatch on a leading short — semantics recorded above its stub. Retail keeps `arg0` in `$16` and spends the first `jal`'s delay slot on `addiu $16,$16,0x20`, making the pointer advance free; this compiler emits a `nop` there. Three source shapes tried (offset expression at the return, advancing a separate `char *p` after the call, and advancing it before the call — best at 20/84); none put the advance in the call's delay slot. |
 | `func_00236B58` | text | **matches** | Brackets two `func_001F9A98(dst, src, len)` block copies between a pair of `func_00236A98()` calls. Byte-exact, first attempt. |
 | `func_0012BBF8` | core_text | **matches** | Clears field `+0x28` of six sub-objects hanging off `arg0->0x40` at offsets `0x1B8/0x1C8/0x1D8/0x1BC/0x1CC/0x1DC`, skipping null ones, returns 1. Retail uses six `bnel` branch-likelies with the store in the delay slot; a plain `if (p != 0) *(int *)(p + 0x28) = 0;` per slot reproduces every one. Byte-exact, first attempt — second case this round confirming branch-likely density is not a warning sign. |
@@ -464,6 +466,46 @@ downstream `jal` targets and turn several "matches (mod. known drift)"
 entries into clean exact matches), `func_0022F090`, and `func_0022F0F0`
 (whose entry explicitly says "worth revisiting if the sign-extension
 question is ever solved").
+
+**Second form: a 64-bit RETURN value narrowed to `int`.** The same
+narrowing fires on the other side of a call, and this one has a wrinkle
+worth knowing. If a callee is prototyped `long` and its result is
+assigned to an `int`, the pair appears at the call site:
+
+```c
+extern long f(void);
+int r = f();          /* <- emits dsll32/dsra32 on the result */
+```
+
+Retail carries this on functions whose callee is defined in the *same
+segment* as `int`, which looks like a contradiction until you remember
+retail had many translation units per segment and nothing cross-checks a
+prototype against a definition at link time. We merge a whole segment
+into one file, so the two views have to be reconciled explicitly — use
+an asm-labelled alias declaration, which this compiler supports and
+which still emits a plain `jal` to the real symbol:
+
+```c
+extern long func_00116108_wide(int *, void *, void *, void *)
+    __asm__("func_00116108");
+```
+
+The callee keeps its `int` definition and stays byte-exact. Do not try
+to widen the definition instead: `word_mode` is SI here even though
+`long` is DI, so any 64-bit *compare* inside it (`r == -1`) is rejected
+outright with `unsupported wide integer operation`. Ordered 64-bit
+compares are rejected everywhere; an equality compare against a
+constant compiles but costs a `dli`, which is not what retail emits, so
+keep the comparison operand `int`-typed. Whether the pair lands on the
+result, or is sunk to a single 32-bit store as in `func_001163A0`,
+follows from whether the local itself is declared `long` or `int` —
+declare it `long` when retail compares and returns the *raw* call result
+and narrows only at one store.
+
+Verified byte-exact on `func_001162B8` and `func_001163A0` (reclaiming a
+banked revert whose note blamed "a sign-extension this compiler does not
+emit for an int-returning callee" — a right observation with the wrong
+conclusion).
 
 Broader lesson, now twice-confirmed: entries in this file asserting
 "tried everything" have twice proven wrong — this one, and the
