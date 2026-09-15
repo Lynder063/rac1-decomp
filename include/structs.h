@@ -53,4 +53,39 @@ typedef struct Node1E4 {
     /* 0x54 */ void *owner;     /* the parent object this is embedded in */
 } Node1E4;
 
+/*
+ * Object handled by the func_0023Cxxx family. Recovered by reading the
+ * family together rather than one function at a time: the constructor
+ * (func_0023C0E0) shows which fields are cleared, func_0023C088 shows
+ * which are handed to the layer below, and func_0023C2B0/func_0023C2C0
+ * show which are tested.
+ *
+ * Only `state` is named. It is set to 0 by the constructor, set to 2
+ * after the submit in func_0023C088, and tested non-zero before
+ * teardown in func_0023C2C0 -- that is enough to call it a state. The
+ * rest keep unkNN: 0x4C is rounded down to a 0x400 multiple and 0x50 is
+ * compared against 0x1000, which hints at a buffer size and a fill
+ * level, but hinting is not knowing and a wrong name here would
+ * propagate into every caller.
+ */
+typedef struct Obj23C {
+    /* 0x00 */ int  state;
+    /* 0x04 */ char unk04[0x10];
+    /* 0x14 */ int  unk14;
+    /* 0x18 */ int  unk18;
+    /* 0x1C */ char unk1C[0x14];
+    /* 0x30 */ int  unk30;
+    /* 0x34 */ int  unk34;
+    /* 0x38 */ int  unk38;
+    /* 0x3C */ int  unk3C;
+    /* 0x40 */ int  unk40;
+    /* 0x44 */ int  unk44;
+    /* 0x48 */ int  unk48;
+    /* 0x4C */ int  unk4C;
+    /* 0x50 */ int  unk50;
+    /* 0x54 */ int  unk54;
+    /* 0x58 */ int  unk58;
+    /* 0x5C */ int  unk5C;
+} Obj23C;
+
 #endif /* STRUCTS_H */

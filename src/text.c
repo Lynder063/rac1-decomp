@@ -1,4 +1,5 @@
 #include "common.h"
+#include "structs.h"
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001E9080);
 
@@ -3958,28 +3959,28 @@ extern void func_0012F248(int, int, int, int, int);
    arithmetic idiom rather than a conditional move. Five args: EABI
    passes the first eight integer args in $4-$11, so $8 is the fifth. */
 void func_0023C088(void *arg0) {
-    char *s = (char *)arg0;
-    func_0012F248(*(int *)(s + 0x48),
-                  (*(int *)(s + 0x4C) / 0x400) * 0x400,
-                  *(int *)(s + 0x5C),
-                  *(int *)(s + 0x14),
-                  *(int *)(s + 0x18));
-    *(int *)s = 2;
+    Obj23C *s = (Obj23C *)arg0;
+    func_0012F248(s->unk48,
+                  (s->unk4C / 0x400) * 0x400,
+                  s->unk5C,
+                  s->unk14,
+                  s->unk18);
+    s->state = 2;
 }
 
 extern void func_0012F1E8(void *);
 
 void func_0023C0E0(void *arg0) {
-    char *s = (char *)arg0;
+    Obj23C *s = (Obj23C *)arg0;
     func_0012F1E8(s);
-    *(int *)(s + 0x00) = 0;
-    *(int *)(s + 0x30) = 0;
-    *(int *)(s + 0x38) = 0;
-    *(int *)(s + 0x3C) = 0;
-    *(int *)(s + 0x44) = 0;
-    *(int *)(s + 0x50) = 0;
-    *(int *)(s + 0x58) = 0;
-    *(int *)(s + 0x5C) = 0;
+    s->state = 0;
+    s->unk30 = 0;
+    s->unk38 = 0;
+    s->unk3C = 0;
+    s->unk44 = 0;
+    s->unk50 = 0;
+    s->unk58 = 0;
+    s->unk5C = 0;
 }
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C128);
@@ -3992,13 +3993,13 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023C128);
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C1F8);
 
 int func_0023C2B0(void *arg0) {
-    return *(int *)((char *)arg0 + 0x50) >= 0x1000;
+    return ((Obj23C *)arg0)->unk50 >= 0x1000;
 }
 
 extern void func_0023C390(void *);
 
 void func_0023C2C0(void *arg0) {
-    if (*(int *)arg0 != 0) {
+    if (((Obj23C *)arg0)->state != 0) {
         func_0023C390(arg0);
     }
 }
