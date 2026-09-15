@@ -932,6 +932,15 @@ spelling (`int`, `unsigned`, `long`, or a cast pointer) changes this.
 Seen on `func_00123208` (`0x00FFFFFF` timeout). Don't spend rounds
 rephrasing the literal.
 
+**Bind globals to locals to order their `%hi` halves.** When a function
+takes the addresses of two globals and the only difference from retail
+is which `lui` comes first, assign them to locals in the order you want
+them built and pass the locals. GCC folds the locals away and keeps
+only the ordering effect, so nothing else in the function changes.
+Fixed `func_0011BEB8` and `func_0011CDE0` from 4/140 to exact. Note the
+contrast with the next entry: hoisting an ADDRESS into a local is free,
+hoisting a LOADED VALUE can delete a reload the original kept.
+
 **Sometimes you must NOT hoist a repeated load into a local.** The
 usual advice is to cache a repeated field access in a variable. On
 `func_001170A0` that made GCC believe the pointer it had just passed to

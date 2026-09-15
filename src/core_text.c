@@ -2832,7 +2832,33 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C990);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CA70);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CBA0);
+extern int func_00128A58(void *, int);
+
+/*
+ * Close, not exact (8/140), same size. Logic is certain -- a bitstream
+ * reader: pull 3 bits, and if the next bit is set pull three 8-bit
+ * fields (keeping the last at +0x144); then a 14-bit field to +0x148,
+ * a flag bit, and another 14-bit field to +0x14C.
+ *
+ * The eight bytes are two adjacent instructions in the wrong order:
+ * retail stores the +0x148 result immediately after its call and then
+ * sets up $4 for the next one, while this compiler hoists the `$4`
+ * setup above the store. Binding the result to a named temporary first
+ * changes nothing -- the scheduler makes the same choice either way.
+ */
+void func_0012CBA0(void *arg0) {
+    char *s = (char *)arg0;
+
+    func_00128A58(s, 3);
+    if (func_00128A58(s, 1) != 0) {
+        func_00128A58(s, 8);
+        func_00128A58(s, 8);
+        *(int *)(s + 0x144) = func_00128A58(s, 8);
+    }
+    *(int *)(s + 0x148) = func_00128A58(s, 0xE);
+    func_00128A58(s, 1);
+    *(int *)(s + 0x14C) = func_00128A58(s, 0xE);
+}
 
 extern char D_00153C48[];
 extern char D_00153C78[];
