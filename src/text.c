@@ -1482,7 +1482,88 @@ int func_00205728(int arg0) {
     return -1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00205790);
+extern void func_00205830(int a, int b);
+
+/* D_001A01F0 typed as the object it is, so that the two 5/6-entry int
+   arrays at +0x278 and +0x28C are members rather than constants added
+   to an index. See the note on func_00205790 -- this is what makes it
+   match. Aliased rather than renamed because the rest of this file
+   still reaches the same symbol as a flat int array. */
+typedef struct {
+    int _pad0[0x9E];
+    int use[5];   /* +0x278 */
+    int flags[6]; /* +0x28C */
+} PadSlots;
+extern PadSlots D_001A01F0_slots __asm__("D_001A01F0");
+
+/*
+ * Allocate a slot. func_00205728(1) gets first refusal; if it returns
+ * nonzero that IS the answer. Otherwise scan slots 1..4 for one that is
+ * neither flagged 0x1000 nor empty, and hand it to func_00205830, which
+ * compacts entry `i` down onto entry 0. Falling out of the loop at i==5
+ * still calls func_00205830(0, 5) -- retail shares that call site with
+ * the break, so the source must too.
+ *
+ * Byte-exact, registers included, and it took three things:
+ *
+ * 1. ONE variable for the callee's result and the loop counter. Retail
+ *    keeps both in $16 and pays for a `daddu $16,$2,$0` that separate
+ *    locals would not need. Two locals is 4 bytes SHORT.
+ *
+ * 2. The peeled first test is not a peeled iteration in the source: it
+ *    is gcc's while -> do-while rotation, whose entry guard `1 < 5`
+ *    folds away, leaving the i==1 addresses as the constants 0x290 and
+ *    0x27C. A plain `while` starting at i = 1 produces it for free.
+ *
+ * 3. TYPE THE BASE AS A STRUCT. Three spellings, against retail's 160:
+ *      D_001A01F0[0xA3 + i]              172  adds the constant to the
+ *                                             index and THEN shifts,
+ *                                             once per array
+ *      int *p = D_001A01F0 + i; p[0xA3]  164  right inside the loop,
+ *                                             but the constant-folded
+ *                                             i==1 peel then needs its
+ *                                             own `addu $3,$3,4`
+ *                                             instead of folding into
+ *                                             the lw displacement
+ *      struct member .flags[i]           160  EXACT
+ *    Only the struct gives base-first `sll`/`addu` with the array's
+ *    byte offset left in the load, in BOTH the loop and the folded
+ *    peel. This widens the existing "type the table, don't rewrite the
+ *    addition" lever from a stride to a base: where retail shows
+ *    `sll idx,2` / `addu base` / `lw CONST(reg)`, that CONST is a
+ *    member offset, so declare the member.
+ *
+ *    It does not contradict the base-pointer rule on func_00205830
+ *    below, where three arrays come off one live base in straight-line
+ *    code and naming the base wins. The rule covering both is: describe
+ *    the memory, not the arithmetic.
+ *
+ * Watch the 164-byte middle spelling: its extra word was not an extra
+ * instruction at all. The body was 40 words either way, but the odd
+ * word count ahead of the loop label made gcc's `.p2align 3` emit a
+ * real nop -- and internal alignment padding sits INSIDE the .ent/.end
+ * pair, so it counts toward the symbol size and toward the bytes. A
+ * size miss of exactly 4 with an otherwise correct instruction stream
+ * means a misaligned block, not a missing instruction.
+ */
+int func_00205790(void) {
+    int i;
+
+    i = func_00205728(1);
+    if (i != 0) {
+        return i;
+    }
+    i = 1;
+    while (i < 5) {
+        if ((D_001A01F0_slots.flags[i] & 0x1000) == 0 &&
+            D_001A01F0_slots.use[i] != 0) {
+            break;
+        }
+        i++;
+    }
+    func_00205830(0, i);
+    return i;
+}
 
 extern int D_001A01F0[];
 
