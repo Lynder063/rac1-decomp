@@ -1725,72 +1725,10 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DF0C);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DFC8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DFE8);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011E6D4);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011E6D8);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011E7C4);
-
-extern long func_00120480(int);
-extern long func_0011FF08(long, long);
-/* func_0011FE48 is defined below returning void (it ends in a call
-   whose result it passes on); reach it through an alias here. */
-extern long func_0011FE48_v(long, long) __asm__("func_0011FE48");
-
 /*
- * Soft-float 64-bit-integer to double. func_00120480 is int->double,
- * func_0011FF08 multiply and func_0011FE48 add, all taking and
- * returning the bit pattern in a GPR, so everything here is spelled
- * `long` (the 64-bit type; `long long` would be 128-bit here).
- *
- * Byte mismatch, correct size (0x98): instruction for instruction the
- * same, but retail builds 0x40F0000000000000 once into $s1 and copies
- * it into $a1 for each call while we rebuild it inline at both sites.
- * The two forms cost the same four instructions, so the size is right;
- * hoisting the constant into a local does not move it (the compiler
- * propagates it straight back).
- *
- * The `& 0xFFFFFFFFL` before the cast is load-bearing: `(int)x` alone
- * is 12 bytes short, because retail masks with a materialised
- * 0xFFFFFFFF (lui/dsrl32/and) and only then sign-extends.
- * The two constants are doubles written as their bit patterns:
- * 0x40F0000000000000 is 65536.0 (applied twice to scale the high half
- * by 2^32) and 0x41F0000000000000 is 4294967296.0, added to the low
- * half when it is negative so it reads as unsigned.
- */
-long func_0011E7C8(long x) {
-    long hi;
-    long lo;
-    long k = 0x40F0000000000000L;
-    int lo32;
-
-    hi = func_00120480((int)(x >> 32));
-    hi = func_0011FF08(hi, k);
-    hi = func_0011FF08(hi, k);
-    lo32 = (int)(x & 0xFFFFFFFFL);
-    lo = func_00120480(lo32);
-    if (lo32 < 0) {
-        lo = func_0011FE48_v(lo, 0x41F0000000000000L);
-    }
-    return func_0011FE48_v(hi, lo);
-}
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011E860);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011EEC8);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011EF28);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011F4F8);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011FA38);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011FB68);
-
-/*
- * 0x11FC08-0x1206A0 is not game code: it is libgcc's fp-bit.c (soft-float
- * double), rebuilt from GCC's own source with Sony's 2.9-ee compiler.
- * See src/libgcc/README.md. core_text continues in src/core_text_2.c.
+ * 0x11DFE8-0x1206A0 is not game code: it is libgcc (libgcc2.c's 64-bit
+ * integer routines, then fp-bit.c's soft-float double), rebuilt from
+ * GCC's own source with Sony's 2.9-ee compiler, with the modules that do
+ * not match yet kept as asm stubs in src/libgcc/nonmatching_*.c. See
+ * src/libgcc/README.md. core_text continues in src/core_text_2.c.
  */

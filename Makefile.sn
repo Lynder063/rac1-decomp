@@ -41,13 +41,28 @@ SIZE    := $(SN_136)/bin/ee-size.exe
 # Verified: -G1/-G2/-G3 all link clean with zero regressions vs -G0.
 CFLAGS := -O2 -G2 -Iinclude -Wa,-I,.
 
-# libgcc's fp-bit.c, one object per L_* module like libgcc.a's members --
-# that is what reproduces retail's 8-byte gaps between them. Built with
-# Sony's 2.9-ee compiler, NOT the game's 2.95.3: see src/libgcc/README.md.
-# Order here is link order is retail address order.
-CC_LIBGCC := $(SN_114)/lib/gcc-lib/ee/2.9-ee-991111/cc1.exe
-LIBGCC_MODS := addsub_df mul_df div_df fpcmp_parts_df compare_df                si_to_df df_to_si df_to_usi make_df
-LIBGCC_OBJS := $(patsubst %,build-sn/libgcc/_%.o,$(LIBGCC_MODS))
+# libgcc, 0x11DFE8-0x1206A0: GCC's own libgcc2.c and fp-bit.c, one object
+# per L_* module like libgcc.a's members (that reproduces retail's gaps).
+# Built with Sony's 2.9-ee, NOT the game's 2.95.3 -- see src/libgcc/README.md.
+# Modules that do not match yet are asm stubs (nonmatching_*.c).
+# Order here is link order is retail address order; rac1.ld.sh and
+# tools/libgcc_units.py carry the same list.
+#
+# Through the 2.9-ee DRIVER, not cc1 directly: the driver passes the
+# target predefines (__mips__, __R5900__, ...), and longlong.h picks its
+# MIPS multiply/divide primitives off them. Without them __divdi3 and
+# __muldi3 come out wrong.
+CC_LIBGCC := $(SN_114)/bin/ee-gcc.exe
+LIBGCC_OBJS := \
+  build-sn/libgcc/l2_divdi3.o build-sn/libgcc/asm_0011E6D4.o \
+  build-sn/libgcc/l2_fixunsdfdi.o build-sn/libgcc/asm_0011E7C4.o \
+  build-sn/libgcc/l2_floatdidf.o build-sn/libgcc/asm_0011E860.o \
+  build-sn/libgcc/l2_muldi3.o build-sn/libgcc/asm_0011EF28.o \
+  build-sn/libgcc/fp_addsub_df.o build-sn/libgcc/fp_mul_df.o \
+  build-sn/libgcc/fp_div_df.o build-sn/libgcc/fp_fpcmp_parts_df.o \
+  build-sn/libgcc/fp_compare_df.o build-sn/libgcc/fp_si_to_df.o \
+  build-sn/libgcc/fp_df_to_si.o build-sn/libgcc/fp_df_to_usi.o \
+  build-sn/libgcc/fp_make_df.o
 
 OBJS := build-sn/core_text.o $(LIBGCC_OBJS) build-sn/core_text_2.o build-sn/text.o
 
@@ -85,21 +100,30 @@ build-sn/core_text_2.o: src/core_text_2.c tools/fix_core_spills.py tools/fix_tai
 	python tools/fix_tail_calls.py build-sn/core_text_2_sp.s build-sn/core_text_2_fixed.s
 	$(CC_CORE) $(CFLAGS) -c build-sn/core_text_2_fixed.s -o $@
 
-# libgcc modules: verbatim GCC source, no rewriters. cc1 is driven
-# directly because the SN driver has no way to select 2.9-ee.
-LIBGCC_CFLAGS := -quiet -O2 -G2 -DFINE_GRAINED_LIBRARIES
+# libgcc modules: verbatim GCC source, no rewriters.
+LIBGCC_CFLAGS := -O2 -G2 -S
 
-build-sn/libgcc/_%.o: src/libgcc/fp-bit.c
+build-sn/libgcc/fp_%.o: src/libgcc/fp-bit.c
 	@mkdir -p build-sn/libgcc
-	$(CC_LIBGCC) $(LIBGCC_CFLAGS) -DL_$* $< -o build-sn/libgcc/_$*.s
-	$(CC_TEXT) -c build-sn/libgcc/_$*.s -o $@
+	$(CC_LIBGCC) $(LIBGCC_CFLAGS) -DFINE_GRAINED_LIBRARIES -DL_$* $< -o build-sn/libgcc/fp_$*.s
+	$(CC_TEXT) -c build-sn/libgcc/fp_$*.s -o $@
 
 # float_to_usi only exists in this fp-bit revision under GOFAST (where it
 # is named dptoul); the code is identical to retail's.
-build-sn/libgcc/_df_to_usi.o: src/libgcc/fp-bit.c
+build-sn/libgcc/fp_df_to_usi.o: src/libgcc/fp-bit.c
 	@mkdir -p build-sn/libgcc
-	$(CC_LIBGCC) $(LIBGCC_CFLAGS) -DL_df_to_usi -DUS_SOFTWARE_GOFAST $< -o build-sn/libgcc/_df_to_usi.s
-	$(CC_TEXT) -c build-sn/libgcc/_df_to_usi.s -o $@
+	$(CC_LIBGCC) $(LIBGCC_CFLAGS) -DFINE_GRAINED_LIBRARIES -DL_df_to_usi -DUS_SOFTWARE_GOFAST $< -o build-sn/libgcc/fp_df_to_usi.s
+	$(CC_TEXT) -c build-sn/libgcc/fp_df_to_usi.s -o $@
+
+build-sn/libgcc/l2_%.o: src/libgcc/libgcc2.c src/libgcc/longlong.h
+	@mkdir -p build-sn/libgcc
+	$(CC_LIBGCC) $(LIBGCC_CFLAGS) -Isrc/libgcc/include -DIN_LIBGCC2 -DL_$* $< -o build-sn/libgcc/l2_$*.s
+	$(CC_TEXT) -c build-sn/libgcc/l2_$*.s -o $@
+
+# Not-yet-matching libgcc modules and linker fill: asm only.
+build-sn/libgcc/asm_%.o: src/libgcc/nonmatching_%.c
+	@mkdir -p build-sn/libgcc
+	$(CC_TEXT) $(CFLAGS) -c $< -o $@
 
 # text also needs the tail-call rewrite (it does NOT need fix_core_spills:
 # retail's text segment uses sq/lq, which v1.14 already emits).

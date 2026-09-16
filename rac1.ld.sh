@@ -27,25 +27,39 @@ SECTIONS
   . = 0x112380;
   .core_text : {
     build-sn/core_text.o(.text)
-    /* libgcc fp-bit modules, 0x11FC08-0x1206A0 (src/libgcc/README.md) */
+    /* libgcc, 0x11DFE8-0x1206A0 (src/libgcc/README.md). Same order as
+       LIBGCC_OBJS in Makefile.sn and tools/libgcc_units.py. */
+    build-sn/libgcc/l2_divdi3.o(.text)
+    build-sn/libgcc/asm_0011E6D4.o(.text)
+    build-sn/libgcc/l2_fixunsdfdi.o(.text)
+    build-sn/libgcc/asm_0011E7C4.o(.text)
+    build-sn/libgcc/l2_floatdidf.o(.text)
+    build-sn/libgcc/asm_0011E860.o(.text)
+    build-sn/libgcc/l2_muldi3.o(.text)
+    build-sn/libgcc/asm_0011EF28.o(.text)
     /* _fpadd_parts is static in fp-bit, so it has no global symbol to
-       alias; it is the first thing in its module. core_text.o ends
-       exactly on the 8-byte boundary, so `.` is its address. */
+       alias; it is the first thing in its module, and the stub object
+       before it ends exactly on the 8-byte boundary, so `.` is its
+       address. */
     func_0011FC08 = .;
-    build-sn/libgcc/_addsub_df.o(.text)
-    build-sn/libgcc/_mul_df.o(.text)
-    build-sn/libgcc/_div_df.o(.text)
-    build-sn/libgcc/_fpcmp_parts_df.o(.text)
-    build-sn/libgcc/_compare_df.o(.text)
-    build-sn/libgcc/_si_to_df.o(.text)
-    build-sn/libgcc/_df_to_si.o(.text)
-    build-sn/libgcc/_df_to_usi.o(.text)
-    build-sn/libgcc/_make_df.o(.text)
+    build-sn/libgcc/fp_addsub_df.o(.text)
+    build-sn/libgcc/fp_mul_df.o(.text)
+    build-sn/libgcc/fp_div_df.o(.text)
+    build-sn/libgcc/fp_fpcmp_parts_df.o(.text)
+    build-sn/libgcc/fp_compare_df.o(.text)
+    build-sn/libgcc/fp_si_to_df.o(.text)
+    build-sn/libgcc/fp_df_to_si.o(.text)
+    build-sn/libgcc/fp_df_to_usi.o(.text)
+    build-sn/libgcc/fp_make_df.o(.text)
     build-sn/core_text_2.o(.text)
   }
 
   /* libgcc keeps its real names; the rest of the image (and every tool)
      knows these functions by address. Map both ways. */
+  func_0011DFE8 = __divdi3;
+  func_0011E6D8 = __fixunsdfdi;
+  func_0011E7C8 = __floatdidf;
+  func_0011EEC8 = __muldi3;
   func_0011FE48 = __adddf3;
   func_0011FEA0 = __subdf3;
   func_0011FF08 = __muldf3;
@@ -58,14 +72,27 @@ SECTIONS
   func_00120670 = __make_dp;
   __pack_d   = func_0011FA38;
   __unpack_d = func_0011FB68;
-  __muldi3   = func_0011EEC8;
   __thenan_df = 0x001597F0;
+  /* Sony's EE compiler emits soft-float libcalls under their GOFAST
+     names (libgcc2's modules call these). */
+  dpadd  = __adddf3;
+  dpsub  = __subdf3;
+  dpmul  = __muldf3;
+  dpcmp  = __cmpdf2;
+  litodp = __floatsidf;
 
   . = 0x12f580;
   .core_data : { build-sn/core_data.data.o(.data) }
 
   . = 0x152300;
-  .core_rdata : { build-sn/core_rdata.rodata.o(.rodata) }
+  /* Split around __divdi3's own static __clz_tab (D_00152B18), which now
+     comes from its object instead of the retail blob -- see
+     tools/split_data_s.py. */
+  .core_rdata : {
+    build-sn/core_rdata_1.o(.rodata)
+    build-sn/libgcc/l2_divdi3.o(.rodata)
+    build-sn/core_rdata_2.o(.rodata)
+  }
 
   . = 0x154200;
   .core_bss : { build-sn/core_bss_pad.o(.core_bss_pad) }

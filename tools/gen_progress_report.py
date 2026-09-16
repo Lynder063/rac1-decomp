@@ -29,7 +29,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from libgcc_units import MODULES, FUNCTIONS as LIBGCC_FUNCTIONS, SEGMENT_SOURCES
+from libgcc_units import (MODULES, FUNCTIONS as LIBGCC_FUNCTIONS, SEGMENT_SOURCES,
+                          LIBGCC_START)
 
 REPORT = Path("progress/report.json")
 BASEROM = "baserom/SCES_509.16"
@@ -43,9 +44,6 @@ TC = str(Path("toolchain/sn-prodg-3.01/usr/local/sce/ee/gcc/bin").resolve())
 FUNC_DEF = re.compile(r"^(?!extern\b)[A-Za-z_].*?\b(func_[0-9A-Fa-f]{8})\s*\(", re.M)
 STUB = re.compile(r"INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\)")
 NONMATCHING = re.compile(r"nonmatching\s+(func_[0-9A-Fa-f]{8}),\s*(0x[0-9A-Fa-f]+)")
-
-# First address past the game half of core_text that precedes libgcc.
-LIBGCC_START = 0x11FC08
 
 
 def retail_functions() -> dict[str, tuple[str, int, int]]:
@@ -72,8 +70,8 @@ def with_source() -> set[str]:
 
 def unit_of(name: str, seg: str, vram: int) -> tuple[str, str, str]:
     """(unit name, source path, progress category)."""
-    for mod, src, fns in MODULES:
-        if name in fns:
+    for mod, src, fns, stubs in MODULES:
+        if name in fns or name in stubs:
             return f"libgcc/{mod}", src, "libgcc"
     if seg == "text":
         return "text", "src/text.c", "game"

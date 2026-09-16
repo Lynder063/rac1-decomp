@@ -666,7 +666,29 @@ the shared module list for the tools.
   EE/IOP SDK were not written for the game. Where the source still
   exists, compiling it is cheaper and more faithful than decoding it.
 
-**Still open.** `pack_d` (0x11FA38), `unpack_d` (0x11FB68) and `unpack_f`
+**Extended to libgcc2 (0x11DFE8).** `__divdi3`, `__muldi3`,
+`__floatdidf` and `__fixunsdfdi` match from the **unmodified** `libgcc2.c`
+and `longlong.h` of GCC trunk 1999-11-02, the revision just before the
+2.9-ee-991111 snapshot. Two things were needed, and neither is obvious:
+
+- **Build through the 2.9-ee driver, not `cc1`.** Calling `cc1` directly
+  drops the driver's target predefines (`__mips__`, `__R5900__`, ...).
+  `longlong.h` selects its MIPS `umul_ppmm` from those, and without them
+  `__divdi3` comes out 0x50 bytes too long. With the driver it is 0/443.
+  fp-bit happened to match either way, but it now goes through the driver
+  as well.
+- **Each division module has its own static `__clz_tab`** in core_rdata.
+  To own `__divdi3`'s table, the retail data blob is cut around
+  D_00152B18 (`tools/split_data_s.py`).
+
+Also learned: Sony's compiler emits soft-float libcalls under GOFAST
+names (`dpadd`, `dpcmp`, `litodp`...). Linker fill between these modules
+is `0xCDCDCDCD`, not zero, and splat split it out as 4-byte "functions"
+(`func_0011E6D4`, `func_0011E7C4`). Whole-image check: 2478 words across
+0x11DFE8-0x1206A0, 0 differ.
+
+**Still open.** `__moddi3`, `__udivdi3`, `__umoddi3` (one extra stack
+local in retail), `pack_d` (0x11FA38), `unpack_d` (0x11FB68) and `unpack_f`
 (0x1206B0) differ from 2.95.3's revision, and so does a gap past
 0x1206A0. They look like a different fp-bit revision. `__extendsfdf2`
 (0x120778) already matches from this source. The four large leaf
