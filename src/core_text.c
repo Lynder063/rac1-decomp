@@ -1377,30 +1377,18 @@ int func_0011BC40(void) {
     return 0;
 }
 
-/*
- * REVERTED (size mismatch: ours 16, retail 12). Logic is certain and the
- * tail-call rewrite does fire:
- *
- *   void func_0011BC70(void) { func_00118C90(D_0012FD9C); }
- *
- * It exposes a real limit of tools/fix_tail_calls.py rather than a source
- * problem. Retail schedules the argument load into the jump's delay slot:
- *
- *   lui $2,%hi(D_0012FD9C) / j func_00118C90 / lw $4,%lo(D_0012FD9C)($2)
- *
- * GCC instead spends the call's delay slot on the epilogue reload, so the
- * rewriter hits its case (a) -- no argument setup to carry down -- emits
- * nothing for the slot, and the assembler fills it with a nop. Three
- * instructions plus that nop is 16 bytes.
- *
- * Fixing it would mean the rewriter MOVING a body instruction into the
- * delay slot, which it deliberately never does: every transformation it
- * performs today is a deletion, and that is what makes it safe. Sinking
- * an arbitrary instruction past a jump needs real hazard analysis.
- * Reverted rather than kept, because a size mismatch drifts every later
- * function in the object.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011BC70);
+/* Byte-exact once tools/fix_tail_calls.py learned to sink the last body
+   instruction into the tail jump's delay slot. An earlier round reverted
+   this at 16 bytes against retail's 12 and correctly identified the
+   cause -- retail has `lui / j / lw(delay)` where we had
+   `lui / lw / j / nop` -- but left it as a rewriter limitation. It was
+   not: SN's assembler fills a delay slot only from AFTER the branch, so
+   at the end of a function it has nothing to take. Moving the one
+   preceding instruction down is safe by construction, not by analysis;
+   the reasoning is written out in the rewriter. */
+void func_0011BC70(void) {
+    func_00118C90(D_0012FD9C);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011BC80);
 

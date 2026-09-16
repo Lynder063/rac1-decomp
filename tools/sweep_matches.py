@@ -30,7 +30,13 @@ LINKED_ELF = "build-sn/rac1.elf"
 # (?!extern\b) so forward declarations aren't mistaken for definitions --
 # they used to be, which made a declared-but-not-defined function report
 # "could not check" forever.
-FUNC_DEF = re.compile(r"^(?!extern\b)[A-Za-z_].*\b(func_[0-9A-Fa-f]{8})\s*\(", re.M)
+# `.*?` is LAZY on purpose. Greedy, a one-line definition such as
+# `void func_0011BC70(void) { func_00118C90(D); }` captured the CALLEE's
+# name instead of the definition's, and because that callee was still a
+# stub the function silently dropped out of the audit -- it read as "not
+# decompiled" rather than as a failure. Found by writing exactly that
+# one-liner. Take the FIRST name on the line: that is the one defined.
+FUNC_DEF = re.compile(r"^(?!extern\b)[A-Za-z_].*?\b(func_[0-9A-Fa-f]{8})\s*\(", re.M)
 STUB = re.compile(r"INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\)")
 NONMATCHING = re.compile(r"nonmatching\s+(func_[0-9A-Fa-f]{8}),\s*(0x[0-9A-Fa-f]+)")
 

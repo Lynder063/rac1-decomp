@@ -70,6 +70,14 @@ SP_REF = re.compile(r"\$sp|\$29")
 CONTROL = re.compile(r"^\s*(?:b\w*|j|jal|jr)\b|^\s*\$?[A-Za-z_.$][\w.$]*:")
 
 
+# Mnemonics that assemble to exactly one machine instruction, so that
+# sinking one into a delay slot under `.set nomacro` cannot silently
+# turn into two words. Anything not listed is left where it is.
+SINKABLE = re.compile(
+    r"^\s*(?:l[bhwdq]u?|lwu|s[bhwdq]|addu?|addiu|daddu|subu|dsubu|move|"
+    r"sll|srl|sra|dsll|dsrl|dsra|or|ori|and|andi|xor|xori|nor|lui|"
+    r"slt|sltu|slti|sltiu|nop)\s")
+
 FRAME_DIR = re.compile(r"^\s*\.frame\s")
 MASK_DIR = re.compile(r"^\s*\.mask\s")
 
@@ -153,9 +161,36 @@ def rewrite_function(lines: list[str]) -> list[str] | None:
     lead, gap, target = m.group(1), m.group(2), m.group(3)
     tail = f"{lead}j{gap}{target}\n"
 
+    # --- case (a) with a non-empty body: sink the last body instruction
+    # into the jump's delay slot.
+    #
+    # Leaving the slot to the assembler is right only when the body is
+    # EMPTY, i.e. retail is a bare `j` plus nop at 8 bytes. When there is
+    # a preceding instruction, retail has it in the slot: retail's
+    # compiler filled the unconditional jump's delay slot from BEFORE the
+    # jump, which is the one direction SN's assembler will not do -- it
+    # fills only from after, so at the end of a function it has nothing
+    # to take and emits a nop. func_0011BC70 is the case: retail is
+    # `lui / j / lw(delay)` = 12 bytes, we were `lui / lw / j / nop`.
+    #
+    # This is the only motion this file performs, and it is safe by
+    # construction rather than by analysis: a delay-slot instruction runs
+    # BEFORE control reaches the target, so program order is unchanged; a
+    # direct `j` reads no registers, so there is nothing for the sunk
+    # instruction to clobber; and the scope guard above already rejects
+    # any function containing an internal label, so the instruction
+    # cannot be some other path's branch target.
+    sink_at = None
+    if delay is None:
+        cand = [i for i in range(0, j) if i not in (push_at, save_at)]
+        if cand and SINKABLE.match(code[cand[-1]]):
+            sink_at = cand[-1]
+
     drop = {idx[push_at], idx[save_at]} | {idx[j + 1 + k] for k in range(len(after))
                                if after[k] in epilogue and
                                (delay is None or k > 0)}
+    if sink_at is not None:
+        drop = drop | {idx[sink_at]}
     jal_line = idx[j]
     out = []
     for i, l in enumerate(lines):
@@ -171,11 +206,20 @@ def rewrite_function(lines: list[str]) -> list[str] | None:
             out.append("\t.mask\t0x00000000,0\n")
             continue
         if i == jal_line:
+            if sink_at is not None:
+                # Written out under noreorder so the assembler leaves
+                # the slot exactly as given.
+                out.append("\t.set\tnoreorder\n\t.set\tnomacro\n")
+                out.append(tail)
+                out.append(code[sink_at])
+                out.append("\t.set\tmacro\n\t.set\treorder\n")
+                continue
             out.append(tail)
-            # Case (a) deliberately emits NOTHING here. The assembler runs
-            # under `.set reorder` and fills the jump's delay slot itself,
-            # so an explicit `nop` becomes a THIRD instruction: measured
-            # 12 bytes against retail's 8 before this was removed.
+            # With an EMPTY body, case (a) deliberately emits nothing
+            # here. The assembler runs under `.set reorder` and fills
+            # the slot itself, so an explicit `nop` becomes a THIRD
+            # instruction: measured 12 bytes against retail 8 before
+            # this was removed.
             continue
         out.append(l)
     return out
