@@ -36,3 +36,7 @@ docs/ghidra/*.c
 # Stray artifacts from tool bootstrap scripts -- never part of the project.
 Python/
 python_install_*.log
+
+# Third-party decomp tools (m2c, asm-differ) -- cloned locally, not vendored.
+tools/ext/
+ctx.c
