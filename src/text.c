@@ -3693,7 +3693,30 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0021F7D0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021F898);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021FA50);
+extern char D_00187040[];
+extern void func_00220128(void *);
+extern void *func_00226720_a(int) __asm__("func_00226720");
+
+/* Attach marker object 0x46E to arg0, parked just above the camera
+   focus in D_00187040's 0x140 block, and point it back at its owner
+   through the node at +0x78. Always returns 0. */
+int func_0021FA50(void *arg0) {
+    char *o = (char *)func_00226720_a(0x46E);
+    char *t;
+
+    if (o != 0) {
+        t = D_00187040;
+        *(char **)((char *)arg0 + 0x44) = o;
+        *(short *)(o + 0x34) = 0;
+        *(float *)(o + 0x10) = *(float *)(t + 0x140) + 8.0f;
+        *(float *)(o + 0x14) = *(float *)(t + 0x144) + 0.5f;
+        *(float *)(o + 0x18) = *(float *)(t + 0x148) - 0.1f;
+        *(float *)(o + 0x44) = -1.9f;
+        *(void **)(o + 0x74) = (void *)func_00220128;
+        **(void ***)(o + 0x78) = arg0;
+    }
+    return 0;
+}
 
 extern int func_002267C0(int);
 
