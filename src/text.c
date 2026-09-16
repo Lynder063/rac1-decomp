@@ -2470,9 +2470,54 @@ void func_0020DAB0(void) {
     } while (i >= 0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020DAF8);
+/* func_001FA460 is declared above with a single argument, for the
+   func_00215328 site; this one passes a source as well. */
+extern void func_001FA460_2(void *, void *) __asm__("func_001FA460");
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_002116A0(void *, int, int *, void *);
+extern void func_001FA540(void *, void *, void *);
+extern void func_00211548(void *, int, void *, void *);
+extern void func_001F9EC0(void *, void *, void *);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020DB98);
+/* Scale the single vertex block at arg2+0x30 by the object's 0x2C field
+   in 1/1024 units, then run it through the two per-object transforms at
+   arg0+0xC0 and arg0+0x10. 0x3A800000 is exactly 2^-10. */
+void func_0020DAF8(char *arg0, int arg1, char *arg2) {
+    char buf[0x40];
+    int n;
+    char *v;
+    float s;
+
+    s = *(float *)(arg0 + 0x2C) * 0.0009765625f;
+    n = arg1;
+    func_002116A0(arg0, 1, &n, arg2);
+    v = arg2 + 0x30;
+    func_001F9C30(v, v, s);
+    func_001FA460_2(buf, arg0 + 0xC0);
+    func_001FA540(arg2, buf, arg2);
+    func_001F9BD8(v, v, arg0 + 0x10);
+}
+
+/* The many-vertex form of the same thing: arg1 blocks of 0x10 bytes
+   starting at arg3, each scaled and transformed in place. */
+void func_0020DB98(char *arg0, int arg1, void *arg2, char *arg3) {
+    char *v = arg3;
+    int n = arg1;
+    float s;
+
+    s = *(float *)(arg0 + 0x2C) * 0.0009765625f;
+    func_00211548(arg0, arg1, arg2, arg3);
+    if (n > 0) {
+        do {
+            func_001F9C30(v, v, s);
+            n--;
+            func_001F9EC0(v, v, arg0 + 0xC0);
+            func_001F9BD8(v, v, arg0 + 0x10);
+            v += 0x10;
+        } while (n != 0);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020DC38);
 
