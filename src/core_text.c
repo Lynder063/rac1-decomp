@@ -3347,27 +3347,39 @@ void func_0012C278(void *arg0) {
 }
 
 /*
- * REVERTED (size mismatch: ours 88, retail 96). Logic is certain:
+ * Point the object's four scratchpad pointers at 0x70000000 and clear a
+ * flag. Size-exact at 0x60, 2 of 24 words: retail saves $s1 before $ra
+ * in the prologue and we save them the other way round. Swapping the two
+ * locals' declaration order does not move it -- spill ORDER is the
+ * recorded dead end, and it stays one.
  *
- *   void func_0012C2F8(void *arg0) {
- *       char *p = (char *)arg0;
- *       func_00127378(1);
- *       *(int *)(p + 0x590) = 0x70000000;   // scratchpad pointers
- *       *(int *)(p + 0x594) = 0x70001800;
- *       *(int *)(p + 0x6D0) = 0x70001B00;
- *       *(int *)(p + 0x6D4) = 0x70003300;
- *       *(int *)(p + 0x810) = 0;
- *   }
+ * What DOES matter, and is new: `int a = 0x70000000;` must be written
+ * BEFORE the call. An earlier round reverted this at 8 bytes short
+ * having tried binding the constants to locals declared AFTER the call,
+ * which changes nothing because gcc folds them straight back into the
+ * stores. Declared before the call, the pseudo's live range crosses the
+ * call, so the allocator gives it a CALLEE-SAVED register and the
+ * function pays retail's sd/ld $s1 pair -- 8 bytes. gcc still
+ * rematerialises the `lui` after the call, exactly as retail does, so
+ * the only trace of the earlier definition is the register class.
  *
- * Retail holds 0x70000000 in $17 and therefore pays a sd/ld $17 pair,
- * 8 bytes this compiler does not emit because it materialises each
- * constant into a temp just before its store instead of keeping four
- * live at once. Binding all four to locals declared after the call was
- * tried and changes nothing -- GCC folds them straight back into the
- * stores. Reverted rather than kept, because a short function drifts
- * everything after it.
+ * That is the general point: a constant hoisted above a call does not
+ * survive as a value (constant propagation puts it back), but it does
+ * survive as a register-class decision. Where retail spends a
+ * callee-saved register on something that looks like it needs no
+ * register at all, the source defined it before the call.
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C2F8);
+void func_0012C2F8(void *arg0) {
+    char *p = (char *)arg0;
+    int a = 0x70000000;
+
+    func_00127378(1);
+    *(int *)(p + 0x590) = a;
+    *(int *)(p + 0x594) = 0x70001800;
+    *(int *)(p + 0x6D0) = 0x70001B00;
+    *(int *)(p + 0x6D4) = 0x70003300;
+    *(int *)(p + 0x810) = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C358);
 
