@@ -2525,7 +2525,67 @@ void *func_00125078(int arg0) {
  */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001250E0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00125160);
+/*
+ * Byte mismatch at correct size (0xB0), 8 of 44 words, and every one of
+ * them is $a2 vs $a3: retail keeps the loop index in $a2 and the
+ * short-slot counter in $a3, we do the reverse. Instruction stream,
+ * constants and everything else are identical.
+ *
+ * New data point on the declaration-order lever, which is recorded as
+ * inert. It is inert for INSTRUCTION SELECTION -- all 24 orderings of
+ * the four initialised locals compile to the identical mnemonic
+ * sequence (checked with tools/permute.py) -- but it is NOT inert for
+ * emission order: moving `i` ahead of `b` reorders the two zeroing
+ * `daddu`s in the prologue and took this function from 10/44 to 8/44.
+ * It does not reach the register assignment itself, which stays the
+ * recorded allocator destination-choice dead end.
+ *
+ * Expand a 40-bit mask into 40 four-word slots. For each set bit, record
+   slot type 1 plus the running (a, b) pair; entries 0x10..0x1F and
+   0x23..0x26 are "wide" (size 8) and only advance a, everything else is
+   size 1 and advances b, rolling a over every eighth. Clear bits zero
+   the slot's type and both counters. */
+int func_00125160(unsigned char *src, int *out) {
+    int bit;
+    int a;
+    int i;
+    int b;
+
+    bit = 0;
+    a = 0;
+    i = 0;
+    b = 0;
+    do {
+        if (((*src >> bit) & 1) != 0) {
+            out[0] = 1;
+            out[2] = a;
+            out[3] = b;
+            if ((i >= 0x10 && i < 0x20) || (i >= 0x23 && i < 0x27)) {
+                out[1] = 8;
+                a++;
+            } else {
+                b++;
+                out[1] = 1;
+                if ((b & 7) == 0) {
+                    a++;
+                    b = 0;
+                }
+            }
+        } else {
+            out[0] = 0;
+            out[2] = 0;
+            out[3] = 0;
+        }
+        bit++;
+        if ((bit & 7) == 0) {
+            src++;
+            bit = 0;
+        }
+        i++;
+        out += 4;
+    } while (i < 0x28);
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00125210);
 
