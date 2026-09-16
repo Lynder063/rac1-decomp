@@ -1581,7 +1581,49 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011E6D8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011E7C4);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011E7C8);
+extern long func_00120480(int);
+extern long func_0011FF08(long, long);
+/* func_0011FE48 is defined below returning void (it ends in a call
+   whose result it passes on); reach it through an alias here. */
+extern long func_0011FE48_v(long, long) __asm__("func_0011FE48");
+
+/*
+ * Soft-float 64-bit-integer to double. func_00120480 is int->double,
+ * func_0011FF08 multiply and func_0011FE48 add, all taking and
+ * returning the bit pattern in a GPR, so everything here is spelled
+ * `long` (the 64-bit type; `long long` would be 128-bit here).
+ *
+ * Byte mismatch, correct size (0x98): instruction for instruction the
+ * same, but retail builds 0x40F0000000000000 once into $s1 and copies
+ * it into $a1 for each call while we rebuild it inline at both sites.
+ * The two forms cost the same four instructions, so the size is right;
+ * hoisting the constant into a local does not move it (the compiler
+ * propagates it straight back).
+ *
+ * The `& 0xFFFFFFFFL` before the cast is load-bearing: `(int)x` alone
+ * is 12 bytes short, because retail masks with a materialised
+ * 0xFFFFFFFF (lui/dsrl32/and) and only then sign-extends.
+ * The two constants are doubles written as their bit patterns:
+ * 0x40F0000000000000 is 65536.0 (applied twice to scale the high half
+ * by 2^32) and 0x41F0000000000000 is 4294967296.0, added to the low
+ * half when it is negative so it reads as unsigned.
+ */
+long func_0011E7C8(long x) {
+    long hi;
+    long lo;
+    long k = 0x40F0000000000000L;
+    int lo32;
+
+    hi = func_00120480((int)(x >> 32));
+    hi = func_0011FF08(hi, k);
+    hi = func_0011FF08(hi, k);
+    lo32 = (int)(x & 0xFFFFFFFFL);
+    lo = func_00120480(lo32);
+    if (lo32 < 0) {
+        lo = func_0011FE48_v(lo, 0x41F0000000000000L);
+    }
+    return func_0011FE48_v(hi, lo);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011E860);
 
@@ -3128,6 +3170,53 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D000);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D068);
 
+/*
+ * Reverted (size mismatch: 152 vs retail's 156). Semantics are certain
+ * -- it fills the record at D_001331D8 once, byte 0 staying zero until
+ * it has been read, and hands the buffer back either way:
+ *
+ *   extern int func_0011BF80(void *, int);
+ *   extern int func_0011C5C0(int, void *, int);
+ *   extern void func_0011C208(int);
+ *   extern char D_001331D8[], D_00153D00[], D_00153D10[], D_00153D28[];
+ *
+ *   char *func_0012D2A0(void) {
+ *       int fd;
+ *       if (D_001331D8[0] == 0) {
+ *           fd = func_0011BF80(D_00153D00, 1);
+ *           if (fd == -1) { func_0011A6C8(D_00153D10, D_001331D8); }
+ *           if (func_0011C5C0(fd, D_001331D8, 0xE) == -1) {
+ *               func_0011A6C8(D_00153D28);
+ *           }
+ *           func_0011C208(fd);
+ *       }
+ *       return D_001331D8;
+ *   }
+ *
+ * (The second func_0011A6C8 gets only the format string; $a1 still holds
+ * the buffer from the func_0011C5C0 call and retail never resets it,
+ * which is why that declaration has to stay unprototyped.)
+ *
+ * Blocked on addressing form, not on source shape. Retail keeps
+ * %hi(D_001331D8) itself live in a callee-saved register and spends
+ * three separate %lo references on it -- the `lb`, the buffer pointer
+ * in $s3, and the returned address -- for 4 saved registers and an
+ * 80-byte frame. This compiler folds %hi+%lo at every reference, so it
+ * never has a reason to keep the bare %hi, and lands one instruction
+ * short however the references are spelled. Counts for the three
+ * spellings tried:
+ *   - the source above, D_001331D8 everywhere            160 (4 LONG:
+ *     adds a daddu because the lui lands in $v0 and has to be copied
+ *     into a saved register to survive the calls)
+ *   - a `char *p = D_001331D8` local used for the calls  152 (4 SHORT)
+ *   - that local plus a second C name on the same asm
+ *     symbol for the return, to force a fresh lui/addiu 152 (4 SHORT;
+ *     the alias works and does emit the second lui/addiu, but the
+ *     compiler then drops a saved register and the save/restore pair
+ *     costs exactly what the lui gained)
+ * Related to the "global store addressing" entry in the docs: the
+ * -mno-split-addresses tradeoff is the same one.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D2A0);
 
 extern void func_0012D2A0(void);
