@@ -4303,7 +4303,27 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0022D6B4);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022D7E0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022D8C0);
+extern char D_00187180_a[] __asm__("D_00187180");
+extern char D_00194220[];
+extern int D_0013E6BC;
+extern void func_002141A8(void *, float, float);
+extern void func_001F9BD8_a(void *, void *, void *) __asm__("func_001F9BD8");
+extern void func_001F9C30_a(void *, void *, float) __asm__("func_001F9C30");
+extern void func_001F9BF0_a(void *, void *, void *) __asm__("func_001F9BF0");
+extern int func_001EFE10_a(void *, void *, int, int, int) __asm__("func_001EFE10");
+
+/* Jitter the vector at arg0 between 0.5 and 6.0, fold in the reference
+   frame at D_00187180, and if the emitter accepts it, re-derive it from
+   D_00194220, damp to 3/4 and fold the frame in again. */
+void func_0022D8C0(void *arg0) {
+    func_002141A8(arg0, 0.5f, 6.0f);
+    func_001F9BD8_a(arg0, arg0, D_00187180_a);
+    if (func_001EFE10_a(D_00187180_a, arg0, 0x82, D_0013E6BC, 0) != 0) {
+        func_001F9BF0_a(arg0, D_00194220, D_00187180_a);
+        func_001F9C30_a(arg0, arg0, 0.75f);
+        func_001F9BD8_a(arg0, arg0, D_00187180_a);
+    }
+}
 
 extern char D_00187180[];
 extern void func_001F9BF0(void *, void *, void *);
@@ -4340,7 +4360,25 @@ void func_0022DB00(void *arg0, int arg1) {
     func_0022DA10(p, v, p[0], p[1]);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022DB48);
+extern void func_001F9EE8(void *, void *, void *);
+extern float func_001F9CE8(void *);
+extern float func_001F9BB0(float, float, float);
+extern float func_001FA058_a(float, float) __asm__("func_001FA058");
+extern void func_001FA898(float);
+
+/* Build the vector at arg1 in the D_00187180 frame, project it against
+   arg2, and steer by its heading: atan2 of the xy part, negated and
+   converted from radians to degrees (180 * 1/pi), scaled by how far the
+   projection runs past 1.0, clamped to 0..1. arg0 is unused. */
+void func_0022DB48(void *arg0, void *arg1, void *arg2) {
+    float v[4];
+    float t;
+
+    func_001F9BF0_a(v, arg1, D_00187180_a);
+    func_001F9EE8(v, v, arg2);
+    t = func_001F9BB0(func_001F9CE8(v) - 1.0f, 0.0f, 1.0f);
+    func_001FA898(-func_001FA058_a(v[0], v[1]) * 180.0f * t * 0.31830987f);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022DBE8);
 
