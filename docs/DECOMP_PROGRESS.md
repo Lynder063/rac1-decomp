@@ -51,9 +51,9 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **345 functions
-have real C; 308 are exact on size and bytes; 0 are size-mismatched and
-37 byte-mismatched** — the 37 being deliberately-kept documented
+Current audited state (from `tools/sweep_matches.py`): **394 functions
+have real C; 341 are exact on size and bytes; 0 are size-mismatched and
+53 byte-mismatched** — the 53 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
 
@@ -1489,3 +1489,144 @@ bytes short if the low half is spelled `(int)x`. Retail materialises
 sign-extends with `dsll32`/`dsra32`. `(int)(x & 0xFFFFFFFFL)` emits
 exactly that. Worth trying whenever a 64-bit value is narrowed and the
 result is a few instructions short.
+
+## Cross-jump sweep across the backlog: it explains nothing already on file
+
+The arm-order lever above was swept against both backlog buckets, and the
+result is negative in a way worth recording so nobody spends another
+round on it.
+
+- **The 50 same-size byte-mismatches: 0 explained, and by construction.**
+  Merging two tails always changes a function's length, so a residual
+  that leaves the size right cannot be a cross-jump. Confirmed anyway two
+  ways: every one of the 50 has exactly as many `jr $31` epilogues in our
+  output as retail has, and none of them differs from retail by an
+  inverted branch condition (same mnemonic, different register, is what
+  the diffs actually show — that is allocation, not layout).
+- **The stubbed "N bytes short" bucket: 0 explained.** Not one of those
+  functions has two same-valued exits in retail — no duplicated
+  `addiu $v0,$0,K`, and a single epilogue each. Their documented causes
+  stand: delay-slot filling (`func_0023E5E0`, `func_0022EF68`,
+  `func_001209D8`), the load-delay `nop` on tiny FP leaves
+  (`func_001F9878`, `func_001F98B0`), `mult` instruction selection
+  (`func_0012D4E0`), and allocator destination choice
+  (`func_00123650`, `func_001250E0`).
+
+So the lever was fully harvested the round it was found. It is still
+worth reaching for on **new** candidates: `func_00217628` came out
+size-exact but 15/40 words wrong with the two arms emitted in the
+opposite order, and inverting the test made it exact. Check it when
+decoding, not when triaging the backlog.
+
+## A value that reaches a join point: give it one definition per arm
+
+`func_0011AFE8` hands out ids from a counter, skipping 0:
+
+```c
+v = *(int *)a + 1;
+*(int *)a = v;
+if (v == 1) { *(int *)a = v + 1; id = 1; }
+else        { id = v; }
+```
+
+Retail rematerialises `addiu $v1,$0,1` in the taken arm even though
+`$v1` already holds that value. Every spelling that computes the value
+once — including writing a redundant `id = 1;` after the store — is
+folded away, and the function comes out **4 bytes short**. Giving each
+arm its own assignment to `id` keeps both definitions alive and matches.
+
+This is the same family as the arm-order lever: what the compiler does
+with a value at a join point is steerable by how many definitions the
+source gives it, not by the value itself.
+
+## Loop-counter signedness decides whether the loop can be reversed
+
+`func_0011DCB8` ends with a short counted loop, `for (i = 2; i < 3; i++)`.
+Declared `int`, gcc normalises it to a count-down from zero
+(`addu $18,$18,-1` / `bgezl`) and the function is **4 bytes short**.
+Declared `unsigned`, it keeps retail's count-up with `sltiu` and the
+function is size-exact.
+
+`sltiu` on a loop back-edge in retail's own output is the tell. Worth
+checking on any short function with a small counted loop.
+
+## Folding a subtracted index into the symbol addend
+
+`func_00216620`/`func_002166F0` index a stride-8 table by `id - 20000`.
+Spelled inline —
+
+```c
+h = *(int *)((char *)D_00137C80 + (arg0 - 0x4E20) * 8 + 0x2988);
+```
+
+— gcc folds the whole constant part into the symbol's addend and emits
+`%hi/%lo(D_00137C80-149368)` with a zero displacement: five instructions
+where retail has six, so the function is **4 bytes short**. Naming the
+unoffset base and the index as two separate locals blocks the fold:
+
+```c
+char *base = (char *)D_00137C80;
+int i = arg0 - 0x4E20;
+h = *(int *)(base + i * 8 + 0x2988);
+```
+
+which reproduces retail exactly — bare `%hi`/`%lo`, a separate
+`addiu $2,$13,-0x4E20`, `sll`, `addu`, and 0x2988 as the load
+displacement. This is the base-pointer lever extended to a subtracted
+index. (Both functions still stub out on an unrelated allocator
+residual; the counts are in the stub comment.)
+
+## Loop-invariant setup belongs in the preheader, so declare it in the loop
+
+`func_00227A70` walks a pending list with a pointer that advances by 8.
+Declaring that pointer before the `while` makes gcc hoist the %hi/%lo of
+its base and the `sll`/`addu` **above the loop guard**; retail has them
+in the preheader, after the guard. Declaring it inside the loop body and
+letting gcc build the induction variable itself puts them where retail
+has them. The function stayed size-exact either way — the loop's
+alignment padding absorbed the slack — which is exactly why this kind of
+drift is easy to miss.
+
+## A constant address is not a base pointer
+
+The base-pointer timing rule ("declared at the top of a function it sits
+in a callee-saved register across calls") holds for a global's base:
+`func_0021FA50` needed `char *t = D_00187040;` moved INSIDE the `if`,
+after the call, or it claimed a second callee-saved register and the
+function was 8 bytes long.
+
+It does **not** hold for a literal MMIO address. `func_00128638` spins on
+0x10002000 and 0x10002010; retail pins both in callee-saved registers,
+and no spelling gets this compiler to pin the first one — declaring the
+pointer at the top of the function does not stop it being rematerialised
+as an absolute load. Three spellings, 160/120/152 against retail's 176,
+all recorded in the stub. Same allocator question already on file for
+`func_00128860`, which shares the wait loop.
+
+## Two small things that cost 4 bytes each
+
+- **`char` vs `unsigned char` for the constant 0xFF.** In
+  `func_00226720` the value 0xFF is compared against a table byte and
+  then stored. Stored through `char` it is the *different* constant -1
+  and earns its own `li`; through `unsigned char` it shares retail's
+  single callee-saved copy. The byte store must also precede the
+  halfword store, or the compiler makes the QImode 255 a fresh pseudo
+  instead of reusing the HImode one.
+- **Store-then-reload needs a basic-block boundary.** `func_0012D688`
+  decrements a byte, stores it, and tests the stored byte. Written
+  straight through, the compiler forwards the value and tests it with
+  `andi`/`bne`; retail re-loads it with `lbu` and tests it bare. Moving
+  the store so that an `if` block falls between it and the test does buy
+  the reload — but the compiler then spends the saving on a `bnel` that
+  duplicates the load into the delay slot, so that function still misses,
+  4 bytes the other way. The lever is real; on `func_0012D688` it just
+  trades one residual for another.
+
+## Missing prototype on a float-taking callee fails at LINK, as `fptodp`
+
+Calling a `(void *, void *, float)` helper with no prototype in scope
+applies default argument promotion, the float becomes a double, and the
+link fails with an undefined reference to `fptodp`. It looks like a bad
+float constant and is not: it means the `extern` declaration is further
+down the file than the call. Four functions this round needed a
+prototype (or an `__asm__` alias of one) hoisted above their first use.
