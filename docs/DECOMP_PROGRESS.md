@@ -676,6 +676,26 @@ functions this section says 2.9-ee improved (`func_00116320`,
 `func_0011DC50`, `func_0011B710`) are worth re-checking for the same
 reason: they may be library or SDK code as well.
 
+## The game is C++, and the language switch alone changes nothing
+
+Retail's strings name its own source files: `hud.cpp`, `loaders.cpp`,
+`map.cpp`, and one `snd.c`. There are no RTTI or exception symbols, so it
+was built without them. The `lvl_*vtbl` sections are consistent with that.
+
+**Measured:** `src/text.c` compiled as C++ gives 239 exact against 240 as
+C, at object level with relocations masked, and all 25 near-misses are
+byte-for-byte unchanged. The setup was cc1plus 2.95.3 v1.14, the whole
+file wrapped in `extern "C"`, and `()` prototypes rewritten to `(...)`.
+Switching the build to C++ is therefore not a missing lever by itself.
+
+Still open, and cheap to try on store-order and allocator near-misses:
+C++ *features* that change codegen. decomp.wiki documents a GCC 2.9 PS2
+case where turning an `int` field into `bool` fixed a load/store order.
+The end goal is readable C++ anyway, so C++ source costs nothing.
+
+See `docs/WORKFLOW.md` for the full review against decomp.wiki, including
+what was ruled out (`.lit4` float-literal nops: retail has none).
+
 ## Open toolchain questions
 
 **RESOLVED (claim was wrong) — 64-bit shift by a non-multiple-of-32
