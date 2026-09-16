@@ -1816,6 +1816,38 @@ void *func_00120978(void *arg0) {
     return old;
 }
 
+/*
+ * Reverted (size mismatch: 144 vs retail's 160). Semantics are certain:
+ *
+ *   void func_001209D8(int *arg0) {
+ *       D_00131414 = *arg0;
+ *       D_00131418 = D_00131414;
+ *       if (D_00131414 == 0xB) {
+ *           D_00131414 = 0;
+ *           D_001313F0 = 0;
+ *           return;
+ *       }
+ *       func_00118CA0(D_001313E8);
+ *       if (D_001313D4 != 0 && D_00159840 != 0) {
+ *           func_00118CA0(D_001313E0);
+ *       } else {
+ *           D_001313F0 = 0;
+ *       }
+ *       D_00131414 = 0;
+ *   }
+ *
+ * Sixteen bytes short for two reasons, in equal parts:
+ *  - retail re-LOADS D_00131414 after storing it, twice (store, load,
+ *    store elsewhere, load, compare), where this compiler forwards the
+ *    stored value. `volatile` would buy those 8 bytes back, but it is
+ *    not something the rest of the tree spells and it would be guessing
+ *    at retail's source rather than recovering it.
+ *  - both func_00118CA0 calls have a bare `nop` in their delay slots in
+ *    retail and we schedule the following load into them -- the known
+ *    per-site delay-slot difference, not a rule (see docs).
+ * Even with volatile the second half would still block it, so this
+ * stays a stub.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001209D8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120A78);

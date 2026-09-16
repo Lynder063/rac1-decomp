@@ -1385,3 +1385,107 @@ The choice is made by the allocator, not by the source. Don't spend
 another round on operand order — if a residual is only a destination
 register, the lever is elsewhere (which pseudo is created first, or how
 long each value stays live), not the `+`.
+
+## Two exits that end the same way get cross-jumped — arm order decides
+
+`func_00120E98` and `func_00121930` are a two-function family: open a
+service, run one `func_0011B4C8` RPC, release the lock, return the
+reply. Spelled the obvious way —
+
+```c
+if (open(...) == 0) return K;
+if (rpc(...) < 0) { release(); return K; }
+r = *reply;
+release();
+return r;
+```
+
+— both come out **8 bytes short**. The early guard's `return K` and the
+failure arm's `return K` both end in `v0 = K; b epilogue`, and the
+compiler cross-jumps them into one: the guard branches straight into the
+middle of the failure block, just past the call. Retail keeps two
+separate `v0 = K` sites.
+
+Putting the success arm inside the `if` and letting the failure path
+fall through to the end stops the merge, and both matched:
+
+```c
+if (open(...) == 0) return K;
+if (rpc(...) >= 0) {
+    r = *reply;
+    release();
+    return r;
+}
+release();
+return K;
+```
+
+This is not a compiler difference. `func_0011CBC8` in the same file is
+the counterexample where retail *does* share its two exits. Which way it
+goes is a per-function layout choice that the comparison's spelling
+controls, so when a function is a small multiple of 4 bytes short and
+has two exits with the same return value, try inverting the test before
+anything else.
+
+Related: `func_0023CE30` needed the same thing in the other direction.
+Returning `0` and `arg2` directly from its two paths is 16 bytes short;
+retail holds the result in `$s4` across the call, which an explicit
+`int r = 0;` assigned in one arm reproduces exactly.
+
+## The base-pointer lever, third case: name the UNOFFSET base
+
+`func_00205830` walks three parallel `int` arrays that live at 0x278,
+0x28C and 0x2A4 inside one global, indexed by two plain ints. Three
+spellings, three sizes (retail is 156):
+
+| spelling | size |
+|---|---|
+| `int *dst = &G[0x9E];` etc. | 152 |
+| `int *base = G; int *dst = base + 0x9E;` etc. | **156, correct** |
+| `G[0x9E + a]` at each use | 184 |
+
+Naming the array with its offset folds that offset into the symbol's
+`%lo`, anchoring every later access on `G+0x278` and saving an
+instruction retail spends. Naming the unoffset base first keeps the raw
+symbol address live and derives all three arrays with separate `addiu`s,
+which is retail's shape. Writing the accesses as `G[k + i]` is worse
+still: the constant is added to the index *before* the shift, so the one
+shared `i*4` is lost.
+
+The same "declare the pointer where retail materialises it" rule fixed
+`func_00227D20`'s and `func_002268F0`'s bases: a base pointer declared
+at the top of a function is parked in a callee-saved register across the
+calls, while one declared after the last call is materialised at the
+point of use, the way retail does it.
+
+## Two C names on one asm symbol defeat address CSE
+
+When retail re-materialises `%hi`/`%lo` of a global for a second use
+instead of reusing the first use's register, and both forms cost the
+same number of instructions, the compiler's choice is an arbitrary
+tie-break. Binding a second C name to the same asm symbol settles it:
+
+```c
+extern char D_0015EF98[];
+extern char D_0015EF98_2[] __asm__("D_0015EF98");
+```
+
+This is what got `func_00227D20` down to two `nop`s from matching. Note
+the caveat found on `func_0012D2A0`: the trick reliably produces the
+extra `lui`/`addiu`, but the compiler may then drop a callee-saved
+register and hand the instruction straight back, so check the size
+rather than assuming it is a net gain.
+
+The same `__asm__("...")` aliasing is the way to call a function through
+a different prototype than the one it is defined with in the same file
+(`func_001F68E8` taking a packed 64-bit colour, `func_001FE540` taking
+an id, `func_0011FE48` returning a value) — used four times this round.
+
+## Converting a `long` to `int`: mask first
+
+`func_0011E7C8` (the soft-float `long` → `double` conversion) is 12
+bytes short if the low half is spelled `(int)x`. Retail materialises
+0xFFFFFFFF with `lui`/`dsrl32`, `and`s with it, and only then
+sign-extends with `dsll32`/`dsra32`. `(int)(x & 0xFFFFFFFFL)` emits
+exactly that. Worth trying whenever a 64-bit value is narrowed and the
+result is a few instructions short.

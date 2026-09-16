@@ -4783,7 +4783,37 @@ int func_0023CE28(void) {
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023CE30);
+extern void func_00121750(int, int, int, void *);
+extern void func_00120F30(int);
+
+/*
+ * Byte mismatch, correct size (0x98), 14 of 38 words: the whole
+ * residual is that retail holds arg2 in $s3 and arg2 >> 11 in $s2 while
+ * we do the reverse, plus the scheduling that follows from it.
+ * Allocator destination choice -- declaring the two locals in the other
+ * order, or computing the shift at the point of use rather than in the
+ * declaration, produces byte-identical output.
+ *
+ * The `int r = 0` is load-bearing and IS source-steerable: returning 0
+ * and arg2 directly from the two paths merges them and comes out 16
+ * bytes short, because retail keeps the result in $s4 across the call.
+ */
+int func_0023CE30(void *arg0, int arg1, int arg2, int arg3) {
+    char buf[4];
+    int n = arg2 >> 11;
+    int r = 0;
+
+    buf[0] = 0x64;
+    buf[1] = 0;
+    buf[2] = 0;
+    func_00121750(*(int *)((char *)arg0 + 4), n, arg1, buf);
+    if (arg3 == 0) {
+        r = arg2;
+        *(int *)((char *)arg0 + 4) = *(int *)((char *)arg0 + 4) + n;
+        func_00120F30(0);
+    }
+    return r;
+}
 
 int func_0023CEC8(int *self, int arg1) {
     int v1 = ((self[2] << 4) + self[1] + 0x10) & 0xFFFFFFF;
