@@ -56,6 +56,23 @@ Scaffolding + toolchain proven, no real decompilation yet:
 - No symbol names, no linker script, no actual decompiled (matching) C
   yet — every function is still `func_XXXXXXXX`.
 
+### Progress report (decomp.dev)
+
+`progress/report.json` is an objdiff-format progress report. CI cannot
+build the game (the toolchain and retail executable are not
+redistributable), so the report is generated locally from a from-scratch
+build and committed:
+
+```
+python tools/gen_progress_report.py
+```
+
+Regenerate it whenever functions gain or lose C. The `Progress report`
+workflow fails a PR whose report is out of date with `src/`, validates the
+report with objdiff-cli, and uploads it as the `SCES_509.16_report`
+artifact that [decomp.dev](https://decomp.dev) reads. The report contains
+only names, addresses, sizes and percentages, and no retail bytes.
+
 ## Plan
 
 1. **Baserom setup** — contributor dumps their own disc to a local, git-
