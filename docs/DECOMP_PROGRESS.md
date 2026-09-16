@@ -735,11 +735,28 @@ Result: every loadable byte (core_text, core_data, core_rdata, text) is
 identical to the build before the split, still 364 exact, and every
 function is at its retail address.
 
+**Confirmed independently:** the object at 0x12DB18 is **989snd.c**. Its
+first function references `"/usr/local/989snd/ee/989snd.c"`, which is 989
+Studios' sound library. That boundary was placed from the `sq`/`sd`
+sub-build switch, not from fill, so two unrelated kinds of evidence agree.
+
 **Next: `text`.** It has no linker fill, so boundaries need other
-evidence. Candidates are functions grouped around source-file strings
-(`hud.cpp`, `loaders.cpp`, `map.cpp`); globals accessed via `$gp` in one
-place and via `lui` in another; `.rodata` ordering; and call-graph
-clusters.
+evidence. Measured so far, not yet acted on:
+- **Source-file strings in `.lit`:** `hud.cpp` (0x15F7B8) is used only by
+  `func_001FF6B8`, and `loaders.cpp` (0x15FC70) only by `func_002032D0`.
+  `map.cpp` (0x15FE28) has no direct reference.
+- **`.lit` order tracks code order.** Take data items used only by
+  functions within 0x2000 of each other, which are likely a TU's own
+  statics. Of 203 such items, 169 (83%) are laid out in the same order
+  as their functions. The breaks follow one pattern (0x160xxx-0x161xxx,
+  then back to 0x15Fxxx), which suggests two interleaved pools, strings
+  and numeric literals, each in TU order. Separating the pools should
+  turn this into usable boundaries.
+- **`.data` is noisier** (214 of 315 in order), because shared globals
+  dominate it.
+- Not done: splitting `text` on this. A wrong boundary would still build
+  byte-identically, so nothing would catch it. Boundaries there need
+  evidence strong enough to stand on its own.
 
 ## The game is C++, and the language switch alone changes nothing
 

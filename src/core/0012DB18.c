@@ -2,8 +2,14 @@
 #include "structs.h"
 
 /*
- * core_text object 0x12DB18-0x12F580. Boundaries are retail's linker fill
- * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ * core_text object 0x12DB18-0x12F580: the 989snd sound library.
+ *
+ * Its first function (func_0012DB18) references the string
+ * "/usr/local/989snd/ee/989snd.c" (D_00153D78), so this object is
+ * 989snd.c. That independently confirms the boundary here, which was
+ * placed from the compiler sub-build switch (sq spills from 0x12DB18 on),
+ * not from linker fill. It is middleware, not Insomniac's code, and it was
+ * built with a different SN sub-build than the objects before it.
  */
 
 /* Declarations in scope here before the split. */
