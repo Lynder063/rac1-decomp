@@ -1484,7 +1484,39 @@ int func_00205728(int arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00205790);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00205830);
+extern int D_001A01F0[];
+
+/*
+ * Same three parallel arrays func_002054E0 walks: 0x278/4 = 0x9E,
+ * 0x28C/4 = 0xA3 and 0x2A4/4 = 0xA9 into D_001A01F0. Moves entry `b`
+ * onto entry `a` and frees `b`.
+ *
+ * Byte mismatch, correct size (0x9C), 22 of 39 words: the instruction
+ * sequence is right and the whole residual is that retail puts b*4 in
+ * $s1 and a*4 in $s2 where we do the reverse (allocator destination
+ * choice -- see docs).
+ *
+ * The `base` local is load-bearing and is a NEW data point for the
+ * two-sided base-pointer lever. Writing the three pointers as
+ * `&D_001A01F0[0x9E]` etc. folds the first offset into the symbol's
+ * %lo, anchoring everything on D_001A01F0+0x278 and costing an
+ * instruction (152 vs 156 bytes). Naming the unoffset base first keeps
+ * the raw symbol address live in $s0 and derives all three with
+ * separate addius, which is retail's shape. Writing the same accesses
+ * as D_001A01F0[0x9E + a] is worse still (184 bytes): it adds the
+ * constant to the index before the shift instead of reusing one a*4.
+ */
+void func_00205830(int a, int b) {
+    int *base = D_001A01F0;
+    int *dst = base + 0x9E;
+    int *slot = base + 0xA3;
+    int *size = base + 0xA9;
+
+    func_001F9A98((void *)dst[a], (void *)dst[b], size[b] << 4);
+    slot[a] = slot[b];
+    size[a] = size[b];
+    slot[b] = -1;
+}
 
 extern int D_001A01F0[];
 
@@ -2784,7 +2816,17 @@ int func_00215B18(char *arg0, float arg1) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215BA8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00215C00);
+/* Spherical-to-cartesian: x is the radius, y and z the two angles.
+   func_001F9F90 is cos, func_001F9FA8 sin (named in the comments at
+   func_00212xxx). Each product is spelled trig * r * trig so the two
+   calls are issued before the multiplies, the way retail does. */
+void func_00215C00(void *arg0, float r, float y, float z) {
+    float *out = (float *)arg0;
+
+    out[0] = func_001F9F90(y) * r * func_001F9F90(z);
+    out[1] = func_001F9FA8(y) * r * func_001F9F90(z);
+    out[2] = func_001F9FA8(z) * r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215CA0);
 
@@ -3308,7 +3350,26 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0021CDA0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021CE60);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021D420);
+extern int D_001A0414;
+extern int D_001CFBF4;
+extern int D_001CFAD8;
+extern void func_0020C7A0(void *);
+extern int func_0020CA50(void *, void *, void *, int);
+
+int func_0021D420(void *arg0) {
+    int *p;
+
+    func_0020C7A0(arg0);
+    *(int *)((char *)arg0 + 0x7C) =
+        func_0020CA50((void *)0x70000000, (void *)0, (void *)0x70000100, 1);
+    p = (int *)((char *)arg0 + 0x30);
+    p += D_001A0414;
+    if (*p != -1) {
+        D_001CFBF4 = ((int *)0x70000000)[*p];
+        D_001CFAD8 = ((int *)0x70000100)[*p];
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021D4C0);
 
@@ -4093,7 +4154,27 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0022D7E0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022D8C0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022D970);
+extern char D_00187180[];
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9E58(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_001EFE10(void *, void *, int, int, int);
+
+/*
+ * Byte mismatch, correct size (0x9C), 3 of 39 words: retail sets up
+ * func_001F9BD8's three arguments as $a0, $a1, then $a2 (the last in
+ * the call's delay slot) and we emit $a2, $a0, $a1. Same instructions,
+ * same registers, scheduler order only.
+ */
+void func_0022D970(void *arg0, void *arg1) {
+    float v[4];
+
+    func_001F9BF0(v, (char *)arg0 + 0x20, D_00187180);
+    func_001F9C30(v, v, 0.75f);
+    func_001F9E58(v, v, 64.0f);
+    func_001F9BD8(v, v, D_00187180);
+    func_001EFE10(arg1, v, 0x82, *(int *)((char *)arg0 + 0x18), 0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022DA10);
 
