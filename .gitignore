@@ -41,3 +41,9 @@ python_install_*.log
 tools/ext/
 ctx.c
 ctx.c.m2c
+
+# Disassembly of the retail executable -- regenerate with tools/setup_asm.sh.
+# It carries the original instruction bytes, so it never goes in the repo.
+asm/
+# Assets splat extracts from the executable.
+assets/

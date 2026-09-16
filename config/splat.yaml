@@ -5,6 +5,14 @@ options:
   target_path: baserom/SCES_509.16
   base_path: ..
   compiler: EEGCC
+  # include/{include_asm.h,labels.inc,macro.inc} are project-owned (labels.inc
+  # makes jlabel global so cross-object jump tables link) -- never regenerate.
+  generate_asm_macros_files: False
+  # Emit a .s for EVERY function, decompiled or not: the audit tools read
+  # retail sizes and bytes from them (sweep_matches, gen_progress_report).
+  disassemble_all: True
+  # ...all in one directory: the tools look in asm/nonmatchings/<segment>.
+  matchings_path: nonmatchings
   find_file_boundaries: True
   platform: ps2
   asm_path: asm

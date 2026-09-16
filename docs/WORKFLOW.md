@@ -8,6 +8,22 @@ Revised 2026-09-16 after checking our process against
 [decomp.wiki](https://decomp.wiki). The "Checked against decomp.wiki"
 section at the end records what was adopted and what was ruled out.
 
+## Setup (once, and after changing config/splat.yaml)
+
+`asm/` is not in git. It is the disassembly of the retail executable.
+Generate it from your own baserom:
+
+```
+pip install -r requirements.txt
+bash tools/setup_asm.sh
+```
+
+The script checks the baserom sha1 and the pinned splat/spimdisasm
+versions, then applies the same post-processing the build expects
+(`fix_vu0_macro.py`, `sn_regnames.py`). It leaves `src/` and `include/`
+alone. The output was verified byte-identical, so every contributor diffs
+against the same thing.
+
 ## 0. Before decompiling anything: is it even game code?
 
 **Check whether a real source exists first.** Libraries were not written

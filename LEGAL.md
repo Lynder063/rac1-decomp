@@ -18,16 +18,16 @@ Be deliberate about it:
 - Build **scripts and config** (`splat.yaml`, symbol maps, linker scripts,
   Makefiles) that describe *how* to reconstruct the original layout from a
   baserom the user supplies themselves.
-- `asm/` — MIPS disassembly produced by `splat` from a locally-supplied
-  baserom. This **is** committed, per standard matching-decomp practice
-  (sm64/papermario/mm-decomp and similar): it's the ground truth every
-  not-yet-decompiled function is diffed against, and it's how progress
-  (matched vs. non-matched function count) gets tracked. It contains no
-  original assets, only code structure recovered by disassembling an
-  executable each contributor is expected to already legally own — the same
-  legal footing the rest of this file discusses below.
+- **Not** `asm/`. The MIPS disassembly `splat` produces carries the
+  retail executable's instruction bytes, so it is generated locally by
+  each contributor from their own baserom (`bash tools/setup_asm.sh`) and
+  is gitignored. That keeps this file consistent with rule 1 below.
+  (It was committed earlier in the project's history. It was removed from
+  the tree on 2026-09-16, but past commits still contain it.) The setup
+  is pinned (`requirements.txt`, `config/splat.yaml`, the baserom sha1),
+  and was verified to regenerate all 1677 files byte-identically.
 - Progressively, hand-written C source in `src/` that a contributor has
-  decompiled from the disassembly in `asm/` and cleaned up to compile back
+  decompiled from the (locally generated) disassembly in `asm/` and cleaned up to compile back
   to matching (or `INCLUDE_ASM`-stubbed, not-yet-matching) object code.
 - Non-matching helper tooling under `tools/`.
 

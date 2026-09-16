@@ -56,6 +56,17 @@ Scaffolding + toolchain proven, no real decompilation yet:
 - No symbol names, no linker script, no actual decompiled (matching) C
   yet — every function is still `func_XXXXXXXX`.
 
+### Setup
+
+1. Dump your own copy of the game and put the executable at
+   `baserom/SCES_509.16` (PAL v2.00, sha1 `79956931bd62fafd8d20fa2eae796dbaf2e15e83`).
+   It is never committed; see [`LEGAL.md`](LEGAL.md).
+2. `pip install -r requirements.txt` (splat and friends, pinned).
+3. `bash tools/setup_asm.sh` regenerates `asm/`, the disassembly, which
+   is not in git.
+4. Get the SN ProDG toolchain into `toolchain/` ([`docs/TOOLCHAIN.md`](docs/TOOLCHAIN.md)),
+   then follow [`docs/WORKFLOW.md`](docs/WORKFLOW.md).
+
 ### Progress report (decomp.dev)
 
 `progress/report.json` is an objdiff-format progress report. CI cannot
