@@ -4059,27 +4059,43 @@ extern char *D_001B3580[] NOT_SDA;
    referenced object, then reset the count. Both the start and the count
    are re-read every iteration.
 
-   Near-miss (30/36), size-exact. The instruction sequence is right and
-   the loop's offsets came good once the base was taken into a local
-   pointer instead of indexed off the extern array -- that is the lever
-   for this shape, worth remembering. What is left is the allocator
-   permutation documented in DECOMP_PROGRESS.md plus the two-base
-   pattern from func_00219E60's note: retail keeps the raw %hi in $t2
-   and rebuilds the pointer for the final store, which is a second
-   address expression we cannot spell without gcc folding it back into
-   the first. */
+   Near-miss (29/36), size-exact, and now structurally identical to
+   retail block for block. Two levers got it here:
+     - taking the base into a local `char *g` instead of indexing the
+       extern array directly fixed the loop's offsets;
+     - declaring `p` INSIDE the loop body rather than before the `while`
+       moves its initialisation into the loop preheader, where retail
+       has it. Spelled before the loop, gcc hoists the %hi/%lo of
+       D_001D5D58 and the `sll`/`addu` above the guard, and the loop's
+       .p2align then eats the slack as a nop. Let gcc build the
+       induction variable itself and the preheader comes out right.
+
+   What is left is two things, neither source-reachable:
+     - the allocator permutation: retail puts D_001B3E40 in $9 and
+       D_001B3580 in $8, this build swaps them, and every $v0/$v1 in
+       the loop body is correspondingly transposed. Splitting the
+       nested index into `int k = D_001B3E40[a];` does not move it.
+     - retail COPIES the raw %hi of D_001D5F70 into $t2 in the prologue
+       and rebuilds the pointer with `addiu $2,$10,%lo` for the final
+       store, keeping both the full pointer and the bare high half live
+       across the loop. This build re-does the whole `lui` at the end
+       instead -- same instruction count, different encoding. The
+       two-names-on-one-symbol trick
+       (`extern char D_001D5F70_2[] __asm__("D_001D5F70");`) was tried
+       here and changes nothing: it defeats CSE of the full address,
+       which we already lack, not of the high half, which is what
+       retail is sharing. */
 void func_00227A70(void) {
     char *g = D_001D5F70;
     int i = *(int *)(g + 0xA8);
-    char *p = D_001D5D58 + i * 8;
 
     while (i < *(int *)(g + 0xA8) + *(int *)(g + 0xAC)) {
+        char *p = D_001D5D58 + i * 8;
         int a = *(int *)p;
         int b = *(int *)(p + 4);
 
         i++;
         *(int *)(D_001B3580[D_001B3E40[a]] + b * 4 + 0x48) = 0;
-        p += 8;
     }
     *(int *)(D_001D5F70 + 0xAC) = 0;
 }
