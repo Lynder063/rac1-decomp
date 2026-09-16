@@ -1845,7 +1845,44 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00120D18);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120D28);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00120E98);
+extern int func_0011B4C8();
+extern int func_00120D28(int);
+extern void func_00118C90(int);
+extern char D_00132590[];
+extern int D_00131440;
+
+/*
+ * Sibling of func_00121930 below (and of the func_0011CBC8 pair): open
+ * the service, run one func_0011B4C8 RPC, then release the lock and
+ * hand back the reply. The reply is read back through the uncached
+ * mirror of the DMA buffer (| 0x20000000), which is why the address is
+ * spelled as an integer or.
+ *
+ * The RPC test MUST be spelled `>= 0` with the success arm inside the
+ * if and the failure path falling through to the end. The obvious
+ * inverse -- `if (rpc(...) < 0) { release(); return 0; } ... return r;`
+ * -- is 8 bytes short in both siblings, because the early guard's
+ * `return 0` and the failure arm's `return 0` then share a tail
+ * (`v0 = 0; b epilogue`) and the compiler cross-jumps them into one.
+ * Retail keeps two separate zeroings, and laying the arms out this way
+ * is what stops the merge. Compare func_0011CBC8 above, where retail
+ * DOES share the two exits -- so this is a per-function layout choice
+ * that the comparison's spelling controls, not a compiler difference.
+ */
+int func_00120E98(void) {
+    int r;
+
+    if (func_00120D28(2) == 0) {
+        return 0;
+    }
+    if (func_0011B4C8(D_00132590, 0xE, 0, 0, 0, &D_00131440, 4, 0, 0) >= 0) {
+        r = *(int *)((unsigned int)&D_00131440 | 0x20000000);
+        func_00118C90(D_001313E8);
+        return r;
+    }
+    func_00118C90(D_001313E8);
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120F30);
 
@@ -1880,7 +1917,25 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012174C);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00121750);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00121930);
+extern int func_00121040(int);
+extern int D_001325C0;
+
+/* func_00120E98's sibling: service 3, command 4, and -1 rather than 0
+   as the failure result. */
+int func_00121930(void) {
+    int r;
+
+    if (func_00121040(3) == 0) {
+        return -1;
+    }
+    if (func_0011B4C8(D_00132E08, 4, 0, 0, 0, &D_001325C0, 4, 0, 0) >= 0) {
+        r = *(int *)((unsigned int)&D_001325C0 | 0x20000000);
+        func_00118C90(D_001313EC);
+        return r;
+    }
+    func_00118C90(D_001313EC);
+    return -1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001219C8);
 
