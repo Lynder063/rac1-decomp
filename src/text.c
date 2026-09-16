@@ -3460,7 +3460,28 @@ int func_00220338(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00220370);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00220600);
+extern void func_001F4630(int);
+extern void func_001F4748(void);
+/* func_001F68E8 is defined above with pointer parameters; this site
+   passes a packed 64-bit colour in $a2, and func_001FE540 above is
+   declared (void) while retail's caller here passes an id in $a0 --
+   reach both through aliases rather than redeclaring them. */
+extern void func_001F68E8_c(int, int, long, void *, int)
+    __asm__("func_001F68E8");
+extern void *func_001FE540_id(int) __asm__("func_001FE540");
+
+/* Sibling of func_00220338 above: the same two func_00234C98 setup
+   calls, then two banner draws. 0x80FFA888 is spelled `long` (64-bit)
+   so it builds via ori/dsll/ori rather than a sign-extending lui. */
+int func_00220600(void) {
+    func_00234C98(0x42, 0x44);
+    func_00234C98(0x47, 0xB);
+    func_001F4630(0);
+    func_001F68E8_c(4, 7, 0x80FFA888L, func_001FE540_id(0x4EE0), -1);
+    func_001F68E8_c(4, 0x17, 0x80FFA888L, func_001FE540_id(0x4F05), -1);
+    func_001F4748();
+    return 2;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00220690);
 
@@ -3480,7 +3501,23 @@ void func_002208F8(int x, int y, int flag) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002209A0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00220C90);
+extern void func_001F5800(int, int, int, int, int, int, int, int, long,
+                          long);
+extern short D_00151880[];
+extern long D_001A0448;
+
+/* Eight register arguments ($a0-$a3, $t0-$t3) then two 64-bit stack
+   slots -- both written with `sd`, so they are `long`, not `long long`
+   (which would be 128-bit here). */
+int func_00220C90(void *arg0) {
+    if (*(int *)((char *)arg0 + 0x44) < 2) {
+        return 0;
+    }
+    func_001F5800(0, 0, D_00151880[0xB0], D_00151880[0xB1], 0, 0,
+                  *(int *)((char *)arg0 + 0x38),
+                  *(int *)((char *)arg0 + 0x3C), 0x80808080L, D_001A0448);
+    return 0x10;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00220D08);
 
@@ -3663,6 +3700,34 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002267C0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00226808);
 
+/*
+ * Reverted (size mismatch: 128 vs retail's 132). Semantics are certain
+ * and every instruction but one is reproduced:
+ *
+ *   int func_002268F0(void *arg0) {
+ *       int *p = (int *)((char *)arg0 + 0x44);
+ *       unsigned short *q;
+ *       int i;
+ *       for (i = 0x17; i >= 0; i--) { *p = func_002267C0(*p); p++; }
+ *       *(int *)((char *)arg0 + 0x3C) =
+ *           func_00226F68(*(int *)((char *)arg0 + 0x3C));
+ *       q = (unsigned short *)D_001517D0;
+ *       if ((unsigned int)(q[0x2D] - 6) >= 2) { q[0x2D] = 5; }
+ *       return 0;
+ *   }
+ *
+ * The single residual is a standalone `nop` retail emits between the
+ * loop body's `sw` and its `bgez` -- the short-loop pad. Everything
+ * after it is instruction-for-instruction identical, just shifted one
+ * word. Not source-steerable, so this stays a stub.
+ *
+ * Worth keeping from the attempt: taking the D_001517D0 base into a
+ * local declared AFTER the calls is what stopped the compiler hoisting
+ * its %hi/%lo into a callee-saved register in the prologue; retail
+ * materialises it in $v1 at the point of use. Spelling the global
+ * inline in the expression hoists it. (Same lever fixed the base in
+ * func_00227D20 below.)
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_002268F0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00226978);
@@ -3799,6 +3864,49 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00227B00);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00227C78);
 
+/*
+ * Reverted (size mismatch: 136 vs retail's 144). Semantics are certain:
+ *
+ *   void func_00227D20(int arg0, int arg1) {
+ *       char *b;
+ *       func_00209DC0(arg0);
+ *       func_00121A80(D_0015EF98);
+ *       func_0012D818(D_0015EF98);      // see note below
+ *       func_0020BA00(arg0);
+ *       b = D_0013D390;
+ *       *(int *)(b + 0xC8) = 0;
+ *       *(int *)(b + 0x14) = arg1;
+ *       *(int *)(b + arg1 * 0x1C + 0x20) = 0;
+ *       *(int *)(b + 0xF4) = arg0;
+ *       if (*(int *)(b + 0xE4) < 0) {
+ *           *(int *)(b + 0xE8) = 0;
+ *           *(int *)(b + 0xE4) = 0x13;
+ *       }
+ *   }
+ *
+ * Blocked by the delay-slot policy, not by source shape: retail leaves
+ * both of the middle `jal`s' delay slots as bare `nop`s (8 bytes) where
+ * this compiler schedules the next %hi/%lo setup into them. That is a
+ * per-site choice in retail, not a rule -- see the "unfilling call delay
+ * slots" entry in docs/DECOMP_PROGRESS.md.
+ *
+ * Two levers were confirmed on the way, and both are reusable:
+ *  - Declaring the base pointer AFTER the last call keeps it out of a
+ *    callee-saved register; retail materialises D_0013D390 in $v1 at the
+ *    point of use. Spelling the global inline instead anchors the base
+ *    on the first offset referenced (D_0013D390+0xC8, giving offsets
+ *    -180/-168 rather than retail's 200/20/244/228).
+ *  - Retail re-materialises %hi/%lo of D_0015EF98 for the second call
+ *    rather than reusing the first call's register. Both forms cost four
+ *    instructions, so CSE is a tie; binding two distinct C names to the
+ *    one asm symbol
+ *        extern char D_0015EF98[];
+ *        extern char D_0015EF98_2[] __asm__("D_0015EF98");
+ *    settles it retail's way. NEW LEVER -- first use in this tree.
+ *
+ * With both applied the only differences left were the two nops and an
+ * arg0/arg1 swap between $s0 and $s1.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00227D20);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00227DB0);
