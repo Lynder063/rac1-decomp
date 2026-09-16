@@ -1145,6 +1145,70 @@ void func_0011B090(void *arg0) {
  */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B0B0);
 
+/*
+ * REVERTED (SIZE mismatch, 168 vs retail 180, both spellings). Decode is
+ * certain -- completion handler for a request block. Two message codes
+ * do extra work before the common teardown: 0x8000000A runs the
+ * target's own callback, 0x80000009 copies three fields back into it.
+ * Then, whatever the message was, close the target's handle if it is
+ * still valid, release its buffer and clear the pointer.
+ *
+ *   extern void func_00118CA0(int h);
+ *
+ *   void func_0011B0E0(char *p) {
+ *       char *o;
+ *       int h;
+ *
+ *       switch (*(unsigned int *)(p + 0x20)) {
+ *       case 0x8000000A:
+ *           o = *(char **)(p + 0x1C);
+ *           if (*(int *)(o + 0x1C) != 0) {
+ *               (*(void (**)(int))(o + 0x1C))(*(int *)(o + 0x20));
+ *           }
+ *           break;
+ *       case 0x80000009:
+ *           o = *(char **)(p + 0x1C);
+ *           *(int *)(o + 0x24) = *(int *)(p + 0x24);
+ *           *(int *)(o + 0x14) = *(int *)(p + 0x28);
+ *           *(int *)(o + 0x18) = *(int *)(p + 0x2C);
+ *           break;
+ *       }
+ *       o = *(char **)(p + 0x1C);
+ *       h = *(int *)(o + 0x8);
+ *       if (h >= 0) {
+ *           func_00118CA0(h);
+ *       }
+ *       func_0011B090(*(void **)o);
+ *       *(int *)o = 0;
+ *   }
+ *
+ * Everything after the dispatch is byte-correct, including the reload of
+ * `o` in exactly the three places retail reloads it (after the indirect
+ * call, and on each path that had not loaded it yet) and NOT on the path
+ * where the callback pointer was null. Writing `o` once after the switch
+ * and letting each arm use it is what produces that.
+ *
+ * The three missing words are all in the dispatch, and this is the
+ * finding worth keeping:
+ *
+ *   retail   beq  m,0xA -> caseA      ours   beq m,0x9 -> case9
+ *            sltu 0xA,m                      bne m,0xA -> default
+ *            bnel      -> default            (fall through to caseA)
+ *            beq  m,0x9 -> case9
+ *            b         -> default
+ *
+ * Retail's is gcc's case-node DECISION TREE rooted at the HIGHER value,
+ * with the redundant `index > root` test that a tree root with only a
+ * left child always emits. Ours is the same routine's two-node CHAIN,
+ * rooted at the lower value. gcc 2.95 only rebalances a case list of
+ * more than two nodes; at exactly two it leaves the chain. So retail's
+ * switch had MORE cases than are reachable here -- at least three, with
+ * 0x8000000A as the median -- and the extra ones compiled to nothing we
+ * can see. No two-case spelling can produce the three-test tree:
+ * switch and if/else-if chain give byte-identical 168-byte output, and
+ * an explicit hand-written `if (m > 0x8000000A)` guard is folded away
+ * because its arm is empty. Not reachable from a two-case source.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B0E0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B198);
