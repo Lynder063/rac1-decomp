@@ -1492,7 +1492,9 @@ extern void func_00205830(int a, int b);
 typedef struct {
     int _pad0[0x9E];
     int use[5];   /* +0x278 */
-    int flags[6]; /* +0x28C */
+    int flags[5]; /* +0x28C */
+    int sel;      /* +0x2A0 -- index of the active slot, -1 for none */
+    int size[5];  /* +0x2A4 */
 } PadSlots;
 extern PadSlots D_001A01F0_slots __asm__("D_001A01F0");
 
@@ -3632,7 +3634,64 @@ int func_0021CD98(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021CDA0);
+/* Hoisted from further down the file: this is its first use, and a
+   second NOT_SDA extern for the same object in one translation unit is
+   a hard error. */
+extern char D_001D5F70[] NOT_SDA;
+
+/* D_001D5F70 + 0xCB. Retail addresses this one byte BOTH ways -- through
+   its own %hi/%lo here and as 0xCB($16) off the D_001D5F70 base a few
+   instructions later -- so it really is two names on one address in the
+   original source, and splat has the second as its own linker symbol. */
+extern char D_001D603B[];
+extern short D_001517D0[];
+
+/*
+ * Pause/menu teardown. When the D_001517D0+8 state word is clear, drop
+ * the active slot: clear the 0xCB flag byte, toggle 0x1000 in that
+ * slot's flag word and mark no slot active. When it is SET instead and
+ * the 0xCB byte is still set, run func_00217588 first, then clear the
+ * byte and invalidate the slot outright (flags = -1, not a toggle).
+ *
+ * The two tests read D_001517D0[4] twice rather than being one if/else,
+ * and that IS the source: the indirect store into the slot table between
+ * them kills gcc 2.95's memory, so retail reloads the halfword and
+ * re-materialises the base. Written as if/else it collapses to a single
+ * test.
+ *
+ * D_001A01F0 is the struct from func_00205790 above; `sel` at +0x2A0
+ * sits between the flag array and the size array, which is why flags is
+ * 5 entries and not 6.
+ *
+ * `char *g = D_001D5F70;` is load-bearing: writing the two accesses as
+ * D_001D5F70[0xCB] lets gcc fold 0xCB into the symbol addend, giving
+ * %hi/%lo(D_001D5F70+203) and a base register already at +0xCB. Retail
+ * keeps the UNOFFSET base in $16 and puts 0xCB in both displacements.
+ * Same instruction count, but it also changes what the branch delay
+ * slot gets filled with, so it is a byte difference, not just cosmetic.
+ */
+int func_0021CDA0(void) {
+    int cur;
+
+    if (D_001517D0[4] == 0) {
+        cur = D_001A01F0_slots.sel;
+        if (cur != -1) {
+            D_001D603B[0] = 0;
+            D_001A01F0_slots.flags[cur] ^= 0x1000;
+            D_001A01F0_slots.sel = -1;
+        }
+    }
+    if (D_001517D0[4] != 0) {
+        char *g = D_001D5F70;
+        if (*(unsigned char *)(g + 0xCB) != 0) {
+            func_00217588();
+            g[0xCB] = 0;
+            D_001A01F0_slots.flags[D_001A01F0_slots.sel] = -1;
+            D_001A01F0_slots.sel = -1;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021CE60);
 
@@ -4314,7 +4373,6 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002279D0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00227A30);
 
-extern char D_001D5F70[] NOT_SDA;
 extern char D_001D5D58[] NOT_SDA;
 extern char *D_001B3580[] NOT_SDA;
 
