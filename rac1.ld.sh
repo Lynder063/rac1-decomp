@@ -25,7 +25,41 @@ SECTIONS
   /* vutext (0x100080-0x112380) is VU0 microcode, not linked here yet */
 
   . = 0x112380;
-  .core_text : { build-sn/core_text.o(.text) }
+  .core_text : {
+    build-sn/core_text.o(.text)
+    /* libgcc fp-bit modules, 0x11FC08-0x1206A0 (src/libgcc/README.md) */
+    /* _fpadd_parts is static in fp-bit, so it has no global symbol to
+       alias; it is the first thing in its module. core_text.o ends
+       exactly on the 8-byte boundary, so `.` is its address. */
+    func_0011FC08 = .;
+    build-sn/libgcc/_addsub_df.o(.text)
+    build-sn/libgcc/_mul_df.o(.text)
+    build-sn/libgcc/_div_df.o(.text)
+    build-sn/libgcc/_fpcmp_parts_df.o(.text)
+    build-sn/libgcc/_compare_df.o(.text)
+    build-sn/libgcc/_si_to_df.o(.text)
+    build-sn/libgcc/_df_to_si.o(.text)
+    build-sn/libgcc/_df_to_usi.o(.text)
+    build-sn/libgcc/_make_df.o(.text)
+    build-sn/core_text_2.o(.text)
+  }
+
+  /* libgcc keeps its real names; the rest of the image (and every tool)
+     knows these functions by address. Map both ways. */
+  func_0011FE48 = __adddf3;
+  func_0011FEA0 = __subdf3;
+  func_0011FF08 = __muldf3;
+  func_001201B0 = __divdf3;
+  func_00120318 = __fpcmp_parts_d;
+  func_00120430 = __cmpdf2;
+  func_00120480 = __floatsidf;
+  func_00120538 = __fixdfsi;
+  func_001205D0 = dptoul;
+  func_00120670 = __make_dp;
+  __pack_d   = func_0011FA38;
+  __unpack_d = func_0011FB68;
+  __muldi3   = func_0011EEC8;
+  __thenan_df = 0x001597F0;
 
   . = 0x12f580;
   .core_data : { build-sn/core_data.data.o(.data) }

@@ -158,7 +158,7 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 | `func_0011BC70` | core_text | **reverted (size 16 vs 12)** | Documents a real limit of `fix_tail_calls.py` rather than a source problem — see the comment above its stub. Retail schedules the argument load into the jump's delay slot; GCC spends the call's delay slot on the epilogue reload instead, so the rewriter's case (a) emits nothing and the assembler fills the slot with a `nop`. Fixing it would require the rewriter to *move* an instruction into the delay slot, which it never does — every transformation it performs is a deletion, and that is what makes it safe. |
 | `func_00216960` | text | **matches** | Guarded state transition on the `D_001517D0` global: if the pointer at `+0x50` is non-null and the state at `+0x5A` is 3, call `func_0012EDE0(p)`, set the state to 4 and return 1; otherwise 0. Byte-exact, first attempt. A `char *d` base local is right here (retail keeps the base in `$16`), the opposite of `func_00216D30` in the same family. |
 | `func_002177F0` | text | **matches** | `D_001517D0` family: when `arg0 == 1`, zero the field at `+0x8`, then set it to 2 if `func_0012F030()` is non-zero. The zeroing store sits in the call's delay slot. Byte-exact. **Its forward declaration said `(void)` but retail reads `$4`** — the declaration was only ever used to take the function's address for a `func_0012F068` callback registration, so correcting it to `(int)` changed no codegen and left the registering function `func_00216270` exact. |
-| `func_0011FE48` | core_text | **close, not exact** (18/88) | Third member of the `func_0011FB68` family — see the comment above it in `src/core_text.c`. Blocked identically to `func_00120430` and `func_0012AAA8`: prologue save **order** ($16 before $31 in retail, the reverse here), with the first call's delay slot taking the other instruction. Buffers cannot be reordered to steer it (their stack addresses already match) and the declaration-order lever moves locals, not prologue saves. **Treat the rest of this family as the same known residual.** |
+| `func_0011FE48` | libgcc | **exact** | `__adddf3` from libgcc's fp-bit.c. The "prologue save order" residual recorded here was never a source problem: this region was built by Sony's gcc 2.9-ee, and GCC's own unmodified source reproduces it byte for byte. See **libgcc is 2.9-ee** below and `src/libgcc/README.md`. |
 | `func_0012BD28` | core_text | **matches** | Four-store struct setter (`p[1]=arg2; p[0]=arg1; p[2]=arg1; p[3]=arg1`). Retail emits `0xC,0x4,0x0,0x8`; the **rotation rule predicted the source order exactly** — writing them `0x4,0x0,0x8,0xC` produced retail's emitted order. Byte-exact, first attempt. |
 | `func_00214D28` | text | **matches** | Float clamp-and-step: `d = target - *p`, clamp to ±`maxstep`, `*p += d`, return `fabsf(target - *p)`. The `else if (d < -maxstep)` arm shares its assignment with the first clamp via retail's negate-then-fall-through, which plain C reproduces. Calls the already-decompiled `func_001F9B88` (`fabsf`), so no extern needed. Byte-exact, first attempt. |
 | `func_00216D30` | text | **reverted (30/84)** | Flag update on the `D_001517D0` global struct — full semantics recorded above its stub in `src/text.c`. **Nested ifs beat the `&&`/`||` form** (38→30) because short-circuit operators let the compiler hoist the `0x3E` load above the first branch. Residual is the allocator: retail keeps `%hi` in `$7` and re-materializes the base inside the branch targets, spending the first delay slot on that copy; this compiler keeps one base in `$6` and uses a branch-likely instead. Direct `D_001517D0[...]` indexing was tried to force re-materialization and is **clearly worse (74%)** — another data point that the indexing lever is per-function. |
@@ -174,7 +174,7 @@ varargs `func_001E9730` and are exact. Only *defining* one needs
 | `func_00124010` | core_text | **matches** | Copies three words out of an uncached-mirror view of `arg0` (`arg0 \| 0x20000000`) into whatever `D_00159B28`/`D_00159B2C`/`D_00159B30` point at, each guarded by a null check on the destination pointer. Byte-exact, first attempt. |
 | `func_001245F8` | core_text | **matches** | Nine-argument call to `func_0011B4C8` (eight in `$4`-`$11`, the ninth at `0($sp)`), then returns `D_0015B180`. Confirms the EABI eight-register argument convention plus stack spill for the ninth. Byte-exact, first attempt. |
 | `func_00125020` | core_text | **close, not exact** (28/84) | Marks entry `arg0` of the `0x330`-stride table `D_0015B640` — see the comment above it in `src/core_text.c`. Size and addressing form are each reachable but not together: one `char *e` local coalesces to a single register and is 4 bytes short; recomputing the address per store gives the right size but folds `+4` into the address constant instead of a store displacement; two pointer locals coalesce back to one. |
-| `func_00120430` | core_text | **close, not exact** (10/76) | Converts two 64-bit args into 32-byte buffers via `func_0011FB68` and compares them with `func_00120318`. Frame, offsets and every instruction match; the entire residual is that retail saves `$s0` in the prologue and spends the first call's delay slot on the argument setup, where this compiler does the reverse. Hoisting `buf1` into a pointer local to lengthen `$s0`'s live range is clearly worse (23/76). |
+| `func_00120430` | libgcc | **exact** | `__cmpdf2` from libgcc's fp-bit.c, built by gcc 2.9-ee. Same resolution as `func_0011FE48`. |
 | `func_0012C058` | core_text | **close, not exact** (7/68) | `if (*(int*)(*(int*)(arg0+0x40) + 0x174) != 3) func_0012C0A0(arg0); else func_0012BF40(arg0);`. Structure is instruction-for-instruction identical including both delay slots and the shared epilogue; only the register assignment differs (retail saves `arg0` in `$7` and holds the constant `3` in `$3`, this compiler uses `$5` and `$2`, and the two loads follow). Allocator destination-reuse question. Hoisting the inner load into its own local changed nothing. Same size, so kept. |
 | `func_00119718` | core_text | **reverted (30/68)** | Four-field forwarder to `func_00118E90` — full semantics recorded above its stub in `src/core_text.c`. Retail computes the `buf[3]` tag entirely before storing anything and spends the call's delay slot on that store; this compiler interleaves the tag arithmetic with the stores. Natural order, retail's emitted order, and hoisting the tag into a leading local all give 30-32/68. |
 | `func_0011D9C0` | core_text | **matches** | Builds two 32-byte stack structs (`int a[8]`, `int b[8]`), sets field 1 and 2 of each to 1, and passes each to `func_00118C70`, storing the results into `D_00130420`/`D_00130424`. **A clean confirmation of the rotation rule:** with the four stores written in retail's *emitted* order the result was 4/72 with the stores rotated; writing them in plain source order (`a[1], a[2], b[1], b[2]`) produced retail's emitted order exactly. Byte-exact. |
@@ -617,6 +617,64 @@ obstacle, and they are all the same shape. If they can be suppressed (a flag,
 or a source form 2.9-ee will not tail-call), re-run the sweep before
 concluding anything — the current 228 number is drift-poisoned and says
 nothing about how many functions 2.9-ee would actually match.
+
+## libgcc is 2.9-ee: 0x11FC08-0x1206A0 rebuilt from GCC's source
+
+**The section above asked whether any of retail is 2.9-ee. Part of it is.**
+`core_text` 0x11FC08-0x1206A0 is not game code. It is libgcc's soft-float
+library `fp-bit.c`, and Sony's **gcc 2.9-ee-991111** built it. The
+unmodified GCC 2.95.3 source for nine `L_*_df` modules compiles under that
+compiler to retail byte for byte. Across 678 words nothing differs, and that
+includes every resolved relocation. No rewriters are involved.
+
+| retail | function | earlier status |
+|---|---|---|
+| 0x11FC08 | `_fpadd_parts` | stub |
+| 0x11FE48 | `__adddf3` | close 18/88 ("prologue save order") |
+| 0x11FEA0 | `__subdf3` | close ("same known residual") |
+| 0x11FF08 | `__muldf3` | stub |
+| 0x1201B0 | `__divdf3` | stub |
+| 0x120318 | `__fpcmp_parts_d` | stub |
+| 0x120430 | `__cmpdf2` | close 10/76 ("prologue save order") |
+| 0x120480 | `__floatsidf` | stub |
+| 0x120538 | `__fixdfsi` | stub |
+| 0x1205D0 | `dptoul` (float_to_usi) | exact under 2.95.3, but only with a flipped `if` |
+| 0x120670 | `__make_dp` | exact |
+
+How it was found: `func_001205D0`'s shape matched `float_to_usi`. That
+pointed to fp-bit, and fp-bit's own `add` still gave exactly the recorded
+18/88 under 2.95.3. So the source was not the problem. Compiling the same
+`add` with every EE `cc1` in the toolchain mirrors settled it: only
+2.9-ee emits retail's `sd $16` before `sd $31` with `move $5,$sp` in the
+first delay slot. Under 2.9-ee the *verbatim* `> 60` spelling of
+float_to_usi matches, where 2.95.3 needed it inverted. That confirms the
+compiler rather than a coincidence of spelling.
+
+**Build shape.** One object per `L_*` module, like `libgcc.a`'s members.
+Each object has 8-byte `.text` alignment, and that alone reproduces
+retail's 4-byte gaps between modules. `src/core_text.c` is split around
+them, and the second half is `src/core_text_2.c`. `rac1.ld.sh` maps the
+`func_` names to the libgcc names both ways. `tools/libgcc_units.py` is
+the shared module list for the tools.
+
+**Two lessons worth keeping.**
+- **A family-wide residual may point to a different compiler, not a
+  missing lever.** Three near-misses carried the note "treat the rest of
+  this family as the same known residual". That was accurate. It was
+  also a sign that the family had not been built by our compiler.
+- **Library code: look for the real source first.** libgcc and the
+  EE/IOP SDK were not written for the game. Where the source still
+  exists, compiling it is cheaper and more faithful than decoding it.
+
+**Still open.** `pack_d` (0x11FA38), `unpack_d` (0x11FB68) and `unpack_f`
+(0x1206B0) differ from 2.95.3's revision, and so does a gap past
+0x1206A0. They look like a different fp-bit revision. `__extendsfdf2`
+(0x120778) already matches from this source. The four large leaf
+functions at 0x11DFE8-0x11F4F8 are probably libgcc2's 64-bit
+division family, which is the next thing to try under 2.9-ee. The
+functions this section says 2.9-ee improved (`func_00116320`,
+`func_0011DC50`, `func_0011B710`) are worth re-checking for the same
+reason: they may be library or SDK code as well.
 
 ## Open toolchain questions
 

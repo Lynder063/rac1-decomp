@@ -51,7 +51,13 @@ import sys
 from pathlib import Path
 
 STUB = re.compile(r"INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\)")
-SEGMENTS = {"text": "src/text.c", "core_text": "src/core_text.c"}
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from libgcc_units import SEGMENT_SOURCES as SEGMENTS
+
+
+def segment_text(seg: str) -> str:
+    """All game source for a segment (core_text is split across files)."""
+    return "\n".join(Path(p).read_text(errors="replace") for p in SEGMENTS[seg])
 FUNCNAME = re.compile(r"\b(func_[0-9A-Fa-f]{8})\b")
 
 
@@ -352,7 +358,7 @@ def check_names(names: list[str]) -> None:
             detail = "discussed in docs/notes -- see reason there"
         stub = re.search(
             r"INCLUDE_ASM\([^)]*\b" + name + r"\)",
-            Path(SEGMENTS[seg]).read_text(errors="replace"),
+            segment_text(seg),
         )
         done = "" if stub else "  [already decompiled]"
         print(f"  {name:<{width}}  {verdict:<9} {size:#7x}  {cat}"
@@ -388,8 +394,7 @@ def main() -> None:
     attempted = already_attempted()
     rows = []
     for seg in segs:
-        src = Path(SEGMENTS[seg])
-        for name in sorted(set(STUB.findall(src.read_text(errors="replace")))):
+        for name in sorted(set(STUB.findall(segment_text(seg)))):
             p = Path(f"asm/nonmatchings/{seg}/{name}.s")
             if not p.exists():
                 continue
