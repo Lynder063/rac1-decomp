@@ -3136,9 +3136,40 @@ void func_00217588(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002175C8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00217628);
+extern char D_001E8980[];
+extern int func_0012EE98(int, int, int, void *);
+extern void func_001F9978(void);
 
-extern int func_00217628(void);
+/* Start a stream: refuse if one is already running (+0x8) or the length
+   is zero, otherwise hand the request to func_0012EE98 with the header
+   block at D_001517D0+0x30 and record it. Returns the length in the
+   units the caller wants, arg2 << 11; on a rejected request it reports
+   the failure and returns 0. */
+int func_00217628(int arg0, int arg1, int arg2) {
+    char *d = (char *)D_001517D0;
+
+    if (*(short *)(d + 8) != 0) {
+        return 0;
+    }
+    if (arg2 == 0) {
+        return 0;
+    }
+    if (func_0012EE98(arg1, arg2, arg0, d + 0x30) == 0) {
+        func_001E9730(D_001E8980);
+        func_001F9978();
+        return 0;
+    }
+    *(int *)(d + 0x14) = arg0;
+    *(short *)(d + 8) = 1;
+    *(int *)(d + 0xC) = arg1;
+    *(int *)(d + 0x10) = arg2;
+    return arg2 << 11;
+}
+
+/* This caller sets up no arguments at all; func_00217628 is defined
+   just above with three. Reach it through an alias rather than
+   redeclaring it. */
+extern int func_00217628_v(void) __asm__("func_00217628");
 extern void func_00122598(int);
 extern void func_00217130(void);
 extern void func_0012EC40(void);
@@ -3163,7 +3194,7 @@ extern void func_0012EC30(void);
  */
 int func_002176C8(void) {
     char *d;
-    int r = func_00217628();
+    int r = func_00217628_v();
     if (r != 0) {
         d = (char *)D_001517D0;
         while (*(short *)(d + 0x8) != 0) {
