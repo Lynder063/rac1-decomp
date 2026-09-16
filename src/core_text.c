@@ -3531,7 +3531,62 @@ void func_0012D568(unsigned char *p) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D5D0);
 
+/*
+ * REVERTED (SIZE mismatch both ways). Decode is certain -- tick the
+ * clock at arg0 back by one day. Take a working copy of the 12-byte
+ * month-length table at D_00153D40, stretch February to 29 on a leap
+ * year, and when the day count reaches zero roll the month back, and
+ * the year with it wrapping 00 to 99, then reload the day count.
+ *
+ *   typedef struct { char b[0xC]; } Cfg12;
+ *   extern Cfg12 D_00153D40 NOT_SDA;
+ *
+ *   void func_0012D688(unsigned char *s) {
+ *       Cfg12 days;
+ *       unsigned char m;
+ *
+ *       days = D_00153D40;
+ *       if ((s[7] & 3) == 0) {
+ *           days.b[1] = 0x1D;
+ *       }
+ *       s[5] = s[5] - 1;
+ *       if (s[5] != 0) {
+ *           return;
+ *       }
+ *       m = s[6] - 1;
+ *       s[6] = m;
+ *       if (m == 0) {
+ *           s[7] = s[7] != 0 ? s[7] - 1 : 0x63;
+ *           s[6] = 0xC;
+ *       }
+ *       s[5] = days.b[s[6] - 1];
+ *   }
+ *
+ * The tail from the month roll-back onwards is already byte-identical,
+ * as is the 12-byte struct copy (ldl/ldr + lwl/lwr at alignment 1, the
+ * func_001FFE88 idiom). Retail is 164 bytes. Two spellings, and the
+ * interesting part is that they miss in OPPOSITE directions:
+ *
+ *   - as written above, the decrement AFTER the leap-year block:  160
+ *     The compiler forwards the stored value, so the `s[5] != 0` test
+ *     becomes `andi $3,$2,0xFF` + `bne` on the value already in hand,
+ *     where retail re-LOADS the byte with `lbu` and tests it bare.
+ *
+ *   - `s[5] = s[5] - 1;` moved BEFORE the leap-year block:         168
+ *     This DOES buy retail's reload -- putting a basic-block boundary
+ *     between the store and the test stops the forwarding, and that is
+ *     the useful finding here. But the compiler then pays for it with a
+ *     `bnel` that duplicates the reload into the branch's delay slot,
+ *     two `lbu`s where retail has one plus a bare `nop`. That is the
+ *     recorded per-site delay-slot difference, so the two halves cannot
+ *     be had at once from this source.
+ *
+ * `m` must stay `unsigned char`: it is what produces retail's
+ * `andi $2,$2,0xFF` on the month counter, and the ternary on s[7] is
+ * confirmed by retail emitting a single `sb` for both arms.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D688);
+
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D730);
 
