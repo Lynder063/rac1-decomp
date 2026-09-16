@@ -25,7 +25,7 @@ SN_136  := toolchain/sn-prodg-3.01/usr/local/sce/ee/gcc
 SN_114  := toolchain/sn-prodg-24/local/sce/ee/gcc
 
 # core_text is built with v1.14 too -- NOT v1.36 -- then post-processed.
-# See the core_text.o rule below for why.
+# See the build-sn/core/%.o rule below for why.
 CC_CORE := $(SN_114)/bin/ee-gcc2953.exe
 CC_TEXT := $(SN_114)/bin/ee-gcc2953.exe
 SIZE    := $(SN_136)/bin/ee-size.exe
@@ -41,30 +41,22 @@ SIZE    := $(SN_136)/bin/ee-size.exe
 # Verified: -G1/-G2/-G3 all link clean with zero regressions vs -G0.
 CFLAGS := -O2 -G2 -Iinclude -Wa,-I,.
 
-# libgcc, 0x11DFE8-0x1206A0: GCC's own libgcc2.c and fp-bit.c, one object
-# per L_* module like libgcc.a's members (that reproduces retail's gaps).
-# Built with Sony's 2.9-ee, NOT the game's 2.95.3 -- see src/libgcc/README.md.
-# Modules that do not match yet are asm stubs (nonmatching_*.c).
-# Order here is link order is retail address order; rac1.ld.sh and
-# tools/libgcc_units.py carry the same list.
+# libgcc (0x11DF0C-0x1206A0): GCC's own libgcc2.c and fp-bit.c, one object
+# per L_* module like libgcc.a's members. Built with Sony's 2.9-ee, NOT the
+# game's 2.95.3 -- see src/libgcc/README.md. Modules that do not match yet
+# are asm stubs (nonmatching_*.c).
 #
 # Through the 2.9-ee DRIVER, not cc1 directly: the driver passes the
 # target predefines (__mips__, __R5900__, ...), and longlong.h picks its
 # MIPS multiply/divide primitives off them. Without them __divdi3 and
 # __muldi3 come out wrong.
 CC_LIBGCC := $(SN_114)/bin/ee-gcc.exe
-LIBGCC_OBJS := \
-  build-sn/libgcc/l2_divdi3.o build-sn/libgcc/asm_0011E6D4.o \
-  build-sn/libgcc/l2_fixunsdfdi.o build-sn/libgcc/asm_0011E7C4.o \
-  build-sn/libgcc/l2_floatdidf.o build-sn/libgcc/asm_0011E860.o \
-  build-sn/libgcc/l2_muldi3.o build-sn/libgcc/asm_0011EF28.o \
-  build-sn/libgcc/fp_addsub_df.o build-sn/libgcc/fp_mul_df.o \
-  build-sn/libgcc/fp_div_df.o build-sn/libgcc/fp_fpcmp_parts_df.o \
-  build-sn/libgcc/fp_compare_df.o build-sn/libgcc/fp_si_to_df.o \
-  build-sn/libgcc/fp_df_to_si.o build-sn/libgcc/fp_df_to_usi.o \
-  build-sn/libgcc/fp_make_df.o
 
-OBJS := build-sn/core_text.o $(LIBGCC_OBJS) build-sn/core_text_2.o build-sn/text.o
+# Every core_text object, in link order, from the one list that rac1.ld.sh
+# and the tools also read.
+CORE_TEXT_OBJS := $(shell grep -v -e "^\#" -e "^$$" config/core_text.objects)
+
+OBJS := $(CORE_TEXT_OBJS) build-sn/text.o
 
 .PHONY: all clean regnames
 all: regnames $(OBJS)
@@ -73,9 +65,9 @@ all: regnames $(OBJS)
 regnames:
 	python tools/sn_regnames.py asm
 
-# core_text: compile to assembly with v1.14, narrow the callee-saved
-# spills to sd/ld, then assemble. Neither compiler reproduces retail's
-# core_text alone:
+# core_text game objects (src/core/<ADDR>.c): compile to assembly with
+# v1.14, narrow the callee-saved spills to sd/ld, then assemble. Neither
+# compiler reproduces retail's core_text alone:
 #   v1.36  spills $ra as sd but $s0-$s7 as sq, AND mirrors the save-slot
 #          layout ($31 at offset 0, s-regs descending)
 #   v1.14  lays slots out EXACTLY as retail does ($16 at 0, s-regs
@@ -84,21 +76,14 @@ regnames:
 # already matches, this is a pure mnemonic substitution -- frame size,
 # the 16-byte slot stride (which retail keeps even for 8-byte stores)
 # and every offset are left exactly as v1.14 emitted them. No offset
-# arithmetic, which is what makes it safe.
-build-sn/core_text.o: src/core_text.c tools/fix_core_spills.py tools/fix_tail_calls.py
-	@mkdir -p build-sn
-	$(CC_CORE) $(CFLAGS) -S -o build-sn/core_text.s $<
-	python tools/fix_core_spills.py build-sn/core_text.s build-sn/core_text_sp.s
-	python tools/fix_tail_calls.py build-sn/core_text_sp.s build-sn/core_text_fixed.s
-	$(CC_CORE) $(CFLAGS) -c build-sn/core_text_fixed.s -o $@
-
-# Second half of core_text, after the libgcc modules. Same recipe.
-build-sn/core_text_2.o: src/core_text_2.c tools/fix_core_spills.py tools/fix_tail_calls.py
-	@mkdir -p build-sn
-	$(CC_CORE) $(CFLAGS) -S -o build-sn/core_text_2.s $<
-	python tools/fix_core_spills.py build-sn/core_text_2.s build-sn/core_text_2_sp.s
-	python tools/fix_tail_calls.py build-sn/core_text_2_sp.s build-sn/core_text_2_fixed.s
-	$(CC_CORE) $(CFLAGS) -c build-sn/core_text_2_fixed.s -o $@
+# arithmetic, which is what makes it safe. (fix_core_spills keys on
+# address, so the objects from 0x12DB18 on keep their sq spills.)
+build-sn/core/%.o: src/core/%.c tools/fix_core_spills.py tools/fix_tail_calls.py
+	@mkdir -p build-sn/core
+	$(CC_CORE) $(CFLAGS) -S -o build-sn/core/$*.s $<
+	python tools/fix_core_spills.py build-sn/core/$*.s build-sn/core/$*_sp.s
+	python tools/fix_tail_calls.py build-sn/core/$*_sp.s build-sn/core/$*_fixed.s
+	$(CC_CORE) $(CFLAGS) -c build-sn/core/$*_fixed.s -o $@
 
 # libgcc modules: verbatim GCC source, no rewriters.
 LIBGCC_CFLAGS := -O2 -G2 -S

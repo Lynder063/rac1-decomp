@@ -8,7 +8,8 @@
 set -u
 TC=toolchain/sn-prodg-3.01/usr/local/sce/ee/gcc/bin
 [ $# -ge 1 ] || { echo "usage: sh tools/diff.sh func_XXXXXXXX [args]"; exit 2; }
-rm -f build-sn/core_text.o build-sn/text.o
+rm -rf build-sn/core build-sn/libgcc
+rm -f build-sn/text.o
 $TC/make.exe -f Makefile.sn >build-sn/diff_make.log 2>&1
 rc=$?
 if [ $rc -ne 0 ]; then

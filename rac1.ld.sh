@@ -26,32 +26,21 @@ SECTIONS
 
   . = 0x112380;
   .core_text : {
-    build-sn/core_text.o(.text)
-    /* libgcc, 0x11DFE8-0x1206A0 (src/libgcc/README.md). Same order as
-       LIBGCC_OBJS in Makefile.sn and tools/libgcc_units.py. */
-    build-sn/libgcc/l2_divdi3.o(.text)
-    build-sn/libgcc/asm_0011E6D4.o(.text)
-    build-sn/libgcc/l2_fixunsdfdi.o(.text)
-    build-sn/libgcc/asm_0011E7C4.o(.text)
-    build-sn/libgcc/l2_floatdidf.o(.text)
-    build-sn/libgcc/asm_0011E860.o(.text)
-    build-sn/libgcc/l2_muldi3.o(.text)
-    build-sn/libgcc/asm_0011EF28.o(.text)
-    /* _fpadd_parts is static in fp-bit, so it has no global symbol to
-       alias; it is the first thing in its module, and the stub object
-       before it ends exactly on the 8-byte boundary, so `.` is its
-       address. */
-    func_0011FC08 = .;
-    build-sn/libgcc/fp_addsub_df.o(.text)
-    build-sn/libgcc/fp_mul_df.o(.text)
-    build-sn/libgcc/fp_div_df.o(.text)
-    build-sn/libgcc/fp_fpcmp_parts_df.o(.text)
-    build-sn/libgcc/fp_compare_df.o(.text)
-    build-sn/libgcc/fp_si_to_df.o(.text)
-    build-sn/libgcc/fp_df_to_si.o(.text)
-    build-sn/libgcc/fp_df_to_usi.o(.text)
-    build-sn/libgcc/fp_make_df.o(.text)
-    build-sn/core_text_2.o(.text)
+EOF
+
+# core_text objects, in link order, from config/core_text.objects -- the
+# one list Makefile.sn and the tools read too. _fpadd_parts is static in
+# fp-bit, so it has no global symbol to alias; it is the first thing in its
+# module, and the object before it ends exactly on the 8-byte boundary, so
+# `.` right before that object is its address.
+grep -v -e '^#' -e '^$' config/core_text.objects | tr -d $'\r' | while read -r obj; do
+  if [ "$obj" = "build-sn/libgcc/fp_addsub_df.o" ]; then
+    echo "    func_0011FC08 = .;" >> build-sn/rac1.ld
+  fi
+  echo "    $obj(.text)" >> build-sn/rac1.ld
+done
+
+cat >> build-sn/rac1.ld <<'EOF'
   }
 
   /* libgcc keeps its real names; the rest of the image (and every tool)

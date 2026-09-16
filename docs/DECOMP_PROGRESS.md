@@ -652,8 +652,8 @@ compiler rather than a coincidence of spelling.
 
 **Build shape.** One object per `L_*` module, like `libgcc.a`'s members.
 Each object has 8-byte `.text` alignment, and that alone reproduces
-retail's 4-byte gaps between modules. `src/core_text.c` is split around
-them, and the second half is `src/core_text_2.c`. `rac1.ld.sh` maps the
+retail's 4-byte gaps between modules. (core_text has since been split
+into one file per retail object, see "core_text is ~50 objects" below.) `rac1.ld.sh` maps the
 `func_` names to the libgcc names both ways. `tools/libgcc_units.py` is
 the shared module list for the tools.
 
@@ -697,6 +697,49 @@ division family, which is the next thing to try under 2.9-ee. The
 functions this section says 2.9-ee improved (`func_00116320`,
 `func_0011DC50`, `func_0011B710`) are worth re-checking for the same
 reason: they may be library or SDK code as well.
+
+## core_text is ~50 objects: split at retail's own linker fill
+
+Retail's linker filled the gaps between objects with `0xCDCDCDCD`.
+core_text has **49** such runs, and every one of them ends on an 8-byte
+boundary, as an object start must. `text` has **none**, so its object
+boundaries have to come from other evidence (see below).
+
+core_text is now one C file per object: `src/core/<START>.c` for game and
+SDK code, plus the libgcc objects. The link order lives in one place,
+`config/core_text.objects`, which Makefile.sn, rac1.ld.sh and the tools
+all read. 0x12DB18, where the compiler sub-build switches from `sd` to
+`sq` spills, is a boundary too.
+
+What it took, all verified:
+- **The fill always ends the previous object.** A first attempt started
+  objects at the fill when splat had put the fill at the head of a
+  function. That ran core_text 0x48 bytes long, because those objects
+  are 8-byte aligned and cannot start on the fill.
+- **19 object starts were buried inside splat functions.** Some are
+  orphan epilogue fragments (`addiu $sp,$sp,N; nop`) left at an object's
+  head, followed by the real first function. They are declared in
+  `config/symbol_addrs.txt`. That also made splat resolve one data
+  pointer (`.word func_0011DD68`), independent confirmation that an entry
+  point starts there.
+- **Every file keeps the compile context its functions had.** It gets the
+  declarations that preceded it in the old file, plus extern prototypes
+  for functions that were defined earlier. A missing prototype is not
+  harmless: without one, `func_0012C2F8` changed 6 words, because its
+  callee `func_00127378` was implicitly `int`. Old-style (K&R)
+  definitions stay unprototyped on purpose.
+- **The libgcc2 `L__main` module starts at 0x11DF10**, not 0x11DF0C.
+  It is `src/libgcc/nonmatching_0011DF10.c`.
+
+Result: every loadable byte (core_text, core_data, core_rdata, text) is
+identical to the build before the split, still 364 exact, and every
+function is at its retail address.
+
+**Next: `text`.** It has no linker fill, so boundaries need other
+evidence. Candidates are functions grouped around source-file strings
+(`hud.cpp`, `loaders.cpp`, `map.cpp`); globals accessed via `$gp` in one
+place and via `lui` in another; `.rodata` ordering; and call-graph
+clusters.
 
 ## The game is C++, and the language switch alone changes nothing
 

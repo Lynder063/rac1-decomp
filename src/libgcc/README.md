@@ -15,8 +15,9 @@ Each `L_*` module is its own object, like the members of `libgcc.a`. That is
 what reproduces retail's alignment gaps between modules. Modules that do not
 match yet stay as asm stubs in `nonmatching_*.c`, in their link position.
 The linker filled two gaps with `0xCDCDCDCD`, and those are kept as stubs
-too. The link order is listed in three places that must agree:
-`Makefile.sn` (`LIBGCC_OBJS`), `rac1.ld.sh`, and `tools/libgcc_units.py`.
+too. The link order is `config/core_text.objects`, which the build and the
+tools read. Per-module facts for the progress report are in
+`tools/libgcc_units.py`.
 
 ## Sources (GPL v2 with the libgcc linking exception, see each file's header)
 
@@ -60,10 +61,10 @@ the source does. The next step is a slightly different `libgcc2.c` revision.
 
 ## Next to look at
 
-- `L__main` at 0x11DF18 or earlier: `__main` (0x11DFC8) already matches
-  byte for byte. It shares a module with `__do_global_ctors`, which differs
-  here (retail has no `atexit` call), so that module stays in game code
-  for now.
+- `L__main` (0x11DF10, stub `nonmatching_0011DF10.c`): `__main`
+  (0x11DFC8) already matches byte for byte. It shares the module with
+  `__do_global_ctors`, which differs here (retail has no `atexit` call and
+  begins with an orphan epilogue fragment), so the module stays asm.
 - `__extendsfdf2` (0x120778) matches from `fp-bit.c` (`-DFLOAT
   -DL_sf_to_df`). It sits past `unpack_f` (0x1206B0), which does not
   match yet.

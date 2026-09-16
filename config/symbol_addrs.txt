@@ -1,0 +1,27 @@
+// splat symbol overrides. Read via symbol_addrs_path in config/splat.yaml.
+//
+// Object starts splat missed. Retail's linker filled the gap between
+// objects with 0xCDCDCDCD, and the code right after each fill run starts a
+// new object -- but splat had folded that code into the previous function
+// (fill included). Declaring the real start makes the fill end its own
+// function file, so the object boundaries in config/core_text.objects fall
+// on file boundaries.
+func_001144D0 = 0x001144D0; // type:func
+func_00116070 = 0x00116070; // type:func
+func_00116CC0 = 0x00116CC0; // type:func
+func_00118A40 = 0x00118A40; // type:func
+func_0011D700 = 0x0011D700; // type:func
+func_0011DD68 = 0x0011DD68; // type:func
+func_0011DF10 = 0x0011DF10; // type:func
+func_001206A8 = 0x001206A8; // type:func
+func_001208E8 = 0x001208E8; // type:func
+func_00122140 = 0x00122140; // type:func
+func_001224B0 = 0x001224B0; // type:func
+func_00122630 = 0x00122630; // type:func
+func_00122818 = 0x00122818; // type:func
+func_00122AD8 = 0x00122AD8; // type:func
+func_00123168 = 0x00123168; // type:func
+func_001236F0 = 0x001236F0; // type:func
+func_00125218 = 0x00125218; // type:func
+func_001252A0 = 0x001252A0; // type:func
+func_0012CC70 = 0x0012CC70; // type:func

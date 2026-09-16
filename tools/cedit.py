@@ -2,14 +2,14 @@
 """
 CRLF-safe anchored replace for the two big source files.
 
-src/core_text.c and src/text.c have CRLF line endings, so a naive
+src/ files (src/text.c, src/core/*.c) may have CRLF line endings, so a naive
 str.replace with an LF-quoted anchor silently matches nothing -- which
 looks exactly like "the edit had no effect on codegen" and cost a couple
 of confused rebuild cycles. This reads universal, requires each anchor to
 match exactly once, and writes back with the file's own line ending.
 
   from tools.cedit import edit
-  edit("src/core_text.c", [(old, new), ...])
+  edit("src/core/00112380.c", [(old, new), ...])
 """
 import io
 
