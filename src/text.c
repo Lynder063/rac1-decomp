@@ -4926,7 +4926,47 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00234380);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002344D8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234620);
+typedef struct {
+    short a;
+    short b;
+} TexRemap;
+
+typedef struct {
+    char *items;
+    int count;
+} TexChunk;
+
+extern TexChunk D_001E1200[];
+extern TexRemap D_001E0F00[];
+
+/* Walk the null-terminated chunk list at D_001E1200; for every 0x50-byte
+   record in each chunk, look up the remap entry indexed by the byte at
+   +0x23 and patch its two nonzero halves into the low 14 bits of the
+   words at +0x00 and +0x30. */
+void func_00234620(void) {
+    TexChunk *c;
+    char *r;
+    TexRemap *e;
+    int i;
+    int n;
+
+    c = D_001E1200;
+    while (c->items != 0) {
+        n = c->count;
+        r = c->items;
+        for (i = 0; i < n; i++) {
+            e = &D_001E0F00[*(unsigned char *)(r + 0x23)];
+            if (e->a != 0) {
+                *(int *)r = (*(int *)r & 0xFFFFC000) | e->a;
+            }
+            if (e->b != 0) {
+                *(int *)(r + 0x30) = (*(int *)(r + 0x30) & 0xFFFFC000) | e->b;
+            }
+            r += 0x50;
+        }
+        c++;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002346C0);
 
