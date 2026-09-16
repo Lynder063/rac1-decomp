@@ -742,8 +742,32 @@ first function references `"/usr/local/989snd/ee/989snd.c"`, which is 989
 Studios' sound library. That boundary was placed from the `sq`/`sd`
 sub-build switch, not from fill, so two unrelated kinds of evidence agree.
 
-**Next: `text`.** It has no linker fill, so boundaries need other
-evidence. Measured so far, not yet acted on:
+**`text` is split too (58 files, named after the originals).** Evidence and method:
+- bordplate's NTSC project RC1 (codeberg.org/bordplate/RC1) splits NTSC
+  `text` into the original source files (`hud.cpp`, `camera.cpp`,
+  `mobyfunc.cpp`, `movie/*.cpp`, plus handwritten asm modules such as
+  `mobyproc`), and lists each file's functions in order.
+- PAL shifts against NTSC, and not uniformly. Instead, the NTSC and PAL
+  function-size sequences were aligned: 710 of 813 NTSC functions (87%)
+  match. 37 boundaries fall on a matched function. 15 more have the same
+  shift on both sides. 5 have one candidate that is a real function
+  start. Every candidate was checked in the PAL code: a return right
+  before it, a function start right at it.
+- `skyfunc` was the one exception. The shift put it mid-function, and the
+  real start is 0x22BEB0, which has the same orphan-epilogue head as the
+  core_text object starts.
+- It agrees with independent evidence. The functions that reference the
+  `hud.cpp` and `loaders.cpp` strings lie inside `hud` and `loaders`.
+- Top-level `__asm__(...)` padding in the old `text.c` is code, not a
+  declaration. Copying it into later files' inherited context added bytes
+  to every object after it. Also, a plain extern that is repeated later in
+  a file is still needed where it is first used: dropping it changed 2
+  words of `func_0020DFF8`.
+- Result: every loadable byte is identical to the unsplit build, still 364
+  exact. Files stay `.c` and compile as C for now, since the language
+  switch alone was measured not to be a lever.
+
+Earlier evidence for `text`, kept for reference:
 - **Source-file strings in `.lit`:** `hud.cpp` (0x15F7B8) is used only by
   `func_001FF6B8`, and `loaders.cpp` (0x15FC70) only by `func_002032D0`.
   `map.cpp` (0x15FE28) has no direct reference.

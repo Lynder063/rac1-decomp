@@ -30,7 +30,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from libgcc_units import (MODULES, FUNCTIONS as LIBGCC_FUNCTIONS, SEGMENT_SOURCES,
-                          core_object_of)
+                          object_of)
 
 REPORT = Path("progress/report.json")
 BASEROM = "baserom/SCES_509.16"
@@ -74,8 +74,9 @@ def unit_of(name: str, seg: str, vram: int) -> tuple[str, str, str]:
         if name in fns or name in stubs:
             return f"libgcc/{mod}", src, "libgcc"
     if seg == "text":
-        return "text", "src/text.c", "game"
-    name, src, _ = core_object_of(vram)
+        name, src, _ = object_of("text", vram)
+        return name, src, "game"
+    name, src, _ = object_of("core_text", vram)
     return f"core/{name}", src, "game"
 
 
@@ -83,10 +84,9 @@ def build() -> None:
     """From-scratch build + link. Refuses on failure: a failed make leaves
     the previous .o behind, whose INCLUDE_ASM stubs still hold retail's
     bytes, and a report built on that would publish fictional matches."""
-    for d in ("build-sn/core", "build-sn/libgcc"):
-        for f in Path(d).glob("*.o") if Path(d).is_dir() else []:
+    for d in ("build-sn/core", "build-sn/libgcc", "build-sn/game"):
+        for f in Path(d).rglob("*.o") if Path(d).is_dir() else []:
             f.unlink()
-    Path("build-sn/text.o").unlink(missing_ok=True)
     for f in Path("build-sn/libgcc").glob("*.o") if Path("build-sn/libgcc").is_dir() else []:
         f.unlink()
     steps = [

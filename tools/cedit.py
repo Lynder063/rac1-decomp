@@ -2,7 +2,7 @@
 """
 CRLF-safe anchored replace for the two big source files.
 
-src/ files (src/text.c, src/core/*.c) may have CRLF line endings, so a naive
+src/ files (src/game/*.c, src/core/*.c) may have CRLF line endings, so a naive
 str.replace with an LF-quoted anchor silently matches nothing -- which
 looks exactly like "the edit had no effect on codegen" and cost a couple
 of confused rebuild cycles. This reads universal, requires each anchor to

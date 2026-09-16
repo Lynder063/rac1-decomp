@@ -27,7 +27,7 @@ Progress is tracked on [decomp.dev](https://decomp.dev/Lynder063/rac1-decomp).
 
 | Category | Progress | Contents |
 |---|---|---|
-| Game | [![](https://decomp.dev/Lynder063/rac1-decomp.svg?mode=shield&category=game&label=Game&measure=matched_code_percent)](https://decomp.dev/Lynder063/rac1-decomp/SCES_509.16?category=game) | Game and SDK code (`src/core/`, `src/text.c`) |
+| Game | [![](https://decomp.dev/Lynder063/rac1-decomp.svg?mode=shield&category=game&label=Game&measure=matched_code_percent)](https://decomp.dev/Lynder063/rac1-decomp/SCES_509.16?category=game) | Game and SDK code (`src/core/`, `src/game/`) |
 | libgcc | [![](https://decomp.dev/Lynder063/rac1-decomp.svg?mode=shield&category=libgcc&label=libgcc&measure=matched_code_percent)](https://decomp.dev/Lynder063/rac1-decomp/SCES_509.16?category=libgcc) | GCC runtime library rebuilt from GCC's own source (`src/libgcc/`) |
 
 The whole image already links with every function at its retail address.
@@ -143,11 +143,11 @@ in [`docs/DECOMP_PROGRESS.md`](docs/DECOMP_PROGRESS.md).
 | Path | Contents |
 |---|---|
 | `src/core/` | The `core_text` segment, one file per retail object, split at the retail linker's own fill between objects. Files are named by start address until their real source is identified (e.g. `989snd.c`) |
-| `src/text.c` | The `text` segment (game code); its object boundaries are not known yet |
+| `src/game/` | The `text` segment, one file per original source file (`hud`, `camera`, `mobyfunc`, `movie/*`...), named after the originals |
 | `src/libgcc/` | GCC's `libgcc2.c` and `fp-bit.c` (GPL with the libgcc exception) plus stubs, see its README |
 | `include/` | Shared headers, recovered structs, assembly macros |
 | `config/splat.yaml`, `config/symbol_addrs.txt` | How the executable is split into functions |
-| `config/core_text.objects` | Link order of every `core_text` object |
+| `config/core_text.objects`, `config/text.objects` | Link order and start address of every object |
 | `Makefile.sn`, `rac1.ld.sh` | Compile and link at retail addresses |
 | `tools/` | Build, audit, progress-report and decompilation helper scripts |
 | `docs/` | Workflow, toolchain notes, progress log, Ghidra policy |
@@ -163,6 +163,8 @@ in [`docs/DECOMP_PROGRESS.md`](docs/DECOMP_PROGRESS.md).
   [asm-differ](https://github.com/simonlindholm/asm-differ),
   [objdiff](https://github.com/encounter/objdiff)
 - [AngheloAlf's PS2 toolchain mirrors](https://github.com/AngheloAlf)
+- [bordplate/RC1](https://codeberg.org/bordplate/RC1): NTSC decomp setup; the
+  source file names and boundaries of the `text` segment come from its split
 - [RatchetModding/rac-modding-resources](https://github.com/RatchetModding/rac-modding-resources)
 - [Wrench](https://github.com/chaoticgd/wrench): Ratchet & Clank PS2 asset
   tooling, useful for cross-referencing structures

@@ -110,7 +110,16 @@ cat >> build-sn/rac1.ld <<'EOF'
   .lvl_sndvtbl : { build-sn/lvl_sndvtbl.data.o(.data) }
 
   . = 0x1e9080;
-  .text : { build-sn/text.o(.text) }
+  .text : {
+EOF
+
+# text objects, in link order, from config/text.objects.
+grep -v -e '^#' -e '^$' config/text.objects | tr -d $'\r' | while read -r obj _start; do
+  echo "    $obj(.text)" >> build-sn/rac1.ld
+done
+
+cat >> build-sn/rac1.ld <<'EOF'
+  }
 
   /* Sections a nonzero -G makes the compiler emit.
 

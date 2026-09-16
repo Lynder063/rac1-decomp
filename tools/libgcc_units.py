@@ -45,19 +45,23 @@ LIBGCC_END = 0x1206A0
 ROOT = Path(__file__).resolve().parent.parent
 
 
-def core_text_entries() -> list[tuple[str, int | None]]:
-    """(object path, retail start or None) from config/core_text.objects, in
+def segment_entries(segment: str) -> list[tuple[str, int | None]]:
+    """(object path, retail start or None) from config/<segment>.objects, in
     link order. Game objects carry their start address in a second column,
     so their file names are free to be real names; libgcc objects are
     described by MODULES instead."""
     out = []
-    for line in (ROOT / "config/core_text.objects").read_text().splitlines():
+    for line in (ROOT / f"config/{segment}.objects").read_text().splitlines():
         line = line.strip()
         if not line or line.startswith("#"):
             continue
         parts = line.split()
         out.append((parts[0], int(parts[1], 16) if len(parts) > 1 else None))
     return out
+
+
+def core_text_entries() -> list[tuple[str, int | None]]:
+    return segment_entries("core_text")
 
 
 def core_text_objects() -> list[str]:
@@ -70,6 +74,8 @@ def source_of(obj: str) -> str:
     name = obj.rsplit("/", 1)[1][:-2]
     if obj.startswith("build-sn/core/"):
         return f"src/core/{name}.c"
+    if obj.startswith("build-sn/game/"):
+        return "src/" + obj[len("build-sn/"):-2] + ".c"
     if name.startswith("asm_"):
         return f"src/libgcc/nonmatching_{name[4:]}.c"
     if name.startswith("l2_"):
@@ -83,13 +89,16 @@ def source_of(obj: str) -> str:
 SEGMENT_SOURCES = {
     "core_text": [s for s in dict.fromkeys(source_of(o) for o in core_text_objects())
                   if s not in (L2, FP)],
-    "text": ["src/text.c"],
+    "text": [source_of(o) for o, _ in segment_entries("text")],
 }
 
 
-def core_object_of(vram: int) -> tuple[str, str, int]:
-    """(object name, source file, start address) of the game object holding vram."""
-    game = [(start, obj) for obj, start in core_text_entries()
-            if obj.startswith("build-sn/core/")]
+def object_of(segment: str, vram: int) -> tuple[str, str, int]:
+    """(object name, source file, start address) of the game object holding
+    vram. core_text names are bare ("989snd"); text names keep their
+    directory ("game/hud")."""
+    game = [(start, obj) for obj, start in segment_entries(segment) if start is not None]
     start, obj = max((s, o) for s, o in game if s <= vram)
-    return obj.rsplit("/", 1)[1][:-2], source_of(obj), start
+    rel = obj[len("build-sn/"):-2]
+    name = rel.split("/", 1)[1] if segment == "core_text" else rel
+    return name, source_of(obj), start

@@ -1,0 +1,303 @@
+#include "common.h"
+#include "structs.h"
+
+/*
+ * fastfunc.cpp in the original source; text 0x1F9810-0x1FAA28.
+ * Name and boundary from the NTSC split in bordplate's RC1 project
+ * (codeberg.org/bordplate/RC1), mapped to PAL by matching function
+ * sizes -- see docs/DECOMP_PROGRESS.md. Compiled as C for now.
+ */
+
+/* Declarations in scope here before the split. */
+extern char D_0013E650[];
+extern int D_0015F694;
+extern void func_001F9A98(void *, void *, int);
+extern char D_00189310[];
+extern char D_001899D0[];
+extern void *D_001871C0 NOT_SDA;
+typedef struct {
+    char unk_00[8];
+    void (*fn_08)(void *);
+    char unk_0C[4];
+    void (*fn_10)(void *);
+} DispatchRec;
+extern DispatchRec D_001E8F80[];
+extern int D_0018A3B0[];
+extern void func_001F99B0();
+extern void func_001F2BC8(void);
+extern int D_0018C434 NOT_SDA;
+extern char D_001940C0[];
+extern long D_00151888[3];
+extern int D_0015F6FC;
+extern short D_0015F534;
+extern void func_001FB530(void);
+extern void func_001F3D78(void);
+extern int D_0015F564;
+extern int D_0018DD40[];
+extern int D_0018DC40[];
+extern short D_0015F59C;
+extern int func_001F65B0(unsigned char *arg0, int arg1, void *arg2);
+extern unsigned char D_001DF3D0[];
+extern unsigned char D_001DF770[];
+extern unsigned char D_001DFB10[];
+extern void func_001F6668(void *, void *, void *, void *, void *, int,
+                          unsigned char *);
+extern int func_001F6600(unsigned char *, int);
+extern int func_001F6620(unsigned char *, int);
+extern int func_001F4868(int);
+extern void func_001F7070(void *, void *, void *, void *, int, unsigned char *);
+extern void func_001FB498(void);
+extern void func_001F3008(void);
+extern void func_001F3140(void);
+extern int D_0018E840[];
+extern void func_001F7B40(void);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9810);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9850);
+
+/*
+ * Reverted (SIZE mismatch: ours 12, retail 16). Semantics are
+ * certain and trivial: return *(float *)&D_0015EE64 * x;  (gp 0x15EE64)
+ * The residual is NOT source shape. Retail is
+ *   lwc1 $f0,off($28) / nop / jr $31 / mul.s $f0,$f0,$f12
+ * -- a load-delay nop between the FP load and its use. This
+ * toolchain omits it, so the function comes out 4 bytes short.
+ * The compiler emits `l.s` under `.set reorder` and leaves slot
+ * filling to the assembler, so this is an assembler ISA-semantics
+ * difference (MIPS I load delay vs MIPS II+ interlocks), not
+ * something a C rewrite can reach. Very likely affects every tiny
+ * leaf that loads a global then immediately uses it -- there is a
+ * cluster of these around 0x1F98xx.
+ */
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9878);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9888);
+
+/*
+ * Reverted (SIZE mismatch: ours 12, retail 16). Semantics are
+ * certain and trivial: return *(float *)&D_0015EE68 * x;  (gp 0x15EE68)
+ * The residual is NOT source shape. Retail is
+ *   lwc1 $f0,off($28) / nop / jr $31 / mul.s $f0,$f0,$f12
+ * -- a load-delay nop between the FP load and its use. This
+ * toolchain omits it, so the function comes out 4 bytes short.
+ * The compiler emits `l.s` under `.set reorder` and leaves slot
+ * filling to the assembler, so this is an assembler ISA-semantics
+ * difference (MIPS I load delay vs MIPS II+ interlocks), not
+ * something a C rewrite can reach. Very likely affects every tiny
+ * leaf that loads a global then immediately uses it -- there is a
+ * cluster of these around 0x1F98xx.
+ */
+INCLUDE_ASM("asm/nonmatchings/text", func_001F98B0);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F98C0);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F98E8);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F98F8);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9908);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9938);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9968);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9978);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9988);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F99B0);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F99D8);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9A00);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9A98);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9AC0);
+
+/*
+ * Not a decompile target: hand-written assembly, same idioms as the
+ * func_0020C210/func_0020C230 DMAC block. It keeps the 0x1000D000 base
+ * live in $1/$at across all four stores (assembler-reserved, never
+ * allocated by GCC), materializes 0x100 with `ori $2,$0,0x100` rather
+ * than `addiu`, has a bare `nop` between two stores, and leaves its
+ * final value in $3 -- not $2, the ABI return register -- which no
+ * compiler would emit for a value-returning function. An earlier
+ * revision of this comment treated it as compiler output and filed the
+ * diff under the scratch-register-allocation open question; that was a
+ * misread.
+ */
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9AF0);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9B20);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9B48);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9B50);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9B70);
+
+float func_001F9B88(float arg0) {
+    return __builtin_fabsf(arg0);
+}
+
+/*
+ * REVERTED to INCLUDE_ASM deliberately, and this one matters beyond
+ * these two functions.
+ *
+ * They are max.s/min.s single-instruction wrappers. Retail is 8 bytes
+ * each (max.s scheduled into the jr's delay slot). Written as inline asm
+ * this compiler emits 12 bytes -- jr first, then the asm in dead-code
+ * position, because inline asm is opaque to its scheduler. So they were
+ * never matches; they were 4 bytes LONGER than retail each.
+ *
+ * A non-matching function that is *longer* than retail shifts every
+ * later function in the segment, so these two were silently adding 8
+ * bytes of drift to every downstream address reference in text.c --
+ * func_001F7B40, for instance, was instruction-for-instruction identical
+ * to retail yet reported 1/44 purely because its `jal` target had moved.
+ * Reverting them restores the stubs' exact retail bytes and removes that
+ * drift.
+ *
+ * General rule this establishes: a size-mismatched function should be
+ * reverted to INCLUDE_ASM, not kept as documented-close C. Byte-diff
+ * near-misses of the same size are harmless to keep; longer ones corrupt
+ * verification for everything after them. (This is the same failure mode
+ * as the old core_text func_00112380 drift, which is why that one was
+ * worth fixing rather than tolerating.)
+ */
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9B90);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9B98);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9BA0);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9BB0);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9BC0);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9BC8);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9BD8);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9BF0);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9C08);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9C30);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9C48);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9C60);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9C78);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9CA0);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9CB8);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9CE8);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9D10);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9D48);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9D78);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9DC0);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9E10);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9E58);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9EC0);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9EE8);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9F18);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9F30);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9F60);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9F90);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9FA8);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9FC0);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA058);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA168);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA190);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA1C0);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA1F8);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA218);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA238);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA460);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA480);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA4A0);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA4F0);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA540);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA588);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA5C8);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA648);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA6C0);
+
+/*
+ * Close but not exact: angle-wrap-to-[-pi,pi] on arg0+arg1 (retail's
+ * else-if shape confirmed by the delay-slot second-compare testing the
+ * *original* sum, only meaningful when the first branch wasn't taken).
+ * Logic and instruction sequence confirmed correct via objdump, but
+ * this compiler allocates the sum into $f12 (reusing arg0's register)
+ * where retail uses a fresh $f0 -- same scratch-register-allocation-
+ * choice open question as elsewhere, now confirmed to apply to FP
+ * registers too, not just integer. Tried forcing a fresh local via a
+ * separate assignment+accumulate instead of one combined expression;
+ * no change. See docs/DECOMP_PROGRESS.md.
+ */
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA748);
+
+/* Same register-allocation-choice issue as func_001FA748 above (its
+   arg0-arg1 sibling); logic confirmed identical shape via objdump. */
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA790);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA7D8);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA850);
+
+float func_001FA888(int arg0) {
+    return (float)arg0;
+}
+
+/*
+ * Close but not exact: retail's cvt.w.s converts in place (dest fs ==
+ * src fs, both $f12, the incoming arg register); this compiler always
+ * allocates a fresh dest register for the conversion result. 2/16 bytes
+ * differ (just that one instruction's register-field encoding). New,
+ * small instance of the scratch-register-allocation-choice open
+ * question. Tried an extra (float)(int) round-trip to nudge it toward
+ * reusing $f12 -- made it worse (50% mismatch), reverted.
+ */
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA898);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA8A8);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA8F0);
+
+INCLUDE_ASM("asm/nonmatchings/text", func_001FA9E8);

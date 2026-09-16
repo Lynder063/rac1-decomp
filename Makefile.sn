@@ -56,7 +56,9 @@ CC_LIBGCC := $(SN_114)/bin/ee-gcc.exe
 # and the tools also read.
 CORE_TEXT_OBJS := $(shell grep -v -e "^\#" -e "^$$" config/core_text.objects | cut -d" " -f1)
 
-OBJS := $(CORE_TEXT_OBJS) build-sn/text.o
+TEXT_OBJS := $(shell grep -v -e "^\#" -e "^$$" config/text.objects | cut -d" " -f1)
+
+OBJS := $(CORE_TEXT_OBJS) $(TEXT_OBJS)
 
 .PHONY: all clean regnames
 all: regnames $(OBJS)
@@ -110,13 +112,13 @@ build-sn/libgcc/asm_%.o: src/libgcc/nonmatching_%.c
 	@mkdir -p build-sn/libgcc
 	$(CC_TEXT) $(CFLAGS) -c $< -o $@
 
-# text also needs the tail-call rewrite (it does NOT need fix_core_spills:
-# retail's text segment uses sq/lq, which v1.14 already emits).
-build-sn/text.o: src/text.c tools/fix_tail_calls.py
-	@mkdir -p build-sn
-	$(CC_TEXT) $(CFLAGS) -S -o build-sn/text.s $<
-	python tools/fix_tail_calls.py build-sn/text.s build-sn/text_fixed.s
-	$(CC_TEXT) $(CFLAGS) -c build-sn/text_fixed.s -o $@
+# text objects (src/game/**.c) need the tail-call rewrite, but NOT
+# fix_core_spills: retail's text segment uses sq/lq, which v1.14 emits.
+build-sn/game/%.o: src/game/%.c tools/fix_tail_calls.py
+	@mkdir -p $(dir $@)
+	$(CC_TEXT) $(CFLAGS) -S -o build-sn/game/$*.s $<
+	python tools/fix_tail_calls.py build-sn/game/$*.s build-sn/game/$*_fixed.s
+	$(CC_TEXT) $(CFLAGS) -c build-sn/game/$*_fixed.s -o $@
 
 clean:
 	rm -rf build-sn
