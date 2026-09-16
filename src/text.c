@@ -2904,6 +2904,96 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00216450);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00216528);
 
+/*
+ * REVERTED -- both are a SIZE mismatch at every spelling tried, so
+ * neither can be left in. Decode is certain and the two are identical
+ * apart from the table they index; they are two rungs of the
+ * func_002167C0 sound-id ladder (20000..29999 and 10000..19999):
+ *
+ *   extern int D_00137C80[];
+ *   extern short D_001517D0_snd[] __asm__("D_001517D0");
+ *   extern void func_00217860(int, long);
+ *   extern void func_0012ED48(int, int, int, int, int, int, int, int,
+ *                             int, void (*)(int, long), long);
+ *
+ *   void func_00216620(int arg0, int arg1, int arg2) {
+ *       char *base = (char *)D_00137C80;
+ *       int i = arg0 - 0x4E20;          // 0x2710 in func_002166F0
+ *       int h;
+ *       char *s;
+ *
+ *       h = *(int *)(base + i * 8 + 0x2988);   // 0x1A0 in func_002166F0
+ *       if (h == 0) {
+ *           return;
+ *       }
+ *       s = (char *)D_001517D0_snd;
+ *       if (*(int *)(s + 0x50) != 0) {
+ *           return;
+ *       }
+ *       *(short *)(s + 0x5A) = 1;
+ *       *(int *)(s + 0x64) = 10;
+ *       *(int *)(s + 0x68) = 0xBB80;            // 48000 Hz
+ *       *(unsigned int *)(s + 0x50) = 0xFFFFFFFF;
+ *       *(short *)(s + 0x54) = arg0;
+ *       *(short *)(s + 0x58) = arg1;
+ *       *(short *)(s + 0x56) = arg2;
+ *       *(short *)(s + 0x60) = 0;
+ *       func_0012ED48(h, 0, 0, 0, (short)arg2, 0, 2, 0, 0x21,
+ *                     func_00217860, (long)(unsigned int)(s + 0x50));
+ *   }
+ *
+ * func_0012ED48's shape is read off its own prologue (asm at
+ * func_0012ED40, alternate entry): eight register arguments $4..$11
+ * plus three stack arguments at 0x30/0x38/0x40 of ITS frame, i.e. the
+ * caller's 0x0/0x8/0x10 -- the last one an `ld`, hence `long`. The
+ * callback matches func_00217860, which is already decompiled below
+ * and reads its second argument as `(short *)(int)arg1` pointing at
+ * D_001517D0+0x50 -- p[5] there is the 0x5A state field written here.
+ *
+ * NEW LEVER, and the reason this is worth keeping written down:
+ * spelling the table access inline as
+ *     *(int *)((char *)D_00137C80 + (arg0 - 0x4E20) * 8 + 0x2988)
+ * lets GCC fold the whole constant part into the symbol's addend and
+ * emit %hi/%lo(D_00137C80-149368) with a zero displacement -- five
+ * instructions where retail has six, so the function came out 4 bytes
+ * SHORT (200 vs 204). Naming the UNOFFSET base and the index as two
+ * separate locals,
+ *     char *base = (char *)D_00137C80;
+ *     int i = arg0 - 0x4E20;
+ *     h = *(int *)(base + i * 8 + 0x2988);
+ * blocks the fold and reproduces retail exactly: lui/addiu %hi/%lo of
+ * the bare symbol, a separate `addiu $2,$13,-0x4E20`, `sll`, `addu`,
+ * and 0x2988 as the load displacement. This is the base-pointer lever
+ * extended to a subtracted index, and it is what took these two from
+ * 200 to the right 204.
+ *
+ * What still blocks them, at 204 bytes, is one instruction:
+ *   - retail loads the table word straight into $a0 (`lw $a0,10632($v1)`)
+ *     and branches on $a0, so it is already in place as the first call
+ *     argument;
+ *   - this compiler lands it in $a3 and emits `daddu $a0,$a3,$0` before
+ *     the jal, because it spends $a0 on the constant 1 destined for
+ *     0x5A. Retail spends $5/$7/$9/$11 on those constants and keeps $4
+ *     reserved.
+ * Every store is in retail's order already (the output store sequence
+ * is byte-for-byte the same sequence of offsets), so this is purely the
+ * allocator's destination choice -- the recorded dead end.
+ *
+ * Counts, all four spellings:
+ *   inline address expression, `*(int *)(s+0x50) = -1`        200 (short 4)
+ *   base+index locals,         `*(int *)(s+0x50) = -1`        204, 36/51 words
+ *                              (right size only because the one-instruction
+ *                               `li -1` cancels the spurious $a0 move)
+ *   base+index locals, `*(unsigned int *)(s+0x50) = 0xFFFFFFFF`
+ *                                                             208 (over 4)
+ *                              (this is retail's `lui 0xffff`/`ori`, so the
+ *                               0xFFFFFFFF spelling is CORRECT; the residual
+ *                               is entirely the surplus `daddu $a0,$a3,$0`)
+ * Also tried at 208, all identical: early-return vs nested-if shape;
+ * re-loading the table word at the call instead of holding it in a
+ * local; `h` typed `void *` and `unsigned int`; `(short)arg2` hoisted
+ * into a `short` local.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00216620);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002166F0);
