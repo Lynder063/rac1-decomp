@@ -4687,29 +4687,36 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002282B8);
 INCLUDE_ASM("asm/nonmatchings/text", func_002282D0);
 
 /*
- * REVERTED -- size mismatch (80 vs retail's 84). Semantics are certain:
+ * Dispatch on a leading short: 0 and 1 each call a handler and advance
+ * the pointer differently, anything else returns it unchanged.
  *
- *   void *func_00228400(void *arg0) {
- *       short v = *(short *)arg0;
- *       if (v == 0) { func_00229098(arg0); return (char *)arg0 + 0x20; }
- *       if (v == 1) { func_002291E8(arg0); return (char *)arg0 + 0x30; }
- *       return arg0;
- *   }
+ * An earlier round reverted this at 4 bytes short and read the residual
+ * as a delay-slot problem -- retail spends the first jal's delay slot on
+ * `addiu $16,$16,0x20`, we emitted a nop. The real cause was one level
+ * up: with a `return` inside each arm, gcc folds the advance into the
+ * return value (`addu $2,$16,32`, one instruction), and there is then
+ * nothing left for the delay slot. Retail updates the pointer and copies
+ * it to $v0 separately, three times, which is what a SINGLE `return p`
+ * at the join gives: the copy belongs to the join block and the
+ * delay-slot filler duplicates it into both branches.
  *
- * Dispatch on a leading short: 0 and 1 each call a handler and return a
- * differently-advanced pointer, anything else returns the argument
- * unchanged.
- *
- * The missing instruction is a delay slot. Retail keeps arg0 in $16 and
- * spends the first `jal`'s delay slot on `addiu $16,$16,0x20`, so the
- * advance is free; this compiler emits a `nop` there and computes the
- * return value in the following branch's delay slot instead. Tried
- * three shapes: returning the offset expression directly, advancing a
- * separate `char *p` after the call, and advancing it before the call
- * (best, 20/84 but still 4 bytes short). The scheduler will not put the
- * advance in the call's delay slot from any of them.
+ * So this is the exit-cross-jumping lever used the other way round.
+ * The usual reach is to SPLIT exits that gcc merged; here retail really
+ * does share one, and the fix was to stop returning early. When a
+ * 4-byte shortfall looks like a missing delay-slot fill, check first
+ * whether an expression got folded that retail kept in two steps.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_00228400);
+void *func_00228400(char *p) {
+    short v = *(short *)p;
+    if (v == 0) {
+        func_00229098(p);
+        p += 0x20;
+    } else if (v == 1) {
+        func_002291E8(p);
+        p += 0x30;
+    }
+    return p;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00228458);
 
