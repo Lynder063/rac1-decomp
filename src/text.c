@@ -2328,6 +2328,46 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0020D678);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020D6D0);
 
+/*
+ * Reverted. Semantics are certain (the object at arg0 caches an actor
+ * slot index in byte 0x7D and a wanted index in byte 0x7C):
+ *
+ *   void func_0020D790(void *arg0) {
+ *       unsigned char *s = (unsigned char *)arg0;
+ *       unsigned char id = s[0x7D];
+ *       if (id != 0xFF) {
+ *           char *e = D_0013E650 + id * 0x70;          // 0x70 stride
+ *           if (*(int *)(e + 0x88) != (int)arg0) {
+ *               s[0x7D] = 0xFF;
+ *           } else if (*(short *)(e + 0x7E) != s[0x7C]) {
+ *               func_0022EAB0(id);
+ *               s[0x7D] = 0xFF;
+ *           }
+ *       } else if (s[0x7C] != 0xFF) {
+ *           func_0022ED80(s[0x7C], 4, arg0);
+ *           s[0x7D] = s[0x7C];
+ *       }
+ *   }
+ *
+ * That spelling is the right size (0x98) and 79/152 bytes off. The whole
+ * residual is one register copy: retail loads byte 0x7D into $v1, keeps
+ * $v1 for the equality tests and copies it into $a1 for use as the table
+ * index and as func_0022EAB0's argument, so everything after the first
+ * branch sits one word later than ours.
+ *
+ * Three spellings were tried to get that copy back, with counts:
+ *   - `unsigned char id` used for both roles          79/152, size OK
+ *   - separate `unsigned char j = s[0x7C]` in the else 31/38 words,
+ *     and 8 bytes SHORT (it also flips $s0/$s1 and grows the frame)
+ *   - `int id = s[0x7D]` with the tests spelled on
+ *     `s[0x7D]` directly                              17/38 words, but
+ *     4 bytes LONG -- this one does produce retail's copy, in the
+ *     opposite direction ($a1 loaded, copied to $v1)
+ * The third is the closest and shows the copy is reachable from C; what
+ * is not yet found is the spelling that makes the COMPARISON operand the
+ * load's destination and the index operand the copy. Left as a stub
+ * rather than a size mismatch.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_0020D790);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020D828);
@@ -3519,7 +3559,40 @@ int func_00220C90(void *arg0) {
     return 0x10;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00220D08);
+extern int func_00226EA8(int);
+
+/*
+ * Sibling of func_00220DA0 below: same slot set (0x44/0x48/0x4C/0x50/
+ * 0x54/0x5C) on the same object, seeded here instead of torn down.
+ *
+ * Byte mismatch, correct size (0x94), 2 of 37 words: retail stores the
+ * -1 to 0x54 before 0x50 and we do the reverse. Four spellings of the
+ * tail were tried -- 5C/54/50 (this one, 2 words off), 5C/50/54 (4),
+ * 54/5C/50 (6), and the chained `*(s+0x50) = *(s+0x54) = -1` (6) -- so
+ * source order is not what decides it here; the -1 is a live value
+ * produced in the branches ($v1), and the scheduler picks the store
+ * order. Kept rather than reverted: the size is right, so nothing
+ * downstream moves.
+ */
+int func_00220D08(void *arg0) {
+    char *s = (char *)arg0;
+
+    *(int *)(s + 0x44) = 0;
+    *(int *)(s + 0x48) = func_00226EA8(*(int *)(s + 0x34) & 0x200);
+    *(int *)(s + 0x4C) = func_00226EA8(*(int *)(s + 0x34) & 0x200);
+    if ((*(int *)(s + 0x34) & 0x200) == 0) {
+        if (*(int *)(s + 0x48) == 0) {
+            *(int *)(s + 0x48) = func_00226EA8(1);
+        }
+        if (*(int *)(s + 0x4C) == 0) {
+            *(int *)(s + 0x4C) = func_00226EA8(1);
+        }
+    }
+    *(int *)(s + 0x5C) = 0;
+    *(int *)(s + 0x54) = -1;
+    *(int *)(s + 0x50) = -1;
+    return 0;
+}
 
 extern int func_00226F68(int);
 
