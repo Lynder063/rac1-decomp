@@ -67,6 +67,32 @@ def trailing_padding(name: str) -> int:
     return 0
 
 
+def body_size_by_gap(addr: int, sec_data: bytes, sec_base: int,
+                     next_addr: int | None) -> int | None:
+    """
+    Our function's body size measured WITHOUT trusting the ELF symbol:
+    the span to the next symbol in the same section, with trailing
+    all-zero (padding `nop`) words stripped.
+
+    This exists as a cross-check on ``st_size``. It is the WEAKER of the
+    two measures, because a function may legitimately END in a real
+    `nop` (145+ byte-exact functions contain standalone nops), which this
+    would strip. So it is never used in place of ``st_size``; it is only
+    used to shout when the two disagree in the direction that cannot be
+    explained away -- real instructions living PAST the declared end.
+    """
+    if next_addr is None or next_addr <= addr:
+        return None
+    off = addr - sec_base
+    end = next_addr - sec_base
+    if off < 0 or end > len(sec_data):
+        return None
+    span = sec_data[off:end]
+    while len(span) >= 4 and span[-4:] == bytes(4):
+        span = span[:-4]
+    return len(span)
+
+
 def retail_size(name: str) -> int | None:
     for seg in ("core_text", "text"):
         p = Path(f"asm/nonmatchings/{seg}/{name}.s")
@@ -99,6 +125,11 @@ def main() -> None:
         syms = {s.name: s for s in symtab.iter_symbols()}
         sections = {i: oelf.get_section(i).data() for i in range(oelf.num_sections())}
         sec_addr = {i: oelf.get_section(i)["sh_addr"] for i in range(oelf.num_sections())}
+        # address -> address of the next symbol that starts strictly
+        # after it, used by the independent body-size measure.
+        addrs = sorted({s["st_value"] for s in symtab.iter_symbols()
+                        if s["st_info"]["type"] == "STT_FUNC"})
+        next_addr = {a: b for a, b in zip(addrs, addrs[1:])}
 
     exact, size_bad, byte_bad, missing = [], [], [], []
     for name in decompiled:
@@ -113,6 +144,32 @@ def main() -> None:
         off = sym["st_value"] - sec_addr[idx]
         ours = sections[idx][off: off + rsize]
         osize = sym["st_size"]
+
+        # --- size-measure cross-check -------------------------------
+        # `st_size` comes from gcc's .ent/.end pair, which brackets the
+        # function body ONLY: the `.align 3` that pads up to the next
+        # function is emitted AFTER `.end`, so its bytes are not counted.
+        # Measured, not assumed: of the 394 compiled-C functions, a large
+        # fraction report sizes that are 4 mod 8, which is impossible if
+        # 8-byte alignment padding were being folded in; and restoring
+        # the known-4-bytes-short spelling of func_0012D688 makes the
+        # sweep print `retail=164 ours=160`, i.e. the real body length,
+        # not a padded 164 that would have read as a false pass.
+        # So `osize` IS the true body size. The block below exists so
+        # that if that ever stops being true -- a rewriter dropping
+        # .ent/.end, a different assembler -- the sweep says so loudly
+        # instead of silently reverting to the old ambiguity.
+        gsize = body_size_by_gap(sym["st_value"], sections[idx],
+                                 sec_addr[idx], next_addr.get(sym["st_value"]))
+        if not osize:
+            print(f"!! NO SYMBOL SIZE for {name}: .ent/.end missing? "
+                  f"falling back to padding-strip measure {gsize}")
+            osize = gsize or 0
+        elif gsize is not None and gsize > osize:
+            print(f"!! SIZE MEASURES DISAGREE for {name}: st_size={osize} "
+                  f"but {gsize} bytes of non-padding follow the symbol. "
+                  f"The symbol size is UNDER-reporting -- do not trust "
+                  f"this function's result until this is understood.")
 
         if osize and osize != rsize:
             size_bad.append((name, rsize, osize))
