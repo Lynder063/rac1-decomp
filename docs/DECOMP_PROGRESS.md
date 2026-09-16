@@ -705,10 +705,12 @@ core_text has **49** such runs, and every one of them ends on an 8-byte
 boundary, as an object start must. `text` has **none**, so its object
 boundaries have to come from other evidence (see below).
 
-core_text is now one C file per object: `src/core/<START>.c` for game and
-SDK code, plus the libgcc objects. The link order lives in one place,
-`config/core_text.objects`, which Makefile.sn, rac1.ld.sh and the tools
-all read. 0x12DB18, where the compiler sub-build switches from `sd` to
+core_text is now one C file per object: `src/core/<NAME>.c` for game and
+SDK code, plus the libgcc objects. A file is named by its start address
+until its real source is identified, then renamed. `989snd.c` is the first
+renamed one. The link order and each object's start address live in one
+place, `config/core_text.objects`, which Makefile.sn, rac1.ld.sh and the
+tools all read. Renaming changes only the name column. 0x12DB18, where the compiler sub-build switches from `sd` to
 `sq` spills, is a boundary too.
 
 What it took, all verified:

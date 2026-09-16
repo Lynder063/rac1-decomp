@@ -7062,7 +7062,7 @@
    }
   },
   {
-   "name": "core/0012DB18",
+   "name": "core/989snd",
    "measures": {
     "fuzzy_match_percent": 1.625526791089705,
     "total_code": "6644",
@@ -7566,7 +7566,7 @@
    ],
    "metadata": {
     "complete": false,
-    "source_path": "src/core/0012DB18.c",
+    "source_path": "src/core/989snd.c",
     "progress_categories": [
      "game"
     ]

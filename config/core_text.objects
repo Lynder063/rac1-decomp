@@ -3,41 +3,44 @@
 #
 # Object boundaries are retail's own: the linker filled the gaps between
 # objects with 0xCDCDCDCD, and every such run starts a new object here
-# (plus 0x12DB18, where the compiler sub-build changes). Game objects are
-# named by start address until their real source file names are known.
-#   build-sn/core/<ADDR>.o     <- src/core/<ADDR>.c
+# (plus 0x12DB18, where the compiler sub-build changes).
+#
+# Game objects carry their retail start address as a second column. They
+# are named by that address until their real source file is identified,
+# then renamed (e.g. 989snd): only the name changes, the address stays.
+#   build-sn/core/<NAME>.o <START>   <- src/core/<NAME>.c
 #   build-sn/libgcc/l2_*.o     <- src/libgcc/libgcc2.c
 #   build-sn/libgcc/fp_*.o     <- src/libgcc/fp-bit.c
 #   build-sn/libgcc/asm_*.o    <- src/libgcc/nonmatching_*.c
 
-build-sn/core/00112380.o
-build-sn/core/00112468.o
-build-sn/core/001138A8.o
-build-sn/core/001138B8.o
-build-sn/core/00113A70.o
-build-sn/core/00113B70.o
-build-sn/core/00114000.o
-build-sn/core/00114060.o
-build-sn/core/001144D0.o
-build-sn/core/00114518.o
-build-sn/core/001154C0.o
-build-sn/core/00116070.o
-build-sn/core/00116248.o
-build-sn/core/00116CC0.o
-build-sn/core/00116D30.o
-build-sn/core/00116FA0.o
-build-sn/core/001188C8.o
-build-sn/core/00118A40.o
-build-sn/core/00119328.o
-build-sn/core/00119868.o
-build-sn/core/00119D88.o
-build-sn/core/0011CCE0.o
-build-sn/core/0011D0D0.o
-build-sn/core/0011D700.o
-build-sn/core/0011D960.o
-build-sn/core/0011DBE8.o
-build-sn/core/0011DD68.o
-build-sn/core/0011DDD0.o
+build-sn/core/00112380.o 0x00112380
+build-sn/core/00112468.o 0x00112468
+build-sn/core/001138A8.o 0x001138A8
+build-sn/core/001138B8.o 0x001138B8
+build-sn/core/00113A70.o 0x00113A70
+build-sn/core/00113B70.o 0x00113B70
+build-sn/core/00114000.o 0x00114000
+build-sn/core/00114060.o 0x00114060
+build-sn/core/001144D0.o 0x001144D0
+build-sn/core/00114518.o 0x00114518
+build-sn/core/001154C0.o 0x001154C0
+build-sn/core/00116070.o 0x00116070
+build-sn/core/00116248.o 0x00116248
+build-sn/core/00116CC0.o 0x00116CC0
+build-sn/core/00116D30.o 0x00116D30
+build-sn/core/00116FA0.o 0x00116FA0
+build-sn/core/001188C8.o 0x001188C8
+build-sn/core/00118A40.o 0x00118A40
+build-sn/core/00119328.o 0x00119328
+build-sn/core/00119868.o 0x00119868
+build-sn/core/00119D88.o 0x00119D88
+build-sn/core/0011CCE0.o 0x0011CCE0
+build-sn/core/0011D0D0.o 0x0011D0D0
+build-sn/core/0011D700.o 0x0011D700
+build-sn/core/0011D960.o 0x0011D960
+build-sn/core/0011DBE8.o 0x0011DBE8
+build-sn/core/0011DD68.o 0x0011DD68
+build-sn/core/0011DDD0.o 0x0011DDD0
 build-sn/libgcc/asm_0011DF10.o
 build-sn/libgcc/l2_divdi3.o
 build-sn/libgcc/asm_0011E6D4.o
@@ -56,24 +59,24 @@ build-sn/libgcc/fp_si_to_df.o
 build-sn/libgcc/fp_df_to_si.o
 build-sn/libgcc/fp_df_to_usi.o
 build-sn/libgcc/fp_make_df.o
-build-sn/core/001206A0.o
-build-sn/core/001206A8.o
-build-sn/core/001208E8.o
-build-sn/core/00121750.o
-build-sn/core/00121D18.o
-build-sn/core/00122140.o
-build-sn/core/00122200.o
-build-sn/core/001224B0.o
-build-sn/core/00122630.o
-build-sn/core/00122818.o
-build-sn/core/00122AD8.o
-build-sn/core/00123168.o
-build-sn/core/001236F0.o
-build-sn/core/00125218.o
-build-sn/core/001252A0.o
-build-sn/core/00125630.o
-build-sn/core/0012A2F0.o
-build-sn/core/0012AC80.o
-build-sn/core/0012CC70.o
-build-sn/core/0012CC90.o
-build-sn/core/0012DB18.o
+build-sn/core/001206A0.o 0x001206A0
+build-sn/core/001206A8.o 0x001206A8
+build-sn/core/001208E8.o 0x001208E8
+build-sn/core/00121750.o 0x00121750
+build-sn/core/00121D18.o 0x00121D18
+build-sn/core/00122140.o 0x00122140
+build-sn/core/00122200.o 0x00122200
+build-sn/core/001224B0.o 0x001224B0
+build-sn/core/00122630.o 0x00122630
+build-sn/core/00122818.o 0x00122818
+build-sn/core/00122AD8.o 0x00122AD8
+build-sn/core/00123168.o 0x00123168
+build-sn/core/001236F0.o 0x001236F0
+build-sn/core/00125218.o 0x00125218
+build-sn/core/001252A0.o 0x001252A0
+build-sn/core/00125630.o 0x00125630
+build-sn/core/0012A2F0.o 0x0012A2F0
+build-sn/core/0012AC80.o 0x0012AC80
+build-sn/core/0012CC70.o 0x0012CC70
+build-sn/core/0012CC90.o 0x0012CC90
+build-sn/core/989snd.o 0x0012DB18

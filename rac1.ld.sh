@@ -33,7 +33,7 @@ EOF
 # fp-bit, so it has no global symbol to alias; it is the first thing in its
 # module, and the object before it ends exactly on the 8-byte boundary, so
 # `.` right before that object is its address.
-grep -v -e '^#' -e '^$' config/core_text.objects | tr -d $'\r' | while read -r obj; do
+grep -v -e '^#' -e '^$' config/core_text.objects | tr -d $'\r' | while read -r obj _start; do
   if [ "$obj" = "build-sn/libgcc/fp_addsub_df.o" ]; then
     echo "    func_0011FC08 = .;" >> build-sn/rac1.ld
   fi

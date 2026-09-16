@@ -45,10 +45,24 @@ LIBGCC_END = 0x1206A0
 ROOT = Path(__file__).resolve().parent.parent
 
 
+def core_text_entries() -> list[tuple[str, int | None]]:
+    """(object path, retail start or None) from config/core_text.objects, in
+    link order. Game objects carry their start address in a second column,
+    so their file names are free to be real names; libgcc objects are
+    described by MODULES instead."""
+    out = []
+    for line in (ROOT / "config/core_text.objects").read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split()
+        out.append((parts[0], int(parts[1], 16) if len(parts) > 1 else None))
+    return out
+
+
 def core_text_objects() -> list[str]:
     """Object paths from config/core_text.objects, in link order."""
-    lines = (ROOT / "config/core_text.objects").read_text().splitlines()
-    return [l.strip() for l in lines if l.strip() and not l.startswith("#")]
+    return [obj for obj, _ in core_text_entries()]
 
 
 def source_of(obj: str) -> str:
@@ -73,9 +87,9 @@ SEGMENT_SOURCES = {
 }
 
 
-def core_object_of(vram: int) -> tuple[str, int]:
-    """(source file, start address) of the game object containing vram."""
-    starts = sorted(int(o.rsplit("/", 1)[1][:-2], 16)
-                    for o in core_text_objects() if o.startswith("build-sn/core/"))
-    start = max(s for s in starts if s <= vram)
-    return f"src/core/{start:08X}.c", start
+def core_object_of(vram: int) -> tuple[str, str, int]:
+    """(object name, source file, start address) of the game object holding vram."""
+    game = [(start, obj) for obj, start in core_text_entries()
+            if obj.startswith("build-sn/core/")]
+    start, obj = max((s, o) for s, o in game if s <= vram)
+    return obj.rsplit("/", 1)[1][:-2], source_of(obj), start

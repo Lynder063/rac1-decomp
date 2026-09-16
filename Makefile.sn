@@ -54,7 +54,7 @@ CC_LIBGCC := $(SN_114)/bin/ee-gcc.exe
 
 # Every core_text object, in link order, from the one list that rac1.ld.sh
 # and the tools also read.
-CORE_TEXT_OBJS := $(shell grep -v -e "^\#" -e "^$$" config/core_text.objects)
+CORE_TEXT_OBJS := $(shell grep -v -e "^\#" -e "^$$" config/core_text.objects | cut -d" " -f1)
 
 OBJS := $(CORE_TEXT_OBJS) build-sn/text.o
 

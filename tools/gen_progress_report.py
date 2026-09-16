@@ -75,8 +75,8 @@ def unit_of(name: str, seg: str, vram: int) -> tuple[str, str, str]:
             return f"libgcc/{mod}", src, "libgcc"
     if seg == "text":
         return "text", "src/text.c", "game"
-    src, start = core_object_of(vram)
-    return f"core/{start:08X}", src, "game"
+    name, src, _ = core_object_of(vram)
+    return f"core/{name}", src, "game"
 
 
 def build() -> None:

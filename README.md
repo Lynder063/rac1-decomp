@@ -142,7 +142,7 @@ in [`docs/DECOMP_PROGRESS.md`](docs/DECOMP_PROGRESS.md).
 
 | Path | Contents |
 |---|---|
-| `src/core/` | The `core_text` segment, one file per retail object (named by start address), split at the retail linker's own fill between objects |
+| `src/core/` | The `core_text` segment, one file per retail object, split at the retail linker's own fill between objects. Files are named by start address until their real source is identified (e.g. `989snd.c`) |
 | `src/text.c` | The `text` segment (game code); its object boundaries are not known yet |
 | `src/libgcc/` | GCC's `libgcc2.c` and `fp-bit.c` (GPL with the libgcc exception) plus stubs, see its README |
 | `include/` | Shared headers, recovered structs, assembly macros |
