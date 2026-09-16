@@ -1047,7 +1047,62 @@ void func_0011AFC0(void) {
     D_0012FD08 = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AFE8);
+extern int func_0011D960(void);
+extern void func_0011D9A8(void);
+
+/* Claim the first free 0x40-byte slot in the table {next_id, base,
+   count} at arg0, with interrupts held off across the search. A claimed
+   slot records its index and state in +0x10, points +0x14 at itself and
+   takes the next id; id 0 is skipped, so after handing out 1 the
+   counter jumps straight to 2. Returns the slot, or 0 if the table is
+   full.
+
+   Two shapes mattered. `i` must be assigned AFTER the func_0011D960
+   call: initialised in its declaration it is live across the call, so
+   it lands in a third callee-saved register and drags in a save/restore
+   pair, where retail keeps it in $v1.
+
+   And the id fan-in has to be written as an explicit if/ELSE with a
+   separate assignment in each arm. Retail rematerialises `addiu $v1,$0,1`
+   in the taken arm even though $v1 already holds that value, and no
+   form that computes the value once -- including writing the redundant
+   `id = 1;` after the store -- survives: the compiler folds it away and
+   the function comes out 4 bytes short. Giving the two arms their own
+   assignments to `id` keeps both definitions alive. */
+void *func_0011AFE8(void *arg0) {
+    char *a = (char *)arg0;
+    int n;
+    char *p;
+    int i;
+    int id;
+    int v;
+
+    func_0011D960();
+    n = *(int *)(a + 0x8);
+    i = 0;
+    p = *(char **)(a + 0x4);
+    while (i < n) {
+        if ((*(int *)(p + 0x10) & 1) == 0) {
+            *(int *)(p + 0x10) = (i << 16) | 5;
+            v = *(int *)a + 1;
+            *(int *)a = v;
+            if (v == 1) {
+                *(int *)a = v + 1;
+                id = 1;
+            } else {
+                id = v;
+            }
+            *(char **)(p + 0x14) = p;
+            *(int *)(p + 0x18) = id;
+            func_0011D9A8();
+            return p;
+        }
+        i++;
+        p += 0x40;
+    }
+    func_0011D9A8();
+    return 0;
+}
 
 void func_0011B090(void *arg0) {
     char *self = (char *)arg0;
@@ -2756,7 +2811,35 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00129600);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00129690);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00129948);
+extern char D_00153A80[];
+extern void func_00116248_4(void *, char *, int, int) __asm__("func_00116248");
+extern void func_0012C468_a(void *, void *) __asm__("func_0012C468");
+
+/* Does the request at arg1 fit the heap described by arg0? A sized
+   request (+0xE0 non-zero) has to fit both the byte budget at +0xDC and
+   the entry budget at +0xE0; an unsized one has to fit width * height
+   against +0xE4. On a refusal, format the two figures into the message
+   at D_00153A80 and report it. Returns whether it fits. */
+int func_00129948(void *arg0, void *arg1) {
+    char buf[0x100];
+    char *h = (char *)arg0;
+    char *q = (char *)arg1;
+    int e = *(int *)(h + 0xE0);
+    int ok;
+
+    if (e != 0) {
+        ok = *(int *)(h + 0xDC) >= *(int *)(q + 0x4) &&
+             e >= *(int *)(q + 0x8);
+    } else {
+        ok = *(int *)(h + 0xE4) >= *(int *)(q + 0xC) * *(int *)(q + 0x10);
+    }
+    if (ok == 0) {
+        func_00116248_4(buf, D_00153A80, *(int *)(q + 0x4),
+                        *(int *)(q + 0x8));
+        func_0012C468_a(arg0, buf);
+    }
+    return ok;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001299E8);
 
