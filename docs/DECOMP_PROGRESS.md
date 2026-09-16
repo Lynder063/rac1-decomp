@@ -1630,3 +1630,351 @@ link fails with an undefined reference to `fptodp`. It looks like a bad
 float constant and is not: it means the `extern` declaration is further
 down the file than the call. Four functions this round needed a
 prototype (or an `__asm__` alias of one) hoisted above their first use.
+
+## Describe the memory, not the arithmetic: type the base as a struct
+
+The base-pointer lever above says "name the unoffset base". That is one
+case of a larger rule, and `func_00205790` is where the larger rule
+showed itself. Retail reads two parallel `int` arrays at `D_001A01F0 +
+0x278` and `+0x28C` inside a loop over `i`. Three spellings, against
+retail's 160 bytes:
+
+| spelling | bytes | what it emits |
+|---|---|---|
+| `D_001A01F0[0xA3 + i]` | 172 | adds the constant to the index, THEN shifts — once per array |
+| `int *p = D_001A01F0 + i; p[0xA3]` | 164 | right inside the loop, but the constant-folded `i == 1` peel then needs its own `addu $3,$3,4` instead of folding into the `lw` displacement |
+| a `struct` with named `int` members, accessed `.flags[i]` | **160, exact** | `sll idx,2` / `addu base` / `lw CONST(reg)` in BOTH the loop and the peel |
+
+Only the struct gives retail's shape in both places. So: **where retail
+shows `sll idx,2` / `addu base` / `lw CONST(reg)`, that CONST is a member
+offset — declare the member.** This does not contradict the
+name-the-base rule; in `func_00205830` three arrays come off one live
+base in straight-line code and naming the base wins. The statement
+covering both is *describe the memory, not the arithmetic.*
+
+The struct is usually aliased onto the asm symbol
+(`extern PadSlots D_001A01F0_slots __asm__("D_001A01F0");`) because other
+functions in the same file still reach it as a flat array. That is the
+"two C names on one asm symbol" trick used for a *type* rather than for
+addressing.
+
+## A 4-byte size miss over a correct instruction stream is alignment
+
+The 164-byte spelling above is worth its own note: its extra word was
+**not an extra instruction**. The body was 40 words either way. An odd
+word count ahead of the loop label made gcc's `.p2align 3` emit a real
+`nop`, and internal alignment padding sits INSIDE the `.ent`/`.end` pair,
+so it counts toward both the symbol size and the emitted bytes.
+
+When a function is exactly 4 bytes off and the instruction stream reads
+correct, count words to the first internal loop label before looking for
+a missing instruction.
+
+## `osize` in the sweep is the true body size — measured, not assumed
+
+A round flagged that `tools/sweep_matches.py` takes our size from the ELF
+symbol and worried this included the assembler's alignment padding,
+making a real 4-byte body difference indistinguishable from an artifact.
+It does not, and this is settled:
+
+* gcc brackets each function with `.ent`/`.end`, and the `.align 3` that
+  pads to the next function is emitted AFTER `.end`. Many compiled-C
+  functions report `st_size == 4 (mod 8)`, impossible if 8-byte padding
+  were folded in.
+* Restoring the known-4-bytes-short spelling of `func_0012D688` makes the
+  sweep print `retail=164 ours=160`, the real body length. A padded
+  measure would have read 164 and passed silently. (That one function
+  alone also took the scorecard from 341 exact to 333 through downstream
+  `jal` drift — rule 4 reconfirmed in passing.)
+
+The sweep now carries a second, independent measure (span to the next
+function symbol, trailing zero words stripped) used only as a
+one-directional alarm: it is the weaker measure, because a function may
+legitimately end in a real `nop`, so it may under-report but never
+over-report. Across all decompiled functions: 328 agree exactly, 65 have
+the gap measure short by a genuine trailing nop, 0 overrun.
+
+Do not re-open this question.
+
+## A constant hoisted above a call survives as a register class
+
+`func_0012C2F8` stores four scratchpad constants after a call. Retail
+keeps `0x70000000` in `$s1` and therefore pays an `sd`/`ld` pair — 8
+bytes we did not emit, because we materialised each constant into a temp
+just before its store. An earlier round tried binding them to locals
+declared AFTER the call; that changes nothing, since gcc folds them
+straight back into the stores.
+
+Declared BEFORE the call, the pseudo's live range crosses the call, so
+the allocator gives it a **callee-saved** register and the function pays
+retail's 8 bytes. gcc still rematerialises the `lui` after the call,
+exactly as retail does; the only surviving trace of the earlier
+definition is the register class.
+
+General form: a constant hoisted above a call does not survive as a
+*value* — constant propagation puts it back — but it does survive as a
+*register-class decision*. Where retail spends a callee-saved register on
+something that appears to need no register at all, the source defined it
+before the call.
+
+## An empty delay slot can be the symptom of a fold, not the cause
+
+`func_00228400` was reverted at 4 bytes short with the residual read as
+the scheduler refusing to put a pointer advance into a `jal` delay slot.
+The cause was one level up: with a `return` inside each arm, gcc folds
+the advance into the return value (`addu $2,$16,32`, one instruction),
+leaving nothing for the slot to take. Retail updates the pointer and
+copies it to `$v0` as two instructions, in three places — which is what a
+**single `return p` at the join** gives, the copy belonging to the join
+block and the delay-slot filler duplicating it into both branches.
+
+That is the exit-cross-jumping lever in the direction it usually is not
+used: normally the reach is to SPLIT exits gcc merged; here retail really
+does share one. When a 4-byte shortfall looks like a missing delay-slot
+fill, check first whether an expression got folded that retail kept in
+two steps.
+
+## SN's assembler fills delay slots only from AFTER the branch
+
+This explains several things at once and had been mis-attributed twice:
+
+* it is why a bare `jal` at the end of a function gets a `nop` — there is
+  nothing after it to take;
+* it is why counting instructions in the compiler's `.s` output is
+  unreliable. The assembler *inserts* delay-slot nops that are not in the
+  `.s`. Count in the linked ELF (`tools/diff_words.py`), never in `.s`;
+* it is why `tools/fix_tail_calls.py` produced `lui / lw / j / nop` where
+  retail has `lui / j / lw(delay)`. Retail's compiler filled the jump's
+  delay slot from BEFORE the jump, which this assembler will not do.
+
+The rewriter now sinks the last body instruction into the tail jump's
+delay slot. This is safe by construction, not by analysis: a delay-slot
+instruction runs before control reaches the target so program order is
+unchanged; a direct `j` reads no registers; and the existing scope guard
+already rejects any function with an internal label, so the instruction
+cannot be another path's branch target. Restricted to mnemonics that
+assemble to exactly one word. The empty-body case is untouched.
+
+## Rewrite a stubbed near-miss in its exact sibling's shape first
+
+`func_002270B0` sat reverted for rounds at 72 against retail's 76, with
+the residual correctly diagnosed (retail emits `addiu %lo` and `addiu +4`
+separately where we folded them) but concluded unreachable. Its twin
+`func_00227068`, four lines above it in the same file, had been exact the
+whole time using a separate `int *base` local — which is exactly what
+blocks the fold. Written in its twin's shape it is byte-exact.
+
+Before trying anything clever on a stubbed near-miss, check whether a
+sibling on the same table or the same idiom is already exact, and copy
+its shape verbatim. Three of this round's matches came out of the
+revert backlog this way.
+
+## Declaration order: inert for selection, not for emission order
+
+The recorded dead end says declaration order of two locals is
+byte-identical. Sharpened on `func_00125160`: it is inert for
+INSTRUCTION SELECTION — all 24 orderings of four initialised locals
+compile to the same mnemonic sequence, checked in one translation unit
+with `tools/permute.py` — but it is **not** inert for emission order.
+Moving one local ahead of another reorders the zeroing `daddu`s in the
+prologue and took that function from 10/44 to 8/44. It does not reach the
+register assignment, which stays the allocator destination-choice dead
+end.
+
+## gcc 2.95 only builds a case tree above two cases
+
+`func_0011B0E0` dispatches on two message codes. Retail uses gcc's
+case-node DECISION TREE rooted at the HIGHER value, carrying the
+redundant `index > root` test that a root with only a left child always
+emits. We get the same routine's two-node CHAIN rooted at the lower
+value, three words shorter. `balance_case_nodes` only rebalances a list
+of more than two nodes; at exactly two it leaves the chain.
+
+So retail's switch had more cases than are reachable in the function --
+at least three, with the observed pivot as the median. A `switch` and an
+if/else-if chain give byte-identical output, and writing the range test
+by hand is folded away because its arm is empty. **Not reachable from a
+two-case source**; do not spend another round on it.
+
+## A one-line function body used to vanish from the sweep
+
+`FUNC_DEF` in `tools/sweep_matches.py` had a greedy `.*`, so a definition
+written as `void f(void) { g(x); }` on one line captured the CALLEE's
+name. If that callee was still a stub, the function silently dropped out
+of the audit entirely — reading as "not decompiled" rather than as a
+failure. Made lazy. Worth remembering as a class: an auditing tool that
+can fail by *omission* needs its own count watched, not just its verdict.
+
+## Describe the memory, not the arithmetic: type the base as a struct
+
+The base-pointer lever above says "name the unoffset base". That is one
+case of a larger rule, and `func_00205790` is where the larger rule
+showed itself. Retail reads two parallel `int` arrays at `D_001A01F0 +
+0x278` and `+0x28C` inside a loop over `i`. Three spellings, against
+retail's 160 bytes:
+
+| spelling | bytes | what it emits |
+|---|---|---|
+| `D_001A01F0[0xA3 + i]` | 172 | adds the constant to the index, THEN shifts — once per array |
+| `int *p = D_001A01F0 + i; p[0xA3]` | 164 | right inside the loop, but the constant-folded `i == 1` peel then needs its own `addu $3,$3,4` instead of folding into the `lw` displacement |
+| a `struct` with named `int` members, accessed `.flags[i]` | **160, exact** | `sll idx,2` / `addu base` / `lw CONST(reg)` in BOTH the loop and the peel |
+
+Only the struct gives retail's shape in both places. So: **where retail
+shows `sll idx,2` / `addu base` / `lw CONST(reg)`, that CONST is a member
+offset — declare the member.** This does not contradict the
+name-the-base rule; in `func_00205830` three arrays come off one live
+base in straight-line code and naming the base wins. The statement
+covering both is *describe the memory, not the arithmetic.*
+
+The struct is usually aliased onto the asm symbol
+(`extern PadSlots D_001A01F0_slots __asm__("D_001A01F0");`) because other
+functions in the same file still reach it as a flat array. That is the
+"two C names on one asm symbol" trick used for a *type* rather than for
+addressing.
+
+## A 4-byte size miss over a correct instruction stream is alignment
+
+The 164-byte spelling above is worth its own note: its extra word was
+**not an extra instruction**. The body was 40 words either way. An odd
+word count ahead of the loop label made gcc's `.p2align 3` emit a real
+`nop`, and internal alignment padding sits INSIDE the `.ent`/`.end` pair,
+so it counts toward both the symbol size and the emitted bytes.
+
+When a function is exactly 4 bytes off and the instruction stream reads
+correct, count words to the first internal loop label before looking for
+a missing instruction.
+
+## `osize` in the sweep is the true body size — measured, not assumed
+
+A round flagged that `tools/sweep_matches.py` takes our size from the ELF
+symbol and worried this included the assembler's alignment padding,
+making a real 4-byte body difference indistinguishable from an artifact.
+It does not, and this is settled:
+
+* gcc brackets each function with `.ent`/`.end`, and the `.align 3` that
+  pads to the next function is emitted AFTER `.end`. Many compiled-C
+  functions report `st_size == 4 (mod 8)`, impossible if 8-byte padding
+  were folded in.
+* Restoring the known-4-bytes-short spelling of `func_0012D688` makes the
+  sweep print `retail=164 ours=160`, the real body length. A padded
+  measure would have read 164 and passed silently. (That one function
+  alone also took the scorecard from 341 exact to 333 through downstream
+  `jal` drift — rule 4 reconfirmed in passing.)
+
+The sweep now carries a second, independent measure (span to the next
+function symbol, trailing zero words stripped) used only as a
+one-directional alarm: it is the weaker measure, because a function may
+legitimately end in a real `nop`, so it may under-report but never
+over-report. Across all decompiled functions: 328 agree exactly, 65 have
+the gap measure short by a genuine trailing nop, 0 overrun.
+
+Do not re-open this question.
+
+## A constant hoisted above a call survives as a register class
+
+`func_0012C2F8` stores four scratchpad constants after a call. Retail
+keeps `0x70000000` in `$s1` and therefore pays an `sd`/`ld` pair — 8
+bytes we did not emit, because we materialised each constant into a temp
+just before its store. An earlier round tried binding them to locals
+declared AFTER the call; that changes nothing, since gcc folds them
+straight back into the stores.
+
+Declared BEFORE the call, the pseudo's live range crosses the call, so
+the allocator gives it a **callee-saved** register and the function pays
+retail's 8 bytes. gcc still rematerialises the `lui` after the call,
+exactly as retail does; the only surviving trace of the earlier
+definition is the register class.
+
+General form: a constant hoisted above a call does not survive as a
+*value* — constant propagation puts it back — but it does survive as a
+*register-class decision*. Where retail spends a callee-saved register on
+something that appears to need no register at all, the source defined it
+before the call.
+
+## An empty delay slot can be the symptom of a fold, not the cause
+
+`func_00228400` was reverted at 4 bytes short with the residual read as
+the scheduler refusing to put a pointer advance into a `jal` delay slot.
+The cause was one level up: with a `return` inside each arm, gcc folds
+the advance into the return value (`addu $2,$16,32`, one instruction),
+leaving nothing for the slot to take. Retail updates the pointer and
+copies it to `$v0` as two instructions, in three places — which is what a
+**single `return p` at the join** gives, the copy belonging to the join
+block and the delay-slot filler duplicating it into both branches.
+
+That is the exit-cross-jumping lever in the direction it usually is not
+used: normally the reach is to SPLIT exits gcc merged; here retail really
+does share one. When a 4-byte shortfall looks like a missing delay-slot
+fill, check first whether an expression got folded that retail kept in
+two steps.
+
+## SN's assembler fills delay slots only from AFTER the branch
+
+This explains several things at once and had been mis-attributed twice:
+
+* it is why a bare `jal` at the end of a function gets a `nop` — there is
+  nothing after it to take;
+* it is why counting instructions in the compiler's `.s` output is
+  unreliable. The assembler *inserts* delay-slot nops that are not in the
+  `.s`. Count in the linked ELF (`tools/diff_words.py`), never in `.s`;
+* it is why `tools/fix_tail_calls.py` produced `lui / lw / j / nop` where
+  retail has `lui / j / lw(delay)`. Retail's compiler filled the jump's
+  delay slot from BEFORE the jump, which this assembler will not do.
+
+The rewriter now sinks the last body instruction into the tail jump's
+delay slot. This is safe by construction, not by analysis: a delay-slot
+instruction runs before control reaches the target so program order is
+unchanged; a direct `j` reads no registers; and the existing scope guard
+already rejects any function with an internal label, so the instruction
+cannot be another path's branch target. Restricted to mnemonics that
+assemble to exactly one word. The empty-body case is untouched.
+
+## Rewrite a stubbed near-miss in its exact sibling's shape first
+
+`func_002270B0` sat reverted for rounds at 72 against retail's 76, with
+the residual correctly diagnosed (retail emits `addiu %lo` and `addiu +4`
+separately where we folded them) but concluded unreachable. Its twin
+`func_00227068`, four lines above it in the same file, had been exact the
+whole time using a separate `int *base` local — which is exactly what
+blocks the fold. Written in its twin's shape it is byte-exact.
+
+Before trying anything clever on a stubbed near-miss, check whether a
+sibling on the same table or the same idiom is already exact, and copy
+its shape verbatim. Three of this round's matches came out of the
+revert backlog this way.
+
+## Declaration order: inert for selection, not for emission order
+
+The recorded dead end says declaration order of two locals is
+byte-identical. Sharpened on `func_00125160`: it is inert for
+INSTRUCTION SELECTION — all 24 orderings of four initialised locals
+compile to the same mnemonic sequence, checked in one translation unit
+with `tools/permute.py` — but it is **not** inert for emission order.
+Moving one local ahead of another reorders the zeroing `daddu`s in the
+prologue and took that function from 10/44 to 8/44. It does not reach the
+register assignment, which stays the allocator destination-choice dead
+end.
+
+## gcc 2.95 only builds a case tree above two cases
+
+`func_0011B0E0` dispatches on two message codes. Retail uses gcc's
+case-node DECISION TREE rooted at the HIGHER value, carrying the
+redundant `index > root` test that a root with only a left child always
+emits. We get the same routine's two-node CHAIN rooted at the lower
+value, three words shorter. `balance_case_nodes` only rebalances a list
+of more than two nodes; at exactly two it leaves the chain.
+
+So retail's switch had more cases than are reachable in the function --
+at least three, with the observed pivot as the median. A `switch` and an
+if/else-if chain give byte-identical output, and writing the range test
+by hand is folded away because its arm is empty. **Not reachable from a
+two-case source**; do not spend another round on it.
+
+## A one-line function body used to vanish from the sweep
+
+`FUNC_DEF` in `tools/sweep_matches.py` had a greedy `.*`, so a definition
+written as `void f(void) { g(x); }` on one line captured the CALLEE's
+name. If that callee was still a stub, the function silently dropped out
+of the audit entirely — reading as "not decompiled" rather than as a
+failure. Made lazy. Worth remembering as a class: an auditing tool that
+can fail by *omission* needs its own count watched, not just its verdict.
