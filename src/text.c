@@ -3963,7 +3963,52 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00226380);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00226410);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00226720);
+/* Hoisted from the func_00227A70 block below so this earlier caller can
+   see it -- a second NOT_SDA extern for the same symbol is a hard
+   error. */
+extern unsigned char D_001B3E40[] NOT_SDA;
+extern void *func_0020D348(void);
+extern void func_0020ED48(void *);
+extern void func_0020E340(void *, int, int, int, int);
+
+/* Spawn the pickup/marker object for slot arg0, unless that slot is
+   disabled (0xFF in D_001B3E40). Fresh objects get 0xFF/0xFF/1 in the
+   0x30 block, are registered, tinted mid-grey, and if their descriptor
+   says so, flagged 0x18 at +0x73.
+
+   Two things mattered for the constant 0xFF, which retail keeps in a
+   single callee-saved register across the call: the +0x30 store must be
+   through `unsigned char` (as `char` it is the DIFFERENT constant -1
+   and gets its own `li`), and the byte store must come BEFORE the
+   halfword store. Written the other way round the compiler makes the
+   QImode 255 a fresh pseudo instead of reusing the HImode one, and the
+   function comes out 4 bytes long.
+
+   Near-miss, 2/40 words, size-exact and therefore inert: retail does
+   `addu $v0,$a0,$v0`, keeping the incoming argument and landing the
+   element address in $v0, where this build overwrites $a0 because arg0
+   is dead after the test. Naming the base in a local first does not
+   move it -- the recorded allocator destination question. */
+void *func_00226720(int arg0) {
+    char *o;
+
+    if (D_001B3E40[arg0] == 0xFF) {
+        return 0;
+    }
+    o = (char *)func_0020D348();
+    if (o != 0) {
+        *(unsigned char *)(o + 0x30) = 0xFF;
+        *(short *)(o + 0x32) = 0xFF;
+        *(char *)(o + 0x20) = 0;
+        *(char *)(o + 0x31) = 1;
+        func_0020ED48(o);
+        func_0020E340(o, 0x202020, 0xE, 0xE, 0);
+        if (*(unsigned char *)(*(int *)(o + 0x24) + 6) != 0) {
+            *(char *)(o + 0x73) = 0x18;
+        }
+    }
+    return o;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002267C0);
 
@@ -4097,7 +4142,6 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00227A30);
 
 extern char D_001D5F70[] NOT_SDA;
 extern char D_001D5D58[] NOT_SDA;
-extern unsigned char D_001B3E40[] NOT_SDA;
 extern char *D_001B3580[] NOT_SDA;
 
 /* Drain the pending list at D_001D5F70+0xA8/+0xAC, clearing +0x48 on each
@@ -4801,7 +4845,33 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023B210);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023B510);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023B5D0);
+typedef struct {
+    char b[0x10];
+} Cfg16;
+
+extern Cfg16 D_00160FD0 NOT_SDA;
+extern float func_001F9CB8(void *);
+extern void func_001F9BF0_b(void *, void *, void *) __asm__("func_001F9BF0");
+
+/* Run the four-vertex transform over the block hanging off arg0+0x78
+   with a fresh copy of the D_00160FD0 parameters (a plain struct
+   assignment: at alignment 1 this compiler expands the 16 bytes as
+   unaligned ldl/ldr + sdl/sdr pairs, which is retail's shape -- same
+   idiom as func_001FFE88), then record the two resulting lengths at
+   +0x40 and +0x44. */
+void func_0023B5D0(char *arg0) {
+    float a[4];
+    float b[4];
+    Cfg16 cfg;
+    char *p = *(char **)(arg0 + 0x78);
+
+    cfg = D_00160FD0;
+    func_0020DB98(arg0, 4, &cfg, p);
+    func_001F9BF0_b(a, p + 0x10, p);
+    func_001F9BF0_b(b, p + 0x20, p);
+    *(float *)(p + 0x40) = func_001F9CB8(a);
+    *(float *)(p + 0x44) = func_001F9CB8(b);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023B670);
 
