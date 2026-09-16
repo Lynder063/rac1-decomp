@@ -40,3 +40,4 @@ python_install_*.log
 # Third-party decomp tools (m2c, asm-differ) -- cloned locally, not vendored.
 tools/ext/
 ctx.c
+ctx.c.m2c
