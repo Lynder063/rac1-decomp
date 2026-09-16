@@ -4428,8 +4428,6 @@ void func_00226D48(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00226D50);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00226EA8);
-
 typedef struct {
     int key;
     int flags;
@@ -4438,6 +4436,34 @@ typedef struct {
 /* Aliased rather than renamed: func_00227018 further down still walks
    the same table as a flat int array. */
 extern PadBind D_001D6448_t[] __asm__("D_001D6448");
+
+extern int func_00227018(int handle);
+
+/* Find the first binding that is enabled (bit 0 clear, or set when
+   `invert` is given), still has a key and is not already claimed, claim
+   it, and scrub its buffer with 0xDEADBEEF. Returns the key, or 0 if
+   there is nothing to claim. */
+int func_00226EA8(int invert) {
+    int i;
+    int f;
+    int n;
+
+    for (i = 0; i < 5; i++) {
+        if (invert != 0) {
+            f = D_001D6448_t[i].flags ^ 1;
+        } else {
+            f = D_001D6448_t[i].flags;
+        }
+        if ((f & 1) == 0 && D_001D6448_t[i].key != 0 &&
+            (D_001D6448_t[i].flags & 2) == 0) {
+            D_001D6448_t[i].flags |= 2;
+            n = func_00227018(D_001D6448_t[i].key);
+            func_001F99B0(D_001D6448_t[i].key, 0xDEADBEEF, n);
+            return D_001D6448_t[i].key;
+        }
+    }
+    return 0;
+}
 
 /*
  * Byte mismatch at correct size (0xB0), 2 of 44 words, and they are one
