@@ -2530,9 +2530,65 @@ void func_00128560(char *arg0, unsigned int arg1) {
     *(int *)(arg0 + 0x818) = D_00132F70[arg1 >> 28];
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00128590);
+extern void func_0012BCC8(int);
 
+/* Spins until the VIF1 DMA channel (D_CHCR 0x10002010) reports idle,
+   nudging the IOP via func_0012BCC8 every 5001 spins so a stalled
+   stream cannot deadlock. Same wait loop documented on func_00128860. */
+void func_00128590(void *arg0) {
+    int counter = 0;
+
+    while ((*(volatile int *)0x10002010 & 0x80004000) == 0x80000000) {
+        if (counter++ >= 0x1389) {
+            func_0012BCC8(*(int *)((char *)arg0 + 0x858));
+            counter = 0;
+        }
+    }
+}
+
+/*
+ * REVERTED (SIZE mismatch -- always fatal downstream). Decode is
+ * certain: the same spin-wait as func_00128590, on channel
+ * 0x10002000, exiting either when the channel word goes non-negative
+ * or when D_CHCR (0x10002010) bit 0x4000 comes up. It returns the raw
+ * 64-bit channel word; func_00128860 narrows it with dsll32/dsra32,
+ * so the return type is `long` (see the _wide alias note there).
+ *
+ *   long func_00128638(void *arg0) {
+ *       volatile long *chcr = (volatile long *)0x10002000;
+ *       long v;
+ *       int counter = 0;
+ *       while ((v = *chcr) < 0 && (*(volatile int *)0x10002010 & 0x4000) == 0) {
+ *           if (counter++ >= 0x1389) {
+ *               func_0012BCC8(*(int *)((char *)arg0 + 0x858));
+ *               counter = 0;
+ *           }
+ *       }
+ *       return v;
+ *   }
+ *
+ * Retail is 176 bytes. Spellings tried, all short:
+ *   - as above (chcr a local, 0x10002010 spelled inline):      160
+ *     Block-for-block IDENTICAL to retail; the whole 16-byte gap is
+ *     that retail hoists BOTH hardware addresses into callee-saved
+ *     registers ($17 = 0x10002000, $16 = 0x10002010, $18 = arg0,
+ *     0x40 frame) while this compiler hoists only 0x10002010 and
+ *     leaves the channel read as an absolute `ld $4,268443648`,
+ *     saving one register pair and its lui/ori setup.
+ *   - both addresses as locals declared at the top:            120
+ *     Hoisting the second one makes GCC rotate the loop the other
+ *     way (`b` into the bottom test), which is structurally wrong.
+ *   - guard + do/while, both addresses as locals inside the if: 152
+ *
+ * This refutes the base-pointer/timing lever for CONSTANT addresses:
+ * declaring the pointer at the top of the function does NOT pin a
+ * literal MMIO address into a callee-saved register the way it pins
+ * a global's base. It is the same rematerialise-vs-keep allocator
+ * choice already recorded on func_00128860, which is the sibling
+ * that shares this exact wait loop.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00128638);
+
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001286E8);
 
