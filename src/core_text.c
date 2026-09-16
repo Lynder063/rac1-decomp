@@ -1878,7 +1878,60 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00120480);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120538);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001205D0);
+/*
+ * libgcc's fp-bit.c (built as dp-bit, i.e. soft-float double), which is
+ * what this whole 0x11F...-0x120... region is: func_0011FB68 = unpack_d,
+ * func_0011FA38 = pack_d, func_0011FC08 = _fpadd_parts, and so on.
+ * Written after gcc 2.95's own source rather than re-derived.
+ *
+ * This one is float_to_usi (__fixunsdfsi). 60 = FRACBITS + NGARDS.
+ */
+typedef struct {
+    int class;               /* CLASS_SNAN, QNAN, ZERO, NUMBER, INFINITY */
+    unsigned int sign;
+    int normal_exp;
+    union { unsigned long ll; } fraction;
+} fp_number_type;
+
+#define CLASS_ZERO     2
+#define CLASS_INFINITY 4
+#define MAX_USI_INT    0xFFFFFFFF
+
+extern void unpack_d(long *src, fp_number_type *dst) __asm__("func_0011FB68");
+
+static inline int isnan(fp_number_type *x) {
+    return x->class == 0 || x->class == 1;   /* CLASS_SNAN, CLASS_QNAN */
+}
+static inline int isinf(fp_number_type *x) {
+    return x->class == CLASS_INFINITY;
+}
+static inline int iszero(fp_number_type *x) {
+    return x->class == CLASS_ZERO;
+}
+
+unsigned int func_001205D0(long arg_a) {
+    fp_number_type a;
+    long au;
+
+    au = arg_a;
+    unpack_d(&au, &a);
+    if (iszero(&a))
+        return 0;
+    if (isnan(&a))
+        return 0;
+    if (a.sign)
+        return 0;
+    if (isinf(&a))
+        return MAX_USI_INT;
+    if (a.normal_exp < 0)
+        return 0;
+    if (a.normal_exp > 31)
+        return MAX_USI_INT;
+    else if (a.normal_exp <= 60)
+        return a.fraction.ll >> (60 - a.normal_exp);
+    else
+        return a.fraction.ll << (a.normal_exp - 60);
+}
 
 extern void func_0011FA38(void *);
 
