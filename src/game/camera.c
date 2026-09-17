@@ -20,6 +20,7 @@ extern char D_00189310[];
 extern char D_001899D0[];
 extern void *D_001871C0 NOT_SDA;
 
+/* BackupCurrentCam */
 void func_001EC038(void) {
     func_001F9A98(D_00189310, D_001871C0, 0xA0);
     func_001F9A98(D_001899D0, D_001899D0 - 0x500, 0x280);
@@ -48,7 +49,7 @@ void func_001EC038(void) {
  * Marking the global `volatile` makes it worse (0x50 frame, four
  * callee-saved regs), confirming it is allocation, not access semantics.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_001EC098);
+INCLUDE_ASM("asm/nonmatchings/text", func_001EC098); /* ExecuteCamPostUpdFuncs */
 
 /* Not a standalone function: no `jr $31` -- dead-value computation
    (`$v0 = 0` twice with intervening nops) then a store, falling through
@@ -56,7 +57,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001EC098);
    func_00113AD8 in core_text. */
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC108);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EC120);
+INCLUDE_ASM("asm/nonmatchings/text", func_001EC120); /* Cam_InterpValues(float, float, float *, float, float, float) */
 
 /* Not a standalone function: single `addiu $sp,$sp,0x50`, no `jr $31` --
    fallthrough fragment, same category as func_00113AD8 in core_text. */
@@ -87,7 +88,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001EC208);
  * and still shares the epilogue, so this is the delay-slot filler, not
  * the source shape.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_001EC210);
+INCLUDE_ASM("asm/nonmatchings/text", func_001EC210); /* Camera_handleCollWithHero(int, UpdateCam *) */
 
 /* 0x14-byte dispatch records, indexed by the type id at +0x8C.
    Declared as a real struct array, not `char[]` + byte offset: the two
@@ -121,6 +122,7 @@ extern DispatchRec D_001E8F80[];
  * and `rec = rec + idx`, which is the known scratch-register/operand
  * choice question. Kept per the same-size-tiny-diff precedent.
  */
+/* Camera_runSetupToNewCam(UpdateCam *) */
 void func_001EC270(void *arg0) {
     void (*fn)(void *) = D_001E8F80[*(short *)((char *)arg0 + 0x8C)].fn_08;
     if (fn != 0) {
@@ -130,7 +132,7 @@ void func_001EC270(void *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC2B8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EC5B8);
+INCLUDE_ASM("asm/nonmatchings/text", func_001EC5B8); /* Camera_ActivationCheckPriority */
 
 /* Same shape/blocker as func_001EC270: indirect call via a function
    pointer loaded from a per-type dispatch table, wrapped in an
@@ -138,6 +140,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001EC5B8);
    func_001E9E70's comment). Not attempted. */
 /* Same vtable dispatch as func_001EC270, on the +0x10 slot instead of
    +8; identical 1/68 operand-order residual, same cause. */
+/* Camera_Exit(UpdateCam *) */
 void func_001EC780(void *arg0) {
     void (*fn)(void *) = D_001E8F80[*(short *)((char *)arg0 + 0x8C)].fn_10;
     if (fn != 0) {

@@ -215,7 +215,7 @@ extern void func_00217588(void);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00219C08);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00219C70);
+INCLUDE_ASM("asm/nonmatchings/text", func_00219C70); /* PauseAllSounds */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00219E48);
 
@@ -369,7 +369,7 @@ int func_0021CDA0(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021CE60);
+INCLUDE_ASM("asm/nonmatchings/text", func_0021CE60); /* DrawMapScreen */
 
 extern int D_001A0414;
 extern int D_001CFBF4;
@@ -448,7 +448,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0021DB00);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021DB30);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021DE08);
+INCLUDE_ASM("asm/nonmatchings/text", func_0021DE08); /* DrawSoundMenu */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021E170);
 
@@ -546,7 +546,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0021F6A0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021F7D0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021F898);
+INCLUDE_ASM("asm/nonmatchings/text", func_0021F898); /* DrawQuitGameMenu */
 
 extern char D_00187040[];
 extern void func_00220128(void *);
@@ -580,9 +580,9 @@ int func_0021FAF8(char *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021FB28);
+INCLUDE_ASM("asm/nonmatchings/text", func_0021FB28); /* DrawItemsMenu */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021FF80);
+INCLUDE_ASM("asm/nonmatchings/text", func_0021FF80); /* DrawGBsShipMenu__maybe */
 
 extern float func_001FA748(float, float);
 
@@ -603,7 +603,7 @@ int func_00220338(void) {
     return 8;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00220370);
+INCLUDE_ASM("asm/nonmatchings/text", func_00220370); /* DrawMissionsMenu */
 
 extern void func_001F4630(int);
 extern void func_001F4748(void);
@@ -725,7 +725,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00221B58);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00221E60);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00222070);
+INCLUDE_ASM("asm/nonmatchings/text", func_00222070); /* DrawCheatsMenu */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002222F8);
 
@@ -818,9 +818,9 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00223490);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00223810);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002239F0);
+INCLUDE_ASM("asm/nonmatchings/text", func_002239F0); /* ObtainAllGoldWeaponsMenu */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00223B40);
+INCLUDE_ASM("asm/nonmatchings/text", func_00223B40); /* DrawEndScreenMenuMaybe */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00223E40);
 

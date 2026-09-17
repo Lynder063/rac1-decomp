@@ -347,12 +347,13 @@ extern void func_00118C80(int);
 extern void func_00118CB0(int);
 extern void func_00118C90(int);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023DE98);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023DE98); /* videoDecCreate(VideoDec *, unsigned char *, int, unsigned long long *, unsigned long long *, int, TimeStamp *, int) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023DF98);
 
 extern void func_0012B008(void);
 
+/* videoDecSetStream(VideoDec *, int, int, int (*)(sceMpeg *, sceMpegCbData *, void *), void *) */
 int func_0023DFA0(void) {
     func_0012B008();
     return 1;
@@ -360,16 +361,19 @@ int func_0023DFA0(void) {
 
 extern int func_0023D1F0(void *);
 
+/* videoDecBeginPut(VideoDec *, unsigned char **, int *, unsigned char **, int *) */
 int func_0023DFC0(void *arg0) {
     return func_0023D1F0((char *)arg0 + 0x48);
 }
 
 extern int func_0023D2E8(void *);
 
+/* videoDecEndPut(VideoDec *) */
 int func_0023DFE0(void *arg0) {
     return func_0023D2E8((char *)arg0 + 0x48);
 }
 
+/* videoDecReset(VideoDec *) */
 void func_0023E000(int *arg0) {
     *(arg0 + (0xA8 / 4)) = 0;
 }
@@ -377,6 +381,7 @@ void func_0023E000(int *arg0) {
 extern int func_0023D988(void *);
 extern void func_0012BB20(void *);
 
+/* videoDecDelete(VideoDec *) */
 int func_0023E008(void *arg0) {
     func_0023D988((char *)arg0 + 0x48);
     func_0012BB20(arg0);
@@ -395,33 +400,37 @@ int func_0023E008(void *arg0) {
  * identical constant" rather than picking a different register for two
  * genuinely different values. See docs/DECOMP_PROGRESS.md.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E040);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023E040); /* videoDecAbort(VideoDec *) */
 
+/* videoDecGetState */
 int func_0023E050(int *arg0) {
     return *(arg0 + (0xA8 / 4));
 }
 
+/* videoDecSetState(VideoDec *, unsigned int) */
 int func_0023E058(int *arg0, int arg1) {
     int old = *(arg0 + (0xA8 / 4));
     *(arg0 + (0xA8 / 4)) = arg1;
     return old;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E068);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023E068); /* videoDecPutTs(VideoDec *, long, long, unsigned char *, int) */
 
 extern int func_0023D9E0(void *);
 
+/* videoDecInputCount(VideoDec *) */
 int func_0023E0B0(void *arg0) {
     return func_0023D9E0((char *)arg0 + 0x48);
 }
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E0D0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E0D8);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023E0D8); /* videoDecFlush(VideoDec *) */
 
 extern int func_0023E0B0(void *);
 extern int func_0012BB98(void *);
 
+/* videoDecIsFlushed(VideoDec *) */
 int func_0023E1B0(void *arg0) {
     int r = 0;
     if (func_0023E0B0(arg0) == 0) {
@@ -430,18 +439,19 @@ int func_0023E1B0(void *arg0) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E1F8);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023E1F8); /* videoDecMain(void *) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E298);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023E298); /* decBs0(VideoDec *) */
 
 extern char D_00161328[];
 
+/* mpegError(sceMpeg *, sceMpegCbDataError *, void *) */
 int func_0023E450(int arg0, void *arg1) {
     func_001E9730(D_00161328, *(int *)((char *)arg1 + 4));
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E478);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023E478); /* mpegNodata(sceMpeg *, sceMpegCbData *, void *) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E4B0);
 

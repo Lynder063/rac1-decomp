@@ -56,19 +56,20 @@ extern char D_00199A68[];
 extern short D_0015F780;
 extern int func_001F6FD8(int a, int b, int c, int d, int e);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FF668);
+INCLUDE_ASM("asm/nonmatchings/text", func_001FF668); /* Hud_GetIconIndex(int) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FF6B8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FF7F0);
+INCLUDE_ASM("asm/nonmatchings/text", func_001FF7F0); /* LinkHudBank(int, char *) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FF950);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FF958);
+INCLUDE_ASM("asm/nonmatchings/text", func_001FF958); /* Hud_SendResidentBank(int, char *, bool) */
 
 extern int D_001941CC NOT_SDA;
 extern int D_0019A4E8 NOT_SDA;
 
+/* Hud_HeapReset(void) */
 void func_001FFA90(void) {
     int *p = &D_0019A4E8;
     int v = D_001941CC;
@@ -78,6 +79,7 @@ void func_001FFA90(void) {
 
 /* Bump allocator out of the D_0019A4E8 arena: p[4] is the cursor,
    p[5] the limit. Rounds the request up to 16 bytes. */
+/* Hud_HeapAlloc(unsigned int, char *, char *, int) */
 int func_001FFAB8(int size) {
     int *p = &D_0019A4E8;
     int cur;
@@ -217,9 +219,9 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FFFB8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00200190);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00200198);
+INCLUDE_ASM("asm/nonmatchings/text", func_00200198); /* GetIconFrame(int, int) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00200248);
+INCLUDE_ASM("asm/nonmatchings/text", func_00200248); /* GetFrameTex(int) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00200468);
 
@@ -237,7 +239,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00200E38);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00201190);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00201348);
+INCLUDE_ASM("asm/nonmatchings/text", func_00201348); /* Hud_sendTexture(char *, int, int, int, int, int) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002014B8);
 

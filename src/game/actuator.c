@@ -10,7 +10,7 @@
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001E9080);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001E9088);
+INCLUDE_ASM("asm/nonmatchings/text", func_001E9088); /* actuator_CalcPower */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001E94A0);
 

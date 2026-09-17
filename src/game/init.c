@@ -67,4 +67,4 @@ extern void func_001166FC(Cfg13 *, void *);
 extern short D_0015F9D0;
 extern void func_00201960(int, int, int, int, int);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00201D58);
+INCLUDE_ASM("asm/nonmatchings/text", func_00201D58); /* LoadIRXModule */

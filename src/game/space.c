@@ -291,7 +291,7 @@ extern void func_0012EE70(int);
 extern void func_0012EF48(int);
 extern void func_0012E2E8(void);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022F128);
+INCLUDE_ASM("asm/nonmatchings/text", func_0022F128); /* FUN_0022de10_rename */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022F258);
 
@@ -334,6 +334,6 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00232B90);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00232EF0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00233308);
+INCLUDE_ASM("asm/nonmatchings/text", func_00233308); /* DoSpaceTransition */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00233AB8);

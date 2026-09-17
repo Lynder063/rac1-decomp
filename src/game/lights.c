@@ -67,13 +67,14 @@ extern void func_001166FC(Cfg13 *, void *);
 extern short D_0015F9D0;
 extern void func_00201960(int, int, int, int, int);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00202260);
+INCLUDE_ASM("asm/nonmatchings/text", func_00202260); /* UpdateAllPointLights */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002023E0);
+INCLUDE_ASM("asm/nonmatchings/text", func_002023E0); /* CreatePointLight */
 
 extern void func_002023E0(int);
 extern void func_002027C0(int);
 
+/* RefreshPointLight */
 void func_00202790(int arg0) {
     func_002027C0(arg0);
     func_002023E0(arg0);
@@ -85,4 +86,4 @@ void func_00202790(int arg0) {
    explicitly. */
 __asm__(".align 4");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002027C0);
+INCLUDE_ASM("asm/nonmatchings/text", func_002027C0); /* DetachPointLight(int) */

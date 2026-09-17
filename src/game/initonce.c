@@ -67,8 +67,8 @@ extern void func_001166FC(Cfg13 *, void *);
 extern short D_0015F9D0;
 extern void func_00201960(int, int, int, int, int);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00201E10);
+INCLUDE_ASM("asm/nonmatchings/text", func_00201E10); /* InitMemSlots(void) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00201E88);
+INCLUDE_ASM("asm/nonmatchings/text", func_00201E88); /* InitOnce(void) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00202258);

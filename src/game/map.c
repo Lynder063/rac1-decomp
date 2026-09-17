@@ -265,7 +265,7 @@ void func_00205C08(unsigned char *dst, unsigned char *a, unsigned char *b,
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00205C70);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00205E70);
+INCLUDE_ASM("asm/nonmatchings/text", func_00205E70); /* UNK_NoMapAvailable */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00206F40);
 

@@ -131,7 +131,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00209A60);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209BB8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209CE8);
+INCLUDE_ASM("asm/nonmatchings/text", func_00209CE8); /* memcard_RestoreGame */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209DC0);
 
@@ -146,6 +146,7 @@ extern int func_0020BBC8(void *dst, int i, int *table);
    sizes first, then one blob for D_001A05C0 and twenty for D_001A08C0,
    each call returning how far to advance. The write cursor is the
    parameter itself -- retail keeps both in $s2. */
+/* memcard_MakeWholeSave */
 void func_0020BA00(char *out) {
     int i;
 
@@ -168,12 +169,14 @@ extern int func_001236F0(void);
 extern int func_001E9730();
 extern char D_001E8690[];
 
+/* memcard_Init */
 void func_0020BAA8(void) {
     if (func_001236F0()) {
         func_001E9730(D_001E8690);
     }
 }
 
+/* memcard_GetDataSize */
 int func_0020BAD8(int *p) {
     int n = 8;
     while (p[0] != 0) {
@@ -185,7 +188,7 @@ int func_0020BAD8(int *p) {
     return n + 8;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020BB10);
+INCLUDE_ASM("asm/nonmatchings/text", func_0020BB10); /* memcard_Checksum */
 
 /*
  * Attempted and reverted at 15/60 (25%). Logic is confirmed:
@@ -202,12 +205,12 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0020BB10);
  * looks unsteerable from source shape, same family as the other
  * scheduling sub-cases.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_0020BB88);
+INCLUDE_ASM("asm/nonmatchings/text", func_0020BB88); /* memcard_TestChecksum */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020BBC8);
+INCLUDE_ASM("asm/nonmatchings/text", func_0020BBC8); /* memcard_PrepData */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020BCB0);
+INCLUDE_ASM("asm/nonmatchings/text", func_0020BCB0); /* memcard_RestoreInfo(char *, int, int) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020BD70);
+INCLUDE_ASM("asm/nonmatchings/text", func_0020BD70); /* memcard_RestoreData(char *, char *, int, mc_data *) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020BFC8);
+INCLUDE_ASM("asm/nonmatchings/text", func_0020BFC8); /* memcard_Save(int, int) */

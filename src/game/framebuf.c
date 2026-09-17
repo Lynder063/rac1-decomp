@@ -63,9 +63,9 @@ void func_001FB448(int arg0, int arg1, int arg2) {
     D_00152178 = (long)arg0 | ((long)arg1 << 8) | ((long)arg2 << 16) | 0x80000000L;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FB470);
+INCLUDE_ASM("asm/nonmatchings/text", func_001FB470); /* PutDispBuffer(void) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FB498);
+INCLUDE_ASM("asm/nonmatchings/text", func_001FB498); /* PutDrawBufferLarge(void) */
 
 /*
  * Close but not exact: appends a 2-word GIF/DMA-style tag pair
@@ -88,11 +88,11 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FB498);
  */
 INCLUDE_ASM("asm/nonmatchings/text", func_001FB530);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FB598);
+INCLUDE_ASM("asm/nonmatchings/text", func_001FB598); /* PutDrawBufferSmall(void) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FB608);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FB848);
+INCLUDE_ASM("asm/nonmatchings/text", func_001FB848); /* AA_BlurPass(void) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FB8A8);
 

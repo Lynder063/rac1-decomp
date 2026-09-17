@@ -151,11 +151,11 @@ extern unsigned char D_0013DE55 NOT_SDA;
 extern unsigned char D_0013D5DD NOT_SDA;
 extern unsigned char D_0013D5E7 NOT_SDA;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020D348);
+INCLUDE_ASM("asm/nonmatchings/text", func_0020D348); /* CreateMoby(int) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020D440);
+INCLUDE_ASM("asm/nonmatchings/text", func_0020D440); /* InitMobyInstance(MobyInstance *, int) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020D678);
+INCLUDE_ASM("asm/nonmatchings/text", func_0020D678); /* DeleteMoby */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020D6D0);
 
@@ -208,6 +208,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0020D830);
 INCLUDE_ASM("asm/nonmatchings/text", func_0020D928);
 
 /* Attach a fresh node to arg0's list at +0x64, seeded with 1.0f scales. */
+/* AttachManipulator */
 void func_0020D960(char *arg0, int arg1, unsigned char *arg2) {
     char *e;
     char *f;
@@ -234,7 +235,7 @@ void func_0020D960(char *arg0, int arg1, unsigned char *arg2) {
     *(int *)(arg0 + 0x64) = (int)arg2;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020D9D8);
+INCLUDE_ASM("asm/nonmatchings/text", func_0020D9D8); /* DetachManipulator */
 
 extern int D_001B2F40[];
 
@@ -320,9 +321,9 @@ void func_0020DB98(char *arg0, int arg1, void *arg2, char *arg3) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020DC38);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020DC40);
+INCLUDE_ASM("asm/nonmatchings/text", func_0020DC40); /* DmaMobyTextures */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020DD48);
+INCLUDE_ASM("asm/nonmatchings/text", func_0020DD48); /* PatchMobyGifs */
 
 extern int D_001414D0 NOT_SDA;
 extern float D_001CAE00[] NOT_SDA;
@@ -360,6 +361,7 @@ extern short D_0015F71C;              /* SDA, gp -0x75E4 */
  * Binding the first argument to a local to force its evaluation order
  * was tried and changed nothing.
  */
+/* ProcessMobyAnimData(void) */
 void func_0020DFF8(void) {
     func_00118D80(0);
     func_001F9A98((void *)0x70003800, D_00165600, 0x800);
@@ -367,6 +369,7 @@ void func_0020DFF8(void) {
 }
 
 
+/* InitMobyClassDists(void) */
 void func_0020E040(void) {
     func_001F99B0((void *)0x70003A00, (void *)0x40000000, 0x380);
 }
@@ -374,21 +377,23 @@ void func_0020E040(void) {
 extern void func_001F9A98(void *, void *, int);
 extern char D_001B3200[];
 
+/* StashMobyClassDists(void) */
 void func_0020E068(void) {
     func_001F9A98(D_001B3200, (void *)0x70003A00, 0x380);
 }
 
+/* RestoreMobyClassDists(void) */
 void func_0020E098(void) {
     func_001F9A98((void *)0x70003A00, D_001B3200, 0x380);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020E0C8);
+INCLUDE_ASM("asm/nonmatchings/text", func_0020E0C8); /* DrawMobysSetup(void) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020E180);
+INCLUDE_ASM("asm/nonmatchings/text", func_0020E180); /* DrawMobyList */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020E200);
+INCLUDE_ASM("asm/nonmatchings/text", func_0020E200); /* DrawMobysCleanUp */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020E2B0);
+INCLUDE_ASM("asm/nonmatchings/text", func_0020E2B0); /* DrawMobys */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020E330);
 

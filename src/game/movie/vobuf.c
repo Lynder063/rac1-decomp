@@ -387,11 +387,13 @@ void func_0023E5B0(void) {
  * compiler doesn't" rather than the usual "different thing lands there".
  * See docs/DECOMP_PROGRESS.md.
  */
+/* voBufReset(VoBuf *) */
 void func_0023E5B8(volatile int *arg0) {
     arg0[3] = 0;
     arg0[2] = 0;
 }
 
+/* voBufIsFull(VoBuf *) */
 int func_0023E5C8(int *arg0) {
     return (arg0[3] ^ arg0[4]) == 0;
 }
@@ -413,8 +415,9 @@ int func_0023E5C8(int *arg0) {
  *       func_0011D9A8();
  *   }
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E5E0);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023E5E0); /* voBufIncCount(VoBuf *) */
 
+/* voBufGetData(VoBuf *) */
 int func_0023E658(int *arg0) {
     if (func_0023E5C8(arg0) != 0) {
         return 0;
@@ -422,6 +425,7 @@ int func_0023E658(int *arg0) {
     return arg0[0] + arg0[2] * 0xD0000;
 }
 
+/* voBufIsEmpty */
 int func_0023E698(int *arg0) {
     return arg0[3] == 0;
 }
@@ -437,6 +441,7 @@ int func_0023E698(int *arg0) {
    %% capacity) * 0x138C0, or 0 when the buffer is empty. The empty test
    is func_0023E698, which is why its result is branched on rather than
    the field being read twice. */
+/* voBufGetTag(VoBuf *) */
 int func_0023E6A8(void *arg0) {
     char *s = (char *)arg0;
     int head;
@@ -452,6 +457,7 @@ int func_0023E6A8(void *arg0) {
     return *(int *)(s + 0x4) + ((head - tail + cap) % cap) * 0x138C0;
 }
 
+/* voBufDecCount(VoBuf *) */
 void func_0023E710(volatile int *arg0) {
     if (arg0[3] > 0) {
         arg0[3] = arg0[3] - 1;

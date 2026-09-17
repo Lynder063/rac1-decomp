@@ -262,6 +262,7 @@ extern void func_0012EC30(void);
  * so the base local is assigned late exactly as retail does. Allocator
  * destination-choice question, not source shape.
  */
+/* Load */
 int func_002176C8(void) {
     char *d;
     int r = func_00217628_v();

@@ -168,7 +168,7 @@ extern short D_0015ED80;
 extern short D_0015EDC4;
 extern void func_0012DDC0(void);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F348);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F348); /* wad_GetSectors_FiiPv */
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F3F8);
 

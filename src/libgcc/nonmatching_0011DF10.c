@@ -86,4 +86,4 @@ extern void func_00118D80(int);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DF10);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DFC8);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DFC8); /* __main */

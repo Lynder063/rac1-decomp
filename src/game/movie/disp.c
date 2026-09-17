@@ -338,12 +338,12 @@ extern void func_0012F248(int, int, int, int, int);
 extern void func_0012F1E8(void *);
 extern void func_0023C390(void *);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C5E0);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023C5E0); /* setImageTag */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C7A8);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023C7A8); /* vblankHandler */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C910);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023C910); /* handler_endimage */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C960);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023C960); /* startDisplay(int) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C9B0);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023C9B0); /* endDisplay(void) */

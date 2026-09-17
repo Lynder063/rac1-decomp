@@ -73,19 +73,19 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00202AA8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00202EF8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00202F00);
+INCLUDE_ASM("asm/nonmatchings/text", func_00202F00); /* ParseParticleTexs */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00203038);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00203118);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002032D0);
+INCLUDE_ASM("asm/nonmatchings/text", func_002032D0); /* LoadHudBanks(void) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00203548);
+INCLUDE_ASM("asm/nonmatchings/text", func_00203548); /* LoadCompressedHudBank(int, char *) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002035B0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00203808);
+INCLUDE_ASM("asm/nonmatchings/text", func_00203808); /* SetUpVisGifViewer(int *, int, int, int, int, int) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00203958);
 
@@ -132,6 +132,7 @@ extern int D_0018CC20 NOT_SDA;
 extern int D_001941C8 NOT_SDA;
 extern int D_0016100C;
 
+/* ParseSpaceSceneChunk(int) */
 void func_00205220(int arg0) {
     char *base = (char *)&D_0018CC20;
     char *p = base + arg0 * 4;

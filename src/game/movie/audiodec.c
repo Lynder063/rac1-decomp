@@ -334,10 +334,11 @@ extern void func_001F9BF0_b(void *, void *, void *) __asm__("func_001F9BF0");
 extern int func_00118BC0(int);
 extern char D_001612F8[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023BFA0);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023BFA0); /* audioDecCreate(_AudioDec *, unsigned char *, int, sceMpegStrType) */
 
 extern void func_0012F220(void);
 
+/* audioDecDelete(_AudioDec *) */
 int func_0023C060(void) {
     func_0012F220();
     return 1;
@@ -350,6 +351,7 @@ extern void func_0012F248(int, int, int, int, int);
 /* movn here is plain signed /1024 (round down to a 1024 multiple), an
    arithmetic idiom rather than a conditional move. Five args: EABI
    passes the first eight integer args in $4-$11, so $8 is the fifth. */
+/* audioDecStart */
 void func_0023C088(void *arg0) {
     Obj23C *s = (Obj23C *)arg0;
     func_0012F248(s->unk48,
@@ -362,6 +364,7 @@ void func_0023C088(void *arg0) {
 
 extern void func_0012F1E8(void *);
 
+/* audioDecReset(_AudioDec *) */
 void func_0023C0E0(void *arg0) {
     Obj23C *s = (Obj23C *)arg0;
     func_0012F1E8(s);
@@ -375,14 +378,14 @@ void func_0023C0E0(void *arg0) {
     s->unk5C = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C128);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023C128); /* audioDecBeginPut(_AudioDec *, unsigned char **, int *, unsigned char **, int *) */
 
 /* Mid-iteration work-in-progress reverted to INCLUDE_ASM: it was at
    57/180 when the agent working it was cut off by an API session
    limit, i.e. unfinished rather than a documented near-miss, and
    over the revert threshold. The partial C is preserved in branch
    history (parallel-A/B/C) for whoever resumes it. */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C1F8);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023C1F8); /* audioDecEndPut(_AudioDec *, int) */
 
 int func_0023C2B0(void *arg0) {
     return ((Obj23C *)arg0)->unk50 >= 0x1000;
@@ -390,12 +393,13 @@ int func_0023C2B0(void *arg0) {
 
 extern void func_0023C390(void *);
 
+/* audioDecSend */
 void func_0023C2C0(void *arg0) {
     if (((Obj23C *)arg0)->state != 0) {
         func_0023C390(arg0);
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C2E8);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023C2E8); /* sendToSPU(_AudioDec *, unsigned char *, int, int) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C390);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023C390); /* sendADPCM(_AudioDec *) */

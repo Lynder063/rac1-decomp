@@ -346,7 +346,7 @@ void func_0022DB48(void *arg0, void *arg1, void *arg2) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022DBE8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022DD68);
+INCLUDE_ASM("asm/nonmatchings/text", func_0022DD68); /* sound_update */
 
 extern void func_00120F30(int);
 extern int func_0012E060(void *, int);
@@ -433,7 +433,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0022EF50);
  */
 INCLUDE_ASM("asm/nonmatchings/text", func_0022EF68);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022EFE8);
+INCLUDE_ASM("asm/nonmatchings/text", func_0022EFE8); /* sound_StopAllSounds(void) */
 
 void func_0022F090(int arg0, long arg1) {
     int *p = (int *)(int)arg1;

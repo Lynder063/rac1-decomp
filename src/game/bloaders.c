@@ -8,8 +8,8 @@
  * sizes -- see docs/DECOMP_PROGRESS.md. Compiled as C for now.
  */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001E94E8);
+INCLUDE_ASM("asm/nonmatchings/text", func_001E94E8); /* LoadPifAsPSMT8H */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001E96B8);
+INCLUDE_ASM("asm/nonmatchings/text", func_001E96B8); /* LoadDebugFont */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001E9728);

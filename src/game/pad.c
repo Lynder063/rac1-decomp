@@ -209,12 +209,13 @@ extern int func_00124BC8(void *, void *);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00217F68);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00218188);
+INCLUDE_ASM("asm/nonmatchings/text", func_00218188); /* ClearPadInput(PAD &) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002181F0);
 
 extern void func_00217F68(void *);
 
+/* UpdatePad(void) */
 void func_00218908(void) {
     func_00217F68(D_0013CA40);
 }

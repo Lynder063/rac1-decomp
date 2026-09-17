@@ -267,8 +267,8 @@ extern int D_001D6860[];
 extern int D_001D74C0[];
 extern int D_001D6760[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00229C08);
+INCLUDE_ASM("asm/nonmatchings/text", func_00229C08); /* DmaShrubTextures */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00229D48);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00229E50);
+INCLUDE_ASM("asm/nonmatchings/text", func_00229E50); /* DrawShrubs */

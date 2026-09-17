@@ -338,8 +338,8 @@ extern void func_0012F248(int, int, int, int, int);
 extern void func_0012F1E8(void *);
 extern void func_0023C390(void *);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C9C0);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023C9C0); /* videoCallback */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023CAF8);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023CAF8); /* pcmCallback(sceMpeg *, sceMpegCbDataStr *, void *) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023CBE0);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023CBE0); /* cpy2area(unsigned char *, int, unsigned char *, int, unsigned char *, int, unsigned char *, int) */

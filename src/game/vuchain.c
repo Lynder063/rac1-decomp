@@ -309,21 +309,22 @@ typedef struct {
 extern TexChunk D_001E1200[];
 extern TexRemap D_001E0F00[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002347F0);
+INCLUDE_ASM("asm/nonmatchings/text", func_002347F0); /* VU0_loadMicroProgram(long *) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002348B8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002348E8);
+INCLUDE_ASM("asm/nonmatchings/text", func_002348E8); /* VU1_initChain(void) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234948);
+INCLUDE_ASM("asm/nonmatchings/text", func_00234948); /* VU1_swapChain(void) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002349B8);
+INCLUDE_ASM("asm/nonmatchings/text", func_002349B8); /* VU1_sendChain(void) */
 
 extern short D_00160FE0;              /* SDA, gp -0x5D20 */
 extern char D_001E8D10[];
 extern void func_001F9988(int);
 extern void func_001F2568(void);
 
+/* VU1_syncChain(int) */
 void func_00234AC8(int mask) {
     int i = 0;
     while ((*(int *)&D_00160FE0 & mask) != 0) {
@@ -337,7 +338,7 @@ void func_00234AC8(int mask) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234B48);
+INCLUDE_ASM("asm/nonmatchings/text", func_00234B48); /* VU1_addDataRef(void *, int) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234B98);
 
@@ -347,17 +348,17 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00234C48);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234C50);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234C98);
+INCLUDE_ASM("asm/nonmatchings/text", func_00234C98); /* VU1_addGSregister(unsigned int, unsigned long, bool) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234D50);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234D58);
+INCLUDE_ASM("asm/nonmatchings/text", func_00234D58); /* VU1_setScissor(int, int, int, int) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234E78);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234E80);
+INCLUDE_ASM("asm/nonmatchings/text", func_00234E80); /* VU1_texFlush(void) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234EE0);
+INCLUDE_ASM("asm/nonmatchings/text", func_00234EE0); /* VU1_gsRegsNormal(void) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234F40);
 
@@ -367,9 +368,9 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00234FA8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00235008);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00235018);
+INCLUDE_ASM("asm/nonmatchings/text", func_00235018); /* DMAC_VIF1_Enable(void) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002350A8);
+INCLUDE_ASM("asm/nonmatchings/text", func_002350A8); /* DMAC_VIF1_Disable(void) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00235118);
 

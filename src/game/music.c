@@ -313,11 +313,11 @@ int func_00216960(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002169B8);
+INCLUDE_ASM("asm/nonmatchings/text", func_002169B8); /* music_PreseekTrack(int, int, int) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00216A90);
+INCLUDE_ASM("asm/nonmatchings/text", func_00216A90); /* music_StartTrack(int, int, int) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00216B68);
+INCLUDE_ASM("asm/nonmatchings/text", func_00216B68); /* music_StartTrackBody(int, int, int) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00216C50);
 
@@ -344,10 +344,11 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00216C50);
  */
 INCLUDE_ASM("asm/nonmatchings/text", func_00216D30);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00216D88);
+INCLUDE_ASM("asm/nonmatchings/text", func_00216D88); /* music_Stop(void) */
 
 extern short D_001517D0[];
 
+/* music_Pause(int) */
 void func_00216EF0(int arg0) {
     if (arg0 != 0) {
         D_001517D0[0x2F] = 0;
@@ -359,6 +360,7 @@ void func_00216EF0(int arg0) {
     D_001517D0[0x3C] = -0x8000;
 }
 
+/* music_Unpause(void) */
 void func_00216F28(void) {
     short *p = D_001517D0;
     p[0x20] = 4;
@@ -366,6 +368,6 @@ void func_00216F28(void) {
     p[0x2E] = 4;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00216F48);
+INCLUDE_ASM("asm/nonmatchings/text", func_00216F48); /* music_UpdateStream(music_Playing &) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00217130);
+INCLUDE_ASM("asm/nonmatchings/text", func_00217130); /* music_Update(void) */

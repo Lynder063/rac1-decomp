@@ -338,6 +338,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023B740);
 
 extern int func_00118BC0(int);
 
+/* switchThread */
 int func_0023BB40(void) {
     return func_00118BC0(1);
 }
@@ -351,16 +352,17 @@ int func_0023BB40(void) {
  * local plus &p[off] indexing (the documented two-sided lever); no
  * change, which confirms allocator rather than source shape.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023BB60);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023BB60); /* isAudioOK */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023BB90);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023BB90); /* initAll(int, int, int) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023BE38);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023BE38); /* termAll(void) */
 
 extern char D_001612F8[];
 
+/* ErrMessage */
 int func_0023BF48(int arg0) {
     return func_001E9730(D_001612F8, arg0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023BF70);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023BF70); /* proceedAudio(void) */

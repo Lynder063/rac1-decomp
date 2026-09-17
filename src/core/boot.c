@@ -165,7 +165,7 @@ extern int func_0012D4E0(int);
 extern int func_0012D4B0(int);
 extern void func_0011DDA0(int);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DA38);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DA38); /* ParseBin(void) */
 
 extern long func_00116F68(int arg0, int arg1, int arg2);
 extern int D_0015ED10;
@@ -317,4 +317,4 @@ extern int func_0012D4E0(int);
 extern int func_0012D4B0(int);
 extern void func_0011DDA0(int);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DB18);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DB18); /* main */

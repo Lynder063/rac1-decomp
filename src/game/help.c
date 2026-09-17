@@ -60,12 +60,13 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FE438);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FE4C0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FE4D0);
+INCLUDE_ASM("asm/nonmatchings/text", func_001FE4D0); /* Help_FindIndex */
 
 extern int func_001FE4D0(void);
 extern char D_00199A68[];
 extern short D_0015F780;              /* SDA, gp -0x7580 */
 
+/* msg_string(int) */
 void *func_001FE540(void) {
     int i = func_001FE4D0();
     if (i >= 0) {
@@ -78,9 +79,9 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FE580);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FE588);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FE6C0);
+INCLUDE_ASM("asm/nonmatchings/text", func_001FE6C0); /* Help_Update */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FF0C8);
+INCLUDE_ASM("asm/nonmatchings/text", func_001FF0C8); /* Help_DrawPrompt */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FF1B0);
 

@@ -339,6 +339,7 @@ extern void func_0012F1E8(void *);
 extern void func_0023C390(void *);
 extern void func_00121750(int, int, int, void *);
 
+/* getFIFOindex(ViBuf *, void *) */
 int func_0023CEC8(int *self, int arg1) {
     int v1 = ((self[2] << 4) + self[1] + 0x10) & 0xFFFFFFF;
     if (arg1 == v1) {
@@ -352,6 +353,7 @@ extern void func_0011D9A8(void);
 
 /* D_ENABLER 0x1000F520 / D_ENABLEW 0x1000F590; bit 16 is the DMA
    disable. Sets a channel's CHCR with DMA transfers suspended. */
+/* setD3_CHCR(unsigned int) */
 void func_0023CF10(int arg0) {
     func_0011D960();
     *(volatile int *)0x1000F590 = *(volatile int *)0x1000F520 | 0x10000;
@@ -362,6 +364,7 @@ void func_0023CF10(int arg0) {
 
 /* D_ENABLER 0x1000F520 / D_ENABLEW 0x1000F590; bit 16 is the DMA
    disable. Sets a channel's CHCR with DMA transfers suspended. */
+/* setD4_CHCR(unsigned int) */
 void func_0023CF80(int arg0) {
     func_0011D960();
     *(volatile int *)0x1000F590 = *(volatile int *)0x1000F520 | 0x10000;
@@ -370,6 +373,7 @@ void func_0023CF80(int arg0) {
     func_0011D9A8();
 }
 
+/* scTag2 */
 void func_0023CFF0(long *arg0, int arg1, int arg2, int arg3) {
     *arg0 = ((long)arg1 << 32) | ((unsigned long)(unsigned int)arg2 << 28) |
             (unsigned int)arg3;
@@ -381,6 +385,7 @@ extern void func_0023D090(char *);
 /* NOTE: `long` is the 64-bit type in this compiler -- `long long` is
    128-bit and compiles the +0x48 clear to `por`/`sq`, which is both
    wrong and one instruction too many. */
+/* viBufCreate */
 int func_0023D018(char *arg0, int arg1, unsigned int arg2, int arg3,
                   int arg4, int arg5) {
     int buf[8];
@@ -399,21 +404,22 @@ int func_0023D018(char *arg0, int arg1, unsigned int arg2, int arg3,
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023D090);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023D090); /* viBufReset(ViBuf *) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023D1F0);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023D1F0); /* viBufBeginPut(ViBuf *, unsigned char **, int *, unsigned char **, int *) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023D2E8);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023D2E8); /* viBufEndPut(ViBuf *, int) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023D340);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023D340); /* viBufAddDMA(ViBuf *) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023D540);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023D540); /* viBufStopDMA(ViBuf *) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023D650);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023D650); /* viBufRestartDMA(ViBuf *) */
 
 extern void func_0023CF80(int);
 extern void func_00118C80(int);
 
+/* viBufDelete(ViBuf *) */
 int func_0023D988(void *arg0) {
     char *s = (char *)arg0;
     func_0023CF80(5);
@@ -424,7 +430,7 @@ int func_0023D988(void *arg0) {
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023D9E0);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023D9E0); /* viBufCount(ViBuf *) */
 
 extern void func_00118CB0(int);
 extern void func_00118C90(int);
@@ -450,6 +456,7 @@ extern void func_00118C90(int);
  * register follows from that. Hoisting the load into an explicit local
  * to change evaluation order was tried and changes nothing.
  */
+/* viBufFlush(ViBuf *) */
 void func_0023DA30(void *arg0) {
     char *s = (char *)arg0;
     int v;
@@ -459,8 +466,8 @@ void func_0023DA30(void *arg0) {
     func_00118C90(*(int *)(s + 0x40));
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023DA88);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023DA88); /* viBufModifyPts(ViBuf *, TimeStamp *) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023DBE0);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023DBE0); /* viBufPutTs(ViBuf *, TimeStamp *) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023DCF0);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023DCF0); /* viBufGetTs(ViBuf *, TimeStamp *) */

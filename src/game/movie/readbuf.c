@@ -348,6 +348,7 @@ void func_0023CD10(void *arg0) {
 void func_0023CD28(void) {
 }
 
+/* readBufBeginPut(ReadBuf *, unsigned char **) */
 int func_0023CD30(char *arg0, int *arg1) {
     int *p = (int *)(arg0 + 0x50000);
     int d = p[2] - p[1];
@@ -357,6 +358,7 @@ int func_0023CD30(char *arg0, int *arg1) {
     return d;
 }
 
+/* readBufEndPut(ReadBuf *, int) */
 void func_0023CD60(void *arg0, int n) {
     int *b = (int *)((char *)arg0 + 0x50000);
     int cap = b[2];
@@ -370,6 +372,7 @@ void func_0023CD60(void *arg0, int n) {
     b[0] = r;
 }
 
+/* readBufBeginGet(ReadBuf *, unsigned char **) */
 int func_0023CDA8(char *arg0, int *arg1) {
     char *base = arg0 + 0x50000;
     int v = *(int *)(base + 4);
@@ -380,4 +383,4 @@ int func_0023CDA8(char *arg0, int *arg1) {
     return *(int *)(base + 4);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023CDF0);
+INCLUDE_ASM("asm/nonmatchings/text", func_0023CDF0); /* readBufEndGet(ReadBuf *, int) */

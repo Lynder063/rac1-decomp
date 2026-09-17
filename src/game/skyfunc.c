@@ -269,18 +269,18 @@ extern int D_001D6760[];
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022BEB0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022C188);
+INCLUDE_ASM("asm/nonmatchings/text", func_0022C188); /* SkyLevelGeneric___maybe */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022C5A0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022C7E0);
+INCLUDE_ASM("asm/nonmatchings/text", func_0022C7E0); /* SetupSkyGifPaging(void) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022C870);
+INCLUDE_ASM("asm/nonmatchings/text", func_0022C870); /* DoSkyGifPaging(void) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022C9A0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022C9A8);
+INCLUDE_ASM("asm/nonmatchings/text", func_0022C9A8); /* SkyDrawShell(int) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022CA00);
+INCLUDE_ASM("asm/nonmatchings/text", func_0022CA00); /* SkyDrawShellTextured */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022CC40);
+INCLUDE_ASM("asm/nonmatchings/text", func_0022CC40); /* SkyDrawShellGouraud */

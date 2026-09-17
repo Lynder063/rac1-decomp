@@ -61,13 +61,13 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F2568);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F2608);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F2930);
+INCLUDE_ASM("asm/nonmatchings/text", func_001F2930); /* UpdateFog(int) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F2A38);
+INCLUDE_ASM("asm/nonmatchings/text", func_001F2A38); /* ParseOcclGrid */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F2B10);
+INCLUDE_ASM("asm/nonmatchings/text", func_001F2B10); /* GetOcclGridFromPair(int, int, int, int, int, int, float) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F2BC8);
+INCLUDE_ASM("asm/nonmatchings/text", func_001F2BC8); /* BuildOcclVisibility(void) */
 
 /* Unprototyped deliberately: two call sites need incompatible arg1
    types (-1 and a pointer) and both callers are byte-exact, so
@@ -78,6 +78,7 @@ extern void func_001F2BC8(void);
 extern int D_0018C434 NOT_SDA;
 extern char D_001940C0[];
 
+/* UpdateOcclusion(void) */
 void func_001F2FB8(void) {
     int state = D_0018C434;
     if (state == 0) {
@@ -87,23 +88,24 @@ void func_001F2FB8(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F3008);
+INCLUDE_ASM("asm/nonmatchings/text", func_001F3008); /* InitViewContext(void) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F3140);
+INCLUDE_ASM("asm/nonmatchings/text", func_001F3140); /* UpdateViewContext(void) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F3760);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F3890);
+INCLUDE_ASM("asm/nonmatchings/text", func_001F3890); /* SetPalMode(int) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F3B90);
+INCLUDE_ASM("asm/nonmatchings/text", func_001F3B90); /* ResetDrawGlobals */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F3C10);
+INCLUDE_ASM("asm/nonmatchings/text", func_001F3C10); /* ResetGsRegisters(void) */
 
 extern long D_00151888[3];
 
 /* GS privileged-register writes (0x1200_00XX = the GS's memory-mapped
    register block): CSR ack, PMODE, then SMODE2/DISPFB1/DISPFB2/DISPLAY1/
    DISPLAY2/BGCOLOR set from a 3-entry table. */
+/* ResetGsRegistersPr(void) */
 void func_001F3D00(void) {
     *(volatile long *)0x120000E0 = 0;
     *(volatile long *)0x12000000 = 0xFFA1;
@@ -115,7 +117,7 @@ void func_001F3D00(void) {
     *(volatile long *)0x120000D0 = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F3D78);
+INCLUDE_ASM("asm/nonmatchings/text", func_001F3D78); /* DrawDebugProfiler */
 
 extern int D_0015F6FC;
 extern short D_0015F534;              /* SDA, gp -0x77CC */
@@ -142,11 +144,11 @@ void func_001F45F0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F4628);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F4630);
+INCLUDE_ASM("asm/nonmatchings/text", func_001F4630); /* SetupGifPaging(int) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F4748);
+INCLUDE_ASM("asm/nonmatchings/text", func_001F4748); /* DoGifPaging(void) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F4868);
+INCLUDE_ASM("asm/nonmatchings/text", func_001F4868); /* GetEffectTex(int, int) */
 
 extern int D_0015F564;
 extern int D_0018DD40[];
@@ -179,7 +181,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F4BB8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F4C30);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F4E08);
+INCLUDE_ASM("asm/nonmatchings/text", func_001F4E08); /* FadeToBlack(int, unsigned int) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F4F90);
 
@@ -191,11 +193,11 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F54E8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F55C0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F5650);
+INCLUDE_ASM("asm/nonmatchings/text", func_001F5650); /* DrawRectOverlay_FiiiiUl */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F57F8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F5800);
+INCLUDE_ASM("asm/nonmatchings/text", func_001F5800); /* DrawTexturedQuad */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F5988);
 
@@ -205,7 +207,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F5E60);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F62C0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F62C8);
+INCLUDE_ASM("asm/nonmatchings/text", func_001F62C8); /* DrawUIFrame */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F6410);
 
@@ -258,7 +260,7 @@ int func_001F6640(unsigned char *arg0, int arg1) {
  */
 __asm__(".section .text\n\tnop\n\tnop\n");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F6668);
+INCLUDE_ASM("asm/nonmatchings/text", func_001F6668); /* FontPrint */
 
 extern void func_001F6668(void *, void *, void *, void *, void *, int,
                           unsigned char *);
@@ -266,12 +268,14 @@ extern void func_001F6668(void *, void *, void *, void *, void *, int,
 /* Same shape as func_001F7560/func_001F75D0 below, one argument wider:
    mode 1 vs 2, D_001DF3D0 vs D_001DF770. Seven arguments, so EABI puts
    the fifth through seventh in $8/$9/$10. */
+/* FontPrintLarge */
 void func_001F68E8(void *a, void *b, void *c, void *d, void *e) {
     int mode = func_001F4868(1);
 
     func_001F6668(a, b, c, d, e, mode, D_001DF3D0);
 }
 
+/* FontPrintSmall */
 void func_001F6968(void *a, void *b, void *c, void *d, void *e) {
     int mode = func_001F4868(2);
 
@@ -317,6 +321,7 @@ void func_001F6E18(char *a, void *b, void *c, unsigned char *d, int e) {
    centred instead of left-aligned: the step-back is half the measured
    value, and the adjusted position is returned. Typed all-int to match
    the extern func_001F7288 already declares for func_001F6FD8. */
+/* FontPrintCenter */
 int func_001F6EA8(int a, int b, int c, int d, int e) {
     int p = a - (func_001F6600((unsigned char *)d, e) >> 1);
     int mode = func_001F4868(1);
@@ -326,6 +331,7 @@ int func_001F6EA8(int a, int b, int c, int d, int e) {
     return p;
 }
 
+/* FontPrintCenterSmall */
 int func_001F6F40(int a, int b, int c, int d, int e) {
     int p = a - (func_001F6620((unsigned char *)d, e) >> 1);
     int mode = func_001F4868(2);
@@ -335,6 +341,7 @@ int func_001F6F40(int a, int b, int c, int d, int e) {
     return p;
 }
 
+/* FontPrintCenterLarge */
 int func_001F6FD8(int a, int b, int c, int d, int e) {
     int p = a - (func_001F6640((unsigned char *)d, e) >> 1);
     int mode = func_001F4868(3);
@@ -344,7 +351,7 @@ int func_001F6FD8(int a, int b, int c, int d, int e) {
     return p;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F7070);
+INCLUDE_ASM("asm/nonmatchings/text", func_001F7070); /* FontPrintWindow */
 
 extern int func_001F4868(int);
 extern void func_001F7070(void *, void *, void *, void *, int, unsigned char *);
@@ -367,6 +374,7 @@ void func_001F75D0(void *a, void *b, void *c, void *d) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F7640);
 
+/* FontSetWindow */
 void func_001F7648(void *arg0, int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8) {
     short *s = (short *)arg0;
     s[0] = a1;

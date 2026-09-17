@@ -799,6 +799,31 @@ Earlier evidence for `text`, kept for reference:
   byte-identically, so nothing would catch it. Boundaries there need
   evidence strong enough to stand on its own.
 
+## Real function names (259), from RC1
+
+`config/symbol_names.txt` maps 259 of the 393 names in bordplate's NTSC
+`symbols.txt` onto this PAL build. Each comes with its evidence, and only
+confident mappings are included:
+- **text:** the NTSC function sits on a function-size-aligned match (the
+  same alignment that placed the file boundaries);
+- **core tail:** the entry-point shift (+0x140) lands on a PAL function
+  start (`_start`, `_exit`, `ParseBin`, `main`, the `snd_*` API);
+- `__main`, which libgcc2 matches byte for byte.
+
+Names are demangled with the SN toolchain's `ee-c__filt` (GCC 2.x ABI),
+e.g. `Hud_HeapAlloc__FUiPcT1i` -> `Hud_HeapAlloc(unsigned int, char *, char *, int)`.
+In `src/` they appear as comments: trailing on stubs, and on the line above
+a decompiled function. `func_<ADDR>` stays the symbol name, because the
+build and every tool read the address from it. The build is byte-identical
+with the comments in place.
+
+Tool fix found on the way: `rank_candidates.py` looked for documented
+reverts in `src/*.c` only. After the split those files are in
+subdirectories, so it silently found none, and 6 already-attempted stubs
+came back as candidates. It now searches recursively. It also ignores a
+trailing comment on the previous stub's line. Without that, the name
+annotations alone would have hidden 131 stubs as "already attempted".
+
 ## The game is C++, and the language switch alone changes nothing
 
 Retail's strings name its own source files: `hud.cpp`, `loaders.cpp`,

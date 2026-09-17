@@ -313,9 +313,9 @@ extern char D_001E8D10[];
 extern void func_001F9988(int);
 extern void func_001F2568(void);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00236958);
+INCLUDE_ASM("asm/nonmatchings/text", func_00236958); /* DmaTieTextures(void) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00236A98);
+INCLUDE_ASM("asm/nonmatchings/text", func_00236A98); /* PatchTieGifs */
 
 extern void func_00236A98(void);
 extern char D_001E3300[];
@@ -339,6 +339,6 @@ void func_00236BB0(void) {
     func_00238688(D_001E4700);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00236BE0);
+INCLUDE_ASM("asm/nonmatchings/text", func_00236BE0); /* DrawTies_1 */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00236CA8);
+INCLUDE_ASM("asm/nonmatchings/text", func_00236CA8); /* DrawTies_2 */

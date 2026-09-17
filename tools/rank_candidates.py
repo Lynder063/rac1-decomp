@@ -81,9 +81,14 @@ def already_attempted() -> set[str]:
     # only the markdown missed them and handed them straight back as top
     # candidates. (Caught when func_0012AAA8, reverted minutes earlier for
     # a delay-slot difference, reappeared at rank 25.)
-    for f in Path("src").glob("*.c"):
+    # rglob: sources live in subdirectories (src/core/, src/game/, ...) since
+    # the split into retail objects -- a flat glob silently found nothing.
+    # The comment must end on its own line: a trailing name annotation on the
+    # PREVIOUS stub (`INCLUDE_ASM(...); /* Name(int) */`) is not a revert note.
+    for f in Path("src").rglob("*.c"):
         src = f.read_text(errors="replace")
-        seen |= set(re.findall(r"\*/\s*INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\)", src))
+        seen |= set(re.findall(
+            r"(?m)^(?![^\n]*INCLUDE_ASM)[^\n]*\*/\s*INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\)", src))
     return seen
 
 

@@ -165,17 +165,18 @@ extern int func_0012D4E0(int);
 extern int func_0012D4B0(int);
 extern void func_0011DDA0(int);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DB68);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DB68); /* snd_StartSoundSystem */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DDC0);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DDC0); /* snd_FlushSoundCommands */
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DFA0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DFB0);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DFB0); /* snd_GotReturns */
 
 extern short D_0015ED84;
 extern short D_0015ED80;
 
+/* snd_PrepareReturnBuffer */
 void func_0012E038(void *arg0, int arg1) {
     int *p = (int *)arg0;
     *(int *)&D_0015ED84 = arg1;
@@ -190,15 +191,15 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E1B8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E2D8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E318);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E318); /* snd_UnloadBank */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E348);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E348); /* snd_SetMasterVolume */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E380);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E380); /* snd_SetPlaybackMode */
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E3B0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E3F8);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E3F8); /* snd_SetGroupVoiceRange */
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E438);
 
@@ -206,28 +207,29 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E490);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E4D8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E528);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E528); /* snd_PauseAllSoundsInGroup */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E558);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E558); /* snd_ContinueAllSoundsInGroup */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E588);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E588); /* snd_SoundIsStillPlaying_CB */
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E5B8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E648);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E688);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E688); /* snd_SendIOPCommandAndWait */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E820);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E820); /* snd_SendIOPCommandNoWait */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EAE0);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EAE0); /* snd_PostMessage */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EB18);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EB18); /* snd_SendCurrentBatch */
 
 /* gp-relative: declared small so -G2 places it in the small-data area,
    accessed as the word it really is. gp 0x166D00 - 0x7F3C = 0x15EDC4. */
 extern short D_0015EDC4;
 
+/* snd_UnkFunction_0012eaf0 */
 void func_0012EC30(void) {
     *(int *)&D_0015EDC4 = 1;
 }
@@ -241,55 +243,57 @@ extern void func_0012DDC0(void);
  * of the ~14 core_text functions on the sq side of that split -- the
  * still-open half of the sq/lq question, not a source-shape problem.
  */
+/* snd_UnkFunction_0012eb00 */
 void func_0012EC40(void) {
     *(int *)&D_0015EDC4 = 0;
     func_0012DDC0();
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EC60);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EC60); /* snd_InitVAGStreamingEx */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012ED10);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012ED10); /* snd_StopAllStreams */
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012ED40);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EDB0);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EDB0); /* snd_PauseVAGStream */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EDE0);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EDE0); /* snd_ContinueVAGStream */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE10);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE10); /* snd_GetVAGStreamTimeRemaining_CB */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE40);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE40); /* snd_IsVAGStreamBuffered_CB */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE70);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE70); /* snd_StreamSafeCheckCDIdle */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE98);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE98); /* snd_StreamSafeCdRead */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EF48);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EF48); /* snd_StreamSafeCdSync */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EFE8);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EFE8); /* snd_StreamSafeCdBreak */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F030);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F030); /* snd_StreamSafeCdGetError */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F068);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F068); /* snd_StreamSafeCdCallback */
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F098);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F0E8);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F0E8); /* snd_PreAllocReverbWorkArea */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F120);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F120); /* snd_AutoReverb */
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F160);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F1E8);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F1E8); /* snd_ResetMovieSound */
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F210);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F248);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F248); /* snd_StartMovieSound */
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F280);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F2B8);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F2B8); /* snd_GetMovieNAX */
 
+/* snd_GetDopplerPitchMod */
 int func_0012F2E0(int arg0) {
     return (arg0 * 0x5F4) / 0x2E5;
 }

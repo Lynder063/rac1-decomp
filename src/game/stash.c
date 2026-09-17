@@ -299,7 +299,7 @@ void func_00233FF8(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234018);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234158);
+INCLUDE_ASM("asm/nonmatchings/text", func_00234158); /* Stash_SendData */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234238);
 

@@ -46,7 +46,7 @@
  * the pre-existing -8 drift starting around func_00234380 (outside this
  * range).
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_001E9E70);
+INCLUDE_ASM("asm/nonmatchings/text", func_001E9E70); /* Transition_DrawSky(void) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001E9EC8);
 
@@ -54,11 +54,11 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001EABE8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EB300);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EB338);
+INCLUDE_ASM("asm/nonmatchings/text", func_001EB338); /* Transition_UpdateMovieCamera(void) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EB458);
+INCLUDE_ASM("asm/nonmatchings/text", func_001EB458); /* Transition_FUN_001eb0a8 */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EB7C0);
+INCLUDE_ASM("asm/nonmatchings/text", func_001EB7C0); /* Transition_DefaultDraw(bool) */
 
 extern char D_0013E650[];
 extern int D_0015F694;

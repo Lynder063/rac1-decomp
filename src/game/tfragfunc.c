@@ -311,9 +311,9 @@ extern int func_00234350(unsigned int arg0);
  */
 __asm__(".align 4");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234380);
+INCLUDE_ASM("asm/nonmatchings/text", func_00234380); /* SetTfragDists(void) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002344D8);
+INCLUDE_ASM("asm/nonmatchings/text", func_002344D8); /* DmaTfragTextures(void) */
 
 typedef struct {
     short a;
@@ -332,6 +332,7 @@ extern TexRemap D_001E0F00[];
    record in each chunk, look up the remap entry indexed by the byte at
    +0x23 and patch its two nonzero halves into the low 14 bits of the
    words at +0x00 and +0x30. */
+/* PatchTfragGifs(void) */
 void func_00234620(void) {
     TexChunk *c;
     char *r;
@@ -357,4 +358,4 @@ void func_00234620(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002346C0);
+INCLUDE_ASM("asm/nonmatchings/text", func_002346C0); /* DrawTfrag */
