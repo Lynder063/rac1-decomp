@@ -13,6 +13,9 @@ options:
   disassemble_all: True
   # ...all in one directory: the tools look in asm/nonmatchings/<segment>.
   matchings_path: nonmatchings
+  # src/ is hand-organised (src/core/, src/game/, src/libgcc/), not one file
+  # per splat segment -- never let splat create src/core_text.c or src/text.c.
+  create_c_files: False
   find_file_boundaries: True
   platform: ps2
   asm_path: asm
