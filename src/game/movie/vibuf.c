@@ -339,13 +339,82 @@ extern void func_0012F1E8(void *);
 extern void func_0023C390(void *);
 extern void func_00121750(int, int, int, void *);
 
+/* Sony's ezmpeg sample (EE library sample "mpeg streaming", vibuf.c
+   0.10, umemura 1999); the layout below is its ViBuf. */
+typedef struct {
+    long pts;
+    long dts;
+    int pos;
+    int len;
+} TimeStamp;
+
+typedef struct {
+    int d4madr;
+    int d4tadr;
+    int d4qwc;
+    int d4chcr;
+    int d3madr;
+    int d3qwc;
+    int d3chcr;
+    int ipubp;
+    int ipuctrl;
+} sceIpuDmaEnv;
+
+typedef struct {
+    long long *data;  /* 0x00 */
+    long long *tag;   /* 0x04 */
+    int n;            /* 0x08 */
+    int dmaStart;     /* 0x0C */
+    int dmaN;         /* 0x10 */
+    int readBytes;    /* 0x14 */
+    int buffSize;     /* 0x18 */
+    sceIpuDmaEnv env; /* 0x1C */
+    int sema;         /* 0x40 */
+    int isActive;     /* 0x44 */
+    long totalBytes;  /* 0x48 */
+    TimeStamp *ts;    /* 0x50 */
+    int n_ts;         /* 0x54 */
+    int count_ts;     /* 0x58 */
+    int wt_ts;        /* 0x5C */
+} ViBuf;
+
+#define VIBUF_ELM_SIZE 2048
+#define REST 2
+#define FS(f) (((f)->dmaStart + (f)->dmaN) * VIBUF_ELM_SIZE)
+#define FN(f) (((f)->n - REST - (f)->dmaN) * VIBUF_ELM_SIZE)
+
+#define TS_NONE (-1)
+#define UNCMASK 0x0fffffff
+#define DMA_ID_REFE 0
+#define DMA_ID_NEXT 2
+#define DMA_ID_REF 3
+#define D3_CHCR ((volatile unsigned int *)0x1000b000)
+#define D3_MADR ((volatile unsigned int *)0x1000b010)
+#define D3_QWC ((volatile unsigned int *)0x1000b020)
+#define D4_CHCR ((volatile unsigned int *)0x1000b400)
+#define D4_MADR ((volatile unsigned int *)0x1000b410)
+#define D4_QWC ((volatile unsigned int *)0x1000b420)
+#define D4_TADR ((volatile unsigned int *)0x1000b430)
+#define IPU_CTRL ((volatile unsigned int *)0x10002010)
+#define IPU_BP ((volatile unsigned int *)0x10002020)
+#define IPU_CMD ((volatile unsigned int *)0x10002000)
+#define DGET_IPU_CTRL() (*IPU_CTRL)
+#define DGET_IPU_BP() (*IPU_BP)
+#define DPUT_IPU_CMD(x) (*IPU_CMD = (x))
+#define sceIpuIsBusy() ((int)DGET_IPU_CTRL() < 0)
+#define sceIpuBCLR(bp) DPUT_IPU_CMD(0x00000000 | (bp))
+
+static inline void *DmaAddr(void *val) {
+    return (void *)((unsigned int)val & UNCMASK);
+}
+
 /* getFIFOindex(ViBuf *, void *) */
-int func_0023CEC8(int *self, int arg1) {
-    int v1 = ((self[2] << 4) + self[1] + 0x10) & 0xFFFFFFF;
-    if (arg1 == v1) {
+int func_0023CEC8(ViBuf *f, void *addr) {
+    if (addr == DmaAddr(f->tag + (f->n + 1))) {
         return 0;
+    } else {
+        return ((unsigned int)addr - (unsigned int)f->data) / VIBUF_ELM_SIZE;
     }
-    return (unsigned int)(arg1 - self[0]) >> 11;
 }
 
 extern void func_0011D960(void);
@@ -379,95 +448,357 @@ void func_0023CFF0(long *arg0, int arg1, int arg2, int arg3) {
             (unsigned int)arg3;
 }
 
-extern int func_00118C70(void *);
-extern void func_0023D090(char *);
+struct SemaParam {
+    int currentCount;
+    int maxCount;
+    int initCount;
+    int numWaitThreads;
+    unsigned int attr;
+    unsigned int option;
+};
 
-/* NOTE: `long` is the 64-bit type in this compiler -- `long long` is
-   128-bit and compiles the +0x48 clear to `por`/`sq`, which is both
-   wrong and one instruction too many. */
-/* viBufCreate */
-int func_0023D018(char *arg0, int arg1, unsigned int arg2, int arg3,
-                  int arg4, int arg5) {
-    int buf[8];
+extern int func_00118C70(struct SemaParam *); /* CreateSema */
+extern int func_0023D090(ViBuf *);
 
-    *(int *)(arg0 + 0x00) = arg1;
-    *(int *)(arg0 + 0x50) = arg4;
-    *(int *)(arg0 + 0x54) = arg5;
-    buf[2] = 1;
-    *(int *)(arg0 + 0x04) = (arg2 & 0x0FFFFFFF) | 0x20000000;
-    *(int *)(arg0 + 0x18) = arg3 << 11;
-    buf[1] = 1;
-    *(int *)(arg0 + 0x08) = arg3;
-    *(int *)(arg0 + 0x40) = func_00118C70(buf);
-    func_0023D090(arg0);
-    *(long *)(arg0 + 0x48) = 0;
+static inline void *UncAddr(void *val) {
+    return (void *)(((unsigned int)val & 0x0fffffff) | 0x20000000);
+}
+
+/* viBufCreate(ViBuf *, u_long128 *, u_long128 *, int, TimeStamp *, int) */
+int func_0023D018(ViBuf *f, long long *data, long long *tag, int size,
+                  TimeStamp *ts, int n_ts) {
+    struct SemaParam param;
+
+    f->data = data;
+    f->tag = (long long *)UncAddr(tag);
+    f->n = size;
+    f->buffSize = size * VIBUF_ELM_SIZE;
+
+    f->ts = ts;
+    f->n_ts = n_ts;
+
+    param.initCount = 1;
+    param.maxCount = 1;
+    f->sema = func_00118C70(&param);
+
+    func_0023D090(f);
+
+    f->totalBytes = 0;
+
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023D090); /* viBufReset(ViBuf *) */
+/* viBufReset(ViBuf *) */
+int func_0023D090(ViBuf *f) {
+    int i;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023D1F0); /* viBufBeginPut(ViBuf *, unsigned char **, int *, unsigned char **, int *) */
+    f->dmaStart = 0;
+    f->dmaN = 0;
+    f->readBytes = 0;
+    f->isActive = 1;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023D2E8); /* viBufEndPut(ViBuf *, int) */
+    f->count_ts = 0;
+    f->wt_ts = 0;
+    for (i = 0; i < f->n_ts; i++) {
+        f->ts[i].pts = TS_NONE;
+        f->ts[i].dts = TS_NONE;
+        f->ts[i].pos = 0;
+        f->ts[i].len = 0;
+    }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023D340); /* viBufAddDMA(ViBuf *) */
+    for (i = 0; i < f->n; i++) {
+        func_0023CFF0((long *)(f->tag + i),
+                      (int)DmaAddr((char *)f->data + VIBUF_ELM_SIZE * i),
+                      DMA_ID_REF, VIBUF_ELM_SIZE / 16);
+    }
+    func_0023CFF0((long *)(f->tag + i), (int)DmaAddr(f->tag), DMA_ID_NEXT, 0);
 
+    *D4_QWC = 0;
+    *D4_MADR = (unsigned int)DmaAddr(f->data);
+    *D4_TADR = (unsigned int)DmaAddr(f->tag);
+    func_0023CF80((0 << 8) | (1 << 2) | 1);
+
+    return 1;
+}
+
+extern int func_00118CB0(int); /* WaitSema */
+extern int func_00118C90(int); /* SignalSema */
+
+/* viBufBeginPut(ViBuf *, unsigned char **, int *, unsigned char **, int *) */
+void func_0023D1F0(ViBuf *f, unsigned char **ptr0, int *len0,
+                   unsigned char **ptr1, int *len1) {
+    int es;
+    int en;
+    int fs;
+    int fn;
+
+    func_00118CB0(f->sema);
+
+    fs = FS(f);
+    fn = FN(f);
+
+    es = (fs + f->readBytes) % f->buffSize;
+    en = fn - f->readBytes;
+
+    if (f->buffSize - es >= en) {
+        *ptr0 = (unsigned char *)f->data + es;
+        *len0 = en;
+        *ptr1 = 0;
+        *len1 = 0;
+    } else {
+        *ptr0 = (unsigned char *)f->data + es;
+        *len0 = f->buffSize - es;
+        *ptr1 = (unsigned char *)f->data;
+        *len1 = en - (f->buffSize - es);
+    }
+
+    func_00118C90(f->sema);
+}
+
+/* viBufEndPut(ViBuf *, int) */
+void func_0023D2E8(ViBuf *f, int size) {
+    func_00118CB0(f->sema);
+
+    f->readBytes += size;
+    f->totalBytes = size + f->totalBytes;
+
+    func_00118C90(f->sema);
+}
+
+extern void func_0023BF48(char *); /* ErrMessage */
+extern char D_001E8E50[];          /* "DMA ADD not active\n" */
+
+/* viBufAddDMA(ViBuf *) */
+int func_0023D340(ViBuf *f) {
+    int i;
+    int index;
+    int id;
+    int last;
+    unsigned int d4chcr;
+    int isNewData = 0;
+    int consume;
+    int read_start, read_n;
+
+    func_00118CB0(f->sema);
+
+    if (!f->isActive) {
+        func_0023BF48(D_001E8E50);
+        return 0;
+    }
+
+    func_0023CF80((DMA_ID_REFE << 28) | (0 << 8) | (1 << 2) | 1);
+    d4chcr = *D4_CHCR;
+
+    index = func_0023CEC8(f, (void *)*D4_MADR);
+    consume = (index + f->n - f->dmaStart) % f->n;
+    f->dmaStart = (f->dmaStart + consume) % f->n;
+    f->dmaN -= consume;
+
+    read_start = (f->dmaStart + f->dmaN) % f->n;
+    read_n = f->readBytes / VIBUF_ELM_SIZE;
+    f->readBytes %= VIBUF_ELM_SIZE;
+
+    if (read_n > 0) {
+        last = (f->dmaStart + f->dmaN - 1 + f->n) % f->n;
+        func_0023CFF0((long *)(f->tag + last),
+                      (int)((char *)f->data + VIBUF_ELM_SIZE * last),
+                      DMA_ID_REF, VIBUF_ELM_SIZE / 16);
+        isNewData = 1;
+    }
+
+    index = read_start;
+    for (i = 0; i < read_n; i++) {
+        id = (i == read_n - 1) ? DMA_ID_REFE : DMA_ID_REF;
+        func_0023CFF0((long *)(f->tag + index),
+                      (int)((char *)f->data + VIBUF_ELM_SIZE * index), id,
+                      VIBUF_ELM_SIZE / 16);
+        index = (index + 1) % f->n;
+    }
+
+    f->dmaN += read_n;
+
+    if (f->dmaN) {
+        if (isNewData) {
+            d4chcr = (d4chcr & 0x0fffffff) | (DMA_ID_REF << 28);
+        }
+        func_0023CF80(d4chcr | 0x100);
+    }
+
+    func_00118C90(f->sema);
+
+    return 1;
+}
+
+/* viBufStopDMA and viBufRestartDMA are Sony's vibuf.c too, but stay asm:
+   their IPU busy-wait loops (`while (DGET_IPU_CTRL() & 0xf0);`,
+   `while (sceIpuIsBusy());`) carry retail's short-loop-erratum nop
+   padding, which this toolchain cannot emit. Measured with the verbatim
+   source: StopDMA 61 words vs 68, RestartDMA 190 vs 206 (size mismatch,
+   so reverted). */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023D540); /* viBufStopDMA(ViBuf *) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023D650); /* viBufRestartDMA(ViBuf *) */
 
 extern void func_0023CF80(int);
-extern void func_00118C80(int);
+extern int func_00118C80(int); /* DeleteSema */
 
 /* viBufDelete(ViBuf *) */
-int func_0023D988(void *arg0) {
-    char *s = (char *)arg0;
-    func_0023CF80(5);
-    *(volatile int *)0x1000B420 = 0;
-    *(volatile int *)0x1000B410 = 0;
-    *(volatile int *)0x1000B430 = 0;
-    func_00118C80(*(int *)(s + 0x40));
+int func_0023D988(ViBuf *f) {
+    func_0023CF80((0 << 8) | (1 << 2) | 1);
+    *D4_QWC = 0;
+    *D4_MADR = 0;
+    *D4_TADR = 0;
+
+    func_00118C80(f->sema);
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023D9E0); /* viBufCount(ViBuf *) */
+/* viBufCount(ViBuf *) */
+int func_0023D9E0(ViBuf *f) {
+    int ret;
 
-extern void func_00118CB0(int);
-extern void func_00118C90(int);
+    func_00118CB0(f->sema);
 
-/* The movn here is signed /2048 inside an align-up-to-2048:
-   (x + 0x7FF) / 0x800 * 0x800. Filed under the movz/movn skip category
-   for many rounds; it is an arithmetic idiom, not a conditional move. */
-/* Mid-iteration work-in-progress reverted to INCLUDE_ASM: it was at
-   13/84 when the agent working it was cut off by an API session
-   limit, i.e. unfinished rather than a documented near-miss, and
-   over the revert threshold. The partial C is preserved in branch
-   history (parallel-A/B/C) for whoever resumes it. */
-extern void func_00118CB0(int);
-extern void func_00118C90(int);
+    ret = f->dmaN * VIBUF_ELM_SIZE + f->readBytes;
 
-/*
- * Close, not exact (13/84), same size so harmless to everything after
- * it. Logic is confirmed: rounds field 0x14 up to the next multiple of
- * 2048 via the signed-division idiom retail uses, bracketed by the two
- * calls. The residual is purely the known scratch-register-allocation
- * question -- retail loads field 0x14 into $3 and materializes -1 into
- * $2, this compiler picks them the other way round, and every later
- * register follows from that. Hoisting the load into an explicit local
- * to change evaluation order was tried and changes nothing.
- */
-/* viBufFlush(ViBuf *) */
-void func_0023DA30(void *arg0) {
-    char *s = (char *)arg0;
-    int v;
-    func_00118CB0(*(int *)(s + 0x40));
-    v = *(int *)(s + 0x14);
-    *(int *)(s + 0x14) = ((v + 0x7FF) / 0x800) * 0x800;
-    func_00118C90(*(int *)(s + 0x40));
+    func_00118C90(f->sema);
+
+    return ret;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023DA88); /* viBufModifyPts(ViBuf *, TimeStamp *) */
+/* viBufFlush(ViBuf *). Was a 13/84 near-miss while WaitSema/SignalSema
+   were declared `void`: the callee's `int` return type alone moves the
+   scratch-register choice. Now Sony's source, verbatim. */
+#define bound(val, x) ((((val) + (x) - 1) / (x)) * (x))
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023DBE0); /* viBufPutTs(ViBuf *, TimeStamp *) */
+void func_0023DA30(ViBuf *f) {
+    func_00118CB0(f->sema);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023DCF0); /* viBufGetTs(ViBuf *, TimeStamp *) */
+    f->readBytes = bound(f->readBytes, VIBUF_ELM_SIZE);
+
+    func_00118C90(f->sema);
+}
+
+#define min(a, b) ((a) > (b) ? (b) : (a))
+#define max(a, b) ((a) > (b) ? (a) : (b))
+
+static inline int IsPtsInRegion(int tgt, int pos, int len, int size) {
+    int tgt1 = (tgt + size - pos) % size;
+    return tgt1 < len;
+}
+
+/* viBufModifyPts(ViBuf *, TimeStamp *) */
+int func_0023DA88(ViBuf *f, TimeStamp *new_ts) {
+    TimeStamp *ts;
+    int rd = (f->wt_ts - f->count_ts + f->n_ts) % f->n_ts;
+    int datasize = VIBUF_ELM_SIZE * f->n;
+    int loop = 1;
+
+    if (f->count_ts > 0) {
+        while (loop) {
+            ts = f->ts + rd;
+
+            if (ts->len == 0 || new_ts->len == 0) {
+                break;
+            }
+
+            if (IsPtsInRegion(ts->pos, new_ts->pos, new_ts->len, datasize)) {
+                int len = min(new_ts->pos + new_ts->len - ts->pos, ts->len);
+
+                ts->pos = (ts->pos + len) % datasize;
+                ts->len -= len;
+
+                if (ts->len == 0) {
+                    if (ts->pts >= 0) {
+                        ts->pts = TS_NONE;
+                        ts->dts = TS_NONE;
+                        ts->pos = 0;
+                        ts->len = 0;
+                    }
+                    f->count_ts = max(f->count_ts - 1, 0);
+                }
+            } else {
+                loop = 0;
+            }
+
+            rd = (rd + 1) % f->n_ts;
+        }
+    }
+
+    return 0;
+}
+
+/* viBufPutTs(ViBuf *, TimeStamp *) */
+int func_0023DBE0(ViBuf *f, TimeStamp *ts) {
+    int ret = 0;
+
+    func_00118CB0(f->sema);
+
+    if (f->count_ts < f->n_ts) {
+
+        func_0023DA88(f, ts);
+
+        if (ts->pts >= 0 || ts->dts >= 0) {
+
+            f->ts[f->wt_ts].pts = ts->pts;
+            f->ts[f->wt_ts].dts = ts->dts;
+            f->ts[f->wt_ts].pos = ts->pos;
+            f->ts[f->wt_ts].len = ts->len;
+
+            f->count_ts++;
+            f->wt_ts = (f->wt_ts + 1) % f->n_ts;
+        }
+        ret = 1;
+    }
+
+    func_00118C90(f->sema);
+
+    return ret;
+}
+
+/* viBufGetTs(ViBuf *, TimeStamp *) */
+int func_0023DCF0(ViBuf *f, TimeStamp *ts) {
+    unsigned int d4madr = *D4_MADR;
+    unsigned int ipubp = DGET_IPU_BP();
+    int bp = f->env.ipubp & 0x7f;
+    int fp = (ipubp >> 16) & 0x3;
+    int ifc = (ipubp >> 8) & 0xf;
+    unsigned int d4madr_next = d4madr - ((fp + ifc) << 4);
+    unsigned int stop;
+    int datasize = VIBUF_ELM_SIZE * f->n;
+    int isEnd = 0;
+    int tscount;
+    int wt;
+    int i;
+
+    func_00118CB0(f->sema);
+
+    ts->pts = TS_NONE;
+    ts->dts = TS_NONE;
+
+    stop = (d4madr_next + (bp >> 3) + datasize - (unsigned int)f->data) %
+           datasize;
+
+    tscount = f->count_ts;
+    wt = f->wt_ts;
+
+    for (i = 0; i < tscount && !isEnd; i++) {
+
+        int rd = (wt - tscount + f->n_ts + i) % f->n_ts;
+
+        if (IsPtsInRegion(stop, f->ts[rd].pos, f->ts[rd].len, datasize)) {
+
+            ts->pts = f->ts[rd].pts;
+            ts->dts = f->ts[rd].dts;
+            f->ts[rd].pts = TS_NONE;
+            f->ts[rd].dts = TS_NONE;
+
+            isEnd = 1;
+            f->count_ts -= min(1, f->count_ts);
+        }
+    }
+
+    func_00118C90(f->sema);
+
+    return 1;
+}
