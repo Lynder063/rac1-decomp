@@ -339,74 +339,7 @@ extern void func_0012F1E8(void *);
 extern void func_0023C390(void *);
 extern void func_00121750(int, int, int, void *);
 
-/* Sony's ezmpeg sample (EE library sample "mpeg streaming", vibuf.c
-   0.10, umemura 1999); the layout below is its ViBuf. */
-typedef struct {
-    long pts;
-    long dts;
-    int pos;
-    int len;
-} TimeStamp;
-
-typedef struct {
-    int d4madr;
-    int d4tadr;
-    int d4qwc;
-    int d4chcr;
-    int d3madr;
-    int d3qwc;
-    int d3chcr;
-    int ipubp;
-    int ipuctrl;
-} sceIpuDmaEnv;
-
-typedef struct {
-    long long *data;  /* 0x00 */
-    long long *tag;   /* 0x04 */
-    int n;            /* 0x08 */
-    int dmaStart;     /* 0x0C */
-    int dmaN;         /* 0x10 */
-    int readBytes;    /* 0x14 */
-    int buffSize;     /* 0x18 */
-    sceIpuDmaEnv env; /* 0x1C */
-    int sema;         /* 0x40 */
-    int isActive;     /* 0x44 */
-    long totalBytes;  /* 0x48 */
-    TimeStamp *ts;    /* 0x50 */
-    int n_ts;         /* 0x54 */
-    int count_ts;     /* 0x58 */
-    int wt_ts;        /* 0x5C */
-} ViBuf;
-
-#define VIBUF_ELM_SIZE 2048
-#define REST 2
-#define FS(f) (((f)->dmaStart + (f)->dmaN) * VIBUF_ELM_SIZE)
-#define FN(f) (((f)->n - REST - (f)->dmaN) * VIBUF_ELM_SIZE)
-
-#define TS_NONE (-1)
-#define UNCMASK 0x0fffffff
-#define DMA_ID_REFE 0
-#define DMA_ID_NEXT 2
-#define DMA_ID_REF 3
-#define D3_CHCR ((volatile unsigned int *)0x1000b000)
-#define D3_MADR ((volatile unsigned int *)0x1000b010)
-#define D3_QWC ((volatile unsigned int *)0x1000b020)
-#define D4_CHCR ((volatile unsigned int *)0x1000b400)
-#define D4_MADR ((volatile unsigned int *)0x1000b410)
-#define D4_QWC ((volatile unsigned int *)0x1000b420)
-#define D4_TADR ((volatile unsigned int *)0x1000b430)
-#define IPU_CTRL ((volatile unsigned int *)0x10002010)
-#define IPU_BP ((volatile unsigned int *)0x10002020)
-#define IPU_CMD ((volatile unsigned int *)0x10002000)
-#define DGET_IPU_CTRL() (*IPU_CTRL)
-#define DGET_IPU_BP() (*IPU_BP)
-#define DPUT_IPU_CMD(x) (*IPU_CMD = (x))
-#define sceIpuIsBusy() ((int)DGET_IPU_CTRL() < 0)
-#define sceIpuBCLR(bp) DPUT_IPU_CMD(0x00000000 | (bp))
-
-static inline void *DmaAddr(void *val) {
-    return (void *)((unsigned int)val & UNCMASK);
-}
+#include "ezmpeg.h"
 
 /* getFIFOindex(ViBuf *, void *) */
 int func_0023CEC8(ViBuf *f, void *addr) {
@@ -459,10 +392,6 @@ struct SemaParam {
 
 extern int func_00118C70(struct SemaParam *); /* CreateSema */
 extern int func_0023D090(ViBuf *);
-
-static inline void *UncAddr(void *val) {
-    return (void *)(((unsigned int)val & 0x0fffffff) | 0x20000000);
-}
 
 /* viBufCreate(ViBuf *, u_long128 *, u_long128 *, int, TimeStamp *, int) */
 int func_0023D018(ViBuf *f, long long *data, long long *tag, int size,
@@ -669,8 +598,6 @@ int func_0023D9E0(ViBuf *f) {
 /* viBufFlush(ViBuf *). Was a 13/84 near-miss while WaitSema/SignalSema
    were declared `void`: the callee's `int` return type alone moves the
    scratch-register choice. Now Sony's source, verbatim. */
-#define bound(val, x) ((((val) + (x) - 1) / (x)) * (x))
-
 void func_0023DA30(ViBuf *f) {
     func_00118CB0(f->sema);
 
@@ -678,9 +605,6 @@ void func_0023DA30(ViBuf *f) {
 
     func_00118C90(f->sema);
 }
-
-#define min(a, b) ((a) > (b) ? (b) : (a))
-#define max(a, b) ((a) > (b) ? (a) : (b))
 
 static inline int IsPtsInRegion(int tgt, int pos, int len, int size) {
     int tgt1 = (tgt + size - pos) % size;

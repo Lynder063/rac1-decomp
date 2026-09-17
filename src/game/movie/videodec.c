@@ -347,7 +347,45 @@ extern void func_00118C80(int);
 extern void func_00118CB0(int);
 extern void func_00118C90(int);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023DE98); /* videoDecCreate(VideoDec *, unsigned char *, int, unsigned long long *, unsigned long long *, int, TimeStamp *, int) */
+#include "ezmpeg.h"
+
+/* The sample's globals (videoDec, audioDec, ...) live in one heap block
+   here, reached through this pointer. */
+typedef struct {
+    char _pad0[0xD9048];
+    VideoDec videoDec; /* 0xD9048 */
+} MovieGlobals;
+extern MovieGlobals *D_0016130C MACRO_ADDR;
+#define videoDec (D_0016130C->videoDec)
+
+extern int func_0012B918(sceMpeg *, unsigned char *, int); /* sceMpegCreate */
+extern int func_0012BC50(sceMpeg *, int, sceMpegCallback, void *); /* sceMpegAddCallback */
+void func_0023E000(VideoDec *vd);
+int func_0023E450(sceMpeg *mp, sceMpegCbDataError *cberror, void *anyData);
+int func_0023E478(sceMpeg *mp, sceMpegCbData *cbdata, void *anyData);
+int func_0023E4B0(sceMpeg *mp, sceMpegCbData *cbdata, void *anyData);
+int func_0023E4E0(sceMpeg *mp, sceMpegCbData *cbdata, void *anyData);
+int func_0023E510(sceMpeg *mp, sceMpegCbDataTimeStamp *cbts, void *anyData);
+extern int func_0023D018(ViBuf *, long long *, long long *, int, TimeStamp *, int); /* viBufCreate */
+
+/* videoDecCreate(VideoDec *, unsigned char *, int, unsigned long long *, unsigned long long *, int, TimeStamp *, int) */
+int func_0023DE98(VideoDec *vd, unsigned char *mpegWork, int mpegWorkSize,
+                  long long *data, long long *tag, int tagSize,
+                  TimeStamp *pts, int n_pts) {
+    func_0012B918(&vd->mpeg, mpegWork, mpegWorkSize);
+
+    func_0012BC50(&vd->mpeg, 0, (sceMpegCallback)func_0023E450, 0);
+    func_0012BC50(&vd->mpeg, 1, func_0023E478, 0);
+    func_0012BC50(&vd->mpeg, 2, func_0023E4B0, 0);
+    func_0012BC50(&vd->mpeg, 3, func_0023E4E0, 0);
+    func_0012BC50(&vd->mpeg, 5, (sceMpegCallback)func_0023E510, 0);
+
+    func_0023E000(vd);
+
+    func_0023D018(&vd->vibuf, data, tag, tagSize, pts, n_pts);
+
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023DF98);
 
@@ -359,23 +397,25 @@ int func_0023DFA0(void) {
     return 1;
 }
 
-extern int func_0023D1F0(void *);
+extern void func_0023D1F0(ViBuf *, unsigned char **, int *, unsigned char **,
+                          int *); /* viBufBeginPut */
 
 /* videoDecBeginPut(VideoDec *, unsigned char **, int *, unsigned char **, int *) */
-int func_0023DFC0(void *arg0) {
-    return func_0023D1F0((char *)arg0 + 0x48);
+void func_0023DFC0(VideoDec *vd, unsigned char **ptr0, int *len0,
+                   unsigned char **ptr1, int *len1) {
+    func_0023D1F0(&vd->vibuf, ptr0, len0, ptr1, len1);
 }
 
-extern int func_0023D2E8(void *);
+extern void func_0023D2E8(ViBuf *, int); /* viBufEndPut */
 
-/* videoDecEndPut(VideoDec *) */
-int func_0023DFE0(void *arg0) {
-    return func_0023D2E8((char *)arg0 + 0x48);
+/* videoDecEndPut(VideoDec *, int) */
+void func_0023DFE0(VideoDec *vd, int size) {
+    func_0023D2E8(&vd->vibuf, size);
 }
 
 /* videoDecReset(VideoDec *) */
-void func_0023E000(int *arg0) {
-    *(arg0 + (0xA8 / 4)) = 0;
+void func_0023E000(VideoDec *vd) {
+    vd->state = VD_STATE_NORMAL;
 }
 
 extern int func_0023D988(void *);
@@ -400,7 +440,11 @@ int func_0023E008(void *arg0) {
  * identical constant" rather than picking a different register for two
  * genuinely different values. See docs/DECOMP_PROGRESS.md.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E040); /* videoDecAbort(VideoDec *) */
+/* videoDecAbort(VideoDec *). The earlier `int` attempt could not share
+   the constant with the return value; the sample's `void` is exact. */
+void func_0023E040(VideoDec *vd) {
+    vd->state = VD_STATE_ABORT;
+}
 
 /* videoDecGetState */
 int func_0023E050(int *arg0) {
@@ -414,7 +458,19 @@ int func_0023E058(int *arg0, int arg1) {
     return old;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E068); /* videoDecPutTs(VideoDec *, long, long, unsigned char *, int) */
+extern int func_0023DBE0(ViBuf *, TimeStamp *); /* viBufPutTs */
+
+/* videoDecPutTs(VideoDec *, long, long, unsigned char *, int) */
+int func_0023E068(VideoDec *vd, long pts_val, long dts_val,
+                  unsigned char *start, int len) {
+    TimeStamp ts;
+
+    ts.pts = pts_val;
+    ts.dts = dts_val;
+    ts.pos = start - (unsigned char *)vd->vibuf.data;
+    ts.len = len;
+    return func_0023DBE0(&videoDec.vibuf, &ts);
+}
 
 extern int func_0023D9E0(void *);
 
@@ -425,7 +481,49 @@ int func_0023E0B0(void *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E0D0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E0D8); /* videoDecFlush(VideoDec *) */
+extern int func_0023CBE0(unsigned char *, int, unsigned char *, int,
+                         unsigned char *, int, unsigned char *, int); /* cpy2area */
+extern void func_0023DA30(ViBuf *); /* viBufFlush */
+/* Retail keeps the sample's `u_char seq_end_code[4] = {0x00, 0x00, 0x01,
+   0xb7}` initializer in .lit at D_00161320. Our build takes .lit from
+   retail as data, so the initializer is copied from there explicitly;
+   the 4-byte struct copy compiles to the same lwl/lwr pair. */
+typedef struct {
+    unsigned char c[4];
+} SeqEndCode;
+extern SeqEndCode D_00161320;
+
+/* videoDecFlush(VideoDec *) */
+int func_0023E0D8(VideoDec *vd) {
+    unsigned char *pd0;
+    unsigned char *pd1;
+    unsigned char *pd0Unc;
+    unsigned char *pd1Unc;
+    SeqEndCode seq_end_code = D_00161320;
+    int d0, d1;
+    int len;
+
+    func_0023DFC0(vd, &pd0, &d0, &pd1, &d1);
+
+    if (d0 + d1 < 4) {
+        return 0;
+    }
+
+    pd0Unc = (unsigned char *)UncAddr(pd0);
+    pd1Unc = (unsigned char *)UncAddr(pd1);
+
+    len = func_0023CBE0(pd0Unc, d0, pd1Unc, d1, seq_end_code.c, 4, 0, 0);
+
+    func_0023DFE0(&videoDec, len);
+
+    func_0023DA30(&vd->vibuf);
+
+    if (vd->state == VD_STATE_NORMAL) {
+        vd->state = VD_STATE_FLUSH;
+    }
+
+    return 1;
+}
 
 extern int func_0023E0B0(void *);
 extern int func_0012BB98(void *);
@@ -446,15 +544,42 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023E298); /* decBs0(VideoDec *) */
 extern char D_00161328[];
 
 /* mpegError(sceMpeg *, sceMpegCbDataError *, void *) */
-int func_0023E450(int arg0, void *arg1) {
-    func_001E9730(D_00161328, *(int *)((char *)arg1 + 4));
+int func_0023E450(sceMpeg *mp, sceMpegCbDataError *cberror, void *anyData) {
+    func_001E9730(D_00161328, cberror->errMessage);
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E478); /* mpegNodata(sceMpeg *, sceMpegCbData *, void *) */
+extern void func_0023BB40(void);  /* switchThread */
+extern int func_0023D340(ViBuf *); /* viBufAddDMA */
+extern int func_0023D540(ViBuf *); /* viBufStopDMA */
+extern int func_0023D650(ViBuf *); /* viBufRestartDMA */
+extern int func_0023DCF0(ViBuf *, TimeStamp *); /* viBufGetTs */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E4B0);
+/* mpegNodata(sceMpeg *, sceMpegCbData *, void *) */
+int func_0023E478(sceMpeg *mp, sceMpegCbData *cbdata, void *anyData) {
+    func_0023BB40();
+    func_0023D340(&videoDec.vibuf);
+    return 1;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E4E0);
+/* mpegStopDMA */
+int func_0023E4B0(sceMpeg *mp, sceMpegCbData *cbdata, void *anyData) {
+    func_0023D540(&videoDec.vibuf);
+    return 1;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E510);
+/* mpegRestartDMA */
+int func_0023E4E0(sceMpeg *mp, sceMpegCbData *cbdata, void *anyData) {
+    func_0023D650(&videoDec.vibuf);
+    return 1;
+}
+
+/* mpegTS */
+int func_0023E510(sceMpeg *mp, sceMpegCbDataTimeStamp *cbts, void *anyData) {
+    TimeStamp ts;
+
+    func_0023DCF0(&videoDec.vibuf, &ts);
+    cbts->pts = ts.pts;
+    cbts->dts = ts.dts;
+    return 1;
+}

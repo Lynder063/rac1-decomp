@@ -26,4 +26,23 @@
  */
 #define NOT_SDA __attribute__((section(".data")))
 
+/*
+ * Loads a global with retail's one-register form:
+ *     lui $2,%hi(D) / lw $2,%lo(D)($2)
+ * where plain declarations give the split form this compiler prefers:
+ *     lui $2,%hi(D) / lw $3,%lo(D)($2)
+ *
+ * The section name makes the compiler treat the symbol as small data, so
+ * it emits the unsplit assembler macro `lw $2,D`. The declared size is
+ * still over -G2, so the assembler does not use $gp for it and expands the
+ * macro through the destination register. The register choice around the
+ * load follows, because the compiler allocated one pseudo, not two.
+ *
+ * Loads only. A store to such a symbol becomes a two-instruction macro
+ * (`lui $at` / `sw`) that the compiler still counts as one instruction, so
+ * it can land in a delay slot; the assembler then warns "macro used after
+ * .set nomacro". Check the make log for that warning.
+ */
+#define MACRO_ADDR __attribute__((section(".sdata")))
+
 #endif /* COMMON_H */
