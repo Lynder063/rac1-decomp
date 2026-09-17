@@ -80,11 +80,12 @@ regnames:
 # and every offset are left exactly as v1.14 emitted them. No offset
 # arithmetic, which is what makes it safe. (fix_core_spills keys on
 # address, so the objects from 0x12DB18 on keep their sq spills.)
-build-sn/core/%.o: src/core/%.c tools/fix_core_spills.py tools/fix_tail_calls.py
+build-sn/core/%.o: src/core/%.c tools/fix_core_spills.py tools/fix_tail_calls.py tools/check_macro_slots.py
 	@mkdir -p build-sn/core
 	$(CC_CORE) $(CFLAGS) -S -o build-sn/core/$*.s $<
 	python tools/fix_core_spills.py build-sn/core/$*.s build-sn/core/$*_sp.s
 	python tools/fix_tail_calls.py build-sn/core/$*_sp.s build-sn/core/$*_fixed.s
+	python tools/check_macro_slots.py build-sn/core/$*_fixed.s
 	$(CC_CORE) $(CFLAGS) -c build-sn/core/$*_fixed.s -o $@
 
 # libgcc modules: verbatim GCC source, no rewriters.
@@ -114,10 +115,11 @@ build-sn/libgcc/asm_%.o: src/libgcc/nonmatching_%.c
 
 # text objects (src/game/**.c) need the tail-call rewrite, but NOT
 # fix_core_spills: retail's text segment uses sq/lq, which v1.14 emits.
-build-sn/game/%.o: src/game/%.c tools/fix_tail_calls.py
+build-sn/game/%.o: src/game/%.c tools/fix_tail_calls.py tools/check_macro_slots.py
 	@mkdir -p $(dir $@)
 	$(CC_TEXT) $(CFLAGS) -S -o build-sn/game/$*.s $<
 	python tools/fix_tail_calls.py build-sn/game/$*.s build-sn/game/$*_fixed.s
+	python tools/check_macro_slots.py build-sn/game/$*_fixed.s
 	$(CC_TEXT) $(CFLAGS) -c build-sn/game/$*_fixed.s -o $@
 
 clean:

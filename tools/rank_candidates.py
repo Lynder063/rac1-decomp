@@ -209,13 +209,13 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     if re.search(r"\b(sq|lq)\s+\$(?!29\b|1[6-9]\b|2[0-3]\b|31\b)", text):
         return "blocked", "bare quadword", ""
 
-    # --- the $at macro store form: retail builds an address in $1 and
-    # stores through it. This compiler never emits $at, it always
-    # allocates a normal register, and -mno-split-addresses (which does
-    # reproduce it) breaks loads elsewhere. Same "two behaviours, one
-    # flag" shape as the sq/lq question.
-    if re.search(r"\b[sl][bhwdq]c?1?\s+\$\w+,\s*[^,]*\(\$1\)", text) and re.search(r"lui\s+\$1\b", text):
-        return "blocked", "$at macro store", "compiler never emits $at form"
+    # --- the $at macro store form (retail builds an address in $1 and
+    # stores through it) was blocked here for many rounds. UNBLOCKED:
+    # declare the global MACRO_ADDR (include/common.h) and the assembler
+    # expands the compiler's unsplit `sw $x,D` through $at. The same
+    # attribute gives the one-register load form. Hinted below.
+    at_store = bool(re.search(r"\b[sl][bhwdq]c?1?\s+\$\w+,\s*[^,]*\(\$1\)", text)
+                    and re.search(r"lui\s+\$1\b", text))
 
     # --- one variable reached BOTH via $gp and via lui/%lo in the same
     # function: one declaration cannot be both, and an aliased second
@@ -301,11 +301,11 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
             if t2 is not None and t2 <= idx and idx - t2 <= 7:
                 return "risky", "loop delay slot nop", "erratum: unfilled delay slot"
 
-    # Allocator destination-reuse: `lw $x, %lo(sym)($x)`. This is THE
-    # signature that predicted the $gp near-misses; filtering it out is
-    # what produced a 4-of-5 hit rate.
-    if re.search(r"l[wbhd]u?\s+\$(\w+),\s*%lo\([^)]*\)\(\$\1\)", text):
-        return "risky", "allocator destination-reuse", "lw $x,%lo(sym)($x)"
+    # Destination-reuse load `lw $x, %lo(sym)($x)`. Long treated as an
+    # allocator near-miss generator; it is the assembler's expansion of an
+    # unsplit `lw $x,sym` macro, which MACRO_ADDR (include/common.h)
+    # reproduces. No longer risky: hinted below instead.
+    reuse_load = bool(re.search(r"l[wbhd]u?\s+\$(\w+),\s*%lo\([^)]*\)\(\$\1\)", text))
 
     # core_text functions that save $ra with sq/lq: retail is on the sq
     # side here but v1.36 emits sd/ld, so these carry a guaranteed 2-byte
@@ -330,6 +330,8 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     detail = ""
     if re.search(r"\$28\b", text):
         detail = "$gp (unblocked at -G2)"
+    if at_store or reuse_load:
+        detail = (detail + "; " if detail else "") + "MACRO_ADDR"
     return "candidate", "candidate", detail
 
 

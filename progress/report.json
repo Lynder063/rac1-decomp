@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 6.979159513836435,
+  "fuzzy_match_percent": 6.984309551603379,
   "total_code": "466016",
-  "matched_code": "27988",
-  "matched_code_percent": 6.00580237588409,
+  "matched_code": "28012",
+  "matched_code_percent": 6.010952413651033,
   "total_functions": 1688,
-  "matched_functions": 382,
-  "matched_functions_percent": 22.630331753554504,
+  "matched_functions": 383,
+  "matched_functions_percent": 22.68957345971564,
   "complete_code": "2940",
   "complete_code_percent": 0.6308796264505939,
   "total_units": 130,
@@ -7684,13 +7684,13 @@
   {
    "name": "game/actuator",
    "measures": {
-    "fuzzy_match_percent": 0.0,
+    "fuzzy_match_percent": 2.1739130434782608,
     "total_code": "1104",
-    "matched_code": "0",
-    "matched_code_percent": 0.0,
+    "matched_code": "24",
+    "matched_code_percent": 2.1739130434782608,
     "total_functions": 5,
-    "matched_functions": 0,
-    "matched_functions_percent": 0.0,
+    "matched_functions": 1,
+    "matched_functions_percent": 20.0,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -7727,7 +7727,7 @@
     {
      "name": "func_001E94A8",
      "size": "24",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "1064",
      "metadata": {
       "virtual_address": "2004136"
@@ -18462,13 +18462,13 @@
    "id": "game",
    "name": "Game",
    "measures": {
-    "fuzzy_match_percent": 6.048482615218593,
+    "fuzzy_match_percent": 6.053746742821046,
     "total_code": "455916",
-    "matched_code": "23040",
-    "matched_code_percent": 5.05356249835496,
+    "matched_code": "23064",
+    "matched_code_percent": 5.058826625957413,
     "total_functions": 1664,
-    "matched_functions": 367,
-    "matched_functions_percent": 22.05528846153846,
+    "matched_functions": 368,
+    "matched_functions_percent": 22.115384615384617,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
