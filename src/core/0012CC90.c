@@ -2,11 +2,10 @@
 #include "structs.h"
 
 /*
- * core_text object 0x12CC90-0x12DB18. Boundaries are retail's linker fill
+ * core_text object 0x12CC90-0x12D868. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
  */
 
-/* Declarations in scope here before the split. */
 extern long func_00116F68(int arg0, int arg1, int arg2);
 extern int D_0015ED10;
 extern void *D_0012F86C NOT_SDA;
@@ -374,7 +373,6 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D5D0);
  */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D688);
 
-
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D730);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D760);
@@ -382,16 +380,3 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D760);
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D788);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D818);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D868);
-
-extern void func_0011DDA0(int);
-
-/* Tail call: `j func_0011DDA0` with the argument zeroed in the delay slot. */
-void func_0012DA28(void) {
-    func_0011DDA0(0);
-}
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DA30);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DA38);

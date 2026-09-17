@@ -2,9 +2,8 @@
 #include "structs.h"
 
 /*
- * 989snd.c (0x12DB68-0x12F308): 989 Studios' sound library. The
- * "/usr/local/989snd/ee/989snd.c" path string is used from 0x12DBE0 on.
- * Name and extent from bordplate's NTSC RC1 split, shifted +0x140.
+ * wad.cpp (0x12F348-0x12F580), the last object in core_text. Name from
+ * bordplate's NTSC RC1 split.
  */
 
 /* Declarations in scope here before the split. */
@@ -164,132 +163,13 @@ extern signed char D_001331D8[];
 extern int func_0012D4E0(int);
 extern int func_0012D4B0(int);
 extern void func_0011DDA0(int);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DB68);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DDC0);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DFA0);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DFB0);
-
 extern short D_0015ED84;
 extern short D_0015ED80;
-
-void func_0012E038(void *arg0, int arg1) {
-    int *p = (int *)arg0;
-    *(int *)&D_0015ED84 = arg1;
-    *(int *)&D_0015ED80 = (int)arg0;
-    p[arg1 + 1] = 0;
-    p[0] = 0;
-}
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E058);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E1B8);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E2D8);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E318);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E348);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E380);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E3B0);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E3F8);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E438);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E490);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E4D8);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E528);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E558);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E588);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E5B8);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E648);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E688);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E820);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EAE0);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EB18);
-
-/* gp-relative: declared small so -G2 places it in the small-data area,
-   accessed as the word it really is. gp 0x166D00 - 0x7F3C = 0x15EDC4. */
 extern short D_0015EDC4;
-
-void func_0012EC30(void) {
-    *(int *)&D_0015EDC4 = 1;
-}
-
 extern void func_0012DDC0(void);
 
-/*
- * Close, not exact (2/32), same size. Retail saves/restores $ra with
- * sq/lq here; v1.36 (correctly for core_text overall) emits sd/ld, so
- * the two spill instructions differ and nothing else does. This is one
- * of the ~14 core_text functions on the sq side of that split -- the
- * still-open half of the sq/lq question, not a source-shape problem.
- */
-void func_0012EC40(void) {
-    *(int *)&D_0015EDC4 = 0;
-    func_0012DDC0();
-}
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F348);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EC60);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F3F8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012ED10);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012ED40);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EDB0);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EDE0);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE10);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE40);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE70);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE98);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EF48);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EFE8);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F030);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F068);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F098);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F0E8);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F120);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F160);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F1E8);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F210);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F248);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F280);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F2B8);
-
-int func_0012F2E0(int arg0) {
-    return (arg0 * 0x5F4) / 0x2E5;
-}
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F4A8);

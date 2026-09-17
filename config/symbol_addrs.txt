@@ -25,3 +25,7 @@ func_001236F0 = 0x001236F0; // type:func
 func_00125218 = 0x00125218; // type:func
 func_001252A0 = 0x001252A0; // type:func
 func_0012CC70 = 0x0012CC70; // type:func
+
+// 989snd.c starts right after boot.cpp's main (confirmed: crt0 calls
+// func_0012DB18 as main; the 989snd.c path string is used from 0x12DBE0 on).
+func_0012DB68 = 0x0012DB68; // type:func

@@ -79,4 +79,8 @@ build-sn/core/0012A2F0.o 0x0012A2F0
 build-sn/core/0012AC80.o 0x0012AC80
 build-sn/core/0012CC70.o 0x0012CC70
 build-sn/core/0012CC90.o 0x0012CC90
-build-sn/core/989snd.o 0x0012DB18
+build-sn/core/crt0.o 0x0012D868
+build-sn/core/boot.o 0x0012DA38
+build-sn/core/989snd.o 0x0012DB68
+build-sn/core/permcb.o 0x0012F308
+build-sn/core/wad.o 0x0012F348

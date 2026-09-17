@@ -737,10 +737,25 @@ Result: every loadable byte (core_text, core_data, core_rdata, text) is
 identical to the build before the split, still 364 exact, and every
 function is at its retail address.
 
-**Confirmed independently:** the object at 0x12DB18 is **989snd.c**. Its
-first function references `"/usr/local/989snd/ee/989snd.c"`, which is 989
-Studios' sound library. That boundary was placed from the `sq`/`sd`
-sub-build switch, not from fill, so two unrelated kinds of evidence agree.
+**The core_text tail, corrected.** An earlier note here said the object at
+0x12DB18 is 989snd.c. That was wrong. crt0 calls `func_0012DB18` as
+**main**, so 0x12DB18 is boot.cpp's `main`, and splat had merged the start
+of 989snd into it. The ELF entry point (0x12D868 = `_start`) gives the
+NTSC-to-PAL shift for this stretch (+0x140). With it, bordplate's NTSC
+split maps onto code boundaries PAL confirms:
+
+| object | PAL | evidence |
+|---|---|---|
+| crt0 | 0x12D868 | e_entry; `padduw` register clearing after pad nops |
+| boot.cpp | 0x12DA38 | right after `_exit`'s syscall; holds ParseBin and main (0x12DB18) |
+| 989snd.c | 0x12DB68 | prologue after main's loop and pad; the 989snd.c path string is used from 0x12DBE0 |
+| permcb.cpp | 0x12F308 | right after `jr $ra` and pad |
+| wad.cpp | 0x12F348 | right after `jr $ra` |
+
+`func_0012DB68` is declared in `config/symbol_addrs.txt`. The sq/sd switch
+at 0x12DB18 therefore falls at `main`, inside boot.cpp, not at an object
+boundary. `fix_core_spills.py` keys on the address, so the build is
+unaffected. Rebuilt byte-identical, still 364 exact.
 
 **`text` is split too (58 files, named after the originals).** Evidence and method:
 - bordplate's NTSC project RC1 (codeberg.org/bordplate/RC1) splits NTSC
