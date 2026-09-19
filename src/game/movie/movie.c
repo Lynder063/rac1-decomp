@@ -343,16 +343,16 @@ int func_0023BB40(void) {
     return func_00118BC0(1);
 }
 
-/*
- * Reverted (9/44). Logic is certainly `func_0023C2B0((char *)D_0016130C
- * + 0xD9100);`. Held by the documented %hi-register-reuse allocator
- * sub-case: retail does `lui $2` / `lw $2,lo($2)` reusing the same
- * register, this compiler emits `lui $2` / `lw $3,lo($2)` and also
- * hoists the constant's lui one slot earlier. Tried a base-pointer
- * local plus &p[off] indexing (the documented two-sided lever); no
- * change, which confirms allocator rather than source shape.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023BB60); /* isAudioOK */
+/* The sample's globals live in one heap block reached through this
+   pointer (see videodec.c); audioDec sits at 0xD9100. */
+extern char *D_0016130C MACRO_ADDR;
+extern int func_0023C2B0(void *);  /* audioDecIsPreset */
+extern void func_0023C2C0(void *); /* audioDecSend */
+
+/* isAudioOK: ezmpeg's `return audioDecIsPreset(&audioDec);` */
+int func_0023BB60(void) {
+    return func_0023C2B0(D_0016130C + 0xD9100);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023BB90); /* initAll(int, int, int) */
 
@@ -365,4 +365,7 @@ int func_0023BF48(int arg0) {
     return func_001E9730(D_001612F8, arg0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023BF70); /* proceedAudio(void) */
+/* proceedAudio: ezmpeg's `audioDecSend(&audioDec);` */
+void func_0023BF70(void) {
+    func_0023C2C0(D_0016130C + 0xD9100);
+}

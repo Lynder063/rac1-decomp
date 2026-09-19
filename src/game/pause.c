@@ -450,15 +450,97 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0021DB30);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021DE08); /* DrawSoundMenu */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021E170);
+typedef struct {
+    unsigned short v;
+    short pad;
+} Half4;
+typedef struct {
+    unsigned short a;
+    short b;
+    char pad[8];
+} Rec0C;
+extern int D_0015EF30 MACRO_ADDR;
+extern Rec0C D_001CFFC0[];
+extern unsigned char D_00141F08[];
+extern Half4 D_00199812[];
+
+int func_0021E170(void) {
+    int i;
+    for (i = 0; i < D_0015EF30;) {
+        int j = i + 1;
+        unsigned char k;
+        D_001CFFC0[i].b = 1;
+        k = D_00141F08[D_0015EF30 - j];
+        D_001CFFC0[i].a = D_00199812[k].v;
+        i = j;
+    }
+    D_001CFFC0[D_0015EF30].a = 0;
+    return 0;
+}
 
 int func_0021E1F8(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021E200);
+typedef struct {
+    int key;
+    int flags;
+} PadBind;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021E2D0);
+/* Aliased rather than renamed: func_00227018 further down still walks
+   the same table as a flat int array. */
+extern PadBind D_001D6448_t[] __asm__("D_001D6448");
+
+extern int D_001D6078;
+extern int D_00137C80[];
+extern int func_00217628_3(int, int, int) __asm__("func_00217628");
+
+int func_0021E200(char *arg0) {
+    int i;
+    char *g;
+    func_00226D50(1);
+    *(int *)(arg0 + 0x54) = 0;
+    *(int *)(arg0 + 0x38) = 0;
+    g = D_001D5F70;
+    for (i = 0; i < 5; i++) {
+        if (D_001D6448_t[i].key != 0
+            && (unsigned int)D_001D6448_t[i].key
+                   < *(unsigned int *)(g + 0x10C)) {
+            D_001D6448_t[i].flags |= 2;
+        }
+    }
+    *(int *)(arg0 + 0x50) = 0;
+    if (D_001517D0[4] == 0) {
+        if (func_00217628_3(D_001D6078, D_00137C80[0x1528 / 4],
+                            D_00137C80[0x152C / 4]) != 0) {
+            *(int *)(arg0 + 0x50) = 1;
+        } else {
+            *(int *)(arg0 + 0x50) = 3;
+        }
+    }
+    *(int *)(arg0 + 0x10) |= 4;
+    return 0;
+}
+
+/* D_0015F780 is SDA elsewhere; pause.cpp stores it through $at. */
+extern int D_0015F780_m __asm__("D_0015F780") MACRO_ADDR;
+extern int D_001997FC;
+
+int func_0021E2D0(int arg0) {
+    if (D_001517D0[4] != 0 && *(int *)(arg0 + 0x50) == 1) {
+        func_00217588();
+    }
+    func_00226D50(1);
+    {
+        int v = *(int *)(arg0 + 0x54);
+        if (v != 0) {
+            int w = *(int *)(arg0 + 0x38);
+            D_0015F780_m = v;
+            D_001997FC = w;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021E340);
 
@@ -778,7 +860,46 @@ int func_00222AD0(void *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00222B00);
+/*
+ * Near-miss, same size (4 words differ, allocator only): in the default
+ * arm retail keeps the D_001D5F70 base in $v1 (the register that held
+ * D_0015EFB0) with the loaded pointer in $a0 and the value in $a1; we
+ * get base $a1, pointer $a0, value $v1. Spellings tried (asm-differ
+ * score, lower is better; all 0x94 bytes):
+ *   this one (if/!=, base local per arm)                       25
+ *   base, pointer and value as separate locals in the arm      45
+ *   la-macro alias (MACRO_ADDR) for the base in the arm        235
+ *   switch with default first and break                        2430
+ * D_0013CBE4 is NOT a macro access: retail splits its lui into the
+ * second beq's delay slot and branches past it, which only the split
+ * form can do (MACRO_ADDR there trips check_macro_slots).
+ */
+/* D_0015EFB0 is SDA elsewhere; pause.cpp reaches it through the
+   assembler macro. */
+extern int D_0015EFB0_m __asm__("D_0015EFB0") MACRO_ADDR;
+extern int D_0013CBE4;
+
+int func_00222B00(void) {
+    int v;
+    char *g;
+    if (D_0015EFB0_m != 0x10 && D_0015EFB0_m != 1) {
+        g = D_001D5F70;
+        *(int *)(g + 8) = *(int *)(*(char **)(g + 4) + 0x38);
+        return 0;
+    }
+    v = D_0013CBE4;
+    if (v & 0x20) {
+        g = D_001D5F70;
+        *(int *)(g + 0xD4) = 0;
+        *(int *)(g + 8) = *(int *)(*(char **)(g + 4) + 0x38);
+        *(int *)(*(char **)(g + 4) + 0x84) = 1;
+    } else if (v & 0x10) {
+        g = D_001D5F70;
+        *(int *)(g + 8) = *(int *)(*(char **)(g + 4) + 0x38);
+        *(int *)(*(char **)(g + 4) + 0x84) = 0;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00222B98);
 
@@ -919,7 +1040,17 @@ void *func_00226720(int arg0) {
     return o;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002267C0);
+extern int D_0015F6F0 MACRO_ADDR;
+extern void func_0020D678(void *); /* DeleteMoby */
+
+int func_002267C0(int arg0) {
+    if (arg0 == 0) {
+        return 0;
+    }
+    func_0020D678((void *)arg0);
+    *(long *)(arg0 + 0x38) = D_0015F6F0;
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00226808);
 
@@ -975,14 +1106,6 @@ void func_00226D48(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00226D50);
 
-typedef struct {
-    int key;
-    int flags;
-} PadBind;
-
-/* Aliased rather than renamed: func_00227018 further down still walks
-   the same table as a flat int array. */
-extern PadBind D_001D6448_t[] __asm__("D_001D6448");
 
 extern int func_00227018(int handle);
 
@@ -1108,11 +1231,55 @@ int func_002270B0(int arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00227100);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00227890);
+extern int D_00160450 MACRO_ADDR;
+typedef struct {
+    int unk00;
+    int arg[13];
+} Rec38;
+extern Rec38 D_001D6250[];
+
+int func_00227890(int a0, int a1, int a2, int a3, int a4, int a5, int a6,
+                  int a7, int a8, int a9, int a10, int a11, int a12) {
+    int n = D_00160450;
+    Rec38 *r;
+    if (n >= 8) {
+        return -1;
+    }
+    D_00160450 = n + 1;
+    r = &D_001D6250[n];
+    r->arg[0] = a0;
+    r->arg[1] = a1;
+    r->arg[2] = a2;
+    r->arg[3] = a3;
+    r->arg[4] = a4;
+    r->arg[5] = a5;
+    r->arg[6] = a6;
+    r->arg[7] = a7;
+    r->arg[8] = a8;
+    r->arg[9] = a9;
+    r->arg[10] = a10;
+    r->unk00 = 0;
+    r->arg[11] = a11;
+    r->arg[12] = a12;
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00227928);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002279D0);
+extern int D_001D641C;
+
+int func_002279D0(void) {
+    if (D_001517D0[4] != 0) {
+        char *g = D_001D5F70;
+        if (*(unsigned char *)(g + 0xCB) != 0) {
+            func_00217588();
+            g[0xCB] = 0;
+        }
+    }
+    D_001D641C = 0;
+    D_00160450 = 0;
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00227A30);
 
@@ -1166,7 +1333,29 @@ void func_00227A70(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00227B00);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00227C78);
+extern char D_0015EF98[] MACRO_ADDR;
+extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
+extern char D_00141FC0[];
+extern void func_00121A80(void *);
+extern void func_0012D818(void *);
+extern void func_00208FA0(void);
+extern void func_00208338(void *);
+
+void func_00227C78(int arg0, int arg1) {
+    char *b = D_0013D390;
+    func_00121A80(D_0015EF98);
+    func_0012D818(D_0015EF98);
+    func_00208FA0();
+    func_00208338(D_00141FC0 + (D_0015EE84_m << 11));
+    func_0020BA00((char *)arg0);
+    *(int *)(b + 0xF4) = arg0;
+    *(int *)(b + 0x14) = arg1;
+    *(int *)(b + 0xC8) = 0;
+    if (*(int *)(b + 0xE4) < 0) {
+        *(int *)(b + 0xE8) = 0;
+        *(int *)(b + 0xE4) = 0x13;
+    }
+}
 
 /*
  * Reverted (size mismatch: 136 vs retail's 144). Semantics are certain:

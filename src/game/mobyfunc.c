@@ -155,7 +155,26 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0020D348); /* CreateMoby(int) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020D440); /* InitMobyInstance(MobyInstance *, int) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020D678); /* DeleteMoby */
+typedef struct {
+    char _pad00[0x20];
+    unsigned char state; /* 0x20 */
+    char _pad21[0x38 - 0x21];
+    long unk38; /* 0x38 */
+} MobyDel;
+extern char *D_0016001C MACRO_ADDR;
+extern int D_0015F6F0 MACRO_ADDR;
+extern void func_0020EA70(void *, int);
+
+/* DeleteMoby */
+void func_0020D678(MobyDel *m) {
+    if ((char *)m < D_0016001C) {
+        m->state = 0xFD;
+    } else {
+        m->state = 0xFE;
+    }
+    m->unk38 = D_0015F6F0 + 2;
+    func_0020EA70(m, 0x80807F7F);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020D6D0);
 
