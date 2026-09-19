@@ -297,14 +297,15 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0022F258);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022F498);
 
-/*
- * Reverted (10/28). Semantics are certain:
- *     D_0015F6E4 = arg0;
- *     D_0015F6FC = 1;
- *     *(int *)&D_0015F690 = 1;           (gp -0x7670 -> 0x15F690)
- * Same blocker as func_001E94A8: the global-STORE addressing form.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_0022F4A0);
+extern int D_0015F6E4 MACRO_ADDR;
+extern int D_0015F6FC_m __asm__("D_0015F6FC") MACRO_ADDR;
+extern short D_0015F690; /* SDA, gp -0x7670 */
+
+void func_0022F4A0(int arg0) {
+    D_0015F6E4 = arg0;
+    *(int *)&D_0015F690 = 1;
+    D_0015F6FC_m = 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022F4C0);
 

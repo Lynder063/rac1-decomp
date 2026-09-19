@@ -376,13 +376,16 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00235118);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00235218);
 
-/*
- * Reverted: SIZE MISMATCH (36/52) -- my reading was wrong, and a
- * size-mismatched function actively harms everything after it (it shifted
- * func_0023D988, giving func_0023E008 a spurious 1-byte jal diff). Shape
- * is a DMA/GIF packet append on D_00161000: bump the global by 0x10,
- * store arg0+0x90000000 at [0] and zero [1]..[3], but the emitted store
- * order ([0],[3],[1],[2]) did not come out of the rotation rule and the
- * pointer bump is materialized differently. Needs a fresh look.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00235290);
+/* Append one quadword to the packet at D_00161000. */
+typedef struct {
+    int w[4];
+} Qword;
+extern Qword *D_00161000 MACRO_ADDR;
+
+void func_00235290(int arg0) {
+    Qword *p = D_00161000++;
+    p->w[0] = arg0 + 0x90000000;
+    p->w[1] = 0;
+    p->w[2] = 0;
+    p->w[3] = 0;
+}

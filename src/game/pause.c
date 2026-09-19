@@ -219,24 +219,20 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00219C70); /* PauseAllSounds */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00219E48);
 
-/*
- * Close but not exact (23/44), reverted. Logic:
- *   char *p = D_001D5F70;
- *   *(int*)p = 0x2D; *(int*)(p+0x110) = 0; D_0015F6E8 = 3;
- *   *(int*)(p+0xC) = 0; *(int*)(p+0x10) = 0;
- * Instruction count/size are right (44 both) but the register
- * assignment differs from the very first instruction (retail `lui $4`,
- * this compiler `lui $5`) and cascades. The store *order* also doesn't
- * follow the usual rotation rule -- unlike the single-base cases, this
- * function's stores go through two different bases (the D_001D5F70
- * object and the standalone global D_0015F6E8), and the compiler
- * reorders them more freely: source (0x110, global, 0xC, 0x10, 0) came
- * out as (0, global, 0x10, 0x110, 0xC), which is not a rotation.
- * Writing the source in retail's own emitted order changes nothing.
- * So: the rotation rule is base-pointer-scoped, and this is the
- * register-allocation-choice question on top.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00219E60);
+/* Hoisted from further down the file: this is its first use, and a
+   second NOT_SDA extern for the same object in one translation unit is
+   a hard error. */
+extern char D_001D5F70[] NOT_SDA;
+extern int D_0015F6E8 MACRO_ADDR;
+
+void func_00219E60(void) {
+    char *p = D_001D5F70;
+    D_0015F6E8 = 3;
+    *(int *)p = 0x2D;
+    *(int *)(p + 0xC) = 0;
+    *(int *)(p + 0x10) = 0;
+    *(int *)(p + 0x110) = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00219E90);
 
@@ -310,10 +306,6 @@ int func_0021CD98(void) {
     return 0;
 }
 
-/* Hoisted from further down the file: this is its first use, and a
-   second NOT_SDA extern for the same object in one translation unit is
-   a hard error. */
-extern char D_001D5F70[] NOT_SDA;
 
 /* D_001D5F70 + 0xCB. Retail addresses this one byte BOTH ways -- through
    its own %hi/%lo here and as 0xCB($16) off the D_001D5F70 base a few
@@ -433,18 +425,13 @@ int func_0021DAE0(void) {
     return 0;
 }
 
-/*
- * Close but not exact (15/48): int func(void) {
- *   D_0013E6A0 = (D_0015EEF0 * 8) / 10; return 0; }
- * Shape exactly right (real signed `div` plus its trap guard -- see the
- * constant-division note in the techniques section). Residual is the
- * same recurring pair as func_00222D70/func_0021B108: retail loads the
- * global into the very register it put the `%hi` in (`lui $3` /
- * `lw $3`), this compiler uses a separate register for the `%hi`, and
- * the divisor's `addiu` is ordered before the load rather than after.
- * Reverted per the size-of-diff precedent.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_0021DB00);
+extern int D_0015EEF0 MACRO_ADDR;
+extern int D_0013E6A0;
+
+int func_0021DB00(void) {
+    D_0013E6A0 = (D_0015EEF0 * 8) / 10;
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021DB30);
 

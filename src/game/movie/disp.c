@@ -342,8 +342,30 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023C5E0); /* setImageTag */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C7A8); /* vblankHandler */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C910); /* handler_endimage */
+/* The sample's globals live in one heap block reached through this
+   pointer (see videodec.c); voBuf sits at 0xD9168. */
+extern char *D_0016130C MACRO_ADDR;
+extern int D_001612E0 MACRO_ADDR; /* isDispStarted? */
+extern int D_001612E8 MACRO_ADDR;
+extern void func_0023E710(void *); /* voBufDecCount */
+
+/* Sony's eekernel.h ExitHandler(): re-enable interrupts on the way out
+   of an interrupt handler. */
+#define ExitHandler() __asm__ volatile("sync.l; ei")
+
+/* handler_endimage */
+int func_0023C910(int val) {
+    if (D_001612E8) {
+        func_0023E710(D_0016130C + 0xD9168);
+        D_001612E8 = 0;
+    }
+    ExitHandler();
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C960); /* startDisplay(int) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C9B0); /* endDisplay(void) */
+/* endDisplay */
+void func_0023C9B0(void) {
+    *(volatile int *)&D_001612E0 = 0;
+}

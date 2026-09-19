@@ -477,27 +477,98 @@ int func_00209048(int x1, int y1, int x0, int y0, int x2, int y2) {
 INCLUDE_ASM("asm/nonmatchings/text", func_00209070);
 
 /*
- * Close but not exact (18/36): materializes &D_0013D390 into a base
- * pointer, sets D_0015EFB0 = 3, reads base+0xC4 into a temp, zeroes
- * base+0xFC, writes the temp to base+0x1C. Logic confirmed correct via
- * objdump. Re-tested against the store-order rotation rule this round
- * (source 0x1C-then-0xFC to obtain retail's emitted 0xFC-then-0x1C):
- * no change, still 18/36. Consistent with the rule being documented as
- * base-pointer-scoped -- the D_0015EFB0 store is through a second base,
- * and as with func_00219E60 the presence of two bases makes the
- * scheduling unresponsive to source order. The residual is retail
- * putting the literal 3 early (materialized into $3 before the base's
- * own addiu) and using $1/$at for D_0015EFB0's hi, where this compiler
- * orders those differently and uses a normal temp register.
+ * Near-miss, same size (differ score 180): func_00209160 below. Every
+ * instruction is right but the scheduler places them differently:
+ * retail   lui b; li 3; addiu b; [lui $at; sw 3]; lw C4; sw FC; j; sw 1C
+ * ours     li 3; lui b; [lui $at; sw 3]; addiu b; sw FC; lw C4; j; sw 1C
+ * The compiler schedules the MACRO_ADDR store as ONE instruction; retail
+ * evidently scheduled around a two-instruction store. Tried: store via a
+ * volatile lvalue, reading 0xC4 into a temp before the store, taking the
+ * base after the store, the constant in its own local, and every order
+ * of the four statements (tools/permute.py) -- the emitted order never
+ * moves. Previously stubbed for the SDA collision, now expressible with
+ * MACRO_ADDR.
  */
 extern char D_0013D390[];
-extern short D_0015EFB0;   /* SDA: retail reaches 0x15EFB0 via $gp in some TUs */
+/* menu.cpp's state word and flags. Stored through the assembler's lui
+   macro, and $gp-relative where the access sits in a delay slot (see
+   tools/check_macro_slots.py). */
+extern int D_0015EFB0 MACRO_ADDR;
+extern int D_0015EFB4 MACRO_ADDR;
+extern int D_0013D3AC;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209160);
+void func_00209160(void) {
+    char *b = D_0013D390;
+    int t;
+    D_0015EFB0 = 3;
+    t = *(int *)(b + 0xC4);
+    *(int *)(b + 0xFC) = 0;
+    *(int *)(b + 0x1C) = t;
+}
 
+/*
+ * Reverted: our ASSEMBLER makes it 12 bytes too long. The compiler's
+ * instruction stream is retail's, byte for byte, with the two ands
+ * (dead-store elimination on D_0015EFB4, see below) and the
+ * $gp-in-delay-slot form. But ee-as then inserts 3 nops before the
+ * cross-jumped `b` back into the 0x80 arm -- its EE short-loop erratum
+ * padding -- and retail has no nops there. Measured: this assembler
+ * pads a backward branch whose loop body is under ~6 instructions, and
+ * pads this 9-instruction one too for a reason that a reduced test case
+ * does not reproduce (plain copies of the same instruction sequence
+ * assemble clean). Retail's own assembler did not pad here, though the
+ * image does carry erratum nops elsewhere.
+ *
+ * The recovered source, which is correct apart from that:
+ *
+ * void func_00209188(void) {
+ *     int flags = D_0015EFB4;
+ *     char *b;
+ *     int nf;
+ *     D_0015EFB4 = flags & ~4;
+ *     b = D_0013D390;
+ *     nf = D_0015EFB4 & ~2;
+ *     D_0015EFB4 = nf;
+ *     if (*(int *)(b + 0xFC) == 0) {
+ *         D_0015EFB0 = 3;
+ *         return;
+ *     }
+ *     if (flags & 0x80) {
+ *         D_0015EFB0 = 0x15;
+ *         D_0015EFB4 = (nf ^ 0x80) | 0x40;
+ *         return;
+ *     }
+ *     if (flags & 0x100) {
+ *         D_0015EFB0 = 0x14;
+ *         D_0015EFB4 = (nf ^ 0x100) | 0x40;
+ *         return;
+ *     }
+ *     if (*(int *)(b + 0x1C) != 0) {
+ *         *(int *)(b + 0xFC) = 0;
+ *         D_0015EFB4 = nf | 1;
+ *         D_0015EFB0 = 2;
+ *         return;
+ *     }
+ *     if (flags & 0x200) {
+ *         D_0015EFB4 = nf ^ 0x200;
+ *         D_0015EFB0 = 0x16;
+ *     }
+ * }
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00209188);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209238);
+void func_00209238(void) {
+    char *b = D_0013D390;
+    char *base = b + 0xB0;
+    int idx = *(int *)(b + 0xCC);
+    int *slot = (int *)(base + idx * 0xC0);
+    if (*slot == 2) {
+        *slot = 0;
+    }
+    if ((D_0015EFB4 ^ 1) & 1) {
+        D_0015EFB0 = 3;
+    }
+}
 
 void func_00209290(void) {
     char *b = D_0013D390;
@@ -515,14 +586,60 @@ void func_00209290(void) {
     if (*slot == 2) {
         *slot = 0;
     }
-    *(int *)&D_0015EFB0 = 4;
+    D_0015EFB0 = 4;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002092E8);
+void func_002092E8(void) {
+    char *b = D_0013D390;
+    int v;
+    D_0015EFB4 &= ~0x20;
+    if (*(int *)(b + 8) != 2) {
+        return;
+    }
+    v = *(int *)(b + 0x1C);
+    if (v == 0) {
+        D_0015EFB0 = 9;
+    } else if (v == -1) {
+        *(int *)(b + 0x1C) = 0;
+        D_0015EFB0 = 9;
+    } else if (v == -2) {
+        D_0015EFB0 = 5;
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209358);
+void func_00209358(void) {
+    if (D_0013D3AC != -2) {
+        D_0015EFB0 = 3;
+        return;
+    }
+    if (D_0015EFB4 & 2) {
+        D_0015EFB0 = 6;
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209398);
+extern int D_0015F6C8 MACRO_ADDR;
+
+void func_00209398(void) {
+    int flags;
+    if (D_0013D3AC != -2) {
+        D_0015EFB0 = 3;
+        return;
+    }
+    flags = D_0015EFB4;
+    if (flags & 0x20) {
+        D_0015EFB4 = flags ^ 0x20;
+        if (D_0015F6C8 != 0) {
+            D_0015EFB0 = 0x17;
+            return;
+        }
+        D_0015EFB0 = 5;
+        return;
+    }
+    if (flags & 8) {
+        D_0015EFB4 = flags ^ 8;
+        D_0015EFB0 = 7;
+    }
+}
 
 void func_00209418(void) {
     char *s = D_0013D390;
@@ -531,38 +648,39 @@ void func_00209418(void) {
         *(int *)(s + 0xE8) = 0;
         *(int *)(s + 0xE4) = 3;
     }
-    *(int *)&D_0015EFB0 = 8;
+    D_0015EFB0 = 8;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209448);
+void func_00209448(void) {
+    char *s = D_0013D390;
+    if (*(int *)(s + 0xDC) == 2 && *(int *)(s + 0xE4) < 0) {
+        if (*(int *)(s + 0xEC) != 0) {
+            D_0015EFB0 = 0x11;
+            D_0015EFB4 |= 0x40;
+            return;
+        }
+        D_0015EFB0 = 0xE;
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002094A8);
+void func_002094A8(void) {
+    if (D_0013D3AC != 0) {
+        D_0015EFB0 = 3;
+        return;
+    }
+    if (D_0015EFB4 & 6) {
+        D_0015EFB0 = 0xA;
+    }
+}
 
-/*
- * Close but not exact (13/64 bytes, 20.3%): if the struct at D_0013D390
- * has kind field 0xDC == 2 and status field 0xE4 is negative, reset it
- * (status=7, field 0xE8=0) and set the global error code D_0015EFB0=0xB.
- * Needed an explicit `char *s` local (materializing the struct's base
- * address once via addiu, matching retail) to get from 58% down to this
- * -- without it the compiler folds each field offset directly into its
- * load/store immediate instead. Remaining diff is the established
- * store-order/scratch-register-choice open question: retail stores the
- * two struct fields, *then* computes D_0015EFB0's address and stores to
- * it; this compiler computes D_0015EFB0's address right after loading
- * the two constants and stores to it before the second struct field,
- * and picks $a0 for the constant 0xB where retail picks $v1. Tried
- * reordering the source statements; no further change.
- */
-/* Stubbed: with D_0015EFB0 declared SDA (needed for func_00209418,
-   which reaches 0x15EFB0 via $gp) this function compiles 4 bytes
-   SHORT of retail, because retail reaches the same address here via
-   the non-SDA lui/%hi form instead. Retail evidently declared it
-   differently per translation unit; one .c file cannot express both.
-   It was already a documented near-miss blocked by the global-STORE
-   addressing question, so nothing exact is lost -- but a SIZE
-   mismatch would drift everything after it, so it is stubbed.
-   Decoded semantics are in the comment above. */
-INCLUDE_ASM("asm/nonmatchings/text", func_002094E0);
+void func_002094E0(void) {
+    char *s = D_0013D390;
+    if (*(int *)(s + 0xDC) == 2 && *(int *)(s + 0xE4) < 0) {
+        *(int *)(s + 0xE4) = 7;
+        *(int *)(s + 0xE8) = 0;
+        D_0015EFB0 = 0xB;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209520);
 
@@ -570,119 +688,77 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002095E8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209620);
 
-/*
- * Close but not exact (13/64, 20.3%) -- a direct sibling of
- * func_002094E0 above: same guard (kind field 0xDC == 2 and status field
- * 0xE4 negative), same three writes, only the constants differ (status 9
- * and error code 0xF here, vs 7 and 0xB there). Landed on exactly the
- * same residual as that function, from exactly the same cause: retail
- * stores the two struct fields first and only then computes
- * D_0015EFB0's address (using $1/$at for its %hi), where this compiler
- * materializes that address earlier and stores to it before the second
- * struct field. That's the established two-base store-order/%hi
- * register-choice question; func_002094E0's entry already records that
- * reordering the source statements doesn't move it, so not re-tried.
- * Kept as documented-close on that function's precedent (same 20.3%).
- */
-/* Stubbed: with D_0015EFB0 declared SDA (needed for func_00209418,
-   which reaches 0x15EFB0 via $gp) this function compiles 4 bytes
-   SHORT of retail, because retail reaches the same address here via
-   the non-SDA lui/%hi form instead. Retail evidently declared it
-   differently per translation unit; one .c file cannot express both.
-   It was already a documented near-miss blocked by the global-STORE
-   addressing question, so nothing exact is lost -- but a SIZE
-   mismatch would drift everything after it, so it is stubbed.
-   Decoded semantics are in the comment above. */
-INCLUDE_ASM("asm/nonmatchings/text", func_00209698);
+void func_00209698(void) {
+    char *s = D_0013D390;
+    if (*(int *)(s + 0xDC) == 2 && *(int *)(s + 0xE4) < 0) {
+        *(int *)(s + 0xE4) = 9;
+        *(int *)(s + 0xE8) = 0;
+        D_0015EFB0 = 0xF;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002096D8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209750);
 
-extern int D_0015EFB4;
 
-/* Byte-identical to func_00209858; see its comment. Same 9/80 residual. */
-/* Stubbed: with D_0015EFB0 declared SDA (needed for func_00209418,
-   which reaches 0x15EFB0 via $gp) this function compiles 4 bytes
-   SHORT of retail, because retail reaches the same address here via
-   the non-SDA lui/%hi form instead. Retail evidently declared it
-   differently per translation unit; one .c file cannot express both.
-   It was already a documented near-miss blocked by the global-STORE
-   addressing question, so nothing exact is lost -- but a SIZE
-   mismatch would drift everything after it, so it is stubbed.
-   Decoded semantics are in the comment above. */
-INCLUDE_ASM("asm/nonmatchings/text", func_00209808);
+void func_00209808(void) {
+    char *b = D_0013D390;
+    char *base = b + 0xB0;
+    int idx = *(int *)(b + 0xCC);
+    int *slot = (int *)(base + idx * 0xC0);
+    if (*slot == 2) {
+        *slot = 0;
+    }
+    if (!(D_0015EFB4 & 0x40)) {
+        D_0015EFB0 = 3;
+    }
+}
 
-/*
- * Close but not exact (9/80, 11.3%). Instruction-for-instruction
- * identical to retail apart from two documented-unsteerable register
- * choices: retail loads D_0015EFB4 with the %hi and the value in the
- * *same* register (`lui $2` / `lw $2,%lo($2)`) where this compiler uses
- * a separate temp, and retail uses $1/$at for D_0015EFB0's %hi (putting
- * the literal 3 before it) where this compiler uses a normal register
- * after. Both are the established %hi-reuse / $at sub-cases of the
- * allocator question -- same cause as func_002094E0/func_00209698.
- *
- * Getting here needed the pointer-advance form: reading the index off
- * the base *before* advancing it by 0xB0 as its own statement. Folding
- * it (`D_0013D390 + 0xB0` in the declaration) makes the compiler
- * materialize one combined address constant instead, which was 51/80.
- * Worth noting the `beql` for `if (*rec == 2) *rec = 0;` matched
- * exactly -- so a branch-likely *is* reachable from plain C for a
- * single-statement `if` whose body fits the delay slot, unlike the FP
- * bc1fl case in func_00208208.
- */
-/* Stubbed: with D_0015EFB0 declared SDA (needed for func_00209418,
-   which reaches 0x15EFB0 via $gp) this function compiles 4 bytes
-   SHORT of retail, because retail reaches the same address here via
-   the non-SDA lui/%hi form instead. Retail evidently declared it
-   differently per translation unit; one .c file cannot express both.
-   It was already a documented near-miss blocked by the global-STORE
-   addressing question, so nothing exact is lost -- but a SIZE
-   mismatch would drift everything after it, so it is stubbed.
-   Decoded semantics are in the comment above. */
-INCLUDE_ASM("asm/nonmatchings/text", func_00209858);
+void func_00209858(void) {
+    char *b = D_0013D390;
+    char *base = b + 0xB0;
+    int idx = *(int *)(b + 0xCC);
+    int *slot = (int *)(base + idx * 0xC0);
+    if (*slot == 2) {
+        *slot = 0;
+    }
+    if (!(D_0015EFB4 & 0x40)) {
+        D_0015EFB0 = 3;
+    }
+}
 
-/*
- * Close but not exact (7/32 bytes): if (D_0013D3AC != 0) D_0015EFB0 = 3;
- * Logic confirmed correct via objdump. Retail schedules the literal 3
- * into the branch's delay slot; this compiler schedules the
- * D_0015EFB0 address computation there instead and materializes 3
- * separately later. New instance of the delay-slot-scheduling open
- * question (same family as func_00209160 right below).
- *
- * Additionally ruled out since: `*(volatile int *)&D_0015EFB0 = 3;`
- * (the volatile-signature technique that fixed func_0023E710 /
- * func_0023E5B8 -- no change here, still 7/32) and hoisting the
- * constant into its own local before the `if` (the documented
- * delay-slot-steering technique -- also no change). Genuinely the
- * scheduling question, not a volatile or statement-order artifact.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_002098A8);
+void func_002098A8(void) {
+    if (D_0013D3AC != 0) {
+        D_0015EFB0 = 3;
+    }
+}
 
-/* Byte-identical to func_00209858; see its comment. Same 9/80 residual. */
-/* Stubbed: with D_0015EFB0 declared SDA (needed for func_00209418,
-   which reaches 0x15EFB0 via $gp) this function compiles 4 bytes
-   SHORT of retail, because retail reaches the same address here via
-   the non-SDA lui/%hi form instead. Retail evidently declared it
-   differently per translation unit; one .c file cannot express both.
-   It was already a documented near-miss blocked by the global-STORE
-   addressing question, so nothing exact is lost -- but a SIZE
-   mismatch would drift everything after it, so it is stubbed.
-   Decoded semantics are in the comment above. */
-INCLUDE_ASM("asm/nonmatchings/text", func_002098C8);
+void func_002098C8(void) {
+    char *b = D_0013D390;
+    char *base = b + 0xB0;
+    int idx = *(int *)(b + 0xCC);
+    int *slot = (int *)(base + idx * 0xC0);
+    if (*slot == 2) {
+        *slot = 0;
+    }
+    if (!(D_0015EFB4 & 0x40)) {
+        D_0015EFB0 = 3;
+    }
+}
 
-/* Byte-identical to func_00209858; see its comment. Same 9/80 residual. */
-/* Stubbed: with D_0015EFB0 declared SDA (needed for func_00209418,
-   which reaches 0x15EFB0 via $gp) this function compiles 4 bytes
-   SHORT of retail, because retail reaches the same address here via
-   the non-SDA lui/%hi form instead. Retail evidently declared it
-   differently per translation unit; one .c file cannot express both.
-   It was already a documented near-miss blocked by the global-STORE
-   addressing question, so nothing exact is lost -- but a SIZE
-   mismatch would drift everything after it, so it is stubbed.
-   Decoded semantics are in the comment above. */
-INCLUDE_ASM("asm/nonmatchings/text", func_00209918);
+void func_00209918(void) {
+    char *b = D_0013D390;
+    char *base = b + 0xB0;
+    int idx = *(int *)(b + 0xCC);
+    int *slot = (int *)(base + idx * 0xC0);
+    if (*slot == 2) {
+        *slot = 0;
+    }
+    if (!(D_0015EFB4 & 0x40)) {
+        D_0015EFB0 = 3;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209968);
 
