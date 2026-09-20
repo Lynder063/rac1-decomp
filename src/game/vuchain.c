@@ -404,7 +404,15 @@ void func_00234B48(void *data, int qwc) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234B98);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234BA0);
+void func_00234BA0(int arg0, void *src, int qwc) {
+    D_00161000[0] = qwc | 0x10000000;
+    D_00161000[1] = 0;
+    D_00161000[2] = 0x1000404;
+    D_00161000[3] = arg0 | (qwc << 16) | 0x6C000000;
+    D_00161000 += 4;
+    func_001F9A98(D_00161000, src, qwc * 16);
+    D_00161000 += qwc * 4;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234C48);
 

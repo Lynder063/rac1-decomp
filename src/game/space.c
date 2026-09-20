@@ -313,7 +313,26 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0022F738);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022FBE0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022FD20);
+/*
+ * 5/160. The 64-bit argument form of func_00234C98 is needed here (one
+ * call passes 0x8000000044). The whole residual is how that one
+ * constant is built: retail has ori 0x8000 / dsll 24 / ori 0x44, and
+ * this assembler expands the identical `dli` macro as addiu 0x80 /
+ * dsll32 / ori 0x44. Every C spelling of the value folds to the same
+ * constant and therefore to the same macro, so the sequence retail has
+ * must have come out of its compiler rather than its assembler.
+ */
+extern void func_00234C98_l(int, long) __asm__("func_00234C98");
+extern int D_0013E604;
+extern long D_00160688 MACRO_ADDR;
+
+void func_0022FD20(int arg0) {
+    func_00234C98_l(0x47, 0x31801);
+    func_00234C98_l(0x42, ((long)0x8000 << 24) | 0x44);
+    func_001F5800(0x20, D_0013E604 - 0x58, 0x100, 0x20, 0, 0, 0x100, 0x20,
+                  (arg0 << 24) | 0x808080, D_00160688);
+    func_00234C98_l(0x47, 0x5360B);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022FDC0);
 

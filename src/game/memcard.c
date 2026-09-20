@@ -133,7 +133,41 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00209BB8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209CE8); /* memcard_RestoreGame */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209DC0);
+/*
+ * 3/168: the only residual is the allocator holding the loaded pointer
+ * in $2 where retail uses $3. Everything else, including saving the
+ * three globals across func_00209CE8 and the $at store of D_0015EE84,
+ * is instruction-for-instruction retail.
+ */
+extern int D_00137C80[];
+extern void func_001FDF10(int, void *, void *);
+extern void func_00217748(int);
+extern void func_002176C8(int, int, int);
+extern void func_00209CE8(int);
+extern int D_0015EEE8 MACRO_ADDR;
+extern int D_0015EEEC MACRO_ADDR;
+extern int D_0015EEF0 MACRO_ADDR;
+extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
+
+void func_00209DC0(void) {
+    int a;
+    int b;
+    int s0;
+    int s1;
+    int s2;
+
+    func_001FDF10(D_00137C80[5] << 11, &a, &b);
+    func_00217748(1);
+    func_002176C8(a, D_00137C80[4], D_00137C80[5]);
+    s2 = D_0015EEF0;
+    s1 = D_0015EEEC;
+    s0 = D_0015EEE8;
+    func_00209CE8(a + *(int *)(a + 0x10));
+    D_0015EEF0 = s2;
+    D_0015EEEC = s1;
+    D_0015EEE8 = s0;
+    D_0015EE84_m = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209E68);
 

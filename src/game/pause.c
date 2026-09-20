@@ -1455,7 +1455,19 @@ void *func_00228400(char *p) {
     return p;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00228458);
+extern int *D_00161000 MACRO_ADDR;
+extern char D_001D8120[];
+extern short D_00160460;              /* SDA, gp -0x68A0 */
+extern void func_002298B0(int, int);
+
+void func_00228458(int arg0, int idx, int n) {
+    D_00161000[0] = 0x30000003;
+    D_00161000[1] = (int)(D_001D8120 + n * 0x30);
+    D_00161000[2] = 0x13000000;
+    D_00161000[3] = 0x50000003;
+    D_00161000 += 4;
+    func_002298B0(arg0, ((int *)&D_00160460)[idx]);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002284E8);
 

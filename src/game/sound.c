@@ -412,7 +412,23 @@ int func_0022EE28(int idx, int arg1, int arg2) {
     return h;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022EEB8);
+extern int D_0015F710 MACRO_ADDR;
+
+int func_0022EEB8(int rel, int arg1, int arg2) {
+    int idx = rel + D_0015F694;
+    int h;
+
+    if (idx >= D_0015F710) {
+        return -1;
+    }
+    h = func_0022EB08(D_0015F714 + idx * 32, arg1, arg2, 0, 0x400);
+    if (h >= 0) {
+        char *rec = D_0013E650 + h * 0x70;
+        *(int *)(rec + 0x88) = arg2;
+        *(short *)(rec + 0x7E) = idx;
+    }
+    return h;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022EF50);
 
