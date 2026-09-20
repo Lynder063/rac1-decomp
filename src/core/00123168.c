@@ -108,7 +108,51 @@ extern int func_00121040(int);
 extern int D_001325C0;
 extern char D_00132E40[];
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00123168);
+extern void *func_00121D08(void);
+extern int func_00119328(int);
+extern int func_00118AA0(int, int);
+extern int func_00118A90(int, void *, int);
+extern void func_00119390(int);
+
+/*
+ * Same-size near-miss (8/0xA0 bytes). Install (or, called with
+ * arg0 == 0, uninstall) a handler/arg pair at offset 8/0xC of
+ * D_00132E40 (func_00121D08's return -- same global func_00122140
+ * reads the mode flag from), guarded by func_00119328/func_00119390,
+ * a lock/unlock pair around the two syscall-wrapper calls
+ * func_00118AA0/func_00118A90. Returns the previous handler.
+ *
+ * The only divergence is the func_00118A90(lvl, arg0, -1) call's
+ * argument setup: retail computes a1 (arg0) before a0 (lvl); every
+ * spelling tried here -- the literal `2` inline, a `lvl` local reused
+ * across all four calls (this dropped the diff from 75 to 65 words by
+ * fixing an unrelated store-order pair, but didn't touch this swap),
+ * and forcing evaluation order through two sequenced statement-local
+ * temporaries right before the call -- produces the same a0-before-a1
+ * order regardless. Pure register-content-identical instruction
+ * scheduling, not reachable from source.
+ */
+int func_00123168(void *arg0) {
+    char *g = (char *)func_00121D08();
+    int lvl = 2;
+    int prev = *(int *)(g + 8);
+
+    if (arg0 == 0) {
+        func_00119328(lvl);
+        func_00118AA0(lvl, *(int *)(g + 0xC));
+        *(int *)(g + 0xC) = 0;
+        *(int *)(g + 8) = 0;
+    } else {
+        if (prev != 0) {
+            func_00119328(lvl);
+            func_00118AA0(lvl, *(int *)(g + 0xC));
+        }
+        *(int *)(g + 8) = (int)arg0;
+        *(int *)(g + 0xC) = func_00118A90(lvl, arg0, -1);
+        func_00119390(lvl);
+    }
+    return prev;
+}
 
 extern void func_00123650(void *);
 extern char D_001534E0[];
