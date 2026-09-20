@@ -378,7 +378,46 @@ void func_0023C0E0(void *arg0) {
     s->unk5C = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C128); /* audioDecBeginPut(_AudioDec *, unsigned char **, int *, unsigned char **, int *) */
+/* audioDecBeginPut: describe up to two writable regions of the ring
+ * buffer (unk34 base, unk30/unk38 write/read cursors, unk3C/unk40
+ * limits) for the caller to fill. state==0 with mode==4 (the "flush"
+ * state?) or the fallback empty-buffer case both hand back a single
+ * region and zero the second; state!=0 (buffer has data) picks
+ * whichever of the two wrap segments is smaller. */
+void func_0023C128(Obj23C *s, unsigned char **a1, int *a2, unsigned char **a3, int *a4) {
+    if (s->state == 0) {
+        int mode = *(int *)((char *)s + 4);
+        if (mode != 4) {
+            *a1 = (unsigned char *)((char *)s + (s->unk30 + 8));
+            *a2 = 0x28 - s->unk30;
+            *a3 = (unsigned char *)s->unk34;
+            *a4 = s->unk40;
+            return;
+        } else {
+            *a1 = (unsigned char *)s->unk34;
+            *a2 = s->unk40;
+            *a3 = 0;
+            *a4 = 0;
+            return;
+        }
+    } else {
+        int free1 = s->unk40 - s->unk3C;
+        int free2 = s->unk40 - s->unk38;
+        if (free2 >= free1) {
+            *a1 = (unsigned char *)(s->unk34 + s->unk38);
+            *a2 = free1;
+            *a3 = 0;
+            *a4 = 0;
+            return;
+        } else {
+            *a1 = (unsigned char *)(s->unk34 + s->unk38);
+            *a2 = s->unk40 - s->unk38;
+            *a3 = (unsigned char *)s->unk34;
+            *a4 = free1 - (s->unk40 - s->unk38);
+            return;
+        }
+    }
+}
 
 /* Mid-iteration work-in-progress reverted to INCLUDE_ASM: it was at
    57/180 when the agent working it was cut off by an API session
