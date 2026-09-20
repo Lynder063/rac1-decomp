@@ -65,7 +65,34 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F2930); /* UpdateFog(int) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F2A38); /* ParseOcclGrid */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F2B10); /* GetOcclGridFromPair(int, int, int, int, int, int, float) */
+extern int func_001F2A38(int, int, int);
+
+/* GetOcclGridFromPair(int, int, int, int, int, int, float) */
+int func_001F2B10(int a0, int a1, int a2, int a3, int a4, int a5, float t) {
+    int r;
+    int b0;
+    int b1;
+    int b2;
+
+    if (t < 0.5f) {
+        r = func_001F2A38(a0, a1, a2);
+        if (r != 0) {
+            return r;
+        }
+        b0 = a3;
+        b1 = a4;
+        b2 = a5;
+    } else {
+        r = func_001F2A38(a3, a4, a5);
+        if (r != 0) {
+            return r;
+        }
+        b0 = a0;
+        b1 = a1;
+        b2 = a2;
+    }
+    return func_001F2A38(b0, b1, b2);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F2BC8); /* BuildOcclVisibility(void) */
 

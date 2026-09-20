@@ -176,6 +176,46 @@ void func_0020D678(MobyDel *m) {
     func_0020EA70(m, 0x80807F7F);
 }
 
+extern unsigned char D_001AAF40[];
+
+/*
+ * REVERTED -- same size, but the residual is a CSE the source cannot
+ * express. Semantics are certain; p[0x52] selects a table entry and
+ * p[0x50]/p[0x51] index within it:
+ *
+ *   void func_0020D6D0(unsigned char *p) {
+ *       unsigned char *t;
+ *       if (p[0x52] != 0xFF) {
+ *           t = *(unsigned char **)(p + 0x24) + 0x48;
+ *           *(int *)(p + 0x68) =
+ *               *(int *)(*(int *)(t + p[0x52] * 4) + p[0x50] * 4 + 0x1C);
+ *           p[0x7E] = *(unsigned char *)(*(int *)(t + p[0x52] * 4) + 0x12);
+ *           p[0x7C] = *(unsigned char *)(*(int *)(t + p[0x52] * 4) + 0x11);
+ *       } else {
+ *           p[0x7C] = p[0x52];
+ *           p[0x7E] = 0;
+ *           *(int *)(p + 0x68) = (int)&D_001AAF40[p[0x50] << 11];
+ *       }
+ *       *(int *)(p + 0x6C) =
+ *           *(int *)(*(int *)(*(char **)(p + 0x24) + p[0x53] * 4 + 0x48) +
+ *                    p[0x51] * 4 + 0x1C);
+ *   }
+ *
+ * Two things were learned and both are already right above:
+ *   - `!= 0xFF` (not `== 0xFF`) puts the blocks in retail's order, with
+ *     the sentinel case as the far block;
+ *   - holding `base + 0x48` in ONE local gives retail's zero-displacement
+ *     loads. Recomputing the address per use folds 0x48 into the load
+ *     displacement instead, which is 3 instructions out.
+ *
+ * What is left: retail RELOADS p[0x52] with `lbu` for each of the three
+ * uses, while this compiler keeps the value from the `!= 0xFF` compare in
+ * a register and re-masks it with `andi` before each use (1690 differing
+ * words, all of them that pattern). Writing each use as a separate
+ * expression does not stop the CSE; only `volatile` would, and that also
+ * serialises the accesses, which retail's schedule interleaves. Retail's
+ * compiler simply did not CSE the byte load across the branch.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_0020D6D0);
 
 /*
