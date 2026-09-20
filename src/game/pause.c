@@ -958,6 +958,56 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002250B8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00225358);
 
+/*
+ * REVERTED -- 8 bytes SHORT, so it cannot be left in. The decode is
+ * certain and everything except two nops matches, registers included:
+ *
+ *   extern int func_002267C0(int);
+ *   extern int func_00226F68(int);
+ *   extern void func_00227A70(void);
+ *
+ *   int func_00225548(void *arg0) {
+ *       char *g; int *p; int *q; int i; int j;
+ *
+ *       p = (int *)((char *)arg0 + 0x44);
+ *       for (i = 23; i >= 0; i--) { *p = func_002267C0(*p); p++; }
+ *       g = D_001D5F70;
+ *       *(int *)(g + 0xA0) = func_00226F68(*(int *)(g + 0xA0));
+ *       *(int *)(g + 0xA4) = func_00226F68(*(int *)(g + 0xA4));
+ *       g[0xC8] = 0xFF;      // emitted 0xC9 then 0xC8: two stores of the
+ *       g[0xC9] = 0xFF;      // same value come out in the opposite order
+ *       g[0xCA] = 0;
+ *       func_00227A70();
+ *       q = (int *)(g + 0xB0);
+ *       for (j = 2; j >= 0; j--) { *q = func_00226F68(*q); q++; }
+ *       return 0;
+ *   }
+ *
+ * Two SEPARATE loop counters are load-bearing: with one variable reused,
+ * both loops take $s2 and q takes $s1. Retail, and this form, put the
+ * first counter and then q in $s1 and the second counter in $s2.
+ *
+ * What is missing is retail's short-loop-erratum padding: a nop between
+ * the store and the backward branch of each loop, because the R5900
+ * mispredicts loops shorter than six instructions. Both loops here are
+ * five. That is the whole residual, and it is 8 bytes.
+ *
+ * Three ways to produce it, all measured, all failed. This is why the
+ * erratum is a toolchain blocker and not a source-shape question:
+ *   1. The compiler never emits it. The generated .s for this function has
+ *      no nop between `sw $2,0($16)` and `bgez`, and neither SN cc1
+ *      (2.95.3, 2.9-ee) has an r5900 erratum flag -- scanning both binaries
+ *      finds only optimisation strings (mulsi3_mult3_r5900 and friends).
+ *   2. The assembler only ever REMOVES nops: `ee-as --help` offers `-O`
+ *      (remove unneeded NOPs) and `-g2` (keep them). There is no insert.
+ *   3. `__asm__("nop")` in the loop body does not append one after the
+ *      store. It perturbs the scheduler instead -- the jal delay slot stops
+ *      being filled -- taking the function from 227 to 447 differing words.
+ *
+ * 52 stubs are blocked this way (rank_candidates, "short-loop erratum").
+ * Unblocking them needs an assembler that inserts the padding, not a
+ * different C spelling.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00225548);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002255F8);

@@ -853,6 +853,28 @@ Earlier evidence for `text`, kept for reference:
   byte-identically, so nothing would catch it. Boundaries there need
   evidence strong enough to stand on its own.
 
+## The short-loop erratum is a toolchain blocker, measured three ways
+
+Retail pads loops shorter than six instructions with a nop between the
+store and the backward branch (the R5900 mispredicts them). 52 stubs are
+blocked on it. Working `func_00225548` down to exactly that residual --
+everything else, registers included, matched -- three ways to produce the
+padding were measured, and all three fail:
+
+1. **The compiler never emits it.** The generated `.s` has no nop between
+   `sw` and `bgez`, and neither SN `cc1` (2.95.3, 2.9-ee) has an r5900
+   erratum flag: scanning both binaries finds only optimisation strings
+   (`mulsi3_mult3_r5900` and friends).
+2. **The assembler only removes nops.** `ee-as --help` offers `-O` (remove
+   unneeded NOPs) and `-g2` (keep them). There is no insert option.
+3. **`__asm__("nop")` in the loop body does not append one.** It perturbs
+   the scheduler instead -- the `jal` delay slot stops being filled --
+   taking the function from 227 to 447 differing words.
+
+So this class needs an assembler that inserts the padding, not a different
+C spelling. The decoded source for `func_00225548` is kept above its stub
+in `src/game/pause.c`, ready if that ever changes.
+
 ## Real function names (259), from RC1
 
 `config/symbol_names.txt` maps 259 of the 393 names in bordplate's NTSC
