@@ -786,7 +786,29 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00221380);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00221688);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002217C8);
+/* Returns the packed texture handle the draw call takes as its last
+   64-bit argument, so it is `long`: retail stores $v0 straight to the
+   stack slot with `sd`, without sign-extending it. */
+extern long func_00205520(int);
+
+/* Sibling of func_00220C90 above: same 0x44 guard and the same
+   func_001F5800 draw, twice, with the colour held in one local because
+   retail keeps it in a callee-saved register across both calls. */
+int func_002217C8(void *arg0) {
+    long c;
+
+    if (*(int *)((char *)arg0 + 0x44) < 4) {
+        return 0;
+    }
+    c = 0x80808080L;
+    func_001F4630(0);
+    func_001F5800(0, 0, 0x100, 0x100, 0, 0, 0x100, 0x100, c,
+                  func_00205520(*(int *)((char *)arg0 + 0x48)));
+    func_001F5800(0x100, 0, 0x100, 0x100, 0, 0, 0x100, 0x100, c,
+                  func_00205520(*(int *)((char *)arg0 + 0x4C)));
+    func_001F4748();
+    return 8;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00221888);
 

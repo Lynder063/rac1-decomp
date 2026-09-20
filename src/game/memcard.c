@@ -131,7 +131,38 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00209A60);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209BB8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209CE8); /* memcard_RestoreGame */
+extern int D_001A05C0[];
+extern int D_001A08C0[];
+extern int func_0020BAD8(int *p);
+extern void func_0020BD70(void *src, int i, int *table);
+extern int func_001E9730();
+extern char D_001E8500[];
+
+/* The counterpart of func_0020BA00 below: both descriptor sizes are
+   recomputed and checked against the ones stored in the blob, then the
+   blobs are read back in the same order they were written. The read
+   cursor is the parameter, which retail keeps in $s2. */
+/* memcard_RestoreGame */
+void func_00209CE8(int arg0) {
+    char *p = (char *)arg0;
+    int a;
+    int b;
+    int i;
+
+    a = func_0020BAD8(D_001A05C0);
+    b = func_0020BAD8(D_001A08C0);
+    if (*(int *)p != a || *(int *)(p + 4) != b) {
+        func_001E9730(D_001E8500);
+        return;
+    }
+    p += 8;
+    func_0020BD70(p, 0, D_001A05C0);
+    p += a;
+    for (i = 0; i < 0x14; i++) {
+        func_0020BD70(p, i, D_001A08C0);
+        p += b;
+    }
+}
 
 /*
  * 3/168: the only residual is the allocator holding the loaded pointer
