@@ -81,7 +81,30 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00203118);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002032D0); /* LoadHudBanks(void) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00203548); /* LoadCompressedHudBank(int, char *) */
+/*
+ * The heap cursor. Retail reaches it with the one-register macro form
+ * (both the load and the $at store), so it is MACRO_ADDR; D_0019A500
+ * next to it is the ordinary split lui/%lo, so it stays plain.
+ *
+ * func_00203548 is 3/100: two addu operand orders are reversed
+ * (`addu $2,$4,$2` and the $3/$4 pair in the tail). Every spelling of
+ * both address expressions -- base-first, index-first, array indexing
+ * on a cast pointer, the base hoisted into a local -- compiles to the
+ * identical instruction stream, so this is the known
+ * operand-order-is-not-source-steerable case.
+ */
+extern int *D_0015EF4C MACRO_ADDR;
+extern char *D_0019A500;
+extern void func_0020C468(int);
+
+/* LoadCompressedHudBank(int, char *) */
+void func_00203548(int idx, int size) {
+    if (((size + 0xF) & 0xFFFFFFF0) != 0) {
+        int *base = D_0015EF4C;
+        func_0020C468(*(int *)((char *)base + idx * 8 + 0x28) + (int)base);
+    }
+    *(int *)(D_0019A500 + idx * 4 + 0x74) = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002035B0);
 
@@ -119,7 +142,19 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00204340);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00204918);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00204BE8);
+extern int D_00137C80[];
+extern char D_1FF7FF0[];
+extern int func_002175C8(int, int, int);
+
+int func_00204BE8(void) {
+    int *hdr = D_00137C80;
+    int want = ((hdr[0x13F] << 11) + 0x1057) & 0xFFFFF000;
+
+    D_0015EF4C = (int *)(((int)D_1FF7FF0 - want) & -0x10);
+    *D_0015EF4C = 0x60;
+    func_002175C8((int)D_0015EF4C + *D_0015EF4C, hdr[0x13E], hdr[0x13F]);
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00204C60);
 

@@ -96,7 +96,50 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F3760);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F3890); /* SetPalMode(int) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F3B90); /* ResetDrawGlobals */
+/*
+ * ResetDrawGlobals. Seventeen zero stores in a row, in three addressing
+ * forms that are all one assembler macro: lui/$at for most, plain $gp
+ * for the three that really are small-data, and $gp again for the last
+ * one because it lands in the jr delay slot where a two-instruction
+ * expansion will not fit.
+ */
+extern int D_0015F430 MACRO_ADDR;
+extern int D_0015F434 MACRO_ADDR;
+extern short D_0015F44C;              /* SDA, gp -0x78B4 */
+extern short D_0015F460;              /* SDA, gp -0x78A0 */
+extern short D_0015F470;              /* SDA, gp -0x7890 */
+extern int D_0015F544 MACRO_ADDR;
+extern int D_0015F548 MACRO_ADDR;
+extern int D_0015F564 MACRO_ADDR;
+extern int D_0015F568 MACRO_ADDR;
+extern int D_0015F56C MACRO_ADDR;
+extern int D_0015F570 MACRO_ADDR;
+extern int D_0015F574 MACRO_ADDR;
+extern int D_0015F728 MACRO_ADDR;
+extern int D_00161290 MACRO_ADDR;
+extern int D_00161294 MACRO_ADDR;
+extern int D_00161298 MACRO_ADDR;
+extern int D_0016129C MACRO_ADDR;
+
+void func_001F3B90(void) {
+    D_0015F564 = 0;
+    D_0015F56C = 0;
+    D_0015F570 = 0;
+    D_0015F568 = 0;
+    D_0015F574 = 0;
+    D_0015F430 = 0;
+    D_0015F434 = 0;
+    D_0015F544 = 0;
+    D_0015F548 = 0;
+    *(int *)&D_0015F44C = 0;
+    *(int *)&D_0015F460 = 0;
+    *(int *)&D_0015F470 = 0;
+    D_0015F728 = 0;
+    D_00161290 = 0;
+    D_00161294 = 0;
+    D_00161298 = 0;
+    D_0016129C = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F3C10); /* ResetGsRegisters(void) */
 
@@ -157,16 +200,12 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F4868); /* GetEffectTex(int, int) *
  * macro form, so they are MACRO_ADDR.
  */
 typedef void (*DrawCallback)(void *);
-extern int D_0015F564 MACRO_ADDR;
 extern DrawCallback D_0018DC40[];
 extern void *D_0018DD40[];
-extern int D_0015F568 MACRO_ADDR;
 extern DrawCallback D_0018DE40[];
 extern void *D_0018DF40[];
-extern int D_0015F56C MACRO_ADDR;
 extern DrawCallback D_0018E040[];
 extern void *D_0018E140[];
-extern int D_0015F570 MACRO_ADDR;
 extern DrawCallback D_0018E240[];
 extern void *D_0018E340[];
 

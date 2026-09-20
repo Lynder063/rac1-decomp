@@ -204,7 +204,26 @@ void func_00217588(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002175C8);
+typedef struct {
+    char b[4];
+} StreamHdr;
+extern StreamHdr D_00151800;
+/* MACRO_ADDR for retail's one-register lbu; the explicit size 4 (over
+   -G2) is what keeps the assembler from expanding it through $gp. */
+extern unsigned char D_0015EE58[4] MACRO_ADDR;
+extern int D_0015EFBC MACRO_ADDR;
+extern int D_0015EFC0 MACRO_ADDR;
+extern void func_00121750(int, int, int, void *);
+
+int func_002175C8(int arg0, int arg1, int arg2) {
+    StreamHdr hdr = D_00151800;
+
+    hdr.b[1] = D_0015EE58[0];
+    D_0015EFBC = 0;
+    D_0015EFC0 = 0;
+    func_00121750(arg1, arg2, arg0, &hdr);
+    return 1;
+}
 
 extern char D_001E8980[];
 extern int func_0012EE98(int, int, int, void *);
