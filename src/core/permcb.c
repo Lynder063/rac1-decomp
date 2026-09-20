@@ -167,4 +167,17 @@ extern short D_0015ED80;
 extern short D_0015EDC4;
 extern void func_0012DDC0(void);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F308); /* vsync_callback(int) */
+/*
+ * vsync_callback(int). The three counters are 64-bit (`ld`/`sd`) and
+ * MACRO_ADDR; the last store lands in the jr delay slot, so it comes
+ * out $gp-relative. 0x10000800 is T0_COUNT.
+ */
+extern long D_0015EE40 MACRO_ADDR;
+extern long D_0015EE48 MACRO_ADDR;
+extern long D_0015EE50 MACRO_ADDR;
+
+int func_0012F308(void) {
+    D_0015EE48++;
+    D_0015EE50 = D_0015EE40 + (unsigned int)*(volatile int *)0x10000800;
+    return 0;
+}

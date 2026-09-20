@@ -279,7 +279,29 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0022C870); /* DoSkyGifPaging(void) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022C9A0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022C9A8); /* SkyDrawShell(int) */
+typedef struct {
+    char unk_00[6];
+    short count;        /* 0x6 */
+    char unk_08[0x18];
+    void *shells[1];    /* 0x20 */
+} SkyDef;
+extern SkyDef *D_0016055C MACRO_ADDR;
+extern void func_0022CA00(void *);
+extern void func_0022CC40(void *);
+
+/* SkyDrawShell(int) */
+void func_0022C9A8(int idx) {
+    SkyDef *def = D_0016055C;
+
+    if (idx < def->count) {
+        void *shell = def->shells[idx];
+        if (*(int *)((char *)shell + 4) != 0) {
+            func_0022CC40(shell);
+        } else {
+            func_0022CA00(shell);
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022CA00); /* SkyDrawShellTextured */
 

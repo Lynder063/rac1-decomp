@@ -329,7 +329,16 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00239628);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00239838);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00239948);
+extern void func_001FBAB8(int, int, int, int, int, int, int);
+extern int D_001611A8 MACRO_ADDR;
+extern int D_001E66E4;
+
+void func_00239948(void) {
+    func_001FBAB8(0, 0, 0x200, 0x80, 0x200, 0x80, 0);
+    if (D_001611A8 == 1) {
+        func_0020E180(D_001E66E4, 1);
+    }
+}
 
 extern char D_00161178[];
 extern char D_00161180[];

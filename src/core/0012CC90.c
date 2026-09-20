@@ -231,7 +231,39 @@ int func_0012D340(void) {
     return D_001331D8[4] == 0x54;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D380);
+/*
+ * Both of these return a flag byte that retail loads with the address
+ * register reused as the destination (`lui $2,%hi(X)` / `lbu
+ * $2,%lo(X)($2)`), and it loads it ACROSS TWO DELAY SLOTS -- the lui in
+ * the branch's, the lbu in the following b's. That rules MACRO_ADDR out
+ * here, and the attempt is worth recording: a MACRO_ADDR access in a
+ * delay slot is expanded $gp-relative, and these two symbols live
+ * outside the +-32KB window, so the link fails outright with
+ * "relocation truncated to fit: R_MIPS_GPREL16". A plain incomplete
+ * array gives retail's exact split-across-delay-slots shape; the only
+ * residual is the allocator putting the address in $3 rather than
+ * reusing $2, plus one more register choice in func_0012D448
+ * (5/96 and 6/104 differing bytes). func_0012D448 also needed its arms
+ * the other way round -- the early `return 0` written last, so the
+ * zero case is the one that branches over.
+ */
+extern unsigned char D_001331D4[];
+
+int func_0012D380(void) {
+    int buf[4];
+    int v;
+
+    func_00118CF0(buf);
+    if (func_0012D340() != 0) {
+        return D_001331D4[0];
+    }
+    func_00118CF0(buf);
+    v = buf[0];
+    if (((v >> 13) & 7) != 0) {
+        return (v >> 16) & 0x1F;
+    }
+    return (v >> 4) & 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D3E0);
 
@@ -239,7 +271,22 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D3F0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D440);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D448);
+extern unsigned char D_001331D6[];
+extern void func_00118DC0(void *, int, int);
+
+int func_0012D448(void) {
+    unsigned char buf[16];
+
+    if (func_0012D340() != 0) {
+        return D_001331D6[0];
+    }
+    func_00118CF0(buf);
+    if (((*(unsigned int *)buf >> 13) & 7) != 0) {
+        func_00118DC0(buf + 4, 1, 1);
+        return (buf[4] >> 4) & 1;
+    }
+    return 0;
+}
 
 int func_0012D4B0(int arg0) {
     unsigned int v = arg0 & 0xFF;
