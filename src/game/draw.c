@@ -267,7 +267,24 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F5368);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F54E8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F55C0);
+/*
+ * 6/144: the only residual is `dsll a3,a3,0x18` scheduled one slot
+ * early. Four associations of the or-chain (flat, fully left-nested,
+ * right-nested, and split into statements) all compile to the same
+ * order. The 64-bit parameters are real -- retail shifts with dsll.
+ */
+extern void func_00234C98(int, long);
+extern int *D_00161000 MACRO_ADDR;
+extern char D_0013CD90[];
+
+void func_001F55C0(long a, long b, long c, long d) {
+    func_00234C98(1, a | (b << 8) | (c << 16) | (d << 24));
+    D_00161000[0] = 0x30000014;
+    D_00161000[1] = (int)D_0013CD90;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000014;
+    D_00161000 += 4;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F5650); /* DrawRectOverlay_FiiiiUl */
 
@@ -483,7 +500,29 @@ void func_001F7B40(void) {
     func_001F3140();
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F7B70);
+/* Two prototypes for one symbol: func_001F55C0 passes a 64-bit value
+   (retail shifts it with dsll), func_001F7B70 passes plain ints
+   (addiu, not daddiu). */
+extern int D_0015F578 MACRO_ADDR;
+extern short D_0015F448;              /* SDA, gp -0x78B8 */
+extern void func_001F91B8(void);
+extern void func_001F7868(void);
+extern void func_001F8B6C(void);
+
+void func_001F7B70(void) {
+    if (D_0015F578 != 0) {
+        func_00234C98(8, 5);
+        func_00234C98(0x14, 0x61);
+        func_00234C98(0x47, 0x513F1);
+        func_00234C98(0x4A, 1);
+        func_001F91B8();
+        *(float *)&D_0015F448 = -0.04f;
+        func_001F7868();
+        func_001F8B6C();
+        *(int *)&D_0015F448 = 0;
+        func_00234C98(0x4A, 0);
+    }
+}
 
 extern int D_0018E840[];
 

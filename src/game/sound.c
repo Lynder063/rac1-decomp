@@ -10,7 +10,7 @@
 
 /* Declarations in scope here before the split. */
 extern char D_0013E650[];
-extern int D_0015F694;
+extern int D_0015F694 MACRO_ADDR;
 extern void func_001F9A98(void *, void *, int);
 extern char D_00189310[];
 extern char D_001899D0[];
@@ -394,7 +394,23 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0022EB08);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022ED80);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022EE28);
+extern char *D_0015F714 MACRO_ADDR;
+extern int func_0022EB08(void *, int, int, int, int);
+
+int func_0022EE28(int idx, int arg1, int arg2) {
+    int h;
+
+    if (idx >= D_0015F694) {
+        return -1;
+    }
+    h = func_0022EB08(D_0015F714 + idx * 32, arg1, arg2, 0, 0x400);
+    if (h >= 0) {
+        char *rec = D_0013E650 + h * 0x70;
+        *(int *)(rec + 0x88) = arg2;
+        *(short *)(rec + 0x7E) = idx;
+    }
+    return h;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022EEB8);
 

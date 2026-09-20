@@ -450,17 +450,42 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00215CA8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215F20);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00215F80);
-
-extern int func_00215F80(void);
 extern int func_001FE540(int);
 extern void func_001FFE88(int);
 extern int D_0015F6B0 MACRO_ADDR;
 extern int D_0015F6B4 MACRO_ADDR;
 extern int D_00161388 MACRO_ADDR;
 
+/*
+ * 11/164: everything but the placement of `addiu $2,$0,1`, which retail
+ * emits before the last store and this compiler after it. Writing the
+ * return value into a local before that store does not move it.
+ */
+int func_00215F80(int arg0, int arg1) {
+    int cur = D_0015F6B4;
+
+    if (cur == arg0) {
+        if (arg1 != 0) {
+            func_001FFE88(func_001FE540(arg1));
+        }
+        D_00161388 = arg1;
+        D_0015F6B0 = 2;
+        return 2;
+    }
+    if (cur != 0) {
+        return 0;
+    }
+    if (arg1 != 0) {
+        func_001FFE88(func_001FE540(arg1));
+    }
+    D_0015F6B4 = arg0;
+    D_0015F6B0 = 2;
+    D_00161388 = arg1;
+    return 1;
+}
+
 int func_00216028(int arg0, int arg1) {
-    int busy = func_00215F80();
+    int busy = func_00215F80(arg0, arg1);
     if (busy != 0) {
         return busy;
     }
