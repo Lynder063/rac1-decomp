@@ -108,7 +108,59 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D3A8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D3B8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D3C8);
+extern int func_0011D3B8(int, int);
+extern void func_0011D360(void *, void *, int);
+extern int func_0011D3A8(int);
+extern void func_00118D80(int);
+extern int D_00130138[];
+extern char D_0012FDB8[];
+extern int D_00130130;
+
+/*
+ * Same-size near-miss (2/0xC4 bytes: one register field). Boot-time
+ * hardware init: three explicit (addr, value) pokes through
+ * func_0011D3B8, a func_0011D360 block copy of D_0012FDB8 (0x330 bytes)
+ * to a fixed load address, an interrupt-disable/enable bracket, then a
+ * loop over 5 more 8-byte table entries where func_0011D3A8 reads the
+ * entry's current value back before func_0011D3B8 rewrites it. All
+ * three callees are handwritten syscall wrappers (0x74/0x5A/0x5B).
+ *
+ * The loop counter has to be `unsigned int`, same tell as
+ * func_0011DCB8 (see that comment): as `int` this compiler reverses
+ * the up-count into a down-count-from-5 with `bgezl`, giving retail's
+ * `addiu s2,zero,0x1`/`sltiu ...,0x8` only with `unsigned`. What's
+ * left is a single instruction's destination register ($v0 vs $v1) on
+ * the loop-continuation test -- tried caching `p->a` in a local
+ * instead of re-reading it for both calls, which regressed badly
+ * (605 words), and reordering the locals, which did nothing.
+ */
+typedef struct { int a; int b; } D_00130138_pair;
+
+int func_0011D3C8(void) {
+    int *t = D_00130138;
+    D_00130138_pair *p;
+    unsigned int i;
+    int old;
+    int r;
+
+    func_0011D3B8(t[0], t[1]);
+    func_0011D360((void *)0x80075000, D_0012FDB8, 0x330);
+    func_00118D80(0);
+    func_00118D80(2);
+    func_0011D3B8(t[2], t[3]);
+    func_0011D3B8(t[4], t[5]);
+
+    p = (D_00130138_pair *)(t + 6);
+    for (i = 3; i < 8; i++) {
+        old = func_0011D3A8(p->a);
+        func_0011D3B8(p->a, old);
+        p++;
+    }
+
+    r = func_0011D3A8(3);
+    D_00130130 = r;
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D490);
 
