@@ -197,7 +197,53 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00127960);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00127A90);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00127C80);
+extern void func_0012C468(void *, void *);
+extern char D_00153968[];
+
+/* arg0 is a moby/entity-ish struct: a table index at +0x810 selects a
+ * +0x140-strided sub-entry whose +0x6CC field gets set, and several
+ * other struct-pointer outputs get filled from +0x150/+0x174 flags.
+ * Ends by clearing bit 0 of *a4, reporting through func_0012C468 (an
+ * already-matched "log to D_00153968" family member) first when
+ * +0x150 == 1. The func_0012C468 call takes arg0 -- the moby struct,
+ * still live in $4 -- not a4/s0, which is a common trap here. */
+int func_00127C80(void *a0, int *a1, int *a2, int *a3, int *a4) {
+    int idx;
+    char *entry;
+    int ret = 1;
+    int c;
+    int mask;
+
+    idx = *(int *)((char *)a0 + 0x810);
+    entry = (char *)a0 + idx * 0x140;
+    *(int *)(entry + 0x6CC) = 1;
+    *(int *)((char *)a0 + 0x1B0) = 1;
+
+    if (*(int *)((char *)a0 + 0x150) == 2) {
+        *(int *)((char *)a1 + 0x14) = 0;
+        *(int *)((char *)a1 + 0x10) = 0;
+        *(int *)((char *)a1 + 0x4) = 0;
+        *(int *)((char *)a1 + 0x0) = 0;
+    }
+
+    if (*(int *)((char *)a0 + 0x174) == 3) {
+        *a2 = 2;
+    } else {
+        *a2 = 1;
+        c = (*(int *)((char *)a0 + 0x174) == 2);
+        a3[1] = c;
+        *a3 = c;
+    }
+
+    if (*(int *)((char *)a0 + 0x150) == 1) {
+        func_0012C468(a0, D_00153968);
+        ret = 0;
+    }
+    mask = *a4;
+    mask &= ~1;
+    *a4 = mask;
+    return ret;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00127D40);
 
