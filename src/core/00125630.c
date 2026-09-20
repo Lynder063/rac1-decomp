@@ -436,6 +436,70 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001293A8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001294A0);
 
+extern int func_00127858(void *);
+extern char D_00153A40[];
+extern char D_00153A60[];
+
+/*
+ * REVERTED (size mismatch: 200 vs retail's 204). Decode is certain,
+ * including one real find: the field picked by state (+0x1C0/1D0/1E0)
+ * is a POINTER, and it's the target of the +0x28 write at the end --
+ * NOT a0, which was the wrong first guess.
+ *
+ *   extern int func_00127858(void *);
+ *   extern char D_00153A40[], D_00153A60[];
+ *
+ *   int func_00129530(void *a0) {
+ *       int state = *(int *)((char *)a0 + 0x174);
+ *       char *target;
+ *       int r;
+ *
+ *       if (state == 3 && *(int *)((char *)a0 + 0x120) != 0) {
+ *           func_0012C468(a0, D_00153A40);
+ *           *(int *)((char *)a0 + 0x120) = 0;
+ *           state = *(int *)((char *)a0 + 0x174);
+ *       }
+ *       if (state != 2) {
+ *           if (state < 3) {
+ *               if (state == 1) {
+ *                   target = *(char **)((char *)a0 + 0x1D0);
+ *               } else {
+ *                   target = *(char **)((char *)a0 + 0x1C0);
+ *                   func_0012C468(a0, D_00153A60);
+ *               }
+ *           } else if (state != 3) {
+ *               target = *(char **)((char *)a0 + 0x1C0);
+ *               func_0012C468(a0, D_00153A60);
+ *           } else {
+ *               target = *(char **)((char *)a0 + 0x1C0);
+ *           }
+ *       } else {
+ *           target = *(char **)((char *)a0 + 0x1E0);
+ *       }
+ *       r = func_00127858(a0);
+ *       if (r != 0) *(int *)(target + 0x28) = 1;
+ *       return r;
+ *   }
+ *
+ * Retail's state dispatch is a decision tree that always jumps TO the
+ * shorter arm with `beq` and falls through the longer arm (state==2
+ * first, then <3 vs >=3, then within <3 state==1 vs default, within
+ * >=3 state==3 vs default) -- getting the OUTER two splits to match
+ * required writing the condition negated (`if (state != 2) {long}
+ * else {short}`, `... != 3 ... else ...`), which flips the compiled
+ * branch to `beq state,X,short_arm` as retail has it. The INNERMOST
+ * split (state==1 vs default, nested inside the `state<3` arm)
+ * never takes that shape: `if (state==1)`, `if (state!=1)`, and an
+ * inner `switch` with case 1 and a default all produced byte-
+ * identical output (confirmed -- same instruction stream all three
+ * times), always the standard `bne ...,skip; short; goto end` form
+ * instead of retail's `beq ...,short_arm`. Whatever governs which
+ * arm gets the direct jump versus the fallthrough at this position
+ * is not reachable from source; branch structure otherwise matches
+ * exactly (the 12c460 vs 12c468 jal-target labels asm-differ showed
+ * are a relocation-display artifact, not a real mismatch -- every
+ * surrounding byte at those two call sites is identical).
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00129530);
 
 /*
