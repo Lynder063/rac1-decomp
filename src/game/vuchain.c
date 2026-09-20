@@ -167,8 +167,6 @@ extern float func_001F9FA8(float);
 extern void func_00118D80(int);
 extern void func_00212578(int, int);
 extern char D_00165600[];
-extern int D_0015F718;
-extern short D_0015F71C;
 extern char D_001B3200[];
 extern int func_001160D8(void);
 extern float func_00214158(void);
@@ -313,6 +311,58 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002347F0); /* VU0_loadMicroProgram(lon
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002348B8);
 
+/*
+ * The VU1 chain state. D_00161000 (the write pointer), D_00161010 (the
+ * buffer index) and the two limits D_0015F718/D_0015F71C are all reached
+ * with retail's one-instruction macro form, so they are MACRO_ADDR: the
+ * assembler expands them through $at, or through $gp where the access
+ * lands in a delay slot.
+ */
+extern int *D_00161000 MACRO_ADDR;
+extern int D_00161004 MACRO_ADDR;
+extern int D_0016100C;
+extern int D_00161010 MACRO_ADDR;
+extern int D_0015F698;
+extern int D_0015F718 MACRO_ADDR;
+extern int D_0015F71C MACRO_ADDR;
+extern int D_00160FF8[2];
+extern int D_001941C0[];
+
+/*
+ * VU1_initChain(void) and VU1_swapChain(void). Both reach the right
+ * SIZE with the declarations above (23 and 28 instructions), and the
+ * instruction sequence is structurally retail's, but the residual is an
+ * allocator tie plus store scheduling, so they are left as asm:
+ *
+ *   void func_002348E8(void) {            // VU1_initChain
+ *       int base = D_001941C0[1];
+ *       int end  = base + D_0016100C - D_0015F698;
+ *       D_00160FF8[0] = base;
+ *       D_00160FF8[1] = D_001941C0[2];
+ *       D_00161010 = 0;
+ *       D_0015F718 = end;
+ *       D_0015F71C = end - 0x2000;
+ *       D_00161000 = (int *)base;
+ *   }
+ *
+ *   void func_00234948(void) {            // VU1_swapChain
+ *       int idx  = 1 - D_00161010;
+ *       int base = D_00160FF8[idx];
+ *       int end  = base + D_0016100C - D_0015F698;
+ *       D_00161004 = (int)D_00161000;
+ *       D_00161010 = idx;
+ *       D_00161000 = (int *)base;
+ *       D_0015F718 = end;
+ *       D_0015F71C = end - 0x2000;
+ *   }
+ *
+ * Kept at 51/92 and 78/112 differing bytes, all of it register
+ * numbering and the order of the four macro stores. All 24 orderings of
+ * those four stores were compiled: retail emits D_00161010, D_0015F71C,
+ * D_00161000, then D_0015F718 in the jr delay slot, and this compiler
+ * emits no permutation with D_00161010 first -- it always sinks that
+ * store past D_0015F71C. Not source-steerable from here.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_002348E8); /* VU1_initChain(void) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234948); /* VU1_swapChain(void) */
@@ -338,7 +388,19 @@ void func_00234AC8(int mask) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234B48); /* VU1_addDataRef(void *, int) */
+/*
+ * VU1_addDataRef(void *, int). Retail reloads D_00161000 before every
+ * field write -- the writes could alias the pointer itself -- which is
+ * exactly what writing through the global (rather than through a local
+ * copy) produces.
+ */
+void func_00234B48(void *data, int qwc) {
+    D_00161000[0] = qwc | 0x30000000;
+    D_00161000[1] = (int)data;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0;
+    D_00161000 += 4;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234B98);
 
@@ -368,22 +430,75 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00234FA8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00235008);
 
+extern int D_00161018 MACRO_ADDR;
+extern int D_0016101C MACRO_ADDR;
+
+/*
+ * DMAC_VIF1_Enable(void). Decoded and semantically confirmed, but one
+ * instruction too long (148 vs 144), so it stays asm:
+ *
+ *   extern int func_00118AB0(int, void *, void *);
+ *   extern void func_00119460(int);
+ *   void func_00235018(void) {
+ *       if (D_00161018 == 0 && D_0016101C == 0) {
+ *           if ((*(volatile int *)0x1000E010 & 0x20000) == 0)
+ *               *(volatile int *)0x1000E010 = 0x20000;
+ *           D_00161018 = func_00118AB0(1, (void *)func_00235118, (void *)0);
+ *           D_0016101C = func_00118AB0(0xF, (void *)func_00235218, (void *)0);
+ *           func_00119460(1);
+ *       }
+ *   }
+ *
+ * The extra instruction is a duplicated `lui $5,%hi(func_00235118)`:
+ * retail fills the inner branch's delay slot by sinking that lui from
+ * ABOVE the branch, this compiler copies it down from the join and so
+ * needs a second copy on the fall-through path. Spellings tried, all
+ * same or worse: hoisting the handler address into a local (hoists the
+ * whole lui/addiu above the first test and switches to `bnel`);
+ * early-return instead of `&&` (identical output); a
+ * `volatile int *` variable for D_STAT (collapses the lui/ori/lw
+ * address form retail uses into a two-instruction macro load).
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00235018); /* DMAC_VIF1_Enable(void) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002350A8); /* DMAC_VIF1_Disable(void) */
+/*
+ * DMAC_VIF1_Disable(void). The two handler ids are MACRO_ADDR: the copy
+ * scheduled into the branch delay slot is $gp-relative, the copy on the
+ * taken path is the lui/%lo expansion of the same macro. The volatile
+ * D_STAT write is what forces the reload on that path.
+ */
+extern int func_00118AD0(int, int);
+extern int func_001193F8(int);
+
+void func_002350A8(void) {
+    if ((*(volatile int *)0x1000E010 & 0x20000) != 0) {
+        *(volatile int *)0x1000E010 = 0x20000;
+    }
+    func_00118AD0(1, D_00161018);
+    func_00118AD0(0xF, D_0016101C);
+    func_001193F8(1);
+    D_00161018 = 0;
+    D_0016101C = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00235118);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00235218);
 
-/* Append one quadword to the packet at D_00161000. */
+/*
+ * Append one quadword to the packet at D_00161000. This one wants the
+ * pointer typed as a quadword: stepping an `int *` by 4 folds the copy
+ * retail keeps (`daddu $5,$2,$0`) into the increment and comes out one
+ * instruction short, so the same symbol is declared a second time under
+ * a quadword type.
+ */
 typedef struct {
     int w[4];
 } Qword;
-extern Qword *D_00161000 MACRO_ADDR;
+extern Qword *D_00161000_q __asm__("D_00161000") MACRO_ADDR;
 
 void func_00235290(int arg0) {
-    Qword *p = D_00161000++;
+    Qword *p = D_00161000_q++;
     p->w[0] = arg0 + 0x90000000;
     p->w[1] = 0;
     p->w[2] = 0;

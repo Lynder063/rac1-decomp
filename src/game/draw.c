@@ -150,34 +150,71 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F4748); /* DoGifPaging(void) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F4868); /* GetEffectTex(int, int) */
 
-extern int D_0015F564;
-extern int D_0018DD40[];
-extern int D_0018DC40[];
-
 /*
- * Close but not exact (24/80), re-tested this round against the newer
- * techniques with no improvement. Logic confirmed:
- *   int count = D_0015F564;
- *   if (count < 0x40) { D_0018DC40[count]=arg0; D_0018DD40[count]=arg1;
- *                       D_0015F564 = count+1; }
- * Held by the `%hi`-register-reuse allocator sub-case at the very first
- * two instructions (retail `lui $6,%hi(X)` / `lw $6,%lo(X)($6)` reusing
- * one register; this compiler always splits it across two), which then
- * shifts the rest. Direct array indexing is already the right form here
- * -- switching it changes nothing, since the blocker precedes the array
- * accesses entirely. See that sub-case under "Open toolchain questions".
+ * Four parallel callback lists, each a (function, argument) pair of
+ * arrays with its own count, plus a "register" and a "run them all"
+ * function per list. The counts are reached with retail's one-register
+ * macro form, so they are MACRO_ADDR.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_001F49B0);
+typedef void (*DrawCallback)(void *);
+extern int D_0015F564 MACRO_ADDR;
+extern DrawCallback D_0018DC40[];
+extern void *D_0018DD40[];
+extern int D_0015F568 MACRO_ADDR;
+extern DrawCallback D_0018DE40[];
+extern void *D_0018DF40[];
+extern int D_0015F56C MACRO_ADDR;
+extern DrawCallback D_0018E040[];
+extern void *D_0018E140[];
+extern int D_0015F570 MACRO_ADDR;
+extern DrawCallback D_0018E240[];
+extern void *D_0018E340[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F4A00);
+void func_001F49B0(DrawCallback fn, void *arg) {
+    int count = D_0015F564;
+    if (count < 0x40) {
+        D_0018DC40[count] = fn;
+        D_0018DD40[count] = arg;
+        D_0015F564 = count + 1;
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F4A78);
+void func_001F4A00(void) {
+    int i;
+    for (i = 0; i < D_0015F564; i++) {
+        D_0018DC40[i](D_0018DD40[i]);
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F4AF0);
+void func_001F4A78(void) {
+    int i;
+    for (i = 0; i < D_0015F56C; i++) {
+        D_0018E040[i](D_0018E140[i]);
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F4B68);
+void func_001F4AF0(void) {
+    int i;
+    for (i = 0; i < D_0015F570; i++) {
+        D_0018E240[i](D_0018E340[i]);
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F4BB8);
+void func_001F4B68(DrawCallback fn, void *arg) {
+    int count = D_0015F568;
+    if (count < 0x40) {
+        D_0018DE40[count] = fn;
+        D_0018DF40[count] = arg;
+        D_0015F568 = count + 1;
+    }
+}
+
+void func_001F4BB8(void) {
+    int i;
+    for (i = 0; i < D_0015F568; i++) {
+        D_0018DE40[i](D_0018DF40[i]);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F4C30);
 
