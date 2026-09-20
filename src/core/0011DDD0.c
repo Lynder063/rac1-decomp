@@ -90,6 +90,59 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DDF0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DE28);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DE38);
+extern void func_0011DDD0(int, int);
+extern void func_0011DDE0(void *, void *, int);
+extern int func_0011DE28(int);
+extern int D_00131358[];
+extern char D_00130BF0[];
+extern char D_00131330[];
+
+typedef struct { int a; int b; } D_00131358_pair;
+
+/*
+ * Same-size near-miss (8/0xD4 bytes). Same shape as func_0011D3C8:
+ * guarded by a hardware status bit at 0x10001810 (skip everything if
+ * already done), two (addr,value) pokes through func_0011DDD0, two
+ * func_0011DDE0 block copies (to a fixed load address and to
+ * scratchpad at 0x82000), an interrupt disable/enable bracket, a
+ * third func_0011DDD0 poke, then a 6-entry table loop where
+ * func_0011DE28 reads the entry's current value back before
+ * func_0011DDD0 rewrites it. All three callees are handwritten
+ * syscall wrappers.
+ *
+ * The residual is the second func_0011DDE0 call's argument setup:
+ * retail finishes materialising the 0x82000 destination address
+ * (lui+ori) before loading the 0x28 size constant into the third
+ * argument register; this compiler schedules the size constant one
+ * instruction earlier. Tried routing the size and the destination
+ * address each through their own local first (forcing a sequence
+ * point) -- neither changed the schedule. Pure instruction ordering,
+ * not reachable from source.
+ */
+void func_0011DE38(void) {
+    int *t;
+    D_00131358_pair *p;
+    unsigned int i;
+    int old;
+
+    if (*(volatile unsigned int *)0x10001810 & 0x100) {
+        return;
+    }
+
+    t = D_00131358;
+    func_0011DDD0(t[0], t[1]);
+    func_0011DDE0((void *)0x80076000, D_00130BF0, 0x740);
+    func_0011DDE0((void *)0x82000, D_00131330, 0x28);
+    func_00118D80(0);
+    func_00118D80(2);
+    func_0011DDD0(t[2], t[3]);
+
+    p = (D_00131358_pair *)(t + 4);
+    for (i = 2; i < 8; i++) {
+        old = func_0011DE28(p->a);
+        func_0011DDD0(p->a, old);
+        p++;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DF0C);
