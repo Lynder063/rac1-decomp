@@ -158,6 +158,39 @@ extern char D_00153C90[];
 extern char D_00153CC8[];
 extern int func_0012CE48(void *);
 
+/*
+ * REVERTED (blocked, not a source-shape problem). Decode is certain: set
+ * a control bit at 0x1000F590 (OR of the 0x1000F520 read with 0x10000),
+ * write arg0 to the channel's address register at 0x1000B000, clear the
+ * same bit, guarded by func_0011D960/func_0011D9A8 (the disable/enable-
+ * interrupts pair used throughout this file):
+ *
+ *   int func_0012CC90(void *arg0) {
+ *       func_0011D960();
+ *       *(volatile unsigned int *)0x1000F590 =
+ *           *(volatile unsigned int *)0x1000F520 | 0x10000;
+ *       *(volatile unsigned int *)0x1000B000 = (unsigned int)arg0;
+ *       *(volatile unsigned int *)0x1000F590 =
+ *           *(volatile unsigned int *)0x1000F520 & 0xFFFEFFFF;
+ *       return func_0011D9A8();  // declared to return int locally
+ *   }
+ *
+ * Body matches retail instruction for instruction. The only gap is the
+ * final call: retail forwards to func_0011D9A8 with a bare `j` and
+ * interleaves its own epilogue around the remaining work (restore $31
+ * right after the last use of $16, do the second read/mask/write, THEN
+ * restore $16, then tail-jump with the frame teardown in the delay
+ * slot). This compiler has no sibling-call optimisation at all in
+ * either SN sub-build (see tools/fix_tail_calls.py) -- confirmed by
+ * -foptimize-sibling-calls not existing and -O3 not helping -- so any
+ * call as the last statement of a function that still has its own frame
+ * (here: the $16/$31 spills) always compiles to `jal` + a full
+ * unscheduled epilogue, 3 words longer than retail (0x70 vs retail's
+ * 0x64). fix_tail_calls.py only rewrites the OTHER case, a bare
+ * forwarding stub with no locals of its own; this function's frame
+ * disqualifies it from that guard by design. Toolchain blocker, same
+ * category as the short-loop erratum.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CC90);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CCF8);
