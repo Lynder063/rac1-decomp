@@ -108,6 +108,54 @@ extern int func_00121040(int);
 extern int D_001325C0;
 extern char D_00132E40[];
 
+extern void *func_00121D08(void);
+
+/*
+ * REVERTED (size mismatch: 192 vs retail's 200). Decode is certain --
+ * pure integer math, no unknown structs beyond the already-known
+ * D_00132E40 (func_00121D08's return):
+ *
+ *   int func_00122200(int a0, int a1, int a2) {
+ *       short mode = (short)a0;
+ *       short w = (short)a1, h = (short)a2;
+ *       unsigned long *g = (unsigned long *)func_00121D08();
+ *       int biased, rw, rh;
+ *       unsigned long v;
+ *
+ *       rw = w;
+ *       biased = w + 0x3F;
+ *       if (-1 < biased) rw = biased;
+ *       rw >>= 6;
+ *       if (mode & 2) {
+ *           rh = h + 0x7E;
+ *           biased = h + 0x3F;
+ *           if (-1 < biased) rh = biased;
+ *           rh >>= 6;
+ *       } else {
+ *           rh = h + 0x3E;
+ *           biased = h + 0x1F;
+ *           if (-1 < biased) rh = biased;
+ *           rh >>= 5;
+ *       }
+ *       v = *g & 0x0000FFFF0000FFFFUL;
+ *       if (v != 1) return (rw * rh) << 17 >> 16;
+ *       return (rw * rh) << 16 >> 16;
+ *   }
+ *
+ * Retail's "round up to a multiple of 64 (or 32), collapse to the
+ * unbiased value if the bias would push it negative" clamp compiles
+ * to `addiu -1; slt; movn` for each of the three tests, materialising
+ * BOTH the biased and unbiased alternatives into separate registers
+ * before the conditional move. This compiler -- for every spelling
+ * tried (if/else either polarity, ternary, comparing the raw value vs
+ * the biased sum) -- always produces the cheaper `slti ...,0; movz`
+ * form instead, one instruction short per test (8 bytes total, all
+ * three sites). Branch structure and the final scale (64-bit masked
+ * D_00132E40 compare, sll 16 vs 17) are otherwise confirmed by
+ * matching branch polarity and target order exactly. Not reachable
+ * from source; the movn-vs-movz choice appears to be an unconditional
+ * strength-reduction this compiler applies to this comparison shape.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00122200);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001222C8);
