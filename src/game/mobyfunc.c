@@ -446,6 +446,56 @@ void func_0020E098(void) {
     func_001F9A98((void *)0x70003A00, D_001B3200, 0x380);
 }
 
+extern void func_00234B48(void *, int);
+extern void func_002347F0(void *);
+extern void func_00234C98(int, int);
+extern void func_001F2560(void);
+extern unsigned short D_0010FA90 NOT_SDA;
+extern char D_0010FAA0[];
+extern int D_0015F704 MACRO_ADDR;
+extern char D_00100080[];
+extern int D_0015EF78 MACRO_ADDR;
+extern int D_0016000C MACRO_ADDR;
+extern int D_0015EF74 MACRO_ADDR;
+extern int D_0015FFD0 MACRO_ADDR;
+extern int D_00160040 MACRO_ADDR;
+extern int D_00160014 MACRO_ADDR;
+extern int D_00161000 MACRO_ADDR;
+extern int D_00161008 MACRO_ADDR;
+
+/*
+ * REVERTED (size mismatch: 168 vs retail's 184). Decode is certain --
+ * pure straight-line setup, no branches:
+ *
+ *   void func_0020E0C8(void) {
+ *       func_00234B48(D_0010FAA0, D_0010FA90);
+ *       D_0015F704 = 6;
+ *       func_002347F0(D_00100080);
+ *       func_00234C98(0x47, 0x5360B);
+ *       D_0016000C = D_00161000;
+ *       D_0015EF74 = D_0015EF78;
+ *       D_0015FFD0 = D_00161000 + 0x10;
+ *       func_001F2560();
+ *       D_00160040 = 0;
+ *       D_00161008 = *(int *)&D_0015F71C - 0x10000;
+ *       D_00160014 = D_0015F718;
+ *   }
+ *
+ * (needs D_0010FA90 NOT_SDA and D_0015F704/D_0015EF78/D_0016000C/
+ * D_0015EF74/D_0015FFD0/D_00160040/D_00160014/D_00161000/D_00161008
+ * all MACRO_ADDR to reproduce retail's individual store shapes -- that
+ * much is confirmed exactly matching). Two residuals, 16 bytes: retail
+ * materialises `&D_0015FFD0` into a dead register (lui+addiu, never
+ * read) alongside the gp-relative store the `D_0015FFD0 = ...`
+ * assignment itself produces -- the SAME MACRO_ADDR symbol expanded
+ * twice for one C statement, same as the func_0011D3C8-family finding
+ * -- plus an unexplained `addiu $5,0,1` this compiler never emits
+ * anywhere in the sequence. Tried: reusing a `v = D_00161000;` local
+ * across both the D_0016000C and D_0015FFD0 stores (805, worse); an
+ * explicit `*(&D_0015FFD0) = ...` dead-reference (805, same). Neither
+ * reproduces the dead address computation; what produces it from
+ * source is not understood.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_0020E0C8); /* DrawMobysSetup(void) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020E180); /* DrawMobyList */
