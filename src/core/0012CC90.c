@@ -362,7 +362,35 @@ void func_0012D568(unsigned char *p) {
     p[1] = func_0012D4B0(p[1]);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D5D0);
+typedef struct { char b[0xC]; } Cfg12;
+extern Cfg12 D_00153D40 NOT_SDA;
+
+/* Forward analog of func_0012D688 below: tick the clock at arg0 forward
+ * by one day, using the same 12-byte month-length table (stretched to 29
+ * for February on a leap year) and the same struct offsets. */
+void func_0012D5D0(unsigned char *s) {
+    Cfg12 days;
+    unsigned char m;
+
+    days = D_00153D40;
+    s[5] = s[5] + 1;
+    if ((s[7] & 3) == 0) {
+        days.b[1] = 0x1D;
+    }
+    if (s[5] > days.b[s[6] - 1]) {
+        s[5] = 1;
+        s[6] = s[6] + 1;
+        m = s[6];
+        if (m == 13) {
+            if (s[7] == 0x63) {
+                s[7] = 0;
+            } else {
+                s[7] = s[7] + 1;
+            }
+            s[6] = 1;
+        }
+    }
+}
 
 /*
  * REVERTED (SIZE mismatch both ways). Decode is certain -- tick the

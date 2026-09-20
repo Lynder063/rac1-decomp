@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 8.597773467005425,
+  "fuzzy_match_percent": 8.636398750257502,
   "total_code": "466016",
-  "matched_code": "33964",
-  "matched_code_percent": 7.288161779853052,
+  "matched_code": "34144",
+  "matched_code_percent": 7.3267870631051295,
   "total_functions": 1688,
-  "matched_functions": 443,
-  "matched_functions_percent": 26.244075829383885,
+  "matched_functions": 444,
+  "matched_functions_percent": 26.303317535545023,
   "complete_code": "3004",
   "complete_code_percent": 0.6446130604957769,
   "total_units": 130,
@@ -6787,13 +6787,13 @@
   {
    "name": "core/0012CC90",
    "measures": {
-    "fuzzy_match_percent": 16.722745625841185,
+    "fuzzy_match_percent": 22.7792732166891,
     "total_code": "2972",
-    "matched_code": "108",
-    "matched_code_percent": 3.6339165545087484,
+    "matched_code": "288",
+    "matched_code_percent": 9.690444145356663,
     "total_functions": 24,
-    "matched_functions": 2,
-    "matched_functions_percent": 8.333333333333334,
+    "matched_functions": 3,
+    "matched_functions_percent": 12.5,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -6965,7 +6965,7 @@
     {
      "name": "func_0012D5D0",
      "size": "180",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "2368",
      "metadata": {
       "virtual_address": "1234384"
@@ -18462,13 +18462,13 @@
    "id": "game",
    "name": "Game",
    "measures": {
-    "fuzzy_match_percent": 7.702954052939576,
+    "fuzzy_match_percent": 7.742435009957974,
     "total_code": "455916",
-    "matched_code": "29016",
-    "matched_code_percent": 6.364330271365778,
+    "matched_code": "29196",
+    "matched_code_percent": 6.403811228384176,
     "total_functions": 1664,
-    "matched_functions": 428,
-    "matched_functions_percent": 25.721153846153847,
+    "matched_functions": 429,
+    "matched_functions_percent": 25.78125,
     "complete_code": "64",
     "complete_code_percent": 0.014037673606541555
    }
