@@ -108,7 +108,38 @@ extern int func_00121040(int);
 extern int D_001325C0;
 extern char D_00132E40[];
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00121D18);
+extern int func_0011BF80(void *path, int mode);
+extern int func_0011C5C0(int fd, void *buf, int len);
+extern void func_0011C208(int fd);
+extern int func_00112380(void *arg0);
+extern char D_00153130[];
+
+/* Read a small text file a byte at a time into a 0x100-byte stack buffer,
+ * stopping at a NUL or the buffer limit, then strtol() the tail starting
+ * 9 bytes before the end and compare it against a build number. Same
+ * open/read/close triplet as func_0012D2A0 above. */
+int func_00121D18(void) {
+    int fd;
+    char buf[0x100];
+    char *p;
+    unsigned int n;
+
+    fd = func_0011BF80(D_00153130, 1);
+    if (fd < 0) {
+        return -1;
+    }
+    n = 0;
+    p = buf;
+    while (n < 0x100) {
+        func_0011C5C0(fd, p, 1);
+        if (*p++ == 0) {
+            break;
+        }
+        n++;
+    }
+    func_0011C208(fd);
+    return 0x1315670 < func_00112380(&buf[n - 9]);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00121DB8);
 
