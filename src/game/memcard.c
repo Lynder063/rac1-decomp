@@ -272,7 +272,57 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0020BB10); /* memcard_Checksum */
  */
 INCLUDE_ASM("asm/nonmatchings/text", func_0020BB88); /* memcard_TestChecksum */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020BBC8); /* memcard_PrepData */
+extern void func_001F9A00(void *dst, void *src, int len);
+extern int func_0020BB10(void *data, int len);
+
+/* Walks a descriptor table (four words per entry: base, element size,
+   tag, unused) and writes one { tag, size, data } record per entry into
+   the caller's buffer, four-byte aligned, terminated by { -1, 0 }. The
+   header it leaves at the front is { payload length, checksum }, and the
+   return value is the total including that header. */
+/*
+ * Byte mismatch, correct size (0x E8), 39 of 232 bytes: the allocator puts
+ * the table cursor in $s1 and the write cursor in $s0, where retail has
+ * them the other way round, and it initialises the cursor before the
+ * `table[0] != 0` test instead of after it. Everything else is retail's
+ * instruction sequence.
+ *
+ * Spellings tried, all identical output: a separate `int *t = table` local
+ * versus advancing the parameter itself; the source address computed at
+ * the call versus in a local. That local IS load-bearing for the rest --
+ * computing it before the two header stores is what makes the compiler
+ * reload table[1] for them, as retail does (1807 -> 517 differing words).
+ * The remaining residual is allocator destination choice, the recorded
+ * dead end.
+ */
+/* memcard_PrepData */
+int func_0020BBC8(void *dst, int i, int *table) {
+    char *out = (char *)dst + 8;
+    int total = 0;
+
+    if (table[0] != 0) {
+        do {
+            char *src = (char *)table[0] + i * table[1];
+
+            total += 8;
+            *(int *)out = table[2];
+            *(int *)(out + 4) = table[1];
+            out += 8;
+            func_001F9A00(out, src, table[1]);
+            out += table[1];
+            total += table[1];
+            table += 4;
+            out = (char *)(((int)out + 3) & -4);
+            total = (total + 3) & -4;
+        } while (table[0] != 0);
+    }
+    total += 8;
+    *(int *)(out + 4) = 0;
+    *(int *)out = -1;
+    *(int *)((char *)dst + 4) = func_0020BB10((char *)dst + 8, total);
+    *(int *)dst = total;
+    return total + 8;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020BCB0); /* memcard_RestoreInfo(char *, int, int) */
 

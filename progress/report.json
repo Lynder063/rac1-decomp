@@ -1,6 +1,6 @@
 {
  "measures": {
-  "fuzzy_match_percent": 8.55635857996292,
+  "fuzzy_match_percent": 8.597773467005425,
   "total_code": "466016",
   "matched_code": "33964",
   "matched_code_percent": 7.288161779853052,
@@ -12329,7 +12329,7 @@
   {
    "name": "game/memcard",
    "measures": {
-    "fuzzy_match_percent": 6.4079778830963665,
+    "fuzzy_match_percent": 8.313586097946288,
     "total_code": "10128",
     "matched_code": "484",
     "matched_code_percent": 4.7788309636650865,
@@ -12435,7 +12435,7 @@
     {
      "name": "func_0020BBC8",
      "size": "232",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 83.1896551724138,
      "address": "8552",
      "metadata": {
       "virtual_address": "2145224"
@@ -18462,7 +18462,7 @@
    "id": "game",
    "name": "Game",
    "measures": {
-    "fuzzy_match_percent": 7.6606216934698494,
+    "fuzzy_match_percent": 7.702954052939576,
     "total_code": "455916",
     "matched_code": "29016",
     "matched_code_percent": 6.364330271365778,
