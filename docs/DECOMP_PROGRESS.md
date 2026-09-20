@@ -51,9 +51,9 @@ classes through, each caught only by luck:
    now fails loudly on any size disagreement, using the symbol's
    `st_size`.
 
-Current audited state (from `tools/sweep_matches.py`): **394 functions
-have real C; 341 are exact on size and bytes; 0 are size-mismatched and
-53 byte-mismatched** — the 53 being deliberately-kept documented
+Current audited state (from `tools/sweep_matches.py`): **501 functions
+have real C; 440 are exact on size and bytes; 0 are size-mismatched and
+61 byte-mismatched** — the 53 being deliberately-kept documented
 near-misses, listed in the table below. Re-run the sweep after any
 change rather than trusting this number or any single entry.
 
@@ -108,6 +108,40 @@ it. Writing the schedule out does:
     next = mask + 1;      /* where retail schedules it */
     ... body reads *mask ...
     mask = next;
+
+**A call argument's declared type picks how its constant is built.** An
+argument declared `long` is materialised by the compiler as ONE `dli`
+macro, so the assembler expands it and can still fill the `jal` delay
+slot from the instruction before it. The same argument declared `int` is
+materialised as two RTL insns (`lui` + `ori`), and the scheduler drops
+the OTHER argument's `li` between them, which changes what lands in the
+delay slot. That one declaration was the entire residual of
+`func_001F7B70` (the `0x513F1` call). The same lever supplies real
+64-bit constants: `0x8000000044` only exists as one argument if the
+parameter is `long`.
+
+**A global pointer written through directly is reloaded; a local copy is
+not.** Retail's packet writers (`func_00234B48`, `func_001F55C0`,
+`func_00234BA0`, `func_00228458`) reload `D_00161000` before every field
+store, because a store of the pointed-to type may alias the pointer
+variable itself. That only happens if the two types can alias: declaring
+the global `int *` and storing `int`s reproduces it exactly, while
+declaring it as a pointer to a quadword struct lets the compiler keep it
+in a register and the function comes out short. The opposite shape
+(`Qword *p = D_00161000++;` then stores through `p`) is what retail's
+`func_00235290` has, so the same symbol is declared twice, under two
+types, through an `__asm__` alias.
+
+**Two fields of one table: type the table so the base survives.** With
+`extern char T[]` and byte offsets, the compiler folds the offset into
+the `%hi` of the first access and addresses the second backwards from
+it. With `extern int T[]` and indices, it keeps one base register and
+uses two displacements, which is retail's form (`func_00204BE8`).
+
+**Taking the address of a small-data symbol.** `&D` on a
+`short`-declared (SDA) symbol compiles to the `la` macro and so to
+`addiu $2,$28,-off` — retail's form when it indexes a small-data array
+with a variable (`func_00228458`).
 
 **Three more rules the sweep enforces, all learned the hard way:**
 
@@ -391,35 +425,55 @@ Expect more of these collisions as the `$gp` harvest continues. When one
 appears, prefer whichever declaration yields an exact match and stub the
 casualties; do not keep a size-mismatched function.
 
-## Open: global STORE addressing (`$at` macro form vs split `%hi`/`%lo`)
+## SOLVED: the one-instruction macro form — `MACRO_ADDR`, per variable
 
-Found while harvesting `$gp` functions. Retail uses **two different
-addressing forms** for non-SDA globals, and this compiler cannot produce
-both under one setting:
+This used to be filed as "Open: global STORE addressing", with the
+conclusion that neither `-msplit-addresses` nor `-mno-split-addresses`
+reproduces retail's combination and that **any function that stores
+directly to a non-SDA global is blocked**. That was wrong, and it had
+been blocking a large category for several rounds.
 
-| access | retail | this compiler (default `-msplit-addresses`) |
-|---|---|---|
-| load | `lui $3,%hi(D)` / `lw $2,%lo(D)($3)` | **same** — matches |
-| store | `lui $1,%hi(D)` / `sw $x,%lo(D)($1)` (`$at`, i.e. the assembler's macro expansion) | `lui $3,%hi(D)` / `sw $x,%lo(D)($3)` (allocated register) |
+Retail's "two addressing forms" are not two compiler settings. They are
+**one assembler macro** (`lw $2,D` / `sw $2,D`), written by a compiler
+that emitted the unsplit form for that variable, expanded by the
+assembler according to where it lands:
 
-`-mno-split-addresses` makes the compiler emit the bare macro form
-(`sw $0,D`), which the assembler expands using `$at` — **exactly
-retail's store form**. But it applies to loads too, turning a matching
-`lui $3` / `lw $2,%lo($3)` into destination-reuse `lui $2` / `lw $2`,
-which breaks currently-exact functions (verified on `func_001138A8`) and
-grew `core_text` enough to overlap sections.
+| where the access lands | the assembler emits |
+|---|---|
+| ordinary load | `lui $2,%hi(D)` / `lw $2,%lo(D)($2)` — the address register reused as the destination |
+| ordinary store | `lui $1,%hi(D)` / `sw $x,%lo(D)($1)` — through `$at` |
+| a delay slot (only one instruction fits) | `$gp`-relative, e.g. `sw $x,-0x5D00($28)` |
 
-So: neither setting reproduces retail's combination. Same shape as the
-`sq`/`lq` and FP-pooling questions — two behaviours coupled to one flag.
-**Any function that stores directly to a non-SDA global is currently
-blocked**, and this very likely explains the recurring "`%hi` register
-reuse" sub-case that has been showing up in near-miss residuals for
-several rounds. Functions that only *load* globals are unaffected.
+`MACRO_ADDR` in `include/common.h` puts the symbol in `.sdata` so the
+compiler emits the unsplit form, while its declared size stays over
+`-G2` so the assembler does not route it through `$gp`. One declaration
+therefore reproduces all three forms at once, which is exactly what
+retail does with variables like `D_00161000`, `D_0015F718` and the
+`draw.cpp` callback counts.
 
-Not yet tried: whether the two forms can be separated some other way
-(a different sub-build, or per-file compilation with mixed flags — note
-`-mno-split-addresses` would have to apply only to store-only functions,
-which is not how translation units divide).
+Consequences worth keeping:
+
+- The recurring "`%hi` register reuse" residual **was never an allocator
+  question**. `func_001F49B0` had been recorded as held by it for
+  several rounds and matched immediately once its count was
+  `MACRO_ADDR`.
+- It works on an **array with an explicit size** too, not only scalars:
+  `extern unsigned char D_0015EE58[4] MACRO_ADDR;` gives retail's
+  one-register `lbu`. Without the section attribute an array compiles to
+  the split `lui`/`%lo` form (and, being an array, is scheduled
+  differently); without the explicit size over `-G2` a byte-sized scalar
+  is small enough for the assembler to use `$gp`.
+- **Hard limit, measured:** because a `MACRO_ADDR` access in a delay
+  slot becomes `$gp`-relative, a symbol **outside the ±32KB small-data
+  window cannot appear in a delay slot at all** — the link fails with
+  `relocation truncated to fit: R_MIPS_GPREL16`. `func_0012D380` and
+  `func_0012D448` load `D_001331D4`/`D_001331D6` across two delay slots
+  (the `lui` in a branch's, the `lbu` in the following `b`'s), which is
+  the compiler's *split* form and not a macro at all. For those, a plain
+  incomplete-array extern gives retail's exact shape and the only
+  residual is which register holds the address.
+- `tools/check_macro_slots.py` runs on every object and fails the build
+  if such an access lands where it cannot be expanded.
 
 ## SOLVED: tail calls — post-process the call-and-return
 
@@ -1522,6 +1576,36 @@ types, only single-byte loads.
 5. Once matching, the readability pass (real names/types/structure) can
    proceed on that function using the still-matching build as a
    regression check, per the plan in `README.md`.
+
+## Disproved this round, with counts
+
+- **Store order at the end of a function is not source-steerable.**
+  `func_002348E8`/`func_00234948` end with four stores through the
+  assembler macro. All **24 orderings** of those four source statements
+  were compiled: retail emits `D_00161010`, `D_0015F71C`, `D_00161000`,
+  then `D_0015F718` in the `jr` delay slot, and this compiler produces
+  no ordering at all with `D_00161010` first — it always sinks that
+  store past `D_0015F71C`. Both functions reach retail's exact size, so
+  the recovered source is in the file as a comment.
+- **Two stores of the SAME value come out in the opposite order to the
+  source.** In `func_00201E10`, writing `T[5] = d;` before `T[6] = d;`
+  is what reproduces retail's `T[6]`-early / `T[6]`-in-the-delay-slot
+  placement. Useful, but it did not close the function: the rest is a
+  scheduling tie with the same instruction multiset in a different
+  order and every live value relabelled one register up.
+- **`addu` operand order, again.** `func_00203548` is 3/100 and the
+  residual is two reversed `addu` operand orders. Four spellings of both
+  address expressions (base-first, index-first, array indexing on a cast
+  pointer, base hoisted into a local) compile to the byte-identical
+  instruction stream. This is the same conclusion as the "Swapped `addu`
+  operands" lever above, from the other side: when the typed-access form
+  does not flip it, nothing else will.
+- **A constant's macro expansion belongs to the assembler.**
+  `func_0022FD20` is 5/160 because retail builds `0x8000000044` as
+  `ori 0x8000` / `dsll 24` / `ori 0x44` and this assembler expands the
+  identical `dli` as `addiu 0x80` / `dsll32` / `ori 0x44`. Every C
+  spelling folds to the same constant and therefore to the same macro,
+  so retail's sequence came out of its compiler, not its assembler.
 
 ## Rejected lever: reordering callee-saved spills to v1.36's order
 
