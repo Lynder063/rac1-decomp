@@ -1391,7 +1391,21 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00227D20);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00227DB0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00228110);
+extern int D_0015F6D0 MACRO_ADDR;
+extern int D_0015EF24 MACRO_ADDR;
+extern int D_0015EE80 MACRO_ADDR;
+
+void func_00228110(void) {
+    int t;
+    if (D_0015F6D0 != 0) {
+        return;
+    }
+    t = D_0015EF24;
+    D_0015EF24 = t + 1;
+    if ((t + 1) % 50 == 0 && D_0015EE80 != 0) {
+        D_0015EF24 = t + 0xB;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00228160);
 

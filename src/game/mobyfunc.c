@@ -412,7 +412,28 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0020E180); /* DrawMobyList */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020E200); /* DrawMobysCleanUp */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020E2B0); /* DrawMobys */
+extern int D_0018A3D8;
+extern int D_00160018 MACRO_ADDR;
+extern int D_00160014 MACRO_ADDR;
+extern int D_00161000 MACRO_ADDR;
+extern int D_00161008 MACRO_ADDR;
+extern char D_001E8730[];
+extern void func_0020E0C8(void);
+extern void func_0020E200(void);
+extern int func_00212658(int, int, int, int);
+
+/* DrawMobys */
+void func_0020E2B0(void) {
+    func_0020E0C8();
+    if (D_0018A3D8 != 0) {
+        func_0020E040();
+        D_00160014 = func_00212658(D_00160018, D_00160014, -1, 1);
+        if (D_00161000 > D_00161008) {
+            func_001E9730(D_001E8730);
+        }
+    }
+    func_0020E200();
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020E330);
 

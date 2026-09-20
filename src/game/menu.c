@@ -344,8 +344,7 @@ extern void func_00208860(void *dst);
    instructions later are the SAME address; retail reaches it both ways
    inside one function. Declared small it lands in SDA at -G2, declared
    int it stays out. */
-extern short D_0015EE84;                                    /* SDA */
-extern int D_0015EE84_far __asm__("D_0015EE84") NOT_SDA;
+extern int D_0015EE84 MACRO_ADDR;
 
 /*
  * Byte MISMATCH kept in place: size-exact (0xA8) and the instruction
@@ -377,9 +376,9 @@ void func_00208338(void *arg0) {
     r = func_001FAA28(arg0, 0x800, D_001A01F0[5], D_001A01F0[3]);
     if (r == -1) {
         func_00208860(arg0);
-        idx = D_0015EE84_far;
+        idx = D_0015EE84;
     } else {
-        idx = *(int *)&D_0015EE84;
+        idx = D_0015EE84;
     }
     if (D_0013D668[idx] < r) {
         D_0013D668[idx] = r;
@@ -421,7 +420,33 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00208D30);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00208D38);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00208FA0);
+extern int D_001E06B8[];
+extern void *D_00199578[];
+extern char D_0013D6B8[];
+
+void func_00208FA0(void) {
+    int i = D_0015EE84;
+    if ((unsigned int)i < 0x13) {
+        int start = D_001E06B8[i];
+        int end = D_001E06B8[i + 1];
+        if (start < end) {
+            float *dst = (float *)(D_0013D6B8 + start * 16);
+            void **src = &D_00199578[start];
+            start = end - start;
+            do {
+                char *p = (char *)*src;
+                if (p != 0) {
+                    dst[0] = *(float *)(p + 0x10);
+                    dst[1] = *(float *)(p + 0x14);
+                    dst[2] = *(float *)(p + 0x48);
+                }
+                dst += 4;
+                start--;
+                src++;
+            } while (start != 0);
+        }
+    }
+}
 
 void func_00209040(void) {
 }
@@ -682,11 +707,81 @@ void func_002094E0(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209520);
+/*
+ * Same-size near-miss (15/50 words): every instruction is retail's, but
+ * the base pointer lands in $a1 and the literal 1 in $a0 where retail
+ * has them the other way round. Tried: reading the index before or
+ * after advancing the base, char* vs int* for the slot, unsigned index,
+ * the +0xB0 folded into the index expression, the compare with the
+ * constant on either side, the block in its own scope, a second local
+ * for the tail. The pair never swaps -- allocator, not source shape.
+ * (`b = D_0013D390;` after the block IS load-bearing: retail
+ * re-materialises %lo from the %hi it kept in $a2, which is what
+ * clobbering the base inside the block produces.)
+ */
+void func_00209520(void) {
+    char *b = D_0013D390;
+    int v;
+    if (*(int *)(b + 0xDC) >= 3 || *(int *)(b + 0xE4) >= 0) {
+        int idx;
+        int *slot;
+        idx = *(int *)(b + 0xCC);
+        b += 0xB0;
+        slot = (int *)(b + idx * 0xC0);
+        if (*slot == 1) {
+            *slot = 2;
+        }
+    }
+    b = D_0013D390;
+    if (*(int *)(b + 0x1C) < -1 || *(int *)(b + 0xEC) != 0) {
+        D_0015EFB0 = 3;
+        return;
+    }
+    v = *(int *)(b + 0x14);
+    if (v == -2) {
+        if (*(int *)(b + 0xC) + *(int *)(b + 0xAC) < 0x15E) {
+            D_0015EFB0 = 0x13;
+        } else {
+            D_0015EFB0 = 0xC;
+        }
+        return;
+    }
+    if (v >= -1) {
+        D_0015EFB0 = 0x10;
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002095E8);
+void func_002095E8(void) {
+    if (D_0013D3AC != 0) {
+        D_0015EFB0 = 3;
+        return;
+    }
+    if (D_0015EFB4 & 2) {
+        D_0015EFB0 = 0xD;
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209620);
+void func_00209620(void) {
+    int flags;
+    if (D_0013D3AC != 0) {
+        D_0015EFB0 = 3;
+        return;
+    }
+    flags = D_0015EFB4;
+    if (flags & 0x20) {
+        D_0015EFB4 = flags ^ 0x20;
+        if (D_0015F6C8 != 0) {
+            D_0015EFB0 = 0x18;
+            return;
+        }
+        D_0015EFB0 = 0xC;
+        return;
+    }
+    if (flags & 0x10) {
+        D_0015EFB4 = flags ^ 0x10;
+        D_0015EFB0 = 0xE;
+    }
+}
 
 void func_00209698(void) {
     char *s = D_0013D390;
@@ -697,8 +792,59 @@ void func_00209698(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002096D8);
+void func_002096D8(void) {
+    char *s = D_0013D390;
+    if (*(int *)(s + 0xDC) == 2 && *(int *)(s + 0xE4) < 0) {
+        if (*(int *)(s + 0xEC) != 0) {
+            D_0015EFB0 = 0x12;
+            D_0015EFB4 |= 0x40;
+            return;
+        }
+        *(int *)(s + 0xE4) = 7;
+        *(int *)(s + 0xC8) = 0;
+        *(int *)(s + 0x14) = 0;
+        *(int *)(s + 0xE8) = 0;
+        D_0015EFB0 = 0x10;
+    }
+}
 
+/*
+ * Reverted, same assembler difference as func_00209188 above: our
+ * ee-as pads the cross-jumped backward `b` with 3 nops because the
+ * shared tail materialises D_0015EFB0 through $at, and retail has no
+ * nops there. (Measured: replacing that one `lui $1` with any non-$at
+ * instruction makes the padding go away.) Recovered source:
+ *
+ * void func_00209750(void) {
+ *     int flags;
+ *     char *b;
+ *     if (D_0015EFB4 & 4) {
+ *         D_0015EFB4 &= ~4;
+ *     }
+ *     if (D_0015EFB4 & 2) {
+ *         D_0015EFB4 &= ~2;
+ *     }
+ *     flags = D_0015EFB4;
+ *     if (flags & 0x80) {
+ *         D_0015EFB0 = 0x15;
+ *         D_0015EFB4 = (flags ^ 0x80) | 0x40;
+ *         return;
+ *     }
+ *     if (flags & 0x100) {
+ *         D_0015EFB0 = 0x14;
+ *         D_0015EFB4 = (flags ^ 0x100) | 0x40;
+ *         return;
+ *     }
+ *     b = D_0013D390;
+ *     if (*(int *)(b + 0x1C) != 0) {
+ *         D_0015EFB0 = 3;
+ *         return;
+ *     }
+ *     if (*(int *)(b + 0xFC) != 0) {
+ *         D_0015EFB0 = 1;
+ *     }
+ * }
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00209750);
 
 
@@ -760,8 +906,41 @@ void func_00209918(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209968);
+void func_00209968(void) {
+    char *b = D_0013D390;
+    if (*(int *)(b + 0xDC) < 3 && *(int *)(b + 0xE4) < 0) {
+        if (*(int *)(b + 0xEC) != 0) {
+            *(int *)(b + 0xFC) = 0;
+            D_0015EFB0 = 0x15;
+            D_0015EFB4 |= 0x440;
+            return;
+        }
+        D_0015EFB0 = 1;
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002099D0);
+void func_002099D0(void) {
+    int flags;
+    if (D_0013D3AC != -2) {
+        D_0015EFB0 = 3;
+        return;
+    }
+    flags = D_0015EFB4;
+    if (flags & 0x20) {
+        D_0015EFB4 = flags ^ 0x20;
+        D_0015EFB0 = 5;
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209A18);
+void func_00209A18(void) {
+    int flags;
+    if (D_0013D3AC != 0) {
+        D_0015EFB0 = 3;
+        return;
+    }
+    flags = D_0015EFB4;
+    if (flags & 0x20) {
+        D_0015EFB4 = flags ^ 0x20;
+        D_0015EFB0 = 0xC;
+    }
+}

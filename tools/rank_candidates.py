@@ -218,8 +218,12 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
                     and re.search(r"lui\s+\$1\b", text))
 
     # --- one variable reached BOTH via $gp and via lui/%lo in the same
-    # function: one declaration cannot be both, and an aliased second
-    # symbol does not help (the difference is register allocation).
+    # function. This was blocked for many rounds as an unexpressible
+    # per-TU declaration difference. It is NOT: retail's toolchain wrote
+    # a one-instruction macro access $gp-relative when it landed in a
+    # branch delay slot (505 of 524 such accesses image-wide), and
+    # tools/check_macro_slots.py reproduces that from one MACRO_ADDR
+    # declaration. Hinted, not blocked.
     gp_syms, hi_syms = set(), set()
     for i in ins:
         if "$28" in i:
@@ -232,8 +236,7 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
         m = re.search(r"%(?:hi|lo)\((D_[0-9A-Fa-f]+)\)", i)
         if m:
             hi_syms.add("0x" + m.group(1).split("_")[1].lstrip("0").lower())
-    if gp_syms & hi_syms:
-        return "blocked", "gp/hi collision", f"same var both ways: {sorted(gp_syms & hi_syms)[:2]}"
+    gp_hi = bool(gp_syms & hi_syms)
 
     # --- an epilogue fragment: a real function opens by RESERVING stack
     # (addiu $sp,$sp,-N). Opening with a positive adjustment means this
@@ -332,6 +335,11 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
         detail = "$gp (unblocked at -G2)"
     if at_store or reuse_load:
         detail = (detail + "; " if detail else "") + "MACRO_ADDR"
+    if gp_hi:
+        if "MACRO_ADDR" in detail:
+            detail += " ($gp in slot)"
+        else:
+            detail = (detail + "; " if detail else "") + "MACRO_ADDR ($gp in slot)"
     return "candidate", "candidate", detail
 
 
