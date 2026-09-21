@@ -158,7 +158,11 @@ extern char D_00153C78[];
 extern char D_00153C90[];
 extern char D_00153CC8[];
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CC70);
+extern void func_0012CD60(void *arg0);
+
+void func_0012CC70(void *arg0) {
+    func_0012CD60((char *)*(void **)((char *)arg0 + 0x40) + 0x4C);
+}
 
 extern int func_0012CE48(void *);
 
