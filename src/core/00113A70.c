@@ -45,6 +45,22 @@ void func_00113AC8(void *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00113AD8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00113AE0);
+/* Same-size near-miss (11/140 bytes): retail computes `n0 = p+0x1E4`
+   before the `p->0x38 = 1` store; this compiler schedules them the
+   other way (both independent, so nothing in source-statement order
+   changes it -- tried an extra local for the constant 1 too). */
+void func_00113AE0(void *arg0) {
+    char *p = (char *)arg0;
+    char *n0 = p + 0x1E4;
+
+    *(void (**)(void *))(p + 0x3C) = func_00113AC8;
+    *(int *)(p + 0x38) = 1;
+    func_00113A70(n0, 4, 0, (int)p);
+    func_00113A70(p + 0x23C, 9, 1, (int)p);
+    func_00113A70(p + 0x294, 0xA, 2, (int)p);
+    *(void **)(p + 0x1E0) = n0;
+    *(int *)(p + 0x1DC) = 3;
+    *(int *)(p + 0x1D8) = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00113B6C);
