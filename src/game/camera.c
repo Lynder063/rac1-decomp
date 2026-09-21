@@ -159,6 +159,32 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001ECB98);
 /* Two conditional 16-byte block copies via bare `lq`/`sq` -- no plain-C
    representation available (same "not attempted, no plain-C
    representation" category as func_001F9BC0 in core_text). */
+/*
+ * Reverted: size mismatch (ours=44, retail=56 -- 12 bytes short).
+ *
+ *   extern char D_001872B0[];
+ *
+ *   void func_001ECC10(void) {
+ *       char *base = D_001872B0;
+ *       if (*(unsigned char *)(base + 2) != 0) {
+ *           *(unsigned long long *)(base + 0x50) =
+ *               *(unsigned long long *)(base + 0xC0);
+ *           *(unsigned long long *)(base + 0x60) =
+ *               *(unsigned long long *)(base + 0xD0);
+ *       }
+ *   }
+ *
+ * Two 8-byte (lq/sq quadword) field copies gated by a flag byte.
+ * `unsigned long long` for the 128-bit lq/sq is correct here (the
+ * usual [[rac1-64bit-field-type]] trap runs the other way -- this is
+ * the one place `long long` is what retail actually uses). Retail
+ * fully materializes each of the four addresses (base+0x50/0x60/0xC0/
+ * 0xD0) before the lq/sq with a zero immediate offset; this compiler
+ * always folds the offset directly into the lq/sq instruction
+ * instead, needing 3 fewer instructions per pair. Tried both the
+ * folded-offset expression form and four explicit pointer locals
+ * (`char *dst1 = base+0x50; ...`) -- identical output either way.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_001ECC10);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001ECC48);
