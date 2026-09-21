@@ -1048,6 +1048,51 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002260A8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00226250);
 
+/*
+ * Reverted: size mismatch (ours=152, retail=144 -- 8 bytes over).
+ *
+ *   extern int func_0020E3D0(int);
+ *   extern void func_0020ED48(void *);
+ *   extern void func_0020DAF8(char *, int, char *);
+ *   extern void func_00214F78(float *);
+ *   extern void func_0020EEE8(void *);
+ *
+ *   void func_00226380(void *arg0) {
+ *       char *p = (char *)arg0;
+ *       int *ptr = *(int **)(p + 0x78);
+ *       int *rec = (int *)*ptr;
+ *       int handle;
+ *       short flag;
+ *       int sel;
+ *       char buf[0x40];
+ *       char *dst2;
+ *
+ *       func_0020E3D0((int)p);
+ *       handle = *(int *)((char *)rec + 0x44);
+ *       func_0020ED48(p);
+ *       flag = *(short *)(p + 0xA6);
+ *       sel = ((flag ^ 0x197) != 0) ? 0x1D : 0x1E;
+ *       func_0020DAF8((char *)handle, sel, buf);
+ *       *(unsigned long long *)(p + 0x10) =
+ *           *(unsigned long long *)(buf + 0x30);
+ *       dst2 = p + 0xC0;
+ *       func_001FA480(dst2, buf);
+ *       func_00214F78((float *)dst2);
+ *       func_0020EEE8(p);
+ *   }
+ *
+ * Call args and struct offsets confirmed correct against
+ * func_0020DAF8's own already-matched body (arg2+0x30 is exactly
+ * what gets copied to p+0x10 here). Two residuals: retail computes
+ * `rec = *ptr` before the func_0020E3D0 call and only the final
+ * +0x44 dereference lands in the call's delay slot; this compiler
+ * defers `rec`'s own load to after the call too, since nothing
+ * forces it earlier. Retail also encodes the ternary as
+ * `movn`-picks-0x1D (matching the source polarity written here);
+ * this compiler canonicizes the XOR-inequality test into the
+ * opposite `movz`-picks-0x1E form regardless, the same class already
+ * seen on func_001F0FF8.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00226380);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00226410);
