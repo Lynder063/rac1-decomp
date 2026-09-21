@@ -47,7 +47,31 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00119F38);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011A0A0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011A690);
+extern void func_0011A0A0(int, void *);
+
+/*
+ * Same-size near-miss (13/56 bytes). Manual va_list forwarder: spills
+ * 7 register args to a stack buffer and hands func_0011A0A0 arg0 plus
+ * the buffer's address, the same shape as func_0011A6C8's blocked
+ * varargs definition (see func_0012C420's comment). The 16-long
+ * buffer size is what closes the frame to retail's exact 0x90 bytes
+ * (7 is 0x20 short); the instruction multiset is then identical to
+ * retail's, but this compiler places the buffer at the bottom of the
+ * frame and $ra at the top, where retail has it the other way around
+ * -- a single local array gives nothing else in source to reorder.
+ */
+void func_0011A690(int arg0, int a1, int a2, int a3, int a4, int a5, int a6,
+                    int a7) {
+    long args[16];
+    args[0] = a1;
+    args[1] = a2;
+    args[2] = a3;
+    args[3] = a4;
+    args[4] = a5;
+    args[5] = a6;
+    args[6] = a7;
+    func_0011A0A0(arg0, args);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011A6C8);
 
