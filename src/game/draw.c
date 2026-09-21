@@ -41,6 +41,49 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F0F78);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F0FF0);
 
+/*
+ * Reverted: size mismatch (ours=132, retail=140 -- 8 bytes short).
+ * Center-text width helper: sums a per-character width table indexed
+ * by (char - 0x20), clamped to the space-character entry for
+ * anything outside the printable range, then offsets arg0 by half
+ * the total width before forwarding to func_001F0F78.
+ *
+ *   extern int D_00189EC0[];
+ *   extern void func_001F0F78(int, int);
+ *
+ *   int func_001F0FF8(int arg0, int arg1, int arg2, char *str) {
+ *       int sum = 0;
+ *       unsigned char c = *str;
+ *       if (c != 0) {
+ *           char *p = str;
+ *           do {
+ *               int idx = 0x20;
+ *               int ch = *(unsigned char *)p;
+ *               unsigned char next;
+ *               p++;
+ *               ch = (ch - 0x20) & 0xFF;
+ *               next = *(unsigned char *)p;
+ *               if ((unsigned int)ch < 0x60) {
+ *                   idx = ch;
+ *               }
+ *               sum += D_00189EC0[idx];
+ *               if (next == 0) {
+ *                   break;
+ *               }
+ *           } while (1);
+ *       }
+ *       arg0 -= sum >> 1;
+ *       func_001F0F78(arg0, arg1);
+ *       return arg0;
+ *   }
+ *
+ * Two residuals: retail encodes the range check as `sltiu v,ch,0x60`
+ * + `movn`; this compiler always canonicalizes an unsigned `< 0x60`
+ * (tried the equivalent `<= 0x5F` too, identical output) into
+ * `sltu v,0x5F,ch` + `movz` instead. Retail also preloads the 0x20
+ * default into its own register once, before the loop; hoisting it
+ * into an explicit local regressed further rather than helping.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_001F0FF8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F1088);
