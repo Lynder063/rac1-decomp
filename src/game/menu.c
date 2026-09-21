@@ -183,6 +183,30 @@ int func_00207CB0(int arg0, int arg1) {
     return D_0013D4C5 != 0;
 }
 
+/*
+ * Reverted: size mismatch (ours=80, retail=88 -- 8 bytes short).
+ *
+ *   int func_00207CE0(int arg0, float unused1, float unused2,
+ *                      float f14) {
+ *       if (arg0 < 0xE0) {
+ *           return f14 >= 47.75f;
+ *       }
+ *       return f14 < 29.0f;
+ *   }
+ *
+ * Same shape and thresholds-in-spirit as func_00207E28/func_00207EC0
+ * below in this file. Getting retail's $f14 register for the real
+ * float argument required TWO unused leading `float` parameters
+ * (neither `int` nor `double` padding reproduced it) -- i.e. this
+ * compiler counts float argument registers independently of
+ * intervening int params, consecutively from $f12, with no shadow-
+ * slot pairing to a specific argument POSITION. Worth remembering for
+ * any other $f14/$f16-argument function in this file. Semantics and
+ * constants confirmed exact (0x423F0000 = 47.75f, not 47.5f). Missing
+ * the same GPR/FPU-adjacent hazard nop (between `mtc1` and the
+ * following `c.le.s`) already documented as unreachable on the two
+ * siblings.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00207CE0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207D38);
