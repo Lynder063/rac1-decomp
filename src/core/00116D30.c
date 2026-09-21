@@ -29,6 +29,17 @@ extern int func_00112468(int *errOut, int arg1);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00116D30);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00116F68);
+extern long func_00116D30(void *, int, int, int);
+
+/*
+ * Same-size near-miss (8/52 bytes). Retail schedules the `addiu
+ * sp,sp,-0x10` prologue push one instruction later than this compiler
+ * does (after the first `daddu v1,a1,zero` rather than before it) --
+ * a single-expression tail call gives nothing else to reorder from
+ * source. Not reachable; kept, harmless to anything after it.
+ */
+long func_00116F68(int arg0, int arg1, int arg2) {
+    return func_00116D30(D_0012F86C, arg0, arg1, arg2);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00116F9C);
