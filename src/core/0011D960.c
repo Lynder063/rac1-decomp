@@ -89,6 +89,34 @@ void func_0011D9C0(void) {
     D_00130424 = func_00118C70(b);
 }
 
+/*
+ * Reverted: size mismatch (ours=52, retail=56 -- 4 bytes short).
+ *
+ *   int func_0011DA08(int *dst, int *src, unsigned int n) {
+ *       unsigned int count = n >> 2;
+ *       unsigned int i;
+ *       if (count != 0) {
+ *           i = 0;
+ *           do {
+ *               int w = *src;
+ *               i++;
+ *               src++;
+ *               *dst = w;
+ *               dst++;
+ *           } while (i < count);
+ *       }
+ *       return 0;
+ *   }
+ *
+ * Word-copy sibling of func_0011DD68's byte-copy loop (see its
+ * revert doc for the full byte-granularity case) -- same class of
+ * function appears at least three times in core_text
+ * (func_0011DA08/func_0011DC08/func_0011DDF0, byte-identical to each
+ * other in retail). Same unreachable gap: retail leaves the branch's
+ * delay slot a genuine standalone nop with `dst++` scheduled before
+ * the branch, while this compiler always sinks `dst++` into the
+ * delay slot.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DA08);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DA40);

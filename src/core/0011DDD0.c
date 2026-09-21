@@ -86,6 +86,8 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DDD0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DDE0);
 
+/* Word-copy loop, byte-identical to func_0011DA08 in retail -- see
+   its revert doc (core/0011D960.c) for the unreachable delay-slot gap. */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DDF0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DE28);
