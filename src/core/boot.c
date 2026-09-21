@@ -317,4 +317,20 @@ extern int func_0012D4E0(int);
 extern int func_0012D4B0(int);
 extern void func_0011DDA0(int);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DB18); /* main */
+typedef void (*EntryFn)(void);
+extern void func_0011DFC8(void);
+extern EntryFn func_0012DA38(void); /* ParseBin(void) */
+extern void func_001E99D8(void);
+
+void func_0012DB18(void) { /* main */
+    EntryFn entry;
+
+    func_0011DFC8();
+    entry = func_001E99D8;
+    do {
+        entry();
+        entry = func_0012DA38();
+        func_00118D80(0);
+        func_00118D80(2);
+    } while (1);
+}
