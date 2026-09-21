@@ -151,7 +151,28 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012A718);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012A7E8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012AA70);
+extern void func_0012AAC8(void *, int);
+
+/*
+ * Same-size near-miss (16/52 bytes, kept). Source statement order
+ * already matches retail's field-write order exactly (confirmed by
+ * comparing both objdumps field-by-field), but the compiler's own
+ * scheduler still reshuffles several of the independent stores and
+ * picks a different store for the tail call's delay slot. Not reached
+ * by any reordering, since the "correct" order is already in place.
+ */
+void func_0012AA70(void *arg0, int arg1, int arg2, int arg3) {
+    char *p = (char *)arg0;
+    *(int *)(p + 0xC) = arg1;
+    *(int *)(p + 0x24) = arg2 + arg3;
+    *(int *)(p + 0x28) = arg3;
+    *(int *)(p + 0x8) = arg1;
+    *(long *)(p + 0x0) = 0;
+    *(int *)(p + 0x10) = 0;
+    *(long *)(p + 0x18) = 0;
+    *(int *)(p + 0x20) = arg2;
+    func_0012AAC8(arg0, 0);
+}
 
 /*
  * REVERTED (size mismatch: ours 32 bytes, retail 28). Semantics are
