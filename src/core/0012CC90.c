@@ -300,7 +300,22 @@ int func_0012D380(void) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D3E0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D3F0);
+extern short D_001331D0 NOT_SDA;
+
+/* Same-size near-miss (2/76 bytes): retail loads D_001331D0's address
+   into $v1 for the branch-taken path, this compiler picks $v0. Pure
+   register-allocation choice, harmless to anything after it. */
+int func_0012D3F0(void) {
+    unsigned int local;
+    unsigned int bits;
+
+    if (func_0012D340() != 0) {
+        return D_001331D0;
+    }
+    func_00118CF0(&local);
+    bits = (local >> 13) & 7;
+    return (bits == 0) ? 0x21C : ((int)local >> 21);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D440);
 
