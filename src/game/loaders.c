@@ -304,6 +304,53 @@ void func_00203B18(char *arg0, int idx) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00203B70);
 
+/*
+ * Reverted: size mismatch (ours=224, retail=236 -- 12 bytes short).
+ * Register slot D_00160000 for the (arg0, arg1, arg2, arg3) object,
+ * tagging it with arg3 in both the D_001B3E40 byte flag table and the
+ * D_001B3C80 slot->tag table, then bump the counter. If arg0 is a
+ * live pointer, stash its +0x2C field in D_001B6500 first and hand
+ * off to func_00203B70 for full init; otherwise func_00213BB8 alone
+ * is enough to clear/free the slot.
+ *
+ * Recovered source (every load/store/branch offset checked against
+ * the target .s and matches):
+ *
+ *   extern int D_00160000 MACRO_ADDR;
+ *   extern unsigned char D_001B3E40[] NOT_SDA;
+ *   extern short D_001B3C80[];
+ *   extern char *D_001B3580[] NOT_SDA;
+ *   extern int D_001B6500[];
+ *   extern void func_00213BB8(void);
+ *   extern void func_00203B70(void *, int, int, int);
+ *
+ *   void func_00203E78(void *arg0, int arg1, int arg2, int arg3) {
+ *       int idx = D_00160000;
+ *       unsigned char b = *(unsigned char *)&D_00160000;
+ *
+ *       D_001B3E40[arg3] = b;
+ *       D_001B3C80[idx] = (short)arg3;
+ *       D_001B3580[idx] = (char *)arg0;
+ *
+ *       if (arg0 == 0) {
+ *           func_00213BB8();
+ *           D_00160000 = D_00160000 + 1;
+ *       } else {
+ *           D_001B6500[idx] = *(int *)((char *)arg0 + 0x2C);
+ *           func_00213BB8();
+ *           func_00203B70(arg0, arg1, arg2, arg3);
+ *           D_00160000 = D_00160000 + 1;
+ *       }
+ *   }
+ *
+ * MACRO_ADDR on D_00160000 closed the frame size (0x50, matching
+ * retail) by stopping the address from being cached in a saved
+ * register across the calls. The residual is retail duplicating the
+ * "reload, increment, store" sequence in both branches while this
+ * compiler notices the two branches converge to the identical
+ * operation and tail-merges them into one shared copy -- same
+ * compiler-is-smarter-than-retail class as func_00203118.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00203E78);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00203F68);
