@@ -497,7 +497,21 @@ void func_002350A8(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00235118);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00235218);
+extern char D_001E8D38[];
+extern char D_001E8D50[];
+extern char D_001E8D68[];
+
+void func_00235218(void) {
+    int a = *(volatile int *)0x10009000;
+    int b = *(volatile int *)0x10009030;
+
+    func_001E9730(D_001E8D38);
+    func_001E9730(D_001E8D50, a, b);
+    func_001E9730(D_001E8D68);
+    while (1) {
+        ;
+    }
+}
 
 /*
  * Append one quadword to the packet at D_00161000. This one wants the
