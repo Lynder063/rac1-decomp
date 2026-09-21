@@ -202,7 +202,27 @@ int func_00123280(int arg0) {
     return arg0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001232A8);
+/*
+ * Same-size near-miss (2/0x34 bytes). Zero-fill n bytes at dst.
+ * Retail advances dst right after decrementing the counter, before
+ * the loop-continuation test; this compiler always schedules the
+ * increment into the branch's delay slot instead. Tried both
+ * statement orders (dst++ before/after i--) and a for-loop -- the
+ * for-loop actually regresses (grows the function); the two do-while
+ * orderings compile identically. Not reachable from source.
+ */
+void func_001232A8(char *dst, int n) {
+    int i;
+    if (n == 0) {
+        return;
+    }
+    i = n - 1;
+    do {
+        *dst = 0;
+        i--;
+        dst++;
+    } while (i != -1);
+}
 
 extern int D_00132E70[];
 
