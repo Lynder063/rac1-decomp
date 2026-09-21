@@ -256,7 +256,22 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E688); /* snd_SendIOPCommandA
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E820); /* snd_SendIOPCommandNoWait */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EAE0); /* snd_PostMessage */
+/* gp-relative, no retail symbol: gp 0x166D00 - 0x7F40 = 0x15EDC0
+   (message-queue index) and gp 0x166D00 - 0x7F60 = 0x15EDA0 (array of
+   pointers to the per-queue message-count int). */
+extern short D_0015EDC0;
+extern short D_0015EDA0;
+extern void func_0012DDC0(void);
+
+/* snd_PostMessage */
+void func_0012EAE0(void) {
+    int idx = *(int *)&D_0015EDC0;
+    int **base = (int **)&D_0015EDA0;
+    int *msg = base[idx];
+
+    *msg = *msg + 1;
+    func_0012DDC0();
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EB18); /* snd_SendCurrentBatch */
 
