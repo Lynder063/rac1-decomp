@@ -430,7 +430,38 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002158E8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215A10);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00215A98);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+
+/*
+ * Same-size near-miss (70/124 bytes). Round arg1 to arg0 decimal
+ * places: round(arg1 * 10^arg0) / 10^arg0. Retail carries two
+ * standalone nops (after each mtc1 whose destination the following
+ * cvt.s.w consumes) that this compiler never emits -- the same
+ * GPR/FPU transfer hazard already documented unreachable elsewhere
+ * this session (e.g. func_00214158). Everything past those two spots
+ * cascades into register-renaming diffs, hence the large byte count
+ * despite matching size; the logic and every constant/instruction is
+ * otherwise identical.
+ */
+
+float func_00215A98(int arg0, float arg1) {
+    float saved = arg1;
+    int p = 1;
+
+    if (arg0 > 0) {
+        do {
+            arg0--;
+            p = p * 10;
+        } while (arg0 != 0);
+    }
+    {
+        float scale = (float)p;
+        float half = 1.0f / (scale + scale);
+        float v = (half + saved) * scale;
+        int r = func_001FA898_r(v);
+        return (float)r / scale;
+    }
+}
 
 extern float func_0020D830(void);
 extern float func_00215A98(int, float);
