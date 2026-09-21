@@ -27,6 +27,63 @@ extern long func_00114518_wide(int *errOut, void *a, void *b, void *c)
     __asm__("func_00114518");
 extern int func_00112468(int *errOut, int arg1);
 
+/*
+ * REVERTED (bloats badly -- corrupted segment layout on link, so the
+ * exact size was never measured). Semantics recovered with confidence:
+ * this is a hand-written `strstr(arg0, arg1)`, matching the standard
+ * algorithm exactly (including the retail-specific up-front special
+ * case for an empty haystack, which a textbook for-loop wouldn't need
+ * but this asm clearly has as a separate branch):
+ *
+ *   char *func_00116CC0(char *arg0, char *arg1) {
+ *       char c1 = *arg0;
+ *       char c2;
+ *       int i;
+ *
+ *       if (c1 != 0) {
+ *           goto check_pattern;
+ *       }
+ *       c2 = *arg1;
+ *       if (c2 != 0) {
+ *           return 0;
+ *       }
+ *       return arg0;
+ *
+ *   next_char:
+ *       arg0++;
+ *       if (*arg0 == 0) {
+ *           return 0;
+ *       }
+ *   check_pattern:
+ *       c2 = *arg1;
+ *       if (c2 == 0) {
+ *           return arg0;
+ *       }
+ *       if (*arg0 != c2) {
+ *           goto next_char;
+ *       }
+ *       i = 1;
+ *   scan:
+ *       c2 = arg1[i];
+ *       if (c2 == 0) {
+ *           return arg0;
+ *       }
+ *       if (arg0[i] != c2) {
+ *           goto next_char;
+ *       }
+ *       i++;
+ *       goto scan;
+ *   }
+ *
+ * Structurally very close (same branches, same fields, confirmed via
+ * the intermediate .s before the link failure), but this compiler
+ * duplicates the `return 0`/`return arg0` tails at each of their two
+ * call sites instead of sharing one copy the way retail does -- a
+ * large-scale instance of the compiler-does-NOT-merge-duplicated-code
+ * class (the mirror image of func_0020D9D8, which is the opposite
+ * problem: retail failing to merge where this compiler does). Not
+ * pursued further to a fix given the scale of the residual.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00116CC0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00116D2C);
