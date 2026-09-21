@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 9.263201263475931,
+  "fuzzy_match_percent": 9.273501339009819,
   "total_code": "466016",
-  "matched_code": "36204",
-  "matched_code_percent": 7.768831971434457,
+  "matched_code": "36252",
+  "matched_code_percent": 7.7791320469683445,
   "total_functions": 1688,
-  "matched_functions": 471,
-  "matched_functions_percent": 27.902843601895736,
+  "matched_functions": 472,
+  "matched_functions_percent": 27.96208530805687,
   "complete_code": "3004",
   "complete_code_percent": 0.6446130604957769,
   "total_units": 130,
@@ -7123,13 +7123,13 @@
   {
    "name": "core/989snd",
    "measures": {
-    "fuzzy_match_percent": 17.350369872225958,
+    "fuzzy_match_percent": 18.15736381977135,
     "total_code": "5948",
-    "matched_code": "1032",
-    "matched_code_percent": 17.350369872225958,
+    "matched_code": "1080",
+    "matched_code_percent": 18.15736381977135,
     "total_functions": 50,
-    "matched_functions": 23,
-    "matched_functions_percent": 46.0,
+    "matched_functions": 24,
+    "matched_functions_percent": 48.0,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -7490,7 +7490,7 @@
     {
      "name": "func_0012F068",
      "size": "48",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "5376",
      "metadata": {
       "virtual_address": "1241192"
@@ -18462,13 +18462,13 @@
    "id": "game",
    "name": "Game",
    "measures": {
-    "fuzzy_match_percent": 8.383123206906536,
+    "fuzzy_match_percent": 8.39365146211144,
     "total_code": "455916",
-    "matched_code": "31256",
-    "matched_code_percent": 6.855648847594733,
+    "matched_code": "31304",
+    "matched_code_percent": 6.8661771027996386,
     "total_functions": 1664,
-    "matched_functions": 456,
-    "matched_functions_percent": 27.403846153846153,
+    "matched_functions": 457,
+    "matched_functions_percent": 27.463942307692307,
     "complete_code": "64",
     "complete_code_percent": 0.014037673606541555
    }

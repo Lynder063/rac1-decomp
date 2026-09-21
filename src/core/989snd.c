@@ -374,7 +374,24 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EFE8); /* snd_StreamSafeCdBre
  */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F030); /* snd_StreamSafeCdGetError */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F068); /* snd_StreamSafeCdCallback */
+/* gp-relative, no retail symbol: gp 0x166D00 - 0x7F74 = 0x15ED8C
+   (streaming-enabled flag, same as func_0012F030's) and
+   gp 0x166D00 - 0x7F70 = 0x15ED90 (cached callback value). */
+extern short D_0015ED8C;
+extern short D_0015ED90;
+extern int func_00120978(void);
+
+/* snd_StreamSafeCdCallback */
+int func_0012F068(int arg0) {
+    int old;
+
+    if (*(int *)&D_0015ED8C == 0) {
+        return func_00120978();
+    }
+    old = *(int *)&D_0015ED90;
+    *(int *)&D_0015ED90 = arg0;
+    return old;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F098);
 
