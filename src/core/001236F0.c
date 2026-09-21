@@ -258,6 +258,18 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00124A68);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124A70);
 
+/*
+ * Reverted -- semantics certain (an unused-argument no-op, called with
+ * one pointer arg from below), but the register-shadow spill shape is
+ * a puzzle: retail spills $5-$11 (a1-a7) to an 0x80-byte frame but
+ * saves NO floating registers. A true `void func_00124B60(void *, ...)`
+ * reproduces the GPR spill but ALSO adds f12/f14/f16/f18 saves (16
+ * bytes over); a K&R-style `void func_00124B60()` produces no spill at
+ * all (compiler proves the args are dead and elides them, same as any
+ * ordinary unused-parameter function). Neither spelling reached
+ * retail's GPR-only shadow save. Same open question as func_001E9730's
+ * variadic idiom, but for a GPR-only variant -- not yet understood.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124B60);
 
 /*
