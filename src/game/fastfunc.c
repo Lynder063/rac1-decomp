@@ -252,6 +252,22 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FA238);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FA460);
 
+/*
+ * Reverted (size mismatch: 28 vs retail's 32). Semantics certain: a
+ * plain 3-quadword (48-byte) copy --
+ *   void func_001FA480(void *arg0, void *arg1) {
+ *       *(unsigned long long *)((char *)arg0 + 0x00) = *(unsigned long long *)((char *)arg1 + 0x00);
+ *       *(unsigned long long *)((char *)arg0 + 0x10) = *(unsigned long long *)((char *)arg1 + 0x10);
+ *       *(unsigned long long *)((char *)arg0 + 0x20) = *(unsigned long long *)((char *)arg1 + 0x20);
+ *   }
+ * (128-bit lq/sq per the usual `unsigned long long` rule; a struct-copy
+ * spelling gives identical output). Retail loads all 3 quadwords, then
+ * stores all 3, then `jr ra` / plain `nop`. This compiler also loads
+ * all 3 first, but hoists the LAST store into the `jr`'s delay slot
+ * instead of leaving it a bare nop -- a valid, more compact schedule
+ * retail's compiler didn't take here. Not reached by reordering the
+ * copies or through a whole-struct assignment.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_001FA480);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FA4A0);
