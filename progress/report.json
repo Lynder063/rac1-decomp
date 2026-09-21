@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 9.042822564032136,
+  "fuzzy_match_percent": 9.074581130261622,
   "total_code": "466016",
-  "matched_code": "35380",
-  "matched_code_percent": 7.592014008102726,
+  "matched_code": "35528",
+  "matched_code_percent": 7.623772574332212,
   "total_functions": 1688,
-  "matched_functions": 455,
-  "matched_functions_percent": 26.954976303317537,
+  "matched_functions": 458,
+  "matched_functions_percent": 27.13270142180095,
   "complete_code": "3004",
   "complete_code_percent": 0.6446130604957769,
   "total_units": 130,
@@ -7123,13 +7123,13 @@
   {
    "name": "core/989snd",
    "measures": {
-    "fuzzy_match_percent": 6.4559515803631475,
+    "fuzzy_match_percent": 8.94418291862811,
     "total_code": "5948",
-    "matched_code": "384",
-    "matched_code_percent": 6.4559515803631475,
+    "matched_code": "532",
+    "matched_code_percent": 8.94418291862811,
     "total_functions": 50,
-    "matched_functions": 10,
-    "matched_functions_percent": 20.0,
+    "matched_functions": 13,
+    "matched_functions_percent": 26.0,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -7211,7 +7211,7 @@
     {
      "name": "func_0012E318",
      "size": "48",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "1968",
      "metadata": {
       "virtual_address": "1237784"
@@ -7220,7 +7220,7 @@
     {
      "name": "func_0012E348",
      "size": "52",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "2016",
      "metadata": {
       "virtual_address": "1237832"
@@ -7229,7 +7229,7 @@
     {
      "name": "func_0012E380",
      "size": "48",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "2072",
      "metadata": {
       "virtual_address": "1237888"
@@ -18462,13 +18462,13 @@
    "id": "game",
    "name": "Game",
    "measures": {
-    "fuzzy_match_percent": 8.157862413251564,
+    "fuzzy_match_percent": 8.190324533466692,
     "total_code": "455916",
-    "matched_code": "30432",
-    "matched_code_percent": 6.6749137999105095,
+    "matched_code": "30580",
+    "matched_code_percent": 6.707375920125637,
     "total_functions": 1664,
-    "matched_functions": 440,
-    "matched_functions_percent": 26.442307692307693,
+    "matched_functions": 443,
+    "matched_functions_percent": 26.622596153846153,
     "complete_code": "64",
     "complete_code_percent": 0.014037673606541555
    }

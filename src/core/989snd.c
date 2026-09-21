@@ -191,11 +191,27 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E1B8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E2D8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E318); /* snd_UnloadBank */
+extern int func_0012E820(int, int, void *, int, int);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E348); /* snd_SetMasterVolume */
+/* snd_UnloadBank */
+void func_0012E318(int arg0) {
+    int local = arg0;
+    func_0012E820(6, 4, &local, 0, 0);
+}
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E380); /* snd_SetPlaybackMode */
+/* snd_SetMasterVolume */
+void func_0012E348(int arg0, int arg1) {
+    int local[2];
+    local[0] = arg0;
+    local[1] = arg1;
+    func_0012E820(9, 8, local, 0, 0);
+}
+
+/* snd_SetPlaybackMode */
+void func_0012E380(int arg0) {
+    int local = arg0;
+    func_0012E820(0xB, 4, &local, 0, 0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E3B0);
 
@@ -250,8 +266,6 @@ void func_0012EC40(void) {
 }
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EC60); /* snd_InitVAGStreamingEx */
-
-extern int func_0012E820(int, int, void *, int, int);
 
 /* snd_StopAllStreams */
 void func_0012ED10(void) {
