@@ -523,6 +523,28 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D688);
  */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D730);
 
+/*
+ * Reverted: same shape as func_0012D730 above (backward analog).
+ *
+ *   void func_0012D760(unsigned char *arg0) {
+ *       unsigned char v = arg0[3];
+ *       if (v != 0) {
+ *           arg0[3] = v - 1;
+ *           return;
+ *       }
+ *       arg0[3] = 0x17;
+ *       func_0012D688(arg0);
+ *   }
+ *
+ * Semantics certain: the same byte counter, counting down and firing
+ * func_0012D688 (the backward day-tick) at 0, resetting to 23. Retail's
+ * call is a bare tail `j func_0012D688` reached only through the
+ * `v == 0` branch -- the second tail-call tooling gap (conditional tail
+ * call through only one path) documented on func_0012D730. Compiling
+ * this as ordinary call-and-return bloats it enough to overlap the
+ * next section at link time, so this wasn't even diffable; reverted
+ * immediately rather than left half-built.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D760);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D788);
