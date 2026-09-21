@@ -110,7 +110,15 @@ void func_001FB848(void) {
     D_00161000 += 4;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FB8A8);
+extern char D_00151C60[];
+
+void func_001FB8A8(void) {
+    D_00161000[0] = 0x30000029;
+    D_00161000[1] = (int)D_00151C60;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000029;
+    D_00161000 += 4;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FB908);
 
