@@ -202,6 +202,22 @@ int func_002140B0(int arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002140F0);
 
+/*
+ * REVERTED -- size mismatch (92 vs retail's 96). Semantics are
+ * certain and every instruction matches except one:
+ *
+ *   float func_002140F8(float a, float b) {
+ *       int v = func_001160D8();
+ *       float delta = b - a;
+ *       v = (v >> 16) & 0x7FFF;
+ *       return a + (float)v * delta * 3.0517578125e-05f;
+ *   }
+ *
+ * i.e. a uniform random float in [a, b): a + (rand15/32768)*(b-a).
+ * Missing the same GPR->FPU transfer hazard `nop` (between `mtc1
+ * $2,$f0` and the `cvt.s.w` consuming it) already documented as not
+ * reachable from C on the sibling func_00214158, immediately below.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_002140F8);
 
 /*
