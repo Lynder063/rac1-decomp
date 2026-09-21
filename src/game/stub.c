@@ -8,7 +8,8 @@
  * sizes -- see docs/DECOMP_PROGRESS.md. Compiled as C for now.
  */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001E9730);
+void func_001E9730(int arg0, ...) {
+}
 
 void func_001E9768(void) {
 }
