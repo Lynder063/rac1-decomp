@@ -144,7 +144,36 @@ __asm__(".section .text
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FFB38);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FFC48);
+extern void func_001FFD30(void *, int);
+
+/* Same-size near-miss (18/104 bytes). Retail loads the 6 fields in
+   the exact order written here (+0x30 first) but this compiler
+   schedules +0x30's load last, and moves the f30!=0 branch one store
+   earlier (the store it jumps past is unconditional either way --
+   it's the branch's delay slot in both orderings, so no semantic
+   difference). Pure scheduling; not reachable from source. */
+void func_001FFC48(void *arg0) {
+    char *p = (char *)arg0;
+    int f24, f34, f38, f2C, f28, f30;
+
+    func_001FFD30(arg0, *(int *)(p + 0x20));
+    f30 = *(int *)(p + 0x30);
+    f24 = *(int *)(p + 0x24);
+    f34 = *(int *)(p + 0x34);
+    f38 = *(int *)(p + 0x38);
+    f2C = *(int *)(p + 0x2C);
+    f28 = *(int *)(p + 0x28);
+    *(int *)(p + 4) = f24;
+    *(int *)(p + 0x14) = f34;
+    *(int *)(p + 0x18) = f38;
+    *(int *)(p + 0xC) = f2C;
+    *(int *)(p + 8) = f28;
+    if (f30 != 0) {
+        *(int *)(p + 0x10) = f30;
+        ((void (*)(void *))f30)(arg0);
+    }
+    *(int *)(p + 0x68) = 0;
+}
 
 /*
  * Same 13-entry walk over D_00199C60 as func_001FFDA0 below, and blocked

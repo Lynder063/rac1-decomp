@@ -1,6 +1,6 @@
 {
  "measures": {
-  "fuzzy_match_percent": 9.303543225983658,
+  "fuzzy_match_percent": 9.321997527981871,
   "total_code": "466016",
   "matched_code": "36392",
   "matched_code_percent": 7.809173933942183,
@@ -10588,7 +10588,7 @@
   {
    "name": "game/hud",
    "measures": {
-    "fuzzy_match_percent": 7.735925475901174,
+    "fuzzy_match_percent": 8.606723369785339,
     "total_code": "9876",
     "matched_code": "628",
     "matched_code_percent": 6.358849736735521,
@@ -10676,7 +10676,7 @@
     {
      "name": "func_001FFC48",
      "size": "104",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 82.6923076923077,
      "address": "1504",
      "metadata": {
       "virtual_address": "2096200"
@@ -18462,7 +18462,7 @@
    "id": "game",
    "name": "Game",
    "measures": {
-    "fuzzy_match_percent": 8.424358873125751,
+    "fuzzy_match_percent": 8.443221997034541,
     "total_code": "455916",
     "matched_code": "31444",
     "matched_code_percent": 6.896884513813948,
