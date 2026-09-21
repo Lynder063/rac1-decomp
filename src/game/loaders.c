@@ -75,7 +75,67 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00202EF8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00202F00); /* ParseParticleTexs */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00203038);
+extern int func_001F9968(int);
+extern int D_0015F55C MACRO_ADDR;
+extern char D_0018D540[];
+
+/*
+ * Same-size near-miss (154/220 bytes). Builds one 0x10-byte entry per
+ * pair of input words: two nibble-shifted values written directly,
+ * two more passed through func_001F9968 (clz-style helper) first, then
+ * the low 8 bytes of the entry zero-filled (a `long`, not `long long`,
+ * cast is required here -- the latter compiles to a 128-bit sq/por
+ * instead of retail's 64-bit sd $0,...).
+ *
+ * D_0015F55C is reset unconditionally at entry, before the count>0
+ * guard, matching retail. The D_0018D540 base address is loaded once
+ * into a saved register only on the count>0 path (declared inside the
+ * `if`, not hoisted above it) -- that alone closed the function to an
+ * exact SIZE match (was 224 vs retail's 220; now byte-equal at 220).
+ * The remaining diff is pure scheduling: retail packs one `sh` store
+ * into a `jal`'s delay slot where this compiler schedules the pointer
+ * increment there instead, and picks the opposite of two candidate
+ * argument-register assignments ($4 vs $5) for the helper calls. Tried
+ * reordering the two-word read pairs and moving the entry-address
+ * computation to different points in the block; neither changed the
+ * schedule. Same unreachable-scheduling class as func_0020E200 and
+ * func_00123308.
+ */
+void func_00203038(int *buf, int count) {
+    D_0015F55C = 0;
+    if (count > 0) {
+        char *base = D_0018D540;
+        do {
+            char *entry;
+            int a, b;
+            int r1;
+
+            a = *buf;
+            buf++;
+            entry = base + D_0015F55C * 0x10;
+            b = *buf;
+            buf++;
+            a >>= 4;
+            *(short *)(entry + 0xA) = a;
+            a = *buf;
+            buf++;
+            b >>= 4;
+            *(short *)(entry + 0x8) = b;
+            r1 = func_001F9968(a);
+            a = *buf;
+            buf++;
+
+            entry = base + D_0015F55C * 0x10;
+            *(short *)(entry + 0xC) = r1;
+            r1 = func_001F9968(a);
+
+            entry = base + D_0015F55C * 0x10;
+            D_0015F55C++;
+            *(short *)(entry + 0xE) = r1;
+            *(long *)entry = 0;
+        } while (D_0015F55C < count);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00203118);
 
