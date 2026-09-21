@@ -447,6 +447,14 @@ void func_00234C50(int arg0) {
     D_00161000 += 4;
 }
 
+/*
+ * VU1_addGSregister(unsigned int, unsigned long). Real name per the
+ * Lombyte NTSC project (github.com/mateuszklysz/Lombyte); their NTSC
+ * build's version, VU1_addGSregister__FUiUlb, takes a third `bool` arg
+ * and is 4 bytes larger (0xb4 vs this PAL build's 176 bytes) -- PAL
+ * evidently dropped the bool, confirmed by every real call site in this
+ * codebase using only 2 args.
+ */
 void func_00234C98(int arg0, long arg1) {
     D_00161000[0] = 0x10000002;
     D_00161000[1] = 0;
