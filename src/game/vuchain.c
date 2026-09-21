@@ -518,6 +518,12 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00234D50);
  * and `movn`s the argument into it. Tried both the "start at 0, override"
  * and "start at arg, zero out" source spellings; identical output either
  * way, confirming it's not reachable from source. 8 bytes over.
+ *
+ * Name and packing formula independently corroborated by the Lombyte
+ * NTSC project's own VU1_setScissor__Fiiii recovery (github.com/
+ * mateuszklysz/Lombyte, src/assembly/textbin/fun_00233a40.c) -- same
+ * field writes and the identical max(arg,0)/min(bound-1,arg) clamp
+ * pair packed the same way. Their copy is also C_NON_MATCHING.
  */
 INCLUDE_ASM("asm/nonmatchings/text", func_00234D58); /* VU1_setScissor(int, int, int, int) */
 

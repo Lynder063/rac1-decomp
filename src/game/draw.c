@@ -314,6 +314,13 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F4628);
  * second time (a fresh lui+addiu) for the second loop instead of reusing
  * the first. 8 bytes over. Not reached by hoisting `b` differently or by
  * introducing an explicit second local alias for the same pointer.
+ *
+ * Name and struct layout independently corroborated by the Lombyte NTSC
+ * project's own SetupGifPaging__Fi recovery (github.com/mateuszklysz/
+ * Lombyte, src/assembly/textbin/fun_001f4280.c) -- same field writes,
+ * same arena offsets (their D_0019A3E8.unk18->unk44/unk24 and unk24/
+ * unk28 match our b[6]->+0x44/+0x24 and b[9]/b[10]), same anonymous
+ * gp-relative flag clear. Their copy is also C_NON_MATCHING.
  */
 INCLUDE_ASM("asm/nonmatchings/text", func_001F4630); /* SetupGifPaging(int) */
 
