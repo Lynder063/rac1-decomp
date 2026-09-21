@@ -500,6 +500,48 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0020E0C8); /* DrawMobysSetup(void) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020E180); /* DrawMobyList */
 
+extern void func_001F2560_a(void *) __asm__("func_001F2560");
+extern void func_0020DC40(void *);
+extern void func_001F2558(void *, int);
+extern void func_0020DFF8(void);
+extern void func_00212508(void *);
+extern char D_0015FFE0[];
+extern char D_0015FFF0[] MACRO_ADDR;
+extern int D_00160038 MACRO_ADDR;
+extern int D_00160040 MACRO_ADDR;
+
+/*
+ * REVERTED (size mismatch: 176 vs retail's 172). Decode is certain:
+ *
+ *   void func_0020E200(void) {
+ *       func_001F2560(D_0015FFE0);   // no-op stub, arg discarded
+ *       func_0020DC40(D_0015FFE0);
+ *       func_001F2558(D_0015FFE0, 5); // no-op stub, args discarded
+ *       if (D_0018A3B0[10] != 0) {
+ *           func_0020DFF8();
+ *           if (D_00160038 != 0) {
+ *               func_00212508(D_0015FFF0);
+ *           }
+ *       }
+ *       func_001F2558(D_0015FFF0, 3);
+ *       if (D_0018A3B0[10] != 0) {
+ *           if (D_00160040 != 0) {
+ *               func_0020DEB0();
+ *           }
+ *       }
+ *   }
+ *
+ * (D_0015FFF0/D_00160038/D_00160040 all need MACRO_ADDR; without it on
+ * D_0015FFF0 the compiler caches its address in a second saved
+ * register across the three uses, growing the frame from 0x20 to
+ * 0x30 -- confirmed exactly matching once added). Two residuals, 4
+ * bytes: retail encodes the D_00160038 check as `beql` (branch
+ * likely, nullified delay) where this compiler always emits plain
+ * `beqz` for it regardless of the surrounding if/else polarity tried;
+ * and the final func_001F2558(D_0015FFF0, 3) call completes a0 before
+ * loading a1's constant, where this compiler does the reverse --
+ * forcing the pointer through its own local first didn't change it.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_0020E200); /* DrawMobysCleanUp */
 
 extern int D_0018A3D8;
