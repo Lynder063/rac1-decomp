@@ -171,6 +171,52 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DDC0); /* snd_FlushSoundComma
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DFA0);
 
+/*
+ * Reverted: size mismatch (ours=144, retail=136 -- 8 bytes over).
+ * snd_GotReturns.
+ *
+ *   extern void func_00118D80(int);
+ *   extern int D_0015ECC0;
+ *   extern int func_00116078(void *);
+ *   extern char D_00153D98[];
+ *   extern short D_0015ED80;   // gp 0x166D00-0x7F80, pointer to a
+ *                               // pending-returns record
+ *   extern short D_0015ED84;   // gp 0x166D00-0x7F7C, index into it
+ *
+ *   int func_0012DFB0(void) {
+ *       func_00118D80(0);
+ *       if (*(int *)&D_0015ED80 == 0) {
+ *           return 1;
+ *       }
+ *       if (func_0011B6B8(&D_0015ECC0) != 0) {
+ *           return 0;
+ *       }
+ *       {
+ *           int *p = *(int **)&D_0015ED80;
+ *           if (p[0] != -1) {
+ *               func_00116078(D_00153D98);
+ *               return 0;
+ *           }
+ *           {
+ *               int idx = *(int *)&D_0015ED84;
+ *               int *slot = (int *)((char *)p + idx * 4);
+ *               if (slot[1] != (int)D_00153D98) {
+ *                   func_00116078(D_00153D98);
+ *                   return 0;
+ *               }
+ *           }
+ *           *(int *)&D_0015ED80 = 0;
+ *           return 1;
+ *       }
+ *   }
+ *
+ * Semantics recovered with reasonable confidence (D_0015ED80 is a
+ * pointer, not a plain flag -- confirmed by the field/index deref
+ * chain after the func_0011B6B8 guard). Compiles 8 bytes over; not
+ * yet isolated which of the two error-path merges or the delay-slot
+ * scheduling accounts for the gap. Left as INCLUDE_ASM pending a
+ * closer look.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DFB0); /* snd_GotReturns */
 
 extern short D_0015ED84;
