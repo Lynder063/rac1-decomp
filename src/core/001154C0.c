@@ -124,6 +124,24 @@ int func_00115748(unsigned int *arg0) {
     return count;
 }
 
+/*
+ * Reverted: size mismatch (ours=52, retail=56 -- 4 bytes short).
+ *
+ *   extern void *func_001154D0(void *, unsigned int);
+ *
+ *   void func_00115808(void *arg0, int arg1) {
+ *       char *p = func_001154D0(arg0, 1);
+ *       *(int *)(p + 0x14) = arg1;
+ *       *(int *)(p + 0x10) = 1;
+ *   }
+ *
+ * Semantics and instruction multiset both match. Retail copies the
+ * call result ($v0) into a second register ($v1) and stores through
+ * that copy for both fields; this compiler stores through $v0
+ * directly since the copy is provably unnecessary. An explicit
+ * `char *q = p;` second local changed nothing -- the copy is
+ * optimized away regardless of source spelling.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00115808);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00115840);
