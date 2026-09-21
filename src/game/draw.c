@@ -257,6 +257,64 @@ void func_001F45F0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F4628);
 
+/*
+ * REVERTED (size mismatch: 268 vs retail's 276). Semantics recovered with
+ * confidence -- SetupGifPaging(int): saves the current D_00161000 mark into
+ * D_0015F550, reserves 0x10 bytes from it, copies D_0015EF78 into D_0015EF74,
+ * clears the anonymous flag at gp-0x77A8 (D_0015F558), then zeroes the low
+ * 8 bytes of D_0015F55C entries of the 0x10-byte D_0018D540 paging table
+ * (same table func_00203038 fills). If arg0==0 it also walks two arrays
+ * hanging off the D_0019A4E8 arena (int *b = &D_0019A4E8): b[9], sized by
+ * *(b[6]+0x44), clearing each element's halfword at +4 when it's >=
+ * (D_0015EF8C >> 8); and b[10], sized by *(b[6]+0x24), unconditionally
+ * clearing every element's halfword at +4:
+ *
+ *   void func_001F4630(int arg0) {
+ *       int *b = &D_0019A4E8;
+ *       int i, count;
+ *
+ *       D_0015F550 = (int)D_00161000;
+ *       D_00161000 += 4;
+ *       D_0015EF74 = D_0015EF78;
+ *       *(int *)&D_0015F558 = 0;
+ *
+ *       count = D_0015F55C;
+ *       if (count > 0) {
+ *           char *e = D_0018D540;
+ *           for (i = 0; i < count; i++) {
+ *               *(long *)e = 0;
+ *               e += 0x10;
+ *           }
+ *       }
+ *
+ *       if (arg0 == 0) {
+ *           int idx, thresh;
+ *           unsigned short *elem;
+ *           short *elem2;
+ *
+ *           thresh = D_0015EF8C >> 8;
+ *           for (idx = 0; idx < *(int *)((char *)b[6] + 0x44); idx++) {
+ *               elem = (unsigned short *)((char *)b[9] + idx * 8 + 4);
+ *               if ((int)*elem >= thresh) {
+ *                   *elem = 0;
+ *               }
+ *           }
+ *           for (idx = 0; idx < *(int *)((char *)b[6] + 0x24); idx++) {
+ *               elem2 = (short *)((char *)b[10] + idx * 8 + 4);
+ *               *elem2 = 0;
+ *           }
+ *       }
+ *   }
+ *
+ * (needs D_00161000/D_0015F550/D_0015EF78/D_0015EF74/D_0015F55C all
+ * MACRO_ADDR, D_0015F558 as the usual short+cast anonymous-bss trick).
+ * Residual: retail computes &D_0019A4E8's upper bits (lui) ONCE into a
+ * saved register and reuses it for both the b[9]-array loop and the
+ * b[10]-array loop below it; this compiler materializes the address a
+ * second time (a fresh lui+addiu) for the second loop instead of reusing
+ * the first. 8 bytes over. Not reached by hoisting `b` differently or by
+ * introducing an explicit second local alias for the same pointer.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_001F4630); /* SetupGifPaging(int) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F4748); /* DoGifPaging(void) */
