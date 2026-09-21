@@ -154,6 +154,37 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001EC8D8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001ECAB8);
 
+/*
+ * Reverted: size mismatch (ours=96, retail=116 -- 20 bytes short).
+ *
+ *   extern char D_001872B0[];
+ *   extern void func_001F9BD8(void *, void *, void *);
+ *   extern char D_0013F590[];
+ *
+ *   void func_001ECB98(void) {
+ *       char *base = D_001872B0;
+ *       if (*(unsigned char *)(base + 2) == 0) {
+ *           *(unsigned long long *)(base + 0xC0) =
+ *               *(unsigned long long *)(base + 0x50);
+ *           if (*(unsigned char *)(base + 3) == 2) {
+ *               func_001F9BD8(base + 0x60, D_0013F590, base + 0x60);
+ *           }
+ *           *(unsigned long long *)(base + 0xD0) =
+ *               *(unsigned long long *)(base + 0x60);
+ *       }
+ *   }
+ *
+ * Two 128-bit (lq/sq) field copies bracketing an optional
+ * func_001F9BD8 vector-add call; `unsigned long long` is correct here
+ * for once, same exception as func_001ECC10 just above. Retail keeps
+ * the first copy as a fully separate, unconditional block before the
+ * flag test; this compiler folds its store into the following
+ * branch's delay slot instead (still unconditional either way, since
+ * delay slots always execute -- not a semantic difference, but it
+ * costs several instructions retail didn't need to duplicate/keep
+ * apart). Tried forcing the copy through explicit `dst1`/`src1`
+ * pointer locals -- no change.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_001ECB98);
 
 /* Two conditional 16-byte block copies via bare `lq`/`sq` -- no plain-C
