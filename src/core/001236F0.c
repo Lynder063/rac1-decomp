@@ -266,9 +266,13 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00124A70);
  * reproduces the GPR spill but ALSO adds f12/f14/f16/f18 saves (16
  * bytes over); a K&R-style `void func_00124B60()` produces no spill at
  * all (compiler proves the args are dead and elides them, same as any
- * ordinary unused-parameter function). Neither spelling reached
- * retail's GPR-only shadow save. Same open question as func_001E9730's
- * variadic idiom, but for a GPR-only variant -- not yet understood.
+ * ordinary unused-parameter function). Also tried 8 explicitly named
+ * `long` params (same result as K&R -- fully eliminated) and taking
+ * `&argN` of each into a volatile local (doesn't force a spill; `&x`
+ * only pins x's address, not its storage class). Neither spelling
+ * reached retail's GPR-only shadow save. Same open question as
+ * func_001E9730's variadic idiom, but for a GPR-only variant -- not
+ * yet understood.
  */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124B60);
 
