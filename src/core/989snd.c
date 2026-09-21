@@ -337,9 +337,23 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F068); /* snd_StreamSafeCdCal
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F098);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F0E8); /* snd_PreAllocReverbWorkArea */
+/* snd_PreAllocReverbWorkArea */
+void func_0012F0E8(int arg0, int arg1) {
+    int local[2];
+    local[0] = arg0;
+    local[1] = arg1;
+    func_0012E820(0x51, 8, local, 0, 0);
+}
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F120); /* snd_AutoReverb */
+/* snd_AutoReverb */
+void func_0012F120(int arg0, int arg1, int arg2, int arg3) {
+    int local[4];
+    local[0] = arg0;
+    local[1] = arg1;
+    local[2] = arg2;
+    local[3] = arg3;
+    func_0012E820(0x10, 0x10, local, 0, 0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F160);
 
