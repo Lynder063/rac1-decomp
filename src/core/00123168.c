@@ -233,6 +233,74 @@ int func_001232E0(unsigned int arg0) {
     return D_00132E70[arg0];
 }
 
+/*
+ * REVERTED (size mismatch: ~228 vs retail's 220). Decode is certain:
+ *
+ *   extern int D_001534F8[];
+ *   extern void func_001233E8(void *);
+ *
+ *   int func_00123308(int arg0) {
+ *       volatile unsigned int *reg0 = (volatile unsigned int *)0x1000E000;
+ *       volatile unsigned int *reg1 = (volatile unsigned int *)0x1000E010;
+ *       char buf[0x14];
+ *       int flag;
+ *       int count;
+ *       int *flagp;
+ *       int *tblp;
+ *
+ *       flag = *reg0 & 1;
+ *
+ *       flagp = D_001534F8;
+ *       tblp = D_00132E70;
+ *       count = 9;
+ *       do {
+ *           if (*flagp != 0) {
+ *               int *p = (int *)*tblp;
+ *               p[0] = 0;
+ *               p[0xC] = 0;
+ *               p[4] = 0;
+ *               p[0x14] = 0;
+ *               p[0x10] = 0;
+ *               p[0x20] = 0;
+ *           }
+ *           tblp++;
+ *           count--;
+ *           flagp++;
+ *       } while (count >= 0);
+ *
+ *       *reg1 = 0xFF1F;
+ *       *reg1 = *reg1 & 0xFF1F0000;
+ *
+ *       func_001232A8(buf, 0x14);
+ *       func_001233E8(buf);
+ *
+ *       if (arg0 == 1) {
+ *           *reg0 = *reg0 | 1;
+ *       }
+ *       return flag;
+ *   }
+ *
+ * Two real bugs caught mid-match, not just scheduling: the table walk
+ * is a trip count of 9 (10 total iterations -- D_00132E70's own
+ * getter bounds-checks against 0xA) over TWO independently-advancing
+ * pointers, not a 9-iteration index loop as first read; and the
+ * per-joint zero-fill's source order has to be a rotation of the
+ * field list (0, 0xC, 4, 0x14, 0x10, 0x20) to reproduce retail's
+ * emitted order (0x20 first, the rest in that sequence) -- same lever
+ * as func_0011DE38's table-pointer fix upstream. Both are confirmed
+ * exactly matching (loop shape: down-counting `bgez`, `beqzl` guard,
+ * store order all byte-identical).
+ *
+ * What's left, ~8 bytes: retail computes the 0x1000E010 register's
+ * address once and reuses it for all three accesses (one store, a
+ * reload, a second store scheduled into the func_001232A8 call's
+ * delay slot); this compiler re-materialises the address via a fresh
+ * `lui $at` for each of the three raw-pointer dereferences instead of
+ * caching it, and never fills that jal's delay slot with the store.
+ * Not reached from source; same class of residual as func_0012CC90
+ * and func_0020E0C8 (a hardware-register access this toolchain won't
+ * schedule the way retail's did).
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00123308);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001233E8);
