@@ -414,7 +414,68 @@ void func_001F55C0(long a, long b, long c, long d) {
     D_00161000 += 4;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F5650); /* DrawRectOverlay_FiiiiUl */
+/*
+ * REVERTED (size mismatch: 528 vs retail's 424 -- badly over). Semantics
+ * recovered with confidence -- appends a 6-qword GIF/DMA packet: a tag
+ * header, a copy of the D_00160920 register descriptor (patched with tag
+ * id 0x8001), a {0x144, arg4} constant pair, a copy of the D_00160930
+ * descriptor (patched with tag id 0x8004), then 4 packed 64-bit GS
+ * TRXPOS-style values built from arg0..arg3 (each *16, i.e. tile
+ * coordinates) offset by D_0013E600[4]/[5] (screen origin) minus 8,
+ * OR'd with a shared upper-bits format mask:
+ *
+ *   void func_001F5650(int arg0, int arg1, int arg2, int arg3, unsigned long arg4) {
+ *       unsigned long c;
+ *
+ *       D_00161000[0] = 0x10000005;
+ *       D_00161000[1] = 0;
+ *       D_00161000[2] = 0;
+ *       D_00161000[3] = 0x50000005;
+ *       D_00161000 += 4;
+ *
+ *       *(unsigned long long *)D_00161000 = *(unsigned long long *)D_00160920;
+ *       *(short *)D_00161000 = (short)0x8001;
+ *       D_00161000 += 4;
+ *
+ *       *(long *)D_00161000 = 0x144;
+ *       *(long *)((char *)D_00161000 + 8) = (long)arg4;
+ *       D_00161000 += 4;
+ *
+ *       *(unsigned long long *)D_00161000 = *(unsigned long long *)D_00160930;
+ *       *(short *)D_00161000 = (short)0x8004;
+ *       D_00161000 += 4;
+ *
+ *       c = 0xFFFFUL;
+ *       c <<= 16;
+ *       c |= 0xF000UL;
+ *       c <<= 24;
+ *
+ *       *(unsigned long *)D_00161000 =
+ *           (unsigned long)(unsigned int)((arg2 * 16 + D_0013E600[4] - 8) |
+ *                                          ((arg0 * 16 + D_0013E600[5] - 8) << 16)) | c;
+ *       *(unsigned long *)((char *)D_00161000 + 8) =
+ *           (unsigned long)(unsigned int)((arg3 * 16 + D_0013E600[4] - 8) |
+ *                                          ((arg0 * 16 + D_0013E600[5] - 8) << 16)) | c;
+ *       *(unsigned long *)((char *)D_00161000 + 0x10) =
+ *           (unsigned long)(unsigned int)((arg2 * 16 + D_0013E600[4] - 8) |
+ *                                          ((arg1 * 16 + D_0013E600[5] - 8) << 16)) | c;
+ *       *(unsigned long *)((char *)D_00161000 + 0x18) =
+ *           (unsigned long)(unsigned int)((arg3 * 16 + D_0013E600[4] - 8) |
+ *                                          ((arg1 * 16 + D_0013E600[5] - 8) << 16)) | c;
+ *
+ *       D_00161000 += 8;
+ *   }
+ *
+ * Residual: this compiler runs out of caller-saved temporaries computing
+ * the four packed values and spills to a real stack frame (sq s0/s1),
+ * where retail keeps everything in temporaries with no frame at all --
+ * 104 bytes over. Needs restructuring (probably hoisting the repeated
+ * D_0013E600[4]/[5] and arg*16 subexpressions into named locals matching
+ * retail's exact reuse, and/or splitting the 4 stores across separate
+ * statements with different evaluation order) to bring register pressure
+ * down; not attempted further this pass.
+ */
+INCLUDE_ASM("asm/nonmatchings/text", func_001F5650); /* DrawRectOverlay_iiiiUl */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F57F8);
 
