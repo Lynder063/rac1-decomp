@@ -86,4 +86,26 @@ extern void func_00118D80(int);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DF10);
 
+/*
+ * Reverted: same tail-call tooling gap as func_0012D730/func_0012D760
+ * (see core/0012CC90.c) -- __main's static-initializer guard:
+ *
+ *   extern int D_001597EC;
+ *   extern void func_0011DF18(void);
+ *
+ *   void func_0011DFC8(void) {
+ *       if (D_001597EC == 0) {
+ *           D_001597EC = 1;
+ *           func_0011DF18();
+ *       }
+ *   }
+ *
+ * Retail's call into func_0011DF18 is a bare tail `j` reached only
+ * through the guard-unset branch, with a plain `jr $ra` on the other
+ * path. Already listed in tools/tail_call_functions.txt, but
+ * fix_tail_calls.py's CONTROL-flow check rejects it for the same
+ * reason as those two: it isn't a lone `jal` with no other branches.
+ * Compiling as ordinary call-and-return bloats it enough to overlap
+ * the next section at link time.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DFC8); /* __main */
