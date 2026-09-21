@@ -83,6 +83,33 @@ extern int func_0011DC40(int);
 extern void func_00118D80(int);
 extern void func_0011D4A0(void);
 
+/*
+ * Reverted: size mismatch (ours=44, retail=48 -- 4 bytes short).
+ *
+ *   int func_0011DD68(char *dst, char *src, unsigned int n) {
+ *       unsigned int i;
+ *       if (n != 0) {
+ *           i = 0;
+ *           do {
+ *               unsigned char b = *src;
+ *               i++;
+ *               src++;
+ *               *dst = b;
+ *               dst++;
+ *           } while (i < n);
+ *       }
+ *       return 0;
+ *   }
+ *
+ * A byte-copy loop returning 0; unsigned counter needed to avoid loop
+ * reversal (see [[rac1-64bit-field-type]]'s sibling lesson on this
+ * target). Every instruction matches except one: retail leaves the
+ * branch's delay slot a genuine standalone `nop`, with `dst++`
+ * scheduled BEFORE the branch instead; this compiler always sinks
+ * `dst++` into the delay slot since nothing stops it. Tried computing
+ * the store through a saved old-dst local (`char *d = dst; dst++; *d
+ * = b;`) -- no change. Not reachable from source.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DD68);
 
 /* Tail call: retail is `j func_0011D4A0` + nop, with no frame at all.
@@ -92,6 +119,29 @@ void func_0011DD98(void) {
     func_0011D4A0();
 }
 
+/*
+ * Reverted: size mismatch (ours=44, retail=40 -- 4 bytes over).
+ *
+ *   extern void func_00118A60(void);
+ *
+ *   void func_0011DDA0(void) {
+ *       func_0011DD98();
+ *       func_00118A60();
+ *   }
+ *
+ * Retail is `jal func_0011DD98` followed by a bare `j func_00118A60`
+ * (no frame needed for the second call at all). func_0011DDA0 IS
+ * listed in tools/tail_call_functions.txt, but that list only gates
+ * WHICH functions the rewrite considers -- tools/fix_tail_calls.py's
+ * rewrite_function() still requires the function to contain exactly
+ * one `jal` total (see its own comment: matching call-and-return
+ * shape on both sides is common and must not be rewritten). A
+ * function with a real leading call plus a trailing tail call, like
+ * this one, has two `jal`s pre-rewrite and doesn't fit that shape;
+ * the tool leaves it alone and both calls compile as call-and-return.
+ * Extending the tool to handle "call, then tail call" is out of scope
+ * here -- flagging it for whoever picks up the tail-call backlog.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DDA0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DDC8);
