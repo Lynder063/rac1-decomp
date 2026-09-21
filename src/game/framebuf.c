@@ -94,7 +94,16 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FB498); /* PutDrawBufferLarge(void)
  */
 INCLUDE_ASM("asm/nonmatchings/text", func_001FB530);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FB598); /* PutDrawBufferSmall(void) */
+extern int *D_00161000 MACRO_ADDR;
+
+/* PutDrawBufferSmall(void) */
+void func_001FB598(void) {
+    D_00161000[0] = 0x30000009;
+    D_00161000[1] = ((int)D_0015EFB8 + 0xC0) & 0xFFFFFFF;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000009;
+    D_00161000 += 4;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FB608);
 
