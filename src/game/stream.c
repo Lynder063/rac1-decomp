@@ -468,6 +468,35 @@ void func_002179C8(int arg0, long arg1) {
     }
 }
 
+/*
+ * Reverted: size mismatch (ours=92, retail=88 -- 4 bytes over).
+ *
+ *   extern int func_001E9730();
+ *   extern char D_00160168[];
+ *
+ *   void func_00217A08(int arg0, long arg1) {
+ *       int *p = (int *)(int)arg1;
+ *       if (p != 0) {
+ *           if (*(unsigned int *)p != 0xFFFFFFFF) {
+ *               func_001E9730(D_00160168);
+ *           } else if (arg0 == 0) {
+ *               *p = arg0;
+ *               *(short *)((char *)p + 0xA) = 7;
+ *           }
+ *       }
+ *   }
+ *
+ * `long arg1` (matching the sibling func_00217A60 just below) plus a
+ * `(int)` narrow-then-widen cast reproduces retail's dsll32/dsra32
+ * sign-extend pair and the -1 comparison written as the hex literal
+ * 0xFFFFFFFF (not the shorter `-1`) reproduces retail's lui/ori
+ * materialization instead of a single addiu. What's left: on the
+ * `arg0 == 0` path, retail computes the store/shift sequence FIRST
+ * and restores $ra last; this compiler restores $ra right after the
+ * branch and computes the sequence after, duplicating a `lq $ra`.
+ * Flattening the else-if into sequential early-returns changed
+ * nothing.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00217A08);
 
 void func_00217A60(int arg0, long arg1) {
