@@ -263,7 +263,13 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE10); /* snd_GetVAGStreamTim
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE40); /* snd_IsVAGStreamBuffered_CB */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE70); /* snd_StreamSafeCheckCDIdle */
+extern int func_0012E688(int, int, void *);
+
+/* snd_StreamSafeCheckCDIdle */
+void func_0012EE70(int arg0) {
+    int local = arg0;
+    func_0012E688(0x36, 4, &local);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE98); /* snd_StreamSafeCdRead */
 
