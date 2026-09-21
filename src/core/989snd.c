@@ -251,17 +251,38 @@ void func_0012EC40(void) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EC60); /* snd_InitVAGStreamingEx */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012ED10); /* snd_StopAllStreams */
+extern int func_0012E820(int, int, void *, int, int);
+
+/* snd_StopAllStreams */
+void func_0012ED10(void) {
+    func_0012E820(0x34, 0, 0, 0, 0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012ED40);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EDB0); /* snd_PauseVAGStream */
+/* snd_PauseVAGStream */
+void func_0012EDB0(int arg0) {
+    int local = arg0;
+    func_0012E820(0x2D, 4, &local, 0, 0);
+}
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EDE0); /* snd_ContinueVAGStream */
+/* snd_ContinueVAGStream */
+void func_0012EDE0(int arg0) {
+    int local = arg0;
+    func_0012E820(0x2E, 4, &local, 0, 0);
+}
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE10); /* snd_GetVAGStreamTimeRemaining_CB */
+/* snd_GetVAGStreamTimeRemaining_CB */
+void func_0012EE10(int arg0, int arg1, int arg2) {
+    int local = arg0;
+    func_0012E820(0x32, 4, &local, arg1, arg2);
+}
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE40); /* snd_IsVAGStreamBuffered_CB */
+/* snd_IsVAGStreamBuffered_CB */
+void func_0012EE40(int arg0, int arg1, int arg2) {
+    int local = arg0;
+    func_0012E820(0x4F, 4, &local, arg1, arg2);
+}
 
 extern int func_0012E688(int, int, void *);
 
