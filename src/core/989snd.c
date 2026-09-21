@@ -215,7 +215,14 @@ void func_0012E380(int arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E3B0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E3F8); /* snd_SetGroupVoiceRange */
+/* snd_SetGroupVoiceRange */
+void func_0012E3F8(int arg0, int arg1, int arg2) {
+    int local[3];
+    local[0] = arg0;
+    local[1] = arg1;
+    local[2] = arg2;
+    func_0012E820(0x4E, 0xC, local, 0, 0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E438);
 
@@ -223,11 +230,23 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E490);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E4D8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E528); /* snd_PauseAllSoundsInGroup */
+/* snd_PauseAllSoundsInGroup */
+void func_0012E528(int arg0) {
+    int local = arg0;
+    func_0012E820(0x16, 4, &local, 0, 0);
+}
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E558); /* snd_ContinueAllSoundsInGroup */
+/* snd_ContinueAllSoundsInGroup */
+void func_0012E558(int arg0) {
+    int local = arg0;
+    func_0012E820(0x17, 4, &local, 0, 0);
+}
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E588); /* snd_SoundIsStillPlaying_CB */
+/* snd_SoundIsStillPlaying_CB */
+void func_0012E588(int arg0, int arg1, int arg2) {
+    int local = arg0;
+    func_0012E820(0x19, 4, &local, arg1, arg2);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E5B8);
 
