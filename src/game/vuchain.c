@@ -464,6 +464,61 @@ void func_00234C98(int arg0, long arg1) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234D50);
 
+/*
+ * REVERTED (size mismatch: 276 vs retail's 284). Semantics recovered with
+ * confidence -- VU1_setScissor(int, int, int, int): clamps a scissor rect
+ * to the screen bounds in D_0013E600[0]/[1] (width/height) and packs it
+ * into one 64-bit GS SCISSOR value (x0 | x1<<16 | y0<<32 | y1<<48):
+ *
+ *   void func_00234D58(int arg0, int arg1, int arg2, int arg3) {
+ *       int x0, x1, y0, y1;
+ *       unsigned long scissor;
+ *
+ *       x1 = arg1;
+ *       if (D_0013E600[0] - 1 < arg1) {
+ *           x1 = D_0013E600[0] - 1;
+ *       }
+ *       x0 = 0;
+ *       if (arg0 > -1) {
+ *           x0 = arg0;
+ *       }
+ *       y0 = 0;
+ *       if (arg2 > -1) {
+ *           y0 = arg2;
+ *       }
+ *       y1 = arg3;
+ *       if (D_0013E600[1] - 1 < arg3) {
+ *           y1 = D_0013E600[1] - 1;
+ *       }
+ *
+ *       scissor = (unsigned long)(unsigned int)x0 |
+ *                 ((unsigned long)(unsigned int)x1 << 16) |
+ *                 ((unsigned long)(unsigned int)y0 << 32) |
+ *                 ((unsigned long)(unsigned int)y1 << 48);
+ *
+ *       D_00161000[0] = 0x10000002;
+ *       D_00161000[1] = 0;
+ *       D_00161000[2] = 0;
+ *       D_00161000[3] = 0x50000002;
+ *       D_00161000[4] = 0x8001;
+ *       D_00161000[5] = 0x10000000;
+ *       D_00161000[6] = 0xE;
+ *       D_00161000[7] = 0;
+ *       *(unsigned long *)((char *)D_00161000 + 0x20) = scissor;
+ *       D_00161000[10] = 0x40;
+ *       D_00161000[11] = 0;
+ *       D_00161000 += 0xC;
+ *   }
+ *
+ * Residual: the x0/y0 lower-bound clamps (max(arg,0)) hit the same
+ * unsigned-range-check canonicalization class documented on
+ * func_001F0FF8/func_00226380/func_002348B8 -- this compiler always
+ * lowers the clamp into `slti`+`movn` operating in place on the argument
+ * register, where retail's clamp starts from a zero-initialized register
+ * and `movn`s the argument into it. Tried both the "start at 0, override"
+ * and "start at arg, zero out" source spellings; identical output either
+ * way, confirming it's not reachable from source. 8 bytes over.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00234D58); /* VU1_setScissor(int, int, int, int) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234E78);
