@@ -344,7 +344,19 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE98); /* snd_StreamSafeCdRea
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EF48); /* snd_StreamSafeCdSync */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EFE8); /* snd_StreamSafeCdBreak */
+/* gp-relative, no retail symbol: gp 0x166D00 - 0x7F74 = 0x15ED8C
+   (streaming-enabled flag, see func_0012F030/func_0012F068). */
+extern short D_0015ED8C;
+extern int func_001219C8(void);
+
+/* snd_StreamSafeCdBreak */
+int func_0012EFE8(void) {
+    if (*(int *)&D_0015ED8C == 0) {
+        return func_001219C8();
+    }
+    func_0012E820(0x37, 0, 0, 0, 0);
+    return 1;
+}
 
 /*
  * Reverted: size mismatch (ours=48, retail=56 -- 8 bytes short).
