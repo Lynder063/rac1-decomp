@@ -1340,7 +1340,26 @@ int func_002279D0(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00227A30);
+void func_00227A30(void *arg0, char *src) {
+    char *d = (char *)arg0;
+    unsigned short v0, v1;
+    int w0, w1;
+
+    *(short *)(d + 0) = 0;
+    v0 = *(unsigned short *)(src + 0x24);
+    *(short *)(d + 4) = 0;
+    *(short *)(d + 2) = v0;
+    v1 = *(unsigned short *)(src + 0x20);
+    *(short *)(d + 6) = v1;
+    w0 = *(int *)(src + 0x20);
+    w0 >>= 1;
+    *(short *)(d + 8) = w0;
+    w1 = *(int *)(src + 0x24);
+    *(short *)(d + 0x10) = 0x10;
+    w1 >>= 1;
+    *(short *)(d + 0x12) = 0;
+    *(short *)(d + 0xA) = w1;
+}
 
 extern char D_001D5D58[] NOT_SDA;
 extern char *D_001B3580[] NOT_SDA;
