@@ -357,15 +357,30 @@ void func_0012F120(int arg0, int arg1, int arg2, int arg3) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F160);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F1E8); /* snd_ResetMovieSound */
+/* snd_ResetMovieSound */
+void func_0012F1E8(void) {
+    func_0012E688(0x3D, 0, 0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F210);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F248); /* snd_StartMovieSound */
+/* snd_StartMovieSound */
+void func_0012F248(int arg0, int arg1, int arg2, int arg3, int arg4) {
+    int local[5];
+    local[0] = arg0;
+    local[1] = arg1;
+    local[2] = arg2;
+    local[3] = arg3;
+    local[4] = arg4;
+    func_0012E688(0x3E, 0x14, local);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F280);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F2B8); /* snd_GetMovieNAX */
+/* snd_GetMovieNAX */
+void func_0012F2B8(void) {
+    func_0012E688(0x5B, 0, 0);
+}
 
 /* snd_GetDopplerPitchMod */
 int func_0012F2E0(int arg0) {

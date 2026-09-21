@@ -63,7 +63,13 @@ void func_001FB448(int arg0, int arg1, int arg2) {
     D_00152178 = (long)arg0 | ((long)arg1 << 8) | ((long)arg2 << 16) | 0x80000000L;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FB470); /* PutDispBuffer(void) */
+extern void *D_0015EFB8 MACRO_ADDR;
+extern void func_00122140(void *);
+
+/* PutDispBuffer(void) */
+void func_001FB470(void) {
+    func_00122140(D_0015EFB8);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FB498); /* PutDrawBufferLarge(void) */
 
