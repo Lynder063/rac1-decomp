@@ -278,7 +278,83 @@ void func_00203548(int idx, int size) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002035B0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00203808); /* SetUpVisGifViewer(int *, int, int, int, int, int) */
+/*
+ * Reverted: size mismatch (ours=296/312, retail=332). SetUpVisGifViewer
+ * (int *, int, int, int, int, int): builds a 4-quad GIF-tag block.
+ * arg5 >= 0 indexes a 24-byte/3-long table row (fields 0 and 2 pass
+ * straight through, field 1 feeds the low tag word); arg5 < 0 selects
+ * one of two fixed 2-long templates (or a literal constant for
+ * arg5 == -1).
+ *
+ * Recovered source (semantics checked against the target .s field by
+ * field -- every offset, mask and shift matches):
+ *
+ *   extern long D_0019E640[][3];
+ *   extern long D_0019E7C0[2];
+ *   extern long D_0019E7D8[2];
+ *
+ *   void func_00203808(long *out, int arg1, int arg2, int arg3,
+ *                       int arg4, int arg5) {
+ *       long f0 = D_0019E640[arg5][0];
+ *       long f1 = D_0019E640[arg5][1];
+ *
+ *       if (arg5 >= 0) {
+ *           long f2 = D_0019E640[arg5][2];
+ *           unsigned long a3w = (unsigned long)arg3 << 32;
+ *
+ *           *out = (f1 & 0x1C) | (((unsigned long)arg2 << 6) | 0x20) | a3w;
+ *           out += 2;
+ *           *out = (unsigned long)arg1 | ((unsigned long)arg4 << 2) |
+ *                  ((unsigned long)arg5 << 24);
+ *           out += 2;
+ *           *(out + 2) = f2;
+ *           *out = f0;
+ *       } else if (arg5 < -1) {
+ *           long *tpl = D_0019E7C0;
+ *           unsigned long a3w = (unsigned long)arg3 << 32;
+ *
+ *           if (arg5 == -3) {
+ *               tpl = D_0019E7D8;
+ *           }
+ *           *out = ((unsigned long)arg2 << 6) | a3w | 0x20;
+ *           out += 2;
+ *           *out = 5;
+ *           out += 2;
+ *           *out = tpl[0];
+ *           out += 2;
+ *           *out = tpl[1];
+ *       } else {
+ *           unsigned long a3w = (unsigned long)arg3 << 32;
+ *           unsigned long c = 0x8000;
+ *
+ *           c <<= 29;
+ *           c |= 0x9980;
+ *           c <<= 19;
+ *           c |= 0x7FFB;
+ *           *out = ((unsigned long)arg2 << 6) | a3w | 0x20;
+ *           out += 2;
+ *           *out = 5;
+ *           out += 2;
+ *           *out = c;
+ *           out += 2;
+ *           *out = 0;
+ *       }
+ *   }
+ *
+ * Two open problems, not one: (1) `long long` on any of the 64-bit
+ * shift-by-32 expressions here trips "unsupported wide integer
+ * operation" -- must use `long`/`unsigned long`, consistent with
+ * [[rac1-64bit-field-type]]. (2) retail loads D_0019E640[arg5][0] and
+ * [1] UNCONDITIONALLY before testing arg5's sign (even for arg5 < 0,
+ * an out-of-bounds read retail's own source apparently didn't guard),
+ * but this compiler proves those two reads are unused on the negative
+ * paths and deletes them (296 vs retail's 332, 36 bytes short).
+ * Marking them `volatile` forces the reads back but also forces them
+ * through stack spills instead of registers, regressing further (312
+ * bytes and 17640 diff words vs 3100). Neither the size gap nor the
+ * dead-read problem is source-steerable with the tools tried so far.
+ */
+INCLUDE_ASM("asm/nonmatchings/text", func_00203808);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00203958);
 
