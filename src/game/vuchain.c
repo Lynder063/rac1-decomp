@@ -309,6 +309,29 @@ extern TexRemap D_001E0F00[];
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002347F0); /* VU0_loadMicroProgram(long *) */
 
+/*
+ * Reverted: size mismatch (ours=48, retail=44 -- 4 bytes over).
+ *
+ *   extern int D_0015EE84_far __asm__("D_0015EE84") NOT_SDA;
+ *   extern int D_001DE338[];
+ *   extern short D_0016100C_s __asm__("D_0016100C");
+ *
+ *   void func_002348B8(void) {
+ *       int idx = D_0015EE84_far;
+ *       if (idx < 0x13) {
+ *           idx = 0;
+ *       }
+ *       *(int *)&D_0016100C_s = D_001DE338[idx];
+ *   }
+ *
+ * The short+cast trick on D_0016100C (see [[rac1-gp-relative-anonymous-bss]])
+ * is needed here too, despite it having a real name -- without it this
+ * compiler materializes its full address instead of the gp-relative
+ * store retail uses. What's left: retail encodes the range check as
+ * `slti v1,v0,0x13`; this compiler always canonicalizes `< 0x13` (and
+ * the equivalent `<= 0x12`, tried too) into `slt v1,0x12,v0` instead --
+ * same class already seen on func_001F0FF8 and func_00226380.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_002348B8);
 
 /*
