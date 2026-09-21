@@ -294,6 +294,58 @@ void func_0020D960(char *arg0, int arg1, unsigned char *arg2) {
     *(int *)(arg0 + 0x64) = (int)arg2;
 }
 
+/*
+ * Reverted: size mismatch (ours=100, retail=144 -- 44 bytes short).
+ * DetachManipulator: unlink arg1 from the singly-linked list headed
+ * by arg0+0x64 (next pointer at +8 of each node), then always call
+ * func_001F99B0(arg1, 0, 0x40) whether or not it was found.
+ *
+ *   void func_0020D9D8(void *arg0, void *arg1) {
+ *       char *base = (char *)arg0;
+ *       char *cur;
+ *       char *next;
+ *       if (arg1 == 0) {
+ *           return;
+ *       }
+ *       cur = *(char **)(base + 0x64);
+ *       if (cur == arg1) {
+ *           *(void **)(base + 0x64) = *(void **)((char *)arg1 + 8);
+ *           goto done;
+ *       }
+ *       next = *(char **)(cur + 8);
+ *       if (next == 0) {
+ *           goto done;
+ *       }
+ *       if (next != arg1) {
+ *           cur = next;
+ *           do {
+ *               next = *(char **)(cur + 8);
+ *               if (next == 0) {
+ *                   goto done;
+ *               }
+ *               if (next == arg1) {
+ *                   break;
+ *               }
+ *               cur = next;
+ *           } while (1);
+ *       }
+ *       *(void **)(cur + 8) = *(void **)((char *)arg1 + 8);
+ *   done:
+ *       func_001F99B0(arg1, 0, 0x40);
+ *   }
+ *
+ * A single-exit `goto done` was needed to get retail's ONE shared
+ * call site instead of one per return path (fixed a much larger
+ * initial gap). What's left: retail's "check next, branch on == 0
+ * vs == target" pattern is duplicated three times (once before the
+ * loop, once as the loop's own top, once merged into the not-found
+ * landing pad) with each copy scheduled slightly differently; this
+ * compiler recognizes all the duplicated checks are identical code
+ * and collapses them into one shared loop entered from multiple
+ * points, matching retail's semantics with visibly fewer
+ * instructions. Same compiler-is-smarter-than-retail class as
+ * several other reverts this session, just larger in scale.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_0020D9D8); /* DetachManipulator */
 
 extern int D_001B2F40[];
