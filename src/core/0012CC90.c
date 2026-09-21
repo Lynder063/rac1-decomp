@@ -481,6 +481,31 @@ void func_0012D5D0(unsigned char *s) {
  */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D688);
 
+/*
+ * Reverted: size mismatch (ours=56, retail=48 -- 8 bytes over).
+ *
+ *   void func_0012D730(void *arg0) {
+ *       unsigned char *p = (unsigned char *)arg0 + 3;
+ *       unsigned char v = *p + 1;
+ *       *p = v;
+ *       if (v == 0x18) {
+ *           *p = 0;
+ *           func_0012D5D0(arg0);
+ *       }
+ *   }
+ *
+ * Semantics certain: a byte counter that wraps to 0 and fires
+ * func_0012D5D0 at 24. Retail's call is a bare tail `j
+ * func_0012D5D0` reached only through the `v == 0x18` branch, with a
+ * plain `jr $ra` on the other path -- no frame at all. func_0012D730
+ * IS listed in tools/tail_call_functions.txt, but
+ * fix_tail_calls.py's rewrite_function() also requires the function
+ * to contain NO other control flow (its CONTROL regex rejects any
+ * branch or label), specifically to avoid rewriting a call reached
+ * through only one of several paths. A conditional tail call is a
+ * second, different shape the tool can't handle, beyond the "call
+ * then tail call" gap noted on func_0011DDA0's revert above.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D730);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D760);
