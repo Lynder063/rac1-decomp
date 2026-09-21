@@ -416,7 +416,13 @@ void func_00234BA0(int arg0, void *src, int qwc) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234C48);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234C50);
+void func_00234C50(int arg0) {
+    D_00161000[0] = 0x10000000;
+    D_00161000[1] = 0;
+    D_00161000[2] = 0;
+    D_00161000[3] = arg0;
+    D_00161000 += 4;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234C98); /* VU1_addGSregister(unsigned int, unsigned long, bool) */
 
