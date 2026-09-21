@@ -249,9 +249,22 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002017C8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00201948);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00201960);
+extern int func_00200198(int, int);
+extern void func_00200468(int, int, int, int, int, int);
+extern void func_00200650(int, int, int, int, int, int);
 
-extern void func_00201960(int, int, int, int, int);
+/* Draw a 3-part stretchable bar: left cap, stretched middle, right cap
+ * (mirrored via func_00200650), all using the same GetIconFrame glyph
+ * in its two variants. */
+void func_00201960(int a0, int a1, int a2, int a3, int a4) {
+    int v0 = func_00200198(0x7580, 0);
+    int v1 = func_00200198(0x7580, 1);
+
+    func_00200468(v1, a0, a1, 0x20, a3, a4);
+    func_00200468(v0, a0 + 0x20, a1, a2 - 0x40, a3, a4);
+    a0 = a0 + a2;
+    func_00200650(v1, a0 - 0x20, a1, 0x20, a3, a4);
+}
 
 /*
  * Close, not exact (32/168, 19%), same size so harmless to anything
