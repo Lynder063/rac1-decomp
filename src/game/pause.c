@@ -1607,6 +1607,93 @@ void func_00228458(int arg0, int idx, int n) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002284E8);
 
+/*
+ * REVERTED (size mismatch: 452 vs retail's 460 -- 8 bytes short, after
+ * closing an initial 28-byte gap). Semantics recovered with confidence --
+ * builds a texture-paging GIF/DMA packet: a tag header, a fixed 10-field
+ * 0x50-byte block (the field at hdr+0x48 is easy to miss -- it isn't
+ * adjacent to the others), then (if the tile count n=w/32 is positive) a
+ * per-tile table of packed TRXPOS-style coordinates built from the
+ * screen width/height at D_00151880[0xA8]/[0xA9]:
+ *
+ *   void func_00228690(unsigned long arg0) {
+ *       int w, h, n, i;
+ *       long ypack_a, ypack_b, xbase_a, xbase_b;
+ *       char *hdr, *table, *newptr;
+ *
+ *       w = D_00151880[0xA8];
+ *       h = D_00151880[0xA9];
+ *       n = w / 32;
+ *
+ *       D_00161000[0] = (n + 5) | 0x10000000;
+ *       D_00161000[1] = 0;
+ *       D_00161000[2] = 0;
+ *       D_00161000[3] = (n + 5) | 0x50000000;
+ *       D_00161000 += 4;
+ *
+ *       hdr = (char *)D_00161000;
+ *
+ *       *(unsigned long *)(hdr + 0x00) = ((unsigned long)0x8000 << 45) | 1;
+ *       *(unsigned long *)(hdr + 0x48) = 0x44;
+ *       *(unsigned long *)(hdr + 0x08) = 0xE;
+ *       *(unsigned long *)(hdr + 0x10) = 0x3D801;
+ *       *(unsigned long *)(hdr + 0x18) = 0x47;
+ *       *(unsigned long *)(hdr + 0x20) = ((unsigned long)0x9000 << 46) | 1;
+ *       *(unsigned long *)(hdr + 0x28) = 0x10;
+ *       *(unsigned long *)(hdr + 0x30) = 0x146;
+ *       *(unsigned long *)(hdr + 0x38) = arg0;
+ *       *(long *)(hdr + 0x40) = (long)(n | 0x8000) | ((long)0x9000 << 46);
+ *
+ *       if (n > 0) {
+ *           long v0, v1;
+ *
+ *           ypack_a = (long)(0x8000 - h * 8) << 16;
+ *           ypack_b = (long)(h * 8 + 0x7FF0) << 16;
+ *           xbase_a = -(w * 8) + 0x8000;
+ *           xbase_b = -(w * 8) + 0x8200;
+ *
+ *           table = hdr + 0x50;
+ *           i = 0;
+ *           do {
+ *               v0 = xbase_a | ypack_a;
+ *               v1 = xbase_b | ypack_b;
+ *               *(long *)table = v0;
+ *               i++;
+ *               table += 8;
+ *               xbase_b += 0x200;
+ *               *(long *)table = v1;
+ *               xbase_a += 0x200;
+ *               table += 8;
+ *           } while (i < n);
+ *       }
+ *
+ *       newptr = hdr + 0x50 + n * 0x10;
+ *       D_00161000 = (int *)newptr;
+ *
+ *       D_00161000[0] = 0x10000000;
+ *       D_00161000[1] = 0;
+ *       D_00161000[2] = 0x13000000;
+ *       D_00161000[3] = 0;
+ *       D_00161000 += 4;
+ *   }
+ *
+ * (needs D_00161000 MACRO_ADDR). The per-tile loop is instruction-for-
+ * instruction exact against retail (confirmed via diff -- this took
+ * writing it as an incrementing-pointer do-while with both store values
+ * precomputed up front, matching retail's exact interleaving of the
+ * pointer bump between the two stores; a straightforward for-loop with
+ * offset-indexed stores compiled to a different, larger schedule).
+ * Residual: retail keeps BOTH w and h live in callee-saved registers
+ * ($16/$17) across the whole function, needing a 0x20-byte frame; this
+ * compiler only needs one saved register for the pair (keeping the other
+ * in an ordinary temporary that happens to survive the header stores
+ * unclobbered), needing a smaller frame -- 8 bytes under. Also builds a
+ * few of the header's 64-bit constants via a different (same-length)
+ * instruction encoding (`lui`+`dsll32` vs retail's `ori`+`dsll32`) for
+ * the same value. Tried hoisting `i=0` earlier (made it worse: forced a
+ * THIRD saved register instead of one); tried reordering the hdr+0x48
+ * statement (no effect on size). Not reached further this pass.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00228690);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00228860);
