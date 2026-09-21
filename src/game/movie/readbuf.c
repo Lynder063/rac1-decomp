@@ -383,4 +383,28 @@ int func_0023CDA8(char *arg0, int *arg1) {
     return *(int *)(base + 4);
 }
 
+/*
+ * REVERTED (size mismatch: 32 vs retail's 36). Semantics recovered with
+ * confidence -- readBufEndGet(ReadBuf *, int): clamps n to the ring
+ * buffer's remaining-available count and consumes that much:
+ *
+ *   void func_0023CDF0(char *arg0, int n) {
+ *       int *b = (int *)(arg0 + 0x50000);
+ *       int total = b[1];
+ *       int taken = total;
+ *       if (n < total) {
+ *           taken = n;
+ *       }
+ *       b[1] = total - taken;
+ *   }
+ *
+ * The base-address computation (arg0+0x50000, then b[1] for the +4
+ * field, matching the sibling functions in this file) is exact. The
+ * clamp itself hits the same unsigned-range-check canonicalization
+ * class as func_001F0FF8/func_00226380/func_002348B8/func_00234D58 --
+ * retail copies `total` into a second register before the clamp
+ * (`daddu a2,v0,zero`) and subtracts through that; this compiler
+ * always reuses the same register instead. Tried both clamp
+ * directions; identical output either way. 4 bytes over.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023CDF0); /* readBufEndGet(ReadBuf *, int) */
