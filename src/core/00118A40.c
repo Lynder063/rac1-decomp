@@ -188,7 +188,25 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00118F60);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119008);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119088);
+extern int func_00119CC8(int);
+extern int func_00119BF8(int, int);
+
+/* Same-size near-miss (13/116 bytes): retail leaves the first call's
+   delay slot a genuine standalone nop; this compiler sinks the next
+   call's argument setup (daddu a0,s0,zero) into it instead. The rest
+   is a cosmetic $s0/$s1 register-allocation swap. */
+int func_00119088(int arg0, int arg1, int arg2) {
+    if (arg0 == 0) {
+        if (D_0012FCF0 == 0) {
+            if (func_00119CC8(arg1) == 0) {
+                return -1;
+            }
+            D_0012FCF0 = 1;
+        }
+        return func_00119BF8(arg1, arg2);
+    }
+    return -1;
+}
 
 /* Takes an argument its callers pass (e.g. func_00112468) and ignores
    it; an unused parameter costs no codegen. */
