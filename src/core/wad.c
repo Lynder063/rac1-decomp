@@ -168,6 +168,44 @@ extern short D_0015ED80;
 extern short D_0015EDC4;
 extern void func_0012DDC0(void);
 
+/*
+ * REVERTED (size mismatch: 168 vs retail's 172). Semantics recovered
+ * with confidence, and instruction-for-instruction identical apart
+ * from one nop -- same shape as stream.c's read-request siblings
+ * (func_002175C8/func_002176C8): build a 4-byte request header,
+ * submit it, pump the busy-wait service call while pending, and retry
+ * the whole request if the completion check reports failure.
+ *
+ *   typedef struct { char b[4]; } StreamHdr;
+ *   extern unsigned char D_0015EE58[4] MACRO_ADDR;
+ *   extern int func_00121750(void *, int, int, void *);
+ *   extern int func_00120F30(int);
+ *   extern void func_00122598(int);
+ *   extern int func_00121930(void);
+ *
+ *   int func_0012F348(void *arg0, int arg1, int arg2) {
+ *       StreamHdr hdr;
+ *
+ *       hdr.b[0] = 0x20;
+ *       hdr.b[1] = D_0015EE58[0];
+ *       hdr.b[2] = 0;
+ *       hdr.b[3] = 0;
+ *
+ *       do {
+ *           func_00121750(arg0, arg1, arg2, &hdr);
+ *           while (func_00120F30(1) != 0) {
+ *               func_00122598(0);
+ *           }
+ *       } while (func_00121930() != 0);
+ *
+ *       return arg1 << 11;
+ *   }
+ *
+ * Residual: retail has one standalone nop between `jal func_00120F30`
+ * and the `bnez` testing its result -- the same GPR-result-feeds-a-
+ * branch hazard-nop class documented on func_0023C960/func_00201D58.
+ * 4 bytes short.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F348); /* wad_GetSectors_FiiPv */
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F3F8);
