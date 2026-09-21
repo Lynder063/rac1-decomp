@@ -137,6 +137,116 @@ void func_00203038(int *buf, int count) {
     }
 }
 
+extern char *D_0016055C MACRO_ADDR;
+
+/*
+ * Reverted: size mismatch (ours=424, retail=440 -- 16 bytes/4
+ * instructions short). PatchSkyDef-adjacent fixup: relocates offset
+ * fields inside arg0 (a SkyDef, see skyfunc.c) from load-time
+ * relative offsets to absolute pointers, then builds one 0x10-byte
+ * icon entry per particle-tex table row (same shape as
+ * func_00203038, but reading and writing the SAME array in place --
+ * 4 words consumed = 0x10 bytes = exactly one written entry), then
+ * walks the shells[] array at +0x20 relocating each shell pointer
+ * and its own nested list.
+ *
+ * Recovered source (semantically correct -- every load/store/branch
+ * matches retail's operation and operand offsets one-for-one; this
+ * was checked instruction-by-instruction against the target .s):
+ *
+ *   void func_00203118(void *arg0) {
+ *       char *s3 = (char *)arg0;
+ *       int v0, v1, a0, a2;
+ *       int i;
+ *
+ *       v0 = *(int *)(s3 + 0x10);
+ *       v1 = *(int *)(s3 + 0x14);
+ *       a0 = *(int *)(s3 + 0x18);
+ *       v0 += (int)s3;
+ *       a2 = *(int *)(s3 + 0x1C);
+ *       v1 += (int)s3;
+ *       D_0016055C = s3;
+ *       a0 += (int)s3;
+ *       *(short *)(s3 + 4) = 1;
+ *       *(int *)(s3 + 0x10) = v0;
+ *       *(int *)(s3 + 0x14) = v1;
+ *       if (a2 != 0) {
+ *           *(int *)(s3 + 0x18) = a0;
+ *           *(int *)(s3 + 0x1C) = a2 + (int)s3;
+ *       }
+ *
+ *       i = 0;
+ *       if (*(short *)(D_0016055C + 0xC) > 0) {
+ *           char *hdr = (char *)D_0016055C;
+ *           char *stream = *(char **)(hdr + 0x10);
+ *           char *hdr2;
+ *           do {
+ *               char *entry;
+ *               int a, b, r1, idx;
+ *
+ *               idx = i;
+ *               a = *(int *)stream;
+ *               stream += 4;
+ *               entry = *(char **)(hdr + 0x10) + idx * 0x10;
+ *               b = *(int *)stream;
+ *               stream += 4;
+ *               a >>= 4;
+ *               *(short *)(entry + 0xA) = a;
+ *
+ *               entry = *(char **)(hdr + 0x10) + idx * 0x10;
+ *               a = *(int *)stream;
+ *               stream += 4;
+ *               b >>= 4;
+ *               *(short *)(entry + 0x8) = b;
+ *               r1 = func_001F9968(a);
+ *
+ *               a = *(int *)stream;
+ *               stream += 4;
+ *               i++;
+ *
+ *               entry = *(char **)(D_0016055C + 0x10) + idx * 0x10;
+ *               *(short *)(entry + 0xC) = r1;
+ *               r1 = func_001F9968(a);
+ *
+ *               hdr2 = (char *)D_0016055C;
+ *               entry = *(char **)(hdr2 + 0x10) + idx * 0x10;
+ *               *(short *)(entry + 0xE) = r1;
+ *               *(long *)entry = 0;
+ *           } while (i < *(short *)(hdr2 + 0xC));
+ *       }
+ *
+ *       if (*(short *)((char *)D_0016055C + 6) > 0) {
+ *           char *hdr = (char *)D_0016055C;
+ *           int j = 0;
+ *           do {
+ *               int *slot = (int *)(hdr + 0x20 + j * 4);
+ *               int next_j = j + 1;
+ *               char *rel = (char *)(*slot + (int)s3);
+ *               *slot = (int)rel;
+ *               j = next_j;
+ *               if (*(int *)rel > 0) {
+ *                   char *q = rel;
+ *                   int k = 0;
+ *                   do {
+ *                       int *inner = (int *)(q + 0x20);
+ *                       *inner = *inner + (int)s3;
+ *                       k++;
+ *                       q += 0x20;
+ *                   } while (k < *(int *)rel);
+ *               }
+ *           } while (j < *(short *)(hdr + 6));
+ *       }
+ *   }
+ *
+ * The residual is GCC finding tail-merge opportunities retail's
+ * build didn't take (e.g. hoisting the epilogue's first `lq $31`
+ * into an early-exit branch's delay slot, and general basic-block
+ * merging around the shells-loop's `blez`), each shaving an
+ * instruction retail keeps duplicated. This is the
+ * compiler-is-smarter-than-retail class of mismatch, not a
+ * source-shape bug -- register pressure/frame size (0x60, 6 saved
+ * regs) and every operand offset already match exactly.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_00203118);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002032D0); /* LoadHudBanks(void) */
