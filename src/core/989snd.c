@@ -346,6 +346,32 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EF48); /* snd_StreamSafeCdSyn
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EFE8); /* snd_StreamSafeCdBreak */
 
+/*
+ * Reverted: size mismatch (ours=48, retail=56 -- 8 bytes short).
+ * snd_StreamSafeCdGetError.
+ *
+ *   extern short D_0015ED8C;   // gp 0x166D00-0x7F74, no retail symbol
+ *   extern int D_00137C00[];
+ *   extern int func_00121930(void);
+ *
+ *   int func_0012F030(void) {
+ *       if (*(int *)&D_0015ED8C == 0) {
+ *           return func_00121930();
+ *       }
+ *       return *(int *)((char *)D_00137C00 + 0x10);
+ *   }
+ *
+ * Semantics certain, every real instruction matches. Retail
+ * duplicates the $ra restore in both branches (if-path restores it in
+ * the beqz's delay slot before an early `b`, else-path restores it
+ * again after the call); this compiler merges both paths into one
+ * shared restore+jr at the end, saving 2 instructions -- same
+ * compiler-is-smarter-than-retail tail-merge class as func_00203118/
+ * func_00203E78. It also folds D_00137C00's +0x10 offset directly
+ * into the load's immediate instead of retail's separate lui+addiu
+ * address materialization; an explicit `char *p = ...; *(int*)p`
+ * local was tried and changed nothing.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F030); /* snd_StreamSafeCdGetError */
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F068); /* snd_StreamSafeCdCallback */
