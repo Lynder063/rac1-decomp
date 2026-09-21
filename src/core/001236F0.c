@@ -260,6 +260,42 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00124A70);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124B60);
 
+/*
+ * Reverted: size mismatch (ours=72, retail=60 -- 12 bytes over).
+ *
+ *   extern int D_00132ED0;
+ *   extern char D_0015B640_b[] __asm__("D_0015B640");
+ *
+ *   int func_00124B88(void) {
+ *       int p = (int)D_0015B640_b;
+ *       int end = p + 0x3300;
+ *       D_00132ED0 = 1;
+ *       do {
+ *           *(int *)(p + 0) = 0;
+ *           *(int *)(p + 4) = 0;
+ *           *(int *)(p + 8) = 0;
+ *           p += 0x330;
+ *       } while (p < end);
+ *       return 1;
+ *   }
+ *
+ * Zeroes the +0x00/+0x04/+0x08 fields of all 16 entries in the
+ * 0x330-stride table D_0015B640, then marks it initialized. Semantics
+ * certain; retail's loop is a plain ascending `bnez` with the
+ * comparison as `slt` (signed) and no duplicated body. Because
+ * end-start (0x3300) is an exact multiple of the stride (0x330) --
+ * always 16 iterations -- this compiler can prove the trip count at
+ * compile time and reverses the loop into a `bnezl`-based down-count
+ * with the first store duplicated as the branch's delay-slot
+ * instruction, regardless of whether the cursor is typed `int`,
+ * `unsigned int`, or `char *` (tried all three; `int` at least
+ * recovers retail's `slt`, but the reversal itself doesn't go away).
+ * A different case from the established "unsigned loop counter blocks
+ * reversal" lever ([[rac1-64bit-field-type]]'s sibling precedent,
+ * e.g. func_0011DCB8) -- that lever stops reversal driven by a small
+ * loop-counter comparison, not one driven by a statically-divisible
+ * address range.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124B88);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124BC8);
