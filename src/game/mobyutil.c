@@ -416,7 +416,26 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00215570);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215648);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00215650);
+extern void func_001FA588(void *, void *, void *);
+
+/* Same-size near-miss (46/140 bytes): quaternion multiply of the
+   negated arg2 by (arg1 with w zeroed), then by the untouched arg2.
+   Three local quadword scratch buffers give the allocator enough
+   freedom that this compiler's own scratch-register choices and
+   call-argument-setup scheduling diverge from retail's throughout,
+   despite matching frame size and instruction count. */
+void func_00215650(void *arg0, void *arg1, void *arg2) {
+    char buf0[16];
+    char buf1[16];
+    char buf2[16];
+
+    func_001F9C30(buf0, arg2, -1.0f);
+    *(float *)(buf0 + 0xC) = *(float *)((char *)arg2 + 0xC);
+    *(unsigned long long *)buf1 = *(unsigned long long *)arg1;
+    *(float *)(buf1 + 0xC) = 0.0f;
+    func_001FA588(buf2, arg2, buf1);
+    func_001FA588(arg0, buf2, buf0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002156E0);
 
