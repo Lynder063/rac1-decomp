@@ -56,6 +56,38 @@ extern char D_00199A68[];
 extern short D_0015F780;
 extern int func_001F6FD8(int a, int b, int c, int d, int e);
 
+/*
+ * Not attempted to full match: initial C attempt compiled to 108
+ * bytes against retail's 76. Semantics are clear -- Hud_GetIconIndex:
+ * linear-search a 0xFFFF-terminated, 8-byte-stride table starting at
+ * D_0019A504 for a matching id in its first short, returning the
+ * index (0 for a match/terminator at the very first entry):
+ *
+ *   extern char D_0019A504[];
+ *
+ *   int func_001FF668(int arg0) {
+ *       char *entry = D_0019A504;
+ *       int idx;
+ *       if (*(unsigned short *)entry == 0xFFFF) return 0;
+ *       if (*(unsigned short *)entry == arg0) return 0;
+ *       idx = 0;
+ *       entry = D_0019A504 + 8;
+ *       while (1) {
+ *           if (*(unsigned short *)entry == 0xFFFF) { idx++; break; }
+ *           idx++;
+ *           if (*(unsigned short *)entry == arg0) break;
+ *           entry += 8;
+ *       }
+ *       return idx;
+ *   }
+ *
+ * Retail keeps the two entry-0 checks as separate branches to the
+ * same target; this compiler CSEs them, and the while(1)/break
+ * loop body came out substantially different in shape from retail's
+ * (single beq-then-bne pair). Needs a source shape that discourages
+ * the early-check merge and mirrors the loop's exact branch layout --
+ * not found yet, banking the decode since that's the expensive part.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_001FF668); /* Hud_GetIconIndex(int) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FF6B8);
