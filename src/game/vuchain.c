@@ -227,7 +227,7 @@ extern char D_00187040[];
 extern void func_00220128(void *);
 extern void *func_00226720_a(int) __asm__("func_00226720");
 extern int func_002267C0(int);
-extern void func_00234C98(int, int);
+extern void func_00234C98(int, long);
 extern void func_00205E70(void);
 extern void func_001F4630(int);
 extern void func_001F4748(void);
@@ -447,7 +447,20 @@ void func_00234C50(int arg0) {
     D_00161000 += 4;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234C98); /* VU1_addGSregister(unsigned int, unsigned long, bool) */
+void func_00234C98(int arg0, long arg1) {
+    D_00161000[0] = 0x10000002;
+    D_00161000[1] = 0;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000002;
+    D_00161000[4] = 0x8001;
+    D_00161000[5] = 0x10000000;
+    D_00161000[6] = 0xE;
+    D_00161000[7] = 0;
+    *(long *)((char *)D_00161000 + 0x20) = arg1;
+    D_00161000[10] = arg0;
+    D_00161000[11] = 0;
+    D_00161000 += 0xC;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234D50);
 
@@ -455,15 +468,49 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00234D58); /* VU1_setScissor(int, int,
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234E78);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234E80); /* VU1_texFlush(void) */
+extern char D_001DF180[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234EE0); /* VU1_gsRegsNormal(void) */
+/* VU1_texFlush(void) */
+void func_00234E80(void) {
+    D_00161000[0] = 0x30000003;
+    D_00161000[1] = (int)D_001DF180;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000003;
+    D_00161000 += 4;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234F40);
+extern char D_001DE740[];
+
+/* VU1_gsRegsNormal(void) */
+void func_00234EE0(void) {
+    D_00161000[0] = 0x30000003;
+    D_00161000[1] = (int)D_001DE740;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000003;
+    D_00161000 += 4;
+}
+
+extern char D_001DE770[];
+
+void func_00234F40(void) {
+    D_00161000[0] = 0x30000003;
+    D_00161000[1] = (int)D_001DE770;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000003;
+    D_00161000 += 4;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234FA0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234FA8);
+extern char D_0013D010[];
+
+void func_00234FA8(void) {
+    D_00161000[0] = 0x3000000B;
+    D_00161000[1] = (int)D_0013D010;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x5000000B;
+    D_00161000 += 4;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00235008);
 
