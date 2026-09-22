@@ -342,4 +342,46 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023C9C0); /* videoCallback */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023CAF8); /* pcmCallback(sceMpeg *, sceMpegCbDataStr *, void *) */
 
+/*
+ * REVERTED (size mismatch: 296 vs retail's 304). Semantics recovered
+ * with confidence -- cpy2area splits two source runs (src1/n2,
+ * src2/n3) across two destination areas (p0/n0, p1/n1), reporting the
+ * required total length up front and bailing if it won't fit:
+ *
+ *   extern void func_00115248(void *dst, void *src, int len);
+ *
+ *   int func_0023CBE0(unsigned char *p0, int n0, unsigned char *p1, int n1,
+ *                      unsigned char *src1, int n2, unsigned char *src2, int n3) {
+ *       int room;
+ *
+ *       if (n0 + n1 < n2 + n3) {
+ *           return n2 + n3;
+ *       }
+ *
+ *       room = n0 - n2;
+ *       if (n2 >= n0) {
+ *           func_00115248(p0, src1, n0);
+ *           func_00115248(p1, src1 + n0, n2 - n0);
+ *           func_00115248(p1 + (n2 - n0), src2, n3);
+ *       } else if (n3 >= room) {
+ *           func_00115248(p0, src1, n2);
+ *           func_00115248(p0 + n2, src2, room);
+ *           func_00115248(p1, src2 + room, n3 - room);
+ *       } else {
+ *           func_00115248(p0, src1, n2);
+ *           func_00115248(p0 + n2, src2, n3);
+ *       }
+ *
+ *       return n2 + n3;
+ *   }
+ *
+ * Writing the branches in retail's own order (n2>=n0 first) recovered
+ * the exact branch polarity throughout (confirmed via objdump -- every
+ * `bnez`/`beqz` and jump target now lines up), closing an initial
+ * larger gap. The residual: this compiler recomputes `n0 - n2` a
+ * second time inside the n2>=n0 branch instead of keeping the earlier
+ * value live across the branch the way retail does. Not reached by
+ * hoisting `room` into its own statement (already is one) or
+ * restructuring the nesting further.
+ */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023CBE0); /* cpy2area(unsigned char *, int, unsigned char *, int, unsigned char *, int, unsigned char *, int) */
