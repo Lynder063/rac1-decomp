@@ -208,6 +208,45 @@ extern void func_0012DDC0(void);
  */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F348); /* wad_GetSectors_FiiPv */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F3F8);
+typedef struct { char b[4]; } StreamHdr;
+extern unsigned char D_0015EE58[4] MACRO_ADDR;
+extern int func_00121750(int, int, void *, void *);
+extern int func_00120F30(int);
+extern void func_00122598(int);
+extern int func_00121930(void);
+extern int D_00137C80[];
+
+/*
+ * Same-size near-miss (41/176, kept). Same request/poll/retry shape
+ * as func_0012F348 above, reading 6 fixed sectors into a stack buffer
+ * and copying 0x2960 bytes of it into D_00137C80. Retail's missing
+ * nop after `jal func_00120F30` (the usual GPR-result-feeds-a-branch
+ * hazard class) is exactly offset here by an extra nop this compiler
+ * inserts before the final copy loop, so the total size matches even
+ * though the two residuals don't cancel semantically -- purely a
+ * coincidence of counting, not a real fix.
+ */
+int func_0012F3F8(void) {
+    char buf[0x3000];
+    StreamHdr hdr;
+    unsigned int i;
+
+    hdr.b[0] = 0x20;
+    hdr.b[1] = D_0015EE58[0];
+    hdr.b[2] = 0;
+    hdr.b[3] = 0;
+
+    do {
+        func_00121750(0x5DC, 6, buf, &hdr);
+        while (func_00120F30(1) != 0) {
+            func_00122598(0);
+        }
+    } while (func_00121930() != 0);
+
+    for (i = 0; i < 0x2960; i++) {
+        ((char *)D_00137C80)[i] = buf[i];
+    }
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F4A8);
