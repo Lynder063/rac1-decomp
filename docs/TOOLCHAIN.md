@@ -135,6 +135,48 @@ scoped so that it cannot touch a function that does not need it.
   them as `.word` with the instruction's own encoding; the bytes are
   identical either way.
 
+## Running it on macOS and Linux
+
+The toolchain is 32-bit Windows programs that import nothing but
+`KERNEL32.dll` (the C runtime is linked in statically), so Wine runs them
+unchanged. `tools/toolchain.sh`, and `tools/toolchain.py` for the Python
+tools, choose how: on Windows the programs run directly and the build
+uses SN's `make.exe`; anywhere else each program runs through `wine` and
+the build uses the host's GNU make with `-j`. `WINE=...` and
+`MAKE_SN=...` override either.
+
+`tools/docker/` packages that as an image: 32-bit (`linux/386`) Debian
+bookworm with classic 32-bit Wine, make, and a Python venv holding the
+pinned `requirements.txt` plus the asm-differ and m2c prerequisites.
+`bash tools/docker/run.sh <command>` builds it on first use and runs the
+command with the repository mounted at the same path. A Linux x86 host
+with 32-bit Wine installed can run the scripts directly instead.
+
+Why a 32-bit container rather than an amd64 one:
+
+- **Rosetta cannot run 32-bit x86 code under Linux.** Wine's WoW64 mode,
+  the only way a 64-bit Wine runs 32-bit programs, switches to the
+  32-bit code segment (selector `0x23`). Measured in an OrbStack amd64
+  machine: a minimal program that does that dies with `rosetta error:
+  invalid gdt selector index 4`, and Wine never finishes setting up its
+  32-bit half, so every toolchain program fails to start. A `linux/386`
+  container instead runs entirely under QEMU's user-mode emulator, where
+  everything is 32-bit and Wine works.
+- **Native macOS Wine is not a good default either.** Homebrew disabled
+  its Wine casks on 2026-09-01 (they do not pass Gatekeeper), and macOS
+  27 is the last release with full Rosetta 2.
+
+Measured on an Apple M5 Max (18 cores) under QEMU emulation:
+`tools/setup_asm.sh` takes about 1.5 minutes, one small object about 3
+seconds, and `tools/build_sn.sh` (clean build of every object, link and
+audit, `make -j18`) about 37 seconds. The first image build takes about 15
+minutes, most of it compiling Levenshtein for asm-differ.
+
+**Verified equivalent.** On 2026-09-23 a from-scratch container build
+reproduced the committed `progress/report.json` byte for byte: all 1,688
+functions' match percentages, generated on Windows, came out identical
+(485 exact, 81 same-size near-misses, 0 size mismatches).
+
 ## History
 
 How the toolchain was found. Several measurements here are still cited
@@ -336,8 +378,11 @@ happens to assemble."
 ### Update: linked, whole-binary result — 99.99% byte-exact
 
 *(The first link. `tools/build_sn.sh` replaces the manual commands at
-the end, and the per-section numbers are from that first link; they
-have not been re-measured in this file since.)*
+the end, and the per-section numbers are from that first link.
+Re-measured on 2026-09-23: the data residual is unchanged, 84 bytes in
+`.data` and 1 in `.lit`; every other differing byte in the image now
+belongs to one of the kept same-size near-misses in `.text` and
+`.core_text`.)*
 
 `rac1.ld.sh` generates `build-sn/rac1.ld` from the same addresses as
 `config/splat.yaml`, placing every object (both C files, all 8

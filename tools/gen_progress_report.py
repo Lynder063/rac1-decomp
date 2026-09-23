@@ -31,13 +31,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from libgcc_units import (MODULES, FUNCTIONS as LIBGCC_FUNCTIONS, SEGMENT_SOURCES,
                           object_of)
+from toolchain import TC, make_sn, sn, start_wineserver
 
 REPORT = Path("progress/report.json")
 BASEROM = "baserom/SCES_509.16"
 LINKED_ELF = "build-sn/rac1.elf"
-# Absolute: Windows' CreateProcess won't resolve a relative forward-slash
-# path to an .exe.
-TC = str(Path("toolchain/sn-prodg-3.01/usr/local/sce/ee/gcc/bin").resolve())
 
 # Same patterns as tools/sweep_matches.py (see the comments there on why
 # the definition regex is lazy and skips `extern`).
@@ -89,10 +87,11 @@ def build() -> None:
             f.unlink()
     for f in Path("build-sn/libgcc").glob("*.o") if Path("build-sn/libgcc").is_dir() else []:
         f.unlink()
+    start_wineserver()
     steps = [
-        [f"{TC}/make.exe", "-f", "Makefile.sn"],
+        make_sn(),
         ["bash", "rac1.ld.sh"],
-        [f"{TC}/ee-ld.exe", "-T", "build-sn/rac1.ld", "build-sn/bss_equs.o", "-o", LINKED_ELF],
+        sn(f"{TC}/ee-ld.exe", "-T", "build-sn/rac1.ld", "build-sn/bss_equs.o", "-o", LINKED_ELF),
     ]
     for cmd in steps:
         r = subprocess.run(cmd, capture_output=True, text=True)

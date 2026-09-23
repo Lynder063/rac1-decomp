@@ -26,7 +26,8 @@ Be deliberate about it:
   2026-09-16. The history has since been rewritten: no commit in this
   repository contains `asm/` or any `.s` file.) The setup
   is pinned (`requirements.txt`, `config/splat.yaml`, the baserom sha1),
-  and was verified to regenerate all 1677 files byte-identically.
+  and a regenerated `asm/` rebuilds the image byte-identically (checked
+  on 2026-09-23 on a second machine, see `docs/TOOLCHAIN.md`).
 - Progressively, hand-written C source in `src/` that a contributor has
   decompiled from the (locally generated) disassembly in `asm/` and cleaned up to compile back
   to matching (or `INCLUDE_ASM`-stubbed, not-yet-matching) object code.

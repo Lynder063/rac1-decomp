@@ -41,24 +41,37 @@ build it you need your own legally obtained copy of the game. Read
 
 ## Building
 
-The original compiler is SN Systems ProDG, a set of native Windows programs,
-so the build runs on **Windows** with **Git Bash**. Building elsewhere (for
-example under Wine) is untested.
+The original compiler is SN Systems ProDG, a set of 32-bit Windows programs.
+There are two ways to run it:
 
-Requirements: Git, Git Bash, and Python 3.10 or newer.
+- **Windows**, natively, with **Git Bash** and Python 3.10 or newer.
+- **macOS and Linux**, through 32-bit Wine in a Docker container
+  (`tools/docker/`). Only Docker is needed on the host; on Apple Silicon it
+  works with OrbStack or Docker Desktop. The container build reproduces the
+  Windows build's progress report byte for byte.
 
-### 1. Clone to a short path
+Every command below runs the same on both. On macOS and Linux, prefix it with
+`bash tools/docker/run.sh`, which builds the image on first use (about 15
+minutes, once) and runs the command inside it:
+
+```
+bash tools/docker/run.sh bash tools/build_sn.sh
+```
+
+### 1. Clone
 
 ```
 git clone https://github.com/Lynder063/rac1-decomp.git C:\rac1-decomp
 ```
 
-The toolchain's `make` 3.77 fails with `CreateProcess ... failed` when the
-repository path is long, so keep it short.
+On Windows keep the path short: the toolchain's `make` 3.77 fails with
+`CreateProcess ... failed` when the repository path is long.
 
 ### 2. Add your executable
 
-Copy `SCES_509.16` from your disc to `baserom/SCES_509.16`. The expected
+Copy `SCES_509.16` from your disc to `baserom/SCES_509.16`. From a disc
+image, `bsdtar -xf game.iso -C baserom SCES_509.16` extracts it (the image
+itself stays out of the way; `baserom/` is ignored by git). The expected
 SHA-1 is:
 
 ```
@@ -68,7 +81,7 @@ SHA-1 is:
 ### 3. Install Python dependencies and generate the disassembly
 
 ```
-pip install -r requirements.txt
+pip install -r requirements.txt      # Windows only; the Docker image has them
 bash tools/setup_asm.sh
 ```
 
@@ -101,13 +114,15 @@ bash tools/build_sn.sh
 ```
 
 This builds and links `build-sn/rac1.elf`, then audits every decompiled
-function against the retail executable on size and bytes:
+function against the retail executable on size and bytes. The output looks
+like this (these are the numbers as of 2026-09-23; decomp.dev has the
+current ones):
 
 ```
-=== 416 decompiled functions audited ===
-  exact (size AND bytes): 364
-  size mismatch:          0
-  byte mismatch:          52
+=== 566 decompiled functions audited ===
+  exact (size AND bytes): 485
+  size mismatch:          0   (always revert these -- see docs)
+  byte mismatch:          81
 every function is at its retail address
 ```
 
@@ -128,6 +143,7 @@ The full procedure is in [`docs/WORKFLOW.md`](docs/WORKFLOW.md). In short:
    `python tools/gen_progress_report.py`, and commit it together with your
    change. CI fails if the report is out of date.
 
+On macOS and Linux, prefix each of these with `bash tools/docker/run.sh`.
 m2c and asm-differ are used from local clones (not vendored):
 
 ```

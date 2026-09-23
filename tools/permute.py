@@ -45,6 +45,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from diff_words import decode  # noqa: E402
+from toolchain import sn  # noqa: E402
 
 BASEROM = "baserom/SCES_509.16"
 # Resolved to a native absolute path: CreateProcess fails with WinError 2
@@ -104,7 +105,7 @@ def main():
     tmp.parent.mkdir(exist_ok=True)
     tmp.write_text("\n".join(out))
     asm = Path("build-sn/_permute.s")
-    r = subprocess.run([CC] + CFLAGS + ["-S", "-o", str(asm), str(tmp)],
+    r = subprocess.run(sn(CC, *CFLAGS, "-S", "-o", str(asm), str(tmp)),
                        capture_output=True, text=True)
     if r.returncode:
         print(r.stderr[-2000:])

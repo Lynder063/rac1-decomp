@@ -3,14 +3,15 @@
 # through the SN Systems ProDG assembler. See docs/TOOLCHAIN.md.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+. tools/toolchain.sh
 
-AS="toolchain/sn-prodg-3.01/usr/local/sce/ee/gcc/bin/ee-as.exe"
+AS="$TC/ee-as.exe"
 mkdir -p build-sn
 
 for f in asm/data/*.s; do
   name=$(basename "$f")
   out="build-sn/${name%.s}.o"
-  "$AS" -I include-sn -I include -o "$out" "$f"
+  sn "$AS" -I include-sn -I include -o "$out" "$f"
   echo "assembled $out"
 done
 
@@ -19,7 +20,7 @@ done
 # with the object's .rodata in between. See tools/split_data_s.py.
 python tools/split_data_s.py asm/data/core_rdata.rodata.s build-sn/core_rdata D_00152B18
 for n in 1 2; do
-  "$AS" -I include-sn -I include -o "build-sn/core_rdata_$n.o" "build-sn/core_rdata_$n.s"
+  sn "$AS" -I include-sn -I include -o "build-sn/core_rdata_$n.o" "build-sn/core_rdata_$n.s"
   echo "assembled build-sn/core_rdata_$n.o"
 done
 
@@ -27,6 +28,6 @@ done
 # sections rather than NOLOAD.
 printf '.section .core_bss_pad, "wa"\n.skip 0xab80\n' > build-sn/core_bss_pad.s
 printf '.section .bss_pad, "wa"\n.skip 0x4200\n' > build-sn/bss_pad.s
-"$AS" -o build-sn/core_bss_pad.o build-sn/core_bss_pad.s
-"$AS" -o build-sn/bss_pad.o build-sn/bss_pad.s
+sn "$AS" -o build-sn/core_bss_pad.o build-sn/core_bss_pad.s
+sn "$AS" -o build-sn/bss_pad.o build-sn/bss_pad.s
 echo "assembled build-sn/core_bss_pad.o build-sn/bss_pad.o"

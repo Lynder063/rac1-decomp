@@ -2,33 +2,38 @@
 # (see docs/TOOLCHAIN.md). Local-only, gitignored -- get it yourself:
 #   git clone https://github.com/AngheloAlf/SN-Systems-ProDG_for_PS2_3.01 \
 #       toolchain/sn-prodg-3.01
+#   git clone https://github.com/AngheloAlf/sce_ps2_sdk_24 toolchain/sn-prodg-24
 #
-# Unlike the modern-binutils Makefile, this one does NOT need
-# tools/fix_vu0_macro.py (this assembler supports VU0 macro-mode natively)
-# but DOES need tools/sn_regnames.py run over asm/ first (this assembler
-# only accepts numeric GPR names) -- both scripts are idempotent, safe to
-# re-run after every `splat split`.
+# Run it through tools/build_sn.sh rather than directly. This assembler
+# supports VU0 macro-mode natively but only accepts numeric GPR names, so
+# tools/sn_regnames.py runs over asm/ first (the regnames target; it only
+# rewrites files that change, so it is safe to re-run and to run in parallel
+# with compiles once asm/ exists).
 
-# PER-SEGMENT COMPILERS. Retail's two segments were built with two
-# different SN sub-builds, which is why no single compiler ever matched
+# The toolchain is 32-bit Windows programs. On Windows they run directly;
+# anywhere else tools/build_sn.sh passes WINE=wine (see tools/toolchain.sh
+# and tools/docker/).
+WINE ?=
+
+# COMPILERS. Retail's two code segments were built by two different SN
+# sub-builds of GCC 2.95.3, which is why no single compiler ever matched
 # both (see docs/DECOMP_PROGRESS.md, the sq/lq section). Measured across
 # all of retail's disassembly:
 #
-#   core_text: 234 s-reg spills via sd,  14 via sq  -> matches v1.36
-#   text:       34 s-reg spills via sd, 428 via sq  -> matches v1.14
+#   core_text: 234 s-reg spills via sd,  14 via sq  -> v1.36-like
+#   text:       34 s-reg spills via sd, 428 via sq  -> v1.14
 #   (plus 520 text functions saving $ra via sq, which v1.36 never emits)
 #
-# Both compilers are already in the toolchain mirrors, so the fix is just
-# to use the right one per file. Identical everything else (-O2 -G0); the
-# only codegen difference between the sub-builds is the spill pair.
+# Given the same input and flags, the only codegen difference between the
+# two sub-builds is the spill pair and the save-slot layout.
 SN_136  := toolchain/sn-prodg-3.01/usr/local/sce/ee/gcc
 SN_114  := toolchain/sn-prodg-24/local/sce/ee/gcc
 
 # core_text is built with v1.14 too -- NOT v1.36 -- then post-processed.
 # See the build-sn/core/%.o rule below for why.
-CC_CORE := $(SN_114)/bin/ee-gcc2953.exe
-CC_TEXT := $(SN_114)/bin/ee-gcc2953.exe
-SIZE    := $(SN_136)/bin/ee-size.exe
+CC_CORE := $(WINE) $(SN_114)/bin/ee-gcc2953.exe
+CC_TEXT := $(WINE) $(SN_114)/bin/ee-gcc2953.exe
+SIZE    := $(WINE) $(SN_136)/bin/ee-size.exe
 
 # -G2, NOT -G0. The small-data threshold has to sit in 1..3:
 #   -G0        no $gp addressing at all -> the ~244 text functions that
@@ -50,7 +55,7 @@ CFLAGS := -O2 -G2 -Iinclude -Wa,-I,.
 # target predefines (__mips__, __R5900__, ...), and longlong.h picks its
 # MIPS multiply/divide primitives off them. Without them __divdi3 and
 # __muldi3 come out wrong.
-CC_LIBGCC := $(SN_114)/bin/ee-gcc.exe
+CC_LIBGCC := $(WINE) $(SN_114)/bin/ee-gcc.exe
 
 # Every core_text object, in link order, from the one list that rac1.ld.sh
 # and the tools also read.
