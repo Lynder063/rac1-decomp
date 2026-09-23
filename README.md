@@ -146,11 +146,13 @@ in [`docs/DECOMP_PROGRESS.md`](docs/DECOMP_PROGRESS.md).
 | `src/game/` | The `text` segment, one file per original source file (`hud`, `camera`, `mobyfunc`, `movie/*`...), named after the originals |
 | `src/libgcc/` | GCC's `libgcc2.c` and `fp-bit.c` (GPL with the libgcc exception) plus stubs, see its README |
 | `include/` | Shared headers, recovered structs, assembly macros |
+| `include-sn/` | Assembly macros for assembling the data objects with SN's assembler |
 | `config/splat.yaml`, `config/symbol_addrs.txt` | How the executable is split into functions |
 | `config/core_text.objects`, `config/text.objects` | Link order and start address of every object |
 | `Makefile.sn`, `rac1.ld.sh` | Compile and link at retail addresses |
 | `tools/` | Build, audit, progress-report and decompilation helper scripts |
 | `docs/` | Workflow, toolchain notes, progress log, Ghidra policy |
+| `notes/` | Round notes from September 2026, kept as history; `docs/DECOMP_PROGRESS.md` has the current state |
 | `progress/report.json` | objdiff-format progress report read by decomp.dev |
 
 ## Resources
@@ -165,6 +167,9 @@ in [`docs/DECOMP_PROGRESS.md`](docs/DECOMP_PROGRESS.md).
 - [AngheloAlf's PS2 toolchain mirrors](https://github.com/AngheloAlf)
 - [bordplate/RC1](https://codeberg.org/bordplate/RC1): NTSC decomp setup; the
   source file names and boundaries of the `text` segment come from its split
+- [Lombyte](https://github.com/mateuszklysz/Lombyte): NTSC decompilation work
+  on the same game; some real names and struct layouts in `src/` comments
+  (e.g. `src/game/draw.c`, `src/game/vuchain.c`) are corroborated against it
 - [RatchetModding/rac-modding-resources](https://github.com/RatchetModding/rac-modding-resources)
 - [Wrench](https://github.com/chaoticgd/wrench): Ratchet & Clank PS2 asset
   tooling, useful for cross-referencing structures

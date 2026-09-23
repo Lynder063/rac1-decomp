@@ -119,11 +119,13 @@ with `src/`, and decomp.dev publishes whatever the report says.
 
 - Stage files by name, never with `git add -A`. Stray tool output has
   reached the public repo that way before.
-- Commit messages end with only
-  `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>`. They carry no
-  session link.
-- Never commit `baserom/`, `toolchain/`, `build-sn/`, extracted assets,
-  or retail bytes of any kind (that includes "target" objects).
+- Commit messages end with a single `Co-Authored-By` trailer naming the
+  model that did the work, for example
+  `Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>`.
+  They carry no session link.
+- Never commit `baserom/`, `toolchain/`, `build-sn/`, `asm/`, `tools/ext/`,
+  extracted assets, or retail bytes of any kind (that includes "target"
+  objects).
 
 If a new library module is added, update `tools/libgcc_units.py`,
 `Makefile.sn` and the aliases in `rac1.ld.sh` together.
