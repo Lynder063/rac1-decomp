@@ -1,5 +1,21 @@
 # Round notes: cashing in the sign-extension solution
 
+> **Historical round notes (September 2026), kept as a record.**
+> `docs/DECOMP_PROGRESS.md` and `progress/report.json` hold the current
+> state. Superseded since this was written:
+> - `func_00217860` and `func_002178C0` ("blocked on the unsolved sq/lq
+>   question") and `func_00217A60` ("hinges on movn") are now exact;
+>   `func_00217A08` was attempted and reverted (size mismatch).
+> - The recommended size check was added: `tools/check_match.py` fails
+>   loudly on any size disagreement. `func_001F9B90`/`func_001F9B98` were
+>   reverted.
+> - `func_0011EEC8` and `func_0011DFE8` turned out to be libgcc
+>   (`__muldi3`, `__divdi3`) and are exact from GCC's own source (see
+>   `src/libgcc/README.md`).
+> - `src/text.c` and `src/core_text.c` no longer exist: the source is
+>   split into `src/core/` (one file per retail object) and `src/game/`
+>   (one file per original source file).
+
 Branch `parallel-C`. All results below verified with the compiler's own
 exit code checked as 0 first, then against a freshly linked
 `build-sn/rac1.elf`.

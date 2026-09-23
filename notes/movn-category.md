@@ -1,6 +1,24 @@
 
 # Coordinator pass (manual, no agent)
 
+> **Historical round notes (September 2026), kept as a record.**
+> `docs/DECOMP_PROGRESS.md` and `progress/report.json` hold the current
+> state. Superseded since this was written:
+> - The `movz`/`movn` skip category: most of these are arithmetic idioms
+>   (signed division by a power of two, a plain ternary or `if`), not
+>   genuine conditional moves. `tools/rank_candidates.py` marks genuine
+>   ones *risky*, never *blocked*.
+> - "More than half the movn pool is really the `$gp` pool": `$gp` access
+>   is solved by `-G2`, and the "`$at` macro store" blocker by
+>   `MACRO_ADDR`.
+> - `func_0023DA30` and `func_00227A30`, recorded here as held by the
+>   allocator, are now exact.
+> - The classifier counts are from that round; rerun
+>   `tools/rank_candidates.py` for current ones.
+> - `src/text.c` and `src/core_text.c` no longer exist: the source is
+>   split into `src/core/` (one file per retail object) and `src/game/`
+>   (one file per original source file).
+
 ## Confirmed: the movz/movn skip category is over-broad
 
 `func_001F7BF8` — **matches byte-exact (0/84), first attempt**, after
