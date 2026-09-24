@@ -198,13 +198,104 @@ short func_001275A0(int arg0) {
     return func_001286E8(arg0, 3);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001275C0);
+/* dualPrimeVector (libmpeg.a:mpc.o): ISO/IEC 13818-2 7.6.3.6
+ * Dual_Prime_Arithmetic(), matching mpeg2decode reference source
+ * (motion.c) line for line. picture_structure (+0x174) and
+ * top_field_first (+0x178) come from the bitstream-state struct instead
+ * of globals; FRAME_PICTURE == 3, TOP_FIELD == 1 (ISO encoding).
+ */
+void func_001275C0(void *arg0, int DMV[][2], int *dmvector, int mvx, int mvy) {
+    char *s = (char *)arg0;
+
+    if (*(int *)(s + 0x174) == 3) {
+        int top_field_first = *(int *)(s + 0x178);
+        if (top_field_first) {
+            DMV[0][0] = ((mvx + (mvx > 0)) >> 1) + dmvector[0];
+            DMV[0][1] = ((mvy + (mvy > 0)) >> 1) + dmvector[1] - 1;
+            DMV[1][0] = ((3 * mvx + (mvx > 0)) >> 1) + dmvector[0];
+            DMV[1][1] = ((3 * mvy + (mvy > 0)) >> 1) + dmvector[1] + 1;
+        } else {
+            DMV[0][0] = ((3 * mvx + (mvx > 0)) >> 1) + dmvector[0];
+            DMV[0][1] = ((3 * mvy + (mvy > 0)) >> 1) + dmvector[1] - 1;
+            DMV[1][0] = ((mvx + (mvx > 0)) >> 1) + dmvector[0];
+            DMV[1][1] = ((mvy + (mvy > 0)) >> 1) + dmvector[1] + 1;
+        }
+    } else {
+        DMV[0][0] = ((mvx + (mvx > 0)) >> 1) + dmvector[0];
+        DMV[0][1] = ((mvy + (mvy > 0)) >> 1) + dmvector[1];
+        if (*(int *)(s + 0x174) == 1) {
+            DMV[0][1]--;
+        } else {
+            DMV[0][1]++;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00127748);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00127858);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00127960);
+extern void func_00128BA8(void *);
+extern int func_00128860(void *, int);
+extern void func_0012C430(void *, char *, int);
+extern void func_00128968(void *, int);
+extern int func_00128C28(void *);
+extern void func_0012C468(void *, void *);
+extern char D_00153900[];
+extern char D_00153928[];
+
+/* sliceA0 (libmpeg.a:mpc.o): ISO/IEC 13818-2 6.2.4 slice_header(), the
+ * hardware-VLC variant. nextStartCode, then peek 32 bits: if it isn't a
+ * slice_start_code (0x101..0x1AF), report it (func_0012C430) and return 2.
+ * Otherwise consume the 32 bits, run sliceB (IPU setup) and
+ * mbAddressIncrement, stash the raw increment at *arg3 (in case of a
+ * fault), and if the fault flag (+0x11C, cleared at entry) got set, report
+ * it (func_0012C468) and return 1. On full success, compute the starting
+ * macroblock address from the slice's row (low byte of the start code)
+ * and the picture's mb width (+0x12C), overwrite *arg3 with 1, latch
+ * +0x1B0, and zero eight fields of the *arg4 output struct.
+ */
+int func_00127960(void *arg0, int arg1, int *arg2, int *arg3, void *arg4) {
+    char *s = (char *)arg0;
+    char *p5 = (char *)arg4;
+    unsigned int code;
+    int sliceB_result;
+    int mbInc;
+    int row;
+
+    *(int *)(s + 0x11C) = 0;
+    func_00128BA8(s);
+    code = func_00128860(s, 0x20);
+
+    if ((unsigned int)(code - 0x101) >= 0xAF) {
+        func_0012C430(s, D_00153900, code);
+        return 2;
+    }
+
+    func_00128968(s, 0x20);
+    sliceB_result = func_00128C28(s);
+    mbInc = func_00127748(s);
+    *arg3 = mbInc;
+
+    if (*(int *)(s + 0x11C) != 0) {
+        func_0012C468(s, D_00153928);
+        return 1;
+    }
+
+    row = (sliceB_result << 7) + (int)(code & 0xFF) - 1;
+    *arg2 = row * (*(int *)(s + 0x12C)) + mbInc - 1;
+    *arg3 = 1;
+    *(int *)(s + 0x1B0) = 1;
+    *(int *)(p5 + 0x14) = 0;
+    *(int *)(p5 + 0x10) = 0;
+    *(int *)(p5 + 0x4) = 0;
+    *(int *)(p5 + 0x0) = 0;
+    *(int *)(p5 + 0x1C) = 0;
+    *(int *)(p5 + 0x18) = 0;
+    *(int *)(p5 + 0xC) = 0;
+    *(int *)(p5 + 0x8) = 0;
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00127A90);
 
@@ -260,9 +351,68 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00127D40);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001281E8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00128270);
+extern void func_00128410(void *, int *, int *, int, int, int, int, int);
+extern int func_00128A58(void *, int);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00128410);
+/* motionVectors (libmpeg.a:mpc.o): ISO/IEC 13818-2 6.2.5.2/6.3.17.2/7.6.3
+ * motion_vectors(), matching mpeg2decode reference source (motion.c)
+ * almost line for line, with the bitstream-state pointer threaded through
+ * explicitly as the new first argument (this file's convention) instead
+ * of read from a global. func_00128410 is motionVector (already matched
+ * in this file); func_00128A58 is Get_Bits.
+ */
+void func_00128270(void *arg0, int PMV[][2][2], int *dmvector, int mvfs[][2],
+                    int s_idx, int motion_vector_count, int mv_format,
+                    int h_r_size, int v_r_size, int dmv, int mvscale) {
+    if (motion_vector_count == 1) {
+        if (mv_format == 0 && dmv == 0) {
+            mvfs[1][s_idx] = mvfs[0][s_idx] = func_00128A58(arg0, 1);
+        }
+        func_00128410(arg0, PMV[0][s_idx], dmvector, h_r_size, v_r_size, dmv, mvscale, 0);
+        PMV[1][s_idx][0] = PMV[0][s_idx][0];
+        PMV[1][s_idx][1] = PMV[0][s_idx][1];
+    } else {
+        mvfs[0][s_idx] = func_00128A58(arg0, 1);
+        func_00128410(arg0, PMV[0][s_idx], dmvector, h_r_size, v_r_size, dmv, mvscale, 0);
+        mvfs[1][s_idx] = func_00128A58(arg0, 1);
+        func_00128410(arg0, PMV[1][s_idx], dmvector, h_r_size, v_r_size, dmv, mvscale, 0);
+    }
+}
+
+extern void func_001281E8(int *, int, int, int, int);
+extern int func_00128A58(void *, int);
+
+/* motionVector (libmpeg.a:mpc.o): ISO/IEC 13818-2 7.6.3.1 motion_vector(),
+ * hardware-VLC variant of mpeg2decode's motion.c. func_001286E8(s, 2) is
+ * Get_motion_code (IPU VLC table 2); func_001275A0 is Get_dmvector (table
+ * 3, already matched in this file). func_001281E8 is decode_motion_vector.
+ */
+void func_00128410(void *arg0, int *PMV, int *dmvector, int h_r_size,
+                    int v_r_size, int dmv, int mvscale, int full_pel_vector) {
+    char *s = (char *)arg0;
+    int motion_code;
+    int motion_residual;
+
+    motion_code = func_001286E8((int)s, 2);
+    motion_residual = (h_r_size != 0 && motion_code != 0) ? func_00128A58(s, h_r_size) : 0;
+    func_001281E8(PMV, h_r_size, motion_code, motion_residual, full_pel_vector);
+    if (dmv) {
+        dmvector[0] = func_001275A0((int)s);
+    }
+
+    motion_code = func_001286E8((int)s, 2);
+    motion_residual = (v_r_size != 0 && motion_code != 0) ? func_00128A58(s, v_r_size) : 0;
+    if (mvscale) {
+        PMV[1] >>= 1;
+    }
+    func_001281E8(PMV + 1, v_r_size, motion_code, motion_residual, full_pel_vector);
+    if (mvscale) {
+        PMV[1] <<= 1;
+    }
+    if (dmv) {
+        dmvector[1] = func_001275A0((int)s);
+    }
+}
 
 extern int D_00132F70[];
 
@@ -429,9 +579,89 @@ int func_00128C28(void *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00128C90);
+extern void func_00128BA8(void *);
+extern int func_00128A58(void *, int);
+extern void func_0012C4E0(void *);
+extern void func_00129240(void *);
+extern void func_00128DA0(void *);
+extern void func_0012BC78(int, void *);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00128DA0);
+typedef struct {
+    int n;
+    long long v[2];
+} Buf18;
+
+/* nextHeader (libmpeg.a:mpc.o): ISO/IEC 13818-2 6.2.2.1 Get_Hdr() loop --
+ * nextStartCode, Get_Bits32, dispatch on the start code: sequence_header
+ * (0x1B3, func_0012C4E0), group_start (0x1B8, func_00129240 groupOf...),
+ * picture_start (0x100, func_00128DA0 pictureHeader then a PTS/DTS-style
+ * query through func_0012BC78, whose two 64-bit outputs land at +0x828/
+ * +0x830), sequence_end (0x1B7, returns 0), anything else loops again.
+ * On picture_start it returns picture_coding_type (+0x150).
+ */
+int func_00128C90(void *arg0) {
+    char *s = (char *)arg0;
+    unsigned int code;
+    Buf18 buf;
+
+    for (;;) {
+        func_00128BA8(s);
+        code = func_00128A58(s, 0x20);
+        switch (code) {
+        case 0x1B3:
+            func_0012C4E0(s);
+            break;
+        case 0x1B8:
+            func_00129240(s);
+            break;
+        case 0x100:
+            func_00128DA0(s);
+            buf.n = 5;
+            buf.v[0] = -1;
+            buf.v[1] = -1;
+            func_0012BC78(*(int *)(s + 0x858), &buf);
+            *(long long *)(s + 0x830) = buf.v[1];
+            *(long long *)(s + 0x828) = buf.v[0];
+            return *(int *)(s + 0x150);
+        case 0x1B7:
+            return 0;
+        }
+    }
+}
+
+extern int func_00128A58(void *, int);
+extern void func_00129180(void *);
+extern void func_00128E68(void *);
+extern void func_001291C8(void *, int);
+
+/* pictureHeader (libmpeg.a:mpc.o): ISO/IEC 13818-2 6.2.3 picture_header().
+ * temporal_reference (+bits 10) is kept live across the whole function to
+ * feed func_001291C8 (updateTempTackData) at the end. picture_coding_type
+ * (+0x150) is re-read from the struct at each use rather than kept in a
+ * local -- it must survive calls that could (as far as the compiler
+ * knows) touch the struct. P_TYPE/B_TYPE (2/3) is the classic
+ * (x-2)<2u range check; B_TYPE alone is a plain ==3.
+ */
+void func_00128DA0(void *arg0) {
+    char *s = (char *)arg0;
+    int temporal_reference = func_00128A58(s, 10);
+
+    *(int *)(s + 0x150) = func_00128A58(s, 3);   /* picture_coding_type */
+    func_00128A58(s, 16);                         /* vbv_delay, discarded */
+
+    if ((unsigned int)(*(int *)(s + 0x150) - 2) < 2) {
+        *(int *)(s + 0x154) = func_00128A58(s, 1);  /* full_pel_forward_vector */
+        *(int *)(s + 0x158) = func_00128A58(s, 3);  /* forward_f_code */
+    }
+    if (*(int *)(s + 0x150) == 3) {
+        *(int *)(s + 0x15C) = func_00128A58(s, 1);  /* full_pel_backward_vector */
+        *(int *)(s + 0x160) = func_00128A58(s, 3);  /* backward_f_code */
+    }
+
+    func_00129180(s);   /* extra_bit_information */
+    func_00128E68(s);   /* extension_and_user_data */
+    func_001291C8(s, temporal_reference);  /* Update_Temporal_Reference_Tacking_Data */
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00128E68);
 
@@ -448,13 +678,108 @@ void func_00129180(void *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001291C8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00129240);
+extern int func_00128A58(void *, int);
+extern void func_00128E68(void *);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001292E0);
+/* groupOfPicturesHeader (libmpeg.a:mpc.o): ISO/IEC 13818-2 6.2.2.6
+ * group_of_pictures_header(). The reference decoder's "if (ld == &base)"
+ * scalable-layer bookkeeping collapses to unconditional field updates here
+ * (this port keeps one bitstream state, not a base/enhancement pair):
+ * Temporal_Reference_Base (+0x84C) = True_Framenum_max (+0x850) + 1,
+ * Temporal_Reference_GOP_Reset (+0x854) = 1, plus a +0xE8 reset.
+ * Then drop_flag(1), hour(5), minute(6), marker_bit(1), sec(6), frame(6)
+ * are read and discarded (dead outside VERBOSE), while closed_gop(1) and
+ * broken_link(1) are kept at +0x1A4/+0x1A8; ends with a tail call into
+ * extensionAndUserData.
+ */
+void func_00129240(void *arg0) {
+    char *s = (char *)arg0;
+
+    *(int *)(s + 0xE8) = 0;
+    *(int *)(s + 0x84C) = *(int *)(s + 0x850) + 1;
+    *(int *)(s + 0x854) = 1;
+
+    func_00128A58(s, 1);  /* drop_flag */
+    func_00128A58(s, 5);  /* hour */
+    func_00128A58(s, 6);  /* minute */
+    func_00128A58(s, 1);  /* marker_bit */
+    func_00128A58(s, 6);  /* sec */
+    func_00128A58(s, 6);  /* frame */
+    *(int *)(s + 0x1A4) = func_00128A58(s, 1);  /* closed_gop */
+    *(int *)(s + 0x1A8) = func_00128A58(s, 1);  /* broken_link */
+
+    func_00128E68(s);
+}
+
+extern int func_00128A58(void *, int);
+extern void func_00128590(void *);
+extern void func_00128560(char *, unsigned int);
+extern void func_0012C468(void *, void *);
+extern char D_001539E8[];
+extern char D_00153A10[];
+
+/* quantMatrixExtension (libmpeg.a:mpc.o): ISO/IEC 13818-2 6.2.3.2
+ * quant_matrix_extension(). Unlike the reference decoder's 64-coefficient
+ * software copy loops, this hardware-assisted port just flags the IPU to
+ * pull the following intra/non-intra matrix straight off the bitstream
+ * (waitIpuIdle, sendIpuCommand(0x50000000 / 0x58000000), waitIpuIdle) when
+ * load_intra/non_intra_quantizer_matrix is set, storing the flag at
+ * +0x840/+0x844 either way. The chroma variants aren't hardware-supported:
+ * setting either just logs a warning through func_0012C468.
+ */
+void func_001292E0(void *arg0) {
+    char *s = (char *)arg0;
+    int flag;
+
+    flag = func_00128A58(s, 1);        /* load_intra_quantizer_matrix */
+    *(int *)(s + 0x840) = flag;
+    if (flag != 0) {
+        func_00128590(s);
+        func_00128560(s, 0x50000000);
+        func_00128590(s);
+    }
+
+    flag = func_00128A58(s, 1);        /* load_non_intra_quantizer_matrix */
+    *(int *)(s + 0x844) = flag;
+    if (flag != 0) {
+        func_00128590(s);
+        func_00128560(s, 0x58000000);
+        func_00128590(s);
+    }
+
+    if (func_00128A58(s, 1) != 0) {    /* load_chroma_intra_quantizer_matrix */
+        func_0012C468(s, D_001539E8);
+    }
+
+    if (func_00128A58(s, 1) != 0) {    /* load_chroma_non_intra_quantizer_matrix */
+        func_0012C468(s, D_00153A10);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001293A8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001294A0);
+extern int func_00128A58(void *, int);
+
+/* copyrightExtension (libmpeg.a:mpc.o) -- ISO/IEC 13818-2 6.2.3.6: skip the
+ * copyright_extension() fields with func_00128A58 (nextBit, "get n bits").
+ * Reference decoder (mpeg2decode gethdr.c copyright_extension()) assigns
+ * each field to a local only used by its VERBOSE printf, which this port
+ * drops entirely, so every nextBit's result is a dead store the compiler
+ * elides -- the sequence is bare `nextBit(s, width)` calls, and the final
+ * one, its value discarded, becomes 2.9-ee's bare tail jump.
+ */
+void func_001294A0(void *arg0) {
+    func_00128A58(arg0, 1);   /* copyright_flag */
+    func_00128A58(arg0, 8);   /* copyright_identifier */
+    func_00128A58(arg0, 1);   /* original_or_copy */
+    func_00128A58(arg0, 7);   /* reserved */
+    func_00128A58(arg0, 1);   /* marker_bit */
+    func_00128A58(arg0, 20);  /* copyright_number_1 */
+    func_00128A58(arg0, 1);   /* marker_bit */
+    func_00128A58(arg0, 22);  /* copyright_number_2 */
+    func_00128A58(arg0, 1);   /* marker_bit */
+    func_00128A58(arg0, 22);  /* copyright_number_3 */
+}
 
 extern int func_00127858(void *);
 extern char D_00153A40[];
@@ -611,6 +936,25 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00129F40);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012A0F8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012A268);
+extern int func_0011D960(void);
+extern void func_0011D9A8(void);
+
+/* receiveDataFromIPU (libmpeg.a:mpc.o): kicks off an IPU->main-memory DMA
+ * receive. func_0011D960 presumably starts/queries the DMA channel; its
+ * result gates whether func_0011D9A8 (presumably a completion/kick) runs.
+ * The three MMIO stores (0x1000B000/10/20 -- D2_CHCR/D2_MADR/D2_QWC, the
+ * IPU_to_RAM DMA channel) queue the transfer: MADR = (arg0 physical addr)
+ * | 0x80000000 (spr flag), QWC = arg1 >> 4 (bytes -> qwords), CHCR = 0x100
+ * (start, from-memory... actually to-memory chain/normal mode).
+ */
+void func_0012A268(void *arg0, int arg1) {
+    int r = func_0011D960();
+    *(volatile unsigned int *)0x1000B010 = ((unsigned int)arg0 & 0x0FFFFFFF) | 0x80000000;
+    *(volatile unsigned int *)0x1000B020 = arg1 >> 4;
+    *(volatile unsigned int *)0x1000B000 = 0x100;
+    if (r != 0) {
+        func_0011D9A8();
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012A2EC);
