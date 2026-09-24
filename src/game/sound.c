@@ -485,38 +485,32 @@ int func_0022EEB8(int rel, int arg1, int arg2) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022EF50);
 
+static inline char *SndSys(void) {
+    return D_0013E650;
+}
+
 /*
- * BLOCKED (4 bytes short): every instruction reproduces from the C
- * below except retail's bare `nop` in the `jalr $2` delay slot -- this
- * compiler fills it with the following `lw $2,0xD90($18)`.
- *
- * Checked whether retail's build simply never scheduled memory into a
- * call delay slot, which would have justified a post-processing
- * rewriter like tools/fix_tail_calls.py. It does not: across all of
- * retail, 1012 `jal` and 11 `jalr` delay slots hold a load or store,
- * against 676 and 9 bare nops. The choice is per-site, so there is no
- * rule to key a rewriter on. Recorded so nobody re-derives it.
- *
- * Recovered source, for the readability phase -- walks the 0x90-byte
- * entry table at base+0xD94 and invokes each entry's +4 callback. Both
- * the count and the table pointer are re-read every iteration, so a
- * callback may grow the table.
- *
- *   void func_0022EF68(void) {
- *       char *base = D_0013E650;
- *       int i, off = 0;
- *       for (i = 0; i < *(int *)(base + 0xD90); i++) {
- *           char *e = off + *(char **)(base + 0xD94);
- *           void (*fn)(char *) = *(void (**)(char *))(e + 4);
- *           if (fn != 0) fn(e);
- *           off += 0x90;
- *       }
- *   }
- *
- * Retail also carries 8 bytes of post-endlabel nop padding here, which
- * a future conversion has to emit explicitly -- see func_001F6668.
+ * Calls each entry's +4 callback in the sound system's 0x90-byte entry
+ * table (count at +0xD90, table at +0xD94), re-reading both every
+ * iteration so a callback may grow the table. The inline accessor gives
+ * each read of D_0013E650 its own pseudo: the duplicated exit test
+ * keeps a temporary and the loop a callee-saved copy, as in retail.
+ * `i * 0x90 + (int)table` (not an offset variable) gives the
+ * offset-first addu.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_0022EF68);
+void func_0022EF68(void) {
+    int i;
+    for (i = 0; i < *(int *)(SndSys() + 0xD90); i++) {
+        char *e = (char *)(i * 0x90 + *(int *)(SndSys() + 0xD94));
+        void (*fn)(char *) = *(void (**)(char *))(e + 4);
+        if (fn != 0) {
+            fn(e);
+        }
+    }
+}
+
+/* 8 bytes of post-endlabel nop padding in retail -- see func_001F6668. */
+__asm__(".section .text\n\tnop\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022EFE8); /* sound_StopAllSounds(void) */
 

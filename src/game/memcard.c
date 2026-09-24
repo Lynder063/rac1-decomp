@@ -287,9 +287,33 @@ int func_0020BAD8(int *p) {
     return n + 8;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020BB10); /* memcard_Checksum */
+/* memcard_Checksum: 0 for more than 0x1800 bytes, else a 16-bit
+   shift-register checksum (polynomial 0x1F45). Only the low half of
+   the 0xEDB88320 seed (the CRC-32 polynomial) reaches the result. */
+int func_0020BB10(void *data, int len) {
+    unsigned char *p = data;
+    unsigned char *end;
+    int crc;
+    int j;
 
-extern int func_0020BB10(void *data, int len);
+    if (len > 0x1800) {
+        return 0;
+    }
+    end = p + len;
+    crc = 0xEDB88320;
+    while (p < end) {
+        crc ^= *p++ << 8;
+        for (j = 0; j < 8; j++) {
+            if (crc & 0x8000) {
+                crc = (crc << 1) ^ 0x1F45;
+            } else {
+                crc <<= 1;
+            }
+        }
+    }
+    return crc & 0xFFFF;
+}
+
 /* memcard_TestChecksum. `len` is read before the test: retail's load sits
    in the beqz slot, and a load that may trap is never taken from the
    fall-through. */

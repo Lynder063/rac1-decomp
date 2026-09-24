@@ -399,23 +399,21 @@ int func_0023E5C8(int *arg0) {
 }
 
 /*
- * BLOCKED, same cause as func_0022EF68: retail leaves the
- * `jal func_0011D9A8` delay slot as a bare `nop` and puts the
- * `sw $v1,0x8($16)` before the call; this compiler schedules that store
- * into the slot, leaving us 4 bytes short. Recovered source -- marks the
- * current 0x138C0-byte frame buffer as state 2, bumps the frame counter
- * and advances the ring index. The `beql`/`break 0,7` pair before the
- * `div` is this compiler's own divide-by-zero trap, not source code.
- *
- *   void func_0023E5E0(char *arg0) {
- *       func_0011D960();
- *       *(int *)(*(int *)(arg0 + 8) * 0x138C0 + *(int *)(arg0 + 4)) = 2;
- *       *(int *)(arg0 + 0xC) = *(int *)(arg0 + 0xC) + 1;
- *       *(int *)(arg0 + 8) = (*(int *)(arg0 + 8) + 1) % *(int *)(arg0 + 0x10);
- *       func_0011D9A8();
- *   }
+ * voBufIncCount(VoBuf *): marks the current 0x138C0-byte frame as
+ * state 2, bumps the count and advances the ring index. Only the index
+ * (+8) and count (+0xC) are volatile, as in voBufDecCount: that keeps
+ * the index store out of the call's delay slot and orders the loads as
+ * retail does. The beql/break before the div is the compiler's own
+ * divide-by-zero trap.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E5E0); /* voBufIncCount(VoBuf *) */
+/* voBufIncCount(VoBuf *) */
+void func_0023E5E0(char *arg0) {
+    func_0011D960();
+    *(int *)(*(volatile int *)(arg0 + 8) * 0x138C0 + *(int *)(arg0 + 4)) = 2;
+    *(volatile int *)(arg0 + 0xC) = *(volatile int *)(arg0 + 0xC) + 1;
+    *(volatile int *)(arg0 + 8) = (*(volatile int *)(arg0 + 8) + 1) % *(int *)(arg0 + 0x10);
+    func_0011D9A8();
+}
 
 /* voBufGetData(VoBuf *) */
 int func_0023E658(int *arg0) {

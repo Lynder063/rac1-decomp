@@ -289,23 +289,42 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0021A1A0);
 INCLUDE_ASM("asm/nonmatchings/text", func_0021A610);
 
 /*
- * REVERTED (size mismatch). Logic is certain; written straight from the
- * branch chain it comes out several instructions short, and the tail
- * collapses into a `movn` where retail keeps two separate returns.
- *
- *   int func_0021ACD8(int arg0) {
- *       int v;
- *       if (*(int *)(*(char **)(D_001D5F70 + 4) + 0x40) != arg0) return 0;
- *       if ((*(int *)(D_0013CA40 + 0x1C4) & 0xD00) != 0
- *               && *(int *)(D_001D5F70 + 0x124) == 0) return 1;
- *       if ((*(int *)(D_0013CA40 + 0x1C4) & 0x10) == 0) return 0;
- *       v = *(int *)(*(char **)(D_001D5F70 + 4) + 0x38);
- *       if (v != 0) { *(int *)(D_001D5F70 + 8) = v; return 0; }
- *       if (*(int *)(D_001D5F70 + 0x124) == 0) return -1;
- *       return 0;
- *   }
+ * Pad handler for the pause page arg0 (g->x4->x40): 1 on the 0xD00
+ * buttons while g->x124 is 0; on 0x10, switch to the page's +0x38
+ * target, or return -1 when it has none and g->x124 is 0. Written in
+ * its family's shape (func_0021F7D0, func_00222DB0): early returns and
+ * one `char *` local per block that reads a global.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_0021ACD8);
+int func_0021ACD8(int arg0) {
+    char *g = D_001D5F70;
+
+    if (*(int *)(*(char **)(g + 4) + 0x40) != arg0) {
+        return 0;
+    }
+    {
+        char *pad = D_0013CA40;
+        if (*(int *)(pad + 0x1C4) & 0xD00) {
+            if (*(int *)(g + 0x124) == 0) {
+                return 1;
+            }
+        }
+    }
+    {
+        char *pad2 = D_0013CA40;
+        if (*(int *)(pad2 + 0x1C4) & 0x10) {
+            char *g2 = D_001D5F70;
+            int t = *(int *)(*(char **)(g2 + 4) + 0x38);
+            if (t != 0) {
+                *(int *)(g2 + 8) = t;
+                return 0;
+            }
+            if (*(int *)(g2 + 0x124) == 0) {
+                return -1;
+            }
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021AD68);
 

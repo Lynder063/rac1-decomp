@@ -360,7 +360,19 @@ void func_002348E8(void) {
     D_0015F71C = end - 0x2000;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234948); /* VU1_swapChain(void) */
+/* VU1_swapChain(void) */
+void func_00234948(void) {
+    int idx = 1 - D_00161010;
+    int base = D_00160FF8[idx];
+    int end;
+
+    D_00161004 = (int)D_00161000;
+    D_00161010 = idx;
+    D_00161000 = (int *)base;
+    end = (int)D_00161000 + D_0016100C_m - D_0015F698_m;
+    D_0015F718 = end;
+    D_0015F71C = end - 0x2000;
+}
 
 extern int D_00161014 MACRO_ADDR;
 extern int D_0016100C_m __asm__("D_0016100C") MACRO_ADDR;
@@ -594,33 +606,28 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00235008);
 extern int D_00161018 MACRO_ADDR;
 extern int D_0016101C MACRO_ADDR;
 
+extern int func_00118AB0(int, void *, void *);
+extern void func_00119460(int);
+extern void func_00235118(void);
+extern void func_00235218(void);
+
 /*
- * DMAC_VIF1_Enable(void). Decoded and semantically confirmed, but one
- * instruction too long (148 vs 144), so it stays asm:
- *
- *   extern int func_00118AB0(int, void *, void *);
- *   extern void func_00119460(int);
- *   void func_00235018(void) {
- *       if (D_00161018 == 0 && D_0016101C == 0) {
- *           if ((*(volatile int *)0x1000E010 & 0x20000) == 0)
- *               *(volatile int *)0x1000E010 = 0x20000;
- *           D_00161018 = func_00118AB0(1, (void *)func_00235118, (void *)0);
- *           D_0016101C = func_00118AB0(0xF, (void *)func_00235218, (void *)0);
- *           func_00119460(1);
- *       }
- *   }
- *
- * The extra instruction is a duplicated `lui $5,%hi(func_00235118)`:
- * retail fills the inner branch's delay slot by sinking that lui from
- * ABOVE the branch, this compiler copies it down from the join and so
- * needs a second copy on the fall-through path. Spellings tried, all
- * same or worse: hoisting the handler address into a local (hoists the
- * whole lui/addiu above the first test and switches to `bnel`);
- * early-return instead of `&&` (identical output); a
- * `volatile int *` variable for D_STAT (collapses the lui/ori/lw
- * address form retail uses into a two-instruction macro load).
+ * DMAC_VIF1_Enable(void): unless the handlers are installed, set CIM1 in
+ * D_STAT and install func_00235118 (channel 1) and func_00235218 (0xF),
+ * then enable channel 1. The D_STAT read is volatile but the store is
+ * plain: a volatile store stops reorg's try_merge_delay_insns at it and
+ * leaves a second copy of the handler's lui on the fall-through path.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_00235018); /* DMAC_VIF1_Enable(void) */
+void func_00235018(void) {
+    if (D_00161018 == 0 && D_0016101C == 0) {
+        if ((*(volatile int *)0x1000E010 & 0x20000) == 0) {
+            *(int *)0x1000E010 = 0x20000;
+        }
+        D_00161018 = func_00118AB0(1, (void *)func_00235118, (void *)0);
+        D_0016101C = func_00118AB0(0xF, (void *)func_00235218, (void *)0);
+        func_00119460(1);
+    }
+}
 
 /*
  * DMAC_VIF1_Disable(void). The two handler ids are MACRO_ADDR: the copy

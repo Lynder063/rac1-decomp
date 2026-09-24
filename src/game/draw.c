@@ -37,7 +37,33 @@ void func_001F0F30(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F0F70);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F0F78);
+typedef struct {
+    int x;
+    int y;
+    int color;
+    char *str;
+} DrawTextRec;
+extern DrawTextRec D_0018AC00[];
+extern short D_0015F100;
+extern short D_0015F104;
+extern char D_0015F108[];
+extern int func_00116248();
+
+/* Queues one text item: D_0018AC00[n] = {x, y, colour, pool position},
+   then sprintf(pool, "%s", str) (D_0015F108 is "%s") advances the
+   D_0015F100 string pool past the copy. Indexing the table at every
+   store gives retail's two addu forms; a `DrawTextRec *` local folds
+   them into one register and comes out 12 bytes short. */
+void func_001F0F78(int x, int y, int color, char *str) {
+    int n = *(int *)&D_0015F104;
+
+    D_0018AC00[n].x = x;
+    D_0018AC00[n].y = y;
+    D_0018AC00[n].color = color;
+    D_0018AC00[n].str = *(char **)&D_0015F100;
+    *(int *)&D_0015F104 = n + 1;
+    *(char **)&D_0015F100 += func_00116248(*(char **)&D_0015F100, D_0015F108, str) + 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F0FF0);
 
@@ -49,7 +75,6 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F0FF0);
  * the total width before forwarding to func_001F0F78.
  *
  *   extern int D_00189EC0[];
- *   extern void func_001F0F78(int, int);
  *
  *   int func_001F0FF8(int arg0, int arg1, int arg2, char *str) {
  *       int sum = 0;
@@ -73,7 +98,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F0FF0);
  *           } while (1);
  *       }
  *       arg0 -= sum >> 1;
- *       func_001F0F78(arg0, arg1);
+ *       func_001F0F78(arg0, arg1, arg2, str);
  *       return arg0;
  *   }
  *

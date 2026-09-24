@@ -78,6 +78,8 @@ typedef struct {
     int x04;      /* 0x04 */
     int pad[7];   /* 0x08 */
     int x24;      /* 0x24 */
+    int x28;      /* 0x28 */
+    int count;    /* 0x2C: entries in the D_0015F780 table */
 } HelpState;
 extern char D_001997D0[];
 
@@ -114,17 +116,39 @@ void func_001FE438(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FE4C0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FE4D0); /* Help_FindIndex */
+typedef struct {
+    char *text;   /* 0x0 */
+    int id;       /* 0x4 */
+    int unk_08;
+    int unk_0C;
+} HelpEntry;
+extern HelpEntry *D_0015F780 MACRO_ADDR;
 
-extern int func_001FE4D0(void);
+/* Help_FindIndex: the index of the first D_0015F780 entry with this id,
+   or -1. `r = -1` and a `break` give retail's peeled first compare and
+   rotated loop; the count goes through the struct so its +0x2C stays a
+   displacement. */
+int func_001FE4D0(int id) {
+    int r = -1;
+    int i;
+
+    for (i = 0; i < ((HelpState *)D_001997D0)->count; i++) {
+        if (D_0015F780[i].id == id) {
+            r = i;
+            break;
+        }
+    }
+    return r;
+}
+
 extern char D_00199A68[];
-extern short D_0015F780;              /* SDA, gp -0x7580 */
 
-/* msg_string(int) */
-void *func_001FE540(void) {
-    int i = func_001FE4D0();
+/* msg_string(int). The table load sits in the bgezl slot, where the
+   MACRO_ADDR access becomes $gp-relative. */
+void *func_001FE540(int id) {
+    int i = func_001FE4D0(id);
     if (i >= 0) {
-        return *(void **)(*(int *)&D_0015F780 + i * 16);
+        return D_0015F780[i].text;
     }
     return D_00199A68;
 }

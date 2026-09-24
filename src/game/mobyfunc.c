@@ -335,58 +335,32 @@ void func_0020D960(char *arg0, int arg1, unsigned char *arg2) {
 }
 
 /*
- * Reverted: size mismatch (ours=100, retail=144 -- 44 bytes short).
- * DetachManipulator: unlink arg1 from the singly-linked list headed
- * by arg0+0x64 (next pointer at +8 of each node), then always call
- * func_001F99B0(arg1, 0, 0x40) whether or not it was found.
- *
- *   void func_0020D9D8(void *arg0, void *arg1) {
- *       char *base = (char *)arg0;
- *       char *cur;
- *       char *next;
- *       if (arg1 == 0) {
- *           return;
- *       }
- *       cur = *(char **)(base + 0x64);
- *       if (cur == arg1) {
- *           *(void **)(base + 0x64) = *(void **)((char *)arg1 + 8);
- *           goto done;
- *       }
- *       next = *(char **)(cur + 8);
- *       if (next == 0) {
- *           goto done;
- *       }
- *       if (next != arg1) {
- *           cur = next;
- *           do {
- *               next = *(char **)(cur + 8);
- *               if (next == 0) {
- *                   goto done;
- *               }
- *               if (next == arg1) {
- *                   break;
- *               }
- *               cur = next;
- *           } while (1);
- *       }
- *       *(void **)(cur + 8) = *(void **)((char *)arg1 + 8);
- *   done:
- *       func_001F99B0(arg1, 0, 0x40);
- *   }
- *
- * A single-exit `goto done` was needed to get retail's ONE shared
- * call site instead of one per return path (fixed a much larger
- * initial gap). What's left: retail's "check next, branch on == 0
- * vs == target" pattern is duplicated three times (once before the
- * loop, once as the loop's own top, once merged into the not-found
- * landing pad) with each copy scheduled slightly differently; this
- * compiler recognizes all the duplicated checks are identical code
- * and collapses them into one shared loop entered from multiple
- * points, matching retail's semantics with visibly fewer
- * instructions. Same compiler-is-smarter-than-retail class as
- * several other reverts this session, just larger in scale.
+ * DetachManipulator: unlink `node` from the list at arg0+0x64 (next
+ * pointer at +8), then clear it with func_001F99B0(node, 0, 0x40).
+ * The head is read twice, for the test and again for `cur`: the copy
+ * that makes lands in the bnel's slot and leaves retail's two nops.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_0020D9D8); /* DetachManipulator */
+void func_0020D9D8(void *arg0, void *arg1) {
+    char *base = (char *)arg0;
+    char *node = (char *)arg1;
+    char *cur;
+
+    if (node == 0) {
+        return;
+    }
+    if (*(char **)(base + 0x64) == node) {
+        *(char **)(base + 0x64) = *(char **)(node + 8);
+    } else {
+        cur = *(char **)(base + 0x64);
+        while (*(char **)(cur + 8) != 0 && *(char **)(cur + 8) != node) {
+            cur = *(char **)(cur + 8);
+        }
+        if (*(char **)(cur + 8) == node) {
+            *(char **)(cur + 8) = *(char **)(node + 8);
+        }
+    }
+    func_001F99B0(node, 0, 0x40);
+}
 
 extern int D_001B2F40[];
 
@@ -731,7 +705,17 @@ void func_0020E0C8(void) {
     D_00160014 = D_0015F718;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020E180); /* DrawMobyList */
+extern int func_00212658(int, int, int, int);
+
+/* DrawMobyList */
+void func_0020E180(int arg0, int arg1) {
+    func_00234C98(0x47, 0x5360B);
+    func_00118D80(0);
+    func_0020E098();
+    D_00160014 = func_00212658(arg0, D_00160014, arg1, 0);
+    func_0020E068();
+    D_00160014 -= 0x10;
+}
 
 extern void func_0020DC40(void);
 extern void func_001F2558(void *, int);
@@ -769,7 +753,6 @@ extern int D_00161008 MACRO_ADDR;
 extern char D_001E8730[];
 extern void func_0020E0C8(void);
 extern void func_0020E200(void);
-extern int func_00212658(int, int, int, int);
 
 /* DrawMobys */
 void func_0020E2B0(void) {

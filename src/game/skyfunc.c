@@ -273,19 +273,59 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0022C188); /* SkyLevelGeneric___maybe 
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022C5A0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022C7E0); /* SetupSkyGifPaging(void) */
+extern int D_00161000 MACRO_ADDR;
+extern int D_00160570 MACRO_ADDR;
+extern int D_0015EF78 MACRO_ADDR;
+extern int D_0015EF74 MACRO_ADDR;
+extern int D_0015F558 MACRO_ADDR;
+extern char D_00160550[];
+extern void func_001F2560(void *, int);
+typedef struct {
+    long tag;
+    long unk_08;
+} SkyGifPage;
+typedef struct {
+    char unk_00[6];
+    short count;          /* 0x6: shells */
+    char unk_08[4];
+    short npages;         /* 0xC: GIF pages */
+    short unk_0E;
+    SkyGifPage *pages;    /* 0x10 */
+    char unk_14[0xC];
+    void *shells[1];      /* 0x20 */
+} SkyDef;
+extern SkyDef *D_0016055C MACRO_ADDR;
+
+/*
+ * SetupSkyGifPaging(void): reserves 0x10 bytes of the VU1 chain at
+ * D_00160570 and clears the tag of each of the sky's GIF pages. Retail
+ * loads the page count before the two global stores: read as a struct
+ * field through a pointer it cannot alias a scalar global (gcc's
+ * fixed_scalar_and_varying_struct_p), where a cast access would keep it
+ * behind them.
+ */
+void func_0022C7E0(void) {
+    int p;
+    SkyDef *s;
+    int i;
+
+    p = D_00161000;
+    D_00160570 = p;
+    p += 0x10;
+    D_00161000 = p;
+    func_001F2560(D_00160550, 1);
+    s = D_0016055C;
+    D_0015EF74 = D_0015EF78;
+    D_0015F558 = 0;
+    for (i = 0; i < s->npages; i++) {
+        s->pages[i].tag = 0;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022C870); /* DoSkyGifPaging(void) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022C9A0);
 
-typedef struct {
-    char unk_00[6];
-    short count;        /* 0x6 */
-    char unk_08[0x18];
-    void *shells[1];    /* 0x20 */
-} SkyDef;
-extern SkyDef *D_0016055C MACRO_ADDR;
 extern void func_0022CA00(void *);
 extern void func_0022CC40(void *);
 

@@ -159,17 +159,34 @@ void func_001FFC48(void *arg0) {
     *(int *)(p + 0x68) = 0;
 }
 
-/*
- * Same 13-entry walk over D_00199C60 as func_001FFDA0 below, and blocked
- * at the same instruction -- the standalone nop between the loop's
- * `lw $2,0($3)` and the `bnel`. Not attempted past that point; if
- * func_001FFDA0's site is ever cracked, this one falls with it.
- *
- * Semantics: find the record whose +0x64 field is arg0; if none of the
- * 13 matched, return 0, otherwise call
- * func_001FFB38(record_index_result, 0xFFFF, 0, 0, 0, 0, 0) and return 1.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_001FFCB0);
+/* The 13 0x90-byte records at D_00199C60, looked up by their +0x64. */
+typedef struct {
+    int unk00, unk04;
+    char pad08[0x1C];
+    int unk24;
+    char pad28[0x3C];
+    int unk64, unk68;
+    char pad6C[0x24];
+} HudRec90;
+extern HudRec90 D_00199C60[] NOT_SDA;
+extern void func_001FFB38(int, int, int, int, int, int, int);
+
+/* Calls func_001FFB38(i, 0xFFFF, 0, 0, 0, 0, 0) on the record whose
+   +0x64 is arg0 and returns 1, or returns 0 when none is. The nop in
+   the search loop is ps2eeas's short-loop padding. */
+int func_001FFCB0(int arg0) {
+    int i;
+    for (i = 0; i < 13; i++) {
+        if (D_00199C60[i].unk64 == arg0) {
+            break;
+        }
+    }
+    if (i < 13) {
+        func_001FFB38(i, 0xFFFF, 0, 0, 0, 0, 0);
+        return 1;
+    }
+    return 0;
+}
 
 extern int func_001FF668(int);
 
@@ -196,37 +213,23 @@ void func_001FFD30(void *arg0, int arg1) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FFD98);
 
-/* func_001FFDA0: 28 of retail's 29 instructions reproduce exactly from
-   the C below; the one missing instruction is a standalone load-delay
-   `nop` retail carries between the loop's `lw $2,0($3)` and the `bnel`
-   consuming it. gcc prints that slot as `#nop` (commented out) and the
-   assembler does not insert one here either.
-
-   Do NOT generalise this into "standalone nops are unreachable" -- that
-   was measured and is false: 145 of the byte-exact functions have a
-   standalone nop in their retail body, so the assembler does emit them
-   in other contexts. It is this particular site that we cannot make it
-   produce. Recovered source, for the readability phase:
-
-     typedef struct { int unk00, unk04; char pad08[0x1C];
-                      int unk24; char pad28[0x3C];
-                      int unk64, unk68; char pad6C[0x24]; } Rec90;
-     extern Rec90 D_00199C60[] NOT_SDA;
-
-     void func_001FFDA0(int arg0, int arg1) {
-         int i;
-         for (i = 0; i < 13; i++)
-             if (D_00199C60[i].unk64 == arg0) break;
-         if (i < 13) {
-             D_00199C60[i].unk24 = arg1;
-             if (D_00199C60[i].unk68 == 0) D_00199C60[i].unk04 = arg1;
-         }
-     }
-
-   Indexing the extern array directly (rather than caching a base pointer
-   in a local) is what reproduces retail's per-access %lo
-   re-materialization -- worth remembering for the next table walker. */
-INCLUDE_ASM("asm/nonmatchings/text", func_001FFDA0);
+/* Stores arg1 into +0x24 of the record whose +0x64 is arg0, and into
+   +0x04 when its +0x68 is 0. Indexing the extern array at each access,
+   not through a cached base pointer, gives retail's per-access %lo. */
+void func_001FFDA0(int arg0, int arg1) {
+    int i;
+    for (i = 0; i < 13; i++) {
+        if (D_00199C60[i].unk64 == arg0) {
+            break;
+        }
+    }
+    if (i < 13) {
+        D_00199C60[i].unk24 = arg1;
+        if (D_00199C60[i].unk68 == 0) {
+            D_00199C60[i].unk04 = arg1;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FFE18);
 
