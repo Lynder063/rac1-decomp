@@ -60,10 +60,10 @@ date with `src/`. It leaves out retail's linker fill (the `0xCDCDCDCD`
 runs between objects that splat also emits as 4-byte "functions"; 38 of
 them, 200 bytes): fill is not code, and the build reproduces it byte for
 byte. Totals written in prose go stale, so this file no
-longer keeps a running count. Snapshot as of 2026-09-23 (`51c705e`):
-**657 functions have source; 581 are exact on size and bytes; 76 are
-same-size near-misses kept as C; 0 are size-mismatched; 11.65% of code
-bytes match; 16 of 120 units complete.** Re-run `bash tools/build_sn.sh`
+longer keeps a running count. Snapshot as of 2026-09-23 (`f26a871`):
+**725 functions have source; 684 are exact on size and bytes; 41 are
+same-size near-misses kept as C; 0 are size-mismatched; 14.36% of code
+bytes match; 20 of 121 units complete.** Re-run `bash tools/build_sn.sh`
 (which runs the sweep, the layout check and the whole-image check)
 after any change rather than trusting a snapshot or any single entry.
 
