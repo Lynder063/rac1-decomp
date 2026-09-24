@@ -26,8 +26,12 @@ done
 
 # bss padding objects -- see rac1.ld.sh for why these are real loaded
 # sections rather than NOLOAD.
-printf '.section .core_bss_pad, "wa"\n.skip 0xab80\n' > build-sn/core_bss_pad.s
+# core_bss (0x154200-0x15ED80) is split around 0x1597EC, where libgcc's
+# __main keeps its static `initialized` (see rac1.ld.sh).
+printf '.section .core_bss_pad, "wa"\n.skip 0x55ec\n' > build-sn/core_bss_pad_1.s
+printf '.section .core_bss_pad, "wa"\n.skip 0x5590\n' > build-sn/core_bss_pad_2.s
 printf '.section .bss_pad, "wa"\n.skip 0x4200\n' > build-sn/bss_pad.s
-sn "$AS" -o build-sn/core_bss_pad.o build-sn/core_bss_pad.s
+sn "$AS" -o build-sn/core_bss_pad_1.o build-sn/core_bss_pad_1.s
+sn "$AS" -o build-sn/core_bss_pad_2.o build-sn/core_bss_pad_2.s
 sn "$AS" -o build-sn/bss_pad.o build-sn/bss_pad.s
-echo "assembled build-sn/core_bss_pad.o build-sn/bss_pad.o"
+echo "assembled build-sn/core_bss_pad_1.o build-sn/core_bss_pad_2.o build-sn/bss_pad.o"

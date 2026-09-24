@@ -96,6 +96,12 @@ scoped so that it cannot touch a function that does not need it.
   It deletes the frame and moves at most the last body instruction into
   the jump's delay slot (SN's assembler fills delay slots only from after
   a branch). It never synthesises an instruction.
+- **`tools/strip_dead.py`**: removes a function the way retail's linker
+  dead-stripped unreferenced code, from its label through its final jump,
+  keeping the delay-slot word (optionally as a named function, e.g.
+  `func_0011DF10`). Used for libgcc's L__main, where retail kept only
+  `__do_global_dtors`'s delay slot; see "Retail's linker dead-stripped
+  unreferenced functions" in `docs/DECOMP_PROGRESS.md`.
 - **`tools/check_macro_slots.py`**: a `MACRO_ADDR` global access that the
   compiler put in a branch delay slot is rewritten to the `$gp`-relative
   form retail's toolchain produced there. Anything it cannot handle (an

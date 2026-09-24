@@ -1,16 +1,16 @@
 {
  "measures": {
-  "fuzzy_match_percent": 9.81640115360846,
-  "total_code": "466016",
-  "matched_code": "37872",
-  "matched_code_percent": 8.126759596237038,
-  "total_functions": 1688,
-  "matched_functions": 487,
-  "matched_functions_percent": 28.850710900473935,
-  "complete_code": "3676",
-  "complete_code_percent": 0.7888141179701984,
+  "fuzzy_match_percent": 9.8619778031467,
+  "total_code": "466012",
+  "matched_code": "38084",
+  "matched_code_percent": 8.172321742787739,
+  "total_functions": 1689,
+  "matched_functions": 490,
+  "matched_functions_percent": 29.01124925991711,
+  "complete_code": "3888",
+  "complete_code_percent": 0.8343132794863651,
   "total_units": 130,
-  "complete_units": 15
+  "complete_units": 16
  },
  "units": [
   {
@@ -3479,32 +3479,41 @@
   {
    "name": "libgcc/main",
    "measures": {
-    "fuzzy_match_percent": 0.0,
-    "total_code": "216",
-    "matched_code": "0",
-    "matched_code_percent": 0.0,
-    "total_functions": 2,
-    "matched_functions": 0,
-    "matched_functions_percent": 0.0,
-    "complete_code": "0",
-    "complete_code_percent": 0.0,
+    "fuzzy_match_percent": 100.0,
+    "total_code": "212",
+    "matched_code": "212",
+    "matched_code_percent": 100.0,
+    "total_functions": 3,
+    "matched_functions": 3,
+    "matched_functions_percent": 100.0,
+    "complete_code": "212",
+    "complete_code_percent": 100.0,
     "total_units": 1,
-    "complete_units": 0
+    "complete_units": 1
    },
    "functions": [
     {
      "name": "func_0011DF10",
-     "size": "184",
-     "fuzzy_match_percent": 0.0,
+     "size": "4",
+     "fuzzy_match_percent": 100.0,
      "address": "0",
      "metadata": {
       "virtual_address": "1171216"
      }
     },
     {
+     "name": "func_0011DF18",
+     "size": "176",
+     "fuzzy_match_percent": 100.0,
+     "address": "8",
+     "metadata": {
+      "virtual_address": "1171224"
+     }
+    },
+    {
      "name": "func_0011DFC8",
      "size": "32",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "184",
      "metadata": {
       "virtual_address": "1171400"
@@ -3512,7 +3521,7 @@
     }
    ],
    "metadata": {
-    "complete": false,
+    "complete": true,
     "source_path": "src/libgcc/libgcc2.c",
     "progress_categories": [
      "libgcc"
@@ -18477,15 +18486,15 @@
    "id": "libgcc",
    "name": "libgcc",
    "measures": {
-    "fuzzy_match_percent": 53.504950495049506,
-    "total_code": "10100",
-    "matched_code": "5404",
-    "matched_code_percent": 53.504950495049506,
-    "total_functions": 24,
-    "matched_functions": 17,
-    "matched_functions_percent": 70.83333333333333,
-    "complete_code": "3396",
-    "complete_code_percent": 33.62376237623762
+    "fuzzy_match_percent": 55.62599049128368,
+    "total_code": "10096",
+    "matched_code": "5616",
+    "matched_code_percent": 55.62599049128368,
+    "total_functions": 25,
+    "matched_functions": 20,
+    "matched_functions_percent": 80.0,
+    "complete_code": "3608",
+    "complete_code_percent": 35.73692551505547
    }
   }
  ]

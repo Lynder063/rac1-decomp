@@ -14,7 +14,7 @@ L2 = "src/libgcc/libgcc2.c"
 FP = "src/libgcc/fp-bit.c"
 
 MODULES = [
-    ("main",           L2, [], ["func_0011DF10", "func_0011DFC8"]),
+    ("main",           L2, ["func_0011DF10", "func_0011DF18", "func_0011DFC8"], []),
     ("divdi3",         L2, ["func_0011DFE8"], ["func_0011E6D4"]),  # + linker fill
     ("fixunsdfdi",     L2, ["func_0011E6D8"], ["func_0011E7C4"]),  # + linker fill
     ("floatdidf",      L2, ["func_0011E7C8"], []),

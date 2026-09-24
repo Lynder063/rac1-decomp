@@ -26,6 +26,11 @@ func_00125218 = 0x00125218; // type:func
 func_001252A0 = 0x001252A0; // type:func
 func_0012CC70 = 0x0012CC70; // type:func
 
+// libgcc's __do_global_ctors. retail's L__main module opens with the one
+// word left of the dead-stripped __do_global_dtors (its delay slot), which
+// splat had merged into this function; see tools/strip_dead.py.
+func_0011DF18 = 0x0011DF18; // type:func
+
 // 989snd.c starts right after boot.cpp's main (confirmed: crt0 calls
 // func_0012DB18 as main; the 989snd.c path string is used from 0x12DBE0 on).
 func_0012DB68 = 0x0012DB68; // type:func

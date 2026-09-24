@@ -797,6 +797,36 @@ functions this section says 2.9-ee improved (`func_00116320`,
 `func_0011DC50`, `func_0011B710`) are worth re-checking for the same
 reason: they may be library or SDK code as well.
 
+## Retail's linker dead-stripped unreferenced functions
+
+Proven on libgcc's L__main module (2026-09-23). Sony's prebuilt
+`__main.o` is `__do_global_dtors`, `__do_global_ctors`, `__main`. Retail's
+copy at 0x11DF10 is the same object with its first 80 bytes gone:
+everything of `__do_global_dtors` up to and including its `jr $ra`,
+leaving the delay-slot `addiu $sp,$sp,0x20` and the alignment `nop`, then
+the other two functions byte for byte. Nothing references
+`__do_global_dtors` in this configuration (the constructors do not
+register it), so the linker removed it, but measured it one instruction
+short. `tools/strip_dead.py` reproduces the cut on compiler output, and
+L__main now builds from GCC's source to an exact match.
+
+That is the same shape as two things this file has long filed as
+unexplained:
+
+- the **orphan epilogue fragments** (`addiu $sp,$sp,N; nop`) at the head
+  of many core_text objects, and
+- the **one-instruction "fallthrough fragments"** throughout both
+  segments (a lone `addiu $sp`, `lw` or `sw` with no `jr $31`), including
+  runs of them like `func_001E94C8`'s four `addiu`/`nop` pairs.
+
+Each is consistent with the delay slot of a stripped, unreferenced
+function. Only L__main is proven so far. For the others it means the
+original source had a function there, and matching it from C means
+writing that function and stripping it the same way, which needs the
+body (the delay slot alone does not say what the function did). Until
+someone does that, these fragments are not failed decompilation: they
+are, as far as retail is concerned, finished.
+
 ## core_text is ~50 objects: split at retail's own linker fill
 
 Retail's linker filled the gaps between objects with `0xCDCDCDCD`.

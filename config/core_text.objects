@@ -41,7 +41,7 @@ build-sn/core/0011D960.o 0x0011D960
 build-sn/core/0011DBE8.o 0x0011DBE8
 build-sn/core/0011DD68.o 0x0011DD68
 build-sn/core/0011DDD0.o 0x0011DDD0
-build-sn/libgcc/asm_0011DF10.o
+build-sn/libgcc/l2__main.o
 build-sn/libgcc/l2_divdi3.o
 build-sn/libgcc/asm_0011E6D4.o
 build-sn/libgcc/l2_fixunsdfdi.o

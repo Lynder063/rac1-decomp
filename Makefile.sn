@@ -120,6 +120,16 @@ build-sn/libgcc/l2_%.o: src/libgcc/libgcc2.c src/libgcc/longlong.h
 	$(CC_LIBGCC) $(LIBGCC_CFLAGS) -Isrc/libgcc/include -DIN_LIBGCC2 -DL_$* $< -o build-sn/libgcc/l2_$*.s
 	$(CC_TEXT) -c build-sn/libgcc/l2_$*.s -o $@
 
+# L__main: retail's linker dead-stripped the unreferenced __do_global_dtors
+# from this module and cut it one instruction short, so its delay slot is
+# still there, followed by __do_global_ctors and __main.
+# tools/strip_dead.py reproduces that on the compiler's output.
+build-sn/libgcc/l2__main.o: src/libgcc/libgcc2.c src/libgcc/gbl-ctors.h tools/strip_dead.py
+	@mkdir -p build-sn/libgcc
+	$(CC_LIBGCC) $(LIBGCC_CFLAGS) -Isrc/libgcc/include -DIN_LIBGCC2 -DL__main $< -o build-sn/libgcc/l2__main.s
+	python tools/strip_dead.py build-sn/libgcc/l2__main.s build-sn/libgcc/l2__main_stripped.s __do_global_dtors=func_0011DF10
+	$(CC_TEXT) -c build-sn/libgcc/l2__main_stripped.s -o $@
+
 # Not-yet-matching libgcc modules and linker fill: asm only.
 build-sn/libgcc/asm_%.o: src/libgcc/nonmatching_%.c
 	@mkdir -p build-sn/libgcc

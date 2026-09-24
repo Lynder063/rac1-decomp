@@ -7,7 +7,7 @@
 # counter correctly after a NOLOAD section (verified: an explicit
 # `. = X;` right after one is silently ignored, next section lands back
 # at the NOLOAD section's own start address instead). See
-# docs/TOOLCHAIN.md. build-sn/{core_bss,bss}_pad.o must exist first --
+# docs/TOOLCHAIN.md. build-sn/{core_bss_pad_1,core_bss_pad_2,bss_pad}.o must exist first --
 # tools/build_sn_data.sh generates them.
 cat > build-sn/rac1.ld <<'EOF'
 OUTPUT_FORMAT("elf32-littlemips")
@@ -47,6 +47,8 @@ cat >> build-sn/rac1.ld <<'EOF'
 
   /* libgcc keeps its real names; the rest of the image (and every tool)
      knows these functions by address. Map both ways. */
+  func_0011DF18 = __do_global_ctors;
+  func_0011DFC8 = __main;
   func_0011DFE8 = __divdi3;
   func_0011FA38 = __pack_d;
   func_0011FB68 = __unpack_d;
@@ -64,6 +66,7 @@ cat >> build-sn/rac1.ld <<'EOF'
   func_001205D0 = dptoul;
   func_00120670 = __make_dp;
   __thenan_df = 0x001597F0;
+  __CTOR_LIST__ = 0x0015ED18;
   /* Sony's EE compiler emits soft-float libcalls under their GOFAST
      names (libgcc2's modules call these). */
   dpadd  = __adddf3;
@@ -86,7 +89,17 @@ cat >> build-sn/rac1.ld <<'EOF'
   }
 
   . = 0x154200;
-  .core_bss : { build-sn/core_bss_pad.o(.core_bss_pad) }
+  /* __main's static `initialized` is retail's D_001597EC, so l2__main.o's
+     .bss goes exactly there, between two halves of the padding (see
+     tools/build_sn_data.sh). Its .data only holds the stripped
+     __do_global_dtors' static pointer, which nothing references any more;
+     retail's copy is in the core_data blob, so ours is discarded. */
+  .core_bss : {
+    build-sn/core_bss_pad_1.o(.core_bss_pad)
+    build-sn/libgcc/l2__main.o(.bss)
+    build-sn/core_bss_pad_2.o(.core_bss_pad)
+  }
+  /DISCARD/ : { build-sn/libgcc/l2__main.o(.data) }
 
   /* main segment (vram 0x15ed80, rom 0x5fd00) */
 

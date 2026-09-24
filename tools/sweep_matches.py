@@ -142,6 +142,12 @@ def main() -> None:
         # after it, used by the independent body-size measure.
         addrs = sorted({s["st_value"] for s in symtab.iter_symbols()
                         if s["st_info"]["type"] == "STT_FUNC"})
+        # Linker-script aliases (libgcc's func_ names, rac1.ld.sh) carry
+        # st_size 0; the symbol gcc emitted at the same address has the size.
+        sized_at = {}
+        for s in symtab.iter_symbols():
+            if s["st_size"] and s["st_info"]["type"] == "STT_FUNC":
+                sized_at.setdefault(s["st_value"], s["st_size"])
         next_addr = {a: b for a, b in zip(addrs, addrs[1:])}
 
     exact, size_bad, byte_bad, missing = [], [], [], []
@@ -156,7 +162,7 @@ def main() -> None:
         idx = sym["st_shndx"]
         off = sym["st_value"] - sec_addr[idx]
         ours = sections[idx][off: off + rsize]
-        osize = sym["st_size"]
+        osize = sym["st_size"] or sized_at.get(sym["st_value"], 0)
 
         # --- size-measure cross-check -------------------------------
         # `st_size` comes from gcc's .ent/.end pair, which brackets the

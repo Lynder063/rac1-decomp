@@ -23,10 +23,18 @@ tools read. Per-module facts for the progress report are in
 
 | file | origin | changes |
 |---|---|---|
-| `libgcc2.c` | GCC trunk at `bf279c4e1a` (1999-11-02), the revision just before the 2.9-ee-991111 snapshot | none |
-| `longlong.h` | same revision | none |
+| `libgcc2.c` | GCC trunk at `31cf01446d` (1999-09-09) | none |
+| `gbl-ctors.h` | same revision | none |
+| `longlong.h` | same revision (unchanged from 1999-06 to 1999-12-06) | none |
 | `fp-bit.c` | GCC 2.95.3 release | two, marked in place: `nan()` uses one shared `__thenan_df`, because every retail reference goes to 0x1597F0 (trunk moved it to its own object on 1999-09-13); and `unpack_d`'s `NO_DENORMALS` test, backported from trunk `2672543458` (Cygnus, 2000-03-16), which Sony's tree already had |
 | `include/` | ours | stand-ins for the build-tree headers (`tconfig.h` etc.) that libgcc2.c includes |
+
+Why 1999-09-09: retail's `__do_global_ctors` never registers the
+destructors, and that revision is the last one where the call goes
+through `ON_EXIT`, which `gbl-ctors.h` leaves empty on a target without
+`HAVE_ATEXIT`/`NEED_ATEXIT`; trunk made it an unconditional `atexit` on
+1999-09-15. Every other module compiles identically from 1999-06 to
+1999-11, so nothing else constrains the revision.
 
 Sony's compiler calls soft-float helpers by their GOFAST names (`dpadd`,
 `dpmul`, `dpcmp`, `litodp`, ...). `rac1.ld.sh` maps those names to the
@@ -63,6 +71,7 @@ function.
 
 | retail | module | function | status |
 |---|---|---|---|
+| 0x11DF10 | `L__main` | (`__do_global_dtors`'s surviving delay slot), `__do_global_ctors`, `__main` | **exact**; see "dead-stripped" below |
 | 0x11DFE8 | `L_divdi3` | `__divdi3` | **exact**; its static `__clz_tab` goes into core_rdata at 0x152B18, see `tools/split_data_s.py` |
 | 0x11E6D8 | `L_fixunsdfdi` | `__fixunsdfdi` | **exact** |
 | 0x11E7C8 | `L_floatdidf` | `__floatdidf` | **exact** |
@@ -103,16 +112,24 @@ the mirrors hold the Windows `2.9-ee-991111b/r4` `cc1`. Dead stack slots
 with identical code point at that build difference. These stay stubs
 unless a matching Linux `cc1` turns up.
 
-## Next to look at
+## L__main was dead-stripped by retail's linker
 
-- `L__main` (0x11DF10, stub `nonmatching_0011DF10.c`): `__main`
-  (0x11DFC8) already matches byte for byte. It shares the module with
-  `__do_global_ctors`, which differs here (retail has no `atexit` call).
-  Sony's `__main.o` matches retail for both, and `_pure.o`'s
-  `__pure_virtual` matches 0x11DF10, so `tools/libgcc_ref.py diff` can
-  now say exactly what differs. The `atexit` call arrived with trunk's
-  1999-09-15 "gbl-ctors.h: Lose HAVE_ATEXIT"; earlier revisions only
-  registered the destructors when `ON_EXIT`/`HAVE_ATEXIT` was configured.
+Retail's L__main object is Sony's `__main.o` with the first 80 bytes cut
+off: `__do_global_dtors` is gone except its last word, the `addiu
+$sp,$sp,0x20` in the delay slot of its `jr $ra`, followed by the alignment
+`nop`, then `__do_global_ctors` and `__main` intact. Nothing references
+`__do_global_dtors` here (the constructors do not register it), so the
+linker dropped it, and dropped it one instruction short.
+`tools/strip_dead.py` does the same to the compiler's output, and names
+the surviving word `func_0011DF10` the way splat sees it. See
+docs/DECOMP_PROGRESS.md for the rest of the image.
+
+The module's statics follow retail: `__main`'s `initialized` is placed at
+retail's D_001597EC inside core_bss, and the stripped function's static
+pointer (its `.data`) is discarded, since retail's copy is in the data
+blob and nothing references it.
+
+## Next to look at
 - The object at 0x1206A8 (`src/core/001206A8.c`) holds `__unpack_f`
   (0x1206B0) and `fptodp`/`__extendsfdf2` (0x120778), both exact against
   Sony's `fp-bit.o`: `__unpack_f` now compiles exact from `fp-bit.c`
