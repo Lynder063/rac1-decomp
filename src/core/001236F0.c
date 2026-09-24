@@ -114,7 +114,49 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001236F0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001238A8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001238B0);
+extern char D_00159B00[];
+extern int D_00132EAC;
+extern int func_00118CC0(int);
+extern void func_00118C90(int);
+extern char D_00159BB0[];
+extern void *func_00116B00(void *, const void *, int);
+extern char D_0015B0C0[];
+extern int func_0011B4C8();
+extern int D_00132EA8;
+
+/* sceMcOpen(port, slot, fname, mode) (libmc): same RPC-wrapper shape as
+   sceMcDelete (func_00124410) but with the flags/mode argument stored to
+   the descriptor's +0x8 word instead of a hardcoded 0, and RPC command 2. */
+int func_001238B0(int port, int slot, int fname_, int mode) {
+    char *cd = D_00159B00;
+    char *fname = (char *)fname_;
+    char *fp;
+    int r;
+
+    if (*(int *)(cd + 0x24) == 0) {
+        return -100;
+    }
+    if (func_00118CC0(D_00132EAC) < 0) {
+        return -200;
+    }
+    if (fname == 0 || *fname == 0) {
+        func_00118C90(D_00132EAC);
+        return -210;
+    }
+    func_00116B00(D_00159BB0 + 0x14, fname, 0x3FF);
+    fp = D_00159BB0;
+    *(int *)(fp + 0x0) = port;
+    fp[0x413] = 0;
+    *(int *)(fp + 0x8) = mode;
+    *(int *)(fp + 0x4) = slot;
+    r = func_0011B4C8(cd, 2, 1, fp, 0x414, D_0015B0C0, 4, 0, 0);
+    if (r == 0) {
+        D_00132EA8 = 2;
+    } else {
+        func_00118C90(D_00132EAC);
+    }
+    return r;
+}
 
 extern int func_001238B0(int, int, int, int);
 extern int D_00132EA8;

@@ -45,6 +45,11 @@ cat >> build-sn/rac1.ld <<'EOF'
   func_0011E6D8 = __fixunsdfdi;
   func_0011E7C8 = __floatdidf;
   func_0011EEC8 = __muldi3;
+  /* Modules still built from retail's assembly define only the address
+     name; compiled C calls them by their real one. */
+  __moddi3 = func_0011E860;
+  __udivdi3 = func_0011EF28;
+  __umoddi3 = func_0011F4F8;
   /* dp-bit.o / fp-bit.o carry Sony's GOFAST names, which is also what the
      compilers call. */
   func_0011FA38 = __pack_d;
