@@ -16,12 +16,29 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
-GHIDRA_DIR="${GHIDRA_DIR:-/c/Users/lynde/ghidra/ghidra_12.1.3_PUBLIC}"
-export JAVA_HOME="${JAVA_HOME:-/c/Program Files/Eclipse Adoptium/jdk-21.0.12.101-hotspot}"
+# Auto-detect OS and set defaults
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*)
+    IS_WINDOWS=true
+    GHIDRA_DIR="${GHIDRA_DIR:-/c/Users/lynde/ghidra/ghidra_12.1.3_PUBLIC}"
+    export JAVA_HOME="${JAVA_HOME:-/c/Program Files/Eclipse Adoptium/jdk-21.0.12.101-hotspot}"
+    HEADLESS_BIN="$GHIDRA_DIR/support/analyzeHeadless.bat"
+    path_conv() { cygpath -w "$1"; }
+    ;;
+  *)
+    IS_WINDOWS=false
+    # Common Linux Ghidra paths
+    GHIDRA_DIR="${GHIDRA_DIR:-${GHIDRA_HOME:-$(ls -d $HOME/ghidra* /opt/ghidra* /usr/local/ghidra* 2>/dev/null | tail -1)}}"
+    HEADLESS_BIN="$GHIDRA_DIR/support/analyzeHeadless"
+    path_conv() { echo "$1"; }
+    ;;
+esac
+
 PROJECT_DIR="${PROJECT_DIR:-${TMPDIR:-/tmp}/rac1-ghidra}"
 ROM="baserom/SCES_509.16"
 
 [ -f "$ROM" ] || { echo "missing $ROM -- see README for how to extract it"; exit 1; }
+[ -n "$GHIDRA_DIR" ] && [ -f "$HEADLESS_BIN" ] || { echo "Ghidra not found. Please set GHIDRA_DIR to your Ghidra install directory."; exit 1; }
 
 python tools/gen_func_table.py
 mkdir -p "$PROJECT_DIR" docs/ghidra
@@ -29,12 +46,12 @@ mkdir -p "$PROJECT_DIR" docs/ghidra
 # -processor is required: the ELF header says plain MIPS, so without it
 # Ghidra picks MIPS:LE:32:default and mis-decodes every 64-bit and
 # 128-bit instruction the EE actually uses.
-"$GHIDRA_DIR/support/analyzeHeadless.bat" \
-    "$(cygpath -w "$PROJECT_DIR")" rac1 \
-    -import "$(cygpath -w "$ROM")" \
+"$HEADLESS_BIN" \
+    "$(path_conv "$PROJECT_DIR")" rac1 \
+    -import "$(path_conv "$ROM")" \
     -overwrite \
     -processor "r5900:LE:32:default" \
-    -scriptPath "$(cygpath -w "$PWD/tools/ghidra")" \
+    -scriptPath "$(path_conv "$PWD/tools/ghidra")" \
     -postScript DumpDecompiled.java \
-        "$(cygpath -w "$PWD/docs/ghidra/functions.csv")" \
-        "$(cygpath -w "$PWD/docs/ghidra")"
+        "$(path_conv "$PWD/docs/ghidra/functions.csv")" \
+        "$(path_conv "$PWD/docs/ghidra")"

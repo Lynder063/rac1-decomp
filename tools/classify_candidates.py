@@ -1,9 +1,15 @@
+import os
 import pathlib
 import re
 import sqlite3
 
-repo_root = pathlib.Path(r"C:\Users\lynde\rac1-decomp")
-db_path = pathlib.Path(r"C:\Users\lynde\rac1-ai-platform\data\ai_decomp.db")
+repo_root = pathlib.Path(__file__).resolve().parent.parent
+db_env = os.environ.get("RAC1_DB_PATH") or os.environ.get("RAC1_PLATFORM_DIR")
+if db_env:
+    p = pathlib.Path(db_env)
+    db_path = p if p.suffix == ".db" else p / "data" / "ai_decomp.db"
+else:
+    db_path = repo_root.parent / "rac1-ai-platform" / "data" / "ai_decomp.db"
 
 padding = set()
 handwritten = set()
