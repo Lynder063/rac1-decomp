@@ -141,7 +141,37 @@ extern char D_00153A80[];
 extern void func_00116248_4(void *, char *, int, int) __asm__("func_00116248");
 extern void func_0012C468_a(void *, void *) __asm__("func_0012C468");
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012A2F0);
+extern int func_0011D960(void);
+extern void func_0011D9A8(void);
+extern void func_00128560();
+extern void func_0012BC78();
+
+/* _doCSC (libmpeg). Stack-size probe #2: a 32-byte local (two 16-byte
+   compiler stack slots) instead of one, since a single int/4-int array
+   both land in one slot here (frame still 0x10 short of retail's 0x70,
+   see c1-c4). */
+void func_0012A2F0(void *arg0, unsigned int arg1, int arg2) {
+    char *p = (char *)arg0;
+    int r;
+    int event[8];
+
+    while (*(volatile int *)0x10002010 < 0) {
+    }
+    r = func_0011D960();
+    *(volatile unsigned int *)0x1000B010 = arg1 & 0x0FFFFFFF;
+    *(volatile unsigned int *)0x1000B020 = (unsigned int)arg2 << 6;
+    *(volatile unsigned int *)0x1000B000 = 0x100;
+    if (r != 0) {
+        func_0011D9A8();
+    }
+    func_00128560(arg0, arg2 | 0x70000000);
+    event[0] = 4;
+    func_0012BC78(*(int *)(p + 0x858), event);
+    while (((*(volatile unsigned int *)0x1000B000 >> 8) & 1) != 0) {
+    }
+    while (*(volatile int *)0x10002010 < 0) {
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012A418);
 
