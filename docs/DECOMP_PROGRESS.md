@@ -56,7 +56,10 @@ classes through, each caught only by luck:
 [decomp.dev](https://decomp.dev/Lynder063/rac1-decomp)) is the source of
 truth for what has source and what matches. `tools/gen_progress_report.py`
 regenerates it from a from-scratch build, and CI fails when it is out of
-date with `src/`. Totals written in prose go stale, so this file no
+date with `src/`. It leaves out retail's linker fill (the `0xCDCDCDCD`
+runs between objects that splat also emits as 4-byte "functions"; 38 of
+them, 200 bytes): fill is not code, and the build reproduces it byte for
+byte. Totals written in prose go stale, so this file no
 longer keeps a running count. Snapshot as of 2026-09-22 (`e76be41`):
 **566 functions have source; 485 are exact on size and bytes; 81 are
 same-size near-misses kept as C; 0 are size-mismatched; 8.03% of code

@@ -42,16 +42,27 @@ LINKED_ELF = "build-sn/rac1.elf"
 FUNC_DEF = re.compile(r"^(?!extern\b)[A-Za-z_].*?\b(func_[0-9A-Fa-f]{8})\s*\(", re.M)
 STUB = re.compile(r"INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\)")
 NONMATCHING = re.compile(r"nonmatching\s+(func_[0-9A-Fa-f]{8}),\s*(0x[0-9A-Fa-f]+)")
+WORD = re.compile(r"/\* [0-9A-F]+ [0-9A-F]{8} ([0-9A-F]{8}) \*/")
+LINKER_FILL = "CDCDCDCD"
 
 
 def retail_functions() -> dict[str, tuple[str, int, int]]:
-    """name -> (segment, vram, size) for every function splat found."""
+    """name -> (segment, vram, size) for every function splat found, except
+    runs of retail's linker fill (0xCDCDCDCD between objects), which splat
+    also emits as "functions". Fill is not code: it cannot be decompiled,
+    and the build reproduces it byte for byte, so counting it would only
+    keep objects from ever reading as complete."""
     out = {}
     for seg in ("core_text", "text"):
         for p in sorted(Path(f"asm/nonmatchings/{seg}").glob("func_*.s")):
-            m = NONMATCHING.search(p.read_text(errors="replace"))
-            if m:
-                out[m.group(1)] = (seg, int(m.group(1)[5:], 16), int(m.group(2), 16))
+            text = p.read_text(errors="replace")
+            m = NONMATCHING.search(text)
+            if not m:
+                continue
+            words = WORD.findall(text.split("endlabel")[0])
+            if words and all(w == LINKER_FILL for w in words):
+                continue
+            out[m.group(1)] = (seg, int(m.group(1)[5:], 16), int(m.group(2), 16))
     return out
 
 
