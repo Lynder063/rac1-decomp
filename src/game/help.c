@@ -56,7 +56,44 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FDF10);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FDF78);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FE438);
+typedef struct {
+    int state;    /* 0x00 */
+    int x04;      /* 0x04 */
+    int pad[7];   /* 0x08 */
+    int x24;      /* 0x24 */
+} HelpState;
+extern char D_001997D0[];
+
+/* Advances the help screen's state (D_001997D0). Every access goes
+   through the global, and cases 6 and 7 are spelled out: the jump table
+   has eight entries. */
+void func_001FE438(void) {
+    switch (((HelpState *)D_001997D0)->state) {
+    case 0:
+        ((HelpState *)D_001997D0)->x24 = -1;
+        break;
+    case 1:
+    case 2:
+        ((HelpState *)D_001997D0)->state = 7;
+        ((HelpState *)D_001997D0)->x04 = 0;
+        break;
+    case 3:
+        ((HelpState *)D_001997D0)->state = 7;
+        ((HelpState *)D_001997D0)->x04 = 0;
+        break;
+    case 4:
+        ((HelpState *)D_001997D0)->state = 6;
+        ((HelpState *)D_001997D0)->x04 = 4 - ((HelpState *)D_001997D0)->x04;
+        break;
+    case 5:
+        ((HelpState *)D_001997D0)->state = 6;
+        ((HelpState *)D_001997D0)->x04 = 0;
+        break;
+    case 6:
+    case 7:
+        break;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FE4C0);
 

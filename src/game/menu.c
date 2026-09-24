@@ -543,7 +543,38 @@ int func_00209048(int x1, int y1, int x0, int y0, int x2, int y2) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209070);
+extern char D_0013D390[];
+extern int D_0015EFB0 MACRO_ADDR;
+extern int D_0015EFB4 MACRO_ADDR;
+extern int D_0015FF4C MACRO_ADDR;
+extern int D_00161380 MACRO_ADDR;
+extern void (*D_001A0538[])(void);
+
+/* Calls the handler for the state in D_0015EFB0 from the table at
+   D_001A0538. Bits 0x80 and 0x100 of D_0015EFB4 request states 0x15 and
+   0x14; D_00161380 counts calls since the state last changed. */
+void func_00209070(void) {
+    char *b = D_0013D390;
+    int old;
+
+    if (*(int *)(b + 0xEC) != 0 || *(int *)(b + 0x1C) != 0) {
+        D_0015FF4C = 1;
+    }
+    old = D_0015EFB0;
+    if (D_0015EFB4 & 0x80) {
+        D_0015EFB0 = 0x15;
+        D_0015EFB4 = (D_0015EFB4 & ~0x80) | 0x40;
+    }
+    if (D_0015EFB4 & 0x100) {
+        D_0015EFB0 = 0x14;
+        D_0015EFB4 = (D_0015EFB4 & ~0x100) | 0x40;
+    }
+    D_001A0538[D_0015EFB0]();
+    D_00161380++;
+    if (D_0015EFB0 != old) {
+        D_00161380 = 0;
+    }
+}
 
 /*
  * Near-miss, same size (differ score 180): func_00209160 below. Every

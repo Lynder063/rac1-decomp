@@ -267,7 +267,46 @@ extern int D_001D6860[];
 extern int D_001D74C0[];
 extern int D_001D6760[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00229C08); /* DmaShrubTextures */
+extern int D_00161000 MACRO_ADDR;
+extern int D_001604F0 MACRO_ADDR;
+extern int D_001604F8 MACRO_ADDR;
+extern int D_0015EF74 MACRO_ADDR;
+extern char D_001E8C00[];
+extern int func_0022B648(int);
+extern void func_00234E80(void);
+
+/* DmaShrubTextures: DmaMobyTextures' splice around the shrub texture
+   upload, which also warns past 0x400000 bytes and keeps the largest
+   size seen in D_001604F8. */
+void func_00229C08(void) {
+    int *p = (int *)D_00161000;
+    int size;
+
+    D_00161000 += 0x10;
+    ((int *)D_001604F0)[0] = 0x20000000;
+    ((int *)D_001604F0)[1] = D_00161000;
+    ((int *)D_001604F0)[2] = 0;
+    ((int *)D_001604F0)[3] = 0;
+    if (D_0018A3B0[8] != 0 && D_0018A3B0[7] != 0) {
+        size = func_0022B648(D_0015EF74);
+        func_00234E80();
+        if (size > 0x400000) {
+            func_001E9730(D_001E8C00);
+        }
+        if (D_001604F8 < size) {
+            D_001604F8 = size;
+        }
+    }
+    ((int *)D_00161000)[0] = 0x20000000;
+    ((int *)D_00161000)[1] = D_001604F0 + 0x10;
+    ((int *)D_00161000)[2] = 0;
+    ((int *)D_00161000)[3] = 0;
+    D_00161000 += 0x10;
+    p[0] = 0x20000000;
+    p[1] = D_00161000;
+    p[2] = 0;
+    p[3] = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00229D48);
 

@@ -313,7 +313,44 @@ extern char D_001E8D10[];
 extern void func_001F9988(int);
 extern void func_001F2568(void);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00236958); /* DmaTieTextures(void) */
+extern int D_00161000 MACRO_ADDR;
+extern int D_00161068 MACRO_ADDR;
+extern int D_00161074 MACRO_ADDR;
+extern int D_0015EF74 MACRO_ADDR;
+extern char D_001E8D80[];
+extern int func_002383D8(int);
+extern void func_00234E80(void);
+
+/* DmaTieTextures: the same splice for ties, largest size in D_00161074. */
+void func_00236958(void) {
+    int *p = (int *)D_00161000;
+    int size;
+
+    D_00161000 += 0x10;
+    ((int *)D_00161068)[0] = 0x20000000;
+    ((int *)D_00161068)[1] = D_00161000;
+    ((int *)D_00161068)[2] = 0;
+    ((int *)D_00161068)[3] = 0;
+    if (D_0018A3B0[6] != 0 && D_0018A3B0[5] != 0) {
+        size = func_002383D8(D_0015EF74);
+        func_00234E80();
+        if (size > 0x400000) {
+            func_001E9730(D_001E8D80);
+        }
+        if (D_00161074 < size) {
+            D_00161074 = size;
+        }
+    }
+    ((int *)D_00161000)[0] = 0x20000000;
+    ((int *)D_00161000)[1] = D_00161068 + 0x10;
+    ((int *)D_00161000)[2] = 0;
+    ((int *)D_00161000)[3] = 0;
+    D_00161000 += 0x10;
+    p[0] = 0x20000000;
+    p[1] = D_00161000;
+    p[2] = 0;
+    p[3] = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00236A98); /* PatchTieGifs */
 

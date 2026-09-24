@@ -211,7 +211,27 @@ void func_001F3B90(void) {
     D_0016129C = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F3C10); /* ResetGsRegisters(void) */
+extern int *D_00161000 MACRO_ADDR;
+extern void func_00234C98(int, long);
+extern char D_0013D0C0[];
+extern char D_0013D010[];
+extern int D_0018CE00[];
+
+/* ResetGsRegisters(void) */
+void func_001F3C10(void) {
+    D_00161000[0] = 0x30000013;
+    D_00161000[1] = (int)D_0013D0C0;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000013;
+    D_00161000 += 4;
+    D_00161000[0] = 0x3000000B;
+    D_00161000[1] = (int)D_0013D010;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x5000000B;
+    D_00161000 += 4;
+    func_00234C98(0x3D, (long)D_0018CE00[0x8C] | ((long)D_0018CE00[0x8D] << 8) |
+                        ((long)D_0018CE00[0x8E] << 16));
+}
 
 extern long D_00151888[3];
 
