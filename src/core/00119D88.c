@@ -1,9 +1,19 @@
+#include <stdarg.h>
 #include "common.h"
 #include "structs.h"
 
 /*
  * core_text object 0x119D88-0x11CCE0. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * Sony's EE kernel library (libkernl), several of its modules back to
+ * back: the kernel printf (scePrintf, func_0011A6C8, over the print core
+ * func_0011A0A0), sifcmd (the command handler table and sceSifSendCmd),
+ * sifrpc (the 0x40-byte packet table, sceSifBindRpc, sceSifCallRpc =
+ * func_0011B4C8), the IOP file stubs (sceOpen, sceClose, sceRead, ... over
+ * a 32-entry fd table) and the IOP heap stubs. Built with Sony's 2.9-ee
+ * like the rest of the SDK (Makefile.sn, EE29_CORE): the sd/ld spills and
+ * the frames of func_0011A6C8 and func_0011B770 are that compiler's.
  */
 
 /* Declarations in scope here before the split. */
@@ -75,57 +85,48 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00119F38);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011A0A0);
 
-extern void func_0011A0A0(int, void *);
+/* The print core: walks fmt with the va_list, writing through the hook
+   D_0012FD00, and returns the count. */
+extern int func_0011A0A0(const char *, va_list);
 
 /*
- * Same-size near-miss (13/56 bytes). Manual va_list forwarder: spills
- * 7 register args to a stack buffer and hands func_0011A0A0 arg0 plus
- * the buffer's address, the same shape as func_0011A6C8's blocked
- * varargs definition (see func_0012C420's comment). The 16-long
- * buffer size is what closes the frame to retail's exact 0x90 bytes
- * (7 is 0x20 short); the instruction multiset is then identical to
- * retail's, but this compiler places the buffer at the bottom of the
- * frame and $ra at the top, where retail has it the other way around
- * -- a single local array gives nothing else in source to reorder.
+ * A real varargs forwarder: va_start, hand fmt and the va_list to
+ * func_0011A0A0, va_end. Its frame is printf's (func_00116078, also
+ * 2.9-ee): $ra at 0 and the $5-$11 save area at 0x58, which is where ap
+ * points. Exact under 2.9-ee; under the game's 2.95.3 a varargs
+ * definition also spills $f12-$f18 (SIZE 72/56), which is why this was
+ * once a hand-built `long args[16]` forwarder (13/56).
  */
-void func_0011A690(int arg0, int a1, int a2, int a3, int a4, int a5, int a6,
-                    int a7) {
-    long args[16];
-    args[0] = a1;
-    args[1] = a2;
-    args[2] = a3;
-    args[3] = a4;
-    args[4] = a5;
-    args[5] = a6;
-    args[6] = a7;
-    func_0011A0A0(arg0, args);
+void func_0011A690(const char *fmt, ...) {
+    va_list ap;
+
+    va_start(ap, fmt);
+    func_0011A0A0(fmt, ap);
+    va_end(ap);
 }
 
 /*
- * Exact, but only under Sony's 2.9-ee, so it stays a stub for now. It is
- * the varargs twin of the function above: swap the print hook D_0012FD00
- * for func_00119DC0, pass fmt and the va_list to func_0011A0A0, restore
- * the hook. Under the game's 2.95.3 it also saves $f12-$f18; with
- * -msoft-float the frame is still 0x90 against retail's 0xB0 (the same
- * as sprintf, 00116248.c). This file cannot move to 2.9-ee as a whole:
- * under it func_0011ABC8, func_0011AC08 and func_0011CCB0 change size.
- * So the function needs an object of its own, and nothing yet shows
- * where that object begins and ends.
- *
- *   int func_0011A6C8(const char *fmt, ...) {
- *       va_list ap;
- *       void *saved = D_0012FD00;
- *       int ret;
- *
- *       D_0012FD00 = (void *)func_00119DC0;
- *       va_start(ap, fmt);
- *       ret = func_0011A0A0(fmt, ap);
- *       va_end(ap);
- *       D_0012FD00 = saved;
- *       return ret;
- *   }
+ * The varargs twin of the function above (likely scePrintf): swap the
+ * print hook D_0012FD00 for func_00119DC0 (the deci2 console writer),
+ * pass fmt and the va_list to func_0011A0A0, restore the hook. Exact
+ * under 2.9-ee; under 2.95.3 the frame comes out 0x90 against retail's
+ * 0xB0 (the $f12-$f18 save again, as with sprintf, 00116248.c).
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011A6C8);
+extern void *D_0012FD00;
+extern void func_00119DC0();
+
+int func_0011A6C8(const char *fmt, ...) {
+    va_list ap;
+    void *saved = D_0012FD00;
+    int ret;
+
+    D_0012FD00 = (void *)func_00119DC0;
+    va_start(ap, fmt);
+    ret = func_0011A0A0(fmt, ap);
+    va_end(ap);
+    D_0012FD00 = saved;
+    return ret;
+}
 
 void func_0011A728(void *arg0, void *arg1) {
     int idx = *(int *)((char *)arg0 + 0x10);
@@ -197,23 +198,24 @@ void func_0011AA68(int arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AA90);
 
-/* EABI passes the first eight integer args in $4-$11, so this forwards
-   seven of them.
- *
- * func_0011ABC8/func_0011AC08 are close, not exact (11/60 each, same
- * size). Every move and the call match retail; only the position of the
- * `addiu $sp,$sp,-0x10` differs -- retail emits it fourth, after three
- * of the argument moves, while this compiler emits it second. That is
- * scheduling, not source shape, and nothing in the source can express
- * where the prologue's stack adjust lands. */
-extern void func_0011AA90(int, int, int, int, int, int, int);
+/* sceSifSendCmd and isceSifSendCmd: forward to the common sender
+   func_0011AA90 with the mode (0, or 1 from interrupt context) injected
+   as its second argument. EABI passes the first eight integer args in
+   $4-$11, so this forwards seven of them.
 
-void func_0011ABC8(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5) {
-    func_0011AA90(arg0, 0, arg1, arg2, arg3, arg4, arg5);
+   Both return the sender's result (it sets $v0 on every path; the packet
+   id). That is what keeps 2.9-ee from turning the call into a bare tail
+   jump (SIZE 40/60 when void), and its schedule is then retail's: the
+   `addiu $sp,$sp,-0x10` fourth, after three argument moves, which
+   2.95.3 could not produce (11/60). */
+extern int func_0011AA90(int, int, int, int, int, int, int);
+
+int func_0011ABC8(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5) {
+    return func_0011AA90(arg0, 0, arg1, arg2, arg3, arg4, arg5);
 }
 
-void func_0011AC08(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5) {
-    func_0011AA90(arg0, 0x1, arg1, arg2, arg3, arg4, arg5);
+int func_0011AC08(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5) {
+    return func_0011AA90(arg0, 0x1, arg1, arg2, arg3, arg4, arg5);
 }
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AC48);
@@ -344,70 +346,58 @@ void *func_0011B0B0(void *arg0) {
 }
 
 /*
- * REVERTED (SIZE mismatch, 168 vs retail 180, both spellings). Decode is
- * certain -- completion handler for a request block. Two message codes
- * do extra work before the common teardown: 0x8000000A runs the
- * target's own callback, 0x80000009 copies three fields back into it.
- * Then, whatever the message was, close the target's handle if it is
- * still valid, release its buffer and clear the pointer.
+ * sifrpc's _request_end: the completion handler for a request block. Two
+ * command ids do extra work before the common teardown: 0x8000000A (RPC
+ * call) runs the client's end callback, 0x80000009 (RPC bind) copies the
+ * server, buff and cbuff back into it. Then, whatever the id was,
+ * iSignalSema the client's semaphore if it has one, free its packet
+ * (func_0011B090) and clear the pointer. Exact under both compilers.
  *
- *   extern void func_00118CA0(int h);
- *
- *   void func_0011B0E0(char *p) {
- *       char *o;
- *       int h;
- *
- *       switch (*(unsigned int *)(p + 0x20)) {
- *       case 0x8000000A:
- *           o = *(char **)(p + 0x1C);
- *           if (*(int *)(o + 0x1C) != 0) {
- *               (*(void (**)(int))(o + 0x1C))(*(int *)(o + 0x20));
- *           }
- *           break;
- *       case 0x80000009:
- *           o = *(char **)(p + 0x1C);
- *           *(int *)(o + 0x24) = *(int *)(p + 0x24);
- *           *(int *)(o + 0x14) = *(int *)(p + 0x28);
- *           *(int *)(o + 0x18) = *(int *)(p + 0x2C);
- *           break;
- *       }
- *       o = *(char **)(p + 0x1C);
- *       h = *(int *)(o + 0x8);
- *       if (h >= 0) {
- *           func_00118CA0(h);
- *       }
- *       func_0011B090(*(void **)o);
- *       *(int *)o = 0;
- *   }
- *
- * Everything after the dispatch is byte-correct, including the reload of
- * `o` in exactly the three places retail reloads it (after the indirect
- * call, and on each path that had not loaded it yet) and NOT on the path
- * where the callback pointer was null. Writing `o` once after the switch
- * and letting each arm use it is what produces that.
- *
- * The three missing words are all in the dispatch, and this is the
- * finding worth keeping:
- *
- *   retail   beq  m,0xA -> caseA      ours   beq m,0x9 -> case9
- *            sltu 0xA,m                      bne m,0xA -> default
- *            bnel      -> default            (fall through to caseA)
- *            beq  m,0x9 -> case9
- *            b         -> default
- *
- * Retail's is gcc's case-node DECISION TREE rooted at the HIGHER value,
- * with the redundant `index > root` test that a tree root with only a
- * left child always emits. Ours is the same routine's two-node CHAIN,
- * rooted at the lower value. gcc 2.95 only rebalances a case list of
- * more than two nodes; at exactly two it leaves the chain. So retail's
- * switch had MORE cases than are reachable here -- at least three, with
- * 0x8000000A as the median -- and the extra ones compiled to nothing we
- * can see. No two-case spelling can produce the three-test tree:
- * switch and if/else-if chain give byte-identical 168-byte output, and
- * an explicit hand-written `if (m > 0x8000000A)` guard is folded away
- * because its arm is empty. Not reachable from a two-case source.
+ * Two levers (build-sn/try/func_0011B0E0/RESULT.md):
+ *  - Retail's dispatch is gcc's case-node decision tree rooted at
+ *    0x8000000A, which a two-case switch never builds (at two nodes it
+ *    stays a chain). The switch has a third case above 0x8000000A that
+ *    shares the default's body: with one shared label the node stays in
+ *    the case list, the three-node tree roots at the median, and the
+ *    now-redundant test is deleted. Any value above 0x8000000A works;
+ *    0x8000000C is ps2sdk's SIF_CMD_RPC_RDATA, a guess.
+ *  - `o` is loaded inside each arm and reloaded only after the callback.
+ *    (Re-read once after the switch it is also exact under 2.9-ee, whose
+ *    -fstrict-aliasing drops the reload after the 0x80000009 stores, but
+ *    2.95.3 keeps that reload.)
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B0E0);
+extern int func_00118CA0(int);
+
+void func_0011B0E0(char *p) {
+    char *o;
+    int h;
+
+    switch (*(unsigned int *)(p + 0x20)) {
+    case 0x8000000A:
+        o = *(char **)(p + 0x1C);
+        if (*(int *)(o + 0x1C) != 0) {
+            (*(void (**)(int))(o + 0x1C))(*(int *)(o + 0x20));
+            o = *(char **)(p + 0x1C);
+        }
+        break;
+    case 0x80000009:
+        o = *(char **)(p + 0x1C);
+        *(int *)(o + 0x24) = *(int *)(p + 0x24);
+        *(int *)(o + 0x14) = *(int *)(p + 0x28);
+        *(int *)(o + 0x18) = *(int *)(p + 0x2C);
+        break;
+    case 0x8000000C:
+    default:
+        o = *(char **)(p + 0x1C);
+        break;
+    }
+    h = *(int *)(o + 0x8);
+    if (h >= 0) {
+        func_00118CA0(h);
+    }
+    func_0011B090(*(void **)o);
+    *(int *)o = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B198);
 
@@ -451,26 +441,20 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B4C8);
  * early returns; both merge. The exit structure is not expressible from
  * C here.
  */
-/*
- * Attempted, reverted at 27/60. Semantics certain:
- *     int f(void *arg0) {
- *         char *p = arg0, *q = *(char **)p;
- *         if (q != 0 && *(int *)(p + 4) == *(int *)(q + 0x18) &&
- *             (*(int *)(q + 0x10) & 1) != 0) return 1;
- *         return 0;
- *     }
- * Retail jumps all three failing conditions to one shared `return 0`
- * tail. Writing it as early returns was worse (36/60) because it emitted
- * branch-likely (`bnezl`); the combined condition above improved it to
- * 27/60 and is the right shape, but this compiler still fills the branch
- * delay slots differently from retail's plain `beqz`+`nop`.
- */
-s32 func_0011B6B8(void *arg0) {
-    void *temp_a1;
+/* Is the handle {slot, id} at arg0 still live: the slot is set, its id at
+   +0x18 still matches the handle's, and its in-use bit (+0x10 bit 0) is
+   set. Written as one inverted guard that returns 0, then `return 1`:
+   that keeps retail's two exits (shared `return 0` block the tests fall
+   into, a separate `return 1`), and gcc leaves all three branch slots to
+   the assembler, which fills them with nops as retail has them. The &&
+   form returning 1 merges the exits; early returns give bnel. */
+/* One test for the three failure cases, then return 1. */
+int func_0011B6B8(void *arg0) {
+    char *p = (char *)arg0;
+    char *q = *(char **)p;
 
-    temp_a1 = *(void **)((u8 *)arg0 + 0x0);
-    if ((temp_a1 == (void *)0) || (*(int *)((u8 *)arg0 + 0x4) != *(int *)((u8 *)temp_a1 + 0x18)) ||
-        !(*(int *)((u8 *)temp_a1 + 0x10) & 1)) {
+    if (q == 0 || *(int *)(p + 4) != *(int *)(q + 0x18) ||
+        !(*(int *)(q + 0x10) & 1)) {
         return 0;
     }
     return 1;
@@ -483,81 +467,73 @@ extern int D_0012FDA0;
 extern int D_0012FDA4;
 
 /*
- * Close, not exact (8/92), same size. Logic confirmed: one-shot init --
- * if D_0012FDA0 is still -1, build a stack descriptor {[1]=1, [2]=1,
- * [5]=0} and register it twice via func_00118C70, storing the two
- * results into D_0012FDA0 and D_0012FDA4.
+ * One-shot init: if D_0012FDA0 is still -1, fill a semaphore descriptor
+ * (the kernel's SemaParam: initCount [2] = 1, maxCount [1] = 1, option
+ * [5] = 0) and create two semaphores from it via func_00118C70
+ * (CreateSema), storing them into D_0012FDA0 and D_0012FDA4.
  *
- * Residual is purely which of the three stores lands in the first
- * call's delay slot: retail puts buf[2] there and emits buf[5], buf[1]
- * ahead of it; this compiler puts buf[1] there. Two source orders were
- * tried -- (1,2,5) gives 10/92, (5,1,2) gives 8/92 -- and the rotation
- * rule does not predict this one consistently: (5,1,2) rotated as
- * documented, (1,2,5) did not. Note buf[1] and buf[2] both take the
- * value 1, so they are interchangeable semantically and only their
- * emission order distinguishes the two.
+ * Under 2.9-ee the store order decides which store lands in the first
+ * call's delay slot: written initCount, maxCount, option it is exact
+ * (retail puts buf[2] in the slot). Under the game's 2.95.3 no order was
+ * exact (8/92 at best), which is what kept this one open.
  */
 void func_0011B710(void) {
     int buf[8];
     if (D_0012FDA0 == -1) {
-        buf[5] = 0;
-        buf[1] = 1;
         buf[2] = 1;
+        buf[1] = 1;
+        buf[5] = 0;
         D_0012FDA0 = func_00118C70(buf);
         D_0012FDA4 = func_00118C70(buf);
     }
 }
 
-/*
- * REVERTED (size mismatch: ours 132, retail 136). Logic is certain:
- * claim the first free slot of the 32-entry, 0x10-byte table
- * D_00157E80 -- the table func_0011B7F8 below indexes -- under the
- * func_00118CB0/func_00118C90 lock. A slot is free when its +4 word is
- * zero; claiming it writes 0x10000000 there and returns the slot, and
- * a full table returns 0. Both exits drop the lock first.
- *
- *   void *func_0011B770(void) {
- *       char *p;
- *
- *       func_0011B710();
- *       func_00118CB0(D_0012FDA0);
- *       for (p = D_00157E80; p < D_00157E80 + 0x200; p += 0x10) {
- *           if (*(int *)(p + 0x4) == 0) {
- *               *(int *)(p + 0x4) = 0x10000000;
- *               func_00118C90(D_0012FDA0);
- *               return p;
- *           }
- *       }
- *       func_00118C90(D_0012FDA0);
- *       return 0;
- *   }
- *
- * Exactly one instruction short, and it is a register-allocation
- * choice, not a source-shape one. Retail spends a THIRD callee-saved
- * register: $17 holds %hi(D_0012FDA0) for the whole function, costing
- * an sd/ld pair in the prologue and epilogue. This compiler keeps the
- * loop pointer in $16 and parks the same %hi in $4 with a single
- * `move $4,$16`, saving the pair and coming out one instruction ahead.
- * Nothing in the source decides that -- the same C is what retail's
- * compiler turned into the three-register form.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B770);
-
 extern char D_00157E80[];
 
-/* The out-of-range test is written >= 0x20 so the compiler branches on
-   the true side to the in-range block, as retail does (sltiu/bnez). */
-void *func_0011B7F8(unsigned int arg0) {
+/*
+ * Claim the first free slot of the 32-entry, 0x10-byte table D_00157E80
+ * -- the table func_0011B7F8 below indexes -- under the
+ * func_00118CB0/func_00118C90 lock (WaitSema/SignalSema). A slot is free
+ * when its +4 word is zero; claiming it writes 0x10000000 there and
+ * returns the slot, and a full table returns 0. Both exits drop the lock
+ * first.
+ *
+ * Exact under 2.9-ee with the C that 2.95.3 compiled one instruction
+ * short: retail spends a third callee-saved register ($17 holds
+ * %hi(D_0012FDA0) for the whole function), which is 2.9-ee's allocation;
+ * 2.95.3 parked the %hi in $4 instead.
+ */
+void *func_0011B770(void) {
+    char *p;
+
     func_0011B710();
     func_00118CB0(D_0012FDA0);
-    if (arg0 < 0x20) {
-        void *ret = &D_00157E80[arg0 * 0x10];
-        func_00118C90(D_0012FDA0);
-        return ret;
-    } else {
+    for (p = D_00157E80; p < D_00157E80 + 0x200; p += 0x10) {
+        if (*(int *)(p + 0x4) == 0) {
+            *(int *)(p + 0x4) = 0x10000000;
+            func_00118C90(D_0012FDA0);
+            return p;
+        }
+    }
+    func_00118C90(D_0012FDA0);
+    return 0;
+}
+
+/* The out-of-range guard comes first and returns 0: 2.9-ee then branches
+   to the in-range block on the true side of the sltiu, as retail does
+   (bnez). The in-range-first if/else that matched under 2.95.3 is laid
+   out the other way round by 2.9-ee. */
+void *func_0011B7F8(unsigned int arg0) {
+    void *ret;
+    func_0011B710();
+    func_00118CB0(D_0012FDA0);
+    if (arg0 >= 0x20) {
         func_00118C90(D_0012FDA0);
         return 0;
     }
+    ret = &D_00157E80[arg0 * 0x10];
+    func_00118C90(D_0012FDA0);
+    return ret;
 }
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B868);
@@ -692,8 +668,10 @@ int arg0;
     }
 }
 
-void func_0011CCB0(void) {
-    func_0011CC38();
+/* Returns its callee's value: retail keeps the frame and calls, and
+   2.9-ee would tail-call it (a bare `j`) if it were void. */
+int func_0011CCB0(void) {
+    return func_0011CC38();
 }
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011CCD0);

@@ -4,6 +4,9 @@
 /*
  * core_text object 0x122630-0x122818. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * Sony's libgraph, graph015.o (sceGsSetDefLoadImage). Built with Sony's
+ * 2.9-ee (Makefile.sn, EE29_CORE), like the prebuilt libgraph.a.
  */
 
 /* Declarations in scope here before the split. */

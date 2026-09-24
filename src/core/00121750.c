@@ -4,6 +4,13 @@
 /*
  * core_text object 0x121750-0x121D18. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * Six Sony SDK archive members back to back (each ends 8-byte aligned, so
+ * no fill separates them): libcdvd's cdvd005.o (sceCdRead), cdvd015.o
+ * (sceCdGetError, func_00121930), cdvd018.o (sceCdBreak, func_001219C8)
+ * and cdvd039.o (sceCdReadClock), then libgraph's graph001.o
+ * (sceGsResetGraph, sceGsGetGParam = func_00121D08). Built with Sony's
+ * 2.9-ee (Makefile.sn, EE29_CORE), like the prebuilt archives they match.
  */
 
 /* Declarations in scope here before the split. */
@@ -111,29 +118,39 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00121750);
 extern int func_00121040(int);
 extern int D_001325C0;
 
-/* func_00120E98's sibling: service 3, command 4, and -1 rather than 0
-   as the failure result. */
+/* sceCdGetError, func_00120E98's sibling: S-command 3, RPC 4, and -1
+   rather than 0 as the failure result.
+
+   The RPC failure is handled first (SignalSema, return -1), then the
+   success path. That is the layout retail has, and it keeps 2.9-ee from
+   cross-jumping the two `return -1` tails into one (SIZE 144/152 with
+   the success path first, which 2.95.3 needed). */
 int func_00121930(void) {
     int r;
 
     if (func_00121040(3) == 0) {
         return -1;
     }
-    if (func_0011B4C8(D_00132E08, 4, 0, 0, 0, &D_001325C0, 4, 0, 0) >= 0) {
-        r = *(int *)((unsigned int)&D_001325C0 | 0x20000000);
+    if (func_0011B4C8(D_00132E08, 4, 0, 0, 0, &D_001325C0, 4, 0, 0) < 0) {
         func_00118C90(D_001313EC);
-        return r;
+        return -1;
     }
+    r = *(int *)((unsigned int)&D_001325C0 | 0x20000000);
     func_00118C90(D_001313EC);
-    return -1;
+    return r;
 }
 
 extern volatile int D_00131414;
 
-/* Sibling of func_00121930: RPC 0x16 on D_00132E08 under the
-   D_001313EC semaphore, returning the reply word read uncached. The
-   volatile flag keeps the success-path store out of a delay slot, where
-   reorg never puts a volatile access. */
+/* sceCdBreak, sibling of func_00121930: S-command 0x1E, RPC 0x16 on
+   D_00132E08 under the D_001313EC semaphore, with the D_00131414 busy flag
+   set around it; returns the reply word read uncached. The volatile flag
+   and semaphore reads stay out of the delay slots, where reorg never puts
+   a volatile access (this module sees its globals as volatile, as
+   cdvd000.o does).
+
+   As in func_00121930, the RPC failure path comes first: with the success
+   path first 2.9-ee merges the two `return 0` tails (SIZE 176/184). */
 int func_001219C8(void) {
     int r;
 
@@ -141,15 +158,15 @@ int func_001219C8(void) {
         return 0;
     }
     D_00131414 = 8;
-    if (func_0011B4C8(D_00132E08, 0x16, 0, 0, 0, &D_001325C0, 4, 0, 0) >= 0) {
-        D_00131414 = 0;
-        r = *(int *)((unsigned int)&D_001325C0 | 0x20000000);
+    if (func_0011B4C8(D_00132E08, 0x16, 0, 0, 0, &D_001325C0, 4, 0, 0) < 0) {
         func_00118C90(*(volatile int *)&D_001313EC);
-        return r;
+        D_00131414 = 0;
+        return 0;
     }
-    func_00118C90(*(volatile int *)&D_001313EC);
     D_00131414 = 0;
-    return 0;
+    r = *(int *)((unsigned int)&D_001325C0 | 0x20000000);
+    func_00118C90(*(volatile int *)&D_001313EC);
+    return r;
 }
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00121A80);

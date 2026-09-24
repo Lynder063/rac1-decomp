@@ -4,6 +4,12 @@
 /*
  * core_text object 0x118A40-0x119328. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * Sony's EE kernel library (libkernl), three members back to back:
+ * klib.o (the syscall stubs, CreateSema ... _InitTLB), glue.o (newlib's
+ * system-call glue: write, read, close, lseek, sbrk, fstat, VSync ...)
+ * and cache.o (SyncDCache, InvalidDCache). Built with Sony's 2.9-ee
+ * (Makefile.sn, EE29_CORE), like the prebuilt libkernl.a.
  */
 
 /* Declarations in scope here before the split. */

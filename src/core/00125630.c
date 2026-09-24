@@ -4,6 +4,13 @@
 /*
  * core_text object 0x125630-0x12A2F0. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * Sony's MPEG library (libmpeg): the macroblock/slice/picture decoder
+ * ("Invalid macroblock_type code", "slice_start_code out of range", ...)
+ * over the IPU (0x10002000 IPU_CMD, 0x10002010 IPU_CTRL). Built with
+ * Sony's 2.9-ee like the rest of libmpeg (0012A2F0.c, 0012AC80.c): the IPU
+ * wait loops that 2.95.3 hoisted into saved registers (func_00128968,
+ * func_00128860) are 2.9-ee's rematerialised constants.
  */
 
 /* Declarations in scope here before the split. */
@@ -181,10 +188,14 @@ void func_00127378(int arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001273A0);
 
-extern void func_001286E8(int, int);
+/* func_001286E8 returns a short: its epilogue sign-extends $v0. */
+extern short func_001286E8(int, int);
 
-void func_001275A0(int arg0) {
-    func_001286E8(arg0, 3);
+/* Returns its callee's value: retail keeps the frame and calls, and
+   2.9-ee turns a void one-call function into a bare tail jump (8 bytes
+   against 28). */
+short func_001275A0(int arg0) {
+    return func_001286E8(arg0, 3);
 }
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001275C0);
@@ -278,47 +289,29 @@ void func_00128590(void *arg0) {
 }
 
 /*
- * REVERTED (SIZE mismatch -- always fatal downstream). Decode is
- * certain: the same spin-wait as func_00128590, on channel
- * 0x10002000, exiting either when the channel word goes non-negative
- * or when D_CHCR (0x10002010) bit 0x4000 comes up. It returns the raw
- * 64-bit channel word; func_00128860 narrows it with dsll32/dsra32,
- * so the return type is `long` (see the _wide alias note there).
+ * IPU wait: the same spin as func_00128590, while IPU_CMD (0x10002000,
+ * read as a 64-bit word) is negative (busy) and IPU_CTRL (0x10002010)
+ * bit 0x4000 is clear, kicking func_0012BCC8 every 5001 spins. Returns
+ * the raw 64-bit IPU_CMD word; func_00128860 and func_00128968 narrow it
+ * with dsll32/dsra32, so the return type is `long`.
  *
- *   long func_00128638(void *arg0) {
- *       volatile long *chcr = (volatile long *)0x10002000;
- *       long v;
- *       int counter = 0;
- *       while ((v = *chcr) < 0 && (*(volatile int *)0x10002010 & 0x4000) == 0) {
- *           if (counter++ >= 0x1389) {
- *               func_0012BCC8(*(int *)((char *)arg0 + 0x858));
- *               counter = 0;
- *           }
- *       }
- *       return v;
- *   }
- *
- * Retail is 176 bytes. Spellings tried, all short:
- *   - as above (chcr a local, 0x10002010 spelled inline):      160
- *     Block-for-block IDENTICAL to retail; the whole 16-byte gap is
- *     that retail hoists BOTH hardware addresses into callee-saved
- *     registers ($17 = 0x10002000, $16 = 0x10002010, $18 = arg0,
- *     0x40 frame) while this compiler hoists only 0x10002010 and
- *     leaves the channel read as an absolute `ld $4,268443648`,
- *     saving one register pair and its lui/ori setup.
- *   - both addresses as locals declared at the top:            120
- *     Hoisting the second one makes GCC rotate the loop the other
- *     way (`b` into the bottom test), which is structurally wrong.
- *   - guard + do/while, both addresses as locals inside the if: 152
- *
- * This refutes the base-pointer/timing lever for CONSTANT addresses:
- * declaring the pointer at the top of the function does NOT pin a
- * literal MMIO address into a callee-saved register the way it pins
- * a global's base. It is the same rematerialise-vs-keep allocator
- * choice already recorded on func_00128860, which is the sibling
- * that shares this exact wait loop.
+ * Exact under both compilers once BOTH MMIO reads are spelled inline in
+ * the condition: both addresses are then loop invariants that loop.c
+ * hoists into $17/$16 as retail has them. The old note's
+ * `volatile long *chcr` local made the compiler use the constant as an
+ * absolute `ld` address instead (160 against 176 bytes).
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00128638);
+long func_00128638(void *arg0) {
+    long v;
+    int counter = 0;
+    while ((v = *(volatile long *)0x10002000) < 0 && (*(volatile int *)0x10002010 & 0x4000) == 0) {
+        if (counter++ >= 0x1389) {
+            func_0012BCC8(*(int *)((char *)arg0 + 0x858));
+            counter = 0;
+        }
+    }
+    return v;
+}
 
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001286E8);
@@ -362,19 +355,46 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001286E8);
  * move is EVIDENCE the ++ belongs inside the comparison. The dsll32/dsra32
  * after the jal is the 64-bit-return narrowing, handled by the _wide alias.
  *
- * Why it fails: retail keeps only $16/$17/$18 across the call (object,
- * D_00132F70 base, n) in a 0x40 frame and REMATERIALISES the hardware
- * constants 0x10002010 / 0x80004000 / 0x80000000 with lui/ori at each
- * use. This compiler hoists all three into callee-saved registers, which
- * forces three extra save/restore pairs and a 0x70 frame. Tried: tbl
- * hoisted before vs after the wait loop (0x114 vs 0x118), and `if` +
- * do/while vs a plain while (identical). The allocator's
- * rematerialise-vs-keep choice is not reachable from C -- same class as
- * the documented destination-choice question.
+ * Why it failed under 2.95.3: retail keeps only $16/$17/$18 across the
+ * call (object, D_00132F70 base, n) in a 0x40 frame and REMATERIALISES
+ * the hardware constants 0x10002010 / 0x80004000 / 0x80000000 with
+ * lui/ori at each use, where 2.95.3 hoists all three into callee-saved
+ * registers (a 0x70 frame, 0x114 against 0x108). 2.9-ee, this object's
+ * compiler, rematerialises them like retail (see func_00128968), and the
+ * C above then comes out 268 against 264: the frame and the wait loop
+ * are right, but n is parked in $a3 and negated early where retail
+ * keeps it in $s2 and negates it at the end. Still open.
  */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00128860);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00128968);
+/*
+ * IPU command send: func_00128590's wait (IPU_CTRL & 0x80004000 ==
+ * 0x80000000, a func_0012BCC8 kick every 5001 spins) inlined, then
+ * cmd = arg1 | 0x40000000 to IPU_CMD, s+0x818 = D_00132F70[cmd >> 28]
+ * (func_00128560 inlined), s+0x838 = the narrowed func_00128638 result,
+ * s+0x83C = 0x20.
+ *
+ * Written plainly it is exact under 2.9-ee, which rematerialises the
+ * MMIO constants inside the loop and keeps only %hi(D_00132F70) in $18,
+ * like retail; 2.95.3 hoists them into saved registers (SIZE 252/240).
+ * The stores go in source order 0x838 then 0x83C.
+ */
+void func_00128968(void *arg0, int arg1) {
+    int counter = 0;
+    unsigned int cmd;
+
+    while ((*(volatile int *)0x10002010 & 0x80004000) == 0x80000000) {
+        if (counter++ >= 0x1389) {
+            func_0012BCC8(*(int *)((char *)arg0 + 0x858));
+            counter = 0;
+        }
+    }
+    cmd = arg1 | 0x40000000;
+    *(volatile int *)0x10002000 = cmd;
+    *(int *)((char *)arg0 + 0x818) = D_00132F70[cmd >> 28];
+    *(int *)((char *)arg0 + 0x838) = func_00128638(arg0);
+    *(int *)((char *)arg0 + 0x83C) = 0x20;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00128A58);
 
@@ -441,66 +461,54 @@ extern char D_00153A40[];
 extern char D_00153A60[];
 
 /*
- * REVERTED (size mismatch: 200 vs retail's 204). Decode is certain,
- * including one real find: the field picked by state (+0x1C0/1D0/1E0)
- * is a POINTER, and it's the target of the +0x28 write at the end --
- * NOT a0, which was the wrong first guess.
+ * Decoder state step: if the picture state (s+0x174) is 3 and s+0x120 is
+ * set, report D_00153A40 through func_0012C468, clear s+0x120 and re-read
+ * the state; pick the target pointer by state (3 -> +0x1C0, 1 -> +0x1D0,
+ * 2 -> +0x1E0, anything else -> +0x1C0 plus a D_00153A60 report; the
+ * field is a POINTER, the target of the final +0x28 write); then
+ * r = func_00127858(s), and if r, target->+0x28 = 1. Exact under both
+ * compilers.
  *
- *   extern int func_00127858(void *);
- *   extern char D_00153A40[], D_00153A60[];
- *
- *   int func_00129530(void *a0) {
- *       int state = *(int *)((char *)a0 + 0x174);
- *       char *target;
- *       int r;
- *
- *       if (state == 3 && *(int *)((char *)a0 + 0x120) != 0) {
- *           func_0012C468(a0, D_00153A40);
- *           *(int *)((char *)a0 + 0x120) = 0;
- *           state = *(int *)((char *)a0 + 0x174);
- *       }
- *       if (state != 2) {
- *           if (state < 3) {
- *               if (state == 1) {
- *                   target = *(char **)((char *)a0 + 0x1D0);
- *               } else {
- *                   target = *(char **)((char *)a0 + 0x1C0);
- *                   func_0012C468(a0, D_00153A60);
- *               }
- *           } else if (state != 3) {
- *               target = *(char **)((char *)a0 + 0x1C0);
- *               func_0012C468(a0, D_00153A60);
- *           } else {
- *               target = *(char **)((char *)a0 + 0x1C0);
- *           }
- *       } else {
- *           target = *(char **)((char *)a0 + 0x1E0);
- *       }
- *       r = func_00127858(a0);
- *       if (r != 0) *(int *)(target + 0x28) = 1;
- *       return r;
- *   }
- *
- * Retail's state dispatch is a decision tree that always jumps TO the
- * shorter arm with `beq` and falls through the longer arm (state==2
- * first, then <3 vs >=3, then within <3 state==1 vs default, within
- * >=3 state==3 vs default) -- getting the OUTER two splits to match
- * required writing the condition negated (`if (state != 2) {long}
- * else {short}`, `... != 3 ... else ...`), which flips the compiled
- * branch to `beq state,X,short_arm` as retail has it. The INNERMOST
- * split (state==1 vs default, nested inside the `state<3` arm)
- * never takes that shape: `if (state==1)`, `if (state!=1)`, and an
- * inner `switch` with case 1 and a default all produced byte-
- * identical output (confirmed -- same instruction stream all three
- * times), always the standard `bne ...,skip; short; goto end` form
- * instead of retail's `beq ...,short_arm`. Whatever governs which
- * arm gets the direct jump versus the fallthrough at this position
- * is not reachable from source; branch structure otherwise matches
- * exactly (the 12c460 vs 12c468 jal-target labels asm-differ showed
- * are a relocation-display artifact, not a real mismatch -- every
- * surrounding byte at those two call sites is identical).
+ * It is a `switch`, with the case bodies in the order 3, 1, 2, default.
+ * GCC's decision tree is fixed (==2, <3, ==1 / ==3), but the body that
+ * follows the dispatch is the first case in source order, and jump.c
+ * then turns `beq 3,case3; b default` into retail's `bne 3,default` plus
+ * fall-through (the nested-if decode was 200 against 204). The state is
+ * re-read into the local after the report, as 2.95.3 needs; switching on
+ * the memory re-read is exact under 2.9-ee too.
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00129530);
+int func_00129530(void *arg0) {
+    char *s = arg0;
+    int state = *(int *)(s + 0x174);
+    char *target;
+    int r;
+
+    if (state == 3 && *(int *)(s + 0x120) != 0) {
+        func_0012C468(s, D_00153A40);
+        *(int *)(s + 0x120) = 0;
+        state = *(int *)(s + 0x174);
+    }
+    switch (state) {
+    case 3:
+        target = *(char **)(s + 0x1C0);
+        break;
+    case 1:
+        target = *(char **)(s + 0x1D0);
+        break;
+    case 2:
+        target = *(char **)(s + 0x1E0);
+        break;
+    default:
+        target = *(char **)(s + 0x1C0);
+        func_0012C468(s, D_00153A60);
+        break;
+    }
+    r = func_00127858(s);
+    if (r != 0) {
+        *(int *)(target + 0x28) = 1;
+    }
+    return r;
+}
 
 /*
  * REVERTED (size mismatch: ours 148, retail 144). Logic is certain:
@@ -545,7 +553,7 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00129530);
  * the F40 path overwrites it in place with arg1 - 1. This compiler
  * parks it in $8 instead and then needs a second `move $7,$8` for the
  * E30 call. Hoisting arg1 or arg1 - 1 into named locals does not move
- * it.
+ * it. 2.9-ee makes the same choice (148 against 144 again).
  */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00129600);
 

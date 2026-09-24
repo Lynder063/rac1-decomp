@@ -4,6 +4,12 @@
 /*
  * core_text object 0x1208E8-0x121750. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * Sony's libcdvd, cdvd000.o (the RPC core: sceCdDelayThread,
+ * sceCdCallback, the N/S command pre-checks, sceCdSync/SyncS, sceCdInit,
+ * sceCdDiskReady, sceCdMmode ...). Built with Sony's 2.9-ee (Makefile.sn,
+ * EE29_CORE), like the prebuilt libcdvd.a it matches. The module sees
+ * most of its globals as volatile (func_001209D8).
  */
 
 /* Declarations in scope here before the split. */
@@ -90,23 +96,24 @@ extern void func_001208E4();
 extern void func_00118B20(int, void *, int);
 extern void func_00118C80(int);
 
-/* Same stack-descriptor idiom as func_0011BBF0. The second argument to
-   func_00118B20 is the address of func_001208E4's *second* instruction --
-   retail builds it as one %hi/%lo pair on `func_001208E4 + 4`, so it is a
-   code address the source names by symbol, not a separate label.
+/* sceCdDelayThread: sleep on an alarm. Same stack-descriptor idiom as
+   func_0011BBF0 (a SemaParam: initCount [2] = 0, maxCount [1] = 1,
+   option [5] = 0). The second argument to func_00118B20 (SetAlarm) is the
+   address of func_001208E4's *second* instruction -- retail builds it as
+   one %hi/%lo pair on `func_001208E4 + 4`, so it is a code address the
+   source names by symbol, not a separate label. `unsigned short arg0` is
+   what puts `andi $17,$4,0xFFFF` in the prologue.
 
-   Not exact: 24/104, same size. `unsigned short arg0` is confirmed -- it
-   is what puts `andi $17,$4,0xFFFF` in the prologue rather than at the
-   call site (declaring it `int` and masking at the call costs 4 more
-   bytes of mismatch). The rest is the same prologue-scheduling residual
-   as func_0011DC50: retail interleaves the three descriptor stores
-   between the `$16` and `$31` saves, this build front-loads `sd $31`. */
+   Exact under 2.9-ee with the stores written initCount, maxCount, option
+   (as func_0011B710). Under 2.95.3 it was 24/104: that build front-loads
+   `sd $31` where retail interleaves the descriptor stores between the
+   `$16` and `$31` saves. */
 void func_00120910(unsigned short arg0) {
     int buf[8];
     int h;
-    buf[5] = 0;
     buf[2] = 0;
     buf[1] = 1;
+    buf[5] = 0;
     h = func_00118C70(buf);
     func_00118B20(arg0, (char *)func_001208E4 + 4, h);
     func_00118CB0(h);
@@ -134,38 +141,47 @@ void *func_00120978(void *arg0) {
 }
 
 /*
- * Reverted (size mismatch: 144 vs retail's 160). Semantics are certain:
+ * _sceCd_cd_callback: the N-command completion callback. Latch *arg0 into
+ * D_00131414 and D_00131418; status 0xB clears D_00131414/D_001313F0 and
+ * returns; otherwise signal the D_001313E8 semaphore (func_00118CA0,
+ * iSignalSema, int return) and D_001313E0 too if D_001313D4 and the
+ * handler D_00159840 are set, else clear D_001313F0; finally clear
+ * D_00131414.
  *
- *   void func_001209D8(int *arg0) {
- *       D_00131414 = *arg0;
- *       D_00131418 = D_00131414;
- *       if (D_00131414 == 0xB) {
- *           D_00131414 = 0;
- *           D_001313F0 = 0;
- *           return;
- *       }
- *       func_00118CA0(D_001313E8);
- *       if (D_001313D4 != 0 && D_00159840 != 0) {
- *           func_00118CA0(D_001313E0);
- *       } else {
- *           D_001313F0 = 0;
- *       }
- *       D_00131414 = 0;
- *   }
- *
- * Sixteen bytes short for two reasons, in equal parts:
- *  - retail re-LOADS D_00131414 after storing it, twice (store, load,
- *    store elsewhere, load, compare), where this compiler forwards the
- *    stored value. `volatile` would buy those 8 bytes back, but it is
- *    not something the rest of the tree spells and it would be guessing
- *    at retail's source rather than recovering it.
- *  - both func_00118CA0 calls have a bare `nop` in their delay slots in
- *    retail and we schedule the following load into them -- the known
- *    per-site delay-slot difference, not a rule (see docs).
- * Even with volatile the second half would still block it, so this
- * stays a stub.
+ * Every global it touches is read and written as `volatile`, through
+ * `__asm__` aliases (the file's plain `extern int` declarations below
+ * stay as they are). That gives retail's two reloads of D_00131414, the
+ * bare `nop`s after both jal (the semaphore-id loads cannot go into the
+ * slots) and the unfilled `b` slot; with fewer volatiles the size
+ * changes. Exact under 2.9-ee only: 2.95.3's GCSE copies the %hi of
+ * D_00131414 into $16 (`lui $2` + `move $16,$2`) where retail loads
+ * `lui $16` directly (SIZE 164/160).
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001209D8);
+extern volatile int D_00131414_v __asm__("D_00131414");
+extern volatile int D_00131418_v __asm__("D_00131418");
+extern volatile int D_001313D4_v __asm__("D_001313D4");
+extern volatile int D_001313E0_v __asm__("D_001313E0");
+extern volatile int D_001313E8_v __asm__("D_001313E8");
+extern volatile int D_001313F0_v __asm__("D_001313F0");
+extern void *volatile D_00159840_v __asm__("D_00159840");
+extern int func_00118CA0(int);
+
+void func_001209D8(int *arg0) {
+    D_00131414_v = *arg0;
+    D_00131418_v = D_00131414_v;
+    if (D_00131414_v == 0xB) {
+        D_00131414_v = 0;
+        D_001313F0_v = 0;
+        return;
+    }
+    func_00118CA0(D_001313E8_v);
+    if (D_001313D4_v != 0 && D_00159840_v != 0) {
+        func_00118CA0(D_001313E0_v);
+    } else {
+        D_001313F0_v = 0;
+    }
+    D_00131414_v = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120A78);
 
@@ -194,8 +210,9 @@ extern int D_001313F0;
  *       }
  *   }
  *
- * Three instructions short, and all three are retail's compiler being
- * WORSE at tail merging rather than anything in the source: retail
+ * Three instructions short under 2.95.3, and all three are retail's
+ * compiler being WORSE at tail merging rather than anything in the
+ * source: retail
  * materialises %hi(D_001313EC) separately in each arm of the ||, keeps
  * a separate `addiu $2,$0,1` per arm, and needs a `b` to rejoin. This
  * compiler hoists the lui above the test and merges the two arms into
@@ -205,8 +222,12 @@ extern int D_001313F0;
  * condition's spelling.
  *
  * The buf store order is also rotated (ours 2,5,1 against retail's
- * 5,1,2) -- the same unexplained rotation already documented on
- * func_0011B710, which is this function's twin.
+ * 5,1,2) -- the same rotation as func_0011B710, this function's twin.
+ *
+ * Under 2.9-ee (this object's compiler) the same C with the stores written
+ * 2,1,5 is the right size, 148, and 11/148: the block duplication is
+ * 2.9-ee's, and what is left is where the three handle stores are
+ * scheduled around the CreateSema calls. Still open.
  */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120B28);
 
@@ -243,22 +264,20 @@ extern char D_00132590[];
 extern int D_00131440;
 
 /*
- * Sibling of func_00121930 below (and of the func_0011CBC8 pair): open
- * the service, run one func_0011B4C8 RPC, then release the lock and
- * hand back the reply. The reply is read back through the uncached
- * mirror of the DMA buffer (| 0x20000000), which is why the address is
- * spelled as an integer or.
+ * sceCdNcmdDiskReady, sibling of func_00121930 (and of the func_0011CBC8
+ * pair): open the service, run one func_0011B4C8 RPC, then release the
+ * lock and hand back the reply. The reply is read back through the
+ * uncached mirror of the DMA buffer (| 0x20000000), which is why the
+ * address is spelled as an integer or.
  *
- * The RPC test MUST be spelled `>= 0` with the success arm inside the
- * if and the failure path falling through to the end. The obvious
- * inverse -- `if (rpc(...) < 0) { release(); return 0; } ... return r;`
- * -- is 8 bytes short in both siblings, because the early guard's
- * `return 0` and the failure arm's `return 0` then share a tail
- * (`v0 = 0; b epilogue`) and the compiler cross-jumps them into one.
- * Retail keeps two separate zeroings, and laying the arms out this way
- * is what stops the merge. Compare func_0011CBC8 above, where retail
- * DOES share the two exits -- so this is a per-function layout choice
- * that the comparison's spelling controls, not a compiler difference.
+ * The RPC failure path comes first (release, return 0), then the success
+ * path, as retail lays them out. Under 2.9-ee that is the form that keeps
+ * the early guard's `return 0` and the failure arm's `return 0` apart
+ * (retail keeps two separate zeroings); the success-first spelling that
+ * 2.95.3 needed is cross-jumped by 2.9-ee into one tail (SIZE 144/152).
+ * The two compilers merge the tails in mirror-image layouts, so the
+ * layout alone does not tell them apart; the prebuilt libcdvd.a, which
+ * this matches, is 2.9-ee's.
  */
 int func_00120E98(void) {
     int r;
@@ -266,13 +285,13 @@ int func_00120E98(void) {
     if (func_00120D28(2) == 0) {
         return 0;
     }
-    if (func_0011B4C8(D_00132590, 0xE, 0, 0, 0, &D_00131440, 4, 0, 0) >= 0) {
-        r = *(int *)((unsigned int)&D_00131440 | 0x20000000);
+    if (func_0011B4C8(D_00132590, 0xE, 0, 0, 0, &D_00131440, 4, 0, 0) < 0) {
         func_00118C90(D_001313E8);
-        return r;
+        return 0;
     }
+    r = *(int *)((unsigned int)&D_00131440 | 0x20000000);
     func_00118C90(D_001313E8);
-    return 0;
+    return r;
 }
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120F30);

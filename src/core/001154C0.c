@@ -4,6 +4,12 @@
 /*
  * core_text object 0x1154C0-0x116070. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * newlib (the SDK's libc.a): mlock.o (__malloc_lock/__malloc_unlock, both
+ * empty) and mprec.o (_Balloc ... _d2b). The linker dead-stripped mprec's
+ * unreferenced _s2b, _ulp and _ratio whole, and _b2d and _mprec_log10 down
+ * to their last word (func_00115EE0, func_00116068).
+ * Built with Sony's 2.9-ee (Makefile.sn, EE29_CORE), like libc.a.
  */
 
 /* Declarations in scope here before the split. */
@@ -24,7 +30,58 @@ void func_001154C0(void) {
 void func_001154C8(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001154D0);
+/*
+ * mprec.c _Balloc(ptr, k): the freelist at ptr+0x4C (calloc'd 16 pointers
+ * on first use); pop freelist[k], or calloc 1 x (0x18 + (x - 1) * 4) with
+ * x = 1 << k and set _k/_maxwds; then _sign = _wds = 0 (wds stored
+ * first). Exact under both compilers.
+ *
+ * The one lever: retail carries the freelist pointer across the join in
+ * one register (loaded on the entry path, copied after the NULL test on
+ * the calloc path). newlib's own text re-reads ptr->_freelist at the join
+ * (7/168); an `fl` local assigned in the test and re-read from
+ * ptr->_freelist after the calloc NULL test gives retail's order.
+ */
+extern void *func_001123A8(void *, int, int);
+
+typedef struct Bigint_1154D0 {
+    struct Bigint_1154D0 *next;
+    int k, maxwds, sign, wds;
+    unsigned int x[1];
+} Bigint_1154D0;
+
+typedef struct {
+    char pad[0x4C];
+    Bigint_1154D0 **freelist;
+} Reent_1154D0;
+
+void *func_001154D0(void *arg0, int k) {
+    Reent_1154D0 *ptr = arg0;
+    Bigint_1154D0 **fl;
+    int x;
+    Bigint_1154D0 *rv;
+
+    if ((fl = ptr->freelist) == 0) {
+        ptr->freelist = func_001123A8(ptr, sizeof(Bigint_1154D0 *), 16);
+        if (ptr->freelist == 0) {
+            return 0;
+        }
+        fl = ptr->freelist;
+    }
+    if ((rv = fl[k]) != 0) {
+        fl[k] = rv->next;
+    } else {
+        x = 1 << k;
+        rv = func_001123A8(ptr, 1, sizeof(Bigint_1154D0) + (x - 1) * sizeof(rv->x));
+        if (rv == 0) {
+            return 0;
+        }
+        rv->k = k;
+        rv->maxwds = x;
+    }
+    rv->sign = rv->wds = 0;
+    return rv;
+}
 
 /*
  * Close but not exact, same register-allocation-choice category as

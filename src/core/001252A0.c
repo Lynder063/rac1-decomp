@@ -4,6 +4,12 @@
 /*
  * core_text object 0x1252A0-0x125630. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * Sony's libvu0, libvu0.o: the sceVu0 matrix and vector routines, VU0
+ * macro-mode inline assembly (_sceVu0ecossin and sceVu0RotMatrixZ/X/Y
+ * among them; the linker dead-stripped what the game does not call).
+ * Built with Sony's 2.9-ee (Makefile.sn, EE29_CORE), like the prebuilt
+ * libvu0.a.
  */
 
 /* Declarations in scope here before the split. */

@@ -4,6 +4,12 @@
 /*
  * core_text object 0x114518-0x1154C0. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * newlib (the SDK's libc.a), nine members back to back: lseekr.o
+ * (_lseek_r), makebuf.o (__smakebuf), mallocr.o (malloc_extend_top,
+ * _malloc_r), mbtowc_r.o (_mbtowc_r), memchr.o, memcmp.o, memcpy.o,
+ * memmove.o and memset.o. Built with Sony's 2.9-ee (Makefile.sn,
+ * EE29_CORE), like libc.a; _mbtowc_r is newlib's own text.
  */
 
 /* Declarations in scope here before the split. */
@@ -35,37 +41,30 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001146C8);
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00114920);
 
 /*
- * REVERTED to INCLUDE_ASM, despite the logic being fully understood.
+ * _mbtowc_r, newlib's text (1999, before multibyte locales): a byte
+ * becomes the wide char; NULL s returns 0, n == 0 returns -1.
  *
- * The C below (kept here for whoever picks this up) is
- * instruction-for-instruction correct -- two real bugs were fixed to get
- * there: `unsigned char *` for the byte loads so they emit lbu not lb,
- * and this exact nesting to get beqz's polarity and target right:
- *
- *   int func_00115098(void *arg0, int *out, unsigned char *arg2, int arg3) {
- *       int junk;
- *       int *dst = out ? out : &junk;
- *       if (arg2 != 0) {
- *           if (arg3 != 0) { *dst = *arg2; return *arg2 != 0; }
- *           return -1;
- *       }
- *       return 0;
- *   }
- *
- * It compiles to 56 bytes where retail is 60, because retail reuses the
- * `bnel arg3,0` delay slot as the *first instruction of the branch
- * target* (the arg2 byte load) -- a scheduling trick this compiler will
- * not reproduce from the equivalent C.
- *
- * It is reverted rather than kept as documented-close because it is
- * SIZE-mismatched, and a size mismatch shifts every later function in
- * the object -- it was putting -4 bytes of drift through the rest of
- * core_text.c and giving downstream functions spurious address diffs.
- * Byte-diff near-misses of the same size are harmless to keep; shorter
- * or longer ones actively corrupt verification for everything after
- * them. Do not re-add this without getting it to exactly 60 bytes.
+ * Exact under 2.9-ee. The same logic nested the other way was 56 bytes
+ * against 60 under 2.95.3 and stayed a stub: retail's `bnel n,0` puts
+ * the byte load of the branch target in its likely slot, which 2.9-ee
+ * does from newlib's own two early returns.
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00115098);
+int func_00115098(void *r, int *pwc, const char *s, unsigned int n, int *state) {
+    int dummy;
+    unsigned char *t = (unsigned char *)s;
+
+    if (pwc == 0)
+        pwc = &dummy;
+
+    if (s != 0 && n == 0)
+        return -1;
+
+    if (s == 0)
+        return 0;  /* not state-dependent */
+
+    *pwc = (int)*t;
+    return (*t != '\0');
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001150D4);
 

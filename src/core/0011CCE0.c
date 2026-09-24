@@ -4,6 +4,12 @@
 /*
  * core_text object 0x11CCE0-0x11D0D0. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * Sony's EE kernel library (libkernl), eeloadfile.o: _lf_bind,
+ * _lf_version, _sceSifLoadModuleBuffer and sceSifLoadModuleBuffer. The
+ * linker dead-stripped the rest of the member; func_0011D098 is the seven
+ * one-word remnants it left. Built with Sony's 2.9-ee (Makefile.sn,
+ * EE29_CORE), like the prebuilt libkernl.a.
  */
 
 /* Declarations in scope here before the split. */

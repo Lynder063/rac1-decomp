@@ -4,6 +4,13 @@
 /*
  * core_text object 0x12AC80-0x12CC70. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * Sony's MPEG library (libmpeg): sceMpegInit/Create/Delete-style setup,
+ * the callback table (sceMpegAddCallback, func_0012BC50) and its
+ * dispatcher, the work-area allocator, the picture/field steps and the
+ * error reporter ("[MPEG ERROR]%s"). Built with Sony's 2.9-ee like the
+ * rest of libmpeg (0012A2F0.c): see func_0012BC50, whose match needs
+ * 2.9-ee's type-based alias analysis.
  */
 
 /* Declarations in scope here before the split. */
@@ -192,57 +199,54 @@ int func_0012BBF8(void *arg0) {
     return 1;
 }
 
+/* The callback table at +0x40: {callback, data} pairs from +0xC, one
+   per callback type. */
+typedef int (*MpegCbFn)(void *, void *, void *);
+typedef struct { MpegCbFn func; void *data; } MpegCbEnt;
+typedef struct { char pad[0xC]; MpegCbEnt cb[1]; } MpegCbTbl;
+
 /*
- * Close, not exact (12/36), same size. Logic verified: fetch the table
- * at arg0+0x40, index it by arg1*8, store arg3 at +0x10, then return
- * the old value at +0xC while overwriting it with arg2.
+ * sceMpegAddCallback: install (callback arg2, data arg3) for type arg1 and
+ * return the old callback.
  *
- * Retail forms the second pointer as (base + 0xC) + arg1*8; this
- * compiler reassociates to base + (arg1*8 + 0xC). Writing it with the
- * parenthesisation retail uses does not help -- GCC reassociates anyway
- * -- and hoisting `base + 0xC` into its own local makes it WORSE
- * (12/36 -> 17/36). Same associativity/allocation class as the other
- * documented near-misses.
+ * Typing the entry as {function pointer, void *} is the lever: 2.9-ee's
+ * type-based alias analysis (-fstrict-aliasing is its default) then knows
+ * the `data` store cannot alias the `func` load, so sched1 computes
+ * `t + 0xC` before `t + off` and the registers fall as in retail. Under
+ * 2.95.3 (no type-based aliasing) the same C is 17/36; the old int-offset
+ * spelling was 12/36 under both.
  */
 int func_0012BC50(void *arg0, int arg1, int arg2, int arg3) {
-    char *base = *(char **)((char *)arg0 + 0x40);
-    char *p = base + arg1 * 8;
-    char *q = (base + 0xC) + arg1 * 8;
-    int old;
-    *(int *)(p + 0x10) = arg3;
-    old = *(int *)q;
-    *(int *)q = arg2;
-    return old;
+    MpegCbTbl *t = *(MpegCbTbl **)((char *)arg0 + 0x40);
+    MpegCbFn old;
+    t->cb[arg1].data = (void *)arg3;
+    old = t->cb[arg1].func;
+    t->cb[arg1].func = (MpegCbFn)arg2;
+    return (int)old;
 }
 
 /*
- * Close, not exact (12/80, same size so harmless). Dispatches through a
- * table hanging off arg0+0x40: index it by *arg1 (8-byte entries), take
- * the handler at +0xC, and if non-null call it with the entry's +0x10
- * field as a third argument, returning ITS result.
+ * Dispatch the callback registered for *arg1 (the callback data's type
+ * field) with its data; returns the callback's result, 0 if none.
  *
- * The result-is-the-call's-return-value reading matters: a first attempt
- * returned the entry address instead, which kept `entry` live across the
- * call, forced a callee-saved register and made the function 8 bytes
- * long. Retail's `daddu $7,$2,$0` sits AFTER the jalr, so $2 there is
- * the callee's return value, not the entry pointer.
- *
- * Residual is the allocator: retail holds `result` in $7 (a3), this
- * compiler in $6 (a2), and the final move follows.
+ * The table entry is indexed afresh for each use (test `.func`, call
+ * `.func(arg0, arg1, .data)`) instead of through one `entry` pointer. CSE
+ * merges the two `.func` loads, but the `.data` address is rebuilt after
+ * the branch, which is retail's second `addu` in a plain beqz slot, and
+ * `ret` then lands in $a3 with the table in $a2. Exact under both
+ * compilers (one `entry` pointer is SIZE 84/80; the old spelling 12/80).
  */
 void *func_0012BC78(void *arg0, int *arg1) {
-    void *result = 0;
+    int ret = 0;
     if (arg0 != 0) {
-        char *tbl = *(char **)((char *)arg0 + 0x40);
-        if (tbl != 0) {
-            char *entry = tbl + (*arg1 << 3);
-            void *(*fn)() = *(void *(**)())(entry + 0xC);
-            if (fn != 0) {
-                result = fn(arg0, arg1, *(int *)(entry + 0x10));
+        MpegCbTbl *t = *(MpegCbTbl **)((char *)arg0 + 0x40);
+        if (t != 0) {
+            if (t->cb[*arg1].func != 0) {
+                ret = t->cb[*arg1].func(arg0, arg1, t->cb[*arg1].data);
             }
         }
     }
-    return result;
+    return (void *)ret;
 }
 
 /* No declaration needed: the definition above precedes this caller. The
@@ -280,7 +284,13 @@ extern char D_00153B38[];
 /* Bump allocator out of a region {base, size, used}: round `used` up to
    `align`, reserve `size` bytes, and hand back the aligned offset. On
    overflow it reports through func_0012C468 and returns 0 WITHOUT
-   touching `used`. */
+   touching `used`.
+
+   The fitting case is written first (`>=`): 2.9-ee then branches to the
+   report on the true side (bnel) and puts the `used` store in the slot
+   of the fall-through `b`, as retail. Written overflow-first, as 2.95.3
+   needed, 2.9-ee inverts the test and puts the store in a beql slot,
+   one instruction short (SIZE 104/108). */
 unsigned int func_0012BD60(void *arg0, char *r, unsigned int size,
                            unsigned int align) {
     unsigned int aligned;
@@ -288,29 +298,32 @@ unsigned int func_0012BD60(void *arg0, char *r, unsigned int size,
 
     aligned = ((*(unsigned int *)(r + 0x8) + align - 1) / align) * align;
     end = aligned + size;
-    if (*(unsigned int *)(r + 0x0) + *(unsigned int *)(r + 0x4) < end) {
-        func_0012C468(arg0, D_00153B38);
-        return 0;
+    if (*(unsigned int *)(r + 0x0) + *(unsigned int *)(r + 0x4) >= end) {
+        *(unsigned int *)(r + 0x8) = end;
+        return aligned;
     }
-    *(unsigned int *)(r + 0x8) = end;
-    return aligned;
+    func_0012C468(arg0, D_00153B38);
+    return 0;
 }
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BDD0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BF40);
 
-extern void func_0012C0A0(void *, int, int);
-extern void func_0012BF40(void *, int, int);
+extern int func_0012C0A0(void *, int, int);
+extern int func_0012BF40(void *, int, int);
 
 /* Hands the call on by the inner object's +0x174 mode: func_0012BF40 for
-   mode 3, func_0012C0A0 otherwise, with the caller's arguments. */
-void func_0012C058(void *arg0, int arg1, int arg2) {
+   mode 3, func_0012C0A0 otherwise, with the caller's arguments.
+
+   Returns its callees' values: retail keeps the frame and calls both, and
+   2.9-ee tail-calls each arm (bare `j`, SIZE 40/68) when it is void. */
+int func_0012C058(void *arg0, int arg1, int arg2) {
     Obj40 *inner = ((Wrapper *)arg0)->obj;
     if (inner->unk174 != 3) {
-        func_0012C0A0(arg0, arg1, arg2);
+        return func_0012C0A0(arg0, arg1, arg2);
     } else {
-        func_0012BF40(arg0, arg1, arg2);
+        return func_0012BF40(arg0, arg1, arg2);
     }
 }
 
@@ -359,12 +372,12 @@ void func_0012C278(void *arg0) {
 
 /*
  * Point the object's four scratchpad pointers at 0x70000000 and clear a
- * flag. Size-exact at 0x60, 2 of 24 words: retail saves $s1 before $ra
- * in the prologue and we save them the other way round. Swapping the two
- * locals' declaration order does not move it -- spill ORDER is the
- * recorded dead end, and it stays one.
+ * flag. Exact under 2.9-ee. Under 2.95.3 it was 2 of 24 words off:
+ * that compiler saved $ra before $s1 in the prologue, where retail (and
+ * 2.9-ee) saves $s1 first -- the prologue-order residual of the core
+ * spill rewrite, not a source question.
  *
- * What DOES matter, and is new: `int a = 0x70000000;` must be written
+ * What does matter: `int a = 0x70000000;` must be written
  * BEFORE the call. An earlier round reverted this at 8 bytes short
  * having tried binding the constants to locals declared AFTER the call,
  * which changes nothing because gcc folds them straight back into the
@@ -428,13 +441,9 @@ void func_0012C468(void *arg0, void *arg1) {
     }
 }
 
-/*
- * Close, not exact (4/32), same size so harmless. Logic and every
- * instruction match; retail puts the `0x8` store in the `jr` delay slot
- * and `0x4` before it, this compiler chooses the opposite. Tried three
- * source orderings -- all three produced the identical schedule, so the
- * scheduler fixes this independently of statement order.
- */
+/* Store the two sizes and their 16-pixel macroblock counts. (An old note
+   here recorded 4/32 with the 0x4/0x8 stores swapped; the function is
+   exact under both compilers now.) */
 int func_0012C4C0(void *arg0, int arg1, int arg2) {
     char *p = (char *)arg0;
     *(int *)(p + 0x4) = arg1;
@@ -455,7 +464,6 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C990);
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CA70);
 
 extern int func_00128A58(void *, int);
-extern void func_00128A58_v(void *, int) __asm__("func_00128A58");
 
 /*
  * MPEG-2 sequence_display_extension(): video_format (3 bits), then
@@ -464,11 +472,10 @@ extern void func_00128A58_v(void *, int) __asm__("func_00128A58");
  * kept at +0x144); display_horizontal_size (14) to +0x148, a marker
  * bit, display_vertical_size (14) to +0x14C.
  *
- * The marker bit's read goes through a void view of the reader. As a
- * value call it would reset $v0's readers, and the +0x148 store would
- * lose the scheduler tie to the next call's argument setup. The C
- * without the alias is exact under Sony's 2.9-ee, so this file (likely
- * the SDK's libmpeg) may be that compiler's and the alias a stand-in.
+ * Plain C, exact under 2.9-ee. (Under 2.95.3 it needed the marker bit's
+ * read to go through a void view of the reader, `func_00128A58_v`: as a
+ * value call it reset $v0's readers and the +0x148 store lost the
+ * scheduler tie to the next call's argument setup, 8/140.)
  */
 void func_0012CBA0(void *arg0) {
     char *s = (char *)arg0;
@@ -480,7 +487,7 @@ void func_0012CBA0(void *arg0) {
         *(int *)(s + 0x144) = func_00128A58(s, 8);
     }
     *(int *)(s + 0x148) = func_00128A58(s, 0xE);
-    func_00128A58_v(s, 1);
+    func_00128A58(s, 1);
     *(int *)(s + 0x14C) = func_00128A58(s, 0xE);
 }
 

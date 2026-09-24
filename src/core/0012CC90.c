@@ -4,6 +4,14 @@
 /*
  * core_text object 0x12CC90-0x12D868. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * Sony SDK code, built with Sony's 2.9-ee (Makefile.sn, EE29_CORE). Up to
+ * 0x12D068: IPU DMA helpers for libmpeg (the CHCR writes of channels 3/4
+ * under a D_ENABLE hold). From 0x12D2A0: libscf -- the rom0:ROMVER record,
+ * sceScfGetTimeZone (func_0012D3F0), sceScfGetSummerTime (func_0012D448),
+ * the BCD<->binary sceCdCLOCK helpers and sceScfGetLocalTimefromRTC
+ * (func_0012D818). Its day/hour helpers end in conditional tail calls
+ * (func_0012D730, func_0012D760), which only 2.9-ee emits.
  */
 
 extern long func_00116F68(int arg0, int arg1, int arg2);
@@ -159,41 +167,31 @@ extern char D_00153CC8[];
 extern int func_0012CE48(void *);
 
 /*
- * REVERTED (blocked, not a source-shape problem). Decode is certain: set
- * a control bit at 0x1000F590 (OR of the 0x1000F520 read with 0x10000),
- * write arg0 to the channel's address register at 0x1000B000, clear the
- * same bit, guarded by func_0011D960/func_0011D9A8 (the disable/enable-
- * interrupts pair used throughout this file):
+ * Write a CHCR value to IPU DMA channel 3 (fromIPU, 0x1000B000) or 4
+ * (toIPU, 0x1000B400): with interrupts off (func_0011D960/func_0011D9A8),
+ * set D_ENABLEW.CPND (0x1000F590 = D_ENABLER | 0x10000) to hold the DMAC,
+ * store the value, release the hold. The final EI is a tail call.
  *
- *   int func_0012CC90(void *arg0) {
- *       func_0011D960();
- *       *(volatile unsigned int *)0x1000F590 =
- *           *(volatile unsigned int *)0x1000F520 | 0x10000;
- *       *(volatile unsigned int *)0x1000B000 = (unsigned int)arg0;
- *       *(volatile unsigned int *)0x1000F590 =
- *           *(volatile unsigned int *)0x1000F520 & 0xFFFEFFFF;
- *       return func_0011D9A8();  // declared to return int locally
- *   }
- *
- * Body matches retail instruction for instruction. The only gap is the
- * final call: retail forwards to func_0011D9A8 with a bare `j` and
- * interleaves its own epilogue around the remaining work (restore $31
- * right after the last use of $16, do the second read/mask/write, THEN
- * restore $16, then tail-jump with the frame teardown in the delay
- * slot). This compiler has no sibling-call optimisation at all in
- * either SN sub-build (see tools/fix_tail_calls.py) -- confirmed by
- * -foptimize-sibling-calls not existing and -O3 not helping -- so any
- * call as the last statement of a function that still has its own frame
- * (here: the $16/$31 spills) always compiles to `jal` + a full
- * unscheduled epilogue, 3 words longer than retail (0x70 vs retail's
- * 0x64). fix_tail_calls.py only rewrites the OTHER case, a bare
- * forwarding stub with no locals of its own; this function's frame
- * disqualifies it from that guard by design. Toolchain blocker, same
- * category as the short-loop erratum.
+ * Exact under 2.9-ee as the plain volatile MMIO sequence. It was blocked
+ * under 2.95.3 only because that compiler never emits a sibling call:
+ * with a frame of its own the last call stayed a `jal` plus a full
+ * epilogue, 3 words over (0x70 against 0x64).
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CC90);
+void func_0012CC90(unsigned int chcr) {
+    func_0011D960();
+    *(volatile unsigned int *)0x1000F590 = *(volatile unsigned int *)0x1000F520 | 0x10000;
+    *(volatile unsigned int *)0x1000B000 = chcr;
+    *(volatile unsigned int *)0x1000F590 = *(volatile unsigned int *)0x1000F520 & 0xFFFEFFFF;
+    func_0011D9A8();
+}
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CCF8);
+void func_0012CCF8(unsigned int chcr) {
+    func_0011D960();
+    *(volatile unsigned int *)0x1000F590 = *(volatile unsigned int *)0x1000F520 | 0x10000;
+    *(volatile unsigned int *)0x1000B400 = chcr;
+    *(volatile unsigned int *)0x1000F590 = *(volatile unsigned int *)0x1000F520 & 0xFFFEFFFF;
+    func_0011D9A8();
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CD60);
 
@@ -206,55 +204,41 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D000);
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D068);
 
 /*
- * Reverted (size mismatch: 152 vs retail's 156). Semantics are certain
- * -- it fills the record at D_001331D8 once, byte 0 staying zero until
- * it has been read, and hands the buffer back either way:
+ * Fill the 14-byte rom0:ROMVER record at D_001331D8 once (open
+ * D_00153D00 "rom0:ROMVER" read-only, read 0xE bytes, close; failures are
+ * reported through func_0011A6C8) and hand the buffer back either way.
+ * (The second func_0011A6C8 gets only the format string: $a1 still holds
+ * the buffer from the read call and retail never resets it, which is why
+ * func_0011A6C8 stays unprototyped here.)
  *
- *   extern int func_0011BF80(void *, int);
- *   extern int func_0011C5C0(int, void *, int);
- *   extern void func_0011C208(int);
- *   extern char D_001331D8[], D_00153D00[], D_00153D10[], D_00153D28[];
- *
- *   char *func_0012D2A0(void) {
- *       int fd;
- *       if (D_001331D8[0] == 0) {
- *           fd = func_0011BF80(D_00153D00, 1);
- *           if (fd == -1) { func_0011A6C8(D_00153D10, D_001331D8); }
- *           if (func_0011C5C0(fd, D_001331D8, 0xE) == -1) {
- *               func_0011A6C8(D_00153D28);
- *           }
- *           func_0011C208(fd);
- *       }
- *       return D_001331D8;
- *   }
- *
- * (The second func_0011A6C8 gets only the format string; $a1 still holds
- * the buffer from the func_0011C5C0 call and retail never resets it,
- * which is why that declaration has to stay unprototyped.)
- *
- * Blocked on addressing form, not on source shape. Retail keeps
- * %hi(D_001331D8) itself live in a callee-saved register and spends
- * three separate %lo references on it -- the `lb`, the buffer pointer
- * in $s3, and the returned address -- for 4 saved registers and an
- * 80-byte frame. This compiler folds %hi+%lo at every reference, so it
- * never has a reason to keep the bare %hi, and lands one instruction
- * short however the references are spelled. Counts for the three
- * spellings tried:
- *   - the source above, D_001331D8 everywhere            160 (4 LONG:
- *     adds a daddu because the lui lands in $v0 and has to be copied
- *     into a saved register to survive the calls)
- *   - a `char *p = D_001331D8` local used for the calls  152 (4 SHORT)
- *   - that local plus a second C name on the same asm
- *     symbol for the return, to force a fresh lui/addiu 152 (4 SHORT;
- *     the alias works and does emit the second lui/addiu, but the
- *     compiler then drops a saved register and the save/restore pair
- *     costs exactly what the lui gained)
- * Related to the "global store addressing" entry in the docs: the
- * -mno-split-addresses tradeoff is the same one.
+ * Exact under 2.9-ee. It was blocked under 2.95.3 (152/160 against 156):
+ * that compiler's GCSE copies the kept %hi(D_001331D8) into a saved
+ * register (`move $19,$2`), where 2.9-ee loads the lui straight into $17
+ * as retail does. D_001331D8 is `signed char` (the declaration below),
+ * hence the cast on the return.
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D2A0);
+extern int func_0011BF80(void *, int);
+extern int func_0011C5C0(int, void *, int);
+extern void func_0011C208(int);
+extern signed char D_001331D8[];
+extern char D_00153D00[], D_00153D10[], D_00153D28[];
 
-extern void func_0012D2A0(void);
+char *func_0012D2A0(void) {
+    int fd;
+    if (D_001331D8[0] == 0) {
+        fd = func_0011BF80(D_00153D00, 1);
+        if (fd == -1) {
+            func_0011A6C8(D_00153D10, D_001331D8);
+        }
+        if (func_0011C5C0(fd, D_001331D8, 0xE) == -1) {
+            func_0011A6C8(D_00153D28);
+        }
+        func_0011C208(fd);
+    }
+    return (char *)D_001331D8;
+}
+
+extern char *func_0012D2A0(void);
 extern signed char D_001331D8[];
 
 int func_0012D340(void) {
@@ -389,15 +373,10 @@ int func_0012D4E0(int arg0) {
 
 extern int func_0012D4E0(int);
 
-/*
- * Close, not exact (4/104), same size so inert. The ONLY divergence is
- * prologue save order: retail emits `sd $16, 0($sp)` then
- * `sd $31, 0x10($sp)`, this compiler emits them the other way round.
- * Identical offsets, identical everything else including every delay
- * slot. Not expressible from C -- these are compiler-emitted prologue
- * stores, not source statements, so neither statement order nor the
- * declaration-order lever reaches them.
- */
+/* Convert the sceCdCLOCK fields (second..year) in place with the helper
+   above. Exact under 2.9-ee, which saves $16 before $31 as retail does;
+   2.95.3 saved them the other way round (4/104), the prologue-order
+   residual that pointed at the SDK compiler in the first place. */
 void func_0012D500(unsigned char *p) {
     p[7] = func_0012D4E0(p[7]);
     p[6] = func_0012D4E0(p[6]);
@@ -409,15 +388,8 @@ void func_0012D500(unsigned char *p) {
 
 extern int func_0012D4B0(int);
 
-/*
- * Close, not exact (4/104), same size so inert. The ONLY divergence is
- * prologue save order: retail emits `sd $16, 0($sp)` then
- * `sd $31, 0x10($sp)`, this compiler emits them the other way round.
- * Identical offsets, identical everything else including every delay
- * slot. Not expressible from C -- these are compiler-emitted prologue
- * stores, not source statements, so neither statement order nor the
- * declaration-order lever reaches them.
- */
+/* The inverse conversion, same shape; exact under 2.9-ee for the same
+   reason as func_0012D500 (4/104 under 2.95.3). */
 void func_0012D568(unsigned char *p) {
     p[7] = func_0012D4B0(p[7]);
     p[6] = func_0012D4B0(p[6]);
@@ -430,16 +402,27 @@ void func_0012D568(unsigned char *p) {
 typedef struct { char b[0xC]; } Cfg12;
 extern Cfg12 D_00153D40 NOT_SDA;
 
-/* Forward analog of func_0012D688 below: tick the clock at arg0 forward
- * by one day, using the same 12-byte month-length table (stretched to 29
- * for February on a leap year) and the same struct offsets. */
+/*
+ * Tick the sceCdCLOCK at s (binary fields: [5] day, [6] month, [7] year)
+ * forward by one day, with a working copy of the 12-byte month-length
+ * table D_00153D40 (February stretched to 29 when year & 3 == 0), the
+ * month rolling 12 -> 1 and the year 99 -> 0.
+ *
+ * The leap test reads the year into an int. Retail loads the year twice
+ * (for the leap test, and again at the year roll-over); 2.9-ee's GCSE
+ * would reuse a first byte-typed load for the second (SIZE 184/180, and
+ * the whole reason this function once looked like 2.95.3 code). An int
+ * load is a zero-extending load, a different expression to GCSE, so
+ * the later byte load stays. (This C is exact under 2.95.3 as well.)
+ */
 void func_0012D5D0(unsigned char *s) {
     Cfg12 days;
     unsigned char m;
+    int y = s[7];
 
     days = D_00153D40;
     s[5] = s[5] + 1;
-    if ((s[7] & 3) == 0) {
+    if ((y & 3) == 0) {
         days.b[1] = 0x1D;
     }
     if (s[5] > days.b[s[6] - 1]) {
@@ -458,112 +441,110 @@ void func_0012D5D0(unsigned char *s) {
 }
 
 /*
- * REVERTED (SIZE mismatch both ways). Decode is certain -- tick the
- * clock at arg0 back by one day. Take a working copy of the 12-byte
- * month-length table at D_00153D40, stretch February to 29 on a leap
- * year, and when the day count reaches zero roll the month back, and
- * the year with it wrapping 00 to 99, then reload the day count.
+ * Tick the sceCdCLOCK at s back by one day: the same month-length table,
+ * the day counting down to 0 rolls the month back (1 -> 12) and the year
+ * with it (0 -> 99), then the day is reloaded from the table.
  *
- *   typedef struct { char b[0xC]; } Cfg12;
- *   extern Cfg12 D_00153D40 NOT_SDA;
- *
- *   void func_0012D688(unsigned char *s) {
- *       Cfg12 days;
- *       unsigned char m;
- *
- *       days = D_00153D40;
- *       if ((s[7] & 3) == 0) {
- *           days.b[1] = 0x1D;
- *       }
- *       s[5] = s[5] - 1;
- *       if (s[5] != 0) {
- *           return;
- *       }
- *       m = s[6] - 1;
- *       s[6] = m;
- *       if (m == 0) {
- *           s[7] = s[7] != 0 ? s[7] - 1 : 0x63;
- *           s[6] = 0xC;
- *       }
- *       s[5] = days.b[s[6] - 1];
- *   }
- *
- * The tail from the month roll-back onwards is already byte-identical,
- * as is the 12-byte struct copy (ldl/ldr + lwl/lwr at alignment 1, the
- * func_001FFE88 idiom). Retail is 164 bytes. Two spellings, and the
- * interesting part is that they miss in OPPOSITE directions:
- *
- *   - as written above, the decrement AFTER the leap-year block:  160
- *     The compiler forwards the stored value, so the `s[5] != 0` test
- *     becomes `andi $3,$2,0xFF` + `bne` on the value already in hand,
- *     where retail re-LOADS the byte with `lbu` and tests it bare.
- *
- *   - `s[5] = s[5] - 1;` moved BEFORE the leap-year block:         168
- *     This DOES buy retail's reload -- putting a basic-block boundary
- *     between the store and the test stops the forwarding, and that is
- *     the useful finding here. But the compiler then pays for it with a
- *     `bnel` that duplicates the reload into the branch's delay slot,
- *     two `lbu`s where retail has one plus a bare `nop`. That is the
- *     recorded per-site delay-slot difference, so the two halves cannot
- *     be had at once from this source.
- *
- * `m` must stay `unsigned char`: it is what produces retail's
- * `andi $2,$2,0xFF` on the month counter, and the ternary on s[7] is
- * confirmed by retail emitting a single `sb` for both arms.
+ * Levers: the leap test on an int copy of the year, as in func_0012D5D0
+ * (2.9-ee's GCSE otherwise reuses the first year load: 61/164);
+ * `s[5] = s[5] - 1;` before the leap block (a block boundary gives
+ * retail's reload of s[5]); the month as `if (--s[6] == 0)` (stores the
+ * raw decrement and tests the masked copy in another register); the
+ * year as an if/else with one store per arm, which cross-jumping merges
+ * into retail's single `sb`. Exact under both compilers.
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D688);
+void func_0012D688(unsigned char *s) {
+    Cfg12 days;
+    int y = s[7];
+
+    days = D_00153D40;
+    s[5] = s[5] - 1;
+    if ((y & 3) == 0) {
+        days.b[1] = 0x1D;
+    }
+    if (s[5] == 0) {
+        if (--s[6] == 0) {
+            if (s[7] == 0) {
+                s[7] = 0x63;
+            } else {
+                s[7] = s[7] - 1;
+            }
+            s[6] = 0xC;
+        }
+        s[5] = days.b[s[6] - 1];
+    }
+}
 
 /*
- * Reverted: size mismatch (ours=56, retail=48 -- 8 bytes over).
- *
- *   void func_0012D730(void *arg0) {
- *       unsigned char *p = (unsigned char *)arg0 + 3;
- *       unsigned char v = *p + 1;
- *       *p = v;
- *       if (v == 0x18) {
- *           *p = 0;
- *           func_0012D5D0(arg0);
- *       }
- *   }
- *
- * Semantics certain: a byte counter that wraps to 0 and fires
- * func_0012D5D0 at 24. Retail's call is a bare tail `j
- * func_0012D5D0` reached only through the `v == 0x18` branch, with a
- * plain `jr $ra` on the other path -- no frame at all. func_0012D730
- * IS listed in tools/tail_call_functions.txt, but
- * fix_tail_calls.py's rewrite_function() also requires the function
- * to contain NO other control flow (its CONTROL regex rejects any
- * branch or label), specifically to avoid rewriting a call reached
- * through only one of several paths. A conditional tail call is a
- * second, different shape the tool can't handle, beyond the "call
- * then tail call" gap noted on func_0011DDA0's revert above.
+ * Advance the hour ([3]); at 24 it wraps to 0 and the day ticks forward.
+ * Retail's call is a bare tail `j func_0012D5D0` on the wrap path only,
+ * with a plain `jr $ra` on the other: a conditional sibling call, which
+ * 2.9-ee emits from this plain C. (Under 2.95.3, which has no sibling
+ * calls, it was 8 bytes over, and fix_tail_calls.py cannot rewrite a call
+ * reached through one of several paths.)
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D730);
+void func_0012D730(unsigned char *s) {
+    s[3] = s[3] + 1;
+    if (s[3] == 0x18) {
+        s[3] = 0;
+        func_0012D5D0(s);
+    }
+}
+
+/* The backward analog: the hour counts down, and at 0 it becomes 23 and
+   the day ticks back, again through a conditional tail call. */
+void func_0012D760(unsigned char *s) {
+    unsigned char v = s[3];
+    if (v != 0) {
+        s[3] = v - 1;
+        return;
+    }
+    s[3] = 0x17;
+    func_0012D688(s);
+}
 
 /*
- * Reverted: same shape as func_0012D730 above (backward analog).
+ * Shift the sceCdCLOCK at s by diff minutes: BCD to binary
+ * (func_0012D500), add diff to the minutes, carry whole hours down or up
+ * through the hour helpers, store the minutes, binary back to BCD
+ * (func_0012D568, a tail call). Note the upper bound is `> 60`, not
+ * `>= 60`: retail's test is `slti 0x3D`.
  *
- *   void func_0012D760(unsigned char *arg0) {
- *       unsigned char v = arg0[3];
- *       if (v != 0) {
- *           arg0[3] = v - 1;
- *           return;
- *       }
- *       arg0[3] = 0x17;
- *       func_0012D688(arg0);
- *   }
- *
- * Semantics certain: the same byte counter, counting down and firing
- * func_0012D688 (the backward day-tick) at 0, resetting to 23. Retail's
- * call is a bare tail `j func_0012D688` reached only through the
- * `v == 0` branch -- the second tail-call tooling gap (conditional tail
- * call through only one path) documented on func_0012D730. Compiling
- * this as ordinary call-and-return bloats it enough to overlap the
- * next section at link time, so this wasn't even diffable; reverted
- * immediately rather than left half-built.
+ * The `min >= 0` arm has to come first: retail lays the carry-up loop
+ * inline and the carry-down loop after it.
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D760);
+void func_0012D788(unsigned char *s, int diff) {
+    int min;
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D788);
+    func_0012D500(s);
+    min = s[2] + diff;
+    if (min >= 0) {
+        while (min > 60) {
+            min -= 60;
+            func_0012D730(s);
+        }
+    } else {
+        while (min < 0) {
+            min += 60;
+            func_0012D760(s);
+        }
+    }
+    s[2] = min;
+    func_0012D568(s);
+}
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D818);
+/*
+ * sceScfGetLocalTimefromRTC: shift the RTC clock (Japan time, UTC+9) by
+ * the configured time zone (func_0012D3F0, minutes) and summer time
+ * (func_0012D448, hours), i.e. by tz - 540 + st * 60 minutes. Written in
+ * that order: `tz + st * 60 - 540` associates differently (19/72).
+ */
+void func_0012D818(unsigned char *s) {
+    int tz, st;
+    tz = func_0012D3F0();
+    st = func_0012D448();
+    func_0012D788(s, tz - 540 + st * 60);
+}
+
+/* 8 bytes of post-endlabel nop padding in retail -- see func_001F6668. */
+__asm__(".section .text\n\tnop\n\tnop\n");
