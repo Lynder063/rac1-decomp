@@ -581,26 +581,26 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0021E4B0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021E950);
 
-/*
- * Close but not exact, reverted: conditional-move vs. branch.
- * Logic is `short v = (D_001414F4 == 1) ? 0 : 3;
- * *(short*)(*(char**)(arg0+0x34) + 2) = v; return 0;`.
- *
- * Retail branches (`addiu $3,$0,1` / `beq $4,$3`, the 0 materialized in
- * the delay slot and the 3 on the fall-through) and stores once at the
- * join. This compiler won't produce that shape:
- *  - single-store forms (`v=0; if (cond) v=3;`, an if/else assigning v,
- *    and a ternary) all compile branchlessly to `xori`/`movz` -- 23/40.
- *  - a two-store form (`if (cond) p[1]=0; else p[1]=3;`) does branch,
- *    and with the polarity written as `!= 1` even gets retail's exact
- *    `beq`, but then needs an extra `b` to join, so it's 15/40.
- * So: retail's compiler chose a branch where this one prefers a
- * conditional move for the same select-then-store. This is the mirror
- * image of func_001FF4F8, where retail used `movn` and this compiler
- * would not produce it -- the cmov heuristics differ in both
- * directions, which is worth knowing before spending long on either.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_0021EDD8);
+extern unsigned char D_001414F4 NOT_SDA;
+
+/* A short-returning inline keeps retail's branch: the select happens in
+   HImode, which has no movcc pattern, so jump.c cannot turn it into the
+   xori/movz a promoted `short` local gets. */
+static inline short pauseFlagState(void) {
+    if (D_001414F4 != 1) {
+        return 3;
+    }
+    return 0;
+}
+
+/* The select sits in a `static inline short` helper so that it stays a
+   branch: jump.c turns an if into movz/movn only when its arm sets a
+   full register, and the inline's short return value is a subreg. */
+int func_0021EDD8(char *arg0) {
+    char *p = *(char **)(arg0 + 0x34);
+    *(short *)(p + 2) = pauseFlagState();
+    return 0;
+}
 
 extern int D_001D53A0[];
 extern void func_0020E180(int, int);
@@ -1254,20 +1254,14 @@ int func_00222B00(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00222B98);
 
-/*
- * Close but not exact (24/60): int func(void *arg0) {
- *   *(int *)((char *)arg0+0x34) = D_001D48A8[D_0015EE84 % 19];
- *   return 0; }
- * Notably the *shape* is exactly right, including the real `divu` and
- * its div-by-zero trap guard -- see the constant-division note in the
- * techniques section. The residual is the known allocator-varying
- * issue: retail does `lui $5` / `lw $5` (loading into the register it
- * just built the address in), this compiler does `lui $3` / `lw $5`,
- * and it orders the divisor's `addiu` before the load rather than
- * after. Same as func_0021B108's entry. Reverted per the size-of-diff
- * precedent.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00222D70);
+extern int D_001D48A8[];
+
+/* `D_001D48A8[(unsigned)D_0015EE84 % 19]`; the older near-miss
+   predated MACRO_ADDR. */
+int func_00222D70(char *arg0) {
+    *(int *)(arg0 + 0x34) = D_001D48A8[(unsigned int)D_0015EE84 % 19];
+    return 0;
+}
 
 extern void func_0022ED80(int, int, int);
 

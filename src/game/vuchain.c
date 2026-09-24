@@ -342,42 +342,23 @@ extern int D_0015F71C MACRO_ADDR;
 extern int D_00160FF8[2];
 extern int D_001941C0[];
 
-/*
- * VU1_initChain(void) and VU1_swapChain(void). Both reach the right
- * SIZE with the declarations above (23 and 28 instructions), and the
- * instruction sequence is structurally retail's, but the residual is an
- * allocator tie plus store scheduling, so they are left as asm:
- *
- *   void func_002348E8(void) {            // VU1_initChain
- *       int base = D_001941C0[1];
- *       int end  = base + D_0016100C - D_0015F698;
- *       D_00160FF8[0] = base;
- *       D_00160FF8[1] = D_001941C0[2];
- *       D_00161010 = 0;
- *       D_0015F718 = end;
- *       D_0015F71C = end - 0x2000;
- *       D_00161000 = (int *)base;
- *   }
- *
- *   void func_00234948(void) {            // VU1_swapChain
- *       int idx  = 1 - D_00161010;
- *       int base = D_00160FF8[idx];
- *       int end  = base + D_0016100C - D_0015F698;
- *       D_00161004 = (int)D_00161000;
- *       D_00161010 = idx;
- *       D_00161000 = (int *)base;
- *       D_0015F718 = end;
- *       D_0015F71C = end - 0x2000;
- *   }
- *
- * Kept at 51/92 and 78/112 differing bytes, all of it register
- * numbering and the order of the four macro stores. All 24 orderings of
- * those four stores were compiled: retail emits D_00161010, D_0015F71C,
- * D_00161000, then D_0015F718 in the jr delay slot, and this compiler
- * emits no permutation with D_00161010 first -- it always sinks that
- * store past D_0015F71C. Not source-steerable from here.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_002348E8); /* VU1_initChain(void) */
+extern int D_0015F698_m __asm__("D_0015F698") MACRO_ADDR;
+
+/* `end` reads D_00161000 back right after storing it (CSE folds the
+   load away), which changes how the stores are scheduled: that, not
+   any order of the four stores, gives retail's. */
+void func_002348E8(void) {
+    int base = D_001941C0[1];
+    int end;
+
+    D_00160FF8[0] = base;
+    D_00160FF8[1] = D_001941C0[2];
+    D_00161010 = 0;
+    D_00161000 = (int *)base;
+    end = (int)D_00161000 + D_0016100C_m - D_0015F698_m;
+    D_0015F718 = end;
+    D_0015F71C = end - 0x2000;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234948); /* VU1_swapChain(void) */
 

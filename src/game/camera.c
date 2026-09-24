@@ -27,29 +27,21 @@ void func_001EC038(void) {
     *(void **)(D_00189310 + 0x70) = D_001899D0;
 }
 
-/*
- * REVERTED. Logic is certain and the loop body compiles
- * instruction-for-instruction identical to retail:
- *
- *   extern int D_0015F08C;
- *   extern void (*D_001893B0[])(void);
- *   void func_001EC098(void) {
- *       int i = 0;
- *       void (**p)(void) = D_001893B0;
- *       while (i < D_0015F08C) { i++; (*p++)(); }
- *       D_0015F08C = 0;
- *   }
- *
- * Right size (108) but 83/108. The entire difference is global-address
- * materialization: retail re-derives `&D_0015F08C` with a fresh `lui`
- * at each of its three uses (and falls back to `$at` for the final
- * store, the documented `%hi`-reuse/`$at` allocator sub-case), whereas
- * this compiler hoists the address into a third callee-saved register
- * as a loop invariant -- so our frame is 0x40 against retail's 0x30.
- * Marking the global `volatile` makes it worse (0x50 frame, four
- * callee-saved regs), confirming it is allocation, not access semantics.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_001EC098); /* ExecuteCamPostUpdFuncs */
+extern int D_0015F08C MACRO_ADDR;
+extern void (*D_001893B0[])(void);
+
+/* ExecuteCamPostUpdFuncs: runs the D_0015F08C queued post-update
+   callbacks, then empties the queue. */
+/* D_0015F08C as MACRO_ADDR removes the hoisted address register (frame
+   0x30); a plain indexed loop. */
+void func_001EC098(void) {
+    int i;
+
+    for (i = 0; i < D_0015F08C; i++) {
+        D_001893B0[i]();
+    }
+    D_0015F08C = 0;
+}
 
 /* Not a standalone function: no `jr $31` -- dead-value computation
    (`$v0 = 0` twice with intervening nops) then a store, falling through
@@ -88,32 +80,27 @@ float func_001EC120(float a, float b, float *p, float c, float d, float e) {
    fallthrough fragment, same category as func_00113AD8 in core_text. */
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC208);
 
-/*
- * REVERTED (size mismatch: ours 92, retail 96). Logic is certain:
- *
- *   void func_001EC210(void *arg0) {
- *       if (*(short *)((char *)arg0 + 0x86) != 0) {
- *           if (*(int *)(D_001871D0 + 0xC4) == 0) return;
- *           func_0020D678();
- *           *(int *)(D_001871D0 + 0xC4) = 0;
- *           return;
- *       }
- *       if (*(int *)(D_001871D0 + 0xC4) != 0) return;
- *       *(int *)(D_001871D0 + 0xC4) = func_001E97C8(D_001871D0 - 0x50);
- *   }
- *
- * (`D_001871D0 - 0x50` is the enclosing struct's base; the global is a
- * field 0x50 into it.)
- *
- * The missing 4 bytes are one instruction: retail restores `$31` in the
- * delay slot of BOTH early-exit branches as well as at the end, i.e. it
- * duplicates the epilogue reload, while GCC branches to a single shared
- * epilogue. Writing it as nested ifs and as mirrored early returns both
- * give 92 -- the early-return form matches retail's control flow exactly
- * and still shares the epilogue, so this is the delay-slot filler, not
- * the source shape.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_001EC210); /* Camera_handleCollWithHero(int, UpdateCam *) */
+extern char D_001871D0[];
+extern void func_0020D678(void *); /* DeleteMoby */
+
+/* Camera_handleCollWithHero: spawns (via func_001E97C8) or deletes the
+   moby kept at D_001871D0+0xC4, depending on the flag at arg0+0x86. */
+/* A `char *c` base, the `== 0` arm first, and DeleteMoby takes the slot
+   as its argument. */
+void func_001EC210(void *arg0) {
+    char *c = D_001871D0;
+
+    if (*(short *)((char *)arg0 + 0x86) == 0) {
+        if (*(void **)(c + 0xC4) == 0) {
+            *(int *)(c + 0xC4) = func_001E97C8(c - 0x50);
+        }
+    } else {
+        if (*(void **)(c + 0xC4) != 0) {
+            func_0020D678(*(void **)(c + 0xC4));
+            *(void **)(c + 0xC4) = 0;
+        }
+    }
+}
 
 /* 0x14-byte dispatch records, indexed by the type id at +0x8C.
    Declared as a real struct array, not `char[]` + byte offset: the two
@@ -259,7 +246,24 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001EDB98);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EDCE8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EDE08);
+extern char D_00187040[];
+extern float D_0015F53C MACRO_ADDR;
+
+/* D_0015F53C is a MACRO_ADDR float: $gp-relative in the delay slots,
+   lui $1 in the body. */
+void func_001EDE08(void) {
+    char *c = D_00187040;
+    float a = *(float *)(c + 0x258);
+
+    if (a != 0.0f) {
+        float t = D_0015F53C - a;
+        D_0015F53C = t;
+        if (t <= 0.0f) {
+            *(float *)(c + 0x258) = 0.0f;
+            D_0015F53C = 0.0f;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EDE50);
 

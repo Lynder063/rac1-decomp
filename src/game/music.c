@@ -508,28 +508,28 @@ int func_00216C50(int arg0, int arg1, int arg2, int arg3) {
     return 1;
 }
 
-/*
- * Reverted at 30/84 (same size, no drift risk). Semantics are confirmed
- * -- flag update on the global struct at D_001517D0, byte offsets:
- *
- *   if (*(short *)(d + 0x38) == arg0) { if (d[0x22] == -1) return; }
- *   if (*(short *)(d + 0x3E) == 0) {
- *       if (*(short *)(d + 0x76) == 0) { *(short *)(d + 0x38) = arg0; return; }
- *   }
- *   d[0x23] = arg1;
- *   d[0x22] = arg0;
- *
- * Nested ifs beat the &&/|| form (38/84 -> 30/84) because short-circuit
- * operators let the compiler hoist the 0x3E load above the first branch.
- * The residual is the allocator: retail keeps the %hi part in $7 and
- * re-materializes the base with `addiu $2,$7,%lo` inside the branch
- * targets, spending the first branch's delay slot on that copy; this
- * compiler keeps one base in $6 and uses a branch-likely with the next
- * load in the delay slot instead. Direct `D_001517D0[...]` indexing
- * instead of a `char *d` local was tried to force re-materialization and
- * is clearly worse (73%), so that lever points the other way here.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00216D30);
+/* A block-local `char *e` for the final stores (%hi kept, %lo rebuilt),
+   written in the order the rotation rule gives. */
+void func_00216D30(int arg0, int arg1) {
+    char *d = (char *)D_001517D0;
+
+    if (*(short *)(d + 0x38) == arg0) {
+        if (*(signed char *)(d + 0x22) == -1) {
+            return;
+        }
+    }
+    if (*(short *)(d + 0x3E) == 0) {
+        if (*(short *)(d + 0x76) == 0) {
+            *(short *)(d + 0x38) = arg0;
+            return;
+        }
+    }
+    {
+        char *e = (char *)D_001517D0;
+        e[0x22] = arg0;
+        e[0x23] = arg1;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00216D88); /* music_Stop(void) */
 

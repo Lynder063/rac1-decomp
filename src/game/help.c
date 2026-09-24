@@ -52,7 +52,24 @@ extern void func_001F3140(void);
 extern int D_0018E840[];
 extern long D_00152178 NOT_SDA;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FDF10);
+extern int D_001941C0[];
+extern int D_0016100C MACRO_ADDR;
+
+/* Start of a `size`-byte block at the end of each of the two VU1 chain
+   buffers (D_001941C0[1]/[2], D_0016100C bytes long, as VU1_initChain
+   uses them). Both outputs are 0 and the result -1 when size is over
+   0x20000. */
+/* Returns int; the size is unsigned and D_0016100C MACRO_ADDR. */
+int func_001FDF10(unsigned int size, int *out1, int *out2) {
+    if (size > 0x20000) {
+        *out1 = 0;
+        *out2 = 0;
+        return -1;
+    }
+    *out1 = D_001941C0[1] + D_0016100C - size;
+    *out2 = D_001941C0[2] + D_0016100C - size;
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FDF78);
 
