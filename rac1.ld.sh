@@ -103,7 +103,13 @@ cat >> build-sn/rac1.ld <<'EOF'
   .bss : { build-sn/bss_pad.o(.bss_pad) }
 
   . = 0x165580;
-  .data : { build-sn/data.data.o(.data) }
+  /* The retail data, cut around the jump tables compiled functions now
+     bring, with each table in its hole (tools/jump_tables.py). */
+  .data : {
+EOF
+python tools/jump_tables.py ld >> build-sn/rac1.ld
+cat >> build-sn/rac1.ld <<'EOF'
+  }
 
   . = 0x1e8f00;
   .lvl_vtbl : { build-sn/lvl_vtbl.data.o(.data) }

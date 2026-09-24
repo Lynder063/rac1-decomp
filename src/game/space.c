@@ -342,7 +342,30 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002308C8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00230A90);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00232200);
+extern int D_0013E150;
+extern void func_001F45F0(void);
+extern void func_002305A0(void);
+
+/* A switch on D_0013E150, whose jump table is linked into the data
+   segment at retail's jtbl_001E8C90 (see rac1.ld.sh). */
+void func_00232200(void) {
+    if (D_0015F6FC_m == 0) {
+        switch (D_0013E150) {
+        case 0:
+        case 8:
+            func_001F45F0();
+            break;
+        case 3:
+        case 7:
+            *(int *)&D_0015F534 = 0x7F;
+            func_001F3D78();
+            break;
+        case 4:
+            func_002305A0();
+            break;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00232278);
 

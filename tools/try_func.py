@@ -76,6 +76,9 @@ def build(name, seg, src, idx, candidate, work):
             shutil.copy(s[0], s[1])
         if not run([sys.executable, "tools/fix_tail_calls.py", str(s[1]), str(s[2])], log):
             return None
+        if seg == "text":
+            if not run([sys.executable, "tools/fix_jump_tables.py", str(s[2]), str(s[2])], log):
+                return None
         if not run([sys.executable, "tools/check_macro_slots.py", str(s[2])], log):
             return None
         if seg == "text":

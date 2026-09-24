@@ -70,13 +70,15 @@ All game code is compiled with **`-O2 -G2 -Iinclude -Wa,-I,.`**.
 | `src/libgcc/libgcc2.c` | 2.9-ee `-S`, one object per `L_*` module, like `libgcc.a`'s members → assemble; L__main also goes through `tools/strip_dead.py` |
 | `src/libgcc/fp-bit.c` | 2.9-ee `-S`, whole file twice (`dp-bit.o`, `fp-bit.o` with `-DFLOAT`) → assemble → `tools/strip_dead.py` → assemble |
 | `src/libgcc/nonmatching_*.c` | asm stubs for the modules that do not match yet, and for linker fill |
-| `asm/data/*.s` | `ee-as.exe` directly (`tools/build_sn_data.sh`); `core_rdata` is cut around `__divdi3`'s `__clz_tab` by `tools/split_data_s.py` |
+| `asm/data/*.s` | `ee-as.exe` directly (`tools/build_sn_data.sh`); `tools/split_data_s.py` cuts `core_rdata` around `__divdi3`'s `__clz_tab` and `data` around the jump tables compiled functions bring (`space.o`'s at `jtbl_001E8C90`) |
 
 Then `rac1.ld.sh` writes `build-sn/rac1.ld`, placing every object at its
 retail address, `tools/gen_bss_equs.py` supplies the bss-only symbols, and
 `ee-ld.exe` links `build-sn/rac1.elf`. `tools/build_sn.sh` runs all of it
 from scratch and finishes with the audit (`tools/sweep_matches.py`,
-`tools/check_layout.py`).
+`tools/check_layout.py`, and `tools/check_image.py`, which compares every
+loaded section with retail and allows differences only inside decompiled
+near-misses).
 
 ## The post-processors
 
@@ -131,6 +133,21 @@ scoped so that it cannot touch a function that does not need it.
 - **`jlabel` is global.** A jump table can live in a different object
   (rodata) from the code that uses it, and a `.local` symbol cannot
   satisfy a reference from another object.
+- **A decompiled `switch` brings its own jump table.** Retail keeps the
+  text objects' read-only data (strings, jump tables) at the end of the
+  `data` segment. `tools/fix_jump_tables.py` gives each compiled table a
+  section named after the retail table it replaces
+  (`.rodata.jtbl_001E8C90`), `tools/build_sn_data.sh` cuts those `jtbl_`
+  blocks out of `asm/data/data.data.s` (`tools/split_data_s.py`), and
+  `rac1.ld.sh` links the pieces and the tables in address order.
+  `tools/jump_tables.py` derives the list from the decompiled functions,
+  so a new switch needs no manual step. Nothing places a string literal
+  yet, so game code declares its strings `extern` (fix_jump_tables stops
+  the build on one).
+- **Denormal floats are written as words.** The assembler reads
+  spimdisasm's `.float 1.401298464e-45` (the word 1) back as 0.
+  `tools/setup_asm.sh` runs `tools/fix_denormal_floats.py`, which writes
+  every denormal as a `.word` from its raw bytes.
 - **No `NOLOAD`.** `ee-ld.exe` does not advance the location counter after
   a `NOLOAD` section, so the next section silently overlaps it. The bss
   regions are therefore real, zero-filled sections (`.skip` in the

@@ -24,6 +24,16 @@ for n in 1 2; do
   echo "assembled build-sn/core_rdata_$n.o"
 done
 
+# data minus the jump tables that compiled game functions now bring
+# themselves (tools/jump_tables.py). rac1.ld.sh links the pieces with each
+# table in its hole.
+rm -f build-sn/data_*.s build-sn/data_*.o
+python tools/split_data_s.py asm/data/data.data.s build-sn/data $(python tools/jump_tables.py labels)
+for s in build-sn/data_*.s; do
+  sn "$AS" -I include-sn -I include -o "${s%.s}.o" "$s"
+  echo "assembled ${s%.s}.o"
+done
+
 # bss padding objects -- see rac1.ld.sh for why these are real loaded
 # sections rather than NOLOAD.
 # core_bss (0x154200-0x15ED80) is split around 0x1597EC, where libgcc's
