@@ -127,7 +127,53 @@ extern void *D_0012FD00;
 extern long func_0011E6D8(double);
 extern void func_0011A690(const char *, ...);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119F38); /* printfloat */
+extern char D_00152880[]; /* "0.%d" */
+extern char D_00152888[]; /* "e+%d" */
+extern char D_00152890[]; /* "e%d" */
+extern void *D_0012FD00;
+extern long func_0011E6D8(double);
+extern void func_0011A690(const char *, ...);
+
+/* printfloat (libkernl.a:kprintf.o): the kprintf %f formatter. Prints a
+   leading '-' through the putchar hook (D_0012FD00) if negative, then
+   normalises the magnitude into [0.1, 1.0) by repeated *10 (if it
+   started below 0.1) or /10 (if at or above 1.0), counting the power of
+   ten removed in exp10, scales the mantissa to an integer (*1000000,
+   func_0011E6D8, then ftoi = func_00119EA8) and prints it as "0.%d",
+   followed by the exponent as "e+%d" or "e%d" (%d supplies the '-' for
+   a negative exponent itself).
+
+   The magnitude is checked, then rescaled, in nested `if (v < 0.1)
+   { while (v < 0.1) ... }`: retail keeps a separate 0.1 for each. Its
+   constants are this object's .rodata, linked at D_00152898 (see
+   config/core_rodata.txt). */
+void func_00119F38(double v) {
+    int exp10 = 0;
+    int digits;
+
+    if (v < 0.0) {
+        v = -v;
+        ((void (*)(int))D_0012FD00)(0x2D);
+    }
+    if (v < 0.1) {
+        while (v < 0.1) {
+            v = v * 10.0;
+            exp10--;
+        }
+    } else if (v >= 1.0) {
+        while (v >= 1.0) {
+            v = v / 10.0;
+            exp10++;
+        }
+    }
+    digits = func_00119EA8(func_0011E6D8(v * 1000000.0));
+    func_0011A690(D_00152880, digits);
+    if (exp10 >= 0) {
+        func_0011A690(D_00152888, exp10);
+    } else {
+        func_0011A690(D_00152890, exp10);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011A0A0);
 

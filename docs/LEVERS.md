@@ -42,7 +42,10 @@ go in `$f12`, `$f13`, `$f14`... `long` is 64-bit, `long long` 128-bit.
 Short-loop nop padding, the nop between an FP compare and `bc1`, the nop
 after an `mtc1` read next, 64-bit `dli` sequences, tail calls in game code,
 a final truncation's `dsra` in the return slot, jump tables, loop alignment.
-Post-endlabel nops in retail (`nop` lines after `endlabel`) must be emitted
+try_func masks relocations, so it can't see where a constant lives: if a
+core function's float/double literals compile into `.rodata`, say so in
+RESULT.md with the retail labels they load (they go in
+`config/core_rodata.txt`). Post-endlabel nops in retail (`nop` lines after `endlabel`) must be emitted
 explicitly: `__asm__(".section .text\n\tnop\n\tnop\n");` after the function.
 
 ## Two compilers

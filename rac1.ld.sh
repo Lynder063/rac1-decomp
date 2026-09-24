@@ -69,13 +69,13 @@ cat >> build-sn/rac1.ld <<'EOF'
   .core_data : { build-sn/core_data.data.o(.data) }
 
   . = 0x152300;
-  /* Split around __divdi3's own static __clz_tab (D_00152B18), which now
-     comes from its object instead of the retail blob -- see
-     tools/split_data_s.py. */
+  /* Split around the read-only data compiled objects now bring themselves
+     (__divdi3's static __clz_tab, SDK functions' literals), each in its
+     retail hole: config/core_rodata.txt, tools/core_rodata.py. */
   .core_rdata : {
-    build-sn/core_rdata_1.o(.rodata)
-    build-sn/libgcc/l2_divdi3.o(.rodata)
-    build-sn/core_rdata_2.o(.rodata)
+EOF
+python tools/core_rodata.py ld >> build-sn/rac1.ld
+cat >> build-sn/rac1.ld <<'EOF'
   }
 
   . = 0x154200;
