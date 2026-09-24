@@ -421,7 +421,16 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B4C8);
  * 27/60 and is the right shape, but this compiler still fills the branch
  * delay slots differently from retail's plain `beqz`+`nop`.
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B6B8);
+s32 func_0011B6B8(void *arg0) {
+    void *temp_a1;
+
+    temp_a1 = *(void **)((u8 *)arg0 + 0x0);
+    if ((temp_a1 == (void *)0) || (*(int *)((u8 *)arg0 + 0x4) != *(int *)((u8 *)temp_a1 + 0x18)) ||
+        !(*(int *)((u8 *)temp_a1 + 0x10) & 1)) {
+        return 0;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B6F8);
 
