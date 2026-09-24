@@ -451,20 +451,26 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B4C8);
  * early returns; both merge. The exit structure is not expressible from
  * C here.
  */
-/* Is the handle {slot, id} at arg0 still live: the slot is set, its id at
-   +0x18 still matches the handle's, and its in-use bit (+0x10 bit 0) is
-   set. Written as one inverted guard that returns 0, then `return 1`:
-   that keeps retail's two exits (shared `return 0` block the tests fall
-   into, a separate `return 1`), and gcc leaves all three branch slots to
-   the assembler, which fills them with nops as retail has them. The &&
-   form returning 1 merges the exits; early returns give bnel. */
-/* One test for the three failure cases, then return 1. */
-int func_0011B6B8(void *arg0) {
-    char *p = (char *)arg0;
-    char *q = *(char **)p;
+/*
+ * Attempted, reverted at 27/60. Semantics certain:
+ *     int f(void *arg0) {
+ *         char *p = arg0, *q = *(char **)p;
+ *         if (q != 0 && *(int *)(p + 4) == *(int *)(q + 0x18) &&
+ *             (*(int *)(q + 0x10) & 1) != 0) return 1;
+ *         return 0;
+ *     }
+ * Retail jumps all three failing conditions to one shared `return 0`
+ * tail. Writing it as early returns was worse (36/60) because it emitted
+ * branch-likely (`bnezl`); the combined condition above improved it to
+ * 27/60 and is the right shape, but this compiler still fills the branch
+ * delay slots differently from retail's plain `beqz`+`nop`.
+ */
+s32 func_0011B6B8(void *arg0) {
+    void *temp_a1;
 
-    if (q == 0 || *(int *)(p + 4) != *(int *)(q + 0x18) ||
-        !(*(int *)(q + 0x10) & 1)) {
+    temp_a1 = *(void **)((u8 *)arg0 + 0x0);
+    if ((temp_a1 == (void *)0) || (*(int *)((u8 *)arg0 + 0x4) != *(int *)((u8 *)temp_a1 + 0x18)) ||
+        !(*(int *)((u8 *)temp_a1 + 0x10) & 1)) {
         return 0;
     }
     return 1;

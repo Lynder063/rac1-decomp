@@ -22,11 +22,27 @@ Usage:
 functions have source and compares that with the committed report, so
 forgetting to regenerate after adding C fails the PR.
 """
+import os
 import json
 import re
 import subprocess
 import sys
 from pathlib import Path
+
+GIT_PATHS = [
+    r"C:\Program Files\Git\usr\bin",
+    r"C:\Program Files\Git\bin",
+    r"C:\Program Files (x86)\Git\usr\bin",
+    r"C:\Program Files (x86)\Git\bin",
+]
+
+def ensure_env():
+    env = os.environ.copy()
+    current_path = env.get("PATH", "")
+    additions = [p for p in GIT_PATHS if os.path.isdir(p) and p not in current_path]
+    if additions:
+        env["PATH"] = ";".join(additions) + ";" + current_path
+    return env
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from libgcc_units import (MODULES, FUNCTIONS as LIBGCC_FUNCTIONS, SEGMENT_SOURCES,
@@ -100,12 +116,12 @@ def build() -> None:
         f.unlink()
     start_wineserver()
     steps = [
-        make_sn(),
-        ["bash", "rac1.ld.sh"],
-        sn(f"{TC}/ee-ld.exe", "-T", "build-sn/rac1.ld", "build-sn/bss_equs.o", "-o", LINKED_ELF),
+        [f"{TC}/make.exe", "-f", "Makefile.sn"],
+        [sys.executable, "tools/gen_ld.py"],
+        [f"{TC}/ee-ld.exe", "-T", "build-sn/rac1.ld", "build-sn/bss_equs.o", "-o", LINKED_ELF],
     ]
     for cmd in steps:
-        r = subprocess.run(cmd, capture_output=True, text=True)
+        r = subprocess.run(cmd, capture_output=True, text=True, env=ensure_env())
         if r.returncode != 0:
             sys.stdout.write(r.stdout[-3000:] + r.stderr[-3000:])
             sys.exit(f"*** {' '.join(cmd[:1])} failed (exit {r.returncode}) -- NOT writing a report")

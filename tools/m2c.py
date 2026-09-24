@@ -28,7 +28,16 @@ def main():
                    if int(m.group(1)) < 32 else m.group(0), text)
     with tempfile.NamedTemporaryFile("w", suffix=".s", delete=False) as t:
         t.write(text)
-    ctx = ["--context", "ctx.c"] if pathlib.Path("ctx.c").exists() else []
+    ctx_file = pathlib.Path("ctx.c")
+    if not ctx_file.exists():
+        try:
+            sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+            from gen_ctx import generate_ctx
+            generate_ctx()
+        except Exception:
+            pass
+
+    ctx = ["--context", "ctx.c"] if ctx_file.exists() else []
     cmd = [sys.executable, "tools/ext/m2c/m2c.py", "-t", "mips-gcc-c",
            *ctx, *sys.argv[2:], t.name]
     sys.exit(subprocess.call(cmd))
