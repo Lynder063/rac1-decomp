@@ -67,7 +67,7 @@ All game code is compiled with **`-O2 -G2 -Iinclude -Wa,-I,.`**.
 |---|---|
 | `src/core/<ADDR>.c` (`core_text`) | v1.14 `-S` → `tools/fix_core_spills.py` → `tools/fix_tail_calls.py` → `tools/check_macro_slots.py` → assemble |
 | `src/core/001236F0.c` (Sony's memory card library) | 2.9-ee `-S` → `tools/check_macro_slots.py` → assemble; SDK code built with the SDK's own compiler, like libgcc (`EE29_CORE` in `Makefile.sn`) |
-| `src/game/**.c` (`text`) | v1.14 `-S` → `tools/fix_tail_calls.py` → `tools/fix_jump_tables.py` → `tools/check_macro_slots.py` → assemble → `tools/ps2eeas_nops.py` → assemble |
+| `src/game/**.c` (`text`) | v1.14 `-S` → `tools/fix_tail_calls.py` → `tools/fix_jump_tables.py` → `tools/ps2eeas_dli.py` → `tools/check_macro_slots.py` → assemble → `tools/ps2eeas_nops.py` → assemble |
 | `src/libgcc/libgcc2.c` | 2.9-ee `-S`, one object per `L_*` module, like `libgcc.a`'s members → assemble; L__main also goes through `tools/strip_dead.py` |
 | `src/libgcc/fp-bit.c` | 2.9-ee `-S`, whole file twice (`dp-bit.o`, `fp-bit.o` with `-DFLOAT`) → assemble → `tools/strip_dead.py` → assemble |
 | `src/libgcc/nonmatching_*.c` | asm stubs for the modules that do not match yet, and for linker fill |
@@ -107,6 +107,11 @@ scoped so that it cannot touch a function that does not need it.
   an FP compare and a directly following `bc1` (never adjacent in retail
   text, 191 of 191). Two-pass: both are measured in a first assembly. See
   "SOLVED: the short-loop erratum" in `docs/DECOMP_PROGRESS.md`.
+- **`tools/ps2eeas_dli.py`** (game code only): rewrites each `dli` into
+  the instructions ps2eeas uses for that 64-bit constant. GNU as picks a
+  different sequence for many values (`0x8000000044`: ps2eeas `ori 0x8000;
+  dsll 24; ori 0x44`, GNU `addiu 0x80; dsll32 0; ori 0x44`). The algorithm
+  was reconstructed from ps2eeas's output and checked on 871 constants.
 - **`tools/strip_dead.py`**: removes a function the way retail's linker
   dead-stripped unreferenced code: its first `floor(size/8)*8` bytes, so a
   function of size 4 mod 8 leaves its last word (optionally named, e.g.

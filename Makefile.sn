@@ -166,13 +166,15 @@ build-sn/libgcc/asm_%.o: src/libgcc/nonmatching_%.c
 # Retail's text was assembled by SN's ps2eeas, which adds nops GNU as does
 # not: it pads short loops (the R5900 erratum) and separates an FP compare
 # from its bc1. tools/ps2eeas_nops.py does the same, measuring both in a
-# first assembly. A switch's jump table gets a section of its own,
-# placed at retail's table by rac1.ld.sh (tools/fix_jump_tables.py).
-build-sn/game/%.o: src/game/%.c tools/fix_tail_calls.py tools/fix_jump_tables.py tools/jump_tables.py tools/check_macro_slots.py tools/ps2eeas_nops.py
+# first assembly. It also builds 64-bit constants its own way, which
+# tools/ps2eeas_dli.py reproduces. A switch's jump table gets a section of
+# its own, placed at retail's table by rac1.ld.sh (tools/fix_jump_tables.py).
+build-sn/game/%.o: src/game/%.c tools/fix_tail_calls.py tools/fix_jump_tables.py tools/jump_tables.py tools/ps2eeas_dli.py tools/check_macro_slots.py tools/ps2eeas_nops.py
 	@mkdir -p $(dir $@)
 	$(CC_TEXT) $(CFLAGS) -S -o build-sn/game/$*.s $<
 	python tools/fix_tail_calls.py build-sn/game/$*.s build-sn/game/$*_tc.s
 	python tools/fix_jump_tables.py build-sn/game/$*_tc.s build-sn/game/$*_jt.s
+	python tools/ps2eeas_dli.py build-sn/game/$*_jt.s build-sn/game/$*_jt.s
 	python tools/check_macro_slots.py build-sn/game/$*_jt.s
 	$(CC_TEXT) $(CFLAGS) -c build-sn/game/$*_jt.s -o build-sn/game/$*_jt.o
 	python tools/ps2eeas_nops.py build-sn/game/$*_jt.s build-sn/game/$*_jt.o build-sn/game/$*_fixed.s
