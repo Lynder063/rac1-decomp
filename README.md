@@ -120,10 +120,11 @@ The full procedure is in [`docs/WORKFLOW.md`](docs/WORKFLOW.md). In short:
    real source.
 2. Get a starting point with `python tools/m2c.py func_XXXXXXXX`. That runs
    [m2c](https://github.com/matt-kempster/m2c) with context from
-   `sh tools/gen_ctx.sh`.
-3. Iterate with `sh tools/diff.sh func_XXXXXXXX`, which runs
-   [asm-differ](https://github.com/simonlindholm/asm-differ).
-4. Verify from scratch with `bash tools/build_sn.sh`.
+   `sh tools/gen_ctx.sh` (or `python tools/gen_ctx.py` on Windows).
+3. Iterate with `sh tools/diff.sh func_XXXXXXXX` (or `tools\diff.bat` on
+   Windows), which runs [asm-differ](https://github.com/simonlindholm/asm-differ).
+4. Verify from scratch with `bash tools/build_sn.sh` (or
+   `python tools/build_sn.py` on Windows).
 5. Regenerate the progress report with
    `python tools/gen_progress_report.py`, and commit it together with your
    change. CI fails if the report is out of date.
@@ -137,6 +138,51 @@ git clone https://github.com/simonlindholm/asm-differ tools/ext/asm-differ
 
 Known compiler behaviour, useful levers and measured dead ends are collected
 in [`docs/DECOMP_PROGRESS.md`](docs/DECOMP_PROGRESS.md).
+
+## Ghidra — AI Decompilation Progress
+
+AI-generated C code from the [rac1-ai-platform](https://github.com/Lynder063/rac1-ai-platform)
+can be imported into Ghidra as plate comments and EOL markers, giving you a
+starting point for every function directly inside the disassembler.
+
+### Setup
+
+The import is a two-step process:
+
+**Step 1 — Export** (run with Python 3, outside Ghidra):
+
+```bash
+# Auto-discovers the platform DB if rac1-ai-platform lives next to this repo
+python tools/ghidra_export_progress.py
+
+# Or point at the DB explicitly
+python tools/ghidra_export_progress.py --db C:/path/to/rac1-ai-platform/data/ai_decomp.db
+
+# Only export 100% byte-exact matches
+python tools/ghidra_export_progress.py --matched-only
+
+# Only export functions with >= 50% match
+python tools/ghidra_export_progress.py --min-pct 50
+```
+
+This writes `tools/ghidra_import.json` (gitignored — generated data).
+
+**Step 2 — Import** (run inside Ghidra):
+
+1. Open the RaC1 `.elf` (`SCES_509.16`) in Ghidra and run **Auto Analyse**.
+2. Open **Window → Script Manager**.
+3. Click the gear icon → **Edit Script Paths** → add the full path to `<repo>/tools/`.
+4. Find `ghidra_import_progress` in the list and click **Run ▶**.
+
+### What gets added
+
+| Function status | Ghidra annotation |
+|---|---|
+| Any AI-generated C code | **Plate comment** above the function with status, source file, and full C body |
+| Exact match (100%) | Plate comment **+ EOL comment** `[AI-MATCHED 100%]` on the first instruction |
+
+Re-run Step 1 any time you want a fresh export, then re-run Step 2 — existing
+comments are overwritten safely.
 
 ## Project structure
 
