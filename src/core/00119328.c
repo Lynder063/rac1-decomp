@@ -116,7 +116,34 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001194C8);
  */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001195A0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119678);
+extern int D_0012FCF8;
+extern int D_00154600;
+extern int D_00154608[];
+extern int func_00118C20(int);
+extern void func_00118CA0(int);
+
+int func_00119678(int arg0) {
+    int v0;
+    int index;
+    int sema;
+
+    asm volatile("addiu $3, $0, -0x2F\n\tsyscall\n\t" : "=r"(v0) : : "$3");
+
+    if (v0 == arg0) {
+        if ((v0 < 0x100) && (D_0012FCF8 != 0)) {
+            sema = D_00154600;
+            index = D_00154608[1] & 0x1FF;
+            D_00154608[1] = index + 1;
+            ((char*)D_00154608)[index * 2 + 8] = 0;
+            ((char*)D_00154608)[index * 2 + 9] = v0;
+            func_00118CA0(sema);
+            return v0;
+        }
+        return -1;
+    }
+
+    return func_00118C20(v0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119710);
 
@@ -132,14 +159,13 @@ extern int func_00118E90_ret(int, void *) __asm__("func_00118E90");
 /* sceDeci2Open: returns Deci2Call's int result (func_00118E90 is
    Deci2Call, declared void in this file, so it is reached through an
    alias). */
-int func_00119718(unsigned short arg0, void *arg1, void *arg2) {
-    unsigned int buf[4];
-
-    buf[0] = arg0;
-    buf[1] = (unsigned int)arg1;
-    buf[2] = (unsigned int)arg2;
-    buf[3] = (unsigned int)&D_00154A10 | 0x20000000;
-    return func_00118E90_ret(1, buf);
+void func_00119718(s32 arg0, s32 arg1, s32 arg2) {
+    char *buf[4];
+    buf[0] = (char *)D_00154A10;
+    buf[1] = (char *)arg0;
+    buf[2] = (char *)arg1;
+    buf[3] = (char *)arg2;
+    func_00118E90(1, buf);
 }
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119760);

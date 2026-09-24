@@ -338,10 +338,14 @@ extern int D_0015EF90_m __asm__("D_0015EF90") MACRO_ADDR;
 
 /* D_0015EF90 is read through a MACRO_ADDR alias: retail's one-register
    load. */
-int func_0021B108(void *arg0) {
-    *(char **)((char *)arg0 + 0x34) =
-        (D_0015EF90_m != 0) ? D_001D4B90 : D_001D4BC0;
-    return 0;
+void func_0021B108(void *arg0) {
+    void **p = (void **)((char *)arg0 + 0x34);
+
+    if (D_0015EF90 == 0) {
+        *p = &D_001D4BC0;
+    } else {
+        *p = &D_001D4B90;
+    }
 }
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021B138);

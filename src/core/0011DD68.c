@@ -86,20 +86,24 @@ extern void func_0011D4A0(void);
 /*
  * Reverted: size mismatch (ours=44, retail=48 -- 4 bytes short).
  *
- *   int func_0011DD68(char *dst, char *src, unsigned int n) {
- *       unsigned int i;
- *       if (n != 0) {
- *           i = 0;
- *           do {
- *               unsigned char b = *src;
- *               i++;
- *               src++;
- *               *dst = b;
- *               dst++;
- *           } while (i < n);
- *       }
- *       return 0;
- *   }
+s32 func_0011DD68(u8 *arg0, u8 *arg1, u32 arg2) {
+    s32 var_a3;
+    u8 *var_a0;
+    u8 *var_a1;
+
+    var_a0 = arg0;
+    var_a1 = arg1;
+    var_a3 = 0;
+    if (arg2 != 0) {
+        do {
+            *var_a0 = *var_a1;
+            var_a3 += 1;
+            var_a1 += 1;
+            var_a0 += 1;
+        } while (var_a3 < arg2);
+    }
+    return 0;
+}
  *
  * A byte-copy loop returning 0; unsigned counter needed to avoid loop
  * reversal (see [[rac1-64bit-field-type]]'s sibling lesson on this
@@ -110,7 +114,24 @@ extern void func_0011D4A0(void);
  * the store through a saved old-dst local (`char *d = dst; dst++; *d
  * = b;`) -- no change. Not reachable from source.
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DD68);
+s32 func_0011DD68(u8 *arg0, u8 *arg1, u32 arg2) {
+    s32 var_a3;
+    u8 *var_a0;
+    u8 *var_a1;
+
+    var_a0 = arg0;
+    var_a1 = arg1;
+    var_a3 = 0;
+    if (arg2 != 0) {
+        do {
+            *var_a0 = *var_a1;
+            var_a3 += 1;
+            var_a1 += 1;
+            var_a0 += 1;
+        } while (var_a3 < arg2);
+    }
+    return 0;
+}
 
 /* Tail call: retail is `j func_0011D4A0` + nop, with no frame at all.
    Reached via tools/fix_tail_calls.py, which rewrites the compiler's

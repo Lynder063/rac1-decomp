@@ -149,7 +149,11 @@ extern char D_001E8690[];
  */
 INCLUDE_ASM("asm/nonmatchings/text", func_0020C210);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020C230);
+void func_0020C230(void) {
+    while (*(s32 *)0x1000D400 & 0x100) {
+        ;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020C268);
 

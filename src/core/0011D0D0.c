@@ -102,7 +102,28 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D360);
  * -malign-loops/-falign-loops do nothing here: the former is accepted
  * but is x86-oriented in 2.95, the latter is rejected outright.
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D370);
+s32 func_0011D370(s32 *arg0, s32 *arg1, u32 arg2) {
+    s32 *var_a0;
+    s32 *var_a1;
+    s32 temp_v1;
+    u32 temp_a2;
+    u32 var_a3;
+
+    var_a0 = arg0;
+    var_a1 = arg1;
+    temp_a2 = arg2 >> 2;
+    var_a3 = 0;
+    if (temp_a2 != 0) {
+        do {
+            temp_v1 = *var_a1;
+            var_a3 += 1;
+            var_a1 += 4;
+            *var_a0 = temp_v1;
+            var_a0 += 4;
+        } while (var_a3 < temp_a2);
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D3A8);
 
