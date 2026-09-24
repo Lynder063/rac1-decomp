@@ -34,7 +34,93 @@ int func_00114518(int *errOut, void *a, void *b, void *c) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00114578);
+/* newlib makebuf.c __smakebuf(fp): allocate fp's stdio buffer (or fall
+ * back to unbuffered). __SNBF -> use the 1-byte fp->_nbuf and return.
+ * Otherwise fstat the descriptor to size the buffer and pick __SOPT
+ * (regular file, default seek) vs __SNPT; BUFSIZ/blksize are both 0x400
+ * here (HAVE_BLKSIZE is off in this build). malloc failure falls back
+ * to unbuffered too; success sets _cleanup_r, __SMBF, and __SLBF when
+ * the descriptor is a tty. */
+extern int func_00114000(void *data, int file, void *st);  /* _fstat_r */
+extern void *func_00114920(void *data, unsigned int size); /* _malloc_r */
+extern int func_001191C0(int);                              /* isatty */
+extern void func_00113AC8(void);                             /* _cleanup_r */
+extern long func_001163A0(void *, void *, void *);           /* __sseek */
+
+typedef struct {
+    short st_dev;
+    short st_ino;
+    int st_mode;
+    unsigned short st_nlink;
+    unsigned short st_uid;
+    unsigned short st_gid;
+    short st_rdev;
+    long st_size;
+    long st_atime;
+    long st_spare1;
+    long st_mtime;
+    long st_spare2;
+    long st_ctime;
+    long st_spare3;
+    long st_blksize;
+    long st_blocks;
+    long st_spare4[2];
+} Stat_114578;
+
+typedef struct {
+    void *_p;
+    char pad_04[0xC - 0x4];
+    short _flags;
+    short _file;
+    void *_bf_base;
+    unsigned int _bf_size;
+    char pad_18[0x28 - 0x18];
+    void *_seek;
+    char pad_2C[0x43 - 0x2C];
+    unsigned char _nbuf[1];
+    char pad_44[0x4C - 0x44];
+    unsigned int _blksize;
+    char pad_50[0x54 - 0x50];
+    void *_data;
+} File_114578;
+
+void func_00114578(File_114578 *fp) {
+    unsigned int size, couldbetty;
+    void *p;
+    Stat_114578 st;
+
+    if (fp->_flags & 0x2) {
+        fp->_bf_base = fp->_p = fp->_nbuf;
+        fp->_bf_size = 1;
+        return;
+    }
+    if (fp->_file < 0 || func_00114000(fp->_data, fp->_file, &st) < 0) {
+        couldbetty = 0;
+        size = 0x400;
+        fp->_flags |= 0x800;
+    } else {
+        couldbetty = (st.st_mode & 0xF000) == 0x2000;
+        size = 0x400;
+        if ((st.st_mode & 0xF000) == 0x8000 && fp->_seek == (void *)func_001163A0) {
+            fp->_flags |= 0x400;
+            fp->_blksize = 0x400;
+        } else {
+            fp->_flags |= 0x800;
+        }
+    }
+    if ((p = func_00114920(fp->_data, size)) == 0) {
+        fp->_flags |= 0x2;
+        fp->_bf_base = fp->_p = fp->_nbuf;
+        fp->_bf_size = 1;
+    } else {
+        *(void (**)(void))((char *)fp->_data + 0x3C) = func_00113AC8;
+        fp->_flags |= 0x80;
+        fp->_bf_base = fp->_p = p;
+        fp->_bf_size = size;
+        if (couldbetty && func_001191C0(fp->_file))
+            fp->_flags |= 0x1;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001146C8);
 

@@ -196,9 +196,114 @@ void *func_00115808(void *ptr, int i) {
     return b;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00115840);
+/* newlib mprec.c mult(ptr,a,b): _multiply, Bigint*Bigint for dtoa/strtod
+ * (schoolbook long multiplication in 16-bit limbs, ensuring a is the
+ * not-shorter operand first). */
+extern void *func_001154D0(void *ptr, int k); /* Balloc */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00115A70);
+#define STOREINC(xc, hi, lo) \
+    (((unsigned short *)(xc))[1] = (unsigned short)(hi), \
+     ((unsigned short *)(xc))[0] = (unsigned short)(lo), \
+     (xc)++)
+
+Bigint_1154D0 *func_00115840(void *ptr, Bigint_1154D0 *a, Bigint_1154D0 *b) {
+    Bigint_1154D0 *c;
+    int k, wa, wb, wc;
+    unsigned int carry, y, z, z2;
+    unsigned int *x, *xa, *xae, *xb, *xbe, *xc, *xc0;
+
+    if (a->wds < b->wds) {
+        c = a;
+        a = b;
+        b = c;
+    }
+    k = a->k;
+    wa = a->wds;
+    wb = b->wds;
+    wc = wa + wb;
+    if (wc > a->maxwds)
+        k++;
+    c = func_001154D0(ptr, k);
+    for (x = c->x, xa = x + wc; x < xa; x++)
+        *x = 0;
+    xa = a->x;
+    xae = xa + wa;
+    xb = b->x;
+    xbe = xb + wb;
+    xc0 = c->x;
+    for (; xb < xbe; xb++, xc0++) {
+        if ((y = *xb & 0xffff)) {
+            x = xa;
+            xc = xc0;
+            carry = 0;
+            do {
+                z = (*x & 0xffff) * y + (*xc & 0xffff) + carry;
+                carry = z >> 16;
+                z2 = (*x++ >> 16) * y + (*xc >> 16) + carry;
+                carry = z2 >> 16;
+                STOREINC(xc, z2, z);
+            } while (x < xae);
+            *xc = carry;
+        }
+        if ((y = *xb >> 16)) {
+            x = xa;
+            xc = xc0;
+            carry = 0;
+            z2 = *xc;
+            do {
+                z = (*x & 0xffff) * y + (*xc >> 16) + carry;
+                carry = z >> 16;
+                STOREINC(xc, z, z2);
+                z2 = (*x++ >> 16) * y + (*xc & 0xffff) + carry;
+                carry = z2 >> 16;
+            } while (x < xae);
+            *xc = z2;
+        }
+    }
+    for (xc0 = c->x, xc = xc0 + wc; wc > 0 && !*--xc; --wc)
+        ;
+    c->wds = wc;
+    return c;
+}
+
+/* newlib mprec.c pow5mult(ptr,b,k): multiplies Bigint b by 5^k using a
+ * squaring ladder cached in ptr->_p5s (the first four bits of k via the
+ * {5,25,125} table D_001524B8, the rest by repeated squaring of 625). */
+extern void *func_001155A8(void *ptr, void *b, int m, int a); /* multadd */
+extern int D_001524B8[3];
+
+typedef struct { char pad[0x48]; Bigint_1154D0 *p5s; } Reent_115A70;
+
+void *func_00115A70(void *ptr, void *b, int k) {
+    Reent_115A70 *r = ptr;
+    Bigint_1154D0 *p5, *p51, *b1;
+    int i;
+
+    if ((i = k & 3))
+        b = func_001155A8(ptr, b, D_001524B8[i - 1], 0);
+
+    if (!(k >>= 2))
+        return b;
+    if (!(p5 = r->p5s)) {
+        p5 = r->p5s = func_00115808(ptr, 625);
+        p5->next = 0;
+    }
+    for (;;) {
+        if (k & 1) {
+            b1 = func_00115840(ptr, b, p5);
+            func_00115578(ptr, b);
+            b = b1;
+        }
+        if (!(k >>= 1))
+            break;
+        if (!(p51 = p5->next)) {
+            p51 = p5->next = func_00115840(ptr, p5, p5);
+            p51->next = 0;
+        }
+        p5 = p51;
+    }
+    return b;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00115B70);
 
