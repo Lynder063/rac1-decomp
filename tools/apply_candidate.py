@@ -12,7 +12,8 @@ is already C (a near-miss being fixed).
 one-line comment the candidate has there. --drop-note removes the block
 comment that ends right above the stub or definition: the old revert or
 near-miss note that the match makes obsolete. Without --comment, a
-stub's trailing name comment (`INCLUDE_ASM(...); /* Name */`) is kept.
+stub's trailing name comment (`INCLUDE_ASM(...); /* Name */`) is kept,
+unless the candidate has a comment of its own above the definition.
 
 The full build decides, as always: run tools/build_sn.sh afterwards.
 """
@@ -54,7 +55,8 @@ def main() -> None:
         block = ["/* " + body[0]] + ["   " + l if l else "" for l in body[1:]]
         block[-1] += " */"
         cand[d:d] = block
-    elif name_comment and name_comment not in "\n".join(cand):
+    elif (name_comment and name_comment not in "\n".join(cand)
+          and not (d > 0 and cand[d - 1].rstrip().endswith("*/"))):
         cand.insert(d, name_comment)
 
     start = first
