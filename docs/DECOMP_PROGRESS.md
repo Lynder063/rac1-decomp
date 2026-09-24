@@ -261,6 +261,41 @@ been the right size only because two errors cancelled [func_00208208,
 func_00215A98]. And `src/core/001236F0.c` is Sony's memory card library,
 built with the SDK's 2.9-ee like libgcc [sceMcSync].
 
+**Later the same day (batches G to J).**
+
+- *Return types show in the next register.* Retail's choice of `$v0` or
+  `$v1` for the first temporary after a call shows whether the callee
+  returns a value. Four near-misses were a callee declared void that
+  returns int, or the reverse [func_00217588, func_00209DC0,
+  func_0011AA00, func_0011D3C8]. Declare the right type through an
+  `__asm__` alias rather than changing the file's declaration, whose
+  other callers were matched against it.
+- *An argument register left alone up to a call is being passed on*
+  [func_00226720 passes oClass to CreateMoby].
+- *A select kept as a branch.* jump.c makes movz/movn only when the
+  arm sets a full register. A `static inline short` helper returns
+  through a subreg, so its select stays a branch [func_0021EDD8].
+- *Reading a global back right after storing it* changes the store
+  schedule (CSE folds the load) where no order of the stores did
+  [func_002348E8].
+- *MACRO_ADDR through an alias* fixed four residuals that old notes
+  blamed on the allocator. Look for a split `lui`/`lw` that retail does
+  in one register [func_001EBAF0, func_001EC098, func_00222D70,
+  func_00205A50].
+- *A MACRO_ADDR store at `D + 4` never goes in a delay slot*, because the
+  compiler counts symbol+offset as two instructions. Declare a symbol
+  at the exact address instead; undefined `D_` names resolve at link.
+- *`m = G = call();`* stores the call's `$v0` directly, where
+  `m = call(); G = m;` stores the saved copy.
+- *`if (x) return 1;` in both arms with one shared `return 0;`* keeps a
+  flag test a beqz; a result variable or a `return 0` per arm becomes
+  sltu [func_002072C0].
+- *Scaled indices in their own locals* (`int off = idx * 8;`) give
+  base-first addu; written inline, the multiply goes first
+  [func_00203548].
+- *Old notes are evidence, not verdicts.* Batch H found four wrong
+  decodes, and batch J a "tried, fails" store order that works.
+
 ### Per-function log
 
 The table below is a **chronological log**, newest entries mostly at the
