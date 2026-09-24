@@ -127,9 +127,67 @@ int func_001239D8(int arg0, int arg1, int arg2) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00123A10);
+extern char D_00159B00[];
+extern int D_00132EAC;
+extern int D_00159B80;
+extern char D_0015B0C0[];
+extern int func_00118CC0(int);
+extern int func_0011B4C8();
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00123AC8);
+/* RPC 3 on the client D_00159B00, in func_001239D8's shape: -100 with
+   no server bound, -200 when the semaphore wait fails. */
+int func_00123A10(int arg0) {
+    char *cd = D_00159B00;
+    int r;
+
+    if (*(int *)(cd + 0x24) == 0) {
+        return -100;
+    }
+    if (func_00118CC0(D_00132EAC) < 0) {
+        return -200;
+    }
+    D_00159B80 = arg0;
+    r = func_0011B4C8(cd, 3, 1, &D_00159B80, 0x30, D_0015B0C0, 4, 0, 0);
+    if (r == 0) {
+        D_00132EA8 = 3;
+    } else {
+        func_00118C90(D_00132EAC);
+    }
+    return r;
+}
+
+extern char D_00159B00[];
+extern int D_00132EAC;
+extern int D_00159B80;
+extern char D_0015B0C0[];
+extern int func_00118CC0(int);
+extern int func_0011B4C8();
+
+/* RPC 4, the same shape with three request words. `buf` is assigned
+   after the semaphore call, so retail builds its address in a temp. */
+int func_00123AC8(int arg0, int arg1, int arg2) {
+    char *cd = D_00159B00;
+    int *buf;
+    int r;
+
+    if (*(int *)(cd + 0x24) == 0) {
+        return -100;
+    }
+    if (func_00118CC0(D_00132EAC) < 0) {
+        return -200;
+    }
+    buf = &D_00159B80;
+    buf[0] = arg0;
+    buf[4] = arg1;
+    buf[5] = arg2;
+    r = func_0011B4C8(cd, 4, 1, buf, 0x30, D_0015B0C0, 4, 0, 0);
+    if (r == 0) {
+        D_00132EA8 = 4;
+    } else {
+        func_00118C90(D_00132EAC);
+    }
+    return r;
+}
 
 /*
  * Unpack a scratchpad-resident descriptor: arg0 is forced into the SPR
@@ -208,7 +266,36 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00124338);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124410);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124528);
+extern char D_00159B00[];
+extern int D_00132EAC;
+extern int D_00159B80;
+extern char D_0015B0C0[];
+extern int func_00118CC0(int);
+extern int func_0011B4C8();
+
+/* RPC 0x11, the same shape with two request words. */
+int func_00124528(int arg0, int arg1) {
+    char *cd = D_00159B00;
+    int *buf;
+    int r;
+
+    if (*(int *)(cd + 0x24) == 0) {
+        return -100;
+    }
+    if (func_00118CC0(D_00132EAC) < 0) {
+        return -200;
+    }
+    buf = &D_00159B80;
+    buf[1] = arg0;
+    buf[2] = arg1;
+    r = func_0011B4C8(cd, 0x11, 1, buf, 0x30, D_0015B0C0, 4, 0, 0);
+    if (r == 0) {
+        D_00132EA8 = 0x11;
+    } else {
+        func_00118C90(D_00132EAC);
+    }
+    return r;
+}
 
 extern int func_0011B4C8();
 extern char D_0015B108[];
@@ -256,7 +343,42 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00124920);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124A68);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124A70);
+extern char D_001537A0[];
+
+/* RPC 0x8000091A round trip on D_0015B180 (the buffer is both request
+   and reply), copying the reply's bytes to arg3. `r` is assigned in both
+   arms of the copy guard with one return; two returns would be
+   cross-jumped into one. */
+int func_00124A70(int arg0, int arg1, int *arg2, char *arg3) {
+    int *buf = &D_0015B180;
+    unsigned char *src;
+    int i;
+    int r;
+
+    buf[0] = arg0;
+    buf[1] = arg1;
+    buf[2] = *arg2;
+    if (func_0011B4C8(D_0015B108, 0x8000091A, 0, buf, 0x400, buf, 0x400, 0, 0) < 0) {
+        func_00124B60(D_001537A0);
+        return 0;
+    }
+    r = buf[0x23];
+    if (r >= 0) {
+        *arg2 = buf[2];
+        i = 0;
+        if (i < buf[2]) {
+            src = (unsigned char *)buf + 0xC;
+            do {
+                arg3[i] = src[i];
+                i++;
+            } while (i < buf[2]);
+            r = buf[0x23];
+        } else {
+            r = buf[0x23];
+        }
+    }
+    return r;
+}
 
 /*
  * Reverted -- semantics certain (an unused-argument no-op, called with

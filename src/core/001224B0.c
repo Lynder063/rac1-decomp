@@ -108,7 +108,30 @@ extern int func_00121040(int);
 extern int D_001325C0;
 extern char D_00132E40[];
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001224B0);
+extern char D_00153178[];
+
+/* Kicks a DMA transfer on the GIF channel (D2 at 0x1000A000), waiting
+   for the channel with a timeout. Every register access is volatile. */
+int func_001224B0(void *arg0) {
+    int p = (int)arg0;
+    unsigned int i;
+
+    i = 0;
+    while (*(volatile int *)0x1000A000 & 0x100) {
+        if (i++ > 0x1000000) {
+            func_0011A6C8(D_00153178);
+            return -1;
+        }
+    }
+    *(volatile int *)0x1000A020 = (int)(*(long *)arg0 & 0x7FFF) + 1;
+    if ((p & 0x70000000) == 0x70000000) {
+        *(volatile int *)0x1000A010 = (p & 0x0FFFFFFF) | 0x80000000;
+    } else {
+        *(volatile int *)0x1000A010 = p & 0x0FFFFFFF;
+    }
+    *(volatile int *)0x1000A000 = 0x101;
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00122598);
 

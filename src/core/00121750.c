@@ -128,7 +128,29 @@ int func_00121930(void) {
     return -1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001219C8);
+extern volatile int D_00131414;
+
+/* Sibling of func_00121930: RPC 0x16 on D_00132E08 under the
+   D_001313EC semaphore, returning the reply word read uncached. The
+   volatile flag keeps the success-path store out of a delay slot, where
+   reorg never puts a volatile access. */
+int func_001219C8(void) {
+    int r;
+
+    if (func_00121040(0x1E) == 0) {
+        return 0;
+    }
+    D_00131414 = 8;
+    if (func_0011B4C8(D_00132E08, 0x16, 0, 0, 0, &D_001325C0, 4, 0, 0) >= 0) {
+        D_00131414 = 0;
+        r = *(int *)((unsigned int)&D_001325C0 | 0x20000000);
+        func_00118C90(*(volatile int *)&D_001313EC);
+        return r;
+    }
+    func_00118C90(*(volatile int *)&D_001313EC);
+    D_00131414 = 0;
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00121A80);
 
