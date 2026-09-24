@@ -964,6 +964,24 @@ own noreorder block when there is one. First results: `func_00225548` and
 `func_002268F0`, both filed below as blocked by exactly this, are exact.
 `tools/rank_candidates.py` no longer blocks the erratum in text.
 
+Using ps2eeas for the whole text segment was measured too, and it is
+worse. To get it to assemble at all, every text stub was reduced to raw
+`.word`s. Three things crash it: a stub whose `lui %hi` feeds two distant
+`%lo` uses, `labels.inc`'s default-parameter macros, and `.type`/`.size`
+next to `.ent`/`.end`. Once assembled, the build was 385 exact instead of
+503, with 11 size mismatches. The cause is small data: this ps2eeas has
+no `-G` expansion, so every `$gp`-relative access came out as a `lui`/`lw`
+pair and the layout shifted after it. Probes also found two scheduling
+differences from GNU `ee-as`:
+
+- after `mfc1`, GNU inserts a nop before the result is used (reorder
+  mode) and ps2eeas does not;
+- between `c.cond.s` and `bc1t`, ps2eeas inserts a nop even in noreorder
+  code and GNU does not.
+
+Switching assemblers would first need the small-data expansion
+reimplemented. Until then `fix_short_loops.py` is the pipeline.
+
 The original analysis follows.
 
 ### (Superseded) The short-loop erratum is a toolchain blocker, measured three ways
