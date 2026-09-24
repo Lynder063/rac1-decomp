@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include "common.h"
 #include "structs.h"
 
@@ -20,7 +21,24 @@ extern char D_00152470[];
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00116070);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00116078);
+extern int func_001170A0(void *, const char *, va_list); /* vfprintf */
+
+/* printf, from the C library (newlib): points _stdout's _data back at
+   the reentrancy struct (_impure_ptr, D_0012F86C) and hands the va_list
+   to vfprintf. _REENT is read once into a local: retail keeps it in a
+   register across the store. Built with 2.9-ee, which saves only the
+   integer argument registers (Makefile.sn, EE29_CORE). */
+int func_00116078(const char *fmt, ...) {
+    int ret;
+    va_list ap;
+    char *r = (char *)D_0012F86C;
+
+    *(void **)(*(char **)(r + 8) + 0x54) = r;
+    va_start(ap, fmt);
+    ret = func_001170A0(*(void **)(r + 8), fmt, ap);
+    va_end(ap);
+    return ret;
+}
 
 void func_001160C8(int arg0) {
     *(int *)((char *)D_0012F86C + 0x58) = arg0;

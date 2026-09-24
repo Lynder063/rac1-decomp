@@ -39,7 +39,8 @@ CC = "toolchain/sn-prodg-24/local/sce/ee/gcc/bin/ee-gcc2953.exe"
 # Sony SDK sources built with the SDK's 2.9-ee, no rewriters (Makefile.sn's
 # EE29_CORE).
 CC29 = "toolchain/sn-prodg-24/local/sce/ee/gcc/bin/ee-gcc.exe"
-EE29_SOURCES = {"src/core/001236F0.c"}
+EE29_INC = "-Itoolchain/sn-prodg-24/local/sce/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111/include"
+EE29_SOURCES = {"src/core/001236F0.c", "src/core/00116070.c", "src/core/00116248.c"}
 CFLAGS = ["-O2", "-G2", "-Iinclude", "-Wa,-I,."]
 BASEROM = "baserom/SCES_509.16"
 STUB = re.compile(r'^\s*INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\)')
@@ -89,7 +90,7 @@ def build(name, seg, src, first, last, candidate, work):
     with open(work / "log.txt", "w") as log:
         s = [work / f"{n}.s" for n in "abcd"]
         if str(src) in EE29_SOURCES:
-            if not run(sn(CC29, *CFLAGS, "-S", "-o", str(s[0]), str(c)), log):
+            if not run(sn(CC29, *CFLAGS, EE29_INC, "-S", "-o", str(s[0]), str(c)), log):
                 return None
             if not run([sys.executable, "tools/check_macro_slots.py", str(s[0])], log):
                 return None
