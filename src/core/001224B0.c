@@ -133,6 +133,38 @@ int func_001224B0(void *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00122598);
+/* libgraph's sceGsGParam, as far as this reads it. */
+typedef struct {
+    short interlace; /* 0x00 */
+    short omode;     /* 0x02 */
+    short ffmode;    /* 0x04 */
+    short version;   /* 0x06 */
+    int unk_08;      /* 0x08 */
+} GsGParam;
+extern GsGParam *func_00121D08(void);
+extern void func_00118ED0(void);
+extern long func_00118F60(void);
+
+/* Returns the current field, bit 13 of the GS CSR (read directly at
+   0x12001000, or through func_00118F60), when the display is
+   interlaced, and 1 otherwise. In the second arm the bit is taken from
+   the call's result before the interlace test, as retail does. */
+int func_00122598(void) {
+    GsGParam *gp = func_00121D08();
+    long csr;
+
+    if (gp->unk_08 == 0) {
+        func_00118ED0();
+        if (gp->interlace != 1) {
+            return 1;
+        }
+        return (*(volatile unsigned long *)0x12001000 >> 13) & 1;
+    }
+    csr = (func_00118F60() >> 13) & 1;
+    if (gp->interlace != 1) {
+        return 1;
+    }
+    return csr;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012262C);
