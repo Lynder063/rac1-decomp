@@ -48,7 +48,7 @@ import os
 # ---------------------------------------------------------------------------
 # Locate ghidra_import.json next to this script file
 # ---------------------------------------------------------------------------
-_SCRIPT_DIR = os.path.dirname(getScriptFile().getAbsolutePath())
+_SCRIPT_DIR = os.path.dirname(getSourceFile().getAbsolutePath())
 _JSON_PATH  = os.path.normpath(os.path.join(_SCRIPT_DIR, "ghidra_import.json"))
 
 
