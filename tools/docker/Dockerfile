@@ -8,6 +8,9 @@
 #   bash tools/docker/run.sh bash tools/build_sn.sh
 FROM --platform=linux/386 debian:bookworm
 
+LABEL org.opencontainers.image.source="https://github.com/Lynder063/rac1-decomp"
+LABEL org.opencontainers.image.description="Build environment for Ratchet & Clank PS2 matching decompilation (32-bit Wine + ProDG)"
+
 RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       wine make git ca-certificates \

@@ -20,7 +20,11 @@ if [ -z "$CONTAINER_CLI" ]; then
 fi
 
 GHCR_IMAGE="${RAC1_BUILD_IMAGE:-ghcr.io/lynder063/rac1-build:latest}"
-LOCAL_IMAGE="rac1-build"
+if [ "$CONTAINER_CLI" = "podman" ]; then
+  LOCAL_IMAGE="localhost/rac1-build:latest"
+else
+  LOCAL_IMAGE="rac1-build:latest"
+fi
 IMAGE_TO_RUN=""
 
 if $CONTAINER_CLI image inspect "$LOCAL_IMAGE" >/dev/null 2>&1; then
