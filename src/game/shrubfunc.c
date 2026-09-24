@@ -308,7 +308,32 @@ void func_00229C08(void) {
     p[3] = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00229D48);
+extern int D_001D9140[];
+extern char *D_001D82C0[];
+extern short D_001D8C40[];
+typedef struct { char *ptr; int pad; } ShrubRec_29D48;
+
+/* `items` declared inside the middle loop, and `rec = &items[i];
+   rec->ptr` rather than `items[i].ptr`, give retail's base-first addu. */
+void func_00229D48(void) {
+    int *p;
+    for (p = D_001D9140; *p >= 0; p++) {
+        char *obj = D_001D82C0[*p];
+        int i;
+        for (i = 0; i < *(short *)(obj + 0x28); i++) {
+            ShrubRec_29D48 *items = (ShrubRec_29D48 *)(obj + 0x40);
+            ShrubRec_29D48 *rec = &items[i]; int *hdr = (int *)(rec->ptr + 0x10);
+            char *e = (char *)hdr + hdr[1] * 0x10 + 0x10;
+            int j;
+            for (j = 0; j < hdr[0]; j++) {
+                short *ent = &D_001D8C40[*(unsigned char *)(e + 0x13) * 2];
+                if (ent[0] != 0) *(int *)(e + 0x30) = (*(int *)(e + 0x30) & 0xFFFFC000) | ent[0];
+                if (ent[1] != 0) *(int *)(e + 0x20) = (*(int *)(e + 0x20) & 0xFFFFC000) | ent[1];
+                e += 0x40;
+            }
+        }
+    }
+}
 
 extern int D_00161000 MACRO_ADDR;
 extern int D_0015EF78 MACRO_ADDR;

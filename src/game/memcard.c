@@ -129,7 +129,38 @@ extern int D_0015EFB4;
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209A60);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209BB8);
+extern int func_00124068(int, int, int *, int *, int *);
+extern int func_00123F30(int, int *, int *);
+extern void func_00122598(int);
+extern int func_001241F0(int, int, char *, int, int, void *);
+extern char D_0013D2D0[];
+extern int D_0013D390_i[] __asm__("D_0013D390");
+
+/* The comparison is bound to a local before the shift:
+   `(a < b) << 1` folds into `a < b ? 2 : 0` (li/slt/movn), not retail's
+   slti/sll. */
+int func_00209BB8(void) {
+    int type, free, format, cmd, result;
+
+    result = func_00124068(D_0013D390_i[0], D_0013D390_i[1], &type, &free, &format);
+    while (func_00123F30(1, &D_0013D390_i[0x30], &D_0013D390_i[0x31]) == 0) {
+        func_00122598(0);
+    }
+    if (D_0013D390_i[0x31] == -5 || D_0013D390_i[0x31] < -9 || type != 2) {
+        return 1;
+    }
+    if (D_0013D390_i[0x31] != -2 && format != 0) {
+        result = func_001241F0(D_0013D390_i[0], D_0013D390_i[1], D_0013D2D0, 0, -1, 0);
+        while (func_00123F30(1, &cmd, &result) == 0) {
+            func_00122598(0);
+        }
+        if (result <= 0) {
+            int t = free < 350;
+            return t << 1;
+        }
+    }
+    return 0;
+}
 
 extern int D_001A05C0[];
 extern int D_001A08C0[];
@@ -255,22 +286,18 @@ int func_0020BAD8(int *p) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020BB10); /* memcard_Checksum */
 
-/*
- * Attempted and reverted at 15/60 (25%). Logic is confirmed:
- *   int n = arg0[1];
- *   result = 0; if (n) result = (func_0020BB10(arg0 + 2, arg0[0]) == n);
- *   return result;
- * Correct size and the right instructions, but retail emits the
- * `result = 0` (`daddu $2,$0,$0`) in the *prologue*, between the stack
- * adjust and the register spills, whereas this compiler always places it
- * after the spills -- shifting the rest of the stream. Tried: single
- * result variable, early-return form, if/else form, and both
- * declaration orders (the last-statement-emits-first rotation rule does
- * not reach into prologue scheduling). Prologue placement of a constant
- * looks unsteerable from source shape, same family as the other
- * scheduling sub-cases.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_0020BB88); /* memcard_TestChecksum */
+extern int func_0020BB10(void *data, int len);
+/* memcard_TestChecksum. `len` is read before the test: retail's load sits
+   in the beqz slot, and a load that may trap is never taken from the
+   fall-through. */
+int func_0020BB88(char *buf) {
+    int *p = (int *)buf;
+    int len = p[0];
+    int sum = p[1];
+    int result = 0;
+    if (sum != 0) result = func_0020BB10(p + 2, len) == sum;
+    return result;
+}
 
 extern void func_001F9A00(void *dst, void *src, int len);
 extern int func_0020BB10(void *data, int len);

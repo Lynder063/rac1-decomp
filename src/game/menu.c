@@ -213,22 +213,15 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00207D38);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207DB0);
 
-/*
- * Close but not exact: `result = (arg0 < 0xE0 && arg1 <= 38.0) ? 1 : 0;`
- * -- confirmed via objdump: same operations, same registers, same
- * threshold constant (0x42180000 = 38.0), same shape (default 0, set 1
- * if arg0<0xE0, reset to 0 if arg1>38.0). Retail encodes the inner
- * boolean-to-branch conversion as bc1t with both the "set 1" and
- * "reset to 0" as literal delay-slot/fallthrough instructions; every
- * source shape tried (single &&-expression, nested if, result-default-
- * then-override) compiles to a bc1f/bc1tl-based scheme instead --
- * logically identical, different instruction encoding/ordering. New
- * instance of the delay-slot-scheduling open question (previously seen
- * as store/branch-target reordering, this is the FP-condition
- * materialization case). 26/52 bytes differ, too large a diff to keep
- * as documented-close C per the func_00112468 precedent.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00207E28);
+/* Returning the compare as `? 1 : 0` gives bc1t with the `li 1` in its
+   slot; folded into `&&` it becomes bc1tl. The two nops, after the mtc1
+   and after the compare, are ps2eeas's (tools/ps2eeas_nops.py). */
+int func_00207E28(int arg0, float unused1, float unused2, float arg1) {
+    if (arg0 >= 0xE0) {
+        return 0;
+    }
+    return (arg1 <= 38.0f) ? 1 : 0;
+}
 
 extern unsigned char D_0013D4C0 NOT_SDA;
 extern unsigned char D_0013D4C1 NOT_SDA;
@@ -263,17 +256,13 @@ int func_00207EB0(void) {
 
 extern unsigned char D_0013D4E0;
 
-/*
- * Close but not exact: if (arg0>=0xBE) return D_0013D4E0!=0; else return
- * (arg1>=58.5) ? 1 : 0. Confirmed via objdump: the arg0>=0xBE early
- * return matches exactly (same bnez polarity as retail once written as
- * `if (arg0 >= 0xBE)` rather than the inverted `if (arg0 < 0xBE)`), but
- * the float-threshold boolean materialization hits the same delay-slot-
- * scheduling issue as func_00207E28 just above -- same category, not
- * re-explained in full here. 19/64 bytes differ, too large a diff to
- * keep as documented-close C per the func_00112468 precedent.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00207EC0);
+extern unsigned char D_0013D4E0_far __asm__("D_0013D4E0") NOT_SDA;
+/* The recorded C was right; the two ps2eeas nops were the only
+   residual. */
+int func_00207EC0(int arg0, float unused1, float unused2, float arg1) {
+    if (arg0 >= 0xBE) return D_0013D4E0_far != 0;
+    return (arg1 >= 58.5f) ? 1 : 0;
+}
 
 extern unsigned char D_0013D4DC NOT_SDA;
 extern unsigned char D_0013D4DD NOT_SDA;

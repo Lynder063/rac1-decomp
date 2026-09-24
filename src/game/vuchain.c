@@ -309,30 +309,21 @@ extern TexRemap D_001E0F00[];
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002347F0); /* VU0_loadMicroProgram(long *) */
 
-/*
- * Reverted: size mismatch (ours=48, retail=44 -- 4 bytes over).
- *
- *   extern int D_0015EE84_far __asm__("D_0015EE84") NOT_SDA;
- *   extern int D_001DE338[];
- *   extern short D_0016100C_s __asm__("D_0016100C");
- *
- *   void func_002348B8(void) {
- *       int idx = D_0015EE84_far;
- *       if (idx < 0x13) {
- *           idx = 0;
- *       }
- *       *(int *)&D_0016100C_s = D_001DE338[idx];
- *   }
- *
- * The short+cast trick on D_0016100C (see [[rac1-gp-relative-anonymous-bss]])
- * is needed here too, despite it having a real name -- without it this
- * compiler materializes its full address instead of the gp-relative
- * store retail uses. What's left: retail encodes the range check as
- * `slti v1,v0,0x13`; this compiler always canonicalizes `< 0x13` (and
- * the equivalent `<= 0x12`, tried too) into `slt v1,0x12,v0` instead --
- * same class already seen on func_001F0FF8 and func_00226380.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_002348B8);
+extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
+extern int D_0016100C_m __asm__("D_0016100C") MACRO_ADDR;
+extern int D_001DE338[];
+
+/* Advances the index at D_0016100C, wrapping at 0x13. The old note had
+   the condition backwards: `slti; movz x,$0,t` is `if (idx >= 0x13)
+   idx = 0`. Both globals are MACRO_ADDR, which gives the one-register
+   load and the $gp store in the jr slot. */
+void func_002348B8(void) {
+    int idx = D_0015EE84_m;
+    if (idx >= 0x13) {
+        idx = 0;
+    }
+    D_0016100C_m = D_001DE338[idx];
+}
 
 /*
  * The VU1 chain state. D_00161000 (the write pointer), D_00161010 (the
@@ -390,7 +381,43 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002348E8); /* VU1_initChain(void) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234948); /* VU1_swapChain(void) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002349B8); /* VU1_sendChain(void) */
+extern int D_00161014 MACRO_ADDR;
+extern int D_0016100C_m __asm__("D_0016100C") MACRO_ADDR;
+extern short D_00160FE0;
+extern char D_001E8CF8[];
+extern int *func_001232E0(int);
+extern void func_001235C8(int *, int);
+
+/* VU1_sendChain. D_00160FE0 is volatile, so its store stays out of the
+   delay slot (reorg never moves a volatile access there). */
+void func_002349B8(void) {
+    int size;
+    int err;
+    int *chan;
+
+    *(volatile int *)&D_00160FE0 |= 0x1F;
+    size = (int)D_00161000 - D_00160FF8[D_00161010];
+    err = 0;
+    if (D_00161014 < size) {
+        D_00161014 = size;
+        if (D_0016100C_m < size) {
+            func_001E9730(D_001E8CF8);
+            err = 1;
+        }
+    }
+    if (err == 0) {
+        D_00161000[0] = 0x70000000;
+        D_00161000[1] = 0;
+        D_00161000[2] = 0;
+        D_00161000[3] = 0;
+        chan = func_001232E0(1);
+        *chan |= 0xC0;
+        func_00118D80(0);
+        func_001235C8(chan, D_00160FF8[D_00161010]);
+    } else {
+        *(volatile int *)&D_00160FE0 = 0;
+    }
+}
 
 extern short D_00160FE0;              /* SDA, gp -0x5D20 */
 extern char D_001E8D10[];

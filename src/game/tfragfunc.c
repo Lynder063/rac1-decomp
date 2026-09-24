@@ -313,7 +313,49 @@ __asm__(".align 4");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234380); /* SetTfragDists(void) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002344D8); /* DmaTfragTextures(void) */
+extern int D_00161000 MACRO_ADDR;
+extern int D_00160FBC MACRO_ADDR;
+extern int D_00160FC4 MACRO_ADDR;
+extern int D_0015EF74 MACRO_ADDR;
+extern char D_001E8CE0[];
+extern void func_00235EF0(void);
+extern int func_00236060(int);
+extern void func_00234E80(void);
+
+/* DmaTfragTextures: the tfrag twin of DmaShrubTextures (func_00229C08),
+   which also warns "tfrag texture overflow" past 0x400000 bytes and keeps
+   the largest size seen in D_00160FC4. */
+/* A copy of its twin func_00229C08. */
+void func_002344D8(void) {
+    int *p = (int *)D_00161000;
+    int size;
+
+    D_00161000 += 0x10;
+    ((int *)D_00160FBC)[0] = 0x20000000;
+    ((int *)D_00160FBC)[1] = D_00161000;
+    ((int *)D_00160FBC)[2] = 0;
+    ((int *)D_00160FBC)[3] = 0;
+    if (D_0018A3B0[4] != 0 && D_0018A3B0[3] != 0) {
+        func_00235EF0();
+        size = func_00236060(D_0015EF74);
+        func_00234E80();
+        if (size > 0x400000) {
+            func_001E9730(D_001E8CE0);
+        }
+        if (D_00160FC4 < size) {
+            D_00160FC4 = size;
+        }
+    }
+    ((int *)D_00161000)[0] = 0x20000000;
+    ((int *)D_00161000)[1] = D_00160FBC + 0x10;
+    ((int *)D_00161000)[2] = 0;
+    ((int *)D_00161000)[3] = 0;
+    D_00161000 += 0x10;
+    p[0] = 0x20000000;
+    p[1] = D_00161000;
+    p[2] = 0;
+    p[3] = 0;
+}
 
 typedef struct {
     short a;
@@ -358,4 +400,49 @@ void func_00234620(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002346C0); /* DrawTfrag */
+extern int D_00161000 MACRO_ADDR;
+extern int D_0015EF78 MACRO_ADDR;
+extern int D_0015EF74 MACRO_ADDR;
+extern int D_00160FBC MACRO_ADDR;
+extern char D_00160F70[];
+extern char D_00160F80[];
+extern char D_001E1600[];
+extern void func_001F2560(void *, int); /* empty profiling marker */
+extern void func_001F2558(void *, int); /* empty profiling marker */
+extern void func_001FA190(void *);
+extern void func_00234BA0(int, void *, int);
+extern void func_002352C8(void);
+extern void func_002344D8(void);
+extern void func_001F9AF0(void *, int, int);
+
+/* DrawTfrag, in DrawShrubs' shape. */
+void func_002346C0(void) {
+    float m[4][4];
+    int p = D_00161000;
+
+    D_00160FBC = p;
+    D_0015EF74 = D_0015EF78;
+    p += 0x10;
+    D_00161000 = p;
+    func_001F2560(D_00160F70, 1);
+    func_001FA190(m);
+    func_001F9C30(m[3], D_00187180, -1024.0f);
+    m[3][3] = 1.0f;
+    func_001FA540(m, D_00187180 - 0x100, m);
+    func_00234BA0(5, m, 4);
+    func_00234BA0(0x14D, m, 4);
+    if (D_0018A3B0[4] != 0) {
+        func_00118D80(0);
+        func_002352C8();
+    }
+    func_001F2560(D_00160F80, 2);
+    func_002344D8();
+    if (D_0018A3B0[4] != 0) {
+        func_001F9AF0(D_001E1600, 0x3000, 0x40);
+    }
+    func_001F2558(D_00160F80, 2);
+}
+
+/* The last function in the object: retail pads to 16 bytes after it
+   (two nops in its .s), and vuchain.o starts there. */
+__asm__(".align 4");

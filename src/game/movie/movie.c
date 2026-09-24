@@ -383,7 +383,37 @@ int func_0023BB60(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023BB90); /* initAll(int, int, int) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023BE38); /* termAll(void) */
+extern int D_00161310 MACRO_ADDR;
+extern void func_0023CD28(void *);
+extern int func_0023E5B0(void *);
+extern int func_00118B80(int);
+extern int func_00118B60(int);
+extern int func_001193F8(int);
+extern int func_00118AD0(int, int);
+extern int func_00119328(int);
+extern int func_00118AA0(int, int);
+extern int func_0023E008(void *);
+extern int func_0023C060(void *);
+extern int func_0023CE28(void *);
+
+/* termAll. The callees are declared as returning int: even an unused
+   int result moves the next temporary from $v0 to $v1. */
+void func_0023BE38(void) {
+    func_00120F30(0);
+    func_0023CD28(D_0016130C);
+    func_0023E5B0(D_0016130C + 0xD9168);
+    func_00118B80(D_00161310);
+    func_00118B60(D_00161310);
+    func_001193F8(2);
+    func_00118AD0(2, *(int *)(D_0016130C + 0xD90F8));
+    func_00119328(2);
+    func_00118AA0(2, *(int *)(D_0016130C + 0xD90FC));
+    func_0023E008(D_0016130C + 0xD9048);
+    func_0023C060(D_0016130C + 0xD9100);
+    func_0023CE28(D_0016130C + 0xD9040);
+    func_00120F30(0);
+    *(volatile unsigned int *)0x1000E000 &= ~2u;
+}
 
 extern char D_001612F8[];
 

@@ -73,7 +73,36 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00202AA8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00202EF8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00202F00); /* ParseParticleTexs */
+extern int D_001601C0 MACRO_ADDR;
+extern char D_001CE500[];
+extern int D_001CE300[];
+typedef struct { int a; int b; } Pair_2F00;
+extern Pair_2F00 D_001CDD00[];
+extern void func_001F9A00(void *, void *, int);
+extern int func_001F9968(int);
+
+/* ParseParticleTexs */
+void func_00202F00(int *hdr, int base, int *list, int count) {
+    int n = hdr[0];
+    int off = hdr[2];
+    int size = hdr[3];
+    int *p = hdr + 4;
+    int i;
+
+    for (i = 0; i < n; i++, p++) {
+        if (*p == 0) D_001CE300[i] = (int)D_001CE500;
+        else D_001CE300[i] = *p - (off - (int)D_001CE500);
+    }
+    func_001F9A00(D_001CE500, (char *)hdr + off, size);
+    for (D_001601C0 = 0; D_001601C0 < count; D_001601C0++) {
+        int a = base + *list++;
+        int b = *list++;
+        int c = base + *list++;
+        int d = *list++;
+        D_001CDD00[D_001601C0].a = (a << 4) + b;
+        D_001CDD00[D_001601C0].b = (c << 4) + func_001F9968(d);
+    }
+}
 
 extern int func_001F9968(int);
 extern int D_0015F55C MACRO_ADDR;

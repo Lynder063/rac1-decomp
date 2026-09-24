@@ -136,7 +136,42 @@ extern char D_001E8690[];
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020C7A0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020C940);
+extern unsigned char D_0013DE48[];
+extern unsigned char D_0013D5C8_b[] __asm__("D_0013D5C8");
+extern unsigned char D_0013D5F0[];
+typedef struct { int a, b, c, d; } Rec16_C940;
+extern Rec16_C940 D_0013D6B8_r[] __asm__("D_0013D6B8");
+extern unsigned char D_0013D490[];
+extern unsigned char D_0014BFC0[][4];
+
+/* A 10-case switch; the explicit `case 9: break;` keeps retail's table. */
+int func_0020C940(short type, int arg) {
+    switch (type) {
+    case 0:
+        return 1;
+    case 1:
+        return D_0013DE48[arg] != 0;
+    case 2:
+        return D_0013D5C8_b[arg] != 0;
+    case 3:
+        return D_0013D5F0[arg] != 0;
+    case 4:
+        if (arg < 0x79) return D_0013D6B8_r[arg].d != 0;
+        break;
+    case 5:
+        if (arg < 0x79) return D_0013D6B8_r[arg].d >= 2;
+        break;
+    case 6:
+        return D_0013D490[arg] != 0;
+    case 7:
+        return ((int (*)(void))arg)() != 0;
+    case 8:
+        return D_0014BFC0[arg >> 16][arg & 0xFFFF] != 0;
+    case 9:
+        break;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020CA50);
 

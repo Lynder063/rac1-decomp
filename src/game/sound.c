@@ -311,17 +311,40 @@ void func_0022D970(void *arg0, void *arg1) {
     func_001EFE10(arg1, v, 0x82, *(int *)((char *)arg0 + 0x18), 0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022DA10);
+extern float func_001FA888(int);
+extern int func_001FA898_i(float) __asm__("func_001FA898");
+
+/* Interpolates between the ints at +0x8 and +0xC as x runs from lo to
+   hi, squared when bit 0 of +0x19 is set. Each arm is an if/else-if
+   chain setting one `r` with a single return; early returns let jump.c
+   move the last arm's return block to the end. It returns int, and its
+   one caller here uses a void alias. */
+int func_0022DA10(void *arg0, float x, float lo, float hi) {
+    char *s = (char *)arg0;
+    int r;
+    if (*(unsigned char *)(s + 0x19) & 1) {
+        if (x <= lo) r = *(int *)(s + 0xC);
+        else if (hi <= x) r = *(int *)(s + 0x8);
+        else r = *(int *)(s + 0x8) + func_001FA898_i((hi - x) * (hi - x) * func_001FA888(*(int *)(s + 0xC) - *(int *)(s + 0x8)) / ((hi - lo) * (hi - lo)));
+    } else {
+        if (x <= lo) r = *(int *)(s + 0xC);
+        else if (hi <= x) r = *(int *)(s + 0x8);
+        else r = *(int *)(s + 0x8) + func_001FA898_i((hi - x) * func_001FA888(*(int *)(s + 0xC) - *(int *)(s + 0x8)) / (hi - lo));
+    }
+    return r;
+}
 
 extern char D_00187180[];
 extern float func_001F9D10(int, void *);
-extern void func_0022DA10(void *, float, float, float);
+/* This caller's view of func_0022DA10 above: it ignores the result, and
+   declaring it int would move its next temporary to $v1. */
+extern void func_0022DA10_v(void *, float, float, float) __asm__("func_0022DA10");
 
 void func_0022DB00(void *arg0, int arg1) {
     char *s = (char *)arg0;
     float v = func_001F9D10(arg1, D_00187180);
     float *p = *(float **)(s + 0x8);
-    func_0022DA10(p, v, p[0], p[1]);
+    func_0022DA10_v(p, v, p[0], p[1]);
 }
 
 extern void func_001F9EE8(void *, void *, void *);
