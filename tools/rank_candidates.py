@@ -274,18 +274,9 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     if "alabel" in body:   # raw body: `alabel` is a bare directive, not an instruction line
         return "blocked", "alternate entry point", "alabel: two entries, not expressible in C"
 
-    # --- GPR->FPU move delay: `mtc1 $x, $fN` / `nop` / <use of $fN>.
-    # Same class as the lwc1 rule above but a different source: retail
-    # carries the hazard nop between the transfer and the first FPU use,
-    # and this compiler does not emit it, so the function comes out
-    # exactly one instruction short. Deliberately NOT restricted to tiny
-    # leaves the way the lwc1 rule is -- func_00214158 has a jal and 20
-    # instructions and was ranked a candidate until this was added.
-    for idx, a in enumerate(ins):
-        m = re.match(r"mtc1\s+\S+,\s*\$(f\d+)", a)
-        if m and idx + 2 < len(ins) and ins[idx + 1] == "nop":
-            if re.search("[$]" + m.group(1) + "(?![0-9])", ins[idx + 2]):
-                return "blocked", "fpu move delay nop", "mtc1 hazard nop, not reachable from C"
+    # (GPR->FPU move delay -- `mtc1 $x, $fN` / `nop` / <use of $fN> -- is
+    # no longer a blocker: the nop is ps2eeas's, and tools/ps2eeas_nops.py
+    # adds it to compiled game code.)
 
     # --- R5900 short-loop erratum: nop padding before a tight backward
     # branch. `span` is the distance back to the branch TARGET; it used to
@@ -294,7 +285,7 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     #
     # In text this is no longer a blocker: retail's text was assembled by
     # SN's ps2eeas, which pads every loop shorter than six instructions, and
-    # tools/fix_short_loops.py reproduces that on our compiled game code.
+    # tools/ps2eeas_nops.py reproduces that on our compiled game code.
     # core_text was assembled without the padding (its short loops are
     # unpadded in retail), so a padded tight loop there is still unexplained.
     labels = label_positions(body)

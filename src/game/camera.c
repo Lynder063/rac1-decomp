@@ -57,7 +57,32 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001EC098); /* ExecuteCamPostUpdFuncs *
    func_00113AD8 in core_text. */
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC108);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EC120); /* Cam_InterpValues(float, float, float *, float, float, float) */
+extern float func_001F9B88(float);
+
+/* Cam_InterpValues(a, b, p, c, d, e): steps *p toward b - a, clamps it
+   to +-e and to +-func_001F9B88(b - a), and returns a + *p. The nop
+   between the first compare and its bc1f is ps2eeas's
+   (tools/ps2eeas_nops.py). */
+float func_001EC120(float a, float b, float *p, float c, float d, float e) {
+    float diff = b - a;
+    float v = *p;
+
+    v = v + (c * diff - d * v);
+    *p = v;
+    if (e != 0.0f) {
+        if (e < v) {
+            *p = e;
+        } else if (v < -e) {
+            *p = -e;
+        }
+    }
+    if (func_001F9B88(diff) < *p) {
+        *p = func_001F9B88(diff);
+    } else if (-func_001F9B88(diff) > *p) {
+        *p = -func_001F9B88(diff);
+    }
+    return a + *p;
+}
 
 /* Not a standalone function: single `addiu $sp,$sp,0x50`, no `jr $31` --
    fallthrough fragment, same category as func_00113AD8 in core_text. */

@@ -317,26 +317,18 @@ int func_002081F8(void) {
     return D_0013D4E9 != 0;
 }
 
-/*
- * Same-size near-miss (16/48 bytes, kept). arg0 is unused; the two
- * leading unused `float` params are needed to land arg3 in $f14
- * (floats count consecutively from $f12, one slot each -- confirmed
- * on func_00207CE0). Two residuals:
- *   1. Retail has a `nop` between the `mtc1` and the `c.le.s` that
- *      consumes it -- the GPR/FPU transfer hazard-nop class (see
- *      func_002140F8/func_00215A98/func_0023C960).
- *   2. Retail's branch is `bc1fl` (branch-likely); this compiler
- *      always emits the plain `bc1f`, which can't annul its delay slot
- *      and so needs one extra trailing instruction to restore the
- *      default-1 value on the fallthrough path.
- */
+/* arg0 is unused; the two unused float parameters put arg3 in $f14
+   (floats count consecutively from $f12, one register each; see
+   func_00207CE0). With `r` defaulting to 1, reorg turns the reset into
+   retail's bc1fl with `r = 0` in its delay slot. The nop after the mtc1
+   is ps2eeas's (tools/ps2eeas_nops.py). */
 int func_00208208(void *arg0, int arg1, float unused1, float unused2, float arg3) {
-    if (arg1 < 0x141) {
-        if (!(63.5f <= arg3)) {
-            return 0;
-        }
+    int r = 1;
+
+    if (arg1 < 0x141 && !(63.5f <= arg3)) {
+        r = 0;
     }
-    return 1;
+    return r;
 }
 
 int func_00208238(void) {

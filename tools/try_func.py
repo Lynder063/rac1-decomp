@@ -9,7 +9,9 @@ and compare the function against retail.
 
 candidate.c holds the function definition, plus any extern declarations it
 needs that the source file does not already have; it replaces the
-function's INCLUDE_ASM line. Work happens in build-sn/try/<func>/.
+function's INCLUDE_ASM line, or, for a function already written in C (a
+near-miss being refined), its current definition. Work happens in
+build-sn/try/<func>/.
 
 The comparison masks relocated fields (a call target, a %hi/%lo half), so
 it is fast and needs no link, but it cannot see a wrong symbol addend. It
@@ -44,14 +46,29 @@ STUB = re.compile(r'^\s*INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\)')
 SIZE = re.compile(r"nonmatching\s+(func_[0-9A-Fa-f]{8}),\s*(0x[0-9A-Fa-f]+)")
 
 
+DEF = re.compile(r"^(?!extern\b)[A-Za-z_].*?\b(func_[0-9A-Fa-f]{8})\s*\(")
+
+
 def find_stub(name):
+    """(segment, source, first line, last line) of NAME's INCLUDE_ASM line,
+    or of its C definition when it is already decompiled."""
     for seg, srcs in SEGMENT_SOURCES.items():
         for src in srcs:
-            for i, line in enumerate(Path(src).read_text(errors="replace").splitlines()):
+            lines = Path(src).read_text(errors="replace").splitlines()
+            for i, line in enumerate(lines):
                 m = STUB.match(line)
                 if m and m.group(1) == name:
-                    return seg, Path(src), i
-    sys.exit(f"{name}: no INCLUDE_ASM stub in src/ (already decompiled?)")
+                    return seg, Path(src), i, i
+            for i, line in enumerate(lines):
+                m = DEF.match(line)
+                if m and m.group(1) == name and not line.rstrip().endswith(";"):
+                    depth, seen = 0, False
+                    for j in range(i, len(lines)):
+                        depth += lines[j].count("{") - lines[j].count("}")
+                        seen = seen or "{" in lines[j]
+                        if seen and depth == 0:
+                            return seg, Path(src), i, j
+    sys.exit(f"{name}: neither an INCLUDE_ASM stub nor a C definition in src/")
 
 
 def run(cmd, log):
@@ -60,10 +77,10 @@ def run(cmd, log):
     return r.returncode == 0
 
 
-def build(name, seg, src, idx, candidate, work):
+def build(name, seg, src, first, last, candidate, work):
     """The Makefile.sn recipe for the segment, on a scratch copy."""
     lines = src.read_text(errors="replace").splitlines()
-    lines[idx] = candidate.rstrip("\n")
+    lines[first:last + 1] = [candidate.rstrip("\n")]
     work.mkdir(parents=True, exist_ok=True)
     c = work / "src.c"
     c.write_text("\n".join(lines) + "\n")
@@ -97,7 +114,7 @@ def build(name, seg, src, idx, candidate, work):
             first = work / "c.o"
             if not run(sn(CC, *CFLAGS, "-c", str(s[2]), "-o", str(first)), log):
                 return None
-            if not run([sys.executable, "tools/fix_short_loops.py", str(s[2]), str(first), str(s[3])], log):
+            if not run([sys.executable, "tools/ps2eeas_nops.py", str(s[2]), str(first), str(s[3])], log):
                 return None
         else:
             shutil.copy(s[2], s[3])
@@ -154,8 +171,8 @@ def main():
     if len(args) != 2:
         sys.exit(__doc__)
     name, cand = args
-    seg, src, idx = find_stub(name)
-    obj = build(name, seg, src, idx, Path(cand).read_text(), Path("build-sn/try") / name)
+    seg, src, first, last = find_stub(name)
+    obj = build(name, seg, src, first, last, Path(cand).read_text(), Path("build-sn/try") / name)
     if obj is None:
         log = (Path("build-sn/try") / name / "log.txt").read_text(errors="replace")
         errs = [l for l in log.splitlines() if "error" in l.lower() or "undeclared" in l or "parse" in l]
