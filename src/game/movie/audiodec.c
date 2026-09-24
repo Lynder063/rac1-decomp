@@ -334,7 +334,56 @@ extern void func_001F9BF0_b(void *, void *, void *) __asm__("func_001F9BF0");
 extern int func_00118BC0(int);
 extern char D_001612F8[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023BFA0); /* audioDecCreate(_AudioDec *, unsigned char *, int, sceMpegStrType) */
+/* The sample's AudioDec, with one more int after state (the stream
+   type) and one more at the end. */
+typedef struct {
+    int state;           /* 0x00 */
+    int strType;         /* 0x04 */
+    char sshd[0x20];     /* 0x08 SpuStreamHeader */
+    char ssbd[8];        /* 0x28 SpuStreamBody */
+    int hdrCount;        /* 0x30 */
+    unsigned char *data; /* 0x34 */
+    int put;             /* 0x38 */
+    int count;           /* 0x3C */
+    int size;            /* 0x40 */
+    int totalBytes;      /* 0x44 */
+    int iopBuff;         /* 0x48 */
+    int iopBuffSize;     /* 0x4C */
+    int iopLastPos;      /* 0x50 */
+    int iopPausePos;     /* 0x54 */
+    int totalBytesSent;  /* 0x58 */
+    int iopZero;         /* 0x5C */
+    int unk60;           /* 0x60 */
+} AudioDecR;
+extern int D_001613B8 MACRO_ADDR;
+extern void func_001F99D8(void *, int); /* quadword clear */
+extern int func_0012F1A8(int, int, int, int, int, int);
+
+/* audioDecCreate(_AudioDec *, unsigned char *, int, sceMpegStrType).
+   The two returns give retail's slti/xori; `return ad->iopBuff >= 0;`
+   gives nor/srl. */
+int func_0023BFA0(AudioDecR *ad, unsigned char *buff, int buffSize, int type) {
+    func_001F99D8(ad->sshd, 0x20);
+    ad->state = 0;
+    ad->strType = 3;
+    ad->hdrCount = 0;
+    ad->data = buff;
+    ad->put = 0;
+    ad->count = 0;
+    ad->size = buffSize;
+    ad->totalBytes = 0;
+    ad->iopLastPos = 0;
+    ad->totalBytesSent = 0;
+    ad->iopZero = 0;
+    ad->unk60 = 0;
+    D_001613B8 = type;
+    ad->iopBuffSize = 0x400;
+    ad->iopBuff = func_0012F1A8(0x400, 0x1000, 0x400, 0, 5, 3);
+    if (ad->iopBuff < 0) {
+        return 0;
+    }
+    return 1;
+}
 
 extern void func_0012F220(void);
 
@@ -419,12 +468,31 @@ void func_0023C128(Obj23C *s, unsigned char **a1, int *a2, unsigned char **a3, i
     }
 }
 
-/* Mid-iteration work-in-progress reverted to INCLUDE_ASM: it was at
-   57/180 when the agent working it was cut off by an API session
-   limit, i.e. unfinished rather than a documented near-miss, and
-   over the revert threshold. The partial C is preserved in branch
-   history (parallel-A/B/C) for whoever resumes it. */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C1F8); /* audioDecEndPut(_AudioDec *, int) */
+/* audioDecEndPut(_AudioDec *, int), Sony's ezmpeg sample: while the
+   0x28-byte ADS header (at +8, count at 0x30) is still being filled, the
+   first bytes go there (min(0x28 - hdrCount, size)); the rest advances
+   the ring buffer put cursor (0x38) modulo its size (0x40, rounded down
+   to 1 KiB and stored back) and the two byte counters (0x3C, 0x44). The
+   mode word at +4 == 4 skips the header. The `!= 4` test must come first:
+   `== 4` first puts the blocks in the wrong order (57 bytes). */
+void func_0023C1F8(Obj23C *ad, int size) {
+    if (ad->state == 0) {
+        if (*(int *)((char *)ad + 4) != 4) {
+            int hdr_add = (0x28 - ad->unk30 < size) ? 0x28 - ad->unk30 : size;
+            ad->unk30 += hdr_add;
+            if (ad->unk30 >= 0x28) {
+                ad->state = 1;
+            }
+            size -= hdr_add;
+        } else {
+            ad->state = 1;
+        }
+    }
+    ad->unk40 = ad->unk40 / 1024 * 1024;
+    ad->unk38 = (ad->unk38 + size) % ad->unk40;
+    ad->unk3C += size;
+    ad->unk44 += size;
+}
 
 int func_0023C2B0(void *arg0) {
     return ((Obj23C *)arg0)->unk50 >= 0x1000;
@@ -439,6 +507,36 @@ void func_0023C2C0(void *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C2E8); /* sendToSPU(_AudioDec *, unsigned char *, int, int) */
+/* sifdev.h */
+typedef struct {
+    unsigned int data;
+    unsigned int addr;
+    unsigned int size;
+    unsigned int mode;
+} sceSifDmaData;
+
+extern int func_00118E20(sceSifDmaData *, int); /* sceSifSetDma */
+extern int func_00118E10(int);                  /* sceSifDmaStat */
+extern void func_0012F288(int, int);
+
+/* sendToSPU(_AudioDec *, unsigned char *, int, int): the sample's
+   sendToIOP, with FlushCache before the stores (no store is scheduled
+   across a call) and SetDma retried until it returns an id. */
+void func_0023C2E8(Obj23C *ad, unsigned char *src, int size, int arg3) {
+    sceSifDmaData transData;
+    int did;
+
+    func_00118D80(0); /* FlushCache */
+    transData.data = (unsigned int)src;
+    transData.addr = (unsigned int)ad->unk48;
+    transData.size = size;
+    transData.mode = 0;
+    do {
+        did = func_00118E20(&transData, 1);
+    } while (did == 0);
+    while (func_00118E10(did) >= 0) {
+    }
+    func_0012F288(size, arg3);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C390); /* sendADPCM(_AudioDec *) */

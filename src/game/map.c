@@ -229,12 +229,20 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00205918);
 
 extern int *D_001602E0;
 
-/* Mid-iteration work-in-progress reverted to INCLUDE_ASM: it was at
-   19/84 when the agent working it was cut off by an API session
-   limit, i.e. unfinished rather than a documented near-miss, and
-   over the revert threshold. The partial C is preserved in branch
-   history (parallel-A/B/C) for whoever resumes it. */
-INCLUDE_ASM("asm/nonmatchings/text", func_00205A50);
+extern int *D_001602E0_m __asm__("D_001602E0") MACRO_ADDR;
+
+/* The global is read at both uses in the loop, giving retail's two
+   pointers, and through a MACRO_ADDR alias. */
+int func_00205A50(int arg0) {
+    int i;
+
+    for (i = 0; D_001602E0_m[i] != 0 && i < 20; i++) {
+        if (D_001602E0_m[i] == arg0) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00205AA8);
 

@@ -136,7 +136,42 @@ extern char D_001E8690[];
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020C7A0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020C940);
+extern unsigned char D_0013DE48[];
+extern unsigned char D_0013D5C8_b[] __asm__("D_0013D5C8");
+extern unsigned char D_0013D5F0[];
+typedef struct { int a, b, c, d; } Rec16_C940;
+extern Rec16_C940 D_0013D6B8_r[] __asm__("D_0013D6B8");
+extern unsigned char D_0013D490[];
+extern unsigned char D_0014BFC0[][4];
+
+/* A 10-case switch; the explicit `case 9: break;` keeps retail's table. */
+int func_0020C940(short type, int arg) {
+    switch (type) {
+    case 0:
+        return 1;
+    case 1:
+        return D_0013DE48[arg] != 0;
+    case 2:
+        return D_0013D5C8_b[arg] != 0;
+    case 3:
+        return D_0013D5F0[arg] != 0;
+    case 4:
+        if (arg < 0x79) return D_0013D6B8_r[arg].d != 0;
+        break;
+    case 5:
+        if (arg < 0x79) return D_0013D6B8_r[arg].d >= 2;
+        break;
+    case 6:
+        return D_0013D490[arg] != 0;
+    case 7:
+        return ((int (*)(void))arg)() != 0;
+    case 8:
+        return D_0014BFC0[arg >> 16][arg & 0xFFFF] != 0;
+    case 9:
+        break;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020CA50);
 
@@ -202,28 +237,17 @@ int func_0020CCB8(int arg0) {
     return base[arg0] != 0;
 }
 
-/*
- * REVERTED (66/84). Semantics are certain -- a three-global predicate,
- * with a/b/d fields of the struct at D_0013D6B8 and c the byte
- * D_0013D5CA:
- *
- *   a = *(int *)(D_0013D6B8 + 0x14C);
- *   b = *(int *)(D_0013D6B8 + 0x18C);
- *   d = *(int *)(D_0013D6B8 + 0x16C);
- *   if (a != 0) { if (b == 0) return 1; }
- *   else        { if (b == 0) return 0; }
- *   if (D_0013D5CA == 0) return 0;
- *   if (d == 0) return 2;
- *   return 0;
- *
- * Blocked on the documented %hi-register-reuse sub-case of the allocator
- * question, and heavily: retail keeps the %hi of D_0013D6B8 alive in a
- * spare register across the whole function and re-adds %lo a second time
- * on the late path, where this compiler materializes the full address
- * once up front. That single choice re-registers most of the body, hence
- * the large residual despite the logic being right.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_0020CCD0);
+/* Two flat `&&` returns over D_0013D6B8_r[20/24/22].d; retail's reuse of
+   the %hi register comes out by itself. */
+int func_0020CCD0(void) {
+    if (D_0013D6B8_r[20].d != 0 && D_0013D6B8_r[24].d == 0) {
+        return 1;
+    }
+    if (D_0013D6B8_r[24].d != 0 && D_0013D5CA != 0 && D_0013D6B8_r[22].d == 0) {
+        return 2;
+    }
+    return 0;
+}
 
 extern int D_0013D9B4 NOT_SDA;
 extern unsigned char D_0013D4B0 NOT_SDA;

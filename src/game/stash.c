@@ -299,10 +299,6 @@ void func_00233FF8(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234018);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234158); /* Stash_SendData */
-
-INCLUDE_ASM("asm/nonmatchings/text", func_00234238);
-
 /* 0x10-stride records. Typed array, not `char[]` + byte offset -- see
    the addu-order lever on D_001E8F80 above. */
 typedef struct {
@@ -312,6 +308,49 @@ typedef struct {
     int unk_0C;
 } Rec10;
 extern Rec10 D_001DD568[];
+
+/* The stash: a buffer on the IOP side (base, size, from func_00234018's
+   RPC), the SIF RPC client at D_001DD538, and a bump allocator over the
+   buffer that hands out up to 0x40 slots in D_001DD568. */
+typedef struct {
+    int base;
+    int size;
+    char cd[0x28];
+    int cur;
+    int count;
+} StashState;
+extern StashState D_001DD530;
+extern int func_00118E20(void *, int);
+
+/* Stash_SendData: DMA arg1 quadwords from arg0 to the stash's next free
+   address (func_00118E20 takes a {src, dst, size, mode} record), reserve
+   arg2 quadwords there, and return the slot. `h->count++` read into the
+   slot index is what keeps retail's copy of the old count. */
+int func_00234158(int arg0, int arg1, int arg2, int arg3) {
+    StashState *h = &D_001DD530;
+    int dma[4];
+    int n;
+
+    if (h->size - (h->cur - h->base) < arg2 * 16) {
+        return -1;
+    }
+    if (h->count == 0x40) {
+        return -2;
+    }
+    dma[0] = arg0;
+    dma[1] = h->cur;
+    dma[2] = arg1 * 16;
+    dma[3] = 0;
+    func_00118E20(dma, 1);
+    n = h->count++;
+    D_001DD568[n].unk_00 = h->cur;
+    D_001DD568[n].unk_04 = arg2;
+    D_001DD568[n].unk_08 = arg3;
+    h->cur += arg2 * 16;
+    return n;
+}
+
+INCLUDE_ASM("asm/nonmatchings/text", func_00234238);
 
 int func_00234350(unsigned int arg0) {
     if (arg0 >= 0x40) {

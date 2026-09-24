@@ -309,30 +309,21 @@ extern TexRemap D_001E0F00[];
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002347F0); /* VU0_loadMicroProgram(long *) */
 
-/*
- * Reverted: size mismatch (ours=48, retail=44 -- 4 bytes over).
- *
- *   extern int D_0015EE84_far __asm__("D_0015EE84") NOT_SDA;
- *   extern int D_001DE338[];
- *   extern short D_0016100C_s __asm__("D_0016100C");
- *
- *   void func_002348B8(void) {
- *       int idx = D_0015EE84_far;
- *       if (idx < 0x13) {
- *           idx = 0;
- *       }
- *       *(int *)&D_0016100C_s = D_001DE338[idx];
- *   }
- *
- * The short+cast trick on D_0016100C (see [[rac1-gp-relative-anonymous-bss]])
- * is needed here too, despite it having a real name -- without it this
- * compiler materializes its full address instead of the gp-relative
- * store retail uses. What's left: retail encodes the range check as
- * `slti v1,v0,0x13`; this compiler always canonicalizes `< 0x13` (and
- * the equivalent `<= 0x12`, tried too) into `slt v1,0x12,v0` instead --
- * same class already seen on func_001F0FF8 and func_00226380.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_002348B8);
+extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
+extern int D_0016100C_m __asm__("D_0016100C") MACRO_ADDR;
+extern int D_001DE338[];
+
+/* Advances the index at D_0016100C, wrapping at 0x13. The old note had
+   the condition backwards: `slti; movz x,$0,t` is `if (idx >= 0x13)
+   idx = 0`. Both globals are MACRO_ADDR, which gives the one-register
+   load and the $gp store in the jr slot. */
+void func_002348B8(void) {
+    int idx = D_0015EE84_m;
+    if (idx >= 0x13) {
+        idx = 0;
+    }
+    D_0016100C_m = D_001DE338[idx];
+}
 
 /*
  * The VU1 chain state. D_00161000 (the write pointer), D_00161010 (the
@@ -351,46 +342,75 @@ extern int D_0015F71C MACRO_ADDR;
 extern int D_00160FF8[2];
 extern int D_001941C0[];
 
-/*
- * VU1_initChain(void) and VU1_swapChain(void). Both reach the right
- * SIZE with the declarations above (23 and 28 instructions), and the
- * instruction sequence is structurally retail's, but the residual is an
- * allocator tie plus store scheduling, so they are left as asm:
- *
- *   void func_002348E8(void) {            // VU1_initChain
- *       int base = D_001941C0[1];
- *       int end  = base + D_0016100C - D_0015F698;
- *       D_00160FF8[0] = base;
- *       D_00160FF8[1] = D_001941C0[2];
- *       D_00161010 = 0;
- *       D_0015F718 = end;
- *       D_0015F71C = end - 0x2000;
- *       D_00161000 = (int *)base;
- *   }
- *
- *   void func_00234948(void) {            // VU1_swapChain
- *       int idx  = 1 - D_00161010;
- *       int base = D_00160FF8[idx];
- *       int end  = base + D_0016100C - D_0015F698;
- *       D_00161004 = (int)D_00161000;
- *       D_00161010 = idx;
- *       D_00161000 = (int *)base;
- *       D_0015F718 = end;
- *       D_0015F71C = end - 0x2000;
- *   }
- *
- * Kept at 51/92 and 78/112 differing bytes, all of it register
- * numbering and the order of the four macro stores. All 24 orderings of
- * those four stores were compiled: retail emits D_00161010, D_0015F71C,
- * D_00161000, then D_0015F718 in the jr delay slot, and this compiler
- * emits no permutation with D_00161010 first -- it always sinks that
- * store past D_0015F71C. Not source-steerable from here.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_002348E8); /* VU1_initChain(void) */
+extern int D_0015F698_m __asm__("D_0015F698") MACRO_ADDR;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234948); /* VU1_swapChain(void) */
+/* `end` reads D_00161000 back right after storing it (CSE folds the
+   load away), which changes how the stores are scheduled: that, not
+   any order of the four stores, gives retail's. */
+void func_002348E8(void) {
+    int base = D_001941C0[1];
+    int end;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002349B8); /* VU1_sendChain(void) */
+    D_00160FF8[0] = base;
+    D_00160FF8[1] = D_001941C0[2];
+    D_00161010 = 0;
+    D_00161000 = (int *)base;
+    end = (int)D_00161000 + D_0016100C_m - D_0015F698_m;
+    D_0015F718 = end;
+    D_0015F71C = end - 0x2000;
+}
+
+/* VU1_swapChain(void) */
+void func_00234948(void) {
+    int idx = 1 - D_00161010;
+    int base = D_00160FF8[idx];
+    int end;
+
+    D_00161004 = (int)D_00161000;
+    D_00161010 = idx;
+    D_00161000 = (int *)base;
+    end = (int)D_00161000 + D_0016100C_m - D_0015F698_m;
+    D_0015F718 = end;
+    D_0015F71C = end - 0x2000;
+}
+
+extern int D_00161014 MACRO_ADDR;
+extern int D_0016100C_m __asm__("D_0016100C") MACRO_ADDR;
+extern short D_00160FE0;
+extern char D_001E8CF8[];
+extern int *func_001232E0(int);
+extern void func_001235C8(int *, int);
+
+/* VU1_sendChain. D_00160FE0 is volatile, so its store stays out of the
+   delay slot (reorg never moves a volatile access there). */
+void func_002349B8(void) {
+    int size;
+    int err;
+    int *chan;
+
+    *(volatile int *)&D_00160FE0 |= 0x1F;
+    size = (int)D_00161000 - D_00160FF8[D_00161010];
+    err = 0;
+    if (D_00161014 < size) {
+        D_00161014 = size;
+        if (D_0016100C_m < size) {
+            func_001E9730(D_001E8CF8);
+            err = 1;
+        }
+    }
+    if (err == 0) {
+        D_00161000[0] = 0x70000000;
+        D_00161000[1] = 0;
+        D_00161000[2] = 0;
+        D_00161000[3] = 0;
+        chan = func_001232E0(1);
+        *chan |= 0xC0;
+        func_00118D80(0);
+        func_001235C8(chan, D_00160FF8[D_00161010]);
+    } else {
+        *(volatile int *)&D_00160FE0 = 0;
+    }
+}
 
 extern short D_00160FE0;              /* SDA, gp -0x5D20 */
 extern char D_001E8D10[];
@@ -586,33 +606,28 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00235008);
 extern int D_00161018 MACRO_ADDR;
 extern int D_0016101C MACRO_ADDR;
 
+extern int func_00118AB0(int, void *, void *);
+extern void func_00119460(int);
+extern void func_00235118(void);
+extern void func_00235218(void);
+
 /*
- * DMAC_VIF1_Enable(void). Decoded and semantically confirmed, but one
- * instruction too long (148 vs 144), so it stays asm:
- *
- *   extern int func_00118AB0(int, void *, void *);
- *   extern void func_00119460(int);
- *   void func_00235018(void) {
- *       if (D_00161018 == 0 && D_0016101C == 0) {
- *           if ((*(volatile int *)0x1000E010 & 0x20000) == 0)
- *               *(volatile int *)0x1000E010 = 0x20000;
- *           D_00161018 = func_00118AB0(1, (void *)func_00235118, (void *)0);
- *           D_0016101C = func_00118AB0(0xF, (void *)func_00235218, (void *)0);
- *           func_00119460(1);
- *       }
- *   }
- *
- * The extra instruction is a duplicated `lui $5,%hi(func_00235118)`:
- * retail fills the inner branch's delay slot by sinking that lui from
- * ABOVE the branch, this compiler copies it down from the join and so
- * needs a second copy on the fall-through path. Spellings tried, all
- * same or worse: hoisting the handler address into a local (hoists the
- * whole lui/addiu above the first test and switches to `bnel`);
- * early-return instead of `&&` (identical output); a
- * `volatile int *` variable for D_STAT (collapses the lui/ori/lw
- * address form retail uses into a two-instruction macro load).
+ * DMAC_VIF1_Enable(void): unless the handlers are installed, set CIM1 in
+ * D_STAT and install func_00235118 (channel 1) and func_00235218 (0xF),
+ * then enable channel 1. The D_STAT read is volatile but the store is
+ * plain: a volatile store stops reorg's try_merge_delay_insns at it and
+ * leaves a second copy of the handler's lui on the fall-through path.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_00235018); /* DMAC_VIF1_Enable(void) */
+void func_00235018(void) {
+    if (D_00161018 == 0 && D_0016101C == 0) {
+        if ((*(volatile int *)0x1000E010 & 0x20000) == 0) {
+            *(int *)0x1000E010 = 0x20000;
+        }
+        D_00161018 = func_00118AB0(1, (void *)func_00235118, (void *)0);
+        D_0016101C = func_00118AB0(0xF, (void *)func_00235218, (void *)0);
+        func_00119460(1);
+    }
+}
 
 /*
  * DMAC_VIF1_Disable(void). The two handler ids are MACRO_ADDR: the copy

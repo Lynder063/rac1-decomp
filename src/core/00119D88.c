@@ -41,7 +41,35 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00119DC0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119E70);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119EA8);
+/* |d| to int for the float printer (func_00119F38 passes the soft-float
+   double's bits): exponent e = biased exponent - 1075; 0 below 2^-53,
+   9999 from 2^13 up; otherwise the 53-bit mantissa shifted into place,
+   right shifts keeping two guard bits and rounding up when both are set.
+   Exact only if the final `(int)` truncation's dsra is moved into the
+   `j $31` slot (see RESULT.md): retail's compiler did that, ours leaves
+   the slot to the assembler, which pads it with a nop. */
+/* The parameter doubles as the mantissa and the exponent is computed
+   in place. It ends in the same int truncation as func_0012AAA8, with
+   the dsra in the return slot (tools/fix_trunc_slot.py). */
+int func_00119EA8(unsigned long x) {
+    long e;
+
+    e = (x << 1) >> 53;
+    e -= 0x433;
+    if (e < -0x35) return 0;
+    if (e >= 13) return 9999;
+    x = (x << 12) >> 12;
+    x |= 0x10000000000000;
+    if (e < 0) {
+        e = -e;
+        x >>= e - 2;
+        if ((x & 3) == 3) x = (x >> 2) + 1;
+        else x >>= 2;
+    } else {
+        x <<= e;
+    }
+    return x;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119F38);
 
@@ -73,6 +101,30 @@ void func_0011A690(int arg0, int a1, int a2, int a3, int a4, int a5, int a6,
     func_0011A0A0(arg0, args);
 }
 
+/*
+ * Exact, but only under Sony's 2.9-ee, so it stays a stub for now. It is
+ * the varargs twin of the function above: swap the print hook D_0012FD00
+ * for func_00119DC0, pass fmt and the va_list to func_0011A0A0, restore
+ * the hook. Under the game's 2.95.3 it also saves $f12-$f18; with
+ * -msoft-float the frame is still 0x90 against retail's 0xB0 (the same
+ * as sprintf, 00116248.c). This file cannot move to 2.9-ee as a whole:
+ * under it func_0011ABC8, func_0011AC08 and func_0011CCB0 change size.
+ * So the function needs an object of its own, and nothing yet shows
+ * where that object begins and ends.
+ *
+ *   int func_0011A6C8(const char *fmt, ...) {
+ *       va_list ap;
+ *       void *saved = D_0012FD00;
+ *       int ret;
+ *
+ *       D_0012FD00 = (void *)func_00119DC0;
+ *       va_start(ap, fmt);
+ *       ret = func_0011A0A0(fmt, ap);
+ *       va_end(ap);
+ *       D_0012FD00 = saved;
+ *       return ret;
+ *   }
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011A6C8);
 
 void func_0011A728(void *arg0, void *arg1) {
@@ -103,40 +155,33 @@ extern void func_00118AD0(int, int);
 extern int D_00154F54;
 extern int D_0012FD04;
 
-/*
- * Close, not exact (4/52, same size so harmless). Every instruction
- * matches; the two `lui` instructions that hold the globals' addresses
- * land in $2 where retail uses $3, and nothing else differs. Tried
- * binding the loaded value to a local and adding a second local to
- * shift allocation -- neither moved it. Same open scratch-register
- * question as func_001160D8.
- */
+extern int func_001193F8_i(int) __asm__("func_001193F8");
+extern int func_00118AD0_i(int, int) __asm__("func_00118AD0");
+
+/* func_001193F8 and func_00118AD0 both return int; their results decide
+   which registers the globals' addresses get. */
 void func_0011AA00(void) {
-    func_001193F8(0x5);
-    func_00118AD0(0x5, D_00154F54);
+    func_001193F8_i(0x5);
+    func_00118AD0_i(0x5, D_00154F54);
     D_0012FD04 = 0;
 }
 
 extern int D_00154F64 NOT_SDA;
 extern int D_00154F6C NOT_SDA;
 
-/*
- * Close, not exact (6/44), same size, and instruction-for-instruction
- * identical to retail -- same opcodes, same order, same operands. The
- * whole residual is register choice: retail reuses arg0's own register
- * ($4) for the loaded base once arg0 is dead and accumulates into $3,
- * while this compiler puts the base in $v0. Hoisting the shift into an
- * `off` local and ordering the two stores took it from 20/44 to 6/44;
- * the rest is the scratch-register question, and specifically the half
- * of it the declaration-order lever cannot reach, since that steers
- * locals and this is a parameter's register being reused.
- */
+/* Sets slot arg0's two words: D_00154F6C's for arg0 >= 0, D_00154F64's
+   below. In func_0011AA68's shape: reassigning arg0 to the table is what
+   puts the base in $a0, as in retail. */
 void func_0011AA38(int arg0, int arg1, int arg2) {
-    int off = arg0 * 8;
-    char *base = (char *)((arg0 >= 0) ? D_00154F6C : D_00154F64);
-    char *p = base + off;
-    *(int *)(p + 0x0) = arg1;
-    *(int *)(p + 0x4) = arg2;
+    int off = arg0 << 3;
+    if (arg0 < 0) {
+        arg0 = D_00154F64;
+    } else {
+        arg0 = D_00154F6C;
+    }
+    off += arg0;
+    *(int *)(off + 0) = arg1;
+    *(int *)(off + 4) = arg2;
 }
 
 void func_0011AA68(int arg0) {
@@ -282,22 +327,21 @@ void func_0011B090(void *arg0) {
  * local, and naming rem+1 as a separate local -- neither changed the
  * allocation. Same open scratch-register question as func_001160D8.
  */
-/*
- * Attempted, reverted at 20/48 (same size). Semantics certain:
- *     int f(void *arg0) {
- *         char *p = arg0;
- *         int rem = *(int *)(p + 0x24) % *(int *)(p + 0x18);
- *         *(int *)(p + 0x24) = rem + 1;
- *         return *(int *)(p + 0x14) + (rem << 6);
- *     }
- * The div, its trap guard, the mfhi and all four offsets match. Residual
- * is two scheduling/allocation choices: retail keeps the remainder in $2
- * and the divisor in $3 where this compiler picks $v1/$v0, and retail
- * emits `addiu rem+1` before `sll rem,6` where this compiler emits the
- * shift first. Statement order does not steer it -- the store already
- * precedes the return expression in the source.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B0B0);
+/* Hand out the next 0x40-byte slot of the ring {.., +0x14 base, +0x18
+   count, .., +0x24 next}: take next modulo count, advance next past it,
+   return the slot. The slot address has to be formed BEFORE the store of
+   the new index: that is what gives retail's allocation (remainder in $v0,
+   divisor in $v1) and its tail, `addiu` before `sll` and the `addu` in the
+   jr delay slot. Storing first and indexing in the return is 20/48. */
+/* The slot address is computed into a local before next = i + 1 is
+   stored. */
+void *func_0011B0B0(void *arg0) {
+    char *p = (char *)arg0;
+    int i = *(int *)(p + 0x24) % *(int *)(p + 0x18);
+    char *s = *(char **)(p + 0x14) + i * 0x40;
+    *(int *)(p + 0x24) = i + 1;
+    return s;
+}
 
 /*
  * REVERTED (SIZE mismatch, 168 vs retail 180, both spellings). Decode is

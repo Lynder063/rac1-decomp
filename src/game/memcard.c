@@ -129,7 +129,38 @@ extern int D_0015EFB4;
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00209A60);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209BB8);
+extern int func_00124068(int, int, int *, int *, int *);
+extern int func_00123F30(int, int *, int *);
+extern void func_00122598(int);
+extern int func_001241F0(int, int, char *, int, int, void *);
+extern char D_0013D2D0[];
+extern int D_0013D390_i[] __asm__("D_0013D390");
+
+/* The comparison is bound to a local before the shift:
+   `(a < b) << 1` folds into `a < b ? 2 : 0` (li/slt/movn), not retail's
+   slti/sll. */
+int func_00209BB8(void) {
+    int type, free, format, cmd, result;
+
+    result = func_00124068(D_0013D390_i[0], D_0013D390_i[1], &type, &free, &format);
+    while (func_00123F30(1, &D_0013D390_i[0x30], &D_0013D390_i[0x31]) == 0) {
+        func_00122598(0);
+    }
+    if (D_0013D390_i[0x31] == -5 || D_0013D390_i[0x31] < -9 || type != 2) {
+        return 1;
+    }
+    if (D_0013D390_i[0x31] != -2 && format != 0) {
+        result = func_001241F0(D_0013D390_i[0], D_0013D390_i[1], D_0013D2D0, 0, -1, 0);
+        while (func_00123F30(1, &cmd, &result) == 0) {
+            func_00122598(0);
+        }
+        if (result <= 0) {
+            int t = free < 350;
+            return t << 1;
+        }
+    }
+    return 0;
+}
 
 extern int D_001A05C0[];
 extern int D_001A08C0[];
@@ -180,6 +211,9 @@ extern int D_0015EEEC MACRO_ADDR;
 extern int D_0015EEF0 MACRO_ADDR;
 extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
 
+extern int func_002176C8_i(int, int, int) __asm__("func_002176C8");
+
+/* func_002176C8 returns int and takes three arguments (stream.c). */
 void func_00209DC0(void) {
     int a;
     int b;
@@ -189,7 +223,7 @@ void func_00209DC0(void) {
 
     func_001FDF10(D_00137C80[5] << 11, &a, &b);
     func_00217748(1);
-    func_002176C8(a, D_00137C80[4], D_00137C80[5]);
+    func_002176C8_i(a, D_00137C80[4], D_00137C80[5]);
     s2 = D_0015EEF0;
     s1 = D_0015EEEC;
     s0 = D_0015EEE8;
@@ -253,24 +287,44 @@ int func_0020BAD8(int *p) {
     return n + 8;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020BB10); /* memcard_Checksum */
+/* memcard_Checksum: 0 for more than 0x1800 bytes, else a 16-bit
+   shift-register checksum (polynomial 0x1F45). Only the low half of
+   the 0xEDB88320 seed (the CRC-32 polynomial) reaches the result. */
+int func_0020BB10(void *data, int len) {
+    unsigned char *p = data;
+    unsigned char *end;
+    int crc;
+    int j;
 
-/*
- * Attempted and reverted at 15/60 (25%). Logic is confirmed:
- *   int n = arg0[1];
- *   result = 0; if (n) result = (func_0020BB10(arg0 + 2, arg0[0]) == n);
- *   return result;
- * Correct size and the right instructions, but retail emits the
- * `result = 0` (`daddu $2,$0,$0`) in the *prologue*, between the stack
- * adjust and the register spills, whereas this compiler always places it
- * after the spills -- shifting the rest of the stream. Tried: single
- * result variable, early-return form, if/else form, and both
- * declaration orders (the last-statement-emits-first rotation rule does
- * not reach into prologue scheduling). Prologue placement of a constant
- * looks unsteerable from source shape, same family as the other
- * scheduling sub-cases.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_0020BB88); /* memcard_TestChecksum */
+    if (len > 0x1800) {
+        return 0;
+    }
+    end = p + len;
+    crc = 0xEDB88320;
+    while (p < end) {
+        crc ^= *p++ << 8;
+        for (j = 0; j < 8; j++) {
+            if (crc & 0x8000) {
+                crc = (crc << 1) ^ 0x1F45;
+            } else {
+                crc <<= 1;
+            }
+        }
+    }
+    return crc & 0xFFFF;
+}
+
+/* memcard_TestChecksum. `len` is read before the test: retail's load sits
+   in the beqz slot, and a load that may trap is never taken from the
+   fall-through. */
+int func_0020BB88(char *buf) {
+    int *p = (int *)buf;
+    int len = p[0];
+    int sum = p[1];
+    int result = 0;
+    if (sum != 0) result = func_0020BB10(p + 2, len) == sum;
+    return result;
+}
 
 extern void func_001F9A00(void *dst, void *src, int len);
 extern int func_0020BB10(void *data, int len);
@@ -324,7 +378,38 @@ int func_0020BBC8(void *dst, int i, int *table) {
     return total + 8;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020BCB0); /* memcard_RestoreInfo(char *, int, int) */
+typedef struct {
+    int a;        /* 0x00 */
+    int b;        /* 0x04 */
+    int c;        /* 0x08 */
+    int d;        /* 0x0C */
+    char name[8]; /* 0x10 */
+    int valid;    /* 0x18 */
+} McEntry;        /* 0x1C */
+typedef struct {
+    char hdr[0x20];
+    McEntry e[5];
+    char pad[0x14];
+} McSlot;         /* 0xC0 */
+extern McSlot D_0013D390_s[] __asm__("D_0013D390");
+extern int func_0020BB88(char *); /* memcard_TestChecksum */
+
+/* memcard_RestoreInfo(char *, int, int). Advancing the buf parameter
+   itself and copying the name with memcpy both matter for retail's
+   registers; re-indexing the entry per store keeps its daddu copies. */
+void func_0020BCB0(char *buf, int slot, int idx) {
+    D_0013D390_s[slot].e[idx].valid = func_0020BB88(buf) == 0;
+    buf += 0x10;
+    D_0013D390_s[slot].e[idx].a = *(int *)buf;
+    buf += 0xC;
+    D_0013D390_s[slot].e[idx].b = *(int *)buf;
+    buf += 0xC;
+    D_0013D390_s[slot].e[idx].c = *(int *)buf;
+    buf += 0xC;
+    D_0013D390_s[slot].e[idx].d = *(int *)buf;
+    buf += 0xC;
+    memcpy(D_0013D390_s[slot].e[idx].name, buf, 8);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020BD70); /* memcard_RestoreData(char *, char *, int, mc_data *) */
 

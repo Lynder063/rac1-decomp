@@ -178,7 +178,31 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00213A78);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00213BAC);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00213BB8);
+typedef struct {
+    int key;
+    int a;
+    int b;
+} Rec0C;
+extern Rec0C D_001E8F00[];
+extern int D_001B3900[];
+extern char *D_001B3580[];
+extern int D_00160000 MACRO_ADDR;
+
+/* Looks arg0 up in the {key, a, b} table D_001E8F00 (ended by key -1).
+   D_00160000 is read at every use, not cached in a local: CSE then
+   reproduces retail's load order and its surviving register copy. */
+void func_00213BB8(int arg0) {
+    char *m = D_001B3580[D_00160000];
+    int i = 0;
+
+    while (D_001E8F00[i].key != -1 && D_001E8F00[i].key != arg0) {
+        i++;
+    }
+    D_001B3900[D_00160000] = D_001E8F00[i].a;
+    if (m != 0) {
+        *(int *)(D_001B3580[D_00160000] + 0x2C) = D_001E8F00[i].b;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00213C70);
 
@@ -202,42 +226,21 @@ int func_002140B0(int arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002140F0);
 
-/*
- * REVERTED -- size mismatch (92 vs retail's 96). Semantics are
- * certain and every instruction matches except one:
- *
- *   float func_002140F8(float a, float b) {
- *       int v = func_001160D8();
- *       float delta = b - a;
- *       v = (v >> 16) & 0x7FFF;
- *       return a + (float)v * delta * 3.0517578125e-05f;
- *   }
- *
- * i.e. a uniform random float in [a, b): a + (rand15/32768)*(b-a).
- * Missing the same GPR->FPU transfer hazard `nop` (between `mtc1
- * $2,$f0` and the `cvt.s.w` consuming it) already documented as not
- * reachable from C on the sibling func_00214158, immediately below.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_002140F8);
+/* As func_00214158: the old note's C, with the mtc1 nop added by the
+   pipeline. */
+float func_002140F8(float a, float b) {
+    int v = func_001160D8();
+    float delta = b - a;
+    v = (v >> 16) & 0x7FFF;
+    return a + (float)v * delta * 3.0517578125e-05f;
+}
 
-/*
- * REVERTED -- size mismatch (76 vs retail's 80). Semantics are certain:
- *
- *   float func_00214158(void) {
- *       int v = ((func_001160D8() >> 16) & 0xFFF) - 0x800;
- *       return (float)v * 3.14159274f * 0.00048828125f;
- *   }
- *
- * i.e. a random angle in radians: take 12 bits out of the PRNG, centre
- * them on zero, and scale by pi * 2^-11. Every instruction matches
- * including both constant materializations (0x40490FDB and 0x3A000000).
- * The single missing instruction is a hazard `nop` retail carries
- * between `mtc1 $2,$f0` and the `cvt.s.w` that consumes $f0 -- the same
- * class as the lwc1 load-delay nop, from the GPR->FPU transfer side.
- * Not reachable from C. tools/rank_candidates.py had ranked this a
- * candidate; it now detects this pattern too.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00214158);
+/* The C of the old revert note: the nop it lacked is ps2eeas's (after
+   an mtc1), which tools/ps2eeas_nops.py now adds. */
+float func_00214158(void) {
+    int v = ((func_001160D8() >> 16) & 0xFFF) - 0x800;
+    return (float)v * 3.14159274f * 0.00048828125f;
+}
 
 extern float func_00214158(void);
 extern float func_002140F8(float, float);
@@ -250,7 +253,16 @@ void func_002141A8(void *arg0, float arg1, float arg2) {
     func_00215C00(arg0, func_002140F8(arg1, arg2), r1, r2);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00214220);
+/* Cosine interpolation: a + (b - a) * ((1 - cos(t * pi)) * 0.5). */
+float func_00214220(float a, float b, float t) {
+    if (t == 0.0f) {
+        return a;
+    }
+    if (t == 1.0f) {
+        return b;
+    }
+    return a + (b - a) * ((1.0f - func_001F9F90(t * 3.14159274f)) * 0.5f);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002142B8);
 
@@ -328,41 +340,30 @@ void func_00214F78(float *m) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215038);
 
-/*
- * Close but not exact, 16/48 (both func_00215048 and func_00215078,
- * which are the same shape with a +0x0 vs +0x10 final field offset).
- * This exact source form gets the first 5 instructions byte-identical,
- * including retail's `bnel`-with-the-load-in-its-delay-slot and its
- * unusual block layout (the shared `return 0` placed *before* the main
- * body), so start from here rather than re-deriving it:
- *
- *   int func(void *arg0) {
- *       if (arg0 == 0) { return 0; }
- *       else if ((*(unsigned short *)((char *)arg0+0x34) & 0x20) == 0) {
- *           return 0;
- *       } else { return **(int **)((char *)arg0+0x78); }
- *   }
- *
- * The if/else-if/else shape is what produces the `bnel`: GCC fills the
- * guard's delay slot from the *target* block using a likely branch, and
- * can only do that when the branch points at the body. The plain
- * `if (arg0 != 0) { ... } return 0;` form points the branch at the tail
- * instead, whose first instruction is a `jr` and so unfillable, giving
- * a plain `beqz` + nop (that form scores 33/48, much worse).
- * Two deltas remain, both after the `andi`:
- *   1. Retail has two literal `nop`s between the `andi` and the `beqz`
- *      that this compiler never emits -- see the backward-branch
- *      padding observation in docs/DECOMP_PROGRESS.md.
- *   2. Retail's `beqz` branches *backward* into the already-emitted
- *      shared `return 0` block; GCC emits a second copy at the end
- *      instead (no cross-jumping between the two identical blocks).
- * Tried and rejected: `volatile` on the flags read (loses the `bnel`
- * entirely, worse), and `-Wa,-g`/`-Wa,-O0` to stop the assembler
- * removing nops (no effect -- cc1 never emits them in the first place).
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00215048);
+/* A goto into the first `return 0` gives retail's backward beqz; the two
+   nops before it are short-loop padding (tools/ps2eeas_nops.py). */
+int func_00215048(char *arg0) {
+    if (arg0 == 0) {
+    ret0:
+        return 0;
+    }
+    if ((*(unsigned short *)(arg0 + 0x34) & 0x20) == 0) {
+        goto ret0;
+    }
+    return **(int **)(arg0 + 0x78);
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00215078);
+/* func_00215048 for the +0x10 field. */
+int func_00215078(char *arg0) {
+    if (arg0 == 0) {
+    ret0:
+        return 0;
+    }
+    if ((*(unsigned short *)(arg0 + 0x34) & 0x20) == 0) {
+        goto ret0;
+    }
+    return *(int *)(*(char **)(arg0 + 0x78) + 0x10);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002150A8);
 
@@ -372,21 +373,11 @@ extern void func_001FA460(void *);
 extern void func_002150B0(void *, void *);
 extern void func_001FA480(void *, void *);
 
-/*
- * Close, not exact (15/76), same size so harmless to everything after
- * it. Logic is certain: fill a 64-byte stack buffer, then hand it to two
- * consumers. Instruction shape is identical to retail; the entire
- * residual is that retail puts arg0 in $s1 and arg1 in $s0 (saving $s1
- * first), while this compiler assigns them the other way round and the
- * save order follows. Tried aliasing the parameters through locals
- * declared in the reverse order -- the declaration-order lever that
- * worked for func_0020DA68/func_0020DAB0 -- but the compiler coalesces
- * the aliases with the parameters, so that lever steers LOCALS only, not
- * incoming parameter registers. Known allocator question.
- */
+/* func_001FA460 takes two arguments: arg1 is passed on to it untouched,
+   which gives arg1 three references and retail's $s0. */
 void func_00215328(void *arg0, void *arg1) {
     char buf[0x40];
-    func_001FA460(buf);
+    func_001FA460_2(buf, arg1);
     func_002150B0(arg0, buf);
     func_001FA480(arg1, buf);
 }
@@ -412,7 +403,35 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002153E8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215518);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00215570);
+typedef struct {
+    char pad[0x30];
+    float pos[4];     /* 0x30 */
+    float mtx[4][4];  /* 0x40 */
+} ViewBox;
+extern ViewBox *D_00160134 MACRO_ADDR;
+extern void func_001F9BF0(void *, void *, void *);
+
+/* Is point arg0 inside box arg1 of the table at D_00160134? The offset
+   from the box's position, taken through its matrix, must lie in
+   [-1, 1] on every axis. 0 for arg1 == -1. */
+int func_00215570(void *arg0, int arg1) {
+    float d[4];
+    float v[4];
+    ViewBox *m;
+
+    if (arg1 == -1) {
+        return 0;
+    }
+    m = &D_00160134[arg1];
+    func_001F9BF0(d, arg0, m->pos);
+    d[3] = 0.0f;
+    func_001F9EC0(v, d, m->mtx);
+    if (v[0] >= -1.0f && v[0] <= 1.0f && v[1] >= -1.0f && v[1] <= 1.0f
+        && v[2] >= -1.0f && v[2] <= 1.0f) {
+        return 1;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215648);
 
@@ -441,7 +460,41 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002156E0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215788);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002157C0);
+extern float D_0015EE60 MACRO_ADDR;
+extern float D_0015EE64 MACRO_ADDR;
+extern float D_0015EE68 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+extern float D_0015EE70 MACRO_ADDR;
+extern float D_0015EE74 MACRO_ADDR;
+extern int D_0015EE78 MACRO_ADDR;
+extern float D_0015EE7C MACRO_ADDR;
+extern int D_0015EE80 MACRO_ADDR;
+
+/* The EE80 flag is written first in each arm. Its float store lands in
+   a delay slot, where check_macro_slots.py makes it $gp-relative. */
+void func_002157C0(int pal) {
+    if (pal == 0) {
+        D_0015EE80 = 0;
+        D_0015EE60 = 1.0f;
+        D_0015EE64 = 1.0f;
+        D_0015EE68 = 1.0f;
+        D_0015EE6C = 0.01666666753590106964111328125f;
+        D_0015EE70 = 0.000277777784503996372222900390625f;
+        D_0015EE74 = 0.00000462962952951784245669841766357421875f;
+        D_0015EE78 = 5;
+        D_0015EE7C = 0.01666666753590106964111328125f;
+    } else {
+        D_0015EE80 = 1;
+        D_0015EE60 = 1.2000000476837158203125f;
+        D_0015EE64 = 1.440000057220458984375f;
+        D_0015EE68 = 0.833333313465118408203125f;
+        D_0015EE6C = 0.02000000141561031341552734375f;
+        D_0015EE70 = 0.00040000001899898052215576171875f;
+        D_0015EE74 = 0.0000079999999798019416630268096923828125f;
+        D_0015EE78 = 6;
+        D_0015EE7C = 0.0199999995529651641845703125f;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002158E0);
 
@@ -451,35 +504,25 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00215A10);
 
 extern int func_001FA898_r(float) __asm__("func_001FA898");
 
-/*
- * Same-size near-miss (70/124 bytes). Round arg1 to arg0 decimal
- * places: round(arg1 * 10^arg0) / 10^arg0. Retail carries two
- * standalone nops (after each mtc1 whose destination the following
- * cvt.s.w consumes) that this compiler never emits -- the same
- * GPR/FPU transfer hazard already documented unreachable elsewhere
- * this session (e.g. func_00214158). Everything past those two spots
- * cascades into register-renaming diffs, hence the large byte count
- * despite matching size; the logic and every constant/instruction is
- * otherwise identical.
- */
-
+/* Rounds arg1 to arg0 decimal places: round(arg1 * 10^arg0) / 10^arg0.
+   arg1 is updated in place throughout, so it stays in $f12 as retail
+   has it. The nops after the two mtc1s are ps2eeas's
+   (tools/ps2eeas_nops.py). */
 float func_00215A98(int arg0, float arg1) {
-    float saved = arg1;
     int p = 1;
+    float scale;
 
     if (arg0 > 0) {
         do {
             arg0--;
-            p = p * 10;
+            p *= 10;
         } while (arg0 != 0);
     }
-    {
-        float scale = (float)p;
-        float half = 1.0f / (scale + scale);
-        float v = (half + saved) * scale;
-        int r = func_001FA898_r(v);
-        return (float)r / scale;
-    }
+    scale = (float)p;
+    arg1 += 1.0f / (scale + scale);
+    arg1 *= scale;
+    arg1 = (float)func_001FA898_r(arg1);
+    return arg1 / scale;
 }
 
 extern float func_0020D830(void);
@@ -522,11 +565,10 @@ extern int D_0015F6B0 MACRO_ADDR;
 extern int D_0015F6B4 MACRO_ADDR;
 extern int D_00161388 MACRO_ADDR;
 
-/*
- * 11/164: everything but the placement of `addiu $2,$0,1`, which retail
- * emits before the last store and this compiler after it. Writing the
- * return value into a local before that store does not move it.
- */
+/* Shows help message arg1 (func_001FFE88 of its string) for requester
+   arg0: 2 if arg0 already holds the slot, 1 if the slot was free and
+   arg0 takes it, 0 if someone else holds it. The failure return goes
+   last, which lets the scheduler put `li $2,1` before the last store. */
 int func_00215F80(int arg0, int arg1) {
     int cur = D_0015F6B4;
 
@@ -538,16 +580,16 @@ int func_00215F80(int arg0, int arg1) {
         D_0015F6B0 = 2;
         return 2;
     }
-    if (cur != 0) {
-        return 0;
+    if (cur == 0) {
+        if (arg1 != 0) {
+            func_001FFE88(func_001FE540(arg1));
+        }
+        D_0015F6B4 = arg0;
+        D_0015F6B0 = 2;
+        D_00161388 = arg1;
+        return 1;
     }
-    if (arg1 != 0) {
-        func_001FFE88(func_001FE540(arg1));
-    }
-    D_0015F6B4 = arg0;
-    D_0015F6B0 = 2;
-    D_00161388 = arg1;
-    return 1;
+    return 0;
 }
 
 int func_00216028(int arg0, int arg1) {

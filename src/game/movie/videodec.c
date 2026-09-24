@@ -537,7 +537,33 @@ int func_0023E1B0(void *arg0) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E1F8); /* videoDecMain(void *) */
+/* vobuf.h */
+typedef struct {
+    void *data;
+    void *tag;
+    volatile int write;
+    volatile int count;
+    int size;
+} VoBuf;
+#define voBuf (*(VoBuf *)((char *)D_0016130C + 0xD9168))
+extern void func_0023E5B8(VoBuf *);    /* voBufReset */
+extern void func_0023E298(VideoDec *); /* decBs0 */
+
+/* videoDecMain(VideoDec *) */
+/* videoDecMain(void *) */
+void func_0023E1F8(VideoDec *vd) {
+    func_0023D090((char *)&vd->vibuf);
+    func_0023E5B8(&voBuf);
+
+    func_0023E298(vd);
+
+    while (voBuf.count) {
+        if (func_0023E050((int *)vd) == VD_STATE_ABORT) {
+            break;
+        }
+    }
+    func_0023E058((int *)vd, VD_STATE_END);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E298); /* decBs0(VideoDec *) */
 

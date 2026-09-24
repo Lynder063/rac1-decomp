@@ -332,7 +332,34 @@ extern Cfg16 D_00160FD0 NOT_SDA;
 extern float func_001F9CB8(void *);
 extern void func_001F9BF0_b(void *, void *, void *) __asm__("func_001F9BF0");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023B670);
+extern int D_00161308 MACRO_ADDR;
+extern char *D_0016130C MACRO_ADDR;
+extern int D_00161314 MACRO_ADDR;
+extern int D_00161318 MACRO_ADDR;
+extern int func_00118BE0(void);        /* GetThreadId */
+extern int func_00118BA0(int, int);    /* ChangeThreadPriority */
+extern int func_0023BB90(int, int, int); /* initAll */
+extern void func_0023B740(void *, void *, void *); /* playMpeg */
+extern void func_0023BE38(void);       /* termAll */
+
+/* The movie player's entry: raise this thread's priority, then
+   initAll, playMpeg and termAll. */
+int func_0023B670(int arg0, int arg1, int arg2, char *heap, int arg4) {
+    D_00161308 = arg2;
+    D_0016130C = heap;
+    D_00161314 = 0;
+    D_00161318 = 0;
+    func_00118BA0(func_00118BE0(), 1);
+    D_00161314 = 1;
+    if (func_0023BB90(arg0, arg1, arg4)) {
+        D_00161314 = 2;
+        func_0023B740(D_0016130C + 0xD9048, D_0016130C, D_0016130C + 0xD9040);
+    }
+    func_0023BE38();
+    D_00161308 = 0;
+    D_0016130C = 0;
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023B740);
 
@@ -356,7 +383,37 @@ int func_0023BB60(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023BB90); /* initAll(int, int, int) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023BE38); /* termAll(void) */
+extern int D_00161310 MACRO_ADDR;
+extern void func_0023CD28(void *);
+extern int func_0023E5B0(void *);
+extern int func_00118B80(int);
+extern int func_00118B60(int);
+extern int func_001193F8(int);
+extern int func_00118AD0(int, int);
+extern int func_00119328(int);
+extern int func_00118AA0(int, int);
+extern int func_0023E008(void *);
+extern int func_0023C060(void *);
+extern int func_0023CE28(void *);
+
+/* termAll. The callees are declared as returning int: even an unused
+   int result moves the next temporary from $v0 to $v1. */
+void func_0023BE38(void) {
+    func_00120F30(0);
+    func_0023CD28(D_0016130C);
+    func_0023E5B0(D_0016130C + 0xD9168);
+    func_00118B80(D_00161310);
+    func_00118B60(D_00161310);
+    func_001193F8(2);
+    func_00118AD0(2, *(int *)(D_0016130C + 0xD90F8));
+    func_00119328(2);
+    func_00118AA0(2, *(int *)(D_0016130C + 0xD90FC));
+    func_0023E008(D_0016130C + 0xD9048);
+    func_0023C060(D_0016130C + 0xD9100);
+    func_0023CE28(D_0016130C + 0xD9040);
+    func_00120F30(0);
+    *(volatile unsigned int *)0x1000E000 &= ~2u;
+}
 
 extern char D_001612F8[];
 

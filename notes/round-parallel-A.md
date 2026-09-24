@@ -1,5 +1,18 @@
 # Range A (`src/text.c`, vram 0x1E9080-0x1F9B00)
 
+> **Historical round notes (September 2026), kept as a record.**
+> `docs/DECOMP_PROGRESS.md` and `progress/report.json` hold the current
+> state. Superseded since this was written:
+> - "`$gp`-relative addressing ... at `-G0` neither is reachable": the
+>   build uses `-G2` now, and `$gp` functions match.
+> - The recommended revert of `func_00115098` was done. The "-8 drift from
+>   about `func_00234380`" was padding lost after `func_00234350`, since
+>   restored with `__asm__(".align 4")`.
+> - `func_001EC270` and `func_001EC780`, kept here at 1/68, are now exact.
+> - `src/text.c` and `src/core_text.c` no longer exist: the source is
+>   split into `src/core/` (one file per retail object) and `src/game/`
+>   (one file per original source file).
+
 ## This file's previous contents were WRONG - corrected here
 
 An earlier survey in this file concluded that **95 of 165** remaining

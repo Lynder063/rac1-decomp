@@ -37,7 +37,33 @@ void func_001F0F30(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F0F70);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F0F78);
+typedef struct {
+    int x;
+    int y;
+    int color;
+    char *str;
+} DrawTextRec;
+extern DrawTextRec D_0018AC00[];
+extern short D_0015F100;
+extern short D_0015F104;
+extern char D_0015F108[];
+extern int func_00116248();
+
+/* Queues one text item: D_0018AC00[n] = {x, y, colour, pool position},
+   then sprintf(pool, "%s", str) (D_0015F108 is "%s") advances the
+   D_0015F100 string pool past the copy. Indexing the table at every
+   store gives retail's two addu forms; a `DrawTextRec *` local folds
+   them into one register and comes out 12 bytes short. */
+void func_001F0F78(int x, int y, int color, char *str) {
+    int n = *(int *)&D_0015F104;
+
+    D_0018AC00[n].x = x;
+    D_0018AC00[n].y = y;
+    D_0018AC00[n].color = color;
+    D_0018AC00[n].str = *(char **)&D_0015F100;
+    *(int *)&D_0015F104 = n + 1;
+    *(char **)&D_0015F100 += func_00116248(*(char **)&D_0015F100, D_0015F108, str) + 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F0FF0);
 
@@ -49,7 +75,6 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F0FF0);
  * the total width before forwarding to func_001F0F78.
  *
  *   extern int D_00189EC0[];
- *   extern void func_001F0F78(int, int);
  *
  *   int func_001F0FF8(int arg0, int arg1, int arg2, char *str) {
  *       int sum = 0;
@@ -73,7 +98,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F0FF0);
  *           } while (1);
  *       }
  *       arg0 -= sum >> 1;
- *       func_001F0F78(arg0, arg1);
+ *       func_001F0F78(arg0, arg1, arg2, str);
  *       return arg0;
  *   }
  *
@@ -211,7 +236,27 @@ void func_001F3B90(void) {
     D_0016129C = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F3C10); /* ResetGsRegisters(void) */
+extern int *D_00161000 MACRO_ADDR;
+extern void func_00234C98(int, long);
+extern char D_0013D0C0[];
+extern char D_0013D010[];
+extern int D_0018CE00[];
+
+/* ResetGsRegisters(void) */
+void func_001F3C10(void) {
+    D_00161000[0] = 0x30000013;
+    D_00161000[1] = (int)D_0013D0C0;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000013;
+    D_00161000 += 4;
+    D_00161000[0] = 0x3000000B;
+    D_00161000[1] = (int)D_0013D010;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x5000000B;
+    D_00161000 += 4;
+    func_00234C98(0x3D, (long)D_0018CE00[0x8C] | ((long)D_0018CE00[0x8D] << 8) |
+                        ((long)D_0018CE00[0x8E] << 16));
+}
 
 extern long D_00151888[3];
 
@@ -237,18 +282,12 @@ extern short D_0015F534;              /* SDA, gp -0x77CC */
 extern void func_001FB530(void);
 extern void func_001F3D78(void);
 
-/*
- * Close, not exact (10/52), same size so harmless to anything after it.
- * Structure is instruction-for-instruction identical to retail. The
- * residual is the known allocator question in its destination-reuse
- * form: retail emits `lui $2` / `lw $2,%lo($2)`, reusing the address
- * register as the load destination, where this compiler emits
- * `lui $2` / `lw $3,...($2)`; the remaining diff is the stack-adjust
- * being scheduled before vs after that lui. Hoisting the load into a
- * local was tried and changes nothing.
- */
+extern int D_0015F6FC_m __asm__("D_0015F6FC") MACRO_ADDR;
+
+/* D_0015F6FC is read through a MACRO_ADDR alias: retail's one-register
+   lui $2 / lw $2 (an older note filed it as an allocator question). */
 void func_001F45F0(void) {
-    if (D_0015F6FC == 0) {
+    if (D_0015F6FC_m == 0) {
         func_001FB530();
         *(int *)&D_0015F534 = 0x7F;
         func_001F3D78();
@@ -400,20 +439,42 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F5148);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F5368);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F54E8);
+extern void func_001F5650(int, int, int, int, unsigned long);
+extern int D_0015EF88 MACRO_ADDR;
+extern short D_00151880[];
 
-/*
- * 6/144: the only residual is `dsll a3,a3,0x18` scheduled one slot
- * early. Four associations of the or-chain (flat, fully left-nested,
- * right-nested, and split into statements) all compile to the same
- * order. The 64-bit parameters are real -- retail shifts with dsll.
- */
+/* GS register writes around an overlay: blend register 0x42 from the
+   64-bit word at +8 while it is set, and when the colour at +4 has an
+   alpha byte, register 0x4E switched around a full-screen
+   func_001F5650 draw. The 64-bit constants are ps2eeas's dli
+   sequences (tools/ps2eeas_dli.py). */
+void func_001F54E8(char *arg0) {
+    long v = *(long *)(arg0 + 8);
+
+    if (v != 0) {
+        func_00234C98(0x42, v & 0xFF000000FFL);
+    }
+    if ((*(int *)(arg0 + 4) & 0xFF000000) != 0) {
+        func_00234C98(0x4E, (D_0015EF88 >> 13) | 0x1000000 | 0x100000000L);
+        func_001F5650(0, D_00151880[0xA9], 0, D_00151880[0xA8],
+                      *(unsigned int *)(arg0 + 4));
+        func_00234C98(0x4E, 0x1000000 | (D_0015EF88 >> 13));
+    }
+    if (*(long *)(arg0 + 8) != 0) {
+        func_00234C98(0x42, 0x8000000044L);
+    }
+}
+
+/* Sets GS register 1 from four bytes packed into one 64-bit value, then
+   restores the default register set. The parameters are int, widened in
+   the expression: with long parameters the scheduler hoists the last
+   dsll one slot early (it was a 6/144 near-miss that way). */
 extern void func_00234C98(int, long);
 extern int *D_00161000 MACRO_ADDR;
 extern char D_0013CD90[];
 
-void func_001F55C0(long a, long b, long c, long d) {
-    func_00234C98(1, a | (b << 8) | (c << 16) | (d << 24));
+void func_001F55C0(int a, int b, int c, int d) {
+    func_00234C98(1, (long)a | ((long)b << 8) | ((long)c << 16) | ((long)d << 24));
     D_00161000[0] = 0x30000014;
     D_00161000[1] = (int)D_0013CD90;
     D_00161000[2] = 0;

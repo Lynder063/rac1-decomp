@@ -22,10 +22,12 @@ Be deliberate about it:
   retail executable's instruction bytes, so it is generated locally by
   each contributor from their own baserom (`bash tools/setup_asm.sh`) and
   is gitignored. That keeps this file consistent with rule 1 below.
-  (It was committed earlier in the project's history. It was removed from
-  the tree on 2026-09-16, but past commits still contain it.) The setup
+  (It was committed earlier in the project and removed from the tree on
+  2026-09-16. The history has since been rewritten: no commit in this
+  repository contains `asm/` or any `.s` file.) The setup
   is pinned (`requirements.txt`, `config/splat.yaml`, the baserom sha1),
-  and was verified to regenerate all 1677 files byte-identically.
+  and a regenerated `asm/` rebuilds the image byte-identically (checked
+  on 2026-09-23 on a second machine, see `docs/TOOLCHAIN.md`).
 - Progressively, hand-written C source in `src/` that a contributor has
   decompiled from the (locally generated) disassembly in `asm/` and cleaned up to compile back
   to matching (or `INCLUDE_ASM`-stubbed, not-yet-matching) object code.
@@ -35,10 +37,11 @@ Be deliberate about it:
 
 - Their own legally owned copy of the game (disc or legally obtained PSN
   ISO), dumped by them.
-- A `baserom.<region>.z64`-equivalent (here: a raw `.bin`/`.iso` extract)
-  placed outside version control (see `.gitignore`), used locally to run
-  `splat` and to verify the build matches via checksum/diff — never
-  committed, never redistributed through this repo.
+- The retail executable itself, `SCES_509.16` (PAL v2.00, SHA-1
+  `79956931bd62fafd8d20fa2eae796dbaf2e15e83`), copied from their own disc
+  into `baserom/`, which is outside version control (see `.gitignore`).
+  It is used locally to run `splat` and to check the build against
+  retail, and is never committed or redistributed through this repo.
 
 ## Why this is a bigger legal step than the RC1 engine-port project
 

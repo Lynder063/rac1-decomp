@@ -25,50 +25,39 @@
  * unit, or some other property not yet isolated). See "Open toolchain
  * questions" in docs/DECOMP_PROGRESS.md.
  */
-/*
- * Reverted at 20/88, logic confirmed. Would be:
- *   func_0022C7E0(); func_0022C188(); func_0022C870();
- *   func_00234C98(0x47, 0x5360B);
- *   func_00234C98(0x4E, 0x1000000 | (D_0015EF88 >> 13));
- * (D_0015EF88 an int, >> 13 arithmetic.)
- *
- * The instruction multiset is right; the order isn't. For each of the
- * two calls retail schedules the *first* argument's `addiu $4` into the
- * jal's delay slot and materializes $5 before it, while this compiler
- * does the reverse. That's argument-materialization order feeding delay
- * slot choice -- an instance of the delay-slot-scheduling question, not
- * a logic error, and not reachable by reordering the C (the arguments
- * are constants in one call expression, so there are no statements to
- * reorder). Reverted per the large-diff rule rather than kept.
- *
- * Note ~2 of those bytes are not this function's fault: both jal targets
- * point at func_00234C98, which sits 8 bytes early in our build due to
- * the pre-existing -8 drift starting around func_00234380 (outside this
- * range).
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_001E9E70); /* Transition_DrawSky(void) */
+extern void func_0022C7E0(void);
+extern void func_0022C188(void);
+extern void func_0022C870(void);
+extern void func_00234C98(int, long);
+extern int D_0015EF88 MACRO_ADDR;
+
+/* func_00234C98 is (int, long) and D_0015EF88 MACRO_ADDR; the older
+   sq/sd note is obsolete. */
+void func_001E9E70(void) {
+    func_0022C7E0();
+    func_0022C188();
+    func_0022C870();
+    func_00234C98(0x47, 0x5360B);
+    func_00234C98(0x4E, 0x1000000 | (D_0015EF88 >> 13));
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001E9EC8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EABE8);
 
-extern int D_0015F064;
-extern int D_0015F060;
+extern int D_0015F064 MACRO_ADDR;
+extern int D_0015F060 MACRO_ADDR;
 extern int D_001997FC;
 /* gp-relative, no retail symbol: gp 0x166D00 - 0x7580 = 0x15F780
    (cursor into the table walked below). */
 extern short D_0015F780;
 
-/*
- * Same-size near-miss (14/56 bytes). Retail loads D_0015F064 into
- * $a1 and shifts arg0*4 into $a0 after that load; this compiler picks
- * $v1 for the same load and schedules the shift before it. Tried
- * swapping the addition's operand order and hoisting D_0015F064 into
- * its own local (matching retail's load-then-shift statement order)
- * -- neither changed the allocation. Not reachable from source.
- */
+/* Points the D_0015F780 cursor at entry arg0 of the table D_0015F064
+   indexes into D_0015F060, past its 8-byte header, and keeps the
+   header's first word in D_001997FC. Both table pointers are MACRO_ADDR
+   (one register each), and the index goes first in the addition. */
 void func_001EB300(int arg0) {
-    int *entry = (int *)(D_0015F064 + arg0 * 4);
+    int *entry = (int *)(arg0 * 4 + D_0015F064);
     int off = *entry;
     char *p = (char *)(D_0015F060 + off);
 
@@ -86,28 +75,22 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001EB7C0); /* Transition_DefaultDraw(b
 extern char D_0013E650[];
 extern int D_0015F694;
 
-/*
- * Close but not yet byte-matching (8/88 bytes): same scratch-register-
- * allocation-choice open question as func_001160D8/func_00115578 in
- * core_text -- retail copies arg1 into $v1 for the delay slot of the
- * `bltz arg0` branch, this compiler copies it into $a2 instead. Same
- * operations, same order, same instruction count, only the register
- * differs (and downstream instructions that read it). Tried
- * precomputing arg1 into its own local before the guard clause (per the
- * delay-slot-steering technique) -- no change, confirms this is the
- * register-allocator-heuristic category, not the fixable delay-slot-
- * shape category. Kept as INCLUDE_ASM since the diff isn't a small fixed
- * offset. Logic:
- *   if (arg0 >= 0) {
- *       char *p = D_0013E650 + arg0 * 0x70;
- *       if (*(short *)(p + 0x7E) == arg1 + D_0015F694 &&
- *           (unsigned char)(*(unsigned char *)(p + 0x74) - 1) < 2) {
- *           return 1;
- *       }
- *   }
- *   return 0;
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_001EBAF0);
+extern int D_0015F694_m __asm__("D_0015F694") MACRO_ADDR;
+
+/* The older register residual was the split load of D_0015F694; read
+   through a MACRO_ADDR alias it is retail's one-register load. */
+int func_001EBAF0(int arg0, int arg1) {
+    if (arg0 >= 0) {
+        char *p = D_0013E650 + arg0 * 0x70;
+        if (*(short *)(p + 0x7E) == arg1 + D_0015F694_m) {
+            unsigned char s = p[0x74];
+            if (s == 1 || s == 2) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EBB48);
 

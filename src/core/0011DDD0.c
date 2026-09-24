@@ -111,15 +111,6 @@ typedef struct { int a; int b; } D_00131358_pair;
  * func_0011DE28 reads the entry's current value back before
  * func_0011DDD0 rewrites it. All three callees are handwritten
  * syscall wrappers.
- *
- * The residual is the second func_0011DDE0 call's argument setup:
- * retail finishes materialising the 0x82000 destination address
- * (lui+ori) before loading the 0x28 size constant into the third
- * argument register; this compiler schedules the size constant one
- * instruction earlier. Tried routing the size and the destination
- * address each through their own local first (forcing a sequence
- * point) -- neither changed the schedule. Pure instruction ordering,
- * not reachable from source.
  */
 void func_0011DE38(void) {
     int *t;

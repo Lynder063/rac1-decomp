@@ -1,5 +1,19 @@
 # Parallel round, agent B — vram 0x1FB600–0x20CB00 (src/text.c)
 
+> **Historical round notes (September 2026), kept as a record.**
+> `docs/DECOMP_PROGRESS.md` and `progress/report.json` hold the current
+> state. Superseded since this was written:
+> - "`$gp`-relative ... unreachable at `-G0`": solved by `-G2`.
+> - The two "unsteerable" register sub-cases (`%hi` reuse on a global
+>   load, `$at` for a global store) were the assembler macro form, solved
+>   by `MACRO_ADDR`. `func_00209808`, `func_00209858`, `func_002098C8`,
+>   `func_00209918`, `func_00209698` and `func_002094E0` are now exact.
+> - The "remaining lead" (8 bytes short between 0x20BAA8 and 0x23DFC0) was
+>   the padding lost after `func_00234350`, since restored.
+> - `src/text.c` and `src/core_text.c` no longer exist: the source is
+>   split into `src/core/` (one file per retail object) and `src/game/`
+>   (one file per original source file).
+
 Findings for the coordinator to merge into `docs/DECOMP_PROGRESS.md`.
 
 ## ⚠ The survey immediately below is WRONG — see "Corrected survey" at the end

@@ -41,24 +41,37 @@ build it you need your own legally obtained copy of the game. Read
 
 ## Building
 
-The original compiler is SN Systems ProDG, a set of native Windows programs,
-so the build runs on **Windows** with **Git Bash**. Building elsewhere (for
-example under Wine) is untested.
+The original compiler is SN Systems ProDG, a set of 32-bit Windows programs.
+There are two ways to run it:
 
-Requirements: Git, Git Bash, and Python 3.10 or newer.
+- **Windows**, natively, with **Git Bash** and Python 3.10 or newer.
+- **macOS and Linux**, through 32-bit Wine in a Docker container
+  (`tools/docker/`). Only Docker is needed on the host; on Apple Silicon it
+  works with OrbStack or Docker Desktop. The container build reproduces the
+  Windows build's progress report byte for byte.
 
-### 1. Clone to a short path
+Every command below runs the same on both. On macOS and Linux, prefix it with
+`bash tools/docker/run.sh`, which builds the image on first use (about 15
+minutes, once) and runs the command inside it:
+
+```
+bash tools/docker/run.sh bash tools/build_sn.sh
+```
+
+### 1. Clone
 
 ```
 git clone https://github.com/Lynder063/rac1-decomp.git C:\rac1-decomp
 ```
 
-The toolchain's `make` 3.77 fails with `CreateProcess ... failed` when the
-repository path is long, so keep it short.
+On Windows keep the path short: the toolchain's `make` 3.77 fails with
+`CreateProcess ... failed` when the repository path is long.
 
 ### 2. Add your executable
 
-Copy `SCES_509.16` from your disc to `baserom/SCES_509.16`. The expected
+Copy `SCES_509.16` from your disc to `baserom/SCES_509.16`. From a disc
+image, `bsdtar -xf game.iso -C baserom SCES_509.16` extracts it (the image
+itself stays out of the way; `baserom/` is ignored by git). The expected
 SHA-1 is:
 
 ```
@@ -68,7 +81,7 @@ SHA-1 is:
 ### 3. Install Python dependencies and generate the disassembly
 
 ```
-pip install -r requirements.txt
+pip install -r requirements.txt      # Windows only; the Docker image has them
 bash tools/setup_asm.sh
 ```
 
@@ -101,14 +114,17 @@ bash tools/build_sn.sh
 ```
 
 This builds and links `build-sn/rac1.elf`, then audits every decompiled
-function against the retail executable on size and bytes:
+function against the retail executable on size and bytes. The output looks
+like this (these are the numbers as of 2026-09-23; decomp.dev has the
+current ones):
 
 ```
-=== 416 decompiled functions audited ===
-  exact (size AND bytes): 364
-  size mismatch:          0
-  byte mismatch:          52
+=== 731 decompiled functions audited ===
+  exact (size AND bytes): 691
+  size mismatch:          0   (always revert these -- see docs)
+  byte mismatch:          40
 every function is at its retail address
+image matches retail outside the decompiled near-misses (1038 bytes differ inside them)
 ```
 
 ## Contributing
@@ -129,6 +145,7 @@ The full procedure is in [`docs/WORKFLOW.md`](docs/WORKFLOW.md). In short:
    `python tools/gen_progress_report.py`, and commit it together with your
    change. CI fails if the report is out of date.
 
+On macOS and Linux, prefix each of these with `bash tools/docker/run.sh`.
 m2c and asm-differ are used from local clones (not vendored):
 
 ```
@@ -192,11 +209,13 @@ comments are overwritten safely.
 | `src/game/` | The `text` segment, one file per original source file (`hud`, `camera`, `mobyfunc`, `movie/*`...), named after the originals |
 | `src/libgcc/` | GCC's `libgcc2.c` and `fp-bit.c` (GPL with the libgcc exception) plus stubs, see its README |
 | `include/` | Shared headers, recovered structs, assembly macros |
+| `include-sn/` | Assembly macros for assembling the data objects with SN's assembler |
 | `config/splat.yaml`, `config/symbol_addrs.txt` | How the executable is split into functions |
 | `config/core_text.objects`, `config/text.objects` | Link order and start address of every object |
 | `Makefile.sn`, `rac1.ld.sh` | Compile and link at retail addresses |
 | `tools/` | Build, audit, progress-report and decompilation helper scripts |
 | `docs/` | Workflow, toolchain notes, progress log, Ghidra policy |
+| `notes/` | Round notes from September 2026, kept as history; `docs/DECOMP_PROGRESS.md` has the current state |
 | `progress/report.json` | objdiff-format progress report read by decomp.dev |
 
 ## Resources
@@ -211,6 +230,9 @@ comments are overwritten safely.
 - [AngheloAlf's PS2 toolchain mirrors](https://github.com/AngheloAlf)
 - [bordplate/RC1](https://codeberg.org/bordplate/RC1): NTSC decomp setup; the
   source file names and boundaries of the `text` segment come from its split
+- [Lombyte](https://github.com/mateuszklysz/Lombyte): NTSC decompilation work
+  on the same game; some real names and struct layouts in `src/` comments
+  (e.g. `src/game/draw.c`, `src/game/vuchain.c`) are corroborated against it
 - [RatchetModding/rac-modding-resources](https://github.com/RatchetModding/rac-modding-resources)
 - [Wrench](https://github.com/chaoticgd/wrench): Ratchet & Clank PS2 asset
   tooling, useful for cross-referencing structures

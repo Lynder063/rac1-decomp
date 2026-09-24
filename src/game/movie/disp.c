@@ -363,31 +363,21 @@ int func_0023C910(int val) {
     return 0;
 }
 
-/*
- * Reverted: size mismatch (ours=64, retail=76 -- 12 bytes short).
- * startDisplay(int). Semantics certain: spin on func_00122598(0)
- * until it returns something other than arg0, then mark
- * isDispStarted (D_001612E0=1) and clear D_001612E4.
- *
- *   extern int func_00122598_r(int) __asm__("func_00122598");
- *   extern int D_001612E4 MACRO_ADDR;
- *
- *   void func_0023C960(int arg0) {
- *       while (func_00122598_r(0) == arg0) {
- *           ;
- *       }
- *       D_001612E0 = 1;
- *       D_001612E4 = 0;
- *   }
- *
- * Retail carries 3 standalone nops after the jal, before testing the
- * call's return value in the loop-continuation branch -- a genuine
- * call-result hazard delay this compiler never emits (same class as
- * the documented load-delay/GPR-FPU-transfer hazard nops elsewhere,
- * just 3 wide instead of 1). Not reachable from source; tried storing
- * the result through an explicit local first, no change.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C960); /* startDisplay(int) */
+extern int func_00122598_r(int) __asm__("func_00122598");
+extern int D_001612E4 MACRO_ADDR;
+
+/* startDisplay(int): wait until func_00122598(0) returns something other
+   than arg0, then mark the display started. The nops before the loop's
+   branch are short-loop padding (tools/fix_short_loops.py). The two
+   stores are volatile, as in func_0023C9B0; otherwise the scheduler
+   moves them both after the register restores. */
+void func_0023C960(int arg0) {
+    while (func_00122598_r(0) == arg0) {
+        ;
+    }
+    *(volatile int *)&D_001612E0 = 1;
+    *(volatile int *)&D_001612E4 = 0;
+}
 
 /* endDisplay */
 void func_0023C9B0(void) {

@@ -1,5 +1,20 @@
 # The `sq`/`lq` callee-saved spill question — resolved
 
+> **Historical round notes (September 2026), kept as a record.**
+> `docs/DECOMP_PROGRESS.md` and `progress/report.json` hold the current
+> state. Superseded since this was written:
+> - Section 4's build change was adopted and then refined: `core_text` is
+>   no longer compiled with v1.36 but with v1.14 plus
+>   `tools/fix_core_spills.py`, because v1.36 mirrors retail's save-slot
+>   layout.
+> - Section 6 ("`core_text` functions needing s-registers ... stay
+>   blocked") is resolved by that same change.
+> - The measurements here were taken at `-O2 -G0`; the build uses `-G2`
+>   now.
+> - `src/text.c` and `src/core_text.c` no longer exist: the source is
+>   split into `src/core/` (one file per retail object) and `src/game/`
+>   (one file per original source file).
+
 **Verdict: it is not a flag. It is two different original builds, and we
 already have both compilers.** Confirmed end-to-end with byte-level
 proof. The practical upshot is large, and part of it is that the

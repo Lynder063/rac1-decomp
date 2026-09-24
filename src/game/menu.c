@@ -107,11 +107,59 @@ int func_002071F0(void) {
     return D_0013D4A5 != 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207200);
+typedef struct {
+    char _pad0[0x12E4];
+    unsigned char unk12E4;
+    char _pad12E5[0x208C - 0x12E5];
+    int unk208C;
+} Menu13F450;
+extern Menu13F450 D_0013F450;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002072C0);
+/* Menu hit test: arg3 is the third float ($f14). b (state 16) is
+   computed before a, as retail evaluates it; the second if's own
+   `arg1 >= 0xC8` is retail's second test of $a1. */
+int func_00207200(void *arg0, int arg1, float unused1, float unused2, float arg3) {
+    Menu13F450 *s = &D_0013F450;
+    int b = s->unk208C == 16;
+    int a = s->unk208C == 17 || s->unk208C == 18 || s->unk12E4 == 1;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207340);
+    if (arg1 < 0xC8 && arg3 >= 39.5f && arg3 <= 42.5f && !a) {
+        return 1;
+    }
+    if (arg1 >= 0xC8 && arg3 >= 87.0f && !b) {
+        return 1;
+    }
+    return 0;
+}
+
+extern int D_001414DC_early __asm__("D_001414DC") NOT_SDA;
+extern unsigned char D_0013D49E NOT_SDA;
+
+/* `if (x) return 1;` in both arms with one shared `return 0;` keeps the
+   flag test a beqz with the li in its slot; a result variable or a
+   return 0 per arm becomes sltu. */
+int func_002072C0(int arg0, float unused1, float unused2, float arg1) {
+    int is16 = D_001414DC_early == 0x10;
+
+    if (arg0 < 0x100) {
+        if (D_0013D49E != 0) {
+            return 1;
+        }
+    } else if (arg1 >= 58.0f && arg1 <= 86.0f && !is16) {
+        return 1;
+    }
+    return 0;
+}
+
+/* The struct's address in a local keeps one base register for both
+   field reads. */
+int func_00207340(int arg0, float unused1, float unused2, float arg1) {
+    if (arg0 < 0x100) {
+        Menu13F450 *s = &D_0013F450;
+        return s->unk208C == 17 || s->unk208C == 18 || s->unk12E4 == 1;
+    }
+    return (arg1 >= 95.0f) ? 1 : 0;
+}
 
 extern short D_0015FE24;   /* declared small so -G2 puts it in SDA */
 
@@ -155,11 +203,37 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00207648);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207780);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207930);
+extern int D_001A04BC NOT_SDA;
+
+/* Menu hit test in two layouts (func_00207200's family). The first arm
+   needs its own `return 0`: jump.c then sets v0 = 1 before the test
+   there too, which gives retail's registers and lets the arm be
+   cross-jumped into the second one. */
+int func_00207930(int arg0, int arg1, float unused1, float unused2, float arg3) {
+    if (arg1 < 0xBB) {
+        Menu13F450 *s = &D_0013F450;
+        int a = s->unk208C == 17 || s->unk208C == 18 || s->unk12E4 == 1;
+
+        if (!a && D_001A04BC != 0) {
+            return 1;
+        }
+        return 0;
+    }
+    if (arg3 >= 51.5f && arg3 <= 54.0f
+        && func_00209048(arg0, arg1, 0x10A, 0xE5, 0x124, 0xF9) != 0) {
+        return 1;
+    }
+    return 0;
+}
 
 extern int D_001A04B4 NOT_SDA;
 
-/* Same hit test as func_002071A8, run against two boxes. */
+/* Same hit test as func_002071A8, run against two boxes.
+   6/144 near-miss: retail tests `a` with a plain bnez (`li $v0,1` in its
+   slot) and sets $v0 = 0 again in the next beqz's slot; ours uses bnel.
+   Tried without change: an r variable (set once, or per arm), if/else
+   chains with explicit 0/1 per path, `?:`, and early returns (4-8 bytes
+   short from cross-jumping). */
 int func_002079F0(int x1, int y1) {
     int a = func_00209048(x1, y1, 0x99, 0xED, 0x160, 0x117);
     int b = func_00209048(x1, y1, 0x10E, 0xF7, 0x13D, 0x119);
@@ -167,11 +241,47 @@ int func_002079F0(int x1, int y1) {
     return D_001A04B4 != 0 && (a != 0 || b != 0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207A80);
+extern int D_001A04C0 NOT_SDA;
+extern int D_001A04B8 NOT_SDA;
+
+/* Hit test in two layouts: arg3 (the third float, $f14) must lie in
+   [73.5, 80] with D_001A04C0 set, or for arg1 >= 0x9D in [51.5, 54] with
+   D_001A04B8 set. Written as `<`/`>` rejections so they compile to retail's
+   c.lt/bc1t; the second arm's `return 0` cross-jumps into the first's. */
+int func_00207A80(void *arg0, int arg1, float unused1, float unused2, float arg3) {
+    if (arg1 < 0x9D) {
+        if (arg3 < 73.5f || arg3 > 80.0f || D_001A04C0 == 0) {
+            return 0;
+        }
+        return 1;
+    } else {
+        if (arg3 < 51.5f || arg3 > 54.0f || D_001A04B8 == 0) {
+            return 0;
+        }
+        return 1;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207B30);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207BE8);
+/* Menu hit test (func_00207200's family): hits unless the menu state
+   blocks it, arg3 ($f14) is below 71.5, or the first box is hit, and
+   then only if the second box is not. */
+int func_00207BE8(int arg0, int arg1, float unused1, float unused2, float arg3) {
+    Menu13F450 *s = &D_0013F450;
+    int a = s->unk208C == 17 || s->unk208C == 18 || s->unk12E4 == 1;
+
+    if (a) {
+        return 0;
+    }
+    if (arg3 < 71.5f) {
+        return 0;
+    }
+    if (func_00209048(arg0, arg1, 0x131, 0xE2, 0xC6, 0x93) != 0) {
+        return 0;
+    }
+    return func_00209048(arg0, arg1, 0x190, 0x89, 0xD1, 0xFB) == 0;
+}
 
 extern unsigned char D_0013D4C5 NOT_SDA;
 extern int D_001414DC NOT_SDA;
@@ -183,52 +293,42 @@ int func_00207CB0(int arg0, int arg1) {
     return D_0013D4C5 != 0;
 }
 
-/*
- * Reverted: size mismatch (ours=80, retail=88 -- 8 bytes short).
- *
- *   int func_00207CE0(int arg0, float unused1, float unused2,
- *                      float f14) {
- *       if (arg0 < 0xE0) {
- *           return f14 >= 47.75f;
- *       }
- *       return f14 < 29.0f;
- *   }
- *
- * Same shape and thresholds-in-spirit as func_00207E28/func_00207EC0
- * below in this file. Getting retail's $f14 register for the real
- * float argument required TWO unused leading `float` parameters
- * (neither `int` nor `double` padding reproduced it) -- i.e. this
- * compiler counts float argument registers independently of
- * intervening int params, consecutively from $f12, with no shadow-
- * slot pairing to a specific argument POSITION. Worth remembering for
- * any other $f14/$f16-argument function in this file. Semantics and
- * constants confirmed exact (0x423F0000 = 47.75f, not 47.5f). Missing
- * the same GPR/FPU-adjacent hazard nop (between `mtc1` and the
- * following `c.le.s`) already documented as unreachable on the two
- * siblings.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00207CE0);
+/* The two unused float parameters put the threshold's argument in
+   $f14 (floats count consecutively from $f12). The nops after the mtc1
+   and the compare are ps2eeas's (tools/ps2eeas_nops.py). */
+int func_00207CE0(int arg0, float unused1, float unused2, float arg1) {
+    if (arg0 < 0xE0) {
+        return (arg1 >= 47.75f) ? 1 : 0;
+    }
+    return (arg1 < 29.0f) ? 1 : 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207D38);
+/* `(a && b) ? 1 : 0` gives retail's bc1f then bc1tl; the other arm is
+   a plain `? 1 : 0`. */
+int func_00207D38(int arg0, float unused1, float unused2, float arg1) {
+    if (arg0 < 0xE0) {
+        return (arg1 >= 44.0f && arg1 <= 45.0f) ? 1 : 0;
+    }
+    return (arg1 >= 37.0f) ? 1 : 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207DB0);
+/* func_00207D38's twin. */
+int func_00207DB0(int arg0, float unused1, float unused2, float arg1) {
+    if (arg0 < 0xE0) {
+        return (arg1 >= 42.0f && arg1 <= 43.0f) ? 1 : 0;
+    }
+    return (arg1 >= 39.0f) ? 1 : 0;
+}
 
-/*
- * Close but not exact: `result = (arg0 < 0xE0 && arg1 <= 38.0) ? 1 : 0;`
- * -- confirmed via objdump: same operations, same registers, same
- * threshold constant (0x42180000 = 38.0), same shape (default 0, set 1
- * if arg0<0xE0, reset to 0 if arg1>38.0). Retail encodes the inner
- * boolean-to-branch conversion as bc1t with both the "set 1" and
- * "reset to 0" as literal delay-slot/fallthrough instructions; every
- * source shape tried (single &&-expression, nested if, result-default-
- * then-override) compiles to a bc1f/bc1tl-based scheme instead --
- * logically identical, different instruction encoding/ordering. New
- * instance of the delay-slot-scheduling open question (previously seen
- * as store/branch-target reordering, this is the FP-condition
- * materialization case). 26/52 bytes differ, too large a diff to keep
- * as documented-close C per the func_00112468 precedent.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00207E28);
+/* Returning the compare as `? 1 : 0` gives bc1t with the `li 1` in its
+   slot; folded into `&&` it becomes bc1tl. The two nops, after the mtc1
+   and after the compare, are ps2eeas's (tools/ps2eeas_nops.py). */
+int func_00207E28(int arg0, float unused1, float unused2, float arg1) {
+    if (arg0 >= 0xE0) {
+        return 0;
+    }
+    return (arg1 <= 38.0f) ? 1 : 0;
+}
 
 extern unsigned char D_0013D4C0 NOT_SDA;
 extern unsigned char D_0013D4C1 NOT_SDA;
@@ -263,17 +363,13 @@ int func_00207EB0(void) {
 
 extern unsigned char D_0013D4E0;
 
-/*
- * Close but not exact: if (arg0>=0xBE) return D_0013D4E0!=0; else return
- * (arg1>=58.5) ? 1 : 0. Confirmed via objdump: the arg0>=0xBE early
- * return matches exactly (same bnez polarity as retail once written as
- * `if (arg0 >= 0xBE)` rather than the inverted `if (arg0 < 0xBE)`), but
- * the float-threshold boolean materialization hits the same delay-slot-
- * scheduling issue as func_00207E28 just above -- same category, not
- * re-explained in full here. 19/64 bytes differ, too large a diff to
- * keep as documented-close C per the func_00112468 precedent.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00207EC0);
+extern unsigned char D_0013D4E0_far __asm__("D_0013D4E0") NOT_SDA;
+/* The recorded C was right; the two ps2eeas nops were the only
+   residual. */
+int func_00207EC0(int arg0, float unused1, float unused2, float arg1) {
+    if (arg0 >= 0xBE) return D_0013D4E0_far != 0;
+    return (arg1 >= 58.5f) ? 1 : 0;
+}
 
 extern unsigned char D_0013D4DC NOT_SDA;
 extern unsigned char D_0013D4DD NOT_SDA;
@@ -301,15 +397,56 @@ int func_00207F40(void) {
     return D_0013D4E1 != 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207F50);
+extern unsigned char D_0013D4E6 NOT_SDA;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207FD0);
+int func_00207F50(int arg0, float unused1, float unused2, float arg1) {
+    if (arg0 < 0xDD) {
+        return arg1 >= 232.0f && arg1 <= 235.0f && D_0013D4E6 != 0;
+    }
+    return (arg1 <= 180.0f) ? 1 : 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00208030);
+extern unsigned char D_0013D4E7 NOT_SDA;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002080B0);
+int func_00207FD0(int arg0, float unused1, float unused2, float arg1) {
+    if (arg0 < 0xDD) {
+        return (arg1 >= 242.0f) ? 1 : 0;
+    }
+    return arg1 <= 180.0f && D_0013D4E7 != 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00208160);
+extern unsigned char D_0013D4E8 NOT_SDA;
+
+int func_00208030(int arg0, float unused1, float unused2, float arg1) {
+    if (arg0 < 0xDD) {
+        return (arg1 >= 238.0f && arg1 <= 241.0f) ? 1 : 0;
+    }
+    return arg1 <= 180.0f && D_0013D4E8 != 0;
+}
+
+extern unsigned char D_0013D4EA NOT_SDA;
+
+/* The Menu13F450 state test of func_00207340, computed up front (retail
+   evaluates it before the arg0 branch), gates the arg0 < 0x15F arm; the
+   other arm is func_00208160's second test with D_0013D4EA. */
+int func_002080B0(int arg0, float unused1, float unused2, float arg1) {
+    Menu13F450 *s = &D_0013F450;
+    int a = s->unk208C == 17 || s->unk208C == 18 || s->unk12E4 == 1;
+
+    if (arg0 < 0x15F) {
+        return (arg1 >= 200.0f) ? a : 0;
+    }
+    return arg1 >= 233.0f && arg1 <= 235.0f && D_0013D4EA != 0;
+}
+
+extern unsigned char D_0013D4EB NOT_SDA;
+
+int func_00208160(int arg0, float unused1, float unused2, float arg1) {
+    if (arg0 < 0x15F) {
+        return (arg1 >= 228.0f && arg1 <= 230.0f) ? 1 : 0;
+    }
+    return arg1 >= 233.0f && arg1 <= 235.0f && D_0013D4EB != 0;
+}
 
 extern unsigned char D_0013D4E9 NOT_SDA;
 
@@ -317,26 +454,18 @@ int func_002081F8(void) {
     return D_0013D4E9 != 0;
 }
 
-/*
- * Same-size near-miss (16/48 bytes, kept). arg0 is unused; the two
- * leading unused `float` params are needed to land arg3 in $f14
- * (floats count consecutively from $f12, one slot each -- confirmed
- * on func_00207CE0). Two residuals:
- *   1. Retail has a `nop` between the `mtc1` and the `c.le.s` that
- *      consumes it -- the GPR/FPU transfer hazard-nop class (see
- *      func_002140F8/func_00215A98/func_0023C960).
- *   2. Retail's branch is `bc1fl` (branch-likely); this compiler
- *      always emits the plain `bc1f`, which can't annul its delay slot
- *      and so needs one extra trailing instruction to restore the
- *      default-1 value on the fallthrough path.
- */
+/* arg0 is unused; the two unused float parameters put arg3 in $f14
+   (floats count consecutively from $f12, one register each; see
+   func_00207CE0). With `r` defaulting to 1, reorg turns the reset into
+   retail's bc1fl with `r = 0` in its delay slot. The nop after the mtc1
+   is ps2eeas's (tools/ps2eeas_nops.py). */
 int func_00208208(void *arg0, int arg1, float unused1, float unused2, float arg3) {
-    if (arg1 < 0x141) {
-        if (!(63.5f <= arg3)) {
-            return 0;
-        }
+    int r = 1;
+
+    if (arg1 < 0x141 && !(63.5f <= arg3)) {
+        r = 0;
     }
-    return 1;
+    return r;
 }
 
 int func_00208238(void) {
@@ -468,14 +597,20 @@ extern int D_001E06B8[];
 extern void *D_00199578[];
 extern char D_0013D6B8[];
 
+/* Copies three floats (+0x10, +0x14, +0x48) of each of level
+   D_0015EE84's objects in D_00199578 into the 16-byte slots at
+   D_0013D6B8; the index range is D_001E06B8[i]..[i + 1]. Binding the
+   two bases to locals in retail's order orders their %hi halves. */
 void func_00208FA0(void) {
     int i = D_0015EE84;
     if ((unsigned int)i < 0x13) {
         int start = D_001E06B8[i];
         int end = D_001E06B8[i + 1];
         if (start < end) {
-            float *dst = (float *)(D_0013D6B8 + start * 16);
-            void **src = &D_00199578[start];
+            void **sbase = D_00199578;
+            char *dbase = D_0013D6B8;
+            float *dst = (float *)(dbase + start * 16);
+            void **src = &sbase[start];
             start = end - start;
             do {
                 char *p = (char *)*src;
@@ -543,7 +678,38 @@ int func_00209048(int x1, int y1, int x0, int y0, int x2, int y2) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209070);
+extern char D_0013D390[];
+extern int D_0015EFB0 MACRO_ADDR;
+extern int D_0015EFB4 MACRO_ADDR;
+extern int D_0015FF4C MACRO_ADDR;
+extern int D_00161380 MACRO_ADDR;
+extern void (*D_001A0538[])(void);
+
+/* Calls the handler for the state in D_0015EFB0 from the table at
+   D_001A0538. Bits 0x80 and 0x100 of D_0015EFB4 request states 0x15 and
+   0x14; D_00161380 counts calls since the state last changed. */
+void func_00209070(void) {
+    char *b = D_0013D390;
+    int old;
+
+    if (*(int *)(b + 0xEC) != 0 || *(int *)(b + 0x1C) != 0) {
+        D_0015FF4C = 1;
+    }
+    old = D_0015EFB0;
+    if (D_0015EFB4 & 0x80) {
+        D_0015EFB0 = 0x15;
+        D_0015EFB4 = (D_0015EFB4 & ~0x80) | 0x40;
+    }
+    if (D_0015EFB4 & 0x100) {
+        D_0015EFB0 = 0x14;
+        D_0015EFB4 = (D_0015EFB4 & ~0x100) | 0x40;
+    }
+    D_001A0538[D_0015EFB0]();
+    D_00161380++;
+    if (D_0015EFB0 != old) {
+        D_00161380 = 0;
+    }
+}
 
 /*
  * Near-miss, same size (differ score 180): func_00209160 below. Every
@@ -575,56 +741,44 @@ void func_00209160(void) {
     *(int *)(b + 0x1C) = t;
 }
 
-/*
- * Reverted: our ASSEMBLER makes it 12 bytes too long. The compiler's
- * instruction stream is retail's, byte for byte, with the two ands
- * (dead-store elimination on D_0015EFB4, see below) and the
- * $gp-in-delay-slot form. But ee-as then inserts 3 nops before the
- * cross-jumped `b` back into the 0x80 arm -- its EE short-loop erratum
- * padding -- and retail has no nops there. Measured: this assembler
- * pads a backward branch whose loop body is under ~6 instructions, and
- * pads this 9-instruction one too for a reason that a reduced test case
- * does not reproduce (plain copies of the same instruction sequence
- * assemble clean). Retail's own assembler did not pad here, though the
- * image does carry erratum nops elsewhere.
- *
- * The recovered source, which is correct apart from that:
- *
- * void func_00209188(void) {
- *     int flags = D_0015EFB4;
- *     char *b;
- *     int nf;
- *     D_0015EFB4 = flags & ~4;
- *     b = D_0013D390;
- *     nf = D_0015EFB4 & ~2;
- *     D_0015EFB4 = nf;
- *     if (*(int *)(b + 0xFC) == 0) {
- *         D_0015EFB0 = 3;
- *         return;
- *     }
- *     if (flags & 0x80) {
- *         D_0015EFB0 = 0x15;
- *         D_0015EFB4 = (nf ^ 0x80) | 0x40;
- *         return;
- *     }
- *     if (flags & 0x100) {
- *         D_0015EFB0 = 0x14;
- *         D_0015EFB4 = (nf ^ 0x100) | 0x40;
- *         return;
- *     }
- *     if (*(int *)(b + 0x1C) != 0) {
- *         *(int *)(b + 0xFC) = 0;
- *         D_0015EFB4 = nf | 1;
- *         D_0015EFB0 = 2;
- *         return;
- *     }
- *     if (flags & 0x200) {
- *         D_0015EFB4 = nf ^ 0x200;
- *         D_0015EFB0 = 0x16;
- *     }
- * }
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00209188);
+/* Clears the 4 and 2 flag bits of D_0015EFB4, then picks the next
+   state into D_0015EFB0 from the 0x80/0x100/0x200 bits and the
+   D_0013D390 record. The cross-jumped `b` back into the 0x80 arm is
+   one GNU as pads as a short loop and ps2eeas did not;
+   tools/ps2eeas_nops.py writes it as a .word. */
+void func_00209188(void) {
+    int flags = D_0015EFB4;
+    char *b;
+    int nf;
+    D_0015EFB4 = flags & ~4;
+    b = D_0013D390;
+    nf = D_0015EFB4 & ~2;
+    D_0015EFB4 = nf;
+    if (*(int *)(b + 0xFC) == 0) {
+        D_0015EFB0 = 3;
+        return;
+    }
+    if (flags & 0x80) {
+        D_0015EFB0 = 0x15;
+        D_0015EFB4 = (nf ^ 0x80) | 0x40;
+        return;
+    }
+    if (flags & 0x100) {
+        D_0015EFB0 = 0x14;
+        D_0015EFB4 = (nf ^ 0x100) | 0x40;
+        return;
+    }
+    if (*(int *)(b + 0x1C) != 0) {
+        *(int *)(b + 0xFC) = 0;
+        D_0015EFB4 = nf | 1;
+        D_0015EFB0 = 2;
+        return;
+    }
+    if (flags & 0x200) {
+        D_0015EFB4 = nf ^ 0x200;
+        D_0015EFB0 = 0x16;
+    }
+}
 
 void func_00209238(void) {
     char *b = D_0013D390;
@@ -852,44 +1006,38 @@ void func_002096D8(void) {
     }
 }
 
-/*
- * Reverted, same assembler difference as func_00209188 above: our
- * ee-as pads the cross-jumped backward `b` with 3 nops because the
- * shared tail materialises D_0015EFB0 through $at, and retail has no
- * nops there. (Measured: replacing that one `lui $1` with any non-$at
- * instruction makes the padding go away.) Recovered source:
- *
- * void func_00209750(void) {
- *     int flags;
- *     char *b;
- *     if (D_0015EFB4 & 4) {
- *         D_0015EFB4 &= ~4;
- *     }
- *     if (D_0015EFB4 & 2) {
- *         D_0015EFB4 &= ~2;
- *     }
- *     flags = D_0015EFB4;
- *     if (flags & 0x80) {
- *         D_0015EFB0 = 0x15;
- *         D_0015EFB4 = (flags ^ 0x80) | 0x40;
- *         return;
- *     }
- *     if (flags & 0x100) {
- *         D_0015EFB0 = 0x14;
- *         D_0015EFB4 = (flags ^ 0x100) | 0x40;
- *         return;
- *     }
- *     b = D_0013D390;
- *     if (*(int *)(b + 0x1C) != 0) {
- *         D_0015EFB0 = 3;
- *         return;
- *     }
- *     if (*(int *)(b + 0xFC) != 0) {
- *         D_0015EFB0 = 1;
- *     }
- * }
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00209750);
+/* func_00209188's sibling: clears the 4 and 2 bits, then the same
+   0x80/0x100 arms and the D_0013D390 record's tests. Its cross-jumped
+   `b` is written as a .word too (tools/ps2eeas_nops.py). */
+void func_00209750(void) {
+    int flags;
+    char *b;
+    if (D_0015EFB4 & 4) {
+        D_0015EFB4 &= ~4;
+    }
+    if (D_0015EFB4 & 2) {
+        D_0015EFB4 &= ~2;
+    }
+    flags = D_0015EFB4;
+    if (flags & 0x80) {
+        D_0015EFB0 = 0x15;
+        D_0015EFB4 = (flags ^ 0x80) | 0x40;
+        return;
+    }
+    if (flags & 0x100) {
+        D_0015EFB0 = 0x14;
+        D_0015EFB4 = (flags ^ 0x100) | 0x40;
+        return;
+    }
+    b = D_0013D390;
+    if (*(int *)(b + 0x1C) != 0) {
+        D_0015EFB0 = 3;
+        return;
+    }
+    if (*(int *)(b + 0xFC) != 0) {
+        D_0015EFB0 = 1;
+    }
+}
 
 
 void func_00209808(void) {

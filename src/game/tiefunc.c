@@ -313,9 +313,67 @@ extern char D_001E8D10[];
 extern void func_001F9988(int);
 extern void func_001F2568(void);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00236958); /* DmaTieTextures(void) */
+extern int D_00161000 MACRO_ADDR;
+extern int D_00161068 MACRO_ADDR;
+extern int D_00161074 MACRO_ADDR;
+extern int D_0015EF74 MACRO_ADDR;
+extern char D_001E8D80[];
+extern int func_002383D8(int);
+extern void func_00234E80(void);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00236A98); /* PatchTieGifs */
+/* DmaTieTextures: the same splice for ties, largest size in D_00161074. */
+void func_00236958(void) {
+    int *p = (int *)D_00161000;
+    int size;
+
+    D_00161000 += 0x10;
+    ((int *)D_00161068)[0] = 0x20000000;
+    ((int *)D_00161068)[1] = D_00161000;
+    ((int *)D_00161068)[2] = 0;
+    ((int *)D_00161068)[3] = 0;
+    if (D_0018A3B0[6] != 0 && D_0018A3B0[5] != 0) {
+        size = func_002383D8(D_0015EF74);
+        func_00234E80();
+        if (size > 0x400000) {
+            func_001E9730(D_001E8D80);
+        }
+        if (D_00161074 < size) {
+            D_00161074 = size;
+        }
+    }
+    ((int *)D_00161000)[0] = 0x20000000;
+    ((int *)D_00161000)[1] = D_00161068 + 0x10;
+    ((int *)D_00161000)[2] = 0;
+    ((int *)D_00161000)[3] = 0;
+    D_00161000 += 0x10;
+    p[0] = 0x20000000;
+    p[1] = D_00161000;
+    p[2] = 0;
+    p[3] = 0;
+}
+
+extern char *D_001E1A00[];
+extern char D_001E3300[];
+extern char D_001E2D00[];
+
+/* PatchTieGifs: PatchShrubGifs' shape (func_00229D48). For each tie index
+   in the -1-terminated list at D_001E3300, walk the tie's 0x50-byte
+   records and patch the nonzero halves of the remap entry picked by byte
+   0x33 into the low 14 bits of the words at +0x00 and +0x20. */
+void func_00236A98(void) {
+    int *p;
+    for (p = (int *)D_001E3300; *p >= 0; p++) {
+        char *tie = D_001E1A00[*p];
+        char *r = *(char **)(tie + 0x2C);
+        int i;
+        for (i = 0; i < *(unsigned char *)(tie + 0x23); i++) {
+            short *ent = (short *)(D_001E2D00 + *(unsigned char *)(r + 0x33) * 4);
+            if (ent[0] != 0) *(int *)r = (*(int *)r & 0xFFFFC000) | ent[0];
+            if (ent[1] != 0) *(int *)(r + 0x20) = (*(int *)(r + 0x20) & 0xFFFFC000) | ent[1];
+            r += 0x50;
+        }
+    }
+}
 
 extern void func_00236A98(void);
 extern char D_001E3300[];
@@ -339,6 +397,119 @@ void func_00236BB0(void) {
     func_00238688(D_001E4700);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00236BE0); /* DrawTies_1 */
+extern int D_00161000 MACRO_ADDR;
+extern int D_0015EF78 MACRO_ADDR;
+extern int D_0015EF74 MACRO_ADDR;
+extern int D_00161068 MACRO_ADDR;
+extern int D_0018A3C8;
+extern char D_00161030[];
+extern char D_00161040[];
+extern char D_001DF3B0[];
+extern void func_001F2560(void *, int); /* empty profiling marker */
+extern void func_001F2558(void *, int); /* empty profiling marker */
+extern void func_00236F00(void);
+extern void func_001F9AF0(void *, int, int);
+extern void func_00236958(void); /* DmaTieTextures */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00236CA8); /* DrawTies_2 */
+/* DrawTies_1: DrawShrubs' shape, the packet pointer advanced through a
+   local. */
+void func_00236BE0(void) {
+    int p = D_00161000;
+
+    D_00161068 = p;
+    D_0015EF74 = D_0015EF78;
+    p += 0x10;
+    D_00161000 = p;
+    func_001F2560(D_00161030, 1);
+    if (D_0018A3C8 != 0) {
+        func_00118D80(0);
+        func_00236F00();
+        func_001F9AF0(D_001E3500, 0x3600, 0x40);
+    }
+    func_001F2560(D_00161040, 5);
+    func_00236958();
+    func_001F9A98((void *)D_00161000, D_001DF3B0, 0x20);
+    func_001F2558(D_00161040, 5);
+}
+
+extern int D_0016104C MACRO_ADDR;
+
+/* D_0018A3B0 read as a struct: a member access is MEM_IN_STRUCT_P, so
+   sched2 knows it cannot alias the fixed-address scalar stores before it
+   (a plain `int *` index is not, and the load then waits for them). */
+typedef struct {
+    int unk00[6];
+    int unk18;
+} DrawCfg_236CA8;
+
+/* DrawTies_2: DrawTies_1's two passes, the first with the odd ties' 0x8
+   flag set (and the saved tie data swapped in around it), the second with
+   the even ones'. Each flag loop reads the tie count into its own local
+   (the loop's stores could alias it) and the flag is a `short` (so the
+   `&= ~8` stays an int AND with -9, not andi 0xFFF7). */
+void func_00236CA8(void) {
+    {
+        int i;
+        int n = D_0016104C;
+        for (i = 1; i < n; i += 2) {
+            *(short *)(D_001E1A00[i] + 0x24) |= 8;
+        }
+    }
+    {
+        int p = D_00161000;
+        D_00161068 = p;
+        D_0015EF74 = D_0015EF78;
+        p += 0x10;
+        D_00161000 = p;
+    }
+    func_001F2560(D_00161030, 1);
+    {
+        DrawCfg_236CA8 *d = (DrawCfg_236CA8 *)D_0018A3B0;
+        if (d->unk18 != 0) {
+            func_00118D80(0);
+            func_00236F00();
+            func_001F9AF0(D_001E4700, 0x3600, 0x40);
+        }
+    }
+    func_00236958();
+    func_001F9A98(D_001E4500, D_001E3300, 0x200);
+    func_001F9A98(D_001E4100, D_001E2D00, 0x400);
+    {
+        int i;
+        int n = D_0016104C;
+        for (i = 1; i < n; i += 2) {
+            *(short *)(D_001E1A00[i] + 0x24) &= ~8;
+        }
+    }
+    {
+        int i;
+        int n = D_0016104C;
+        for (i = 0; i < n; i += 2) {
+            *(short *)(D_001E1A00[i] + 0x24) |= 8;
+        }
+    }
+    {
+        DrawCfg_236CA8 *d = (DrawCfg_236CA8 *)D_0018A3B0;
+        int p = D_00161000;
+        D_00161068 = p;
+        D_0015EF74 = D_0015EF78;
+        p += 0x10;
+        D_00161000 = p;
+        if (d->unk18 != 0) {
+            func_00118D80(0);
+            func_00236F00();
+            func_001F9AF0(D_001E3500, 0x3600, 0x40);
+        }
+    }
+    func_001F2560(D_00161040, 5);
+    func_00236958();
+    {
+        int i;
+        int n = D_0016104C;
+        for (i = 0; i < n; i += 2) {
+            *(short *)(D_001E1A00[i] + 0x24) &= ~8;
+        }
+    }
+    func_001F9A98((void *)D_00161000, D_001DF3B0, 0x20);
+    func_001F2558(D_00161040, 5);
+}

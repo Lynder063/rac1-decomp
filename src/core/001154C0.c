@@ -124,25 +124,20 @@ int func_00115748(unsigned int *arg0) {
     return count;
 }
 
-/*
- * Reverted: size mismatch (ours=52, retail=56 -- 4 bytes short).
- *
- *   extern void *func_001154D0(void *, unsigned int);
- *
- *   void func_00115808(void *arg0, int arg1) {
- *       char *p = func_001154D0(arg0, 1);
- *       *(int *)(p + 0x14) = arg1;
- *       *(int *)(p + 0x10) = 1;
- *   }
- *
- * Semantics and instruction multiset both match. Retail copies the
- * call result ($v0) into a second register ($v1) and stores through
- * that copy for both fields; this compiler stores through $v0
- * directly since the copy is provably unnecessary. An explicit
- * `char *q = p;` second local changed nothing -- the copy is
- * optimized away regardless of source spelling.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00115808);
+extern void *func_001154D0(void *ptr, int k);
+
+/* newlib mprec.c i2b(): b = Balloc(ptr, 1); b->_x[0] = i; b->_wds = 1;
+   return b. Returning the Bigint is what keeps the call result in $v0 and
+   puts the working copy in $v1 (the void version stores through $v0 and
+   comes out 4 bytes short). Bigint: _wds at +0x10, _x[0] at +0x14. */
+/* newlib's i2b (mprec.c): a one-word Bigint holding i. It returns b;
+   that return is where retail's $v1 copy comes from. */
+void *func_00115808(void *ptr, int i) {
+    char *b = func_001154D0(ptr, 1);
+    *(int *)(b + 0x14) = i;
+    *(int *)(b + 0x10) = 1;
+    return b;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00115840);
 

@@ -282,39 +282,50 @@ int func_0012D340(void) {
  */
 extern unsigned char D_001331D4[];
 
+/* One return, the `== 0` arm first, and `v` unsigned (as func_0012D3F0). */
 int func_0012D380(void) {
     int buf[4];
-    int v;
+    unsigned int v;
+    int r;
 
     func_00118CF0(buf);
     if (func_0012D340() != 0) {
-        return D_001331D4[0];
+        r = D_001331D4[0];
+    } else {
+        func_00118CF0(buf);
+        v = buf[0];
+        if (((v >> 13) & 7) == 0) {
+            r = (v >> 4) & 1;
+        } else {
+            r = (v >> 16) & 0x1F;
+        }
     }
-    func_00118CF0(buf);
-    v = buf[0];
-    if (((v >> 13) & 7) != 0) {
-        return (v >> 16) & 0x1F;
-    }
-    return (v >> 4) & 1;
+    return r;
 }
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D3E0);
 
 extern short D_001331D0 NOT_SDA;
 
-/* Same-size near-miss (2/76 bytes): retail loads D_001331D0's address
-   into $v1 for the branch-taken path, this compiler picks $v0. Pure
-   register-allocation choice, harmless to anything after it. */
+/* `r` assigned in both arms and returned once: a direct `return
+   D_001331D0;` loads straight into $v0 and moves the address to $v1. */
 int func_0012D3F0(void) {
     unsigned int local;
     unsigned int bits;
+    int r;
 
     if (func_0012D340() != 0) {
-        return D_001331D0;
+        r = D_001331D0;
+    } else {
+        func_00118CF0(&local);
+        bits = (local >> 13) & 7;
+        if (bits == 0) {
+            r = 0x21C;
+        } else {
+            r = (int)local >> 21;
+        }
     }
-    func_00118CF0(&local);
-    bits = (local >> 13) & 7;
-    return (bits == 0) ? 0x21C : ((int)local >> 21);
+    return r;
 }
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D440);
@@ -322,18 +333,25 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D440);
 extern unsigned char D_001331D6[];
 extern void func_00118DC0(void *, int, int);
 
+extern int func_00118DC0_i(void *, int, int) __asm__("func_00118DC0");
+
+/* One return, and func_00118DC0 returns int. */
 int func_0012D448(void) {
     unsigned char buf[16];
+    int r;
 
     if (func_0012D340() != 0) {
-        return D_001331D6[0];
+        r = D_001331D6[0];
+    } else {
+        func_00118CF0(buf);
+        if (((*(unsigned int *)buf >> 13) & 7) == 0) {
+            r = 0;
+        } else {
+            func_00118DC0_i(buf + 4, 1, 1);
+            r = (buf[4] >> 4) & 1;
+        }
     }
-    func_00118CF0(buf);
-    if (((*(unsigned int *)buf >> 13) & 7) != 0) {
-        func_00118DC0(buf + 4, 1, 1);
-        return (buf[4] >> 4) & 1;
-    }
-    return 0;
+    return r;
 }
 
 int func_0012D4B0(int arg0) {
@@ -357,18 +375,17 @@ int func_0012D4B0(int arg0) {
  * and needs no mflo -- one instruction fewer, hence 4 bytes short. That
  * is an ISA/codegen choice, not something the source can steer.
  */
-/*
- * Attempted, reverted at 14/32. Semantics certain -- BCD to binary,
- * callee of func_0012D500/func_0012D568:
- *     int f(int arg0) { unsigned v = arg0 & 0xFF;
- *                       return (v - (v >> 4) * 6) & 0xFF; }
- * Every instruction matches except the multiply FORM: retail emits the
- * generic `mult $0, $3, $4` + `mflo $3`, this compiler picks the R5900
- * three-operand `mult $v1, $v1, $a0` which writes rd directly and needs
- * no mflo. Same operands, same order, different instruction selection --
- * not reachable by reshaping the C.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D4E0);
+/* BCD byte to binary. The product goes through an unsigned char: combine
+   folds the multiply into that narrowing copy and re-recognises it as the
+   generic LO-destination multiply, which is retail's `mult $0,a,b` +
+   `mflo` (the plain int form picks the R5900 three-operand mult). */
+/* The product goes through an unsigned char local: that gives retail's
+   generic mult $0 + mflo instead of the three-operand mult. */
+int func_0012D4E0(int arg0) {
+    unsigned char v = arg0;
+    unsigned char t = (v >> 4) * 6;
+    return (unsigned char)(v - t);
+}
 
 extern int func_0012D4E0(int);
 

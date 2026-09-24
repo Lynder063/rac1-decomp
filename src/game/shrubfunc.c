@@ -267,8 +267,105 @@ extern int D_001D6860[];
 extern int D_001D74C0[];
 extern int D_001D6760[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00229C08); /* DmaShrubTextures */
+extern int D_00161000 MACRO_ADDR;
+extern int D_001604F0 MACRO_ADDR;
+extern int D_001604F8 MACRO_ADDR;
+extern int D_0015EF74 MACRO_ADDR;
+extern char D_001E8C00[];
+extern int func_0022B648(int);
+extern void func_00234E80(void);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00229D48);
+/* DmaShrubTextures: DmaMobyTextures' splice around the shrub texture
+   upload, which also warns past 0x400000 bytes and keeps the largest
+   size seen in D_001604F8. */
+void func_00229C08(void) {
+    int *p = (int *)D_00161000;
+    int size;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00229E50); /* DrawShrubs */
+    D_00161000 += 0x10;
+    ((int *)D_001604F0)[0] = 0x20000000;
+    ((int *)D_001604F0)[1] = D_00161000;
+    ((int *)D_001604F0)[2] = 0;
+    ((int *)D_001604F0)[3] = 0;
+    if (D_0018A3B0[8] != 0 && D_0018A3B0[7] != 0) {
+        size = func_0022B648(D_0015EF74);
+        func_00234E80();
+        if (size > 0x400000) {
+            func_001E9730(D_001E8C00);
+        }
+        if (D_001604F8 < size) {
+            D_001604F8 = size;
+        }
+    }
+    ((int *)D_00161000)[0] = 0x20000000;
+    ((int *)D_00161000)[1] = D_001604F0 + 0x10;
+    ((int *)D_00161000)[2] = 0;
+    ((int *)D_00161000)[3] = 0;
+    D_00161000 += 0x10;
+    p[0] = 0x20000000;
+    p[1] = D_00161000;
+    p[2] = 0;
+    p[3] = 0;
+}
+
+extern int D_001D9140[];
+extern char *D_001D82C0[];
+extern short D_001D8C40[];
+typedef struct { char *ptr; int pad; } ShrubRec_29D48;
+
+/* `items` declared inside the middle loop, and `rec = &items[i];
+   rec->ptr` rather than `items[i].ptr`, give retail's base-first addu. */
+void func_00229D48(void) {
+    int *p;
+    for (p = D_001D9140; *p >= 0; p++) {
+        char *obj = D_001D82C0[*p];
+        int i;
+        for (i = 0; i < *(short *)(obj + 0x28); i++) {
+            ShrubRec_29D48 *items = (ShrubRec_29D48 *)(obj + 0x40);
+            ShrubRec_29D48 *rec = &items[i]; int *hdr = (int *)(rec->ptr + 0x10);
+            char *e = (char *)hdr + hdr[1] * 0x10 + 0x10;
+            int j;
+            for (j = 0; j < hdr[0]; j++) {
+                short *ent = &D_001D8C40[*(unsigned char *)(e + 0x13) * 2];
+                if (ent[0] != 0) *(int *)(e + 0x30) = (*(int *)(e + 0x30) & 0xFFFFC000) | ent[0];
+                if (ent[1] != 0) *(int *)(e + 0x20) = (*(int *)(e + 0x20) & 0xFFFFC000) | ent[1];
+                e += 0x40;
+            }
+        }
+    }
+}
+
+extern int D_00161000 MACRO_ADDR;
+extern int D_0015EF78 MACRO_ADDR;
+extern int D_0015EF74 MACRO_ADDR;
+extern int D_001604F0 MACRO_ADDR;
+extern int D_0018A3D0;
+extern char D_001604B0[];
+extern char D_001604C0[];
+extern char D_001D9240[];
+extern void func_001F2560(void *, int); /* empty profiling marker */
+extern void func_001F2558(void *, int); /* empty profiling marker */
+extern void func_00229F00(void);
+extern void func_001F9AF0(void *, int, int);
+extern void func_00229C08(void);
+
+/* DrawShrubs. The packet pointer goes through a local advanced in place;
+   `D_00161000 += 0x10` is 4 bytes short (its store lands in the jal
+   delay slot as a $gp store). */
+void func_00229E50(void) {
+    int p = D_00161000;
+
+    D_001604F0 = p;
+    D_0015EF74 = D_0015EF78;
+    p += 0x10;
+    D_00161000 = p;
+    func_001F2560(D_001604B0, 1);
+    if (D_0018A3D0 != 0) {
+        func_00118D80(0);
+        func_00229F00();
+        func_001F9AF0(D_001D9240, 0x3200, 0x40);
+    }
+    func_001F2560(D_001604C0, 7);
+    func_00229C08();
+    func_001F2558(D_001604C0, 7);
+}

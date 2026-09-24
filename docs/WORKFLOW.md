@@ -20,7 +20,7 @@ bash tools/setup_asm.sh
 
 The script checks the baserom sha1 and the pinned splat/spimdisasm
 versions, then applies the same post-processing the build expects
-(`fix_vu0_macro.py`, `sn_regnames.py`). It leaves `src/` and `include/`
+(`fix_vu0_macro.py`, `sn_regnames.py`, `fix_denormal_floats.py`). It leaves `src/` and `include/`
 alone. The output was verified byte-identical, so every contributor diffs
 against the same thing.
 
@@ -61,6 +61,22 @@ method has paid in every round since it was introduced.
 
 ## 2. Iterate with the differ
 
+For quick tries, `tools/try_func.py` compiles one candidate function in a
+scratch copy of its source file (the same per-segment pipeline) and
+compares it with retail in seconds, without touching `src/` or linking:
+
+```
+python tools/try_func.py func_XXXXXXXX candidate.c --diff
+python tools/try_func.py func_XXXXXXXX c1.c c2.c c3.c      # one verdict each
+```
+
+It also takes a function that is already C: the candidate then replaces
+its definition, which is how near-misses get refined. It masks relocated
+fields, so a pass there is a filter, not a match: the function still has
+to pass the full build (step 3). On macOS/Linux run it through
+`bash tools/docker/run.sh python tools/try_func.py ...`. For a whole-image view
+and asm-differ's side-by-side, use:
+
 ```
 sh tools/diff.sh func_XXXXXXXX
 ```
@@ -69,6 +85,13 @@ It builds, links, regenerates the images and runs asm-differ. It
 **refuses to diff after a failed make**: a failed compile leaves the
 previous `.o`, whose `INCLUDE_ASM` stubs still hold retail's bytes. That
 would show a fictional match, and it has happened 15+ times.
+
+In `core_text`, first ask which compiler built the object: Sony SDK code
+(the C library, the memory card library, libmpeg, ...) was built with
+the SDK's 2.9-ee, the rest with 2.95.3. `tools/compiler_sweep.py
+src/core/X.c` compiles a file whole under both and lists each function's
+verdict. A near-miss that only one compiler reaches says which one it is;
+the objects marked `ee29` in `config/core_text.objects` build with 2.9-ee.
 
 Work through the levers in `docs/DECOMP_PROGRESS.md` in rough order of
 cost:
@@ -99,7 +122,7 @@ bash tools/build_sn.sh
 ```
 
 The script deletes the objects first, stops on make's own exit status, then
-links, runs `sweep_matches.py` and runs `check_layout.py`. If you run the
+links, and runs `sweep_matches.py`, `check_layout.py` and `check_image.py`. If you run the
 steps by hand, check make's exit status yourself. `$?` after a pipe is the
 status of the last command in the pipe, not make's. When a tool itself changes (the sweep, a rewriter,
 the report generator), also cross-check with an independent whole-image
@@ -119,11 +142,13 @@ with `src/`, and decomp.dev publishes whatever the report says.
 
 - Stage files by name, never with `git add -A`. Stray tool output has
   reached the public repo that way before.
-- Commit messages end with only
-  `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>`. They carry no
-  session link.
-- Never commit `baserom/`, `toolchain/`, `build-sn/`, extracted assets,
-  or retail bytes of any kind (that includes "target" objects).
+- Commit messages end with a single `Co-Authored-By` trailer naming the
+  model that did the work, for example
+  `Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>`.
+  They carry no session link.
+- Never commit `baserom/`, `toolchain/`, `build-sn/`, `asm/`, `tools/ext/`,
+  extracted assets, or retail bytes of any kind (that includes "target"
+  objects).
 
 If a new library module is added, update `tools/libgcc_units.py`,
 `Makefile.sn` and the aliases in `rac1.ld.sh` together.

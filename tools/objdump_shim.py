@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Minimal objdump stand-in for asm-differ (see diff_settings.py).
 
 Why not a real objdump: the only MIPS objdump on this machine is the SN

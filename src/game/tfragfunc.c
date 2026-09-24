@@ -311,9 +311,86 @@ extern int func_00234350(unsigned int arg0);
  */
 __asm__(".align 4");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234380); /* SetTfragDists(void) */
+extern float D_00160FA0[3];
+extern int D_00160FB0[3];
+extern float D_0018D020;
+extern float D_001DEB70[4][4];
+extern int func_001FA898_i(float) __asm__("func_001FA898");
+extern void func_001F99D8(void *, int);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002344D8); /* DmaTfragTextures(void) */
+/* SetTfragDists(void): the three LOD distances as fixed point (x1024), and
+   the matrix mapping distance to the two blend weights. The store order is
+   load-bearing: filling the rows first and the two translation terms last
+   ([1][3] = b, then [0][3] = a) moves sched1's last use of b, and with it
+   the local-alloc priority of b's quantity below ab's -- retail's b in $f21,
+   1/(a-b) in $f20, and -0.5 in $f3. */
+void func_00234380(void) {
+    float a, b, c, ab, bc;
+
+    D_00160FB0[0] = func_001FA898_i(D_00160FA0[0] * 1024.0f);
+    D_00160FB0[1] = func_001FA898_i(D_00160FA0[1] * 1024.0f);
+    D_00160FB0[2] = func_001FA898_i(D_00160FA0[2] * 1024.0f);
+    a = D_00160FA0[0] * D_0018D020;
+    b = D_00160FA0[1] * D_0018D020;
+    c = D_00160FA0[2] * D_0018D020;
+    ab = 1.0f / (a - b);
+    bc = 1.0f / (b - c);
+    func_001F99D8(D_001DEB70, 0x40);
+    D_001DEB70[0][0] = ab * 0.5f;
+    D_001DEB70[0][1] = -ab;
+    D_001DEB70[1][0] = bc * 0.5f;
+    D_001DEB70[1][1] = -bc;
+    D_001DEB70[2][0] = b * ab * -0.5f;
+    D_001DEB70[2][1] = a * ab;
+    D_001DEB70[3][0] = c * bc * -0.5f;
+    D_001DEB70[3][1] = b * bc;
+    D_001DEB70[1][3] = b;
+    D_001DEB70[0][3] = a;
+}
+
+extern int D_00161000 MACRO_ADDR;
+extern int D_00160FBC MACRO_ADDR;
+extern int D_00160FC4 MACRO_ADDR;
+extern int D_0015EF74 MACRO_ADDR;
+extern char D_001E8CE0[];
+extern void func_00235EF0(void);
+extern int func_00236060(int);
+extern void func_00234E80(void);
+
+/* DmaTfragTextures: the tfrag twin of DmaShrubTextures (func_00229C08),
+   which also warns "tfrag texture overflow" past 0x400000 bytes and keeps
+   the largest size seen in D_00160FC4. */
+/* A copy of its twin func_00229C08. */
+void func_002344D8(void) {
+    int *p = (int *)D_00161000;
+    int size;
+
+    D_00161000 += 0x10;
+    ((int *)D_00160FBC)[0] = 0x20000000;
+    ((int *)D_00160FBC)[1] = D_00161000;
+    ((int *)D_00160FBC)[2] = 0;
+    ((int *)D_00160FBC)[3] = 0;
+    if (D_0018A3B0[4] != 0 && D_0018A3B0[3] != 0) {
+        func_00235EF0();
+        size = func_00236060(D_0015EF74);
+        func_00234E80();
+        if (size > 0x400000) {
+            func_001E9730(D_001E8CE0);
+        }
+        if (D_00160FC4 < size) {
+            D_00160FC4 = size;
+        }
+    }
+    ((int *)D_00161000)[0] = 0x20000000;
+    ((int *)D_00161000)[1] = D_00160FBC + 0x10;
+    ((int *)D_00161000)[2] = 0;
+    ((int *)D_00161000)[3] = 0;
+    D_00161000 += 0x10;
+    p[0] = 0x20000000;
+    p[1] = D_00161000;
+    p[2] = 0;
+    p[3] = 0;
+}
 
 typedef struct {
     short a;
@@ -358,4 +435,49 @@ void func_00234620(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002346C0); /* DrawTfrag */
+extern int D_00161000 MACRO_ADDR;
+extern int D_0015EF78 MACRO_ADDR;
+extern int D_0015EF74 MACRO_ADDR;
+extern int D_00160FBC MACRO_ADDR;
+extern char D_00160F70[];
+extern char D_00160F80[];
+extern char D_001E1600[];
+extern void func_001F2560(void *, int); /* empty profiling marker */
+extern void func_001F2558(void *, int); /* empty profiling marker */
+extern void func_001FA190(void *);
+extern void func_00234BA0(int, void *, int);
+extern void func_002352C8(void);
+extern void func_002344D8(void);
+extern void func_001F9AF0(void *, int, int);
+
+/* DrawTfrag, in DrawShrubs' shape. */
+void func_002346C0(void) {
+    float m[4][4];
+    int p = D_00161000;
+
+    D_00160FBC = p;
+    D_0015EF74 = D_0015EF78;
+    p += 0x10;
+    D_00161000 = p;
+    func_001F2560(D_00160F70, 1);
+    func_001FA190(m);
+    func_001F9C30(m[3], D_00187180, -1024.0f);
+    m[3][3] = 1.0f;
+    func_001FA540(m, D_00187180 - 0x100, m);
+    func_00234BA0(5, m, 4);
+    func_00234BA0(0x14D, m, 4);
+    if (D_0018A3B0[4] != 0) {
+        func_00118D80(0);
+        func_002352C8();
+    }
+    func_001F2560(D_00160F80, 2);
+    func_002344D8();
+    if (D_0018A3B0[4] != 0) {
+        func_001F9AF0(D_001E1600, 0x3000, 0x40);
+    }
+    func_001F2558(D_00160F80, 2);
+}
+
+/* The last function in the object: retail pads to 16 bytes after it
+   (two nops in its .s), and vuchain.o starts there. */
+__asm__(".align 4");

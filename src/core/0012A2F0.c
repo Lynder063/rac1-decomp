@@ -151,7 +151,7 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012A718);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012A7E8);
 
-extern void func_0012AAC8(void *, int);
+extern long func_0012AAC8(void *, int);
 
 /*
  * Same-size near-miss (16/52 bytes, kept). Source statement order
@@ -174,54 +174,48 @@ void func_0012AA70(void *arg0, int arg1, int arg2, int arg3) {
     func_0012AAC8(arg0, 0);
 }
 
-/*
- * REVERTED (size mismatch: ours 32 bytes, retail 28). Semantics are
- * certain and the instruction sequence is identical:
- *
- *   int func_0012AAA8(void *arg0, int arg1) {
- *       return (int)(*(unsigned long *)arg0 >> (0x40 - arg1));
- *   }
- *
- * ld / li 0x40 / subu / dsrlv / dsll32 / dsra32 all match. The single
- * difference is delay-slot filling: retail puts the final `dsra32`
- * (second half of the 64->32 sign-extension for the int return) IN the
- * `jr` delay slot; this compiler emits it before the `jr` and fills the
- * slot with a nop, costing 4 bytes. Tried hoisting the load to a local
- * and hoisting the shift amount to a local -- both still 8 instructions.
- * Not source-steerable; it is the assembler/compiler delay-slot filler,
- * same family as the other scheduling blockers.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012AAA8);
+/* Bitstream peek: the top n bits of the 64-bit accumulator at +0x0, as
+   an int. The truncation's dsra sits in the return's delay slot, as the
+   retail compiler had it (tools/fix_trunc_slot.py). */
+int func_0012AAA8(void *arg0, int arg1) {
+    return (int)(*(unsigned long *)arg0 >> (0x40 - arg1));
+}
 
-/*
- * Reverted: decoded but not compilable as written. Banking the decode
- * because that is the expensive part.
- *
- * It is a bitstream reader. Consume n bits from the 64-bit accumulator
- * at +0x0, then refill it a byte at a time from the cursor at +0xC
- * until at least 0x39 bits are available, wrapping the cursor back to
- * +0x20 when it reaches the end pointer at +0x24. +0x10 holds the bit
- * count, +0x18 the running total.
- *
- * Why it does not build: the refill needs a 64-bit shift by a VARIABLE
- * amount (`(long long)*p << (0x38 - bits)`), and this compiler rejects
- * that outright -- `unsupported wide integer operation`. That is the
- * same limitation already recorded for ordered 64-bit compares; shifts
- * by a constant are fine, by a variable are not. So this needs either
- * inline asm for the shift, or a reformulation that keeps the shift
- * amount constant. Do not simply retype the locals -- the operation
- * itself is what is refused.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012AAC8);
+/* The bitstream reader's state (func_0012AA70 sets it up). */
+typedef struct {
+    unsigned long acc;     /* 0x00: the next bits, top-aligned */
+    unsigned char *start0; /* 0x08 */
+    unsigned char *cur;    /* 0x0C: next byte to load */
+    unsigned int bits;     /* 0x10: valid bits in acc */
+    long total;            /* 0x18: bits consumed so far */
+    unsigned char *start;  /* 0x20: the ring buffer */
+    unsigned char *end;    /* 0x24 */
+    int len;               /* 0x28 */
+} BitStream;
 
-/*
- * Close, not exact (8/76), same size. Two-argument sibling of
- * func_0012ABB0 above and blocked identically: the instruction multiset
- * is right, but retail schedules `move $16,$4` into the first jal's
- * delay slot while this compiler puts a register save there. Not
- * source-steerable -- see func_0012ABB0's comment for the variants
- * already tried.
- */
+/* Consume n bits, then refill the accumulator a byte at a time from the
+   ring buffer until more than 56 bits are buffered; returns the new
+   total (mpeg2decode's Flush_Buffer shape). The `c` local and the
+   returned total are load-bearing: they bring the function to the 40
+   insns that put GCSE's hash buckets, and so PRE's registers, in
+   retail's order. */
+long func_0012AAC8(void *arg0, int n) {
+    BitStream *p = arg0;
+    p->acc <<= n;
+    p->bits -= n;
+    if (p->bits <= 56) {
+        do {
+            unsigned int c = *p->cur++;
+            p->acc |= (unsigned long)c << (56 - p->bits);
+            if (p->cur >= p->end) p->cur = p->start;
+            p->bits += 8;
+        } while (p->bits <= 56);
+    }
+    return p->total += n;
+}
+
+/* Get n bits: peek them (func_0012AAA8), then consume them
+   (func_0012AAC8). */
 int func_0012AB60(void *arg0, int arg1) {
     int r = func_0012AAA8(arg0, arg1);
     func_0012AAC8(arg0, arg1);
@@ -229,18 +223,8 @@ int func_0012AB60(void *arg0, int arg1) {
 }
 
 extern int func_0012AAA8(void *, int);
-extern void func_0012AAC8(void *, int);
 
-/*
- * Close, not exact (8/68), same size so harmless to everything after it.
- * Logic confirmed. The residual is purely which instruction fills the
- * first jal's delay slot: retail emits the three saves consecutively
- * ($16@0, $17@16, $31@32) and schedules `move $16,$4` into the slot,
- * while this compiler interleaves the $16 save with the move and puts
- * `sd $17,16` in the slot instead. Same instruction multiset, different
- * schedule. Hoisting the result into a pre-declared local (the usual
- * declaration-order lever) changes nothing.
- */
+/* Get one bit, as func_0012AB60. */
 int func_0012ABB0(void *arg0) {
     int r;
     r = func_0012AAA8(arg0, 1);
@@ -248,7 +232,18 @@ int func_0012ABB0(void *arg0) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012ABF8);
+/* _sysbitJump (libmpeg bit.c): skip n bytes, then refill through
+   _sysbitFlush. Clearing acc and bits before the total update is the
+   one statement order that matches. */
+void func_0012ABF8(void *arg0, int n) {
+    BitStream *p = arg0;
+    p->acc = 0;
+    p->bits = 0;
+    p->total += n * 8;
+    p->cur = p->start0 + (p->total >> 3);
+    if (p->cur >= p->end) p->cur -= p->len;
+    func_0012AAC8(p, 0);
+}
 
 unsigned int func_0012AC50(char *arg0, int arg1) {
     unsigned int v = *(int *)(arg0 + 0x8) + (arg1 >> 3);

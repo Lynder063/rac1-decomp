@@ -311,17 +311,49 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0022F4C0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022F738);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022FBE0);
+extern void func_00234C98_l(int, long) __asm__("func_00234C98");
+extern long D_00160680 MACRO_ADDR;
+extern char D_001D9B40[];
+extern float D_001D9E20[];
+extern float D_001D9DE0[][4];
+extern short D_001605F0;
+extern void func_001F7EF8(void *, int, int);
+extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
 
-/*
- * 5/160. The 64-bit argument form of func_00234C98 is needed here (one
- * call passes 0x8000000044). The whole residual is how that one
- * constant is built: retail has ori 0x8000 / dsll 24 / ori 0x44, and
- * this assembler expands the identical `dli` macro as addiu 0x80 /
- * dsll32 / ori 0x44. Every C spelling of the value folds to the same
- * constant and therefore to the same macro, so the sequence retail has
- * must have come out of its compiler rather than its assembler.
- */
+typedef struct {
+    float v[4][4];     /* 0x00 */
+    int rgba[4];       /* 0x40 */
+    char uv[0x20];     /* 0x50 */
+    long gs[4];        /* 0x70 */
+} Quad_FBE0;
+
+/* Its 0x8000000044 is built as ps2eeas built it (tools/ps2eeas_dli.py). */
+void func_0022FBE0(void) {
+    Quad_FBE0 q;
+    float s;
+    int i;
+
+    func_00234C98_l(0x47, 0x31801);
+    s = 1.0f;
+    q.gs[0] = 0;
+    q.gs[1] = D_00160680;
+    q.gs[2] = 0xFF9000000260;
+    q.gs[3] = 0x8000000044;
+    func_001F9A98(q.uv, D_001D9B40, 0x20);
+    if ((unsigned)D_0015EE84_m < 0x13) s = D_001D9E20[D_0015EE84_m];
+    for (i = 0; i < 4; i++) {
+        q.rgba[i] = 0x80808080;
+        func_001F9C30(q.v[i], D_001D9DE0[i], s);
+        func_001F9BD8(q.v[i], q.v[i], &D_001605F0);
+    }
+    func_001F7EF8(&q, 0, 0);
+    func_00234C98_l(0x47, 0x5360B);
+}
+
+/* The 64-bit argument form of func_00234C98 is needed here (one call
+   passes 0x8000000044). Retail's ori 0x8000 / dsll 24 / ori 0x44 for
+   that constant is ps2eeas's expansion of the same `dli`, which
+   tools/ps2eeas_dli.py reproduces; GNU as builds it differently. */
 extern void func_00234C98_l(int, long) __asm__("func_00234C98");
 extern int D_0013E604;
 extern long D_00160688 MACRO_ADDR;
@@ -342,11 +374,76 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002308C8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00230A90);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00232200);
+extern int D_0013E150;
+extern void func_001F45F0(void);
+extern void func_002305A0(void);
+
+/* A switch on D_0013E150, whose jump table is linked into the data
+   segment at retail's jtbl_001E8C90 (see rac1.ld.sh). */
+void func_00232200(void) {
+    if (D_0015F6FC_m == 0) {
+        switch (D_0013E150) {
+        case 0:
+        case 8:
+            func_001F45F0();
+            break;
+        case 3:
+        case 7:
+            *(int *)&D_0015F534 = 0x7F;
+            func_001F3D78();
+            break;
+        case 4:
+            func_002305A0();
+            break;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00232278);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00232920);
+typedef struct {
+    int sector;
+    int size;
+} WadEntry;
+typedef struct {
+    char _pad0[0x1938];
+    WadEntry movie[12];  /* 0x1938 */
+    WadEntry movie2[12]; /* 0x1998 */
+} WadToc;
+extern WadToc D_00137C80_t __asm__("D_00137C80");
+extern int D_0015EE80 MACRO_ADDR;
+extern int D_0015EE88 MACRO_ADDR;
+extern int D_001941D4;
+extern int func_0023B670(int, int, int, int, int);
+extern void func_00120858(int, int);
+extern void func_00123168(void *);
+extern void func_0012F308(void);
+extern void func_001F4E08(int);
+
+/* Plays movie id, taking its {sector, size} from the WAD table of
+   contents (from the second table when D_0015EE80 is set). */
+void func_00232920(int id) {
+    int sector;
+    int size;
+    int buf;
+
+    if (D_0015EE80 != 0) {
+        sector = D_00137C80_t.movie2[id].sector;
+        size = D_00137C80_t.movie2[id].size;
+    } else {
+        sector = D_00137C80_t.movie[id].sector;
+        size = D_00137C80_t.movie[id].size;
+    }
+    D_0013E650[0x6B] |= 8;
+    buf = D_001941D4;
+    func_0023B670(sector, size, (buf + 0x3F) & ~0x3F,
+                  (buf + 0x300000 + 0x3F) & ~0x3F, D_0015EE88);
+    func_00122598(0);
+    func_00120858(0, 0);
+    func_00123168(func_0012F308);
+    func_001F4E08(4);
+    D_0013E650[0x6B] |= 0x10;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00232A00);
 

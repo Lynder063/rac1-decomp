@@ -190,16 +190,14 @@ extern void func_0012EDE0(void *);
 
 extern void func_0012EFE8(void);
 
-/*
- * 2/64: retail reuses the register that held the loaded halfword ($3)
- * for the constant 1, this compiler takes a fresh $2 -- the documented
- * scratch-register-allocation-choice question. Tried forcing reuse via
- * a single int local reassigned to 1; that made it worse (4/64).
- */
+extern int func_0012EFE8_i(void) __asm__("func_0012EFE8");
+
+/* func_0012EFE8 returns int (989snd.c): with the result in $v0, the
+   constant goes to the register retail uses. */
 void func_00217588(void) {
     short *p = D_001517D0;
     if (p[4] != 0) {
-        func_0012EFE8();
+        func_0012EFE8_i();
         ((char *)p)[0xA] = 1;
     }
 }
@@ -302,62 +300,35 @@ int func_002176C8(void) {
    of on a call's result: with arg0 set, keep servicing while the
    D_001517D0+8 state word stays nonzero; with it clear, run the four
    service calls exactly once. Either way return the state word. */
-/*
- * REVERTED (SIZE mismatch, every spelling short). Decode is certain and
- * is the sibling of func_002176C8 above: with arg0 set, keep pumping the
- * five service calls while the D_001517D0+8 state word stays nonzero;
- * with arg0 clear, run the four of them that are not func_00122598
- * exactly once. Either way the state word is the return value.
- *
- *   short func_00217748(int arg0) {
- *       char *d;
- *       if (arg0 != 0) {
- *           d = (char *)D_001517D0;
- *           while (*(short *)(d + 0x8) != 0) {
- *               func_00122598(0);
- *               func_00217130();
- *               func_0012EC40();
- *               func_0012DDC0();
- *               func_0012EC30();
- *           }
- *       } else {
- *           func_00217130();
- *           func_0012EC40();
- *           func_0012DDC0();
- *           func_0012EC30();
- *       }
- *       d = (char *)D_001517D0;
- *       return *(short *)(d + 0x8);
- *   }
- *
- * Retail is 168. Spellings tried, all short, none over:
- *
- *   as above (a char * local, reused for the return)           164
- *   same but the return written inline as
- *     *(short *)((char *)D_001517D0 + 8)                       164, and
- *     worse: the inline form folds to `lh 6104($s1)` where retail
- *     materialises the base and uses an 8 displacement. The local is
- *     what blocks the symbol-addend fold; keep it.
- *   no local at all, the cast expression inline everywhere      160
- *   local for the guard + a second local for a do/while body    160
- *   guard through a second C name on the same asm symbol
- *     (extern short D_001517D0_g[] __asm__("D_001517D0"))       160,
- *     and it also loses the displacement form in the guard
- *
- * The whole residual in the best spelling is two words in the loop
- * preheader. Retail computes the base into the TEMP $a0, tests
- * `lh $v0,8($a0)`, and only on entering the loop copies it with
- * `daddu $s0,$a0,$0`; that copy pushes the loop label from 0x2C to 0x30
- * and the assembler's 8-byte loop alignment then supplies the `nop` at
- * 0x2C for free. So it is ONE instruction, a register-to-register copy
- * that this compiler always coalesces away: we put the base straight
- * into $s0 and use $s0 for the guard too. Two pseudos in the source did
- * not survive to two registers -- every attempt to split the live range
- * either coalesced again or cost a whole extra lui. Allocator live-range
- * coalescing, i.e. the recorded destination-choice dead end, not a shape
- * source can ask for.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00217748);
+/* With arg0 set, keep pumping the five service calls while the
+   D_001517D0+8 state word stays nonzero; with it clear, run the four that
+   are not func_00122598 once. Either way return the state word.
+   The base pointer is assigned IN the loop condition: the exit test that
+   jump.c duplicates in front of the loop then gets its own pseudo (retail's
+   $a0 for the guard), loop.c hoists the loop's copy into $s0 and CSE turns
+   it into `daddu $s0,$a0,$0`. A second, separate local for the return keeps
+   its base a temp ($v1) sharing the %hi with the guard through $s1. */
+short func_00217748(int arg0) {
+    if (arg0 != 0) {
+        char *d;
+        while (d = (char *)D_001517D0, *(short *)(d + 0x8) != 0) {
+            func_00122598(0);
+            func_00217130();
+            func_0012EC40();
+            func_0012DDC0();
+            func_0012EC30();
+        }
+    } else {
+        func_00217130();
+        func_0012EC40();
+        func_0012DDC0();
+        func_0012EC30();
+    }
+    {
+        char *d = (char *)D_001517D0;
+        return *(short *)(d + 0x8);
+    }
+}
 
 extern int func_0012F030(void);
 
@@ -468,36 +439,23 @@ void func_002179C8(int arg0, long arg1) {
     }
 }
 
-/*
- * Reverted: size mismatch (ours=92, retail=88 -- 4 bytes over).
- *
- *   extern int func_001E9730();
- *   extern char D_00160168[];
- *
- *   void func_00217A08(int arg0, long arg1) {
- *       int *p = (int *)(int)arg1;
- *       if (p != 0) {
- *           if (*(unsigned int *)p != 0xFFFFFFFF) {
- *               func_001E9730(D_00160168);
- *           } else if (arg0 == 0) {
- *               *p = arg0;
- *               *(short *)((char *)p + 0xA) = 7;
- *           }
- *       }
- *   }
- *
- * `long arg1` (matching the sibling func_00217A60 just below) plus a
- * `(int)` narrow-then-widen cast reproduces retail's dsll32/dsra32
- * sign-extend pair and the -1 comparison written as the hex literal
- * 0xFFFFFFFF (not the shorter `-1`) reproduces retail's lui/ori
- * materialization instead of a single addiu. What's left: on the
- * `arg0 == 0` path, retail computes the store/shift sequence FIRST
- * and restores $ra last; this compiler restores $ra right after the
- * branch and computes the sequence after, duplicating a `lq $ra`.
- * Flattening the else-if into sequential early-returns changed
- * nothing.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00217A08);
+extern char D_00160168[];
+
+/* `*p = arg0` happens on the 0xFFFFFFFF path too (the older decode made
+   it conditional), and D_001E8C60's message is printed. */
+void func_00217A08(int arg0, long arg1) {
+    short *p = (short *)(int)arg1;
+    if (p != 0) {
+        if (*(unsigned int *)p != 0xFFFFFFFF) {
+            func_001E9730(D_00160168);
+        } else {
+            *(int *)p = arg0;
+            if (arg0 == 0) {
+                p[5] = 7;
+            }
+        }
+    }
+}
 
 void func_00217A60(int arg0, long arg1) {
     char *p = (char *)(int)arg1;

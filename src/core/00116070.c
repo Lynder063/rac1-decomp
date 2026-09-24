@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include "common.h"
 #include "structs.h"
 
@@ -20,34 +21,35 @@ extern char D_00152470[];
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00116070);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00116078);
+extern int func_001170A0(void *, const char *, va_list); /* vfprintf */
+
+/* printf, from the C library (newlib): points _stdout's _data back at
+   the reentrancy struct (_impure_ptr, D_0012F86C) and hands the va_list
+   to vfprintf. _REENT is read once into a local: retail keeps it in a
+   register across the store. Built with 2.9-ee, which saves only the
+   integer argument registers (Makefile.sn, EE29_CORE). */
+int func_00116078(const char *fmt, ...) {
+    int ret;
+    va_list ap;
+    char *r = (char *)D_0012F86C;
+
+    *(void **)(*(char **)(r + 8) + 0x54) = r;
+    va_start(ap, fmt);
+    ret = func_001170A0(*(void **)(r + 8), fmt, ap);
+    va_end(ap);
+    return ret;
+}
 
 void func_001160C8(int arg0) {
     *(int *)((char *)D_0012F86C + 0x58) = arg0;
 }
 
-/*
- * Close but not exact: logic fully understood and correct (verified
- * against retail instruction-for-instruction), but this compiler picks
- * $v1/$a0 for the two independent temporaries (the LCG constant and the
- * loaded game pointer) where retail picks $a0/$a1 -- same operations,
- * same order, just a different register-allocator choice. Tried
- * reordering the source statements and splitting into extra locals;
- * neither changed the allocation. Same category as the other
- * documented near-misses in this file -- a compiler-version-specific
- * codegen detail, not a logic gap.
- *
- * Linear congruential PRNG (classic glibc-style constants: multiplier
- * 0x41C64E6D, increment 12345, 31-bit mask) reading/updating a seed
- * field at offset 0x58 of the struct pointed to by the D_0012F86C
- * global -- the same field func_001160C8 above sets directly.
- */
+/* newlib's rand(), as newlib writes it: one expression that reads
+   _REENT (D_0012F86C) twice. +0x58 is _REENT->_next, which srand
+   (func_001160C8 above) sets. */
 int func_001160D8(void) {
-    char *game = (char *)D_0012F86C;
-    int seed = *(int *)(game + 0x58);
-    seed = seed * 0x41C64E6D + 0x3039;
-    *(int *)(game + 0x58) = seed;
-    return seed & 0x7FFFFFFF;
+    return (*(unsigned int *)((char *)D_0012F86C + 0x58) =
+            *(unsigned int *)((char *)D_0012F86C + 0x58) * 1103515245 + 12345) & 0x7FFFFFFF;
 }
 
 extern int func_00119088();

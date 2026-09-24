@@ -52,7 +52,9 @@ from pathlib import Path
 
 STUB = re.compile(r"INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\)")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from libgcc_units import SEGMENT_SOURCES as SEGMENTS
+from libgcc_units import SEGMENT_SOURCES as SEGMENTS, ee29_sources, object_of
+
+EE29 = ee29_sources()
 
 
 def segment_text(seg: str) -> str:
@@ -125,16 +127,27 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     vram = int(name.split("_")[1], 16)
     ins = instructions(body)
     text = "\n".join(ins)
+    # Objects built with Sony's 2.9-ee make two of the risky signatures
+    # below by themselves: a void function that ends in a call becomes a
+    # tail jump, and a short loop is padded with its branch slot left
+    # empty (func_001232A8).
+    ee29 = seg == "core_text" and object_of(seg, vram)[1] in EE29
 
     if not ins:
         return "blocked", "empty", ""
 
-    # A 4-byte function is a bare `jr $31` with nothing in its delay
-    # slot. `void f(void){}` emits `jr $ra; nop` plus alignment = 8+
-    # bytes, so this is a SIZE mismatch that can never be reached from C.
-    # (This is exactly how func_0011AE1C became a false "match" once.)
+    # A 4-byte "function" is almost never one. Most are the single word
+    # retail's linker left when it dead-stripped an unreferenced function
+    # of size 4 mod 8 (its last delay slot; see tools/strip_dead.py), the
+    # rest linker fill between objects. The one true bare `jr $31`
+    # (func_0011AE1C) has the next function's first word in its delay slot,
+    # which C cannot emit either: `void f(void){}` is `jr $ra; nop`.
     if size and size <= 4:
-        return "blocked", "bare jr (4 bytes)", "C cannot emit under 8 bytes"
+        if re.match(r"jr\s+\$31\b", ins[0]):
+            return "blocked", "bare jr (4 bytes)", "C cannot emit under 8 bytes"
+        if ins[0].startswith("pref") and "0x0D, -0x3233" in ins[0]:
+            return "blocked", "linker fill", "0xCDCDCDCD between objects"
+        return "blocked", "dead-strip remnant", "delay slot of a stripped function"
 
     # RESOLVED: core_text s-register spills are no longer blocked.
     # core_text is now built with v1.14 (which reproduces retail's
@@ -158,7 +171,8 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     # locals, or does work after the call, is deliberately refused -- of
     # the 99, 47 touch $sp and 22 contain a second call, so expect a large
     # share not to convert.
-    if re.search(r"(?m)^j\s+func_[0-9A-Fa-f]{8}", text):
+    tail = bool(re.search(r"(?m)^j\s+func_[0-9A-Fa-f]{8}", text))
+    if tail and not ee29:
         return "risky", "tail call", "needs fix_tail_calls.py; strict shape"
     # Must come AFTER the tail-call test: a tail-called function ends in
     # `j`, not `jr $31`, so this rule would otherwise claim every tail call
@@ -166,8 +180,12 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     # reader whether a real function is there -- a fragment is not
     # independently callable, a tail call is a complete function blocked
     # only by a missing compiler optimisation.
-    if not re.search(r"\bjr\s+\$31\b", text):
-        return "blocked", "fallthrough fragment", "no jr $31"
+    # These are, as far as checked, runs of dead-strip remnants: one
+    # surviving delay-slot word per stripped function, nop-padded to 8
+    # (tools/strip_dead.py). The stripped bodies are unknown, so C cannot
+    # recreate them.
+    if not tail and not re.search(r"\bjr\s+\$31\b", text):
+        return "blocked", "fallthrough fragment", "no jr $31; dead-strip remnants"
 
     if len(ins) == 1 and "0xCDCDCDCD" in body:
         return "blocked", "padding", ""
@@ -264,30 +282,24 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     if "alabel" in body:   # raw body: `alabel` is a bare directive, not an instruction line
         return "blocked", "alternate entry point", "alabel: two entries, not expressible in C"
 
-    # --- GPR->FPU move delay: `mtc1 $x, $fN` / `nop` / <use of $fN>.
-    # Same class as the lwc1 rule above but a different source: retail
-    # carries the hazard nop between the transfer and the first FPU use,
-    # and this compiler does not emit it, so the function comes out
-    # exactly one instruction short. Deliberately NOT restricted to tiny
-    # leaves the way the lwc1 rule is -- func_00214158 has a jal and 20
-    # instructions and was ranked a candidate until this was added.
-    for idx, a in enumerate(ins):
-        m = re.match(r"mtc1\s+\S+,\s*\$(f\d+)", a)
-        if m and idx + 2 < len(ins) and ins[idx + 1] == "nop":
-            if re.search("[$]" + m.group(1) + "(?![0-9])", ins[idx + 2]):
-                return "blocked", "fpu move delay nop", "mtc1 hazard nop, not reachable from C"
+    # (GPR->FPU move delay -- `mtc1 $x, $fN` / `nop` / <use of $fN> -- is
+    # no longer a blocker: the nop is ps2eeas's, and tools/ps2eeas_nops.py
+    # adds it to compiled game code.)
 
     # --- R5900 short-loop erratum: nop padding before a tight backward
-    # branch. No source shape fixes it. `span` is the distance back to the
-    # branch TARGET; it used to be the index from the start of the
-    # function, which let any tight loop past instruction 7 escape.
+    # branch. `span` is the distance back to the branch TARGET; it used to
+    # be the index from the start of the function, which let any tight loop
+    # past instruction 7 escape.
+    #
+    # It is no longer a blocker anywhere. Retail's text was assembled by SN's
+    # ps2eeas, which pads every loop shorter than six instructions, and
+    # tools/ps2eeas_nops.py reproduces that. core_text was assembled by the
+    # compiler driver's own as.exe (ee/bin/as.exe), which pads short loops
+    # that contain no call -- the same assembler this build runs, so those
+    # come out padded by themselves. (The standalone bin/ee-as.exe, with the
+    # same version string, pads nothing; probing that one is what made this
+    # look unexplained.)
     labels = label_positions(body)
-    for idx, i in enumerate(ins):
-        if re.match(r"b(ne|eq|gtz|ltz|gez|lez|nez|eqz)l?\b", i) and idx >= 2:
-            tgt = labels.get(i.rsplit(",", 1)[-1].strip())
-            span = idx - tgt if tgt is not None and tgt <= idx else 99
-            if span <= 7 and ins[idx - 1] == "nop" and ins[idx - 2] == "nop":
-                return "blocked", "short-loop erratum", "double nop before tight branch"
 
     # ---- risky signatures (near-miss generators, not hard blockers) ----
 
@@ -297,7 +309,7 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     # blocked; this one is only marked risky because there is a single
     # confirmation so far (func_0011D370) -- blanket-blocking on thin
     # evidence has cost this project real matches twice.
-    for idx, i in enumerate(ins[:-1]):
+    for idx, i in enumerate(ins[:-1] if not ee29 else []):
         m = re.match(r"b(ne|eq|nez|eqz|gez|ltz|gtz|lez)l?\s.*?(\.L[0-9A-Fa-f]+)\s*$", i)
         if m and ins[idx + 1] == "nop":
             t2 = labels.get(m.group(2))
@@ -330,9 +342,11 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
         if not idiom:
             return "risky", "genuine conditional move", "movz/movn, no sra idiom"
 
-    detail = ""
+    detail = "2.9-ee" if ee29 else ""
+    if tail:
+        detail += " (void tail call)"
     if re.search(r"\$28\b", text):
-        detail = "$gp (unblocked at -G2)"
+        detail = (detail + "; " if detail else "") + "$gp (unblocked at -G2)"
     if at_store or reuse_load:
         detail = (detail + "; " if detail else "") + "MACRO_ADDR"
     if gp_hi:

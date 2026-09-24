@@ -356,20 +356,35 @@ extern int func_0023E0B0(void *);
 extern int func_0012BB98(void *);
 extern char D_00161328[];
 
-void func_0023E560(void *arg0, int arg1, int arg2, int arg3) {
-    Obj23E *s = (Obj23E *)arg0;
-    s->unk0C = 0;
-    s->unk00 = arg1;
-    s->unk04 = arg2;
-    s->count = arg3;
-    s->unk08 = 0;
-    if (arg3 > 0) {
-        int off = 0;
-        do {
-            *(int *)(off + s->unk04) = 0;
-            arg3--;
-            off += 0x138C0;
-        } while (arg3 != 0);
+/* Sony's ezmpeg sample's video buffer: a ring of 0x138C0-byte frames.
+   `write` and `count` are volatile, shared with the decode thread. */
+typedef struct {
+    int status;
+    char pad[0x138C0 - 4];
+} VoTag;
+
+typedef struct {
+    void *data;
+    VoTag *tag;
+    volatile int write;
+    volatile int count;
+    int size;
+} VoBuf;
+
+/* voBufCreate(VoBuf *, VoData *, VoTag *, int), in the sample's order.
+   The volatile stores keep their order against each other, which puts
+   `count = 0` first and keeps `write = 0` out of the loop test's slot. */
+void func_0023E560(void *arg0, void *data, void *tag, int size) {
+    VoBuf *f = (VoBuf *)arg0;
+    int i;
+
+    f->data = data;
+    f->tag = (VoTag *)tag;
+    f->size = size;
+    f->count = 0;
+    f->write = 0;
+    for (i = 0; i < size; i++) {
+        f->tag[i].status = 0;
     }
 }
 
@@ -399,23 +414,20 @@ int func_0023E5C8(int *arg0) {
 }
 
 /*
- * BLOCKED, same cause as func_0022EF68: retail leaves the
- * `jal func_0011D9A8` delay slot as a bare `nop` and puts the
- * `sw $v1,0x8($16)` before the call; this compiler schedules that store
- * into the slot, leaving us 4 bytes short. Recovered source -- marks the
- * current 0x138C0-byte frame buffer as state 2, bumps the frame counter
- * and advances the ring index. The `beql`/`break 0,7` pair before the
- * `div` is this compiler's own divide-by-zero trap, not source code.
- *
- *   void func_0023E5E0(char *arg0) {
- *       func_0011D960();
- *       *(int *)(*(int *)(arg0 + 8) * 0x138C0 + *(int *)(arg0 + 4)) = 2;
- *       *(int *)(arg0 + 0xC) = *(int *)(arg0 + 0xC) + 1;
- *       *(int *)(arg0 + 8) = (*(int *)(arg0 + 8) + 1) % *(int *)(arg0 + 0x10);
- *       func_0011D9A8();
- *   }
+ * voBufIncCount(VoBuf *): marks the current 0x138C0-byte frame as
+ * state 2, bumps the count and advances the ring index. Only the index
+ * (+8) and count (+0xC) are volatile, as in voBufDecCount: that keeps
+ * the index store out of the call's delay slot and orders the loads as
+ * retail does. The beql/break before the div is the compiler's own
+ * divide-by-zero trap.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E5E0); /* voBufIncCount(VoBuf *) */
+void func_0023E5E0(char *arg0) {
+    func_0011D960();
+    *(int *)(*(volatile int *)(arg0 + 8) * 0x138C0 + *(int *)(arg0 + 4)) = 2;
+    *(volatile int *)(arg0 + 0xC) = *(volatile int *)(arg0 + 0xC) + 1;
+    *(volatile int *)(arg0 + 8) = (*(volatile int *)(arg0 + 8) + 1) % *(int *)(arg0 + 0x10);
+    func_0011D9A8();
+}
 
 /* voBufGetData(VoBuf *) */
 int func_0023E658(int *arg0) {
@@ -430,31 +442,17 @@ int func_0023E698(int *arg0) {
     return arg0[3] == 0;
 }
 
-/* 4/100, same size: retail loads +8 before +0xC, we load +0xC first. Two
-   independent loads, pure scheduling. tools/permute.py says it is not
-   source-steerable -- all six orderings of the three field loads compile
-   to byte-identical output, so the order is not coming from the source.
-   Kept as C.
-
-   Ring buffer index -> element address. arg0 holds {+4 base, +8 head,
-   +0xC tail, +0x10 capacity}; returns base + ((head - tail + capacity)
-   %% capacity) * 0x138C0, or 0 when the buffer is empty. The empty test
-   is func_0023E698, which is why its result is branched on rather than
-   the field being read twice. */
-/* voBufGetTag(VoBuf *) */
+/* voBufGetTag(VoBuf *): the frame at the ring's read position,
+   (write - count + size) % size frames past the base, or 0 when the
+   buffer is empty (voBufIsEmpty). write and count are read volatile, as
+   Sony's sample declares them, which keeps their loads in source order. */
 int func_0023E6A8(void *arg0) {
     char *s = (char *)arg0;
-    int head;
-    int tail;
-    int cap;
 
     if (func_0023E698((int *)arg0) != 0) {
         return 0;
     }
-    head = *(int *)(s + 0x8);
-    tail = *(int *)(s + 0xC);
-    cap = *(int *)(s + 0x10);
-    return *(int *)(s + 0x4) + ((head - tail + cap) % cap) * 0x138C0;
+    return *(int *)(s + 0x4) + ((*(volatile int *)(s + 0x8) - *(volatile int *)(s + 0xC) + *(int *)(s + 0x10)) % *(int *)(s + 0x10)) * 0x138C0;
 }
 
 /* voBufDecCount(VoBuf *) */

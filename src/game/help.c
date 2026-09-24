@@ -52,25 +52,103 @@ extern void func_001F3140(void);
 extern int D_0018E840[];
 extern long D_00152178 NOT_SDA;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FDF10);
+extern int D_001941C0[];
+extern int D_0016100C MACRO_ADDR;
+
+/* Start of a `size`-byte block at the end of each of the two VU1 chain
+   buffers (D_001941C0[1]/[2], D_0016100C bytes long, as VU1_initChain
+   uses them). Both outputs are 0 and the result -1 when size is over
+   0x20000. */
+/* Returns int; the size is unsigned and D_0016100C MACRO_ADDR. */
+int func_001FDF10(unsigned int size, int *out1, int *out2) {
+    if (size > 0x20000) {
+        *out1 = 0;
+        *out2 = 0;
+        return -1;
+    }
+    *out1 = D_001941C0[1] + D_0016100C - size;
+    *out2 = D_001941C0[2] + D_0016100C - size;
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FDF78);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FE438);
+typedef struct {
+    int state;    /* 0x00 */
+    int x04;      /* 0x04 */
+    int pad[7];   /* 0x08 */
+    int x24;      /* 0x24 */
+    int x28;      /* 0x28 */
+    int count;    /* 0x2C: entries in the D_0015F780 table */
+} HelpState;
+extern char D_001997D0[];
+
+/* Advances the help screen's state (D_001997D0). Every access goes
+   through the global, and cases 6 and 7 are spelled out: the jump table
+   has eight entries. */
+void func_001FE438(void) {
+    switch (((HelpState *)D_001997D0)->state) {
+    case 0:
+        ((HelpState *)D_001997D0)->x24 = -1;
+        break;
+    case 1:
+    case 2:
+        ((HelpState *)D_001997D0)->state = 7;
+        ((HelpState *)D_001997D0)->x04 = 0;
+        break;
+    case 3:
+        ((HelpState *)D_001997D0)->state = 7;
+        ((HelpState *)D_001997D0)->x04 = 0;
+        break;
+    case 4:
+        ((HelpState *)D_001997D0)->state = 6;
+        ((HelpState *)D_001997D0)->x04 = 4 - ((HelpState *)D_001997D0)->x04;
+        break;
+    case 5:
+        ((HelpState *)D_001997D0)->state = 6;
+        ((HelpState *)D_001997D0)->x04 = 0;
+        break;
+    case 6:
+    case 7:
+        break;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FE4C0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FE4D0); /* Help_FindIndex */
+typedef struct {
+    char *text;   /* 0x0 */
+    int id;       /* 0x4 */
+    int unk_08;
+    int unk_0C;
+} HelpEntry;
+extern HelpEntry *D_0015F780 MACRO_ADDR;
 
-extern int func_001FE4D0(void);
+/* Help_FindIndex: the index of the first D_0015F780 entry with this id,
+   or -1. `r = -1` and a `break` give retail's peeled first compare and
+   rotated loop; the count goes through the struct so its +0x2C stays a
+   displacement. */
+int func_001FE4D0(int id) {
+    int r = -1;
+    int i;
+
+    for (i = 0; i < ((HelpState *)D_001997D0)->count; i++) {
+        if (D_0015F780[i].id == id) {
+            r = i;
+            break;
+        }
+    }
+    return r;
+}
+
 extern char D_00199A68[];
-extern short D_0015F780;              /* SDA, gp -0x7580 */
 
-/* msg_string(int) */
-void *func_001FE540(void) {
-    int i = func_001FE4D0();
+/* msg_string(int). The table load sits in the bgezl slot, where the
+   MACRO_ADDR access becomes $gp-relative. */
+void *func_001FE540(int id) {
+    int i = func_001FE4D0(id);
     if (i >= 0) {
-        return *(void **)(*(int *)&D_0015F780 + i * 16);
+        return D_0015F780[i].text;
     }
     return D_00199A68;
 }

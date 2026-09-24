@@ -327,7 +327,31 @@ extern void func_0020DB98(char *arg0, int arg1, void *arg2, char *arg3);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00239628);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00239838);
+extern int func_00116810_s(char *) __asm__("func_00116810");
+extern int func_002140B0(int);
+extern int D_001E62B8[];
+extern void func_002391A8(void *);
+extern void func_00239628(char *, int, int, float);
+extern void func_001FBAB8(int, int, int, int, int, int, int);
+
+/* Two base locals, one before the join and one after, make gcse share
+   only the %hi and rebuild the %lo base after the join; the first must
+   be assigned after the first call. func_00116810 is strlen. */
+void func_00239838(void) {
+    char *v;
+    char *w;
+    func_001FBAB8(0, 0, 0x200, 0x80, 0x200, 0x80, 0);
+    v = D_001E66C0;
+    if (func_00116810_s(*(char **)(v + 0x2C)) - *(int *)(v + 0x44) / 20 > 0) {
+        *(int *)(v + 0x44) += 2;
+    } else {
+        func_002391A8(func_001FE540_id(D_001E62B8[func_002140B0(0x18)]));
+    }
+    w = D_001E66C0;
+    func_00239628(*(char **)(w + 0x2C), -*(int *)(w + 0x44), 8, 2.0f);
+    func_001FBAB8(0, 0, 4, 0x40, 0x200, 0x80, 0);
+    func_001FBAB8(0xE2, 0, 0xE6, 0x40, 0x200, 0x80, 0);
+}
 
 extern void func_001FBAB8(int, int, int, int, int, int, int);
 extern int D_001611A8 MACRO_ADDR;

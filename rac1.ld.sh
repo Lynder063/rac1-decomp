@@ -7,7 +7,7 @@
 # counter correctly after a NOLOAD section (verified: an explicit
 # `. = X;` right after one is silently ignored, next section lands back
 # at the NOLOAD section's own start address instead). See
-# docs/TOOLCHAIN.md. build-sn/{core_bss,bss}_pad.o must exist first --
+# docs/TOOLCHAIN.md. build-sn/{core_bss_pad_1,core_bss_pad_2,bss_pad}.o must exist first --
 # tools/build_sn_data.sh generates them.
 cat > build-sn/rac1.ld <<'EOF'
 OUTPUT_FORMAT("elf32-littlemips")
@@ -29,14 +29,8 @@ SECTIONS
 EOF
 
 # core_text objects, in link order, from config/core_text.objects -- the
-# one list Makefile.sn and the tools read too. _fpadd_parts is static in
-# fp-bit, so it has no global symbol to alias; it is the first thing in its
-# module, and the object before it ends exactly on the 8-byte boundary, so
-# `.` right before that object is its address.
+# one list Makefile.sn and the tools read too.
 grep -v -e '^#' -e '^$' config/core_text.objects | tr -d $'\r' | while read -r obj _start; do
-  if [ "$obj" = "build-sn/libgcc/fp_addsub_df.o" ]; then
-    echo "    func_0011FC08 = .;" >> build-sn/rac1.ld
-  fi
   echo "    $obj(.text)" >> build-sn/rac1.ld
 done
 
@@ -45,30 +39,31 @@ cat >> build-sn/rac1.ld <<'EOF'
 
   /* libgcc keeps its real names; the rest of the image (and every tool)
      knows these functions by address. Map both ways. */
+  func_0011DF18 = __do_global_ctors;
+  func_0011DFC8 = __main;
   func_0011DFE8 = __divdi3;
   func_0011E6D8 = __fixunsdfdi;
   func_0011E7C8 = __floatdidf;
   func_0011EEC8 = __muldi3;
-  func_0011FE48 = __adddf3;
-  func_0011FEA0 = __subdf3;
-  func_0011FF08 = __muldf3;
-  func_001201B0 = __divdf3;
+  /* dp-bit.o / fp-bit.o carry Sony's GOFAST names, which is also what the
+     compilers call. */
+  func_0011FA38 = __pack_d;
+  func_0011FB68 = __unpack_d;
+  func_0011FC08 = _fpadd_parts;
+  func_0011FE48 = dpadd;
+  func_0011FEA0 = dpsub;
+  func_0011FF08 = dpmul;
+  func_001201B0 = dpdiv;
   func_00120318 = __fpcmp_parts_d;
-  func_00120430 = __cmpdf2;
-  func_00120480 = __floatsidf;
-  func_00120538 = __fixdfsi;
+  func_00120430 = dpcmp;
+  func_00120480 = litodp;
+  func_00120538 = dptoli;
   func_001205D0 = dptoul;
   func_00120670 = __make_dp;
-  __pack_d   = func_0011FA38;
-  __unpack_d = func_0011FB68;
+  func_001206B0 = __unpack_f;
+  func_00120778 = fptodp;
   __thenan_df = 0x001597F0;
-  /* Sony's EE compiler emits soft-float libcalls under their GOFAST
-     names (libgcc2's modules call these). */
-  dpadd  = __adddf3;
-  dpsub  = __subdf3;
-  dpmul  = __muldf3;
-  dpcmp  = __cmpdf2;
-  litodp = __floatsidf;
+  __CTOR_LIST__ = 0x0015ED18;
 
   . = 0x12f580;
   .core_data : { build-sn/core_data.data.o(.data) }
@@ -84,7 +79,17 @@ cat >> build-sn/rac1.ld <<'EOF'
   }
 
   . = 0x154200;
-  .core_bss : { build-sn/core_bss_pad.o(.core_bss_pad) }
+  /* __main's static `initialized` is retail's D_001597EC, so l2__main.o's
+     .bss goes exactly there, between two halves of the padding (see
+     tools/build_sn_data.sh). Its .data only holds the stripped
+     __do_global_dtors' static pointer, which nothing references any more;
+     retail's copy is in the core_data blob, so ours is discarded. */
+  .core_bss : {
+    build-sn/core_bss_pad_1.o(.core_bss_pad)
+    build-sn/libgcc/l2__main.o(.bss)
+    build-sn/core_bss_pad_2.o(.core_bss_pad)
+  }
+  /DISCARD/ : { build-sn/libgcc/l2__main.o(.data) }
 
   /* main segment (vram 0x15ed80, rom 0x5fd00) */
 
@@ -98,7 +103,13 @@ cat >> build-sn/rac1.ld <<'EOF'
   .bss : { build-sn/bss_pad.o(.bss_pad) }
 
   . = 0x165580;
-  .data : { build-sn/data.data.o(.data) }
+  /* The retail data, cut around the jump tables compiled functions now
+     bring, with each table in its hole (tools/jump_tables.py). */
+  .data : {
+EOF
+python tools/jump_tables.py ld >> build-sn/rac1.ld
+cat >> build-sn/rac1.ld <<'EOF'
+  }
 
   . = 0x1e8f00;
   .lvl_vtbl : { build-sn/lvl_vtbl.data.o(.data) }

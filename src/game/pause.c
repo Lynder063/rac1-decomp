@@ -118,8 +118,9 @@ extern int D_0013D668[];
 extern void func_00209040(void);
 extern int func_001FAA28(void *dst, int size, int a, int b);
 extern void func_00208860(void *dst);
-extern short D_0015EE84;
-extern int D_0015EE84_far __asm__("D_0015EE84") NOT_SDA;
+/* MACRO_ADDR: lui/lw where retail has them, $gp-relative in a delay slot
+   (func_0021F7D0, func_002229B0). */
+extern int D_0015EE84 MACRO_ADDR;
 extern int D_001A0218[] NOT_SDA;
 extern void func_00208458(void *, unsigned char *, int);
 extern void func_00208688(void *, unsigned char *);
@@ -236,30 +237,94 @@ void func_00219E60(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00219E90);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021A0B0);
+extern int D_0015EF78 MACRO_ADDR;
+extern int func_002267C0(int);
+extern int D_001D6120[];
+
+typedef struct { char pad[0x44]; char *items[14]; } ObjList;
+
+/* Pause teardown: calls each object's +0xC handler, then refreshes the
+   14 D_001D6120 handles. Retail's register copies come from gcse, so the
+   base is re-read inside each block (and inside the loop body). */
+void func_0021A0B0(void) {
+    char *g = D_001D5F70;
+
+    if (*(int *)(g + 0x110) < 10) {
+        return;
+    }
+    if (*(int *)(g + 4) != 0) {
+        int i;
+        for (i = 0; i < 14; i++) {
+            char *g2 = D_001D5F70;
+            char *obj = ((ObjList *)*(char **)(g2 + 4))->items[i];
+            if (obj != 0) {
+                void (*fn)(void *, int) = *(void (**)(void *, int))(obj + 0xC);
+                if (fn != 0) {
+                    fn(obj, 0);
+                }
+            }
+        }
+        {
+            char *g5 = D_001D5F70;
+            *(int *)(g5 + 4) = 0;
+        }
+    }
+    {
+        char *g3 = D_001D5F70;
+        int j;
+        D_0015EF78 = *(int *)(g3 + 0x18);
+        for (j = 0; j < 14; j++) {
+            D_001D6120[j] = func_002267C0(D_001D6120[j]);
+        }
+    }
+    {
+        char *g4 = D_001D5F70;
+        *(int *)g4 = 0x14;
+        *(int *)(g4 + 0x14) = 2;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021A1A0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021A610);
 
 /*
- * REVERTED (size mismatch). Logic is certain; written straight from the
- * branch chain it comes out several instructions short, and the tail
- * collapses into a `movn` where retail keeps two separate returns.
- *
- *   int func_0021ACD8(int arg0) {
- *       int v;
- *       if (*(int *)(*(char **)(D_001D5F70 + 4) + 0x40) != arg0) return 0;
- *       if ((*(int *)(D_0013CA40 + 0x1C4) & 0xD00) != 0
- *               && *(int *)(D_001D5F70 + 0x124) == 0) return 1;
- *       if ((*(int *)(D_0013CA40 + 0x1C4) & 0x10) == 0) return 0;
- *       v = *(int *)(*(char **)(D_001D5F70 + 4) + 0x38);
- *       if (v != 0) { *(int *)(D_001D5F70 + 8) = v; return 0; }
- *       if (*(int *)(D_001D5F70 + 0x124) == 0) return -1;
- *       return 0;
- *   }
+ * Pad handler for the pause page arg0 (g->x4->x40): 1 on the 0xD00
+ * buttons while g->x124 is 0; on 0x10, switch to the page's +0x38
+ * target, or return -1 when it has none and g->x124 is 0. Written in
+ * its family's shape (func_0021F7D0, func_00222DB0): early returns and
+ * one `char *` local per block that reads a global.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_0021ACD8);
+int func_0021ACD8(int arg0) {
+    char *g = D_001D5F70;
+
+    if (*(int *)(*(char **)(g + 4) + 0x40) != arg0) {
+        return 0;
+    }
+    {
+        char *pad = D_0013CA40;
+        if (*(int *)(pad + 0x1C4) & 0xD00) {
+            if (*(int *)(g + 0x124) == 0) {
+                return 1;
+            }
+        }
+    }
+    {
+        char *pad2 = D_0013CA40;
+        if (*(int *)(pad2 + 0x1C4) & 0x10) {
+            char *g2 = D_001D5F70;
+            int t = *(int *)(*(char **)(g2 + 4) + 0x38);
+            if (t != 0) {
+                *(int *)(g2 + 8) = t;
+                return 0;
+            }
+            if (*(int *)(g2 + 0x124) == 0) {
+                return -1;
+            }
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021AD68);
 
@@ -269,9 +334,13 @@ extern int D_0015EF90;
 extern char D_001D4B90[];
 extern char D_001D4BC0[];
 
+extern int D_0015EF90_m __asm__("D_0015EF90") MACRO_ADDR;
+
+/* D_0015EF90 is read through a MACRO_ADDR alias: retail's one-register
+   load. */
 int func_0021B108(void *arg0) {
     *(char **)((char *)arg0 + 0x34) =
-        (D_0015EF90 != 0) ? D_001D4B90 : D_001D4BC0;
+        (D_0015EF90_m != 0) ? D_001D4B90 : D_001D4BC0;
     return 0;
 }
 
@@ -388,7 +457,33 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0021D4C0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021D7A0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021D9C8);
+extern int D_00141FA0[];
+
+typedef struct {
+    char pad[0x30];
+    int list[8]; /* 0x30 */
+    int idx;     /* 0x50 */
+} SelList_0021D9C8;
+
+/* Reload the 8-entry list at +0x30 from D_00141FA0 (the reverse of
+   func_0021DA60 below), then leave idx at +0x50 on the first empty entry,
+   wrapped to 0..7. Indexing arg0->list directly in both loops (no local
+   list pointer) is what gives retail's hoisted base; the scan is a do-while
+   guarded by list[0] (a plain while/for rotated differently). */
+int func_0021D9C8(SelList_0021D9C8 *arg0) {
+    int i;
+    for (i = 0; i < 8; i++) {
+        arg0->list[i] = D_00141FA0[i];
+    }
+    arg0->idx = 0;
+    if (arg0->list[0] != 0) {
+        do {
+            arg0->idx++;
+        } while (arg0->list[arg0->idx] != 0 && arg0->idx < 8);
+    }
+    arg0->idx %= 8;
+    return 0;
+}
 
 extern int D_00141FA0[];
 
@@ -535,28 +630,79 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0021E4B0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021E950);
 
-/*
- * Close but not exact, reverted: conditional-move vs. branch.
- * Logic is `short v = (D_001414F4 == 1) ? 0 : 3;
- * *(short*)(*(char**)(arg0+0x34) + 2) = v; return 0;`.
- *
- * Retail branches (`addiu $3,$0,1` / `beq $4,$3`, the 0 materialized in
- * the delay slot and the 3 on the fall-through) and stores once at the
- * join. This compiler won't produce that shape:
- *  - single-store forms (`v=0; if (cond) v=3;`, an if/else assigning v,
- *    and a ternary) all compile branchlessly to `xori`/`movz` -- 23/40.
- *  - a two-store form (`if (cond) p[1]=0; else p[1]=3;`) does branch,
- *    and with the polarity written as `!= 1` even gets retail's exact
- *    `beq`, but then needs an extra `b` to join, so it's 15/40.
- * So: retail's compiler chose a branch where this one prefers a
- * conditional move for the same select-then-store. This is the mirror
- * image of func_001FF4F8, where retail used `movn` and this compiler
- * would not produce it -- the cmov heuristics differ in both
- * directions, which is worth knowing before spending long on either.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_0021EDD8);
+extern unsigned char D_001414F4 NOT_SDA;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021EE00);
+/* A short-returning inline keeps retail's branch: the select happens in
+   HImode, which has no movcc pattern, so jump.c cannot turn it into the
+   xori/movz a promoted `short` local gets. */
+static inline short pauseFlagState(void) {
+    if (D_001414F4 != 1) {
+        return 3;
+    }
+    return 0;
+}
+
+/* The select sits in a `static inline short` helper so that it stays a
+   branch: jump.c turns an if into movz/movn only when its arm sets a
+   full register, and the inline's short return value is a subreg. */
+int func_0021EDD8(char *arg0) {
+    char *p = *(char **)(arg0 + 0x34);
+    *(short *)(p + 2) = pauseFlagState();
+    return 0;
+}
+
+extern int D_001D53A0[];
+extern void func_0020E180(int, int);
+
+/* Tears down the 24 handles at arg0+0x44, skipping the ones in use.
+   The switch's table is jtbl_001E8AD0; `off` before `slots` and a second
+   slots2/off2 pair give retail's copies. */
+int func_0021EE00(char *arg0) {
+    int i;
+
+    for (i = 0; i < 24; i++) {
+        int off = i * 4;
+        char *slots = arg0 + 0x44;
+        if (*(int *)(slots + off) == 0) {
+            continue;
+        }
+        if (*(unsigned char *)(arg0 + i + 0xA4) != 0) {
+            continue;
+        }
+        if (D_001D53A0[i] == 0) {
+            continue;
+        }
+        if (i == 7 && *(short *)(*(char **)(arg0 + 0x60) + 0xA6) == 0x4A) {
+            unsigned char *o = *(unsigned char **)(arg0 + 0x44);
+            if (o[0x52] != o[0x53]) {
+                continue;
+            }
+        }
+        switch (i) {
+        case 1:
+        case 2:
+        case 3:
+        case 5:
+        case 6:
+        case 10:
+        case 11:
+        case 12: {
+            unsigned char *o = *(unsigned char **)(arg0 + 0x44);
+            if ((*(long *)(o + 0x50) & 0xFFFF0000L) == 0x99990000L
+                && o[0x50] >= 0x4D && o[0x50] < 0x92) {
+                continue;
+            }
+            break;
+        }
+        }
+        {
+            char *slots2 = arg0 + 0x44;
+            int off2 = i * 4;
+            func_0020E180(*(int *)(slots2 + off2), 1);
+        }
+    }
+    return 4;
+}
 
 int func_0021EF30(void) {
     return 0;
@@ -579,7 +725,38 @@ int func_0021EF60(char *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021EFA0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021F118);
+extern char *D_001D5F74 NOT_SDA;
+extern void func_0020E180(int, int);
+extern void func_001F4630(int);
+extern void func_001F4748(void);
+extern void *func_001FE540_id(int) __asm__("func_001FE540");
+extern void func_00227A30(void *, char *);
+extern void func_001F7560(void *, long, void *, int);
+
+/* Draw/teardown callback (func_0021F610's family). The entry address is
+   written inline in the index; a `char *e` local leaves an addu swap. */
+int func_0021F118(char *arg0) {
+    short buf[10];
+    char *p = *(char **)(D_001D5F74 + 0x40);
+
+    if (((unsigned char *)&D_0013D5C8)[*(short *)(*(int *)(p + 0x3C) * 10 + *(char **)(p + 0x48) + 6)] == 0) {
+        return 0;
+    }
+    if (*(int *)(arg0 + 0x44) != 0) {
+        func_0020E180(*(int *)(arg0 + 0x44), 1);
+        if (*(int *)(arg0 + 0x48) != 0) {
+            func_0020E180(*(int *)(arg0 + 0x48), 1);
+        }
+        return 8;
+    }
+    func_001F4630(0);
+    func_00227A30(buf, arg0);
+    buf[8] = 0x10;
+    buf[9] = 3;
+    func_001F7560(buf, 0x80FFA888L, func_001FE540_id(0x4F4D), -1);
+    func_001F4748();
+    return 2;
+}
 
 extern float func_001FA748(float, float);
 
@@ -592,12 +769,13 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0021F238);
 extern char *D_001D5F74 NOT_SDA;
 extern void func_0020E180(int, int);
 
+/* The entry address is written inline in the index, as in
+   func_0021F118; a `char *e` local swapped the addu. */
 int func_0021F610(char *arg0) {
     char *p = *(char **)(D_001D5F74 + 0x40);
-    char *e = *(int *)(p + 0x3C) * 10 + *(char **)(p + 0x48);
     int v;
 
-    if (((unsigned char *)&D_0013D5C8)[*(short *)(e + 6)] == 0) {
+    if (((unsigned char *)&D_0013D5C8)[*(short *)(*(int *)(p + 0x3C) * 10 + *(char **)(p + 0x48) + 6)] == 0) {
         return 0;
     }
     v = *(int *)(arg0 + 0x44);
@@ -613,7 +791,51 @@ int func_0021F610(char *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021F6A0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021F7D0);
+extern int D_0013D48C;
+extern int D_0015F6E4 MACRO_ADDR;
+extern int D_0015F6FC_m __asm__("D_0015F6FC") MACRO_ADDR;
+extern int D_0015F690 MACRO_ADDR;
+
+/* Pad handler (func_0021ACD8's family). A separate `char *` local for
+   each block that reads the pad word gives retail's pattern: the %hi
+   kept in a register and the %lo rebuilt before each use. */
+int func_0021F7D0(char *arg0) {
+    char *pad = D_0013CA40;
+    int v = *(int *)(pad + 0x1C4);
+
+    if (v & 0xD00) {
+        if (*(int *)(arg0 + 0x30) & 0x20) {
+            D_001A0414 = D_0015EE84;
+        }
+        return -1;
+    }
+    if (v & 0x10) {
+        char *g;
+        int t;
+        if (*(int *)(arg0 + 0x30) & 0x20) {
+            D_001A0414 = D_0015EE84;
+        }
+        g = D_001D5F70;
+        t = *(int *)(*(char **)(g + 4) + 0x38);
+        if (t != 0) {
+            *(int *)(g + 8) = t;
+            return 0;
+        }
+        if (*(int *)(g + 0x124) == 0) {
+            return -1;
+        }
+    }
+    {
+        char *pad2 = D_0013CA40;
+        if (*(int *)(pad2 + 0x1C4) & 0x20) {
+            D_0013D48C = 0;
+            D_0015F6E4 = -1;
+            D_0015F690 = 1;
+            D_0015F6FC_m = 1;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021F898); /* DrawQuitGameMenu */
 
@@ -735,19 +957,9 @@ int func_00220C90(void *arg0) {
 
 extern int func_00226EA8(int);
 
-/*
- * Sibling of func_00220DA0 below: same slot set (0x44/0x48/0x4C/0x50/
- * 0x54/0x5C) on the same object, seeded here instead of torn down.
- *
- * Byte mismatch, correct size (0x94), 2 of 37 words: retail stores the
- * -1 to 0x54 before 0x50 and we do the reverse. Four spellings of the
- * tail were tried -- 5C/54/50 (this one, 2 words off), 5C/50/54 (4),
- * 54/5C/50 (6), and the chained `*(s+0x50) = *(s+0x54) = -1` (6) -- so
- * source order is not what decides it here; the -1 is a live value
- * produced in the branches ($v1), and the scheduler picks the store
- * order. Kept rather than reverted: the size is right, so nothing
- * downstream moves.
- */
+/* Sibling of func_00220DA0 below: the same slot set (0x44/0x48/0x4C/
+   0x50/0x54/0x5C) on the same object, seeded here instead of torn down.
+   The tail stores go 5C, 50, 54. */
 int func_00220D08(void *arg0) {
     char *s = (char *)arg0;
 
@@ -763,8 +975,8 @@ int func_00220D08(void *arg0) {
         }
     }
     *(int *)(s + 0x5C) = 0;
-    *(int *)(s + 0x54) = -1;
     *(int *)(s + 0x50) = -1;
+    *(int *)(s + 0x54) = -1;
     return 0;
 }
 
@@ -822,15 +1034,154 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002222F8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002224A8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00222640);
+typedef struct {
+    unsigned short a;   /* +0 */
+    short b;            /* +2 */
+    short c;            /* +4 */
+    short id;           /* +6 */
+    short idx;          /* +8 */
+} Item0A;
+extern Item0A D_001CF4A0[];
+extern Item0A D_001D6470[];
+extern int D_001D6508[];
+extern char D_001864D0[];
+extern char D_001D1080[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00222708);
+/* Builds the pause-menu item list from the 15 entries of D_001CF4A0
+   that D_0013D5C8 enables. The flag needs its own `f = b != 0`:
+   `(b != 0) << 2` folds into a branch. */
+int func_00222640(void) {
+    int i;
+    int n = 0;
+    char *m;
+
+    for (i = 0; i < 15; i++) {
+        int id = D_001CF4A0[i].id;
+        if (((unsigned char *)&D_0013D5C8)[id] != 0) {
+            Item0A *out = &D_001D6470[n];
+            char *rec = D_001864D0 + id * 0x4C;
+            unsigned char b = D_0013E620[id];
+            int f = b != 0;
+            out->a = *(unsigned short *)(rec + 0x38);
+            out->b = f << 2;
+            out->c = 0;
+            out->id = id;
+            out->idx = i;
+            D_001D6508[n] = b ? *(short *)(rec + 0x42) : *(short *)(rec + 0x40);
+            n++;
+        }
+    }
+    m = D_001D1080;
+    *(int *)(m + 0x40) = n;
+    return 0;
+}
+
+extern Item0A D_001CEFA0[];
+extern Item0A D_001CEFE0[];
+extern Item0A D_001CF000[];
+extern Item0A D_001CF020[];
+extern Item0A D_001D6548[];
+extern int D_001D65D8[];
+extern int D_001D6610[];
+extern char D_001864D0[];
+extern char D_001D1408[];
+
+/* func_00222640's sibling over four source tables. */
+int func_00222708(void) {
+    int i;
+    int id;
+    int n = 0;
+    char *m;
+
+    for (i = 0; i < 14; i++) {
+        if (i < 6) {
+            id = D_001CEFA0[i].id;
+        } else if (i < 9) {
+            id = D_001CEFE0[i - 6].id;
+        } else if (i < 12) {
+            id = D_001CF000[i - 9].id;
+        } else {
+            id = D_001CF020[i - 12].id;
+        }
+        if (((unsigned char *)&D_0013D5C8)[id] != 0) {
+            char *rec = D_001864D0 + id * 0x4C;
+            D_001D6548[n].a = *(unsigned short *)(rec + 0x38);
+            D_001D6548[n].b = 0;
+            D_001D6548[n].c = 0;
+            D_001D6548[n].id = id;
+            D_001D6548[n].idx = i;
+            D_001D65D8[n] = *(short *)(rec + 0x40);
+            D_001D6610[n] = *(short *)(rec + 0x44);
+            n++;
+        }
+    }
+    m = D_001D1408;
+    *(int *)(m + 0x40) = n;
+    return 0;
+}
 
 int func_00222840(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00222848);
+typedef struct {
+    unsigned short a;   /* +0 */
+    short b;            /* +2 */
+    int c;              /* +4 */
+    unsigned short d;   /* +8 */
+    short e;            /* +A */
+} Out0C;
+typedef struct {
+    unsigned short a;   /* +0 */
+    short pad2;
+    unsigned short b;   /* +4 */
+    short pad6;
+    int pad8;
+} Src0C;
+extern int D_0013D618[];
+extern Src0C D_001DE0C0[];
+extern Out0C D_001D6648[];
+extern short D_001602E0_s __asm__("D_001602E0");
+extern int *D_001602E0_m __asm__("D_001602E0") MACRO_ADDR;
+
+typedef struct {
+    char pad00[0x30];
+    int flags;          /* +0x30 */
+    char pad34[0xC];
+    int sel;            /* +0x40 */
+} MenuObj40;
+
+/* Menu builder: the item list from D_0013D618, then the selection. The
+   scalar MACRO_ADDR view of D_001602E0 lets sched2 hoist its load, and
+   the dead reference to the 2-byte view keeps `.extern D_001602E0, 2`
+   last, so the assembler still uses $gp. A later 4-byte reference in
+   this file would undo that. */
+int func_00222848(MenuObj40 *arg0) {
+    int i;
+
+    for (i = 0; i < 20 && D_0013D618[i] != 0; i++) {
+        D_001D6648[i].a = *(unsigned short *)((char *)D_001DE0C0 + D_0013D618[i] * 12);
+        D_001D6648[i].b = 1;
+        D_001D6648[i].c = 0;
+        D_001D6648[i].d = *(unsigned short *)((char *)D_001DE0C0 + D_0013D618[i] * 12 + 4);
+    }
+    D_001D6648[i].a = 0;
+    arg0->sel = 0;
+    arg0->flags |= 0x8000;
+    for (i = 0; D_001602E0_m[i] != 0; i++) {
+        char *slots = (char *)D_001A01F0;
+        if (*(int *)(slots + 0x224) == D_001602E0_m[i]) {
+            arg0->sel = i;
+            break;
+        }
+    }
+    if (0) {
+        /* no code: registers the 2-byte view last, so the file ends with
+           `.extern D_001602E0, 2` and the assembler uses $gp */
+        (void)D_001602E0_s;
+    }
+    return 0;
+}
 
 extern int D_0013CC04 NOT_SDA;
 extern char D_001D2678[];
@@ -851,7 +1202,38 @@ int func_00222978(void *arg0) {
     return 2;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002229B0);
+extern void func_0022ED80(int, int, int);
+
+/* Pause sub-menu input on the pad word D_0013CC04. One if/else-if chain
+   falling to a single `return 0`; early returns in the 0x10 arm give a
+   movn instead. */
+int func_002229B0(char *arg0) {
+    int v = D_0013CC04;
+
+    if (v & 0x10) {
+        char *g = D_001D5F70;
+        int t = *(int *)(*(char **)(g + 4) + 0x38);
+        if (t != 0) {
+            *(int *)(g + 8) = t;
+        } else if (*(int *)(g + 0x124) == 0) {
+            return -1;
+        }
+    } else if (v & 0x800) {
+        D_001A0414 = D_0015EE84;
+        return 1;
+    } else if (v & 0x40) {
+        func_0022ED80(0, 0x11, *(int *)(arg0 + 0x14));
+        return 1;
+    } else if (v & 0x20) {
+        char *g = D_001D5F70;
+        *(int *)(g + 0xE4) = D_001A0414;
+        *(int *)(g + 0xF0) = *(int *)(g + 4);
+        *(int *)(g + 0xC) = 3;
+        *(int *)(g + 0xF4) = 0xF;
+        func_0022ED80(0, 0x11, *(int *)(arg0 + 0x14));
+    }
+    return 0;
+}
 
 extern int func_00226EA8(int);
 extern char *D_001D5F74 NOT_SDA;
@@ -912,24 +1294,97 @@ int func_00222B00(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00222B98);
 
-/*
- * Close but not exact (24/60): int func(void *arg0) {
- *   *(int *)((char *)arg0+0x34) = D_001D48A8[D_0015EE84 % 19];
- *   return 0; }
- * Notably the *shape* is exactly right, including the real `divu` and
- * its div-by-zero trap guard -- see the constant-division note in the
- * techniques section. The residual is the known allocator-varying
- * issue: retail does `lui $5` / `lw $5` (loading into the register it
- * just built the address in), this compiler does `lui $3` / `lw $5`,
- * and it orders the divisor's `addiu` before the load rather than
- * after. Same as func_0021B108's entry. Reverted per the size-of-diff
- * precedent.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00222D70);
+extern int D_001D48A8[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00222DB0);
+/* `D_001D48A8[(unsigned)D_0015EE84 % 19]`; the older near-miss
+   predated MACRO_ADDR. */
+int func_00222D70(char *arg0) {
+    *(int *)(arg0 + 0x34) = D_001D48A8[(unsigned int)D_0015EE84 % 19];
+    return 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00222E98);
+extern void func_0022ED80(int, int, int);
+
+/* Pause sub-menu with a 30-entry wrapping cursor at arg0+0x40, in
+   func_0021F7D0's shape. */
+int func_00222DB0(char *arg0) {
+    char *pad = D_0013CA40;
+    int w, old;
+
+    if (*(int *)(pad + 0x1C4) & 0xD00) {
+        if (*(int *)(D_001D5F70 + 0x124) == 0) {
+            return 1;
+        }
+    }
+    {
+        char *pad2 = D_0013CA40;
+        if (*(int *)(pad2 + 0x1C4) & 0x10) {
+            char *g = D_001D5F70;
+            int t = *(int *)(*(char **)(g + 4) + 0x38);
+            if (t != 0) {
+                *(int *)(g + 8) = t;
+                return 0;
+            }
+            if (*(int *)(g + 0x124) == 0) {
+                return -1;
+            }
+        }
+    }
+    {
+        char *pad3 = D_0013CA40;
+        w = *(int *)(pad3 + 0x1A4);
+    }
+    old = *(int *)(arg0 + 0x40);
+    if (w & 0x40) {
+        *(int *)(arg0 + 0x40) = (old + 1) % 30;
+    } else if (w & 0x20) {
+        *(int *)(arg0 + 0x40) = (old + 29) % 30;
+    }
+    if (*(int *)(arg0 + 0x40) != old) {
+        func_0022ED80(1, 0x11, *(int *)(arg0 + 0x14));
+    }
+    return 0;
+}
+
+extern void func_0022ED80(int, int, int);
+
+/* func_00222DB0's twin with a 12-entry cursor at arg0+0x54. */
+int func_00222E98(char *arg0) {
+    char *pad = D_0013CA40;
+    int w;
+
+    if (*(int *)(pad + 0x1C4) & 0xD00) {
+        if (*(int *)(D_001D5F70 + 0x124) == 0) {
+            return 1;
+        }
+    }
+    {
+        char *pad2 = D_0013CA40;
+        if (*(int *)(pad2 + 0x1C4) & 0x10) {
+            char *g = D_001D5F70;
+            int t = *(int *)(*(char **)(g + 4) + 0x38);
+            if (t != 0) {
+                *(int *)(g + 8) = t;
+                return 0;
+            }
+            if (*(int *)(g + 0x124) == 0) {
+                return -1;
+            }
+        }
+    }
+    {
+        char *pad3 = D_0013CA40;
+        w = *(int *)(pad3 + 0x1A4);
+    }
+    if (w & 0x2040) {
+        *(int *)(arg0 + 0x54) = (*(int *)(arg0 + 0x54) + 1) % 12;
+        func_0022ED80(1, 0x11, *(int *)(arg0 + 0x14));
+    } else if (w & 0x8020) {
+        *(int *)(arg0 + 0x54) = (*(int *)(arg0 + 0x54) + 11) % 12;
+        func_0022ED80(1, 0x11, *(int *)(arg0 + 0x14));
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00222FA8);
 
@@ -981,56 +1436,32 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002250B8);
 INCLUDE_ASM("asm/nonmatchings/text", func_00225358);
 
 /*
- * REVERTED -- 8 bytes SHORT, so it cannot be left in. The decode is
- * certain and everything except two nops matches, registers included:
- *
- *   extern int func_002267C0(int);
- *   extern int func_00226F68(int);
- *   extern void func_00227A70(void);
- *
- *   int func_00225548(void *arg0) {
- *       char *g; int *p; int *q; int i; int j;
- *
- *       p = (int *)((char *)arg0 + 0x44);
- *       for (i = 23; i >= 0; i--) { *p = func_002267C0(*p); p++; }
- *       g = D_001D5F70;
- *       *(int *)(g + 0xA0) = func_00226F68(*(int *)(g + 0xA0));
- *       *(int *)(g + 0xA4) = func_00226F68(*(int *)(g + 0xA4));
- *       g[0xC8] = 0xFF;      // emitted 0xC9 then 0xC8: two stores of the
- *       g[0xC9] = 0xFF;      // same value come out in the opposite order
- *       g[0xCA] = 0;
- *       func_00227A70();
- *       q = (int *)(g + 0xB0);
- *       for (j = 2; j >= 0; j--) { *q = func_00226F68(*q); q++; }
- *       return 0;
- *   }
- *
- * Two SEPARATE loop counters are load-bearing: with one variable reused,
- * both loops take $s2 and q takes $s1. Retail, and this form, put the
- * first counter and then q in $s1 and the second counter in $s2.
- *
- * What is missing is retail's short-loop-erratum padding: a nop between
- * the store and the backward branch of each loop, because the R5900
- * mispredicts loops shorter than six instructions. Both loops here are
- * five. That is the whole residual, and it is 8 bytes.
- *
- * Three ways to produce it, all measured, all failed. This is why the
- * erratum is a toolchain blocker and not a source-shape question:
- *   1. The compiler never emits it. The generated .s for this function has
- *      no nop between `sw $2,0($16)` and `bgez`, and neither SN cc1
- *      (2.95.3, 2.9-ee) has an r5900 erratum flag -- scanning both binaries
- *      finds only optimisation strings (mulsi3_mult3_r5900 and friends).
- *   2. The assembler only ever REMOVES nops: `ee-as --help` offers `-O`
- *      (remove unneeded NOPs) and `-g2` (keep them). There is no insert.
- *   3. `__asm__("nop")` in the loop body does not append one after the
- *      store. It perturbs the scheduler instead -- the jal delay slot stops
- *      being filled -- taking the function from 227 to 447 differing words.
- *
- * 52 stubs are blocked this way (rank_candidates, "short-loop erratum").
- * Unblocking them needs an assembler that inserts the padding, not a
- * different C spelling.
+ * Exact once the short-loop padding retail's assembler adds is reproduced
+ * (tools/fix_short_loops.py): both loops are five instructions and get one
+ * nop each. g is unsigned char so 0xFF is built as 0xFF, not -1. Two
+ * separate loop counters are load-bearing: with one variable reused, both
+ * loops take $s2 and q takes $s1.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_00225548);
+extern int func_002267C0(int);
+extern int func_00226F68(int);
+extern void func_00227A70(void);
+
+int func_00225548(void *arg0) {
+    unsigned char *g; int *p; int *q; int i; int j;
+
+    p = (int *)((char *)arg0 + 0x44);
+    for (i = 23; i >= 0; i--) { *p = func_002267C0(*p); p++; }
+    g = D_001D5F70;
+    *(int *)(g + 0xA0) = func_00226F68(*(int *)(g + 0xA0));
+    *(int *)(g + 0xA4) = func_00226F68(*(int *)(g + 0xA4));
+    g[0xC8] = 0xFF;      // emitted 0xC9 then 0xC8: two stores of the
+    g[0xC9] = 0xFF;      // same value come out in the opposite order
+    g[0xCA] = 0;
+    func_00227A70();
+    q = (int *)(g + 0xB0);
+    for (j = 2; j >= 0; j--) { *q = func_00226F68(*q); q++; }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002255F8);
 
@@ -1105,31 +1536,22 @@ extern void *func_0020D348(void);
 extern void func_0020ED48(void *);
 extern void func_0020E340(void *, int, int, int, int);
 
-/* Spawn the pickup/marker object for slot arg0, unless that slot is
-   disabled (0xFF in D_001B3E40). Fresh objects get 0xFF/0xFF/1 in the
-   0x30 block, are registered, tinted mid-grey, and if their descriptor
-   says so, flagged 0x18 at +0x73.
+extern void *func_0020D348_c(int) __asm__("func_0020D348");
 
-   Two things mattered for the constant 0xFF, which retail keeps in a
-   single callee-saved register across the call: the +0x30 store must be
-   through `unsigned char` (as `char` it is the DIFFERENT constant -1
-   and gets its own `li`), and the byte store must come BEFORE the
-   halfword store. Written the other way round the compiler makes the
-   QImode 255 a fresh pseudo instead of reusing the HImode one, and the
-   function comes out 4 bytes long.
-
-   Near-miss, 2/40 words, size-exact and therefore inert: retail does
-   `addu $v0,$a0,$v0`, keeping the incoming argument and landing the
-   element address in $v0, where this build overwrites $a0 because arg0
-   is dead after the test. Naming the base in a local first does not
-   move it -- the recorded allocator destination question. */
+/* Spawns the pickup/marker object for slot arg0, unless the slot is
+   disabled (0xFF in D_001B3E40). A fresh object gets 0xFF/0xFF/1 in the
+   0x30 block, is registered, tinted mid-grey, and flagged 0x18 at +0x73
+   when its descriptor says so. The +0x30 store is through `unsigned
+   char` and comes before the halfword store, so the 0xFF stays in one
+   saved register. CreateMoby takes oClass: passing arg0 on keeps $a0
+   live, which puts the element address in $v0 as retail has it. */
 void *func_00226720(int arg0) {
     char *o;
 
     if (D_001B3E40[arg0] == 0xFF) {
         return 0;
     }
-    o = (char *)func_0020D348();
+    o = (char *)func_0020D348_c(arg0);
     if (o != 0) {
         *(unsigned char *)(o + 0x30) = 0xFF;
         *(short *)(o + 0x32) = 0xFF;
@@ -1159,34 +1581,22 @@ int func_002267C0(int arg0) {
 INCLUDE_ASM("asm/nonmatchings/text", func_00226808);
 
 /*
- * Reverted (size mismatch: 128 vs retail's 132). Semantics are certain
- * and every instruction but one is reproduced:
- *
- *   int func_002268F0(void *arg0) {
- *       int *p = (int *)((char *)arg0 + 0x44);
- *       unsigned short *q;
- *       int i;
- *       for (i = 0x17; i >= 0; i--) { *p = func_002267C0(*p); p++; }
- *       *(int *)((char *)arg0 + 0x3C) =
- *           func_00226F68(*(int *)((char *)arg0 + 0x3C));
- *       q = (unsigned short *)D_001517D0;
- *       if ((unsigned int)(q[0x2D] - 6) >= 2) { q[0x2D] = 5; }
- *       return 0;
- *   }
- *
- * The single residual is a standalone `nop` retail emits between the
- * loop body's `sw` and its `bgez` -- the short-loop pad. Everything
- * after it is instruction-for-instruction identical, just shifted one
- * word. Not source-steerable, so this stays a stub.
- *
- * Worth keeping from the attempt: taking the D_001517D0 base into a
- * local declared AFTER the calls is what stopped the compiler hoisting
- * its %hi/%lo into a callee-saved register in the prologue; retail
- * materialises it in $v1 at the point of use. Spelling the global
- * inline in the expression hoists it. (Same lever fixed the base in
- * func_00227D20 below.)
+ * Exact once the short-loop padding retail's assembler adds is reproduced
+ * (tools/fix_short_loops.py); it was the whole residual. Taking the
+ * D_001517D0 base into a local declared after the calls keeps its
+ * %hi/%lo out of a callee-saved register, as retail has it.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_002268F0);
+int func_002268F0(void *arg0) {
+    int *p = (int *)((char *)arg0 + 0x44);
+    unsigned short *q;
+    int i;
+    for (i = 0x17; i >= 0; i--) { *p = func_002267C0(*p); p++; }
+    *(int *)((char *)arg0 + 0x3C) =
+        func_00226F68(*(int *)((char *)arg0 + 0x3C));
+    q = (unsigned short *)D_001517D0;
+    if ((unsigned int)(q[0x2D] - 6) >= 2) { q[0x2D] = 5; }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00226978);
 
@@ -1239,42 +1649,27 @@ int func_00226EA8(int invert) {
     return 0;
 }
 
-/*
- * Byte mismatch at correct size (0xB0), 2 of 44 words, and they are one
- * swap: retail materialises the `return 0` value BEFORE the `and` that
- * clears the bit, we do it after. Both are independent single
- * instructions feeding a branch and its delay slot. Tried and did not
- * move it: an explicit result local assigned before the store and
- * returned afterwards (byte-identical). Scheduling placement, the
- * recorded dead end.
- *
- * Everything else is exact, including the shared 0xCB latch handled the
- * same way as in func_0021CDA0 -- `char *g = D_001D5F70;` with 0xCB in
- * the displacement, not folded into the symbol addend.
- *
- * Release the binding whose key matches. Bit 1 means "bound"; bit 2 on
+/* Release the binding whose key matches. Bit 1 means "bound"; bit 2 on
    top of that means it also owns the shared 0xCB latch, which has to be
    handed back through func_00217588 first. Always returns 0 so callers
-   can assign it straight over their handle. */
+   can assign it straight over their handle. The flags are read from the
+   table at every use, not kept in a local. */
 int func_00226F68(int key) {
     int i;
-    int f;
     char *g;
 
     for (i = 0; i < 5; i++) {
         if (D_001D6448_t[i].key == key) {
-            f = D_001D6448_t[i].flags;
-            if ((f & 2) != 0) {
-                if ((f & 4) != 0) {
+            if ((D_001D6448_t[i].flags & 2) != 0) {
+                if ((D_001D6448_t[i].flags & 4) != 0) {
                     g = D_001D5F70;
-                    D_001D6448_t[i].flags = f ^ 4;
+                    D_001D6448_t[i].flags ^= 4;
                     if (*(unsigned char *)(g + 0xCB) != 0) {
                         func_00217588();
                         g[0xCB] = 0;
                     }
-                    f = D_001D6448_t[i].flags;
                 }
-                D_001D6448_t[i].flags = f & ~2;
+                D_001D6448_t[i].flags &= ~2;
                 return 0;
             }
         }
@@ -1368,7 +1763,18 @@ int func_00227890(int a0, int a1, int a2, int a3, int a4, int a5, int a6,
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00227928);
+/* Pops the head of the 8-entry queue at D_001D6250. Copying through
+   `d = &D_001D6250[i - 1]; *d = d[1];` makes the store the loop's
+   master giv; the plain form reverses the loop. */
+int func_00227928(void) {
+    int i;
+    for (i = 1; i < 8; i++) {
+        Rec38 *d = &D_001D6250[i - 1];
+        *d = d[1];
+    }
+    D_00160450--;
+    return 0;
+}
 
 extern int D_001D641C;
 
@@ -1457,7 +1863,6 @@ void func_00227A70(void) {
 INCLUDE_ASM("asm/nonmatchings/text", func_00227B00);
 
 extern char D_0015EF98[] MACRO_ADDR;
-extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
 extern char D_00141FC0[];
 extern void func_00121A80(void *);
 extern void func_0012D818(void *);
@@ -1469,7 +1874,7 @@ void func_00227C78(int arg0, int arg1) {
     func_00121A80(D_0015EF98);
     func_0012D818(D_0015EF98);
     func_00208FA0();
-    func_00208338(D_00141FC0 + (D_0015EE84_m << 11));
+    func_00208338(D_00141FC0 + (D_0015EE84 << 11));
     func_0020BA00((char *)arg0);
     *(int *)(b + 0xF4) = arg0;
     *(int *)(b + 0x14) = arg1;
@@ -1500,11 +1905,17 @@ void func_00227C78(int arg0, int arg1) {
  *       }
  *   }
  *
- * Blocked by the delay-slot policy, not by source shape: retail leaves
- * both of the middle `jal`s' delay slots as bare `nop`s (8 bytes) where
- * this compiler schedules the next %hi/%lo setup into them. That is a
- * per-site choice in retail, not a rule -- see the "unfilling call delay
- * slots" entry in docs/DECOMP_PROGRESS.md.
+ * Update 2026-09-23: the size is solved. With D_0015EF98 declared
+ * MACRO_ADDR (as func_00227C78 above needs), `&D_0015EF98` is one `la`
+ * macro, which never goes in a delay slot, so retail's two bare `nop`s
+ * come out by themselves. The C above, with b declared after the calls,
+ * then leaves 10/144 bytes: arg0 in $s1 and arg1 in $s0, the reverse of
+ * ours. Unchanged by any order of the four stores, by a char * arg0, by
+ * a local copy of either argument, or by a K&R definition.
+ *
+ * (Older analysis, kept for the record: retail leaves both of the
+ * middle `jal`s' delay slots as bare `nop`s where this compiler
+ * scheduled the next %hi/%lo setup into them.)
  *
  * Two levers were confirmed on the way, and both are reusable:
  *  - Declaring the base pointer AFTER the last call keeps it out of a

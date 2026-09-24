@@ -67,51 +67,39 @@ extern void func_001166FC(Cfg13 *, void *);
 extern short D_0015F9D0;
 extern void func_00201960(int, int, int, int, int);
 
-/*
- * REVERTED (size mismatch: 172 vs retail's 180). Semantics recovered
- * with confidence -- LoadIRXModule(name, args): starts an IOP module
- * load via an RPC helper, hands a 4-word tagged buffer to
- * func_00118E20, polls the returned module id until it's ready, then
- * starts it and reports success/failure:
- *
- *   extern int func_0011CBC8(int arg0);
- *   extern int func_00118E20(void *buf, int flag);
- *   extern int func_00118E10(int modid);
- *   extern int func_0011D078(int a, int b, int c);
- *   extern void func_0011CCB0();  // called with an arg despite taking
- *                                 // none -- see func_0011CC38's note
- *
- *   int func_00201D58(void *arg0, void *arg1) {
- *       int buf[4];
- *       int result;
- *       int modid;
- *       int status;
- *       int ret = 1;
- *
- *       result = func_0011CBC8((int)arg1);
- *       buf[0] = (int)arg0;
- *       buf[1] = result;
- *       buf[2] = (int)arg1;
- *       buf[3] = 0;
- *       modid = func_00118E20(buf, 1);
- *       if (modid != 0) {
- *           while (func_00118E10(modid) >= 0) {
- *           }
- *           status = func_0011D078(result, 0, 0);
- *           func_0011CCB0(result);
- *           if (status < 0) {
- *               ret = 0;
- *           }
- *       }
- *       return ret;
- *   }
- *
- * Everything else matches instruction-for-instruction, including the
- * exact buffer field layout and the polling loop shape. The only
- * residual: retail has 3 standalone `nop`s between the `jal
- * func_00118E10` and the `bgez` that tests its result, the same
- * GPR-result-feeds-a-branch hazard-nop variant documented on
- * func_0023C960; this compiler fills that gap with real scheduled
- * work instead. 8 bytes short.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00201D58); /* LoadIRXModule */
+extern int func_0011CBC8(int arg0);
+extern int func_00118E20(void *buf, int flag);
+extern int func_00118E10(int modid);
+extern int func_0011D078(int a, int b, int c);
+extern void func_0011CCB0();
+
+/* LoadIRXModule(name, args): starts an IOP module load through an RPC
+   helper, hands func_00118E20 a 4-word tagged buffer, polls the returned
+   id until it is ready, then starts the module and reports the result.
+   The nops before the poll loop's branch are the short-loop padding
+   (tools/fix_short_loops.py); the result test comes before the
+   func_0011CCB0 call, where retail's movz sits in its delay slot. */
+int func_00201D58(void *arg0, void *arg1) {
+    int buf[4];
+    int result;
+    int modid;
+    int status;
+    int ret = 1;
+
+    result = func_0011CBC8((int)arg1);
+    buf[0] = (int)arg0;
+    buf[1] = result;
+    buf[2] = (int)arg1;
+    buf[3] = 0;
+    modid = func_00118E20(buf, 1);
+    if (modid != 0) {
+        while (func_00118E10(modid) >= 0) {
+        }
+        status = func_0011D078(result, 0, 0);
+        if (status < 0) {
+            ret = 0;
+        }
+        func_0011CCB0(result);
+    }
+    return ret;
+}
