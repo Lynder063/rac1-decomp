@@ -102,8 +102,9 @@ git clone https://github.com/AngheloAlf/sce_ps2_sdk_24 toolchain/sn-prodg-24
 
 - `sn-prodg-3.01` provides `make`, the assembler and the linker.
 - `sn-prodg-24` provides the compilers:
-  - GCC 2.95.3 (SN BUILD v1.14) for game code;
-  - Sony's `2.9-ee-991111` for libgcc.
+  - GCC 2.95.3 (SN BUILD v1.14) for game code and the 989snd sound library;
+  - Sony's `2.9-ee-991111` for Sony's SDK code and libgcc (the objects
+    marked `ee29` in `config/core_text.objects`).
 
 See [`docs/TOOLCHAIN.md`](docs/TOOLCHAIN.md) for how this was determined.
 
@@ -137,8 +138,13 @@ The full procedure is in [`docs/WORKFLOW.md`](docs/WORKFLOW.md). In short:
 2. Get a starting point with `python tools/m2c.py func_XXXXXXXX`. That runs
    [m2c](https://github.com/matt-kempster/m2c) with context from
    `sh tools/gen_ctx.sh` (or `python tools/gen_ctx.py` on Windows).
-3. Iterate with `sh tools/diff.sh func_XXXXXXXX` (or `tools\diff.bat` on
-   Windows), which runs [asm-differ](https://github.com/simonlindholm/asm-differ).
+3. Iterate. `python tools/try_func.py func_XXXXXXXX c1.c c2.c ...`
+   compiles each candidate through the real pipeline and says `EXACT` or
+   how many bytes are off, in seconds, without touching `src/`.
+   [`docs/LEVERS.md`](docs/LEVERS.md) is the one-page list of what makes
+   a function match. For a side-by-side view, `sh tools/diff.sh
+   func_XXXXXXXX` (or `tools\diff.bat` on Windows) runs
+   [asm-differ](https://github.com/simonlindholm/asm-differ).
 4. Verify from scratch with `bash tools/build_sn.sh` (or
    `python tools/build_sn.py` on Windows).
 5. Regenerate the progress report with
