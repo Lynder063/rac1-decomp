@@ -345,7 +345,44 @@ void func_0012EC40(void) {
     func_0012DDC0();
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EC60); /* snd_InitVAGStreamingEx */
+/* gp-relative, no retail symbol: gp 0x166D00 - 0x7F74 = 0x15ED8C
+   (streaming-enabled flag, same as func_0012F030/func_0012F068's) and
+   gp 0x166D00 - 0x7F38 = 0x15EDC8 (drain-commands-first flag). */
+extern short D_0015ED8C;
+extern short D_0015EDBC;   /* the word at +0xC, SDA ($gp -0x7F38) */
+/* snd_FlushSoundCommands: declared void elsewhere in this file (every
+   other call site discards its result), so its int-returning form is
+   reached through an alias here, as func_00119718/func_00118E90 do
+   elsewhere in core_text for the same reason. */
+extern int func_0012DDC0_ret(void) __asm__("func_0012DDC0");
+extern int func_0012EF48(int);              /* snd_StreamSafeCdSync */
+extern int func_0012E688(int, int, void *); /* snd_SendIOPCommandAndWait */
+
+/* snd_InitVAGStreamingEx: no-op (returns 0) if VAG streaming is already
+ * enabled; otherwise drains any pending sound commands, syncs the CD
+ * stream, and sends the "init streaming" IOP command with the four
+ * arguments packed into a header, storing (and returning) its result as
+ * the streaming-enabled flag. */
+int func_0012EC60(int arg0, int arg1, int arg2, int arg3) {
+    int hdr[4];
+    int r;
+
+    if (*(int *)&D_0015ED8C == 1) {
+        return 0;
+    }
+    if (*(int *)((char *)&D_0015EDBC + 0xC) != 0) {
+        while (({ int r = func_0012DDC0_ret(); __asm__ __volatile__("nop\n\tnop\n\tnop\n\tnop"); r; }) != 0) {
+        }
+    }
+    func_0012EF48(0);
+    hdr[0] = arg0;
+    hdr[1] = arg1;
+    hdr[2] = arg2;
+    hdr[3] = arg3;
+    r = func_0012E688(0x2A, 0x10, hdr);
+    *(int *)&D_0015ED8C = r;
+    return r;
+}
 
 /* snd_StopAllStreams */
 void func_0012ED10(void) {

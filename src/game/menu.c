@@ -287,7 +287,33 @@ int func_00207A80(void *arg0, int arg1, float unused1, float unused2, float arg3
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207B30);
+extern int D_001A04AC NOT_SDA;
+extern int func_00209048(int, int, int, int, int, int);
+
+/* Menu hit test (func_00207200's family): for arg1 >= 0x105, needs
+   D_001A04AC set and arg3 >= 47.7; otherwise returns `a` directly when
+   arg1 < 0xC1, else `a` unless func_00209048's box test hits (which
+   clears it to 0). */
+int func_00207B30(int arg0, int arg1, float unused1, float unused2, float arg3) {
+    Menu13F450 *s = &D_0013F450;
+    int a = s->unk208C == 17 || s->unk208C == 18 || s->unk12E4 == 1;
+    int result;
+
+    if (arg1 >= 0x105) {
+        if (D_001A04AC == 0) {
+            return 0;
+        }
+        return (arg3 >= 47.7f) ? 1 : 0;
+    }
+    if (arg1 < 0xC1) {
+        return a;
+    }
+    result = a;
+    if (func_00209048(arg0, arg1, 0xD9, 0xB8, 0x156, 0xD2) != 0) {
+        result = 0;
+    }
+    return result;
+}
 
 /* Menu hit test (func_00207200's family): hits unless the menu state
    blocks it, arg3 ($f14) is below 71.5, or the first box is hit, and
@@ -612,7 +638,45 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00208860);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00208AB0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00208C38);
+typedef struct {
+    float a, b, c, d;
+} OrientEntry;
+extern OrientEntry D_0019EA70[];
+
+/* arg2 (a table index, offset by 100 when the +100 variant is wanted)
+   selects a row of D_0019EA70 (19 rows, 0..0x12); -1 means "use
+   D_0015EE84"; anything out of [0,0x13) collapses to row 0. Row 6 with
+   the +100 variant blends against fixed constants instead of the
+   generic per-row formula. */
+void func_00208C38(float *out0, float *out1, int arg2, float arg3, float arg4) {
+    int idx;
+    int flag = 0;
+
+    if (arg2 >= 100) {
+        arg2 -= 100;
+        flag = 1;
+    }
+
+    idx = arg2;
+    if (idx == -1) {
+        idx = D_0015EE84;
+    }
+    if (idx < 0) {
+        idx = 0;
+    }
+    if (idx >= 0x13) {
+        idx = 0;
+    }
+
+    if (idx == 6 && flag) {
+        *out0 = (D_0019EA70[6].d * arg4 + 1053.0f) * (1.0f / 512.0f);
+        *out1 = (740.0f - D_0019EA70[6].b * arg3) * (1.0f / 512.0f);
+        return;
+    }
+
+    *out0 = (D_0019EA70[idx].a + D_0019EA70[idx].b * arg3) * (1.0f / 512.0f);
+    *out1 = (D_0019EA70[idx].c + D_0019EA70[idx].d * arg4) * (1.0f / 512.0f);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00208D30);
 

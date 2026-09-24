@@ -103,7 +103,44 @@ void func_00115578(void *arg0, void *arg1) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001155A8);
+extern void *func_001154D0(void *ptr, int k);        /* Balloc */
+extern void func_00115578(void *ptr, void *b);        /* Bfree */
+extern void *func_00115248(void *dest, void *src, unsigned int n); /* memcpy */
+
+/* newlib mprec.c multadd(ptr,b,m,a): b = b*m+a in place (16-bit limbs
+ * packed two to a 32-bit word, Pack_32); if the carry out of the top
+ * limb doesn't fit, Balloc a wider Bigint, Bcopy the sign/wds/digits
+ * over (memcpy from &b->sign, which is what func_00115248 is here),
+ * Bfree the old one, and append the carry as one more digit. */
+void *func_001155A8(void *ptr, void *arg1, int m, int a) {
+    unsigned int *x;
+    unsigned int xi, y, z;
+    int i, wds;
+    Bigint_1154D0 *b1;
+
+    wds = ((Bigint_1154D0 *)arg1)->wds;
+    x = ((Bigint_1154D0 *)arg1)->x;
+    i = 0;
+    do {
+        xi = *x;
+        y = (xi & 0xFFFF) * m + a;
+        z = (xi >> 16) * m + (y >> 16);
+        a = (int)(z >> 16);
+        *x++ = (z << 16) + (y & 0xFFFF);
+    } while (++i < wds);
+    if (a) {
+        if (wds >= ((Bigint_1154D0 *)arg1)->maxwds) {
+            b1 = func_001154D0(ptr, ((Bigint_1154D0 *)arg1)->k + 1);
+            func_00115248(&b1->sign, &((Bigint_1154D0 *)arg1)->sign,
+                          ((Bigint_1154D0 *)arg1)->wds * sizeof(unsigned int) + 2 * sizeof(int));
+            func_00115578(ptr, arg1);
+            arg1 = b1;
+        }
+        ((Bigint_1154D0 *)arg1)->x[wds++] = a;
+        ((Bigint_1154D0 *)arg1)->wds = wds;
+    }
+    return arg1;
+}
 
 int func_001156C0(unsigned int arg0) {
     int count;
