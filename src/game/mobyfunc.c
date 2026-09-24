@@ -156,13 +156,37 @@ extern unsigned char D_0013D5E7 NOT_SDA;
    (taking that slot moves the mark to the next one); a freed slot is not
    reused before frame unk38 (DeleteMoby sets it two frames ahead). */
 typedef struct {
+    char _pad00[0x11];
+    unsigned char unk11; /* 0x11: copied to a moby's +0x7C */
+    unsigned char unk12; /* 0x12: copied to a moby's +0x7E */
+    char _pad13[0x1C - 0x13];
+    int frames[1]; /* 0x1C */
+} MobySeq;
+typedef struct {
+    char _pad00[0x48];
+    MobySeq *seqs[1]; /* 0x48: animation sequences */
+} MobyClass;
+typedef struct {
     char _pad00[0x20];
     unsigned char state; /* 0x20 */
-    char _pad21[0x38 - 0x21];
+    char _pad21[0x24 - 0x21];
+    MobyClass *pClass; /* 0x24 */
+    char _pad28[0x38 - 0x28];
     unsigned long unk38; /* 0x38 */
-    char _pad40[0x78 - 0x40];
+    char _pad40[0x50 - 0x40];
+    unsigned char frame;     /* 0x50 */
+    unsigned char prevFrame; /* 0x51 */
+    unsigned char seq;       /* 0x52: 0xFF for none */
+    unsigned char prevSeq;   /* 0x53 */
+    char _pad54[0x68 - 0x54];
+    int frameData;     /* 0x68 */
+    int prevFrameData; /* 0x6C */
+    char _pad70[0x78 - 0x70];
     char *pvars; /* 0x78: this moby's 0x80 bytes at D_00160028 */
-    char _pad7C[0x100 - 0x7C];
+    unsigned char unk7C; /* 0x7C: the sound it wants (func_0020D790) */
+    unsigned char unk7D; /* 0x7D: the handle of the one playing, or 0xFF */
+    unsigned char unk7E; /* 0x7E */
+    char _pad7F[0x100 - 0x7F];
 } Moby;
 extern char *D_0016001C MACRO_ADDR;
 extern char *D_00160020 MACRO_ADDR;
@@ -218,87 +242,52 @@ void func_0020D678(MobyDel *m) {
 
 extern unsigned char D_001AAF40[];
 
-/*
- * REVERTED -- same size, but the residual is a CSE the source cannot
- * express. Semantics are certain; p[0x52] selects a table entry and
- * p[0x50]/p[0x51] index within it:
- *
- *   void func_0020D6D0(unsigned char *p) {
- *       unsigned char *t;
- *       if (p[0x52] != 0xFF) {
- *           t = *(unsigned char **)(p + 0x24) + 0x48;
- *           *(int *)(p + 0x68) =
- *               *(int *)(*(int *)(t + p[0x52] * 4) + p[0x50] * 4 + 0x1C);
- *           p[0x7E] = *(unsigned char *)(*(int *)(t + p[0x52] * 4) + 0x12);
- *           p[0x7C] = *(unsigned char *)(*(int *)(t + p[0x52] * 4) + 0x11);
- *       } else {
- *           p[0x7C] = p[0x52];
- *           p[0x7E] = 0;
- *           *(int *)(p + 0x68) = (int)&D_001AAF40[p[0x50] << 11];
- *       }
- *       *(int *)(p + 0x6C) =
- *           *(int *)(*(int *)(*(char **)(p + 0x24) + p[0x53] * 4 + 0x48) +
- *                    p[0x51] * 4 + 0x1C);
- *   }
- *
- * Two things were learned and both are already right above:
- *   - `!= 0xFF` (not `== 0xFF`) puts the blocks in retail's order, with
- *     the sentinel case as the far block;
- *   - holding `base + 0x48` in ONE local gives retail's zero-displacement
- *     loads. Recomputing the address per use folds 0x48 into the load
- *     displacement instead, which is 3 instructions out.
- *
- * What is left: retail RELOADS p[0x52] with `lbu` for each of the three
- * uses, while this compiler keeps the value from the `!= 0xFF` compare in
- * a register and re-masks it with `andi` before each use (1690 differing
- * words, all of them that pattern). Writing each use as a separate
- * expression does not stop the CSE; only `volatile` would, and that also
- * serialises the accesses, which retail's schedule interleaves. Retail's
- * compiler simply did not CSE the byte load across the branch.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_0020D6D0);
+/* Refresh a moby's animation frame pointers from its class's sequence
+   table: seq 0xFF (none) points frameData into D_001AAF40 instead.
+   Reaching the table as mc->seqs[i] (an array member behind a
+   class-pointer local) is load-bearing: CSE shares mc + 0x48 across the
+   three uses, the adds come out base-first, and local-alloc ties the
+   last one to that base, which puts it in $a0 and overwrites the
+   compare's copy of m->seq. With the value gone, reload_cse cannot turn
+   the three index loads into `andi`s of the compare register. */
+void func_0020D6D0(Moby *m) {
+    MobyClass *mc;
+    if (m->seq != 0xFF) {
+        mc = m->pClass;
+        m->frameData = mc->seqs[m->seq]->frames[m->frame];
+        m->unk7E = mc->seqs[m->seq]->unk12;
+        m->unk7C = mc->seqs[m->seq]->unk11;
+    } else {
+        m->unk7C = m->seq;
+        m->unk7E = 0;
+        m->frameData = (int)&D_001AAF40[m->frame << 11];
+    }
+    m->prevFrameData = m->pClass->seqs[m->prevSeq]->frames[m->prevFrame];
+}
 
-/*
- * Reverted. Semantics are certain (the object at arg0 caches an actor
- * slot index in byte 0x7D and a wanted index in byte 0x7C):
- *
- *   void func_0020D790(void *arg0) {
- *       unsigned char *s = (unsigned char *)arg0;
- *       unsigned char id = s[0x7D];
- *       if (id != 0xFF) {
- *           char *e = D_0013E650 + id * 0x70;          // 0x70 stride
- *           if (*(int *)(e + 0x88) != (int)arg0) {
- *               s[0x7D] = 0xFF;
- *           } else if (*(short *)(e + 0x7E) != s[0x7C]) {
- *               func_0022EAB0(id);
- *               s[0x7D] = 0xFF;
- *           }
- *       } else if (s[0x7C] != 0xFF) {
- *           func_0022ED80(s[0x7C], 4, arg0);
- *           s[0x7D] = s[0x7C];
- *       }
- *   }
- *
- * That spelling is the right size (0x98) and 79/152 bytes off. The whole
- * residual is one register copy: retail loads byte 0x7D into $v1, keeps
- * $v1 for the equality tests and copies it into $a1 for use as the table
- * index and as func_0022EAB0's argument, so everything after the first
- * branch sits one word later than ours.
- *
- * Three spellings were tried to get that copy back, with counts:
- *   - `unsigned char id` used for both roles          79/152, size OK
- *   - separate `unsigned char j = s[0x7C]` in the else 31/38 words,
- *     and 8 bytes SHORT (it also flips $s0/$s1 and grows the frame)
- *   - `int id = s[0x7D]` with the tests spelled on
- *     `s[0x7D]` directly                              17/38 words, but
- *     4 bytes LONG -- this one does produce retail's copy, in the
- *     opposite direction ($a1 loaded, copied to $v1)
- * The third is the closest and shows the copy is reachable from C; what
- * is not yet found is the spelling that makes the COMPARISON operand the
- * load's destination and the index operand the copy. Left as a stub
- * rather than a size mismatch.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_0020D790);
+extern void func_0022EAB0(int);
+extern int func_0022ED80(int, int, int);
+
+/* Drop this moby's sound handle (byte 0x7D) when its sound slot no longer
+   belongs to it or plays another sound than the wanted one (byte 0x7C);
+   with no handle, start the wanted one. Re-reading s[0x7D] inside the
+   branch is what gives retail's two registers: the compare keeps the
+   first load, the copy (live across blocks) becomes CSE's canonical
+   register for the index and the call. */
+void func_0020D790(unsigned char *s) {
+    if (s[0x7D] != 0xFF) {
+        int id = s[0x7D];
+        char *e = D_0013E650 + id * 0x70;
+        if (*(unsigned char **)(e + 0x88) != s) {
+            s[0x7D] = 0xFF;
+        } else if (*(short *)(e + 0x7E) != s[0x7C]) {
+            func_0022EAB0(id);
+            s[0x7D] = 0xFF;
+        }
+    } else if (s[0x7C] != 0xFF) {
+        s[0x7D] = func_0022ED80(s[0x7C], 4, (int)s);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020D828);
 

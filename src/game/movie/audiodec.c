@@ -468,12 +468,31 @@ void func_0023C128(Obj23C *s, unsigned char **a1, int *a2, unsigned char **a3, i
     }
 }
 
-/* Mid-iteration work-in-progress reverted to INCLUDE_ASM: it was at
-   57/180 when the agent working it was cut off by an API session
-   limit, i.e. unfinished rather than a documented near-miss, and
-   over the revert threshold. The partial C is preserved in branch
-   history (parallel-A/B/C) for whoever resumes it. */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C1F8); /* audioDecEndPut(_AudioDec *, int) */
+/* audioDecEndPut(_AudioDec *, int), Sony's ezmpeg sample: while the
+   0x28-byte ADS header (at +8, count at 0x30) is still being filled, the
+   first bytes go there (min(0x28 - hdrCount, size)); the rest advances
+   the ring buffer put cursor (0x38) modulo its size (0x40, rounded down
+   to 1 KiB and stored back) and the two byte counters (0x3C, 0x44). The
+   mode word at +4 == 4 skips the header. The `!= 4` test must come first:
+   `== 4` first puts the blocks in the wrong order (57 bytes). */
+void func_0023C1F8(Obj23C *ad, int size) {
+    if (ad->state == 0) {
+        if (*(int *)((char *)ad + 4) != 4) {
+            int hdr_add = (0x28 - ad->unk30 < size) ? 0x28 - ad->unk30 : size;
+            ad->unk30 += hdr_add;
+            if (ad->unk30 >= 0x28) {
+                ad->state = 1;
+            }
+            size -= hdr_add;
+        } else {
+            ad->state = 1;
+        }
+    }
+    ad->unk40 = ad->unk40 / 1024 * 1024;
+    ad->unk38 = (ad->unk38 + size) % ad->unk40;
+    ad->unk3C += size;
+    ad->unk44 += size;
+}
 
 int func_0023C2B0(void *arg0) {
     return ((Obj23C *)arg0)->unk50 >= 0x1000;

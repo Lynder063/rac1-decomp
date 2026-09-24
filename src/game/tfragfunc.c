@@ -311,7 +311,42 @@ extern int func_00234350(unsigned int arg0);
  */
 __asm__(".align 4");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234380); /* SetTfragDists(void) */
+extern float D_00160FA0[3];
+extern int D_00160FB0[3];
+extern float D_0018D020;
+extern float D_001DEB70[4][4];
+extern int func_001FA898_i(float) __asm__("func_001FA898");
+extern void func_001F99D8(void *, int);
+
+/* SetTfragDists(void): the three LOD distances as fixed point (x1024), and
+   the matrix mapping distance to the two blend weights. The store order is
+   load-bearing: filling the rows first and the two translation terms last
+   ([1][3] = b, then [0][3] = a) moves sched1's last use of b, and with it
+   the local-alloc priority of b's quantity below ab's -- retail's b in $f21,
+   1/(a-b) in $f20, and -0.5 in $f3. */
+void func_00234380(void) {
+    float a, b, c, ab, bc;
+
+    D_00160FB0[0] = func_001FA898_i(D_00160FA0[0] * 1024.0f);
+    D_00160FB0[1] = func_001FA898_i(D_00160FA0[1] * 1024.0f);
+    D_00160FB0[2] = func_001FA898_i(D_00160FA0[2] * 1024.0f);
+    a = D_00160FA0[0] * D_0018D020;
+    b = D_00160FA0[1] * D_0018D020;
+    c = D_00160FA0[2] * D_0018D020;
+    ab = 1.0f / (a - b);
+    bc = 1.0f / (b - c);
+    func_001F99D8(D_001DEB70, 0x40);
+    D_001DEB70[0][0] = ab * 0.5f;
+    D_001DEB70[0][1] = -ab;
+    D_001DEB70[1][0] = bc * 0.5f;
+    D_001DEB70[1][1] = -bc;
+    D_001DEB70[2][0] = b * ab * -0.5f;
+    D_001DEB70[2][1] = a * ab;
+    D_001DEB70[3][0] = c * bc * -0.5f;
+    D_001DEB70[3][1] = b * bc;
+    D_001DEB70[1][3] = b;
+    D_001DEB70[0][3] = a;
+}
 
 extern int D_00161000 MACRO_ADDR;
 extern int D_00160FBC MACRO_ADDR;

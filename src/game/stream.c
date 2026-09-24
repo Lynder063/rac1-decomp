@@ -300,62 +300,35 @@ int func_002176C8(void) {
    of on a call's result: with arg0 set, keep servicing while the
    D_001517D0+8 state word stays nonzero; with it clear, run the four
    service calls exactly once. Either way return the state word. */
-/*
- * REVERTED (SIZE mismatch, every spelling short). Decode is certain and
- * is the sibling of func_002176C8 above: with arg0 set, keep pumping the
- * five service calls while the D_001517D0+8 state word stays nonzero;
- * with arg0 clear, run the four of them that are not func_00122598
- * exactly once. Either way the state word is the return value.
- *
- *   short func_00217748(int arg0) {
- *       char *d;
- *       if (arg0 != 0) {
- *           d = (char *)D_001517D0;
- *           while (*(short *)(d + 0x8) != 0) {
- *               func_00122598(0);
- *               func_00217130();
- *               func_0012EC40();
- *               func_0012DDC0();
- *               func_0012EC30();
- *           }
- *       } else {
- *           func_00217130();
- *           func_0012EC40();
- *           func_0012DDC0();
- *           func_0012EC30();
- *       }
- *       d = (char *)D_001517D0;
- *       return *(short *)(d + 0x8);
- *   }
- *
- * Retail is 168. Spellings tried, all short, none over:
- *
- *   as above (a char * local, reused for the return)           164
- *   same but the return written inline as
- *     *(short *)((char *)D_001517D0 + 8)                       164, and
- *     worse: the inline form folds to `lh 6104($s1)` where retail
- *     materialises the base and uses an 8 displacement. The local is
- *     what blocks the symbol-addend fold; keep it.
- *   no local at all, the cast expression inline everywhere      160
- *   local for the guard + a second local for a do/while body    160
- *   guard through a second C name on the same asm symbol
- *     (extern short D_001517D0_g[] __asm__("D_001517D0"))       160,
- *     and it also loses the displacement form in the guard
- *
- * The whole residual in the best spelling is two words in the loop
- * preheader. Retail computes the base into the TEMP $a0, tests
- * `lh $v0,8($a0)`, and only on entering the loop copies it with
- * `daddu $s0,$a0,$0`; that copy pushes the loop label from 0x2C to 0x30
- * and the assembler's 8-byte loop alignment then supplies the `nop` at
- * 0x2C for free. So it is ONE instruction, a register-to-register copy
- * that this compiler always coalesces away: we put the base straight
- * into $s0 and use $s0 for the guard too. Two pseudos in the source did
- * not survive to two registers -- every attempt to split the live range
- * either coalesced again or cost a whole extra lui. Allocator live-range
- * coalescing, i.e. the recorded destination-choice dead end, not a shape
- * source can ask for.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00217748);
+/* With arg0 set, keep pumping the five service calls while the
+   D_001517D0+8 state word stays nonzero; with it clear, run the four that
+   are not func_00122598 once. Either way return the state word.
+   The base pointer is assigned IN the loop condition: the exit test that
+   jump.c duplicates in front of the loop then gets its own pseudo (retail's
+   $a0 for the guard), loop.c hoists the loop's copy into $s0 and CSE turns
+   it into `daddu $s0,$a0,$0`. A second, separate local for the return keeps
+   its base a temp ($v1) sharing the %hi with the guard through $s1. */
+short func_00217748(int arg0) {
+    if (arg0 != 0) {
+        char *d;
+        while (d = (char *)D_001517D0, *(short *)(d + 0x8) != 0) {
+            func_00122598(0);
+            func_00217130();
+            func_0012EC40();
+            func_0012DDC0();
+            func_0012EC30();
+        }
+    } else {
+        func_00217130();
+        func_0012EC40();
+        func_0012DDC0();
+        func_0012EC30();
+    }
+    {
+        char *d = (char *)D_001517D0;
+        return *(short *)(d + 0x8);
+    }
+}
 
 extern int func_0012F030(void);
 

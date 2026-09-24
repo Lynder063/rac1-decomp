@@ -107,7 +107,30 @@ int func_002071F0(void) {
     return D_0013D4A5 != 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207200);
+typedef struct {
+    char _pad0[0x12E4];
+    unsigned char unk12E4;
+    char _pad12E5[0x208C - 0x12E5];
+    int unk208C;
+} Menu13F450;
+extern Menu13F450 D_0013F450;
+
+/* Menu hit test: arg3 is the third float ($f14). b (state 16) is
+   computed before a, as retail evaluates it; the second if's own
+   `arg1 >= 0xC8` is retail's second test of $a1. */
+int func_00207200(void *arg0, int arg1, float unused1, float unused2, float arg3) {
+    Menu13F450 *s = &D_0013F450;
+    int b = s->unk208C == 16;
+    int a = s->unk208C == 17 || s->unk208C == 18 || s->unk12E4 == 1;
+
+    if (arg1 < 0xC8 && arg3 >= 39.5f && arg3 <= 42.5f && !a) {
+        return 1;
+    }
+    if (arg1 >= 0xC8 && arg3 >= 87.0f && !b) {
+        return 1;
+    }
+    return 0;
+}
 
 extern int D_001414DC_early __asm__("D_001414DC") NOT_SDA;
 extern unsigned char D_0013D49E NOT_SDA;
@@ -127,14 +150,6 @@ int func_002072C0(int arg0, float unused1, float unused2, float arg1) {
     }
     return 0;
 }
-
-typedef struct {
-    char _pad0[0x12E4];
-    unsigned char unk12E4;
-    char _pad12E5[0x208C - 0x12E5];
-    int unk208C;
-} Menu13F450;
-extern Menu13F450 D_0013F450;
 
 /* The struct's address in a local keeps one base register for both
    field reads. */
@@ -205,7 +220,26 @@ int func_002079F0(int x1, int y1) {
     return D_001A04B4 != 0 && (a != 0 || b != 0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207A80);
+extern int D_001A04C0 NOT_SDA;
+extern int D_001A04B8 NOT_SDA;
+
+/* Hit test in two layouts: arg3 (the third float, $f14) must lie in
+   [73.5, 80] with D_001A04C0 set, or for arg1 >= 0x9D in [51.5, 54] with
+   D_001A04B8 set. Written as `<`/`>` rejections so they compile to retail's
+   c.lt/bc1t; the second arm's `return 0` cross-jumps into the first's. */
+int func_00207A80(void *arg0, int arg1, float unused1, float unused2, float arg3) {
+    if (arg1 < 0x9D) {
+        if (arg3 < 73.5f || arg3 > 80.0f || D_001A04C0 == 0) {
+            return 0;
+        }
+        return 1;
+    } else {
+        if (arg3 < 51.5f || arg3 > 54.0f || D_001A04B8 == 0) {
+            return 0;
+        }
+        return 1;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207B30);
 
@@ -352,7 +386,20 @@ int func_00208030(int arg0, float unused1, float unused2, float arg1) {
     return arg1 <= 180.0f && D_0013D4E8 != 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002080B0);
+extern unsigned char D_0013D4EA NOT_SDA;
+
+/* The Menu13F450 state test of func_00207340, computed up front (retail
+   evaluates it before the arg0 branch), gates the arg0 < 0x15F arm; the
+   other arm is func_00208160's second test with D_0013D4EA. */
+int func_002080B0(int arg0, float unused1, float unused2, float arg1) {
+    Menu13F450 *s = &D_0013F450;
+    int a = s->unk208C == 17 || s->unk208C == 18 || s->unk12E4 == 1;
+
+    if (arg0 < 0x15F) {
+        return (arg1 >= 200.0f) ? a : 0;
+    }
+    return arg1 >= 233.0f && arg1 <= 235.0f && D_0013D4EA != 0;
+}
 
 extern unsigned char D_0013D4EB NOT_SDA;
 
