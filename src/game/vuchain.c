@@ -307,7 +307,27 @@ typedef struct {
 extern TexChunk D_001E1200[];
 extern TexRemap D_001E0F00[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002347F0); /* VU0_loadMicroProgram(long *) */
+extern void func_001F9988(int);
+
+#define VIF0_STAT ((volatile unsigned int *)0x10008000)
+#define VIF0_FBRST ((volatile unsigned int *)0x10008020)
+#define VIF0_BASE ((volatile unsigned int *)0x10008030)
+
+/* VU0_loadMicroProgram(long *): waits for VIF0 to go idle, resets it,
+ * points it at the (uncached-masked) micro program address, kicks off
+ * MSCALL 0x45 by writing the code word directly, then waits for VIF0 to
+ * go idle again. */
+void func_002347F0(long *prog) {
+    while (*VIF0_STAT & 0x100) {
+        func_001F9988(0x10);
+    }
+    *VIF0_FBRST = 0;
+    *VIF0_BASE = (unsigned int)prog & 0x0FFFFFFF;
+    *VIF0_STAT = 0x145;
+    while (*VIF0_STAT & 0x100) {
+        func_001F9988(0x10);
+    }
+}
 
 extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
 extern int D_0016100C_m __asm__("D_0016100C") MACRO_ADDR;

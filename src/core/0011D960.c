@@ -112,7 +112,16 @@ int func_0011DA08(int *dst, int *src, unsigned int nbytes) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DA40);
+/* kFindAddress (libkernl.a:initsys.o): scan the words from p up to, not
+ * including, end for val; returns the matching address, or 0 if the scan
+ * reaches end. */
+int *func_0011DA40(int *p, int *end, int val) {
+    while (*p != val && p < end)
+        p++;
+    if (!(p < end))
+        p = 0;
+    return p;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DA80);
 
@@ -120,7 +129,6 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DA90);
 
 extern void func_0011DB98(int, int);
 extern int func_0011DA80(int, int, void *);
-extern void func_0011DA40(void);
 extern int D_00130410[];
 extern int D_00130408;
 

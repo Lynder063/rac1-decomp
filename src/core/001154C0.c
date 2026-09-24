@@ -305,14 +305,124 @@ void *func_00115A70(void *ptr, void *b, int k) {
     return b;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00115B70);
+/* newlib mprec.c lshift(ptr,b,k): shift Bigint b left by k bits, growing
+ * into a freshly-Balloc'd result and freeing the input. */
+extern void *func_001154D0(void *ptr, int k);       /* Balloc */
+extern void func_00115578(void *ptr, void *b);      /* Bfree */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00115CE8);
+Bigint_1154D0 *func_00115B70(void *ptr, Bigint_1154D0 *b, int k) {
+    int i, k1, n, n1;
+    Bigint_1154D0 *b1;
+    unsigned int *x, *x1, *xe, z;
+
+    n = k >> 5;
+    k1 = b->k;
+    n1 = n + b->wds + 1;
+    for (i = b->maxwds; n1 > i; i <<= 1)
+        k1++;
+    b1 = func_001154D0(ptr, k1);
+    x1 = b1->x;
+    for (i = 0; i < n; i++)
+        *x1++ = 0;
+    x = b->x;
+    xe = x + b->wds;
+    if ((k &= 0x1f)) {
+        k1 = 32 - k;
+        z = 0;
+        do {
+            *x1++ = *x << k | z;
+            z = *x++ >> k1;
+        } while (x < xe);
+        if ((*x1 = z))
+            ++n1;
+    } else {
+        do {
+            *x1++ = *x++;
+        } while (x < xe);
+    }
+    b1->wds = n1 - 1;
+    func_00115578(ptr, b);
+    return b1;
+}
+
+/* newlib mprec.c cmp(a,b) (real name __mcmp): three-way compare of two
+ * Bigints by word count, then from the most-significant word down. */
+int func_00115CE8(Bigint_1154D0 *a, Bigint_1154D0 *b) {
+    unsigned int *xa, *xa0, *xb, *xb0;
+    int i, j;
+
+    i = a->wds;
+    j = b->wds;
+    if ((i -= j))
+        return i;
+    xa0 = a->x;
+    xa = xa0 + j;
+    xb0 = b->x;
+    xb = xb0 + j;
+    for (;;) {
+        if (*--xa != *--xb)
+            return *xa < *xb ? -1 : 1;
+        if (xa <= xa0)
+            break;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00115D50);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00115EE0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00115EE8);
+/* newlib mprec.c d2b(ptr,_d,e,bits): splits a double into a Bigint
+ * significand plus a binary exponent and precision (dtoa's first step).
+ * Pack_32, !_DOUBLE_IS_32BITS, !Sudden_Underflow, IEEE_8087 word order
+ * (the high 32 bits carry sign/exponent/high mantissa, the low 32 bits
+ * the rest of the mantissa). */
+typedef union {
+    double d;
+    unsigned int w[2];
+} DUnion_115EE8;
+
+extern void *func_001154D0(void *ptr, int k);  /* Balloc */
+extern int func_00115748(unsigned int *y);     /* lo0bits */
+extern int func_001156C0(unsigned int x);      /* hi0bits */
+
+Bigint_1154D0 *func_00115EE8(void *ptr, double _d, int *e, int *bits) {
+    DUnion_115EE8 d;
+    Bigint_1154D0 *b;
+    int de, i, k;
+    unsigned int *x, y, z;
+
+    d.d = _d;
+    b = func_001154D0(ptr, 1);
+    x = b->x;
+
+    z = d.w[1] & 0xFFFFF;
+    d.w[1] &= 0x7FFFFFFF;
+    if ((de = (int)(d.w[1] >> 20)))
+        z |= 0x100000;
+
+    if ((y = d.w[0])) {
+        if ((k = func_00115748(&y))) {
+            x[0] = y | z << (32 - k);
+            z >>= k;
+        } else {
+            x[0] = y;
+        }
+        i = b->wds = (x[1] = z) ? 2 : 1;
+    } else {
+        k = func_00115748(&z);
+        x[0] = z;
+        i = b->wds = 1;
+        k += 32;
+    }
+    if (de) {
+        *e = de - 1023 - (53 - 1) + k;
+        *bits = 53 - k;
+    } else {
+        *e = de - 1023 - (53 - 1) + 1 + k;
+        *bits = 32 * i - func_001156C0(x[i - 1]);
+    }
+    return b;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00116068);
