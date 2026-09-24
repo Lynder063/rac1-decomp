@@ -257,18 +257,12 @@ extern short D_0015F534;              /* SDA, gp -0x77CC */
 extern void func_001FB530(void);
 extern void func_001F3D78(void);
 
-/*
- * Close, not exact (10/52), same size so harmless to anything after it.
- * Structure is instruction-for-instruction identical to retail. The
- * residual is the known allocator question in its destination-reuse
- * form: retail emits `lui $2` / `lw $2,%lo($2)`, reusing the address
- * register as the load destination, where this compiler emits
- * `lui $2` / `lw $3,...($2)`; the remaining diff is the stack-adjust
- * being scheduled before vs after that lui. Hoisting the load into a
- * local was tried and changes nothing.
- */
+extern int D_0015F6FC_m __asm__("D_0015F6FC") MACRO_ADDR;
+
+/* D_0015F6FC is read through a MACRO_ADDR alias: retail's one-register
+   lui $2 / lw $2 (an older note filed it as an allocator question). */
 void func_001F45F0(void) {
-    if (D_0015F6FC == 0) {
+    if (D_0015F6FC_m == 0) {
         func_001FB530();
         *(int *)&D_0015F534 = 0x7F;
         func_001F3D78();
