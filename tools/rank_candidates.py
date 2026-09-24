@@ -283,19 +283,15 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     # be the index from the start of the function, which let any tight loop
     # past instruction 7 escape.
     #
-    # In text this is no longer a blocker: retail's text was assembled by
-    # SN's ps2eeas, which pads every loop shorter than six instructions, and
-    # tools/ps2eeas_nops.py reproduces that on our compiled game code.
-    # core_text was assembled without the padding (its short loops are
-    # unpadded in retail), so a padded tight loop there is still unexplained.
+    # It is no longer a blocker anywhere. Retail's text was assembled by SN's
+    # ps2eeas, which pads every loop shorter than six instructions, and
+    # tools/ps2eeas_nops.py reproduces that. core_text was assembled by the
+    # compiler driver's own as.exe (ee/bin/as.exe), which pads short loops
+    # that contain no call -- the same assembler this build runs, so those
+    # come out padded by themselves. (The standalone bin/ee-as.exe, with the
+    # same version string, pads nothing; probing that one is what made this
+    # look unexplained.)
     labels = label_positions(body)
-    if seg == "core_text":
-        for idx, i in enumerate(ins):
-            if re.match(r"b(ne|eq|gtz|ltz|gez|lez|nez|eqz)l?\b", i) and idx >= 2:
-                tgt = labels.get(i.rsplit(",", 1)[-1].strip())
-                span = idx - tgt if tgt is not None and tgt <= idx else 99
-                if span <= 7 and ins[idx - 1] == "nop" and ins[idx - 2] == "nop":
-                    return "blocked", "short-loop erratum", "double nop before tight branch"
 
     # ---- risky signatures (near-miss generators, not hard blockers) ----
 

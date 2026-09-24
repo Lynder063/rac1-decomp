@@ -1057,6 +1057,22 @@ Retail's text segment has no unpadded short loop at all, while every
 unpadded one in the image is in core_text or libgcc (16 objects). So text
 was assembled by ps2eeas and core_text was not.
 
+*Correction, same day:* core_text's padded loops come from GNU as after
+all. The compiler driver calls its own `ee/bin/as.exe`, which pads short
+loops that contain no call. The standalone `bin/ee-as.exe`, with the same
+version string (2.9-ee-991111b), pads nothing, and it was that binary
+the first probes used. ps2eeas pads loops with calls as well. So
+core_text was assembled by the driver's as.exe, which is what this build
+uses, and its call-free short loops come out padded by themselves.
+`tools/ps2eeas_nops.py` measures loops in a first assembly by that same
+as.exe, so it only adds what ps2eeas adds beyond it: the padding of loops
+that contain a call. A padded tight loop in a core_text stub is therefore
+no blocker. A related residual remains: retail's compiler sometimes left
+a short loop's branch delay slot empty where ours fills it, which puts
+the moved instruction on the other side of the padding (func_001232A8).
+It fills about half of these slots in both segments, and what decides
+it is not known.
+
 ps2eeas cannot simply replace `ee-as` here: it recurses without end on
 some of the retail stubs INCLUDE_ASM feeds it. `tools/fix_short_loops.py`
 reproduces the padding instead, on compiled game code only: it measures
