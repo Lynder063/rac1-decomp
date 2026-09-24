@@ -124,8 +124,10 @@ def compare(name, seg, obj, show):
         for i in range(0, n, 4):
             a = int.from_bytes(ours[i:i + 4], "little") if i < osize else None
             b = int.from_bytes(orig[i:i + 4], "little") if i < rsize else None
-            masked = all(relocated.get(off + i + k) for k in range(4)) if a is not None else False
-            if a != b and not masked:
+            # Differences only inside relocated fields are not differences.
+            real = a is None or b is None or any(
+                ours[i + k] != orig[i + k] and not relocated.get(off + i + k) for k in range(4))
+            if a != b and real:
                 da = rz.Instruction(a, vram=vram + i, category=rz.InstrCategory.R5900).disassemble() if a is not None else "-"
                 db = rz.Instruction(b, vram=vram + i, category=rz.InstrCategory.R5900).disassemble() if b is not None else "-"
                 print(f"  +{i:4x}  ours {da:40s} retail {db}")
