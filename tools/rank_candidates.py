@@ -52,7 +52,9 @@ from pathlib import Path
 
 STUB = re.compile(r"INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\)")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from libgcc_units import SEGMENT_SOURCES as SEGMENTS
+from libgcc_units import SEGMENT_SOURCES as SEGMENTS, ee29_sources, object_of
+
+EE29 = ee29_sources()
 
 
 def segment_text(seg: str) -> str:
@@ -125,6 +127,11 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     vram = int(name.split("_")[1], 16)
     ins = instructions(body)
     text = "\n".join(ins)
+    # Objects built with Sony's 2.9-ee make two of the risky signatures
+    # below by themselves: a void function that ends in a call becomes a
+    # tail jump, and a short loop is padded with its branch slot left
+    # empty (func_001232A8).
+    ee29 = seg == "core_text" and object_of(seg, vram)[1] in EE29
 
     if not ins:
         return "blocked", "empty", ""
@@ -164,7 +171,8 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     # locals, or does work after the call, is deliberately refused -- of
     # the 99, 47 touch $sp and 22 contain a second call, so expect a large
     # share not to convert.
-    if re.search(r"(?m)^j\s+func_[0-9A-Fa-f]{8}", text):
+    tail = bool(re.search(r"(?m)^j\s+func_[0-9A-Fa-f]{8}", text))
+    if tail and not ee29:
         return "risky", "tail call", "needs fix_tail_calls.py; strict shape"
     # Must come AFTER the tail-call test: a tail-called function ends in
     # `j`, not `jr $31`, so this rule would otherwise claim every tail call
@@ -176,7 +184,7 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     # surviving delay-slot word per stripped function, nop-padded to 8
     # (tools/strip_dead.py). The stripped bodies are unknown, so C cannot
     # recreate them.
-    if not re.search(r"\bjr\s+\$31\b", text):
+    if not tail and not re.search(r"\bjr\s+\$31\b", text):
         return "blocked", "fallthrough fragment", "no jr $31; dead-strip remnants"
 
     if len(ins) == 1 and "0xCDCDCDCD" in body:
@@ -301,7 +309,7 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     # blocked; this one is only marked risky because there is a single
     # confirmation so far (func_0011D370) -- blanket-blocking on thin
     # evidence has cost this project real matches twice.
-    for idx, i in enumerate(ins[:-1]):
+    for idx, i in enumerate(ins[:-1] if not ee29 else []):
         m = re.match(r"b(ne|eq|nez|eqz|gez|ltz|gtz|lez)l?\s.*?(\.L[0-9A-Fa-f]+)\s*$", i)
         if m and ins[idx + 1] == "nop":
             t2 = labels.get(m.group(2))
@@ -334,9 +342,11 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
         if not idiom:
             return "risky", "genuine conditional move", "movz/movn, no sra idiom"
 
-    detail = ""
+    detail = "2.9-ee" if ee29 else ""
+    if tail:
+        detail += " (void tail call)"
     if re.search(r"\$28\b", text):
-        detail = "$gp (unblocked at -G2)"
+        detail = (detail + "; " if detail else "") + "$gp (unblocked at -G2)"
     if at_store or reuse_load:
         detail = (detail + "; " if detail else "") + "MACRO_ADDR"
     if gp_hi:
