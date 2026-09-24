@@ -41,7 +41,35 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00119DC0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119E70);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119EA8);
+/* |d| to int for the float printer (func_00119F38 passes the soft-float
+   double's bits): exponent e = biased exponent - 1075; 0 below 2^-53,
+   9999 from 2^13 up; otherwise the 53-bit mantissa shifted into place,
+   right shifts keeping two guard bits and rounding up when both are set.
+   Exact only if the final `(int)` truncation's dsra is moved into the
+   `j $31` slot (see RESULT.md): retail's compiler did that, ours leaves
+   the slot to the assembler, which pads it with a nop. */
+/* The parameter doubles as the mantissa and the exponent is computed
+   in place. It ends in the same int truncation as func_0012AAA8, with
+   the dsra in the return slot (tools/fix_trunc_slot.py). */
+int func_00119EA8(unsigned long x) {
+    long e;
+
+    e = (x << 1) >> 53;
+    e -= 0x433;
+    if (e < -0x35) return 0;
+    if (e >= 13) return 9999;
+    x = (x << 12) >> 12;
+    x |= 0x10000000000000;
+    if (e < 0) {
+        e = -e;
+        x >>= e - 2;
+        if ((x & 3) == 3) x = (x >> 2) + 1;
+        else x >>= 2;
+    } else {
+        x <<= e;
+    }
+    return x;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119F38);
 

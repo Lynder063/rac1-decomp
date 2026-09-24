@@ -174,24 +174,12 @@ void func_0012AA70(void *arg0, int arg1, int arg2, int arg3) {
     func_0012AAC8(arg0, 0);
 }
 
-/*
- * REVERTED (size mismatch: ours 32 bytes, retail 28). Semantics are
- * certain and the instruction sequence is identical:
- *
- *   int func_0012AAA8(void *arg0, int arg1) {
- *       return (int)(*(unsigned long *)arg0 >> (0x40 - arg1));
- *   }
- *
- * ld / li 0x40 / subu / dsrlv / dsll32 / dsra32 all match. The single
- * difference is delay-slot filling: retail puts the final `dsra32`
- * (second half of the 64->32 sign-extension for the int return) IN the
- * `jr` delay slot; this compiler emits it before the `jr` and fills the
- * slot with a nop, costing 4 bytes. Tried hoisting the load to a local
- * and hoisting the shift amount to a local -- both still 8 instructions.
- * Not source-steerable; it is the assembler/compiler delay-slot filler,
- * same family as the other scheduling blockers.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012AAA8);
+/* Bitstream peek: the top n bits of the 64-bit accumulator at +0x0, as
+   an int. The truncation's dsra sits in the return's delay slot, as the
+   retail compiler had it (tools/fix_trunc_slot.py). */
+int func_0012AAA8(void *arg0, int arg1) {
+    return (int)(*(unsigned long *)arg0 >> (0x40 - arg1));
+}
 
 /*
  * Reverted: decoded but not compilable as written. Banking the decode
