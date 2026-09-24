@@ -151,7 +151,7 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012A718);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012A7E8);
 
-extern void func_0012AAC8(void *, int);
+extern long func_0012AAC8(void *, int);
 
 /*
  * Same-size near-miss (16/52 bytes, kept). Source statement order
@@ -181,26 +181,38 @@ int func_0012AAA8(void *arg0, int arg1) {
     return (int)(*(unsigned long *)arg0 >> (0x40 - arg1));
 }
 
-/*
- * Reverted: decoded but not compilable as written. Banking the decode
- * because that is the expensive part.
- *
- * It is a bitstream reader. Consume n bits from the 64-bit accumulator
- * at +0x0, then refill it a byte at a time from the cursor at +0xC
- * until at least 0x39 bits are available, wrapping the cursor back to
- * +0x20 when it reaches the end pointer at +0x24. +0x10 holds the bit
- * count, +0x18 the running total.
- *
- * Why it does not build: the refill needs a 64-bit shift by a VARIABLE
- * amount (`(long long)*p << (0x38 - bits)`), and this compiler rejects
- * that outright -- `unsupported wide integer operation`. That is the
- * same limitation already recorded for ordered 64-bit compares; shifts
- * by a constant are fine, by a variable are not. So this needs either
- * inline asm for the shift, or a reformulation that keeps the shift
- * amount constant. Do not simply retype the locals -- the operation
- * itself is what is refused.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012AAC8);
+/* The bitstream reader's state (func_0012AA70 sets it up). */
+typedef struct {
+    unsigned long acc;     /* 0x00: the next bits, top-aligned */
+    unsigned char *start0; /* 0x08 */
+    unsigned char *cur;    /* 0x0C: next byte to load */
+    unsigned int bits;     /* 0x10: valid bits in acc */
+    long total;            /* 0x18: bits consumed so far */
+    unsigned char *start;  /* 0x20: the ring buffer */
+    unsigned char *end;    /* 0x24 */
+    int len;               /* 0x28 */
+} BitStream;
+
+/* Consume n bits, then refill the accumulator a byte at a time from the
+   ring buffer until more than 56 bits are buffered; returns the new
+   total (mpeg2decode's Flush_Buffer shape). The `c` local and the
+   returned total are load-bearing: they bring the function to the 40
+   insns that put GCSE's hash buckets, and so PRE's registers, in
+   retail's order. */
+long func_0012AAC8(void *arg0, int n) {
+    BitStream *p = arg0;
+    p->acc <<= n;
+    p->bits -= n;
+    if (p->bits <= 56) {
+        do {
+            unsigned int c = *p->cur++;
+            p->acc |= (unsigned long)c << (56 - p->bits);
+            if (p->cur >= p->end) p->cur = p->start;
+            p->bits += 8;
+        } while (p->bits <= 56);
+    }
+    return p->total += n;
+}
 
 /* Get n bits: peek them (func_0012AAA8), then consume them
    (func_0012AAC8). */
@@ -211,7 +223,6 @@ int func_0012AB60(void *arg0, int arg1) {
 }
 
 extern int func_0012AAA8(void *, int);
-extern void func_0012AAC8(void *, int);
 
 /* Get one bit, as func_0012AB60. */
 int func_0012ABB0(void *arg0) {

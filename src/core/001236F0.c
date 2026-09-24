@@ -462,11 +462,6 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00124BC8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124D10);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124DF0);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124EE0);
-
-extern int func_00124920(int);
 /* 0x330-stride entry table. Declared as a real struct array, not
    `char[]` + byte offset: the two are not codegen-equivalent. Indexing a
    typed array emits `addu base,index`; the char-pointer form emits
@@ -481,6 +476,52 @@ typedef struct {
     char unk_10[0x320];
 } Ent330;
 extern Ent330 D_0015B640[];
+
+extern int func_00125020(int);
+extern int func_00125160(unsigned char *, int *);
+
+/* The command word, built as bitfields of an `unsigned long` union: the
+   union stays in a register, each insert is a 64-bit and/or, and the
+   int view is the dsll32/dsra32 truncation retail passes in $a1. */
+typedef union {
+    struct {
+        unsigned long f0 : 14;
+        unsigned long f1 : 2;
+        unsigned long f2 : 8;
+        unsigned long f3 : 8;
+    } b;
+    int i;
+} McCmd;
+
+/* Opens entry `port` of the table if it is not (func_00125020), sends
+   command {2, 3, 2, 1} through func_00124A70, expands the 40-bit mask it
+   returns into the entry's slots (func_00125160) and returns the result
+   word func_00124A70 filled in. */
+int func_00124DF0(int port, void *arg1) {
+    McCmd cmd;
+    int result;
+    int r;
+
+    if (D_0015B640[port].unk_04 == 0) {
+        if (func_00125020(port) < 0) {
+            return -1;
+        }
+    }
+    cmd.b.f0 = 2;
+    cmd.b.f1 = 3;
+    cmd.b.f2 = 2;
+    cmd.b.f3 = 1;
+    r = func_00124A70(port, cmd.i, &result, arg1);
+    if (r < 0) {
+        return r;
+    }
+    func_00125160(arg1, (int *)D_0015B640[port].unk_10);
+    return result;
+}
+
+INCLUDE_ASM("asm/nonmatchings/core_text", func_00124EE0);
+
+extern int func_00124920(int);
 
 /*
  * Close, not exact (28/84), same size. Logic confirmed: call
