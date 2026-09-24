@@ -127,17 +127,14 @@ extern void func_00118AD0(int, int);
 extern int D_00154F54;
 extern int D_0012FD04;
 
-/*
- * Close, not exact (4/52, same size so harmless). Every instruction
- * matches; the two `lui` instructions that hold the globals' addresses
- * land in $2 where retail uses $3, and nothing else differs. Tried
- * binding the loaded value to a local and adding a second local to
- * shift allocation -- neither moved it. Same open scratch-register
- * question as func_001160D8.
- */
+extern int func_001193F8_i(int) __asm__("func_001193F8");
+extern int func_00118AD0_i(int, int) __asm__("func_00118AD0");
+
+/* func_001193F8 and func_00118AD0 both return int; their results decide
+   which registers the globals' addresses get. */
 void func_0011AA00(void) {
-    func_001193F8(0x5);
-    func_00118AD0(0x5, D_00154F54);
+    func_001193F8_i(0x5);
+    func_00118AD0_i(0x5, D_00154F54);
     D_0012FD04 = 0;
 }
 

@@ -190,16 +190,14 @@ extern void func_0012EDE0(void *);
 
 extern void func_0012EFE8(void);
 
-/*
- * 2/64: retail reuses the register that held the loaded halfword ($3)
- * for the constant 1, this compiler takes a fresh $2 -- the documented
- * scratch-register-allocation-choice question. Tried forcing reuse via
- * a single int local reassigned to 1; that made it worse (4/64).
- */
+extern int func_0012EFE8_i(void) __asm__("func_0012EFE8");
+
+/* func_0012EFE8 returns int (989snd.c): with the result in $v0, the
+   constant goes to the register retail uses. */
 void func_00217588(void) {
     short *p = D_001517D0;
     if (p[4] != 0) {
-        func_0012EFE8();
+        func_0012EFE8_i();
         ((char *)p)[0xA] = 1;
     }
 }

@@ -315,9 +315,13 @@ extern int D_0015EF90;
 extern char D_001D4B90[];
 extern char D_001D4BC0[];
 
+extern int D_0015EF90_m __asm__("D_0015EF90") MACRO_ADDR;
+
+/* D_0015EF90 is read through a MACRO_ADDR alias: retail's one-register
+   load. */
 int func_0021B108(void *arg0) {
     *(char **)((char *)arg0 + 0x34) =
-        (D_0015EF90 != 0) ? D_001D4B90 : D_001D4BC0;
+        (D_0015EF90_m != 0) ? D_001D4B90 : D_001D4BC0;
     return 0;
 }
 
@@ -720,12 +724,13 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0021F238);
 extern char *D_001D5F74 NOT_SDA;
 extern void func_0020E180(int, int);
 
+/* The entry address is written inline in the index, as in
+   func_0021F118; a `char *e` local swapped the addu. */
 int func_0021F610(char *arg0) {
     char *p = *(char **)(D_001D5F74 + 0x40);
-    char *e = *(int *)(p + 0x3C) * 10 + *(char **)(p + 0x48);
     int v;
 
-    if (((unsigned char *)&D_0013D5C8)[*(short *)(e + 6)] == 0) {
+    if (((unsigned char *)&D_0013D5C8)[*(short *)(*(int *)(p + 0x3C) * 10 + *(char **)(p + 0x48) + 6)] == 0) {
         return 0;
     }
     v = *(int *)(arg0 + 0x44);
@@ -907,19 +912,9 @@ int func_00220C90(void *arg0) {
 
 extern int func_00226EA8(int);
 
-/*
- * Sibling of func_00220DA0 below: same slot set (0x44/0x48/0x4C/0x50/
- * 0x54/0x5C) on the same object, seeded here instead of torn down.
- *
- * Byte mismatch, correct size (0x94), 2 of 37 words: retail stores the
- * -1 to 0x54 before 0x50 and we do the reverse. Four spellings of the
- * tail were tried -- 5C/54/50 (this one, 2 words off), 5C/50/54 (4),
- * 54/5C/50 (6), and the chained `*(s+0x50) = *(s+0x54) = -1` (6) -- so
- * source order is not what decides it here; the -1 is a live value
- * produced in the branches ($v1), and the scheduler picks the store
- * order. Kept rather than reverted: the size is right, so nothing
- * downstream moves.
- */
+/* Sibling of func_00220DA0 below: the same slot set (0x44/0x48/0x4C/
+   0x50/0x54/0x5C) on the same object, seeded here instead of torn down.
+   The tail stores go 5C, 50, 54. */
 int func_00220D08(void *arg0) {
     char *s = (char *)arg0;
 
@@ -935,8 +930,8 @@ int func_00220D08(void *arg0) {
         }
     }
     *(int *)(s + 0x5C) = 0;
-    *(int *)(s + 0x54) = -1;
     *(int *)(s + 0x50) = -1;
+    *(int *)(s + 0x54) = -1;
     return 0;
 }
 
@@ -1496,31 +1491,22 @@ extern void *func_0020D348(void);
 extern void func_0020ED48(void *);
 extern void func_0020E340(void *, int, int, int, int);
 
-/* Spawn the pickup/marker object for slot arg0, unless that slot is
-   disabled (0xFF in D_001B3E40). Fresh objects get 0xFF/0xFF/1 in the
-   0x30 block, are registered, tinted mid-grey, and if their descriptor
-   says so, flagged 0x18 at +0x73.
+extern void *func_0020D348_c(int) __asm__("func_0020D348");
 
-   Two things mattered for the constant 0xFF, which retail keeps in a
-   single callee-saved register across the call: the +0x30 store must be
-   through `unsigned char` (as `char` it is the DIFFERENT constant -1
-   and gets its own `li`), and the byte store must come BEFORE the
-   halfword store. Written the other way round the compiler makes the
-   QImode 255 a fresh pseudo instead of reusing the HImode one, and the
-   function comes out 4 bytes long.
-
-   Near-miss, 2/40 words, size-exact and therefore inert: retail does
-   `addu $v0,$a0,$v0`, keeping the incoming argument and landing the
-   element address in $v0, where this build overwrites $a0 because arg0
-   is dead after the test. Naming the base in a local first does not
-   move it -- the recorded allocator destination question. */
+/* Spawns the pickup/marker object for slot arg0, unless the slot is
+   disabled (0xFF in D_001B3E40). A fresh object gets 0xFF/0xFF/1 in the
+   0x30 block, is registered, tinted mid-grey, and flagged 0x18 at +0x73
+   when its descriptor says so. The +0x30 store is through `unsigned
+   char` and comes before the halfword store, so the 0xFF stays in one
+   saved register. CreateMoby takes oClass: passing arg0 on keeps $a0
+   live, which puts the element address in $v0 as retail has it. */
 void *func_00226720(int arg0) {
     char *o;
 
     if (D_001B3E40[arg0] == 0xFF) {
         return 0;
     }
-    o = (char *)func_0020D348();
+    o = (char *)func_0020D348_c(arg0);
     if (o != 0) {
         *(unsigned char *)(o + 0x30) = 0xFF;
         *(short *)(o + 0x32) = 0xFF;

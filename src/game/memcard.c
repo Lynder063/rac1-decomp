@@ -211,6 +211,9 @@ extern int D_0015EEEC MACRO_ADDR;
 extern int D_0015EEF0 MACRO_ADDR;
 extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
 
+extern int func_002176C8_i(int, int, int) __asm__("func_002176C8");
+
+/* func_002176C8 returns int and takes three arguments (stream.c). */
 void func_00209DC0(void) {
     int a;
     int b;
@@ -220,7 +223,7 @@ void func_00209DC0(void) {
 
     func_001FDF10(D_00137C80[5] << 11, &a, &b);
     func_00217748(1);
-    func_002176C8(a, D_00137C80[4], D_00137C80[5]);
+    func_002176C8_i(a, D_00137C80[4], D_00137C80[5]);
     s2 = D_0015EEF0;
     s1 = D_0015EEEC;
     s0 = D_0015EEE8;

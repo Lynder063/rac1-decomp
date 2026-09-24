@@ -296,13 +296,19 @@ extern int *D_0015EF4C MACRO_ADDR;
 extern char *D_0019A500;
 extern void func_0020C468(int);
 
-/* LoadCompressedHudBank(int, char *) */
+/* LoadCompressedHudBank(int, char *). Each scaled index in its own local
+   gives retail's base-first addu; written inline, the multiply goes
+   first. */
 void func_00203548(int idx, int size) {
     if (((size + 0xF) & 0xFFFFFFF0) != 0) {
         int *base = D_0015EF4C;
-        func_0020C468(*(int *)((char *)base + idx * 8 + 0x28) + (int)base);
+        int off = idx * 8;
+        func_0020C468(*(int *)((char *)base + off + 0x28) + (int)base);
     }
-    *(int *)(D_0019A500 + idx * 4 + 0x74) = 0;
+    {
+        int off = idx * 4;
+        *(int *)(D_0019A500 + off + 0x74) = 0;
+    }
 }
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002035B0);
