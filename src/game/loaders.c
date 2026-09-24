@@ -495,13 +495,20 @@ extern int D_0018CC20 NOT_SDA;
 extern int D_001941C8 NOT_SDA;
 extern int D_0016100C;
 
-/* ParseSpaceSceneChunk(int) */
+extern int D_0016100C_m __asm__("D_0016100C") MACRO_ADDR;
+
+/* ParseSpaceSceneChunk(int). Near-miss, 2/80: retail adds the index as
+   addu $a0,$s0,$a0 (base first), ours index first. The index in its own
+   local, a typed int pointer, and a struct with the table as a member do
+   not flip it (the struct also costs 4 bytes). D_0016100C is read through
+   a MACRO_ADDR alias, which took it from 7 bytes to 2. */
 void func_00205220(int arg0) {
     char *base = (char *)&D_0018CC20;
-    char *p = base + arg0 * 4;
+    int off = arg0 * 4;
+    char *p = base + off;
     *(int *)(base + 0x5C) = *(int *)(p + 0x60);
     func_00204FC0(p);
-    *(int *)(base + 0x5C) = D_0016100C + D_001941C8;
+    *(int *)(base + 0x5C) = D_001941C8 + D_0016100C_m;
 }
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00205270);

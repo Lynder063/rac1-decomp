@@ -1,6 +1,6 @@
 {
  "measures": {
-  "fuzzy_match_percent": 14.069705531271737,
+  "fuzzy_match_percent": 14.07120836088521,
   "total_code": "465788",
   "matched_code": "59612",
   "matched_code_percent": 12.798096988329455,
@@ -10607,7 +10607,7 @@
   {
    "name": "game/loaders",
    "measures": {
-    "fuzzy_match_percent": 6.993717664449372,
+    "fuzzy_match_percent": 7.058388765705839,
     "total_code": "10824",
     "matched_code": "620",
     "matched_code_percent": 5.728011825572801,
@@ -10803,7 +10803,7 @@
     {
      "name": "func_00205220",
      "size": "80",
-     "fuzzy_match_percent": 88.75,
+     "fuzzy_match_percent": 97.5,
      "address": "10104",
      "metadata": {
       "virtual_address": "2118176"
@@ -17967,7 +17967,7 @@
    "id": "game",
    "name": "Game",
    "measures": {
-    "fuzzy_match_percent": 13.102253565657275,
+    "fuzzy_match_percent": 13.10379048689665,
     "total_code": "455456",
     "matched_code": "53752",
     "matched_code_percent": 11.801798636970421,
