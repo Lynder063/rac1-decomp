@@ -42,6 +42,17 @@ int func_001188C8(int *errOut, void *a, void *b, void *c) {
     return r;
 }
 
+/*
+ * newlib's __swsetup (stdio/wsetup.c), called before the first write to
+ * a FILE. Its source is public (newlib 1.8); build-sn/try/func_00118928
+ * has it written out against newlib's FILE layout. Under the game's
+ * 2.95.3 it is the right size but 57 of 268 bytes differ; under 2.9-ee
+ * it is 8 bytes short. Retail reads _flags with lhu, so the field is
+ * unsigned here. It keeps the flags value in a register across `&=
+ * ~(__SRD|__SEOF)` and the later `|= __SWR`, masking as an int
+ * (`and` with -0x25). Ours masks with andi 0xFFDB and reloads the
+ * field after the _r/_p stores.
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00118928);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00118A34);
