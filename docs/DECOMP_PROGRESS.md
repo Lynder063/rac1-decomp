@@ -941,7 +941,32 @@ Earlier evidence for `text`, kept for reference:
   byte-identically, so nothing would catch it. Boundaries there need
   evidence strong enough to stand on its own.
 
-## The short-loop erratum is a toolchain blocker, measured three ways
+## SOLVED: the short-loop erratum -- retail's text was assembled by SN's ps2eeas
+
+**Update 2026-09-23.** The mirrors carry a second EE assembler: SN
+Systems' own `ps2eeas` (`ee/bin/Ps2EeAs.exe`), not the GNU `ee-as` the
+compiler driver calls. It works around the R5900 short-loop erratum
+itself. Measured on it directly: every backward branch whose loop (target
+through branch) is shorter than six instructions gets nops inserted right
+before the branch until it is exactly six, in reorder and noreorder code,
+branch-likely included. GNU `ee-as` never does this.
+
+Retail's text segment has no unpadded short loop at all, while every
+unpadded one in the image is in core_text or libgcc (16 objects). So text
+was assembled by ps2eeas and core_text was not.
+
+ps2eeas cannot simply replace `ee-as` here: it recurses without end on
+some of the retail stubs INCLUDE_ASM feeds it. `tools/fix_short_loops.py`
+reproduces the padding instead, on compiled game code only: it measures
+each loop in a first assembly (so macro expansion and delay slots are
+never guessed) and puts the nops before the branch, inside the compiler's
+own noreorder block when there is one. First results: `func_00225548` and
+`func_002268F0`, both filed below as blocked by exactly this, are exact.
+`tools/rank_candidates.py` no longer blocks the erratum in text.
+
+The original analysis follows.
+
+### (Superseded) The short-loop erratum is a toolchain blocker, measured three ways
 
 Retail pads loops shorter than six instructions with a nop between the
 store and the backward branch (the R5900 mispredicts them). 52 stubs are

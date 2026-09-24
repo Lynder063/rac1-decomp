@@ -148,11 +148,17 @@ build-sn/libgcc/asm_%.o: src/libgcc/nonmatching_%.c
 
 # text objects (src/game/**.c) need the tail-call rewrite, but NOT
 # fix_core_spills: retail's text segment uses sq/lq, which v1.14 emits.
-build-sn/game/%.o: src/game/%.c tools/fix_tail_calls.py tools/check_macro_slots.py
+#
+# Retail's text was assembled by SN's ps2eeas, which pads short loops (the
+# R5900 erratum); tools/fix_short_loops.py does the same, measuring the loops
+# in a first assembly.
+build-sn/game/%.o: src/game/%.c tools/fix_tail_calls.py tools/check_macro_slots.py tools/fix_short_loops.py
 	@mkdir -p $(dir $@)
 	$(CC_TEXT) $(CFLAGS) -S -o build-sn/game/$*.s $<
-	python tools/fix_tail_calls.py build-sn/game/$*.s build-sn/game/$*_fixed.s
-	python tools/check_macro_slots.py build-sn/game/$*_fixed.s
+	python tools/fix_tail_calls.py build-sn/game/$*.s build-sn/game/$*_tc.s
+	python tools/check_macro_slots.py build-sn/game/$*_tc.s
+	$(CC_TEXT) $(CFLAGS) -c build-sn/game/$*_tc.s -o build-sn/game/$*_tc.o
+	python tools/fix_short_loops.py build-sn/game/$*_tc.s build-sn/game/$*_tc.o build-sn/game/$*_fixed.s
 	$(CC_TEXT) $(CFLAGS) -c build-sn/game/$*_fixed.s -o $@
 
 clean:

@@ -129,12 +129,18 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     if not ins:
         return "blocked", "empty", ""
 
-    # A 4-byte function is a bare `jr $31` with nothing in its delay
-    # slot. `void f(void){}` emits `jr $ra; nop` plus alignment = 8+
-    # bytes, so this is a SIZE mismatch that can never be reached from C.
-    # (This is exactly how func_0011AE1C became a false "match" once.)
+    # A 4-byte "function" is almost never one. Most are the single word
+    # retail's linker left when it dead-stripped an unreferenced function
+    # of size 4 mod 8 (its last delay slot; see tools/strip_dead.py), the
+    # rest linker fill between objects. The one true bare `jr $31`
+    # (func_0011AE1C) has the next function's first word in its delay slot,
+    # which C cannot emit either: `void f(void){}` is `jr $ra; nop`.
     if size and size <= 4:
-        return "blocked", "bare jr (4 bytes)", "C cannot emit under 8 bytes"
+        if re.match(r"jr\s+\$31\b", ins[0]):
+            return "blocked", "bare jr (4 bytes)", "C cannot emit under 8 bytes"
+        if ins[0].startswith("pref") and "0x0D, -0x3233" in ins[0]:
+            return "blocked", "linker fill", "0xCDCDCDCD between objects"
+        return "blocked", "dead-strip remnant", "delay slot of a stripped function"
 
     # RESOLVED: core_text s-register spills are no longer blocked.
     # core_text is now built with v1.14 (which reproduces retail's
@@ -166,8 +172,12 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     # reader whether a real function is there -- a fragment is not
     # independently callable, a tail call is a complete function blocked
     # only by a missing compiler optimisation.
+    # These are, as far as checked, runs of dead-strip remnants: one
+    # surviving delay-slot word per stripped function, nop-padded to 8
+    # (tools/strip_dead.py). The stripped bodies are unknown, so C cannot
+    # recreate them.
     if not re.search(r"\bjr\s+\$31\b", text):
-        return "blocked", "fallthrough fragment", "no jr $31"
+        return "blocked", "fallthrough fragment", "no jr $31; dead-strip remnants"
 
     if len(ins) == 1 and "0xCDCDCDCD" in body:
         return "blocked", "padding", ""
@@ -278,16 +288,23 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
                 return "blocked", "fpu move delay nop", "mtc1 hazard nop, not reachable from C"
 
     # --- R5900 short-loop erratum: nop padding before a tight backward
-    # branch. No source shape fixes it. `span` is the distance back to the
-    # branch TARGET; it used to be the index from the start of the
-    # function, which let any tight loop past instruction 7 escape.
+    # branch. `span` is the distance back to the branch TARGET; it used to
+    # be the index from the start of the function, which let any tight loop
+    # past instruction 7 escape.
+    #
+    # In text this is no longer a blocker: retail's text was assembled by
+    # SN's ps2eeas, which pads every loop shorter than six instructions, and
+    # tools/fix_short_loops.py reproduces that on our compiled game code.
+    # core_text was assembled without the padding (its short loops are
+    # unpadded in retail), so a padded tight loop there is still unexplained.
     labels = label_positions(body)
-    for idx, i in enumerate(ins):
-        if re.match(r"b(ne|eq|gtz|ltz|gez|lez|nez|eqz)l?\b", i) and idx >= 2:
-            tgt = labels.get(i.rsplit(",", 1)[-1].strip())
-            span = idx - tgt if tgt is not None and tgt <= idx else 99
-            if span <= 7 and ins[idx - 1] == "nop" and ins[idx - 2] == "nop":
-                return "blocked", "short-loop erratum", "double nop before tight branch"
+    if seg == "core_text":
+        for idx, i in enumerate(ins):
+            if re.match(r"b(ne|eq|gtz|ltz|gez|lez|nez|eqz)l?\b", i) and idx >= 2:
+                tgt = labels.get(i.rsplit(",", 1)[-1].strip())
+                span = idx - tgt if tgt is not None and tgt <= idx else 99
+                if span <= 7 and ins[idx - 1] == "nop" and ins[idx - 2] == "nop":
+                    return "blocked", "short-loop erratum", "double nop before tight branch"
 
     # ---- risky signatures (near-miss generators, not hard blockers) ----
 

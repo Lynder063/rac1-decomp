@@ -66,7 +66,7 @@ All game code is compiled with **`-O2 -G2 -Iinclude -Wa,-I,.`**.
 | Source | Steps |
 |---|---|
 | `src/core/<ADDR>.c` (`core_text`) | v1.14 `-S` → `tools/fix_core_spills.py` → `tools/fix_tail_calls.py` → `tools/check_macro_slots.py` → assemble |
-| `src/game/**.c` (`text`) | v1.14 `-S` → `tools/fix_tail_calls.py` → `tools/check_macro_slots.py` → assemble |
+| `src/game/**.c` (`text`) | v1.14 `-S` → `tools/fix_tail_calls.py` → `tools/check_macro_slots.py` → assemble → `tools/fix_short_loops.py` → assemble |
 | `src/libgcc/libgcc2.c` | 2.9-ee `-S`, one object per `L_*` module, like `libgcc.a`'s members → assemble; L__main also goes through `tools/strip_dead.py` |
 | `src/libgcc/fp-bit.c` | 2.9-ee `-S`, whole file twice (`dp-bit.o`, `fp-bit.o` with `-DFLOAT`) → assemble → `tools/strip_dead.py` → assemble |
 | `src/libgcc/nonmatching_*.c` | asm stubs for the modules that do not match yet, and for linker fill |
@@ -97,6 +97,12 @@ scoped so that it cannot touch a function that does not need it.
   It deletes the frame and moves at most the last body instruction into
   the jump's delay slot (SN's assembler fills delay slots only from after
   a branch). It never synthesises an instruction.
+- **`tools/fix_short_loops.py`** (game code only): pads every loop shorter
+  than six instructions with nops before its backward branch, which is
+  what SN's own assembler, `ps2eeas`, did to retail's text segment for the
+  R5900 short-loop erratum. Two-pass: the loops are measured in a first
+  assembly. See "SOLVED: the short-loop erratum" in
+  `docs/DECOMP_PROGRESS.md`.
 - **`tools/strip_dead.py`**: removes a function the way retail's linker
   dead-stripped unreferenced code: its first `floor(size/8)*8` bytes, so a
   function of size 4 mod 8 leaves its last word (optionally named, e.g.
