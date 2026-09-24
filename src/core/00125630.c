@@ -297,7 +297,120 @@ int func_00127960(void *arg0, int arg1, int *arg2, int *arg3, void *arg4) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00127A90);
+extern int func_00127960(void *, int, int *, int *, void *);
+extern int func_001273A0(void *);
+extern int func_00128860(void *, int);
+extern int func_00127748(void *);
+extern void func_0012C468(void *, void *);
+extern char D_00153948[];
+extern int func_00127D40(void *, int *, int *, int *, void *, void *, void *);
+extern int func_00125630(void *, int, int, int, int, void *, void *, void *);
+extern int func_001263A8(void *, int);
+
+/* slice0 (libmpeg.a:mpc.o): the per-picture macroblock loop -- sliceA0
+ * (func_00127960) parses the first slice header and starting mb address
+ * (local "mbAddr"/"mbInc" pair, plus the zeroed 8-word block-info struct
+ * at local0); then while mbAddr < mbCount: waitBdecOut (func_001273A0)
+ * must succeed; if this macroblock doesn't already have a pending
+ * mbAddressIncrement (mbInc==0, i.e. a fresh slice), peek 23 bits looking
+ * for the next slice_start_code prefix, and if found read the next
+ * mbAddressIncrement (func_00127748) -- both faulting through +0x11C;
+ * decode (decMB0, func_00127D40) when mbInc==1, else skip (skipMB0,
+ * func_00127C80) the run of skipped macroblocks; run motion compensation
+ * (motionComp0, func_00125630) on the result; for every macroblock after
+ * the first, run the previous macroblock's IPU motion-comp dispatch
+ * (doMC, func_001263A8) using the alternating +0x810 buffer index before
+ * flipping it; advance mbAddr and consume one mbInc, looping until the
+ * picture's macroblocks are exhausted (return 0) or a fault (1/2/3)
+ * happens along the way.
+ */
+int func_00127A90(void *arg0, int mbCount) {
+    char *s = (char *)arg0;
+    int mbAddr = 0;
+    int mbInc = 0;
+    int local48, local4C, local50;
+    int local0[8];
+    int scratch20[4];
+    int scratch30[4];
+    int r;
+
+    r = func_00127960(s, mbCount, &mbAddr, &mbInc, local0);
+    if (r != 0) {
+        return r;
+    }
+    *(int *)(s + 0x11C) = 0;
+
+    for (;;) {
+        int mbIdx;
+        char *entry;
+
+        if (!(mbAddr < mbCount)) {
+            return 0;
+        }
+
+        mbIdx = *(int *)(s + 0x810);
+        entry = s + mbIdx * 0x140;
+        *(int *)(entry + 0x6CC) = 0;
+        r = func_001273A0(s);
+        if (r == 0) {
+            return 2;
+        }
+
+        if (mbInc == 0) {
+            int peeked = func_00128860(s, 0x17);
+            if (peeked == 0) {
+                *(int *)(s + 0x11C) = 0;
+                return 3;
+            }
+            if (*(int *)(s + 0x11C) != 0) {
+                *(int *)(s + 0x11C) = 0;
+                return 3;
+            }
+
+            mbInc = func_00127748(s);
+            if (*(int *)(s + 0x11C) != 0) {
+                *(int *)(s + 0x11C) = 0;
+                return 1;
+            }
+        }
+
+        if (!(mbAddr < mbCount)) {
+            func_0012C468(s, D_00153948);
+            return 2;
+        }
+
+        if (mbInc == 1) {
+            r = func_00127D40(s, &local48, &local4C, &local50, local0,
+                               scratch20, scratch30);
+            if (r == 0) {
+                *(int *)(s + 0x11C) = 0;
+                return 1;
+            }
+        } else {
+            r = func_00127C80(s, local0, &local4C, scratch20, &local48);
+            if (r == 0) {
+                *(int *)(s + 0x11C) = 0;
+                return 2;
+            }
+        }
+
+        r = func_00125630(s, mbAddr, mbInc, local48, local4C, local0,
+                           scratch20, scratch30);
+        if (r == 0) {
+            *(int *)(s + 0x11C) = 0;
+            return 2;
+        }
+
+        if (mbAddr != 0) {
+            int fault = *(int *)(s + 0x810);
+            func_001263A8(s, fault ^ 1);
+        }
+
+        mbAddr = mbAddr + 1;
+        *(int *)(s + 0x810) ^= 1;
+        mbInc = mbInc - 1;
+    }
+}
 
 extern void func_0012C468(void *, void *);
 extern char D_00153968[];
@@ -349,7 +462,29 @@ int func_00127C80(void *a0, int *a1, int *a2, int *a3, int *a4) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00127D40);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001281E8);
+/* decode_motion_vector (libmpeg.a:mpc.o): ISO/IEC 13818-2 motion_vector()
+ * component reconstruction, matching mpeg2decode reference source
+ * (motion.c) decode_motion_vector() line for line. full_pel_vector is
+ * MPEG-1 (ISO/IEC 11172-1) support; called from func_00128410
+ * (motionVector, already matched in this file).
+ */
+void func_001281E8(int *pred, int r_size, int motion_code, int motion_residual, int full_pel_vector) {
+    int lim, vec;
+
+    lim = 16 << r_size;
+    vec = full_pel_vector ? (*pred >> 1) : (*pred);
+
+    if (motion_code > 0) {
+        vec += ((motion_code - 1) << r_size) + motion_residual + 1;
+        if (vec >= lim)
+            vec -= lim + lim;
+    } else if (motion_code < 0) {
+        vec -= ((-motion_code - 1) << r_size) + motion_residual + 1;
+        if (vec < -lim)
+            vec += lim + lim;
+    }
+    *pred = full_pel_vector ? (vec << 1) : vec;
+}
 
 extern void func_00128410(void *, int *, int *, int, int, int, int, int);
 extern int func_00128A58(void *, int);
