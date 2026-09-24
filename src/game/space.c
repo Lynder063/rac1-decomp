@@ -346,7 +346,49 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00232200);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00232278);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00232920);
+typedef struct {
+    int sector;
+    int size;
+} WadEntry;
+typedef struct {
+    char _pad0[0x1938];
+    WadEntry movie[12];  /* 0x1938 */
+    WadEntry movie2[12]; /* 0x1998 */
+} WadToc;
+extern WadToc D_00137C80_t __asm__("D_00137C80");
+extern int D_0015EE80 MACRO_ADDR;
+extern int D_0015EE88 MACRO_ADDR;
+extern int D_001941D4;
+extern int func_0023B670(int, int, int, int, int);
+extern void func_00120858(int, int);
+extern void func_00123168(void *);
+extern void func_0012F308(void);
+extern void func_001F4E08(int);
+
+/* Plays movie id, taking its {sector, size} from the WAD table of
+   contents (from the second table when D_0015EE80 is set). */
+void func_00232920(int id) {
+    int sector;
+    int size;
+    int buf;
+
+    if (D_0015EE80 != 0) {
+        sector = D_00137C80_t.movie2[id].sector;
+        size = D_00137C80_t.movie2[id].size;
+    } else {
+        sector = D_00137C80_t.movie[id].sector;
+        size = D_00137C80_t.movie[id].size;
+    }
+    D_0013E650[0x6B] |= 8;
+    buf = D_001941D4;
+    func_0023B670(sector, size, (buf + 0x3F) & ~0x3F,
+                  (buf + 0x300000 + 0x3F) & ~0x3F, D_0015EE88);
+    func_00122598(0);
+    func_00120858(0, 0);
+    func_00123168(func_0012F308);
+    func_001F4E08(4);
+    D_0013E650[0x6B] |= 0x10;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00232A00);
 

@@ -339,6 +339,39 @@ void func_00236BB0(void) {
     func_00238688(D_001E4700);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00236BE0); /* DrawTies_1 */
+extern int D_00161000 MACRO_ADDR;
+extern int D_0015EF78 MACRO_ADDR;
+extern int D_0015EF74 MACRO_ADDR;
+extern int D_00161068 MACRO_ADDR;
+extern int D_0018A3C8;
+extern char D_00161030[];
+extern char D_00161040[];
+extern char D_001DF3B0[];
+extern void func_001F2560(void *, int); /* empty profiling marker */
+extern void func_001F2558(void *, int); /* empty profiling marker */
+extern void func_00236F00(void);
+extern void func_001F9AF0(void *, int, int);
+extern void func_00236958(void); /* DmaTieTextures */
+
+/* DrawTies_1: DrawShrubs' shape, the packet pointer advanced through a
+   local. */
+void func_00236BE0(void) {
+    int p = D_00161000;
+
+    D_00161068 = p;
+    D_0015EF74 = D_0015EF78;
+    p += 0x10;
+    D_00161000 = p;
+    func_001F2560(D_00161030, 1);
+    if (D_0018A3C8 != 0) {
+        func_00118D80(0);
+        func_00236F00();
+        func_001F9AF0(D_001E3500, 0x3600, 0x40);
+    }
+    func_001F2560(D_00161040, 5);
+    func_00236958();
+    func_001F9A98((void *)D_00161000, D_001DF3B0, 0x20);
+    func_001F2558(D_00161040, 5);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00236CA8); /* DrawTies_2 */

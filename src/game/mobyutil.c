@@ -178,7 +178,31 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00213A78);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00213BAC);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00213BB8);
+typedef struct {
+    int key;
+    int a;
+    int b;
+} Rec0C;
+extern Rec0C D_001E8F00[];
+extern int D_001B3900[];
+extern char *D_001B3580[];
+extern int D_00160000 MACRO_ADDR;
+
+/* Looks arg0 up in the {key, a, b} table D_001E8F00 (ended by key -1).
+   D_00160000 is read at every use, not cached in a local: CSE then
+   reproduces retail's load order and its surviving register copy. */
+void func_00213BB8(int arg0) {
+    char *m = D_001B3580[D_00160000];
+    int i = 0;
+
+    while (D_001E8F00[i].key != -1 && D_001E8F00[i].key != arg0) {
+        i++;
+    }
+    D_001B3900[D_00160000] = D_001E8F00[i].a;
+    if (m != 0) {
+        *(int *)(D_001B3580[D_00160000] + 0x2C) = D_001E8F00[i].b;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00213C70);
 

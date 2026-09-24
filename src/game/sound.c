@@ -392,7 +392,37 @@ void func_0022EAB0(int idx) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022EB08);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022ED80);
+extern int func_0022EB08(void *, int, int, int, int);
+
+/* Starts entry idx of the sound bank arg2 points at; the same shape as
+   its siblings func_0022EE28 and func_0022EEB8. */
+int func_0022ED80(int idx, int arg1, int arg2) {
+    char *p;
+    char *tbl;
+    int h;
+
+    if (arg2 == 0) {
+        return -1;
+    }
+    p = *(char **)(arg2 + 0x24);
+    if (p == 0) {
+        return -1;
+    }
+    tbl = *(char **)(p + 0x28);
+    if (tbl == 0) {
+        return -1;
+    }
+    if (idx >= *(unsigned char *)(p + 0xD)) {
+        return -1;
+    }
+    h = func_0022EB08(tbl + idx * 32, arg1, arg2, 0, 0x400);
+    if (h >= 0) {
+        char *rec = D_0013E650 + h * 0x70;
+        *(int *)(rec + 0x88) = arg2;
+        *(short *)(rec + 0x7E) = idx;
+    }
+    return h;
+}
 
 extern char *D_0015F714 MACRO_ADDR;
 extern int func_0022EB08(void *, int, int, int, int);

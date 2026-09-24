@@ -332,7 +332,34 @@ extern Cfg16 D_00160FD0 NOT_SDA;
 extern float func_001F9CB8(void *);
 extern void func_001F9BF0_b(void *, void *, void *) __asm__("func_001F9BF0");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023B670);
+extern int D_00161308 MACRO_ADDR;
+extern char *D_0016130C MACRO_ADDR;
+extern int D_00161314 MACRO_ADDR;
+extern int D_00161318 MACRO_ADDR;
+extern int func_00118BE0(void);        /* GetThreadId */
+extern int func_00118BA0(int, int);    /* ChangeThreadPriority */
+extern int func_0023BB90(int, int, int); /* initAll */
+extern void func_0023B740(void *, void *, void *); /* playMpeg */
+extern void func_0023BE38(void);       /* termAll */
+
+/* The movie player's entry: raise this thread's priority, then
+   initAll, playMpeg and termAll. */
+int func_0023B670(int arg0, int arg1, int arg2, char *heap, int arg4) {
+    D_00161308 = arg2;
+    D_0016130C = heap;
+    D_00161314 = 0;
+    D_00161318 = 0;
+    func_00118BA0(func_00118BE0(), 1);
+    D_00161314 = 1;
+    if (func_0023BB90(arg0, arg1, arg4)) {
+        D_00161314 = 2;
+        func_0023B740(D_0016130C + 0xD9048, D_0016130C, D_0016130C + 0xD9040);
+    }
+    func_0023BE38();
+    D_00161308 = 0;
+    D_0016130C = 0;
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023B740);
 

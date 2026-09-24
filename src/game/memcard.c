@@ -324,7 +324,38 @@ int func_0020BBC8(void *dst, int i, int *table) {
     return total + 8;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020BCB0); /* memcard_RestoreInfo(char *, int, int) */
+typedef struct {
+    int a;        /* 0x00 */
+    int b;        /* 0x04 */
+    int c;        /* 0x08 */
+    int d;        /* 0x0C */
+    char name[8]; /* 0x10 */
+    int valid;    /* 0x18 */
+} McEntry;        /* 0x1C */
+typedef struct {
+    char hdr[0x20];
+    McEntry e[5];
+    char pad[0x14];
+} McSlot;         /* 0xC0 */
+extern McSlot D_0013D390_s[] __asm__("D_0013D390");
+extern int func_0020BB88(char *); /* memcard_TestChecksum */
+
+/* memcard_RestoreInfo(char *, int, int). Advancing the buf parameter
+   itself and copying the name with memcpy both matter for retail's
+   registers; re-indexing the entry per store keeps its daddu copies. */
+void func_0020BCB0(char *buf, int slot, int idx) {
+    D_0013D390_s[slot].e[idx].valid = func_0020BB88(buf) == 0;
+    buf += 0x10;
+    D_0013D390_s[slot].e[idx].a = *(int *)buf;
+    buf += 0xC;
+    D_0013D390_s[slot].e[idx].b = *(int *)buf;
+    buf += 0xC;
+    D_0013D390_s[slot].e[idx].c = *(int *)buf;
+    buf += 0xC;
+    D_0013D390_s[slot].e[idx].d = *(int *)buf;
+    buf += 0xC;
+    memcpy(D_0013D390_s[slot].e[idx].name, buf, 8);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020BD70); /* memcard_RestoreData(char *, char *, int, mc_data *) */
 

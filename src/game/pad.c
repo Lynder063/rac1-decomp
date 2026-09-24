@@ -209,7 +209,41 @@ extern int func_00124BC8(void *, void *);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00217F68);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00218188); /* ClearPadInput(PAD &) */
+/* ClearPadInput(PAD &) */
+typedef struct {
+    char unk_000[0x100];
+    int a[16];      /* 0x100 */
+    int b[16];      /* 0x140 */
+    char unk_180[0x20];
+    int f1A0, f1A4, f1A8, f1AC;
+    int f1B0, f1B4, f1B8, f1BC;
+    int f1C0, f1C4, f1C8, f1CC;
+    int f1D0, f1D4, f1D8;
+} PadClr;
+
+/* ClearPadInput(PAD &). The stores are in the source order that gives
+   retail's schedule. a and b are separate members, so each is its own
+   loop giv; the second one (b) becomes the loop's base. */
+void func_00218188(PadClr *p) {
+    int i;
+
+    p->f1B0 = 0;
+    p->f1A0 = 0;
+    p->f1A4 = 0;
+    p->f1A8 = 0;
+    p->f1D0 = 1;
+    p->f1B4 = 0;
+    p->f1B8 = 0;
+    p->f1C0 = 0;
+    p->f1C4 = 0;
+    p->f1C8 = 0;
+    p->f1D4 = 1;
+    p->f1D8 = 0;
+    for (i = 0; i < 16; i++) {
+        p->a[i] = 0;
+        p->b[i] = 0;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002181F0);
 

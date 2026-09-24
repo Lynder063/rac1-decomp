@@ -151,7 +151,49 @@ extern unsigned char D_0013DE55 NOT_SDA;
 extern unsigned char D_0013D5DD NOT_SDA;
 extern unsigned char D_0013D5E7 NOT_SDA;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020D348); /* CreateMoby(int) */
+/* A moby instance: 0x100 bytes, in one array from D_0016001C to
+   D_00160020. state 0xFE is a free slot and 0xFF marks the free tail
+   (taking that slot moves the mark to the next one); a freed slot is not
+   reused before frame unk38 (DeleteMoby sets it two frames ahead). */
+typedef struct {
+    char _pad00[0x20];
+    unsigned char state; /* 0x20 */
+    char _pad21[0x38 - 0x21];
+    unsigned long unk38; /* 0x38 */
+    char _pad40[0x78 - 0x40];
+    char *pvars; /* 0x78: this moby's 0x80 bytes at D_00160028 */
+    char _pad7C[0x100 - 0x7C];
+} Moby;
+extern char *D_0016001C MACRO_ADDR;
+extern char *D_00160020 MACRO_ADDR;
+extern char *D_00160028 MACRO_ADDR;
+extern int D_0015F6F0 MACRO_ADDR;
+extern int D_0015FFFC MACRO_ADDR;
+extern char D_001E86F0[];
+extern void func_0020D440(void *, int);
+
+/* CreateMoby. The failure message ("... Time: %d, oClass: %d") takes
+   oClass as its third argument, which is why retail keeps it in $a2. */
+Moby *func_0020D348(int oClass) {
+    Moby *m;
+
+    for (m = (Moby *)D_0016001C; m < (Moby *)D_00160020; m++) {
+        if (m->state >= 0xFE && (unsigned int)D_0015F6F0 >= m->unk38) {
+            if (m->state == 0xFF) {
+                m[1].state = 0xFF;
+            }
+            func_0020D440(m, oClass);
+            m->pvars = D_00160028 + (m - (Moby *)D_0016001C) * 0x80;
+            func_001F99B0(m->pvars, 0, 0x80);
+            if (D_0015FFFC != 0) {
+                D_0015FFFC--;
+            }
+            return m;
+        }
+    }
+    func_001E9730(D_001E86F0, D_0015F6F0, oClass);
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020D440); /* InitMobyInstance(MobyInstance *, int) */
 
@@ -161,8 +203,6 @@ typedef struct {
     char _pad21[0x38 - 0x21];
     long unk38; /* 0x38 */
 } MobyDel;
-extern char *D_0016001C MACRO_ADDR;
-extern int D_0015F6F0 MACRO_ADDR;
 extern void func_0020EA70(void *, int);
 
 /* DeleteMoby */
@@ -432,7 +472,38 @@ void func_0020DB98(char *arg0, int arg1, void *arg2, char *arg3) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020DC38);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020DC40); /* DmaMobyTextures */
+extern int D_0016000C MACRO_ADDR;
+extern int D_00161000 MACRO_ADDR;
+extern int D_0015EF74 MACRO_ADDR;
+extern void func_00212258(int);
+extern void func_00234E80(void);
+
+/* DmaMobyTextures: splices the texture uploads into the DMA chain with
+   "next" tags (0x20000000). D_00161000 is the packet write pointer and
+   D_0016000C the tag slot DrawMobysSetup reserved. Every access goes
+   back to the globals, because each store through them could alias. */
+void func_0020DC40(void *arg0) {
+    int *p = (int *)D_00161000;
+
+    D_00161000 += 0x10;
+    ((int *)D_0016000C)[0] = 0x20000000;
+    ((int *)D_0016000C)[1] = D_00161000;
+    ((int *)D_0016000C)[2] = 0;
+    ((int *)D_0016000C)[3] = 0;
+    if (D_0018A3B0[10] != 0 && D_0018A3B0[9] != 0) {
+        func_00212258(D_0015EF74);
+        func_00234E80();
+    }
+    ((int *)D_00161000)[0] = 0x20000000;
+    ((int *)D_00161000)[1] = D_0016000C + 0x10;
+    ((int *)D_00161000)[2] = 0;
+    ((int *)D_00161000)[3] = 0;
+    D_00161000 += 0x10;
+    p[0] = 0x20000000;
+    p[1] = D_00161000;
+    p[2] = 0;
+    p[3] = 0;
+}
 
 extern int D_001B6880[];
 extern void *D_001B3580[];
@@ -539,7 +610,52 @@ void func_0020DE20(void) {
     D_001CAE00[2] = -0.99f;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020DEB0);
+extern int D_0016003C MACRO_ADDR;
+extern int D_00160040 MACRO_ADDR;
+extern char D_0015FFC0[];
+extern char D_001C8A00[];
+extern void func_00228A58(void);
+extern void func_00228860(void *);
+extern void func_001F2558(void *, int);
+
+/* The same splice as DmaMobyTextures, around func_00228A58/func_00228860,
+   at the tag slot D_00160040; with D_0016003C clear the slot becomes a
+   plain "cnt" tag (0x10000000) instead. The write pointer goes through
+   a temporary that is advanced in place (t += 0x10): that breaks CSE's
+   p == t equivalence, which is what keeps retail's `daddu $16,$2,$0`
+   copy. `p = D_00161000; D_00161000 += 0x10;` is 4 bytes short. */
+void func_0020DEB0(void) {
+    int *p;
+    int t;
+
+    if (D_0016003C == 0) {
+        ((int *)D_00160040)[0] = 0x10000000;
+        ((int *)D_00160040)[1] = 0;
+        ((int *)D_00160040)[2] = 0;
+        ((int *)D_00160040)[3] = 0;
+        return;
+    }
+    t = D_00161000;
+    p = (int *)t;
+    t += 0x10;
+    D_00161000 = t;
+    ((int *)D_00160040)[0] = 0x20000000;
+    ((int *)D_00160040)[1] = D_00161000;
+    ((int *)D_00160040)[2] = 0;
+    ((int *)D_00160040)[3] = 0;
+    func_00228A58();
+    func_00228860(D_001C8A00);
+    ((int *)D_00161000)[0] = 0x20000000;
+    ((int *)D_00161000)[1] = D_00160040 + 0x10;
+    ((int *)D_00161000)[2] = 0;
+    ((int *)D_00161000)[3] = 0;
+    D_00161000 += 0x10;
+    p[0] = 0x20000000;
+    p[1] = D_00161000;
+    p[2] = 0;
+    p[3] = 0;
+    func_001F2558(D_0015FFC0, 8);
+}
 
 extern void func_00118D80(int);
 extern void func_00212578(int, int);

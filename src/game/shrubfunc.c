@@ -271,4 +271,37 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00229C08); /* DmaShrubTextures */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00229D48);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00229E50); /* DrawShrubs */
+extern int D_00161000 MACRO_ADDR;
+extern int D_0015EF78 MACRO_ADDR;
+extern int D_0015EF74 MACRO_ADDR;
+extern int D_001604F0 MACRO_ADDR;
+extern int D_0018A3D0;
+extern char D_001604B0[];
+extern char D_001604C0[];
+extern char D_001D9240[];
+extern void func_001F2560(void *, int); /* empty profiling marker */
+extern void func_001F2558(void *, int); /* empty profiling marker */
+extern void func_00229F00(void);
+extern void func_001F9AF0(void *, int, int);
+extern void func_00229C08(void);
+
+/* DrawShrubs. The packet pointer goes through a local advanced in place;
+   `D_00161000 += 0x10` is 4 bytes short (its store lands in the jal
+   delay slot as a $gp store). */
+void func_00229E50(void) {
+    int p = D_00161000;
+
+    D_001604F0 = p;
+    D_0015EF74 = D_0015EF78;
+    p += 0x10;
+    D_00161000 = p;
+    func_001F2560(D_001604B0, 1);
+    if (D_0018A3D0 != 0) {
+        func_00118D80(0);
+        func_00229F00();
+        func_001F9AF0(D_001D9240, 0x3200, 0x40);
+    }
+    func_001F2560(D_001604C0, 7);
+    func_00229C08();
+    func_001F2558(D_001604C0, 7);
+}
