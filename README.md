@@ -45,14 +45,11 @@ The original compiler is SN Systems ProDG, a set of 32-bit Windows programs.
 There are two ways to run it:
 
 - **Windows**, natively, with **Git Bash** and Python 3.10 or newer.
-- **macOS and Linux**, through 32-bit Wine in a Docker container
-  (`tools/docker/`). Only Docker is needed on the host; on Apple Silicon it
-  works with OrbStack or Docker Desktop. The container build reproduces the
-  Windows build's progress report byte for byte.
+- **Linux and macOS**, through 32-bit Wine in a container
+  (`tools/docker/`). Works with **Podman** (Fedora, RHEL, etc.) or **Docker** (Ubuntu, Debian, macOS OrbStack/Docker Desktop). Prebuilt images are automatically pulled from GitHub Container Registry (`ghcr.io/lynder063/rac1-build:latest`), so you don't need to wait 15 minutes compiling the image locally. The container build reproduces the Windows build's progress report byte for byte.
 
-Every command below runs the same on both. On macOS and Linux, prefix it with
-`bash tools/docker/run.sh`, which builds the image on first use (about 15
-minutes, once) and runs the command inside it:
+Every command below runs the same on both. On Linux and macOS, prefix it with
+`bash tools/docker/run.sh` (which automatically pulls or builds the container and runs the command inside it):
 
 ```
 bash tools/docker/run.sh bash tools/build_sn.sh
