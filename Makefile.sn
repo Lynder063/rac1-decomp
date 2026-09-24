@@ -93,6 +93,20 @@ build-sn/core/%.o: src/core/%.c tools/fix_core_spills.py tools/fix_tail_calls.py
 	python tools/check_macro_slots.py build-sn/core/$*_fixed.s
 	$(CC_CORE) $(CFLAGS) -c build-sn/core/$*_fixed.s -o $@
 
+# Sony SDK code that was built with the SDK's own 2.9-ee, like libgcc,
+# not with the game's 2.95.3: 001236F0.c is the memory card library
+# (sceMcSync at func_00123F30). 2.9-ee writes sd/ld spills and tail calls
+# natively, so neither rewriter runs; what tells the compilers apart is
+# gcse (2.95.3's PRE leaves extra %hi copies) and the varargs register
+# save (2.95.3 also saves $f12-$f18). tools/try_func.py keeps the same
+# list (EE29_SOURCES).
+EE29_CORE := build-sn/core/001236F0.o
+$(EE29_CORE): build-sn/core/%.o: src/core/%.c tools/check_macro_slots.py
+	@mkdir -p build-sn/core
+	$(CC_LIBGCC) $(CFLAGS) -S -o build-sn/core/$*.s $<
+	python tools/check_macro_slots.py build-sn/core/$*.s
+	$(CC_CORE) $(CFLAGS) -c build-sn/core/$*.s -o $@
+
 # libgcc modules: verbatim GCC source, no rewriters.
 LIBGCC_CFLAGS := -O2 -G2 -S
 

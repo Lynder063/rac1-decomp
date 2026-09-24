@@ -34,6 +34,10 @@ from elftools.elf.elffile import ELFFile  # noqa: E402
 from elftools.elf.relocation import RelocationSection  # noqa: E402
 
 CC = "toolchain/sn-prodg-24/local/sce/ee/gcc/bin/ee-gcc2953.exe"
+# Sony SDK sources built with the SDK's 2.9-ee, no rewriters (Makefile.sn's
+# EE29_CORE).
+CC29 = "toolchain/sn-prodg-24/local/sce/ee/gcc/bin/ee-gcc.exe"
+EE29_SOURCES = {"src/core/001236F0.c"}
 CFLAGS = ["-O2", "-G2", "-Iinclude", "-Wa,-I,."]
 BASEROM = "baserom/SCES_509.16"
 STUB = re.compile(r'^\s*INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\)')
@@ -67,6 +71,14 @@ def build(name, seg, src, idx, candidate, work):
     obj.unlink(missing_ok=True)
     with open(work / "log.txt", "w") as log:
         s = [work / f"{n}.s" for n in "abcd"]
+        if str(src) in EE29_SOURCES:
+            if not run(sn(CC29, *CFLAGS, "-S", "-o", str(s[0]), str(c)), log):
+                return None
+            if not run([sys.executable, "tools/check_macro_slots.py", str(s[0])], log):
+                return None
+            if not run(sn(CC, *CFLAGS, "-c", str(s[0]), "-o", str(obj)), log):
+                return None
+            return obj
         if not run(sn(CC, *CFLAGS, "-S", "-o", str(s[0]), str(c)), log):
             return None
         if seg == "core_text":

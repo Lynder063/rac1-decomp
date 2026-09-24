@@ -245,7 +245,40 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00123EC0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00123EE8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00123F30);
+extern char D_00159B00[];
+extern int D_00132EAC;
+extern char D_0015B0C0[];
+extern void func_00123EE8(int);
+
+/* sceMcSync(mode, &cmd, &result): polls the pending memory card command
+   (or waits for it when mode is 0) and hands back its result. Exact
+   only under 2.9-ee: 2.95.3's gcse leaves two extra %hi copies. */
+int func_00123F30(int mode, int *cmd, int *result) {
+    int r;
+
+    if (D_00132EA8 == 0) {
+        return -1;
+    }
+    r = func_0011B6B8(D_00159B00);
+    if (mode == 0 && r != 0) {
+        while (func_0011B6B8(D_00159B00) != 0) {
+            func_00123EE8(0x3C);
+        }
+        r = 0;
+    }
+    r = (r == 0);
+    if (cmd != 0) {
+        *cmd = D_00132EA8;
+    }
+    if (r != 0) {
+        D_00132EA8 = 0;
+        if (result != 0) {
+            *result = *(int *)D_0015B0C0;
+        }
+        func_00118C90(D_00132EAC);
+    }
+    return r;
+}
 
 extern int *D_00159B28;
 extern int *D_00159B2C;
@@ -309,7 +342,7 @@ int func_001245F8(void) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124650);
 
-extern void func_00124B60(void *);
+extern void func_00124B60(void *, ...);
 extern char D_00153658[];
 
 /* Same RPC shape as func_001245F8 above (9 args: $4-$11 plus one stack
@@ -380,23 +413,12 @@ int func_00124A70(int arg0, int arg1, int *arg2, char *arg3) {
     return r;
 }
 
-/*
- * Reverted -- semantics certain (an unused-argument no-op, called with
- * one pointer arg from below), but the register-shadow spill shape is
- * a puzzle: retail spills $5-$11 (a1-a7) to an 0x80-byte frame but
- * saves NO floating registers. A true `void func_00124B60(void *, ...)`
- * reproduces the GPR spill but ALSO adds f12/f14/f16/f18 saves (16
- * bytes over); a K&R-style `void func_00124B60()` produces no spill at
- * all (compiler proves the args are dead and elides them, same as any
- * ordinary unused-parameter function). Also tried 8 explicitly named
- * `long` params (same result as K&R -- fully eliminated) and taking
- * `&argN` of each into a volatile local (doesn't force a spill; `&x`
- * only pins x's address, not its storage class). Neither spelling
- * reached retail's GPR-only shadow save. Same open question as
- * func_001E9730's variadic idiom, but for a GPR-only variant -- not
- * yet understood.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124B60);
+/* The library's debug print, compiled out to an empty varargs function.
+   Only Sony's 2.9-ee gives retail's shape, spilling $5-$11 and no FP
+   argument registers; the game's 2.95.3 also saves $f12-$f18. That is
+   how this file was found to be built with 2.9-ee (Makefile.sn). */
+void func_00124B60(void *fmt, ...) {
+}
 
 /*
  * Reverted: size mismatch (ours=72, retail=60 -- 12 bytes over).
