@@ -216,15 +216,92 @@ extern void func_00217588(void);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00219C08);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00219C70); /* PauseAllSounds */
-
-INCLUDE_ASM("asm/nonmatchings/text", func_00219E48);
-
-/* Hoisted from further down the file: this is its first use, and a
-   second NOT_SDA extern for the same object in one translation unit is
-   a hard error. */
+extern void func_0012E528(int);
+extern void func_00216EF0(int);
+extern int D_0018C42C;
+extern int D_0015F754 MACRO_ADDR;
+extern int D_00141760;
+extern unsigned char D_0014171B NOT_SDA;
+extern int D_0015EFA0 MACRO_ADDR;
+extern int D_0015EF20 MACRO_ADDR;
+extern char D_001CE938[];
+extern char D_001CEAC8[];
+extern char D_001CEB18[];
+extern int D_001A0414;
+extern int D_001D0718;
+extern int func_0020C7A0_i(void) __asm__("func_0020C7A0");
+extern int func_0012DDC0_i(void) __asm__("func_0012DDC0");
+extern void func_00228160(void);
 extern char D_001D5F70[] NOT_SDA;
 extern int D_0015F6E8 MACRO_ADDR;
+
+/* PauseAllSounds: pause entry. Unless D_0018C42C is set (then only
+   D_0015F754 = 1), it computes the pause object's flags (0x134, 0x138,
+   0xD8 "loaded", 0xDC "arg0 is 0x23"), points the D_001CE938/D_001CEAC8
+   records' +0x38/+0x3C at the loaded or unloaded variants, resets the
+   object for arg0 (func_00219E60's body) and D_001A0414, then calls
+   func_0020C7A0 and func_00228160. Each group reads D_001D5F70 through
+   its own `char *` local (retail's saved %hi); func_0012DDC0 and
+   func_0020C7A0 return values, which moves the next temporary to $v1. */
+void func_00219C70(int arg0) {
+    func_0012E528(0x1D);
+    func_00216EF0(0);
+    func_0012DDC0_i();
+    if (D_0018C42C != 0) {
+        D_0015F754 = 1;
+        return;
+    }
+    if (D_00141760 == 0x24) {
+        D_00141760 = 0;
+    }
+    {
+        char *g = D_001D5F70;
+        *(int *)(g + 0x134) = D_0015EE84 == 0xD || D_0014171B != 0;
+    }
+    {
+        char *g = D_001D5F70;
+        *(int *)(g + 0x138) = D_0015EE84 == 0 || D_0015EE84 == 0xE;
+    }
+    {
+        char *g = D_001D5F70;
+        *(int *)(g + 0xD8) = D_0015EFA0 != 0 || D_0015EF20 != 0
+                             || *(int *)(g + 0xF8) != 0;
+    }
+    {
+        char *g = D_001D5F70;
+        char *a = D_001CE938;
+        *(int *)(g + 0xDC) = arg0 == 0x23;
+        *(char **)(a + 0x38) = *(int *)(g + 0xD8) ? D_001CEB18 : D_001CEAC8;
+    }
+    {
+        char *g = D_001D5F70;
+        char *b = D_001CEAC8;
+        *(char **)(b + 0x3C) = *(int *)(g + 0xD8) ? D_001CEB18 : D_001CE938;
+    }
+    {
+        char *g = D_001D5F70;
+        D_0015F6E8 = 3;
+        *(int *)g = arg0;
+        *(int *)(g + 0xC) = 0;
+        *(int *)(g + 0x10) = 0;
+        *(int *)(g + 0x110) = 0;
+    }
+    if (D_0015EE84 < 0x13) {
+        D_001A0414 = D_0015EE84;
+    } else {
+        D_001A0414 = 0;
+    }
+    func_0020C7A0_i();
+    D_001D0718 = 0;
+    func_00228160();
+    {
+        char *g = D_001D5F70;
+        *(int *)(g + 0x13C) = 1;
+        *(int *)(g + 0x140) = 0;
+    }
+}
+
+INCLUDE_ASM("asm/nonmatchings/text", func_00219E48);
 
 void func_00219E60(void) {
     char *p = D_001D5F70;
@@ -326,7 +403,78 @@ int func_0021ACD8(int arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021AD68);
+extern int D_001D6094;
+extern void func_0022ED80(int, int, int);
+
+/* Pause list handler (func_0021ACD8's family: one `char *` pad local per
+   block). The cursor at arg0+0x3C moves on 0x1000/0x4000 within
+   arg0+0x40, with a func_0022ED80 notify on change; then the scroll
+   (arg0+0x60) is clamped around the cursor and the bar position at
+   arg0+0x5C derived from it, or pinned to 0x52. The re-reads of 0x3C and
+   0x60 are how retail's reloads come out; the page size q - 2 is formed
+   after the clamp, and each arm stores the bar position itself. */
+int func_0021AD68(char *arg0) {
+    {
+        char *pad = D_0013CA40;
+        if (*(int *)(pad + 0x1C4) & 0xD00) {
+            if (D_001D6094 == 0) {
+                return 1;
+            }
+        }
+    }
+    {
+        char *pad2 = D_0013CA40;
+        if (*(int *)(pad2 + 0x1C4) & 0x10) {
+            char *g = D_001D5F70;
+            int t = *(int *)(*(char **)(g + 4) + 0x38);
+            if (t != 0) {
+                *(int *)(g + 8) = t;
+                return 0;
+            }
+            if (*(int *)(g + 0x124) == 0) {
+                return -1;
+            }
+        }
+    }
+    {
+        char *pad3 = D_0013CA40;
+        int v = *(int *)(pad3 + 0x1C4);
+        int old = *(int *)(arg0 + 0x3C);
+        if ((v & 0x1000) && old != 0) {
+            *(int *)(arg0 + 0x3C) = old - 1;
+        }
+        if (v & 0x4000) {
+            int c = *(int *)(arg0 + 0x3C) + 1;
+            if (c < *(int *)(arg0 + 0x40)) {
+                *(int *)(arg0 + 0x3C) = c;
+            }
+        }
+        if (*(int *)(arg0 + 0x3C) != old) {
+            func_0022ED80(1, 0x11, *(int *)(arg0 + 0x14));
+        }
+    }
+    {
+        int t = *(int *)(arg0 + 0x24) * 16;
+        if (t / 0x252 >= *(int *)(arg0 + 0x40)) {
+            *(int *)(arg0 + 0x5C) = 0x52;
+        } else {
+            int q = (t - 0x28) / 0x252;
+            int n;
+            if (*(int *)(arg0 + 0x60) >= *(int *)(arg0 + 0x3C)) {
+                *(int *)(arg0 + 0x60) = *(int *)(arg0 + 0x3C) - 1;
+                if (*(int *)(arg0 + 0x60) < 0) {
+                    *(int *)(arg0 + 0x60) = 0;
+                }
+            }
+            n = q - 2;
+            if (*(int *)(arg0 + 0x60) < *(int *)(arg0 + 0x3C) - n) {
+                *(int *)(arg0 + 0x60) = *(int *)(arg0 + 0x3C) - n;
+            }
+            *(int *)(arg0 + 0x5C) = 0x182 - *(int *)(arg0 + 0x60) * 0x252;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021AEF8);
 
@@ -344,7 +492,52 @@ int func_0021B108(void *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021B138);
+/* The two initializer tables of the local arrays below. The first is
+   copied as a char block (retail's ldl/ldr for all 32 bytes), the second
+   as an int block (ldl/ldr, then lw/sw for the last word). */
+typedef struct { char b[0x20]; } Blk32;
+typedef struct { int w[7]; } Blk28;
+extern Blk32 D_001E8A58;
+extern Blk28 D_001E8A78;
+/* MACRO_ADDR: retail builds each address in one register (la). */
+extern unsigned char D_0015EEC0[] MACRO_ADDR;
+extern unsigned char D_0015EEB0[] MACRO_ADDR;
+typedef struct {
+    int val;
+    void *addr;
+    int c1;
+    int c2;
+    int zero;
+} Entry14;
+extern Entry14 D_001D3E90[];
+
+/* Builds the D_001D3E90 list: for each id in {1, 3, 0, 7, 4, 6, 2} (up
+   to the -1) whose D_0015EEC0 flag is set, an entry with its text id
+   (0x501A...), &D_0015EEB0[id] and the constants 0x4F5A/0x4F5B; a zero
+   val ends the list. A plain indexed for loop: strength reduction gives
+   retail's pointer walk, its end test against ids + 12, and the id read
+   twice per iteration (exit test and body). */
+int func_0021B138(void) {
+    int ids[8];
+    int names[7];
+    int i, n;
+
+    *(Blk32 *)ids = D_001E8A58;
+    *(Blk28 *)names = D_001E8A78;
+    n = 0;
+    for (i = 0; i < 12 && ids[i] != -1; i++) {
+        if (D_0015EEC0[ids[i]] != 0) {
+            D_001D3E90[n].val = names[i];
+            D_001D3E90[n].addr = &D_0015EEB0[ids[i]];
+            D_001D3E90[n].c1 = 0x4F5A;
+            D_001D3E90[n].c2 = 0x4F5B;
+            D_001D3E90[n].zero = 0;
+            n++;
+        }
+    }
+    D_001D3E90[n].val = 0;
+    return 0;
+}
 
 int func_0021B278(void) {
     return 0;
@@ -624,7 +817,71 @@ int func_0021E2D0(int arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021E340);
+extern int D_0015EE88 MACRO_ADDR;
+extern char D_001997D0[];
+extern void func_001F9A00(void *, void *, int);
+
+/* The slot count at D_001997D0+0x2C, read through its own base pointer:
+   retail's loop keeps a separate copy of the D_001997D0 address. */
+static inline int pauseSlotCount(void) {
+    char *b = D_001997D0;
+    return *(int *)(b + 0x2C);
+}
+
+/* Pause sub-state machine at arg0+0x50 (func_00221688's family). State 0
+   runs func_00217628 and moves to 1 or 3; state 1, once D_001517D0[4]
+   clears, pulls the controller's record out of the table at
+   D_001D5F70+0x108 (func_001F9A00 moves it to the table start), swaps it
+   in as D_0015F780 and the D_001997D0+0x2C count (old values kept in
+   arg0+0x54/+0x38), rebases the entries' first words and moves to 2.
+   Cases 2 and 3 are empty; they make gcc's case tree test 1 first, as
+   retail does. The reloaded table gets its own variable so that the
+   first one stays block-local, and the rebase delta is computed in the
+   loop so that loop.c hoists it. */
+int func_0021E340(char *arg0) {
+    switch (*(int *)(arg0 + 0x50)) {
+    case 0:
+        if (D_001517D0[4] == 0) {
+            if (func_00217628_3(D_001D6078, D_00137C80[0x1528 / 4],
+                                D_00137C80[0x152C / 4]) != 0) {
+                *(int *)(arg0 + 0x50) = 1;
+            } else {
+                *(int *)(arg0 + 0x50) = 3;
+            }
+        }
+        break;
+    case 1:
+        if (D_001517D0[4] == 0) {
+            char *g = D_001D5F70;
+            int *tbl = *(int **)(g + 0x108);
+            int *p = (int *)((char *)tbl + tbl[D_0015EE88]);
+            int n = *p++;
+            int sz = *p++;
+            char *b;
+            int *t;
+            int i;
+
+            func_001F9A00(tbl, p, ((sz + 3) & ~3) - 8);
+            b = D_001997D0;
+            *(int *)(arg0 + 0x54) = D_0015F780_m;
+            *(int *)(arg0 + 0x38) = *(int *)(b + 0x2C);
+            *(int *)(b + 0x2C) = n;
+            t = *(int **)(g + 0x108);
+            D_0015F780_m = (int)t;
+            for (i = 0; i < pauseSlotCount(); i++) {
+                int d = (int)t - 8;
+                *(int *)((char *)t + i * 0x10) += d;
+            }
+            *(int *)(arg0 + 0x10) &= ~4;
+            *(int *)(arg0 + 0x50) = 2;
+        }
+        break;
+    case 2:
+    case 3:
+        break;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021E4B0);
 
@@ -882,7 +1139,63 @@ void func_00220128(void *arg0) {
         func_001FA748(*(float *)((char *)arg0 + 0x40), 0.02f);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00220160);
+/* func_00234C98's second parameter is 64-bit (as in draw.c and
+   mobyfunc.c); the (int, int) declaration below this point is kept for
+   the functions matched against it. */
+extern void func_00234C98_l(int, long) __asm__("func_00234C98");
+extern int func_00116248(char *, const char *, ...); /* sprintf */
+extern int D_0013D530[];
+extern char D_001E02B0[];
+extern char D_001603A0[]; /* "%d" */
+extern char D_001603B8[]; /* "%d/" */
+extern char D_001603C0[]; /* "%d,%03d/" */
+extern char D_001603D0[]; /* "%d,%03d" */
+
+/* Draws the current item's count banner, gated like func_0021F118: the
+   item's text id 0x4F52 when its D_001E02B0 record has no counter,
+   otherwise "have/total" with thousands separators. The second sprintf
+   appends at text + the first one's length; forming that pointer in each
+   arm (`q = text + sprintf(...)`) lets gcc merge the two into one addu at
+   the join, as retail has it. */
+int func_00220160(char *arg0) {
+    char text[0x50];
+    short box[10];
+    char *p = *(char **)(D_001D5F74 + 0x40);
+    int id = *(short *)(*(int *)(p + 0x3C) * 10 + *(char **)(p + 0x48) + 6);
+    int have, total;
+    char *rec;
+
+    if (((unsigned char *)&D_0013D5C8)[id] == 0) {
+        return 0;
+    }
+    have = D_0013D530[id];
+    rec = D_001E02B0 + id * 0x18;
+    total = *(unsigned short *)(rec + 0xE);
+    func_00234C98_l(0x42, 0x44);
+    func_00234C98_l(0x47, 0xB);
+    if (*(unsigned short *)(rec + 8) == 0) {
+        func_00116248(text, func_001FE540_id(0x4F52));
+    } else {
+        char *q;
+        if (have < 1000) {
+            q = text + func_00116248(text, D_001603B8, have);
+        } else {
+            q = text + func_00116248(text, D_001603C0, have / 1000, have % 1000);
+        }
+        if (total < 1000) {
+            func_00116248(q, D_001603A0, total);
+        } else {
+            func_00116248(q, D_001603D0, total / 1000, total % 1000);
+        }
+    }
+    func_001F4630(0);
+    func_00227A30(box, arg0);
+    box[8] = 0x10;
+    box[9] = 3;
+    func_001F7560(box, 0x80FFA888L, text, -1);
+    func_001F4748();
+    return 2;
+}
 
 extern void func_00234C98(int, int);
 extern void func_00205E70(void);
@@ -996,7 +1309,61 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00220DF0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00221380);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00221688);
+/* The per-controller request slots in D_00137C80 (declared above as a
+   flat int array). */
+typedef struct { int a, b; } Pair8;
+typedef struct {
+    char pad[0x2C8];
+    Pair8 req0[6]; /* 0x2C8 */
+    Pair8 req2[6]; /* 0x2F8 */
+} Tbl137C80;
+extern Tbl137C80 D_00137C80_t __asm__("D_00137C80");
+extern int D_0015EE88 MACRO_ADDR;
+
+/* Pause sub-state machine at arg0+0x44. States 0 and 2 wait for their
+   request (arg0+0x48 / +0x4C) and for D_001517D0[4] to clear, then run
+   func_00217628 with the controller's slot and advance (or go to -1 on
+   failure); states 1 and 3 advance once D_001517D0[4] clears. Always
+   returns 0. A switch with its cases in source order 0-3 gives retail's
+   case tree and block order; reading the slot's two words as fields of a
+   struct gives two address adds (one becomes retail's copy). */
+int func_00221688(char *arg0) {
+    switch (*(int *)(arg0 + 0x44)) {
+    case 0:
+        if (*(int *)(arg0 + 0x48) != 0 && D_001517D0[4] == 0) {
+            if (func_00217628_3(*(int *)(arg0 + 0x48),
+                                D_00137C80_t.req0[D_0015EE88].a,
+                                D_00137C80_t.req0[D_0015EE88].b) != 0) {
+                *(int *)(arg0 + 0x44) += 1;
+            } else {
+                *(int *)(arg0 + 0x44) = -1;
+            }
+        }
+        break;
+    case 1:
+        if (D_001517D0[4] == 0) {
+            *(int *)(arg0 + 0x44) = 2;
+        }
+        break;
+    case 2:
+        if (*(int *)(arg0 + 0x4C) != 0 && D_001517D0[4] == 0) {
+            if (func_00217628_3(*(int *)(arg0 + 0x4C),
+                                D_00137C80_t.req2[D_0015EE88].a,
+                                D_00137C80_t.req2[D_0015EE88].b) != 0) {
+                *(int *)(arg0 + 0x44) += 1;
+            } else {
+                *(int *)(arg0 + 0x44) = -1;
+            }
+        }
+        break;
+    case 3:
+        if (D_001517D0[4] == 0) {
+            *(int *)(arg0 + 0x44) = 4;
+        }
+        break;
+    }
+    return 0;
+}
 
 /* Returns the packed texture handle the draw call takes as its last
    64-bit argument, so it is `long`: retail stores $v0 straight to the
@@ -1386,11 +1753,142 @@ int func_00222E98(char *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00222FA8);
+typedef struct { char c[2]; } Glyph2;
+extern char D_001603F0[];
+extern char D_001603F8[];
+extern int func_00200248(int);
+/* x, y first: arguments are evaluated in order, so the y conversion runs
+   before the nested texture calls and is kept in $f20 across them, as in
+   retail (and in func_00205E70, the other caller). */
+extern void func_00200E38_f(float, float, int, int, int, float, float, float)
+    __asm__("func_00200E38");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00223140);
+/* Draws the glyph "\x10" (arg0->0x38 set) or "\x11" and a gauge sprite
+   below it, rotated by pi in the second case. The glyph string is a
+   2-byte char struct copied onto the stack (retail's lb/lb/sb/sb). */
+int func_00222FA8(char *arg0) {
+    Glyph2 buf;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002232E0);
+    func_001F4630(0);
+    if (*(int *)(arg0 + 0x38) != 0) {
+        buf = *(Glyph2 *)D_001603F0;
+        func_001F68E8_c(4, *(int *)(arg0 + 0x24) / 2 - 8, 0x80FFA888L, &buf, -1);
+        func_00200E38_f(640.0f, (float)(*(int *)(arg0 + 0x24) << 3), 0x20, 0x10,
+                        func_00200248(func_00200198(0xE99E, 6)), 128.0f,
+                        256.0f, 0.0f);
+    } else {
+        buf = *(Glyph2 *)D_001603F8;
+        func_001F68E8_c(*(int *)(arg0 + 0x20) - 0x18,
+                        *(int *)(arg0 + 0x24) / 2 - 8, 0x80FFA888L, &buf, -1);
+        func_00200E38_f(192.0f, (float)(*(int *)(arg0 + 0x24) << 3), 0x20, 0x10,
+                        func_00200248(func_00200198(0xE99E, 6)), 128.0f,
+                        256.0f, 3.14159274f);
+    }
+    func_001F4748();
+    return 2;
+}
+
+/* D_001DE0C0 is declared above as Src0C (halfword view); these rows are
+   read here as two word-sized icon ids. */
+typedef struct { int a; int b; int c; } IconRow;
+extern IconRow D_001DE0C0_i[] __asm__("D_001DE0C0");
+extern void func_001F6EA8(int, int, long, void *, int);
+
+/* Draws the current page's icons: the page record (stride 0xC) gives a
+   row of D_001DE0C0, or -1 for the single icon 0x5019 centred in the
+   box; otherwise the row's two icons at 1/3 and 2/3 of the height. The
+   row is read before func_001F4630, and each call is written with its
+   arguments inline: gcc evaluates them in order, so x and y are computed
+   before the nested func_001FE540 call. */
+int func_00223140(char *arg0) {
+    char *p = *(char **)(D_001D5F74 + 0x40);
+    int row = *(int *)(*(char **)(p + 0x34) + *(int *)(p + 0x40) * 12 + 4);
+
+    func_001F4630(0);
+    if (row == -1) {
+        func_001F6EA8(*(int *)(arg0 + 0x20) / 2, *(int *)(arg0 + 0x24) / 2 - 8,
+                      0x80FFA888L, func_001FE540_id(0x5019), -1);
+    } else {
+        func_001F6EA8(*(int *)(arg0 + 0x20) / 2, *(int *)(arg0 + 0x24) / 3 - 8,
+                      0x80FFA888L, func_001FE540_id(D_001DE0C0_i[row].a), -1);
+        func_001F6EA8(*(int *)(arg0 + 0x20) / 2, *(int *)(arg0 + 0x24) * 2 / 3 - 8,
+                      0x80FFA888L, func_001FE540_id(D_001DE0C0_i[row].b), -1);
+    }
+    func_001F4748();
+    return 2;
+}
+
+extern int D_0015EFB4_m __asm__("D_0015EFB4") MACRO_ADDR;
+extern int D_0015EFA0 MACRO_ADDR;
+extern int D_0015F6CC MACRO_ADDR;
+extern char D_001D5240[];
+extern void func_001FBC80(int, void *, int);
+extern unsigned char D_0014C008[];
+extern unsigned char D_0015EEB0[] MACRO_ADDR;
+extern unsigned char D_0015EEC0[] MACRO_ADDR;
+extern void func_001F9A00(void *, void *, int);
+extern void func_00209CE8(int);
+extern void func_0020BFC8(int, int);
+extern int func_001F98C0(int);
+extern void func_001F4E08(int);
+extern unsigned char D_0013F450[];
+extern void func_00228268(void);
+
+/* Pad handler for the restart option (pad word D_0013CBE4): 0x20 opens
+   the confirm popup; 0x40 restarts: the level reload (func_00209CE8)
+   runs with the D_0013D510+0x1D byte, the 4 bytes at D_0014C008 and the
+   D_0015EEB0/D_0015EEC0 tables saved and restored around it, then the
+   pause state is reset. The flags are MACRO_ADDR (retail's one-register
+   loads, $at stores and $gp-relative stores in delay slots); globals
+   used as bases get a `char *` local per block, so retail keeps only the
+   D_0013D510 %hi across the calls. */
+int func_002232E0(void) {
+    int v = D_0013CBE4;
+
+    if (v & 0x20) {
+        D_0015EFB4_m |= 2;
+        func_001FBC80(3, D_001D5240, 0);
+        return 0;
+    }
+    if (v & 0x40) {
+        unsigned char save[4];
+        char tbl0[0xC];
+        char tbl1[0xC];
+        unsigned char tag;
+        int i;
+
+        {
+            unsigned char *m = D_0013D510;
+            tag = m[0x1D];
+        }
+        for (i = 0; i < 4; i++) {
+            save[i] = D_0014C008[i];
+        }
+        func_001F9A00(tbl0, D_0015EEB0, 0xC);
+        func_001F9A00(tbl1, D_0015EEC0, 0xC);
+        {
+            char *g = D_001D5F70;
+            func_00209CE8(*(int *)(g + 0xE0));
+        }
+        {
+            unsigned char *m2 = D_0013D510;
+            m2[0x1D] = tag;
+        }
+        for (i = 0; i < 4; i++) {
+            D_0014C008[i] = save[i];
+        }
+        func_001F9A00(D_0015EEB0, tbl0, 0xC);
+        func_001F9A00(D_0015EEC0, tbl1, 0xC);
+        D_0015EFA0 = 1;
+        D_0015F6CC = 0;
+        func_0020BFC8(0, -1);
+        func_00228268();
+        func_001F4E08(func_001F98C0(0x10));
+        D_0013F450[0x20B1] = 1;
+        return -1;
+    }
+    return 0;
+}
 
 int func_00223478(void *arg0) {
     *(int *)((char *)arg0 + 0x40) = 0;
@@ -1403,11 +1901,78 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00223490);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00223810);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002239F0); /* ObtainAllGoldWeaponsMenu */
+extern void func_001153FC(void *, int, int); /* memset */
+typedef struct {
+    short f0, f2, f4, f6;
+    short x, y;
+    short fC;
+    unsigned short fE;
+    short f10, f12, f14, f16;
+} Box18;
+
+/* ObtainAllGoldWeaponsMenu: two icon + text rows (texts 0x5187, 0x5188)
+   in a box sized from arg0+0x20/0x24. The box is built zeroed in a
+   temporary and copied (a struct assignment: retail's ldl/ldr copy). y is
+   one variable, 4 and then the bottom of the first text (buf.fE, written
+   by func_001F7560) plus 0x10, with each icon at y + 8; it and x stay in
+   callee-saved registers across the calls, as in retail. */
+int func_002239F0(char *arg0) {
+    Box18 buf;
+    Box18 tmp;
+    int x, y;
+
+    func_001153FC(&tmp, 0, 0x18);
+    tmp.f2 = *(unsigned short *)(arg0 + 0x24);
+    tmp.f6 = *(unsigned short *)(arg0 + 0x20);
+    tmp.f10 = 0x10;
+    buf = tmp;
+    x = 0x18;
+    y = 4;
+    func_001F4630(0);
+    func_00200468(func_00200198(0xE99A, 6), 4, y + 8, 0x10, 0x10, 0x80);
+    buf.x = x;
+    buf.y = y;
+    func_001F7560(&buf, 0x80FFA888L, func_001FE540_id(0x5187), -1);
+    y = (short)buf.fE + 0x10;
+    buf.y = y;
+    func_00200468(func_00200198(0xE99A, 6), 4, y + 8, 0x10, 0x10, 0x80);
+    func_001F7560(&buf, 0x80FFA888L, func_001FE540_id(0x5188), -1);
+    func_001F4748();
+    return 2;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00223B40); /* DrawEndScreenMenuMaybe */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00223E40);
+/* Page records in D_0013D390: stride 0x1C from +0x20. */
+typedef struct { int row; char pad[0x18]; } PageRec;
+typedef struct { char pad[0x20]; PageRec rec[1]; } PageTbl;
+
+/* func_00223140's sibling for the D_0013D390 pages: if the page passes
+   four gates, draws icon 0x521C centred (row -1) or the row's two
+   D_001DE0C0 icons at y 4 and 0x14. The row is read before
+   func_001F4630; the record is reached as a struct member off the page
+   base (retail's base-first add). */
+int func_00223E40(char *arg0) {
+    char *g = D_001D5F70;
+    char *b = D_0013D390;
+    int row = ((PageTbl *)b)->rec[*(int *)(*(char **)(*(char **)(g + 4) + 0x40) + 0x40)].row;
+
+    func_001F4630(0);
+    if (*(int *)(b + 0xDC) < 3 && *(int *)(b + 0xE4) < 0
+        && *(int *)(g + 0x154) >= 0xB && *(int *)(b + 8) == 2) {
+        if (row == -1) {
+            func_001F6EA8(*(int *)(arg0 + 0x20) / 2, *(int *)(arg0 + 0x24) / 2 - 8,
+                          0x80FFA888L, func_001FE540_id(0x521C), -1);
+        } else {
+            func_001F6EA8(*(int *)(arg0 + 0x20) / 2, 4, 0x80FFA888L,
+                          func_001FE540_id(D_001DE0C0_i[row].a), -1);
+            func_001F6EA8(*(int *)(arg0 + 0x20) / 2, 0x14, 0x80FFA888L,
+                          func_001FE540_id(D_001DE0C0_i[row].b), -1);
+        }
+    }
+    func_001F4748();
+    return 2;
+}
 
 extern void func_00226D50(int);
 
