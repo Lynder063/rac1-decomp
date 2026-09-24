@@ -60,10 +60,10 @@ date with `src/`. It leaves out retail's linker fill (the `0xCDCDCDCD`
 runs between objects that splat also emits as 4-byte "functions"; 38 of
 them, 200 bytes): fill is not code, and the build reproduces it byte for
 byte. Totals written in prose go stale, so this file no
-longer keeps a running count. Snapshot as of 2026-09-23 (`f26a871`):
-**725 functions have source; 684 are exact on size and bytes; 41 are
-same-size near-misses kept as C; 0 are size-mismatched; 14.36% of code
-bytes match; 20 of 121 units complete.** Re-run `bash tools/build_sn.sh`
+longer keeps a running count. Snapshot as of 2026-09-24 (`f53f9ae`):
+**731 functions have source; 691 are exact on size and bytes; 40 are
+same-size near-misses kept as C; 0 are size-mismatched; 14.59% of code
+bytes match; 21 of 121 units complete.** Re-run `bash tools/build_sn.sh`
 (which runs the sweep, the layout check and the whole-image check)
 after any change rather than trusting a snapshot or any single entry.
 
@@ -978,6 +978,64 @@ division family, which is the next thing to try under 2.9-ee. The
 functions this section says 2.9-ee improved (`func_00116320`,
 `func_0011DC50`, `func_0011B710`) are worth re-checking for the same
 reason: they may be library or SDK code as well.
+
+## Sony's SDK archives match retail: names for core's library code
+
+**Found 2026-09-24 (batch S).** The SDK libraries in the toolchain mirror,
+`toolchain/sn-prodg-24/local/sce/ee/lib/*.a`, are what retail linked,
+the way `libgcc.a` is for libgcc: every one of batch S's 14 functions
+matches a member of `libmc.a`, `libdbc.a`, `libpad2.a` or `libmpeg.a`
+byte for byte (relocations masked). `tools/libgcc_ref.py`'s `members()`
+reads any of them. The members have no type information, but their
+`.symtab`/`.mdebug` give real names for functions and static data, and
+their undefined symbols name the callees:
+
+- **libmc.o** (0x1236F0): sceMcInit, sceMcOpen (0x1238B0), sceMcMkdir,
+  sceMcClose, sceMcSeek, mceIntrReadFixAlign, sceMcRead (0x123C30),
+  sceMcWrite, mcHearAlarm (0x123EC0), mcDelayThread, sceMcSync
+  (0x123F30), mceGetInfoApdx, sceMcGetInfo, sceMcDelete, sceMcUnformat.
+  Data: mcClientID D_00159B00, typeAddr/freeAddr/formAddr
+  D_00159B28/2C/30, buffFileInfo D_00159B40, sifParamOrd D_00159B80,
+  sifParamFname D_00159BB0, sifParamNext D_0015A000, currentDir
+  D_0015A0C0, retval D_0015B0C0, mcRunCmdNo D_00132EA8, semaidRegFunc
+  D_00132EAC.
+- **libdbc.o** (0x1245F8): sceDbcGetModVersion, sceDbcInit (0x124650),
+  sceDbcSetWorkAddr, sceDbcCreateSocket (0x124858), sceDbcGetDepNumber,
+  sceDbcReceiveData (0x124A70), DPRINT (0x124B60). Data: cd_base
+  D_0015B108, cd_send_data2 D_0015B130, sif_buffer D_0015B180,
+  sif_dma_buf D_0015B580, link_state_table D_0015B600.
+- **libpad2.o** (0x124B88): scePad2Init, scePad2CreateSocket,
+  scePad2GetButtonProfile (0x124DF0), scePad2GetState, scePad2LinkDriver
+  (0x125020), scePad2GetSide, scePad2CheckDma, scePad2SetButtonOrder
+  (0x125160). Data: pad2_info D_0015B640 (16 x 0x330, the Ent330
+  table), isInit D_00132ED0.
+- **libmpeg** (0x12A2F0): _doCSC, _ch3dmaCSC, _doCSC2, _ch4dma,
+  _csc_storeRefImage; bit.o (0x12AA70): _sysbitInit, _sysbitNext,
+  _sysbitFlush, _sysbitGet, _sysbitMarker, _sysbitJump, _sysbitPtr.
+- **Kernel and SIF callees**: func_00118CC0 WaitSema, func_00118C90
+  SignalSema, func_00118B20 SetAlarm, func_00118BE0 GetThreadId,
+  func_00118C00 SleepThread, func_00118D80 FlushCache, func_00119288
+  SyncDCache, func_0011D960 DIntr, func_0011D9A8 EIntr, func_00118AC0
+  AddDmacHandler2, func_00118AD0 RemoveDmacHandler, func_00119460
+  EnableDmac, func_001193F8 DisableDmac, func_0011AD70
+  sceSifWriteBackDCache, func_0011B4C8 sceSifCallRpc, func_0011B2F8
+  sceSifBindRpc, func_0011AE20 sceSifInitRpc, func_0011A6C8 scePrintf,
+  func_001138B8 exit, func_001153FC memset, func_00116B00 strncpy.
+
+What follows from it:
+
+- **One of our objects can be several of theirs.** `src/core/001236F0.c`
+  is libmc.o, libdbc.o and libpad2.o back to back; no linker fill marked
+  the joins. The archive members' extents are the true object
+  boundaries.
+- **The compiler question is settled per member.** A function that
+  matches an SDK member is 2.9-ee code.
+- **Near-misses get an exact reference to diff against**, with no link:
+  scePad2Init (func_00124B88), scePad2LinkDriver (func_00125020) and
+  _sysbitInit (func_0012AA70) are all in these archives.
+- **Next:** generalise `tools/libgcc_ref.py` to every archive in the
+  mirror (and newlib's libc.a), map every core_text function to its
+  member and name, and put the names on the stubs.
 
 ## Retail's linker dead-stripped unreferenced functions
 
