@@ -24,6 +24,15 @@ import sys
 LABEL = r"nonmatching\s+((?:D|jtbl)_[0-9A-F]{8})\b"
 
 
+def first_address(body: list[str]) -> int | None:
+    """VRAM of the first data line (spimdisasm's `/* ROM VRAM ... */`)."""
+    for line in body:
+        m = re.match(r"\s*/\*\s*[0-9A-Fa-f]+\s+([0-9A-Fa-f]{8})\b", line)
+        if m:
+            return int(m.group(1), 16)
+    return None
+
+
 def main() -> None:
     src, prefix, cuts = sys.argv[1], sys.argv[2], set(sys.argv[3:])
     lines = open(src, newline="").read().splitlines(keepends=True)
@@ -47,8 +56,18 @@ def main() -> None:
             cur.extend(body)
     parts.append(cur)
     for n, body in enumerate(parts, 1):
+        # A piece after a cut starts where retail's next item starts, and
+        # the linker only puts it there if its section is aligned at least
+        # as much as that address is (the gap after our table is always
+        # smaller than that). So open it with the address's own alignment,
+        # capped at 16. The first piece starts at the segment's own base.
+        align = []
+        start = first_address(body)
+        if n > 1 and start is not None:
+            bits = min((start & -start).bit_length() - 1, 4)
+            align = [f".align {bits}\n"]
         with open(f"{prefix}_{n}.s", "w", newline="") as f:
-            f.writelines(header + body)
+            f.writelines(header + align + body)
     print(f"split {src} into {len(parts)} part(s) around {sorted(cuts)}")
 
 

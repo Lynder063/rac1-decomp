@@ -32,27 +32,41 @@ bash rac1.ld.sh >/dev/null
 
 # bss symbols have no definitions anywhere; their names are their
 # addresses. Collect them from the linker's complaints, then equate.
-make_bss_equs() {
-  sn "$TC/ee-ld.exe" -T build-sn/rac1.ld -o build-sn/rac1.elf >build-sn/ld_undef.log 2>&1
-  grep -oE "undefined reference to \`[^']+'" build-sn/ld_undef.log \
-    | sed -E "s/.*\`([^']+)'/\1/" | sort -u >build-sn/undefined_syms.txt
+# Adds whatever the link still reports as undefined to the bss equates.
+# The link runs WITH the current equates, so only the new symbols are
+# reported, and the list only ever grows. That matters because this ld
+# can crash part-way through a long run of undefined references
+# ("Unhandled illegal instruction"), and a crashed run lists only the
+# objects before the crash. Returns nonzero when nothing new was found.
+update_bss_equs() {
+  local equs=""
+  [ -f build-sn/bss_equs.o ] && equs=build-sn/bss_equs.o
+  sn "$TC/ee-ld.exe" -T build-sn/rac1.ld $equs -o build-sn/rac1.elf >build-sn/ld_undef.log 2>&1
+  local new
+  new=$(grep -oE "undefined reference to \`[^']+'" build-sn/ld_undef.log \
+    | sed -E "s/.*\`([^']+)'/\1/" | sort -u)
+  [ -n "$new" ] || return 1
+  touch build-sn/undefined_syms.txt
+  { echo "$new"; cat build-sn/undefined_syms.txt; } | sort -u >build-sn/undefined_syms.tmp
+  mv build-sn/undefined_syms.tmp build-sn/undefined_syms.txt
   python tools/gen_bss_equs.py >/dev/null
   sn "$TC/ee-as.exe" -o build-sn/bss_equs.o build-sn/bss_equs.s
 }
 
-[ -f build-sn/bss_equs.o ] || make_bss_equs || exit 1
+[ -f build-sn/bss_equs.o ] || update_bss_equs || true
 
 # The equates are cached, so C that newly references a bss symbol fails to
-# link. Regenerate and retry once before giving up, rather than making every
-# contributor learn to delete the file by hand. The retry is unconditional:
-# with symbols missing this ld build does not always report "undefined
-# reference" -- it can segfault instead (verified).
-if ! sn "$TC/ee-ld.exe" -T build-sn/rac1.ld build-sn/bss_equs.o -o build-sn/rac1.elf 2>build-sn/ld.log; then
-  echo "link failed -- regenerating build-sn/bss_equs.o and retrying once"
-  make_bss_equs || exit 1
-  sn "$TC/ee-ld.exe" -T build-sn/rac1.ld build-sn/bss_equs.o -o build-sn/rac1.elf \
-    || { tail -5 build-sn/ld.log; echo "*** link failed"; exit 1; }
-fi
+# link. Add the missing symbols and retry, a few passes at most, rather than
+# making every contributor learn to delete the file by hand.
+for pass in 1 2 3 4 5 6; do
+  if sn "$TC/ee-ld.exe" -T build-sn/rac1.ld build-sn/bss_equs.o -o build-sn/rac1.elf 2>build-sn/ld.log; then
+    break
+  fi
+  echo "link failed -- adding the missing bss symbols (pass $pass)"
+  if ! update_bss_equs || [ "$pass" = 6 ]; then
+    tail -5 build-sn/ld.log; echo "*** link failed"; exit 1
+  fi
+done
 
 python tools/sweep_matches.py | sed -n '/=== .* audited ===/,/byte mismatch/p'
 python tools/check_layout.py | tail -1
