@@ -52,6 +52,28 @@ asm/
 assets/
 .aider*
 
+# Ghidra project files -- these are local to each contributor's machine.
+*.gpr
+*.lock
+*.lock~
+*.rep/
+pyghidra_mcp_projects/
+
+# One-off scratch / helper scripts created during a session.
+patch_*.py
+get_count.py
+get_func.py
+get_funcs.py
+run_test.py
+push_ghidra.py
+update_db.py
+query.py
+scratch.c
+tools/create_ghidra_project.py
+16
+rac1_ld_numbered.txt
+ghidra-ee.zip
+
 # AI Decomp platform local data (database, local model training datasets, logs)
 tools/platform/data/
 *.db

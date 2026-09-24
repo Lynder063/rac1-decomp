@@ -41,7 +41,7 @@ def provided() -> list[tuple[str, str, str]]:
     for src in SEGMENT_SOURCES["text"]:
         text = Path(src).read_text(errors="replace")
         stubs = set(STUB.findall(text))
-        obj = "build-sn/" + str(Path(src).with_suffix(".o")).removeprefix("src/")
+        obj = "build-sn/" + Path(src).with_suffix(".o").as_posix().removeprefix("src/")
         for func in dict.fromkeys(FUNC_DEF.findall(text)):
             if func not in stubs:
                 out += [(label, func, obj) for label in retail_tables(func)]
