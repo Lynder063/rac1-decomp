@@ -169,23 +169,19 @@ void func_0011AA00(void) {
 extern int D_00154F64 NOT_SDA;
 extern int D_00154F6C NOT_SDA;
 
-/*
- * Close, not exact (6/44), same size, and instruction-for-instruction
- * identical to retail -- same opcodes, same order, same operands. The
- * whole residual is register choice: retail reuses arg0's own register
- * ($4) for the loaded base once arg0 is dead and accumulates into $3,
- * while this compiler puts the base in $v0. Hoisting the shift into an
- * `off` local and ordering the two stores took it from 20/44 to 6/44;
- * the rest is the scratch-register question, and specifically the half
- * of it the declaration-order lever cannot reach, since that steers
- * locals and this is a parameter's register being reused.
- */
+/* Sets slot arg0's two words: D_00154F6C's for arg0 >= 0, D_00154F64's
+   below. In func_0011AA68's shape: reassigning arg0 to the table is what
+   puts the base in $a0, as in retail. */
 void func_0011AA38(int arg0, int arg1, int arg2) {
-    int off = arg0 * 8;
-    char *base = (char *)((arg0 >= 0) ? D_00154F6C : D_00154F64);
-    char *p = base + off;
-    *(int *)(p + 0x0) = arg1;
-    *(int *)(p + 0x4) = arg2;
+    int off = arg0 << 3;
+    if (arg0 < 0) {
+        arg0 = D_00154F64;
+    } else {
+        arg0 = D_00154F6C;
+    }
+    off += arg0;
+    *(int *)(off + 0) = arg1;
+    *(int *)(off + 4) = arg2;
 }
 
 void func_0011AA68(int arg0) {

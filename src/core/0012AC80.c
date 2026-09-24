@@ -300,15 +300,17 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BDD0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BF40);
 
-extern void func_0012C0A0(void *);
-extern void func_0012BF40(void *);
+extern void func_0012C0A0(void *, int, int);
+extern void func_0012BF40(void *, int, int);
 
-void func_0012C058(void *arg0) {
+/* Hands the call on by the inner object's +0x174 mode: func_0012BF40 for
+   mode 3, func_0012C0A0 otherwise, with the caller's arguments. */
+void func_0012C058(void *arg0, int arg1, int arg2) {
     Obj40 *inner = ((Wrapper *)arg0)->obj;
     if (inner->unk174 != 3) {
-        func_0012C0A0(arg0);
+        func_0012C0A0(arg0, arg1, arg2);
     } else {
-        func_0012BF40(arg0);
+        func_0012BF40(arg0, arg1, arg2);
     }
 }
 
@@ -453,18 +455,20 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C990);
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CA70);
 
 extern int func_00128A58(void *, int);
+extern void func_00128A58_v(void *, int) __asm__("func_00128A58");
 
 /*
- * Close, not exact (8/140), same size. Logic is certain -- a bitstream
- * reader: pull 3 bits, and if the next bit is set pull three 8-bit
- * fields (keeping the last at +0x144); then a 14-bit field to +0x148,
- * a flag bit, and another 14-bit field to +0x14C.
+ * MPEG-2 sequence_display_extension(): video_format (3 bits), then
+ * colour_description (1) and, when set, colour_primaries,
+ * transfer_characteristics and matrix_coefficients (8 each; the last is
+ * kept at +0x144); display_horizontal_size (14) to +0x148, a marker
+ * bit, display_vertical_size (14) to +0x14C.
  *
- * The eight bytes are two adjacent instructions in the wrong order:
- * retail stores the +0x148 result immediately after its call and then
- * sets up $4 for the next one, while this compiler hoists the `$4`
- * setup above the store. Binding the result to a named temporary first
- * changes nothing -- the scheduler makes the same choice either way.
+ * The marker bit's read goes through a void view of the reader. As a
+ * value call it would reset $v0's readers, and the +0x148 store would
+ * lose the scheduler tie to the next call's argument setup. The C
+ * without the alias is exact under Sony's 2.9-ee, so this file (likely
+ * the SDK's libmpeg) may be that compiler's and the alias a stand-in.
  */
 void func_0012CBA0(void *arg0) {
     char *s = (char *)arg0;
@@ -476,7 +480,7 @@ void func_0012CBA0(void *arg0) {
         *(int *)(s + 0x144) = func_00128A58(s, 8);
     }
     *(int *)(s + 0x148) = func_00128A58(s, 0xE);
-    func_00128A58(s, 1);
+    func_00128A58_v(s, 1);
     *(int *)(s + 0x14C) = func_00128A58(s, 0xE);
 }
 

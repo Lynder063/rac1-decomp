@@ -1623,42 +1623,27 @@ int func_00226EA8(int invert) {
     return 0;
 }
 
-/*
- * Byte mismatch at correct size (0xB0), 2 of 44 words, and they are one
- * swap: retail materialises the `return 0` value BEFORE the `and` that
- * clears the bit, we do it after. Both are independent single
- * instructions feeding a branch and its delay slot. Tried and did not
- * move it: an explicit result local assigned before the store and
- * returned afterwards (byte-identical). Scheduling placement, the
- * recorded dead end.
- *
- * Everything else is exact, including the shared 0xCB latch handled the
- * same way as in func_0021CDA0 -- `char *g = D_001D5F70;` with 0xCB in
- * the displacement, not folded into the symbol addend.
- *
- * Release the binding whose key matches. Bit 1 means "bound"; bit 2 on
+/* Release the binding whose key matches. Bit 1 means "bound"; bit 2 on
    top of that means it also owns the shared 0xCB latch, which has to be
    handed back through func_00217588 first. Always returns 0 so callers
-   can assign it straight over their handle. */
+   can assign it straight over their handle. The flags are read from the
+   table at every use, not kept in a local. */
 int func_00226F68(int key) {
     int i;
-    int f;
     char *g;
 
     for (i = 0; i < 5; i++) {
         if (D_001D6448_t[i].key == key) {
-            f = D_001D6448_t[i].flags;
-            if ((f & 2) != 0) {
-                if ((f & 4) != 0) {
+            if ((D_001D6448_t[i].flags & 2) != 0) {
+                if ((D_001D6448_t[i].flags & 4) != 0) {
                     g = D_001D5F70;
-                    D_001D6448_t[i].flags = f ^ 4;
+                    D_001D6448_t[i].flags ^= 4;
                     if (*(unsigned char *)(g + 0xCB) != 0) {
                         func_00217588();
                         g[0xCB] = 0;
                     }
-                    f = D_001D6448_t[i].flags;
                 }
-                D_001D6448_t[i].flags = f & ~2;
+                D_001D6448_t[i].flags &= ~2;
                 return 0;
             }
         }

@@ -373,13 +373,15 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0022DD68); /* sound_update */
 
 extern void func_00120F30(int);
 extern int func_0012E060(void *, int);
-extern void func_0012EE70(int);
+extern int func_0012EE70(int);
 extern void func_0012EF48(int);
 extern void func_0012E2E8(void);
 
 /* Reentrancy-guarded: base+0x44 is held at 1 for the duration. The
    return value is func_0012E060's, captured in the delay slot of the
-   *next* call. */
+   *next* call. That callee, func_0012EE70 (snd_StreamSafeCheckCDIdle),
+   returns int: a value call resets $v0's readers, which lets the
+   capture sink into its slot. */
 int func_0022EA20(void *arg0) {
     char *base = D_0013E650;
     int r = 0;
