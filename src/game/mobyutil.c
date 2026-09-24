@@ -226,42 +226,21 @@ int func_002140B0(int arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002140F0);
 
-/*
- * REVERTED -- size mismatch (92 vs retail's 96). Semantics are
- * certain and every instruction matches except one:
- *
- *   float func_002140F8(float a, float b) {
- *       int v = func_001160D8();
- *       float delta = b - a;
- *       v = (v >> 16) & 0x7FFF;
- *       return a + (float)v * delta * 3.0517578125e-05f;
- *   }
- *
- * i.e. a uniform random float in [a, b): a + (rand15/32768)*(b-a).
- * Missing the same GPR->FPU transfer hazard `nop` (between `mtc1
- * $2,$f0` and the `cvt.s.w` consuming it) already documented as not
- * reachable from C on the sibling func_00214158, immediately below.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_002140F8);
+/* As func_00214158: the old note's C, with the mtc1 nop added by the
+   pipeline. */
+float func_002140F8(float a, float b) {
+    int v = func_001160D8();
+    float delta = b - a;
+    v = (v >> 16) & 0x7FFF;
+    return a + (float)v * delta * 3.0517578125e-05f;
+}
 
-/*
- * REVERTED -- size mismatch (76 vs retail's 80). Semantics are certain:
- *
- *   float func_00214158(void) {
- *       int v = ((func_001160D8() >> 16) & 0xFFF) - 0x800;
- *       return (float)v * 3.14159274f * 0.00048828125f;
- *   }
- *
- * i.e. a random angle in radians: take 12 bits out of the PRNG, centre
- * them on zero, and scale by pi * 2^-11. Every instruction matches
- * including both constant materializations (0x40490FDB and 0x3A000000).
- * The single missing instruction is a hazard `nop` retail carries
- * between `mtc1 $2,$f0` and the `cvt.s.w` that consumes $f0 -- the same
- * class as the lwc1 load-delay nop, from the GPR->FPU transfer side.
- * Not reachable from C. tools/rank_candidates.py had ranked this a
- * candidate; it now detects this pattern too.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00214158);
+/* The C of the old revert note: the nop it lacked is ps2eeas's (after
+   an mtc1), which tools/ps2eeas_nops.py now adds. */
+float func_00214158(void) {
+    int v = ((func_001160D8() >> 16) & 0xFFF) - 0x800;
+    return (float)v * 3.14159274f * 0.00048828125f;
+}
 
 extern float func_00214158(void);
 extern float func_002140F8(float, float);
@@ -274,7 +253,16 @@ void func_002141A8(void *arg0, float arg1, float arg2) {
     func_00215C00(arg0, func_002140F8(arg1, arg2), r1, r2);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00214220);
+/* Cosine interpolation: a + (b - a) * ((1 - cos(t * pi)) * 0.5). */
+float func_00214220(float a, float b, float t) {
+    if (t == 0.0f) {
+        return a;
+    }
+    if (t == 1.0f) {
+        return b;
+    }
+    return a + (b - a) * ((1.0f - func_001F9F90(t * 3.14159274f)) * 0.5f);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002142B8);
 

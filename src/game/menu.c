@@ -109,9 +109,42 @@ int func_002071F0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207200);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002072C0);
+extern int D_001414DC_early __asm__("D_001414DC") NOT_SDA;
+extern unsigned char D_0013D49E NOT_SDA;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207340);
+/* `if (x) return 1;` in both arms with one shared `return 0;` keeps the
+   flag test a beqz with the li in its slot; a result variable or a
+   return 0 per arm becomes sltu. */
+int func_002072C0(int arg0, float unused1, float unused2, float arg1) {
+    int is16 = D_001414DC_early == 0x10;
+
+    if (arg0 < 0x100) {
+        if (D_0013D49E != 0) {
+            return 1;
+        }
+    } else if (arg1 >= 58.0f && arg1 <= 86.0f && !is16) {
+        return 1;
+    }
+    return 0;
+}
+
+typedef struct {
+    char _pad0[0x12E4];
+    unsigned char unk12E4;
+    char _pad12E5[0x208C - 0x12E5];
+    int unk208C;
+} Menu13F450;
+extern Menu13F450 D_0013F450;
+
+/* The struct's address in a local keeps one base register for both
+   field reads. */
+int func_00207340(int arg0, float unused1, float unused2, float arg1) {
+    if (arg0 < 0x100) {
+        Menu13F450 *s = &D_0013F450;
+        return s->unk208C == 17 || s->unk208C == 18 || s->unk12E4 == 1;
+    }
+    return (arg1 >= 95.0f) ? 1 : 0;
+}
 
 extern short D_0015FE24;   /* declared small so -G2 puts it in SDA */
 
@@ -188,35 +221,32 @@ int func_00207CB0(int arg0, int arg1) {
     return D_0013D4C5 != 0;
 }
 
-/*
- * Reverted: size mismatch (ours=80, retail=88 -- 8 bytes short).
- *
- *   int func_00207CE0(int arg0, float unused1, float unused2,
- *                      float f14) {
- *       if (arg0 < 0xE0) {
- *           return f14 >= 47.75f;
- *       }
- *       return f14 < 29.0f;
- *   }
- *
- * Same shape and thresholds-in-spirit as func_00207E28/func_00207EC0
- * below in this file. Getting retail's $f14 register for the real
- * float argument required TWO unused leading `float` parameters
- * (neither `int` nor `double` padding reproduced it) -- i.e. this
- * compiler counts float argument registers independently of
- * intervening int params, consecutively from $f12, with no shadow-
- * slot pairing to a specific argument POSITION. Worth remembering for
- * any other $f14/$f16-argument function in this file. Semantics and
- * constants confirmed exact (0x423F0000 = 47.75f, not 47.5f). Missing
- * the same GPR/FPU-adjacent hazard nop (between `mtc1` and the
- * following `c.le.s`) already documented as unreachable on the two
- * siblings.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00207CE0);
+/* The two unused float parameters put the threshold's argument in
+   $f14 (floats count consecutively from $f12). The nops after the mtc1
+   and the compare are ps2eeas's (tools/ps2eeas_nops.py). */
+int func_00207CE0(int arg0, float unused1, float unused2, float arg1) {
+    if (arg0 < 0xE0) {
+        return (arg1 >= 47.75f) ? 1 : 0;
+    }
+    return (arg1 < 29.0f) ? 1 : 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207D38);
+/* `(a && b) ? 1 : 0` gives retail's bc1f then bc1tl; the other arm is
+   a plain `? 1 : 0`. */
+int func_00207D38(int arg0, float unused1, float unused2, float arg1) {
+    if (arg0 < 0xE0) {
+        return (arg1 >= 44.0f && arg1 <= 45.0f) ? 1 : 0;
+    }
+    return (arg1 >= 37.0f) ? 1 : 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207DB0);
+/* func_00207D38's twin. */
+int func_00207DB0(int arg0, float unused1, float unused2, float arg1) {
+    if (arg0 < 0xE0) {
+        return (arg1 >= 42.0f && arg1 <= 43.0f) ? 1 : 0;
+    }
+    return (arg1 >= 39.0f) ? 1 : 0;
+}
 
 /* Returning the compare as `? 1 : 0` gives bc1t with the `li 1` in its
    slot; folded into `&&` it becomes bc1tl. The two nops, after the mtc1
@@ -295,15 +325,43 @@ int func_00207F40(void) {
     return D_0013D4E1 != 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207F50);
+extern unsigned char D_0013D4E6 NOT_SDA;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207FD0);
+int func_00207F50(int arg0, float unused1, float unused2, float arg1) {
+    if (arg0 < 0xDD) {
+        return arg1 >= 232.0f && arg1 <= 235.0f && D_0013D4E6 != 0;
+    }
+    return (arg1 <= 180.0f) ? 1 : 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00208030);
+extern unsigned char D_0013D4E7 NOT_SDA;
+
+int func_00207FD0(int arg0, float unused1, float unused2, float arg1) {
+    if (arg0 < 0xDD) {
+        return (arg1 >= 242.0f) ? 1 : 0;
+    }
+    return arg1 <= 180.0f && D_0013D4E7 != 0;
+}
+
+extern unsigned char D_0013D4E8 NOT_SDA;
+
+int func_00208030(int arg0, float unused1, float unused2, float arg1) {
+    if (arg0 < 0xDD) {
+        return (arg1 >= 238.0f && arg1 <= 241.0f) ? 1 : 0;
+    }
+    return arg1 <= 180.0f && D_0013D4E8 != 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002080B0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00208160);
+extern unsigned char D_0013D4EB NOT_SDA;
+
+int func_00208160(int arg0, float unused1, float unused2, float arg1) {
+    if (arg0 < 0x15F) {
+        return (arg1 >= 228.0f && arg1 <= 230.0f) ? 1 : 0;
+    }
+    return arg1 >= 233.0f && arg1 <= 235.0f && D_0013D4EB != 0;
+}
 
 extern unsigned char D_0013D4E9 NOT_SDA;
 
