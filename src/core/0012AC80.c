@@ -293,7 +293,135 @@ void func_0012B870(void) {
     func_0012D068();
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012B918);
+extern void func_0012C468(void *, void *);
+/* memset returns its pointer: the unused return moves the first temporary
+   after the call from $v0 to $v1. */
+extern void *func_001153FC_p(void *, int, unsigned int) __asm__("func_001153FC");
+extern char D_00153B10[];
+extern void func_0012BD28(void *, int, int);
+extern unsigned int func_0012BD60(void *, char *, unsigned int, unsigned int);
+extern void func_0012C2F8(void *);
+extern void func_0012BBA8(void *);
+extern int func_0012BBF8(void *);
+extern void func_0012BD40(void *);
+extern void func_0012CC70(void);
+extern void func_0012CC80(void);
+
+/*
+ * sceMpegCreate (libmpeg.a:mpeg.o): clear the caller's work area
+ * (memset), align it up to 4 and carve the decoder object out of it. Less
+ * than 0x10C0 usable bytes is reported through func_0012C468 and returns
+ * 0. Otherwise: wrapper->0x40 = the object; a heap descriptor at +0x108
+ * (func_0012BD28) covers the space past 0x10C0; the fields are reset
+ * (-1 "unset" sentinels or 0); 0x600 bytes are allocated from that heap
+ * (func_0012BD60) into +0x44; handler slots +0x1C/+0x24 get the two
+ * callback trampolines (func_0012CC70/func_0012CC80); func_0012C2F8,
+ * sceMpegReset (func_0012BBA8) and func_0012BBF8 run; the three 0x10-byte
+ * entries at +0x1B8 get pointers into nine 0x68-byte regions; and
+ * func_0012BD40 closes the heap. Success falls off the end (retail
+ * leaves 0x70003600 in $v0).
+ *
+ * The trampoline store at +0x24 is written before the allocation so it
+ * fills that call's delay slot, and the last four stores are in the
+ * order that schedules as retail's.
+ */
+int func_0012B918(void *arg0, void *workarea, int size) {
+    char *w = (char *)arg0;
+    unsigned int wa = (unsigned int)workarea;
+    char *aligned;
+    char *area2;
+    unsigned int avail;
+    int neg1;
+
+    func_001153FC_p(workarea, 0, size);
+
+    aligned = (char *)(((wa + 3) >> 2) << 2);
+    avail = (unsigned int)size - ((unsigned int)aligned - wa);
+
+    if (avail < 0x10C0) {
+        func_0012C468(aligned, D_00153B10);
+        return 0;
+    }
+
+    area2 = aligned + 0x108;
+    *(int *)(w + 0x40) = (int)aligned;
+    avail -= 0x10C0;
+    func_0012BD28(area2, (int)(aligned + 0x10C0), (int)avail);
+    neg1 = -1;
+
+    *(int *)(w + 0x0) = 0;
+    *(int *)(w + 0x4) = 0;
+    *(int *)(w + 0x8) = 0;
+    *(long *)(w + 0x10) = -1;
+    *(long *)(w + 0x18) = -1;
+    *(long *)(w + 0x20) = 0;
+    *(long *)(w + 0x28) = -1;
+    *(long *)(w + 0x30) = -1;
+    *(long *)(w + 0x38) = 0;
+
+    *(int *)(aligned + 0xB4) = 0;
+    *(int *)(aligned + 0xB8) = 0;
+    *(int *)(aligned + 0xBC) = 0;
+    *(int *)(aligned + 0xC0) = 0;
+    *(int *)(aligned + 0xC4) = 0;
+    *(int *)(aligned + 0xC8) = 0;
+    *(int *)(aligned + 0xCC) = 0;
+    *(int *)(aligned + 0xD0) = 0;
+    *(int *)(aligned + 0xD4) = 0;
+    *(int *)(aligned + 0xD8) = 0;
+    *(int *)(aligned + 0xDC) = 0;
+    *(int *)(aligned + 0xE0) = 0;
+    *(int *)(aligned + 0xE4) = 0;
+    *(int *)(aligned + 0xE8) = 0;
+    *(int *)(aligned + 0xF8) = 0;
+    *(int *)(aligned + 0xC) = 0;
+    *(int *)(aligned + 0x14) = 0;
+    *(int *)(aligned + 0x2C) = 0;
+    *(int *)(aligned + 0x34) = 0;
+    *(int *)(aligned + 0x3C) = 0;
+    *(long *)(aligned + 0xF0) = -1;
+    *(int *)(aligned + 0x1C) = (int)func_0012CC70;
+    *(int *)(aligned + 0x24) = (int)func_0012CC80;
+
+    *(int *)(aligned + 0x44) = (int)func_0012BD60(aligned, area2, 0x600, 8);
+
+    *(int *)(aligned + 0x48) = 0;
+    *(int *)(aligned + 0xFC) = 0;
+    *(int *)(aligned + 0x100) = 0;
+    *(int *)(aligned + 0x104) = 0;
+    *(int *)(aligned + 0x70) = 0;
+    *(long *)(aligned + 0x78) = 0;
+    *(int *)(aligned + 0x80) = neg1;
+    *(long *)(aligned + 0x88) = 0;
+    *(int *)(aligned + 0x90) = 0;
+    *(int *)(aligned + 0xAC) = 0;
+    *(int *)(aligned + 0x94) = neg1;
+    *(int *)(aligned + 0x98) = neg1;
+    *(int *)(aligned + 0x9C) = neg1;
+    *(int *)(aligned + 0x858) = (int)w;
+    *(int *)(aligned + 0xB0) = 1;
+
+    func_0012C2F8(aligned);
+    func_0012BBA8(w);
+    func_0012BBF8(w);
+
+    *(int *)(aligned + 0x1B8) = (int)(aligned + 0x1E8);
+    *(int *)(aligned + 0x1BC) = (int)(aligned + 0x250);
+    *(int *)(aligned + 0x1C4) = (int)(aligned + 0x2B8);
+    *(int *)(aligned + 0x1C8) = (int)(aligned + 0x320);
+    *(int *)(aligned + 0x1CC) = (int)(aligned + 0x388);
+    *(int *)(aligned + 0x1D4) = (int)(aligned + 0x3F0);
+    *(int *)(aligned + 0x1D8) = (int)(aligned + 0x458);
+    *(int *)(aligned + 0x1DC) = (int)(aligned + 0x4C0);
+    *(int *)(aligned + 0x1E4) = (int)(aligned + 0x528);
+
+    func_0012BD40(area2);
+
+    *(int *)(aligned + 0x850) = neg1;
+    *(int *)(aligned + 0x84C) = 0;
+    *(int *)(aligned + 0x81C) = 0x70003600;
+    *(int *)(aligned + 0x854) = 0;
+}
 
 int func_0012BB20(void) {
     return 1;
@@ -451,7 +579,85 @@ unsigned int func_0012BD60(void *arg0, char *r, unsigned int size,
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BDD0);
+extern int func_00128C90(void *);
+extern int func_0012C200(void *);
+extern int func_0012C058(void *, int, int);
+/* _errMessage (func_0012C430) sprintf's its format and passes the
+   format's arguments on untouched in $a1-$a3, so it is called here
+   without a prototype, with the value the "%08x" reports. */
+extern void func_0012C430();
+extern char D_00153B58[];
+
+/*
+ * _getpic (libmpeg.a:mpeg.o): fetch and start decoding one picture.
+ * The image buffer (inner +0xD8) must be 64-byte aligned; if not, it is
+ * reported through _errMessage with the address and the call fails with
+ * -1. Otherwise loop: fetch headers (func_00128C90) until one yields no
+ * picture (0), the picture counter reaches its target (+0x174 == +0xD4)
+ * or the fault flag (+0x848) clears, skipping the fetch when the last
+ * decode returned -1. picture_coding_type 1/2/3 call func_0012C058 with
+ * that type's running index (+0xA0/+0xA4/+0xA8, I resetting all three)
+ * and slot (+0x94/+0x98/+0x9C) and bump the index; type 4 shares the B
+ * arm (retail's jump table maps 3 and 4 to one handler); 0 ends the
+ * stream through func_0012C200 and sets inner->0; anything above 4 does
+ * nothing. Returns 1 once +0x820 or inner->0 is set.
+ *
+ * pictureType's initializer and lastResult declared first put both in
+ * retail's saved registers and hoist lastResult's 0 into the prologue.
+ */
+int func_0012BDD0(void *arg0) {
+    int pictureType = 1;
+    int lastResult = 0;
+    char *w = (char *)arg0;
+    char *inner = *(char **)(w + 0x40);
+
+    *(int *)inner = 0;
+    if ((*(int *)(inner + 0xD8) & 0x3F) != 0) {
+        func_0012C430(inner, D_00153B58, *(int *)(inner + 0xD8));
+        return -1;
+    }
+    *(int *)(inner + 0x820) = 0;
+
+    do {
+        if (lastResult != -1) {
+            for (;;) {
+                pictureType = func_00128C90(inner);
+                if (pictureType == 0) break;
+                if (*(int *)(inner + 0x174) == *(int *)(inner + 0xD4)) break;
+                if (*(int *)(inner + 0x848) == 0) break;
+            }
+        }
+
+        switch (pictureType) {
+        case 0:
+            func_0012C200(w);
+            *(int *)inner = 1;
+            break;
+        case 1:
+            *(int *)(inner + 0xA8) = 0;
+            *(int *)(inner + 0xA4) = 0;
+            *(int *)(inner + 0xA0) = 0;
+            lastResult = func_0012C058(w, 0, *(int *)(inner + 0x94));
+            *(int *)(inner + 0xA0) = *(int *)(inner + 0xA0) + 1;
+            break;
+        case 2:
+            lastResult = func_0012C058(w, *(int *)(inner + 0xA4), *(int *)(inner + 0x98));
+            *(int *)(inner + 0xA4) = *(int *)(inner + 0xA4) + 1;
+            break;
+        case 3:
+        case 4:
+            lastResult = func_0012C058(w, *(int *)(inner + 0xA8), *(int *)(inner + 0x9C));
+            *(int *)(inner + 0xA8) = *(int *)(inner + 0xA8) + 1;
+            break;
+        }
+
+        if (*(int *)(inner + 0x820) != 0) {
+            return 1;
+        }
+    } while (*(int *)inner == 0);
+
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BF40);
 

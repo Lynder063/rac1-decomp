@@ -26,7 +26,7 @@ def entries() -> list[tuple[str, list[str]]]:
 
 
 def main() -> None:
-    rows = sorted(((int(lab[2:], 16), lab, obj if i == 0 else None)
+    rows = sorted(((int(lab.rsplit("_", 1)[1], 16), lab, obj if i == 0 else None)
                    for obj, labs in entries() for i, lab in enumerate(labs)))
     if sys.argv[1:] == ["labels"]:
         print(" ".join(lab for _, lab, _ in rows))

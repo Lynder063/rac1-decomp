@@ -45,7 +45,24 @@ extern void func_00118E90(int arg0, void *arg1);
 extern void *D_00154A40 NOT_SDA;
 extern int func_001160D8(void);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119D88);
+/* kputchar (libkernl.a:kprintf.o): wait until the SIO status port
+   (0x1000F130) has its busy bit (0x8000) clear, write the character to
+   the SIO data port (0x1000F180) and return it.
+
+   Retail's store is not volatile (it fills the return's delay slot, which
+   a volatile access never does) yet its address stays in a register
+   (lui/ori). A plain constant address is folded into the store by the
+   optimizer instead, so the address goes through an empty asm that hides
+   its value. */
+int func_00119D88(int c) {
+    unsigned char *p;
+
+    while (*(volatile unsigned int *)0x1000F130 & 0x8000)
+        ;
+    __asm__("" : "=r"(p) : "0"(0x1000F180));
+    *p = c;
+    return c;
+}
 
 extern void func_00119840(char *);
 extern int D_0012FCFC;

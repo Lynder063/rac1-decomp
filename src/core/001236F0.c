@@ -462,9 +462,94 @@ int func_001247E8(int arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124858);
+extern int D_0015B180;
+extern char D_0015B108[];
+extern int func_0011B4C8();
+extern void func_00124B60(void *, ...);
+extern char D_00153678[];
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124920);
+/* sceDbcCreateSocket (libdbc): copy the caller's socket record (five
+   header words, then a 16-byte name) into the RPC buffer D_0015B180, set
+   its port (arg1, word 10) and mode (arg2, word 11), then run the
+   create-socket RPC (0x80000901) through cd_base. Prints and returns 0
+   on failure, else the reply's word 9.
+
+   The header words are copied as pointers. Their alias set then differs
+   from the int port/mode stores, so the header loads need not wait for
+   those stores; the scheduler then places `i = 0` ahead of them, and the
+   loop registers come out in $t0-$t2 as in retail. namesrc/namedst are
+   precomputed so each byte address is one base+index add, and the call
+   re-takes &D_0015B180 for its buffer arguments. */
+int func_00124858(void *arg0, int arg1, int arg2) {
+    int *buf = &D_0015B180;
+    char *namesrc = (char *)arg0 + 0x14;
+    char *namedst = (char *)buf + 0x14;
+    int i;
+
+    buf[10] = arg1;
+    buf[11] = arg2;
+    ((void **)buf)[0] = ((void **)arg0)[0];
+    ((void **)buf)[1] = ((void **)arg0)[1];
+    ((void **)buf)[2] = ((void **)arg0)[2];
+    ((void **)buf)[3] = ((void **)arg0)[3];
+    ((void **)buf)[4] = ((void **)arg0)[4];
+    for (i = 0; i < 0x10; i++) {
+        namedst[i] = namesrc[i];
+    }
+    if (func_0011B4C8(D_0015B108, 0x80000901, 0, &D_0015B180, 0x400,
+                       &D_0015B180, 0x400, 0, 0) < 0) {
+        func_00124B60(D_00153678);
+        return 0;
+    }
+    return buf[9];
+}
+
+extern void func_00119288(void *, void *);
+extern int func_0011D960(void);
+/* EIntr returns the previous interrupt state; the file declares it void.
+   A call that returns a value changes how the lookup after it is
+   allocated. */
+extern int func_0011D9A8_i(void) __asm__("func_0011D9A8");
+extern char D_0015B580[];
+extern int D_0015B600[];
+extern void *memcpy(void *, const void *, unsigned int);
+extern int D_0015B180;
+extern char D_0015B108[];
+extern int func_0011B4C8();
+extern void func_00124B60(void *, ...);
+extern char D_001536B8[];
+
+/*
+ * sceDbcGetDepNumber(port) (libdbc): write back the 0x80-byte DMA buffer
+ * D_0015B580 (func_00119288), then with interrupts off (DIntr/EIntr)
+ * copy its first 0x40 bytes into the link-state table D_0015B600. A port
+ * whose state is not 1 (linked) returns -12. Otherwise RPC 0x80000903
+ * with the port as the request word; returns the reply's second word, or
+ * reports the failure (func_00124B60) and returns 0.
+ *
+ * The RPC buffer is re-taken as &D_0015B180 for the call's arguments and
+ * `buf` is only assigned where it is used, so the table base and the
+ * buffer share retail's saved register.
+ */
+int func_00124920(int port) {
+    int *buf;
+
+    func_00119288(D_0015B580, D_0015B580 + 0x80);
+    func_0011D960();
+    memcpy(D_0015B600, D_0015B580, 0x40);
+    func_0011D9A8_i();
+    if (D_0015B600[port] != 1) {
+        return -0xC;
+    }
+    buf = &D_0015B180;
+    buf[0] = port;
+    if (func_0011B4C8(D_0015B108, 0x80000903, 0, &D_0015B180, 0x400,
+                       &D_0015B180, 0x400, 0, 0) < 0) {
+        func_00124B60(D_001536B8);
+        return 0;
+    }
+    return buf[1];
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124A68);
 

@@ -279,13 +279,19 @@ extern void func_0012EC30(void);
  * so the base local is assigned late exactly as retail does. Allocator
  * destination-choice question, not source shape.
  */
+/* Load: call func_00217628 and, if it succeeded, keep pumping the five
+   service calls while the D_001517D0+0x8 state word stays nonzero;
+   return func_00217628's result either way.
+   As in func_00217748 below, the base pointer is assigned in the loop
+   condition: the exit test jump.c duplicates in front of the loop gets
+   its own temporary, and the loop's copy goes to $s1 with the result in
+   $s0, as in retail. */
 /* Load */
 int func_002176C8(void) {
     char *d;
     int r = func_00217628_v();
     if (r != 0) {
-        d = (char *)D_001517D0;
-        while (*(short *)(d + 0x8) != 0) {
+        while (d = (char *)D_001517D0, *(short *)(d + 0x8) != 0) {
             func_00122598(0);
             func_00217130();
             func_0012EC40();

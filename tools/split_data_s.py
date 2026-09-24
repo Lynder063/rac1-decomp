@@ -16,6 +16,11 @@ static __clz_tab (0x100 bytes), which retail has at D_00152B18 in the
 middle of core_rdata; a game function's switch brings its jump table,
 which retail has among the text objects' read-only data at the end of
 the data segment.
+
+Every piece after a cut lays its blocks out with `.org` at their retail
+offsets from the piece's start, in place of the data's own `.align`
+lines: those assume retail's absolute addresses, and a piece can start
+less aligned than its contents (after a 20-byte jump table, say).
 """
 import re
 import sys
@@ -53,9 +58,10 @@ def main() -> None:
             parts.append(cur)
             cur = []
         else:
-            cur.extend(body)
+            cur.append(body)
     parts.append(cur)
-    for n, body in enumerate(parts, 1):
+    for n, piece in enumerate(parts, 1):
+        body = [l for b in piece for l in b]
         # A piece after a cut starts where retail's next item starts, and
         # the linker only puts it there if its section is aligned at least
         # as much as that address is (the gap after our table is always
@@ -66,6 +72,24 @@ def main() -> None:
         if n > 1 and start is not None:
             bits = min((start & -start).bit_length() - 1, 4)
             align = [f".align {bits}\n"]
+            # Inside the piece, place every block at its retail offset from
+            # the piece's start. The data's own .align lines assume retail's
+            # absolute addresses, and would raise the section's alignment
+            # past what its start has (a piece can start at 4 mod 8).
+            body = []
+            for b in piece:
+                addr = first_address(b)
+                if addr is not None:
+                    body.append(f".org 0x{addr - start:X}\n")
+                for k, line in enumerate(b):
+                    if not re.match(r"\s*\.align\b", line):
+                        body.append(line)
+                        continue
+                    # An .align inside a block: go straight to the address
+                    # of the next data line instead.
+                    nxt = first_address(b[k + 1:])
+                    if nxt is not None:
+                        body.append(f".org 0x{nxt - start:X}\n")
         with open(f"{prefix}_{n}.s", "w", newline="") as f:
             f.writelines(header + align + body)
     print(f"split {src} into {len(parts)} part(s) around {sorted(cuts)}")

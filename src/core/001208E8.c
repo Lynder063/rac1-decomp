@@ -231,7 +231,44 @@ extern int D_001313F0;
  */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120B28);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00120BC0);
+extern int D_001313D4;
+extern volatile int D_00131414_v __asm__("D_00131414");
+/* DeleteSema returns int; declared void, the lui after each call would take
+   $v0 instead of retail's $v1. */
+extern int func_00118C80_i(int) __asm__("func_00118C80");
+extern void func_00118C90(int);
+extern void func_0011AA68(int);
+
+/*
+ * cdvd_exit (libcdvd.a cdvd000.o): if the callback thread exists
+ * (D_001313D4, cb_thid), set the callback number (D_00131414,
+ * sceCdCbfunc_num) to -1 and SignalSema its semaphore (D_001313E0,
+ * cb_semid); DeleteSema the N-command, S-command and callback
+ * semaphores; then remove SIF command handler 0x80000012 with interrupts
+ * off, re-enabling them if DIntr said they were on.
+ *
+ * The do-while (0) around the store leaves loop notes in the block, which
+ * the scheduler treats as a barrier: the store stays ahead of the
+ * semaphore-id load, as in retail, and the load still fills the jal's
+ * delay slot. Without it the load is hoisted above the store.
+ */
+void func_00120BC0(void) {
+    int di;
+    if (D_001313D4 != 0) {
+        do {
+            D_00131414_v = -1;
+        } while (0);
+        func_00118C90(D_001313E0);
+    }
+    func_00118C80_i(D_001313E8);
+    func_00118C80_i(D_001313EC);
+    func_00118C80_i(D_001313E0);
+    di = func_0011D960();
+    func_0011AA68(0x80000012);
+    if (di != 0) {
+        func_0011D9A8();
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120C58);
 

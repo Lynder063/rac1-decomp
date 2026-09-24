@@ -160,7 +160,76 @@ void func_001EC780(void *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EC7C8);
+extern int D_00189C50[];
+typedef struct { char unk_00[0xA0]; } CamSlot;
+extern CamSlot D_00187510[];
+extern int func_001EC5B8(void *cur, void *other);
+extern void func_001EC2B8(void *arg0);
+/* The camera-type table (D_001E8F80) with its +0xC hook typed: DispatchRec
+   above keeps that slot as bytes. */
+typedef struct {
+    char unk_00[0xC];
+    void (*fn_0C)(void *);
+    char unk_10[4];
+} CamTypeHooks;
+extern CamTypeHooks D_001E8F80_hooks[] __asm__("D_001E8F80");
+
+/* Camera_ActivationCheck: exits the current camera (func_001EC780, the
+   type table's +0x10 hook), then scans the 48 camera slots (D_00189C50[i]
+   != 0 = enabled, D_00187510[i] = the 0xA0-byte record) and keeps
+   whichever func_001EC5B8 prefers over the current one. If that changed
+   the camera, func_001EC2B8 switches to it. Then func_001EC210, the new
+   camera's +0xC hook (read before that call, as retail does), a copy of
+   its fields 0x30-0x38 to 0x64-0x6C, and the post-update queue
+   (func_001EC098). Returns -1, which the one caller ignores.
+
+   The indexed loop is what gives retail's preheader: strength reduction
+   builds the two slot pointers in its order, and loop reversal makes the
+   count run down 47..0. Indexing the table directly by a typed +0xC
+   member puts the base first in the addu. */
+int func_001EC7C8(void) {
+    void *cur = D_001871C0;
+    int changed = 0;
+    CamSlot *rec;
+    int i;
+
+    func_001EC780(cur);
+
+    for (i = 0; i < 0x30; i++) {
+        if (D_00189C50[i] != 0) {
+            rec = &D_00187510[i];
+            if (rec != cur) {
+                if (func_001EC5B8(rec, cur)) {
+                    cur = rec;
+                    changed = 1;
+                }
+            }
+        }
+    }
+
+    if (changed) {
+        func_001EC2B8(cur);
+    }
+    {
+        void (*fn0C)(void *) = D_001E8F80_hooks[*(short *)((char *)cur + 0x8C)].fn_0C;
+        char *src;
+        char *dst;
+        float v;
+
+        func_001EC210(cur);
+        if (fn0C != 0) {
+            fn0C(cur);
+        }
+        src = (char *)cur + 0x30;
+        dst = (char *)cur + 0x64;
+        v = *(float *)src;
+        *(float *)((char *)cur + 0x64) = v;
+        *(float *)(dst + 4) = *(float *)(src + 4);
+        *(float *)(dst + 8) = *(float *)(src + 8);
+    }
+    func_001EC098();
+    return -1;
+}
 
 extern void func_001F9BF0(void *dst, void *a, void *b);      /* dst = a - b (vector) */
 extern float func_001F9C78(void *a, void *b);                 /* dot(a, b) */
