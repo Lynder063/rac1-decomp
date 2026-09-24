@@ -19,6 +19,16 @@ rules:
    call, in the first-pass object this measures, so in effect this adds
    the padding ps2eeas also gives loops with a call.
 
+   The driver's as.exe measures differently, though: it counts from the
+   target label to the first jump after it, not to the branch. On a
+   backward branch that is not a loop -- a cross-jump back into a short
+   block that returns -- it pads where ps2eeas did not (func_00209188:
+   three nops). Where GNU as gave a branch more nops than ps2eeas's rule,
+   the branch is written as a `.word` with its offset computed from the
+   label, which GNU as cannot pad, and gets ps2eeas's padding instead.
+   Only branches in the compiler's noreorder blocks, whose delay slot is
+   spelled out, are rewritten.
+
 2. FP compare then branch. A `c.cond.fmt` immediately followed by a
    `bc1*` gets a nop between them. In retail text the pair is never
    adjacent (191 of 191 have the nop). GNU as adds one on its own in
@@ -129,6 +139,69 @@ def scan(start, size, text):
 INSN_LINE = re.compile(r"^\s*([a-z][a-z0-9.]*)\s*(.*?)\s*(#.*)?$")
 
 
+def gnu_padding(text, start, branch, lines, j):
+    """Nops GNU as put right before the branch at BRANCH (source line J):
+    the object's run of nops there, not counting a delay slot, less the
+    nops the source itself writes there."""
+    run, a = 0, branch - 4
+    while a >= start and text[a:a + 4] == b"\0\0\0\0":
+        if a - 4 >= start:
+            prev = decode(text, a - 4)
+            if prev.isBranch() or prev.isJump():
+                break
+        run += 1
+        a -= 4
+    # A bc1's nop after its FP compare is the hazard nop (rule 2), which
+    # ps2eeas has too.
+    if run and a >= start and decode(text, branch).getOpcodeName().startswith("bc1") \
+            and decode(text, a).getOpcodeName().startswith("c."):
+        run -= 1
+    written, k = 0, j - 1
+    while k >= 0:
+        stripped = lines[k].split("#")[0].strip()
+        if not stripped or stripped.startswith(".") or stripped.endswith(":"):
+            k -= 1
+        elif stripped == "nop":
+            written += 1
+            k -= 1
+        else:
+            break
+    return max(0, run - written)
+
+
+REGS = {"$zero": 0, "$at": 1, "$gp": 28, "$sp": 29, "$fp": 30, "$ra": 31}
+# op -> (primary opcode, operands: s = rs, t = rt, a digit = REGIMM's rt code)
+BRANCHES = {
+    "b": (0x04, ""), "beq": (0x04, "st"), "bne": (0x05, "st"),
+    "beql": (0x14, "st"), "bnel": (0x15, "st"),
+    "beqz": (0x04, "s"), "bnez": (0x05, "s"), "beqzl": (0x14, "s"), "bnezl": (0x15, "s"),
+    "blez": (0x06, "s"), "bgtz": (0x07, "s"), "blezl": (0x16, "s"), "bgtzl": (0x17, "s"),
+    "bltz": (0x01, "s0"), "bgez": (0x01, "s1"), "bltzl": (0x01, "s2"), "bgezl": (0x01, "s3"),
+}
+
+
+def branch_as_word(line):
+    """LINE, a branch to a local label, as a `.word` that encodes it, or
+    None for a form not handled here."""
+    m = re.match(r"^(\s*)([a-z]+)\s+([^#]*?)\s*(#.*)?$", line.rstrip("\n"))
+    if not m or m.group(2) not in BRANCHES:
+        return None
+    opcode, shape = BRANCHES[m.group(2)]
+    ops = [o.strip() for o in m.group(3).split(",")]
+    label, regs = ops[-1], ops[:-1]
+
+    def reg(r):
+        return REGS[r] if r in REGS else int(r[1:])
+    word = opcode << 26
+    if shape.startswith("s"):
+        word |= reg(regs[0]) << 21
+    if shape == "st":
+        word |= reg(regs[1]) << 16
+    elif shape[1:]:
+        word |= int(shape[1:]) << 16
+    return f"{m.group(1)}.word\t{word:#010x} | ((({label} - . - 4) >> 2) & 0xFFFF)\n"
+
+
 def move_sites(lines, start, end):
     """Source lines that read the FP register a reorder-mode `mtc1`/`li.s`
     on the previous instruction line wrote; the nop goes before them."""
@@ -167,6 +240,7 @@ def main() -> None:
              if s["st_shndx"] == tidx and s["st_info"]["type"] == "STT_FUNC" and s["st_size"]}
 
     inserts = {}  # line index -> number of nops to put before it
+    as_words = set()  # branch lines to write as .word (GNU as over-padded them)
     loops = fps = moves = 0
     hand_written = noreorder_ranges()
     i = 0
@@ -213,7 +287,14 @@ def main() -> None:
             moves += 1
         for (target, branch), j in zip(obj_back, src_back):
             span = (branch - target) // 4 + 1 + sum(1 for a in fp_nops if target <= a <= branch)
-            if span < MIN_SPAN:
+            gnu = gnu_padding(text, start, branch, lines, j)
+            need = max(0, MIN_SPAN - (span - gnu))
+            if gnu > need:
+                as_words.add(j)
+                if need:
+                    inserts[j] = inserts.get(j, 0) + need
+                    loops += 1
+            elif span < MIN_SPAN:
                 inserts[j] = inserts.get(j, 0) + MIN_SPAN - span
                 loops += 1
         i = end + 1
@@ -235,10 +316,16 @@ def main() -> None:
             reorder = False
         elif stripped == ".set\treorder" or stripped == ".set reorder":
             reorder = True
+        if j in as_words:
+            word = branch_as_word(line) if not reorder else None
+            if word is None:
+                sys.exit(f"ps2eeas_nops: {src_path}:{j + 1}: GNU as pads this branch more "
+                         f"than ps2eeas did, and it cannot be written as a .word here: {stripped}")
+            line = word
         out.append(line)
     open(dst_path, "w").writelines(out)
     print(f"ps2eeas_nops: padded {loops} short loop(s), {fps} FP compare(s), "
-          f"{moves} mtc1 use(s) {src_path} -> {dst_path}")
+          f"{moves} mtc1 use(s), unpadded {len(as_words)} branch(es) {src_path} -> {dst_path}")
 
 
 if __name__ == "__main__":

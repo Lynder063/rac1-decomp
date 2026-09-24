@@ -697,56 +697,44 @@ void func_00209160(void) {
     *(int *)(b + 0x1C) = t;
 }
 
-/*
- * Reverted: our ASSEMBLER makes it 12 bytes too long. The compiler's
- * instruction stream is retail's, byte for byte, with the two ands
- * (dead-store elimination on D_0015EFB4, see below) and the
- * $gp-in-delay-slot form. But ee-as then inserts 3 nops before the
- * cross-jumped `b` back into the 0x80 arm -- its EE short-loop erratum
- * padding -- and retail has no nops there. Measured: this assembler
- * pads a backward branch whose loop body is under ~6 instructions, and
- * pads this 9-instruction one too for a reason that a reduced test case
- * does not reproduce (plain copies of the same instruction sequence
- * assemble clean). Retail's own assembler did not pad here, though the
- * image does carry erratum nops elsewhere.
- *
- * The recovered source, which is correct apart from that:
- *
- * void func_00209188(void) {
- *     int flags = D_0015EFB4;
- *     char *b;
- *     int nf;
- *     D_0015EFB4 = flags & ~4;
- *     b = D_0013D390;
- *     nf = D_0015EFB4 & ~2;
- *     D_0015EFB4 = nf;
- *     if (*(int *)(b + 0xFC) == 0) {
- *         D_0015EFB0 = 3;
- *         return;
- *     }
- *     if (flags & 0x80) {
- *         D_0015EFB0 = 0x15;
- *         D_0015EFB4 = (nf ^ 0x80) | 0x40;
- *         return;
- *     }
- *     if (flags & 0x100) {
- *         D_0015EFB0 = 0x14;
- *         D_0015EFB4 = (nf ^ 0x100) | 0x40;
- *         return;
- *     }
- *     if (*(int *)(b + 0x1C) != 0) {
- *         *(int *)(b + 0xFC) = 0;
- *         D_0015EFB4 = nf | 1;
- *         D_0015EFB0 = 2;
- *         return;
- *     }
- *     if (flags & 0x200) {
- *         D_0015EFB4 = nf ^ 0x200;
- *         D_0015EFB0 = 0x16;
- *     }
- * }
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00209188);
+/* Clears the 4 and 2 flag bits of D_0015EFB4, then picks the next
+   state into D_0015EFB0 from the 0x80/0x100/0x200 bits and the
+   D_0013D390 record. The cross-jumped `b` back into the 0x80 arm is
+   one GNU as pads as a short loop and ps2eeas did not;
+   tools/ps2eeas_nops.py writes it as a .word. */
+void func_00209188(void) {
+    int flags = D_0015EFB4;
+    char *b;
+    int nf;
+    D_0015EFB4 = flags & ~4;
+    b = D_0013D390;
+    nf = D_0015EFB4 & ~2;
+    D_0015EFB4 = nf;
+    if (*(int *)(b + 0xFC) == 0) {
+        D_0015EFB0 = 3;
+        return;
+    }
+    if (flags & 0x80) {
+        D_0015EFB0 = 0x15;
+        D_0015EFB4 = (nf ^ 0x80) | 0x40;
+        return;
+    }
+    if (flags & 0x100) {
+        D_0015EFB0 = 0x14;
+        D_0015EFB4 = (nf ^ 0x100) | 0x40;
+        return;
+    }
+    if (*(int *)(b + 0x1C) != 0) {
+        *(int *)(b + 0xFC) = 0;
+        D_0015EFB4 = nf | 1;
+        D_0015EFB0 = 2;
+        return;
+    }
+    if (flags & 0x200) {
+        D_0015EFB4 = nf ^ 0x200;
+        D_0015EFB0 = 0x16;
+    }
+}
 
 void func_00209238(void) {
     char *b = D_0013D390;
@@ -974,44 +962,38 @@ void func_002096D8(void) {
     }
 }
 
-/*
- * Reverted, same assembler difference as func_00209188 above: our
- * ee-as pads the cross-jumped backward `b` with 3 nops because the
- * shared tail materialises D_0015EFB0 through $at, and retail has no
- * nops there. (Measured: replacing that one `lui $1` with any non-$at
- * instruction makes the padding go away.) Recovered source:
- *
- * void func_00209750(void) {
- *     int flags;
- *     char *b;
- *     if (D_0015EFB4 & 4) {
- *         D_0015EFB4 &= ~4;
- *     }
- *     if (D_0015EFB4 & 2) {
- *         D_0015EFB4 &= ~2;
- *     }
- *     flags = D_0015EFB4;
- *     if (flags & 0x80) {
- *         D_0015EFB0 = 0x15;
- *         D_0015EFB4 = (flags ^ 0x80) | 0x40;
- *         return;
- *     }
- *     if (flags & 0x100) {
- *         D_0015EFB0 = 0x14;
- *         D_0015EFB4 = (flags ^ 0x100) | 0x40;
- *         return;
- *     }
- *     b = D_0013D390;
- *     if (*(int *)(b + 0x1C) != 0) {
- *         D_0015EFB0 = 3;
- *         return;
- *     }
- *     if (*(int *)(b + 0xFC) != 0) {
- *         D_0015EFB0 = 1;
- *     }
- * }
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00209750);
+/* func_00209188's sibling: clears the 4 and 2 bits, then the same
+   0x80/0x100 arms and the D_0013D390 record's tests. Its cross-jumped
+   `b` is written as a .word too (tools/ps2eeas_nops.py). */
+void func_00209750(void) {
+    int flags;
+    char *b;
+    if (D_0015EFB4 & 4) {
+        D_0015EFB4 &= ~4;
+    }
+    if (D_0015EFB4 & 2) {
+        D_0015EFB4 &= ~2;
+    }
+    flags = D_0015EFB4;
+    if (flags & 0x80) {
+        D_0015EFB0 = 0x15;
+        D_0015EFB4 = (flags ^ 0x80) | 0x40;
+        return;
+    }
+    if (flags & 0x100) {
+        D_0015EFB0 = 0x14;
+        D_0015EFB4 = (flags ^ 0x100) | 0x40;
+        return;
+    }
+    b = D_0013D390;
+    if (*(int *)(b + 0x1C) != 0) {
+        D_0015EFB0 = 3;
+        return;
+    }
+    if (*(int *)(b + 0xFC) != 0) {
+        D_0015EFB0 = 1;
+    }
+}
 
 
 void func_00209808(void) {

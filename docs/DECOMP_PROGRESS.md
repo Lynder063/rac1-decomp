@@ -1094,7 +1094,18 @@ uses, and its call-free short loops come out padded by themselves.
 `tools/ps2eeas_nops.py` measures loops in a first assembly by that same
 as.exe, so it only adds what ps2eeas adds beyond it: the padding of loops
 that contain a call. A padded tight loop in a core_text stub is therefore
-no blocker. A related residual remains: retail's compiler sometimes left
+no blocker.
+
+*The driver's as.exe measures its own way* (batch M): it counts from the
+target label to the first jump after it, not to the branch. So a
+backward branch that is not a loop, a cross-jump back into a short block
+that returns, gets padded where ps2eeas left it alone (3 nops in
+func_00209188 and func_00209750). `tools/ps2eeas_nops.py` spots a branch
+GNU as padded beyond ps2eeas's rule and writes it as a `.word` with the
+offset computed from its label, which the assembler cannot pad. The
+standalone `ee-as.exe` is no way out: it adds MIPS-style hazard nops
+after every `mtc1` and FP compare, and a text build with it drifted
+(529 exact, 3 size mismatches). A related residual remains: retail's compiler sometimes left
 a short loop's branch delay slot empty where ours fills it, which puts
 the moved instruction on the other side of the padding (func_001232A8).
 It fills about half of these slots in both segments, and what decides
