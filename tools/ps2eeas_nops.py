@@ -3,9 +3,10 @@
 Add the nops retail's assembler added, to compiled game code.
 
 Retail's text segment was assembled by SN Systems' own ps2eeas, not the
-GNU ee-as this build uses, and ps2eeas inserts nops GNU as does not.
-core_text and libgcc were assembled without it, so this runs on
-src/game/ objects only. Two rules:
+GNU as this build uses, and ps2eeas inserts nops GNU as does not.
+core_text was assembled by the same GNU as the build runs (the compiler
+driver's ee/bin/as.exe), so this runs on src/game/ objects only. Three
+rules:
 
 1. Short loops (the R5900 short-loop erratum). Every backward branch
    whose loop -- the target through the branch itself -- is shorter than
@@ -14,7 +15,9 @@ src/game/ objects only. Two rules:
    mirrors): in reorder and noreorder code alike, branch-likely too,
    counting any other instructions in the loop, delay slots included.
    This is why 309 of retail's backward branches span exactly six
-   instructions.
+   instructions. The driver's as.exe already pads loops that contain no
+   call, in the first-pass object this measures, so in effect this adds
+   the padding ps2eeas also gives loops with a call.
 
 2. FP compare then branch. A `c.cond.fmt` immediately followed by a
    `bc1*` gets a nop between them. In retail text the pair is never
