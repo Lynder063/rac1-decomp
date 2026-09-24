@@ -243,7 +243,17 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00123D48);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00123EC0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00123EE8);
+extern int func_00118BE0(void);
+extern int func_00118C00(void);
+extern void func_00123EC0(int, unsigned short, void *);
+
+/* mcDelayThread (libmc): sleep this thread until an alarm of `time`
+   h-lines wakes it: SetAlarm (func_00118B20) with mcHearAlarm
+   (func_00123EC0) on GetThreadId(), then SleepThread(). */
+void func_00123EE8(int time) {
+    func_00118B20((unsigned short)time, func_00123EC0, func_00118BE0());
+    func_00118C00();
+}
 
 extern char D_00159B00[];
 extern int D_00132EAC;

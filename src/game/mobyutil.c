@@ -403,7 +403,35 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002153E8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215518);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00215570);
+typedef struct {
+    char pad[0x30];
+    float pos[4];     /* 0x30 */
+    float mtx[4][4];  /* 0x40 */
+} ViewBox;
+extern ViewBox *D_00160134 MACRO_ADDR;
+extern void func_001F9BF0(void *, void *, void *);
+
+/* Is point arg0 inside box arg1 of the table at D_00160134? The offset
+   from the box's position, taken through its matrix, must lie in
+   [-1, 1] on every axis. 0 for arg1 == -1. */
+int func_00215570(void *arg0, int arg1) {
+    float d[4];
+    float v[4];
+    ViewBox *m;
+
+    if (arg1 == -1) {
+        return 0;
+    }
+    m = &D_00160134[arg1];
+    func_001F9BF0(d, arg0, m->pos);
+    d[3] = 0.0f;
+    func_001F9EC0(v, d, m->mtx);
+    if (v[0] >= -1.0f && v[0] <= 1.0f && v[1] >= -1.0f && v[1] <= 1.0f
+        && v[2] >= -1.0f && v[2] <= 1.0f) {
+        return 1;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215648);
 

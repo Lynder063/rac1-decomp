@@ -442,31 +442,17 @@ int func_0023E698(int *arg0) {
     return arg0[3] == 0;
 }
 
-/* 4/100, same size: retail loads +8 before +0xC, we load +0xC first. Two
-   independent loads, pure scheduling. tools/permute.py says it is not
-   source-steerable -- all six orderings of the three field loads compile
-   to byte-identical output, so the order is not coming from the source.
-   Kept as C.
-
-   Ring buffer index -> element address. arg0 holds {+4 base, +8 head,
-   +0xC tail, +0x10 capacity}; returns base + ((head - tail + capacity)
-   %% capacity) * 0x138C0, or 0 when the buffer is empty. The empty test
-   is func_0023E698, which is why its result is branched on rather than
-   the field being read twice. */
-/* voBufGetTag(VoBuf *) */
+/* voBufGetTag(VoBuf *): the frame at the ring's read position,
+   (write - count + size) % size frames past the base, or 0 when the
+   buffer is empty (voBufIsEmpty). write and count are read volatile, as
+   Sony's sample declares them, which keeps their loads in source order. */
 int func_0023E6A8(void *arg0) {
     char *s = (char *)arg0;
-    int head;
-    int tail;
-    int cap;
 
     if (func_0023E698((int *)arg0) != 0) {
         return 0;
     }
-    head = *(int *)(s + 0x8);
-    tail = *(int *)(s + 0xC);
-    cap = *(int *)(s + 0x10);
-    return *(int *)(s + 0x4) + ((head - tail + cap) % cap) * 0x138C0;
+    return *(int *)(s + 0x4) + ((*(volatile int *)(s + 0x8) - *(volatile int *)(s + 0xC) + *(int *)(s + 0x10)) % *(int *)(s + 0x10)) * 0x138C0;
 }
 
 /* voBufDecCount(VoBuf *) */

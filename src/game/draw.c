@@ -439,7 +439,31 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F5148);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F5368);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F54E8);
+extern void func_001F5650(int, int, int, int, unsigned long);
+extern int D_0015EF88 MACRO_ADDR;
+extern short D_00151880[];
+
+/* GS register writes around an overlay: blend register 0x42 from the
+   64-bit word at +8 while it is set, and when the colour at +4 has an
+   alpha byte, register 0x4E switched around a full-screen
+   func_001F5650 draw. The 64-bit constants are ps2eeas's dli
+   sequences (tools/ps2eeas_dli.py). */
+void func_001F54E8(char *arg0) {
+    long v = *(long *)(arg0 + 8);
+
+    if (v != 0) {
+        func_00234C98(0x42, v & 0xFF000000FFL);
+    }
+    if ((*(int *)(arg0 + 4) & 0xFF000000) != 0) {
+        func_00234C98(0x4E, (D_0015EF88 >> 13) | 0x1000000 | 0x100000000L);
+        func_001F5650(0, D_00151880[0xA9], 0, D_00151880[0xA8],
+                      *(unsigned int *)(arg0 + 4));
+        func_00234C98(0x4E, 0x1000000 | (D_0015EF88 >> 13));
+    }
+    if (*(long *)(arg0 + 8) != 0) {
+        func_00234C98(0x42, 0x8000000044L);
+    }
+}
 
 /* Sets GS register 1 from four bytes packed into one 64-bit value, then
    restores the default register set. The parameters are int, widened in

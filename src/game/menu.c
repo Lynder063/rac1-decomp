@@ -203,7 +203,28 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00207648);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207780);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207930);
+extern int D_001A04BC NOT_SDA;
+
+/* Menu hit test in two layouts (func_00207200's family). The first arm
+   needs its own `return 0`: jump.c then sets v0 = 1 before the test
+   there too, which gives retail's registers and lets the arm be
+   cross-jumped into the second one. */
+int func_00207930(int arg0, int arg1, float unused1, float unused2, float arg3) {
+    if (arg1 < 0xBB) {
+        Menu13F450 *s = &D_0013F450;
+        int a = s->unk208C == 17 || s->unk208C == 18 || s->unk12E4 == 1;
+
+        if (!a && D_001A04BC != 0) {
+            return 1;
+        }
+        return 0;
+    }
+    if (arg3 >= 51.5f && arg3 <= 54.0f
+        && func_00209048(arg0, arg1, 0x10A, 0xE5, 0x124, 0xF9) != 0) {
+        return 1;
+    }
+    return 0;
+}
 
 extern int D_001A04B4 NOT_SDA;
 
@@ -243,7 +264,24 @@ int func_00207A80(void *arg0, int arg1, float unused1, float unused2, float arg3
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207B30);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207BE8);
+/* Menu hit test (func_00207200's family): hits unless the menu state
+   blocks it, arg3 ($f14) is below 71.5, or the first box is hit, and
+   then only if the second box is not. */
+int func_00207BE8(int arg0, int arg1, float unused1, float unused2, float arg3) {
+    Menu13F450 *s = &D_0013F450;
+    int a = s->unk208C == 17 || s->unk208C == 18 || s->unk12E4 == 1;
+
+    if (a) {
+        return 0;
+    }
+    if (arg3 < 71.5f) {
+        return 0;
+    }
+    if (func_00209048(arg0, arg1, 0x131, 0xE2, 0xC6, 0x93) != 0) {
+        return 0;
+    }
+    return func_00209048(arg0, arg1, 0x190, 0x89, 0xD1, 0xFB) == 0;
+}
 
 extern unsigned char D_0013D4C5 NOT_SDA;
 extern int D_001414DC NOT_SDA;
