@@ -422,18 +422,16 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F5368);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F54E8);
 
-/*
- * 6/144: the only residual is `dsll a3,a3,0x18` scheduled one slot
- * early. Four associations of the or-chain (flat, fully left-nested,
- * right-nested, and split into statements) all compile to the same
- * order. The 64-bit parameters are real -- retail shifts with dsll.
- */
+/* Sets GS register 1 from four bytes packed into one 64-bit value, then
+   restores the default register set. The parameters are int, widened in
+   the expression: with long parameters the scheduler hoists the last
+   dsll one slot early (it was a 6/144 near-miss that way). */
 extern void func_00234C98(int, long);
 extern int *D_00161000 MACRO_ADDR;
 extern char D_0013CD90[];
 
-void func_001F55C0(long a, long b, long c, long d) {
-    func_00234C98(1, a | (b << 8) | (c << 16) | (d << 24));
+void func_001F55C0(int a, int b, int c, int d) {
+    func_00234C98(1, (long)a | ((long)b << 8) | ((long)c << 16) | ((long)d << 24));
     D_00161000[0] = 0x30000014;
     D_00161000[1] = (int)D_0013CD90;
     D_00161000[2] = 0;
