@@ -115,7 +115,53 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F1088);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F2410);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F2418);
+extern void func_001FA190(void *);
+extern void func_001FA540(void *, void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9EE8(void *, void *, void *);
+extern float D_0018D010;
+
+typedef struct {
+    char pad0[0x40];
+    float viewMtx[4][4];   /* +0x40 */
+    char pad1[0xC0];
+    float focus[3];        /* +0x140 */
+} CameraBlock;
+/* The camera block as a struct: all four accesses then share one base
+   register with field offsets, as in retail. */
+extern CameraBlock D_00187040_cam __asm__("D_00187040");
+
+typedef struct {
+    float x, y, z;
+} Vec3f;
+
+/* Projects camera-space point a1 through the camera matrix, divides by
+   depth (D_0018D010 / w) and scales to x16 screen units. func_002346C0
+   in tfragfunc.c builds the same matrix. */
+void func_001F2418(Vec3f *a0, float *a1) {
+    float m[4][4];
+    float m2[4][4];
+    float v[4];
+    float out[4];
+    float invw;
+
+    func_001FA190(m);
+    m[3][0] = -D_00187040_cam.focus[0] * 1024.0f;
+    m[3][1] = -D_00187040_cam.focus[1] * 1024.0f;
+    m[3][2] = -D_00187040_cam.focus[2] * 1024.0f;
+    func_001FA540(m2, D_00187040_cam.viewMtx, m);
+
+    func_001F9C30(v, a1, 1024.0f);
+    v[3] = 1.0f;
+    func_001F9EE8(out, v, m2);
+
+    invw = D_0018D010 / out[3];
+    a0->z = out[2] * 0.0009765625f;
+    out[0] = out[0] * invw + 2048.0f;
+    a0->x = out[0] * 16.0f;
+    out[1] = out[1] * invw + 2048.0f;
+    a0->y = out[1] * 16.0f;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F2550);
 

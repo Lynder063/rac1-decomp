@@ -162,7 +162,67 @@ void func_001EC780(void *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC7C8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EC8D8);
+extern void func_001F9BF0(void *dst, void *a, void *b);      /* dst = a - b (vector) */
+extern float func_001F9C78(void *a, void *b);                 /* dot(a, b) */
+extern float func_001F9CB8(void *a);                           /* |a| */
+extern void func_001F9DC0(void *dst, void *src, float len);    /* dst = normalize(src) * len */
+extern float func_001F9FC0(float x);                            /* approx acos(x) */
+extern void func_002156E0(void *dst, void *vec, void *axis, float angle); /* dst = vec rotated `angle` around axis */
+
+/* The camera's angles to a target: out[0] = signed yaw between dir0 and
+   (p0 - p1) off the axis, out[1] = signed pitch after rotating dir0 by
+   that yaw, out[2] = |p0 - p1|. A zero length becomes 0.0001 before the
+   acos. The two sign fixups are shaped differently, as in retail. */
+void func_001EC8D8(float *out, void *p0, void *p1, void *dir0, void *dir1,
+                    void *axis) {
+    char diff[16];
+    char proj[16];
+    char perp[16];
+    char unit[16];
+    char rotated[16];
+    float d1, d2, d3, d4, d5;
+    float lenPerp, lenDiff;
+    float angle1, angle2;
+    float a0, a1;
+
+    func_001F9BF0(diff, p0, p1);
+    d1 = func_001F9C78(diff, axis);
+    func_001F9DC0(proj, axis, d1);
+    func_001F9BF0(perp, diff, proj);
+
+    d2 = func_001F9C78(dir0, perp);
+    lenPerp = func_001F9CB8(perp);
+    if (lenPerp == 0.0f) {
+        lenPerp = 0.0001f;
+    }
+    angle1 = func_001F9FC0(d2 / lenPerp);
+    a0 = 1.57079637f - angle1;
+
+    func_001F9DC0(unit, perp, 1.0f);
+    d3 = func_001F9C78(dir1, unit);
+    if (d3 < 0.0f) {
+        a0 = -a0;
+    }
+    out[0] = a0;
+
+    func_002156E0(rotated, dir0, axis, a0);
+    d4 = func_001F9C78(rotated, diff);
+    lenDiff = func_001F9CB8(diff);
+    if (lenDiff == 0.0f) {
+        lenDiff = 0.0001f;
+    }
+    angle2 = func_001F9FC0(d4 / lenDiff);
+    a1 = -(1.57079637f - angle2);
+
+    func_001F9DC0(unit, diff, 1.0f);
+    d5 = func_001F9C78(axis, unit);
+    if (d5 < 0.0f) {
+        a1 = 1.57079637f - angle2;
+    }
+    out[1] = a1;
+
+    out[2] = func_001F9CB8(diff);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001ECAB8);
 
