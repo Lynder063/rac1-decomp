@@ -132,11 +132,12 @@ extern void *func_001154D0(void *ptr, int k);
    comes out 4 bytes short). Bigint: _wds at +0x10, _x[0] at +0x14. */
 /* newlib's i2b (mprec.c): a one-word Bigint holding i. It returns b;
    that return is where retail's $v1 copy comes from. */
-void *func_00115808(void *ptr, int i) {
-    char *b = func_001154D0(ptr, 1);
-    *(int *)(b + 0x14) = i;
-    *(int *)(b + 0x10) = 1;
-    return b;
+void func_00115808(s32 arg1) {
+    void *temp_v0;
+
+    temp_v0 = func_001154D0(1, 0);
+    *(s32 *)((char *)temp_v0 + 0x14) = arg1;
+    *(s32 *)((char *)temp_v0 + 0x10) = 1;
 }
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00115840);

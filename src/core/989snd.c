@@ -478,7 +478,9 @@ void func_0012F1E8(void) {
     func_0012E688(0x3D, 0, 0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F210);
+void func_0012F210(void) {
+    func_0012E688(0x3C, 0, 0);
+}
 
 /* snd_StartMovieSound */
 void func_0012F248(int arg0, int arg1, int arg2, int arg3, int arg4) {
@@ -491,7 +493,12 @@ void func_0012F248(int arg0, int arg1, int arg2, int arg3, int arg4) {
     func_0012E688(0x3E, 0x14, local);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F280);
+void func_0012F280(s32 arg0, s32 arg1) {
+    s32 buf[2];
+    buf[0] = arg0;
+    buf[1] = arg1;
+    func_0012E688(0x5A, 8, buf);
+}
 
 /* snd_GetMovieNAX */
 void func_0012F2B8(void) {

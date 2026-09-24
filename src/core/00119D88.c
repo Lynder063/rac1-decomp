@@ -35,11 +35,111 @@ extern void func_00118E90(int arg0, void *arg1);
 extern void *D_00154A40 NOT_SDA;
 extern int func_001160D8(void);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119D88);
+s8 func_00119D88(s8 arg0) {
+    do {
+
+    } while (*(s32 *)0x1000F130 & 0x8000);
+    *(s8 *)0x1000F180 = arg0;
+    return arg0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119DC0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119E70);
+void func_002164A8(void) {
+    func_0012EDE0();
+}
+
+void func_002164B8(void) {
+    func_0012EDE0();
+}
+
+void func_002164C8(void) {
+    func_0012EDE0();
+}
+
+void func_002164D8(void) {
+    func_0012EDE0();
+}
+
+void func_002164E8(void) {
+    func_0012EDE0();
+}
+
+void func_002164F8(void) {
+    func_0012EDE0();
+}
+
+void func_00216508(void) {
+    func_0012EDE0();
+}
+
+void func_00216518(void) {
+    func_0012EDE0();
+}
+
+void func_00216528(void) {
+    func_0012EDE0();
+}
+
+void func_00216538(void) {
+    func_0012EDE0();
+}
+
+void func_00216548(void) {
+    func_0012EDE0();
+}
+
+void func_00216558(void) {
+    func_0012EDE0();
+}
+
+void func_00216568(void) {
+    func_0012EDE0();
+}
+
+void func_00216578(void) {
+    func_0012EDE0();
+}
+
+void func_00216588(void) {
+    func_0012EDE0();
+}
+
+void func_00216598(void) {
+    func_0012EDE0();
+}
+
+void func_002165A8(void) {
+    func_0012EDE0();
+}
+
+void func_002165B8(void) {
+    func_0012EDE0();
+}
+
+void func_002165C8(void) {
+    func_0012EDE0();
+}
+
+void func_002165D8(void) {
+    func_0012EDE0();
+}
+
+void func_002165E8(void) {
+    func_0012EDE0();
+}
+
+void func_002165F8(void) {
+    func_0012EDE0();
+}
+
+void func_00216608(void) {
+    func_0012EDE0();
+}
+
+void func_00216618(void) {
+    func_0012EDE0();
+}
 
 /* |d| to int for the float printer (func_00119F38 passes the soft-float
    double's bits): exponent e = biased exponent - 1075; 0 below 2^-53,
@@ -161,8 +261,8 @@ extern int func_00118AD0_i(int, int) __asm__("func_00118AD0");
 /* func_001193F8 and func_00118AD0 both return int; their results decide
    which registers the globals' addresses get. */
 void func_0011AA00(void) {
-    func_001193F8_i(0x5);
-    func_00118AD0_i(0x5, D_00154F54);
+    func_001193F8(5);
+    func_00118AD0(5, *(int *)&D_00154F54);
     D_0012FD04 = 0;
 }
 
@@ -172,16 +272,18 @@ extern int D_00154F6C NOT_SDA;
 /* Sets slot arg0's two words: D_00154F6C's for arg0 >= 0, D_00154F64's
    below. In func_0011AA68's shape: reassigning arg0 to the table is what
    puts the base in $a0, as in retail. */
-void func_0011AA38(int arg0, int arg1, int arg2) {
-    int off = arg0 << 3;
+void func_0011AA38(s32 arg0, s32 arg1, s32 arg2) {
+    s32 var_a0;
+    void *temp_v1;
+
     if (arg0 < 0) {
-        arg0 = D_00154F64;
+        var_a0 = D_00154F64;
     } else {
-        arg0 = D_00154F6C;
+        var_a0 = D_00154F6C;
     }
-    off += arg0;
-    *(int *)(off + 0) = arg1;
-    *(int *)(off + 4) = arg2;
+    temp_v1 = (void *)((arg0 * 8) + var_a0);
+    *(s32 *)(temp_v1 + 0x4) = arg2;
+    *(s32 *)(temp_v1 + 0x0) = arg1;
 }
 
 void func_0011AA68(int arg0) {
@@ -208,8 +310,8 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AA90);
  * where the prologue's stack adjust lands. */
 extern void func_0011AA90(int, int, int, int, int, int, int);
 
-void func_0011ABC8(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5) {
-    func_0011AA90(arg0, 0, arg1, arg2, arg3, arg4, arg5);
+void func_0011ABC8(void *arg1, void *arg2, void *arg3) {
+    func_0011AA90(0, (u32)arg1, (u32)arg2, 0);
 }
 
 void func_0011AC08(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5) {

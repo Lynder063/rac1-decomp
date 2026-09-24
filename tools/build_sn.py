@@ -29,6 +29,11 @@ def ensure_env():
     additions = [p for p in GIT_PATHS if os.path.isdir(p) and p not in current_path]
     if additions:
         env["PATH"] = ";".join(additions) + ";" + current_path
+    
+    # Force WINE empty on Windows to prevent toolchain.sh from guessing wrong
+    if os.name == 'nt':
+        env["WINE"] = ""
+        
     return env
 
 def build_sn_data(tc_as, env):
@@ -61,12 +66,8 @@ def build_sn_data(tc_as, env):
                        cwd=REPO_ROOT, env=env, check=True)
 
     # bss padding objects
-    (build_dir / "core_bss_pad.s").write_text('.section .core_bss_pad, "wa"\n.skip 0xab80\n', encoding="utf-8")
-    (build_dir / "bss_pad.s").write_text('.section .bss_pad, "wa"\n.skip 0x4200\n', encoding="utf-8")
-    subprocess.run([str(tc_as), "-o", "build-sn/core_bss_pad.o", "build-sn/core_bss_pad.s"],
-                   cwd=REPO_ROOT, env=env, check=True)
-    subprocess.run([str(tc_as), "-o", "build-sn/bss_pad.o", "build-sn/bss_pad.s"],
-                   cwd=REPO_ROOT, env=env, check=True)
+    bash_exe = shutil.which("bash", path=env.get("PATH"))
+    subprocess.run([bash_exe, "tools/build_sn_data.sh"], cwd=REPO_ROOT, env=env, check=True)
 
 def make_bss_equs(tc_ld, tc_as, env):
     """Collect undefined symbols from linker complaints and equate them."""
@@ -121,9 +122,9 @@ def main():
         sys.exit(f"*** make failed (exit {make_res.returncode})")
 
     # 4. Generate rac1.ld
-    sys.path.insert(0, str(REPO_ROOT / "tools"))
-    from gen_ld import generate_ld
-    generate_ld()
+    bash_exe = shutil.which("bash", path=env.get("PATH"))
+    subprocess.run([bash_exe, "rac1.ld.sh"], cwd=REPO_ROOT, env=env, check=True)
+    print("wrote build-sn/rac1.ld")
 
     # 5. Handle bss equates
     bss_equs = REPO_ROOT / "build-sn" / "bss_equs.o"

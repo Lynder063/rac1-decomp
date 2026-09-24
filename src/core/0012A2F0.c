@@ -161,17 +161,15 @@ extern long func_0012AAC8(void *, int);
  * picks a different store for the tail call's delay slot. Not reached
  * by any reordering, since the "correct" order is already in place.
  */
-void func_0012AA70(void *arg0, int arg1, int arg2, int arg3) {
-    char *p = (char *)arg0;
-    *(int *)(p + 0xC) = arg1;
-    *(int *)(p + 0x24) = arg2 + arg3;
-    *(int *)(p + 0x28) = arg3;
-    *(int *)(p + 0x8) = arg1;
-    *(long *)(p + 0x0) = 0;
-    *(int *)(p + 0x10) = 0;
-    *(long *)(p + 0x18) = 0;
-    *(int *)(p + 0x20) = arg2;
-    func_0012AAC8(arg0, 0);
+void func_0012AA70(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
+    *(int *)((char *)arg0 + 0xC) = arg1;
+    *(int *)((char *)arg0 + 0x24) = arg2 + arg3;
+    *(int *)((char *)arg0 + 0x28) = arg3;
+    *(int *)((char *)arg0 + 0x8) = arg1;
+    *(int *)arg0 = 0;
+    *(int *)((char *)arg0 + 0x10) = 0;
+    *(int *)((char *)arg0 + 0x18) = 0;
+    func_0012AAC8(0, 0);
 }
 
 /* Bitstream peek: the top n bits of the 64-bit accumulator at +0x0, as
