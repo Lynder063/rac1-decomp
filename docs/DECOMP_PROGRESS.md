@@ -296,6 +296,56 @@ built with the SDK's 2.9-ee like libgcc [sceMcSync].
 - *Old notes are evidence, not verdicts.* Batch H found four wrong
   decodes, and batch J a "tried, fails" store order that works.
 
+**Batches K to N (same day).** `-dS -dR -dg -dl` and `-da` RTL dumps work
+in the container (`-fsched-verbose-4` is spelled with `-N`), and several
+of these came out of them.
+
+- *The scheduler's tie-break is predictable.* It issues two insns a cycle,
+  at most one memory access. Between equal priorities the insn with more
+  dependents wins, then the insn that frees a register, then source
+  order. So the source's last store, which also frees the base, goes
+  first; stores that are the last use of their value follow in source
+  order; and a value stored twice has its first store emitted last
+  [InitMemSlots func_00201E10].
+- *A callee's return type reorders the caller.* A call that returns a
+  value clears the list of pending `$v0` readers; a void call leaves it,
+  so every later call depends on them. `int` fixed func_0022EA20, a
+  `void` alias func_0012CBA0.
+- *A struct member cannot alias a scalar global.* A load through a
+  struct member is "in struct", and gcc's fixed_scalar_and_varying_struct_p
+  lets it move above fixed-address scalar stores; `*(T *)(p + off)` and
+  an `int *` index wait behind them [SetupSkyGifPaging, DrawTies_2].
+- *volatile on one path.* A volatile store on a fall-through path stops
+  reorg's try_merge_delay_insns, leaving a duplicated delay-slot copy.
+  Keep the read volatile and make the store plain where retail merges
+  [DMAC_VIF1_Enable]. Make only the fields retail re-reads volatile
+  [voBufIncCount].
+- *A fresh pseudo per read.* A `static inline` accessor for a global gives
+  each use its own pseudo: a temp in the duplicated exit test, a saved
+  copy in the loop [func_0022EF68]. `i * SIZE + (int)ptr` gives the
+  offset-first addu that pointer arithmetic does not.
+- *Reading a value twice* (test it, then assign it) keeps a copy that
+  changes reorg's fills [func_0020D9D8, func_0020D790].
+- *reload_cse, not CSE,* merged three byte loads into `andi`s of a
+  compare register. A base-first add that lands the table base in that
+  register kills the value [func_0020D6D0].
+- *One basic block* (calls do not end blocks): local-alloc ranks pseudos
+  over the first scheduling pass's order, so statement order moves
+  registers. Brute force works: 122 store orders compiled in one run,
+  one exact [SetTfragDists].
+- *A pointer assigned in the loop condition* (`while (d = D, d[4])`)
+  gives the duplicated exit test its own register and retail's
+  preheader copy [func_00217748].
+- *`short` vs `unsigned short`:* `unsigned short &= ~8` becomes andi
+  0xFFF7, `short` an AND with -9 in a register [DrawTies_2].
+- *GCSE's hash buckets* decide PRE's register order: the bucket count is
+  (insns at GCSE / 2) | 1, so adding or removing insns can swap two
+  registers [func_0012AAC8].
+- *2.9-ee* (core SDK objects): it tail-calls void functions that end in
+  a call, never `return f(...)`; it has -fstrict-aliasing on by default;
+  and verbatim library source often matches under it (newlib's rand,
+  __sinit, _fwalk). See the 2.9-ee section below.
+
 ### Per-function log
 
 The table below is a **chronological log**, newest entries mostly at the
