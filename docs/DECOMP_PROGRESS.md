@@ -60,10 +60,11 @@ date with `src/`. It leaves out retail's linker fill (the `0xCDCDCDCD`
 runs between objects that splat also emits as 4-byte "functions"; 38 of
 them, 200 bytes): fill is not code, and the build reproduces it byte for
 byte. Totals written in prose go stale, so this file no
-longer keeps a running count. Snapshot as of 2026-09-22 (`e76be41`):
-**566 functions have source; 485 are exact on size and bytes; 81 are
-same-size near-misses kept as C; 0 are size-mismatched; 8.03% of code
-bytes match.** Re-run `bash tools/build_sn.sh` (which runs the sweep)
+longer keeps a running count. Snapshot as of 2026-09-23 (`51c705e`):
+**657 functions have source; 581 are exact on size and bytes; 76 are
+same-size near-misses kept as C; 0 are size-mismatched; 11.65% of code
+bytes match; 16 of 120 units complete.** Re-run `bash tools/build_sn.sh`
+(which runs the sweep, the layout check and the whole-image check)
 after any change rather than trusting a snapshot or any single entry.
 
 Two tools carry most of the weight when closing a near-miss:
@@ -193,6 +194,72 @@ emit retail's full argument-shadow spill (`$5`-`$11` and
 `$f12`/`$f14`/`$f16`/`$f18`), no body needed. Only a definition that
 actually *reads* its variable arguments (`va_arg`) would need a
 `stdarg.h` shim, and none has been attempted yet.
+
+### New this round (2026-09-23)
+
+Found while decompiling in parallel with `tools/try_func.py`. Each one
+closed at least one function, named in brackets; the function's own
+comment has the details.
+
+**Read the callee, not the caller.** Several "unexplained" instructions
+were arguments. `li $5,1` and a "dead" `&D_0015FFD0` were the arguments
+of the empty profiling markers `func_001F2560`/`func_001F2558`, which
+take `(void *, int)` [DrawMobysSetup]. A register oddly copied at entry
+(`daddu $6,$4,$0`) was a later printf's third argument: read the format
+string [CreateMoby]. A callee retail calls without setting `$a0` takes
+nothing [DrawMobysCleanUp]. A `long` parameter changes argument
+evaluation order: `func_00234C98(int, long)` [DrawMobysSetup]. Even an
+unused int return moves the next temporary from `$v0` to `$v1`, so
+retail's `$2`/`$3` choice tells a callee's return type [termAll].
+
+**One variable, two registers: how a copy survives CSE.**
+`n = h->count++;` keeps retail's copy of the old count [Stash_SendData].
+`t = g; p = (int *)t; t += 0x10; g = t;` keeps a copy of a pointer that
+`p = g; g += 0x10;` folds away [func_0020DEB0]. Advancing a local in
+place (`p += 0x10; g = p;`) ties old and new to one register, where a
+plain `g += 0x10` lets the store fall into a jal slot [DrawShrubs].
+Updating a parameter in place keeps it in its argument register
+[func_00215A98].
+
+**Globals read at every use.** Re-reading a MACRO_ADDR global where the
+source uses it, instead of caching it in a local, lets CSE reproduce
+retail's load order and copies [func_00213BB8]. One `char *` local per
+block that reads a global gives retail's "%hi kept, %lo rebuilt"
+pattern [pause.c handlers].
+
+**volatile.** reorg never moves a volatile access into a delay slot, and
+volatile stores keep their order against the epilogue
+[startDisplay, func_001219C8, VU1_sendChain].
+
+**Return shapes.** `if (x < 0) return 0; return 1;` gives slti/xori
+where `return x >= 0` gives nor/srl [audioDecCreate]. Two
+`return x;` statements get cross-jumped into one; assign in each arm and
+return once to keep both copies [func_00124A70]. A float compare
+returned as `? 1 : 0` gives bc1t with the `li` in its slot, and folded
+into `&&` it gives bc1tl [func_00207E28]. `int r = 1; if (a && !(x <= y))
+r = 0; return r;` gives retail's bc1fl with `r = 0` in its likely slot
+[func_00208208]. A flag shifted as `(x != 0) << k` folds into a branch;
+bind the comparison to a local first [func_00222640, func_00209BB8].
+
+**Statement order still decides allocation.** In the music play family
+the first store must not need a constant in a register, or `$a0` goes
+to the constant and the handle cannot load straight into it. That was
+the "allocator dead end" recorded for years [func_00216290 family].
+
+**Structure of the memory.** Reaching a table as a member of a struct
+fixes addu operand order where pointer arithmetic cannot
+[SndToc in music.c]. For a local pointer the order is the reverse of the
+global-table rule: `items[i].ptr` is index-first and `rec = &items[i];
+rec->ptr` base-first [func_00229D48].
+
+**The toolchain, not the source.** Many residuals recorded as compiler
+behaviour were retail's assembler (ps2eeas): short-loop padding, the nop
+between an FP compare and its bc1, the nop after an mtc1 whose register
+is read next, and its own dli sequences. `tools/ps2eeas_nops.py` and
+`tools/ps2eeas_dli.py` now reproduce all four. Some near-misses had
+been the right size only because two errors cancelled [func_00208208,
+func_00215A98]. And `src/core/001236F0.c` is Sony's memory card library,
+built with the SDK's 2.9-ee like libgcc [sceMcSync].
 
 ### Per-function log
 
@@ -1789,11 +1856,8 @@ The full procedure, including setup, publishing and commit rules, is
   operands" lever above, from the other side: when the typed-access form
   does not flip it, nothing else will.
 - **A constant's macro expansion belongs to the assembler.**
-  `func_0022FD20` is 5/160 because retail builds `0x8000000044` as
-  `ori 0x8000` / `dsll 24` / `ori 0x44` and this assembler expands the
-  identical `dli` as `addiu 0x80` / `dsll32` / `ori 0x44`. Every C
-  spelling folds to the same constant and therefore to the same macro,
-  so retail's sequence came out of its compiler, not its assembler.
+  `func_0022FD20` was 5/160 because retail builds `0x8000000044` with
+  ps2eeas's own `dli` sequence; exact since `tools/ps2eeas_dli.py`.
 
 ## Rejected lever: reordering callee-saved spills to v1.36's order
 

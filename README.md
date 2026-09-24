@@ -119,11 +119,12 @@ like this (these are the numbers as of 2026-09-23; decomp.dev has the
 current ones):
 
 ```
-=== 566 decompiled functions audited ===
-  exact (size AND bytes): 485
+=== 657 decompiled functions audited ===
+  exact (size AND bytes): 581
   size mismatch:          0   (always revert these -- see docs)
-  byte mismatch:          81
+  byte mismatch:          76
 every function is at its retail address
+image matches retail outside the decompiled near-misses (1298 bytes differ inside them)
 ```
 
 ## Contributing
