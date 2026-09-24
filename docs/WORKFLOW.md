@@ -61,6 +61,18 @@ method has paid in every round since it was introduced.
 
 ## 2. Iterate with the differ
 
+For quick tries, `tools/try_func.py` compiles one candidate function in a
+scratch copy of its source file (the same per-segment pipeline) and
+compares it with retail in seconds, without touching `src/` or linking:
+
+```
+python tools/try_func.py func_XXXXXXXX candidate.c --diff
+```
+
+It masks relocated fields, so a pass there is a filter, not a match: the
+function still has to pass the full build (step 3). For a whole-image view
+and asm-differ's side-by-side, use:
+
 ```
 sh tools/diff.sh func_XXXXXXXX
 ```
