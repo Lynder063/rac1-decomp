@@ -375,18 +375,17 @@ int func_0012D4B0(int arg0) {
  * and needs no mflo -- one instruction fewer, hence 4 bytes short. That
  * is an ISA/codegen choice, not something the source can steer.
  */
-/*
- * Attempted, reverted at 14/32. Semantics certain -- BCD to binary,
- * callee of func_0012D500/func_0012D568:
- *     int f(int arg0) { unsigned v = arg0 & 0xFF;
- *                       return (v - (v >> 4) * 6) & 0xFF; }
- * Every instruction matches except the multiply FORM: retail emits the
- * generic `mult $0, $3, $4` + `mflo $3`, this compiler picks the R5900
- * three-operand `mult $v1, $v1, $a0` which writes rd directly and needs
- * no mflo. Same operands, same order, different instruction selection --
- * not reachable by reshaping the C.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D4E0);
+/* BCD byte to binary. The product goes through an unsigned char: combine
+   folds the multiply into that narrowing copy and re-recognises it as the
+   generic LO-destination multiply, which is retail's `mult $0,a,b` +
+   `mflo` (the plain int form picks the R5900 three-operand mult). */
+/* The product goes through an unsigned char local: that gives retail's
+   generic mult $0 + mflo instead of the three-operand mult. */
+int func_0012D4E0(int arg0) {
+    unsigned char v = arg0;
+    unsigned char t = (v >> 4) * 6;
+    return (unsigned char)(v - t);
+}
 
 extern int func_0012D4E0(int);
 

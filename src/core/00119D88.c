@@ -303,22 +303,21 @@ void func_0011B090(void *arg0) {
  * local, and naming rem+1 as a separate local -- neither changed the
  * allocation. Same open scratch-register question as func_001160D8.
  */
-/*
- * Attempted, reverted at 20/48 (same size). Semantics certain:
- *     int f(void *arg0) {
- *         char *p = arg0;
- *         int rem = *(int *)(p + 0x24) % *(int *)(p + 0x18);
- *         *(int *)(p + 0x24) = rem + 1;
- *         return *(int *)(p + 0x14) + (rem << 6);
- *     }
- * The div, its trap guard, the mfhi and all four offsets match. Residual
- * is two scheduling/allocation choices: retail keeps the remainder in $2
- * and the divisor in $3 where this compiler picks $v1/$v0, and retail
- * emits `addiu rem+1` before `sll rem,6` where this compiler emits the
- * shift first. Statement order does not steer it -- the store already
- * precedes the return expression in the source.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B0B0);
+/* Hand out the next 0x40-byte slot of the ring {.., +0x14 base, +0x18
+   count, .., +0x24 next}: take next modulo count, advance next past it,
+   return the slot. The slot address has to be formed BEFORE the store of
+   the new index: that is what gives retail's allocation (remainder in $v0,
+   divisor in $v1) and its tail, `addiu` before `sll` and the `addu` in the
+   jr delay slot. Storing first and indexing in the return is 20/48. */
+/* The slot address is computed into a local before next = i + 1 is
+   stored. */
+void *func_0011B0B0(void *arg0) {
+    char *p = (char *)arg0;
+    int i = *(int *)(p + 0x24) % *(int *)(p + 0x18);
+    char *s = *(char **)(p + 0x14) + i * 0x40;
+    *(int *)(p + 0x24) = i + 1;
+    return s;
+}
 
 /*
  * REVERTED (SIZE mismatch, 168 vs retail 180, both spellings). Decode is
@@ -428,21 +427,24 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B4C8);
  * early returns; both merge. The exit structure is not expressible from
  * C here.
  */
-/*
- * Attempted, reverted at 27/60. Semantics certain:
- *     int f(void *arg0) {
- *         char *p = arg0, *q = *(char **)p;
- *         if (q != 0 && *(int *)(p + 4) == *(int *)(q + 0x18) &&
- *             (*(int *)(q + 0x10) & 1) != 0) return 1;
- *         return 0;
- *     }
- * Retail jumps all three failing conditions to one shared `return 0`
- * tail. Writing it as early returns was worse (36/60) because it emitted
- * branch-likely (`bnezl`); the combined condition above improved it to
- * 27/60 and is the right shape, but this compiler still fills the branch
- * delay slots differently from retail's plain `beqz`+`nop`.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B6B8);
+/* Is the handle {slot, id} at arg0 still live: the slot is set, its id at
+   +0x18 still matches the handle's, and its in-use bit (+0x10 bit 0) is
+   set. Written as one inverted guard that returns 0, then `return 1`:
+   that keeps retail's two exits (shared `return 0` block the tests fall
+   into, a separate `return 1`), and gcc leaves all three branch slots to
+   the assembler, which fills them with nops as retail has them. The &&
+   form returning 1 merges the exits; early returns give bnel. */
+/* One test for the three failure cases, then return 1. */
+int func_0011B6B8(void *arg0) {
+    char *p = (char *)arg0;
+    char *q = *(char **)p;
+
+    if (q == 0 || *(int *)(p + 4) != *(int *)(q + 0x18) ||
+        !(*(int *)(q + 0x10) & 1)) {
+        return 0;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B6F8);
 

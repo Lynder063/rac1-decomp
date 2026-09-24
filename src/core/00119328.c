@@ -120,33 +120,27 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00119678);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119710);
 
-/*
- * REVERTED (30/68, same size). Semantics are certain -- it is the same
- * "stash a tagged struct on the stack and hand it to func_00118E90"
- * forwarder as func_001197C0/func_001197F8, with four fields:
- *
- *   extern int D_00154A10;
- *   void func_00119718(unsigned short arg0, int arg1, int arg2) {
- *       int buf[4];
- *       buf[1] = arg1;
- *       buf[0] = arg0;                  // andi 0xFFFF from the short
- *       buf[2] = arg2;
- *       buf[3] = (int)&D_00154A10 | 0x20000000;
- *       func_00118E90(1, buf);
- *   }
- *
- * Retail computes the buf[3] tag completely (lui/addiu/lui/or) before
- * any store, then stores 0x4, 0x0, 0x8 and puts 0xC in the call's delay
- * slot. This compiler interleaves the tag arithmetic with the stores and
- * spends the delay slot on the &buf move instead. Tried: natural store
- * order, retail's store order, and hoisting the tag into a leading local
- * (the declaration-order lever) -- all three give 30-32/68, so the
- * scheduling is not reachable from source shape here. The sibling
- * func_001197C0 matches with source order == retail's emitted order,
- * which is why that was tried first; the difference is that this one's
- * buf[3] needs runtime arithmetic and theirs does not.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119718);
+extern int D_00154A10;
+/* Deci2Call (syscall 0x7C) returns the result; the file's later
+   `extern void func_00118E90(int, void *)` drops it, hence the alias. */
+extern int func_00118E90_ret(int, void *) __asm__("func_00118E90");
+
+/* libkernel sceDeci2Open(protocol, opt, handler): Deci2Call(1, {protocol,
+   opt, handler, uncached &D_00154A10}). Returning the call's value is
+   what gives retail's schedule (tag complete before the stores, the &buf
+   move ahead of the $ra save); the void spelling is 30/68. */
+/* sceDeci2Open: returns Deci2Call's int result (func_00118E90 is
+   Deci2Call, declared void in this file, so it is reached through an
+   alias). */
+int func_00119718(unsigned short arg0, void *arg1, void *arg2) {
+    unsigned int buf[4];
+
+    buf[0] = arg0;
+    buf[1] = (unsigned int)arg1;
+    buf[2] = (unsigned int)arg2;
+    buf[3] = (unsigned int)&D_00154A10 | 0x20000000;
+    return func_00118E90_ret(1, buf);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119760);
 

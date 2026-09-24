@@ -536,49 +536,30 @@ void *func_00125078(int arg0) {
     return slot[*(int *)(slot[0] + 0x7C) < *(int *)(slot[1] + 0x7C)];
 }
 
-/*
- * REVERTED (size mismatch: ours 132, retail 128). Logic is certain, and
- * the block structure below reproduces retail's exactly -- the two
- * `return 0` exits share one block, the beqz delay slot is free for the
- * spill, and the D_00132ED8 accesses come out as %lo($base) for [0] and
- * addiu+4 for [1], just as retail has them:
- *
- *   extern int D_00132ED8[];
- *
- *   int func_001250E0(int arg0) {
- *       char *e = D_0015B640 + arg0 * 0x330;
- *       char *p = *(char **)(e + 0xC);
- *       char *slot[2];
- *
- *       slot[0] = p;
- *       slot[1] = p + 0x80;
- *       if (*(int *)(p + 0x7C) == 0 ||
- *           (D_00132ED8[0] == *(int *)(p + 0x7C) &&
- *            D_00132ED8[1] == *(int *)(slot[1] + 0x7C))) {
- *           return 0;
- *       }
- *       D_00132ED8[0] = *(int *)(slot[0] + 0x7C);
- *       D_00132ED8[1] = *(int *)(slot[1] + 0x7C);
- *       return 1;
- *   }
- *
- * The two-slot stack array is not decoration: retail spills the pointer
- * and pointer+0x80 to 0x0/0x4 of a 0x10 frame in a LEAF function, the
- * same idiom already used by func_00125078 just above.
- *
- * Exactly one instruction over, and it is the allocator's destination
- * choice again: retail puts %hi(D_00132ED8) straight into $7 and uses
- * $7 for every later reference, while this compiler emits
- *     lui $2,%hi(D_00132ED8) ; lw $3,%lo(D_00132ED8)($2) ; move $7,$2
- * because it wants $2 for the lui and then needs $2 back for `li $2,1`.
- * Caching the global's base in a local `int *g` removes the copy but
- * also removes an addiu and a reload, landing four bytes SHORT (and
- * folding the two bne into a bnel); combining the conditions the other
- * way (a single `&&` chain returning 1) lets GCC keep both pointers in
- * registers and drops the spills entirely, 16 bytes short. No spelling
- * tried hits 32 instructions.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001250E0);
+extern int D_00132ED8[];
+
+/* Has entry arg0's current pair changed? Follow entry arg0 of the
+   0x330-stride table to its buffer p; the pair is p+0x7C and p+0x80+0x7C.
+   If the first is zero, or both equal the cached pair D_00132ED8[0..1],
+   report 0; otherwise cache them and report 1. The two-slot stack array
+   is retail's (the same idiom as func_00125078). Exact under this file's
+   2.9-ee; under 2.95.3 it was a word long. */
+/* The old note's decode, exact since 001236F0.c builds with 2.9-ee. */
+int func_001250E0(int arg0) {
+    char *p = D_0015B640[arg0].unk_0C;
+    char *slot[2];
+
+    slot[0] = p;
+    slot[1] = p + 0x80;
+    if (*(int *)(p + 0x7C) == 0 ||
+        (D_00132ED8[0] == *(int *)(p + 0x7C) &&
+         D_00132ED8[1] == *(int *)(slot[1] + 0x7C))) {
+        return 0;
+    }
+    D_00132ED8[0] = *(int *)(slot[0] + 0x7C);
+    D_00132ED8[1] = *(int *)(slot[1] + 0x7C);
+    return 1;
+}
 
 /*
  * Byte mismatch at correct size (0xB0), 8 of 44 words, and every one of
