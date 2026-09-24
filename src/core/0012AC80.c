@@ -154,9 +154,103 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012AC80);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012AD08);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012B008);
+extern long func_0012AC80(int arg0, int arg1);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012B100);
+typedef struct {
+    long key;
+    long extra;
+    int  cb;
+    int  data;
+} StrCbEnt; /* 0x18 */
+
+typedef struct { char pad[8]; long extra; } Tbl16;
+extern Tbl16 D_00132FD8[];
+
+/*
+ * sceMpegAddStrCallback (libmpeg.a:pack.o): key = func_0012AC80(arg1,
+ * arg2) (a 64-bit stream/type key); linear-search the object's callback
+ * table (handlers[7] reused as {table pointer, count} -- raw offsets,
+ * not the Handler struct, per this file's warning about that array
+ * overlapping) for a matching key, remembering its old callback (0 if
+ * none found). Whether found or not (index lands on the match, or one
+ * past the end), if there's room (< 0x40 entries), overwrite the slot
+ * with the new key/data/callback and the type's extra 8 bytes from
+ * D_00132FD8[arg1], and bump the stored count unconditionally. Returns
+ * the previous callback.
+ */
+int func_0012B008(void *arg0, int arg1, int arg2, int arg3, int arg4) {
+    int old = 0;
+    char *obj = *(char **)((char *)arg0 + 0x40);
+    StrCbEnt *tbl = *(StrCbEnt **)(obj + 0x44);
+    long key = func_0012AC80(arg1, arg2);
+    int count = *(int *)(obj + 0x48);
+    int i;
+
+    for (i = 0; i < count; i++) {
+        if (key == tbl[i].key) {
+            old = tbl[i].cb;
+            break;
+        }
+    }
+    if (i < 0x40) {
+        *(int *)(obj + 0x48) = count + 1;
+        tbl[i].key = key;
+        tbl[i].data = arg4;
+        tbl[i].cb = arg3;
+        tbl[i].extra = D_00132FD8[arg1].extra;
+    }
+    return old;
+}
+
+extern void func_0012ABB0(void *arg0);
+extern int func_0012B250();
+
+/*
+ * _pack_header (libmpeg.a:pack.o): ISO/IEC 11172-1 2.4.3.3 pack_header().
+ * func_0012AB60 is nextBit ("get n bits"), func_0012ABB0 a marker-bit
+ * skip, func_0012AAA8 a 32-bit peek (nextStartCode-style). Reads the pack
+ * start code's fixed fields (34 then 3, marker, 15, marker, 15, marker,
+ * 9, marker), discarding the SCR/mux_rate pieces except for three: the
+ * low bit of the first 3-bit group goes to +0x8, and the three groups
+ * combine into +0x4 as (first<<30)|(second<<15)|third. The last field
+ * read (3 bits) is pack_stuffing_length: that many stuffing bytes are
+ * then skipped. Peeks the next 32 bits; a system_header_start_code
+ * (0x1BB) sets +0xC and hands off into func_0012B250 (system_header
+ * parsing -- called prototype-less here since retail's call site passes
+ * it a second, unused argument, the same K&R situation as func_00129F40
+ * elsewhere in this file), otherwise clears +0xC. Always returns 1.
+ */
+int func_0012B100(void *arg0, void *arg1) {
+    char *p = (char *)arg1;
+    unsigned int first, second, third, stuffing;
+    unsigned int i;
+
+    func_0012AB60(arg0, 0x22);
+    first = func_0012AB60(arg0, 3);
+    func_0012ABB0(arg0);
+    second = func_0012AB60(arg0, 0xF);
+    func_0012ABB0(arg0);
+    third = func_0012AB60(arg0, 0xF);
+    func_0012ABB0(arg0);
+    *(int *)(p + 0x0) = func_0012AB60(arg0, 9);
+    func_0012AB60(arg0, 0x1E);
+    stuffing = func_0012AB60(arg0, 3);
+
+    *(unsigned int *)(p + 0x8) = (first >> 2) & 1;
+    *(unsigned int *)(p + 0x4) = (first << 30) | (second << 15) | third;
+
+    for (i = 0; i < stuffing; i++) {
+        func_0012AB60(arg0, 8);
+    }
+
+    if (func_0012AAA8(arg0, 0x20) == 0x1BB) {
+        *(int *)(p + 0xC) = 1;
+        func_0012B250(arg0, p);
+    } else {
+        *(int *)(p + 0xC) = 0;
+    }
+    return 1;
+}
 
 int func_0012B250(void *arg0) {
     func_0012AB60(arg0, 0x38);
@@ -169,7 +263,35 @@ int func_0012B250(void *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012B2C0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012B870);
+extern void func_0012D068(void);
+
+/*
+ * sceMpegInit (libmpeg.a:mpeg.o): one-time IOP/EE SIF hardware bring-up.
+ * func_0011D960 presumably queries the DMA/SIF state, gating whether
+ * func_0011D9A8 (a kick) runs; the SIF flag register at 0x1000F590 is set
+ * then cleared (bit 0x10000, re-reading 0x1000F520 fresh each time), two
+ * DMA channel control registers (0x1000B000/0x1000B400) have bit 0x100
+ * masked off, and two more (0x1000B020/0x1000B420) are zeroed before the
+ * tail call into func_0012D068.
+ */
+void func_0012B870(void) {
+    int r = func_0011D960();
+
+    *(volatile unsigned int *)0x1000F590 =
+        *(volatile unsigned int *)0x1000F520 | 0x10000;
+    *(volatile unsigned int *)0x1000B000 &= ~0x100;
+    *(volatile unsigned int *)0x1000B400 &= ~0x100;
+    *(volatile unsigned int *)0x1000F590 =
+        *(volatile unsigned int *)0x1000F520 & ~0x10000;
+
+    if (r != 0) {
+        func_0011D9A8();
+    }
+
+    *(volatile unsigned int *)0x1000B020 = 0;
+    *(volatile unsigned int *)0x1000B420 = 0;
+    func_0012D068();
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012B918);
 
@@ -185,7 +307,30 @@ int func_0012BB98(void *arg0) {
     return ((Wrapper *)arg0)->obj->unk004 == 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BBA8);
+extern void func_0012C358(void *arg0);
+extern void func_0012C268(void *arg0);
+
+/*
+ * sceMpegReset (libmpeg.a:mpeg.o): clear the object's decode state
+ * (unk000/004/008/0AC, the handler-table slot at +0x80, and +0x118), and
+ * the wrapper's own +0x08, then call _clearEach (func_0012C358) and hand
+ * the object to func_0012C268 (zero +0x848, kick the IPU chain via
+ * func_00127378).
+ */
+void func_0012BBA8(void *arg0) {
+    char *w = (char *)arg0;
+    char *inner = *(char **)(w + 0x40);
+
+    *(int *)(inner + 0x0) = 0;
+    *(int *)(inner + 0x4) = 0;
+    *(int *)(inner + 0x8) = 0;
+    *(int *)(w + 0x8) = 0;
+    *(int *)(inner + 0xAC) = 0;
+    *(int *)(inner + 0x80) = -1;
+    func_0012C358(inner);
+    *(int *)(inner + 0x118) = 0;
+    func_0012C268(inner);
+}
 
 int func_0012BBF8(void *arg0) {
     char *b = *(char **)((char *)arg0 + 0x40);
@@ -405,7 +550,44 @@ void func_0012C2F8(void *arg0) {
     *(int *)(p + 0x810) = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C358);
+extern void func_0012CF98(int, int);
+
+/*
+ * _clearEach (libmpeg.a:init.o): per-stream hardware reset shared by
+ * sceMpegInit's shape -- flag the bitstream state "in use" (+0x818 = 1),
+ * clear its slice-address latch (+0x1B0), then the same SIF-flag toggle
+ * (0x1000F590 set/cleared around bit 0x10000, re-reading 0x1000F520 fresh
+ * each time) and three DMA channel registers zeroed (0x1000B000/B400/D400),
+ * gated IOP kick via func_0011D960/func_0011D9A8, three more registers
+ * zeroed (0x1000B020/B420/D420), IPU_CTRL (0x10002010) set to 0x40000000,
+ * and a tail call into func_0012CF98(0, 0).
+ */
+void func_0012C358(void *arg0) {
+    char *s = (char *)arg0;
+    int r;
+
+    *(int *)(s + 0x818) = 1;
+    *(int *)(s + 0x1B0) = 0;
+    r = func_0011D960();
+
+    *(volatile unsigned int *)0x1000F590 =
+        *(volatile unsigned int *)0x1000F520 | 0x10000;
+    *(volatile unsigned int *)0x1000B000 = 0;
+    *(volatile unsigned int *)0x1000B400 = 0;
+    *(volatile unsigned int *)0x1000D400 = 0;
+    *(volatile unsigned int *)0x1000F590 =
+        *(volatile unsigned int *)0x1000F520 & ~0x10000;
+
+    if (r != 0) {
+        func_0011D9A8();
+    }
+
+    *(volatile unsigned int *)0x1000B020 = 0;
+    *(volatile unsigned int *)0x1000B420 = 0;
+    *(volatile unsigned int *)0x1000D420 = 0;
+    *(volatile unsigned int *)0x10002010 = 0x40000000;
+    func_0012CF98(0, 0);
+}
 
 extern char D_00153BD8[];
 /* Unprototyped: func_0011A6C8 is a varargs definition (blocked as such),
@@ -453,7 +635,76 @@ int func_0012C4C0(void *arg0, int arg1, int arg2) {
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C4E0);
+extern int func_00128A58(void *, int);
+extern void func_0012C468(void *, void *);
+extern char D_00153BE8[];
+extern void func_00128590(void *);
+extern void func_00128560(void *, unsigned int);
+extern void func_0012C990(void *, int, int);
+extern char D_001330C0[];
+extern char D_00133100[];
+extern void func_00128E68(void *);
+extern void func_0012C608(void *);
+
+/*
+ * _sequenceHeader (libmpeg.a:init.o): ISO/IEC 13818-2 6.2.2.1
+ * sequence_header(), hardware-VLC variant matching mpeg2decode's
+ * gethdr.c almost line for line but reading combined bitfields in one
+ * Get_Bits (func_00128A58) call each: a 32-bit fetch for
+ * horizontal_size/vertical_size/aspect_ratio_information/frame_rate_code
+ * (only the two sizes are kept, at +0x124/+0x128; a vertical_size
+ * reading >= 0xAF1 is reported through func_0012C468) and a 30-bit fetch
+ * for bit_rate_value/marker_bit/vbv_buffer_size/constrained_parameters_
+ * flag (bit_rate_value kept at +0x134, vbv_buffer_size at +0x138).
+ * load_intra/non_intra_quantizer_matrix (+0x840/+0x844) gate the IPU
+ * matrix load (func_00128590/func_00128560) or, when clear, _setDefaultQM
+ * (func_0012C990) with the reference decoder's default table. Ends with
+ * extensionAndUserData (func_00128E68) and a tail call into _initSeq
+ * (func_0012C608) with the object read back from +0x858.
+ */
+void func_0012C4E0(void *arg0) {
+    char *s = (char *)arg0;
+    unsigned int v;
+    int mid;
+    unsigned int flag;
+
+    *(unsigned int *)(s + 0xD4) = 0;
+
+    v = func_00128A58(s, 0x20);
+    *(unsigned int *)(s + 0x124) = v >> 20;
+    mid = (v >> 8) & 0xFFF;
+    *(unsigned int *)(s + 0x128) = mid;
+    if (mid >= 0xAF1) {
+        func_0012C468(s, D_00153BE8);
+    }
+
+    v = func_00128A58(s, 0x1E);
+    *(unsigned int *)(s + 0x134) = v >> 12;
+    *(unsigned int *)(s + 0x138) = (v >> 1) & 0x3FF;
+
+    flag = func_00128A58(s, 1);
+    *(unsigned int *)(s + 0x840) = flag;
+    if (flag != 0) {
+        func_00128590(s);
+        func_00128560(s, 0x50000000);
+        func_00128590(s);
+    } else {
+        func_0012C990(s, 0x50000000, (int)D_001330C0);
+    }
+
+    flag = func_00128A58(s, 1);
+    *(unsigned int *)(s + 0x844) = flag;
+    if (flag != 0) {
+        func_00128590(s);
+        func_00128560(s, 0x58000000);
+        func_00128590(s);
+    } else {
+        func_0012C990(s, 0x58000000, (int)D_00133100);
+    }
+
+    func_00128E68(s);
+    func_0012C608(*(void **)(s + 0x858));
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C608);
 
@@ -461,7 +712,64 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C8B0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C990);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CA70);
+extern int func_00128A58(void *, int);
+extern void func_0012C468(void *, void *);
+extern char D_00153C00[];
+extern char D_00153C28[];
+
+/*
+ * _sequenceExtension (libmpeg.a:init.o): ISO/IEC 13818-2 6.2.2.3
+ * sequence_extension(), matching mpeg2decode's gethdr.c almost line for
+ * line but reading two combined bitfields with func_00128A58: a 28-bit
+ * fetch covers profile_and_level_indication(8) + progressive_sequence(1)
+ * + chroma_format(2) + horizontal_size_extension(2) +
+ * vertical_size_extension(2) + bit_rate_extension(12) + marker_bit(1); a
+ * 16-bit fetch covers vbv_buffer_size_extension(8) + low_delay(1) +
+ * frame_rate_extension_n(2) + frame_rate_extension_d(5) (the last three
+ * read and dropped). chroma_format must be 1 (4:2:0) and
+ * profile_and_level_indication one of three literal bytes (0x48/0x58/
+ * 0x44); either failing reports through func_0012C468. Ends by folding
+ * the extension bits into sequenceHeader's fields exactly as the
+ * reference decoder's
+ * `horizontal_size = (horizontal_size_extension<<12) | (horizontal_size&0xfff)`
+ * et al.
+ */
+void func_0012CA70(void *arg0) {
+    char *s = (char *)arg0;
+    unsigned int v1, v2;
+    unsigned int chroma_format, h_ext, v_ext, bitrate_ext;
+    unsigned int progressive, profile, vbv_ext;
+
+    *(int *)(s + 0x848) = 1;
+    func_00127378(0);
+
+    v1 = func_00128A58(s, 0x1C);
+    bitrate_ext = (v1 >> 1) & 0xFFF;
+    chroma_format = (v1 >> 17) & 3;
+    v_ext = (v1 >> 13) & 3;
+    h_ext = (v1 >> 15) & 3;
+
+    *(unsigned int *)(s + 0x140) = chroma_format;
+    if (chroma_format != 1) {
+        func_0012C468(s, D_00153C00);
+    }
+
+    progressive = (v1 >> 19) & 1;
+    *(unsigned int *)(s + 0x13C) = progressive;
+    profile = v1 >> 20;
+
+    v2 = func_00128A58(s, 0x10);
+    vbv_ext = v2 >> 8;
+
+    if (profile != 0x48 && profile != 0x58 && profile != 0x44) {
+        func_0012C468(s, D_00153C28);
+    }
+
+    *(int *)(s + 0x124) = (h_ext << 12) | (*(int *)(s + 0x124) & 0xFFF);
+    *(int *)(s + 0x128) = (v_ext << 12) | (*(int *)(s + 0x128) & 0xFFF);
+    *(int *)(s + 0x134) += bitrate_ext << 18;
+    *(int *)(s + 0x138) += vbv_ext << 10;
+}
 
 extern int func_00128A58(void *, int);
 
