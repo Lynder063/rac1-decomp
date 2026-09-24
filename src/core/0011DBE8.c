@@ -89,15 +89,7 @@ extern void func_00118CE0(void *);
 /* Reads a word through func_00118CF0, rewrites its 13..15 bit field to 1,
    pushes it back, re-reads it and restores the original. Returns whether
    the field read back as 0. `srl` (not `sra`) at the end is the tell that
-   the scratch word is unsigned.
-
-   Not exact: 10/104, same size. Every instruction and operand matches;
-   the residual is entirely prologue scheduling -- retail emits
-   `sd $16,0x10; sd $31,0x20` back to back and spends the first call's
-   delay slot on the argument, this build sinks the `$16` save into the
-   delay slot instead. See the gcc 2.9-ee note in docs/DECOMP_PROGRESS.md:
-   this is the sq-then-substitute pipeline scheduling against the wrong
-   store width, not a source-shape problem. */
+   the scratch word is unsigned. */
 int func_0011DC50(void) {
     unsigned int saved;
     unsigned int cur;
@@ -117,42 +109,31 @@ extern void func_0011DBF8(int, void *, int);
 extern int func_0011DC40(int);
 extern void func_00118D80(int);
 
-/* Bring up the two fixed channels from the D_00130BD0 table, load the
-   0x7A8-byte image at D_00130428 to 0x80074000, then walk the remaining
-   table entries handing each one its func_0011DC40 result. Does nothing
-   unless func_0011DC50 says the hardware is in the right state.
+typedef struct {
+    int num;
+    int fn;
+} SysEnt;
 
-   The loop counter has to be UNSIGNED. As `int`, gcc normalises the
-   two-to-three loop into a count-down from zero (`addu $18,$18,-1` /
-   `bgezl`) and the function comes out 4 bytes short; as `unsigned` it
-   keeps retail's count-up with `sltiu`, which is the tell in retail's
-   own code. Worth remembering: signedness of a loop variable decides
-   whether this compiler is allowed to reverse the loop.
-
-   Near-miss (4/43), size-exact: two pairs of adjacent instructions are
-   scheduled the other way round -- the 0x7A8 immediate against the %lo
-   of D_00130428, and the two argument loads for the third func_0011DBE8
-   call. Feeding that call through explicit temporaries in retail's
-   order does not move it. */
+/* When func_0011DC50 says so, installs the kernel entries of the
+   {num, fn} table at D_00130BD0 (the third through func_0011DC40) and
+   copies 0x7A8 bytes of D_00130428 to 0x80074000. Indexing the table in
+   the loop keeps its base live, so the argument loads keep source
+   order. */
 void func_0011DCB8(void) {
-    int *g;
-    int *p;
+    SysEnt *t;
     unsigned int i;
 
     if (func_0011DC50() == 0) {
         return;
     }
-    i = 2;
-    g = D_00130BD0;
-    p = g + 4;
-    func_0011DBE8(g[0], g[1]);
+    t = (SysEnt *)D_00130BD0;
+    func_0011DBE8(t[0].num, t[0].fn);
     func_0011DBF8((int)0x80074000, D_00130428, 0x7A8);
     func_00118D80(0);
     func_00118D80(2);
-    func_0011DBE8(g[2], g[3]);
-    for (; i < 3; i++) {
-        func_0011DBE8(p[0], func_0011DC40(p[0]));
-        p += 2;
+    func_0011DBE8(t[1].num, t[1].fn);
+    for (i = 2; i < 3; i++) {
+        func_0011DBE8(t[i].num, func_0011DC40(t[i].num));
     }
 }
 

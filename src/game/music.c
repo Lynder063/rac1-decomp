@@ -193,107 +193,206 @@ void func_00216270(void) {
     func_0012F068(func_002177F0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00216290);
+/* The sound tables in the WAD table of contents at D_00137C80, as far as
+   the play functions show them: 8-byte records per sound id whose first
+   word is the stream handle, except the 50000 range, which has six
+   handles per id (D_0015EE88 picks one). The [1] bounds are placeholders,
+   not known counts. Reaching a table as a member of this struct, rather
+   than by pointer arithmetic, is what gives retail's addu operand order.
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00216368);
+   D_001517D0 holds three playing records (music_Playing, 0x1C bytes)
+   at 0x34, 0x50 and 0x6C: +0x00 state (-1 while starting), +0x04 the
+   id, +0x06 the value also passed as func_0012ED48's fifth argument,
+   +0x08 another argument, +0x0A and +0x10 flags, +0x14 10, +0x18 48000
+   (the sample rate). The stores are written in the order retail emits
+   them. The first one must not need a constant in a register: if it
+   does, the allocator spends $a0 on the constant, and the handle can no
+   longer load straight into $a0. An older note here recorded that
+   residual as an allocator dead end. */
+typedef struct {
+    int handle;
+    int unk_04;
+} SndRec;
+typedef struct {
+    char _pad0000[0x1A0];
+    SndRec ids10000[1]; /* 0x01A0 */
+    char _pad01A8[0xF00 - 0x1A8];
+    int ids50000[1][6]; /* 0x0F00 */
+    char _pad0F18[0x13C0 - 0xF18];
+    SndRec ids40000[1]; /* 0x13C0 */
+    char _pad13C8[0x1618 - 0x13C8];
+    SndRec ids60000[1]; /* 0x1618 */
+    char _pad1620[0x2988 - 0x1620];
+    SndRec ids20000[1]; /* 0x2988 */
+} SndToc;
+extern int D_00137C80[];
+extern short D_001517D0[];
+extern int D_0015EE88 MACRO_ADDR;
+extern void func_00217860(int, long);
+extern void func_0012ED48(int, int, int, int, short, int, int, int,
+                          int, void (*)(int, long), long);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00216450);
+/* Plays sound arg0 in 60000..: the other play functions below differ
+   only in their table. */
+void func_00216290(int arg0, int arg1, int arg2) {
+    SndToc *toc = (SndToc *)D_00137C80;
+    int i = arg0 - 60000;
+    int h;
+    char *s;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00216528);
+    h = toc->ids60000[i].handle;
+    if (h == 0) {
+        return;
+    }
+    s = (char *)D_001517D0;
+    if (*(int *)(s + 0x50) != 0) {
+        return;
+    }
+    *(unsigned int *)(s + 0x50) = 0xFFFFFFFF;
+    *(short *)(s + 0x5A) = 1;
+    *(short *)(s + 0x54) = arg0;
+    *(short *)(s + 0x58) = arg1;
+    *(int *)(s + 0x64) = 10;
+    *(int *)(s + 0x68) = 0xBB80;
+    *(short *)(s + 0x56) = arg2;
+    *(short *)(s + 0x60) = 0;
+    func_0012ED48(h, 0, 0, 0, arg2, 0, 2, 0, 0x21,
+                  func_00217860, (long)(unsigned int)(s + 0x50));
+}
 
-/*
- * REVERTED -- both are a SIZE mismatch at every spelling tried, so
- * neither can be left in. Decode is certain and the two are identical
- * apart from the table they index; they are two rungs of the
- * func_002167C0 sound-id ladder (20000..29999 and 10000..19999):
- *
- *   extern int D_00137C80[];
- *   extern short D_001517D0_snd[] __asm__("D_001517D0");
- *   extern void func_00217860(int, long);
- *   extern void func_0012ED48(int, int, int, int, int, int, int, int,
- *                             int, void (*)(int, long), long);
- *
- *   void func_00216620(int arg0, int arg1, int arg2) {
- *       char *base = (char *)D_00137C80;
- *       int i = arg0 - 0x4E20;          // 0x2710 in func_002166F0
- *       int h;
- *       char *s;
- *
- *       h = *(int *)(base + i * 8 + 0x2988);   // 0x1A0 in func_002166F0
- *       if (h == 0) {
- *           return;
- *       }
- *       s = (char *)D_001517D0_snd;
- *       if (*(int *)(s + 0x50) != 0) {
- *           return;
- *       }
- *       *(short *)(s + 0x5A) = 1;
- *       *(int *)(s + 0x64) = 10;
- *       *(int *)(s + 0x68) = 0xBB80;            // 48000 Hz
- *       *(unsigned int *)(s + 0x50) = 0xFFFFFFFF;
- *       *(short *)(s + 0x54) = arg0;
- *       *(short *)(s + 0x58) = arg1;
- *       *(short *)(s + 0x56) = arg2;
- *       *(short *)(s + 0x60) = 0;
- *       func_0012ED48(h, 0, 0, 0, (short)arg2, 0, 2, 0, 0x21,
- *                     func_00217860, (long)(unsigned int)(s + 0x50));
- *   }
- *
- * func_0012ED48's shape is read off its own prologue (asm at
- * func_0012ED40, alternate entry): eight register arguments $4..$11
- * plus three stack arguments at 0x30/0x38/0x40 of ITS frame, i.e. the
- * caller's 0x0/0x8/0x10 -- the last one an `ld`, hence `long`. The
- * callback matches func_00217860, which is already decompiled below
- * and reads its second argument as `(short *)(int)arg1` pointing at
- * D_001517D0+0x50 -- p[5] there is the 0x5A state field written here.
- *
- * NEW LEVER, and the reason this is worth keeping written down:
- * spelling the table access inline as
- *     *(int *)((char *)D_00137C80 + (arg0 - 0x4E20) * 8 + 0x2988)
- * lets GCC fold the whole constant part into the symbol's addend and
- * emit %hi/%lo(D_00137C80-149368) with a zero displacement -- five
- * instructions where retail has six, so the function came out 4 bytes
- * SHORT (200 vs 204). Naming the UNOFFSET base and the index as two
- * separate locals,
- *     char *base = (char *)D_00137C80;
- *     int i = arg0 - 0x4E20;
- *     h = *(int *)(base + i * 8 + 0x2988);
- * blocks the fold and reproduces retail exactly: lui/addiu %hi/%lo of
- * the bare symbol, a separate `addiu $2,$13,-0x4E20`, `sll`, `addu`,
- * and 0x2988 as the load displacement. This is the base-pointer lever
- * extended to a subtracted index, and it is what took these two from
- * 200 to the right 204.
- *
- * What still blocks them, at 204 bytes, is one instruction:
- *   - retail loads the table word straight into $a0 (`lw $a0,10632($v1)`)
- *     and branches on $a0, so it is already in place as the first call
- *     argument;
- *   - this compiler lands it in $a3 and emits `daddu $a0,$a3,$0` before
- *     the jal, because it spends $a0 on the constant 1 destined for
- *     0x5A. Retail spends $5/$7/$9/$11 on those constants and keeps $4
- *     reserved.
- * Every store is in retail's order already (the output store sequence
- * is byte-for-byte the same sequence of offsets), so this is purely the
- * allocator's destination choice -- the recorded dead end.
- *
- * Counts, all four spellings:
- *   inline address expression, `*(int *)(s+0x50) = -1`        200 (short 4)
- *   base+index locals,         `*(int *)(s+0x50) = -1`        204, 36/51 words
- *                              (right size only because the one-instruction
- *                               `li -1` cancels the spurious $a0 move)
- *   base+index locals, `*(unsigned int *)(s+0x50) = 0xFFFFFFFF`
- *                                                             208 (over 4)
- *                              (this is retail's `lui 0xffff`/`ori`, so the
- *                               0xFFFFFFFF spelling is CORRECT; the residual
- *                               is entirely the surplus `daddu $a0,$a3,$0`)
- * Also tried at 208, all identical: early-return vs nested-if shape;
- * re-loading the table word at the call instead of holding it in a
- * local; `h` typed `void *` and `unsigned int`; `(short)arg2` hoisted
- * into a `short` local.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00216620);
+void func_00216368(int arg0, int arg1, int arg2) {
+    SndToc *toc = (SndToc *)D_00137C80;
+    int i = arg0 - 50000;
+    int h;
+    char *s;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002166F0);
+    h = toc->ids50000[i][D_0015EE88];
+    if (h == 0) {
+        return;
+    }
+    s = (char *)D_001517D0;
+    if (*(int *)(s + 0x50) != 0) {
+        return;
+    }
+    *(unsigned int *)(s + 0x50) = 0xFFFFFFFF;
+    *(short *)(s + 0x5A) = 1;
+    *(short *)(s + 0x54) = arg0;
+    *(short *)(s + 0x58) = arg1;
+    *(int *)(s + 0x64) = 10;
+    *(int *)(s + 0x68) = 0xBB80;
+    *(short *)(s + 0x56) = arg2;
+    *(short *)(s + 0x60) = 0;
+    func_0012ED48(h, 0, 0, 0, arg2, 0, 2, 0, 0x21,
+                  func_00217860, (long)(unsigned int)(s + 0x50));
+}
+
+void func_00216450(int arg0, int arg1, int arg2) {
+    SndToc *toc = (SndToc *)D_00137C80;
+    int i = arg0 - 40000;
+    int h;
+    char *s;
+
+    h = toc->ids40000[i].handle;
+    if (h == 0) {
+        return;
+    }
+    s = (char *)D_001517D0;
+    if (*(int *)(s + 0x50) != 0) {
+        return;
+    }
+    *(unsigned int *)(s + 0x50) = 0xFFFFFFFF;
+    *(short *)(s + 0x5A) = 1;
+    *(short *)(s + 0x54) = arg0;
+    *(short *)(s + 0x58) = arg1;
+    *(int *)(s + 0x64) = 10;
+    *(int *)(s + 0x68) = 0xBB80;
+    *(short *)(s + 0x56) = arg2;
+    *(short *)(s + 0x60) = 0;
+    func_0012ED48(h, 0, 0, 0, arg2, 0, 2, 0, 0x21,
+                  func_00217860, (long)(unsigned int)(s + 0x50));
+}
+
+/* A byte flag; declared int-sized so MACRO_ADDR keeps it off $gp (-G2). */
+extern int D_0015EF1C_w __asm__("D_0015EF1C") MACRO_ADDR;
+extern char D_0011C278[];
+extern char D_00151820[];
+
+/* The same through a per-language table at D_0011C278; volume only
+   when the D_0015EF1C flag is set. */
+void func_00216528(int arg0, int arg1, int arg2) {
+    int *p = (int *)(D_0011C278 + (arg0 * 4 + D_0015EE88 * 0x258));
+    char *s;
+
+    if (*p == 0) {
+        return;
+    }
+    s = (char *)D_001517D0;
+    if (*(int *)(s + 0x50) != 0) {
+        return;
+    }
+    *(unsigned int *)(s + 0x50) = 0xFFFFFFFF;
+    *(short *)(s + 0x5A) = 1;
+    *(short *)(s + 0x54) = arg0;
+    *(short *)(s + 0x58) = arg1;
+    *(int *)(s + 0x64) = 10;
+    *(int *)(s + 0x68) = 0xBB80;
+    *(short *)(s + 0x56) = arg2;
+    *(short *)(s + 0x60) = 0;
+    func_0012ED48(*p, 0, 0, 0, *(unsigned char *)&D_0015EF1C_w ? arg2 : 0,
+                  0, 2, 0, 0x21, func_00217860, (long)(unsigned int)D_00151820);
+}
+
+void func_00216620(int arg0, int arg1, int arg2) {
+    SndToc *toc = (SndToc *)D_00137C80;
+    int i = arg0 - 20000;
+    int h;
+    char *s;
+
+    h = toc->ids20000[i].handle;
+    if (h == 0) {
+        return;
+    }
+    s = (char *)D_001517D0;
+    if (*(int *)(s + 0x50) != 0) {
+        return;
+    }
+    *(unsigned int *)(s + 0x50) = 0xFFFFFFFF;
+    *(short *)(s + 0x5A) = 1;
+    *(short *)(s + 0x54) = arg0;
+    *(short *)(s + 0x58) = arg1;
+    *(int *)(s + 0x64) = 10;
+    *(int *)(s + 0x68) = 0xBB80;
+    *(short *)(s + 0x56) = arg2;
+    *(short *)(s + 0x60) = 0;
+    func_0012ED48(h, 0, 0, 0, arg2, 0, 2, 0, 0x21,
+                  func_00217860, (long)(unsigned int)(s + 0x50));
+}
+
+void func_002166F0(int arg0, int arg1, int arg2) {
+    SndToc *toc = (SndToc *)D_00137C80;
+    int i = arg0 - 10000;
+    int h;
+    char *s;
+
+    h = toc->ids10000[i].handle;
+    if (h == 0) {
+        return;
+    }
+    s = (char *)D_001517D0;
+    if (*(int *)(s + 0x50) != 0) {
+        return;
+    }
+    *(unsigned int *)(s + 0x50) = 0xFFFFFFFF;
+    *(short *)(s + 0x5A) = 1;
+    *(short *)(s + 0x54) = arg0;
+    *(short *)(s + 0x58) = arg1;
+    *(int *)(s + 0x64) = 10;
+    *(int *)(s + 0x68) = 0xBB80;
+    *(short *)(s + 0x56) = arg2;
+    *(short *)(s + 0x60) = 0;
+    func_0012ED48(h, 0, 0, 0, arg2, 0, 2, 0, 0x21,
+                  func_00217860, (long)(unsigned int)(s + 0x50));
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002167C0);
 
@@ -313,36 +412,124 @@ int func_00216960(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002169B8); /* music_PreseekTrack(int, int, int) */
+extern void func_002178C0(int, long);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00216A90); /* music_StartTrack(int, int, int) */
+/* music_PreseekTrack(int, int, int) */
+void func_002169B8(int arg0, int arg1, int arg2) {
+    char *s = (char *)D_001517D0;
+    char *base;
+    int *tbl;
+    long h;
+
+    if (*(int *)(s + 0x34) != 0) {
+        return;
+    }
+    base = (char *)D_00137C80;
+    tbl = (int *)(base + 0x2AA8);
+    if (tbl[arg0] == 0) {
+        return;
+    }
+    *(short *)(s + 0x3E) = 1;
+    h = tbl[arg0];
+    *(short *)(s + 0x38) = arg0;
+    *(int *)(s + 0x48) = 10;
+    *(int *)(s + 0x4C) = 0xBB80;
+    *(unsigned int *)(s + 0x34) = 0xFFFFFFFF;
+    *(short *)(s + 0x3C) = arg1;
+    *(short *)(s + 0x3A) = arg2;
+    *(short *)(s + 0x44) = 0;
+    func_0012ED48(h, 0, 0, 0, arg2, 0, 1, 0, 0x21,
+                  func_002178C0, (long)(unsigned int)(s + 0x34));
+}
+
+extern void func_002179C8(int, long);
+
+/* music_StartTrack(int, int, int) */
+void func_00216A90(int arg0, int arg1, int arg2) {
+    char *s = (char *)D_001517D0;
+    char *base;
+    int *tbl;
+    long h;
+
+    if (*(int *)(s + 0x34) != 0) {
+        return;
+    }
+    base = (char *)D_00137C80;
+    tbl = (int *)(base + 0x2AA8);
+    if (tbl[arg0] == 0) {
+        return;
+    }
+    *(short *)(s + 0x3E) = 1;
+    h = tbl[arg0];
+    *(short *)(s + 0x38) = arg0;
+    *(int *)(s + 0x48) = 10;
+    *(int *)(s + 0x4C) = 0xBB80;
+    *(unsigned int *)(s + 0x34) = 0xFFFFFFFF;
+    *(short *)(s + 0x3C) = arg1;
+    *(short *)(s + 0x3A) = arg2;
+    *(short *)(s + 0x44) = 0;
+    func_0012ED48(h, 0, 0, 0, arg2, 0, 1, 0, 0x20,
+                  func_002179C8, (long)(unsigned int)(s + 0x34));
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00216B68); /* music_StartTrackBody(int, int, int) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00216C50);
+extern void func_00217920(int, long);
 
-/*
- * Reverted at 30/84 (same size, no drift risk). Semantics are confirmed
- * -- flag update on the global struct at D_001517D0, byte offsets:
- *
- *   if (*(short *)(d + 0x38) == arg0) { if (d[0x22] == -1) return; }
- *   if (*(short *)(d + 0x3E) == 0) {
- *       if (*(short *)(d + 0x76) == 0) { *(short *)(d + 0x38) = arg0; return; }
- *   }
- *   d[0x23] = arg1;
- *   d[0x22] = arg0;
- *
- * Nested ifs beat the &&/|| form (38/84 -> 30/84) because short-circuit
- * operators let the compiler hoist the 0x3E load above the first branch.
- * The residual is the allocator: retail keeps the %hi part in $7 and
- * re-materializes the base with `addiu $2,$7,%lo` inside the branch
- * targets, spending the first branch's delay slot on that copy; this
- * compiler keeps one base in $6 and uses a branch-likely with the next
- * load in the delay slot instead. Direct `D_001517D0[...]` indexing
- * instead of a `char *d` local was tried to force re-materialization and
- * is clearly worse (73%), so that lever points the other way here.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00216D30);
+/* The success path ends in the call, so `return 1` does not break the
+   block's trailing call run (the scheduler then keeps retail's order). */
+int func_00216C50(int arg0, int arg1, int arg2, int arg3) {
+    char *s = (char *)D_001517D0;
+    char *base;
+    int *tbl;
+    long h;
+
+    if (*(int *)(s + 0x6C) == 0) {
+        base = (char *)D_00137C80;
+        tbl = (int *)(base + 0x2AA8);
+        if (tbl[arg1] != 0) {
+            *(short *)(s + 0x74) = arg2;
+            h = tbl[arg1];
+            *(int *)(s + 0x80) = 10;
+            *(int *)(s + 0x84) = 0xBB80;
+            *(unsigned int *)(s + 0x6C) = 0xFFFFFFFF;
+            *(short *)(s + 0x70) = arg0;
+            *(short *)(s + 0x76) = 1;
+            *(short *)(s + 0x7C) = 1;
+            *(short *)(s + 0x72) = arg3;
+            func_0012ED48(h, 0, 0, 0, arg3, 0, 1, 0, 0x20,
+                          func_00217920, (long)(unsigned int)(s + 0x6C));
+        } else {
+            return 0;
+        }
+    } else {
+        return 0;
+    }
+    return 1;
+}
+
+/* A block-local `char *e` for the final stores (%hi kept, %lo rebuilt),
+   written in the order the rotation rule gives. */
+void func_00216D30(int arg0, int arg1) {
+    char *d = (char *)D_001517D0;
+
+    if (*(short *)(d + 0x38) == arg0) {
+        if (*(signed char *)(d + 0x22) == -1) {
+            return;
+        }
+    }
+    if (*(short *)(d + 0x3E) == 0) {
+        if (*(short *)(d + 0x76) == 0) {
+            *(short *)(d + 0x38) = arg0;
+            return;
+        }
+    }
+    {
+        char *e = (char *)D_001517D0;
+        e[0x22] = arg0;
+        e[0x23] = arg1;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00216D88); /* music_Stop(void) */
 

@@ -186,19 +186,40 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00118ED0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00118F60);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119008);
+/* func_00119CC8 takes no argument (it sets $a0 itself before its first
+   call); the file's `extern int func_00119CC8(int)` below is wrong. */
+extern int func_00119CC8_v(void) __asm__("func_00119CC8");
+extern int func_00119AA8(int, int);
+
+/* Deci2 tty write for fd 1/2: open the tty channel on first use
+   (func_00119CC8), then write. Calling the opener with no argument is
+   what leaves retail's `jal; nop`: the `a0 = arg1` in the bnez slot is
+   the write's argument, stolen from the branch target. */
+/* func_00119CC8 takes no argument; passing one puts a redundant move in
+   the jal slot and swaps $s0/$s1. */
+int func_00119008(int fd, int buf, int len) {
+    if (fd == 1 || fd == 2) {
+        if (D_0012FCF0 == 0) {
+            if (func_00119CC8_v() == 0) {
+                return -1;
+            }
+            D_0012FCF0 = 1;
+        }
+        return func_00119AA8(buf, len);
+    }
+    return -1;
+}
 
 extern int func_00119CC8(int);
 extern int func_00119BF8(int, int);
 
-/* Same-size near-miss (13/116 bytes): retail leaves the first call's
-   delay slot a genuine standalone nop; this compiler sinks the next
-   call's argument setup (daddu a0,s0,zero) into it instead. The rest
-   is a cosmetic $s0/$s1 register-allocation swap. */
+extern int func_00119CC8_v(void) __asm__("func_00119CC8");
+
+/* As func_00119008: func_00119CC8 is called with no argument. */
 int func_00119088(int arg0, int arg1, int arg2) {
     if (arg0 == 0) {
         if (D_0012FCF0 == 0) {
-            if (func_00119CC8(arg1) == 0) {
+            if (func_00119CC8_v() == 0) {
                 return -1;
             }
             D_0012FCF0 = 1;

@@ -41,9 +41,10 @@ import re
 import sys
 
 # A memory operand that is a bare symbol (optionally +offset), not
-# `off($reg)` or `%lo(sym)($reg)`.
+# `off($reg)` or `%lo(sym)($reg)`. gcc spells FP loads and stores l.s/s.s
+# (l.d/s.d) as often as lwc1/swc1.
 MACRO = re.compile(
-    r"^(\s*)(l[bhwd]u?|s[bhwd]|l[wd]c1|s[wd]c1|la|dla)(\s+)(\$\w+)\s*,\s*"
+    r"^(\s*)(l[bhwd]u?|s[bhwd]|l[wd]c1|s[wd]c1|[ls]\.[sd]|la|dla)(\s+)(\$\w+)\s*,\s*"
     r"(?!%)(?![-+]?\d)([A-Za-z_.$][\w.$]*(?:\s*[-+]\s*\d+)?)\s*$"
 )
 

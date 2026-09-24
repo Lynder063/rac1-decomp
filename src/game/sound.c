@@ -311,17 +311,40 @@ void func_0022D970(void *arg0, void *arg1) {
     func_001EFE10(arg1, v, 0x82, *(int *)((char *)arg0 + 0x18), 0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022DA10);
+extern float func_001FA888(int);
+extern int func_001FA898_i(float) __asm__("func_001FA898");
+
+/* Interpolates between the ints at +0x8 and +0xC as x runs from lo to
+   hi, squared when bit 0 of +0x19 is set. Each arm is an if/else-if
+   chain setting one `r` with a single return; early returns let jump.c
+   move the last arm's return block to the end. It returns int, and its
+   one caller here uses a void alias. */
+int func_0022DA10(void *arg0, float x, float lo, float hi) {
+    char *s = (char *)arg0;
+    int r;
+    if (*(unsigned char *)(s + 0x19) & 1) {
+        if (x <= lo) r = *(int *)(s + 0xC);
+        else if (hi <= x) r = *(int *)(s + 0x8);
+        else r = *(int *)(s + 0x8) + func_001FA898_i((hi - x) * (hi - x) * func_001FA888(*(int *)(s + 0xC) - *(int *)(s + 0x8)) / ((hi - lo) * (hi - lo)));
+    } else {
+        if (x <= lo) r = *(int *)(s + 0xC);
+        else if (hi <= x) r = *(int *)(s + 0x8);
+        else r = *(int *)(s + 0x8) + func_001FA898_i((hi - x) * func_001FA888(*(int *)(s + 0xC) - *(int *)(s + 0x8)) / (hi - lo));
+    }
+    return r;
+}
 
 extern char D_00187180[];
 extern float func_001F9D10(int, void *);
-extern void func_0022DA10(void *, float, float, float);
+/* This caller's view of func_0022DA10 above: it ignores the result, and
+   declaring it int would move its next temporary to $v1. */
+extern void func_0022DA10_v(void *, float, float, float) __asm__("func_0022DA10");
 
 void func_0022DB00(void *arg0, int arg1) {
     char *s = (char *)arg0;
     float v = func_001F9D10(arg1, D_00187180);
     float *p = *(float **)(s + 0x8);
-    func_0022DA10(p, v, p[0], p[1]);
+    func_0022DA10_v(p, v, p[0], p[1]);
 }
 
 extern void func_001F9EE8(void *, void *, void *);
@@ -350,13 +373,15 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0022DD68); /* sound_update */
 
 extern void func_00120F30(int);
 extern int func_0012E060(void *, int);
-extern void func_0012EE70(int);
+extern int func_0012EE70(int);
 extern void func_0012EF48(int);
 extern void func_0012E2E8(void);
 
 /* Reentrancy-guarded: base+0x44 is held at 1 for the duration. The
    return value is func_0012E060's, captured in the delay slot of the
-   *next* call. */
+   *next* call. That callee, func_0012EE70 (snd_StreamSafeCheckCDIdle),
+   returns int: a value call resets $v0's readers, which lets the
+   capture sink into its slot. */
 int func_0022EA20(void *arg0) {
     char *base = D_0013E650;
     int r = 0;
@@ -392,7 +417,37 @@ void func_0022EAB0(int idx) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022EB08);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022ED80);
+extern int func_0022EB08(void *, int, int, int, int);
+
+/* Starts entry idx of the sound bank arg2 points at; the same shape as
+   its siblings func_0022EE28 and func_0022EEB8. */
+int func_0022ED80(int idx, int arg1, int arg2) {
+    char *p;
+    char *tbl;
+    int h;
+
+    if (arg2 == 0) {
+        return -1;
+    }
+    p = *(char **)(arg2 + 0x24);
+    if (p == 0) {
+        return -1;
+    }
+    tbl = *(char **)(p + 0x28);
+    if (tbl == 0) {
+        return -1;
+    }
+    if (idx >= *(unsigned char *)(p + 0xD)) {
+        return -1;
+    }
+    h = func_0022EB08(tbl + idx * 32, arg1, arg2, 0, 0x400);
+    if (h >= 0) {
+        char *rec = D_0013E650 + h * 0x70;
+        *(int *)(rec + 0x88) = arg2;
+        *(short *)(rec + 0x7E) = idx;
+    }
+    return h;
+}
 
 extern char *D_0015F714 MACRO_ADDR;
 extern int func_0022EB08(void *, int, int, int, int);
@@ -432,38 +487,32 @@ int func_0022EEB8(int rel, int arg1, int arg2) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022EF50);
 
+static inline char *SndSys(void) {
+    return D_0013E650;
+}
+
 /*
- * BLOCKED (4 bytes short): every instruction reproduces from the C
- * below except retail's bare `nop` in the `jalr $2` delay slot -- this
- * compiler fills it with the following `lw $2,0xD90($18)`.
- *
- * Checked whether retail's build simply never scheduled memory into a
- * call delay slot, which would have justified a post-processing
- * rewriter like tools/fix_tail_calls.py. It does not: across all of
- * retail, 1012 `jal` and 11 `jalr` delay slots hold a load or store,
- * against 676 and 9 bare nops. The choice is per-site, so there is no
- * rule to key a rewriter on. Recorded so nobody re-derives it.
- *
- * Recovered source, for the readability phase -- walks the 0x90-byte
- * entry table at base+0xD94 and invokes each entry's +4 callback. Both
- * the count and the table pointer are re-read every iteration, so a
- * callback may grow the table.
- *
- *   void func_0022EF68(void) {
- *       char *base = D_0013E650;
- *       int i, off = 0;
- *       for (i = 0; i < *(int *)(base + 0xD90); i++) {
- *           char *e = off + *(char **)(base + 0xD94);
- *           void (*fn)(char *) = *(void (**)(char *))(e + 4);
- *           if (fn != 0) fn(e);
- *           off += 0x90;
- *       }
- *   }
- *
- * Retail also carries 8 bytes of post-endlabel nop padding here, which
- * a future conversion has to emit explicitly -- see func_001F6668.
+ * Calls each entry's +4 callback in the sound system's 0x90-byte entry
+ * table (count at +0xD90, table at +0xD94), re-reading both every
+ * iteration so a callback may grow the table. The inline accessor gives
+ * each read of D_0013E650 its own pseudo: the duplicated exit test
+ * keeps a temporary and the loop a callee-saved copy, as in retail.
+ * `i * 0x90 + (int)table` (not an offset variable) gives the
+ * offset-first addu.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_0022EF68);
+void func_0022EF68(void) {
+    int i;
+    for (i = 0; i < *(int *)(SndSys() + 0xD90); i++) {
+        char *e = (char *)(i * 0x90 + *(int *)(SndSys() + 0xD94));
+        void (*fn)(char *) = *(void (**)(char *))(e + 4);
+        if (fn != 0) {
+            fn(e);
+        }
+    }
+}
+
+/* 8 bytes of post-endlabel nop padding in retail -- see func_001F6668. */
+__asm__(".section .text\n\tnop\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022EFE8); /* sound_StopAllSounds(void) */
 

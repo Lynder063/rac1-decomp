@@ -151,7 +151,73 @@ extern unsigned char D_0013DE55 NOT_SDA;
 extern unsigned char D_0013D5DD NOT_SDA;
 extern unsigned char D_0013D5E7 NOT_SDA;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020D348); /* CreateMoby(int) */
+/* A moby instance: 0x100 bytes, in one array from D_0016001C to
+   D_00160020. state 0xFE is a free slot and 0xFF marks the free tail
+   (taking that slot moves the mark to the next one); a freed slot is not
+   reused before frame unk38 (DeleteMoby sets it two frames ahead). */
+typedef struct {
+    char _pad00[0x11];
+    unsigned char unk11; /* 0x11: copied to a moby's +0x7C */
+    unsigned char unk12; /* 0x12: copied to a moby's +0x7E */
+    char _pad13[0x1C - 0x13];
+    int frames[1]; /* 0x1C */
+} MobySeq;
+typedef struct {
+    char _pad00[0x48];
+    MobySeq *seqs[1]; /* 0x48: animation sequences */
+} MobyClass;
+typedef struct {
+    char _pad00[0x20];
+    unsigned char state; /* 0x20 */
+    char _pad21[0x24 - 0x21];
+    MobyClass *pClass; /* 0x24 */
+    char _pad28[0x38 - 0x28];
+    unsigned long unk38; /* 0x38 */
+    char _pad40[0x50 - 0x40];
+    unsigned char frame;     /* 0x50 */
+    unsigned char prevFrame; /* 0x51 */
+    unsigned char seq;       /* 0x52: 0xFF for none */
+    unsigned char prevSeq;   /* 0x53 */
+    char _pad54[0x68 - 0x54];
+    int frameData;     /* 0x68 */
+    int prevFrameData; /* 0x6C */
+    char _pad70[0x78 - 0x70];
+    char *pvars; /* 0x78: this moby's 0x80 bytes at D_00160028 */
+    unsigned char unk7C; /* 0x7C: the sound it wants (func_0020D790) */
+    unsigned char unk7D; /* 0x7D: the handle of the one playing, or 0xFF */
+    unsigned char unk7E; /* 0x7E */
+    char _pad7F[0x100 - 0x7F];
+} Moby;
+extern char *D_0016001C MACRO_ADDR;
+extern char *D_00160020 MACRO_ADDR;
+extern char *D_00160028 MACRO_ADDR;
+extern int D_0015F6F0 MACRO_ADDR;
+extern int D_0015FFFC MACRO_ADDR;
+extern char D_001E86F0[];
+extern void func_0020D440(void *, int);
+
+/* CreateMoby. The failure message ("... Time: %d, oClass: %d") takes
+   oClass as its third argument, which is why retail keeps it in $a2. */
+Moby *func_0020D348(int oClass) {
+    Moby *m;
+
+    for (m = (Moby *)D_0016001C; m < (Moby *)D_00160020; m++) {
+        if (m->state >= 0xFE && (unsigned int)D_0015F6F0 >= m->unk38) {
+            if (m->state == 0xFF) {
+                m[1].state = 0xFF;
+            }
+            func_0020D440(m, oClass);
+            m->pvars = D_00160028 + (m - (Moby *)D_0016001C) * 0x80;
+            func_001F99B0(m->pvars, 0, 0x80);
+            if (D_0015FFFC != 0) {
+                D_0015FFFC--;
+            }
+            return m;
+        }
+    }
+    func_001E9730(D_001E86F0, D_0015F6F0, oClass);
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020D440); /* InitMobyInstance(MobyInstance *, int) */
 
@@ -161,8 +227,6 @@ typedef struct {
     char _pad21[0x38 - 0x21];
     long unk38; /* 0x38 */
 } MobyDel;
-extern char *D_0016001C MACRO_ADDR;
-extern int D_0015F6F0 MACRO_ADDR;
 extern void func_0020EA70(void *, int);
 
 /* DeleteMoby */
@@ -178,87 +242,52 @@ void func_0020D678(MobyDel *m) {
 
 extern unsigned char D_001AAF40[];
 
-/*
- * REVERTED -- same size, but the residual is a CSE the source cannot
- * express. Semantics are certain; p[0x52] selects a table entry and
- * p[0x50]/p[0x51] index within it:
- *
- *   void func_0020D6D0(unsigned char *p) {
- *       unsigned char *t;
- *       if (p[0x52] != 0xFF) {
- *           t = *(unsigned char **)(p + 0x24) + 0x48;
- *           *(int *)(p + 0x68) =
- *               *(int *)(*(int *)(t + p[0x52] * 4) + p[0x50] * 4 + 0x1C);
- *           p[0x7E] = *(unsigned char *)(*(int *)(t + p[0x52] * 4) + 0x12);
- *           p[0x7C] = *(unsigned char *)(*(int *)(t + p[0x52] * 4) + 0x11);
- *       } else {
- *           p[0x7C] = p[0x52];
- *           p[0x7E] = 0;
- *           *(int *)(p + 0x68) = (int)&D_001AAF40[p[0x50] << 11];
- *       }
- *       *(int *)(p + 0x6C) =
- *           *(int *)(*(int *)(*(char **)(p + 0x24) + p[0x53] * 4 + 0x48) +
- *                    p[0x51] * 4 + 0x1C);
- *   }
- *
- * Two things were learned and both are already right above:
- *   - `!= 0xFF` (not `== 0xFF`) puts the blocks in retail's order, with
- *     the sentinel case as the far block;
- *   - holding `base + 0x48` in ONE local gives retail's zero-displacement
- *     loads. Recomputing the address per use folds 0x48 into the load
- *     displacement instead, which is 3 instructions out.
- *
- * What is left: retail RELOADS p[0x52] with `lbu` for each of the three
- * uses, while this compiler keeps the value from the `!= 0xFF` compare in
- * a register and re-masks it with `andi` before each use (1690 differing
- * words, all of them that pattern). Writing each use as a separate
- * expression does not stop the CSE; only `volatile` would, and that also
- * serialises the accesses, which retail's schedule interleaves. Retail's
- * compiler simply did not CSE the byte load across the branch.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_0020D6D0);
+/* Refresh a moby's animation frame pointers from its class's sequence
+   table: seq 0xFF (none) points frameData into D_001AAF40 instead.
+   Reaching the table as mc->seqs[i] (an array member behind a
+   class-pointer local) is load-bearing: CSE shares mc + 0x48 across the
+   three uses, the adds come out base-first, and local-alloc ties the
+   last one to that base, which puts it in $a0 and overwrites the
+   compare's copy of m->seq. With the value gone, reload_cse cannot turn
+   the three index loads into `andi`s of the compare register. */
+void func_0020D6D0(Moby *m) {
+    MobyClass *mc;
+    if (m->seq != 0xFF) {
+        mc = m->pClass;
+        m->frameData = mc->seqs[m->seq]->frames[m->frame];
+        m->unk7E = mc->seqs[m->seq]->unk12;
+        m->unk7C = mc->seqs[m->seq]->unk11;
+    } else {
+        m->unk7C = m->seq;
+        m->unk7E = 0;
+        m->frameData = (int)&D_001AAF40[m->frame << 11];
+    }
+    m->prevFrameData = m->pClass->seqs[m->prevSeq]->frames[m->prevFrame];
+}
 
-/*
- * Reverted. Semantics are certain (the object at arg0 caches an actor
- * slot index in byte 0x7D and a wanted index in byte 0x7C):
- *
- *   void func_0020D790(void *arg0) {
- *       unsigned char *s = (unsigned char *)arg0;
- *       unsigned char id = s[0x7D];
- *       if (id != 0xFF) {
- *           char *e = D_0013E650 + id * 0x70;          // 0x70 stride
- *           if (*(int *)(e + 0x88) != (int)arg0) {
- *               s[0x7D] = 0xFF;
- *           } else if (*(short *)(e + 0x7E) != s[0x7C]) {
- *               func_0022EAB0(id);
- *               s[0x7D] = 0xFF;
- *           }
- *       } else if (s[0x7C] != 0xFF) {
- *           func_0022ED80(s[0x7C], 4, arg0);
- *           s[0x7D] = s[0x7C];
- *       }
- *   }
- *
- * That spelling is the right size (0x98) and 79/152 bytes off. The whole
- * residual is one register copy: retail loads byte 0x7D into $v1, keeps
- * $v1 for the equality tests and copies it into $a1 for use as the table
- * index and as func_0022EAB0's argument, so everything after the first
- * branch sits one word later than ours.
- *
- * Three spellings were tried to get that copy back, with counts:
- *   - `unsigned char id` used for both roles          79/152, size OK
- *   - separate `unsigned char j = s[0x7C]` in the else 31/38 words,
- *     and 8 bytes SHORT (it also flips $s0/$s1 and grows the frame)
- *   - `int id = s[0x7D]` with the tests spelled on
- *     `s[0x7D]` directly                              17/38 words, but
- *     4 bytes LONG -- this one does produce retail's copy, in the
- *     opposite direction ($a1 loaded, copied to $v1)
- * The third is the closest and shows the copy is reachable from C; what
- * is not yet found is the spelling that makes the COMPARISON operand the
- * load's destination and the index operand the copy. Left as a stub
- * rather than a size mismatch.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_0020D790);
+extern void func_0022EAB0(int);
+extern int func_0022ED80(int, int, int);
+
+/* Drop this moby's sound handle (byte 0x7D) when its sound slot no longer
+   belongs to it or plays another sound than the wanted one (byte 0x7C);
+   with no handle, start the wanted one. Re-reading s[0x7D] inside the
+   branch is what gives retail's two registers: the compare keeps the
+   first load, the copy (live across blocks) becomes CSE's canonical
+   register for the index and the call. */
+void func_0020D790(unsigned char *s) {
+    if (s[0x7D] != 0xFF) {
+        int id = s[0x7D];
+        char *e = D_0013E650 + id * 0x70;
+        if (*(unsigned char **)(e + 0x88) != s) {
+            s[0x7D] = 0xFF;
+        } else if (*(short *)(e + 0x7E) != s[0x7C]) {
+            func_0022EAB0(id);
+            s[0x7D] = 0xFF;
+        }
+    } else if (s[0x7C] != 0xFF) {
+        s[0x7D] = func_0022ED80(s[0x7C], 4, (int)s);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020D828);
 
@@ -295,58 +324,32 @@ void func_0020D960(char *arg0, int arg1, unsigned char *arg2) {
 }
 
 /*
- * Reverted: size mismatch (ours=100, retail=144 -- 44 bytes short).
- * DetachManipulator: unlink arg1 from the singly-linked list headed
- * by arg0+0x64 (next pointer at +8 of each node), then always call
- * func_001F99B0(arg1, 0, 0x40) whether or not it was found.
- *
- *   void func_0020D9D8(void *arg0, void *arg1) {
- *       char *base = (char *)arg0;
- *       char *cur;
- *       char *next;
- *       if (arg1 == 0) {
- *           return;
- *       }
- *       cur = *(char **)(base + 0x64);
- *       if (cur == arg1) {
- *           *(void **)(base + 0x64) = *(void **)((char *)arg1 + 8);
- *           goto done;
- *       }
- *       next = *(char **)(cur + 8);
- *       if (next == 0) {
- *           goto done;
- *       }
- *       if (next != arg1) {
- *           cur = next;
- *           do {
- *               next = *(char **)(cur + 8);
- *               if (next == 0) {
- *                   goto done;
- *               }
- *               if (next == arg1) {
- *                   break;
- *               }
- *               cur = next;
- *           } while (1);
- *       }
- *       *(void **)(cur + 8) = *(void **)((char *)arg1 + 8);
- *   done:
- *       func_001F99B0(arg1, 0, 0x40);
- *   }
- *
- * A single-exit `goto done` was needed to get retail's ONE shared
- * call site instead of one per return path (fixed a much larger
- * initial gap). What's left: retail's "check next, branch on == 0
- * vs == target" pattern is duplicated three times (once before the
- * loop, once as the loop's own top, once merged into the not-found
- * landing pad) with each copy scheduled slightly differently; this
- * compiler recognizes all the duplicated checks are identical code
- * and collapses them into one shared loop entered from multiple
- * points, matching retail's semantics with visibly fewer
- * instructions. Same compiler-is-smarter-than-retail class as
- * several other reverts this session, just larger in scale.
+ * DetachManipulator: unlink `node` from the list at arg0+0x64 (next
+ * pointer at +8), then clear it with func_001F99B0(node, 0, 0x40).
+ * The head is read twice, for the test and again for `cur`: the copy
+ * that makes lands in the bnel's slot and leaves retail's two nops.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_0020D9D8); /* DetachManipulator */
+void func_0020D9D8(void *arg0, void *arg1) {
+    char *base = (char *)arg0;
+    char *node = (char *)arg1;
+    char *cur;
+
+    if (node == 0) {
+        return;
+    }
+    if (*(char **)(base + 0x64) == node) {
+        *(char **)(base + 0x64) = *(char **)(node + 8);
+    } else {
+        cur = *(char **)(base + 0x64);
+        while (*(char **)(cur + 8) != 0 && *(char **)(cur + 8) != node) {
+            cur = *(char **)(cur + 8);
+        }
+        if (*(char **)(cur + 8) == node) {
+            *(char **)(cur + 8) = *(char **)(node + 8);
+        }
+    }
+    func_001F99B0(node, 0, 0x40);
+}
 
 extern int D_001B2F40[];
 
@@ -432,7 +435,38 @@ void func_0020DB98(char *arg0, int arg1, void *arg2, char *arg3) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020DC38);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020DC40); /* DmaMobyTextures */
+extern int D_0016000C MACRO_ADDR;
+extern int D_00161000 MACRO_ADDR;
+extern int D_0015EF74 MACRO_ADDR;
+extern void func_00212258(int);
+extern void func_00234E80(void);
+
+/* DmaMobyTextures: splices the texture uploads into the DMA chain with
+   "next" tags (0x20000000). D_00161000 is the packet write pointer and
+   D_0016000C the tag slot DrawMobysSetup reserved. Every access goes
+   back to the globals, because each store through them could alias. */
+void func_0020DC40(void) {
+    int *p = (int *)D_00161000;
+
+    D_00161000 += 0x10;
+    ((int *)D_0016000C)[0] = 0x20000000;
+    ((int *)D_0016000C)[1] = D_00161000;
+    ((int *)D_0016000C)[2] = 0;
+    ((int *)D_0016000C)[3] = 0;
+    if (D_0018A3B0[10] != 0 && D_0018A3B0[9] != 0) {
+        func_00212258(D_0015EF74);
+        func_00234E80();
+    }
+    ((int *)D_00161000)[0] = 0x20000000;
+    ((int *)D_00161000)[1] = D_0016000C + 0x10;
+    ((int *)D_00161000)[2] = 0;
+    ((int *)D_00161000)[3] = 0;
+    D_00161000 += 0x10;
+    p[0] = 0x20000000;
+    p[1] = D_00161000;
+    p[2] = 0;
+    p[3] = 0;
+}
 
 extern int D_001B6880[];
 extern void *D_001B3580[];
@@ -539,29 +573,66 @@ void func_0020DE20(void) {
     D_001CAE00[2] = -0.99f;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020DEB0);
+extern int D_0016003C MACRO_ADDR;
+extern int D_00160040 MACRO_ADDR;
+extern char D_0015FFC0[];
+extern char D_001C8A00[];
+extern void func_00228A58(void);
+extern void func_00228860(void *);
+extern void func_001F2558(void *, int);
+
+/* The same splice as DmaMobyTextures, around func_00228A58/func_00228860,
+   at the tag slot D_00160040; with D_0016003C clear the slot becomes a
+   plain "cnt" tag (0x10000000) instead. The write pointer goes through
+   a temporary that is advanced in place (t += 0x10): that breaks CSE's
+   p == t equivalence, which is what keeps retail's `daddu $16,$2,$0`
+   copy. `p = D_00161000; D_00161000 += 0x10;` is 4 bytes short. */
+void func_0020DEB0(void) {
+    int *p;
+    int t;
+
+    if (D_0016003C == 0) {
+        ((int *)D_00160040)[0] = 0x10000000;
+        ((int *)D_00160040)[1] = 0;
+        ((int *)D_00160040)[2] = 0;
+        ((int *)D_00160040)[3] = 0;
+        return;
+    }
+    t = D_00161000;
+    p = (int *)t;
+    t += 0x10;
+    D_00161000 = t;
+    ((int *)D_00160040)[0] = 0x20000000;
+    ((int *)D_00160040)[1] = D_00161000;
+    ((int *)D_00160040)[2] = 0;
+    ((int *)D_00160040)[3] = 0;
+    func_00228A58();
+    func_00228860(D_001C8A00);
+    ((int *)D_00161000)[0] = 0x20000000;
+    ((int *)D_00161000)[1] = D_00160040 + 0x10;
+    ((int *)D_00161000)[2] = 0;
+    ((int *)D_00161000)[3] = 0;
+    D_00161000 += 0x10;
+    p[0] = 0x20000000;
+    p[1] = D_00161000;
+    p[2] = 0;
+    p[3] = 0;
+    func_001F2558(D_0015FFC0, 8);
+}
 
 extern void func_00118D80(int);
 extern void func_00212578(int, int);
 extern char D_00165600[];
-extern int D_0015F718;
-extern short D_0015F71C;              /* SDA, gp -0x75E4 */
+extern int D_0015F718 MACRO_ADDR;
+extern int D_0015F71C MACRO_ADDR;
 
-/*
- * Close, not exact (9/68), same size so harmless to anything after it.
- * Same instructions as retail; the residual is the allocator's
- * destination-reuse choice again -- retail emits lui $4 /
- * lw $4,%lo(D_0015F718)($4) and schedules the SDA load into the jal
- * delay slot, while this compiler materializes into $2, loads the SDA
- * value into $5 first and puts the %lo load in the delay slot.
- * Binding the first argument to a local to force its evaluation order
- * was tried and changed nothing.
- */
-/* ProcessMobyAnimData(void) */
+/* ProcessMobyAnimData(void). Both globals are MACRO_ADDR: D_0015F718
+   loads with retail's one-register lui $4 / lw $4, and D_0015F71C's
+   load, scheduled into the jal delay slot, becomes $gp-relative. */
 void func_0020DFF8(void) {
     func_00118D80(0);
     func_001F9A98((void *)0x70003800, D_00165600, 0x800);
-    func_00212578(D_0015F718, *(int *)&D_0015F71C);
+    func_00212578(D_0015F718, D_0015F71C);
 }
 
 
@@ -585,8 +656,8 @@ void func_0020E098(void) {
 
 extern void func_00234B48(void *, int);
 extern void func_002347F0(void *);
-extern void func_00234C98(int, int);
-extern void func_001F2560(void);
+extern void func_00234C98(int, long);
+extern void func_001F2560(void *, int);
 extern unsigned short D_0010FA90 NOT_SDA;
 extern char D_0010FAA0[];
 extern int D_0015F704 MACRO_ADDR;
@@ -594,92 +665,74 @@ extern char D_00100080[];
 extern int D_0015EF78 MACRO_ADDR;
 extern int D_0016000C MACRO_ADDR;
 extern int D_0015EF74 MACRO_ADDR;
-extern int D_0015FFD0 MACRO_ADDR;
+extern char D_0015FFD0[];
 extern int D_00160040 MACRO_ADDR;
 extern int D_00160014 MACRO_ADDR;
 extern int D_00161000 MACRO_ADDR;
 extern int D_00161008 MACRO_ADDR;
 
-/*
- * REVERTED (size mismatch: 168 vs retail's 184). Decode is certain --
- * pure straight-line setup, no branches:
- *
- *   void func_0020E0C8(void) {
- *       func_00234B48(D_0010FAA0, D_0010FA90);
- *       D_0015F704 = 6;
- *       func_002347F0(D_00100080);
- *       func_00234C98(0x47, 0x5360B);
- *       D_0016000C = D_00161000;
- *       D_0015EF74 = D_0015EF78;
- *       D_0015FFD0 = D_00161000 + 0x10;
- *       func_001F2560();
- *       D_00160040 = 0;
- *       D_00161008 = *(int *)&D_0015F71C - 0x10000;
- *       D_00160014 = D_0015F718;
- *   }
- *
- * (needs D_0010FA90 NOT_SDA and D_0015F704/D_0015EF78/D_0016000C/
- * D_0015EF74/D_0015FFD0/D_00160040/D_00160014/D_00161000/D_00161008
- * all MACRO_ADDR to reproduce retail's individual store shapes -- that
- * much is confirmed exactly matching). Two residuals, 16 bytes: retail
- * materialises `&D_0015FFD0` into a dead register (lui+addiu, never
- * read) alongside the gp-relative store the `D_0015FFD0 = ...`
- * assignment itself produces -- the SAME MACRO_ADDR symbol expanded
- * twice for one C statement, same as the func_0011D3C8-family finding
- * -- plus an unexplained `addiu $5,0,1` this compiler never emits
- * anywhere in the sequence. Tried: reusing a `v = D_00161000;` local
- * across both the D_0016000C and D_0015FFD0 stores (805, worse); an
- * explicit `*(&D_0015FFD0) = ...` dead-reference (805, same). Neither
- * reproduces the dead address computation; what produces it from
- * source is not understood.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_0020E0C8); /* DrawMobysSetup(void) */
+/* DrawMobysSetup(void). What an older note here called a dead
+   `&D_0015FFD0` and an unexplained `li $5,1` are the arguments of the
+   profiling marker func_001F2560. The packet pointer goes through a
+   local advanced in place, as in DrawShrubs. func_00234C98's second
+   parameter being `long` is what orders its arguments like retail. */
+void func_0020E0C8(void) {
+    int p;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020E180); /* DrawMobyList */
+    func_00234B48(D_0010FAA0, D_0010FA90);
+    D_0015F704 = 6;
+    func_002347F0(D_00100080);
+    func_00234C98(0x47, 0x5360B);
+    p = D_00161000;
+    D_0016000C = p;
+    D_0015EF74 = D_0015EF78;
+    p += 0x10;
+    D_00161000 = p;
+    func_001F2560(D_0015FFD0, 1);
+    D_00160040 = 0;
+    D_00161008 = D_0015F71C - 0x10000;
+    D_00160014 = D_0015F718;
+}
 
-extern void func_001F2560_a(void *) __asm__("func_001F2560");
-extern void func_0020DC40(void *);
+extern int func_00212658(int, int, int, int);
+
+/* DrawMobyList */
+void func_0020E180(int arg0, int arg1) {
+    func_00234C98(0x47, 0x5360B);
+    func_00118D80(0);
+    func_0020E098();
+    D_00160014 = func_00212658(arg0, D_00160014, arg1, 0);
+    func_0020E068();
+    D_00160014 -= 0x10;
+}
+
+extern void func_0020DC40(void);
 extern void func_001F2558(void *, int);
 extern void func_0020DFF8(void);
-extern void func_00212508(void *);
+extern void func_00212508(void);
 extern char D_0015FFE0[];
-extern char D_0015FFF0[] MACRO_ADDR;
+extern char D_0015FFF0[];
 extern int D_00160038 MACRO_ADDR;
 extern int D_00160040 MACRO_ADDR;
 
-/*
- * REVERTED (size mismatch: 176 vs retail's 172). Decode is certain:
- *
- *   void func_0020E200(void) {
- *       func_001F2560(D_0015FFE0);   // no-op stub, arg discarded
- *       func_0020DC40(D_0015FFE0);
- *       func_001F2558(D_0015FFE0, 5); // no-op stub, args discarded
- *       if (D_0018A3B0[10] != 0) {
- *           func_0020DFF8();
- *           if (D_00160038 != 0) {
- *               func_00212508(D_0015FFF0);
- *           }
- *       }
- *       func_001F2558(D_0015FFF0, 3);
- *       if (D_0018A3B0[10] != 0) {
- *           if (D_00160040 != 0) {
- *               func_0020DEB0();
- *           }
- *       }
- *   }
- *
- * (D_0015FFF0/D_00160038/D_00160040 all need MACRO_ADDR; without it on
- * D_0015FFF0 the compiler caches its address in a second saved
- * register across the three uses, growing the frame from 0x20 to
- * 0x30 -- confirmed exactly matching once added). Two residuals, 4
- * bytes: retail encodes the D_00160038 check as `beql` (branch
- * likely, nullified delay) where this compiler always emits plain
- * `beqz` for it regardless of the surrounding if/else polarity tried;
- * and the final func_001F2558(D_0015FFF0, 3) call completes a0 before
- * loading a1's constant, where this compiler does the reverse --
- * forcing the pointer through its own local first didn't change it.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_0020E200); /* DrawMobysCleanUp */
+/* DrawMobysCleanUp. The empty profiling markers take (void *, int);
+   DmaMobyTextures and func_00212508 take nothing. With the arguments
+   right, D_0015FFF0 is a plain array, not MACRO_ADDR. */
+void func_0020E200(void) {
+    func_001F2560(D_0015FFE0, 3);
+    func_0020DC40();
+    func_001F2558(D_0015FFE0, 5);
+    if (D_0018A3B0[10] != 0) {
+        func_0020DFF8();
+        if (D_00160038 != 0) {
+            func_00212508();
+        }
+    }
+    func_001F2558(D_0015FFF0, 3);
+    if (D_0018A3B0[10] != 0 && D_00160040 != 0) {
+        func_0020DEB0();
+    }
+}
 
 extern int D_0018A3D8;
 extern int D_00160018 MACRO_ADDR;
@@ -689,7 +742,6 @@ extern int D_00161008 MACRO_ADDR;
 extern char D_001E8730[];
 extern void func_0020E0C8(void);
 extern void func_0020E200(void);
-extern int func_00212658(int, int, int, int);
 
 /* DrawMobys */
 void func_0020E2B0(void) {

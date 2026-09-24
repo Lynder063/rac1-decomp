@@ -40,20 +40,6 @@ Boston, MA 02111-1307, USA.  */
 /* fixproto guarantees these system headers exist. */
 #include <stdlib.h>
 #include <unistd.h>
-
-#else
-#ifndef L_trampoline
-#include <stddef.h>
-#ifndef malloc
-extern void *malloc (size_t);
-#endif
-#ifndef free
-extern void free (void *);
-#endif
-#ifndef atexit
-extern int atexit(void (*)(void));
-#endif
-#endif
 #endif
 
 #include "machmode.h"
@@ -65,6 +51,10 @@ extern int atexit(void (*)(void));
 /* Don't use `fancy_abort' here even if config.h says to use it.  */
 #ifdef abort
 #undef abort
+#endif
+
+#if (SUPPORTS_WEAK == 1) && (defined (ASM_OUTPUT_DEF) || defined (ASM_OUTPUT_WEAK_ALIAS))
+#define WEAK_ALIAS
 #endif
 
 /* In a cross-compilation situation, default to inhibiting compilation
@@ -1471,8 +1461,6 @@ char *ctime ();
 
 static struct bb *bb_head;
 
-static int num_digits (long value, int base) __attribute__ ((const));
-
 /* Return the number of digits needed to print a value */
 /* __inline__ */ static int num_digits (long value, int base)
 {
@@ -1514,7 +1502,7 @@ __bb_exit_func (void)
 	  /* If the file exists, and the number of counts in it is the same,
 	     then merge them in.  */
 	     
-	  if ((da_file = fopen (ptr->filename, "rb")) != 0)
+	  if ((da_file = fopen (ptr->filename, "r")) != 0)
 	    {
 	      long n_counts = 0;
 	      
@@ -1547,7 +1535,7 @@ __bb_exit_func (void)
 		fprintf (stderr, "arc profiling: Error closing output file %s.\n",
 			 ptr->filename);
 	    }
-	  if ((da_file = fopen (ptr->filename, "wb")) == 0)
+	  if ((da_file = fopen (ptr->filename, "w")) == 0)
 	    {
 	      fprintf (stderr, "arc profiling: Can't open output file %s.\n",
 		       ptr->filename);
@@ -1721,9 +1709,11 @@ __bb_init_func (struct bb *blocks)
   if (blocks->zero_word)
     return;
 
+#ifdef ON_EXIT
   /* Initialize destructor.  */
   if (!bb_head)
-    atexit (__bb_exit_func);
+    ON_EXIT (__bb_exit_func, 0);
+#endif
 
   /* Set up linked list.  */
   blocks->zero_word = 1;
@@ -2094,8 +2084,10 @@ __bb_init_prg ()
   enum bb_func_mode m;
   int i;
 
+#ifdef ON_EXIT
   /* Initialize destructor.  */
-  atexit (__bb_exit_func);
+  ON_EXIT (__bb_exit_func, 0);
+#endif
 
   if (!(file = fopen ("bb.in", "r")))
     return;
@@ -2184,8 +2176,11 @@ __bb_init_prg ()
       bb_stack = (unsigned long *) malloc (bb_stacksize * sizeof (*bb_stack));
     }
 
-  /* Initialize destructor.  */
-  atexit (__bb_exit_trace_func);
+#ifdef ON_EXIT
+      /* Initialize destructor.  */
+      ON_EXIT (__bb_exit_trace_func, 0);
+#endif
+
 }
 
 /* Called upon entering a basic block.  */
@@ -2472,8 +2467,7 @@ unsigned int __shtab[] = {
 #define INSN_CACHE_PLANE_SIZE (INSN_CACHE_SIZE / INSN_CACHE_DEPTH)
 
 void
-__clear_cache (char *beg __attribute__((__unused__)),
-	       char *end __attribute__((__unused__)))
+__clear_cache (char *beg, char *end)
 {
 #ifdef CLEAR_INSN_CACHE 
   CLEAR_INSN_CACHE (beg, end);
@@ -2866,21 +2860,25 @@ __do_global_dtors ()
       (*(p-1)) ();
     }
 #endif
-#if defined (EH_FRAME_SECTION) && !defined (HAS_INIT_SECTION)
-  {
-    static int completed = 0;
-    if (! completed)
-      {
-	completed = 1;
-	__deregister_frame_info (__EH_FRAME_BEGIN__);
-      }
-  }
+#ifdef EH_FRAME_SECTION
+  __deregister_frame_info (__EH_FRAME_BEGIN__);
 #endif
 }
 #endif
 
 #ifndef HAS_INIT_SECTION
 /* Run all the global constructors on entry to the program.  */
+
+#ifndef ON_EXIT
+#define ON_EXIT(a, b)
+#else
+/* Make sure the exit routine is pulled in to define the globals as
+   bss symbols, just in case the linker does not automatically pull
+   bss definitions from the library.  */
+
+extern int _exit_dummy_decl;
+int *_exit_dummy_ref = &_exit_dummy_decl;
+#endif /* ON_EXIT */
 
 void
 __do_global_ctors ()
@@ -2892,7 +2890,7 @@ __do_global_ctors ()
   }
 #endif
   DO_GLOBAL_CTORS_BODY;
-  atexit (__do_global_dtors);
+  ON_EXIT (__do_global_dtors, 0);
 }
 #endif /* no HAS_INIT_SECTION */
 
@@ -2954,17 +2952,22 @@ func_ptr __DTOR_LIST__[2];
 #include "gbl-ctors.h"
 
 #ifdef NEED_ATEXIT
+# ifdef ON_EXIT
+#  undef ON_EXIT
+# endif
+int _exit_dummy_decl = 0;	/* prevent compiler & linker warnings */
+#endif
 
 #ifndef ON_EXIT
 
+#ifdef NEED_ATEXIT
 # include <errno.h>
 
 static func_ptr *atexit_chain = 0;
 static long atexit_chain_length = 0;
 static volatile long last_atexit_chain_slot = -1;
 
-int
-atexit (func_ptr func)
+int atexit (func_ptr func)
 {
   if (++last_atexit_chain_slot == atexit_chain_length)
     {
@@ -2986,13 +2989,22 @@ atexit (func_ptr func)
   atexit_chain[last_atexit_chain_slot] = func;
   return (0);
 }
+#endif /* NEED_ATEXIT */
 
+/* If we have no known way of registering our own __do_global_dtors
+   routine so that it will be invoked at program exit time, then we
+   have to define our own exit routine which will get this to happen.  */
+
+extern void __do_global_dtors ();
+extern void __bb_exit_func ();
 extern void _cleanup ();
 extern void _exit () __attribute__ ((noreturn));
 
 void 
 exit (int status)
 {
+#if !defined (INIT_SECTION_ASM_OP) || !defined (OBJECT_FORMAT_ELF)
+#ifdef NEED_ATEXIT
   if (atexit_chain)
     {
       for ( ; last_atexit_chain_slot-- >= 0; )
@@ -3003,6 +3015,19 @@ exit (int status)
       free (atexit_chain);
       atexit_chain = 0;
     }
+#else /* No NEED_ATEXIT */
+  __do_global_dtors ();
+#endif /* No NEED_ATEXIT */
+#endif /* !defined (INIT_SECTION_ASM_OP) || !defined (OBJECT_FORMAT_ELF) */
+/* In gbl-ctors.h, ON_EXIT is defined if HAVE_ATEXIT is defined.  In
+   __bb_init_func and _bb_init_prg, __bb_exit_func is registered with
+   ON_EXIT if ON_EXIT is defined.  Thus we must not call __bb_exit_func here
+   if HAVE_ATEXIT is defined. */
+#ifndef HAVE_ATEXIT
+#ifndef inhibit_libc
+  __bb_exit_func ();
+#endif
+#endif /* !HAVE_ATEXIT */
 #ifdef EXIT_BODY
   EXIT_BODY;
 #else
@@ -3011,17 +3036,17 @@ exit (int status)
   _exit (status);
 }
 
-#else /* ON_EXIT */
+#else /* ON_EXIT defined */
+int _exit_dummy_decl = 0;	/* prevent compiler & linker warnings */
 
-/* Simple; we just need a wrapper for ON_EXIT.  */
-int
-atexit (func_ptr func)
+# ifndef HAVE_ATEXIT
+/* Provide a fake for atexit() using ON_EXIT.  */
+int atexit (func_ptr func)
 {
-  return ON_EXIT (func);
+  return ON_EXIT (func, NULL);
 }
-
-#endif /* ON_EXIT */
-#endif /* NEED_ATEXIT */
+# endif /* HAVE_ATEXIT */
+#endif /* ON_EXIT defined */
 
 #endif /* L_exit */
 
@@ -3142,18 +3167,6 @@ __get_eh_info ()
   return &eh->info;
 }
 
-#ifdef DWARF2_UNWIND_INFO
-static int dwarf_reg_size_table_initialized = 0;
-static char dwarf_reg_size_table[FIRST_PSEUDO_REGISTER];
-
-static void
-init_reg_size_table ()
-{
-  __builtin_init_dwarf_reg_size_table (dwarf_reg_size_table);
-  dwarf_reg_size_table_initialized = 1;
-}
-#endif
-
 #if __GTHREADS
 static void
 eh_threads_initialize ()
@@ -3186,23 +3199,11 @@ eh_context_initialize ()
       /* Use static version of EH context. */
       get_eh_context = &eh_context_static;
     }
-#ifdef DWARF2_UNWIND_INFO
-  {
-    static __gthread_once_t once_regsizes = __GTHREAD_ONCE_INIT;
-    if (__gthread_once (&once_regsizes, init_reg_size_table) != 0
-	|| ! dwarf_reg_size_table_initialized)
-      init_reg_size_table ();
-  }
-#endif
 
 #else /* no __GTHREADS */
 
   /* Use static version of EH context. */
   get_eh_context = &eh_context_static;
-
-#ifdef DWARF2_UNWIND_INFO
-  init_reg_size_table ();
-#endif
 
 #endif /* no __GTHREADS */
 
@@ -3441,6 +3442,7 @@ EH_TABLE_LOOKUP
 
 #ifdef DWARF2_UNWIND_INFO
 
+
 /* Return the table version of an exception descriptor */
 
 short 
@@ -3665,7 +3667,7 @@ copy_reg (unsigned reg, frame_state *udata, frame_state *target_udata)
   word_type *preg = get_reg_addr (reg, udata, NULL);
   word_type *ptreg = get_reg_addr (reg, target_udata, NULL);
 
-  memcpy (ptreg, preg, dwarf_reg_size_table [reg]);
+  memcpy (ptreg, preg, __builtin_dwarf_reg_size (reg));
 }
 
 /* Retrieve the return address for frame UDATA.  */
@@ -4021,8 +4023,6 @@ label:
 #endif /* inhibit_libc */
 
 #define MESSAGE "pure virtual method called\n"
-
-extern void __terminate (void) __attribute__ ((__noreturn__));
 
 void
 __pure_virtual ()

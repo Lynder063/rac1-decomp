@@ -73,7 +73,36 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00202AA8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00202EF8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00202F00); /* ParseParticleTexs */
+extern int D_001601C0 MACRO_ADDR;
+extern char D_001CE500[];
+extern int D_001CE300[];
+typedef struct { int a; int b; } Pair_2F00;
+extern Pair_2F00 D_001CDD00[];
+extern void func_001F9A00(void *, void *, int);
+extern int func_001F9968(int);
+
+/* ParseParticleTexs */
+void func_00202F00(int *hdr, int base, int *list, int count) {
+    int n = hdr[0];
+    int off = hdr[2];
+    int size = hdr[3];
+    int *p = hdr + 4;
+    int i;
+
+    for (i = 0; i < n; i++, p++) {
+        if (*p == 0) D_001CE300[i] = (int)D_001CE500;
+        else D_001CE300[i] = *p - (off - (int)D_001CE500);
+    }
+    func_001F9A00(D_001CE500, (char *)hdr + off, size);
+    for (D_001601C0 = 0; D_001601C0 < count; D_001601C0++) {
+        int a = base + *list++;
+        int b = *list++;
+        int c = base + *list++;
+        int d = *list++;
+        D_001CDD00[D_001601C0].a = (a << 4) + b;
+        D_001CDD00[D_001601C0].b = (c << 4) + func_001F9968(d);
+    }
+}
 
 extern int func_001F9968(int);
 extern int D_0015F55C MACRO_ADDR;
@@ -267,13 +296,19 @@ extern int *D_0015EF4C MACRO_ADDR;
 extern char *D_0019A500;
 extern void func_0020C468(int);
 
-/* LoadCompressedHudBank(int, char *) */
+/* LoadCompressedHudBank(int, char *). Each scaled index in its own local
+   gives retail's base-first addu; written inline, the multiply goes
+   first. */
 void func_00203548(int idx, int size) {
     if (((size + 0xF) & 0xFFFFFFF0) != 0) {
         int *base = D_0015EF4C;
-        func_0020C468(*(int *)((char *)base + idx * 8 + 0x28) + (int)base);
+        int off = idx * 8;
+        func_0020C468(*(int *)((char *)base + off + 0x28) + (int)base);
     }
-    *(int *)(D_0019A500 + idx * 4 + 0x74) = 0;
+    {
+        int off = idx * 4;
+        *(int *)(D_0019A500 + off + 0x74) = 0;
+    }
 }
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002035B0);
@@ -460,13 +495,20 @@ extern int D_0018CC20 NOT_SDA;
 extern int D_001941C8 NOT_SDA;
 extern int D_0016100C;
 
-/* ParseSpaceSceneChunk(int) */
+extern int D_0016100C_m __asm__("D_0016100C") MACRO_ADDR;
+
+/* ParseSpaceSceneChunk(int). Near-miss, 2/80: retail adds the index as
+   addu $a0,$s0,$a0 (base first), ours index first. The index in its own
+   local, a typed int pointer, and a struct with the table as a member do
+   not flip it (the struct also costs 4 bytes). D_0016100C is read through
+   a MACRO_ADDR alias, which took it from 7 bytes to 2. */
 void func_00205220(int arg0) {
     char *base = (char *)&D_0018CC20;
-    char *p = base + arg0 * 4;
+    int off = arg0 * 4;
+    char *p = base + off;
     *(int *)(base + 0x5C) = *(int *)(p + 0x60);
     func_00204FC0(p);
-    *(int *)(base + 0x5C) = D_0016100C + D_001941C8;
+    *(int *)(base + 0x5C) = D_001941C8 + D_0016100C_m;
 }
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00205270);

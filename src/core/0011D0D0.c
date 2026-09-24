@@ -136,6 +136,10 @@ extern int D_00130130;
  */
 typedef struct { int a; int b; } D_00130138_pair;
 
+extern void func_0011D3B8_v(int, int) __asm__("func_0011D3B8");
+
+/* func_0011D3B8 returns nothing: declared int, its result register
+   pushed the loop test to $v1. */
 int func_0011D3C8(void) {
     int *t = D_00130138;
     D_00130138_pair *p;
@@ -143,17 +147,17 @@ int func_0011D3C8(void) {
     int old;
     int r;
 
-    func_0011D3B8(t[0], t[1]);
+    func_0011D3B8_v(t[0], t[1]);
     func_0011D360((void *)0x80075000, D_0012FDB8, 0x330);
     func_00118D80(0);
     func_00118D80(2);
-    func_0011D3B8(t[2], t[3]);
-    func_0011D3B8(t[4], t[5]);
+    func_0011D3B8_v(t[2], t[3]);
+    func_0011D3B8_v(t[4], t[5]);
 
     p = (D_00130138_pair *)(t + 6);
     for (i = 3; i < 8; i++) {
         old = func_0011D3A8(p->a);
-        func_0011D3B8(p->a, old);
+        func_0011D3B8_v(p->a, old);
         p++;
     }
 

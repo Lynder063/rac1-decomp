@@ -44,7 +44,9 @@ def classify(body: str) -> tuple[str, str]:
     # VU0 / COP2 vector math.
     if re.search(r"\b(v[a-z]+\.[xyzw]+|vcallms|qmfc2|qmtc2|pxor|pcpyud|pextlw|pnor)\b", text):
         return "SIMD/COP2", ""
-    # $gp-relative addressing is unreachable at -G0 (loads as well as stores).
+    # $gp-relative addressing (loads as well as stores). This was a blocker
+    # under the old -G0 build; since the switch to -G2 it is reachable, so
+    # treat this as a category to report, not as a verdict.
     if re.search(r"\$28\b", text):
         return "$gp-relative", ""
     # Conditional moves: heuristics differ in both directions.

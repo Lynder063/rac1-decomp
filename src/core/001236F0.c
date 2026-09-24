@@ -127,9 +127,67 @@ int func_001239D8(int arg0, int arg1, int arg2) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00123A10);
+extern char D_00159B00[];
+extern int D_00132EAC;
+extern int D_00159B80;
+extern char D_0015B0C0[];
+extern int func_00118CC0(int);
+extern int func_0011B4C8();
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00123AC8);
+/* RPC 3 on the client D_00159B00, in func_001239D8's shape: -100 with
+   no server bound, -200 when the semaphore wait fails. */
+int func_00123A10(int arg0) {
+    char *cd = D_00159B00;
+    int r;
+
+    if (*(int *)(cd + 0x24) == 0) {
+        return -100;
+    }
+    if (func_00118CC0(D_00132EAC) < 0) {
+        return -200;
+    }
+    D_00159B80 = arg0;
+    r = func_0011B4C8(cd, 3, 1, &D_00159B80, 0x30, D_0015B0C0, 4, 0, 0);
+    if (r == 0) {
+        D_00132EA8 = 3;
+    } else {
+        func_00118C90(D_00132EAC);
+    }
+    return r;
+}
+
+extern char D_00159B00[];
+extern int D_00132EAC;
+extern int D_00159B80;
+extern char D_0015B0C0[];
+extern int func_00118CC0(int);
+extern int func_0011B4C8();
+
+/* RPC 4, the same shape with three request words. `buf` is assigned
+   after the semaphore call, so retail builds its address in a temp. */
+int func_00123AC8(int arg0, int arg1, int arg2) {
+    char *cd = D_00159B00;
+    int *buf;
+    int r;
+
+    if (*(int *)(cd + 0x24) == 0) {
+        return -100;
+    }
+    if (func_00118CC0(D_00132EAC) < 0) {
+        return -200;
+    }
+    buf = &D_00159B80;
+    buf[0] = arg0;
+    buf[4] = arg1;
+    buf[5] = arg2;
+    r = func_0011B4C8(cd, 4, 1, buf, 0x30, D_0015B0C0, 4, 0, 0);
+    if (r == 0) {
+        D_00132EA8 = 4;
+    } else {
+        func_00118C90(D_00132EAC);
+    }
+    return r;
+}
 
 /*
  * Unpack a scratchpad-resident descriptor: arg0 is forced into the SPR
@@ -185,9 +243,52 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00123D48);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00123EC0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00123EE8);
+extern int func_00118BE0(void);
+extern int func_00118C00(void);
+extern void func_00123EC0(int, unsigned short, void *);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00123F30);
+/* mcDelayThread (libmc): sleep this thread until an alarm of `time`
+   h-lines wakes it: SetAlarm (func_00118B20) with mcHearAlarm
+   (func_00123EC0) on GetThreadId(), then SleepThread(). */
+void func_00123EE8(int time) {
+    func_00118B20((unsigned short)time, func_00123EC0, func_00118BE0());
+    func_00118C00();
+}
+
+extern char D_00159B00[];
+extern int D_00132EAC;
+extern char D_0015B0C0[];
+extern void func_00123EE8(int);
+
+/* sceMcSync(mode, &cmd, &result): polls the pending memory card command
+   (or waits for it when mode is 0) and hands back its result. Exact
+   only under 2.9-ee: 2.95.3's gcse leaves two extra %hi copies. */
+int func_00123F30(int mode, int *cmd, int *result) {
+    int r;
+
+    if (D_00132EA8 == 0) {
+        return -1;
+    }
+    r = func_0011B6B8(D_00159B00);
+    if (mode == 0 && r != 0) {
+        while (func_0011B6B8(D_00159B00) != 0) {
+            func_00123EE8(0x3C);
+        }
+        r = 0;
+    }
+    r = (r == 0);
+    if (cmd != 0) {
+        *cmd = D_00132EA8;
+    }
+    if (r != 0) {
+        D_00132EA8 = 0;
+        if (result != 0) {
+            *result = *(int *)D_0015B0C0;
+        }
+        func_00118C90(D_00132EAC);
+    }
+    return r;
+}
 
 extern int *D_00159B28;
 extern int *D_00159B2C;
@@ -208,7 +309,36 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00124338);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124410);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124528);
+extern char D_00159B00[];
+extern int D_00132EAC;
+extern int D_00159B80;
+extern char D_0015B0C0[];
+extern int func_00118CC0(int);
+extern int func_0011B4C8();
+
+/* RPC 0x11, the same shape with two request words. */
+int func_00124528(int arg0, int arg1) {
+    char *cd = D_00159B00;
+    int *buf;
+    int r;
+
+    if (*(int *)(cd + 0x24) == 0) {
+        return -100;
+    }
+    if (func_00118CC0(D_00132EAC) < 0) {
+        return -200;
+    }
+    buf = &D_00159B80;
+    buf[1] = arg0;
+    buf[2] = arg1;
+    r = func_0011B4C8(cd, 0x11, 1, buf, 0x30, D_0015B0C0, 4, 0, 0);
+    if (r == 0) {
+        D_00132EA8 = 0x11;
+    } else {
+        func_00118C90(D_00132EAC);
+    }
+    return r;
+}
 
 extern int func_0011B4C8();
 extern char D_0015B108[];
@@ -222,7 +352,7 @@ int func_001245F8(void) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124650);
 
-extern void func_00124B60(void *);
+extern void func_00124B60(void *, ...);
 extern char D_00153658[];
 
 /* Same RPC shape as func_001245F8 above (9 args: $4-$11 plus one stack
@@ -256,25 +386,49 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00124920);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124A68);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124A70);
+extern char D_001537A0[];
 
-/*
- * Reverted -- semantics certain (an unused-argument no-op, called with
- * one pointer arg from below), but the register-shadow spill shape is
- * a puzzle: retail spills $5-$11 (a1-a7) to an 0x80-byte frame but
- * saves NO floating registers. A true `void func_00124B60(void *, ...)`
- * reproduces the GPR spill but ALSO adds f12/f14/f16/f18 saves (16
- * bytes over); a K&R-style `void func_00124B60()` produces no spill at
- * all (compiler proves the args are dead and elides them, same as any
- * ordinary unused-parameter function). Also tried 8 explicitly named
- * `long` params (same result as K&R -- fully eliminated) and taking
- * `&argN` of each into a volatile local (doesn't force a spill; `&x`
- * only pins x's address, not its storage class). Neither spelling
- * reached retail's GPR-only shadow save. Same open question as
- * func_001E9730's variadic idiom, but for a GPR-only variant -- not
- * yet understood.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124B60);
+/* RPC 0x8000091A round trip on D_0015B180 (the buffer is both request
+   and reply), copying the reply's bytes to arg3. `r` is assigned in both
+   arms of the copy guard with one return; two returns would be
+   cross-jumped into one. */
+int func_00124A70(int arg0, int arg1, int *arg2, char *arg3) {
+    int *buf = &D_0015B180;
+    unsigned char *src;
+    int i;
+    int r;
+
+    buf[0] = arg0;
+    buf[1] = arg1;
+    buf[2] = *arg2;
+    if (func_0011B4C8(D_0015B108, 0x8000091A, 0, buf, 0x400, buf, 0x400, 0, 0) < 0) {
+        func_00124B60(D_001537A0);
+        return 0;
+    }
+    r = buf[0x23];
+    if (r >= 0) {
+        *arg2 = buf[2];
+        i = 0;
+        if (i < buf[2]) {
+            src = (unsigned char *)buf + 0xC;
+            do {
+                arg3[i] = src[i];
+                i++;
+            } while (i < buf[2]);
+            r = buf[0x23];
+        } else {
+            r = buf[0x23];
+        }
+    }
+    return r;
+}
+
+/* The library's debug print, compiled out to an empty varargs function.
+   Only Sony's 2.9-ee gives retail's shape, spilling $5-$11 and no FP
+   argument registers; the game's 2.95.3 also saves $f12-$f18. That is
+   how this file was found to be built with 2.9-ee (Makefile.sn). */
+void func_00124B60(void *fmt, ...) {
+}
 
 /*
  * Reverted: size mismatch (ours=72, retail=60 -- 12 bytes over).
@@ -318,11 +472,6 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00124BC8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124D10);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124DF0);
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124EE0);
-
-extern int func_00124920(int);
 /* 0x330-stride entry table. Declared as a real struct array, not
    `char[]` + byte offset: the two are not codegen-equivalent. Indexing a
    typed array emits `addu base,index`; the char-pointer form emits
@@ -337,6 +486,52 @@ typedef struct {
     char unk_10[0x320];
 } Ent330;
 extern Ent330 D_0015B640[];
+
+extern int func_00125020(int);
+extern int func_00125160(unsigned char *, int *);
+
+/* The command word, built as bitfields of an `unsigned long` union: the
+   union stays in a register, each insert is a 64-bit and/or, and the
+   int view is the dsll32/dsra32 truncation retail passes in $a1. */
+typedef union {
+    struct {
+        unsigned long f0 : 14;
+        unsigned long f1 : 2;
+        unsigned long f2 : 8;
+        unsigned long f3 : 8;
+    } b;
+    int i;
+} McCmd;
+
+/* Opens entry `port` of the table if it is not (func_00125020), sends
+   command {2, 3, 2, 1} through func_00124A70, expands the 40-bit mask it
+   returns into the entry's slots (func_00125160) and returns the result
+   word func_00124A70 filled in. */
+int func_00124DF0(int port, void *arg1) {
+    McCmd cmd;
+    int result;
+    int r;
+
+    if (D_0015B640[port].unk_04 == 0) {
+        if (func_00125020(port) < 0) {
+            return -1;
+        }
+    }
+    cmd.b.f0 = 2;
+    cmd.b.f1 = 3;
+    cmd.b.f2 = 2;
+    cmd.b.f3 = 1;
+    r = func_00124A70(port, cmd.i, &result, arg1);
+    if (r < 0) {
+        return r;
+    }
+    func_00125160(arg1, (int *)D_0015B640[port].unk_10);
+    return result;
+}
+
+INCLUDE_ASM("asm/nonmatchings/core_text", func_00124EE0);
+
+extern int func_00124920(int);
 
 /*
  * Close, not exact (28/84), same size. Logic confirmed: call
@@ -392,70 +587,38 @@ void *func_00125078(int arg0) {
     return slot[*(int *)(slot[0] + 0x7C) < *(int *)(slot[1] + 0x7C)];
 }
 
-/*
- * REVERTED (size mismatch: ours 132, retail 128). Logic is certain, and
- * the block structure below reproduces retail's exactly -- the two
- * `return 0` exits share one block, the beqz delay slot is free for the
- * spill, and the D_00132ED8 accesses come out as %lo($base) for [0] and
- * addiu+4 for [1], just as retail has them:
- *
- *   extern int D_00132ED8[];
- *
- *   int func_001250E0(int arg0) {
- *       char *e = D_0015B640 + arg0 * 0x330;
- *       char *p = *(char **)(e + 0xC);
- *       char *slot[2];
- *
- *       slot[0] = p;
- *       slot[1] = p + 0x80;
- *       if (*(int *)(p + 0x7C) == 0 ||
- *           (D_00132ED8[0] == *(int *)(p + 0x7C) &&
- *            D_00132ED8[1] == *(int *)(slot[1] + 0x7C))) {
- *           return 0;
- *       }
- *       D_00132ED8[0] = *(int *)(slot[0] + 0x7C);
- *       D_00132ED8[1] = *(int *)(slot[1] + 0x7C);
- *       return 1;
- *   }
- *
- * The two-slot stack array is not decoration: retail spills the pointer
- * and pointer+0x80 to 0x0/0x4 of a 0x10 frame in a LEAF function, the
- * same idiom already used by func_00125078 just above.
- *
- * Exactly one instruction over, and it is the allocator's destination
- * choice again: retail puts %hi(D_00132ED8) straight into $7 and uses
- * $7 for every later reference, while this compiler emits
- *     lui $2,%hi(D_00132ED8) ; lw $3,%lo(D_00132ED8)($2) ; move $7,$2
- * because it wants $2 for the lui and then needs $2 back for `li $2,1`.
- * Caching the global's base in a local `int *g` removes the copy but
- * also removes an addiu and a reload, landing four bytes SHORT (and
- * folding the two bne into a bnel); combining the conditions the other
- * way (a single `&&` chain returning 1) lets GCC keep both pointers in
- * registers and drops the spills entirely, 16 bytes short. No spelling
- * tried hits 32 instructions.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001250E0);
+extern int D_00132ED8[];
 
-/*
- * Byte mismatch at correct size (0xB0), 8 of 44 words, and every one of
- * them is $a2 vs $a3: retail keeps the loop index in $a2 and the
- * short-slot counter in $a3, we do the reverse. Instruction stream,
- * constants and everything else are identical.
- *
- * New data point on the declaration-order lever, which is recorded as
- * inert. It is inert for INSTRUCTION SELECTION -- all 24 orderings of
- * the four initialised locals compile to the identical mnemonic
- * sequence (checked with tools/permute.py) -- but it is NOT inert for
- * emission order: moving `i` ahead of `b` reorders the two zeroing
- * `daddu`s in the prologue and took this function from 10/44 to 8/44.
- * It does not reach the register assignment itself, which stays the
- * recorded allocator destination-choice dead end.
- *
- * Expand a 40-bit mask into 40 four-word slots. For each set bit, record
+/* Has entry arg0's current pair changed? Follow entry arg0 of the
+   0x330-stride table to its buffer p; the pair is p+0x7C and p+0x80+0x7C.
+   If the first is zero, or both equal the cached pair D_00132ED8[0..1],
+   report 0; otherwise cache them and report 1. The two-slot stack array
+   is retail's (the same idiom as func_00125078). Exact under this file's
+   2.9-ee; under 2.95.3 it was a word long. */
+/* The old note's decode, exact since 001236F0.c builds with 2.9-ee. */
+int func_001250E0(int arg0) {
+    char *p = D_0015B640[arg0].unk_0C;
+    char *slot[2];
+
+    slot[0] = p;
+    slot[1] = p + 0x80;
+    if (*(int *)(p + 0x7C) == 0 ||
+        (D_00132ED8[0] == *(int *)(p + 0x7C) &&
+         D_00132ED8[1] == *(int *)(slot[1] + 0x7C))) {
+        return 0;
+    }
+    D_00132ED8[0] = *(int *)(slot[0] + 0x7C);
+    D_00132ED8[1] = *(int *)(slot[1] + 0x7C);
+    return 1;
+}
+
+/* Expand a 40-bit mask into 40 four-word slots. For each set bit, record
    slot type 1 plus the running (a, b) pair; entries 0x10..0x1F and
    0x23..0x26 are "wide" (size 8) and only advance a, everything else is
    size 1 and advances b, rolling a over every eighth. Clear bits zero
-   the slot's type and both counters. */
+   the slot's type and both counters. Initialising b before the loop
+   sets i gives i the shorter live range, so this file's compiler
+   (2.9-ee) allocates it first, as retail. */
 int func_00125160(unsigned char *src, int *out) {
     int bit;
     int a;
@@ -464,9 +627,8 @@ int func_00125160(unsigned char *src, int *out) {
 
     bit = 0;
     a = 0;
-    i = 0;
     b = 0;
-    do {
+    for (i = 0; i < 0x28; i++) {
         if (((*src >> bit) & 1) != 0) {
             out[0] = 1;
             out[2] = a;
@@ -492,9 +654,8 @@ int func_00125160(unsigned char *src, int *out) {
             src++;
             bit = 0;
         }
-        i++;
         out += 4;
-    } while (i < 0x28);
+    }
     return 1;
 }
 

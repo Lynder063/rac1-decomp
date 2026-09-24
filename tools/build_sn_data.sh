@@ -3,14 +3,15 @@
 # through the SN Systems ProDG assembler. See docs/TOOLCHAIN.md.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+. tools/toolchain.sh
 
-AS="toolchain/sn-prodg-3.01/usr/local/sce/ee/gcc/bin/ee-as.exe"
+AS="$TC/ee-as.exe"
 mkdir -p build-sn
 
 for f in asm/data/*.s; do
   name=$(basename "$f")
   out="build-sn/${name%.s}.o"
-  "$AS" -I include-sn -I include -o "$out" "$f"
+  sn "$AS" -I include-sn -I include -o "$out" "$f"
   echo "assembled $out"
 done
 
@@ -19,14 +20,28 @@ done
 # with the object's .rodata in between. See tools/split_data_s.py.
 python tools/split_data_s.py asm/data/core_rdata.rodata.s build-sn/core_rdata D_00152B18
 for n in 1 2; do
-  "$AS" -I include-sn -I include -o "build-sn/core_rdata_$n.o" "build-sn/core_rdata_$n.s"
+  sn "$AS" -I include-sn -I include -o "build-sn/core_rdata_$n.o" "build-sn/core_rdata_$n.s"
   echo "assembled build-sn/core_rdata_$n.o"
+done
+
+# data minus the jump tables that compiled game functions now bring
+# themselves (tools/jump_tables.py). rac1.ld.sh links the pieces with each
+# table in its hole.
+rm -f build-sn/data_*.s build-sn/data_*.o
+python tools/split_data_s.py asm/data/data.data.s build-sn/data $(python tools/jump_tables.py labels)
+for s in build-sn/data_*.s; do
+  sn "$AS" -I include-sn -I include -o "${s%.s}.o" "$s"
+  echo "assembled ${s%.s}.o"
 done
 
 # bss padding objects -- see rac1.ld.sh for why these are real loaded
 # sections rather than NOLOAD.
-printf '.section .core_bss_pad, "wa"\n.skip 0xab80\n' > build-sn/core_bss_pad.s
+# core_bss (0x154200-0x15ED80) is split around 0x1597EC, where libgcc's
+# __main keeps its static `initialized` (see rac1.ld.sh).
+printf '.section .core_bss_pad, "wa"\n.skip 0x55ec\n' > build-sn/core_bss_pad_1.s
+printf '.section .core_bss_pad, "wa"\n.skip 0x5590\n' > build-sn/core_bss_pad_2.s
 printf '.section .bss_pad, "wa"\n.skip 0x4200\n' > build-sn/bss_pad.s
-"$AS" -o build-sn/core_bss_pad.o build-sn/core_bss_pad.s
-"$AS" -o build-sn/bss_pad.o build-sn/bss_pad.s
-echo "assembled build-sn/core_bss_pad.o build-sn/bss_pad.o"
+sn "$AS" -o build-sn/core_bss_pad_1.o build-sn/core_bss_pad_1.s
+sn "$AS" -o build-sn/core_bss_pad_2.o build-sn/core_bss_pad_2.s
+sn "$AS" -o build-sn/bss_pad.o build-sn/bss_pad.s
+echo "assembled build-sn/core_bss_pad_1.o build-sn/core_bss_pad_2.o build-sn/bss_pad.o"
