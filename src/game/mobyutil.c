@@ -373,21 +373,11 @@ extern void func_001FA460(void *);
 extern void func_002150B0(void *, void *);
 extern void func_001FA480(void *, void *);
 
-/*
- * Close, not exact (15/76), same size so harmless to everything after
- * it. Logic is certain: fill a 64-byte stack buffer, then hand it to two
- * consumers. Instruction shape is identical to retail; the entire
- * residual is that retail puts arg0 in $s1 and arg1 in $s0 (saving $s1
- * first), while this compiler assigns them the other way round and the
- * save order follows. Tried aliasing the parameters through locals
- * declared in the reverse order -- the declaration-order lever that
- * worked for func_0020DA68/func_0020DAB0 -- but the compiler coalesces
- * the aliases with the parameters, so that lever steers LOCALS only, not
- * incoming parameter registers. Known allocator question.
- */
+/* func_001FA460 takes two arguments: arg1 is passed on to it untouched,
+   which gives arg1 three references and retail's $s0. */
 void func_00215328(void *arg0, void *arg1) {
     char buf[0x40];
-    func_001FA460(buf);
+    func_001FA460_2(buf, arg1);
     func_002150B0(arg0, buf);
     func_001FA480(arg1, buf);
 }
@@ -547,11 +537,10 @@ extern int D_0015F6B0 MACRO_ADDR;
 extern int D_0015F6B4 MACRO_ADDR;
 extern int D_00161388 MACRO_ADDR;
 
-/*
- * 11/164: everything but the placement of `addiu $2,$0,1`, which retail
- * emits before the last store and this compiler after it. Writing the
- * return value into a local before that store does not move it.
- */
+/* Shows help message arg1 (func_001FFE88 of its string) for requester
+   arg0: 2 if arg0 already holds the slot, 1 if the slot was free and
+   arg0 takes it, 0 if someone else holds it. The failure return goes
+   last, which lets the scheduler put `li $2,1` before the last store. */
 int func_00215F80(int arg0, int arg1) {
     int cur = D_0015F6B4;
 
@@ -563,16 +552,16 @@ int func_00215F80(int arg0, int arg1) {
         D_0015F6B0 = 2;
         return 2;
     }
-    if (cur != 0) {
-        return 0;
+    if (cur == 0) {
+        if (arg1 != 0) {
+            func_001FFE88(func_001FE540(arg1));
+        }
+        D_0015F6B4 = arg0;
+        D_0015F6B0 = 2;
+        D_00161388 = arg1;
+        return 1;
     }
-    if (arg1 != 0) {
-        func_001FFE88(func_001FE540(arg1));
-    }
-    D_0015F6B4 = arg0;
-    D_0015F6B0 = 2;
-    D_00161388 = arg1;
-    return 1;
+    return 0;
 }
 
 int func_00216028(int arg0, int arg1) {

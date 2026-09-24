@@ -45,23 +45,19 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001E9EC8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EABE8);
 
-extern int D_0015F064;
-extern int D_0015F060;
+extern int D_0015F064 MACRO_ADDR;
+extern int D_0015F060 MACRO_ADDR;
 extern int D_001997FC;
 /* gp-relative, no retail symbol: gp 0x166D00 - 0x7580 = 0x15F780
    (cursor into the table walked below). */
 extern short D_0015F780;
 
-/*
- * Same-size near-miss (14/56 bytes). Retail loads D_0015F064 into
- * $a1 and shifts arg0*4 into $a0 after that load; this compiler picks
- * $v1 for the same load and schedules the shift before it. Tried
- * swapping the addition's operand order and hoisting D_0015F064 into
- * its own local (matching retail's load-then-shift statement order)
- * -- neither changed the allocation. Not reachable from source.
- */
+/* Points the D_0015F780 cursor at entry arg0 of the table D_0015F064
+   indexes into D_0015F060, past its 8-byte header, and keeps the
+   header's first word in D_001997FC. Both table pointers are MACRO_ADDR
+   (one register each), and the index goes first in the addition. */
 void func_001EB300(int arg0) {
-    int *entry = (int *)(D_0015F064 + arg0 * 4);
+    int *entry = (int *)(arg0 * 4 + D_0015F064);
     int off = *entry;
     char *p = (char *)(D_0015F060 + off);
 

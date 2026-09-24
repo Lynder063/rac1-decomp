@@ -356,20 +356,35 @@ extern int func_0023E0B0(void *);
 extern int func_0012BB98(void *);
 extern char D_00161328[];
 
-void func_0023E560(void *arg0, int arg1, int arg2, int arg3) {
-    Obj23E *s = (Obj23E *)arg0;
-    s->unk0C = 0;
-    s->unk00 = arg1;
-    s->unk04 = arg2;
-    s->count = arg3;
-    s->unk08 = 0;
-    if (arg3 > 0) {
-        int off = 0;
-        do {
-            *(int *)(off + s->unk04) = 0;
-            arg3--;
-            off += 0x138C0;
-        } while (arg3 != 0);
+/* Sony's ezmpeg sample's video buffer: a ring of 0x138C0-byte frames.
+   `write` and `count` are volatile, shared with the decode thread. */
+typedef struct {
+    int status;
+    char pad[0x138C0 - 4];
+} VoTag;
+
+typedef struct {
+    void *data;
+    VoTag *tag;
+    volatile int write;
+    volatile int count;
+    int size;
+} VoBuf;
+
+/* voBufCreate(VoBuf *, VoData *, VoTag *, int), in the sample's order.
+   The volatile stores keep their order against each other, which puts
+   `count = 0` first and keeps `write = 0` out of the loop test's slot. */
+void func_0023E560(void *arg0, void *data, void *tag, int size) {
+    VoBuf *f = (VoBuf *)arg0;
+    int i;
+
+    f->data = data;
+    f->tag = (VoTag *)tag;
+    f->size = size;
+    f->count = 0;
+    f->write = 0;
+    for (i = 0; i < size; i++) {
+        f->tag[i].status = 0;
     }
 }
 
@@ -406,7 +421,6 @@ int func_0023E5C8(int *arg0) {
  * retail does. The beql/break before the div is the compiler's own
  * divide-by-zero trap.
  */
-/* voBufIncCount(VoBuf *) */
 void func_0023E5E0(char *arg0) {
     func_0011D960();
     *(int *)(*(volatile int *)(arg0 + 8) * 0x138C0 + *(int *)(arg0 + 4)) = 2;

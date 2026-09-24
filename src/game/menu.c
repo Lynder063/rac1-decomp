@@ -559,14 +559,20 @@ extern int D_001E06B8[];
 extern void *D_00199578[];
 extern char D_0013D6B8[];
 
+/* Copies three floats (+0x10, +0x14, +0x48) of each of level
+   D_0015EE84's objects in D_00199578 into the 16-byte slots at
+   D_0013D6B8; the index range is D_001E06B8[i]..[i + 1]. Binding the
+   two bases to locals in retail's order orders their %hi halves. */
 void func_00208FA0(void) {
     int i = D_0015EE84;
     if ((unsigned int)i < 0x13) {
         int start = D_001E06B8[i];
         int end = D_001E06B8[i + 1];
         if (start < end) {
-            float *dst = (float *)(D_0013D6B8 + start * 16);
-            void **src = &D_00199578[start];
+            void **sbase = D_00199578;
+            char *dbase = D_0013D6B8;
+            float *dst = (float *)(dbase + start * 16);
+            void **src = &sbase[start];
             start = end - start;
             do {
                 char *p = (char *)*src;
