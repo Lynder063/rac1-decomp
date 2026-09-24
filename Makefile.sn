@@ -96,16 +96,23 @@ build-sn/core/%.o: src/core/%.c tools/fix_core_spills.py tools/fix_tail_calls.py
 # libgcc modules: verbatim GCC source, no rewriters.
 LIBGCC_CFLAGS := -O2 -G2 -S
 
+# fp-bit is compiled the way Sony's toolchain generated dp-bit.c/fp-bit.c:
+# little-endian bitfield layout (GCC's MIPS makefile fragments define
+# FLOAT_BIT_ORDER_MISMATCH under __MIPSEL__) and no denormals (the EE FPU
+# flushes them). Only pack_d/unpack_d depend on either; with them they match
+# the SDK's prebuilt libgcc.a and retail exactly. See src/libgcc/README.md.
+FP_DEFS := -DFLOAT_BIT_ORDER_MISMATCH -DNO_DENORMALS
+
 build-sn/libgcc/fp_%.o: src/libgcc/fp-bit.c
 	@mkdir -p build-sn/libgcc
-	$(CC_LIBGCC) $(LIBGCC_CFLAGS) -DFINE_GRAINED_LIBRARIES -DL_$* $< -o build-sn/libgcc/fp_$*.s
+	$(CC_LIBGCC) $(LIBGCC_CFLAGS) $(FP_DEFS) -DFINE_GRAINED_LIBRARIES -DL_$* $< -o build-sn/libgcc/fp_$*.s
 	$(CC_TEXT) -c build-sn/libgcc/fp_$*.s -o $@
 
 # float_to_usi only exists in this fp-bit revision under GOFAST (where it
 # is named dptoul); the code is identical to retail's.
 build-sn/libgcc/fp_df_to_usi.o: src/libgcc/fp-bit.c
 	@mkdir -p build-sn/libgcc
-	$(CC_LIBGCC) $(LIBGCC_CFLAGS) -DFINE_GRAINED_LIBRARIES -DL_df_to_usi -DUS_SOFTWARE_GOFAST $< -o build-sn/libgcc/fp_df_to_usi.s
+	$(CC_LIBGCC) $(LIBGCC_CFLAGS) $(FP_DEFS) -DFINE_GRAINED_LIBRARIES -DL_df_to_usi -DUS_SOFTWARE_GOFAST $< -o build-sn/libgcc/fp_df_to_usi.s
 	$(CC_TEXT) -c build-sn/libgcc/fp_df_to_usi.s -o $@
 
 build-sn/libgcc/l2_%.o: src/libgcc/libgcc2.c src/libgcc/longlong.h

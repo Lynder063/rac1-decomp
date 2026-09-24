@@ -580,7 +580,15 @@ unpack_d (FLO_union_type * src, fp_number_type * dst)
   if (exp == 0)
     {
       /* Hmm.  Looks like 0 */
-      if (fraction == 0)
+      /* rac1-decomp: the NO_DENORMALS test below is backported from GCC
+	 trunk 2672543458 (Bernd Schmidt, Cygnus, 2000-03-16). Sony's EE
+	 fp-bit already had it; with -DNO_DENORMALS it reproduces retail's
+	 __unpack_d and __unpack_f byte for byte.  */
+      if (fraction == 0
+#ifdef NO_DENORMALS
+	  || 1
+#endif
+	  )
 	{
 	  /* tastes like zero */
 	  dst->class = CLASS_ZERO;

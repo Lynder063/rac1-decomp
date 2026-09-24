@@ -31,11 +31,13 @@ EOF
 # core_text objects, in link order, from config/core_text.objects -- the
 # one list Makefile.sn and the tools read too. _fpadd_parts is static in
 # fp-bit, so it has no global symbol to alias; it is the first thing in its
-# module, and the object before it ends exactly on the 8-byte boundary, so
-# `.` right before that object is its address.
+# module, whose .text is 8-byte aligned, so its address is `.` rounded up to
+# 8. (Not `.` itself: the object before it, fp_unpack_df.o, ends 4 bytes
+# short of the boundary.) ALIGN(8) only computes the value; the object's own
+# alignment still does the padding.
 grep -v -e '^#' -e '^$' config/core_text.objects | tr -d $'\r' | while read -r obj _start; do
   if [ "$obj" = "build-sn/libgcc/fp_addsub_df.o" ]; then
-    echo "    func_0011FC08 = .;" >> build-sn/rac1.ld
+    echo "    func_0011FC08 = ALIGN(8);" >> build-sn/rac1.ld
   fi
   echo "    $obj(.text)" >> build-sn/rac1.ld
 done
@@ -46,6 +48,8 @@ cat >> build-sn/rac1.ld <<'EOF'
   /* libgcc keeps its real names; the rest of the image (and every tool)
      knows these functions by address. Map both ways. */
   func_0011DFE8 = __divdi3;
+  func_0011FA38 = __pack_d;
+  func_0011FB68 = __unpack_d;
   func_0011E6D8 = __fixunsdfdi;
   func_0011E7C8 = __floatdidf;
   func_0011EEC8 = __muldi3;
@@ -59,8 +63,6 @@ cat >> build-sn/rac1.ld <<'EOF'
   func_00120538 = __fixdfsi;
   func_001205D0 = dptoul;
   func_00120670 = __make_dp;
-  __pack_d   = func_0011FA38;
-  __unpack_d = func_0011FB68;
   __thenan_df = 0x001597F0;
   /* Sony's EE compiler emits soft-float libcalls under their GOFAST
      names (libgcc2's modules call these). */

@@ -1,16 +1,16 @@
 {
  "measures": {
-  "fuzzy_match_percent": 9.718550436036532,
+  "fuzzy_match_percent": 9.81640115360846,
   "total_code": "466016",
-  "matched_code": "37416",
-  "matched_code_percent": 8.02890887866511,
+  "matched_code": "37872",
+  "matched_code_percent": 8.126759596237038,
   "total_functions": 1688,
-  "matched_functions": 485,
-  "matched_functions_percent": 28.732227488151658,
-  "complete_code": "3220",
-  "complete_code_percent": 0.6909634003982695,
+  "matched_functions": 487,
+  "matched_functions_percent": 28.850710900473935,
+  "complete_code": "3676",
+  "complete_code_percent": 0.7888141179701984,
   "total_units": 130,
-  "complete_units": 13
+  "complete_units": 15
  },
  "units": [
   {
@@ -3778,23 +3778,23 @@
   {
    "name": "libgcc/pack_df",
    "measures": {
-    "fuzzy_match_percent": 0.0,
+    "fuzzy_match_percent": 100.0,
     "total_code": "300",
-    "matched_code": "0",
-    "matched_code_percent": 0.0,
+    "matched_code": "300",
+    "matched_code_percent": 100.0,
     "total_functions": 1,
-    "matched_functions": 0,
-    "matched_functions_percent": 0.0,
-    "complete_code": "0",
-    "complete_code_percent": 0.0,
+    "matched_functions": 1,
+    "matched_functions_percent": 100.0,
+    "complete_code": "300",
+    "complete_code_percent": 100.0,
     "total_units": 1,
-    "complete_units": 0
+    "complete_units": 1
    },
    "functions": [
     {
      "name": "func_0011FA38",
      "size": "300",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "0",
      "metadata": {
       "virtual_address": "1178168"
@@ -3802,7 +3802,7 @@
     }
    ],
    "metadata": {
-    "complete": false,
+    "complete": true,
     "source_path": "src/libgcc/fp-bit.c",
     "progress_categories": [
      "libgcc"
@@ -3812,23 +3812,23 @@
   {
    "name": "libgcc/unpack_df",
    "measures": {
-    "fuzzy_match_percent": 0.0,
+    "fuzzy_match_percent": 100.0,
     "total_code": "156",
-    "matched_code": "0",
-    "matched_code_percent": 0.0,
+    "matched_code": "156",
+    "matched_code_percent": 100.0,
     "total_functions": 1,
-    "matched_functions": 0,
-    "matched_functions_percent": 0.0,
-    "complete_code": "0",
-    "complete_code_percent": 0.0,
+    "matched_functions": 1,
+    "matched_functions_percent": 100.0,
+    "complete_code": "156",
+    "complete_code_percent": 100.0,
     "total_units": 1,
-    "complete_units": 0
+    "complete_units": 1
    },
    "functions": [
     {
      "name": "func_0011FB68",
      "size": "156",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "0",
      "metadata": {
       "virtual_address": "1178472"
@@ -3836,7 +3836,7 @@
     }
    ],
    "metadata": {
-    "complete": false,
+    "complete": true,
     "source_path": "src/libgcc/fp-bit.c",
     "progress_categories": [
      "libgcc"
@@ -18477,15 +18477,15 @@
    "id": "libgcc",
    "name": "libgcc",
    "measures": {
-    "fuzzy_match_percent": 48.99009900990099,
+    "fuzzy_match_percent": 53.504950495049506,
     "total_code": "10100",
-    "matched_code": "4948",
-    "matched_code_percent": 48.99009900990099,
+    "matched_code": "5404",
+    "matched_code_percent": 53.504950495049506,
     "total_functions": 24,
-    "matched_functions": 15,
-    "matched_functions_percent": 62.5,
-    "complete_code": "2940",
-    "complete_code_percent": 29.10891089108911
+    "matched_functions": 17,
+    "matched_functions_percent": 70.83333333333333,
+    "complete_code": "3396",
+    "complete_code_percent": 33.62376237623762
    }
   }
  ]

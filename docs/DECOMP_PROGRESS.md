@@ -776,7 +776,20 @@ is `0xCDCDCDCD`, not zero, and splat split it out as 4-byte "functions"
 **Still open.** `__moddi3`, `__udivdi3`, `__umoddi3` (one extra stack
 local in retail), `pack_d` (0x11FA38), `unpack_d` (0x11FB68) and `unpack_f`
 (0x1206B0) differ from 2.95.3's revision, and so does a gap past
-0x1206A0. They look like a different fp-bit revision. `__extendsfdf2`
+0x1206A0. They look like a different fp-bit revision.
+
+**Update 2026-09-23: Sony's prebuilt `libgcc.a` is an exact reference.**
+The `libgcc.a` shipped in every EE compiler directory of the mirrors
+matches retail byte for byte for these modules (`tools/libgcc_ref.py`).
+Against it, `pack_d`/`unpack_d` were not a different revision at all:
+`__pack_d` needs `-DFLOAT_BIT_ORDER_MISMATCH` (GCC's MIPS makefile
+fragments define it for little-endian), and `__unpack_d`/`__unpack_f`
+need `-DNO_DENORMALS` plus that option's one-hunk implementation, which
+trunk only got on 2000-03-16 (from Cygnus) and which is backported into
+`src/libgcc/fp-bit.c`. Both modules are exact now. The three libgcc2 stubs
+compile to Sony's instructions but not Sony's frame (unused stack slots),
+identically across every 1999 revision and all flags tried: a compiler
+build difference, recorded in `src/libgcc/README.md`. `__extendsfdf2`
 (0x120778) already matches from this source. The four large leaf
 functions at 0x11DFE8-0x11F4F8 are probably libgcc2's 64-bit
 division family, which is the next thing to try under 2.9-ee. The

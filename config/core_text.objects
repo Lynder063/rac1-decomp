@@ -50,6 +50,8 @@ build-sn/libgcc/l2_floatdidf.o
 build-sn/libgcc/asm_0011E860.o
 build-sn/libgcc/l2_muldi3.o
 build-sn/libgcc/asm_0011EF28.o
+build-sn/libgcc/fp_pack_df.o
+build-sn/libgcc/fp_unpack_df.o
 build-sn/libgcc/fp_addsub_df.o
 build-sn/libgcc/fp_mul_df.o
 build-sn/libgcc/fp_div_df.o
