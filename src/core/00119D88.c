@@ -73,6 +73,30 @@ void func_0011A690(int arg0, int a1, int a2, int a3, int a4, int a5, int a6,
     func_0011A0A0(arg0, args);
 }
 
+/*
+ * Exact, but only under Sony's 2.9-ee, so it stays a stub for now. It is
+ * the varargs twin of the function above: swap the print hook D_0012FD00
+ * for func_00119DC0, pass fmt and the va_list to func_0011A0A0, restore
+ * the hook. Under the game's 2.95.3 it also saves $f12-$f18; with
+ * -msoft-float the frame is still 0x90 against retail's 0xB0 (the same
+ * as sprintf, 00116248.c). This file cannot move to 2.9-ee as a whole:
+ * under it func_0011ABC8, func_0011AC08 and func_0011CCB0 change size.
+ * So the function needs an object of its own, and nothing yet shows
+ * where that object begins and ends.
+ *
+ *   int func_0011A6C8(const char *fmt, ...) {
+ *       va_list ap;
+ *       void *saved = D_0012FD00;
+ *       int ret;
+ *
+ *       D_0012FD00 = (void *)func_00119DC0;
+ *       va_start(ap, fmt);
+ *       ret = func_0011A0A0(fmt, ap);
+ *       va_end(ap);
+ *       D_0012FD00 = saved;
+ *       return ret;
+ *   }
+ */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011A6C8);
 
 void func_0011A728(void *arg0, void *arg1) {
