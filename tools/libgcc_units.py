@@ -69,6 +69,17 @@ def core_text_objects() -> list[str]:
     return [obj for obj, _ in core_text_entries()]
 
 
+def ee29_sources() -> set[str]:
+    """Sources of the core_text objects marked `ee29` (a third column in
+    config/core_text.objects): Sony SDK code built with the SDK's 2.9-ee."""
+    out = set()
+    for line in (ROOT / "config/core_text.objects").read_text().splitlines():
+        parts = line.split()
+        if len(parts) > 2 and not line.startswith("#") and parts[2] == "ee29":
+            out.add(source_of(parts[0]))
+    return out
+
+
 def source_of(obj: str) -> str:
     """The source file an object in the list is built from."""
     name = obj.rsplit("/", 1)[1][:-2]

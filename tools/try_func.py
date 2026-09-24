@@ -29,7 +29,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from libgcc_units import SEGMENT_SOURCES  # noqa: E402
+from libgcc_units import SEGMENT_SOURCES, ee29_sources  # noqa: E402
 from toolchain import sn  # noqa: E402
 
 import rabbitizer as rz  # noqa: E402
@@ -37,11 +37,11 @@ from elftools.elf.elffile import ELFFile  # noqa: E402
 from elftools.elf.relocation import RelocationSection  # noqa: E402
 
 CC = "toolchain/sn-prodg-24/local/sce/ee/gcc/bin/ee-gcc2953.exe"
-# Sony SDK sources built with the SDK's 2.9-ee, no rewriters (Makefile.sn's
-# EE29_CORE).
+# Sony SDK sources built with the SDK's 2.9-ee (Makefile.sn's EE29_CORE: the
+# objects marked `ee29` in config/core_text.objects).
 CC29 = "toolchain/sn-prodg-24/local/sce/ee/gcc/bin/ee-gcc.exe"
 EE29_INC = "-Itoolchain/sn-prodg-24/local/sce/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111/include"
-EE29_SOURCES = {"src/core/001236F0.c", "src/core/00116070.c", "src/core/00116248.c"}
+EE29_SOURCES = ee29_sources()
 CFLAGS = ["-O2", "-G2", "-Iinclude", "-Wa,-I,."]
 BASEROM = "baserom/SCES_509.16"
 STUB = re.compile(r'^\s*INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\)')
@@ -93,9 +93,11 @@ def build(name, seg, src, first, last, candidate, work):
         if str(src) in EE29_SOURCES:
             if not run(sn(CC29, *CFLAGS, EE29_INC, "-S", "-o", str(s[0]), str(c)), log):
                 return None
-            if not run([sys.executable, "tools/check_macro_slots.py", str(s[0])], log):
+            if not run([sys.executable, "tools/fix_trunc_slot.py", str(s[0]), str(s[3])], log):
                 return None
-            if not run(sn(CC, *CFLAGS, "-c", str(s[0]), "-o", str(obj)), log):
+            if not run([sys.executable, "tools/check_macro_slots.py", str(s[3])], log):
+                return None
+            if not run(sn(CC, *CFLAGS, "-c", str(s[3]), "-o", str(obj)), log):
                 return None
             return obj
         if not run(sn(CC, *CFLAGS, "-S", "-o", str(s[0]), str(c)), log):

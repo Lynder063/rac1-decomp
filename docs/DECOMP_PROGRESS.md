@@ -809,6 +809,33 @@ or a source form 2.9-ee will not tail-call), re-run the sweep before
 concluding anything — the current 228 number is drift-poisoned and says
 nothing about how many functions 2.9-ee would actually match.
 
+**Update (2026-09-23): the source form exists, and core files are moving.**
+2.9-ee tail-calls a void function that ends in a call, but not
+`int f() { return g(); }`. So a retail call-and-return means the function
+returned its callee's value, and a retail tail jump means it was void.
+`func_00116408` (newlib's `__sclose`) is the first one: it returns the
+close result, as newlib's does. Compiling every core file whole under
+both compilers (each function's C unchanged) splits them like this:
+
+- **989snd** is SN: 25/25 under 2.95.3, 3/25 under 2.9-ee (it also
+  spills with `sq`).
+- **Better under 2.9-ee, nothing lost; now built with it** (the `ee29`
+  column in `config/core_text.objects`): `00113A70` (newlib's
+  `std`/`__sinit`), `00116D30` (strtol), `001162B8` (stdio's
+  `__sread`/`__swrite`/`__sseek`/`__sclose`), `0011DBE8`, `0011DDD0`,
+  `0012A2F0` (libmpeg's bitstream reader). Seven functions went exact,
+  among them the three this section's table lists.
+- **Mixed**: under 2.9-ee, `00123168`, `0012CC90`, `00119D88`,
+  `0012AC80` and `00125630` gain some functions and lose others. The
+  losses are mostly return-type tail calls (`func_0011CCB0`,
+  `func_0011D4A0`, `func_001275A0`, `func_0011ABC8`/`func_0011AC08`,
+  `func_0012C058`) plus a few 4-8 byte size changes, and `00121750`,
+  `001208E8` and `00116FA0` only lose. Their C was tuned against 2.95.3,
+  so the losses may be C to rework, not proof of the compiler.
+
+Neither compiler puts a final truncation's `dsra` in the return slot, so
+`tools/fix_trunc_slot.py` runs in the 2.9-ee pipeline too.
+
 ## libgcc is 2.9-ee: 0x11FC08-0x1206A0 rebuilt from GCC's source
 
 **The section above asked whether any of retail is 2.9-ee. Part of it is.**

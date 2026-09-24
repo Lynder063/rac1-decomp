@@ -66,7 +66,7 @@ All game code is compiled with **`-O2 -G2 -Iinclude -Wa,-I,.`**.
 | Source | Steps |
 |---|---|
 | `src/core/<ADDR>.c` (`core_text`) | v1.14 `-S` → `tools/fix_core_spills.py` → `tools/fix_tail_calls.py` → `tools/fix_trunc_slot.py` → `tools/check_macro_slots.py` → assemble |
-| `src/core/001236F0.c` (memory card library), `00116070.c`/`00116248.c` (the C library's printf and sprintf) | 2.9-ee `-S` (with its own include directory, for `stdarg.h`) → `tools/check_macro_slots.py` → assemble; SDK code built with the SDK's own compiler, like libgcc (`EE29_CORE` in `Makefile.sn`) |
+| `src/core/<ADDR>.c` marked `ee29` in `config/core_text.objects` (the memory card library, the C library's printf, sprintf, stdio and strtol, libmpeg's bitstream reader, ...) | 2.9-ee `-S` (with its own include directory, for `stdarg.h`) → `tools/fix_trunc_slot.py` → `tools/check_macro_slots.py` → assemble; SDK code built with the SDK's own compiler, like libgcc (`EE29_CORE` in `Makefile.sn`). No spill or tail-call rewriter: 2.9-ee spills with `sd` and tail-calls a void function ending in a call by itself, but not `return f(...)` |
 | `src/game/**.c` (`text`) | v1.14 `-S` → `tools/fix_tail_calls.py` → `tools/fix_trunc_slot.py` → `tools/fix_jump_tables.py` → `tools/ps2eeas_dli.py` → `tools/check_macro_slots.py` → assemble → `tools/ps2eeas_nops.py` → assemble |
 | `src/libgcc/libgcc2.c` | 2.9-ee `-S`, one object per `L_*` module, like `libgcc.a`'s members → assemble; L__main also goes through `tools/strip_dead.py` |
 | `src/libgcc/fp-bit.c` | 2.9-ee `-S`, whole file twice (`dp-bit.o`, `fp-bit.o` with `-DFLOAT`) → assemble → `tools/strip_dead.py` → assemble |

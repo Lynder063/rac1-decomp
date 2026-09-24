@@ -202,14 +202,8 @@ int func_0012AAA8(void *arg0, int arg1) {
  */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012AAC8);
 
-/*
- * Close, not exact (8/76), same size. Two-argument sibling of
- * func_0012ABB0 above and blocked identically: the instruction multiset
- * is right, but retail schedules `move $16,$4` into the first jal's
- * delay slot while this compiler puts a register save there. Not
- * source-steerable -- see func_0012ABB0's comment for the variants
- * already tried.
- */
+/* Get n bits: peek them (func_0012AAA8), then consume them
+   (func_0012AAC8). */
 int func_0012AB60(void *arg0, int arg1) {
     int r = func_0012AAA8(arg0, arg1);
     func_0012AAC8(arg0, arg1);
@@ -219,16 +213,7 @@ int func_0012AB60(void *arg0, int arg1) {
 extern int func_0012AAA8(void *, int);
 extern void func_0012AAC8(void *, int);
 
-/*
- * Close, not exact (8/68), same size so harmless to everything after it.
- * Logic confirmed. The residual is purely which instruction fills the
- * first jal's delay slot: retail emits the three saves consecutively
- * ($16@0, $17@16, $31@32) and schedules `move $16,$4` into the slot,
- * while this compiler interleaves the $16 save with the move and puts
- * `sd $17,16` in the slot instead. Same instruction multiset, different
- * schedule. Hoisting the result into a pre-declared local (the usual
- * declaration-order lever) changes nothing.
- */
+/* Get one bit, as func_0012AB60. */
 int func_0012ABB0(void *arg0) {
     int r;
     r = func_0012AAA8(arg0, 1);

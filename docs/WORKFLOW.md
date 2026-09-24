@@ -86,6 +86,13 @@ It builds, links, regenerates the images and runs asm-differ. It
 previous `.o`, whose `INCLUDE_ASM` stubs still hold retail's bytes. That
 would show a fictional match, and it has happened 15+ times.
 
+In `core_text`, first ask which compiler built the object: Sony SDK code
+(the C library, the memory card library, libmpeg, ...) was built with
+the SDK's 2.9-ee, the rest with 2.95.3. `tools/compiler_sweep.py
+src/core/X.c` compiles a file whole under both and lists each function's
+verdict. A near-miss that only one compiler reaches says which one it is;
+the objects marked `ee29` in `config/core_text.objects` build with 2.9-ee.
+
 Work through the levers in `docs/DECOMP_PROGRESS.md` in rough order of
 cost:
 

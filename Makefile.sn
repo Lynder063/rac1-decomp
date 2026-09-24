@@ -95,21 +95,26 @@ build-sn/core/%.o: src/core/%.c tools/fix_core_spills.py tools/fix_tail_calls.py
 	$(CC_CORE) $(CFLAGS) -c build-sn/core/$*_fixed.s -o $@
 
 # Sony SDK code that was built with the SDK's own 2.9-ee, like libgcc,
-# not with the game's 2.95.3: 001236F0.c is the memory card library
-# (sceMcSync at func_00123F30), 00116070.c and 00116248.c the C library's
-# printf and sprintf. 2.9-ee writes sd/ld spills and tail calls natively,
-# so neither rewriter runs; what tells the compilers apart is gcse
-# (2.95.3's PRE leaves extra %hi copies) and the varargs register save
-# (2.95.3 also saves $f12-$f18). Its own headers (stdarg.h) are passed
-# explicitly: under Wine the driver does not find its built-in include
-# directory. tools/try_func.py keeps the same list (EE29_SOURCES).
-EE29_CORE := build-sn/core/001236F0.o build-sn/core/00116070.o build-sn/core/00116248.o
+# not with the game's 2.95.3: the objects marked `ee29` in
+# config/core_text.objects (the memory card library, sceMcSync at
+# func_00123F30; the C library's printf, sprintf, stdio and strtol; ...).
+# 2.9-ee writes sd/ld spills and tail calls natively, so the spill and
+# tail-call rewriters do not run. It tail-calls a void function that ends
+# in a call, but not `return f(...)`, so the return type decides which
+# retail has. What else tells the compilers apart is scheduling ties,
+# gcse (2.95.3's PRE leaves extra %hi copies) and the varargs register
+# save (2.95.3 also saves $f12-$f18). fix_trunc_slot runs: neither
+# compiler puts a final truncation's dsra in the return slot. Its own
+# headers (stdarg.h) are passed explicitly: under Wine the driver does
+# not find its built-in include directory.
+EE29_CORE := $(shell awk '!/^\#/ && $$3 == "ee29" {print $$1}' config/core_text.objects)
 EE29_INC := -I$(SN_114)/lib/gcc-lib/ee/2.9-ee-991111/include
-$(EE29_CORE): build-sn/core/%.o: src/core/%.c tools/check_macro_slots.py
+$(EE29_CORE): build-sn/core/%.o: src/core/%.c tools/fix_trunc_slot.py tools/check_macro_slots.py
 	@mkdir -p build-sn/core
 	$(CC_LIBGCC) $(CFLAGS) $(EE29_INC) -S -o build-sn/core/$*.s $<
-	python tools/check_macro_slots.py build-sn/core/$*.s
-	$(CC_CORE) $(CFLAGS) -c build-sn/core/$*.s -o $@
+	python tools/fix_trunc_slot.py build-sn/core/$*.s build-sn/core/$*_fixed.s
+	python tools/check_macro_slots.py build-sn/core/$*_fixed.s
+	$(CC_CORE) $(CFLAGS) -c build-sn/core/$*_fixed.s -o $@
 
 # libgcc modules: verbatim GCC source, no rewriters.
 LIBGCC_CFLAGS := -O2 -G2 -S

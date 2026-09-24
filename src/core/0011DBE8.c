@@ -89,15 +89,7 @@ extern void func_00118CE0(void *);
 /* Reads a word through func_00118CF0, rewrites its 13..15 bit field to 1,
    pushes it back, re-reads it and restores the original. Returns whether
    the field read back as 0. `srl` (not `sra`) at the end is the tell that
-   the scratch word is unsigned.
-
-   Not exact: 10/104, same size. Every instruction and operand matches;
-   the residual is entirely prologue scheduling -- retail emits
-   `sd $16,0x10; sd $31,0x20` back to back and spends the first call's
-   delay slot on the argument, this build sinks the `$16` save into the
-   delay slot instead. See the gcc 2.9-ee note in docs/DECOMP_PROGRESS.md:
-   this is the sq-then-substitute pipeline scheduling against the wrong
-   store width, not a source-shape problem. */
+   the scratch word is unsigned. */
 int func_0011DC50(void) {
     unsigned int saved;
     unsigned int cur;

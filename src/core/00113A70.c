@@ -45,10 +45,9 @@ void func_00113AC8(void *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00113AD8);
 
-/* Same-size near-miss (11/140 bytes): retail computes `n0 = p+0x1E4`
-   before the `p->0x38 = 1` store; this compiler schedules them the
-   other way (both independent, so nothing in source-statement order
-   changes it -- tried an extra local for the constant 1 too). */
+/* newlib's __sinit (findfp.c): the reent's three built-in FILEs become
+   stdin, stdout and stderr through std() (func_00113A70), then the glue
+   list points at them; the cleanup hook is _cleanup_r (func_00113AC8). */
 void func_00113AE0(void *arg0) {
     char *p = (char *)arg0;
     char *n0 = p + 0x1E4;

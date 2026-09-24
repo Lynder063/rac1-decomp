@@ -15,7 +15,7 @@ extern void *D_0012F86C NOT_SDA;
 extern int func_001162B8(void *arg0, void *arg1, void *arg2);
 extern int func_00116320(void *arg0, void *arg1, void *arg2);
 extern long func_001163A0(void *arg0, void *arg1, void *arg2);
-extern void func_00116408(void *arg0);
+extern int func_00116408(void *arg0);
 extern void func_00113968(void);
 extern void func_00114438(void *, void *);
 extern char D_00152470[];
@@ -56,16 +56,10 @@ int func_001162B8(void *arg0, void *arg1, void *arg2) {
     return r;
 }
 
-/* Same cross-TU `long` prototype as func_001162B8 above -- see that note.
-   Here the narrowing lands on the return value itself: retail's trailing
-   dsll32/dsra32 pair is func_001188C8's 64-bit result being handed back
-   through this function's int return type.
-
-   Not exact: 8/128, same size so harmless. Every instruction and operand
-   matches; retail schedules `andi $2,$2,0xEFFF` ahead of the argument load
-   `lw $4,0x54($16)` and this build emits them the other way round. A pure
-   list-scheduler tie between two independent instructions -- tried the
-   `&=` idiom and a named local for the handle load, neither moves it. */
+/* newlib's __swrite. Same cross-TU `long` prototype as func_001162B8
+   above -- see that note. Here the narrowing lands on the return value
+   itself: retail's trailing dsll32/dsra32 pair is func_001188C8's 64-bit
+   result being handed back through this function's int return type. */
 extern long func_001188C8_wide(int *errOut, void *a, void *b, void *c)
     __asm__("func_001188C8");
 
@@ -102,9 +96,11 @@ long func_001163A0(void *arg0, void *arg1, void *arg2) {
 
 extern int func_00112468(int *errOut, int arg1);
 
-void func_00116408(void *arg0) {
+/* newlib's __sclose. It returns the close result: 2.9-ee tail-calls a
+   void function that ends in a call, which retail does not have here. */
+int func_00116408(void *arg0) {
     char *self = (char *)arg0;
-    func_00112468(*(int **)(self + 0x54), *(short *)(self + 0xE));
+    return func_00112468(*(int **)(self + 0x54), *(short *)(self + 0xE));
 }
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00116428);
