@@ -1464,11 +1464,17 @@ void func_00227C78(int arg0, int arg1) {
  *       }
  *   }
  *
- * Blocked by the delay-slot policy, not by source shape: retail leaves
- * both of the middle `jal`s' delay slots as bare `nop`s (8 bytes) where
- * this compiler schedules the next %hi/%lo setup into them. That is a
- * per-site choice in retail, not a rule -- see the "unfilling call delay
- * slots" entry in docs/DECOMP_PROGRESS.md.
+ * Update 2026-09-23: the size is solved. With D_0015EF98 declared
+ * MACRO_ADDR (as func_00227C78 above needs), `&D_0015EF98` is one `la`
+ * macro, which never goes in a delay slot, so retail's two bare `nop`s
+ * come out by themselves. The C above, with b declared after the calls,
+ * then leaves 10/144 bytes: arg0 in $s1 and arg1 in $s0, the reverse of
+ * ours. Unchanged by any order of the four stores, by a char * arg0, by
+ * a local copy of either argument, or by a K&R definition.
+ *
+ * (Older analysis, kept for the record: retail leaves both of the
+ * middle `jal`s' delay slots as bare `nop`s where this compiler
+ * scheduled the next %hi/%lo setup into them.)
  *
  * Two levers were confirmed on the way, and both are reusable:
  *  - Declaring the base pointer AFTER the last call keeps it out of a

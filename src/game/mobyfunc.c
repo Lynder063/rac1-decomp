@@ -482,7 +482,7 @@ extern void func_00234E80(void);
    "next" tags (0x20000000). D_00161000 is the packet write pointer and
    D_0016000C the tag slot DrawMobysSetup reserved. Every access goes
    back to the globals, because each store through them could alias. */
-void func_0020DC40(void *arg0) {
+void func_0020DC40(void) {
     int *p = (int *)D_00161000;
 
     D_00161000 += 0x10;
@@ -660,24 +660,16 @@ void func_0020DEB0(void) {
 extern void func_00118D80(int);
 extern void func_00212578(int, int);
 extern char D_00165600[];
-extern int D_0015F718;
-extern short D_0015F71C;              /* SDA, gp -0x75E4 */
+extern int D_0015F718 MACRO_ADDR;
+extern int D_0015F71C MACRO_ADDR;
 
-/*
- * Close, not exact (9/68), same size so harmless to anything after it.
- * Same instructions as retail; the residual is the allocator's
- * destination-reuse choice again -- retail emits lui $4 /
- * lw $4,%lo(D_0015F718)($4) and schedules the SDA load into the jal
- * delay slot, while this compiler materializes into $2, loads the SDA
- * value into $5 first and puts the %lo load in the delay slot.
- * Binding the first argument to a local to force its evaluation order
- * was tried and changed nothing.
- */
-/* ProcessMobyAnimData(void) */
+/* ProcessMobyAnimData(void). Both globals are MACRO_ADDR: D_0015F718
+   loads with retail's one-register lui $4 / lw $4, and D_0015F71C's
+   load, scheduled into the jal delay slot, becomes $gp-relative. */
 void func_0020DFF8(void) {
     func_00118D80(0);
     func_001F9A98((void *)0x70003800, D_00165600, 0x800);
-    func_00212578(D_0015F718, *(int *)&D_0015F71C);
+    func_00212578(D_0015F718, D_0015F71C);
 }
 
 
@@ -701,8 +693,8 @@ void func_0020E098(void) {
 
 extern void func_00234B48(void *, int);
 extern void func_002347F0(void *);
-extern void func_00234C98(int, int);
-extern void func_001F2560(void);
+extern void func_00234C98(int, long);
+extern void func_001F2560(void *, int);
 extern unsigned short D_0010FA90 NOT_SDA;
 extern char D_0010FAA0[];
 extern int D_0015F704 MACRO_ADDR;
@@ -710,92 +702,64 @@ extern char D_00100080[];
 extern int D_0015EF78 MACRO_ADDR;
 extern int D_0016000C MACRO_ADDR;
 extern int D_0015EF74 MACRO_ADDR;
-extern int D_0015FFD0 MACRO_ADDR;
+extern char D_0015FFD0[];
 extern int D_00160040 MACRO_ADDR;
 extern int D_00160014 MACRO_ADDR;
 extern int D_00161000 MACRO_ADDR;
 extern int D_00161008 MACRO_ADDR;
 
-/*
- * REVERTED (size mismatch: 168 vs retail's 184). Decode is certain --
- * pure straight-line setup, no branches:
- *
- *   void func_0020E0C8(void) {
- *       func_00234B48(D_0010FAA0, D_0010FA90);
- *       D_0015F704 = 6;
- *       func_002347F0(D_00100080);
- *       func_00234C98(0x47, 0x5360B);
- *       D_0016000C = D_00161000;
- *       D_0015EF74 = D_0015EF78;
- *       D_0015FFD0 = D_00161000 + 0x10;
- *       func_001F2560();
- *       D_00160040 = 0;
- *       D_00161008 = *(int *)&D_0015F71C - 0x10000;
- *       D_00160014 = D_0015F718;
- *   }
- *
- * (needs D_0010FA90 NOT_SDA and D_0015F704/D_0015EF78/D_0016000C/
- * D_0015EF74/D_0015FFD0/D_00160040/D_00160014/D_00161000/D_00161008
- * all MACRO_ADDR to reproduce retail's individual store shapes -- that
- * much is confirmed exactly matching). Two residuals, 16 bytes: retail
- * materialises `&D_0015FFD0` into a dead register (lui+addiu, never
- * read) alongside the gp-relative store the `D_0015FFD0 = ...`
- * assignment itself produces -- the SAME MACRO_ADDR symbol expanded
- * twice for one C statement, same as the func_0011D3C8-family finding
- * -- plus an unexplained `addiu $5,0,1` this compiler never emits
- * anywhere in the sequence. Tried: reusing a `v = D_00161000;` local
- * across both the D_0016000C and D_0015FFD0 stores (805, worse); an
- * explicit `*(&D_0015FFD0) = ...` dead-reference (805, same). Neither
- * reproduces the dead address computation; what produces it from
- * source is not understood.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_0020E0C8); /* DrawMobysSetup(void) */
+/* DrawMobysSetup(void). What an older note here called a dead
+   `&D_0015FFD0` and an unexplained `li $5,1` are the arguments of the
+   profiling marker func_001F2560. The packet pointer goes through a
+   local advanced in place, as in DrawShrubs. func_00234C98's second
+   parameter being `long` is what orders its arguments like retail. */
+void func_0020E0C8(void) {
+    int p;
+
+    func_00234B48(D_0010FAA0, D_0010FA90);
+    D_0015F704 = 6;
+    func_002347F0(D_00100080);
+    func_00234C98(0x47, 0x5360B);
+    p = D_00161000;
+    D_0016000C = p;
+    D_0015EF74 = D_0015EF78;
+    p += 0x10;
+    D_00161000 = p;
+    func_001F2560(D_0015FFD0, 1);
+    D_00160040 = 0;
+    D_00161008 = D_0015F71C - 0x10000;
+    D_00160014 = D_0015F718;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020E180); /* DrawMobyList */
 
-extern void func_001F2560_a(void *) __asm__("func_001F2560");
-extern void func_0020DC40(void *);
+extern void func_0020DC40(void);
 extern void func_001F2558(void *, int);
 extern void func_0020DFF8(void);
-extern void func_00212508(void *);
+extern void func_00212508(void);
 extern char D_0015FFE0[];
-extern char D_0015FFF0[] MACRO_ADDR;
+extern char D_0015FFF0[];
 extern int D_00160038 MACRO_ADDR;
 extern int D_00160040 MACRO_ADDR;
 
-/*
- * REVERTED (size mismatch: 176 vs retail's 172). Decode is certain:
- *
- *   void func_0020E200(void) {
- *       func_001F2560(D_0015FFE0);   // no-op stub, arg discarded
- *       func_0020DC40(D_0015FFE0);
- *       func_001F2558(D_0015FFE0, 5); // no-op stub, args discarded
- *       if (D_0018A3B0[10] != 0) {
- *           func_0020DFF8();
- *           if (D_00160038 != 0) {
- *               func_00212508(D_0015FFF0);
- *           }
- *       }
- *       func_001F2558(D_0015FFF0, 3);
- *       if (D_0018A3B0[10] != 0) {
- *           if (D_00160040 != 0) {
- *               func_0020DEB0();
- *           }
- *       }
- *   }
- *
- * (D_0015FFF0/D_00160038/D_00160040 all need MACRO_ADDR; without it on
- * D_0015FFF0 the compiler caches its address in a second saved
- * register across the three uses, growing the frame from 0x20 to
- * 0x30 -- confirmed exactly matching once added). Two residuals, 4
- * bytes: retail encodes the D_00160038 check as `beql` (branch
- * likely, nullified delay) where this compiler always emits plain
- * `beqz` for it regardless of the surrounding if/else polarity tried;
- * and the final func_001F2558(D_0015FFF0, 3) call completes a0 before
- * loading a1's constant, where this compiler does the reverse --
- * forcing the pointer through its own local first didn't change it.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_0020E200); /* DrawMobysCleanUp */
+/* DrawMobysCleanUp. The empty profiling markers take (void *, int);
+   DmaMobyTextures and func_00212508 take nothing. With the arguments
+   right, D_0015FFF0 is a plain array, not MACRO_ADDR. */
+void func_0020E200(void) {
+    func_001F2560(D_0015FFE0, 3);
+    func_0020DC40();
+    func_001F2558(D_0015FFE0, 5);
+    if (D_0018A3B0[10] != 0) {
+        func_0020DFF8();
+        if (D_00160038 != 0) {
+            func_00212508();
+        }
+    }
+    func_001F2558(D_0015FFF0, 3);
+    if (D_0018A3B0[10] != 0 && D_00160040 != 0) {
+        func_0020DEB0();
+    }
+}
 
 extern int D_0018A3D8;
 extern int D_00160018 MACRO_ADDR;
