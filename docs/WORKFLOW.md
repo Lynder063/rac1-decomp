@@ -20,7 +20,7 @@ bash tools/setup_asm.sh
 
 The script checks the baserom sha1 and the pinned splat/spimdisasm
 versions, then applies the same post-processing the build expects
-(`fix_vu0_macro.py`, `sn_regnames.py`). It leaves `src/` and `include/`
+(`fix_vu0_macro.py`, `sn_regnames.py`, `fix_denormal_floats.py`). It leaves `src/` and `include/`
 alone. The output was verified byte-identical, so every contributor diffs
 against the same thing.
 
@@ -111,7 +111,7 @@ bash tools/build_sn.sh
 ```
 
 The script deletes the objects first, stops on make's own exit status, then
-links, runs `sweep_matches.py` and runs `check_layout.py`. If you run the
+links, and runs `sweep_matches.py`, `check_layout.py` and `check_image.py`. If you run the
 steps by hand, check make's exit status yourself. `$?` after a pipe is the
 status of the last command in the pipe, not make's. When a tool itself changes (the sweep, a rewriter,
 the report generator), also cross-check with an independent whole-image

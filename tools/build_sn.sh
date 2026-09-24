@@ -56,3 +56,4 @@ fi
 
 python tools/sweep_matches.py | sed -n '/=== .* audited ===/,/byte mismatch/p'
 python tools/check_layout.py | tail -1
+python tools/check_image.py

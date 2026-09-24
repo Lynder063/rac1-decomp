@@ -36,4 +36,5 @@ python -m splat split config/splat.yaml
 # Same post-processing the committed asm used to carry.
 python tools/fix_vu0_macro.py asm
 python tools/sn_regnames.py asm
+python tools/fix_denormal_floats.py asm
 echo "asm/ ready ($(find asm -name '*.s' | wc -l) files)"
