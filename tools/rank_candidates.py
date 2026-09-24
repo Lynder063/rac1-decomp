@@ -322,14 +322,10 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     # reproduces. No longer risky: hinted below instead.
     reuse_load = bool(re.search(r"l[wbhd]u?\s+\$(\w+),\s*%lo\([^)]*\)\(\$\1\)", text))
 
-    # core_text functions that save $ra with sq/lq: retail is on the sq
-    # side here but v1.36 emits sd/ld, so these carry a guaranteed 2-byte
-    # floor (the store and its restore) and nothing else. Same size, so
-    # they are keepable as documented-close, but they can never be exact
-    # -- flagged risky rather than blocked so the logic can still be
-    # recovered if someone wants it. 34 stubs are in this state.
-    if seg == "core_text" and re.search(r"(?m)^sq\s+\$31", text):
-        return "risky", "core_text sq $ra", "2-byte floor: retail sq, v1.36 sd"
+    # (A rule here once marked core_text functions that save $ra with sq as
+    # risky, on the belief that core was built with v1.36. They are the
+    # objects from 0x12DB18 on, 989snd and friends, built with SN 2.95.3,
+    # which writes those sq saves itself.)
 
     # Genuine conditional move (not the div-by-power-of-two idiom, whose
     # movn is followed closely by an sra).
