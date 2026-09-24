@@ -6,6 +6,7 @@ and compare the function against retail.
 
   python tools/try_func.py func_XXXXXXXX candidate.c         # verdict
   python tools/try_func.py func_XXXXXXXX candidate.c --diff  # + differing words
+  python tools/try_func.py func_XXXXXXXX c1.c c2.c c3.c      # one verdict each
 
 candidate.c holds the function definition, plus any extern declarations it
 needs that the source file does not already have; it replaces the
@@ -171,19 +172,26 @@ def compare(name, seg, obj, show):
 
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    if len(args) != 2:
+    if len(args) < 2:
         sys.exit(__doc__)
-    name, cand = args
+    name, cands = args[0], args[1:]
     seg, src, first, last = find_stub(name)
-    obj = build(name, seg, src, first, last, Path(cand).read_text(), Path("build-sn/try") / name)
-    if obj is None:
-        log = (Path("build-sn/try") / name / "log.txt").read_text(errors="replace")
-        errs = [l for l in log.splitlines() if "error" in l.lower() or "undeclared" in l or "parse" in l]
-        print(f"{name}: COMPILE failed ({src})")
-        for l in errs[:8]:
-            print("   ", l)
+    failed = False
+    for cand in cands:
+        # Several candidates: label each line, and keep going past failures.
+        label = f"{Path(cand).name:10s} " if len(cands) > 1 else ""
+        obj = build(name, seg, src, first, last, Path(cand).read_text(), Path("build-sn/try") / name)
+        if obj is None:
+            log = (Path("build-sn/try") / name / "log.txt").read_text(errors="replace")
+            errs = [l for l in log.splitlines() if "error" in l.lower() or "undeclared" in l or "parse" in l]
+            print(f"{label}{name}: COMPILE failed ({src})")
+            for l in errs[:8]:
+                print("   ", l)
+            failed = True
+            continue
+        print(f"{label}{name}: {compare(name, seg, obj, '--diff' in sys.argv)}   ({src})")
+    if failed:
         sys.exit(1)
-    print(f"{name}: {compare(name, seg, obj, '--diff' in sys.argv)}   ({src})")
 
 
 if __name__ == "__main__":

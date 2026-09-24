@@ -67,10 +67,14 @@ compares it with retail in seconds, without touching `src/` or linking:
 
 ```
 python tools/try_func.py func_XXXXXXXX candidate.c --diff
+python tools/try_func.py func_XXXXXXXX c1.c c2.c c3.c      # one verdict each
 ```
 
-It masks relocated fields, so a pass there is a filter, not a match: the
-function still has to pass the full build (step 3). For a whole-image view
+It also takes a function that is already C: the candidate then replaces
+its definition, which is how near-misses get refined. It masks relocated
+fields, so a pass there is a filter, not a match: the function still has
+to pass the full build (step 3). On macOS/Linux run it through
+`bash tools/docker/run.sh python tools/try_func.py ...`. For a whole-image view
 and asm-differ's side-by-side, use:
 
 ```
