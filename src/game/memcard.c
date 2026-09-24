@@ -127,7 +127,43 @@ extern char D_0013D390[];
 extern short D_0015EFB0;
 extern int D_0015EFB4;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209A60);
+extern char D_0013D2D0[];
+extern char D_0013D2E8[];
+extern char D_0013D300[];
+extern char D_0013D320[];
+extern char D_0013D340[];
+extern char D_0013D370[];
+extern void func_00116B00(void *, void *, int);
+
+/* Builds a 13-byte name/version stamp in D_0013D2D0 from the record's
+   region byte (arg0[0x12]) and the record's date/version fields, then
+   copies that stamp into the six on-disk name buffers. */
+void func_00209A60(void *arg0) {
+    unsigned char *a = (unsigned char *)arg0;
+    unsigned char region = a[0x12];
+    int i;
+
+    if (region == 'E') {
+        D_0013D2D0[2] = region;
+    } else if (region == 'P') {
+        D_0013D2D0[2] = 'I';
+    }
+    for (i = 3; i < 7; i++) {
+        D_0013D2D0[i] = a[i + 0xD];
+    }
+    for (i = 8; i < 0xB; i++) {
+        D_0013D2D0[i] = a[i + 0xD];
+    }
+    for (i = 0xB; i < 0xD; i++) {
+        D_0013D2D0[i] = a[i + 0xE];
+    }
+    func_00116B00(D_0013D2E8, D_0013D2D0, 0xD);
+    func_00116B00(D_0013D300, D_0013D2D0, 0xD);
+    func_00116B00(D_0013D320, D_0013D2D0, 0xD);
+    func_00116B00(D_0013D340, D_0013D2D0, 0xD);
+    func_00116B00(D_0013D340 + 0x14, D_0013D2D0, 0xD);
+    func_00116B00(D_0013D370, D_0013D2D0, 0xD);
+}
 
 extern int func_00124068(int, int, int *, int *, int *);
 extern int func_00123F30(int, int *, int *);

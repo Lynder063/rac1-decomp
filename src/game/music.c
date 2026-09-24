@@ -394,7 +394,60 @@ void func_002166F0(int arg0, int arg1, int arg2) {
                   func_00217860, (long)(unsigned int)(s + 0x50));
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002167C0);
+extern char D_0013A764[];
+
+/* music_Play dispatcher: routes to the range-specific play function
+   (siblings above, one per id range) for arg0 >= 10000; below that it's
+   the same music_Playing setup those siblings do, inline, with the sound
+   handle read from D_0013A764[arg0][D_0015EE88] (stride 0x250) instead of
+   a SndToc table. */
+void func_002167C0(int arg0, int arg1, int arg2) {
+    char *s;
+    int handle;
+
+    if (arg0 >= 60000) {
+        func_00216290(arg0, arg1, arg2);
+        return;
+    }
+    if (arg0 >= 50000) {
+        func_00216368(arg0, arg1, arg2);
+        return;
+    }
+    if (arg0 >= 40000) {
+        func_00216450(arg0, arg1, arg2);
+        return;
+    }
+    if (arg0 >= 30000) {
+        func_00216528(arg0, arg1, arg2);
+        return;
+    }
+    if (arg0 >= 20000) {
+        func_00216620(arg0, arg1, arg2);
+        return;
+    }
+    if (arg0 >= 10000) {
+        func_002166F0(arg0, arg1, arg2);
+        return;
+    }
+    handle = *(int *)((char *)D_0013A764 + arg0 * 0x250 + D_0015EE88 * 4);
+    if (handle == 0) {
+        return;
+    }
+    s = (char *)D_001517D0;
+    if (*(int *)(s + 0x50) != 0) {
+        return;
+    }
+    *(unsigned int *)(s + 0x50) = 0xFFFFFFFF;
+    *(short *)(s + 0x5A) = 1;
+    *(short *)(s + 0x54) = arg0;
+    *(short *)(s + 0x58) = arg1;
+    *(int *)(s + 0x64) = 10;
+    *(int *)(s + 0x68) = 0xBB80;
+    *(short *)(s + 0x56) = arg2;
+    *(short *)(s + 0x60) = 0;
+    func_0012ED48(handle, 0, 0, 0, arg2, 0, 2, 0, 0x21,
+                  func_00217860, (long)(unsigned int)(s + 0x50));
+}
 
 extern short D_001517D0[];
 extern void func_0012EDE0(void *);
