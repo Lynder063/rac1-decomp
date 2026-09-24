@@ -10,7 +10,7 @@
 # then renamed (e.g. 989snd): only the name changes, the address stays.
 #   build-sn/core/<NAME>.o <START>   <- src/core/<NAME>.c
 #   build-sn/libgcc/l2_*.o     <- src/libgcc/libgcc2.c
-#   build-sn/libgcc/fp_*.o     <- src/libgcc/fp-bit.c
+#   build-sn/libgcc/dp-bit.o, fp-bit.o <- src/libgcc/fp-bit.c
 #   build-sn/libgcc/asm_*.o    <- src/libgcc/nonmatching_*.c
 
 build-sn/core/00112380.o 0x00112380
@@ -50,19 +50,10 @@ build-sn/libgcc/l2_floatdidf.o
 build-sn/libgcc/asm_0011E860.o
 build-sn/libgcc/l2_muldi3.o
 build-sn/libgcc/asm_0011EF28.o
-build-sn/libgcc/fp_pack_df.o
-build-sn/libgcc/fp_unpack_df.o
-build-sn/libgcc/fp_addsub_df.o
-build-sn/libgcc/fp_mul_df.o
-build-sn/libgcc/fp_div_df.o
-build-sn/libgcc/fp_fpcmp_parts_df.o
-build-sn/libgcc/fp_compare_df.o
-build-sn/libgcc/fp_si_to_df.o
-build-sn/libgcc/fp_df_to_si.o
-build-sn/libgcc/fp_df_to_usi.o
-build-sn/libgcc/fp_make_df.o
-build-sn/core/001206A0.o 0x001206A0
-build-sn/core/001206A8.o 0x001206A8
+build-sn/libgcc/dp-bit.o
+build-sn/libgcc/asm_001206A4.o
+build-sn/libgcc/fp-bit.o
+build-sn/core/001207B8.o 0x001207B8
 build-sn/core/001208E8.o 0x001208E8
 build-sn/core/00121750.o 0x00121750
 build-sn/core/00121D18.o 0x00121D18

@@ -799,7 +799,16 @@ reason: they may be library or SDK code as well.
 
 ## Retail's linker dead-stripped unreferenced functions
 
-Proven on libgcc's L__main module (2026-09-23). Sony's prebuilt
+**The rule (2026-09-23): an unreferenced function lost its first
+`floor(size/8)*8` bytes.** A function of size 0 mod 8 vanished; one of
+size 4 mod 8 left its last word, the delay slot of its final jump, plus
+the alignment nop. Proven on three libgcc objects against Sony's prebuilt
+`libgcc.a` (details in `src/libgcc/README.md`): L__main, dp-bit.o
+(`__negdf2` gone, `dptofp` left one word) and fp-bit.o, where thirteen
+stripped functions left exactly the eight words their sizes predict, in
+order. What follows is how it was first found, on L__main.
+
+Sony's prebuilt
 `__main.o` is `__do_global_dtors`, `__do_global_ctors`, `__main`. Retail's
 copy at 0x11DF10 is the same object with its first 80 bytes gone:
 everything of `__do_global_dtors` up to and including its `jr $ra`,
@@ -808,7 +817,8 @@ the other two functions byte for byte. Nothing references
 `__do_global_dtors` in this configuration (the constructors do not
 register it), so the linker removed it, but measured it one instruction
 short. `tools/strip_dead.py` reproduces the cut on compiler output, and
-L__main now builds from GCC's source to an exact match.
+L__main now builds from GCC's source to an exact match, as do the two
+soft-float objects.
 
 That is the same shape as two things this file has long filed as
 unexplained:
@@ -820,7 +830,7 @@ unexplained:
   runs of them like `func_001E94C8`'s four `addiu`/`nop` pairs.
 
 Each is consistent with the delay slot of a stripped, unreferenced
-function. Only L__main is proven so far. For the others it means the
+function. Proven so far for libgcc's three objects only. For the others it means the
 original source had a function there, and matching it from C means
 writing that function and stripping it the same way, which needs the
 body (the delay slot alone does not say what the function did). Until

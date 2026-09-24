@@ -96,24 +96,34 @@ build-sn/core/%.o: src/core/%.c tools/fix_core_spills.py tools/fix_tail_calls.py
 # libgcc modules: verbatim GCC source, no rewriters.
 LIBGCC_CFLAGS := -O2 -G2 -S
 
-# fp-bit is compiled the way Sony's toolchain generated dp-bit.c/fp-bit.c:
-# little-endian bitfield layout (GCC's MIPS makefile fragments define
-# FLOAT_BIT_ORDER_MISMATCH under __MIPSEL__) and no denormals (the EE FPU
-# flushes them). Only pack_d/unpack_d depend on either; with them they match
-# the SDK's prebuilt libgcc.a and retail exactly. See src/libgcc/README.md.
-FP_DEFS := -DFLOAT_BIT_ORDER_MISMATCH -DNO_DENORMALS
+# Soft-float: Sony's libgcc.a builds fp-bit.c twice, whole: dp-bit.o
+# (double) and fp-bit.o (-DFLOAT), with GOFAST names (dpadd, fpadd...), the
+# little-endian bitfield layout GCC's MIPS makefile fragments select
+# (FLOAT_BIT_ORDER_MISMATCH) and no denormals (the EE FPU flushes them).
+# Built that way ours are function for function identical to Sony's. Retail's
+# linker then dead-stripped what the game never calls (tools/strip_dead.py):
+# DP_DEAD / SF_DEAD list those functions, with the func_ name splat gives each
+# surviving word. See src/libgcc/README.md.
+FP_DEFS := -DFLOAT_BIT_ORDER_MISMATCH -DNO_DENORMALS -DUS_SOFTWARE_GOFAST
+DP_DEAD := --export _fpadd_parts __negdf2 dptofp=func_001206A0
+SF_DEAD := __pack_f=func_001206A8 _fpadd_parts=func_00120740 fpadd \
+	fpsub=func_00120748 fpmul=func_00120750 fpdiv \
+	__fpcmp_parts_f=func_00120758 fpcmp=func_00120760 sitofp \
+	fptosi=func_00120768 fptoui __negsf2 __make_fp=func_00120770
 
-build-sn/libgcc/fp_%.o: src/libgcc/fp-bit.c
+build-sn/libgcc/dp-bit.o: src/libgcc/fp-bit.c tools/strip_dead.py
 	@mkdir -p build-sn/libgcc
-	$(CC_LIBGCC) $(LIBGCC_CFLAGS) $(FP_DEFS) -DFINE_GRAINED_LIBRARIES -DL_$* $< -o build-sn/libgcc/fp_$*.s
-	$(CC_TEXT) -c build-sn/libgcc/fp_$*.s -o $@
+	$(CC_LIBGCC) $(LIBGCC_CFLAGS) $(FP_DEFS) $< -o build-sn/libgcc/dp-bit.s
+	$(CC_TEXT) -c build-sn/libgcc/dp-bit.s -o build-sn/libgcc/dp-bit_whole.o
+	python tools/strip_dead.py build-sn/libgcc/dp-bit.s build-sn/libgcc/dp-bit_whole.o build-sn/libgcc/dp-bit_stripped.s $(DP_DEAD)
+	$(CC_TEXT) -c build-sn/libgcc/dp-bit_stripped.s -o $@
 
-# float_to_usi only exists in this fp-bit revision under GOFAST (where it
-# is named dptoul); the code is identical to retail's.
-build-sn/libgcc/fp_df_to_usi.o: src/libgcc/fp-bit.c
+build-sn/libgcc/fp-bit.o: src/libgcc/fp-bit.c tools/strip_dead.py
 	@mkdir -p build-sn/libgcc
-	$(CC_LIBGCC) $(LIBGCC_CFLAGS) $(FP_DEFS) -DFINE_GRAINED_LIBRARIES -DL_df_to_usi -DUS_SOFTWARE_GOFAST $< -o build-sn/libgcc/fp_df_to_usi.s
-	$(CC_TEXT) -c build-sn/libgcc/fp_df_to_usi.s -o $@
+	$(CC_LIBGCC) $(LIBGCC_CFLAGS) $(FP_DEFS) -DFLOAT $< -o build-sn/libgcc/fp-bit.s
+	$(CC_TEXT) -c build-sn/libgcc/fp-bit.s -o build-sn/libgcc/fp-bit_whole.o
+	python tools/strip_dead.py build-sn/libgcc/fp-bit.s build-sn/libgcc/fp-bit_whole.o build-sn/libgcc/fp-bit_stripped.s $(SF_DEAD)
+	$(CC_TEXT) -c build-sn/libgcc/fp-bit_stripped.s -o $@
 
 build-sn/libgcc/l2_%.o: src/libgcc/libgcc2.c src/libgcc/longlong.h
 	@mkdir -p build-sn/libgcc
@@ -121,13 +131,14 @@ build-sn/libgcc/l2_%.o: src/libgcc/libgcc2.c src/libgcc/longlong.h
 	$(CC_TEXT) -c build-sn/libgcc/l2_$*.s -o $@
 
 # L__main: retail's linker dead-stripped the unreferenced __do_global_dtors
-# from this module and cut it one instruction short, so its delay slot is
-# still there, followed by __do_global_ctors and __main.
+# from this module; being 4 mod 8 bytes long, it left its last word (the
+# delay slot) behind, followed by __do_global_ctors and __main.
 # tools/strip_dead.py reproduces that on the compiler's output.
 build-sn/libgcc/l2__main.o: src/libgcc/libgcc2.c src/libgcc/gbl-ctors.h tools/strip_dead.py
 	@mkdir -p build-sn/libgcc
 	$(CC_LIBGCC) $(LIBGCC_CFLAGS) -Isrc/libgcc/include -DIN_LIBGCC2 -DL__main $< -o build-sn/libgcc/l2__main.s
-	python tools/strip_dead.py build-sn/libgcc/l2__main.s build-sn/libgcc/l2__main_stripped.s __do_global_dtors=func_0011DF10
+	$(CC_TEXT) -c build-sn/libgcc/l2__main.s -o build-sn/libgcc/l2__main_whole.o
+	python tools/strip_dead.py build-sn/libgcc/l2__main.s build-sn/libgcc/l2__main_whole.o build-sn/libgcc/l2__main_stripped.s __do_global_dtors=func_0011DF10
 	$(CC_TEXT) -c build-sn/libgcc/l2__main_stripped.s -o $@
 
 # Not-yet-matching libgcc modules and linker fill: asm only.

@@ -29,16 +29,8 @@ SECTIONS
 EOF
 
 # core_text objects, in link order, from config/core_text.objects -- the
-# one list Makefile.sn and the tools read too. _fpadd_parts is static in
-# fp-bit, so it has no global symbol to alias; it is the first thing in its
-# module, whose .text is 8-byte aligned, so its address is `.` rounded up to
-# 8. (Not `.` itself: the object before it, fp_unpack_df.o, ends 4 bytes
-# short of the boundary.) ALIGN(8) only computes the value; the object's own
-# alignment still does the padding.
+# one list Makefile.sn and the tools read too.
 grep -v -e '^#' -e '^$' config/core_text.objects | tr -d $'\r' | while read -r obj _start; do
-  if [ "$obj" = "build-sn/libgcc/fp_addsub_df.o" ]; then
-    echo "    func_0011FC08 = ALIGN(8);" >> build-sn/rac1.ld
-  fi
   echo "    $obj(.text)" >> build-sn/rac1.ld
 done
 
@@ -50,30 +42,28 @@ cat >> build-sn/rac1.ld <<'EOF'
   func_0011DF18 = __do_global_ctors;
   func_0011DFC8 = __main;
   func_0011DFE8 = __divdi3;
-  func_0011FA38 = __pack_d;
-  func_0011FB68 = __unpack_d;
   func_0011E6D8 = __fixunsdfdi;
   func_0011E7C8 = __floatdidf;
   func_0011EEC8 = __muldi3;
-  func_0011FE48 = __adddf3;
-  func_0011FEA0 = __subdf3;
-  func_0011FF08 = __muldf3;
-  func_001201B0 = __divdf3;
+  /* dp-bit.o / fp-bit.o carry Sony's GOFAST names, which is also what the
+     compilers call. */
+  func_0011FA38 = __pack_d;
+  func_0011FB68 = __unpack_d;
+  func_0011FC08 = _fpadd_parts;
+  func_0011FE48 = dpadd;
+  func_0011FEA0 = dpsub;
+  func_0011FF08 = dpmul;
+  func_001201B0 = dpdiv;
   func_00120318 = __fpcmp_parts_d;
-  func_00120430 = __cmpdf2;
-  func_00120480 = __floatsidf;
-  func_00120538 = __fixdfsi;
+  func_00120430 = dpcmp;
+  func_00120480 = litodp;
+  func_00120538 = dptoli;
   func_001205D0 = dptoul;
   func_00120670 = __make_dp;
+  func_001206B0 = __unpack_f;
+  func_00120778 = fptodp;
   __thenan_df = 0x001597F0;
   __CTOR_LIST__ = 0x0015ED18;
-  /* Sony's EE compiler emits soft-float libcalls under their GOFAST
-     names (libgcc2's modules call these). */
-  dpadd  = __adddf3;
-  dpsub  = __subdf3;
-  dpmul  = __muldf3;
-  dpcmp  = __cmpdf2;
-  litodp = __floatsidf;
 
   . = 0x12f580;
   .core_data : { build-sn/core_data.data.o(.data) }

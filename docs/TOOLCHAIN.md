@@ -67,7 +67,8 @@ All game code is compiled with **`-O2 -G2 -Iinclude -Wa,-I,.`**.
 |---|---|
 | `src/core/<ADDR>.c` (`core_text`) | v1.14 `-S` → `tools/fix_core_spills.py` → `tools/fix_tail_calls.py` → `tools/check_macro_slots.py` → assemble |
 | `src/game/**.c` (`text`) | v1.14 `-S` → `tools/fix_tail_calls.py` → `tools/check_macro_slots.py` → assemble |
-| `src/libgcc/libgcc2.c`, `src/libgcc/fp-bit.c` | 2.9-ee `-S`, one object per `L_*` module, like `libgcc.a`'s members → assemble; no rewriters |
+| `src/libgcc/libgcc2.c` | 2.9-ee `-S`, one object per `L_*` module, like `libgcc.a`'s members → assemble; L__main also goes through `tools/strip_dead.py` |
+| `src/libgcc/fp-bit.c` | 2.9-ee `-S`, whole file twice (`dp-bit.o`, `fp-bit.o` with `-DFLOAT`) → assemble → `tools/strip_dead.py` → assemble |
 | `src/libgcc/nonmatching_*.c` | asm stubs for the modules that do not match yet, and for linker fill |
 | `asm/data/*.s` | `ee-as.exe` directly (`tools/build_sn_data.sh`); `core_rdata` is cut around `__divdi3`'s `__clz_tab` by `tools/split_data_s.py` |
 
@@ -97,11 +98,12 @@ scoped so that it cannot touch a function that does not need it.
   the jump's delay slot (SN's assembler fills delay slots only from after
   a branch). It never synthesises an instruction.
 - **`tools/strip_dead.py`**: removes a function the way retail's linker
-  dead-stripped unreferenced code, from its label through its final jump,
-  keeping the delay-slot word (optionally as a named function, e.g.
-  `func_0011DF10`). Used for libgcc's L__main, where retail kept only
-  `__do_global_dtors`'s delay slot; see "Retail's linker dead-stripped
-  unreferenced functions" in `docs/DECOMP_PROGRESS.md`.
+  dead-stripped unreferenced code: its first `floor(size/8)*8` bytes, so a
+  function of size 4 mod 8 leaves its last word (optionally named, e.g.
+  `func_0011DF10`) and one of size 0 mod 8 vanishes. It reads the sizes
+  from a first assembly of the same file. Used for libgcc's L__main,
+  dp-bit.o and fp-bit.o; see "Retail's linker dead-stripped unreferenced
+  functions" in `docs/DECOMP_PROGRESS.md`.
 - **`tools/check_macro_slots.py`**: a `MACRO_ADDR` global access that the
   compiler put in a branch delay slot is rewritten to the `$gp`-relative
   form retail's toolchain produced there. Anything it cannot handle (an

@@ -36,15 +36,15 @@ through `ON_EXIT`, which `gbl-ctors.h` leaves empty on a target without
 1999-09-15. Every other module compiles identically from 1999-06 to
 1999-11, so nothing else constrains the revision.
 
-Sony's compiler calls soft-float helpers by their GOFAST names (`dpadd`,
-`dpmul`, `dpcmp`, `litodp`, ...). `rac1.ld.sh` maps those names to the
-fp-bit functions.
-
-fp-bit is compiled with `-DFLOAT_BIT_ORDER_MISMATCH -DNO_DENORMALS`
-(`FP_DEFS` in `Makefile.sn`), the way Sony's toolchain generated its
-`dp-bit.c`/`fp-bit.c`: GCC's MIPS makefile fragments define
-`FLOAT_BIT_ORDER_MISMATCH` for little-endian, and the EE FPU flushes
-denormals. Only `pack_d`/`unpack_d` depend on either.
+The soft-float code is `fp-bit.c` built twice as whole files, the way
+Sony's `libgcc.a` has it: `dp-bit.o` (double) and `fp-bit.o` (`-DFLOAT`),
+with `-DFLOAT_BIT_ORDER_MISMATCH -DNO_DENORMALS -DUS_SOFTWARE_GOFAST`
+(`FP_DEFS` in `Makefile.sn`). GCC's MIPS makefile fragments define
+`FLOAT_BIT_ORDER_MISMATCH` for little-endian, the EE FPU flushes denormals,
+and the GOFAST names (`dpadd`, `dpmul`, `fpadd`, `fptodp`, ...) are what
+Sony's compilers call. Built this way both objects are function for
+function identical to Sony's (all 30 functions, same offsets). Retail's
+linker then dead-stripped what the game never calls; see below.
 
 ## Sony's libgcc.a is the reference
 
@@ -58,14 +58,30 @@ object directly, without a link:
 
 ```
 python tools/libgcc_ref.py retail                  # which archive function matches which retail address
-python tools/libgcc_ref.py diff build-sn/libgcc/fp_pack_df.o __pack_d
+python tools/libgcc_ref.py diff build-sn/libgcc/dp-bit_whole.o __pack_d
 ```
 
-The archive's `dp-bit.o` and `fp-bit.o` are single objects, while retail
-has the fine-grained layout (no `__negdf2` between `dptoul` and
-`__make_dp`), so retail's libgcc is a fine-grained build of the same
-sources with the same compiler. Its code is identical function by
-function.
+## Retail's linker dead-stripped what nothing calls
+
+An unreferenced function lost its first `floor(size/8)*8` bytes: one whose
+size is a multiple of 8 vanished, one of size 4 mod 8 left its last word
+(its final jump's delay slot) and the alignment nop behind.
+`tools/strip_dead.py` applies that to the compiler's output. It accounts
+for every "odd" spot in retail's libgcc:
+
+- **L__main**: `__do_global_dtors` (84 bytes) left the `addiu` at
+  0x11DF10 (`func_0011DF10`), before `__do_global_ctors` and `__main`.
+- **dp-bit.o**: `__negdf2` (56) vanished from between `dptoul` and
+  `__make_dp`; `dptofp` (84) left `func_001206A0`, then linker fill.
+- **fp-bit.o** (0x1206A8-0x1207B8): everything but `__unpack_f` and
+  `fptodp` was stripped. `__pack_f`, `_fpadd_parts`, `fpsub`, `fpmul`,
+  `__fpcmp_parts_f`, `fpcmp`, `fptosi` and `__make_fp` (4 mod 8) left one
+  word each, in order (`func_001206A8`, `func_00120740`-`func_00120770`);
+  `fpadd`, `fpdiv`, `sitofp`, `fptoui` and `__negsf2` (0 mod 8) left
+  nothing.
+
+The object after fp-bit.o (0x1207B8, `src/core/001207B8.c`) is not
+libgcc: its two functions program VIF1 and DMA registers.
 
 ## Modules
 
@@ -79,17 +95,8 @@ function.
 | 0x11EEC8 | `L_muldi3` | `__muldi3` | **exact** |
 | 0x11EF28 | `L_udivdi3` | `__udivdi3` | stub: 12 bytes short, because retail keeps a 0x10 frame (see below) |
 | 0x11F4F8 | `L_umoddi3` | `__umoddi3` | stub: 2/336 words, retail frame 0x20 larger (see below) |
-| 0x11FA38 | `L_pack_df` | `__pack_d` | **exact** (needs `FLOAT_BIT_ORDER_MISMATCH`) |
-| 0x11FB68 | `L_unpack_df` | `__unpack_d` | **exact** (needs the `NO_DENORMALS` backport) |
-| 0x11FC08 | `L_addsub_df` | `_fpadd_parts`, `__adddf3`, `__subdf3` | **exact** |
-| 0x11FF08 | `L_mul_df` | `__muldf3` | **exact** |
-| 0x1201B0 | `L_div_df` | `__divdf3` | **exact** |
-| 0x120318 | `L_fpcmp_parts_df` | `__fpcmp_parts_d` | **exact** |
-| 0x120430 | `L_compare_df` | `__cmpdf2` | **exact** |
-| 0x120480 | `L_si_to_df` | `__floatsidf` | **exact** |
-| 0x120538 | `L_df_to_si` | `__fixdfsi` | **exact** |
-| 0x1205D0 | `L_df_to_usi` | `dptoul` | **exact** (needs `US_SOFTWARE_GOFAST`) |
-| 0x120670 | `L_make_df` | `__make_dp` | **exact** |
+| 0x11FA38 | `dp-bit.o` | `__pack_d`, `__unpack_d`, `_fpadd_parts`, `dpadd`, `dpsub`, `dpmul`, `dpdiv`, `__fpcmp_parts_d`, `dpcmp`, `litodp`, `dptoli`, `dptoul`, `__make_dp`, and `dptofp`'s remnant | **exact**; `__negdf2` stripped |
+| 0x1206A8 | `fp-bit.o` | `__unpack_f`, `fptodp`, and the remnants of eight stripped functions | **exact** |
 
 The three remaining libgcc2 stubs share one residual, and it is not the
 source. Against Sony's objects, ours compile to the same instructions
@@ -130,10 +137,6 @@ pointer (its `.data`) is discarded, since retail's copy is in the data
 blob and nothing references it.
 
 ## Next to look at
-- The object at 0x1206A8 (`src/core/001206A8.c`) holds `__unpack_f`
-  (0x1206B0) and `fptodp`/`__extendsfdf2` (0x120778), both exact against
-  Sony's `fp-bit.o`: `__unpack_f` now compiles exact from `fp-bit.c`
-  (`-DFLOAT -DL_unpack_sf` plus `FP_DEFS`), and `__extendsfdf2` from
-  `-DFLOAT -DL_sf_to_df`. The object's other three functions (0x120740,
-  0x1207B8, 0x120858) match nothing in the archive, so the object is not
-  a plain fp-bit module, and it is still built as game code.
+
+- `__moddi3`, `__udivdi3`, `__umoddi3` (above): their frames need Sony's
+  Linux `cc1`. Everything else in libgcc now builds from GCC's source.

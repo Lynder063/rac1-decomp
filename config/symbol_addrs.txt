@@ -31,6 +31,17 @@ func_0012CC70 = 0x0012CC70; // type:func
 // splat had merged into this function; see tools/strip_dead.py.
 func_0011DF18 = 0x0011DF18; // type:func
 
+// Words left by retail's linker dead-stripping libgcc's soft-float (see
+// tools/strip_dead.py): one per stripped function of size 4 mod 8, which
+// splat had merged. 0x1206A4 is linker fill after dp-bit.o's last remnant.
+func_001206A4 = 0x001206A4; // type:func
+func_00120748 = 0x00120748; // type:func
+func_00120750 = 0x00120750; // type:func
+func_00120758 = 0x00120758; // type:func
+func_00120760 = 0x00120760; // type:func
+func_00120768 = 0x00120768; // type:func
+func_00120770 = 0x00120770; // type:func
+
 // 989snd.c starts right after boot.cpp's main (confirmed: crt0 calls
 // func_0012DB18 as main; the 989snd.c path string is used from 0x12DBE0 on).
 func_0012DB68 = 0x0012DB68; // type:func
