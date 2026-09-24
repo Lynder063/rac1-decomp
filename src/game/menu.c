@@ -199,7 +199,32 @@ int func_002073F8(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207408);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207648);
+extern int D_001A04A8 NOT_SDA;
+
+/* Menu hit test (func_00207200's family: `a` is the Menu13F450 state test
+   shared with func_00207340/func_00207930). Two independent ways to hit:
+   the first box with arg1 >= 0x135 and D_001A04A8 set and arg3 >= 47.7,
+   which can succeed even when `a` is true; or, only when `a` is true,
+   all three of a second group of boxes hit. */
+int func_00207648(int arg0, int arg1, float unused1, float unused2,
+                   float arg3) {
+    Menu13F450 *s = &D_0013F450;
+    int a = s->unk208C == 17 || s->unk208C == 18 || s->unk12E4 == 1;
+
+    if (func_00209048(arg0, arg1, 0x93, 0x168, 0x182, 0x168) != 0
+        && arg1 >= 0x135 && D_001A04A8 != 0 && arg3 >= 47.7f) {
+        return 1;
+    }
+    if (!a) {
+        return 0;
+    }
+    if (func_00209048(arg0, arg1, 0xC5, 0x9A, 0x13C, 0xE1) != 0
+        && func_00209048(arg0, arg1, 0xD6, 0xC3, 0x157, 0xC5) != 0
+        && func_00209048(arg0, arg1, 0x107, 0xDA, 0x171, 0xA0) != 0) {
+        return 1;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207780);
 

@@ -126,7 +126,54 @@ __asm__(".section .text
 	nop
 ");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FFB38);
+extern char D_00199C60_raw[] __asm__("D_00199C60") NOT_SDA;
+extern int D_0015F6E8 MACRO_ADDR;
+extern void func_001FFC48(void *arg0);
+
+/* Finds or creates the residency record for arg0's slot (idx = arg0 & 0xF)
+   in D_00199C60 (0x90-byte records), matching arg1..arg6 against the
+   record's cached selectors; returns the record's +0x64 bank id, calling
+   func_001FFC48 to reload the bank when a bit of (arg0's high nibbles &
+   the record's +0x04 flags) is set. Sibling of func_001FFCB0/func_001FFD30
+   in this file, which use the same record layout. */
+int func_001FFB38(int arg0, int arg1, int arg2, int arg3, int arg4,
+                 int arg5, int arg6) {
+    int idx = arg0 & 0xF;
+    char *p = D_00199C60_raw + idx * 0x90;
+    int masked0 = arg0 & 0xFFF0;
+    int r3;
+    int cur;
+
+    if (D_0015F6E8 == 5 && idx != 2 && idx != 0) {
+        return 0;
+    }
+    if (*(int *)(p + 0x2C) == arg5 && *(int *)(p + 0x28) == arg6
+        && *(int *)(p + 0x20) == arg1 && *(int *)(p + 0x24) == masked0
+        && *(int *)(p + 0x30) == arg2 && *(int *)(p + 0x34) == arg3
+        && *(int *)(p + 0x38) == arg4) {
+        return *(int *)(p + 0x64);
+    }
+    cur = D_0019A4E8;
+    *(int *)(p + 0x2C) = arg5;
+    r3 = masked0 & *(int *)(p + 4);
+    *(int *)(p + 0x64) = cur;
+    r3 = r3 & 0x20;
+    cur = cur + 1;
+    *(int *)(p + 0x28) = arg6;
+    D_0019A4E8 = cur;
+    *(int *)(p + 0x20) = arg1;
+    *(int *)(p + 0x30) = arg2;
+    *(int *)(p + 0x34) = arg3;
+    *(int *)(p + 0x38) = arg4;
+    *(int *)(p + 0x68) = 1;
+    *(int *)(p + 0x24) = masked0;
+    *(int *)(p + 0x7C) = 0;
+    *(int *)(p + 0x70) = 0;
+    if (r3 != 0) {
+        func_001FFC48(p);
+    }
+    return *(int *)(p + 0x64);
+}
 
 extern void func_001FFD30(void *, int);
 
@@ -169,7 +216,9 @@ typedef struct {
     char pad6C[0x24];
 } HudRec90;
 extern HudRec90 D_00199C60[] NOT_SDA;
-extern void func_001FFB38(int, int, int, int, int, int, int);
+/* func_001FFB38 returns the bank id; this caller ignores it, and its
+   match was made against a void view. */
+extern void func_001FFB38_v(int, int, int, int, int, int, int) __asm__("func_001FFB38");
 
 /* Calls func_001FFB38(i, 0xFFFF, 0, 0, 0, 0, 0) on the record whose
    +0x64 is arg0 and returns 1, or returns 0 when none is. The nop in
@@ -182,7 +231,7 @@ int func_001FFCB0(int arg0) {
         }
     }
     if (i < 13) {
-        func_001FFB38(i, 0xFFFF, 0, 0, 0, 0, 0);
+        func_001FFB38_v(i, 0xFFFF, 0, 0, 0, 0, 0);
         return 1;
     }
     return 0;
@@ -289,11 +338,141 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00201190);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00201348); /* Hud_sendTexture(char *, int, int, int, int, int) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002014B8);
+extern int *D_00161000 MACRO_ADDR;
+extern int D_0013E600[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00201640);
+/* func_002017C8's sibling: same 1-tag + 3-quadword PACKED GIF packet, but
+   register-id constant 0x41 (not 0x46) at +0x20, and a FIXED mask
+   0x00FFFFF000000000 in the vertices' upper 32 bits instead of a Z
+   parameter -- one fewer int argument than func_002017C8. */
+void func_002014B8(int arg0, int arg1, int arg2, int arg3, long arg4,
+                    int arg5) {
+    int *base;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002017C8);
+    D_00161000[0] = 0x10000003;
+    D_00161000[1] = 0;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000003;
+
+    base = D_00161000;
+    D_00161000 = base + 4;
+    *(long *)((char *)base + 0x10) = 0x4400000000000001UL;
+    *(long *)((char *)base + 0x18) = 0x4410;
+    *(long *)((char *)base + 0x20) = 0x41;
+    *(long *)((char *)base + 0x28) = arg4;
+    if (arg5 != 0) {
+        *(long *)((char *)base + 0x30) =
+            (arg0 + D_0013E600[4] - 8)
+            | ((long)(arg1 + D_0013E600[5] - 8) << 16)
+            | 0x00FFFFF000000000L;
+        *(long *)((char *)base + 0x38) =
+            (arg2 + D_0013E600[4] - 8)
+            | ((long)(arg3 + D_0013E600[5] - 8) << 16)
+            | 0x00FFFFF000000000L;
+    } else {
+        *(long *)((char *)base + 0x30) =
+            (arg0 * 16 + D_0013E600[4] - 0x10)
+            | ((long)(arg1 * 16 + D_0013E600[5] - 0x10) << 16)
+            | 0x00FFFFF000000000L;
+        *(long *)((char *)base + 0x38) =
+            (arg2 * 16 + D_0013E600[4] - 0x10)
+            | ((long)(arg3 * 16 + D_0013E600[5] - 0x10) << 16)
+            | 0x00FFFFF000000000L;
+    }
+    D_00161000 = (int *)((char *)D_00161000 + 0x30);
+}
+
+extern int *D_00161000 MACRO_ADDR;
+extern int D_0013E600[];
+
+/* func_002014B8's sibling (register-id constant 0x46, like
+   func_002017C8's, instead of 0x41): same 1-tag + 3-quadword PACKED GIF
+   packet with a FIXED mask 0x00FFFFF000000000 in the vertices' upper 32
+   bits instead of a Z parameter. */
+void func_00201640(int arg0, int arg1, int arg2, int arg3, long arg4,
+                    int arg5) {
+    int *base;
+
+    D_00161000[0] = 0x10000003;
+    D_00161000[1] = 0;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000003;
+
+    base = D_00161000;
+    D_00161000 = base + 4;
+    *(long *)((char *)base + 0x10) = 0x4400000000000001UL;
+    *(long *)((char *)base + 0x18) = 0x4410;
+    *(long *)((char *)base + 0x20) = 0x46;
+    *(long *)((char *)base + 0x28) = arg4;
+    if (arg5 != 0) {
+        *(long *)((char *)base + 0x30) =
+            (arg0 + D_0013E600[4] - 8)
+            | ((long)(arg1 + D_0013E600[5] - 8) << 16)
+            | 0x00FFFFF000000000L;
+        *(long *)((char *)base + 0x38) =
+            (arg2 + D_0013E600[4] - 8)
+            | ((long)(arg3 + D_0013E600[5] - 8) << 16)
+            | 0x00FFFFF000000000L;
+    } else {
+        *(long *)((char *)base + 0x30) =
+            (arg0 * 16 + D_0013E600[4] - 0x10)
+            | ((long)(arg1 * 16 + D_0013E600[5] - 0x10) << 16)
+            | 0x00FFFFF000000000L;
+        *(long *)((char *)base + 0x38) =
+            (arg2 * 16 + D_0013E600[4] - 0x10)
+            | ((long)(arg3 * 16 + D_0013E600[5] - 0x10) << 16)
+            | 0x00FFFFF000000000L;
+    }
+    D_00161000 = (int *)((char *)D_00161000 + 0x30);
+}
+
+extern int *D_00161000 MACRO_ADDR;
+extern int D_0013E600[];
+
+/* Appends a 1-tag + 3-quadword PACKED GIF packet to D_00161000: a GIFtag
+   (0x10000003 / 0 / 0 / 0x50000003), then TEX-ish GS register data at
+   +0x10/+0x18/+0x20, arg4 verbatim at +0x28, then two packed XYZ2-style
+   vertices at +0x30/+0x38: X = argX(+D_0013E600[4])-8, Y =
+   argY(+D_0013E600[5])-8, Z = arg5<<32, when arg6 != 0 (raw coordinates);
+   or the same with argX/argY scaled by 16 and offset -0x10 when arg6==0
+   (tile coordinates). D_00161000 is re-read at every use (never cached
+   across a store to it), matching this file's other packet builders. */
+void func_002017C8(int arg0, int arg1, int arg2, int arg3, long arg4,
+                    int arg5, int arg6) {
+    int *base;
+
+    D_00161000[0] = 0x10000003;
+    D_00161000[1] = 0;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000003;
+
+    base = D_00161000;
+    D_00161000 = base + 4;
+    *(long *)((char *)base + 0x10) = 0x4400000000000001UL;
+    *(long *)((char *)base + 0x18) = 0x4410;
+    *(long *)((char *)base + 0x20) = 0x46;
+    *(long *)((char *)base + 0x28) = arg4;
+    if (arg6 != 0) {
+        *(long *)((char *)base + 0x30) =
+            (arg0 + D_0013E600[4] - 8)
+            | ((long)(arg1 + D_0013E600[5] - 8) << 16)
+            | ((long)arg5 << 32);
+        *(long *)((char *)base + 0x38) =
+            (arg2 + D_0013E600[4] - 8)
+            | ((long)(arg3 + D_0013E600[5] - 8) << 16)
+            | ((long)arg5 << 32);
+    } else {
+        *(long *)((char *)base + 0x30) =
+            (arg0 * 16 + D_0013E600[4] - 0x10)
+            | ((long)(arg1 * 16 + D_0013E600[5] - 0x10) << 16)
+            | ((long)arg5 << 32);
+        *(long *)((char *)base + 0x38) =
+            (arg2 * 16 + D_0013E600[4] - 0x10)
+            | ((long)(arg3 * 16 + D_0013E600[5] - 0x10) << 16)
+            | ((long)arg5 << 32);
+    }
+    D_00161000 = (int *)((char *)D_00161000 + 0x30);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00201948);
 
