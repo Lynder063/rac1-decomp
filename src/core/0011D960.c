@@ -118,10 +118,65 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DA80);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DA90);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DA98);
+extern void func_0011DB98(int, int);
+extern int func_0011DA80(int, int, void *);
+extern void func_0011DA40(void);
+extern int D_00130410[];
+extern int D_00130408;
+
+/* InitSystemCallTableAddress (libkernl.a:initsys.o): patches two kernel
+   entry points found by scanning for known function bodies
+   (FindAddress = func_0011DA80, matching kCopy = func_0011DA08 and a
+   second reference routine, func_0011DA40) into the two descriptors of
+   D_00130410 (kFindAddress/func_0011DB98, called once per descriptor),
+   then records where the two scans converge (they start from the same
+   base and offset by different constants, and are each advanced by 4
+   bytes -- whichever trails -- until they land on the same address) in
+   D_00130408. `a`/`b` have to be unsigned: retail's convergence test is
+   `sltu`. */
+void func_0011DA98(void) {
+    unsigned int a, b;
+    int p1, p2;
+
+    func_0011DB98(D_00130410[0], D_00130410[1]);
+    func_0011DB98(D_00130410[2], D_00130410[3]);
+
+    p1 = func_0011DA80(0x80000000, 0x80080000, (void *)func_0011DA40);
+    p2 = func_0011DA80(0x80000000, 0x80080000, (void *)func_0011DA08);
+    a = p1 - 0x20C;
+    b = p2 - 0x168;
+    while (a != b) {
+        if (a < b) {
+            p1 = func_0011DA80(p1 + 4, 0x80080000, (void *)func_0011DA40);
+            a = p1 - 0x20C;
+        } else {
+            p2 = func_0011DA80(p2 + 4, 0x80080000, (void *)func_0011DA08);
+            b = p2 - 0x168;
+        }
+    }
+    D_00130408 = a;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DB98);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DBA8);
+extern void func_0011D9C0(void);
+extern void func_0011DA98(void);
+extern void func_0011DE38(void);
+extern void func_001195A0(void);
+extern void func_0011DCB8(void);
+extern void func_0011D3C8(void);
+
+/* _InitSys (libkernl.a:initsys.o): the kernel's one-shot startup sequence,
+   run once from the crt0 supplement. Chains six sub-system initialisers;
+   the last (InitTLBFunctions, func_0011D3C8) is a tail call since this is
+   void and it is the final statement. */
+void func_0011DBA8(void) {
+    func_0011D9C0();
+    func_0011DA98();
+    func_0011DE38();
+    func_001195A0();
+    func_0011DCB8();
+    func_0011D3C8();
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DBE4);

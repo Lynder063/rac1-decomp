@@ -47,9 +47,48 @@ extern int func_001160D8(void);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119D88);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119DC0);
+extern void func_00119840(char *);
+extern int D_0012FCFC;
+extern char D_00154E00[];
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119E70);
+/* deci2Putchar (libkernl.a:kprintf.o): the kprintf hook used for the
+   deci2 debug console. Buffers characters into D_00154E00 (a 0x80-byte
+   line buffer) counted by D_0012FCFC, flushing (func_00119840) and
+   resetting the count once it reaches 0x7E; on '\n' it also flushes
+   immediately (appending the '\n' first) instead of just buffering it. */
+void func_00119DC0(int c) {
+    int count = D_0012FCFC;
+
+    if (count >= 0x7E) {
+        D_0012FCFC = 0;
+        D_00154E00[0x7F] = 0;
+        func_00119840(D_00154E00);
+        count = D_0012FCFC;
+    }
+    if (c == 0xA) {
+        D_0012FCFC = 0;
+        D_00154E00[count] = c;
+        D_00154E00[count + 1] = 0;
+        func_00119840(D_00154E00);
+    } else {
+        D_0012FCFC = count + 1;
+        D_00154E00[count] = c;
+    }
+}
+
+extern int func_00119D88(int c);
+
+/* serialPutchar (libkernl.a:kprintf.o): the printf hook used when going to
+   the serial port. '\n' is expanded to a CR/LF pair (write '\r' then the
+   original character); anything else is written as-is via kputchar. */
+void func_00119E70(int c) {
+    if (c == 0xA) {
+        func_00119D88(0xD);
+        func_00119D88(0xA);
+    } else {
+        func_00119D88(c);
+    }
+}
 
 /* |d| to int for the float printer (func_00119F38 passes the soft-float
    double's bits): exponent e = biased exponent - 1075; 0 below 2^-53,
@@ -81,7 +120,14 @@ int func_00119EA8(unsigned long x) {
     return x;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119F38);
+extern char D_00152880[]; /* "0.%d" */
+extern char D_00152888[]; /* "e+%d" */
+extern char D_00152890[]; /* "e%d" */
+extern void *D_0012FD00;
+extern long func_0011E6D8(double);
+extern void func_0011A690(const char *, ...);
+
+INCLUDE_ASM("asm/nonmatchings/core_text", func_00119F38); /* printfloat */
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011A0A0);
 
@@ -399,7 +445,29 @@ void func_0011B0E0(char *p) {
     *(int *)o = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B198);
+/* _request_rdata (libkernl.a:sifrpc.o): the sifcmd system handler for
+   SIF_CMD_RPC_RDATA (0x8000000c). Grabs a free response packet
+   (func_0011B0B0 = _rpc_get_fpacket), copies the requester's pkt_addr
+   and recvbuf pointer (rdata's words 5 and 7) into the response, tags
+   the response SIF_CMD_RPC_RDATA (word 8), then forwards the
+   requester's src/dest/size (words 8/9/10) to the IOP as
+   isceSifSendCmd(SIF_CMD_RPC_END, ...) (func_0011AC08). Void: the
+   trailing call is a tail jump. Both copied fields have to be read into
+   their own locals before either store: that is what puts pkt_addr in
+   $a1 and recvbuf in $a0, matching retail (any other shape -- inline
+   reads, one field hoisted, or reversed declaration order -- swaps that
+   allocation or reloads recvbuf late). */
+void func_0011B198(void *rdata, void *data) {
+    int *r = (int *)rdata;
+    int *rend = (int *)func_0011B0B0(data);
+    int pkt_addr = r[5];
+    int recvbuf = r[7];
+
+    rend[5] = pkt_addr;
+    rend[7] = recvbuf;
+    rend[8] = 0x8000000C;
+    func_0011AC08(0x80000008, (int)rend, 0x40, r[8], r[9], r[10]);
+}
 
 void *func_0011B1F8(int key, void *arg1) {
     void *outer = *(void **)((char *)arg1 + 0x28);
@@ -416,11 +484,95 @@ void *func_0011B1F8(int key, void *arg1) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B248);
+/* _request_bind (libkernl.a:sifrpc.o): the sifcmd system handler for
+   SIF_CMD_RPC_BIND (0x80000009). Grabs a free response packet
+   (func_0011B0B0 = _rpc_get_fpacket), copies the requester's pkt_addr
+   and cd (bind's words 5 and 7) into it, tags it SIF_CMD_RPC_BIND,
+   looks up the requested service id (bind's word 8, search_svdata =
+   func_0011B1F8) and fills in the server/buf/cbuf fields (words 9-11)
+   from it if found, zeroing them otherwise, then forwards to the IOP as
+   isceSifSendCmd(SIF_CMD_RPC_END, ...) (func_0011AC08). Matches
+   ps2sdk's _request_bind field-for-field (sifrpc.c).
+
+   Two shapes mattered: pkt_addr and cd need their own locals declared
+   in that order (pkt_addr first) even though cd is stored first --
+   reversed, the two loads swap registers (func_0011B198's lever again);
+   and the not-found case has to be the `if` arm, sd-found the `else`
+   (retail branches on `sd == 0` being false, i.e. `bnel`; writing the
+   found case first inverts the branch, as in func_0011B438). */
+void func_0011B248(void *bind, void *data) {
+    int *b = (int *)bind;
+    int *rend = (int *)func_0011B0B0(data);
+    int pkt_addr = b[5];
+    int cd = b[7];
+    int *sd;
+
+    rend[7] = cd;
+    rend[5] = pkt_addr;
+    rend[8] = 0x80000009;
+    sd = (int *)func_0011B1F8(b[8], data);
+    if (sd == 0) {
+        rend[9] = 0;
+        rend[10] = 0;
+        rend[11] = 0;
+    } else {
+        rend[9] = (int)sd;
+        rend[10] = sd[2];
+        rend[11] = sd[5];
+    }
+    func_0011AC08(0x80000008, (int)rend, 0x40, 0, 0, 0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B2F8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B438);
+extern void func_00119678(int thread_id);
+
+/* _request_call (libkernl.a:sifrpc.o): the sifcmd system handler for
+   SIF_CMD_RPC_CALL (0x8000000a). Queues the request's server object
+   (request->sd, word 13) onto its data queue's (sd->base, word 16)
+   linked list of pending calls -- append to the current end if the
+   queue is non-empty (base->start, word 3), else start a new list --
+   then copies the request's fields into the server object (pkt_addr,
+   client/cd, rpc_number, size/send_size, recvbuf, rsize/recv_size,
+   rmode, rid/rec_id), and finally wakes the queue's worker thread
+   (iWakeupThread, func_00119678) unless it is already running or has
+   none. Matches ps2sdk's _request_call field-for-field (sifrpc.c).
+
+   Three shapes mattered: the empty-queue arm has to come first (retail
+   tests and branches on it, not on the append case); and the first two
+   copied fields (pkt_addr, client) need their own locals, both declared
+   right there (not hoisted to the top, which pulls their loads into the
+   queue-splice code) and both declared before either store -- the same
+   allocator lever as func_0011B198 -- or the pair's load/store order
+   swaps or its two registers trade places. */
+void func_0011B438(void *request, void *data) {
+    int *req = (int *)request;
+    int *sd = (int *)req[13];
+    int *base = (int *)sd[16];
+
+    if (base[3] == 0) {
+        base[3] = (int)sd;
+    } else {
+        int *end = (int *)base[4];
+        end[15] = (int)sd;
+    }
+    base[4] = (int)sd;
+    {
+        int pkt_addr = req[5];
+        int client = req[7];
+        sd[8] = pkt_addr;
+        sd[7] = client;
+    }
+    sd[9] = req[8];
+    sd[3] = req[9];
+    sd[10] = req[10];
+    sd[11] = req[11];
+    sd[12] = req[12];
+    sd[13] = req[4];
+
+    if (base[0] < 0 || base[1] != 0) return;
+    func_00119678(base[0]);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B4C8);
 

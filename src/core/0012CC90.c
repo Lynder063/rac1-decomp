@@ -193,13 +193,48 @@ void func_0012CCF8(unsigned int chcr) {
     func_0011D9A8();
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CD60);
+/* sceIpuStopDMA: request the IPU-in (D4/toIPU) DMA channel to stop
+ * (func_0012CCF8(1)), save its MADR/TADR/QWC/CHCR into env[0..3], wait for
+ * the IPU's queued-command count (IPU_CTRL bits 4-7) to drain, stop the
+ * IPU-out (D3/fromIPU) channel (func_0012CC90(0)) and save its
+ * MADR/QWC/CHCR plus IPU_BP and IPU_CTRL into env[4..8]. */
+extern void func_0012CCF8(unsigned int);
+extern void func_0012CC90(unsigned int);
+
+void func_0012CD60(unsigned int *env) {
+    func_0012CCF8(1);
+    env[0] = *(volatile unsigned int *)0x1000B410;
+    env[1] = *(volatile unsigned int *)0x1000B430;
+    env[2] = *(volatile unsigned int *)0x1000B420;
+    env[3] = *(volatile unsigned int *)0x1000B400;
+    while ((*(volatile unsigned int *)0x10002010 & 0xF0) != 0) {
+    }
+    func_0012CC90(0);
+    env[4] = *(volatile unsigned int *)0x1000B010;
+    env[5] = *(volatile unsigned int *)0x1000B020;
+    env[6] = *(volatile unsigned int *)0x1000B000;
+    env[7] = *(volatile unsigned int *)0x10002020;
+    env[8] = *(volatile unsigned int *)0x10002010;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CE48);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CF98);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D000);
+/* Sony's setD4_CHCR, linked a second time as ipuinit.o's own private copy
+ * (called from sceIpuInit, which immediately follows at 0x12D068): write
+ * chcr to IPU DMA channel 4's CHCR (toIPU, 0x1000B400) with interrupts off
+ * and D_ENABLEW.CPND (0x1000F590 = D_ENABLER | 0x10000) held around it.
+ * Byte-identical to func_0012CCF8 (setD4_CHCR's other copy, already
+ * matched) since it is the same source compiled into a different object.
+ */
+void func_0012D000(unsigned int chcr) {
+    func_0011D960();
+    *(volatile unsigned int *)0x1000F590 = *(volatile unsigned int *)0x1000F520 | 0x10000;
+    *(volatile unsigned int *)0x1000B400 = chcr;
+    *(volatile unsigned int *)0x1000F590 = *(volatile unsigned int *)0x1000F520 & 0xFFFEFFFF;
+    func_0011D9A8();
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D068);
 
