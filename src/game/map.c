@@ -225,7 +225,49 @@ int func_002058D0(int arg0) {
     return -1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00205918);
+extern unsigned char D_0013D5E9 NOT_SDA;
+/* The MACRO_ADDR view declared further down, needed here already. */
+extern int *D_001602E0_m __asm__("D_001602E0") MACRO_ADDR;
+
+/* Picks the map to load next: the current map id (D_001A01F0+0x224,
+   +0x100 when D_0013D5E9 is set) unless func_002058D0 finds it already
+   in a slot, otherwise the nearest entry of the 20-id list D_001602E0
+   around the current one (+1, -1, +2, -2, +3, -3) that is not loaded;
+   -1 if none. The two bounds tests are nested so that fold does not
+   merge them into one unsigned compare, and the step update is the
+   ternary that gives retail's select (slti/movn). */
+int func_00205918(void) {
+    char *m = (char *)D_001A01F0;
+    int off = D_0013D5E9 ? 0x100 : 0;
+    int key;
+    int i;
+    int step;
+
+    key = *(int *)(m + 0x224) + off;
+    if (func_002058D0(key) == -1) {
+        return key;
+    }
+    i = 0;
+    if (*(int *)(m + 0x224) < 20) {
+        while (D_001602E0_m[i] != *(int *)(m + 0x224)) {
+            i++;
+        }
+    }
+    step = 1;
+    do {
+        int j = i + step;
+        if (j >= 0) {
+            if (j < 20 && D_001602E0_m[j] != 0) {
+                key = D_001602E0_m[j] + off;
+                if (func_002058D0(key) == -1) {
+                    return key;
+                }
+            }
+        }
+        step = (step > 0) ? -step : 1 - step;
+    } while (step != 4);
+    return -1;
+}
 
 extern int *D_001602E0;
 
@@ -244,7 +286,58 @@ int func_00205A50(int arg0) {
     return -1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00205AA8);
+extern int func_001F9B70(int); /* abs */
+
+/* Picks the map slot to reuse (D_001A01F0's five slots: in use at
+   [0x9E + i], map id at [0xA3 + i], active slot [0xA8]). With no current
+   map (+0x224 == 0) a used, inactive slot holding no map (-1) is looked
+   for from the top first. Then the slots are scanned from the bottom:
+   such a slot is taken, or else the one whose map is furthest from the
+   current map in the D_001602E0 list (func_00205A50) is freed; 1 if the
+   current map is not in the list.
+   The slots are indexed off the global itself, as in func_002058D0, so
+   that loop.c keeps one pointer per loop; the final store goes through
+   the struct view, which adds the base first. */
+int func_00205AA8(void) {
+    int best = 0;
+    int bestIdx = -1;
+    int cur;
+
+    if (D_001A01F0[0x89] == 0) {
+        int i;
+        for (i = 4; i >= 0; i--) {
+            if (D_001A01F0[0x9E + i] != 0 && i != D_001A01F0[0xA8]
+                && D_001A01F0[0xA3 + i] == -1) {
+                return i;
+            }
+        }
+    }
+    {
+        int i;
+        cur = func_00205A50(D_001A01F0[0x89]);
+        if (cur == -1) {
+            return 1;
+        }
+        for (i = 0; i < 5; i++) {
+            if (D_001A01F0[0x9E + i] != 0 && i != D_001A01F0[0xA8]) {
+                int d;
+                if (D_001A01F0[0xA3 + i] == -1) {
+                    return i;
+                }
+                d = func_001F9B70(func_00205A50(D_001A01F0[0xA3 + i] & 0xFF) - cur);
+                if (best < d) {
+                    best = d;
+                    bestIdx = i;
+                }
+            }
+        }
+    }
+    if (bestIdx == -1) {
+        bestIdx = 0;
+    }
+    ((PadSlots *)D_001A01F0)->flags[bestIdx] = -1;
+    return bestIdx;
+}
 
 void func_00205C08(unsigned char *dst, unsigned char *a, unsigned char *b,
                    unsigned char *mask) {
@@ -342,6 +435,112 @@ int func_00205C70(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00205E70); /* UNK_NoMapAvailable */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00206F40);
+extern void func_00207090(unsigned char *dst, int row, unsigned char *src,
+                          short *offs);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207090);
+/* Builds the map's 1-bit coverage mask: each of the 256 rows is decoded
+   into the scratchpad (func_00207090), then every 4-bit pixel that is
+   not 0 sets its bit, 32 pixels to a word, one word every 16 words of
+   the output, 16 rows side by side (dst + row % 16 + row / 16 * 512).
+   The remainder is computed before the quotient (retail's surviving
+   copy of the quotient), and the scratchpad is a pointer local (retail
+   adds the base first). */
+void func_00206F40(int *dst, unsigned char *src, short *offs) {
+    int row;
+    unsigned char *scr = (unsigned char *)0x70000000;
+
+    for (row = 0; row < 0x100; row++) {
+        int *p;
+        int j;
+
+        func_00207090(scr, row, src, offs);
+        {
+            int r = row % 16;
+            int q = row / 16;
+            p = dst + (r + q * 512);
+        }
+        for (j = 0; j < 32; j++) {
+            int bits = 0;
+            int k;
+
+            for (k = 0; k < 32; k++) {
+                unsigned char b = scr[j * 16 + (k >> 1)];
+                int v;
+
+                if (k & 1) {
+                    v = b >> 4;
+                } else {
+                    v = b & 0xF;
+                }
+                if (v != 0) {
+                    bits |= 1 << k;
+                }
+                if ((k & 31) == 31) {
+                    *p++ = bits;
+                    bits = 0;
+                }
+            }
+            p += 15;
+        }
+    }
+}
+
+/* Unpacks run-length coded 4-bit pixels (the map image) into dst: row's
+   codes run from src + offs[row - 1] (src + 0x200 for row 0) to src +
+   offs[row], three nibbles each, a pixel value and a count byte (0 means
+   0x100). Pixels are packed two to a byte, low nibble first, and `half`
+   carries an odd run's last pixel into the next run. The count starts
+   at 0x100 in its own statement so that it stays a plain set in the loop
+   (a cmove constant would be hoisted); the two bytes are read low byte
+   first and `half` is cleared before the count drops, retail's order. */
+void func_00207090(unsigned char *dst, int row, unsigned char *src, short *offs) {
+    int half = 0;
+    unsigned char *p;
+    int n;
+    int i;
+
+    if (row != 0) {
+        p = src + offs[row - 1];
+    } else {
+        p = src + 0x200;
+    }
+    n = (src + offs[row] - p) * 2 / 3;
+    for (i = 0; i < n; i++) {
+        int nib = i * 3;
+        unsigned char *q = p + (nib >> 1);
+        unsigned char v = q[0];
+        unsigned char c = q[1];
+        unsigned char pair;
+        int count;
+
+        if (nib & 1) {
+            v >>= 4;
+        } else {
+            c = (c << 4) | (v >> 4);
+            v &= 0xF;
+        }
+        pair = v | (v << 4);
+        count = 0x100;
+        if (c != 0) {
+            count = c;
+        }
+        if (half) {
+            *dst |= v << 4;
+            dst++;
+            half = 0;
+            count--;
+        }
+        if (count != 0) {
+            do {
+                *dst = pair;
+                count -= 2;
+                dst++;
+            } while (count > 0);
+            if (count != 0) {
+                dst--;
+                half = 1;
+                *dst = v;
+            }
+        }
+    }
+}

@@ -455,7 +455,34 @@ void func_0020D790(unsigned char *s) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020D828);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020D830);
+extern float func_001FA888(int);
+
+/* Animation-frame value of a moby (the short at +4 of its frame data,
+   1/16 units): the current frame's (the previous one's when no sequence
+   is set), plus the blend factor at +0x54 while a new sequence or frame
+   is starting, else blended between the current and previous frames by
+   that factor. Written `frame > prevFrame` so the two bytes load in
+   retail's order; prevFrameData is read before the first call. */
+float func_0020D830(Moby *m) {
+    int fd;
+
+    if (m->seq != 0xFF) {
+        fd = m->frameData;
+    } else {
+        fd = m->prevFrameData;
+    }
+    if (*(float *)((char *)m + 0x54) == 0.0f) {
+        return func_001FA888(*(short *)(fd + 4)) * 0.0625f;
+    }
+    if (m->seq != m->prevSeq || m->frame > m->prevFrame) {
+        return func_001FA888(*(short *)(fd + 4)) * 0.0625f + *(float *)((char *)m + 0x54);
+    } else {
+        int prev = m->prevFrameData;
+        float a = func_001FA888(*(short *)(fd + 4)) * (1.0f - *(float *)((char *)m + 0x54));
+        return (a + func_001FA888(*(short *)(prev + 4)) * *(float *)((char *)m + 0x54)) * 0.0625f;
+    }
+}
+__asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020D928);
 
@@ -636,88 +663,55 @@ extern int D_001B6880[];
 extern void *D_001B3580[];
 extern short D_001B6100[];
 
-/*
- * REVERTED (size mismatch: 224 vs retail's 216). Decode is certain --
- * PatchMobyGifs: for each moby class index in the negative-terminated
- * D_001B6880 list, walk its joint chain (D_001B3580[idx]->+0x20, 0x10
- * stride, +0xC's sign bit ending the chain). Each joint has its own
- * tag-byte chain (0xFF-terminated, walked ONE byte per iteration,
- * unconditionally -- not gated on the second lookup, an earlier wrong
- * reading of the delay slot); each tag looks up a pair of 14-bit
- * values in D_001B6100 (as a raw sign-extended `short`, no masking --
- * retail has no `andi` here, so real data apparently never sets the
- * top bit) and folds them into the low bits of a 0x40-stride GIF-tag
- * entry's +0x30/+0x40 fields (entry = joint's +0xC field with the top
- * bit masked off, computed unconditionally every joint the same way
- * retail's delay slot does it), advancing to the next entry every tag.
- *
- *   extern int D_001B6880[];
- *   extern void *D_001B3580[];
- *   extern short D_001B6100[];
- *
- *   void func_0020DD48(void) {
- *       int *outer = D_001B6880;
- *       int idx = *outer;
- *       int more;
- *
- *       while (idx >= 0) {
- *           char *cls = *(char **)((char *)D_001B3580 + idx * 4);
- *           unsigned char *joint = *(unsigned char **)(cls + 0x20);
- *
- *           do {
- *               char *entry = (char *)(*(int *)(joint + 0xC) & 0x7FFFFFFF);
- *               if (*joint != 0xFF) {
- *                   unsigned char *p = joint;
- *                   unsigned char tag;
- *                   do {
- *                       short *lut;
- *                       short v1, v2;
- *                       int old;
- *                       tag = *p;
- *                       lut = D_001B6100 + tag * 2;
- *                       v1 = lut[0];
- *                       if (v1 != 0) {
- *                           old = *(int *)(entry + 0x30);
- *                           *(int *)(entry + 0x30) = (old & 0xFFFFC000) | v1;
- *                       }
- *                       v2 = lut[1];
- *                       p++;
- *                       if (v2 != 0) {
- *                           old = *(int *)(entry + 0x40);
- *                           *(int *)(entry + 0x40) = (old & 0xFFFFC000) | v2;
- *                       }
- *                       tag = *p;
- *                       entry += 0x40;
- *                   } while (tag != 0xFF);
- *               }
- *               more = *(int *)(joint + 0xC) >= 0;
- *               joint += 0x10;
- *           } while (more);
- *           outer++;
- *           idx = *outer;
- *       }
- *   }
- *
- * Toolchain quirk found along the way, worth remembering: declaring
- * `int more;` INSIDE the outer do-block (the one whose body contains
- * an `if` with its own nested `do-while`) makes this compiler reject
- * `more` as undeclared at its own `while (more);` -- a genuine parser
- * bug in this SN GCC 2.95.3 build for a do-while-inside-if-inside-
- * do-while shape. Renaming changes nothing; hoisting the declaration
- * to function scope (as above) is the fix.
- *
- * The lookup needed a single shared pointer (`lut[0]`/`lut[1]`, not
- * two independent `D_001B6100[tag*2]`/`[tag*2+1]` array accesses) to
- * get retail's one-address-computation-two-loads shape, and the
- * `(unsigned short)` cast on the OR had to go (retail relies on the
- * data never setting the sign bit). Both were real, confirmed bugs,
- * not just scheduling. What is left, 8 bytes: retail recomputes
- * `joint + 0x10` fresh in the loop-back delay slot; this compiler
- * hoists that add earlier in the block regardless of statement
- * position, since nothing between depends on the order. Not reached
- * from source.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_0020DD48); /* PatchMobyGifs */
+/* A class's joint records (the list at class+0x20): the joint's tag
+   bytes, 0xFF-terminated, then the address of its first 0x40-byte GIF
+   entry, whose sign bit marks the last joint. */
+typedef struct {
+    unsigned char tags[0xC];
+    int entry;
+} MobyJoint;
+
+/* PatchMobyGifs: for each class in the negative-terminated D_001B6880
+   list, walk its joints; each tag looks up two 14-bit values in
+   D_001B6100 and ORs the non-zero ones into the low bits of the +0x30 /
+   +0x40 words of successive GIF entries. The outer pointer is advanced
+   through a `next` named at the top of the body (retail computes p + 1
+   there), and the joint loop tests and breaks before its increment: in
+   a do/while the increment is an expression GCSE hoists to the loop top. */
+void func_0020DD48(void) {
+    int *p;
+    int *next;
+
+    for (p = D_001B6880; *p >= 0; p = next) {
+        MobyJoint *joint;
+
+        next = p + 1;
+        joint = *(MobyJoint **)(*(char **)((char *)D_001B3580 + *p * 4) + 0x20);
+        for (;;) {
+            unsigned char *t = joint->tags;
+            char *entry = (char *)(joint->entry & 0x7FFFFFFF);
+
+            while (*t != 0xFF) {
+                short *lut = D_001B6100 + *t * 2;
+                short v;
+                v = lut[0];
+                if (v != 0) {
+                    *(int *)(entry + 0x30) = (*(int *)(entry + 0x30) & 0xFFFFC000) | v;
+                }
+                v = lut[1];
+                t++;
+                if (v != 0) {
+                    *(int *)(entry + 0x40) = (*(int *)(entry + 0x40) & 0xFFFFC000) | v;
+                }
+                entry += 0x40;
+            }
+            if (joint->entry < 0) {
+                break;
+            }
+            joint++;
+        }
+    }
+}
 
 extern int D_001414D0 NOT_SDA;
 extern float D_001CAE00[] NOT_SDA;
