@@ -73,9 +73,108 @@ extern int D_0018CC20 NOT_SDA;
 extern int D_001941C8 NOT_SDA;
 extern int D_0016100C;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00205520);
+extern int func_001F9968(int);
+extern int D_0015EF74 MACRO_ADDR;
+extern int D_0015F558 MACRO_ADDR;
+typedef struct {
+    int addr;            /* +0 */
+    short unk4;          /* +4 */
+    short cbp;           /* +6 */
+    int unk8;            /* +8 */
+    unsigned char tw;    /* +C */
+    unsigned char th;    /* +D */
+    short tbp;           /* +E */
+} TexSlot;
+extern TexSlot D_0018D140[];
+typedef struct {
+    char *clut;          /* 0x00 */
+    char *pix;           /* 0x04 */
+    char pad08[0xC];
+    int clutSize;        /* 0x14 */
+    char pad18[0x34];
+    int tw;              /* 0x4C */
+    int th;              /* 0x50 */
+    char pad54[0xC];
+} TexDesc;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00205660);
+/* Loads a 256-colour texture file p (width at +8, height at +0xC, CLUT
+   at +0x20, pixels after it): the CLUT and the pixels take the next VRAM
+   space at D_0015EF74 (cbp, then tbp 0x400 later, then the allocator
+   moves on by 1 << (tw + th)), and the texture is registered and its GS
+   TEX0 value returned as in func_00205660. The allocator update comes
+   before the TEX0 value and the buffer width is shifted back into w:
+   both decide which of tw and the constant 1 local-alloc serves first. */
+long func_00205520(char *p) {
+    TexDesc t;
+    int w;
+    int cbp;
+    int tbp;
+    int addr;
+    long reg;
+
+    t.clut = p + 0x20;
+    t.clutSize = 0x400;
+    t.tw = func_001F9968(*(int *)(p + 8));
+    t.th = func_001F9968(*(int *)(p + 0xC));
+    t.pix = p + 0x20 + t.clutSize;
+    addr = D_0015EF74;
+    cbp = addr >> 8;
+    addr += 0x400;
+    tbp = addr >> 8;
+    D_0015EF74 = addr + (1 << (t.tw + t.th));
+    w = t.tw - 6;
+    if (w < 0) {
+        w = 0;
+    }
+    w = 1 << w;
+    reg = (long)tbp | ((long)w << 14) | ((long)0x13 << 20)
+        | ((long)t.tw << 26) | ((long)t.th << 30) | ((long)1 << 34)
+        | ((long)cbp << 37) | ((long)4 << 61);
+    if (D_0015F558 < 0x40) {
+        D_0018D140[D_0015F558].addr = (int)t.clut;
+        D_0018D140[D_0015F558].cbp = cbp;
+        D_0018D140[D_0015F558].unk4 = 0;
+        D_0018D140[D_0015F558].unk8 = (int)t.pix;
+        D_0018D140[D_0015F558].tw = t.tw;
+        D_0018D140[D_0015F558].th = t.th;
+        D_0018D140[D_0015F558].tbp = tbp;
+        D_0015F558++;
+    }
+    return reg;
+}
+
+/* Registers an 8-bit texture: returns its GS TEX0 value (tbp = tex >> 8,
+   tbw = 1 << max(tw - 6, 0), PSMT8, tw, th, tcc 1, cbp = clut >> 8,
+   cld 4) and, while there is room (64 entries), records it in the next
+   D_0018D140 slot. The buffer width is shifted back into w itself: the
+   shift then writes w's register and the constant 1 keeps its own. */
+long func_00205660(int tw, int th, int a2, int a3, int clut, int tex) {
+    int w = tw - 6;
+    long reg;
+    int tbp = tex >> 8;
+    int cbp = clut >> 8;
+
+    if (w < 0) {
+        w = 0;
+    }
+    w = 1 << w;
+    reg = (long)tbp | ((long)w << 14) | ((long)0x13 << 20)
+        | ((long)tw << 26) | ((long)th << 30) | ((long)1 << 34)
+        | ((long)cbp << 37) | ((long)4 << 61);
+    if (D_0015F558 < 0x40) {
+
+        D_0018D140[D_0015F558].addr = a2;
+        D_0018D140[D_0015F558].cbp = cbp;
+        D_0018D140[D_0015F558].unk4 = 0;
+        D_0018D140[D_0015F558].unk8 = a3;
+        D_0018D140[D_0015F558].tw = tw;
+        D_0018D140[D_0015F558].th = th;
+        D_0018D140[D_0015F558].tbp = tbp;
+        D_0015F558++;
+    }
+    return reg;
+}
+__asm__(".section .text\n\tnop\n");
 
 extern int D_001A0468[];
 

@@ -297,7 +297,64 @@ void func_00233FF8(void) {
     func_0011AE20(0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234018);
+extern int func_0011B2F8(void *client, int id, int mode);
+extern int func_0011B6B8(void *client);
+extern int func_0011B4C8(void *, int, int, void *, int, void *, int, void *, void *); /* sceSifCallRpc */
+
+typedef struct {
+    int base;
+    int size;
+    char cd[0x28];
+    int cur;
+    int count;
+} StashState_00234018;
+extern StashState_00234018 D_001DD530_alias __asm__("D_001DD530");
+typedef struct {
+    int unk_00;
+    int unk_04;
+    int unk_08;
+    int unk_0C;
+} Rec10_00234018;
+extern Rec10_00234018 D_001DD568_alias[] __asm__("D_001DD568");
+
+/* Stash_Init: binds the IOP stash RPC server (0x11, no-wait mode; a bind
+   error hangs), waits for the bind and retries after a delay loop until
+   the server answers, then asks it (RPC 2, sceSifCallRpc's nine
+   arguments) for the buffer's base and size and clears the 0x40 slots.
+   The server check reads through a pointer set inside the loop: loop.c
+   then hoists the struct's full address into a register of its own, as
+   retail has it, while the client's address stays a constant. */
+void func_00234018(void) {
+    StashState_00234018 *s;
+    int reply[4];
+    int i;
+
+    for (;;) {
+        if (func_0011B2F8(D_001DD530_alias.cd, 0x11, 1) < 0) {
+            for (;;) {
+            }
+        }
+        while (func_0011B6B8(D_001DD530_alias.cd) != 0) {
+        }
+        s = &D_001DD530_alias;
+        if (*(int *)(s->cd + 0x24) != 0) {
+            break;
+        }
+        i = 0xFFFF;
+        while (i--) {
+        }
+    }
+    func_0011B4C8(D_001DD530_alias.cd, 2, 0, 0, 0, reply, 0x10, 0, 0);
+    D_001DD530_alias.base = reply[0];
+    D_001DD530_alias.size = reply[1];
+    D_001DD530_alias.cur = reply[0];
+    D_001DD530_alias.count = 0;
+    for (i = 0; i < 0x40; i++) {
+        D_001DD568_alias[i].unk_00 = 0;
+        D_001DD568_alias[i].unk_04 = 0;
+    }
+}
+__asm__(".section .text\n\tnop\n");
 
 /* 0x10-stride records. Typed array, not `char[]` + byte offset -- see
    the addu-order lever on D_001E8F80 above. */

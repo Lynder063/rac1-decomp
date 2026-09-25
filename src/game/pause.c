@@ -719,7 +719,72 @@ int func_0021D420(void *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021D4C0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021D7A0);
+extern char *D_001D5F74 NOT_SDA;
+extern int D_0015EFA4 MACRO_ADDR;
+extern void func_0022ED80(int, int, int);
+typedef struct {
+    char pad[0xA8];
+    unsigned short count;  /* 0xA8 */
+    unsigned short best;   /* 0xAA */
+    unsigned int mask;     /* 0xAC */
+} Stats_0021D7A0;
+extern Stats_0021D7A0 D_00141948;
+typedef struct {
+    char pad[0x14];
+    int id;      /* 0x14 */
+    char pad18[0x18];
+    int list[8]; /* 0x30 */
+    int idx;     /* 0x50 */
+} SelList_0021D7A0;
+
+/* Quick-select slot handler: 8 and 4 on the pad step the slot index at
+   +0x50 forward and back (mod 8), with a func_0022ED80 notify when it
+   moved. With 0x40, if the highlighted item (the current page's entry
+   id) is owned, it is recorded: the use count at D_00141948+0xA8 (to
+   0xFFFF), the best time +0xAA and the level mask +0xAC; then the item
+   leaves any slot it held and is put in the current slot, and the index
+   advances. The three conditions are one `&&` (one shared exit) and the
+   time is compared call-first, as retail evaluates them. */
+int func_0021D7A0(SelList_0021D7A0 *arg0) {
+    char *q = *(char **)(D_001D5F74 + 0x40);
+    int item = *(short *)(*(int *)(q + 0x3C) * 10 + *(char **)(q + 0x48) + 6);
+    int old = arg0->idx;
+    char *pad = D_0013CA40;
+    int i;
+
+    if (*(int *)(pad + 0x1C4) & 8) {
+        arg0->idx = (old + 1) % 8;
+    }
+    if (*(int *)(pad + 0x1C4) & 4) {
+        arg0->idx = (arg0->idx + 7) % 8;
+    }
+    if (arg0->idx != old) {
+        func_0022ED80(1, 0x11, arg0->id);
+    }
+    if (item != 0 && ((unsigned char *)&D_0013D5C8)[item] != 0
+        && (*(int *)(pad + 0x1C4) & 0x40)) {
+        Stats_0021D7A0 *s = &D_00141948;
+
+        if (s->count <= 0xFFFE) {
+            s->count++;
+        }
+        if (func_001F98C0(D_0015EFA4) / 600 > s->best) {
+            s->best = func_001F98C0(D_0015EFA4) / 600;
+        }
+        s->mask = s->mask | (1 << D_0015EE84) | 0x80000000;
+        for (i = 0; i < 8; i++) {
+            if (arg0->list[i] == item) {
+                break;
+            }
+        }
+        if (i < 8) {
+            arg0->list[i] = 0;
+        }
+        arg0->list[arg0->idx] = item;
+        arg0->idx = (arg0->idx + 1) % 8;
+    }
+    return 0;
+}
 
 extern int D_00141FA0[];
 
@@ -1380,7 +1445,70 @@ int func_00220338(void) {
     return 8;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00220370); /* DrawMissionsMenu */
+extern void func_001F65A8(void);
+extern void func_001F6598(void);
+extern void func_001F6968_c(int, int, long, void *, int) __asm__("func_001F6968");
+
+/* DrawMissionsMenu: the menu's text lines (0x4EEE, 0x4EEF only when
+   D_0015EE84 is set, then 0x4EFA, 0x4EFB, 0x4EFC, 0x4EE0) in one column,
+   left-aligned so the widest (func_001F6620) is centred in arg0+0x20 but
+   at least 2 in, and spaced arg0+0x24 / (6 or 7 lines) apart starting a
+   line minus 6 down. */
+int func_00220370(char *arg0) {
+    int maxw, w;
+    int x, y, step;
+
+    func_00234C98(0x42, 0x44);
+    func_00234C98(0x47, 0xB);
+    func_001F4630(0);
+    maxw = func_001F6620(func_001FE540_id(0x4EEE), -1);
+    w = func_001F6620(func_001FE540_id(0x4EFA), -1);
+    if (w >= maxw) {
+        maxw = w;
+    }
+    if (D_0015EE84 != 0) {
+        w = func_001F6620(func_001FE540_id(0x4EEF), -1);
+        if (w >= maxw) {
+            maxw = w;
+        }
+    }
+    w = func_001F6620(func_001FE540_id(0x4EFB), -1);
+    if (w >= maxw) {
+        maxw = w;
+    }
+    w = func_001F6620(func_001FE540_id(0x4EFC), -1);
+    if (w >= maxw) {
+        maxw = w;
+    }
+    w = func_001F6620(func_001FE540_id(0x4EE0), -1);
+    if (w >= maxw) {
+        maxw = w;
+    }
+    x = (*(int *)(arg0 + 0x20) - maxw) >> 1;
+    if (x < 2) {
+        x = 2;
+    }
+    step = *(int *)(arg0 + 0x24) / (D_0015EE84 != 0 ? 7 : 6);
+    func_001F65A8();
+    y = step - 6;
+    func_001F6968_c(x, y, 0x80FFA888L, func_001FE540_id(0x4EEE), -1);
+    if (D_0015EE84 != 0) {
+        y += step;
+        func_001F6968_c(x, y, 0x80FFA888L, func_001FE540_id(0x4EEF), -1);
+    }
+    y += step;
+    func_001F6968_c(x, y, 0x80FFA888L, func_001FE540_id(0x4EFA), -1);
+    y += step;
+    func_001F6968_c(x, y, 0x80FFA888L, func_001FE540_id(0x4EFB), -1);
+    y += step;
+    func_001F6968_c(x, y, 0x80FFA888L, func_001FE540_id(0x4EFC), -1);
+    y += step;
+    func_001F6968_c(x, y, 0x80FFA888L, func_001FE540_id(0x4EE0), -1);
+    func_001F6598();
+    func_001F4748();
+    return 2;
+}
+__asm__(".section .text\n\tnop\n");
 
 extern void func_001F4630(int);
 extern void func_001F4748(void);
@@ -1566,7 +1694,105 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00221888);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00221B58);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00221E60);
+extern void func_0022ED80(int, int, int);
+extern void func_001FBC80(int, void *, int);
+extern int func_001F98C0(int);
+extern void func_001F4E08(int);
+extern float D_0015F53C MACRO_ADDR;
+extern int D_0016044C_i __asm__("D_0016044C") MACRO_ADDR;
+typedef struct {
+    int w0;              /* 0x00 */
+    unsigned char *buf;  /* 0x04 */
+    int e[2];            /* 0x08 */
+    int flags;           /* 0x10 */
+} Row14;
+
+/* Pad handler for a row list of toggles (func_002222F8's sibling, one
+   `char *` pad local per block). While the timer at arg0+0x3C runs it
+   counts down and sets D_0015F53C to min(t, 4) / 4. Otherwise, for the
+   active item: 0xD00/0x10 leave, 0x1000/0x4000 move the cursor with a
+   notify on change, and 0x40 flips the current row's byte, or for a row
+   with flag 1 starts the timer and flips D_0016044C (func_001FBC80 once
+   it is set). The row is indexed directly at each use (index-first addu)
+   and the cursor compare is written new != old, as retail's beq has it. */
+int func_00221E60(char *arg0) {
+    char *g = D_001D5F70;
+    int sel = *(char **)(*(char **)(g + 4) + 0x40) == arg0;
+
+    if (*(int *)(arg0 + 0x3C) != 0) {
+        int t = *(int *)(arg0 + 0x3C) - 1;
+        *(int *)(arg0 + 0x3C) = t;
+        D_0015F53C = (float)(t < 5 ? t : 4) * 0.25f;
+        return 0;
+    }
+    if (!sel) {
+        return 0;
+    }
+    {
+        char *pad = D_0013CA40;
+        if (*(int *)(pad + 0x1C4) & 0xD00) {
+            if (*(int *)(g + 0x124) == 0) {
+                return 1;
+            }
+        }
+    }
+    {
+        char *pad2 = D_0013CA40;
+        if (*(int *)(pad2 + 0x1C4) & 0x10) {
+            char *g2 = D_001D5F70;
+            int t = *(int *)(*(char **)(g2 + 4) + 0x38);
+            if (t != 0) {
+                *(int *)(g2 + 8) = t;
+                return 0;
+            }
+            if (*(int *)(g2 + 0x124) == 0) {
+                return -1;
+            }
+        }
+    }
+    {
+        char *pad3 = D_0013CA40;
+        int old = *(int *)(arg0 + 0x38);
+        if ((*(int *)(pad3 + 0x1C4) & 0x1000) && old != 0) {
+            *(int *)(arg0 + 0x38) = old - 1;
+        }
+        {
+            char *pad4 = D_0013CA40;
+            if (*(int *)(pad4 + 0x1C4) & 0x4000) {
+                int c = *(int *)(arg0 + 0x38);
+                if ((*(Row14 **)(arg0 + 0x34))[c + 1].w0 != 0) {
+                    *(int *)(arg0 + 0x38) = c + 1;
+                }
+            }
+        }
+        {
+            char *pad5 = D_0013CA40;
+            if (*(int *)(pad5 + 0x1C4) & 0x40) {
+                func_0022ED80(0, 0x11, *(int *)(arg0 + 0x14));
+                if ((*(Row14 **)(arg0 + 0x34))[*(int *)(arg0 + 0x38)].flags & 1) {
+                    if (*(unsigned char *)&D_0016044C_i) {
+                        char *g3 = D_001D5F70;
+                        func_001FBC80(6, *(void **)(g3 + 4), 0);
+                    } else {
+                        func_001F4E08(4);
+                        *(int *)(arg0 + 0x3C) = func_001F98C0(0x10);
+                        *(unsigned char *)&D_0016044C_i = !*(unsigned char *)&D_0016044C_i;
+                    }
+                } else {
+                    unsigned char *buf = (*(Row14 **)(arg0 + 0x34))[*(int *)(arg0 + 0x38)].buf;
+                    if (buf != 0) {
+                        buf[0] = !buf[0];
+                    }
+                }
+            }
+        }
+        if (*(int *)(arg0 + 0x38) != old) {
+            func_0022ED80(1, 0x11, *(int *)(arg0 + 0x14));
+        }
+    }
+    return 0;
+}
+__asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00222070); /* DrawCheatsMenu */
 
@@ -2157,7 +2383,76 @@ int func_00223478(void *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00223490);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00223810);
+/* A text box on the menu's own geometry (func_00227A30's box, then
+   arg0+0x18..0x24: top y + 4, bottom y + h - 4, x, x + w, centre).
+   Per state (arg0+0x50): the list states draw each text id of the -1
+   terminated list at arg0+0x34 down from a start that the line count
+   (arg0+0x3C >> 4) centres, taking each height from box[7] as the text
+   call leaves it, and flag arg0+0x54 when the list ends 0x18 above the
+   bottom; states 4, 11, 15 and 19 draw the single text id at +0x34. The
+   line count's low nibble goes through `& 0xF` (retail's lbu + dsrl) and
+   the start subtracts its own variable, which keeps retail's order. */
+int func_00223810(char *arg0) {
+    short box[12];
+    int ypos;
+    int n;
+    int i;
+
+    func_00234C98_l(0x47, 0x30000);
+    func_00234C98_l(0x42, 0x8000000044L);
+    func_001F4630(0);
+    func_00227A30(box, arg0);
+    box[9] = 9;
+    box[3] = *(int *)(arg0 + 0x18) + *(int *)(arg0 + 0x20);
+    box[0] = *(int *)(arg0 + 0x1C) + 4;
+    box[1] = *(int *)(arg0 + 0x1C) + *(int *)(arg0 + 0x24) - 4;
+    box[2] = *(int *)(arg0 + 0x18);
+    box[4] = *(int *)(arg0 + 0x18) + (*(int *)(arg0 + 0x20) >> 1);
+    box[10] = 0;
+    box[11] = 0;
+    switch (*(int *)(arg0 + 0x50)) {
+    case 1:
+    case 2:
+    case 3:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 12:
+    case 13:
+    case 14:
+    case 16:
+    case 17:
+    case 18:
+        n = (*(int *)(arg0 + 0x3C) >> 4) - 4;
+        ypos = *(int *)(arg0 + 0x1C) - n;
+        for (i = 0; (*(int **)(arg0 + 0x34))[i] != -1; i++) {
+            box[5] = ypos;
+            box[11] = (*(int *)(arg0 + 0x3C) >> 4) & 0xF;
+            func_001F7560(box, 0x80FFA888L,
+                          func_001FE540_id((*(int **)(arg0 + 0x34))[i]), -1);
+            ypos += box[7];
+            ypos += 10;
+        }
+        if (ypos + 0x18 < *(int *)(arg0 + 0x1C) + *(int *)(arg0 + 0x24)) {
+            *(int *)(arg0 + 0x54) = 1;
+        }
+        break;
+    case 4:
+    case 11:
+    case 15:
+    case 19:
+        box[5] = *(int *)(arg0 + 0x1C) + 0x20;
+        func_001F7560(box, 0x80FFA888L, func_001FE540_id(*(int *)(arg0 + 0x34)), -1);
+        break;
+    case 0:
+        break;
+    }
+    func_001F4748();
+    return 2;
+}
 
 extern void func_001153FC(void *, int, int); /* memset */
 typedef struct {
@@ -2256,7 +2551,93 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00224C30);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002250B8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00225358);
+extern int func_002279D0(void);
+extern int D_0016004C MACRO_ADDR;
+extern char D_001D6160[];
+extern char D_001D61A0[];
+extern char D_001D61E0[];
+extern char D_00186410[];
+extern void func_001E9790(void *);
+extern void func_00225DF0(void);
+extern void func_00226250(void);
+
+/* Menu setup: resets the pad bindings, marks D_001D5F70's selections
+   unset, fetches three entries with func_00226EA8, clears the 24 flag
+   bytes at arg0+0xA4, then spawns moby 0 in front of the camera (update
+   func_00225DF0, owner arg0) and moby 0x259 (update func_00226250). One
+   `g` local per block reading D_001D5F70 gives retail's %hi kept in a
+   saved register with %lo rebuilt; the -1 stores are written in the
+   order that gives retail's schedule. */
+int func_00225358(char *arg0) {
+    char *m;
+    int *p;
+    int *v;
+    char *q;
+    int i, j;
+
+    func_00226D50(1);
+    func_002279D0();
+    {
+        unsigned char *g = D_001D5F70;
+
+        D_0016004C = -1;
+        *(int *)(g + 0x11C) = -1;
+        *(int *)(g + 0x120) = -1;
+        *(int *)(g + 0xA0) = func_00226EA8(1);
+        *(int *)(g + 0xA4) = func_00226EA8(1);
+        g[0xC8] = 0xFF;
+        g[0xC9] = 0xFF;
+        g[0xCA] = 0;
+        p = (int *)(g + 0xB0);
+        for (i = 2; i >= 0; i--) {
+            *p = func_00226EA8(0);
+            p++;
+        }
+    }
+    {
+        char *g = D_001D5F70;
+
+        D_001D6160[1] = 0;
+        *(int *)(g + 0x1C) = -1;
+        D_001D61A0[1] = 0;
+        D_001D61E0[1] = 0;
+    }
+    m = func_00226720_a(0);
+    q = arg0 + 0xBB;
+    for (j = 23; j >= 0; j--) {
+        *q = 0;
+        q--;
+    }
+    if (m != 0) {
+        char *cam = D_00187040;
+        char *g;
+
+        *(char **)(arg0 + 0x44) = m;
+        *(short *)(m + 0x34) = 0;
+        *(float *)(m + 0x10) = *(float *)(cam + 0x140) + 4.0f;
+        *(float *)(m + 0x14) = *(float *)(cam + 0x144);
+        *(float *)(m + 0x18) = *(float *)(cam + 0x148) - 0.6f;
+        *(float *)(m + 0x48) = 3.1415927f;
+        *(void **)(m + 0x74) = func_00225DF0;
+        v = *(int **)(m + 0x78);
+        v[0] = (int)arg0;
+        v[1] = 0;
+        v[2] = 0;
+        g = D_001D5F70;
+        *(int *)(g + 0xC0) = -1;
+        func_001F99B0(D_00186410, 0, 0x40);
+        func_001E9790(m);
+    }
+    m = func_00226720_a(0x259);
+    if (m != 0) {
+        **(int **)(m + 0x78) = (int)arg0;
+        *(void **)(m + 0x74) = func_00226250;
+        *(short *)(m + 0x34) = 4;
+    }
+    *(char **)(arg0 + 0x48) = m;
+    return 0;
+}
+__asm__(".section .text\n\tnop\n");
 
 /*
  * Exact once the short-loop padding retail's assembler adds is reproduced
