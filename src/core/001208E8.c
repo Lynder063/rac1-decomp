@@ -358,6 +358,28 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001211B0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00121490);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00121688);
+extern int D_00132A00;
+extern int D_001325C0;
+extern int func_00121040(int);
+extern void func_0011AD70(void *, int);
+
+/* sceCdMmode */
+int func_00121688(int arg0) {
+    int *p = &D_00132A00;
+    int r;
+
+    if (func_00121040(0x22) == 0) {
+        return 0;
+    }
+    D_00132A00 = arg0;
+    func_0011AD70(p, 4);
+    if (func_0011B4C8(D_00132E08, 0x22, 0, p, 4, &D_001325C0, 4, 0, 0) < 0) {
+        func_00118C90(D_001313EC);
+        return 0;
+    }
+    r = *(int *)((unsigned int)&D_001325C0 | 0x20000000);
+    func_00118C90(D_001313EC);
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012174C);
