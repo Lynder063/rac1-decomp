@@ -366,7 +366,45 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FFFB8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00200190);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00200198); /* GetIconFrame(int, int) */
+extern char D_0019A4E8_raw[] __asm__("D_0019A4E8");
+extern int func_001FF668(int);
+
+/* GetIconFrame(iconId, sub): finds the icon's {id, count, base} row
+   (func_001FF668 gives its index) in the arena's +0x1C table; frame =
+   base + sub. Returns frame when the id is known, sub < count, and
+   neither the +0x28 entry (for the frame's first index) nor the +0x24
+   entry (for its second) has the top bit set; else 0. Row and pair
+   are int sums so their addu takes the index first. Both flag tests
+   are `& 0x80000000`: the first becomes a bltz, but the constant it
+   loaded is reused by the second test, as in retail. */
+int func_00200198(int iconId, int sub) {
+    int idx;
+    char *arena;
+    unsigned short *row;
+    int frame;
+    short *pair;
+
+    idx = func_001FF668(iconId);
+    arena = D_0019A4E8_raw;
+    row = (unsigned short *)(idx * 8 + *(int *)(arena + 0x1C));
+    if (row[0] == 0xFFFF) {
+        return 0;
+    }
+    if (sub >= row[1]) {
+        return 0;
+    }
+    frame = row[2] + sub;
+    pair = (short *)(frame * 4 + *(int *)(arena + 0x20));
+    if (*(int *)(*(char **)(arena + 0x28) + pair[0] * 8) & 0x80000000) {
+        return 0;
+    }
+    if ((*(int *)(*(char **)(arena + 0x24) + pair[1] * 8) & 0x80000000) == 0) {
+        return frame;
+    }
+    return 0;
+}
+
+__asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00200248); /* GetFrameTex(int) */
 

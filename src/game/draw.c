@@ -67,49 +67,32 @@ void func_001F0F78(int x, int y, int color, char *str) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F0FF0);
 
-/*
- * Reverted: size mismatch (ours=132, retail=140 -- 8 bytes short).
- * Center-text width helper: sums a per-character width table indexed
- * by (char - 0x20), clamped to the space-character entry for
- * anything outside the printable range, then offsets arg0 by half
- * the total width before forwarding to func_001F0F78.
- *
- *   extern int D_00189EC0[];
- *
- *   int func_001F0FF8(int arg0, int arg1, int arg2, char *str) {
- *       int sum = 0;
- *       unsigned char c = *str;
- *       if (c != 0) {
- *           char *p = str;
- *           do {
- *               int idx = 0x20;
- *               int ch = *(unsigned char *)p;
- *               unsigned char next;
- *               p++;
- *               ch = (ch - 0x20) & 0xFF;
- *               next = *(unsigned char *)p;
- *               if ((unsigned int)ch < 0x60) {
- *                   idx = ch;
- *               }
- *               sum += D_00189EC0[idx];
- *               if (next == 0) {
- *                   break;
- *               }
- *           } while (1);
- *       }
- *       arg0 -= sum >> 1;
- *       func_001F0F78(arg0, arg1, arg2, str);
- *       return arg0;
- *   }
- *
- * Two residuals: retail encodes the range check as `sltiu v,ch,0x60`
- * + `movn`; this compiler always canonicalizes an unsigned `< 0x60`
- * (tried the equivalent `<= 0x5F` too, identical output) into
- * `sltu v,0x5F,ch` + `movz` instead. Retail also preloads the 0x20
- * default into its own register once, before the loop; hoisting it
- * into an explicit local regressed further rather than helping.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_001F0FF8);
+extern int D_00189EC0[];
+
+/* Draws `str` centred on x: sums the per-character widths in D_00189EC0
+   (indexed by char - 0x20, anything past the table using entry 0x20),
+   moves x left by half the total and queues the text with
+   func_001F0F78. Returns the adjusted x. `idx = ch` followed by the
+   out-of-range override gives retail's sltiu 0x60 + movn; the reverse
+   (default first, then `if (ch < 0x60)`) becomes sltu + movz. */
+int func_001F0FF8(int x, int y, int color, char *str) {
+    int w = 0;
+    unsigned char *p = (unsigned char *)str;
+
+    while (*p != 0) {
+        unsigned char ch = *p++ - 0x20;
+        int idx = ch;
+        if (ch >= 0x60) {
+            idx = 0x20;
+        }
+        w += D_00189EC0[idx];
+    }
+    x -= w >> 1;
+    func_001F0F78(x, y, color, str);
+    return x;
+}
+
+__asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F1088);
 
@@ -264,7 +247,41 @@ void func_001F2930(int arg0) {
 }
 __asm__(".section .text\n\tnop\n");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F2A38); /* ParseOcclGrid */
+extern char *D_0015F720 MACRO_ADDR;
+
+/* ParseOcclGrid(x, y, z): walks the three-level occlusion grid at
+   D_0015F720. Each level is {u16 start, u16 count, u16 entry[count]};
+   the coordinate minus start must fall in [0, count), and its entry is
+   the next level's offset in words from the grid (levels 1 and 2, 0 =
+   empty) or, at the last level, a 128-byte cell index from the root
+   (grid + grid[0]), 0xFFFF = empty. Returns the cell or 0. Each level's
+   coordinate goes in its own local: that keeps y and x in their argument
+   registers and the level pointer in $a3. The last level's bounds share
+   one `if`, which is what leaves retail's shared failure return after
+   level 2 and a separate one for the 0xFFFF test. */
+int func_001F2A38(int x, int y, int z) {
+    char *grid = D_0015F720;
+    char *base = grid + *(int *)grid;
+    unsigned short *l = (unsigned short *)(grid + 4);
+    int cz, cy, cx;
+
+    cz = z - l[0];
+    if (cz < 0) return 0;
+    if (cz >= l[1]) return 0;
+    if (l[cz + 2] == 0) return 0;
+    l = (unsigned short *)(grid + l[cz + 2] * 4);
+    cy = y - l[0];
+    if (cy < 0) return 0;
+    if (cy >= l[1]) return 0;
+    if (l[cy + 2] == 0) return 0;
+    l = (unsigned short *)(grid + l[cy + 2] * 4);
+    cx = x - l[0];
+    if (cx < 0 || cx >= l[1]) return 0;
+    if (l[cx + 2] == 0xFFFF) return 0;
+    return (int)(base + l[cx + 2] * 128);
+}
+
+__asm__(".section .text\n\tnop\n");
 
 extern int func_001F2A38(int, int, int);
 
@@ -316,7 +333,52 @@ void func_001F2FB8(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F3008); /* InitViewContext(void) */
+extern short D_00151880[];
+extern int D_0013E600[];
+extern float func_001FA888(int);
+
+/* InitViewContext: the same set-up as SetScreenSize (func_001F3760) for
+   the display's size, D_00151880[0xA8]/[0xA9], with fixed extras. The
+   GS viewport record D_0013E600 gets width, height, their halves and the
+   four <<4 edges around the 0x800 centre. The draw context D_0018CE00
+   gets 32, 745472 and 0.63 at +0xA0/+0xA4/+0xB0, the half extents as
+   floats (func_001FA888 is int to float) at +0x200/+0x204, four times
+   each at +0x208/+0x20C, and 0, 524288, 255, 0 at +0x218/+0x21C/+0x228/
+   +0x22C. The size is read into `short` locals (lhu, then sll/sra) through
+   a base pointer that stays in $s1, and the height is read again from
+   memory for the second conversion. */
+void func_001F3008(void) {
+    short *res = D_00151880;
+    float *ctx = (float *)D_0018CE00;
+    short w = res[0xA8];
+    short h = res[0xA9];
+    int hw = w >> 1;
+    int hh = h >> 1;
+    float fh;
+
+    D_0013E600[0] = w;
+    D_0013E600[1] = h;
+    D_0013E600[2] = hw;
+    D_0013E600[3] = hh;
+    D_0013E600[4] = (0x800 - hw) << 4;
+    D_0013E600[5] = (0x800 - hh) << 4;
+    D_0013E600[6] = (hw + 0x800) << 4;
+    D_0013E600[7] = (hh + 0x800) << 4;
+    ctx[0x28] = 32.0f;
+    ctx[0x29] = 745472.0f;
+    ctx[0x2C] = 0.63f;
+    ctx[0x80] = func_001FA888(w) * 0.5f;
+    fh = func_001FA888(res[0xA9]) * 0.5f;
+    ctx[0x81] = fh;
+    ctx[0x82] = ctx[0x80] * 4.0f;
+    ctx[0x83] = fh * 4.0f;
+    ctx[0x86] = 0.0f;
+    ctx[0x87] = 524288.0f;
+    ctx[0x8A] = 255.0f;
+    ctx[0x8B] = 0.0f;
+}
+
+__asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F3140); /* UpdateViewContext(void) */
 
@@ -1117,7 +1179,42 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F7680);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F7868);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F7A50);
+extern void func_001FB608(int, int, int);
+extern short D_001519EE NOT_SDA;
+
+/* Sets up a (1 << a) x (1 << b) area, as vendor.c's func_0023A948 does:
+   func_001FB608 gets the sizes and a base address, which is D_001519EE
+   pages when `flag` is set, else D_0015EF8C less 4 << min(a + b, 16)
+   bytes rounded down to a page (8 KB); func_001F3760 gets the sizes and
+   the float setup (f, 0, 524288, 255, 0); GS registers 0x47 (0 with the
+   flag, 0x30000 without) and 0x42 are then written. Each arm makes its
+   own page-aligned base, so the two trailing `<< 13`s are cross-jumped
+   into the one retail has ahead of the argument moves. */
+void func_001F7A50(int a, int b, int flag, float f) {
+    int base;
+
+    if (flag != 0) {
+        base = D_001519EE << 13;
+    } else {
+        int t = a + b;
+
+        if (t > 16) {
+            t = 16;
+        }
+        base = D_0015EF8C - (4 << t);
+        base = (base >> 13) << 13;
+    }
+    func_001FB608(a, b, base);
+    func_001F3760(1 << a, 1 << b, f, 0.0f, 524288.0f, 255.0f, 0.0f);
+    if (flag != 0) {
+        func_00234C98(0x47, 0);
+    } else {
+        func_00234C98(0x47, 0x30000);
+    }
+    func_00234C98(0x42, 0x8000000044L);
+}
+
+__asm__(".section .text\n\tnop\n");
 
 extern void func_001FB498(void);
 extern void func_001F3008(void);

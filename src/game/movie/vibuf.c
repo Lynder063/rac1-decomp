@@ -558,13 +558,34 @@ int func_0023D340(ViBuf *f) {
     return 1;
 }
 
-/* viBufStopDMA and viBufRestartDMA are Sony's vibuf.c too, but stay asm:
-   their IPU busy-wait loops (`while (DGET_IPU_CTRL() & 0xf0);`,
-   `while (sceIpuIsBusy());`) carry retail's short-loop-erratum nop
-   padding, which this toolchain cannot emit. Measured with the verbatim
-   source: StopDMA 61 words vs 68, RestartDMA 190 vs 206 (size mismatch,
-   so reverted). */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023D540); /* viBufStopDMA(ViBuf *) */
+/* viBufStopDMA(ViBuf *), Sony's vibuf.c: stops channel 5 (VIF1) and
+   saves the D4 DMA registers in f->env, waits until the IPU's FIFO
+   empties, stops channel 4 (func_0023CF10(0)), then saves the D3 and
+   IPU registers too. The wait is written as a guarded do-while: that is
+   the rotated loop retail has (a test ahead of the loop, then the loop
+   on a freshly built IPU_CTRL address), where an empty `while` body
+   leaves gcc nothing to rotate. */
+int func_0023D540(ViBuf *f) {
+    func_00118CB0(f->sema);
+    f->isActive = 0;
+    func_0023CF80((0 << 8) | (1 << 2) | 1);
+    f->env.d4madr = *D4_MADR;
+    f->env.d4tadr = *D4_TADR;
+    f->env.d4qwc = *D4_QWC;
+    f->env.d4chcr = *D4_CHCR;
+    if (DGET_IPU_CTRL() & 0xf0) {
+        do {
+        } while (DGET_IPU_CTRL() & 0xf0);
+    }
+    func_0023CF10(0);
+    f->env.d3madr = *D3_MADR;
+    f->env.d3qwc = *D3_QWC;
+    f->env.d3chcr = *D3_CHCR;
+    f->env.ipubp = *IPU_BP;
+    f->env.ipuctrl = *IPU_CTRL;
+    func_00118C90(f->sema);
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023D650); /* viBufRestartDMA(ViBuf *) */
 

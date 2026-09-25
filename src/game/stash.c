@@ -350,7 +350,43 @@ int func_00234158(int arg0, int arg1, int arg2, int arg3) {
     return n;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234238);
+extern int func_00234350(unsigned int);
+extern int func_0011B4C8(void *, int, int, void *, int, void *, int, void *, void *); /* sceSifCallRpc */
+extern char D_001DD538[];
+
+/* Stash_ReceiveData(dest, slot, offset, size, mode): size -1 means the
+   slot's whole length (func_00234350). -3 for a bad or empty slot, -1
+   if offset + size runs past the slot. Otherwise the data is fetched
+   from the stash (slot base + offset quadwords) to dest by the stash
+   client's RPC 1, at most 0xFFFF quadwords per call; returns 0. The RPC
+   is sceSifCallRpc, with nine arguments: end function and end
+   parameter 0, the last on the stack. */
+int func_00234238(void *dest, unsigned int slot, int offset, int size, int mode) {
+    int src;
+    int chunk;
+
+    if (size == -1) {
+        size = func_00234350(slot);
+    }
+    if (slot >= 0x40) {
+        return -3;
+    }
+    if (D_001DD568[slot].unk_04 == 0) {
+        return -3;
+    }
+    if (D_001DD568[slot].unk_04 < offset + size) {
+        return -1;
+    }
+    src = D_001DD568[slot].unk_00 + offset * 16;
+    while (size != 0) {
+        chunk = (size > 0xFFFF) ? 0xFFFF : size;
+        func_0011B4C8(D_001DD538, 1, mode, &src, 0x10, dest, chunk * 16, 0, 0);
+        size -= chunk;
+        dest = (char *)dest + chunk * 16;
+        src += chunk * 16;
+    }
+    return 0;
+}
 
 int func_00234350(unsigned int arg0) {
     if (arg0 >= 0x40) {

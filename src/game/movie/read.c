@@ -338,9 +338,145 @@ extern void func_0012F248(int, int, int, int, int);
 extern void func_0012F1E8(void *);
 extern void func_0023C390(void *);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C9C0); /* videoCallback */
+#include "ezmpeg.h"
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023CAF8); /* pcmCallback(sceMpeg *, sceMpegCbDataStr *, void *) */
+#ifndef READ_C_CALLBACKS
+#define READ_C_CALLBACKS
+/* libmpeg's stream callback data, and the sample's read buffer (the
+   0x50000-byte ring handed to both callbacks as `data`). */
+typedef struct {
+    int type;
+    unsigned char *header;
+    unsigned char *data;
+    int len;
+    long pts;
+    long dts;
+} sceMpegCbDataStr;
+
+typedef struct {
+    unsigned char data[0x50000];
+    int put;
+    int count;
+    int size;
+} ReadBuf;
+
+/* The sample's globals live in one heap block: videoDec at +0xD9048,
+   audioDec at +0xD9100. */
+extern char *D_0016130C MACRO_ADDR;
+extern char D_001E8E38[]; /* "pts buffer overflow\n" */
+extern void func_0023DFC0(VideoDec *, unsigned char **, int *, unsigned char **, int *); /* videoDecBeginPut */
+extern void func_0023DFE0(VideoDec *, int); /* videoDecEndPut */
+extern int func_0023E068(VideoDec *, long, long, unsigned char *, int); /* videoDecPutTs */
+extern int func_0023CBE0(unsigned char *, int, unsigned char *, int,
+                         unsigned char *, int, unsigned char *, int); /* cpy2area */
+extern void func_0023BF48(char *); /* ErrMessage */
+extern void func_0023C128(void *, unsigned char **, int *, unsigned char **, int *); /* audioDecBeginPut */
+extern void func_0023C1F8(void *, int); /* audioDecEndPut */
+#endif
+
+/* videoCallback, Sony's MPEG streaming sample: copies the video stream's
+   span of the read buffer (wrapping at its end) into the video decoder's
+   input buffer, records its timestamps, and commits it. Returns 1 if
+   anything was copied. The span length is min(end - data, len) with
+   len an int, which gives retail's slt/movn. */
+int func_0023C9C0(sceMpeg *mp, sceMpegCbDataStr *cbstr, void *data) {
+    ReadBuf *rb = (ReadBuf *)data;
+    unsigned char *ps0 = cbstr->data;
+    unsigned char *ps1 = rb->data;
+    int s0 = min(rb->data + rb->size - cbstr->data, cbstr->len);
+    int s1 = cbstr->len - s0;
+    unsigned char *pd0;
+    int d0;
+    unsigned char *pd1;
+    int d1;
+    unsigned char *pd0Unc, *pd1Unc;
+    int len;
+
+    func_0023DFC0((VideoDec *)(D_0016130C + 0xD9048), &pd0, &d0, &pd1, &d1);
+
+    pd0Unc = (unsigned char *)UncAddr(pd0);
+    pd1Unc = (unsigned char *)UncAddr(pd1);
+
+    len = func_0023CBE0(pd0Unc, d0, pd1Unc, d1, ps0, s0, ps1, s1);
+
+    if (len > 0) {
+        if (!func_0023E068((VideoDec *)(D_0016130C + 0xD9048), cbstr->pts, cbstr->dts, pd0, len)) {
+            func_0023BF48(D_001E8E38);
+        }
+    }
+
+    func_0023DFE0((VideoDec *)(D_0016130C + 0xD9048), len);
+
+    return (len > 0) ? 1 : 0;
+}
+
+#include "ezmpeg.h"
+
+#ifndef READ_C_CALLBACKS
+#define READ_C_CALLBACKS
+/* libmpeg's stream callback data, and the sample's read buffer (the
+   0x50000-byte ring handed to both callbacks as `data`). */
+typedef struct {
+    int type;
+    unsigned char *header;
+    unsigned char *data;
+    int len;
+    long pts;
+    long dts;
+} sceMpegCbDataStr;
+
+typedef struct {
+    unsigned char data[0x50000];
+    int put;
+    int count;
+    int size;
+} ReadBuf;
+
+/* The sample's globals live in one heap block: videoDec at +0xD9048,
+   audioDec at +0xD9100. */
+extern char *D_0016130C MACRO_ADDR;
+extern char D_001E8E38[]; /* "pts buffer overflow\n" */
+extern void func_0023DFC0(VideoDec *, unsigned char **, int *, unsigned char **, int *); /* videoDecBeginPut */
+extern void func_0023DFE0(VideoDec *, int); /* videoDecEndPut */
+extern int func_0023E068(VideoDec *, long, long, unsigned char *, int); /* videoDecPutTs */
+extern int func_0023CBE0(unsigned char *, int, unsigned char *, int,
+                         unsigned char *, int, unsigned char *, int); /* cpy2area */
+extern void func_0023BF48(char *); /* ErrMessage */
+extern void func_0023C128(void *, unsigned char **, int *, unsigned char **, int *); /* audioDecBeginPut */
+extern void func_0023C1F8(void *, int); /* audioDecEndPut */
+#endif
+
+/* pcmCallback, Sony's MPEG streaming sample: the audio stream's span
+   minus its 4-byte header, wrapped back into the read buffer when the
+   skip crosses its end, is copied into the audio decoder's buffer and
+   committed. Returns 1 if anything was copied. */
+int func_0023CAF8(sceMpeg *mp, sceMpegCbDataStr *cbstr, void *data) {
+    ReadBuf *rb = (ReadBuf *)data;
+    unsigned char *ps0 = cbstr->data + 4;
+    int slen = cbstr->len - 4;
+    unsigned char *pd0;
+    int d0;
+    unsigned char *pd1;
+    int d1;
+    int s0, s1;
+    int len;
+
+    if (ps0 >= rb->data + rb->size) {
+        ps0 -= rb->size;
+    }
+    s0 = min(rb->data + rb->size - ps0, slen);
+    s1 = slen - s0;
+
+    func_0023C128(D_0016130C + 0xD9100, &pd0, &d0, &pd1, &d1);
+
+    len = func_0023CBE0(pd0, d0, pd1, d1, ps0, s0, rb->data, s1);
+
+    func_0023C1F8(D_0016130C + 0xD9100, len);
+
+    return (len > 0) ? 1 : 0;
+}
+
+__asm__(".section .text\n\tnop\n");
 
 extern void *func_00115248(void *, const void *, int);
 
