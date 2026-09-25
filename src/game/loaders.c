@@ -168,115 +168,91 @@ void func_00203038(int *buf, int count) {
 
 extern char *D_0016055C MACRO_ADDR;
 
-/*
- * Reverted: size mismatch (ours=424, retail=440 -- 16 bytes/4
- * instructions short). PatchSkyDef-adjacent fixup: relocates offset
- * fields inside arg0 (a SkyDef, see skyfunc.c) from load-time
- * relative offsets to absolute pointers, then builds one 0x10-byte
- * icon entry per particle-tex table row (same shape as
- * func_00203038, but reading and writing the SAME array in place --
- * 4 words consumed = 0x10 bytes = exactly one written entry), then
- * walks the shells[] array at +0x20 relocating each shell pointer
- * and its own nested list.
- *
- * Recovered source (semantically correct -- every load/store/branch
- * matches retail's operation and operand offsets one-for-one; this
- * was checked instruction-by-instruction against the target .s):
- *
- *   void func_00203118(void *arg0) {
- *       char *s3 = (char *)arg0;
- *       int v0, v1, a0, a2;
- *       int i;
- *
- *       v0 = *(int *)(s3 + 0x10);
- *       v1 = *(int *)(s3 + 0x14);
- *       a0 = *(int *)(s3 + 0x18);
- *       v0 += (int)s3;
- *       a2 = *(int *)(s3 + 0x1C);
- *       v1 += (int)s3;
- *       D_0016055C = s3;
- *       a0 += (int)s3;
- *       *(short *)(s3 + 4) = 1;
- *       *(int *)(s3 + 0x10) = v0;
- *       *(int *)(s3 + 0x14) = v1;
- *       if (a2 != 0) {
- *           *(int *)(s3 + 0x18) = a0;
- *           *(int *)(s3 + 0x1C) = a2 + (int)s3;
- *       }
- *
- *       i = 0;
- *       if (*(short *)(D_0016055C + 0xC) > 0) {
- *           char *hdr = (char *)D_0016055C;
- *           char *stream = *(char **)(hdr + 0x10);
- *           char *hdr2;
- *           do {
- *               char *entry;
- *               int a, b, r1, idx;
- *
- *               idx = i;
- *               a = *(int *)stream;
- *               stream += 4;
- *               entry = *(char **)(hdr + 0x10) + idx * 0x10;
- *               b = *(int *)stream;
- *               stream += 4;
- *               a >>= 4;
- *               *(short *)(entry + 0xA) = a;
- *
- *               entry = *(char **)(hdr + 0x10) + idx * 0x10;
- *               a = *(int *)stream;
- *               stream += 4;
- *               b >>= 4;
- *               *(short *)(entry + 0x8) = b;
- *               r1 = func_001F9968(a);
- *
- *               a = *(int *)stream;
- *               stream += 4;
- *               i++;
- *
- *               entry = *(char **)(D_0016055C + 0x10) + idx * 0x10;
- *               *(short *)(entry + 0xC) = r1;
- *               r1 = func_001F9968(a);
- *
- *               hdr2 = (char *)D_0016055C;
- *               entry = *(char **)(hdr2 + 0x10) + idx * 0x10;
- *               *(short *)(entry + 0xE) = r1;
- *               *(long *)entry = 0;
- *           } while (i < *(short *)(hdr2 + 0xC));
- *       }
- *
- *       if (*(short *)((char *)D_0016055C + 6) > 0) {
- *           char *hdr = (char *)D_0016055C;
- *           int j = 0;
- *           do {
- *               int *slot = (int *)(hdr + 0x20 + j * 4);
- *               int next_j = j + 1;
- *               char *rel = (char *)(*slot + (int)s3);
- *               *slot = (int)rel;
- *               j = next_j;
- *               if (*(int *)rel > 0) {
- *                   char *q = rel;
- *                   int k = 0;
- *                   do {
- *                       int *inner = (int *)(q + 0x20);
- *                       *inner = *inner + (int)s3;
- *                       k++;
- *                       q += 0x20;
- *                   } while (k < *(int *)rel);
- *               }
- *           } while (j < *(short *)(hdr + 6));
- *       }
- *   }
- *
- * The residual is GCC finding tail-merge opportunities retail's
- * build didn't take (e.g. hoisting the epilogue's first `lq $31`
- * into an early-exit branch's delay slot, and general basic-block
- * merging around the shells-loop's `blez`), each shaving an
- * instruction retail keeps duplicated. This is the
- * compiler-is-smarter-than-retail class of mismatch, not a
- * source-shape bug -- register pressure/frame size (0x60, 6 saved
- * regs) and every operand offset already match exactly.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00203118);
+typedef struct {
+    long tag;
+    short unk08;
+    short unk0A;
+    short unk0C;
+    short unk0E;
+} SkyPageL;
+/* A shell is a row of 0x20-byte records: a header holding the count,
+   then one record per item whose first word is an offset to relocate. */
+typedef struct {
+    char *ptr;
+    char pad04[0x1C];
+} SkyShellItemL;
+typedef struct SkyShellL {
+    int count;
+    char pad04[0x1C];
+} SkyShellL;
+typedef struct {
+    int unk00;
+    short unk04;
+    short count;      /* 0x06: shells */
+    int unk08;
+    short npages;     /* 0x0C */
+    short unk0E;
+    SkyPageL *pages;  /* 0x10 */
+    char *unk14;
+    char *unk18;
+    char *unk1C;
+    struct SkyShellL *shells[1]; /* 0x20 */
+} SkyDefL;
+extern SkyDefL *D_0016055C_s __asm__("D_0016055C") MACRO_ADDR;
+
+/* Relocates the sky definition s just loaded (its pointers are offsets
+   from s) and makes it the current one (D_0016055C): the page table and
+   the +0x14/+0x18/+0x1C blocks (+0x1C only when present), then each GIF
+   page, whose four words are rewritten in place as two 1/16 values, two
+   func_001F9968 results and a cleared tag, then each shell and the items
+   in it. The pages are reached through D_0016055C at every use, as
+   retail reloads it after each call. The item pointer is a separate
+   `sh + k` local: loop.c then reduces it to one register starting at sh
+   and reaches the item at +0x20 from it, as retail does. */
+void func_00203118(SkyDefL *s) {
+    int i;
+
+    D_0016055C_s = s;
+    s->unk04 = 1;
+    s->pages = (SkyPageL *)((char *)s->pages + (int)s);
+    s->unk14 = s->unk14 + (int)s;
+    s->unk18 = s->unk18 + (int)s;
+    if (s->unk1C != 0) {
+        s->unk1C = s->unk1C + (int)s;
+    }
+    {
+        int *src = (int *)D_0016055C_s->pages;
+
+        for (i = 0; i < D_0016055C_s->npages; i++) {
+            int a = *src++;
+            int b = *src++;
+            int c = *src++;
+            int d = *src++;
+
+            D_0016055C_s->pages[i].unk0A = a >> 4;
+            D_0016055C_s->pages[i].unk08 = b >> 4;
+            D_0016055C_s->pages[i].unk0C = func_001F9968(c);
+            D_0016055C_s->pages[i].unk0E = func_001F9968(d);
+            D_0016055C_s->pages[i].tag = 0;
+        }
+    }
+    {
+        int j;
+
+        for (j = 0; j < D_0016055C_s->count; j++) {
+            SkyShellL *sh;
+            int k;
+
+            D_0016055C_s->shells[j] = (SkyShellL *)((char *)D_0016055C_s->shells[j] + (int)s);
+            sh = D_0016055C_s->shells[j];
+            for (k = 0; k < sh->count; k++) {
+                SkyShellItemL *it = (SkyShellItemL *)sh + k;
+
+                it[1].ptr = it[1].ptr + (int)s;
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002032D0); /* LoadHudBanks(void) */
 
@@ -313,83 +289,62 @@ void func_00203548(int idx, int size) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002035B0);
 
-/*
- * Reverted: size mismatch (ours=296/312, retail=332). SetUpVisGifViewer
- * (int *, int, int, int, int, int): builds a 4-quad GIF-tag block.
- * arg5 >= 0 indexes a 24-byte/3-long table row (fields 0 and 2 pass
- * straight through, field 1 feeds the low tag word); arg5 < 0 selects
- * one of two fixed 2-long templates (or a literal constant for
- * arg5 == -1).
- *
- * Recovered source (semantics checked against the target .s field by
- * field -- every offset, mask and shift matches):
- *
- *   extern long D_0019E640[][3];
- *   extern long D_0019E7C0[2];
- *   extern long D_0019E7D8[2];
- *
- *   void func_00203808(long *out, int arg1, int arg2, int arg3,
- *                       int arg4, int arg5) {
- *       long f0 = D_0019E640[arg5][0];
- *       long f1 = D_0019E640[arg5][1];
- *
- *       if (arg5 >= 0) {
- *           long f2 = D_0019E640[arg5][2];
- *           unsigned long a3w = (unsigned long)arg3 << 32;
- *
- *           *out = (f1 & 0x1C) | (((unsigned long)arg2 << 6) | 0x20) | a3w;
- *           out += 2;
- *           *out = (unsigned long)arg1 | ((unsigned long)arg4 << 2) |
- *                  ((unsigned long)arg5 << 24);
- *           out += 2;
- *           *(out + 2) = f2;
- *           *out = f0;
- *       } else if (arg5 < -1) {
- *           long *tpl = D_0019E7C0;
- *           unsigned long a3w = (unsigned long)arg3 << 32;
- *
- *           if (arg5 == -3) {
- *               tpl = D_0019E7D8;
- *           }
- *           *out = ((unsigned long)arg2 << 6) | a3w | 0x20;
- *           out += 2;
- *           *out = 5;
- *           out += 2;
- *           *out = tpl[0];
- *           out += 2;
- *           *out = tpl[1];
- *       } else {
- *           unsigned long a3w = (unsigned long)arg3 << 32;
- *           unsigned long c = 0x8000;
- *
- *           c <<= 29;
- *           c |= 0x9980;
- *           c <<= 19;
- *           c |= 0x7FFB;
- *           *out = ((unsigned long)arg2 << 6) | a3w | 0x20;
- *           out += 2;
- *           *out = 5;
- *           out += 2;
- *           *out = c;
- *           out += 2;
- *           *out = 0;
- *       }
- *   }
- *
- * Two open problems, not one: (1) `long long` on any of the 64-bit
- * shift-by-32 expressions here trips "unsupported wide integer
- * operation" -- must use `long`/`unsigned long`, consistent with
- * [[rac1-64bit-field-type]]. (2) retail loads D_0019E640[arg5][0] and
- * [1] UNCONDITIONALLY before testing arg5's sign (even for arg5 < 0,
- * an out-of-bounds read retail's own source apparently didn't guard),
- * but this compiler proves those two reads are unused on the negative
- * paths and deletes them (296 vs retail's 332, 36 bytes short).
- * Marking them `volatile` forces the reads back but also forces them
- * through stack spills instead of registers, regressing further (312
- * bytes and 17640 diff words vs 3100). Neither the size gap nor the
- * dead-read problem is source-steerable with the tools tried so far.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00203808);
+extern long D_0019E640[];
+extern long D_0019E7C0[];
+extern long D_0019E7D8[];
+
+/* Fills four A+D qwords (low dwords only) at out: a TEX1-style word
+   (MXL bits from the second word of row arg5 of the 3-dword table
+   D_0019E640, MMAG 1, MMIN arg2, K arg1), then arg3 | arg4 << 2 |
+   arg5 << 24, then the row's first and third words. A negative arg5 has
+   no row: -2 and -3 take the rows D_0019E7C0 and D_0019E7D8 (and 5 for
+   the second word), -1 a fixed constant and 0. The row is read before
+   the sign test, as in retail. The OR operands are named locals so fold
+   does not move the 0x20 to the end of the chain. */
+void func_00203808(long *out, int arg1, int arg2, int arg3, int arg4, int arg5) {
+    long f0 = D_0019E640[arg5 * 3];
+    long f1 = D_0019E640[arg5 * 3 + 1];
+    long f2 = D_0019E640[arg5 * 3 + 2];
+
+    if (arg5 >= 0) {
+        long t = ((long)arg2 << 6) | 0x20;
+
+        *out = (f1 & 0x1C) | t | ((long)arg1 << 32);
+        out += 2;
+        *out = arg3 | ((long)arg4 << 2) | ((long)arg5 << 24);
+        out += 2;
+        *out = f0;
+        out[2] = f2;
+    } else if (arg5 < -1) {
+        long *tpl = D_0019E7C0;
+
+        if (arg5 == -3) {
+            tpl = D_0019E7D8;
+        }
+        {
+            long v = (long)arg2 << 6;
+            long u = ((long)arg1 << 32) | 0x20;
+            *out = v | u;
+        }
+        out += 2;
+        *out = 5;
+        out += 2;
+        *out = tpl[0];
+        out[2] = tpl[2];
+    } else {
+        {
+            long v = (long)arg2 << 6;
+            long u = ((long)arg1 << 32) | 0x20;
+            *out = v | u;
+        }
+        out += 2;
+        *out = 5;
+        out += 2;
+        *out = 0x80000004CC007FFBL;
+        out[2] = 0;
+    }
+}
+__asm__(".section .text\n\tnop\n");
 
 extern int D_0015EF8C MACRO_ADDR;
 extern int D_0015EF78 MACRO_ADDR;
@@ -482,54 +437,37 @@ void func_00203B18(char *arg0, int idx) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00203B70);
 
-/*
- * Reverted: size mismatch (ours=224, retail=236 -- 12 bytes short).
- * Register slot D_00160000 for the (arg0, arg1, arg2, arg3) object,
- * tagging it with arg3 in both the D_001B3E40 byte flag table and the
- * D_001B3C80 slot->tag table, then bump the counter. If arg0 is a
- * live pointer, stash its +0x2C field in D_001B6500 first and hand
- * off to func_00203B70 for full init; otherwise func_00213BB8 alone
- * is enough to clear/free the slot.
- *
- * Recovered source (every load/store/branch offset checked against
- * the target .s and matches):
- *
- *   extern int D_00160000 MACRO_ADDR;
- *   extern unsigned char D_001B3E40[] NOT_SDA;
- *   extern short D_001B3C80[];
- *   extern char *D_001B3580[] NOT_SDA;
- *   extern int D_001B6500[];
- *   extern void func_00213BB8(void);
- *   extern void func_00203B70(void *, int, int, int);
- *
- *   void func_00203E78(void *arg0, int arg1, int arg2, int arg3) {
- *       int idx = D_00160000;
- *       unsigned char b = *(unsigned char *)&D_00160000;
- *
- *       D_001B3E40[arg3] = b;
- *       D_001B3C80[idx] = (short)arg3;
- *       D_001B3580[idx] = (char *)arg0;
- *
- *       if (arg0 == 0) {
- *           func_00213BB8();
- *           D_00160000 = D_00160000 + 1;
- *       } else {
- *           D_001B6500[idx] = *(int *)((char *)arg0 + 0x2C);
- *           func_00213BB8();
- *           func_00203B70(arg0, arg1, arg2, arg3);
- *           D_00160000 = D_00160000 + 1;
- *       }
- *   }
- *
- * MACRO_ADDR on D_00160000 closed the frame size (0x50, matching
- * retail) by stopping the address from being cached in a saved
- * register across the calls. The residual is retail duplicating the
- * "reload, increment, store" sequence in both branches while this
- * compiler notices the two branches converge to the identical
- * operation and tail-merges them into one shared copy -- same
- * compiler-is-smarter-than-retail class as func_00203118.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00203E78);
+extern int D_00160000 MACRO_ADDR;
+extern unsigned char D_001B3E40[] NOT_SDA;
+extern short D_001B3C80[];
+extern char *D_001B3580[] NOT_SDA;
+extern int D_001B6500[];
+extern void func_00213BB8(int);
+extern void func_00203B70(void *, int, int, int);
+
+/* Registers class arg3's data arg0 in the next moby-class slot
+   (D_00160000): class -> slot in D_001B3E40, slot -> class in
+   D_001B3C80, slot -> data in D_001B3580; then func_00213BB8(arg3) and
+   the slot count is bumped. A non-null arg0 also has its +0x2C field
+   kept in D_001B6500 and is set up by func_00203B70 once the count is
+   bumped. The slot byte is D_00160000 read again as a byte. */
+void func_00203E78(void *arg0, int arg1, int arg2, int arg3) {
+    int idx = D_00160000;
+
+    D_001B3E40[arg3] = *(unsigned char *)&D_00160000;
+    D_001B3C80[idx] = arg3;
+    D_001B3580[idx] = arg0;
+    if (arg0 == 0) {
+        func_00213BB8(arg3);
+        D_00160000 = D_00160000 + 1;
+    } else {
+        D_001B6500[idx] = *(int *)((char *)arg0 + 0x2C);
+        func_00213BB8(arg3);
+        D_00160000 = D_00160000 + 1;
+        func_00203B70(arg0, arg1, arg2, arg3);
+    }
+}
+__asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00203F68);
 

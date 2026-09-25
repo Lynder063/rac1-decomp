@@ -210,7 +210,57 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00213C78);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00213D10);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00213D28);
+typedef struct {
+    char _pad00[0x10];
+    unsigned char nframes; /* 0x10 */
+} AnimSeq;
+typedef struct {
+    char _pad00[0x48];
+    AnimSeq *seqs[1]; /* 0x48 */
+} AnimClass;
+typedef struct {
+    char _pad00[0x24];
+    AnimClass *pClass;       /* 0x24 */
+    char _pad28[0x50 - 0x28];
+    unsigned char frame;     /* 0x50 */
+    unsigned char nextFrame; /* 0x51 */
+    unsigned char seq;       /* 0x52 */
+    unsigned char prevSeq;   /* 0x53 */
+    char _pad54[0x5C - 0x54];
+    float unk5C;             /* 0x5C */
+    char _pad60[0x68 - 0x60];
+    float *frameData;        /* 0x68 */
+    char _pad6C[4];
+    unsigned char unk70;     /* 0x70 */
+} MobyAnim;
+extern void func_0020D6D0_a(void *) __asm__("func_0020D6D0");
+
+/* Sets moby m's animation to sequence seq at frame (clamped to the
+   sequence's last frame), the next frame to frame + 1 (clamped the same
+   way, 0 if still out of range), refreshes the frame pointers
+   (func_0020D6D0) and copies the first float of the new frame to +0x5C.
+   The frame count is re-read through the class at each test, as retail
+   reloads it after the byte stores. */
+void func_00213D28(MobyAnim *m, int seq, int frame) {
+    int n = m->pClass->seqs[seq]->nframes;
+
+    m->seq = seq;
+    if (frame >= n) {
+        frame = n - 1;
+    }
+    m->frame = frame;
+    m->nextFrame = frame + 1;
+    if (m->nextFrame > m->pClass->seqs[seq]->nframes - 1) {
+        m->nextFrame = m->pClass->seqs[seq]->nframes - 1;
+    }
+    m->prevSeq = seq;
+    if (m->nextFrame >= m->pClass->seqs[seq]->nframes) {
+        m->nextFrame = 0;
+    }
+    func_0020D6D0_a(m);
+    m->unk5C = *m->frameData;
+    m->unk70 &= ~2;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00213DE0);
 
@@ -270,7 +320,44 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00214358);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002143D0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00214440);
+extern int D_00161298 MACRO_ADDR;
+extern int D_0016129C MACRO_ADDR;
+extern float D_001612A0[4] MACRO_ADDR;
+extern int func_0023B210(float *, void *, float, float, float);
+extern float func_001F9D48(void *, void *);
+extern void func_001F9BC8(void *);
+
+/* Ground height under pos: func_0023B210's answer when D_00161298 is on
+   and it finds one (it writes the height through its first argument and
+   gets `out` as well); else, when D_0016129C is on and pos lies within
+   0.5 of the height of the disc D_001612A0 (x, y, height, radius) and
+   inside its radius (func_001F9D48 is an XY distance), the disc's
+   height; else pos's own z. Whenever the answer is not func_0023B210's,
+   a non-null `out` is reset by func_001F9BC8. The disc is one MACRO_ADDR
+   array: its fields are symbol+offset accesses, which the compiler
+   counts as two instructions and so keeps out of delay slots, as retail
+   has them. */
+float func_00214440(float *pos, void *out) {
+    float h;
+
+    if (D_00161298 != 0) {
+        h = pos[2];
+        if (func_0023B210(&h, out, pos[0], pos[1], h) != 0) {
+            return h;
+        }
+    }
+    if (D_0016129C != 0 && func_001F9B88(pos[2] - D_001612A0[2]) < 0.5f
+        && func_001F9D48(pos, D_001612A0) < D_001612A0[3]) {
+        if (out != 0) {
+            func_001F9BC8(out);
+        }
+        return D_001612A0[2];
+    }
+    if (out != 0) {
+        func_001F9BC8(out);
+    }
+    return pos[2];
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00214538);
 
@@ -550,7 +637,38 @@ void func_002157C0(int pal) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002158E0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002158E8);
+extern int func_001F9F30(float *);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+
+/* Packs vector v into one RGBA word at *out (func_001F9F30 converts a
+   float4 to bytes): its largest absolute component sets a scale n,
+   rounded (func_001FA898) from max * 10000 / 63 and clamped to 1..255,
+   which goes in w; x, y, z become v / (n / 10000) + 127. */
+void func_002158E8(float *v, int *out) {
+    float buf[4];
+    float a = func_001F9B88(v[0]);
+    float b = func_001F9B88(v[1]);
+    float c = func_001F9B88(v[2]);
+    float m;
+    int n;
+    float s;
+
+    if (b < a) {
+        b = a;
+    }
+    m = (c < b) ? b : c;
+    n = func_001FA898_r(m * 10000.0f / 63.0f);
+    n = (n < 0x100) ? n : 0xFF;
+    if (n <= 0) {
+        n = 1;
+    }
+    buf[3] = (float)n;
+    s = 1.0f / (buf[3] * 0.0001f);
+    buf[0] = v[0] * s + 127.0f;
+    buf[1] = v[1] * s + 127.0f;
+    buf[2] = v[2] * s + 127.0f;
+    *out = func_001F9F30(buf);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215A10);
 

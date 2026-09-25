@@ -131,6 +131,59 @@ void func_001FB8A8(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FB908);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FBAB8);
+extern void func_00234C50(int);
+extern void func_00234C98(int, long);
+
+/* Draws an alpha-blended sprite through a GIF packet appended to
+   D_00161000 (a DMA/VIF header, TEST_1 0x33003, then PRIM 0x106 with
+   RGBAQ rgba and two XYZ2 corners), with ALPHA_1 (GS register 0x42) set
+   to 0x64 around it by func_00234C98 and a VIF flush (func_00234C50,
+   0x13000000) on each side. The corners are (x << 4) + 0x8000 minus
+   half the w/h extent, in 12.4 fixed point. The int sums are kept in their own locals
+   (fold would otherwise share the 0x8000 with the extent), and the four
+   64-bit corner values are converted in the order that leaves retail's
+   last uses, which the scheduler follows. */
+void func_001FBAB8(int x0, int y0, int x1, int y1, int w, int h, unsigned int rgba) {
+    long *q;
+    int ax, ay, bx, by;
+    int hw, hh;
+
+    func_00234C50(0x13000000);
+    func_00234C98(0x42, 0x64);
+    ax = (x0 << 4) + 0x8000;
+    ay = (y0 << 4) + 0x8000;
+    bx = (x1 << 4) + 0x8000;
+    by = (y1 << 4) + 0x8000;
+    hw = w << 3;
+    hh = h << 3;
+    D_00161000[0] = 0x10000006;
+    D_00161000[1] = 0;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000006;
+    D_00161000 += 4;
+    q = (long *)D_00161000;
+    q[0] = 0x1000000000000001L;
+    q[1] = 0xE;
+    q[2] = 0x33003;
+    q[3] = 0x47;
+    q[4] = 0x2400000000000001L;
+    q[5] = 0x10;
+    q[6] = 0x106;
+    q[7] = rgba;
+    q[8] = 0x2400000000008001L;
+    q[9] = 0x44;
+    {
+        long X1 = bx - hw;
+        long X0 = ax - hw;
+        long Y0 = ay - hh;
+        long Y1 = by - hh;
+
+        q[10] = X0 | (Y0 << 16);
+        q[11] = X1 | (Y1 << 16);
+    }
+    D_00161000 += 0x18;
+    func_00234C98(0x42, 0x8000000044L);
+    func_00234C50(0x13000000);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FBC78);

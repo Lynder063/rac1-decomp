@@ -525,7 +525,60 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001ED818);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EDB98);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EDCE8);
+extern int D_0015F09C MACRO_ADDR;
+extern int D_0015F0A0 MACRO_ADDR;
+extern int D_0015F098 MACRO_ADDR;
+
+/* Picks the camera's draw modes: D_0015F09C is 0x14, or 0x34 in states
+   0x11/0x12 or mode 0x73 of D_0013F450, back to 0x14 when its +0x2F0
+   height is below D_00187180+8 (except in state 0x11); D_0015F0A0 keeps
+   the value before bit 0x80 is set. D_0015F098 is 0xB4 ORed with the +0xC0 mode of
+   D_001871D0, which the first set flag of D_0013F450's 0x12E5, 0x12EB,
+   0x12E6, 0x12EC, 0x12E4 overrides. Each arm ORs the new mode in itself
+   (the constants fold per arm, as in retail), and each block reads
+   D_0013F450 through its own local (%hi kept, %lo rebuilt). */
+void func_001EDCE8(void) {
+    char *c = D_001871D0;
+    char *g = D_0013F450;
+    int st;
+
+    D_0015F09C = 0x14;
+    st = *(int *)(g + 0x208C);
+    if (st == 0x11 || st == 0x12 || *(int *)(g + 0x2084) == 0x73) {
+        D_0015F09C = 0x34;
+    }
+    {
+        char *g2 = D_0013F450;
+        if (*(int *)(g2 + 0x208C) != 0x11
+            && *(float *)(g2 + 0x2F0) < *(float *)(D_00187180 + 8)) {
+            D_0015F09C = 0x14;
+        }
+    }
+    {
+        unsigned char *g3 = (unsigned char *)D_0013F450;
+        D_0015F0A0 = D_0015F09C;
+        D_0015F09C |= 0x80;
+        D_0015F098 = 0xB4;
+        if (g3[0x12E5]) {
+            *(int *)(c + 0xC0) = 0x100;
+            D_0015F098 |= *(int *)(c + 0xC0);
+        } else if (g3[0x12EB]) {
+            *(int *)(c + 0xC0) = 0xB00;
+            D_0015F098 |= *(int *)(c + 0xC0);
+        } else if (g3[0x12E6]) {
+            *(int *)(c + 0xC0) = 0x300;
+            D_0015F098 |= *(int *)(c + 0xC0);
+        } else if (g3[0x12EC]) {
+            *(int *)(c + 0xC0) = 0xD00;
+            D_0015F098 |= *(int *)(c + 0xC0);
+        } else if (g3[0x12E4]) {
+            *(int *)(c + 0xC0) = 0;
+            D_0015F098 |= *(int *)(c + 0xC0);
+        } else {
+            D_0015F098 |= *(int *)(c + 0xC0);
+        }
+    }
+}
 
 extern char D_00187040[];
 extern float D_0015F53C MACRO_ADDR;

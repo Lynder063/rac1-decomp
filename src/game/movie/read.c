@@ -342,46 +342,31 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023C9C0); /* videoCallback */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023CAF8); /* pcmCallback(sceMpeg *, sceMpegCbDataStr *, void *) */
 
-/*
- * REVERTED (size mismatch: 296 vs retail's 304). Semantics recovered
- * with confidence -- cpy2area splits two source runs (src1/n2,
- * src2/n3) across two destination areas (p0/n0, p1/n1), reporting the
- * required total length up front and bailing if it won't fit:
- *
- *   extern void func_00115248(void *dst, void *src, int len);
- *
- *   int func_0023CBE0(unsigned char *p0, int n0, unsigned char *p1, int n1,
- *                      unsigned char *src1, int n2, unsigned char *src2, int n3) {
- *       int room;
- *
- *       if (n0 + n1 < n2 + n3) {
- *           return n2 + n3;
- *       }
- *
- *       room = n0 - n2;
- *       if (n2 >= n0) {
- *           func_00115248(p0, src1, n0);
- *           func_00115248(p1, src1 + n0, n2 - n0);
- *           func_00115248(p1 + (n2 - n0), src2, n3);
- *       } else if (n3 >= room) {
- *           func_00115248(p0, src1, n2);
- *           func_00115248(p0 + n2, src2, room);
- *           func_00115248(p1, src2 + room, n3 - room);
- *       } else {
- *           func_00115248(p0, src1, n2);
- *           func_00115248(p0 + n2, src2, n3);
- *       }
- *
- *       return n2 + n3;
- *   }
- *
- * Writing the branches in retail's own order (n2>=n0 first) recovered
- * the exact branch polarity throughout (confirmed via objdump -- every
- * `bnez`/`beqz` and jump target now lines up), closing an initial
- * larger gap. The residual: this compiler recomputes `n0 - n2` a
- * second time inside the n2>=n0 branch instead of keeping the earlier
- * value live across the branch the way retail does. Not reached by
- * hoisting `room` into its own statement (already is one) or
- * restructuring the nesting further.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023CBE0); /* cpy2area(unsigned char *, int, unsigned char *, int, unsigned char *, int, unsigned char *, int) */
+extern void *func_00115248(void *, const void *, int);
+
+/* cpy2area, from Sony's MPEG streaming sample: copies the two source runs
+   (ps0, s0) and (ps1, s1) into the two destination areas (pd0, d0) and
+   (pd1, d1), splitting where the first area fills; returns the bytes
+   copied, or 0 if they do not fit. func_00115248 is memcpy. The sample's
+   own expressions give retail's order (pd1 + s0 - d0, ps1 + d0 - s0). */
+int func_0023CBE0(unsigned char *pd0, int d0, unsigned char *pd1, int d1,
+                  unsigned char *ps0, int s0, unsigned char *ps1, int s1) {
+    if (d0 + d1 < s0 + s1) {
+        return 0;
+    }
+    if (s0 >= d0) {
+        func_00115248(pd0, ps0, d0);
+        func_00115248(pd1, ps0 + d0, s0 - d0);
+        func_00115248(pd1 + s0 - d0, ps1, s1);
+    } else {
+        if (s1 >= d0 - s0) {
+            func_00115248(pd0, ps0, s0);
+            func_00115248(pd0 + s0, ps1, d0 - s0);
+            func_00115248(pd1, ps1 + d0 - s0, s1 - (d0 - s0));
+        } else {
+            func_00115248(pd0, ps0, s0);
+            func_00115248(pd0 + s0, ps1, s1);
+        }
+    }
+    return s0 + s1;
+}

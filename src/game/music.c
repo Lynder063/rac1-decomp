@@ -663,7 +663,60 @@ void func_00216D30(int arg0, int arg1) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00216D88); /* music_Stop(void) */
+extern void func_0012ED10(void);
+extern void func_0012EE70(int);
+
+/* music_Stop: waits (func_0012DDC0, snd_FlushSoundCommands) while each
+   of the three playing records at +0x34, +0x6C and +0x50 is still
+   starting (state 0xFFFFFFFF), stops the streams (func_0012ED10), flushes
+   until nothing is left, calls func_0012EE70(1), then clears the records
+   and the current id (+0x22 kept in +0x38 when set). Each wait loop has
+   its own pointer assigned in the loop condition: jump.c's copy of the
+   exit test in front of the loop then gets its own pseudo, and the loop
+   keeps retail's copy in $s1. The stores are in the order that gives
+   retail's schedule. */
+void func_00216D88(void) {
+    {
+        char *d;
+        while (d = (char *)D_001517D0, *(unsigned int *)(d + 0x34) == 0xFFFFFFFF) {
+            func_0012DDC0();
+        }
+    }
+    {
+        char *d;
+        while (d = (char *)D_001517D0, *(unsigned int *)(d + 0x6C) == 0xFFFFFFFF) {
+            func_0012DDC0();
+        }
+    }
+    {
+        char *d;
+        while (d = (char *)D_001517D0, *(unsigned int *)(d + 0x50) == 0xFFFFFFFF) {
+            func_0012DDC0();
+        }
+    }
+    func_0012ED10();
+    while (func_0012DDC0() != 0) {
+    }
+    func_0012EE70(1);
+    {
+        char *s = (char *)D_001517D0;
+        *(short *)(s + 0x3E) = 0;
+        *(short *)(s + 0x3C) = 0;
+        *(int *)(s + 0x34) = 0;
+        if (*(signed char *)(s + 0x22) != -1) {
+            *(short *)(s + 0x38) = *(signed char *)(s + 0x22);
+        }
+        *(short *)(s + 0x5A) = 0;
+        *(short *)(s + 0x58) = 0;
+        *(int *)(s + 0x50) = 0;
+        *(short *)(s + 0x76) = 0;
+        *(short *)(s + 0x74) = 0;
+        *(int *)(s + 0x6C) = 0;
+        *(short *)(s + 0x20) = 0;
+        *(char *)(s + 0x22) = -1;
+        *(char *)(s + 0x23) = -1;
+    }
+}
 
 extern short D_001517D0[];
 

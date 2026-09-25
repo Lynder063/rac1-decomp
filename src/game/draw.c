@@ -219,7 +219,50 @@ __asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F2608);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F2930); /* UpdateFog(int) */
+/* A fog preset: an RGB byte triple and four floats. */
+typedef struct {
+    unsigned char r, g, b, pad;
+    float f[4];
+} FogPreset;
+extern int D_001873D4;
+extern FogPreset D_001611C4 MACRO_ADDR;
+extern FogPreset D_0015F584 MACRO_ADDR;
+extern int D_0018CE00[];
+extern int D_001601BC MACRO_ADDR;
+extern int D_0015F598 MACRO_ADDR;
+extern void func_001F3140(void);
+
+/* UpdateFog(int): copies the fog preset (the fixed D_001611C4 when
+   D_001873D4 is set, else the current D_0015F584) into the draw context
+   at D_0018CE00+0x218, sets the mode word D_001601BC (0x40000 or
+   0x1F4000), runs UpdateViewContext (func_001F3140) and clears
+   D_0015F598. The presets and the two words it writes are MACRO_ADDR:
+   retail reads each field with the one-register macro, and the mode
+   word's store fits the branch delay slot ($gp-relative there). */
+void func_001F2930(int arg0) {
+    if (D_001873D4 != 0) {
+        D_0018CE00[0x8C] = D_001611C4.r;
+        D_0018CE00[0x8D] = D_001611C4.g;
+        D_0018CE00[0x8E] = D_001611C4.b;
+        *(float *)&D_0018CE00[0x86] = D_001611C4.f[0];
+        *(float *)&D_0018CE00[0x87] = D_001611C4.f[1];
+        *(float *)&D_0018CE00[0x8A] = D_001611C4.f[2];
+        *(float *)&D_0018CE00[0x8B] = D_001611C4.f[3];
+        D_001601BC = 0x40000;
+    } else {
+        D_0018CE00[0x8C] = D_0015F584.r;
+        D_0018CE00[0x8D] = D_0015F584.g;
+        D_0018CE00[0x8E] = D_0015F584.b;
+        *(float *)&D_0018CE00[0x86] = D_0015F584.f[0];
+        *(float *)&D_0018CE00[0x87] = D_0015F584.f[1];
+        *(float *)&D_0018CE00[0x8A] = D_0015F584.f[2];
+        *(float *)&D_0018CE00[0x8B] = D_0015F584.f[3];
+        D_001601BC = 0x1F4000;
+    }
+    func_001F3140();
+    D_0015F598 = 0;
+}
+__asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F2A38); /* ParseOcclGrid */
 
@@ -277,7 +320,48 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F3008); /* InitViewContext(void) */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F3140); /* UpdateViewContext(void) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F3760);
+extern int D_0013E600[];
+extern int D_0018CE00[];
+extern float func_001FA888(int);
+extern void func_001F3140(void);
+
+/* Sets the screen size: the GS viewport record at D_0013E600 gets width,
+   height, their halves and the four <<4 edges around the 0x800 centre;
+   the draw context at D_0018CE00 gets a2 at +0xB0, 32 and 524288 at
+   +0xA0/+0xA4, the half extents as floats (func_001FA888 is int to
+   float) at +0x200/+0x204, four times each at +0x208/+0x20C, and a3..a6
+   at +0x218/+0x21C/+0x228/+0x22C; then UpdateViewContext (func_001F3140).
+   The context is reached through one local pointer, which keeps its
+   full address in $s0 as retail does (indexing the global directly
+   folds +0xB0 into the base and spends $a0 on the %hi). */
+void func_001F3760(int w, int h, float a2, float a3, float a4, float a5, float a6) {
+    float *ctx = (float *)D_0018CE00;
+    int hw = w >> 1;
+    int hh = h >> 1;
+    float fh;
+
+    D_0013E600[0] = w;
+    D_0013E600[1] = h;
+    D_0013E600[2] = hw;
+    D_0013E600[3] = hh;
+    D_0013E600[4] = (0x800 - hw) << 4;
+    D_0013E600[5] = (0x800 - hh) << 4;
+    D_0013E600[6] = (hw + 0x800) << 4;
+    D_0013E600[7] = (hh + 0x800) << 4;
+    ctx[0x2C] = a2;
+    ctx[0x28] = 32.0f;
+    ctx[0x29] = 524288.0f;
+    ctx[0x80] = func_001FA888(w) * 0.5f;
+    fh = func_001FA888(h) * 0.5f;
+    ctx[0x81] = fh;
+    ctx[0x82] = ctx[0x80] * 4.0f;
+    ctx[0x83] = fh * 4.0f;
+    ctx[0x86] = a3;
+    ctx[0x87] = a4;
+    ctx[0x8A] = a5;
+    ctx[0x8B] = a6;
+    func_001F3140();
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F3890); /* SetPalMode(int) */
 
@@ -627,7 +711,74 @@ void func_001F4E08(int frames, unsigned int color) {
     func_001FB530();
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F4F90);
+typedef struct {
+    short start;   /* 0x0 */
+    short end;     /* 0x2 */
+    short text[6]; /* 0x4: string offsets, one per language */
+} Subtitle;
+typedef struct {
+    char pad00[0x34];
+    int time;      /* 0x34 */
+    char pad38[0x14];
+    char *subs;    /* 0x4C */
+} SubState;
+extern SubState D_0018CC20_s __asm__("D_0018CC20");
+extern int D_0015EE88 MACRO_ADDR;
+extern int D_0013E600[];
+extern void func_001F7648(void *arg0, int a1, int a2, int a3, int a4, int a5,
+                          int a6, int a7, int a8);
+extern void func_001F7560_l(void *, long, char *, int) __asm__("func_001F7560");
+extern void func_001F62C8(int, int, int, int, int);
+
+/* Draws the subtitle showing at the current time (D_0018CC20+0x34): the
+   list at +0x4C holds 16-byte entries (start, end, and one string offset
+   into the list per language; a negative start ends it). The language
+   D_0015EE88 picks the string (2..5 map to 1..4, anything else to 0). The
+   text is measured in a FontSetWindow buffer (func_001F7648/7560), its
+   box is kept 0x14 above the bottom of the screen (D_0013E600[1]), the
+   frame is drawn (func_001F62C8) and the text printed with the measure
+   flag (4) cleared. The list is tested and then read again for the
+   loop, which gives retail's copy of it; the clamp test is written
+   bottom-first, which gives retail's registers. */
+void func_001F4F90(void) {
+    Subtitle *p;
+    int lang;
+    int idx;
+
+    if (D_0018CC20_s.subs == 0) {
+        return;
+    }
+    lang = D_0015EE88;
+    idx = (lang >= 2 && lang <= 5) ? lang - 1 : 0;
+    for (p = (Subtitle *)D_0018CC20_s.subs; p->start >= 0; p++) {
+        if (D_0018CC20_s.time < p->start) {
+            continue;
+        }
+        if (p->end < D_0018CC20_s.time) {
+            continue;
+        }
+        {
+            short win[16];
+            short w, h;
+            int hw, hh;
+
+            func_001F7648(win, 0xC8, 0x208, 0x28, 0x1D8, 0x100, D_0013E600[1] - 0x38, 0x12, 7);
+            func_001F7560_l(win, 0x80B0B0B0, D_0018CC20_s.subs + p->text[idx], -1);
+            win[5] = D_0013E600[1] - 0x3C;
+            w = win[6];
+            h = win[7];
+            hh = (h >> 1) + 5;
+            hw = (w >> 1) + 10;
+            if (win[5] + hh > D_0013E600[1] - 0x14) {
+                win[5] = D_0013E600[1] - 0x14 - hh;
+            }
+            func_001F62C8(win[5] - hh, win[5] + hh, 0x100 - hw, 0x100 + hw, 0x60);
+            win[9] &= ~4;
+            func_001F7560_l(win, 0x80B0B0B0, D_0018CC20_s.subs + p->text[idx], -1);
+            return;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F5148);
 

@@ -231,7 +231,68 @@ int func_0020C940(short type, int arg) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020CA50);
+typedef struct {
+    short id;             /* 0x00 */
+    char _pad02[0xE];
+    unsigned short flags; /* 0x10 */
+    short base;           /* 0x12 */
+    short ids[8];         /* 0x14 */
+    short status;         /* 0x24 */
+    short sel;            /* 0x26 */
+} MissionNode;
+extern MissionNode *D_001A2FA0;
+
+/* Lists the current objectives (the 0x28-byte node list at D_001A2FA0,
+   ended by id 0): each node not hidden (flags & 2), with a status, and
+   not an optional (flags & 1) one already done (status 2) goes to
+   out[count] as its id (with arg3: 0x5243 when done, else ids[sel]),
+   sets bit count of *mask when done and puts base + sel in *nums++.
+   Bit 31 of *mask says every visible node is done. Returns the count.
+   out is indexed by count: loop strength reduction then gives retail's
+   pointer and its copy for the second store. */
+int func_0020CA50(int *out, int *mask, int *nums, int arg3) {
+    MissionNode *p = D_001A2FA0;
+    int count = 0;
+    int all = 1;
+
+    *out = 0;
+    if (mask != 0) {
+        *mask = 0;
+    }
+    if (nums != 0) {
+        *nums = -1;
+    }
+    if (p == 0) {
+        return 0;
+    }
+    while (p->id != 0) {
+        unsigned short f = p->flags;
+        short t = p->status;
+
+        if (t != 2 && !(f & 2)) {
+            all = 0;
+        }
+        if (!(f & 2) && t != 0 && !((f & 1) && t == 2)) {
+            out[count] = p->id;
+            if (arg3 != 0) {
+                out[count] = (p->status == 2) ? 0x5243 : p->ids[p->sel];
+            }
+            if (mask != 0 && p->status == 2) {
+                *mask |= 1 << count;
+            }
+            if (nums != 0) {
+                *nums++ = p->base + p->sel;
+            }
+            count++;
+        }
+        p++;
+    }
+    if (mask != 0 && all != 0) {
+        *mask |= 0x80000000;
+    }
+    return count;
+}
+__asm__(".section .text\n\tnop\n");
 
 extern int D_0013D844 NOT_SDA;
 extern unsigned char D_0013D4A8 NOT_SDA;
