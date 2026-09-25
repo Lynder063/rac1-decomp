@@ -113,16 +113,16 @@ bash tools/build_sn.sh
 
 This builds and links `build-sn/rac1.elf`, then audits every decompiled
 function against the retail executable on size and bytes. The output looks
-like this (these are the numbers as of 2026-09-23; decomp.dev has the
+like this (these are the numbers as of 2026-09-24; decomp.dev has the
 current ones):
 
 ```
-=== 731 decompiled functions audited ===
-  exact (size AND bytes): 691
+=== 926 decompiled functions audited ===
+  exact (size AND bytes): 903
   size mismatch:          0   (always revert these -- see docs)
-  byte mismatch:          40
+  byte mismatch:          23
 every function is at its retail address
-image matches retail outside the decompiled near-misses (1038 bytes differ inside them)
+image matches retail outside the decompiled near-misses (834 bytes differ inside them)
 ```
 
 ## Contributing

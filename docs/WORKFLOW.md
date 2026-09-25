@@ -86,6 +86,11 @@ It builds, links, regenerates the images and runs asm-differ. It
 previous `.o`, whose `INCLUDE_ASM` stubs still hold retail's bytes. That
 would show a fictional match, and it has happened 15+ times.
 
+A batch of candidates (one `func_X path/to/candidate.c` line each in a
+manifest) goes in with `python tools/integrate.py MANIFEST --apply`: it
+re-checks each one with `try_func.py` and applies the exact ones. Build
+and audit afterwards as always.
+
 In `core_text`, first ask which compiler built the object: Sony SDK code
 (the C library, the memory card library, libmpeg, ...) was built with
 the SDK's 2.9-ee, the rest with 2.95.3. `tools/compiler_sweep.py

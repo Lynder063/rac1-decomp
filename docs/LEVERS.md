@@ -55,7 +55,8 @@ in `config/core_rodata.txt`).
 - Sony SDK code (objects marked `ee29` in `config/core_text.objects`):
   Sony's 2.9-ee. It tail-calls a void function ending in a call but never
   `return f(...)`, has strict aliasing on, and pads short loops itself.
-  Library code often matches with the library's own source (newlib).
+  Library code often matches with the library's own source: newlib's
+  2000-02-17 snapshot, and MSSG mpeg2decode for libmpeg's decoder.
   Sony's archives in `toolchain/sn-prodg-24/local/sce/ee/lib/` match retail
   and give real names.
 
@@ -64,10 +65,14 @@ in `config/core_rodata.txt`).
 1. **Callee signatures.** `$v0` vs `$v1` for the first temporary after a
    call shows whether the callee returns a value; an argument register
    untouched up to a call is being passed on; a callee's return type also
-   reorders the caller. Fix with an alias.
+   reorders the caller. Fix with an alias. `sltiu` vs `slti` tells an
+   unsigned compare from a signed one.
 2. **`MACRO_ADDR`** (`include/common.h`) on a global that retail loads
    `lui`+`lw` in one register; in a delay slot it becomes `$gp`-relative.
-   `NOT_SDA` for globals that must not use `$gp`.
+   `NOT_SDA` for globals that must not use `$gp`. Never declare a global
+   the file also reaches through `lui` with a small type: every access in
+   the file then goes `$gp`-relative. A word inside a data block read via
+   `$gp` is the block's label plus an offset, not a new symbol.
 3. **Statement order.** The scheduler's ties go to the source's last store
    first; a value stored twice has its first store last. In a function
    with no branches, order moves registers: try the permutations.
@@ -83,6 +88,10 @@ in `config/core_rodata.txt`).
    make only the fields retail re-reads volatile.
 8. **Siblings.** Find a matched function of the same shape in the file and
    copy it first.
+9. **Last resorts.** An empty asm, `__asm__("" : "+r"(x));`, hides a value
+   from the optimizer: it stops a loop being reversed and keeps a
+   constant address in a register. `do { ... } while (0)` around one
+   store is a scheduling barrier.
 
 ## What to hand back
 
