@@ -416,6 +416,7 @@ void func_0012EE70(int arg0) {
 /* gp-relative, no retail symbol: gp 0x166D00 - 0x7F74 = 0x15ED8C
    (streaming-enabled flag, see func_0012F030/func_0012F068). */
 extern short D_0015ED8C;
+extern short D_0015ED94;
 extern short D_0015ED98;
 
 typedef struct {
@@ -425,7 +426,30 @@ typedef struct {
 } CdSafeState;
 extern CdSafeState D_00137C00;
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE98); /* snd_StreamSafeCdRead */
+extern int func_00121750(int, int, int);
+
+/* snd_StreamSafeCdRead */
+int func_0012EE98(int arg0, int arg1, int arg2) {
+    int local[3];
+
+    if (*(int *)&D_0015ED8C == 0) {
+        return func_00121750(arg0, arg1, arg2);
+    }
+
+    if (func_0012EF48(1) == 1) {
+        return 0;
+    }
+
+    local[0] = arg0;
+    D_00137C00.count = 1;
+    D_00137C00.error = 0;
+    local[1] = arg1;
+    local[2] = arg2;
+    func_0012E820(0x38, 12, local, 0, 0);
+    *(int *)&D_0015ED94 = 1;
+    *(int *)&D_0015ED98 = 0;
+    return 1;
+}
 
 extern int func_00120F30(int);
 extern void func_00118D80(int);
