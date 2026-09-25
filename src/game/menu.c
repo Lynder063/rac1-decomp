@@ -226,7 +226,50 @@ int func_00207648(int arg0, int arg1, float unused1, float unused2,
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207780);
+/* Menu hit test. Left of x 0xE9 (arg1 < 0xE9) the point must be inside
+   all four func_00209048 boxes. Otherwise it needs a hit in each of
+   three pairs of boxes, where both boxes of a pair are always tested.
+   Each pair's results are locals of their own block: the first one then
+   lives in one basic block across the second call, so local-alloc gives
+   it $s0 before the arguments are allocated, as retail has it. The two
+   compound conditions (`&&` chain, `!a && !b`) keep the return values
+   as branches instead of an sltu. */
+int func_00207780(int arg0, int arg1) {
+    if (arg1 < 0xE9) {
+        if (func_00209048(arg0, arg1, 0x132, 0xA0, 0x15F, 0xD8)
+            && func_00209048(arg0, arg1, 0x14D, 0xD8, 0x181, 0x9A)
+            && func_00209048(arg0, arg1, 0x182, 0xB4, 0x137, 0x93)
+            && func_00209048(arg0, arg1, 0x157, 0x8C, 0x130, 0xAA)) {
+            return 1;
+        }
+        return 0;
+    }
+    {
+        int a = func_00209048(arg0, arg1, 0x8F, 0x115, 0x148, 0x14B);
+        int b = func_00209048(arg0, arg1, 0xE7, 0x108, 0x127, 0x164);
+        if (a == 0 && b == 0) {
+            return 0;
+        }
+    }
+    {
+        int a = func_00209048(arg0, arg1, 0xED, 0x15F, 0x154, 0x10E);
+        int b = func_00209048(arg0, arg1, 0xA2, 0x12B, 0x16F, 0x147);
+        if (a == 0 && b == 0) {
+            return 0;
+        }
+    }
+    {
+        int a = func_00209048(arg0, arg1, 0x132, 0x163, 0x141, 0xCC);
+        int b = func_00209048(arg0, arg1, 0xC2, 0x108, 0x1A0, 0x12E);
+        if (!a && !b) {
+            return 0;
+        }
+        return 1;
+    }
+}
+
+/* Retail carries 4 bytes of inter-function padding after this endlabel. */
+__asm__(".section .text\n\tnop\n");
 
 extern int D_001A04BC NOT_SDA;
 
@@ -640,13 +683,119 @@ void func_002083E0(void *arg0, unsigned char *arg1, int arg2) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00208458);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00208688);
+/* Expands 128 rows of 16 source bytes into 4-bit-per-pixel masks: a
+   256-entry table maps each byte to a word with nibble k set to 0xF when
+   bit k is set, each row's 16 bytes are looked up into a 64-byte row
+   buffer, and the buffer is copied to dst four times (0x100 bytes of dst
+   per source row). The first bit is a plain store over the zeroed entry
+   (retail's store-in-delay-slot), and the row buffer is filled through
+   a block-local pointer, which gives retail's separate buffer copies. */
+void func_00208688(void *dst, unsigned char *src) {
+    unsigned int table[256];
+    unsigned int rowbuf[16];
+    int i, j, row;
+
+    for (i = 0; i < 256; i++) {
+        table[i] = 0;
+        if (i & 1) {
+            table[i] = 0xF;
+        }
+        if (i & 0x2) {
+            table[i] |= 0xF0;
+        }
+        if (i & 0x4) {
+            table[i] |= 0xF00;
+        }
+        if (i & 0x8) {
+            table[i] |= 0xF000;
+        }
+        if (i & 0x10) {
+            table[i] |= 0xF0000;
+        }
+        if (i & 0x20) {
+            table[i] |= 0xF00000;
+        }
+        if (i & 0x40) {
+            table[i] |= 0xF000000;
+        }
+        if (i & 0x80) {
+            table[i] |= 0xF0000000;
+        }
+    }
+    for (row = 0; row < 128; row++) {
+        unsigned int *p = rowbuf;
+        for (j = 0; j < 16; j++) {
+            *p++ = table[*src++];
+        }
+        func_001F9A98(dst, rowbuf, 0x40);
+        dst = (char *)dst + 0x40;
+        func_001F9A98(dst, rowbuf, 0x40);
+        dst = (char *)dst + 0x40;
+        func_001F9A98(dst, rowbuf, 0x40);
+        dst = (char *)dst + 0x40;
+        func_001F9A98(dst, rowbuf, 0x40);
+        dst = (char *)dst + 0x40;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00208858);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00208860);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00208AB0);
+extern void *func_001FE540_id(int) __asm__("func_001FE540");
+extern char D_0015FE60[]; /* "%d" */
+extern char D_0015FE68[]; /* "error" */
+extern char D_001E02B0[];
+extern int func_00116248_3(void *, char *, int) __asm__("func_00116248");
+extern int func_00116248_2(void *, char *) __asm__("func_00116248");
+
+/* Copies the text of menu entry `bank` (text id at +0xA of its 0x28-byte
+   record in the table at D_001A01F0[8]) into dst, expanding the first
+   '%' escape: "%b" becomes the entry's D_001E02B0 value (the record's
+   +0xC item, first int of its 0x18-byte row) printed with "%d", any
+   other letter becomes "error". The strings are unsigned char (one lbu
+   serves both the test and the copy), and each block that reads
+   D_001A01F0 has its own char * local, which gives retail's kept %hi
+   and rebuilt %lo. */
+void func_00208AB0(int bank, unsigned char *dst) {
+    unsigned char buf[16];
+    unsigned char *src;
+    unsigned char *p;
+    char *t;
+
+    t = (char *)D_001A01F0;
+    src = func_001FE540_id(*(short *)(*(char **)(t + 0x20) + bank * 0x28 + 0xA));
+    p = buf;
+    if (src == 0) {
+        return;
+    }
+    while (*src != 0 && *src != '%') {
+        *dst++ = *src++;
+    }
+    if (*src == 0) {
+        *dst = *src;
+        return;
+    }
+    src++;
+    if (*src == 'b') {
+        char *t2 = (char *)D_001A01F0;
+        func_00116248_3(buf, D_0015FE60,
+                        *(int *)(D_001E02B0 + *(short *)(*(char **)(t2 + 0x20) + bank * 0x28 + 0xC) * 0x18));
+    } else {
+        func_00116248_2(buf, D_0015FE68);
+    }
+    src++;
+    while (*p != 0) {
+        *dst++ = *p++;
+    }
+    while (*src != 0) {
+        *dst++ = *src++;
+    }
+    *dst = 0;
+}
+
+/* Retail carries 12 bytes of inter-function padding after this endlabel. */
+__asm__(".section .text\n\tnop\n\tnop\n\tnop\n");
 
 typedef struct {
     float a, b, c, d;

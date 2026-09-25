@@ -383,7 +383,77 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00239CF8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023A220);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023A478);
+extern int D_0013D530[];
+extern int D_0015EE98 MACRO_ADDR;
+extern char D_001E02B0[];
+extern int func_001F6F40_c(int, int, long, void *, int) __asm__("func_001F6F40");
+
+typedef struct {
+    int type; /* +0x0 */
+    int kind; /* +0x4: 1 == ammo */
+    int pad[3];
+} VendorSlot;
+
+typedef struct {
+    char pad0[0x40];
+    int alt;             /* +0x40 */
+    char pad1[0x14];
+    int idx;             /* +0x58 */
+    int sel;             /* +0x5C */
+    char pad2[0x70];
+    VendorSlot slots[1]; /* +0xD0 */
+} Vendor;
+extern Vendor D_001E66C0_v __asm__("D_001E66C0");
+
+typedef struct {
+    char pad0[8];
+    unsigned short price;    /* +0x8 */
+    unsigned short priceAlt; /* +0xA */
+    char pad1[2];
+    unsigned short max;      /* +0xE */
+    char pad2[8];
+} WeaponInfo; /* 0x18 */
+
+/* Vendor ammo prompt: draws the panel, then shows text 0x4EE0 when
+   nothing is selected, or when the selected slot is an ammo slot
+   (kind 1) that is not full (D_0013D530[type] < max) and the player's
+   D_0015EE98 covers its price (priceAlt when +0x40 is set).
+   The kind test is two separate ifs: the first one's failure jumps to
+   the second, so CSE sees a label there and keeps the re-test retail
+   has. The D_001E02B0 records are reached as char arithmetic cast to a
+   struct, which gives retail's index-first addu with the field offset
+   left as the load displacement. */
+void func_0023A478(void) {
+    Vendor *v;
+    int idx;
+    int price;
+
+    func_001FBAB8(0, 0, 0x200, 0x80, 0x200, 0x80, 0);
+    v = &D_001E66C0_v;
+    if (v->sel != 0) {
+        idx = v->idx;
+        if (v->slots[idx].kind == 1 &&
+            D_0013D530[v->slots[idx].type] >=
+                ((WeaponInfo *)(D_001E02B0 + v->slots[idx].type * 0x18))->max) {
+            return;
+        }
+        if (v->slots[idx].kind == 1) {
+            if (v->alt) {
+                price = ((WeaponInfo *)(D_001E02B0 + v->slots[idx].type * 0x18))->priceAlt;
+            } else {
+                price = ((WeaponInfo *)(D_001E02B0 + v->slots[idx].type * 0x18))->price;
+            }
+            if (D_0015EE98 >= price) {
+                func_001F6F40_c(0x28, 0x14, 0x80F0F0F0L, func_001FE540_id(0x4EE0), -1);
+            }
+        }
+    } else {
+        func_001F6F40_c(0x28, 0x14, 0x80F0F0F0L, func_001FE540_id(0x4EE0), -1);
+    }
+}
+
+/* Retail carries 4 bytes of inter-function padding after this endlabel. */
+__asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023A5D8);
 

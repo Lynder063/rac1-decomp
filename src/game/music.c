@@ -740,6 +740,88 @@ void func_00216F28(void) {
     p[0x2E] = 4;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00216F48); /* music_UpdateStream(music_Playing &) */
+typedef struct {
+    unsigned int handle; /* 0x00: 0 none, 0xFFFFFFFF starting/released */
+    short id;            /* 0x04 */
+    short unk06;
+    short unk08;
+    short state;         /* 0x0A: low bits the state, 0x8000 paused */
+    short fade;          /* 0x0C: 0x8000 fading */
+    short fadeT;         /* 0x0E */
+} MusicPlaying;
+
+extern void func_0012E4A8(int);
+extern void func_0012EDB0(int);
+extern int func_001F9938(void *);
+extern void func_0012EE10(int, void (*)(int, long), long);
+extern void func_0012E588(int, void (*)(int, long), long);
+extern void func_0012EE40(int, void (*)(int, long), long);
+extern void func_00217A60(int, long);
+extern void func_00217A08(int, long);
+extern void func_00217830(int, long);
+
+/* music_UpdateStream(music_Playing &): with a live handle and state other
+   than 9, state 5 stops the stream (state 6) and state 6 without a
+   handle resets; a fading record (+0xC bit 15) pauses the handle once
+   (+0xA bit 15) and polls func_001F9938 until it reports 2 (+0xC = 4),
+   otherwise a paused one is resumed. Unpaused, states 1/8/9 are left
+   alone, 2 hands the handle to func_0012EE40 unless it is 0xFFFFFFFF,
+   and anything but 2/3 releases the handle through func_0012EE10 and
+   func_0012E588. With no live handle (or state 9) the state is cleared
+   when it is 7 or the handle is 0. The handle is unsigned (retail builds
+   0xFFFFFFFF with lui/ori), the special case is the else arm (retail
+   places it last), and the dispatch reads p->state directly so the 2/3
+   range test works on the loaded halfword as retail's does. */
+void func_00216F48(MusicPlaying *p) {
+    int h;
+
+    if (p->state != 9 && p->handle != 0 && p->handle != 0xFFFFFFFF) {
+        if (p->state == 5) {
+            if (p->handle != 0) {
+                func_0012E4A8(p->handle);
+                p->state = 6;
+            } else {
+                p->state = 0;
+            }
+        } else if (p->state == 6) {
+            if (p->handle == 0) {
+                p->state = 0;
+            }
+        }
+        if (p->handle == 0) {
+            return;
+        }
+        if (p->fade & 0x8000) {
+            if (!(p->state & 0x8000)) {
+                func_0012EDB0(p->handle);
+                p->state |= 0x8000;
+            }
+            if (func_001F9938(&p->fadeT) == 2) {
+                p->fade = 4;
+            }
+        } else if (p->state & 0x8000) {
+            func_0012EDE0((void *)p->handle);
+            p->state ^= 0x8000;
+        }
+        if (p->state & 0x8000) {
+            return;
+        }
+        if (p->state == 1 || p->state == 8 || p->state == 9) {
+            return;
+        }
+        if (p->state != 2 && p->state != 3) {
+            h = p->handle;
+            p->handle = 0xFFFFFFFF;
+            func_0012EE10(h, func_00217A60, (long)(unsigned int)p);
+            func_0012E588(h, func_00217A08, (long)(unsigned int)p);
+            return;
+        }
+        if (p->handle != 0xFFFFFFFF && p->state == 2) {
+            func_0012EE40(p->handle, func_00217830, (long)(unsigned int)p);
+        }
+    } else if (p->state == 7 || p->handle == 0) {
+        p->state = 0;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00217130); /* music_Update(void) */

@@ -539,4 +539,97 @@ void func_0023C2E8(Obj23C *ad, unsigned char *src, int size, int arg3) {
     func_0012F288(size, arg3);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C390); /* sendADPCM(_AudioDec *) */
+/* _AudioDec as the RC1 build has it (func_0023BFA0's AudioDecR), with
+   the SpuStreamHeader fields spelled out and the extra int at 0x60 the
+   SPU-side position. */
+typedef struct {
+    int state;           /* 0x00 */
+    int strType;         /* 0x04 */
+    char id[4];          /* 0x08 SpuStreamHeader */
+    int hsize;           /* 0x0C */
+    int type;            /* 0x10 */
+    int rate;            /* 0x14 */
+    int ch;              /* 0x18 */
+    int interSize;       /* 0x1C */
+    int loopStart;       /* 0x20 */
+    int loopEnd;         /* 0x24 */
+    char ssbd[8];        /* 0x28 SpuStreamBody */
+    int hdrCount;        /* 0x30 */
+    unsigned char *data; /* 0x34 */
+    int put;             /* 0x38 */
+    int count;           /* 0x3C */
+    int size;            /* 0x40 */
+    int totalBytes;      /* 0x44 */
+    int iopBuff;         /* 0x48 */
+    int iopBuffSize;     /* 0x4C */
+    int iopLastPos;      /* 0x50 */
+    int iopPausePos;     /* 0x54 */
+    int totalBytesSent;  /* 0x58 */
+    int iopZero;         /* 0x5C */
+    int spuPos;          /* 0x60 */
+} AudioDecA;
+extern unsigned char *D_001613B8_p __asm__("D_001613B8") MACRO_ADDR;
+extern int func_0012F2B8(void);
+extern void func_0023C2E8_a(AudioDecA *, unsigned char *, int, int) __asm__("func_0023C2E8");
+
+/* sendADPCM(_AudioDec *): once enough is buffered (state 1: 4 KiB,
+   filling the IOP buffer from iopLastPos; state 2: the free space behind
+   the SPU position func_0012F2B8 reports), sends 1 KiB per channel at a
+   time: each channel's interleaved blocks are gathered from the ring
+   buffer into D_001613B8, the ADPCM loop/start flags are patched at the
+   buffer's start (spuPos 0) and end (spuPos 0xC00), and func_0023C2E8
+   sends it to i * 0x1000 + spuPos. The space counter is decremented at
+   the end of the body, so it is its own register at the loop test as
+   in retail; the header bytes go through a local copy of the buffer
+   pointer (one load, as retail). */
+void func_0023C390(void *arg0) {
+    AudioDecA *ad = arg0;
+    int avail = 0;
+    int i, j, n;
+    unsigned char *src, *dst;
+
+    switch (ad->state) {
+    case 1:
+        if (ad->count < 0x1000) {
+            return;
+        }
+        avail = 0x1000 - ad->iopLastPos;
+        break;
+    case 2:
+        avail = (func_0012F2B8() - ad->spuPos) & 0xFFF;
+        break;
+    case 3:
+        return;
+    }
+    while (avail >= 0x400 && ad->count >= ad->ch << 10) {
+        for (i = 0; i < ad->ch; i++) {
+            src = ad->data + (ad->put - ad->count + ad->size) % ad->size;
+            src += i * ad->interSize;
+            dst = D_001613B8_p;
+            n = 0;
+            while (n < 0x400) {
+                for (j = 0; j < ad->interSize; j++) {
+                    *dst++ = *src++;
+                    n++;
+                }
+                src += ad->interSize * (ad->ch - 1);
+            }
+            if (ad->spuPos + 0x400 == 0x1000) {
+                D_001613B8_p[0x3F1] = 3;
+            }
+            if (ad->spuPos == 0) {
+                unsigned char *b = D_001613B8_p;
+                b[1] = 6;
+                b[0x11] = 2;
+            }
+            func_0023C2E8_a(ad, D_001613B8_p, 0x400, i * 0x1000 + ad->spuPos);
+        }
+        ad->spuPos = (ad->spuPos + 0x400) % 0x1000;
+        ad->count -= ad->ch << 10;
+        ad->iopLastPos += 0x400;
+        avail -= 0x400;
+    }
+}
+
+/* Retail carries 4 bytes of inter-function padding after this endlabel. */
+__asm__(".section .text\n\tnop\n");
