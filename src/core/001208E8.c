@@ -433,7 +433,52 @@ int func_00120FD0(int arg0) {
     return func_0011B6B8(D_00132E08);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00121040);
+extern int D_001313EC;
+extern int D_001313D8;
+extern char D_00153010[];
+extern char D_00153038[];
+extern int D_00131408;
+
+/* _sceCd_ncmd_prechk (libcdvd.a cdvd000.o) */
+int func_00121040(int arg0) {
+    int i;
+    volatile int *sem = &D_001313EC;
+
+    func_00120B28();
+    if (*sem != func_00118CC0(*sem)) {
+        if (D_001313D0 > 0) {
+            func_0011A6C8(D_00153010, arg0, D_001313D8);
+        }
+        return 0;
+    }
+    D_001313D8 = arg0;
+    func_00118BF0(D_00159850, D_00159858);
+    if (func_00120FD0(1) != 0) {
+        func_00118C90(*sem);
+        return 0;
+    }
+    func_0011AE20(0);
+    if (D_00131408 >= 0) {
+        return 1;
+    }
+    while (1) {
+        if (func_0011B2F8(D_00132E08, 0x80000593, 0) < 0) {
+            if (D_001313D0 > 0) {
+                func_0011A6C8(D_00153038);
+            }
+            for (i = 0x100000; i != -1; i--)
+                ;
+        } else {
+            if (((SifRpcClientData *)D_00132E08)->serve != 0) {
+                break;
+            }
+            for (i = 0x100000; i != -1; i--)
+                ;
+        }
+    }
+    D_00131408 = 0;
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001211B0);
 
