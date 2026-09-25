@@ -4,6 +4,12 @@
 /*
  * core_text object 0x119328-0x119868. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * Sony's EE kernel library (libkernl), three members of libkernl.a back to
+ * back: intr.o (DisableIntc/EnableIntc/DisableDmac/EnableDmac), thread.o
+ * (topThread, InitThread = func_001195A0, iWakeupThread) and deci2.o
+ * (sceDeci2Open ... kputs). Built with Sony's 2.9-ee (Makefile.sn,
+ * EE29_CORE), like the prebuilt archive it matches.
  */
 
 /* Declarations in scope here before the split. */
@@ -43,107 +49,94 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00119460);
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001194C8);
 
 /*
- * REVERTED (size mismatch: 220 vs retail's 212). Decode is certain.
- * The two argument structs are the real PS2 kernel ones (from
- * kernel.h): CreateSema takes a 6-int ee_sema_t {count, max_count,
- * init_count, wait_threads, attr, option} -- only max_count and
- * init_count are written, count is genuinely left uninitialized --
- * and CreateThread's struct is 9 ints (only the first 6 are written;
- * retail's field 0 holds the entry function pointer, which doesn't
- * match ps2sdk's documented ee_thread_t field order, so this is
- * likely Sony's own layout, not ps2sdk's reconstruction). Getting
- * BOTH struct sizes right was what closed a 32-byte stack-frame gap
- * (0x60 vs retail's 0x80) to an exact match:
+ * InitThread: start the kernel-side service thread once. Bail with -1 if
+ * the thread id D_0012FCF8 is already > 0; CreateSema (func_00118C70,
+ * maxCount 0xFF, initCount 0) into D_00154600; CreateThread
+ * (func_00118B50) with entry topThread (func_001194C8), stack D_00154200,
+ * stackSize 0x400, gpReg &_gp (D_00166D00), initPriority 0, its id into
+ * D_0012FCF8 (DeleteSema and -1 on failure); clear D_00154608[0..1],
+ * StartThread(tid, D_00154608), ChangeThreadPriority(GetThreadId(), 1);
+ * return D_0012FCF8 (re-read). Exact under 2.9-ee.
  *
- *   extern int func_00118C70(void *); // CreateSema
- *   extern void func_00118C80(int);   // DeleteSema
- *   extern int func_00118B50(void *); // CreateThread
- *   extern int func_00118B70(int, void *);
- *   extern int func_00118BE0(void);
- *   extern int func_00118BA0(int, int);
- *   extern void func_001194C8(void);
- *   extern int D_0012FCF8, D_00154600;
- *   extern char D_00154200[], D_00166D00[];
- *   extern int D_00154608[2];
- *
- *   typedef struct {
- *       int count, max_count, init_count, wait_threads, attr, option;
- *   } Sema001195A0;
- *   typedef struct {
- *       void (*entry)(void); void *gp; void *stack; int stack_size;
- *       int arg1, arg2, f18, f1C, f20;
- *   } Thread001195A0;
- *
- *   int func_001195A0(void) {
- *       Thread001195A0 thread;
- *       Sema001195A0 sema;
- *       int tid;
- *       if (D_0012FCF8 > 0) goto fail;
- *       sema.max_count = 0xFF;
- *       sema.init_count = 0;
- *       tid = func_00118C70(&sema);
- *       if (tid < 0) goto fail;
- *       D_00154600 = tid;
- *       thread.entry = func_001194C8;
- *       thread.gp = D_00154200;
- *       thread.stack = D_00166D00;
- *       thread.stack_size = 0x400;
- *       thread.arg1 = 0;
- *       thread.arg2 = 0;
- *       tid = func_00118B50(&thread);
- *       D_0012FCF8 = tid;
- *       if (tid < 0) {
- *           func_00118C80(D_00154600);
- *           goto fail;
- *       }
- *       D_00154608[0] = 0;
- *       D_00154608[1] = 0;
- *       func_00118B70(tid, D_00154608);
- *       func_00118BA0(func_00118BE0(), 1);
- *       return D_0012FCF8;
- *   fail:
- *       return -1;
- *   }
- *
- * Two residuals, both 4 bytes: sharing the -1 return between the
- * three failure paths (goto to one `fail:` label, as above) recovered
- * one; retail also tests CreateSema's raw return in $2 directly
- * (`bltz $2,...`) with no register move, where this compiler always
- * inserts one -- tried a bare `if (func_00118C70(&sema) < 0)` (can't,
- * needs the value again right after) and `if ((tid = ...) < 0)`
- * (identical codegen to the plain assign-then-test form). Not
- * reachable from source.
+ * Levers: Sony's real kernel.h structs -- ThreadParam is 12 ints with
+ * `status` first (entry at +4, stack +8, stackSize +0xC, gpReg +0x10,
+ * initPriority +0x14), SemaParam 6 ints -- which put the thread at sp+0
+ * and the semaphore at sp+0x30 in a 0x80 frame (the old decode had a
+ * 9-int struct with entry first); and the CreateSema result stored to
+ * the global and the global tested, which gives retail's test of $v0
+ * with the store in the bltz slot. Under 2.95.3 the CreateThread failure
+ * block is laid out after the success path (48/212, same size).
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001195A0);
-
+extern int func_00118C70(void *);
+extern void func_00118C80(int);
+extern int func_00118B50(void *);
+extern int func_00118B70(int, void *);
+extern int func_00118BE0(void);
+extern int func_00118BA0(int, int);
+extern void func_001194C8(void *);
 extern int D_0012FCF8;
 extern int D_00154600;
+extern char D_00154200[];
+extern char D_00166D00[];
 extern int D_00154608[];
-extern int func_00118C20(int);
-extern void func_00118CA0(int);
 
-int func_00119678(int arg0) {
-    int v0;
-    int index;
-    int sema;
+typedef struct {
+    int status;
+    void (*entry)(void *);
+    void *stack;
+    int stackSize;
+    void *gpReg;
+    int initPriority;
+    int currentPriority;
+    unsigned int attr;
+    unsigned int option;
+    int waitType;
+    int waitId;
+    int wakeupCount;
+} ThreadParam_1195A0;
 
-    asm volatile("addiu $3, $0, -0x2F\n\tsyscall\n\t" : "=r"(v0) : : "$3");
+typedef struct {
+    int currentCount;
+    int maxCount;
+    int initCount;
+    int numWaitThreads;
+    unsigned int attr;
+    unsigned int option;
+} SemaParam_1195A0;
 
-    if (v0 == arg0) {
-        if ((v0 < 0x100) && (D_0012FCF8 != 0)) {
-            sema = D_00154600;
-            index = D_00154608[1] & 0x1FF;
-            D_00154608[1] = index + 1;
-            ((char*)D_00154608)[index * 2 + 8] = 0;
-            ((char*)D_00154608)[index * 2 + 9] = v0;
-            func_00118CA0(sema);
-            return v0;
-        }
+int func_001195A0(void) {
+    ThreadParam_1195A0 tp;
+    SemaParam_1195A0 sp;
+    int tid;
+
+    if (D_0012FCF8 > 0) {
         return -1;
     }
-
-    return func_00118C20(v0);
+    sp.maxCount = 0xFF;
+    sp.initCount = 0;
+    D_00154600 = func_00118C70(&sp);
+    if (D_00154600 < 0) {
+        return -1;
+    }
+    tp.entry = func_001194C8;
+    tp.stack = D_00154200;
+    tp.stackSize = 0x400;
+    tp.gpReg = D_00166D00;
+    tp.initPriority = 0;
+    tid = func_00118B50(&tp);
+    D_0012FCF8 = tid;
+    if (tid < 0) {
+        func_00118C80(D_00154600);
+        return -1;
+    }
+    D_00154608[0] = 0;
+    D_00154608[1] = 0;
+    func_00118B70(tid, D_00154608);
+    func_00118BA0(func_00118BE0(), 1);
+    return D_0012FCF8;
 }
+
+INCLUDE_ASM("asm/nonmatchings/core_text", func_00119678);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119710);
 
@@ -159,13 +152,14 @@ extern int func_00118E90_ret(int, void *) __asm__("func_00118E90");
 /* sceDeci2Open: returns Deci2Call's int result (func_00118E90 is
    Deci2Call, declared void in this file, so it is reached through an
    alias). */
-void func_00119718(s32 arg0, s32 arg1, s32 arg2) {
-    char *buf[4];
-    buf[0] = (char *)D_00154A10;
-    buf[1] = (char *)arg0;
-    buf[2] = (char *)arg1;
-    buf[3] = (char *)arg2;
-    func_00118E90(1, buf);
+int func_00119718(unsigned short arg0, void *arg1, void *arg2) {
+    unsigned int buf[4];
+
+    buf[0] = arg0;
+    buf[1] = (unsigned int)arg1;
+    buf[2] = (unsigned int)arg2;
+    buf[3] = (unsigned int)&D_00154A10 | 0x20000000;
+    return func_00118E90_ret(1, buf);
 }
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119760);

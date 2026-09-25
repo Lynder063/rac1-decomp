@@ -4,6 +4,12 @@
 /*
  * core_text object 0x123168-0x1236F0. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * Two Sony libraries back to back, both built with Sony's 2.9-ee
+ * (Makefile.sn, EE29_CORE): libgraph's sceGsSyncVCallback (func_00123168,
+ * the last of libgraph's modules, which end 8-byte aligned so no fill
+ * separates them) and the start of libdma ("libdma: sync timeout";
+ * sceDmaGetChan, sceDmaReset, sceDmaPutEnv, sceDmaPause, ...).
  */
 
 /* Declarations in scope here before the split. */
@@ -115,22 +121,17 @@ extern int func_00118A90(int, void *, int);
 extern void func_00119390(int);
 
 /*
- * Same-size near-miss (8/0xA0 bytes). Install (or, called with
- * arg0 == 0, uninstall) a handler/arg pair at offset 8/0xC of
- * D_00132E40 (func_00121D08's return -- same global func_00122140
- * reads the mode flag from), guarded by func_00119328/func_00119390,
- * a lock/unlock pair around the two syscall-wrapper calls
- * func_00118AA0/func_00118A90. Returns the previous handler.
+ * libgraph's sceGsSyncVCallback: install (or, called with arg0 == 0,
+ * uninstall) the V-sync handler at offset 8/0xC of D_00132E40
+ * (func_00121D08's sceGsGetGParam -- the same global func_00122140 reads
+ * the mode flag from), under DisableIntc/EnableIntc (func_00119328/
+ * func_00119390) of INTC 2 (VBLANK start) around the AddIntcHandler/
+ * RemoveIntcHandler syscalls (func_00118A90/func_00118AA0). Returns the
+ * previous handler.
  *
- * The only divergence is the func_00118A90(lvl, arg0, -1) call's
- * argument setup: retail computes a1 (arg0) before a0 (lvl); every
- * spelling tried here -- the literal `2` inline, a `lvl` local reused
- * across all four calls (this dropped the diff from 75 to 65 words by
- * fixing an unrelated store-order pair, but didn't touch this swap),
- * and forcing evaluation order through two sequenced statement-local
- * temporaries right before the call -- produces the same a0-before-a1
- * order regardless. Pure register-content-identical instruction
- * scheduling, not reachable from source.
+ * Exact under 2.9-ee as written. Under 2.95.3 it was 8/0xA0: that
+ * compiler set up a0 (lvl) before a1 (arg0) for the func_00118A90 call
+ * whatever the spelling, where retail (and 2.9-ee) has a1 first.
  */
 int func_00123168(void *arg0) {
     char *g = (char *)func_00121D08();
@@ -154,41 +155,30 @@ int func_00123168(void *arg0) {
     return prev;
 }
 
-extern void func_00123650(void *);
+extern int func_00123650(void *);
 extern char D_001534E0[];
 
 /*
- * Close, not exact (24/112), same size. Logic is certain: spin while
- * bit 8 of *arg0 is set, and once a 0xFFFFFF countdown goes negative,
- * report through func_0011A6C8(D_001534E0) and kick func_00123650 on
- * every further iteration.
+ * Wait for a DMA channel: spin while CHCR.STR (bit 8 of *arg0) is set;
+ * after 0x1000000 polls report through func_0011A6C8(D_001534E0,
+ * "libdma: sync timeout") and sceDmaPause (func_00123650) the channel on
+ * every further poll.
  *
- * The residual is the countdown's initial constant, and it is NOT
- * reachable from C. Retail builds 0x00FFFFFF as
- *     lui $17,0x100 ; addiu $17,$17,-1
- * (the signed %hi/%lo split, which is why splat invented a bogus
- * "D_FFFFFF" symbol for it). Both SN sub-builds emit the logical split
- *     lui $16,0xff  ; ori $16,$16,0xffff
- * instead, for every spelling tried: int, unsigned, long, and a
- * (char *)0xFFFFFF pointer. gcc 2.95's mips_move_1word hands a plain
- * CONST_INT to the assembler as `li`, and gas expands `li` with ori.
- * The lui/addiu pair is what gcc emits for a SYMBOL address, so retail
- * most likely got this value from an absolute/linker-defined symbol
- * rather than a literal.
- *
- * The register roles are swapped with it ($16/$17 exchanged) as a knock
- * -on of which value is materialised first; fixing that alone would not
- * make this exact, so it was not chased.
+ * The countdown starts at 0x1000000 and is decremented before the test:
+ * retail's `lui 0x100; addiu -1` (splat's "D_FFFFFF") is that first
+ * n-- folded into the constant, and reorg copies the loop's n-- into the
+ * bnez slot. The old reading (0xFFFFFF, `if (n < 0)` then `n--`) gave
+ * `lui 0xff; ori 0xffff` and was 24/112. The channel word is read
+ * volatile, as the hardware register it is.
  */
 void func_00123208(void *arg0) {
-    int n = 0xFFFFFF;
+    int n = 0x1000000;
 
-    while ((*(int *)arg0 & 0x100) != 0) {
-        if (n < 0) {
+    while ((*(volatile int *)arg0 & 0x100) != 0) {
+        if (--n < 0) {
             func_0011A6C8(D_001534E0);
             func_00123650(arg0);
         }
-        n--;
     }
 }
 
@@ -202,106 +192,85 @@ int func_00123280(int arg0) {
     return arg0;
 }
 
-/*
- * Same-size near-miss (2/0x34 bytes). Zero-fill n bytes at dst.
- * Retail advances dst right after decrementing the counter, before
- * the loop-continuation test; this compiler always schedules the
- * increment into the branch's delay slot instead. Tried both
- * statement orders (dst++ before/after i--) and a for-loop -- the
- * for-loop actually regresses (grows the function); the two do-while
- * orderings compile identically. Not reachable from source.
- */
+/* Zero-fill n bytes at dst.
+
+   The plain post-decrement loop: the counter becomes a new pseudo (n - 1
+   in $v0, -1 in $v1) instead of the parameter decremented in place, and
+   the empty delay slot is 2.9-ee itself -- it pads the short loop with
+   nops in its own output and leaves the bne unfilled, so the assembler
+   puts the nop in the slot. That is the "unfilled short-loop slot" seen
+   elsewhere in core_text. Under 2.95.3 the same C gets the registers
+   right but reorg fills the slot (6/52); the old do-while was 2/52. */
 void func_001232A8(char *dst, int n) {
-    int i;
-    if (n == 0) {
-        return;
+    while (n-- != 0) {
+        *dst++ = 0;
     }
-    i = n - 1;
-    do {
-        *dst = 0;
-        i--;
-        dst++;
-    } while (i != -1);
 }
 
 extern int D_00132E70[];
 
+/* sceDmaGetChan: the channel's register block, 0 for an id past the ten
+   channels. The in-range return comes first under 2.9-ee (the
+   `>= 0xA` guard-first form matched 2.95.3 and is 21/40 here). */
 int func_001232E0(unsigned int arg0) {
-    if (arg0 >= 0xA) {
-        return 0;
+    if (arg0 < 0xA) {
+        return D_00132E70[arg0];
     }
-    return D_00132E70[arg0];
+    return 0;
 }
 
 /*
- * REVERTED (size mismatch: ~228 vs retail's 220). Decode is certain:
+ * sceDmaReset(mode): ret = D_CTRL.DMAE; for each of the ten channels
+ * whose flag (D_001534F8[i]) is set, zero chcr/tadr/madr/as1/as0/sadr of
+ * the channel's registers (D_00132E70[i]); D_STAT = 0xFF1F, then
+ * D_STAT &= 0xFF1F0000; zero a 0x14-byte sceDmaEnv (func_001232A8) and
+ * sceDmaPutEnv it (func_001233E8); if mode == 1 set DMAE. Exact under
+ * both compilers.
  *
- *   extern int D_001534F8[];
- *   extern void func_001233E8(void *);
- *
- *   int func_00123308(int arg0) {
- *       volatile unsigned int *reg0 = (volatile unsigned int *)0x1000E000;
- *       volatile unsigned int *reg1 = (volatile unsigned int *)0x1000E010;
- *       char buf[0x14];
- *       int flag;
- *       int count;
- *       int *flagp;
- *       int *tblp;
- *
- *       flag = *reg0 & 1;
- *
- *       flagp = D_001534F8;
- *       tblp = D_00132E70;
- *       count = 9;
- *       do {
- *           if (*flagp != 0) {
- *               int *p = (int *)*tblp;
- *               p[0] = 0;
- *               p[0xC] = 0;
- *               p[4] = 0;
- *               p[0x14] = 0;
- *               p[0x10] = 0;
- *               p[0x20] = 0;
- *           }
- *           tblp++;
- *           count--;
- *           flagp++;
- *       } while (count >= 0);
- *
- *       *reg1 = 0xFF1F;
- *       *reg1 = *reg1 & 0xFF1F0000;
- *
- *       func_001232A8(buf, 0x14);
- *       func_001233E8(buf);
- *
- *       if (arg0 == 1) {
- *           *reg0 = *reg0 | 1;
- *       }
- *       return flag;
- *   }
- *
- * Two real bugs caught mid-match, not just scheduling: the table walk
- * is a trip count of 9 (10 total iterations -- D_00132E70's own
- * getter bounds-checks against 0xA) over TWO independently-advancing
- * pointers, not a 9-iteration index loop as first read; and the
- * per-joint zero-fill's source order has to be a rotation of the
- * field list (0, 0xC, 4, 0x14, 0x10, 0x20) to reproduce retail's
- * emitted order (0x20 first, the rest in that sequence) -- same lever
- * as func_0011DE38's table-pointer fix upstream. Both are confirmed
- * exactly matching (loop shape: down-counting `bgez`, `beqzl` guard,
- * store order all byte-identical).
- *
- * What's left, ~8 bytes: retail computes the 0x1000E010 register's
- * address once and reuses it for all three accesses (one store, a
- * reload, a second store scheduled into the func_001232A8 call's
- * delay slot); this compiler re-materialises the address via a fresh
- * `lui $at` for each of the three raw-pointer dereferences instead of
- * caching it, and never fills that jal's delay slot with the store.
- * Not reached from source; same class of residual as func_0012CC90
- * and func_0020E0C8 (a hardware-register access this toolchain won't
- * schedule the way retail's did).
+ * Levers (build-sn/try/func_00123308/RESULT.md):
+ *  - an index loop: loop.c strength-reduces it into the two pointers and
+ *    the down-counter itself, in retail's init order (the old
+ *    hand-written two-pointer loop swapped them);
+ *  - the MMIO spelled inline as `*(volatile unsigned int *)0x1000E0x0`
+ *    (a pointer local becomes absolute `$at` addressing: the old 228);
+ *  - the two D_STAT stores are not volatile, only its read, so the second
+ *    store can go into the jal slot as in retail (a volatile store never
+ *    does);
+ *  - sceDmaPutEnv returns int: the `li 1` after it is in $v1.
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00123308);
+extern int D_001534F8[];
+extern int func_001233E8(void *);
+
+int func_00123308(int arg0) {
+    char buf[0x14];
+    int flag;
+    int i;
+
+    flag = *(volatile unsigned int *)0x1000E000 & 1;
+
+    for (i = 0; i < 10; i++) {
+        if (D_001534F8[i] != 0) {
+            int *p = (int *)D_00132E70[i];
+            p[0] = 0;
+            p[0xC] = 0;
+            p[4] = 0;
+            p[0x14] = 0;
+            p[0x10] = 0;
+            p[0x20] = 0;
+        }
+    }
+
+    *(unsigned int *)0x1000E010 = 0xFF1F;
+    *(unsigned int *)0x1000E010 = *(volatile unsigned int *)0x1000E010 & 0xFF1F0000;
+
+    func_001232A8(buf, 0x14);
+    func_001233E8(buf);
+
+    if (arg0 == 1) {
+        *(volatile unsigned int *)0x1000E000 = *(volatile unsigned int *)0x1000E000 | 1;
+    }
+    return flag;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001233E8);
 
@@ -310,34 +279,32 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001235C0);
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00123630);
 
 /*
- * Attempted and reverted at 70/152 (same size, so inert). Semantics are
- * confirmed and the instruction sequence is structurally identical to
- * retail; the residual is the allocator destination-choice question plus
- * prologue scheduling, neither source-steerable. Decoded C, so a later
- * attempt starts from the meaning:
+ * sceDmaPause: DI (func_0011D960), force D_ENABLEW.CPND (0x10000) if
+ * D_ENABLER has it clear, read D_CTRL (a volatile read for its side
+ * effect only), clear the channel's CHCR.STR (bit 8), restore
+ * D_ENABLEW, EI (func_0011D9A8) if DI said interrupts were on, and
+ * return the old CHCR.
  *
- *   int func_00123650(int *arg0) {
- *       int en, prev, old;
- *       en = func_0011D960();
- *       prev = *(volatile int *)0x1000F520;          // D_ENABLER
- *       if ((prev & 0x10000) == 0)
- *           *(volatile int *)0x1000F590 = prev | 0x10000;
- *       *(volatile int *)0x1000E000;                 // D_CTRL, discarded
- *       old = *arg0;
- *       *arg0 = old & ~0x100;
- *       *(volatile int *)0x1000F590 = prev;          // restore
- *       if (en != 0) func_0011D9A8();
- *       return old;
- *   }
- *
- * Divergences: retail holds the func_0011D960 result in $7 and the
- * enabler in $6 where this compiler picks $a2/$a1; retail copies the
- * parameter to $17 after both prologue saves where this compiler
- * interleaves it between them; and this compiler hoists the
- * non-volatile *arg0 load above the volatile D_CTRL read (legal, but
- * retail has them the other way). The D_CTRL read is genuinely
- * discarded -- a volatile read for its side effect only.
+ * Exact under 2.9-ee. The mask has to be an unsigned constant
+ * (`old & 0xFFFFFEFF`; `~0x100` is one addiu, SIZE 148), and the channel
+ * word goes through a `volatile unsigned int *`, which keeps its load
+ * after the D_CTRL read and gives retail's $4-$7 allocation. Under
+ * 2.95.3 the same C differs in the prologue order only (8/152).
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00123650);
+int func_00123650(void *arg0) {
+    volatile unsigned int *d = arg0;
+    int en;
+    unsigned int prev, old;
+    en = func_0011D960();
+    prev = *(volatile unsigned int *)0x1000F520;
+    if ((prev & 0x10000) == 0)
+        *(volatile unsigned int *)0x1000F590 = prev | 0x10000;
+    *(volatile unsigned int *)0x1000E000;
+    old = *d;
+    *d = old & 0xFFFFFEFF;
+    *(volatile unsigned int *)0x1000F590 = prev;
+    if (en != 0) func_0011D9A8();
+    return old;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001236E8);

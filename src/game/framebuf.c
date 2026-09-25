@@ -105,7 +105,87 @@ void func_001FB598(void) {
     D_00161000 += 4;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FB608);
+typedef struct {
+    char unk_000[0x160];
+    short w;        /* 0x160 */
+    short h;        /* 0x162 */
+    short psm;      /* 0x164 */
+    short fbp;      /* 0x166 */
+    short unk_168[2];
+    short zpsm;     /* 0x16C */
+    short zbp;      /* 0x16E */
+} FrameCfg;
+extern FrameCfg D_00151880_f __asm__("D_00151880");
+extern long D_0015EFD0 MACRO_ADDR;
+extern void func_001F99D8(void *, int);
+/* sceGsSetDefDrawEnv */
+extern int func_001222C8(void *, short, short, short, short, short);
+
+typedef struct {
+    unsigned long FBP:9;
+    unsigned long pad09:7;
+    unsigned long FBW:6;
+    unsigned long pad22:2;
+    unsigned long PSM:6;
+    unsigned long pad30:2;
+    unsigned long FBMSK:32;
+} GsFrame; /* sceGsFrame */
+
+/* Sets up a (1 << a) x (1 << b) render target at GS address c (see
+   func_0023A948): records TEX0 for it in D_0015EFD0 (buffer width
+   1 << max(a - 6, 1) pages, PSMCT32, TCC), its size and FBP (c >> 13) in
+   D_00151880, then appends a packet to D_00161000: a default draw
+   environment (sceGsSetDefDrawEnv with ztest 3) patched with the FBP and
+   the configured Z buffer, followed by TEST_1 0x30003 and a black sprite
+   over the whole target. FBP is set through the sceGsFrame bitfield, the
+   form that sign-extends the halfword before masking as retail does. */
+void func_001FB608(int a, int b, int c) {
+    int x;
+    long *q;
+    unsigned long *d;
+    long *r;
+
+    x = a - 6;
+    if (x <= 0) {
+        x = 1;
+    }
+    D_00151880_f.fbp = c >> 13;
+    D_00151880_f.w = 1 << a;
+    D_00151880_f.h = 1 << b;
+    D_0015EFD0 = (unsigned long)(c >> 8) | ((unsigned long)(1 << x) << 14)
+               | ((unsigned long)0 << 20) | ((unsigned long)a << 26)
+               | ((unsigned long)b << 30) | ((unsigned long)1 << 34);
+    func_001F99D8(D_00161000, 0xF0);
+    D_00161000[0] = 0x1000000E;
+    D_00161000[1] = 0;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x5000000E;
+    D_00161000 += 4;
+    q = (long *)D_00161000;
+    q[0] = 0x1000000000000008L;
+    q[1] = 0xE;
+    D_00161000 += 4;
+    d = (unsigned long *)D_00161000;
+    func_001222C8(d, D_00151880_f.psm, D_00151880_f.w, D_00151880_f.h, 3, 0);
+    ((GsFrame *)d)->FBP = D_00151880_f.fbp;
+    d[2] = D_00151880_f.zbp | ((unsigned long)(D_00151880_f.zpsm & 0xF) << 24);
+    D_00161000 += 0x20;
+    r = (long *)D_00161000;
+    r[0] = 0x1000000000000001L;
+    r[1] = 0xE;
+    r[2] = 0x30003;
+    r[3] = 0x47;
+    r[4] = 0x4400000000008001L;
+    r[5] = 0x4410;
+    r[6] = 0x106;
+    r[7] = 0;
+    r[8] = (long)(0x8000 - D_00151880_f.w * 8) | ((long)(0x8000 - D_00151880_f.h * 8) << 16);
+    r[9] = (long)(D_00151880_f.w * 8 + 0x8000) | ((long)(D_00151880_f.h * 8 + 0x7FF0) << 16);
+    D_00161000 += 0x14;
+}
+
+/* Retail carries 4 bytes of inter-function padding after this endlabel. */
+__asm__(".section .text\n\tnop\n");
 
 extern int *D_00161000 MACRO_ADDR;
 extern char D_00151A00[];
@@ -131,6 +211,59 @@ void func_001FB8A8(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FB908);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FBAB8);
+extern void func_00234C50(int);
+extern void func_00234C98(int, long);
+
+/* Draws an alpha-blended sprite through a GIF packet appended to
+   D_00161000 (a DMA/VIF header, TEST_1 0x33003, then PRIM 0x106 with
+   RGBAQ rgba and two XYZ2 corners), with ALPHA_1 (GS register 0x42) set
+   to 0x64 around it by func_00234C98 and a VIF flush (func_00234C50,
+   0x13000000) on each side. The corners are (x << 4) + 0x8000 minus
+   half the w/h extent, in 12.4 fixed point. The int sums are kept in their own locals
+   (fold would otherwise share the 0x8000 with the extent), and the four
+   64-bit corner values are converted in the order that leaves retail's
+   last uses, which the scheduler follows. */
+void func_001FBAB8(int x0, int y0, int x1, int y1, int w, int h, unsigned int rgba) {
+    long *q;
+    int ax, ay, bx, by;
+    int hw, hh;
+
+    func_00234C50(0x13000000);
+    func_00234C98(0x42, 0x64);
+    ax = (x0 << 4) + 0x8000;
+    ay = (y0 << 4) + 0x8000;
+    bx = (x1 << 4) + 0x8000;
+    by = (y1 << 4) + 0x8000;
+    hw = w << 3;
+    hh = h << 3;
+    D_00161000[0] = 0x10000006;
+    D_00161000[1] = 0;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000006;
+    D_00161000 += 4;
+    q = (long *)D_00161000;
+    q[0] = 0x1000000000000001L;
+    q[1] = 0xE;
+    q[2] = 0x33003;
+    q[3] = 0x47;
+    q[4] = 0x2400000000000001L;
+    q[5] = 0x10;
+    q[6] = 0x106;
+    q[7] = rgba;
+    q[8] = 0x2400000000008001L;
+    q[9] = 0x44;
+    {
+        long X1 = bx - hw;
+        long X0 = ax - hw;
+        long Y0 = ay - hh;
+        long Y1 = by - hh;
+
+        q[10] = X0 | (Y0 << 16);
+        q[11] = X1 | (Y1 << 16);
+    }
+    D_00161000 += 0x18;
+    func_00234C98(0x42, 0x8000000044L);
+    func_00234C50(0x13000000);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FBC78);

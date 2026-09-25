@@ -114,7 +114,49 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001236F0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001238A8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001238B0);
+extern char D_00159B00[];
+extern int D_00132EAC;
+extern int func_00118CC0(int);
+extern void func_00118C90(int);
+extern char D_00159BB0[];
+extern void *func_00116B00(void *, const void *, int);
+extern char D_0015B0C0[];
+extern int func_0011B4C8();
+extern int D_00132EA8;
+
+/* sceMcOpen(port, slot, fname, mode) (libmc): same RPC-wrapper shape as
+   sceMcDelete (func_00124410) but with the flags/mode argument stored to
+   the descriptor's +0x8 word instead of a hardcoded 0, and RPC command 2. */
+int func_001238B0(int port, int slot, int fname_, int mode) {
+    char *cd = D_00159B00;
+    char *fname = (char *)fname_;
+    char *fp;
+    int r;
+
+    if (*(int *)(cd + 0x24) == 0) {
+        return -100;
+    }
+    if (func_00118CC0(D_00132EAC) < 0) {
+        return -200;
+    }
+    if (fname == 0 || *fname == 0) {
+        func_00118C90(D_00132EAC);
+        return -210;
+    }
+    func_00116B00(D_00159BB0 + 0x14, fname, 0x3FF);
+    fp = D_00159BB0;
+    *(int *)(fp + 0x0) = port;
+    fp[0x413] = 0;
+    *(int *)(fp + 0x8) = mode;
+    *(int *)(fp + 0x4) = slot;
+    r = func_0011B4C8(cd, 2, 1, fp, 0x414, D_0015B0C0, 4, 0, 0);
+    if (r == 0) {
+        D_00132EA8 = 2;
+    } else {
+        func_00118C90(D_00132EAC);
+    }
+    return r;
+}
 
 extern int func_001238B0(int, int, int, int);
 extern int D_00132EA8;
@@ -237,7 +279,44 @@ void func_00123BA0(void *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00123C30);
+extern char D_00159B00[];
+extern int D_00132EAC;
+extern int func_00118CC0(int);
+extern void func_00118C90(int);
+extern int D_00159B80;
+extern char D_0015A000[];
+extern char D_0015B0C0[];
+extern int func_0011AD70(void *, int);
+extern int func_0011B4C8();
+extern int D_00132EA8;
+extern void func_00123BA0(void *);
+
+int func_00123C30(int fd, void *buf, int nbyte) {
+    char *cd = D_00159B00;
+    int *p;
+    char *next;
+    int r;
+
+    if (*(int *)(cd + 0x24) == 0) {
+        return -100;
+    }
+    if (func_00118CC0(D_00132EAC) < 0) {
+        return -200;
+    }
+    p = &D_00159B80;
+    next = D_0015A000;
+    p[0] = fd;
+    p[7] = (int)next;
+    func_0011AD70((void *)(p[6] = (int)buf), p[3] = nbyte);
+    func_0011AD70(next, 0xC0);
+    r = func_0011B4C8(cd, 5, 1, p, 0x30, D_0015B0C0, 4, func_00123BA0, next);
+    if (r == 0) {
+        D_00132EA8 = 5;
+    } else {
+        func_00118C90(D_00132EAC);
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00123D48);
 
@@ -307,7 +386,52 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001241E8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124338);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124410);
+extern char D_00159B00[];
+extern int D_00132EAC;
+extern int func_00118CC0(int);
+extern void func_00118C90(int);
+extern char D_00159BB0[];
+extern void *func_00116B00(void *, const void *, int);
+extern char D_0015B0C0[];
+extern int func_0011B4C8();
+extern int D_00132EA8;
+
+/* sceMcDelete(port, slot, fname): rejects a null/empty fname (SignalSema,
+   return -210), else strncpy's it into the shared sifParamFname
+   descriptor's name field (D_00159BB0+0x14), fills in port/slot/flags
+   and force-terminates at the max length, then runs RPC 0xF (delete)
+   through cd_base. Nonzero (queued) result SignalSemas and returns the
+   handle; 0 records the command and returns 0 -- the same idiom as
+   func_00123C30/sceMcRead. */
+int func_00124410(int port, int slot, char *fname) {
+    char *cd = D_00159B00;
+    char *fp;
+    int r;
+
+    if (*(int *)(cd + 0x24) == 0) {
+        return -100;
+    }
+    if (func_00118CC0(D_00132EAC) < 0) {
+        return -200;
+    }
+    if (fname == 0 || *fname == 0) {
+        func_00118C90(D_00132EAC);
+        return -210;
+    }
+    func_00116B00(D_00159BB0 + 0x14, fname, 0x3FF);
+    fp = D_00159BB0;
+    *(int *)(fp + 0x0) = port;
+    *(int *)(fp + 0x4) = slot;
+    fp[0x413] = 0;
+    *(int *)(fp + 0x8) = 0;
+    r = func_0011B4C8(cd, 0xF, 1, fp, 0x414, D_0015B0C0, 4, 0, 0);
+    if (r == 0) {
+        D_00132EA8 = 0xF;
+    } else {
+        func_00118C90(D_00132EAC);
+    }
+    return r;
+}
 
 extern char D_00159B00[];
 extern int D_00132EAC;
@@ -380,9 +504,94 @@ int func_001247E8(int arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124858);
+extern int D_0015B180;
+extern char D_0015B108[];
+extern int func_0011B4C8();
+extern void func_00124B60(void *, ...);
+extern char D_00153678[];
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124920);
+/* sceDbcCreateSocket (libdbc): copy the caller's socket record (five
+   header words, then a 16-byte name) into the RPC buffer D_0015B180, set
+   its port (arg1, word 10) and mode (arg2, word 11), then run the
+   create-socket RPC (0x80000901) through cd_base. Prints and returns 0
+   on failure, else the reply's word 9.
+
+   The header words are copied as pointers. Their alias set then differs
+   from the int port/mode stores, so the header loads need not wait for
+   those stores; the scheduler then places `i = 0` ahead of them, and the
+   loop registers come out in $t0-$t2 as in retail. namesrc/namedst are
+   precomputed so each byte address is one base+index add, and the call
+   re-takes &D_0015B180 for its buffer arguments. */
+int func_00124858(void *arg0, int arg1, int arg2) {
+    int *buf = &D_0015B180;
+    char *namesrc = (char *)arg0 + 0x14;
+    char *namedst = (char *)buf + 0x14;
+    int i;
+
+    buf[10] = arg1;
+    buf[11] = arg2;
+    ((void **)buf)[0] = ((void **)arg0)[0];
+    ((void **)buf)[1] = ((void **)arg0)[1];
+    ((void **)buf)[2] = ((void **)arg0)[2];
+    ((void **)buf)[3] = ((void **)arg0)[3];
+    ((void **)buf)[4] = ((void **)arg0)[4];
+    for (i = 0; i < 0x10; i++) {
+        namedst[i] = namesrc[i];
+    }
+    if (func_0011B4C8(D_0015B108, 0x80000901, 0, &D_0015B180, 0x400,
+                       &D_0015B180, 0x400, 0, 0) < 0) {
+        func_00124B60(D_00153678);
+        return 0;
+    }
+    return buf[9];
+}
+
+extern void func_00119288(void *, void *);
+extern int func_0011D960(void);
+/* EIntr returns the previous interrupt state; the file declares it void.
+   A call that returns a value changes how the lookup after it is
+   allocated. */
+extern int func_0011D9A8_i(void) __asm__("func_0011D9A8");
+extern char D_0015B580[];
+extern int D_0015B600[];
+extern void *memcpy(void *, const void *, unsigned int);
+extern int D_0015B180;
+extern char D_0015B108[];
+extern int func_0011B4C8();
+extern void func_00124B60(void *, ...);
+extern char D_001536B8[];
+
+/*
+ * sceDbcGetDepNumber(port) (libdbc): write back the 0x80-byte DMA buffer
+ * D_0015B580 (func_00119288), then with interrupts off (DIntr/EIntr)
+ * copy its first 0x40 bytes into the link-state table D_0015B600. A port
+ * whose state is not 1 (linked) returns -12. Otherwise RPC 0x80000903
+ * with the port as the request word; returns the reply's second word, or
+ * reports the failure (func_00124B60) and returns 0.
+ *
+ * The RPC buffer is re-taken as &D_0015B180 for the call's arguments and
+ * `buf` is only assigned where it is used, so the table base and the
+ * buffer share retail's saved register.
+ */
+int func_00124920(int port) {
+    int *buf;
+
+    func_00119288(D_0015B580, D_0015B580 + 0x80);
+    func_0011D960();
+    memcpy(D_0015B600, D_0015B580, 0x40);
+    func_0011D9A8_i();
+    if (D_0015B600[port] != 1) {
+        return -0xC;
+    }
+    buf = &D_0015B180;
+    buf[0] = port;
+    if (func_0011B4C8(D_0015B108, 0x80000903, 0, &D_0015B180, 0x400,
+                       &D_0015B180, 0x400, 0, 0) < 0) {
+        func_00124B60(D_001536B8);
+        return 0;
+    }
+    return buf[1];
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124A68);
 
@@ -468,7 +677,68 @@ void func_00124B60(void *fmt, ...) {
  */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124B88);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124BC8);
+extern int func_00124858(void *, int, int);
+extern void func_001153FC(void *, int, int);
+extern void *memcpy(void *, const void *, unsigned int);
+
+extern char D_0015B640_b[] __asm__("D_0015B640");
+
+typedef struct {
+    int w0;
+    int mode;
+    int w2;
+    int w3;
+    int w4;
+    char name[16];
+} Pad2SockParam;
+
+/* scePad2CreateSocket(param, buf). c5: `desc.w0 = 0` moved inside the
+   else (null) block instead of shared before the if, probing the last
+   1-byte beqz/beql (branch-likely) difference from c4. */
+int func_00124BC8(void *param, char *buf) {
+    Pad2SockParam desc;
+    int r;
+    int i;
+    char *p;
+
+    if (((int)buf & 0x3F) != 0) {
+        return -1;
+    }
+    if (param != 0) {
+        int *src = (int *)param;
+        desc.w0 = src[0];
+        desc.w2 = src[1];
+        desc.w3 = src[2];
+        desc.w4 = src[3];
+        memcpy(desc.name, (char *)param + 0x10, 16);
+    } else {
+        desc.w0 = 0;
+        desc.w2 = 0;
+        desc.w3 = 0;
+        desc.w4 = 0;
+        desc.name[0] = 0;
+    }
+    desc.w0 |= 1;
+    desc.mode = 1;
+    r = func_00124858(&desc, (int)buf, (int)buf + 0x80);
+    if (r < 0) {
+        return r;
+    }
+    *(int *)(D_0015B640_b + r * 0x330) = 1;
+    *(char **)(D_0015B640_b + r * 0x330 + 0xC) = buf;
+    p = buf;
+    for (i = 1; i >= 0; i--) {
+        p[0] = 0;
+        *(int *)(p + 0x7C) = 0;
+        p[1] = 0;
+        p[3] = 0;
+        p[2] = 0;
+        *(int *)(p + 4) = 0;
+        func_001153FC(p + 0x1C, 0xFF, 0x20);
+        p += 0x80;
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124D10);
 
@@ -529,7 +799,61 @@ int func_00124DF0(int port, void *arg1) {
     return result;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124EE0);
+extern int func_001250E0(int);
+extern void *func_00125078(int);
+
+/* A single stack-resident local shared by both call paths below: its
+   byte 0 is the state code every path eventually returns (retail's two
+   "side" sub-paths converge on one `sb`/`lbu` round trip through it,
+   and the RPC path stages its return through the same byte), and the
+   word at +4 is the uninitialised in/out count func_00124A70 wants. */
+typedef struct {
+    unsigned char state;
+    char pad[3];
+    int result;
+} Pad2Buf;
+
+/* scePad2GetState(port): link the pad if needed (func_00125020), then
+   ask func_001250E0 (scePad2CheckDma) whether new data has arrived.
+   If so, fetch the active "side" struct (func_00125078) and take its
+   state byte directly if it looks initialised (+0x4 != 0); otherwise
+   try one more relink and use it anyway on success, else forget this
+   port's link and return 0. If CheckDma says nothing changed, build
+   the RPC command word (the same McCmd bitfield union as
+   func_00124DF0's {2,3,2,1}, here {0xC,2,1,1}) and round-trip it
+   through func_00124A70; return its state byte on success, 0 on
+   failure. */
+int func_00124EE0(int port) {
+    Pad2Buf buf;
+    char *side;
+    McCmd cmd;
+
+    if (D_0015B640[port].unk_04 == 0) {
+        if (func_00125020(port) < 0) {
+            return 0;
+        }
+    }
+    if (func_001250E0(port) != 0) {
+        side = func_00125078(port);
+        if (*(int *)(side + 0x4) != 0) {
+            buf.state = side[0];
+        } else if (func_00125020(port) >= 0) {
+            buf.state = side[0];
+        } else {
+            D_0015B640[port].unk_04 = 0;
+            return 0;
+        }
+        return buf.state;
+    }
+    cmd.b.f0 = 0xC;
+    cmd.b.f1 = 2;
+    cmd.b.f2 = 1;
+    cmd.b.f3 = 1;
+    if (func_00124A70(port, cmd.i, &buf.result, (char *)&buf) < 0) {
+        return 0;
+    }
+    return buf.state;
+}
 
 extern int func_00124920(int);
 

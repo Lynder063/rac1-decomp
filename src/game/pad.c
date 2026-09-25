@@ -207,7 +207,113 @@ extern void func_00124650(void);
 extern void func_00124B88(int);
 extern int func_00124BC8(void *, void *);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00217F68);
+typedef struct {
+    char unk_000[0x180];
+    unsigned char mode[4]; /* 0x180 */
+    unsigned char act[4];  /* 0x184 */
+    char f188;             /* 0x188 */
+    char f189;             /* 0x189 */
+    char unk_18A[2];
+    short f18C;            /* 0x18C */
+    char unk_18E[6];
+    int port;              /* 0x194 */
+    int state;             /* 0x198 */
+    int padState;          /* 0x19C */
+    int f1A0;              /* 0x1A0 */
+    char unk_1A4[8];
+    int f1AC;              /* 0x1AC */
+    int f1B0;              /* 0x1B0 */
+    char unk_1B4[8];
+    int f1BC;              /* 0x1BC */
+    char unk_1C0[0x1C];
+    int f1DC;              /* 0x1DC */
+    char unk_1E0[0x168];
+    int f348;              /* 0x348 */
+} Pad;
+
+extern int func_00124EE0(int);
+extern int func_00124DF0(int, void *);
+extern int func_00125218(int, void *);
+extern int func_00124D18(int, void *);
+extern void func_00218188(); /* ClearPadInput(PAD &), defined below */
+extern void func_002181F0(void *, void *, int);
+
+/* UpdatePad(PAD &): latches a few per-frame fields, then asks
+   func_00124EE0 for the port's state. Not 1: the input is cleared and
+   the pad state machine reset. Otherwise state 0 reads two 4-byte info
+   blocks (func_00124DF0 -> +0x180, with +0x1DC = 0x79 when the first word
+   is 0xFFFFFFFF, and func_00125218 -> +0x184; more than 4 bytes counts
+   as none) and moves to state 1, or 2 when the first block was too
+   long; state 1 reads the buttons into func_002181F0 and counts +0x18C
+   down; state 2 clears the input and sets +0x18C to 2. The two copy
+   loops per block are as retail has them (0..n, then n..3). */
+void func_00217F68(void *arg0) {
+    Pad *p = arg0;
+    unsigned char buf[0x40];
+    int n, i, s;
+
+    p->f1A0 = 0;
+    p->f1AC = p->f348;
+    p->f1BC = p->f1B0;
+    p->f1B0 = 0;
+    p->padState = func_00124EE0(p->port);
+    if (p->padState == 1) {
+        switch (s = p->state) {
+        case 0:
+            n = func_00124DF0(p->port, buf);
+            if (*(unsigned int *)buf == 0xFFFFFFFF) {
+                p->f1DC = 0x79;
+            } else {
+                p->f1DC = 0;
+            }
+            if (n < 5) {
+                for (i = 0; i < n; i++) {
+                    p->mode[i] = buf[i];
+                }
+                p->state = 1;
+            } else {
+                n = 0;
+                p->state = 2;
+            }
+            for (i = n; i < 4; i++) {
+                p->mode[i] = buf[i];
+            }
+            n = func_00125218(p->port, buf);
+            if (n < 5) {
+                for (i = 0; i < n; i++) {
+                    p->act[i] = buf[i];
+                }
+            } else {
+                n = 0;
+            }
+            for (i = n; i < 4; i++) {
+                p->act[i] = buf[i];
+            }
+            func_00218188(p);
+            p->f18C = 2;
+            break;
+        case 1:
+            n = func_00124D18(p->port, buf);
+            func_002181F0(p, buf, n);
+            if (p->f18C != 0) {
+                p->f18C--;
+            }
+            break;
+        case 2:
+            func_00218188(p);
+            p->f18C = s;
+            break;
+        }
+    } else {
+        func_00218188(p);
+        p->state = 0;
+    }
+    p->f188 = 0;
+    p->f189 = 0;
+}
+
+/* Retail carries 4 bytes of inter-function padding after this endlabel. */
+__asm__(".section .text\n\tnop\n");
 
 /* ClearPadInput(PAD &) */
 typedef struct {

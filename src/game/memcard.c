@@ -127,7 +127,43 @@ extern char D_0013D390[];
 extern short D_0015EFB0;
 extern int D_0015EFB4;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00209A60);
+extern char D_0013D2D0[];
+extern char D_0013D2E8[];
+extern char D_0013D300[];
+extern char D_0013D320[];
+extern char D_0013D340[];
+extern char D_0013D370[];
+extern void func_00116B00(void *, void *, int);
+
+/* Builds a 13-byte name/version stamp in D_0013D2D0 from the record's
+   region byte (arg0[0x12]) and the record's date/version fields, then
+   copies that stamp into the six on-disk name buffers. */
+void func_00209A60(void *arg0) {
+    unsigned char *a = (unsigned char *)arg0;
+    unsigned char region = a[0x12];
+    int i;
+
+    if (region == 'E') {
+        D_0013D2D0[2] = region;
+    } else if (region == 'P') {
+        D_0013D2D0[2] = 'I';
+    }
+    for (i = 3; i < 7; i++) {
+        D_0013D2D0[i] = a[i + 0xD];
+    }
+    for (i = 8; i < 0xB; i++) {
+        D_0013D2D0[i] = a[i + 0xD];
+    }
+    for (i = 0xB; i < 0xD; i++) {
+        D_0013D2D0[i] = a[i + 0xE];
+    }
+    func_00116B00(D_0013D2E8, D_0013D2D0, 0xD);
+    func_00116B00(D_0013D300, D_0013D2D0, 0xD);
+    func_00116B00(D_0013D320, D_0013D2D0, 0xD);
+    func_00116B00(D_0013D340, D_0013D2D0, 0xD);
+    func_00116B00(D_0013D340 + 0x14, D_0013D2D0, 0xD);
+    func_00116B00(D_0013D370, D_0013D2D0, 0xD);
+}
 
 extern int func_00124068(int, int, int *, int *, int *);
 extern int func_00123F30(int, int *, int *);
@@ -413,4 +449,96 @@ void func_0020BCB0(char *buf, int slot, int idx) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0020BD70); /* memcard_RestoreData(char *, char *, int, mc_data *) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020BFC8); /* memcard_Save(int, int) */
+extern void func_00121A80(void *);
+extern void func_0012D818(void *);
+extern void func_00208FA0(void);
+extern void func_00208338(void *);
+extern char D_0015EF98[] MACRO_ADDR;
+extern char D_00141FC0[];
+extern unsigned char D_0013DE60[];
+extern int D_0015EE98 MACRO_ADDR;
+extern int D_0015EF24 MACRO_ADDR;
+extern int D_0015EF20 MACRO_ADDR;
+extern int D_0015EFB4_m __asm__("D_0015EFB4") MACRO_ADDR;
+extern char D_0014EFD0[];
+extern char D_001507D0[];
+
+/* memcard_Save(slot, flags): starts the save (func_00121A80/func_0012D818
+   on D_0015EF98, func_00208FA0, func_00208338 on the D_00141FC0 page for
+   D_0015EE84). With no valid card slot (D_0013D390+0xC8, its record's
+   +0x14) it returns whether `slot` is 0. Otherwise it ORs `slot` into the
+   pending mask (+0xFC); unless nothing is pending, a save is running
+   (+0xDC >= 3) or a result is waiting (+0xE4 >= 0), it stamps +0xD0 with
+   D_0015EE84 (temporarily switching D_0015EE84 to `flags` and setting that
+   D_0013DE60 byte), fills entry e[+0x14] (four globals and the 8-byte
+   name), serialises both tables (func_0020BBC8), restores the byte and
+   D_0015EE84, and sets result 0xF. Returns whether the result is 0xF.
+   D_0015EF98 is MACRO_ADDR (retail rebuilds its address at each use), the
+   name field is reached from a `q + 0x30` base, and each block reads
+   D_0013D390 through its own `char *` local (retail keeps only the %hi). */
+int func_0020BFC8(int slot, int flags) {
+    unsigned char saved;
+
+    func_00121A80(D_0015EF98);
+    func_0012D818(D_0015EF98);
+    func_00208FA0();
+    func_00208338(D_00141FC0 + (D_0015EE84_m << 11));
+    {
+        char *p = D_0013D390;
+        int active = *(int *)(p + 0xC8);
+        int mask;
+
+        if (active == -1 || *(int *)(p + active * 0xC0 + 0x14) < 0) {
+            return slot == 0;
+        }
+        mask = *(int *)(p + 0xFC) | slot;
+        *(int *)(p + 0xFC) = mask;
+        if (mask == 0) {
+            goto done;
+        }
+        if (slot == 0) {
+            D_0015EFB4_m |= 0x200;
+        }
+        if (*(int *)(p + 0xDC) >= 3) {
+            goto done;
+        }
+        if (*(int *)(p + 0xE4) >= 0) {
+            goto done;
+        }
+        *(int *)(p + 0xD0) = D_0015EE84_m;
+        saved = 0;
+        if (flags >= 0) {
+            D_0015EE84_m = flags;
+            saved = D_0013DE60[flags];
+            if (saved == 0) {
+                D_0013DE60[flags] = 1;
+            }
+        }
+    }
+    {
+        char *q = D_0013D390;
+        char *names = q + 0x30;
+
+        *(int *)(q + *(int *)(q + 0x14) * 0x1C + 0x24) = D_0015EE98;
+        *(int *)(q + *(int *)(q + 0x14) * 0x1C + 0x20) = D_0015EE84_m;
+        *(int *)(q + *(int *)(q + 0x14) * 0x1C + 0x2C) = D_0015EF24;
+        memcpy(names + *(int *)(q + 0x14) * 0x1C, D_0015EF98, 8);
+        *(int *)(q + *(int *)(q + 0x14) * 0x1C + 0x28) = D_0015EF20;
+        func_0020BBC8(D_0014EFD0, 0, D_001A05C0);
+        func_0020BBC8(D_001507D0, *(int *)(q + 0xD0), D_001A08C0);
+        if (flags >= 0) {
+            D_0013DE60[D_0015EE84_m] = saved;
+            D_0015EE84_m = *(int *)(q + 0xD0);
+        }
+        if (*(int *)(q + 0xE4) < 0) {
+            *(int *)(q + 0xE4) = 0xF;
+            *(int *)(q + 0xE8) = *(int *)(q + 0xC8);
+        }
+    }
+done:
+    {
+        char *r = D_0013D390;
+        return *(int *)(r + 0xE4) == 0xF;
+    }
+}
+__asm__(".section .text\n\tnop\n");

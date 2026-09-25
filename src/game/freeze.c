@@ -52,7 +52,108 @@ extern void func_001F3140(void);
 extern int D_0018E840[];
 extern long D_00152178 NOT_SDA;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FBC80);
+extern void func_0012E528(int);
+extern void func_00216EF0(int);
+extern int func_001FE540(int);
+extern void func_001FF560(int);
+extern int func_001F98C0(int);
+extern int D_0015F6E8 MACRO_ADDR;
+extern int D_0013D440;
+extern char D_00193400[];
+
+/* Enters the freeze screen for reason arg0: pauses the music unless the
+   game mode (D_0015F6E8) is already 3, saves arg1/arg2 and the old mode in
+   the freeze record D_00193400, sets mode 4, then per reason fetches the
+   message strings (func_001FE540) or starts the timers (func_001F98C0);
+   an unknown reason gets a plain 0x78 countdown. Each case reads the
+   record through its own `char *` local (retail keeps only the %hi and
+   rebuilds the %lo per case); the case bodies are in retail's layout
+   order, and the last store of a block is written last in the source
+   because the scheduler issues it first. */
+void func_001FBC80(int arg0, int arg1, int arg2) {
+    char *s = D_00193400;
+
+    *(int *)(s + 0x30) = arg2;
+    if (D_0015F6E8 != 3) {
+        func_0012E528(0x1D);
+        func_00216EF0(0);
+    }
+    *(int *)(s + 0x18) = arg1;
+    *(int *)(s + 0x14) = D_0015F6E8;
+    D_0015F6E8 = 4;
+    *(int *)s = arg0;
+    *(int *)(s + 0x2C) = 0;
+    switch (arg0) {
+    case 0: {
+        char *p = D_00193400;
+        *(int *)(p + 8) = func_001FE540(0x4F6E);
+        *(int *)(p + 0xC) = func_001FE540(0x524D);
+        *(int *)(p + 0x10) = func_001FE540(0x524E);
+        *(int *)(p + 4) = 0;
+        *(int *)(p + 0x1C) = 0;
+        *(int *)(p + 0x20) = 0;
+        *(int *)(p + 0x24) = 0;
+        *(int *)(p + 0x28) = 0;
+        break;
+    }
+    case 2: {
+        int v = func_001FE540(0x524F);
+        char *p = D_00193400;
+        *(int *)(p + 8) = v;
+        *(int *)(p + 0xC) = 0;
+        *(int *)(p + 4) = 0;
+        break;
+    }
+    case 1:
+    case 4: {
+        char *p = D_00193400;
+        *(int *)(p + 8) = func_001FE540(0x522E);
+        *(int *)(p + 0xC) = func_001FE540(0x4EE0);
+        *(int *)(p + 0x10) = func_001FE540(0x524F);
+        *(int *)(p + 4) = 0;
+        break;
+    }
+    case 5: {
+        char *p = D_00193400;
+        func_001FF560(0x4E2B);
+        *(int *)(p + 4) = func_001F98C0(0x1E);
+        *(int *)(p + 0x20) = 0;
+        *(int *)(p + 0x24) = func_001F98C0(0x1E);
+        break;
+    }
+    case 7:
+    case 8: {
+        char *p = D_00193400;
+        *(int *)(p + 4) = func_001F98C0(0x1E);
+        *(int *)(p + 0x20) = -1;
+        *(int *)(p + 0x24) = func_001F98C0(0x1E);
+        break;
+    }
+    case 3: {
+        char *p = D_00193400;
+        *(int *)(p + 4) = func_001F98C0(0x1E);
+        *(int *)(p + 0x20) = -1;
+        *(int *)(p + 0x24) = func_001F98C0(0x1E);
+        D_0013D440 = 3;
+        *(int *)(p + 0x2C) = func_001F98C0(0xA);
+        break;
+    }
+    case 6: {
+        int v = func_001F98C0(0x1E);
+        char *p = D_00193400;
+        *(int *)(p + 4) = v;
+        *(int *)(p + 0x1C) = 0;
+        break;
+    }
+    default:
+        *(int *)(s + 4) = 0x78;
+        *(int *)(s + 0xC) = 0;
+        *(int *)(s + 0x10) = 0;
+        *(int *)(s + 8) = 0;
+        break;
+    }
+}
+__asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FBE80);
 

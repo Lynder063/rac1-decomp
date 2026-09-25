@@ -4,6 +4,13 @@
 /*
  * core_text object 0x12AC80-0x12CC70. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * Sony's MPEG library (libmpeg): sceMpegInit/Create/Delete-style setup,
+ * the callback table (sceMpegAddCallback, func_0012BC50) and its
+ * dispatcher, the work-area allocator, the picture/field steps and the
+ * error reporter ("[MPEG ERROR]%s"). Built with Sony's 2.9-ee like the
+ * rest of libmpeg (0012A2F0.c): see func_0012BC50, whose match needs
+ * 2.9-ee's type-based alias analysis.
  */
 
 /* Declarations in scope here before the split. */
@@ -147,9 +154,103 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012AC80);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012AD08);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012B008);
+extern long func_0012AC80(int arg0, int arg1);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012B100);
+typedef struct {
+    long key;
+    long extra;
+    int  cb;
+    int  data;
+} StrCbEnt; /* 0x18 */
+
+typedef struct { char pad[8]; long extra; } Tbl16;
+extern Tbl16 D_00132FD8[];
+
+/*
+ * sceMpegAddStrCallback (libmpeg.a:pack.o): key = func_0012AC80(arg1,
+ * arg2) (a 64-bit stream/type key); linear-search the object's callback
+ * table (handlers[7] reused as {table pointer, count} -- raw offsets,
+ * not the Handler struct, per this file's warning about that array
+ * overlapping) for a matching key, remembering its old callback (0 if
+ * none found). Whether found or not (index lands on the match, or one
+ * past the end), if there's room (< 0x40 entries), overwrite the slot
+ * with the new key/data/callback and the type's extra 8 bytes from
+ * D_00132FD8[arg1], and bump the stored count unconditionally. Returns
+ * the previous callback.
+ */
+int func_0012B008(void *arg0, int arg1, int arg2, int arg3, int arg4) {
+    int old = 0;
+    char *obj = *(char **)((char *)arg0 + 0x40);
+    StrCbEnt *tbl = *(StrCbEnt **)(obj + 0x44);
+    long key = func_0012AC80(arg1, arg2);
+    int count = *(int *)(obj + 0x48);
+    int i;
+
+    for (i = 0; i < count; i++) {
+        if (key == tbl[i].key) {
+            old = tbl[i].cb;
+            break;
+        }
+    }
+    if (i < 0x40) {
+        *(int *)(obj + 0x48) = count + 1;
+        tbl[i].key = key;
+        tbl[i].data = arg4;
+        tbl[i].cb = arg3;
+        tbl[i].extra = D_00132FD8[arg1].extra;
+    }
+    return old;
+}
+
+extern void func_0012ABB0(void *arg0);
+extern int func_0012B250();
+
+/*
+ * _pack_header (libmpeg.a:pack.o): ISO/IEC 11172-1 2.4.3.3 pack_header().
+ * func_0012AB60 is nextBit ("get n bits"), func_0012ABB0 a marker-bit
+ * skip, func_0012AAA8 a 32-bit peek (nextStartCode-style). Reads the pack
+ * start code's fixed fields (34 then 3, marker, 15, marker, 15, marker,
+ * 9, marker), discarding the SCR/mux_rate pieces except for three: the
+ * low bit of the first 3-bit group goes to +0x8, and the three groups
+ * combine into +0x4 as (first<<30)|(second<<15)|third. The last field
+ * read (3 bits) is pack_stuffing_length: that many stuffing bytes are
+ * then skipped. Peeks the next 32 bits; a system_header_start_code
+ * (0x1BB) sets +0xC and hands off into func_0012B250 (system_header
+ * parsing -- called prototype-less here since retail's call site passes
+ * it a second, unused argument, the same K&R situation as func_00129F40
+ * elsewhere in this file), otherwise clears +0xC. Always returns 1.
+ */
+int func_0012B100(void *arg0, void *arg1) {
+    char *p = (char *)arg1;
+    unsigned int first, second, third, stuffing;
+    unsigned int i;
+
+    func_0012AB60(arg0, 0x22);
+    first = func_0012AB60(arg0, 3);
+    func_0012ABB0(arg0);
+    second = func_0012AB60(arg0, 0xF);
+    func_0012ABB0(arg0);
+    third = func_0012AB60(arg0, 0xF);
+    func_0012ABB0(arg0);
+    *(int *)(p + 0x0) = func_0012AB60(arg0, 9);
+    func_0012AB60(arg0, 0x1E);
+    stuffing = func_0012AB60(arg0, 3);
+
+    *(unsigned int *)(p + 0x8) = (first >> 2) & 1;
+    *(unsigned int *)(p + 0x4) = (first << 30) | (second << 15) | third;
+
+    for (i = 0; i < stuffing; i++) {
+        func_0012AB60(arg0, 8);
+    }
+
+    if (func_0012AAA8(arg0, 0x20) == 0x1BB) {
+        *(int *)(p + 0xC) = 1;
+        func_0012B250(arg0, p);
+    } else {
+        *(int *)(p + 0xC) = 0;
+    }
+    return 1;
+}
 
 int func_0012B250(void *arg0) {
     func_0012AB60(arg0, 0x38);
@@ -162,9 +263,165 @@ int func_0012B250(void *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012B2C0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012B870);
+extern void func_0012D068(void);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012B918);
+/*
+ * sceMpegInit (libmpeg.a:mpeg.o): one-time IOP/EE SIF hardware bring-up.
+ * func_0011D960 presumably queries the DMA/SIF state, gating whether
+ * func_0011D9A8 (a kick) runs; the SIF flag register at 0x1000F590 is set
+ * then cleared (bit 0x10000, re-reading 0x1000F520 fresh each time), two
+ * DMA channel control registers (0x1000B000/0x1000B400) have bit 0x100
+ * masked off, and two more (0x1000B020/0x1000B420) are zeroed before the
+ * tail call into func_0012D068.
+ */
+void func_0012B870(void) {
+    int r = func_0011D960();
+
+    *(volatile unsigned int *)0x1000F590 =
+        *(volatile unsigned int *)0x1000F520 | 0x10000;
+    *(volatile unsigned int *)0x1000B000 &= ~0x100;
+    *(volatile unsigned int *)0x1000B400 &= ~0x100;
+    *(volatile unsigned int *)0x1000F590 =
+        *(volatile unsigned int *)0x1000F520 & ~0x10000;
+
+    if (r != 0) {
+        func_0011D9A8();
+    }
+
+    *(volatile unsigned int *)0x1000B020 = 0;
+    *(volatile unsigned int *)0x1000B420 = 0;
+    func_0012D068();
+}
+
+extern void func_0012C468(void *, void *);
+/* memset returns its pointer: the unused return moves the first temporary
+   after the call from $v0 to $v1. */
+extern void *func_001153FC_p(void *, int, unsigned int) __asm__("func_001153FC");
+extern char D_00153B10[];
+extern void func_0012BD28(void *, int, int);
+extern unsigned int func_0012BD60(void *, char *, unsigned int, unsigned int);
+extern void func_0012C2F8(void *);
+extern void func_0012BBA8(void *);
+extern int func_0012BBF8(void *);
+extern void func_0012BD40(void *);
+extern void func_0012CC70(void);
+extern void func_0012CC80(void);
+
+/*
+ * sceMpegCreate (libmpeg.a:mpeg.o): clear the caller's work area
+ * (memset), align it up to 4 and carve the decoder object out of it. Less
+ * than 0x10C0 usable bytes is reported through func_0012C468 and returns
+ * 0. Otherwise: wrapper->0x40 = the object; a heap descriptor at +0x108
+ * (func_0012BD28) covers the space past 0x10C0; the fields are reset
+ * (-1 "unset" sentinels or 0); 0x600 bytes are allocated from that heap
+ * (func_0012BD60) into +0x44; handler slots +0x1C/+0x24 get the two
+ * callback trampolines (func_0012CC70/func_0012CC80); func_0012C2F8,
+ * sceMpegReset (func_0012BBA8) and func_0012BBF8 run; the three 0x10-byte
+ * entries at +0x1B8 get pointers into nine 0x68-byte regions; and
+ * func_0012BD40 closes the heap. Success falls off the end (retail
+ * leaves 0x70003600 in $v0).
+ *
+ * The trampoline store at +0x24 is written before the allocation so it
+ * fills that call's delay slot, and the last four stores are in the
+ * order that schedules as retail's.
+ */
+int func_0012B918(void *arg0, void *workarea, int size) {
+    char *w = (char *)arg0;
+    unsigned int wa = (unsigned int)workarea;
+    char *aligned;
+    char *area2;
+    unsigned int avail;
+    int neg1;
+
+    func_001153FC_p(workarea, 0, size);
+
+    aligned = (char *)(((wa + 3) >> 2) << 2);
+    avail = (unsigned int)size - ((unsigned int)aligned - wa);
+
+    if (avail < 0x10C0) {
+        func_0012C468(aligned, D_00153B10);
+        return 0;
+    }
+
+    area2 = aligned + 0x108;
+    *(int *)(w + 0x40) = (int)aligned;
+    avail -= 0x10C0;
+    func_0012BD28(area2, (int)(aligned + 0x10C0), (int)avail);
+    neg1 = -1;
+
+    *(int *)(w + 0x0) = 0;
+    *(int *)(w + 0x4) = 0;
+    *(int *)(w + 0x8) = 0;
+    *(long *)(w + 0x10) = -1;
+    *(long *)(w + 0x18) = -1;
+    *(long *)(w + 0x20) = 0;
+    *(long *)(w + 0x28) = -1;
+    *(long *)(w + 0x30) = -1;
+    *(long *)(w + 0x38) = 0;
+
+    *(int *)(aligned + 0xB4) = 0;
+    *(int *)(aligned + 0xB8) = 0;
+    *(int *)(aligned + 0xBC) = 0;
+    *(int *)(aligned + 0xC0) = 0;
+    *(int *)(aligned + 0xC4) = 0;
+    *(int *)(aligned + 0xC8) = 0;
+    *(int *)(aligned + 0xCC) = 0;
+    *(int *)(aligned + 0xD0) = 0;
+    *(int *)(aligned + 0xD4) = 0;
+    *(int *)(aligned + 0xD8) = 0;
+    *(int *)(aligned + 0xDC) = 0;
+    *(int *)(aligned + 0xE0) = 0;
+    *(int *)(aligned + 0xE4) = 0;
+    *(int *)(aligned + 0xE8) = 0;
+    *(int *)(aligned + 0xF8) = 0;
+    *(int *)(aligned + 0xC) = 0;
+    *(int *)(aligned + 0x14) = 0;
+    *(int *)(aligned + 0x2C) = 0;
+    *(int *)(aligned + 0x34) = 0;
+    *(int *)(aligned + 0x3C) = 0;
+    *(long *)(aligned + 0xF0) = -1;
+    *(int *)(aligned + 0x1C) = (int)func_0012CC70;
+    *(int *)(aligned + 0x24) = (int)func_0012CC80;
+
+    *(int *)(aligned + 0x44) = (int)func_0012BD60(aligned, area2, 0x600, 8);
+
+    *(int *)(aligned + 0x48) = 0;
+    *(int *)(aligned + 0xFC) = 0;
+    *(int *)(aligned + 0x100) = 0;
+    *(int *)(aligned + 0x104) = 0;
+    *(int *)(aligned + 0x70) = 0;
+    *(long *)(aligned + 0x78) = 0;
+    *(int *)(aligned + 0x80) = neg1;
+    *(long *)(aligned + 0x88) = 0;
+    *(int *)(aligned + 0x90) = 0;
+    *(int *)(aligned + 0xAC) = 0;
+    *(int *)(aligned + 0x94) = neg1;
+    *(int *)(aligned + 0x98) = neg1;
+    *(int *)(aligned + 0x9C) = neg1;
+    *(int *)(aligned + 0x858) = (int)w;
+    *(int *)(aligned + 0xB0) = 1;
+
+    func_0012C2F8(aligned);
+    func_0012BBA8(w);
+    func_0012BBF8(w);
+
+    *(int *)(aligned + 0x1B8) = (int)(aligned + 0x1E8);
+    *(int *)(aligned + 0x1BC) = (int)(aligned + 0x250);
+    *(int *)(aligned + 0x1C4) = (int)(aligned + 0x2B8);
+    *(int *)(aligned + 0x1C8) = (int)(aligned + 0x320);
+    *(int *)(aligned + 0x1CC) = (int)(aligned + 0x388);
+    *(int *)(aligned + 0x1D4) = (int)(aligned + 0x3F0);
+    *(int *)(aligned + 0x1D8) = (int)(aligned + 0x458);
+    *(int *)(aligned + 0x1DC) = (int)(aligned + 0x4C0);
+    *(int *)(aligned + 0x1E4) = (int)(aligned + 0x528);
+
+    func_0012BD40(area2);
+
+    *(int *)(aligned + 0x850) = neg1;
+    *(int *)(aligned + 0x84C) = 0;
+    *(int *)(aligned + 0x81C) = 0x70003600;
+    *(int *)(aligned + 0x854) = 0;
+}
 
 int func_0012BB20(void) {
     return 1;
@@ -178,7 +435,30 @@ int func_0012BB98(void *arg0) {
     return ((Wrapper *)arg0)->obj->unk004 == 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BBA8);
+extern void func_0012C358(void *arg0);
+extern void func_0012C268(void *arg0);
+
+/*
+ * sceMpegReset (libmpeg.a:mpeg.o): clear the object's decode state
+ * (unk000/004/008/0AC, the handler-table slot at +0x80, and +0x118), and
+ * the wrapper's own +0x08, then call _clearEach (func_0012C358) and hand
+ * the object to func_0012C268 (zero +0x848, kick the IPU chain via
+ * func_00127378).
+ */
+void func_0012BBA8(void *arg0) {
+    char *w = (char *)arg0;
+    char *inner = *(char **)(w + 0x40);
+
+    *(int *)(inner + 0x0) = 0;
+    *(int *)(inner + 0x4) = 0;
+    *(int *)(inner + 0x8) = 0;
+    *(int *)(w + 0x8) = 0;
+    *(int *)(inner + 0xAC) = 0;
+    *(int *)(inner + 0x80) = -1;
+    func_0012C358(inner);
+    *(int *)(inner + 0x118) = 0;
+    func_0012C268(inner);
+}
 
 int func_0012BBF8(void *arg0) {
     char *b = *(char **)((char *)arg0 + 0x40);
@@ -192,57 +472,54 @@ int func_0012BBF8(void *arg0) {
     return 1;
 }
 
+/* The callback table at +0x40: {callback, data} pairs from +0xC, one
+   per callback type. */
+typedef int (*MpegCbFn)(void *, void *, void *);
+typedef struct { MpegCbFn func; void *data; } MpegCbEnt;
+typedef struct { char pad[0xC]; MpegCbEnt cb[1]; } MpegCbTbl;
+
 /*
- * Close, not exact (12/36), same size. Logic verified: fetch the table
- * at arg0+0x40, index it by arg1*8, store arg3 at +0x10, then return
- * the old value at +0xC while overwriting it with arg2.
+ * sceMpegAddCallback: install (callback arg2, data arg3) for type arg1 and
+ * return the old callback.
  *
- * Retail forms the second pointer as (base + 0xC) + arg1*8; this
- * compiler reassociates to base + (arg1*8 + 0xC). Writing it with the
- * parenthesisation retail uses does not help -- GCC reassociates anyway
- * -- and hoisting `base + 0xC` into its own local makes it WORSE
- * (12/36 -> 17/36). Same associativity/allocation class as the other
- * documented near-misses.
+ * Typing the entry as {function pointer, void *} is the lever: 2.9-ee's
+ * type-based alias analysis (-fstrict-aliasing is its default) then knows
+ * the `data` store cannot alias the `func` load, so sched1 computes
+ * `t + 0xC` before `t + off` and the registers fall as in retail. Under
+ * 2.95.3 (no type-based aliasing) the same C is 17/36; the old int-offset
+ * spelling was 12/36 under both.
  */
 int func_0012BC50(void *arg0, int arg1, int arg2, int arg3) {
-    char *base = *(char **)((char *)arg0 + 0x40);
-    char *p = base + arg1 * 8;
-    char *q = (base + 0xC) + arg1 * 8;
-    int old;
-    *(int *)(p + 0x10) = arg3;
-    old = *(int *)q;
-    *(int *)q = arg2;
-    return old;
+    MpegCbTbl *t = *(MpegCbTbl **)((char *)arg0 + 0x40);
+    MpegCbFn old;
+    t->cb[arg1].data = (void *)arg3;
+    old = t->cb[arg1].func;
+    t->cb[arg1].func = (MpegCbFn)arg2;
+    return (int)old;
 }
 
 /*
- * Close, not exact (12/80, same size so harmless). Dispatches through a
- * table hanging off arg0+0x40: index it by *arg1 (8-byte entries), take
- * the handler at +0xC, and if non-null call it with the entry's +0x10
- * field as a third argument, returning ITS result.
+ * Dispatch the callback registered for *arg1 (the callback data's type
+ * field) with its data; returns the callback's result, 0 if none.
  *
- * The result-is-the-call's-return-value reading matters: a first attempt
- * returned the entry address instead, which kept `entry` live across the
- * call, forced a callee-saved register and made the function 8 bytes
- * long. Retail's `daddu $7,$2,$0` sits AFTER the jalr, so $2 there is
- * the callee's return value, not the entry pointer.
- *
- * Residual is the allocator: retail holds `result` in $7 (a3), this
- * compiler in $6 (a2), and the final move follows.
+ * The table entry is indexed afresh for each use (test `.func`, call
+ * `.func(arg0, arg1, .data)`) instead of through one `entry` pointer. CSE
+ * merges the two `.func` loads, but the `.data` address is rebuilt after
+ * the branch, which is retail's second `addu` in a plain beqz slot, and
+ * `ret` then lands in $a3 with the table in $a2. Exact under both
+ * compilers (one `entry` pointer is SIZE 84/80; the old spelling 12/80).
  */
 void *func_0012BC78(void *arg0, int *arg1) {
-    void *result = 0;
+    int ret = 0;
     if (arg0 != 0) {
-        char *tbl = *(char **)((char *)arg0 + 0x40);
-        if (tbl != 0) {
-            char *entry = tbl + (*arg1 << 3);
-            void *(*fn)() = *(void *(**)())(entry + 0xC);
-            if (fn != 0) {
-                result = fn(arg0, arg1, *(int *)(entry + 0x10));
+        MpegCbTbl *t = *(MpegCbTbl **)((char *)arg0 + 0x40);
+        if (t != 0) {
+            if (t->cb[*arg1].func != 0) {
+                ret = t->cb[*arg1].func(arg0, arg1, t->cb[*arg1].data);
             }
         }
     }
-    return result;
+    return (void *)ret;
 }
 
 /* No declaration needed: the definition above precedes this caller. The
@@ -280,7 +557,13 @@ extern char D_00153B38[];
 /* Bump allocator out of a region {base, size, used}: round `used` up to
    `align`, reserve `size` bytes, and hand back the aligned offset. On
    overflow it reports through func_0012C468 and returns 0 WITHOUT
-   touching `used`. */
+   touching `used`.
+
+   The fitting case is written first (`>=`): 2.9-ee then branches to the
+   report on the true side (bnel) and puts the `used` store in the slot
+   of the fall-through `b`, as retail. Written overflow-first, as 2.95.3
+   needed, 2.9-ee inverts the test and puts the store in a beql slot,
+   one instruction short (SIZE 104/108). */
 unsigned int func_0012BD60(void *arg0, char *r, unsigned int size,
                            unsigned int align) {
     unsigned int aligned;
@@ -288,29 +571,110 @@ unsigned int func_0012BD60(void *arg0, char *r, unsigned int size,
 
     aligned = ((*(unsigned int *)(r + 0x8) + align - 1) / align) * align;
     end = aligned + size;
-    if (*(unsigned int *)(r + 0x0) + *(unsigned int *)(r + 0x4) < end) {
-        func_0012C468(arg0, D_00153B38);
-        return 0;
+    if (*(unsigned int *)(r + 0x0) + *(unsigned int *)(r + 0x4) >= end) {
+        *(unsigned int *)(r + 0x8) = end;
+        return aligned;
     }
-    *(unsigned int *)(r + 0x8) = end;
-    return aligned;
+    func_0012C468(arg0, D_00153B38);
+    return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BDD0);
+extern int func_00128C90(void *);
+extern int func_0012C200(void *);
+extern int func_0012C058(void *, int, int);
+/* _errMessage (func_0012C430) sprintf's its format and passes the
+   format's arguments on untouched in $a1-$a3, so it is called here
+   without a prototype, with the value the "%08x" reports. */
+extern void func_0012C430();
+extern char D_00153B58[];
+
+/*
+ * _getpic (libmpeg.a:mpeg.o): fetch and start decoding one picture.
+ * The image buffer (inner +0xD8) must be 64-byte aligned; if not, it is
+ * reported through _errMessage with the address and the call fails with
+ * -1. Otherwise loop: fetch headers (func_00128C90) until one yields no
+ * picture (0), the picture counter reaches its target (+0x174 == +0xD4)
+ * or the fault flag (+0x848) clears, skipping the fetch when the last
+ * decode returned -1. picture_coding_type 1/2/3 call func_0012C058 with
+ * that type's running index (+0xA0/+0xA4/+0xA8, I resetting all three)
+ * and slot (+0x94/+0x98/+0x9C) and bump the index; type 4 shares the B
+ * arm (retail's jump table maps 3 and 4 to one handler); 0 ends the
+ * stream through func_0012C200 and sets inner->0; anything above 4 does
+ * nothing. Returns 1 once +0x820 or inner->0 is set.
+ *
+ * pictureType's initializer and lastResult declared first put both in
+ * retail's saved registers and hoist lastResult's 0 into the prologue.
+ */
+int func_0012BDD0(void *arg0) {
+    int pictureType = 1;
+    int lastResult = 0;
+    char *w = (char *)arg0;
+    char *inner = *(char **)(w + 0x40);
+
+    *(int *)inner = 0;
+    if ((*(int *)(inner + 0xD8) & 0x3F) != 0) {
+        func_0012C430(inner, D_00153B58, *(int *)(inner + 0xD8));
+        return -1;
+    }
+    *(int *)(inner + 0x820) = 0;
+
+    do {
+        if (lastResult != -1) {
+            for (;;) {
+                pictureType = func_00128C90(inner);
+                if (pictureType == 0) break;
+                if (*(int *)(inner + 0x174) == *(int *)(inner + 0xD4)) break;
+                if (*(int *)(inner + 0x848) == 0) break;
+            }
+        }
+
+        switch (pictureType) {
+        case 0:
+            func_0012C200(w);
+            *(int *)inner = 1;
+            break;
+        case 1:
+            *(int *)(inner + 0xA8) = 0;
+            *(int *)(inner + 0xA4) = 0;
+            *(int *)(inner + 0xA0) = 0;
+            lastResult = func_0012C058(w, 0, *(int *)(inner + 0x94));
+            *(int *)(inner + 0xA0) = *(int *)(inner + 0xA0) + 1;
+            break;
+        case 2:
+            lastResult = func_0012C058(w, *(int *)(inner + 0xA4), *(int *)(inner + 0x98));
+            *(int *)(inner + 0xA4) = *(int *)(inner + 0xA4) + 1;
+            break;
+        case 3:
+        case 4:
+            lastResult = func_0012C058(w, *(int *)(inner + 0xA8), *(int *)(inner + 0x9C));
+            *(int *)(inner + 0xA8) = *(int *)(inner + 0xA8) + 1;
+            break;
+        }
+
+        if (*(int *)(inner + 0x820) != 0) {
+            return 1;
+        }
+    } while (*(int *)inner == 0);
+
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BF40);
 
-extern void func_0012C0A0(void *, int, int);
-extern void func_0012BF40(void *, int, int);
+extern int func_0012C0A0(void *, int, int);
+extern int func_0012BF40(void *, int, int);
 
 /* Hands the call on by the inner object's +0x174 mode: func_0012BF40 for
-   mode 3, func_0012C0A0 otherwise, with the caller's arguments. */
-void func_0012C058(void *arg0, int arg1, int arg2) {
+   mode 3, func_0012C0A0 otherwise, with the caller's arguments.
+
+   Returns its callees' values: retail keeps the frame and calls both, and
+   2.9-ee tail-calls each arm (bare `j`, SIZE 40/68) when it is void. */
+int func_0012C058(void *arg0, int arg1, int arg2) {
     Obj40 *inner = ((Wrapper *)arg0)->obj;
     if (inner->unk174 != 3) {
-        func_0012C0A0(arg0, arg1, arg2);
+        return func_0012C0A0(arg0, arg1, arg2);
     } else {
-        func_0012BF40(arg0, arg1, arg2);
+        return func_0012BF40(arg0, arg1, arg2);
     }
 }
 
@@ -359,12 +723,12 @@ void func_0012C278(void *arg0) {
 
 /*
  * Point the object's four scratchpad pointers at 0x70000000 and clear a
- * flag. Size-exact at 0x60, 2 of 24 words: retail saves $s1 before $ra
- * in the prologue and we save them the other way round. Swapping the two
- * locals' declaration order does not move it -- spill ORDER is the
- * recorded dead end, and it stays one.
+ * flag. Exact under 2.9-ee. Under 2.95.3 it was 2 of 24 words off:
+ * that compiler saved $ra before $s1 in the prologue, where retail (and
+ * 2.9-ee) saves $s1 first -- the prologue-order residual of the core
+ * spill rewrite, not a source question.
  *
- * What DOES matter, and is new: `int a = 0x70000000;` must be written
+ * What does matter: `int a = 0x70000000;` must be written
  * BEFORE the call. An earlier round reverted this at 8 bytes short
  * having tried binding the constants to locals declared AFTER the call,
  * which changes nothing because gcc folds them straight back into the
@@ -392,7 +756,44 @@ void func_0012C2F8(void *arg0) {
     *(int *)(p + 0x810) = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C358);
+extern void func_0012CF98(int, int);
+
+/*
+ * _clearEach (libmpeg.a:init.o): per-stream hardware reset shared by
+ * sceMpegInit's shape -- flag the bitstream state "in use" (+0x818 = 1),
+ * clear its slice-address latch (+0x1B0), then the same SIF-flag toggle
+ * (0x1000F590 set/cleared around bit 0x10000, re-reading 0x1000F520 fresh
+ * each time) and three DMA channel registers zeroed (0x1000B000/B400/D400),
+ * gated IOP kick via func_0011D960/func_0011D9A8, three more registers
+ * zeroed (0x1000B020/B420/D420), IPU_CTRL (0x10002010) set to 0x40000000,
+ * and a tail call into func_0012CF98(0, 0).
+ */
+void func_0012C358(void *arg0) {
+    char *s = (char *)arg0;
+    int r;
+
+    *(int *)(s + 0x818) = 1;
+    *(int *)(s + 0x1B0) = 0;
+    r = func_0011D960();
+
+    *(volatile unsigned int *)0x1000F590 =
+        *(volatile unsigned int *)0x1000F520 | 0x10000;
+    *(volatile unsigned int *)0x1000B000 = 0;
+    *(volatile unsigned int *)0x1000B400 = 0;
+    *(volatile unsigned int *)0x1000D400 = 0;
+    *(volatile unsigned int *)0x1000F590 =
+        *(volatile unsigned int *)0x1000F520 & ~0x10000;
+
+    if (r != 0) {
+        func_0011D9A8();
+    }
+
+    *(volatile unsigned int *)0x1000B020 = 0;
+    *(volatile unsigned int *)0x1000B420 = 0;
+    *(volatile unsigned int *)0x1000D420 = 0;
+    *(volatile unsigned int *)0x10002010 = 0x40000000;
+    func_0012CF98(0, 0);
+}
 
 extern char D_00153BD8[];
 /* Unprototyped: func_0011A6C8 is a varargs definition (blocked as such),
@@ -428,13 +829,9 @@ void func_0012C468(void *arg0, void *arg1) {
     }
 }
 
-/*
- * Close, not exact (4/32), same size so harmless. Logic and every
- * instruction match; retail puts the `0x8` store in the `jr` delay slot
- * and `0x4` before it, this compiler chooses the opposite. Tried three
- * source orderings -- all three produced the identical schedule, so the
- * scheduler fixes this independently of statement order.
- */
+/* Store the two sizes and their 16-pixel macroblock counts. (An old note
+   here recorded 4/32 with the 0x4/0x8 stores swapped; the function is
+   exact under both compilers now.) */
 int func_0012C4C0(void *arg0, int arg1, int arg2) {
     char *p = (char *)arg0;
     *(int *)(p + 0x4) = arg1;
@@ -444,7 +841,76 @@ int func_0012C4C0(void *arg0, int arg1, int arg2) {
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C4E0);
+extern int func_00128A58(void *, int);
+extern void func_0012C468(void *, void *);
+extern char D_00153BE8[];
+extern void func_00128590(void *);
+extern void func_00128560(void *, unsigned int);
+extern void func_0012C990(void *, int, int);
+extern char D_001330C0[];
+extern char D_00133100[];
+extern void func_00128E68(void *);
+extern void func_0012C608(void *);
+
+/*
+ * _sequenceHeader (libmpeg.a:init.o): ISO/IEC 13818-2 6.2.2.1
+ * sequence_header(), hardware-VLC variant matching mpeg2decode's
+ * gethdr.c almost line for line but reading combined bitfields in one
+ * Get_Bits (func_00128A58) call each: a 32-bit fetch for
+ * horizontal_size/vertical_size/aspect_ratio_information/frame_rate_code
+ * (only the two sizes are kept, at +0x124/+0x128; a vertical_size
+ * reading >= 0xAF1 is reported through func_0012C468) and a 30-bit fetch
+ * for bit_rate_value/marker_bit/vbv_buffer_size/constrained_parameters_
+ * flag (bit_rate_value kept at +0x134, vbv_buffer_size at +0x138).
+ * load_intra/non_intra_quantizer_matrix (+0x840/+0x844) gate the IPU
+ * matrix load (func_00128590/func_00128560) or, when clear, _setDefaultQM
+ * (func_0012C990) with the reference decoder's default table. Ends with
+ * extensionAndUserData (func_00128E68) and a tail call into _initSeq
+ * (func_0012C608) with the object read back from +0x858.
+ */
+void func_0012C4E0(void *arg0) {
+    char *s = (char *)arg0;
+    unsigned int v;
+    int mid;
+    unsigned int flag;
+
+    *(unsigned int *)(s + 0xD4) = 0;
+
+    v = func_00128A58(s, 0x20);
+    *(unsigned int *)(s + 0x124) = v >> 20;
+    mid = (v >> 8) & 0xFFF;
+    *(unsigned int *)(s + 0x128) = mid;
+    if (mid >= 0xAF1) {
+        func_0012C468(s, D_00153BE8);
+    }
+
+    v = func_00128A58(s, 0x1E);
+    *(unsigned int *)(s + 0x134) = v >> 12;
+    *(unsigned int *)(s + 0x138) = (v >> 1) & 0x3FF;
+
+    flag = func_00128A58(s, 1);
+    *(unsigned int *)(s + 0x840) = flag;
+    if (flag != 0) {
+        func_00128590(s);
+        func_00128560(s, 0x50000000);
+        func_00128590(s);
+    } else {
+        func_0012C990(s, 0x50000000, (int)D_001330C0);
+    }
+
+    flag = func_00128A58(s, 1);
+    *(unsigned int *)(s + 0x844) = flag;
+    if (flag != 0) {
+        func_00128590(s);
+        func_00128560(s, 0x58000000);
+        func_00128590(s);
+    } else {
+        func_0012C990(s, 0x58000000, (int)D_00133100);
+    }
+
+    func_00128E68(s);
+    func_0012C608(*(void **)(s + 0x858));
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C608);
 
@@ -452,10 +918,66 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C8B0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C990);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CA70);
+extern int func_00128A58(void *, int);
+extern void func_0012C468(void *, void *);
+extern char D_00153C00[];
+extern char D_00153C28[];
+
+/*
+ * _sequenceExtension (libmpeg.a:init.o): ISO/IEC 13818-2 6.2.2.3
+ * sequence_extension(), matching mpeg2decode's gethdr.c almost line for
+ * line but reading two combined bitfields with func_00128A58: a 28-bit
+ * fetch covers profile_and_level_indication(8) + progressive_sequence(1)
+ * + chroma_format(2) + horizontal_size_extension(2) +
+ * vertical_size_extension(2) + bit_rate_extension(12) + marker_bit(1); a
+ * 16-bit fetch covers vbv_buffer_size_extension(8) + low_delay(1) +
+ * frame_rate_extension_n(2) + frame_rate_extension_d(5) (the last three
+ * read and dropped). chroma_format must be 1 (4:2:0) and
+ * profile_and_level_indication one of three literal bytes (0x48/0x58/
+ * 0x44); either failing reports through func_0012C468. Ends by folding
+ * the extension bits into sequenceHeader's fields exactly as the
+ * reference decoder's
+ * `horizontal_size = (horizontal_size_extension<<12) | (horizontal_size&0xfff)`
+ * et al.
+ */
+void func_0012CA70(void *arg0) {
+    char *s = (char *)arg0;
+    unsigned int v1, v2;
+    unsigned int chroma_format, h_ext, v_ext, bitrate_ext;
+    unsigned int progressive, profile, vbv_ext;
+
+    *(int *)(s + 0x848) = 1;
+    func_00127378(0);
+
+    v1 = func_00128A58(s, 0x1C);
+    bitrate_ext = (v1 >> 1) & 0xFFF;
+    chroma_format = (v1 >> 17) & 3;
+    v_ext = (v1 >> 13) & 3;
+    h_ext = (v1 >> 15) & 3;
+
+    *(unsigned int *)(s + 0x140) = chroma_format;
+    if (chroma_format != 1) {
+        func_0012C468(s, D_00153C00);
+    }
+
+    progressive = (v1 >> 19) & 1;
+    *(unsigned int *)(s + 0x13C) = progressive;
+    profile = v1 >> 20;
+
+    v2 = func_00128A58(s, 0x10);
+    vbv_ext = v2 >> 8;
+
+    if (profile != 0x48 && profile != 0x58 && profile != 0x44) {
+        func_0012C468(s, D_00153C28);
+    }
+
+    *(int *)(s + 0x124) = (h_ext << 12) | (*(int *)(s + 0x124) & 0xFFF);
+    *(int *)(s + 0x128) = (v_ext << 12) | (*(int *)(s + 0x128) & 0xFFF);
+    *(int *)(s + 0x134) += bitrate_ext << 18;
+    *(int *)(s + 0x138) += vbv_ext << 10;
+}
 
 extern int func_00128A58(void *, int);
-extern void func_00128A58_v(void *, int) __asm__("func_00128A58");
 
 /*
  * MPEG-2 sequence_display_extension(): video_format (3 bits), then
@@ -464,11 +986,10 @@ extern void func_00128A58_v(void *, int) __asm__("func_00128A58");
  * kept at +0x144); display_horizontal_size (14) to +0x148, a marker
  * bit, display_vertical_size (14) to +0x14C.
  *
- * The marker bit's read goes through a void view of the reader. As a
- * value call it would reset $v0's readers, and the +0x148 store would
- * lose the scheduler tie to the next call's argument setup. The C
- * without the alias is exact under Sony's 2.9-ee, so this file (likely
- * the SDK's libmpeg) may be that compiler's and the alias a stand-in.
+ * Plain C, exact under 2.9-ee. (Under 2.95.3 it needed the marker bit's
+ * read to go through a void view of the reader, `func_00128A58_v`: as a
+ * value call it reset $v0's readers and the +0x148 store lost the
+ * scheduler tie to the next call's argument setup, 8/140.)
  */
 void func_0012CBA0(void *arg0) {
     char *s = (char *)arg0;
@@ -480,7 +1001,7 @@ void func_0012CBA0(void *arg0) {
         *(int *)(s + 0x144) = func_00128A58(s, 8);
     }
     *(int *)(s + 0x148) = func_00128A58(s, 0xE);
-    func_00128A58_v(s, 1);
+    func_00128A58(s, 1);
     *(int *)(s + 0x14C) = func_00128A58(s, 0xE);
 }
 

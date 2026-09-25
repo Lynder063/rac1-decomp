@@ -4,6 +4,10 @@
 /*
  * core_text object 0x113B70-0x114000. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * newlib's freer.o (mallocr.c built with DEFINE_FREE: _free_r and
+ * _malloc_trim_r; the SDK's libc.a). Built with Sony's 2.9-ee
+ * (Makefile.sn, EE29_CORE), like libc.a.
  */
 
 /* Declarations in scope here before the split. */

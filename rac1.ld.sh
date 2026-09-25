@@ -45,6 +45,11 @@ cat >> build-sn/rac1.ld <<'EOF'
   func_0011E6D8 = __fixunsdfdi;
   func_0011E7C8 = __floatdidf;
   func_0011EEC8 = __muldi3;
+  /* Modules still built from retail's assembly define only the address
+     name; compiled C calls them by their real one. */
+  __moddi3 = func_0011E860;
+  __udivdi3 = func_0011EF28;
+  __umoddi3 = func_0011F4F8;
   /* dp-bit.o / fp-bit.o carry Sony's GOFAST names, which is also what the
      compilers call. */
   func_0011FA38 = __pack_d;
@@ -69,13 +74,13 @@ cat >> build-sn/rac1.ld <<'EOF'
   .core_data : { build-sn/core_data.data.o(.data) }
 
   . = 0x152300;
-  /* Split around __divdi3's own static __clz_tab (D_00152B18), which now
-     comes from its object instead of the retail blob -- see
-     tools/split_data_s.py. */
+  /* Split around the read-only data compiled objects now bring themselves
+     (__divdi3's static __clz_tab, SDK functions' literals), each in its
+     retail hole: config/core_rodata.txt, tools/core_rodata.py. */
   .core_rdata : {
-    build-sn/core_rdata_1.o(.rodata)
-    build-sn/libgcc/l2_divdi3.o(.rodata)
-    build-sn/core_rdata_2.o(.rodata)
+EOF
+python tools/core_rodata.py ld >> build-sn/rac1.ld
+cat >> build-sn/rac1.ld <<'EOF'
   }
 
   . = 0x154200;

@@ -297,7 +297,64 @@ void func_00233FF8(void) {
     func_0011AE20(0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234018);
+extern int func_0011B2F8(void *client, int id, int mode);
+extern int func_0011B6B8(void *client);
+extern int func_0011B4C8(void *, int, int, void *, int, void *, int, void *, void *); /* sceSifCallRpc */
+
+typedef struct {
+    int base;
+    int size;
+    char cd[0x28];
+    int cur;
+    int count;
+} StashState_00234018;
+extern StashState_00234018 D_001DD530_alias __asm__("D_001DD530");
+typedef struct {
+    int unk_00;
+    int unk_04;
+    int unk_08;
+    int unk_0C;
+} Rec10_00234018;
+extern Rec10_00234018 D_001DD568_alias[] __asm__("D_001DD568");
+
+/* Stash_Init: binds the IOP stash RPC server (0x11, no-wait mode; a bind
+   error hangs), waits for the bind and retries after a delay loop until
+   the server answers, then asks it (RPC 2, sceSifCallRpc's nine
+   arguments) for the buffer's base and size and clears the 0x40 slots.
+   The server check reads through a pointer set inside the loop: loop.c
+   then hoists the struct's full address into a register of its own, as
+   retail has it, while the client's address stays a constant. */
+void func_00234018(void) {
+    StashState_00234018 *s;
+    int reply[4];
+    int i;
+
+    for (;;) {
+        if (func_0011B2F8(D_001DD530_alias.cd, 0x11, 1) < 0) {
+            for (;;) {
+            }
+        }
+        while (func_0011B6B8(D_001DD530_alias.cd) != 0) {
+        }
+        s = &D_001DD530_alias;
+        if (*(int *)(s->cd + 0x24) != 0) {
+            break;
+        }
+        i = 0xFFFF;
+        while (i--) {
+        }
+    }
+    func_0011B4C8(D_001DD530_alias.cd, 2, 0, 0, 0, reply, 0x10, 0, 0);
+    D_001DD530_alias.base = reply[0];
+    D_001DD530_alias.size = reply[1];
+    D_001DD530_alias.cur = reply[0];
+    D_001DD530_alias.count = 0;
+    for (i = 0; i < 0x40; i++) {
+        D_001DD568_alias[i].unk_00 = 0;
+        D_001DD568_alias[i].unk_04 = 0;
+    }
+}
+__asm__(".section .text\n\tnop\n");
 
 /* 0x10-stride records. Typed array, not `char[]` + byte offset -- see
    the addu-order lever on D_001E8F80 above. */
@@ -350,7 +407,43 @@ int func_00234158(int arg0, int arg1, int arg2, int arg3) {
     return n;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234238);
+extern int func_00234350(unsigned int);
+extern int func_0011B4C8(void *, int, int, void *, int, void *, int, void *, void *); /* sceSifCallRpc */
+extern char D_001DD538[];
+
+/* Stash_ReceiveData(dest, slot, offset, size, mode): size -1 means the
+   slot's whole length (func_00234350). -3 for a bad or empty slot, -1
+   if offset + size runs past the slot. Otherwise the data is fetched
+   from the stash (slot base + offset quadwords) to dest by the stash
+   client's RPC 1, at most 0xFFFF quadwords per call; returns 0. The RPC
+   is sceSifCallRpc, with nine arguments: end function and end
+   parameter 0, the last on the stack. */
+int func_00234238(void *dest, unsigned int slot, int offset, int size, int mode) {
+    int src;
+    int chunk;
+
+    if (size == -1) {
+        size = func_00234350(slot);
+    }
+    if (slot >= 0x40) {
+        return -3;
+    }
+    if (D_001DD568[slot].unk_04 == 0) {
+        return -3;
+    }
+    if (D_001DD568[slot].unk_04 < offset + size) {
+        return -1;
+    }
+    src = D_001DD568[slot].unk_00 + offset * 16;
+    while (size != 0) {
+        chunk = (size > 0xFFFF) ? 0xFFFF : size;
+        func_0011B4C8(D_001DD538, 1, mode, &src, 0x10, dest, chunk * 16, 0, 0);
+        size -= chunk;
+        dest = (char *)dest + chunk * 16;
+        src += chunk * 16;
+    }
+    return 0;
+}
 
 int func_00234350(unsigned int arg0) {
     if (arg0 >= 0x40) {

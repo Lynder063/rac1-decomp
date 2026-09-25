@@ -141,7 +141,37 @@ extern char D_00153A80[];
 extern void func_00116248_4(void *, char *, int, int) __asm__("func_00116248");
 extern void func_0012C468_a(void *, void *) __asm__("func_0012C468");
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012A2F0);
+extern int func_0011D960(void);
+extern void func_0011D9A8(void);
+extern void func_00128560();
+extern void func_0012BC78();
+
+/* _doCSC (libmpeg). Stack-size probe #2: a 32-byte local (two 16-byte
+   compiler stack slots) instead of one, since a single int/4-int array
+   both land in one slot here (frame still 0x10 short of retail's 0x70,
+   see c1-c4). */
+void func_0012A2F0(void *arg0, unsigned int arg1, int arg2) {
+    char *p = (char *)arg0;
+    int r;
+    int event[8];
+
+    while (*(volatile int *)0x10002010 < 0) {
+    }
+    r = func_0011D960();
+    *(volatile unsigned int *)0x1000B010 = arg1 & 0x0FFFFFFF;
+    *(volatile unsigned int *)0x1000B020 = (unsigned int)arg2 << 6;
+    *(volatile unsigned int *)0x1000B000 = 0x100;
+    if (r != 0) {
+        func_0011D9A8();
+    }
+    func_00128560(arg0, arg2 | 0x70000000);
+    event[0] = 4;
+    func_0012BC78(*(int *)(p + 0x858), event);
+    while (((*(volatile unsigned int *)0x1000B000 >> 8) & 1) != 0) {
+    }
+    while (*(volatile int *)0x10002010 < 0) {
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012A418);
 
@@ -161,15 +191,17 @@ extern long func_0012AAC8(void *, int);
  * picks a different store for the tail call's delay slot. Not reached
  * by any reordering, since the "correct" order is already in place.
  */
-void func_0012AA70(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
-    *(int *)((char *)arg0 + 0xC) = arg1;
-    *(int *)((char *)arg0 + 0x24) = arg2 + arg3;
-    *(int *)((char *)arg0 + 0x28) = arg3;
-    *(int *)((char *)arg0 + 0x8) = arg1;
-    *(int *)arg0 = 0;
-    *(int *)((char *)arg0 + 0x10) = 0;
-    *(int *)((char *)arg0 + 0x18) = 0;
-    func_0012AAC8(0, 0);
+void func_0012AA70(void *arg0, int arg1, int arg2, int arg3) {
+    char *p = (char *)arg0;
+    *(int *)(p + 0xC) = arg1;
+    *(int *)(p + 0x24) = arg2 + arg3;
+    *(int *)(p + 0x28) = arg3;
+    *(int *)(p + 0x8) = arg1;
+    *(long *)(p + 0x0) = 0;
+    *(int *)(p + 0x10) = 0;
+    *(long *)(p + 0x18) = 0;
+    *(int *)(p + 0x20) = arg2;
+    func_0012AAC8(arg0, 0);
 }
 
 /* Bitstream peek: the top n bits of the 64-bit accumulator at +0x0, as

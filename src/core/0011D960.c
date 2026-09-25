@@ -4,6 +4,11 @@
 /*
  * core_text object 0x11D960-0x11DBE8. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * Sony's EE kernel library (libkernl): diei.o (DIntr, EIntr) and
+ * initsys.o (supplement_crt0, kCopy, kFindAddress, FindAddress,
+ * InitSystemCallTableAddress, _InitSys). Built with Sony's 2.9-ee
+ * (Makefile.sn, EE29_CORE), like the prebuilt libkernl.a.
  */
 
 /* Declarations in scope here before the split. */
@@ -90,45 +95,96 @@ void func_0011D9C0(void) {
 }
 
 /*
- * Reverted: size mismatch (ours=52, retail=56 -- 4 bytes short).
+ * initsys.o's kCopy: a word-at-a-time copy of n bytes (rounded down to
+ * words); returns 0. The same function is func_0011D370 (alarm.o), and
+ * func_0011DC08/func_0011DDF0 in the other kernel modules.
  *
- *   int func_0011DA08(int *dst, int *src, unsigned int n) {
- *       unsigned int count = n >> 2;
- *       unsigned int i;
- *       if (count != 0) {
- *           i = 0;
- *           do {
- *               int w = *src;
- *               i++;
- *               src++;
- *               *dst = w;
- *               dst++;
- *           } while (i < count);
- *       }
- *       return 0;
- *   }
- *
- * Word-copy sibling of func_0011DD68's byte-copy loop (see its
- * revert doc for the full byte-granularity case) -- same class of
- * function appears at least three times in core_text
- * (func_0011DA08/func_0011DC08/func_0011DDF0, byte-identical to each
- * other in retail). Same unreachable gap: retail leaves the branch's
- * delay slot a genuine standalone nop with `dst++` scheduled before
- * the branch, while this compiler always sinks `dst++` into the
- * delay slot.
+ * Exact under 2.9-ee: the empty delay slot of the loop branch is
+ * 2.9-ee's own short-loop padding (it pads the loop and leaves the bnez
+ * unfilled). Under 2.95.3 reorg sinks `dst++` into the slot, 52 bytes
+ * against 56, which is what kept this a stub.
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DA08);
+int func_0011DA08(int *dst, int *src, unsigned int nbytes) {
+    unsigned int i;
+    for (i = 0; i < nbytes >> 2; i++) {
+        *dst++ = *src++;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DA40);
+/* kFindAddress (libkernl.a:initsys.o): scan the words from p up to, not
+ * including, end for val; returns the matching address, or 0 if the scan
+ * reaches end. */
+int *func_0011DA40(int *p, int *end, int val) {
+    while (*p != val && p < end)
+        p++;
+    if (!(p < end))
+        p = 0;
+    return p;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DA80);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DA90);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DA98);
+extern void func_0011DB98(int, int);
+extern int func_0011DA80(int, int, void *);
+extern int D_00130410[];
+extern int D_00130408;
+
+/* InitSystemCallTableAddress (libkernl.a:initsys.o): patches two kernel
+   entry points found by scanning for known function bodies
+   (FindAddress = func_0011DA80, matching kCopy = func_0011DA08 and a
+   second reference routine, func_0011DA40) into the two descriptors of
+   D_00130410 (kFindAddress/func_0011DB98, called once per descriptor),
+   then records where the two scans converge (they start from the same
+   base and offset by different constants, and are each advanced by 4
+   bytes -- whichever trails -- until they land on the same address) in
+   D_00130408. `a`/`b` have to be unsigned: retail's convergence test is
+   `sltu`. */
+void func_0011DA98(void) {
+    unsigned int a, b;
+    int p1, p2;
+
+    func_0011DB98(D_00130410[0], D_00130410[1]);
+    func_0011DB98(D_00130410[2], D_00130410[3]);
+
+    p1 = func_0011DA80(0x80000000, 0x80080000, (void *)func_0011DA40);
+    p2 = func_0011DA80(0x80000000, 0x80080000, (void *)func_0011DA08);
+    a = p1 - 0x20C;
+    b = p2 - 0x168;
+    while (a != b) {
+        if (a < b) {
+            p1 = func_0011DA80(p1 + 4, 0x80080000, (void *)func_0011DA40);
+            a = p1 - 0x20C;
+        } else {
+            p2 = func_0011DA80(p2 + 4, 0x80080000, (void *)func_0011DA08);
+            b = p2 - 0x168;
+        }
+    }
+    D_00130408 = a;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DB98);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DBA8);
+extern void func_0011D9C0(void);
+extern void func_0011DA98(void);
+extern void func_0011DE38(void);
+extern void func_001195A0(void);
+extern void func_0011DCB8(void);
+extern void func_0011D3C8(void);
+
+/* _InitSys (libkernl.a:initsys.o): the kernel's one-shot startup sequence,
+   run once from the crt0 supplement. Chains six sub-system initialisers;
+   the last (InitTLBFunctions, func_0011D3C8) is a tail call since this is
+   void and it is the final statement. */
+void func_0011DBA8(void) {
+    func_0011D9C0();
+    func_0011DA98();
+    func_0011DE38();
+    func_001195A0();
+    func_0011DCB8();
+    func_0011D3C8();
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DBE4);

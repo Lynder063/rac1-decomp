@@ -307,7 +307,27 @@ typedef struct {
 extern TexChunk D_001E1200[];
 extern TexRemap D_001E0F00[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002347F0); /* VU0_loadMicroProgram(long *) */
+extern void func_001F9988(int);
+
+#define VIF0_STAT ((volatile unsigned int *)0x10008000)
+#define VIF0_FBRST ((volatile unsigned int *)0x10008020)
+#define VIF0_BASE ((volatile unsigned int *)0x10008030)
+
+/* VU0_loadMicroProgram(long *): waits for VIF0 to go idle, resets it,
+ * points it at the (uncached-masked) micro program address, kicks off
+ * MSCALL 0x45 by writing the code word directly, then waits for VIF0 to
+ * go idle again. */
+void func_002347F0(long *prog) {
+    while (*VIF0_STAT & 0x100) {
+        func_001F9988(0x10);
+    }
+    *VIF0_FBRST = 0;
+    *VIF0_BASE = (unsigned int)prog & 0x0FFFFFFF;
+    *VIF0_STAT = 0x145;
+    while (*VIF0_STAT & 0x100) {
+        func_001F9988(0x10);
+    }
+}
 
 extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
 extern int D_0016100C_m __asm__("D_0016100C") MACRO_ADDR;
@@ -492,68 +512,35 @@ void func_00234C98(int arg0, long arg1) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234D50);
 
-/*
- * REVERTED (size mismatch: 276 vs retail's 284). Semantics recovered with
- * confidence -- VU1_setScissor(int, int, int, int): clamps a scissor rect
- * to the screen bounds in D_0013E600[0]/[1] (width/height) and packs it
- * into one 64-bit GS SCISSOR value (x0 | x1<<16 | y0<<32 | y1<<48):
- *
- *   void func_00234D58(int arg0, int arg1, int arg2, int arg3) {
- *       int x0, x1, y0, y1;
- *       unsigned long scissor;
- *
- *       x1 = arg1;
- *       if (D_0013E600[0] - 1 < arg1) {
- *           x1 = D_0013E600[0] - 1;
- *       }
- *       x0 = 0;
- *       if (arg0 > -1) {
- *           x0 = arg0;
- *       }
- *       y0 = 0;
- *       if (arg2 > -1) {
- *           y0 = arg2;
- *       }
- *       y1 = arg3;
- *       if (D_0013E600[1] - 1 < arg3) {
- *           y1 = D_0013E600[1] - 1;
- *       }
- *
- *       scissor = (unsigned long)(unsigned int)x0 |
- *                 ((unsigned long)(unsigned int)x1 << 16) |
- *                 ((unsigned long)(unsigned int)y0 << 32) |
- *                 ((unsigned long)(unsigned int)y1 << 48);
- *
- *       D_00161000[0] = 0x10000002;
- *       D_00161000[1] = 0;
- *       D_00161000[2] = 0;
- *       D_00161000[3] = 0x50000002;
- *       D_00161000[4] = 0x8001;
- *       D_00161000[5] = 0x10000000;
- *       D_00161000[6] = 0xE;
- *       D_00161000[7] = 0;
- *       *(unsigned long *)((char *)D_00161000 + 0x20) = scissor;
- *       D_00161000[10] = 0x40;
- *       D_00161000[11] = 0;
- *       D_00161000 += 0xC;
- *   }
- *
- * Residual: the x0/y0 lower-bound clamps (max(arg,0)) hit the same
- * unsigned-range-check canonicalization class documented on
- * func_001F0FF8/func_00226380/func_002348B8 -- this compiler always
- * lowers the clamp into `slti`+`movn` operating in place on the argument
- * register, where retail's clamp starts from a zero-initialized register
- * and `movn`s the argument into it. Tried both the "start at 0, override"
- * and "start at arg, zero out" source spellings; identical output either
- * way, confirming it's not reachable from source. 8 bytes over.
- *
- * Name and packing formula independently corroborated by the Lombyte
- * NTSC project's own VU1_setScissor__Fiiii recovery (github.com/
- * mateuszklysz/Lombyte, src/assembly/textbin/fun_00233a40.c) -- same
- * field writes and the identical max(arg,0)/min(bound-1,arg) clamp
- * pair packed the same way. Their copy is also C_NON_MATCHING.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00234D58); /* VU1_setScissor(int, int, int, int) */
+extern int D_0013E600[];
+
+/* VU1_setScissor(x0, x1, y0, y1): clamps the rectangle to the screen
+   (D_0013E600[0]/[1] are its width and height) and queues it as GS
+   register 0x40 (SCISSOR_1: x0 | x1 << 16 | y0 << 32 | y1 << 48) in the
+   same packet VU1_addGSregister (func_00234C98) builds. Each clamp is a
+   `cond ? bound : arg` select assigned back to the argument, and the
+   fields are sign-extended to 64 bits, not zero-extended. */
+void func_00234D58(int x0, int x1, int y0, int y1) {
+    x0 = x0 < 0 ? 0 : x0;
+    x1 = x1 > D_0013E600[0] - 1 ? D_0013E600[0] - 1 : x1;
+    y0 = y0 < 0 ? 0 : y0;
+    y1 = y1 > D_0013E600[1] - 1 ? D_0013E600[1] - 1 : y1;
+    D_00161000[0] = 0x10000002;
+    D_00161000[1] = 0;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000002;
+    D_00161000[4] = 0x8001;
+    D_00161000[5] = 0x10000000;
+    D_00161000[6] = 0xE;
+    D_00161000[7] = 0;
+    *(long *)((char *)D_00161000 + 0x20) =
+        (long)x0 | ((long)x1 << 16) | ((long)y0 << 32) | ((long)y1 << 48);
+    D_00161000[10] = 0x40;
+    D_00161000[11] = 0;
+    D_00161000 += 0xC;
+}
+
+__asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00234E78);
 

@@ -4,6 +4,11 @@
 /*
  * core_text object 0x11DD68-0x11DDD0. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * Sony's EE kernel library (libkernl), exit.o: kCopy (the byte
+ * version), a TLB re-init stub and Exit. Built with Sony's 2.9-ee
+ * (Makefile.sn, EE29_CORE), like the prebuilt libkernl.a, which emits
+ * both of its tail calls natively.
  */
 
 /* Declarations in scope here before the split. */
@@ -84,85 +89,38 @@ extern void func_00118D80(int);
 extern void func_0011D4A0(void);
 
 /*
- * Reverted: size mismatch (ours=44, retail=48 -- 4 bytes short).
- *
-s32 func_0011DD68(u8 *arg0, u8 *arg1, u32 arg2) {
-    s32 var_a3;
-    u8 *var_a0;
-    u8 *var_a1;
-
-    var_a0 = arg0;
-    var_a1 = arg1;
-    var_a3 = 0;
-    if (arg2 != 0) {
-        do {
-            *var_a0 = *var_a1;
-            var_a3 += 1;
-            var_a1 += 1;
-            var_a0 += 1;
-        } while (var_a3 < arg2);
-    }
-    return 0;
-}
- *
- * A byte-copy loop returning 0; unsigned counter needed to avoid loop
- * reversal (see [[rac1-64bit-field-type]]'s sibling lesson on this
- * target). Every instruction matches except one: retail leaves the
- * branch's delay slot a genuine standalone `nop`, with `dst++`
- * scheduled BEFORE the branch instead; this compiler always sinks
- * `dst++` into the delay slot since nothing stops it. Tried computing
- * the store through a saved old-dst local (`char *d = dst; dst++; *d
- * = b;`) -- no change. Not reachable from source.
+ * exit.o's kCopy: a byte copy loop returning 0. Exact under 2.9-ee, which
+ * pads the short loop itself and leaves the branch's delay slot empty,
+ * with `dst++` before the branch as retail has it. (Under 2.95.3 reorg
+ * sinks `dst++` into the slot, 44 bytes against 48: the old revert.)
  */
-s32 func_0011DD68(u8 *arg0, u8 *arg1, u32 arg2) {
-    s32 var_a3;
-    u8 *var_a0;
-    u8 *var_a1;
-
-    var_a0 = arg0;
-    var_a1 = arg1;
-    var_a3 = 0;
-    if (arg2 != 0) {
-        do {
-            *var_a0 = *var_a1;
-            var_a3 += 1;
-            var_a1 += 1;
-            var_a0 += 1;
-        } while (var_a3 < arg2);
+int func_0011DD68(char *dst, char *src, unsigned int n) {
+    unsigned int i;
+    for (i = 0; i < n; i++) {
+        *dst++ = *src++;
     }
     return 0;
 }
 
 /* Tail call: retail is `j func_0011D4A0` + nop, with no frame at all.
-   Reached via tools/fix_tail_calls.py, which rewrites the compiler's
-   call-and-return for the functions listed in tools/tail_call_functions.txt. */
+   2.9-ee emits it natively for a void function that ends in a call.
+   (Under 2.95.3 it needed tools/fix_tail_calls.py and its list.) */
 void func_0011DD98(void) {
     func_0011D4A0();
 }
 
 /*
- * Reverted: size mismatch (ours=44, retail=40 -- 4 bytes over).
- *
- *   extern void func_00118A60(void);
- *
- *   void func_0011DDA0(void) {
- *       func_0011DD98();
- *       func_00118A60();
- *   }
- *
- * Retail is `jal func_0011DD98` followed by a bare `j func_00118A60`
- * (no frame needed for the second call at all). func_0011DDA0 IS
- * listed in tools/tail_call_functions.txt, but that list only gates
- * WHICH functions the rewrite considers -- tools/fix_tail_calls.py's
- * rewrite_function() still requires the function to contain exactly
- * one `jal` total (see its own comment: matching call-and-return
- * shape on both sides is common and must not be rewritten). A
- * function with a real leading call plus a trailing tail call, like
- * this one, has two `jal`s pre-rewrite and doesn't fit that shape;
- * the tool leaves it alone and both calls compile as call-and-return.
- * Extending the tool to handle "call, then tail call" is out of scope
- * here -- flagging it for whoever picks up the tail-call backlog.
+ * Exit(status): re-init the TLB (func_0011DD98), then the _Exit syscall
+ * (func_00118A60) with the status, as a bare tail jump. Exact under
+ * 2.9-ee, which emits "call, then tail call" itself; under 2.95.3 it was
+ * 4 bytes over, a shape tools/fix_tail_calls.py does not rewrite (it
+ * wants exactly one jal). The status lives in $16 across the first call.
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DDA0);
+extern void func_00118A60(int);
+
+void func_0011DDA0(int status) {
+    func_0011DD98();
+    func_00118A60(status);
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DDC8);

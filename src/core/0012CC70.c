@@ -4,6 +4,10 @@
 /*
  * core_text object 0x12CC70-0x12CC90. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * Two libmpeg forwarders into the IPU DMA code of 0012CC90.c, each a bare
+ * tail jump. Built with Sony's 2.9-ee (Makefile.sn, EE29_CORE), which
+ * emits those tail calls itself for a void function that ends in a call.
  */
 
 /* Declarations in scope here before the split. */
@@ -164,12 +168,16 @@ void func_0012CC70(void *arg0) {
     func_0012CD60((char *)*(void **)((char *)arg0 + 0x40) + 0x4C);
 }
 
-extern int func_0012CE48(void *);
+/* func_0012CE48 itself ends in a tail call (to func_0012CCF8): it returns
+   nothing. */
+extern void func_0012CE48(void *);
 
 /* Tail call with argument setup: retail is
-   `lw $4,0x40($4)` / `j func_0012CE48` / `addiu $4,$4,0x4C`. */
-int func_0012CC80(char *a) {
-    return func_0012CE48((char *)&((Wrapper *)a)->obj->handlers[8]);
+   `lw $4,0x40($4)` / `j func_0012CE48` / `addiu $4,$4,0x4C`. Void, so
+   2.9-ee emits the tail jump (a `return` of the callee's value would
+   keep a frame: 32 bytes against 12). */
+void func_0012CC80(char *a) {
+    func_0012CE48((char *)&((Wrapper *)a)->obj->handlers[8]);
 }
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CC8C);

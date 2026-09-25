@@ -15,13 +15,15 @@ for f in asm/data/*.s; do
   echo "assembled $out"
 done
 
-# core_rdata minus the tables libgcc objects now provide themselves
-# (__divdi3's static __clz_tab at D_00152B18). rac1.ld.sh links the parts
-# with the object's .rodata in between. See tools/split_data_s.py.
-python tools/split_data_s.py asm/data/core_rdata.rodata.s build-sn/core_rdata D_00152B18
-for n in 1 2; do
-  sn "$AS" -I include-sn -I include -o "build-sn/core_rdata_$n.o" "build-sn/core_rdata_$n.s"
-  echo "assembled build-sn/core_rdata_$n.o"
+# core_rdata minus the read-only data compiled objects now provide
+# themselves (config/core_rodata.txt: __divdi3's static __clz_tab, the
+# literals of compiled SDK functions). rac1.ld.sh links the pieces with
+# each object's .rodata in its hole. See tools/split_data_s.py.
+rm -f build-sn/core_rdata_*.s build-sn/core_rdata_*.o
+python tools/split_data_s.py asm/data/core_rdata.rodata.s build-sn/core_rdata $(python tools/core_rodata.py labels)
+for s in build-sn/core_rdata_*.s; do
+  sn "$AS" -I include-sn -I include -o "${s%.s}.o" "$s"
+  echo "assembled ${s%.s}.o"
 done
 
 # data minus the jump tables that compiled game functions now bring

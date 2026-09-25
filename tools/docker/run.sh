@@ -49,4 +49,5 @@ if [ "$CONTAINER_CLI" = "podman" ]; then
   sec_opts+=(--security-opt label=disable)
 fi
 
-exec $CONTAINER_CLI run --rm $tty "${sec_opts[@]}" --platform linux/386 -v "$repo:$repo" -w "$repo" "$IMAGE_TO_RUN" "$@"
+# ${a[@]+...}: bash 3.2 (macOS) treats an empty array as unset under set -u.
+exec $CONTAINER_CLI run --rm $tty ${sec_opts[@]+"${sec_opts[@]}"} --platform linux/386 -v "$repo:$repo" -w "$repo" "$IMAGE_TO_RUN" "$@"

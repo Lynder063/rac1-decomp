@@ -60,10 +60,10 @@ date with `src/`. It leaves out retail's linker fill (the `0xCDCDCDCD`
 runs between objects that splat also emits as 4-byte "functions"; 38 of
 them, 200 bytes): fill is not code, and the build reproduces it byte for
 byte. Totals written in prose go stale, so this file no
-longer keeps a running count. Snapshot as of 2026-09-24 (`f53f9ae`):
-**731 functions have source; 691 are exact on size and bytes; 40 are
-same-size near-misses kept as C; 0 are size-mismatched; 14.59% of code
-bytes match; 21 of 121 units complete.** Re-run `bash tools/build_sn.sh`
+longer keeps a running count. Snapshot as of 2026-09-24 (`5c1d28b`):
+**926 functions have source; 903 are exact on size and bytes; 23 are
+same-size near-misses kept as C; 0 are size-mismatched; 26.69% of code
+bytes match; 28 of 121 units complete.** Re-run `bash tools/build_sn.sh`
 (which runs the sweep, the layout check and the whole-image check)
 after any change rather than trusting a snapshot or any single entry.
 
@@ -345,6 +345,55 @@ of these came out of them.
   a call, never `return f(...)`; it has -fstrict-aliasing on by default;
   and verbatim library source often matches under it (newlib's rand,
   __sinit, _fwalk). See the 2.9-ee section below.
+
+**2026-09-24: batches with cheaper workers (691 to 903).** Matching ran as
+batches of 10-15 functions per agent, grouped by file, with
+`docs/LEVERS.md` as the one-page brief and `tools/integrate.py` to check
+and apply each batch's manifest. Per function matched, Sonnet workers
+cost roughly 60-100K tokens on library code with a reference source,
+rising past 250K once that ran dry, and 370K+ on game code (0 of 15 on
+pause.c). Opus agents cost 37-79K per function on game code, closing
+11-14 of 14 per batch, largely by re-deriving Sonnet's near-misses from
+the assembly. What was new:
+
+- *Reference sources match library code nearly line for line:* the MSSG
+  mpeg2decode sources for libmpeg's `mpc.o` (motion vectors, headers,
+  slices) and newlib's 2000-02-17 snapshot for `mprec.c`, `dtoa.c`,
+  `makebuf.c`, `strtol.c`.
+- *An empty asm hides a value from the optimizer.* `__asm__("" :
+  "+r"(x));` stops gcc proving a small trip count and reversing a loop
+  [scePad2Init], and keeps a constant address in a register where
+  retail's store is not volatile [kputchar]. `do { ... } while (0)`
+  around one store is a scheduling barrier [cdvd_exit]. A register pin
+  (`register int i asm("$14")`) closed func_002284E8, but was not kept.
+- *Signedness shows in the compare:* `sltiu` means unsigned, `slti`
+  signed [pictureData0, updateTempTackData].
+- *More return types:* memset returns a pointer, EIntr and DeleteSema
+  return int, func_001F4868 returns a 64-bit `long`, func_0020D830 a
+  float.
+- *A word inside a data block, read via `$gp`:* write it as the block's
+  label plus an offset (`(char *)&D_0015EDBC + 0xC`). A made-up
+  `D_0015EDC8` has no definition [snd_InitVAGStreamingEx].
+- *Never declare a global that the file also reaches through `lui` with a
+  small type:* the assembler then makes every access to it in the file
+  `$gp`-relative [draw.c's D_00161000].
+- *A DMA wait:* `if (x) do {} while (x);` [vibuf.c's StopDMA]. Its old
+  "short-loop erratum" note was wrong.
+- *Old notes and Sonnet candidates had real decode errors:* wrong case
+  labels, swapped results, an 8-byte copy read as 13, a callee given an
+  argument it doesn't take.
+- *What try_func can't see:* where a constant lives (above), and a
+  `%hi` that ld resolves wrongly. In func_001E9808, a second HI16 for the
+  same symbol before its LO16 came out as `lui 0xd390` in the image, where
+  retail has a bare `lui 0x14`. It stays a stub until that is reproduced.
+
+Build changes this round (docs/TOOLCHAIN.md): compiled core objects place
+their literals and jump tables in core_rdata (`config/core_rodata.txt`);
+data pieces after a cut are laid out with `.org` at retail offsets, and a
+`jtbl_` cut keeps the data splat merged after the table; the bss equates
+come from the objects' symbol tables (`tools/list_undefined.py`), since
+ld crashes on long runs of undefined references; `__udivdi3` and
+friends map to their still-assembly libgcc modules.
 
 ### Per-function log
 
@@ -882,6 +931,15 @@ both compilers (each function's C unchanged) splits them like this:
   `func_0012C058`) plus a few 4-8 byte size changes, and `00121750`,
   `001208E8` and `00116FA0` only lose. Their C was tuned against 2.95.3,
   so the losses may be C to rework, not proof of the compiler.
+
+**Settled (2026-09-24, `1a48d5d`).** The losses were C to rework. A
+migration pass checked every remaining core object against Sony's SDK
+archives (452 functions match an archive member exactly) and reworked
+the C that had been tuned for 2.95.3, mostly callees that return a
+value. 38 more objects moved to `ee29` and 46 functions went exact. Every
+core object is now 2.9-ee except 989snd, `boot`, `permcb`, `wad` (game
+code) and `crt0` (assembly), all SN; `001207B8` (libsn's `vu.o`) is
+undecided.
 
 Neither compiler puts a final truncation's `dsra` in the return slot, so
 `tools/fix_trunc_slot.py` runs in the 2.9-ee pipeline too.

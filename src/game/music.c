@@ -184,7 +184,39 @@ extern unsigned char D_0014BFC0[];
 extern unsigned char D_0013E620[];
 extern unsigned char D_0013D510[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002161E0);
+extern short D_001517D0[];
+extern int func_0012EC60(int, int, int, int);
+extern int func_0012DDC0(void);
+extern void func_00216270(void);
+
+/* Music init: resets the music state at D_001517D0 (+0x30 = 0x20, the
+   other bytes and the three playing records' state and +0x0A flag
+   cleared, +0x1C/+0x22 set to -1), starts VAG streaming through
+   func_0012EC60 (snd_InitVAGStreamingEx), waits until func_0012DDC0
+   (snd_FlushSoundCommands) has nothing left, and calls func_00216270.
+   The two -1 stores are one chained assignment written last: that
+   shares one register between the word and the byte store, and leaves
+   the other stores in source order, as retail has them. */
+void func_002161E0(void) {
+    char *s = (char *)D_001517D0;
+
+    *(char *)(s + 0x30) = 0x20;
+    *(int *)(s + 0x00) = 0;
+    *(char *)(s + 0x31) = 0;
+    *(char *)(s + 0x32) = 0;
+    *(char *)(s + 0x33) = 0;
+    *(int *)(s + 0x34) = 0;
+    *(short *)(s + 0x3E) = 0;
+    *(int *)(s + 0x50) = 0;
+    *(short *)(s + 0x5A) = 0;
+    *(int *)(s + 0x6C) = 0;
+    *(short *)(s + 0x76) = 0;
+    *(char *)(s + 0x22) = *(int *)(s + 0x1C) = -1;
+    func_0012EC60(4, 0xF000, 0, 1);
+    while (func_0012DDC0() != 0) {
+    }
+    func_00216270();
+}
 
 extern void func_0012F068(void *);
 extern void func_002177F0(int);
@@ -394,7 +426,60 @@ void func_002166F0(int arg0, int arg1, int arg2) {
                   func_00217860, (long)(unsigned int)(s + 0x50));
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002167C0);
+extern char D_0013A764[];
+
+/* music_Play dispatcher: routes to the range-specific play function
+   (siblings above, one per id range) for arg0 >= 10000; below that it's
+   the same music_Playing setup those siblings do, inline, with the sound
+   handle read from D_0013A764[arg0][D_0015EE88] (stride 0x250) instead of
+   a SndToc table. */
+void func_002167C0(int arg0, int arg1, int arg2) {
+    char *s;
+    int handle;
+
+    if (arg0 >= 60000) {
+        func_00216290(arg0, arg1, arg2);
+        return;
+    }
+    if (arg0 >= 50000) {
+        func_00216368(arg0, arg1, arg2);
+        return;
+    }
+    if (arg0 >= 40000) {
+        func_00216450(arg0, arg1, arg2);
+        return;
+    }
+    if (arg0 >= 30000) {
+        func_00216528(arg0, arg1, arg2);
+        return;
+    }
+    if (arg0 >= 20000) {
+        func_00216620(arg0, arg1, arg2);
+        return;
+    }
+    if (arg0 >= 10000) {
+        func_002166F0(arg0, arg1, arg2);
+        return;
+    }
+    handle = *(int *)((char *)D_0013A764 + arg0 * 0x250 + D_0015EE88 * 4);
+    if (handle == 0) {
+        return;
+    }
+    s = (char *)D_001517D0;
+    if (*(int *)(s + 0x50) != 0) {
+        return;
+    }
+    *(unsigned int *)(s + 0x50) = 0xFFFFFFFF;
+    *(short *)(s + 0x5A) = 1;
+    *(short *)(s + 0x54) = arg0;
+    *(short *)(s + 0x58) = arg1;
+    *(int *)(s + 0x64) = 10;
+    *(int *)(s + 0x68) = 0xBB80;
+    *(short *)(s + 0x56) = arg2;
+    *(short *)(s + 0x60) = 0;
+    func_0012ED48(handle, 0, 0, 0, arg2, 0, 2, 0, 0x21,
+                  func_00217860, (long)(unsigned int)(s + 0x50));
+}
 
 extern short D_001517D0[];
 extern void func_0012EDE0(void *);
@@ -472,7 +557,54 @@ void func_00216A90(int arg0, int arg1, int arg2) {
                   func_002179C8, (long)(unsigned int)(s + 0x34));
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00216B68); /* music_StartTrackBody(int, int, int) */
+extern void func_00217970(int, long);
+
+/* music_StartTrackBody(int, int, int): when the music record at +0x34 is
+   already playing (its word neither 0 nor -1) and not in state 9, starts
+   track arg0 + 1 of the table at D_00137C80 + 0x2AA8 on it: state 9, the
+   track, arg1 and arg2 recorded, 10 and 48000 stored, then
+   func_0012ED48 with the current word passed on as its eighth argument
+   and 0x24 or 0x20 by arg1's bit 0. The handle is read twice as in
+   func_00216A90 (CSE merges the loads, and the address stays in a
+   register as in retail), and the 0x24/0x20 choice comes before the
+   stores, which keeps arg1 in $a1. */
+void func_00216B68(int arg0, int arg1, int arg2) {
+    char *s = (char *)D_001517D0;
+    char *base;
+    int *tbl;
+    unsigned int cur;
+    long h;
+    int i;
+    int flags;
+
+    if (*(short *)(s + 0x3E) == 9) {
+        return;
+    }
+    cur = *(unsigned int *)(s + 0x34);
+    if (cur == 0 || cur == 0xFFFFFFFF) {
+        return;
+    }
+    base = (char *)D_00137C80;
+    tbl = (int *)(base + 0x2AA8);
+    i = arg0 + 1;
+    if (tbl[i] == 0) {
+        return;
+    }
+    h = tbl[i];
+    flags = (arg1 & 1) ? 0x24 : 0x20;
+    *(short *)(s + 0x38) = arg0;
+    *(short *)(s + 0x3C) = arg1;
+    *(short *)(s + 0x3E) = 9;
+    *(int *)(s + 0x48) = 10;
+    *(int *)(s + 0x4C) = 0xBB80;
+    *(short *)(s + 0x3A) = arg2;
+    *(short *)(s + 0x44) = 0;
+    func_0012ED48(h, 0, 0, 0, arg2, 0, 1, cur, flags,
+                  func_00217970, (long)(unsigned int)(s + 0x34));
+}
+
+/* Retail carries 4 bytes of inter-function padding after this endlabel. */
+__asm__(".section .text\n\tnop\n");
 
 extern void func_00217920(int, long);
 
@@ -531,7 +663,60 @@ void func_00216D30(int arg0, int arg1) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00216D88); /* music_Stop(void) */
+extern void func_0012ED10(void);
+extern void func_0012EE70(int);
+
+/* music_Stop: waits (func_0012DDC0, snd_FlushSoundCommands) while each
+   of the three playing records at +0x34, +0x6C and +0x50 is still
+   starting (state 0xFFFFFFFF), stops the streams (func_0012ED10), flushes
+   until nothing is left, calls func_0012EE70(1), then clears the records
+   and the current id (+0x22 kept in +0x38 when set). Each wait loop has
+   its own pointer assigned in the loop condition: jump.c's copy of the
+   exit test in front of the loop then gets its own pseudo, and the loop
+   keeps retail's copy in $s1. The stores are in the order that gives
+   retail's schedule. */
+void func_00216D88(void) {
+    {
+        char *d;
+        while (d = (char *)D_001517D0, *(unsigned int *)(d + 0x34) == 0xFFFFFFFF) {
+            func_0012DDC0();
+        }
+    }
+    {
+        char *d;
+        while (d = (char *)D_001517D0, *(unsigned int *)(d + 0x6C) == 0xFFFFFFFF) {
+            func_0012DDC0();
+        }
+    }
+    {
+        char *d;
+        while (d = (char *)D_001517D0, *(unsigned int *)(d + 0x50) == 0xFFFFFFFF) {
+            func_0012DDC0();
+        }
+    }
+    func_0012ED10();
+    while (func_0012DDC0() != 0) {
+    }
+    func_0012EE70(1);
+    {
+        char *s = (char *)D_001517D0;
+        *(short *)(s + 0x3E) = 0;
+        *(short *)(s + 0x3C) = 0;
+        *(int *)(s + 0x34) = 0;
+        if (*(signed char *)(s + 0x22) != -1) {
+            *(short *)(s + 0x38) = *(signed char *)(s + 0x22);
+        }
+        *(short *)(s + 0x5A) = 0;
+        *(short *)(s + 0x58) = 0;
+        *(int *)(s + 0x50) = 0;
+        *(short *)(s + 0x76) = 0;
+        *(short *)(s + 0x74) = 0;
+        *(int *)(s + 0x6C) = 0;
+        *(short *)(s + 0x20) = 0;
+        *(char *)(s + 0x22) = -1;
+        *(char *)(s + 0x23) = -1;
+    }
+}
 
 extern short D_001517D0[];
 
@@ -555,6 +740,88 @@ void func_00216F28(void) {
     p[0x2E] = 4;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00216F48); /* music_UpdateStream(music_Playing &) */
+typedef struct {
+    unsigned int handle; /* 0x00: 0 none, 0xFFFFFFFF starting/released */
+    short id;            /* 0x04 */
+    short unk06;
+    short unk08;
+    short state;         /* 0x0A: low bits the state, 0x8000 paused */
+    short fade;          /* 0x0C: 0x8000 fading */
+    short fadeT;         /* 0x0E */
+} MusicPlaying;
+
+extern void func_0012E4A8(int);
+extern void func_0012EDB0(int);
+extern int func_001F9938(void *);
+extern void func_0012EE10(int, void (*)(int, long), long);
+extern void func_0012E588(int, void (*)(int, long), long);
+extern void func_0012EE40(int, void (*)(int, long), long);
+extern void func_00217A60(int, long);
+extern void func_00217A08(int, long);
+extern void func_00217830(int, long);
+
+/* music_UpdateStream(music_Playing &): with a live handle and state other
+   than 9, state 5 stops the stream (state 6) and state 6 without a
+   handle resets; a fading record (+0xC bit 15) pauses the handle once
+   (+0xA bit 15) and polls func_001F9938 until it reports 2 (+0xC = 4),
+   otherwise a paused one is resumed. Unpaused, states 1/8/9 are left
+   alone, 2 hands the handle to func_0012EE40 unless it is 0xFFFFFFFF,
+   and anything but 2/3 releases the handle through func_0012EE10 and
+   func_0012E588. With no live handle (or state 9) the state is cleared
+   when it is 7 or the handle is 0. The handle is unsigned (retail builds
+   0xFFFFFFFF with lui/ori), the special case is the else arm (retail
+   places it last), and the dispatch reads p->state directly so the 2/3
+   range test works on the loaded halfword as retail's does. */
+void func_00216F48(MusicPlaying *p) {
+    int h;
+
+    if (p->state != 9 && p->handle != 0 && p->handle != 0xFFFFFFFF) {
+        if (p->state == 5) {
+            if (p->handle != 0) {
+                func_0012E4A8(p->handle);
+                p->state = 6;
+            } else {
+                p->state = 0;
+            }
+        } else if (p->state == 6) {
+            if (p->handle == 0) {
+                p->state = 0;
+            }
+        }
+        if (p->handle == 0) {
+            return;
+        }
+        if (p->fade & 0x8000) {
+            if (!(p->state & 0x8000)) {
+                func_0012EDB0(p->handle);
+                p->state |= 0x8000;
+            }
+            if (func_001F9938(&p->fadeT) == 2) {
+                p->fade = 4;
+            }
+        } else if (p->state & 0x8000) {
+            func_0012EDE0((void *)p->handle);
+            p->state ^= 0x8000;
+        }
+        if (p->state & 0x8000) {
+            return;
+        }
+        if (p->state == 1 || p->state == 8 || p->state == 9) {
+            return;
+        }
+        if (p->state != 2 && p->state != 3) {
+            h = p->handle;
+            p->handle = 0xFFFFFFFF;
+            func_0012EE10(h, func_00217A60, (long)(unsigned int)p);
+            func_0012E588(h, func_00217A08, (long)(unsigned int)p);
+            return;
+        }
+        if (p->handle != 0xFFFFFFFF && p->state == 2) {
+            func_0012EE40(p->handle, func_00217830, (long)(unsigned int)p);
+        }
+    } else if (p->state == 7 || p->handle == 0) {
+        p->state = 0;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00217130); /* music_Update(void) */

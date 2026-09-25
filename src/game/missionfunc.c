@@ -134,7 +134,65 @@ extern int func_001236F0(void);
 extern int func_001E9730();
 extern char D_001E8690[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020C7A0);
+extern int func_0020C940(short type, int arg);
+extern char *D_001A2EF0[];
+extern unsigned char D_0013DE60[];
+extern char D_001A2F90[];
+
+/* Per-frame objective update over the 0x28-byte node list of the current
+   pad slot (D_001A2EF0[D_001A01F0[0x89]], kept at D_001A2F90+0x10):
+   status +0x24 = 0 when a gated node (+0x10 & 4) has its D_0013DE60 byte
+   clear or its first condition (func_0020C940) fails, else 2 or 1 by the
+   second condition; then each +0x1C callback's result goes to +0x26; then
+   the count of status-1 nodes without +0x10 & 2 goes to D_001A2F90+0xC.
+   Returns whether that count is 0. The head is stored and then read back
+   (CSE forwards it, leaving retail's copy into $s0 after the null test),
+   and each block reads D_001A2F90 through its own `char *` local. */
+int func_0020C7A0(void) {
+    char *node;
+
+    {
+        char *p = D_001A2F90;
+        *(char **)(p + 0x10) = D_001A2EF0[D_001A01F0[0x89]];
+        if (*(char **)(p + 0x10) == 0) {
+            return 0;
+        }
+        node = *(char **)(p + 0x10);
+    }
+    while (*(short *)node != 0) {
+        if ((*(unsigned short *)(node + 0x10) & 4) && D_0013DE60[D_001A01F0[0x89]] == 0) {
+            *(short *)(node + 0x24) = 0;
+        } else if (!func_0020C940(*(short *)(node + 2), *(int *)(node + 4))) {
+            *(short *)(node + 0x24) = 0;
+        } else if (!func_0020C940(*(short *)(node + 8), *(int *)(node + 0xC))) {
+            *(short *)(node + 0x24) = 1;
+        } else {
+            *(short *)(node + 0x24) = 2;
+        }
+        node += 0x28;
+    }
+    {
+        char *p = D_001A2F90;
+        for (node = *(char **)(p + 0x10); *(short *)node != 0; node += 0x28) {
+            if (*(int (**)(int))(node + 0x1C) != 0) {
+                *(short *)(node + 0x26) = (*(int (**)(int))(node + 0x1C))(*(int *)(node + 0x20));
+            }
+        }
+    }
+    {
+        char *p = D_001A2F90;
+        *(int *)(p + 0xC) = 0;
+        for (node = *(char **)(p + 0x10); *(short *)node != 0; node += 0x28) {
+            if (*(short *)(node + 0x24) == 1 && !(*(unsigned short *)(node + 0x10) & 2)) {
+                *(int *)(p + 0xC) += 1;
+            }
+        }
+    }
+    {
+        char *p = D_001A2F90;
+        return *(int *)(p + 0xC) == 0;
+    }
+}
 
 extern unsigned char D_0013DE48[];
 extern unsigned char D_0013D5C8_b[] __asm__("D_0013D5C8");
@@ -173,7 +231,68 @@ int func_0020C940(short type, int arg) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020CA50);
+typedef struct {
+    short id;             /* 0x00 */
+    char _pad02[0xE];
+    unsigned short flags; /* 0x10 */
+    short base;           /* 0x12 */
+    short ids[8];         /* 0x14 */
+    short status;         /* 0x24 */
+    short sel;            /* 0x26 */
+} MissionNode;
+extern MissionNode *D_001A2FA0;
+
+/* Lists the current objectives (the 0x28-byte node list at D_001A2FA0,
+   ended by id 0): each node not hidden (flags & 2), with a status, and
+   not an optional (flags & 1) one already done (status 2) goes to
+   out[count] as its id (with arg3: 0x5243 when done, else ids[sel]),
+   sets bit count of *mask when done and puts base + sel in *nums++.
+   Bit 31 of *mask says every visible node is done. Returns the count.
+   out is indexed by count: loop strength reduction then gives retail's
+   pointer and its copy for the second store. */
+int func_0020CA50(int *out, int *mask, int *nums, int arg3) {
+    MissionNode *p = D_001A2FA0;
+    int count = 0;
+    int all = 1;
+
+    *out = 0;
+    if (mask != 0) {
+        *mask = 0;
+    }
+    if (nums != 0) {
+        *nums = -1;
+    }
+    if (p == 0) {
+        return 0;
+    }
+    while (p->id != 0) {
+        unsigned short f = p->flags;
+        short t = p->status;
+
+        if (t != 2 && !(f & 2)) {
+            all = 0;
+        }
+        if (!(f & 2) && t != 0 && !((f & 1) && t == 2)) {
+            out[count] = p->id;
+            if (arg3 != 0) {
+                out[count] = (p->status == 2) ? 0x5243 : p->ids[p->sel];
+            }
+            if (mask != 0 && p->status == 2) {
+                *mask |= 1 << count;
+            }
+            if (nums != 0) {
+                *nums++ = p->base + p->sel;
+            }
+            count++;
+        }
+        p++;
+    }
+    if (mask != 0 && all != 0) {
+        *mask |= 0x80000000;
+    }
+    return count;
+}
+__asm__(".section .text\n\tnop\n");
 
 extern int D_0013D844 NOT_SDA;
 extern unsigned char D_0013D4A8 NOT_SDA;

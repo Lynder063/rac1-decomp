@@ -144,7 +144,109 @@ void func_001EC270(void *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC2B8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EC5B8); /* Camera_ActivationCheckPriority */
+typedef struct {
+    char unk_00[0x10];
+    int unk10;
+    char unk14[8];
+    int unk1C;
+} CamRec20;
+extern CamRec20 *D_0015F090 MACRO_ADDR;
+extern CamRec20 *D_0015F040 MACRO_ADDR;
+extern char D_0013F450[];
+extern char D_0013F4D0[];
+extern int func_00215570(void *arg0, int arg1);
+typedef struct {
+    char unk_00[4];
+    int (*fn_04)(void *, void *);
+    char unk_08[0xC];
+} CamPrioHook;
+extern CamPrioHook D_001E8F80_prio[] __asm__("D_001E8F80");
+
+/* Camera_ActivationCheckPriority(cur, other): whether camera `cur` should
+   take over from `other`. An inactive camera (+0x7C) never does; the camera
+   type's +4 hook (D_001E8F80) may decide first (-1 no, 1 yes); otherwise
+   the mode at +0x74 decides: 0 (and 1/2 once +0x7D is set) by priority
+   byte, 4 through func_00215570 on the target record, 7 by the level's
+   mode and target. Each case ends in `if (x) return 1;` falling out to the
+   one shared `return 0;`, which is what lets cross-jumping and reorg give
+   retail's branches; case 7's final test shares its `return 1` with the
+   g < 0 exit so its `$v0 = 1` is not hoisted above the load. */
+int func_001EC5B8(void *cur, void *other) {
+    char *c = (char *)cur;
+    char *o = (char *)other;
+    unsigned char *state = (unsigned char *)(c + 0x74);
+
+    if (*(unsigned char *)(c + 0x7C) == 0) {
+        return 0;
+    }
+    {
+        int (*fn)(void *, void *) = D_001E8F80_prio[*(short *)(c + 0x8C)].fn_04;
+        if (fn != 0) {
+            switch (fn(cur, other)) {
+            case -1:
+                return 0;
+            case 1:
+                return 1;
+            }
+        }
+    }
+    switch (*(int *)state) {
+    case 1:
+    case 2:
+        if (state[9] == 0) {
+            return 0;
+        }
+        /* fallthrough */
+    case 0:
+        if (o == 0) {
+            return 1;
+        }
+        if (*(short *)(o + 0x7E) != 0) {
+            return 1;
+        }
+        if (state[8] > *(unsigned char *)(o + 0x7C)) {
+            return 1;
+        }
+        break;
+    case 4: {
+        char *p = (char *)D_0015F090[*(short *)(c + 0x84)].unk1C;
+
+        if (o != 0 && *(short *)(o + 0x7E) == 0 && !(state[8] > *(unsigned char *)(o + 0x7C))) {
+            return 0;
+        }
+        if (func_00215570(D_0013F4D0, *(int *)(p + 0xC))) {
+            return 1;
+        }
+        break;
+    }
+    case 7: {
+        char *base = D_0013F450;
+        short e = *(short *)(c + 0x86);
+
+        if (e != *(int *)(base + 0x2284)) {
+            return 0;
+        }
+        if (*(short *)(o + 0x7E) == 0 && !(state[8] > *(unsigned char *)(o + 0x7C))) {
+            return 0;
+        }
+        if (e != 3) {
+            return 1;
+        }
+        {
+            CamRec20 *rec = &D_0015F090[*(short *)(c + 0x84)];
+            int g = *(int *)((char *)rec->unk1C + 0x24);
+
+            if (g < 0 || (*(int *)(base + 0x560) == D_0015F040[g].unk10
+                          && *(int *)(base + 0x570) == 0)) {
+                return 1;
+            }
+        }
+        break;
+    }
+    }
+    return 0;
+}
+__asm__(".section .text\n\tnop\n");
 
 /* Same shape/blocker as func_001EC270: indirect call via a function
    pointer loaded from a per-type dispatch table, wrapped in an
@@ -160,9 +262,138 @@ void func_001EC780(void *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EC7C8);
+extern int D_00189C50[];
+typedef struct { char unk_00[0xA0]; } CamSlot;
+extern CamSlot D_00187510[];
+extern int func_001EC5B8(void *cur, void *other);
+extern void func_001EC2B8(void *arg0);
+/* The camera-type table (D_001E8F80) with its +0xC hook typed: DispatchRec
+   above keeps that slot as bytes. */
+typedef struct {
+    char unk_00[0xC];
+    void (*fn_0C)(void *);
+    char unk_10[4];
+} CamTypeHooks;
+extern CamTypeHooks D_001E8F80_hooks[] __asm__("D_001E8F80");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EC8D8);
+/* Camera_ActivationCheck: exits the current camera (func_001EC780, the
+   type table's +0x10 hook), then scans the 48 camera slots (D_00189C50[i]
+   != 0 = enabled, D_00187510[i] = the 0xA0-byte record) and keeps
+   whichever func_001EC5B8 prefers over the current one. If that changed
+   the camera, func_001EC2B8 switches to it. Then func_001EC210, the new
+   camera's +0xC hook (read before that call, as retail does), a copy of
+   its fields 0x30-0x38 to 0x64-0x6C, and the post-update queue
+   (func_001EC098). Returns -1, which the one caller ignores.
+
+   The indexed loop is what gives retail's preheader: strength reduction
+   builds the two slot pointers in its order, and loop reversal makes the
+   count run down 47..0. Indexing the table directly by a typed +0xC
+   member puts the base first in the addu. */
+int func_001EC7C8(void) {
+    void *cur = D_001871C0;
+    int changed = 0;
+    CamSlot *rec;
+    int i;
+
+    func_001EC780(cur);
+
+    for (i = 0; i < 0x30; i++) {
+        if (D_00189C50[i] != 0) {
+            rec = &D_00187510[i];
+            if (rec != cur) {
+                if (func_001EC5B8(rec, cur)) {
+                    cur = rec;
+                    changed = 1;
+                }
+            }
+        }
+    }
+
+    if (changed) {
+        func_001EC2B8(cur);
+    }
+    {
+        void (*fn0C)(void *) = D_001E8F80_hooks[*(short *)((char *)cur + 0x8C)].fn_0C;
+        char *src;
+        char *dst;
+        float v;
+
+        func_001EC210(cur);
+        if (fn0C != 0) {
+            fn0C(cur);
+        }
+        src = (char *)cur + 0x30;
+        dst = (char *)cur + 0x64;
+        v = *(float *)src;
+        *(float *)((char *)cur + 0x64) = v;
+        *(float *)(dst + 4) = *(float *)(src + 4);
+        *(float *)(dst + 8) = *(float *)(src + 8);
+    }
+    func_001EC098();
+    return -1;
+}
+
+extern void func_001F9BF0(void *dst, void *a, void *b);      /* dst = a - b (vector) */
+extern float func_001F9C78(void *a, void *b);                 /* dot(a, b) */
+extern float func_001F9CB8(void *a);                           /* |a| */
+extern void func_001F9DC0(void *dst, void *src, float len);    /* dst = normalize(src) * len */
+extern float func_001F9FC0(float x);                            /* approx acos(x) */
+extern void func_002156E0(void *dst, void *vec, void *axis, float angle); /* dst = vec rotated `angle` around axis */
+
+/* The camera's angles to a target: out[0] = signed yaw between dir0 and
+   (p0 - p1) off the axis, out[1] = signed pitch after rotating dir0 by
+   that yaw, out[2] = |p0 - p1|. A zero length becomes 0.0001 before the
+   acos. The two sign fixups are shaped differently, as in retail. */
+void func_001EC8D8(float *out, void *p0, void *p1, void *dir0, void *dir1,
+                    void *axis) {
+    char diff[16];
+    char proj[16];
+    char perp[16];
+    char unit[16];
+    char rotated[16];
+    float d1, d2, d3, d4, d5;
+    float lenPerp, lenDiff;
+    float angle1, angle2;
+    float a0, a1;
+
+    func_001F9BF0(diff, p0, p1);
+    d1 = func_001F9C78(diff, axis);
+    func_001F9DC0(proj, axis, d1);
+    func_001F9BF0(perp, diff, proj);
+
+    d2 = func_001F9C78(dir0, perp);
+    lenPerp = func_001F9CB8(perp);
+    if (lenPerp == 0.0f) {
+        lenPerp = 0.0001f;
+    }
+    angle1 = func_001F9FC0(d2 / lenPerp);
+    a0 = 1.57079637f - angle1;
+
+    func_001F9DC0(unit, perp, 1.0f);
+    d3 = func_001F9C78(dir1, unit);
+    if (d3 < 0.0f) {
+        a0 = -a0;
+    }
+    out[0] = a0;
+
+    func_002156E0(rotated, dir0, axis, a0);
+    d4 = func_001F9C78(rotated, diff);
+    lenDiff = func_001F9CB8(diff);
+    if (lenDiff == 0.0f) {
+        lenDiff = 0.0001f;
+    }
+    angle2 = func_001F9FC0(d4 / lenDiff);
+    a1 = -(1.57079637f - angle2);
+
+    func_001F9DC0(unit, diff, 1.0f);
+    d5 = func_001F9C78(axis, unit);
+    if (d5 < 0.0f) {
+        a1 = 1.57079637f - angle2;
+    }
+    out[1] = a1;
+
+    out[2] = func_001F9CB8(diff);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001ECAB8);
 
@@ -238,13 +469,116 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001ED080);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001ED658);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001ED708);
+extern void func_001F9908(int *arg0);
+extern float func_001FA888(int arg0);
+extern float func_001FA7D8(float x);
+extern float func_001F9F90(float x);
+extern void func_001F9DC0(void *dst, void *src, float len);
+extern void func_001F9BD8(void *dst, void *a, void *b);
+extern char D_001873B0[];
+extern char D_00187390[];
+extern char D_00187180[];
+
+/* Camera shake update. arg0: +0 amplitude, +4 sample (out), +8 countdown,
+   +0xC longest countdown. With the active camera (D_001871C0) in state 6
+   both counters are cleared; with the countdown at 0 only +0xC is.
+   Otherwise the countdown is decremented (func_001F9908, saturating) and
+   sample = amplitude * cos(wrap(2 * count)) * (count / longest)^2
+   (func_001FA888 int->float, func_001FA7D8 wrap to [-pi, pi],
+   func_001F9F90 cos) scales one of two directions (arg1) into the shake
+   offset D_00187180 (func_001F9DC0 scale, func_001F9BD8 add). The
+   countdown-zero exit is the else arm after the main path (retail's
+   `b L800` over it), and the state-6 stores are written 8 then 0xC so
+   the scheduler emits 0xC first and cross-jumping leaves them alone. */
+void func_001ED708(char *arg0, int arg1) {
+    char buf[16];
+
+    if (D_001871C0 != 0 && *(short *)((char *)D_001871C0 + 0x86) == 6) {
+        *(int *)(arg0 + 8) = 0;
+        *(int *)(arg0 + 0xC) = 0;
+    } else if (*(int *)(arg0 + 8) != 0) {
+        float ratio;
+        float shake;
+
+        if (*(int *)(arg0 + 0xC) < *(int *)(arg0 + 8)) {
+            *(int *)(arg0 + 0xC) = *(int *)(arg0 + 8);
+        }
+        func_001F9908((int *)(arg0 + 8));
+        ratio = func_001FA888(*(int *)(arg0 + 8)) / func_001FA888(*(int *)(arg0 + 0xC));
+        shake = *(float *)arg0
+                * func_001F9F90(func_001FA7D8(func_001FA888(*(int *)(arg0 + 8)) * 2.0f))
+                * ratio * ratio;
+        *(float *)(arg0 + 4) = shake;
+        if (arg1 == 0) {
+            func_001F9DC0(buf, D_001873B0, shake);
+        } else {
+            func_001F9DC0(buf, D_00187390, shake);
+        }
+        func_001F9BD8(D_00187180, D_00187180, buf);
+    } else {
+        *(int *)(arg0 + 0xC) = 0;
+    }
+}
+__asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001ED818);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EDB98);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EDCE8);
+extern int D_0015F09C MACRO_ADDR;
+extern int D_0015F0A0 MACRO_ADDR;
+extern int D_0015F098 MACRO_ADDR;
+
+/* Picks the camera's draw modes: D_0015F09C is 0x14, or 0x34 in states
+   0x11/0x12 or mode 0x73 of D_0013F450, back to 0x14 when its +0x2F0
+   height is below D_00187180+8 (except in state 0x11); D_0015F0A0 keeps
+   the value before bit 0x80 is set. D_0015F098 is 0xB4 ORed with the +0xC0 mode of
+   D_001871D0, which the first set flag of D_0013F450's 0x12E5, 0x12EB,
+   0x12E6, 0x12EC, 0x12E4 overrides. Each arm ORs the new mode in itself
+   (the constants fold per arm, as in retail), and each block reads
+   D_0013F450 through its own local (%hi kept, %lo rebuilt). */
+void func_001EDCE8(void) {
+    char *c = D_001871D0;
+    char *g = D_0013F450;
+    int st;
+
+    D_0015F09C = 0x14;
+    st = *(int *)(g + 0x208C);
+    if (st == 0x11 || st == 0x12 || *(int *)(g + 0x2084) == 0x73) {
+        D_0015F09C = 0x34;
+    }
+    {
+        char *g2 = D_0013F450;
+        if (*(int *)(g2 + 0x208C) != 0x11
+            && *(float *)(g2 + 0x2F0) < *(float *)(D_00187180 + 8)) {
+            D_0015F09C = 0x14;
+        }
+    }
+    {
+        unsigned char *g3 = (unsigned char *)D_0013F450;
+        D_0015F0A0 = D_0015F09C;
+        D_0015F09C |= 0x80;
+        D_0015F098 = 0xB4;
+        if (g3[0x12E5]) {
+            *(int *)(c + 0xC0) = 0x100;
+            D_0015F098 |= *(int *)(c + 0xC0);
+        } else if (g3[0x12EB]) {
+            *(int *)(c + 0xC0) = 0xB00;
+            D_0015F098 |= *(int *)(c + 0xC0);
+        } else if (g3[0x12E6]) {
+            *(int *)(c + 0xC0) = 0x300;
+            D_0015F098 |= *(int *)(c + 0xC0);
+        } else if (g3[0x12EC]) {
+            *(int *)(c + 0xC0) = 0xD00;
+            D_0015F098 |= *(int *)(c + 0xC0);
+        } else if (g3[0x12E4]) {
+            *(int *)(c + 0xC0) = 0;
+            D_0015F098 |= *(int *)(c + 0xC0);
+        } else {
+            D_0015F098 |= *(int *)(c + 0xC0);
+        }
+    }
+}
 
 extern char D_00187040[];
 extern float D_0015F53C MACRO_ADDR;

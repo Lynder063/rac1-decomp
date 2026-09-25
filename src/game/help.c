@@ -155,16 +155,166 @@ void *func_001FE540(int id) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FE580);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FE588);
+extern int D_0015EF1D_i __asm__("D_0015EF1D") MACRO_ADDR;
+extern int D_0015EF1C_i __asm__("D_0015EF1C") MACRO_ADDR;
+#define D_0015EF1D_b (*(unsigned char *)&D_0015EF1D_i)
+#define D_0015EF1C_b (*(unsigned char *)&D_0015EF1C_i)
+extern int func_0022EE28(int, int, int);
+extern void func_001F7648(void *arg0, int a1, int a2, int a3, int a4, int a5,
+                          int a6, int a7, int a8);
+extern void func_001F75D0(void *a, long b, void *c, int d);
+extern int D_0013E604;
+
+/* Opens the help window: state 1 (opening), the open sound unless both
+   fade flags are clear, then the current entry's text is measured in a
+   scratch FontSetWindow buffer and the box geometry goes into HelpState's
+   pad[] for func_001FE6C0 to draw. The box's y is clamped so its bottom
+   stays 12 above the screen's; written as `screenY - 0xC - hHalf5`, CSE
+   folds it to retail's screenY - (h/2 + 0x11). The fade flags are bytes
+   read through MACRO_ADDR int aliases, which keeps retail's lui+lbu. */
+void func_001FE588(void) {
+    short win[12];
+    int idx;
+    char *text;
+    int screenY;
+    int y0;
+    short w, h;
+    int hHalf5;
+
+    ((HelpState *)D_001997D0)->state = 1;
+    ((HelpState *)D_001997D0)->x04 = 0;
+    if (D_0015EF1D_b || D_0015EF1C_b) {
+        func_0022EE28(0, 1, 0);
+    }
+
+    idx = ((HelpState *)D_001997D0)->pad[6];
+    text = D_0015F780[idx].text;
+    func_001F7648((void *)win, 0xF0, 0x1E0, 0x2C, 0x1D4, 0x100, 0x168, 0x10, 7);
+    func_001F75D0((void *)win, 0x80FFA888L, text, -1);
+
+    screenY = D_0013E604;
+    w = win[6];
+    h = win[7];
+    hHalf5 = (h >> 1) + 5;
+    y0 = screenY - 0x3C;
+
+    ((HelpState *)D_001997D0)->pad[0] = (w >> 1) + 10;
+    ((HelpState *)D_001997D0)->pad[1] = hHalf5;
+    ((HelpState *)D_001997D0)->pad[2] = 0x100;
+    ((HelpState *)D_001997D0)->pad[4] = 8;
+    ((HelpState *)D_001997D0)->pad[5] = 8;
+    ((HelpState *)D_001997D0)->pad[3] = y0;
+    if (screenY - 0xC < y0 + hHalf5) {
+        ((HelpState *)D_001997D0)->pad[3] = screenY - 0xC - hHalf5;
+    }
+}
+
+/* Retail carries 4 bytes of inter-function padding after this endlabel. */
+__asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FE6C0); /* Help_Update */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FF0C8); /* Help_DrawPrompt */
+extern void func_001F62C8(int, int, int, int, int);
+extern void func_001F5800(int, int, int, int, int, int, int, int, long, long);
+extern long func_001F4868_l(int) __asm__("func_001F4868");
+
+/* Help_DrawPrompt: sets the prompt box's +0x18/+0x1C sizes to 0x20,
+   draws its frame (func_001F62C8, a 0x40 box around +0x14/+0x10, 0x60
+   as the fifth argument), then the prompt icon (effect texture 4) as a
+   0x40 quad in grey whose alpha is 0x7E, or x04 * 21 while opening or
+   closing (states 1 and 7), capped at 0x80. Every access goes through
+   D_001997D0, as in the rest of this file. The texture handle is the
+   draw call's 64-bit last argument, taken as `long` so retail's sd
+   stores $v0 directly, ahead of the colour. */
+void func_001FF0C8(void) {
+    int alpha;
+
+    ((HelpState *)D_001997D0)->pad[4] = 0x20;
+    ((HelpState *)D_001997D0)->pad[5] = 0x20;
+    func_001F62C8(((HelpState *)D_001997D0)->pad[3] - 0x20,
+                  ((HelpState *)D_001997D0)->pad[3] + 0x20,
+                  ((HelpState *)D_001997D0)->pad[2] - 0x20,
+                  ((HelpState *)D_001997D0)->pad[2] + 0x20, 0x60);
+    if (((HelpState *)D_001997D0)->state == 1 || ((HelpState *)D_001997D0)->state == 7) {
+        alpha = ((HelpState *)D_001997D0)->x04 * 0x15;
+    } else {
+        alpha = 0x7E;
+    }
+    if (alpha > 0x80) {
+        alpha = 0x80;
+    }
+    func_001F5800(((HelpState *)D_001997D0)->pad[2] - 0x20,
+                  ((HelpState *)D_001997D0)->pad[3] - 0x20, 0x40, 0x40, 0, 0, 0x40, 0x40,
+                  (alpha << 24) | 0x808080, func_001F4868_l(4));
+}
+
+__asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FF1B0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FF4F8);
+extern short D_00199810[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FF560);
+/* Looks `key` up in field `which` (0 or 1) of D_00199810's 150
+   {short a, short b} pairs. On a match it stores the OTHER field into
+   *out (when out is not NULL) and returns the pair's index, else -1.
+   `off` walks the b field's byte offset and becomes the a field's
+   (idx * 4) when which != 0. idx * 4 is computed before the compare,
+   so it lives across the branch and fills its delay slot; the address
+   is an int sum so the addu takes the offset first. */
+int func_001FF4F8(short key, int which, short *out) {
+    char *base = (char *)D_00199810;
+    short *p = (short *)(base + which * 2);
+    int idx = 0;
+    int off = 2;
+
+    do {
+        int t = idx * 4;
+        if (*p == key) {
+            if (which != 0) {
+                off = t;
+            }
+            if (out != 0) {
+                *out = *(short *)(off + (int)base);
+            }
+            return idx;
+        }
+        idx++;
+        off += 4;
+        p = (short *)((char *)p + 4);
+    } while (idx < 150);
+    return -1;
+}
+
+__asm__(".section .text\n\tnop\n");
+
+extern int func_001FF4F8(short, int, short *);
+extern unsigned char D_00141F08[];
+extern int D_0015EF30 MACRO_ADDR;
+
+/* Moves the entry func_001FF4F8 finds for `id` (field a of its table)
+   to the end of the byte list D_00141F08, whose length is D_0015EF30:
+   an earlier occurrence is removed by shifting the rest down, then the
+   value is appended. Unknown ids (-1) change nothing. The search loop
+   tests the byte before the bound, as retail does: it reads
+   D_00141F08[0] before it first reads the count. */
+void func_001FF560(short id) {
+    int val = func_001FF4F8(id, 0, 0);
+    int i;
+
+    if (val == -1) {
+        return;
+    }
+    for (i = 0; D_00141F08[i] != val && i < D_0015EF30; i++) {
+    }
+    if (i < D_0015EF30) {
+        for (; i < D_0015EF30 - 1; i++) {
+            D_00141F08[i] = D_00141F08[i + 1];
+        }
+        D_00141F08[i] = 0;
+        D_0015EF30--;
+    }
+    D_00141F08[D_0015EF30] = val;
+    D_0015EF30++;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FF660);

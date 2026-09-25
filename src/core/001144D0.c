@@ -4,6 +4,11 @@
 /*
  * core_text object 0x1144D0-0x114518. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * newlib's locale.o (the SDK's libc.a): _localeconv_r and localeconv.
+ * The linker dead-stripped the unreferenced _setlocale_r and setlocale
+ * down to their last word each (func_001144D0, func_001144E8). Built
+ * with Sony's 2.9-ee (Makefile.sn, EE29_CORE), like libc.a.
  */
 
 /* Declarations in scope here before the split. */

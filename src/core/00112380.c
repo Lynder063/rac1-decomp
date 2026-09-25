@@ -4,6 +4,10 @@
 /*
  * core_text object 0x112380-0x112468. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * newlib (the SDK's libc.a): atoi.o (atoi) and callocr.o (_calloc_r),
+ * back to back. Built with Sony's 2.9-ee (Makefile.sn, EE29_CORE), like
+ * libc.a.
  */
 
 extern long func_00116F68(int arg0, int arg1, int arg2);

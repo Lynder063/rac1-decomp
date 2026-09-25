@@ -199,9 +199,77 @@ int func_002073F8(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00207408);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207648);
+extern int D_001A04A8 NOT_SDA;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207780);
+/* Menu hit test (func_00207200's family: `a` is the Menu13F450 state test
+   shared with func_00207340/func_00207930). Two independent ways to hit:
+   the first box with arg1 >= 0x135 and D_001A04A8 set and arg3 >= 47.7,
+   which can succeed even when `a` is true; or, only when `a` is true,
+   all three of a second group of boxes hit. */
+int func_00207648(int arg0, int arg1, float unused1, float unused2,
+                   float arg3) {
+    Menu13F450 *s = &D_0013F450;
+    int a = s->unk208C == 17 || s->unk208C == 18 || s->unk12E4 == 1;
+
+    if (func_00209048(arg0, arg1, 0x93, 0x168, 0x182, 0x168) != 0
+        && arg1 >= 0x135 && D_001A04A8 != 0 && arg3 >= 47.7f) {
+        return 1;
+    }
+    if (!a) {
+        return 0;
+    }
+    if (func_00209048(arg0, arg1, 0xC5, 0x9A, 0x13C, 0xE1) != 0
+        && func_00209048(arg0, arg1, 0xD6, 0xC3, 0x157, 0xC5) != 0
+        && func_00209048(arg0, arg1, 0x107, 0xDA, 0x171, 0xA0) != 0) {
+        return 1;
+    }
+    return 0;
+}
+
+/* Menu hit test. Left of x 0xE9 (arg1 < 0xE9) the point must be inside
+   all four func_00209048 boxes. Otherwise it needs a hit in each of
+   three pairs of boxes, where both boxes of a pair are always tested.
+   Each pair's results are locals of their own block: the first one then
+   lives in one basic block across the second call, so local-alloc gives
+   it $s0 before the arguments are allocated, as retail has it. The two
+   compound conditions (`&&` chain, `!a && !b`) keep the return values
+   as branches instead of an sltu. */
+int func_00207780(int arg0, int arg1) {
+    if (arg1 < 0xE9) {
+        if (func_00209048(arg0, arg1, 0x132, 0xA0, 0x15F, 0xD8)
+            && func_00209048(arg0, arg1, 0x14D, 0xD8, 0x181, 0x9A)
+            && func_00209048(arg0, arg1, 0x182, 0xB4, 0x137, 0x93)
+            && func_00209048(arg0, arg1, 0x157, 0x8C, 0x130, 0xAA)) {
+            return 1;
+        }
+        return 0;
+    }
+    {
+        int a = func_00209048(arg0, arg1, 0x8F, 0x115, 0x148, 0x14B);
+        int b = func_00209048(arg0, arg1, 0xE7, 0x108, 0x127, 0x164);
+        if (a == 0 && b == 0) {
+            return 0;
+        }
+    }
+    {
+        int a = func_00209048(arg0, arg1, 0xED, 0x15F, 0x154, 0x10E);
+        int b = func_00209048(arg0, arg1, 0xA2, 0x12B, 0x16F, 0x147);
+        if (a == 0 && b == 0) {
+            return 0;
+        }
+    }
+    {
+        int a = func_00209048(arg0, arg1, 0x132, 0x163, 0x141, 0xCC);
+        int b = func_00209048(arg0, arg1, 0xC2, 0x108, 0x1A0, 0x12E);
+        if (!a && !b) {
+            return 0;
+        }
+        return 1;
+    }
+}
+
+/* Retail carries 4 bytes of inter-function padding after this endlabel. */
+__asm__(".section .text\n\tnop\n");
 
 extern int D_001A04BC NOT_SDA;
 
@@ -228,17 +296,27 @@ int func_00207930(int arg0, int arg1, float unused1, float unused2, float arg3) 
 
 extern int D_001A04B4 NOT_SDA;
 
-/* Same hit test as func_002071A8, run against two boxes.
-   6/144 near-miss: retail tests `a` with a plain bnez (`li $v0,1` in its
-   slot) and sets $v0 = 0 again in the next beqz's slot; ours uses bnel.
-   Tried without change: an r variable (set once, or per arm), if/else
-   chains with explicit 0/1 per path, `?:`, and early returns (4-8 bytes
-   short from cross-jumping). */
+/* Same hit test as func_002071A8, run against two boxes: nonzero when
+   D_001A04B4 is set and either box is hit. Retail sets the result before
+   each test (0, 1, 0, then 1 on the fall-through), so the C does the same.
+   The last store goes through a short: jump.c folds `r = 0; if (b) r = 1;`
+   into an sltu only when the store sets a whole register, and a subreg
+   store keeps retail's beqz. */
 int func_002079F0(int x1, int y1) {
     int a = func_00209048(x1, y1, 0x99, 0xED, 0x160, 0x117);
     int b = func_00209048(x1, y1, 0x10E, 0xF7, 0x13D, 0x119);
+    int r = 0;
 
-    return D_001A04B4 != 0 && (a != 0 || b != 0);
+    if (D_001A04B4 != 0) {
+        r = 1;
+        if (a == 0) {
+            r = 0;
+            if (b != 0) {
+                *(short *)&r = 1;
+            }
+        }
+    }
+    return r;
 }
 
 extern int D_001A04C0 NOT_SDA;
@@ -262,7 +340,33 @@ int func_00207A80(void *arg0, int arg1, float unused1, float unused2, float arg3
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00207B30);
+extern int D_001A04AC NOT_SDA;
+extern int func_00209048(int, int, int, int, int, int);
+
+/* Menu hit test (func_00207200's family): for arg1 >= 0x105, needs
+   D_001A04AC set and arg3 >= 47.7; otherwise returns `a` directly when
+   arg1 < 0xC1, else `a` unless func_00209048's box test hits (which
+   clears it to 0). */
+int func_00207B30(int arg0, int arg1, float unused1, float unused2, float arg3) {
+    Menu13F450 *s = &D_0013F450;
+    int a = s->unk208C == 17 || s->unk208C == 18 || s->unk12E4 == 1;
+    int result;
+
+    if (arg1 >= 0x105) {
+        if (D_001A04AC == 0) {
+            return 0;
+        }
+        return (arg3 >= 47.7f) ? 1 : 0;
+    }
+    if (arg1 < 0xC1) {
+        return a;
+    }
+    result = a;
+    if (func_00209048(arg0, arg1, 0xD9, 0xB8, 0x156, 0xD2) != 0) {
+        result = 0;
+    }
+    return result;
+}
 
 /* Menu hit test (func_00207200's family): hits unless the menu state
    blocks it, arg3 ($f14) is below 71.5, or the first box is hit, and
@@ -459,14 +563,13 @@ int func_002081F8(void) {
    func_00207CE0). With `r` defaulting to 1, reorg turns the reset into
    retail's bc1fl with `r = 0` in its delay slot. The nop after the mtc1
    is ps2eeas's (tools/ps2eeas_nops.py). */
-s32 func_00208208(s32 arg1) {
-    s32 var_v0;
+int func_00208208(void *arg0, int arg1, float unused1, float unused2, float arg3) {
+    int r = 1;
 
-    var_v0 = 1;
-    if ((arg1 < 0x141) && !(arg1 >= 63.5f)) {
-        var_v0 = 0;
+    if (arg1 < 0x141 && !(63.5f <= arg3)) {
+        r = 0;
     }
-    return var_v0;
+    return r;
 }
 
 int func_00208238(void) {
@@ -580,15 +683,159 @@ void func_002083E0(void *arg0, unsigned char *arg1, int arg2) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00208458);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00208688);
+/* Expands 128 rows of 16 source bytes into 4-bit-per-pixel masks: a
+   256-entry table maps each byte to a word with nibble k set to 0xF when
+   bit k is set, each row's 16 bytes are looked up into a 64-byte row
+   buffer, and the buffer is copied to dst four times (0x100 bytes of dst
+   per source row). The first bit is a plain store over the zeroed entry
+   (retail's store-in-delay-slot), and the row buffer is filled through
+   a block-local pointer, which gives retail's separate buffer copies. */
+void func_00208688(void *dst, unsigned char *src) {
+    unsigned int table[256];
+    unsigned int rowbuf[16];
+    int i, j, row;
+
+    for (i = 0; i < 256; i++) {
+        table[i] = 0;
+        if (i & 1) {
+            table[i] = 0xF;
+        }
+        if (i & 0x2) {
+            table[i] |= 0xF0;
+        }
+        if (i & 0x4) {
+            table[i] |= 0xF00;
+        }
+        if (i & 0x8) {
+            table[i] |= 0xF000;
+        }
+        if (i & 0x10) {
+            table[i] |= 0xF0000;
+        }
+        if (i & 0x20) {
+            table[i] |= 0xF00000;
+        }
+        if (i & 0x40) {
+            table[i] |= 0xF000000;
+        }
+        if (i & 0x80) {
+            table[i] |= 0xF0000000;
+        }
+    }
+    for (row = 0; row < 128; row++) {
+        unsigned int *p = rowbuf;
+        for (j = 0; j < 16; j++) {
+            *p++ = table[*src++];
+        }
+        func_001F9A98(dst, rowbuf, 0x40);
+        dst = (char *)dst + 0x40;
+        func_001F9A98(dst, rowbuf, 0x40);
+        dst = (char *)dst + 0x40;
+        func_001F9A98(dst, rowbuf, 0x40);
+        dst = (char *)dst + 0x40;
+        func_001F9A98(dst, rowbuf, 0x40);
+        dst = (char *)dst + 0x40;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00208858);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00208860);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00208AB0);
+extern void *func_001FE540_id(int) __asm__("func_001FE540");
+extern char D_0015FE60[]; /* "%d" */
+extern char D_0015FE68[]; /* "error" */
+extern char D_001E02B0[];
+extern int func_00116248_3(void *, char *, int) __asm__("func_00116248");
+extern int func_00116248_2(void *, char *) __asm__("func_00116248");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00208C38);
+/* Copies the text of menu entry `bank` (text id at +0xA of its 0x28-byte
+   record in the table at D_001A01F0[8]) into dst, expanding the first
+   '%' escape: "%b" becomes the entry's D_001E02B0 value (the record's
+   +0xC item, first int of its 0x18-byte row) printed with "%d", any
+   other letter becomes "error". The strings are unsigned char (one lbu
+   serves both the test and the copy), and each block that reads
+   D_001A01F0 has its own char * local, which gives retail's kept %hi
+   and rebuilt %lo. */
+void func_00208AB0(int bank, unsigned char *dst) {
+    unsigned char buf[16];
+    unsigned char *src;
+    unsigned char *p;
+    char *t;
+
+    t = (char *)D_001A01F0;
+    src = func_001FE540_id(*(short *)(*(char **)(t + 0x20) + bank * 0x28 + 0xA));
+    p = buf;
+    if (src == 0) {
+        return;
+    }
+    while (*src != 0 && *src != '%') {
+        *dst++ = *src++;
+    }
+    if (*src == 0) {
+        *dst = *src;
+        return;
+    }
+    src++;
+    if (*src == 'b') {
+        char *t2 = (char *)D_001A01F0;
+        func_00116248_3(buf, D_0015FE60,
+                        *(int *)(D_001E02B0 + *(short *)(*(char **)(t2 + 0x20) + bank * 0x28 + 0xC) * 0x18));
+    } else {
+        func_00116248_2(buf, D_0015FE68);
+    }
+    src++;
+    while (*p != 0) {
+        *dst++ = *p++;
+    }
+    while (*src != 0) {
+        *dst++ = *src++;
+    }
+    *dst = 0;
+}
+
+/* Retail carries 12 bytes of inter-function padding after this endlabel. */
+__asm__(".section .text\n\tnop\n\tnop\n\tnop\n");
+
+typedef struct {
+    float a, b, c, d;
+} OrientEntry;
+extern OrientEntry D_0019EA70[];
+
+/* arg2 (a table index, offset by 100 when the +100 variant is wanted)
+   selects a row of D_0019EA70 (19 rows, 0..0x12); -1 means "use
+   D_0015EE84"; anything out of [0,0x13) collapses to row 0. Row 6 with
+   the +100 variant blends against fixed constants instead of the
+   generic per-row formula. */
+void func_00208C38(float *out0, float *out1, int arg2, float arg3, float arg4) {
+    int idx;
+    int flag = 0;
+
+    if (arg2 >= 100) {
+        arg2 -= 100;
+        flag = 1;
+    }
+
+    idx = arg2;
+    if (idx == -1) {
+        idx = D_0015EE84;
+    }
+    if (idx < 0) {
+        idx = 0;
+    }
+    if (idx >= 0x13) {
+        idx = 0;
+    }
+
+    if (idx == 6 && flag) {
+        *out0 = (D_0019EA70[6].d * arg4 + 1053.0f) * (1.0f / 512.0f);
+        *out1 = (740.0f - D_0019EA70[6].b * arg3) * (1.0f / 512.0f);
+        return;
+    }
+
+    *out0 = (D_0019EA70[idx].a + D_0019EA70[idx].b * arg3) * (1.0f / 512.0f);
+    *out1 = (D_0019EA70[idx].c + D_0019EA70[idx].d * arg4) * (1.0f / 512.0f);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00208D30);
 

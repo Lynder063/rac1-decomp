@@ -4,6 +4,12 @@
 /*
  * core_text object 0x11D0D0-0x11D700. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * Sony's EE kernel library (libkernl): the IOP reset (sceSifRebootIop,
+ * func_0011D248, "rom0:UDNL "), the boot-time kernel patch/poke sequence
+ * (func_0011D3C8) and the TLB setup (func_0011D4A0/func_0011D4E0,
+ * "# TLB spad=0 kernel=1:%d ..."). Built with Sony's 2.9-ee
+ * (Makefile.sn, EE29_CORE).
  */
 
 /* Declarations in scope here before the split. */
@@ -86,41 +92,18 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D358);
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D360);
 
 /*
- * REVERTED: size mismatch, 52 bytes against retail's 56. Semantics are
- * certain:
+ * A word-at-a-time copy of nbytes (rounded down to words); returns 0.
  *
- *   unsigned int n = nbytes >> 2, i = 0;
- *   if (n) do { *dst = *src; src++; i++; dst++; } while (i < n);
- *   return 0;
- *
- * A word-at-a-time copy. Every instruction matches; the missing 4 bytes
- * are a `nop` retail leaves in the loop branch's DELAY SLOT, where this
- * compiler fills the slot with the `addiu $4,$4,4` pointer bump. That is
- * the R5900 short-loop erratum again, in a form the classifier did not
- * look for (it checked for two nops *before* the branch, not an
- * unfilled delay slot after it). No source shape fixes it, and
- * -malign-loops/-falign-loops do nothing here: the former is accepted
- * but is x86-oriented in 2.95, the latter is rejected outright.
+ * Exact under 2.9-ee. Retail leaves the loop branch's delay slot empty,
+ * and that is 2.9-ee itself: it pads the short loop with nops in its own
+ * output and leaves the bnez unfilled (as in libdma's func_001232A8).
+ * Under 2.95.3 reorg fills the slot with the `addiu $4,$4,4` bump, 52
+ * bytes against 56, which is what kept this a stub.
  */
-s32 func_0011D370(s32 *arg0, s32 *arg1, u32 arg2) {
-    s32 *var_a0;
-    s32 *var_a1;
-    s32 temp_v1;
-    u32 temp_a2;
-    u32 var_a3;
-
-    var_a0 = arg0;
-    var_a1 = arg1;
-    temp_a2 = arg2 >> 2;
-    var_a3 = 0;
-    if (temp_a2 != 0) {
-        do {
-            temp_v1 = *var_a1;
-            var_a3 += 1;
-            var_a1 += 4;
-            *var_a0 = temp_v1;
-            var_a0 += 4;
-        } while (var_a3 < temp_a2);
+int func_0011D370(int *dst, int *src, unsigned int nbytes) {
+    unsigned int i;
+    for (i = 0; i < nbytes >> 2; i++) {
+        *dst++ = *src++;
     }
     return 0;
 }
@@ -138,7 +121,7 @@ extern char D_0012FDB8[];
 extern int D_00130130;
 
 /*
- * Same-size near-miss (2/0xC4 bytes: one register field). Boot-time
+ * Exact (it was a 2/0xC4 near-miss until the int/void fix below). Boot-time
  * hardware init: three explicit (addr, value) pokes through
  * func_0011D3B8, a func_0011D360 block copy of D_0012FDB8 (0x330 bytes)
  * to a fixed load address, an interrupt-disable/enable bracket, then a
@@ -153,7 +136,8 @@ extern int D_00130130;
  * left is a single instruction's destination register ($v0 vs $v1) on
  * the loop-continuation test -- tried caching `p->a` in a local
  * instead of re-reading it for both calls, which regressed badly
- * (605 words), and reordering the locals, which did nothing.
+ * (605 words), and reordering the locals, which did nothing; the fix was
+ * func_0011D3B8's return type (below).
  */
 typedef struct { int a; int b; } D_00130138_pair;
 
@@ -190,14 +174,19 @@ int func_0011D3C8(void) {
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D490);
 
 extern int func_00118EA0(void);
-extern void func_0011D4E0(void);
-extern void func_00118EB0(void);
+extern int func_0011D4E0(void);
+extern int func_00118EB0(void);
 
-void func_0011D4A0(void) {
+/* Set up the TLB for the machine's memory size: the 32 MB layout
+   (func_0011D4E0) when func_00118EA0 reports 0x2000000, the kernel's own
+   routine (func_00118EB0) otherwise. Returns its callees' values: retail
+   keeps the frame and calls both, and 2.9-ee turns both arms into tail
+   jumps (44 bytes against 64) when it is void. */
+int func_0011D4A0(void) {
     if (func_00118EA0() == 0x2000000) {
-        func_0011D4E0();
+        return func_0011D4E0();
     } else {
-        func_00118EB0();
+        return func_00118EB0();
     }
 }
 

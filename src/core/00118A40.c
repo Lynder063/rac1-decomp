@@ -4,6 +4,12 @@
 /*
  * core_text object 0x118A40-0x119328. Boundaries are retail's linker fill
  * (0xCDCDCDCD) between objects; see docs/DECOMP_PROGRESS.md.
+ *
+ * Sony's EE kernel library (libkernl), three members back to back:
+ * klib.o (the syscall stubs, CreateSema ... _InitTLB), glue.o (newlib's
+ * system-call glue: write, read, close, lseek, sbrk, fstat, VSync ...)
+ * and cache.o (SyncDCache, InvalidDCache). Built with Sony's 2.9-ee
+ * (Makefile.sn, EE29_CORE), like the prebuilt libkernl.a.
  */
 
 /* Declarations in scope here before the split. */
@@ -182,9 +188,67 @@ void func_00118EC0(void) {
     D_0012FCF0 = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00118ED0);
+extern int func_0011D960(void); /* DIntr */
+extern void func_0011D9A8(void); /* EIntr */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00118F60);
+/* VSync (glue.o): clear INTC_STAT's VBlank-start bit (guarded by
+ * DIntr/EIntr so the read-modify-write can't race the interrupt handler),
+ * then poll INTC_STAT until that bit is set again; repeats the
+ * clear/guard once more before returning so a caller's own poll starts
+ * from a clean flag. */
+void func_00118ED0(void) {
+    int old;
+
+    old = func_0011D960();
+    *(volatile unsigned int *)0x1000F000 = 4;
+    __asm__ __volatile__("sync");
+    if (old) {
+        func_0011D9A8();
+    }
+    while ((*(volatile unsigned int *)0x1000F000 & 4) == 0) {
+    }
+
+    old = func_0011D960();
+    *(volatile unsigned int *)0x1000F000 = 4;
+    __asm__ __volatile__("sync");
+    if (old) {
+        func_0011D9A8();
+    }
+}
+
+extern void func_00118E00(unsigned int *, long *); /* SetVSyncFlag */
+extern int func_0011D960(void);                    /* DIntr */
+extern void func_0011D9A8(void);                    /* EIntr */
+
+/* VSync2 (glue.o): like VSync, but also arms an asynchronous flag via
+ * SetVSyncFlag before the guarded INTC_STAT clear, and the poll loop
+ * exits on either the raw hardware bit or that flag; returns the 64-bit
+ * value SetVSyncFlag filled in. */
+long func_00118F60(void) {
+    volatile unsigned int flag;
+    volatile long result;
+    int old;
+
+    flag = 0;
+    func_00118E00((unsigned int *)&flag, (long *)&result);
+
+    old = func_0011D960();
+    *(volatile unsigned int *)0x1000F000 = 4;
+    __asm__ __volatile__("sync");
+    if (old) {
+        func_0011D9A8();
+    }
+    while ((*(volatile unsigned int *)0x1000F000 & 4) == 0 && flag == 0) {
+    }
+
+    old = func_0011D960();
+    *(volatile unsigned int *)0x1000F000 = 4;
+    __asm__ __volatile__("sync");
+    if (old) {
+        func_0011D9A8();
+    }
+    return result;
+}
 
 /* func_00119CC8 takes no argument (it sets $a0 itself before its first
    call); the file's `extern int func_00119CC8(int)` below is wrong. */

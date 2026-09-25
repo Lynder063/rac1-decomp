@@ -77,9 +77,17 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DBE8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DBF8);
 
-/* Word-copy loop, byte-identical to func_0011DA08 in retail -- see
-   its revert doc (core/0011D960.c) for the unreachable delay-slot gap. */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DC08);
+/* kCopy: libosd.o's own copy of the word-at-a-time copy helper (nbytes
+ * rounded down to words); returns 0. Same body as func_0011DA08
+ * (initsys.o), func_0011D370 (alarm.o) and func_0011DDF0 (alarm.o's other
+ * copy) -- each kernel module linked its own instance of this helper. */
+int func_0011DC08(int *dst, int *src, unsigned int nbytes) {
+    unsigned int i;
+    for (i = 0; i < nbytes >> 2; i++) {
+        *dst++ = *src++;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DC40);
 

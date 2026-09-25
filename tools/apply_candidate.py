@@ -43,10 +43,12 @@ def main() -> None:
     name_comment = m.group(1) if m else None
 
     cand = Path(a.candidate).read_text().rstrip("\n").splitlines()
+    # The definition's first line: its signature may wrap onto more lines.
     d = next((i for i, l in enumerate(cand)
-              if re.match(rf"^[A-Za-z_][\w \t\*]*\b{a.name}\s*\(.*\)\s*\{{\s*$", l)), None)
+              if re.match(rf"^(?!extern\b)[A-Za-z_][\w \t\*]*\b{a.name}\s*\(", l)
+              and not l.rstrip().endswith(";")), None)
     if d is None:
-        sys.exit(f"{a.candidate}: no definition of {a.name} on one line ending in '{{'")
+        sys.exit(f"{a.candidate}: no definition of {a.name}")
     if a.comment:
         if d > 0 and re.match(r"^\s*/\*.*\*/\s*$", cand[d - 1]):
             cand.pop(d - 1)

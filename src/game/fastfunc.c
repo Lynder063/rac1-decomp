@@ -124,12 +124,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F9AC0);
  * diff under the scratch-register-allocation open question; that was a
  * misread.
  */
-void func_001F9AF0(s32 arg0, s32 arg1, s32 arg2) {
-    *(s32 *)0x1000D080 = arg1;
-    *(s32 *)0x1000D010 = arg0;
-    *(s32 *)0x1000D020 = arg2;
-    *(s32 *)0x1000D000 = 0x100;
-}
+INCLUDE_ASM("asm/nonmatchings/text", func_001F9AF0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9B20);
 

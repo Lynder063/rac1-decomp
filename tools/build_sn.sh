@@ -31,23 +31,17 @@ if [ $rc -ne 0 ]; then tail -20 build-sn/make.log; echo "*** make failed (exit $
 bash rac1.ld.sh >/dev/null
 
 # bss symbols have no definitions anywhere; their names are their
-# addresses. Collect them from the linker's complaints, then equate.
-# Adds whatever the link still reports as undefined to the bss equates.
-# The link runs WITH the current equates, so only the new symbols are
-# reported, and the list only ever grows. That matters because this ld
-# can crash part-way through a long run of undefined references
-# ("Unhandled illegal instruction"), and a crashed run lists only the
-# objects before the crash. Returns nonzero when nothing new was found.
+# addresses. Collect them from the objects' own symbol tables
+# (tools/list_undefined.py), then equate. Not from the linker's
+# complaints: this ld can crash on a long run of undefined references
+# ("Unhandled illegal instruction"), sometimes before printing any.
+# The list only ever grows. Returns nonzero when nothing new was found.
 update_bss_equs() {
-  local equs=""
-  [ -f build-sn/bss_equs.o ] && equs=build-sn/bss_equs.o
-  sn "$TC/ee-ld.exe" -T build-sn/rac1.ld $equs -o build-sn/rac1.elf >build-sn/ld_undef.log 2>&1
-  local new
-  new=$(grep -oE "undefined reference to \`[^']+'" build-sn/ld_undef.log \
-    | sed -E "s/.*\`([^']+)'/\1/" | sort -u)
-  [ -n "$new" ] || return 1
   touch build-sn/undefined_syms.txt
-  { echo "$new"; cat build-sn/undefined_syms.txt; } | sort -u >build-sn/undefined_syms.tmp
+  local new
+  new=$(python tools/list_undefined.py | LC_ALL=C comm -23 - build-sn/undefined_syms.txt)
+  [ -n "$new" ] || return 1
+  { echo "$new"; cat build-sn/undefined_syms.txt; } | LC_ALL=C sort -u >build-sn/undefined_syms.tmp
   mv build-sn/undefined_syms.tmp build-sn/undefined_syms.txt
   python tools/gen_bss_equs.py >/dev/null
   sn "$TC/ee-as.exe" -o build-sn/bss_equs.o build-sn/bss_equs.s

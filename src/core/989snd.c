@@ -171,53 +171,43 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DDC0); /* snd_FlushSoundComma
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DFA0);
 
-/*
- * Reverted: size mismatch (ours=144, retail=136 -- 8 bytes over).
- * snd_GotReturns.
- *
- *   extern void func_00118D80(int);
- *   extern int D_0015ECC0;
- *   extern int func_00116078(void *);
- *   extern char D_00153D98[];
- *   extern short D_0015ED80;   // gp 0x166D00-0x7F80, pointer to a
- *                               // pending-returns record
- *   extern short D_0015ED84;   // gp 0x166D00-0x7F7C, index into it
- *
- *   int func_0012DFB0(void) {
- *       func_00118D80(0);
- *       if (*(int *)&D_0015ED80 == 0) {
- *           return 1;
- *       }
- *       if (func_0011B6B8(&D_0015ECC0) != 0) {
- *           return 0;
- *       }
- *       {
- *           int *p = *(int **)&D_0015ED80;
- *           if (p[0] != -1) {
- *               func_00116078(D_00153D98);
- *               return 0;
- *           }
- *           {
- *               int idx = *(int *)&D_0015ED84;
- *               int *slot = (int *)((char *)p + idx * 4);
- *               if (slot[1] != (int)D_00153D98) {
- *                   func_00116078(D_00153D98);
- *                   return 0;
- *               }
- *           }
- *           *(int *)&D_0015ED80 = 0;
- *           return 1;
- *       }
- *   }
- *
- * Semantics recovered with reasonable confidence (D_0015ED80 is a
- * pointer, not a plain flag -- confirmed by the field/index deref
- * chain after the func_0011B6B8 guard). Compiles 8 bytes over; not
- * yet isolated which of the two error-path merges or the delay-slot
- * scheduling accounts for the gap. Left as INCLUDE_ASM pending a
- * closer look.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DFB0); /* snd_GotReturns */
+extern void func_00118D80(int arg0);
+extern int D_0015ECC0;
+extern int func_00116078(void *arg0);
+extern char D_00153D98[];
+extern int func_0011B6B8(void *arg0);
+extern short D_0015ED80;
+extern short D_0015ED84;
+
+/* snd_GotReturns: true once the pending IOP reply record's sentinel word
+ * and its per-slot echo both read back -1, after taking the returns
+ * semaphore (D_0015ECC0). D_0015ED80 is a pointer to that record, not a
+ * plain flag; D_0015ED84 is the slot index within it. The slot address
+ * is left as one inlined expression (no separate idx/slot locals) --
+ * that is what gets retail's addu operand order and epilogue merge. */
+int func_0012DFB0(void) {
+    int *p;
+
+    func_00118D80(0);
+    if (*(int *)&D_0015ED80 == 0) {
+        return 1;
+    }
+    if (func_0011B6B8(&D_0015ECC0) != 0) {
+        return 0;
+    }
+    p = *(int **)&D_0015ED80;
+    if ((unsigned int)p[0] != 0xFFFFFFFFU) {
+        func_00116078(D_00153D98);
+        return 0;
+    }
+    if ((unsigned int)*(int *)((*(int *)&D_0015ED84) * 4 + (char *)p + 4) !=
+        (unsigned int)p[0]) {
+        func_00116078(D_00153D98);
+        return 0;
+    }
+    *(int *)&D_0015ED80 = 0;
+    return 1;
+}
 
 extern short D_0015ED84;
 extern short D_0015ED80;
@@ -345,7 +335,44 @@ void func_0012EC40(void) {
     func_0012DDC0();
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EC60); /* snd_InitVAGStreamingEx */
+/* gp-relative, no retail symbol: gp 0x166D00 - 0x7F74 = 0x15ED8C
+   (streaming-enabled flag, same as func_0012F030/func_0012F068's) and
+   gp 0x166D00 - 0x7F38 = 0x15EDC8 (drain-commands-first flag). */
+extern short D_0015ED8C;
+extern short D_0015EDBC;   /* the word at +0xC, SDA ($gp -0x7F38) */
+/* snd_FlushSoundCommands: declared void elsewhere in this file (every
+   other call site discards its result), so its int-returning form is
+   reached through an alias here, as func_00119718/func_00118E90 do
+   elsewhere in core_text for the same reason. */
+extern int func_0012DDC0_ret(void) __asm__("func_0012DDC0");
+extern int func_0012EF48(int);              /* snd_StreamSafeCdSync */
+extern int func_0012E688(int, int, void *); /* snd_SendIOPCommandAndWait */
+
+/* snd_InitVAGStreamingEx: no-op (returns 0) if VAG streaming is already
+ * enabled; otherwise drains any pending sound commands, syncs the CD
+ * stream, and sends the "init streaming" IOP command with the four
+ * arguments packed into a header, storing (and returning) its result as
+ * the streaming-enabled flag. */
+int func_0012EC60(int arg0, int arg1, int arg2, int arg3) {
+    int hdr[4];
+    int r;
+
+    if (*(int *)&D_0015ED8C == 1) {
+        return 0;
+    }
+    if (*(int *)((char *)&D_0015EDBC + 0xC) != 0) {
+        while (({ int r = func_0012DDC0_ret(); __asm__ __volatile__("nop\n\tnop\n\tnop\n\tnop"); r; }) != 0) {
+        }
+    }
+    func_0012EF48(0);
+    hdr[0] = arg0;
+    hdr[1] = arg1;
+    hdr[2] = arg2;
+    hdr[3] = arg3;
+    r = func_0012E688(0x2A, 0x10, hdr);
+    *(int *)&D_0015ED8C = r;
+    return r;
+}
 
 /* snd_StopAllStreams */
 void func_0012ED10(void) {
@@ -404,33 +431,27 @@ int func_0012EFE8(void) {
     return 1;
 }
 
-/*
- * Reverted: size mismatch (ours=48, retail=56 -- 8 bytes short).
- * snd_StreamSafeCdGetError.
- *
- *   extern short D_0015ED8C;   // gp 0x166D00-0x7F74, no retail symbol
- *   extern int D_00137C00[];
- *   extern int func_00121930(void);
- *
- *   int func_0012F030(void) {
- *       if (*(int *)&D_0015ED8C == 0) {
- *           return func_00121930();
- *       }
- *       return *(int *)((char *)D_00137C00 + 0x10);
- *   }
- *
- * Semantics certain, every real instruction matches. Retail
- * duplicates the $ra restore in both branches (if-path restores it in
- * the beqz's delay slot before an early `b`, else-path restores it
- * again after the call); this compiler merges both paths into one
- * shared restore+jr at the end, saving 2 instructions -- same
- * compiler-is-smarter-than-retail tail-merge class as func_00203118/
- * func_00203E78. It also folds D_00137C00's +0x10 offset directly
- * into the load's immediate instead of retail's separate lui+addiu
- * address materialization; an explicit `char *p = ...; *(int*)p`
- * local was tried and changed nothing.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F030); /* snd_StreamSafeCdGetError */
+extern short D_0015ED8C;
+extern int func_00121930(void);
+
+typedef struct {
+    int count;
+    int unk04[3];
+    volatile int error;
+} CdSafeState;
+extern CdSafeState D_00137C00;
+
+/* snd_StreamSafeCdGetError: returns the last CD error while VAG streaming
+ * owns the drive (the cached value at D_00137C00.error), otherwise defers
+ * to sceCdGetError. The field access (not a byte-offset cast) plus
+ * volatile is what makes retail's separate lui+addiu base and its
+ * duplicated epilogue restore come out of this compiler. */
+int func_0012F030(void) {
+    if (*(int *)&D_0015ED8C == 0) {
+        return func_00121930();
+    }
+    return D_00137C00.error;
+}
 
 /* gp-relative, no retail symbol: gp 0x166D00 - 0x7F74 = 0x15ED8C
    (streaming-enabled flag, same as func_0012F030's) and
@@ -478,9 +499,7 @@ void func_0012F1E8(void) {
     func_0012E688(0x3D, 0, 0);
 }
 
-void func_0012F210(void) {
-    func_0012E688(0x3C, 0, 0);
-}
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F210);
 
 /* snd_StartMovieSound */
 void func_0012F248(int arg0, int arg1, int arg2, int arg3, int arg4) {
@@ -493,12 +512,7 @@ void func_0012F248(int arg0, int arg1, int arg2, int arg3, int arg4) {
     func_0012E688(0x3E, 0x14, local);
 }
 
-void func_0012F280(s32 arg0, s32 arg1) {
-    s32 buf[2];
-    buf[0] = arg0;
-    buf[1] = arg1;
-    func_0012E688(0x5A, 8, buf);
-}
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F280);
 
 /* snd_GetMovieNAX */
 void func_0012F2B8(void) {
