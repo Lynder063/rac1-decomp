@@ -219,7 +219,171 @@ Moby *func_0020D348(int oClass) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020D440); /* InitMobyInstance(MobyInstance *, int) */
+extern void func_001F99B0();
+extern unsigned char D_001B3E40[] NOT_SDA;
+extern int D_001B3900[];
+extern void *D_001B3580[];
+extern int D_00160018 MACRO_ADDR;
+extern void func_0020D6D0_p(void *) __asm__("func_0020D6D0");
+
+typedef struct {
+    char _pad00[0x10];
+    unsigned char nframes; /* 0x10 */
+    signed char unk11;     /* 0x11 */
+} MobyISeq;
+
+typedef struct {
+    char _pad00[6];
+    unsigned char unk06; /* 0x06 */
+    char _pad07[5];
+    unsigned char unk0C; /* 0x0C */
+    char _pad0D;
+    unsigned char unk0E; /* 0x0E */
+    unsigned char unk0F; /* 0x0F */
+    int unk10;           /* 0x10 */
+    char _pad14[0x10];
+    float unk24;         /* 0x24 */
+    char _pad28[0x18];
+    int unk40;           /* 0x40 */
+    unsigned short unk44; /* 0x44 */
+    char _pad46[2];
+    MobyISeq *seq;       /* 0x48 */
+} MobyIClass;
+
+typedef struct {
+    char _pad00[0x21];
+    unsigned char unk21;   /* 0x21 */
+    unsigned char oClass;  /* 0x22 */
+    unsigned char unk23;   /* 0x23 */
+    MobyIClass *pClass;    /* 0x24 */
+    char _pad28[4];
+    float unk2C;           /* 0x2C */
+    char _pad30[4];
+    unsigned short flags;  /* 0x34 */
+    unsigned short unk36;  /* 0x36 */
+    unsigned long unk38;   /* 0x38 */
+    char _pad40[0x18];
+    float unk58;           /* 0x58 */
+    float unk5C;           /* 0x5C */
+    char _pad60[0x11];
+    unsigned char unk71;   /* 0x71 */
+    unsigned char unk72;   /* 0x72 */
+    unsigned char unk73;   /* 0x73 */
+    int unk74;             /* 0x74 */
+    char _pad78[4];
+    unsigned char unk7C;   /* 0x7C */
+    unsigned char unk7D;   /* 0x7D */
+    unsigned char unk7E;   /* 0x7E */
+    unsigned char unk7F;   /* 0x7F */
+    char _pad80[4];
+    int unk84;             /* 0x84 */
+    int unk88;             /* 0x88 */
+    char _pad8C[4];
+    int unk90;             /* 0x90 */
+    int unk94;             /* 0x94 */
+    char _pad98[8];
+    unsigned char unkA0;   /* 0xA0 */
+    unsigned char unkA1;   /* 0xA1 */
+    unsigned char unkA2;   /* 0xA2 */
+    unsigned char unkA3;   /* 0xA3 */
+    unsigned char unkA4;   /* 0xA4 */
+    char _padA5;
+    short unkA6;           /* 0xA6 */
+    int unkA8;             /* 0xA8 */
+    int unkAC;             /* 0xAC */
+    char _padB0[0xD];
+    unsigned char unkBD;   /* 0xBD */
+    char _padBE[0x42];
+} MobyI;
+
+/* InitMobyInstance: clears the 0x100-byte moby, fills its defaults (class
+   byte from D_001B3E40[oClass], colours, its slot index from the moby
+   array base D_00160018), flags a class with no D_001B3900 entry, then
+   copies the class record D_001B3580[class] (or marks the moby dead when
+   there is none) and applies the animation-sequence rules after
+   func_0020D6D0. The moby is a real struct so its non-byte stores are "in
+   struct" and D_00160018's load can move above them; the class load comes
+   first, and the default stores are ordered so that sched1's
+   register-pressure tie-break (stores that free a register go first)
+   reproduces retail's store order. */
+void func_0020D440(void *arg0, int oClass) {
+    MobyI *m = (MobyI *)arg0;
+    unsigned char c;
+    int idx;
+    MobyIClass *pClass;
+
+    func_001F99B0(m, 0, 0x100);
+    c = D_001B3E40[oClass];
+    m->unk23 = 0x80;
+    m->oClass = c;
+    m->unkA4 = 0xFF;
+    m->unk21 = 0xFF;
+    m->unk71 = 0xFF;
+    m->unk72 = 0xFF;
+    m->unkA6 = oClass;
+    m->unk38 = 0x40404000000000L;
+    m->unk36 = 0x7F80;
+    idx = ((char *)m - (char *)D_00160018) >> 8;
+    m->unkA8 = idx << 16;
+    m->unkAC = idx;
+    m->unk7E = 0;
+    m->unk7C = 0xFF;
+    m->unkA0 = 0x7F;
+    m->unkA2 = 0x80;
+    m->unk7D = 0xFF;
+    m->unkA1 = 0x7F;
+    m->unkA3 = 0x80;
+    m->unk74 = D_001B3900[m->oClass];
+    if (m->unk74 == 0) {
+        m->flags |= 2;
+    }
+    pClass = (MobyIClass *)D_001B3580[m->oClass];
+    if (pClass != 0) {
+        MobyIClass *p;
+
+        m->pClass = pClass;
+        m->unk72 = pClass->unk0E;
+        m->flags |= pClass->unk44;
+        m->unk94 = pClass->unk10;
+        m->unk2C = pClass->unk24;
+        m->unk58 = 1.0f;
+        m->unk5C = 1.0f;
+        if (pClass->unk40 != 0) {
+            m->flags |= 0x10;
+            m->unk90 = pClass->unk40;
+        }
+        if (m->pClass->unk0F != 0) {
+            m->unk7F = 0x18;
+            m->flags |= 0x400;
+            m->unk84 = 0;
+            m->unk88 = 0;
+            m->unkBD = 0;
+        }
+        if (m->pClass->unk06 != 0) {
+            m->unk73 = 0x18;
+        }
+        if (m->pClass->seq == 0) {
+            return;
+        }
+        func_0020D6D0_p(m);
+        if (m->pClass->seq->nframes >= 2) {
+            m->flags &= 0xFFFD;
+        }
+        p = m->pClass;
+        if (p->unk0C == 1) {
+            if (p->seq->nframes < 2) {
+                m->unk58 = 0.0f;
+                if (p->seq->unk11 < 0) {
+                    m->flags |= 0x40;
+                }
+            }
+        }
+        return;
+    }
+    m->pClass = 0;
+    m->flags |= 5;
+    m->unk94 = 0;
+}
 
 typedef struct {
     char _pad00[0x20];

@@ -293,7 +293,59 @@ float func_00214D28(float *p, float target, float maxstep) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00214D80);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00214D88);
+extern float func_001F9B50(float);
+
+/* Moves *p1 toward `a` with velocity *p2: when *p2 heads away from the
+   target (or it is reached), the velocity eases to 0 by c
+   (func_00214D28) and is added. Otherwise, inside the braking distance
+   (*p2^2 / c / 2) it eases to 0 by c, or by 1.1c once |diff| + |*p2| no
+   longer exceeds that distance; outside it, it eases by b toward
+   +-min(func_001F9B50(2c * diff), d) (func_001F9B50 is a square root).
+   Then, if |*p2| < |diff| the velocity is added and returned, else *p1
+   snaps to `a` and diff is returned. func_001F9B88 is fabsf; the fabs
+   calls are made in retail's order through temporaries. */
+float func_00214D88(float *p1, float *p2, float a, float b, float c, float d) {
+    float diff = a - *p1;
+
+    if (*p2 * diff >= 0.0f && diff != 0.0f) {
+        float half = *p2 * *p2 / c * 0.5f;
+
+        if (func_001F9B88(diff) < half) {
+            float s = func_001F9B88(diff);
+            s += func_001F9B88(*p2);
+            if (half < s) {
+                func_00214D28(p2, 0.0f, c);
+            } else {
+                func_00214D28(p2, 0.0f, c * 1.1f);
+            }
+        } else {
+            float speed = func_001F9B50((c + c) * diff);
+
+            if (d < speed) {
+                speed = d;
+            }
+            if (diff < 0.0f) {
+                func_00214D28(p2, -speed, b);
+            } else {
+                func_00214D28(p2, speed, b);
+            }
+        }
+        {
+            float m1 = func_001F9B88(diff);
+            float m2 = func_001F9B88(*p2);
+
+            if (m2 < m1) {
+                *p1 = *p1 + *p2;
+                return *p2;
+            }
+            *p1 = a;
+            return diff;
+        }
+    }
+    func_00214D28(p2, 0.0f, c);
+    *p1 += *p2;
+    return *p2;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00214F50);
 

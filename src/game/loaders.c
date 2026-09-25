@@ -391,7 +391,74 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002035B0);
  */
 INCLUDE_ASM("asm/nonmatchings/text", func_00203808);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00203958);
+extern int D_0015EF8C MACRO_ADDR;
+extern int D_0015EF78 MACRO_ADDR;
+extern int D_0015EF74 MACRO_ADDR;
+/* libgraph: sceGsSetDefLoadImage, sceGsExecLoadImage, sceGsSyncPath;
+   func_00118D80 is the kernel's FlushCache. */
+extern int func_00122630(void *, short, short, short, short, short, short, short);
+extern int func_00122958(void *, void *);
+extern void func_00118D80(int);
+extern int func_00120858(int, unsigned short);
+
+typedef struct {
+    int type;   /* GS pixel format: 0x13 PSMT8, 2 PSMCT16, 0 PSMCT32 */
+    int packed; /* width in the low half, height in the high half */
+    int pad8;
+    int size;   /* offset of the image data from the base */
+} Chunk;
+
+typedef struct {
+    long w[12];
+} GsLoadImage __attribute__((aligned(16)));
+
+/* Uploads `count` images described by `list` into GS memory, starting at
+   the VRAM cursor D_0015EF74 (reset from D_0015EF8C) and advancing it by
+   each image's size, then records the end in D_0015EF78. An 8-bit image
+   is w*h bytes (at least 0x100) with a buffer width of w/64 (at least 1);
+   the other two formats are fixed 16x16 uploads. The prototypes are the
+   SDK's (short arguments), the clamps are written `< 1` / `< 0x100` so the
+   loop pass hoists their constants into saved registers, and the pointer
+   advances in the for increment so the reversed counter's decrement
+   lands in FlushCache's delay slot. */
+void func_00203958(int base, int count, Chunk *list) {
+    GsLoadImage li;
+    int i;
+
+    D_0015EF78 = D_0015EF74 = D_0015EF8C;
+    for (i = 0; i < count; i++, list++) {
+        int addr = base + list->size;
+        int packed = list->packed;
+        int t = D_0015EF74;
+        int w = packed & 0xFFFF;
+        int h = packed >> 16;
+
+        if (list->type == 0x13) {
+            int dbw = w >> 6;
+            int sz;
+
+            if (dbw < 1) {
+                dbw = 1;
+            }
+            func_00122630(&li, t >> 8, dbw, 0x13, 0, 0, w, h);
+            sz = w * h;
+            if (sz < 0x100) {
+                sz = 0x100;
+            }
+            D_0015EF74 += sz;
+        } else if (list->type == 2) {
+            func_00122630(&li, t >> 8, 1, 2, 0, 0, 0x10, 0x10);
+            D_0015EF74 += 0x200;
+        } else if (list->type == 0) {
+            func_00122630(&li, t >> 8, 1, 0, 0, 0, 0x10, 0x10);
+            D_0015EF74 += 0x400;
+        }
+        func_00118D80(0);
+        func_00122958(&li, (void *)addr);
+        func_00120858(0, 0);
+    }
+    D_0015EF78 = D_0015EF74;
+}
 
 void func_00203B18(char *arg0, int idx) {
     char *obj;

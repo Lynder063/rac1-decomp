@@ -144,7 +144,109 @@ void func_001EC270(void *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EC2B8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EC5B8); /* Camera_ActivationCheckPriority */
+typedef struct {
+    char unk_00[0x10];
+    int unk10;
+    char unk14[8];
+    int unk1C;
+} CamRec20;
+extern CamRec20 *D_0015F090 MACRO_ADDR;
+extern CamRec20 *D_0015F040 MACRO_ADDR;
+extern char D_0013F450[];
+extern char D_0013F4D0[];
+extern int func_00215570(void *arg0, int arg1);
+typedef struct {
+    char unk_00[4];
+    int (*fn_04)(void *, void *);
+    char unk_08[0xC];
+} CamPrioHook;
+extern CamPrioHook D_001E8F80_prio[] __asm__("D_001E8F80");
+
+/* Camera_ActivationCheckPriority(cur, other): whether camera `cur` should
+   take over from `other`. An inactive camera (+0x7C) never does; the camera
+   type's +4 hook (D_001E8F80) may decide first (-1 no, 1 yes); otherwise
+   the mode at +0x74 decides: 0 (and 1/2 once +0x7D is set) by priority
+   byte, 4 through func_00215570 on the target record, 7 by the level's
+   mode and target. Each case ends in `if (x) return 1;` falling out to the
+   one shared `return 0;`, which is what lets cross-jumping and reorg give
+   retail's branches; case 7's final test shares its `return 1` with the
+   g < 0 exit so its `$v0 = 1` is not hoisted above the load. */
+int func_001EC5B8(void *cur, void *other) {
+    char *c = (char *)cur;
+    char *o = (char *)other;
+    unsigned char *state = (unsigned char *)(c + 0x74);
+
+    if (*(unsigned char *)(c + 0x7C) == 0) {
+        return 0;
+    }
+    {
+        int (*fn)(void *, void *) = D_001E8F80_prio[*(short *)(c + 0x8C)].fn_04;
+        if (fn != 0) {
+            switch (fn(cur, other)) {
+            case -1:
+                return 0;
+            case 1:
+                return 1;
+            }
+        }
+    }
+    switch (*(int *)state) {
+    case 1:
+    case 2:
+        if (state[9] == 0) {
+            return 0;
+        }
+        /* fallthrough */
+    case 0:
+        if (o == 0) {
+            return 1;
+        }
+        if (*(short *)(o + 0x7E) != 0) {
+            return 1;
+        }
+        if (state[8] > *(unsigned char *)(o + 0x7C)) {
+            return 1;
+        }
+        break;
+    case 4: {
+        char *p = (char *)D_0015F090[*(short *)(c + 0x84)].unk1C;
+
+        if (o != 0 && *(short *)(o + 0x7E) == 0 && !(state[8] > *(unsigned char *)(o + 0x7C))) {
+            return 0;
+        }
+        if (func_00215570(D_0013F4D0, *(int *)(p + 0xC))) {
+            return 1;
+        }
+        break;
+    }
+    case 7: {
+        char *base = D_0013F450;
+        short e = *(short *)(c + 0x86);
+
+        if (e != *(int *)(base + 0x2284)) {
+            return 0;
+        }
+        if (*(short *)(o + 0x7E) == 0 && !(state[8] > *(unsigned char *)(o + 0x7C))) {
+            return 0;
+        }
+        if (e != 3) {
+            return 1;
+        }
+        {
+            CamRec20 *rec = &D_0015F090[*(short *)(c + 0x84)];
+            int g = *(int *)((char *)rec->unk1C + 0x24);
+
+            if (g < 0 || (*(int *)(base + 0x560) == D_0015F040[g].unk10
+                          && *(int *)(base + 0x570) == 0)) {
+                return 1;
+            }
+        }
+        break;
+    }
+    }
+    return 0;
+}
+__asm__(".section .text\n\tnop\n");
 
 /* Same shape/blocker as func_001EC270: indirect call via a function
    pointer loaded from a per-type dispatch table, wrapped in an
@@ -367,7 +469,57 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001ED080);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001ED658);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001ED708);
+extern void func_001F9908(int *arg0);
+extern float func_001FA888(int arg0);
+extern float func_001FA7D8(float x);
+extern float func_001F9F90(float x);
+extern void func_001F9DC0(void *dst, void *src, float len);
+extern void func_001F9BD8(void *dst, void *a, void *b);
+extern char D_001873B0[];
+extern char D_00187390[];
+extern char D_00187180[];
+
+/* Camera shake update. arg0: +0 amplitude, +4 sample (out), +8 countdown,
+   +0xC longest countdown. With the active camera (D_001871C0) in state 6
+   both counters are cleared; with the countdown at 0 only +0xC is.
+   Otherwise the countdown is decremented (func_001F9908, saturating) and
+   sample = amplitude * cos(wrap(2 * count)) * (count / longest)^2
+   (func_001FA888 int->float, func_001FA7D8 wrap to [-pi, pi],
+   func_001F9F90 cos) scales one of two directions (arg1) into the shake
+   offset D_00187180 (func_001F9DC0 scale, func_001F9BD8 add). The
+   countdown-zero exit is the else arm after the main path (retail's
+   `b L800` over it), and the state-6 stores are written 8 then 0xC so
+   the scheduler emits 0xC first and cross-jumping leaves them alone. */
+void func_001ED708(char *arg0, int arg1) {
+    char buf[16];
+
+    if (D_001871C0 != 0 && *(short *)((char *)D_001871C0 + 0x86) == 6) {
+        *(int *)(arg0 + 8) = 0;
+        *(int *)(arg0 + 0xC) = 0;
+    } else if (*(int *)(arg0 + 8) != 0) {
+        float ratio;
+        float shake;
+
+        if (*(int *)(arg0 + 0xC) < *(int *)(arg0 + 8)) {
+            *(int *)(arg0 + 0xC) = *(int *)(arg0 + 8);
+        }
+        func_001F9908((int *)(arg0 + 8));
+        ratio = func_001FA888(*(int *)(arg0 + 8)) / func_001FA888(*(int *)(arg0 + 0xC));
+        shake = *(float *)arg0
+                * func_001F9F90(func_001FA7D8(func_001FA888(*(int *)(arg0 + 8)) * 2.0f))
+                * ratio * ratio;
+        *(float *)(arg0 + 4) = shake;
+        if (arg1 == 0) {
+            func_001F9DC0(buf, D_001873B0, shake);
+        } else {
+            func_001F9DC0(buf, D_00187390, shake);
+        }
+        func_001F9BD8(D_00187180, D_00187180, buf);
+    } else {
+        *(int *)(arg0 + 0xC) = 0;
+    }
+}
+__asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001ED818);
 

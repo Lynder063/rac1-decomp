@@ -38,6 +38,27 @@ def first_address(body: list[str]) -> int | None:
     return None
 
 
+def table_rest(body: list[str]) -> list[str]:
+    """What splat merged into a jtbl_ block after the table itself: the
+    table is its leading run of words pointing into code (a label or a
+    text address); anything after them belongs to the next piece."""
+    lines = [l for l in body if first_address([l]) is not None]
+    k = 0
+    while k < len(lines):
+        m = re.search(r"\.word\s+(\S+)", lines[k])
+        if not m:
+            break
+        v = m.group(1)
+        if not v.startswith((".L", "L")):
+            try:
+                if not 0x100000 <= int(v, 16) < 0x300000:
+                    break
+            except ValueError:
+                break
+        k += 1
+    return lines[k:]
+
+
 def main() -> None:
     src, prefix, cuts = sys.argv[1], sys.argv[2], set(sys.argv[3:])
     lines = open(src, newline="").read().splitlines(keepends=True)
@@ -57,6 +78,10 @@ def main() -> None:
         if name in cuts:
             parts.append(cur)
             cur = []
+            # The object brings only the table; data splat merged into the
+            # block after it (strings, say) stays, at its own address.
+            if name.startswith("jtbl_") and table_rest(body):
+                cur.append(table_rest(body))
         else:
             cur.append(body)
     parts.append(cur)

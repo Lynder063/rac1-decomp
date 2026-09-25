@@ -134,7 +134,65 @@ extern int func_001236F0(void);
 extern int func_001E9730();
 extern char D_001E8690[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020C7A0);
+extern int func_0020C940(short type, int arg);
+extern char *D_001A2EF0[];
+extern unsigned char D_0013DE60[];
+extern char D_001A2F90[];
+
+/* Per-frame objective update over the 0x28-byte node list of the current
+   pad slot (D_001A2EF0[D_001A01F0[0x89]], kept at D_001A2F90+0x10):
+   status +0x24 = 0 when a gated node (+0x10 & 4) has its D_0013DE60 byte
+   clear or its first condition (func_0020C940) fails, else 2 or 1 by the
+   second condition; then each +0x1C callback's result goes to +0x26; then
+   the count of status-1 nodes without +0x10 & 2 goes to D_001A2F90+0xC.
+   Returns whether that count is 0. The head is stored and then read back
+   (CSE forwards it, leaving retail's copy into $s0 after the null test),
+   and each block reads D_001A2F90 through its own `char *` local. */
+int func_0020C7A0(void) {
+    char *node;
+
+    {
+        char *p = D_001A2F90;
+        *(char **)(p + 0x10) = D_001A2EF0[D_001A01F0[0x89]];
+        if (*(char **)(p + 0x10) == 0) {
+            return 0;
+        }
+        node = *(char **)(p + 0x10);
+    }
+    while (*(short *)node != 0) {
+        if ((*(unsigned short *)(node + 0x10) & 4) && D_0013DE60[D_001A01F0[0x89]] == 0) {
+            *(short *)(node + 0x24) = 0;
+        } else if (!func_0020C940(*(short *)(node + 2), *(int *)(node + 4))) {
+            *(short *)(node + 0x24) = 0;
+        } else if (!func_0020C940(*(short *)(node + 8), *(int *)(node + 0xC))) {
+            *(short *)(node + 0x24) = 1;
+        } else {
+            *(short *)(node + 0x24) = 2;
+        }
+        node += 0x28;
+    }
+    {
+        char *p = D_001A2F90;
+        for (node = *(char **)(p + 0x10); *(short *)node != 0; node += 0x28) {
+            if (*(int (**)(int))(node + 0x1C) != 0) {
+                *(short *)(node + 0x26) = (*(int (**)(int))(node + 0x1C))(*(int *)(node + 0x20));
+            }
+        }
+    }
+    {
+        char *p = D_001A2F90;
+        *(int *)(p + 0xC) = 0;
+        for (node = *(char **)(p + 0x10); *(short *)node != 0; node += 0x28) {
+            if (*(short *)(node + 0x24) == 1 && !(*(unsigned short *)(node + 0x10) & 2)) {
+                *(int *)(p + 0xC) += 1;
+            }
+        }
+    }
+    {
+        char *p = D_001A2F90;
+        return *(int *)(p + 0xC) == 0;
+    }
+}
 
 extern unsigned char D_0013DE48[];
 extern unsigned char D_0013D5C8_b[] __asm__("D_0013D5C8");

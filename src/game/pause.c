@@ -1397,7 +1397,92 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00221E60);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00222070); /* DrawCheatsMenu */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002222F8);
+extern void func_0022ED80(int, int, int);
+typedef struct {
+    int w0;              /* 0x00 */
+    unsigned char *buf;  /* 0x04 */
+    int e[4];            /* 0x08 */
+} Row18;
+
+/* Pad handler for a row list (func_0021ACD8's gate, one `char *` pad
+   local per block): the cursor at arg0+0x38 moves down on 0x1000 and up
+   on 0x4000 while the next row is used, with a func_0022ED80 notify on
+   change; the current row's used entries (up to 4) are counted, and 0x40
+   cycles the row's byte selector through them. The row is indexed with a
+   fresh read of the cursor after the notify (reorg skips that load on the
+   no-notify path, where the compare already left it in $v0), and the
+   count walks an `int *e = rec->e` set before its first test, which puts
+   `rec + 8` in the test's delay slot as retail does. */
+int func_002222F8(char *arg0) {
+    char *g = D_001D5F70;
+
+    if (*(char **)(*(char **)(g + 4) + 0x40) != arg0) {
+        return 0;
+    }
+    {
+        char *pad = D_0013CA40;
+        if (*(int *)(pad + 0x1C4) & 0xD00) {
+            if (*(int *)(g + 0x124) == 0) {
+                return 1;
+            }
+        }
+    }
+    {
+        char *pad2 = D_0013CA40;
+        if (*(int *)(pad2 + 0x1C4) & 0x10) {
+            char *g2 = D_001D5F70;
+            int t = *(int *)(*(char **)(g2 + 4) + 0x38);
+            if (t != 0) {
+                *(int *)(g2 + 8) = t;
+                return 0;
+            }
+            if (*(int *)(g2 + 0x124) == 0) {
+                return -1;
+            }
+        }
+    }
+    {
+        char *pad3 = D_0013CA40;
+        int old = *(int *)(arg0 + 0x38);
+        if ((*(int *)(pad3 + 0x1C4) & 0x1000) && old != 0) {
+            *(int *)(arg0 + 0x38) = old - 1;
+        }
+        {
+            char *pad4 = D_0013CA40;
+            if (*(int *)(pad4 + 0x1C4) & 0x4000) {
+                int c = *(int *)(arg0 + 0x38);
+                if ((*(Row18 **)(arg0 + 0x34))[c + 1].w0 != 0) {
+                    *(int *)(arg0 + 0x38) = c + 1;
+                }
+            }
+        }
+        if (old != *(int *)(arg0 + 0x38)) {
+            func_0022ED80(1, 0x11, *(int *)(arg0 + 0x14));
+        }
+    }
+    {
+        Row18 *rec = &(*(Row18 **)(arg0 + 0x34))[*(int *)(arg0 + 0x38)];
+        int n = 0;
+        char *pad5;
+        int *e;
+
+        e = rec->e;
+        if (e[0] != 0) {
+            do {
+                n++;
+            } while (e[n] != 0 && n < 4);
+        }
+        pad5 = D_0013CA40;
+        if (*(int *)(pad5 + 0x1C4) & 0x40) {
+            unsigned char *buf = rec->buf;
+            if (buf != 0) {
+                buf[0] = (buf[0] + 1) % n;
+                func_0022ED80(0, 0x11, *(int *)(arg0 + 0x14));
+            }
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002224A8);
 
