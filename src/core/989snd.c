@@ -413,13 +413,49 @@ void func_0012EE70(int arg0) {
     func_0012E688(0x36, 4, &local);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE98); /* snd_StreamSafeCdRead */
-
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EF48); /* snd_StreamSafeCdSync */
-
 /* gp-relative, no retail symbol: gp 0x166D00 - 0x7F74 = 0x15ED8C
    (streaming-enabled flag, see func_0012F030/func_0012F068). */
 extern short D_0015ED8C;
+extern short D_0015ED98;
+
+typedef struct {
+    volatile unsigned int count;
+    int unk04[3];
+    volatile int error;
+} CdSafeState;
+extern CdSafeState D_00137C00;
+
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012EE98); /* snd_StreamSafeCdRead */
+
+extern int func_00120F30(int);
+extern void func_00118D80(int);
+extern void func_0012DDC0(void);
+
+/* snd_StreamSafeCdSync */
+int func_0012EF48(int arg0) {
+    if (*(int *)&D_0015ED8C == 0) {
+        return func_00120F30(arg0);
+    }
+
+    func_00118D80(0);
+    *(int *)&D_0015ED98 = D_00137C00.count == 0;
+    if (*(int *)&D_0015ED98 == 1) {
+        return 0;
+    }
+
+    if (arg0 == 1) {
+        return 1;
+    }
+
+    while (*(int *)&D_0015ED98 == 0) {
+        func_0012DDC0();
+        func_00118D80(0);
+        *(int *)&D_0015ED98 = D_00137C00.count == 0;
+    }
+
+    return 0;
+}
+
 extern int func_001219C8(void);
 
 /* snd_StreamSafeCdBreak */
@@ -431,15 +467,7 @@ int func_0012EFE8(void) {
     return 1;
 }
 
-extern short D_0015ED8C;
 extern int func_00121930(void);
-
-typedef struct {
-    int count;
-    int unk04[3];
-    volatile int error;
-} CdSafeState;
-extern CdSafeState D_00137C00;
 
 /* snd_StreamSafeCdGetError: returns the last CD error while VAG streaming
  * owns the drive (the cached value at D_00137C00.error), otherwise defers
