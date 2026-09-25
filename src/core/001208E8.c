@@ -331,14 +331,32 @@ int func_00120E98(void) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00120F30);
+extern char D_00152FF0[];
+extern int D_001313D0;
+
+/* sceCdSyncS */
+int func_00120F30(int arg0) {
+    if (arg0 == 0) {
+        if (D_001313D0 > 0) {
+            func_0011A6C8(D_00152FF0);
+        }
+        while (D_001313F0 != 0 || func_0011B6B8(D_00132590) != 0) {
+            func_00120910(0x3C);
+        }
+        return 0;
+    }
+    if (D_001313F0 != 0 || func_0011B6B8(D_00132590) != 0) {
+        return 1;
+    }
+    return 0;
+}
 
 extern void func_0011A6C8();
 extern int func_0011B6B8(void *);
 extern char D_00153000[];
 extern char D_00132E08[];
-extern int D_001313D0;
 
+/* sceCdSync */
 int func_00120FD0(int arg0) {
     if (arg0 == 0) {
         if (D_001313D0 > 0) {
