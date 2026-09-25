@@ -389,7 +389,30 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023A5D8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023A5E0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023A948);
+extern void func_001FB608(int, int, int);
+extern void func_001F3760(int, int, float, float, float, float, float);
+extern void func_00234C98_l(int, long) __asm__("func_00234C98");
+
+/* Sets up a (1 << a) x (1 << b) area: func_001FB608 gets the sizes and a
+   base below 0x3FF000 by 4 << min(a + b, 16) bytes, rounded down to 8 KB
+   (the GS page), func_001F3760 the sizes and the float setup (f, 0,
+   524288, 255, 0); then GS registers 0x47 and 0x42 are written through
+   func_00234C98, whose value argument is 64-bit (hence the long alias,
+   which builds 0x8000000044 as one dli). */
+void func_0023A948(int a, int b, float f) {
+    int t = a + b;
+
+    if (t > 16) {
+        t = 16;
+    }
+    func_001FB608(a, b, ((0x3FF000 - (4 << t)) >> 13) << 13);
+    func_001F3760(1 << a, 1 << b, f, 0.0f, 524288.0f, 255.0f, 0.0f);
+    func_00234C98_l(0x47, 0x30000);
+    func_00234C98_l(0x42, 0x8000000044L);
+}
+
+/* Retail carries 4 bytes of inter-function padding after this endlabel. */
+__asm__(".section .text\n\tnop\n");
 
 extern void func_001FB498(void);
 extern void func_001F3008(void);

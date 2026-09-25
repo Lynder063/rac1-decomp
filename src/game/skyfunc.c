@@ -322,7 +322,48 @@ void func_0022C7E0(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022C870); /* DoSkyGifPaging(void) */
+extern int *D_00161000_p __asm__("D_00161000") MACRO_ADDR;
+extern int *D_00160570_p __asm__("D_00160570") MACRO_ADDR;
+extern int *D_00160574 MACRO_ADDR;
+extern void func_0020C2F8(void);
+extern void func_00234E80(void);
+
+/* DoSkyGifPaging: DoGifPaging's twin (func_001F4748) for the sky. Pushes
+   two 4-word GIF tags (0x20000000 in the first word) onto the D_00161000
+   packet, D_00160574 marking where it started and D_00160570's tag
+   pointing at the second; in between, when D_0018A3B0[1] is set,
+   func_0020C2F8 and func_00234E80 add their own. Then restores
+   D_0015EF74 from D_0015EF78. The first advance goes through a local
+   advanced in place, which keeps the old and new pointer in one register
+   as retail does. */
+void func_0022C870(void) {
+    int *p = D_00161000_p;
+
+    D_00160574 = p;
+    p += 4;
+    D_00161000_p = p;
+    D_00160570_p[0] = 0x20000000;
+    D_00160570_p[1] = (int)D_00161000_p;
+    D_00160570_p[2] = 0;
+    D_00160570_p[3] = 0;
+    if (D_0018A3B0[1] != 0) {
+        func_0020C2F8();
+        func_00234E80();
+    }
+    D_00161000_p[0] = 0x20000000;
+    D_00161000_p[1] = (int)(D_00160570_p + 4);
+    D_00161000_p[2] = 0;
+    D_00161000_p[3] = 0;
+    D_00161000_p += 4;
+    D_00160574[0] = 0x20000000;
+    D_00160574[1] = (int)D_00161000_p;
+    D_00160574[2] = 0;
+    D_00160574[3] = 0;
+    D_0015EF74 = D_0015EF78;
+}
+
+/* Retail carries 4 bytes of inter-function padding after this endlabel. */
+__asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022C9A0);
 

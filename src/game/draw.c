@@ -171,7 +171,51 @@ void func_001F2558(void) {
 void func_001F2560(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F2568);
+extern int D_0015F6FC_m __asm__("D_0015F6FC") MACRO_ADDR;
+extern int D_0015EE80 MACRO_ADDR;
+extern int D_0015EF78 MACRO_ADDR;
+extern int *D_00161000 MACRO_ADDR;
+
+extern void func_002350A8(void);
+extern int func_00123308(int);
+extern void func_0020C268(void);
+extern void func_00121B78(int, int, int, int);
+extern void func_001207B8(void);
+extern void func_002348E8(void);
+extern void func_001F3890(void);
+extern void func_00235018(void);
+extern volatile int D_00160FE0_v __asm__("D_00160FE0") MACRO_ADDR;
+
+/* Render setup: raises D_0015F6FC, clears D_00160FE0, runs the setup calls,
+   picks func_00121B78's mode from D_0015EE80 (retail's movz), then runs
+   func_001F3890 with D_0015EF78 saved around it and D_00161000 cleared.
+   The D_00160FE0 flag is volatile: retail keeps its store out of
+   func_002350A8's delay slot, where the plain MACRO_ADDR store would go.
+   The two stores that do sit in delay slots (D_00161000, D_0015EF78) are
+   MACRO_ADDR and come out $gp-relative there. */
+void func_001F2568(void) {
+    int flag;
+    int pal;
+
+    D_0015F6FC_m = 1;
+    D_00160FE0_v = 0;
+    func_002350A8();
+    func_00123308(1);
+    func_0020C268();
+    flag = D_0015EE80;
+    func_00121B78(0, 1, flag ? 3 : 2, 0);
+    func_001207B8();
+    func_002348E8();
+    pal = D_0015EF78;
+    D_00161000 = 0;
+    func_001F3890();
+    D_0015EF78 = pal;
+    func_002348E8();
+    func_00235018();
+}
+
+/* Retail carries 4 bytes of inter-function padding after this endlabel. */
+__asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F2608);
 
@@ -342,74 +386,115 @@ void func_001F45F0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F4628);
 
-/*
- * REVERTED (size mismatch: 268 vs retail's 276). Semantics recovered with
- * confidence -- SetupGifPaging(int): saves the current D_00161000 mark into
- * D_0015F550, reserves 0x10 bytes from it, copies D_0015EF78 into D_0015EF74,
- * clears the anonymous flag at gp-0x77A8 (D_0015F558), then zeroes the low
- * 8 bytes of D_0015F55C entries of the 0x10-byte D_0018D540 paging table
- * (same table func_00203038 fills). If arg0==0 it also walks two arrays
- * hanging off the D_0019A4E8 arena (int *b = &D_0019A4E8): b[9], sized by
- * *(b[6]+0x44), clearing each element's halfword at +4 when it's >=
- * (D_0015EF8C >> 8); and b[10], sized by *(b[6]+0x24), unconditionally
- * clearing every element's halfword at +4:
- *
- *   void func_001F4630(int arg0) {
- *       int *b = &D_0019A4E8;
- *       int i, count;
- *
- *       D_0015F550 = (int)D_00161000;
- *       D_00161000 += 4;
- *       D_0015EF74 = D_0015EF78;
- *       *(int *)&D_0015F558 = 0;
- *
- *       count = D_0015F55C;
- *       if (count > 0) {
- *           char *e = D_0018D540;
- *           for (i = 0; i < count; i++) {
- *               *(long *)e = 0;
- *               e += 0x10;
- *           }
- *       }
- *
- *       if (arg0 == 0) {
- *           int idx, thresh;
- *           unsigned short *elem;
- *           short *elem2;
- *
- *           thresh = D_0015EF8C >> 8;
- *           for (idx = 0; idx < *(int *)((char *)b[6] + 0x44); idx++) {
- *               elem = (unsigned short *)((char *)b[9] + idx * 8 + 4);
- *               if ((int)*elem >= thresh) {
- *                   *elem = 0;
- *               }
- *           }
- *           for (idx = 0; idx < *(int *)((char *)b[6] + 0x24); idx++) {
- *               elem2 = (short *)((char *)b[10] + idx * 8 + 4);
- *               *elem2 = 0;
- *           }
- *       }
- *   }
- *
- * (needs D_00161000/D_0015F550/D_0015EF78/D_0015EF74/D_0015F55C all
- * MACRO_ADDR, D_0015F558 as the usual short+cast anonymous-bss trick).
- * Residual: retail computes &D_0019A4E8's upper bits (lui) ONCE into a
- * saved register and reuses it for both the b[9]-array loop and the
- * b[10]-array loop below it; this compiler materializes the address a
- * second time (a fresh lui+addiu) for the second loop instead of reusing
- * the first. 8 bytes over. Not reached by hoisting `b` differently or by
- * introducing an explicit second local alias for the same pointer.
- *
- * Name and struct layout independently corroborated by the Lombyte NTSC
- * project's own SetupGifPaging__Fi recovery (github.com/mateuszklysz/
- * Lombyte, src/assembly/textbin/fun_001f4280.c) -- same field writes,
- * same arena offsets (their D_0019A3E8.unk18->unk44/unk24 and unk24/
- * unk28 match our b[6]->+0x44/+0x24 and b[9]/b[10]), same anonymous
- * gp-relative flag clear. Their copy is also C_NON_MATCHING.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_001F4630); /* SetupGifPaging(int) */
+extern int *D_00161000 MACRO_ADDR;
+extern int *D_0015F550 MACRO_ADDR;
+extern int D_0015EF78 MACRO_ADDR;
+extern int D_0015EF74 MACRO_ADDR;
+extern int D_0015F55C MACRO_ADDR;
+extern int D_0015EF8C MACRO_ADDR;
+extern short D_0015F558;
+typedef struct {
+    long unk0;
+    long unk8;
+} PageSlot;
+extern PageSlot D_0018D540[];
+extern char D_0019A4E8[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F4748); /* DoGifPaging(void) */
+static inline char *PagingArena(void) {
+    return D_0019A4E8;
+}
+
+/* SetupGifPaging(int): marks the D_00161000 packet in D_0015F550 and
+   reserves 0x10 bytes, copies D_0015EF78 to D_0015EF74, clears
+   D_0015F558 and the first dword of the D_0015F55C paging slots, then,
+   when arg0 is 0, clears the +4 half of the arena's 8-byte list entries:
+   the list at D_0019A4E8 + 0x24 (count at +0x44 of the record at +0x18)
+   where it is at least D_0015EF8C >> 8, and all of the list at + 0x28
+   (count at +0x24). The slot loop has its own counter, which loop
+   reversal copies from the count (retail's $v1). The first list reads
+   the arena through a static inline accessor (a fresh pseudo per read
+   gives retail's copy for the loop) with the element offset first
+   (`i * 8 + base`); the second through a block-local pointer, whose
+   %hi retail keeps. */
+void func_001F4630(int arg0) {
+    int *p = D_00161000;
+    int i;
+
+    D_0015F550 = p;
+    p += 4;
+    D_00161000 = p;
+    D_0015EF74 = D_0015EF78;
+    *(int *)&D_0015F558 = 0;
+    {
+        int k;
+
+        for (k = 0; k < D_0015F55C; k++) {
+            D_0018D540[k].unk0 = 0;
+        }
+    }
+    if (arg0 == 0) {
+        for (i = 0; i < *(int *)(*(char **)(PagingArena() + 0x18) + 0x44); i++) {
+            unsigned short *el = (unsigned short *)(i * 8
+                + *(int *)(PagingArena() + 0x24) + 4);
+
+            if (*el >= (D_0015EF8C >> 8)) {
+                *el = 0;
+            }
+        }
+        {
+            char *b = D_0019A4E8;
+            int j;
+
+            for (j = 0; j < *(int *)(*(char **)(b + 0x18) + 0x24); j++) {
+                *(short *)(*(char **)(b + 0x28) + j * 8 + 4) = 0;
+            }
+        }
+    }
+}
+
+/* Retail carries 4 bytes of inter-function padding after this endlabel. */
+__asm__(".section .text\n\tnop\n");
+
+extern int *D_00161000 MACRO_ADDR;
+extern int *D_0015F550 MACRO_ADDR;
+extern int *D_0015F554 MACRO_ADDR;
+extern int D_0018A3DC;
+extern void func_0020C2F8(void);
+extern void func_00234E80(void);
+
+/* DoGifPaging: pushes two 4-word GIF tags (0x20000000 in the first word)
+   onto the D_00161000 packet, D_0015F554 marking where it started and
+   D_0015F550's tag pointing at the second one; between the two, when
+   D_0018A3DC is set, func_0020C2F8 and func_00234E80 add their own.
+   The first advance goes through a local advanced in place, which keeps
+   the old and new pointer in one register as retail does. */
+void func_001F4748(void) {
+    int *p = D_00161000;
+
+    D_0015F554 = p;
+    p += 4;
+    D_00161000 = p;
+    D_0015F550[0] = 0x20000000;
+    D_0015F550[1] = (int)D_00161000;
+    D_0015F550[2] = 0;
+    D_0015F550[3] = 0;
+    if (D_0018A3DC != 0) {
+        func_0020C2F8();
+        func_00234E80();
+    }
+    D_00161000[0] = 0x20000000;
+    D_00161000[1] = (int)(D_0015F550 + 4);
+    D_00161000[2] = 0;
+    D_00161000[3] = 0;
+    D_00161000 += 4;
+    D_0015F554[0] = 0x20000000;
+    D_0015F554[1] = (int)D_00161000;
+    D_0015F554[2] = 0;
+    D_0015F554[3] = 0;
+}
+
+/* Retail carries 4 bytes of inter-function padding after this endlabel. */
+__asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F4868); /* GetEffectTex(int, int) */
 
@@ -477,7 +562,70 @@ void func_001F4BB8(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F4C30);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F4E08); /* FadeToBlack(int, unsigned int) */
+extern void func_00234AC8(int mask);
+extern int func_00122598_i(int) __asm__("func_00122598");
+extern void func_002348E8(void);
+extern void func_00234948(void);
+extern void func_002349B8(void);
+extern void func_001FB498(void);
+extern void func_001FB530(void);
+extern void func_001FB598(void);
+extern void func_001F55C0(int, int, int, int);
+extern void func_00234C98(int, long);
+extern int *D_00161000 MACRO_ADDR;
+extern int D_0015F538 MACRO_ADDR;
+extern char D_0013CED0[];
+
+/* FadeToBlack(frames, color): `frames` VU1 chains, each drawing a
+   full-screen quad (D_0013CED0's GS packet) with its alpha ramped down
+   from 0x80 by (n << 7) / (n + 1) of the count still to go; `color` is
+   not read. Each chain is bracketed by func_00234AC8/func_00122598 and a
+   D_0015F538 bump. func_00122598 (sceGsSyncV) returns int: declared that
+   way, the bump's temporary moves to $v1 as in retail. D_0015F538 is
+   MACRO_ADDR so each bump reloads it in one register. */
+void func_001F4E08(int frames, unsigned int color) {
+    int n;
+    int q;
+
+    func_00234AC8(1);
+    func_00122598_i(0);
+    D_0015F538 = D_0015F538 + 1;
+    func_002348E8();
+    n = frames - 1;
+
+    if (n >= 0) {
+        do {
+            func_001FB498();
+            func_001FB530();
+            func_001F55C0(0, 0, 0, 0x80);
+            func_001FB598();
+
+            q = (n << 7) / (n + 1);
+            n--;
+
+            func_00234C98(1, (long)(0x80 - q) << 24);
+
+            D_00161000[0] = 0x30000014;
+            D_00161000[1] = (int)D_0013CED0;
+            D_00161000[2] = 0;
+            D_00161000[3] = 0x50000014;
+            D_00161000 += 4;
+
+            func_00234AC8(1);
+            func_00122598_i(0);
+            D_0015F538 = D_0015F538 + 1;
+            func_002349B8();
+            func_00234948();
+        } while (n >= 0);
+    }
+
+    func_00234AC8(1);
+    func_00122598_i(0);
+    D_0015F538 = D_0015F538 + 1;
+    func_002348E8();
+    func_001FB498();
+    func_001FB530();
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F4F90);
 
@@ -620,7 +768,34 @@ void func_001F65A8(void) {
     *(int *)&D_0015F59C = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F65B0);
+/* String width: sums the signed width byte (+3 of each 4-byte entry of
+   `table`, indexed by character) over at most `count` characters of `str`,
+   stopping at the NUL. Called by func_001F6600/20/40 with the three font
+   tables. A do-while behind an entry test, with `p = str` set inside the
+   if: the body's `*p` then sits after the loop label, so CSE keeps it
+   apart from the entry test's `*str`, and `i = 0` is not folded into the
+   first `i++`, both as in retail. */
+int func_001F65B0(unsigned char *str, int count, void *table) {
+    int width = 0;
+    int i = 0;
+    unsigned char *p;
+
+    if (count != 0 && *str != 0) {
+        p = str;
+        do {
+            int c = *p;
+            int w;
+
+            i++;
+            p++;
+            w = ((signed char *)table)[c * 4 + 3];
+            if (w != 0) {
+                width += w;
+            }
+        } while (i != count && *p != 0);
+    }
+    return width;
+}
 
 extern int func_001F65B0(unsigned char *arg0, int arg1, void *arg2);
 extern unsigned char D_001DF3D0[];

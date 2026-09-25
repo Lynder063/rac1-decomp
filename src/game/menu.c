@@ -253,17 +253,27 @@ int func_00207930(int arg0, int arg1, float unused1, float unused2, float arg3) 
 
 extern int D_001A04B4 NOT_SDA;
 
-/* Same hit test as func_002071A8, run against two boxes.
-   6/144 near-miss: retail tests `a` with a plain bnez (`li $v0,1` in its
-   slot) and sets $v0 = 0 again in the next beqz's slot; ours uses bnel.
-   Tried without change: an r variable (set once, or per arm), if/else
-   chains with explicit 0/1 per path, `?:`, and early returns (4-8 bytes
-   short from cross-jumping). */
+/* Same hit test as func_002071A8, run against two boxes: nonzero when
+   D_001A04B4 is set and either box is hit. Retail sets the result before
+   each test (0, 1, 0, then 1 on the fall-through), so the C does the same.
+   The last store goes through a short: jump.c folds `r = 0; if (b) r = 1;`
+   into an sltu only when the store sets a whole register, and a subreg
+   store keeps retail's beqz. */
 int func_002079F0(int x1, int y1) {
     int a = func_00209048(x1, y1, 0x99, 0xED, 0x160, 0x117);
     int b = func_00209048(x1, y1, 0x10E, 0xF7, 0x13D, 0x119);
+    int r = 0;
 
-    return D_001A04B4 != 0 && (a != 0 || b != 0);
+    if (D_001A04B4 != 0) {
+        r = 1;
+        if (a == 0) {
+            r = 0;
+            if (b != 0) {
+                *(short *)&r = 1;
+            }
+        }
+    }
+    return r;
 }
 
 extern int D_001A04C0 NOT_SDA;

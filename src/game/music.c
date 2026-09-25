@@ -184,7 +184,39 @@ extern unsigned char D_0014BFC0[];
 extern unsigned char D_0013E620[];
 extern unsigned char D_0013D510[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002161E0);
+extern short D_001517D0[];
+extern int func_0012EC60(int, int, int, int);
+extern int func_0012DDC0(void);
+extern void func_00216270(void);
+
+/* Music init: resets the music state at D_001517D0 (+0x30 = 0x20, the
+   other bytes and the three playing records' state and +0x0A flag
+   cleared, +0x1C/+0x22 set to -1), starts VAG streaming through
+   func_0012EC60 (snd_InitVAGStreamingEx), waits until func_0012DDC0
+   (snd_FlushSoundCommands) has nothing left, and calls func_00216270.
+   The two -1 stores are one chained assignment written last: that
+   shares one register between the word and the byte store, and leaves
+   the other stores in source order, as retail has them. */
+void func_002161E0(void) {
+    char *s = (char *)D_001517D0;
+
+    *(char *)(s + 0x30) = 0x20;
+    *(int *)(s + 0x00) = 0;
+    *(char *)(s + 0x31) = 0;
+    *(char *)(s + 0x32) = 0;
+    *(char *)(s + 0x33) = 0;
+    *(int *)(s + 0x34) = 0;
+    *(short *)(s + 0x3E) = 0;
+    *(int *)(s + 0x50) = 0;
+    *(short *)(s + 0x5A) = 0;
+    *(int *)(s + 0x6C) = 0;
+    *(short *)(s + 0x76) = 0;
+    *(char *)(s + 0x22) = *(int *)(s + 0x1C) = -1;
+    func_0012EC60(4, 0xF000, 0, 1);
+    while (func_0012DDC0() != 0) {
+    }
+    func_00216270();
+}
 
 extern void func_0012F068(void *);
 extern void func_002177F0(int);
@@ -525,7 +557,54 @@ void func_00216A90(int arg0, int arg1, int arg2) {
                   func_002179C8, (long)(unsigned int)(s + 0x34));
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00216B68); /* music_StartTrackBody(int, int, int) */
+extern void func_00217970(int, long);
+
+/* music_StartTrackBody(int, int, int): when the music record at +0x34 is
+   already playing (its word neither 0 nor -1) and not in state 9, starts
+   track arg0 + 1 of the table at D_00137C80 + 0x2AA8 on it: state 9, the
+   track, arg1 and arg2 recorded, 10 and 48000 stored, then
+   func_0012ED48 with the current word passed on as its eighth argument
+   and 0x24 or 0x20 by arg1's bit 0. The handle is read twice as in
+   func_00216A90 (CSE merges the loads, and the address stays in a
+   register as in retail), and the 0x24/0x20 choice comes before the
+   stores, which keeps arg1 in $a1. */
+void func_00216B68(int arg0, int arg1, int arg2) {
+    char *s = (char *)D_001517D0;
+    char *base;
+    int *tbl;
+    unsigned int cur;
+    long h;
+    int i;
+    int flags;
+
+    if (*(short *)(s + 0x3E) == 9) {
+        return;
+    }
+    cur = *(unsigned int *)(s + 0x34);
+    if (cur == 0 || cur == 0xFFFFFFFF) {
+        return;
+    }
+    base = (char *)D_00137C80;
+    tbl = (int *)(base + 0x2AA8);
+    i = arg0 + 1;
+    if (tbl[i] == 0) {
+        return;
+    }
+    h = tbl[i];
+    flags = (arg1 & 1) ? 0x24 : 0x20;
+    *(short *)(s + 0x38) = arg0;
+    *(short *)(s + 0x3C) = arg1;
+    *(short *)(s + 0x3E) = 9;
+    *(int *)(s + 0x48) = 10;
+    *(int *)(s + 0x4C) = 0xBB80;
+    *(short *)(s + 0x3A) = arg2;
+    *(short *)(s + 0x44) = 0;
+    func_0012ED48(h, 0, 0, 0, arg2, 0, 1, cur, flags,
+                  func_00217970, (long)(unsigned int)(s + 0x34));
+}
+
+/* Retail carries 4 bytes of inter-function padding after this endlabel. */
+__asm__(".section .text\n\tnop\n");
 
 extern void func_00217920(int, long);
 

@@ -74,7 +74,65 @@ int func_001FF668(int arg0) {
     return i;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FF6B8);
+extern int D_0019A4E8 NOT_SDA;
+extern int func_001FFB38(int, int, int, int, int, int, int);
+extern char *func_001FFAB8_d(int, int, char *, int) __asm__("func_001FFAB8");
+extern void func_001F99D8(void *, int);
+extern char D_0015F7B8[];
+extern unsigned char *D_0015FAB8 MACRO_ADDR;
+extern unsigned char *D_0015FABC MACRO_ADDR;
+extern unsigned char *D_0015FAC0 MACRO_ADDR;
+extern unsigned char *D_0015FAC4 MACRO_ADDR;
+typedef struct {
+    int unk00, unk04;
+    char pad08[0x18];
+    int unk20, unk24;
+    char pad28[0x3C];
+    int unk64, unk68, unk6C;
+    char pad70[0xC];
+    int unk7C;
+    char pad80[0x10];
+} HudBank;
+extern HudBank D_00199C60_b[] __asm__("D_00199C60") NOT_SDA;
+
+/* HUD bank init: clears the first two words of the D_0019A4E8 arena,
+   resets the 13 0x90-byte bank records at D_00199C60 (+0x64 = -1, the
+   pending +0x20 selector = 0x10000, func_001FFB38(i, 0xFFFF, 0, 0, 0, 0,
+   1), then +0x7C = 0, +0x6C = -6, +0x04 = +0x24 = 0), allocates the two
+   HUD buffers once through the debug allocator (size, 0, "hud.cpp",
+   line 277/278), sets D_0015FAC0/D_0015FABC from the first, clears
+   0x2800 bytes of it and sets its byte +0x20 to 0xFF. The records are
+   indexed through a struct array: each field access is its own giv,
+   and loop.c's pick (the +0x24 one) is retail's loop pointer. */
+void func_001FF6B8(void) {
+    int *arena = &D_0019A4E8;
+    int i;
+    unsigned char *buf;
+
+    arena[0] = 0;
+    arena[1] = 0;
+    for (i = 0; i < 13; i++) {
+        D_00199C60_b[i].unk64 = -1;
+        D_00199C60_b[i].unk20 = 0x10000;
+        func_001FFB38(i, 0xFFFF, 0, 0, 0, 0, 1);
+        D_00199C60_b[i].unk7C = 0;
+        D_00199C60_b[i].unk6C = -6;
+        D_00199C60_b[i].unk04 = 0;
+        D_00199C60_b[i].unk24 = 0;
+    }
+    if (D_0015FAB8 == 0) {
+        D_0015FAB8 = (unsigned char *)func_001FFAB8_d(0x2800, 0, D_0015F7B8, 277);
+        D_0015FAC4 = (unsigned char *)func_001FFAB8_d(0x1400, 0, D_0015F7B8, 278);
+    }
+    buf = D_0015FAB8;
+    D_0015FAC0 = buf + 0x2800;
+    D_0015FABC = buf;
+    func_001F99D8(buf, 0x2800);
+    D_0015FAB8[0x20] = 0xFF;
+}
+
+/* Retail carries 4 bytes of inter-function padding after this endlabel. */
+__asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FF7F0); /* LinkHudBank(int, char *) */
 
@@ -177,31 +235,23 @@ int func_001FFB38(int arg0, int arg1, int arg2, int arg3, int arg4,
 
 extern void func_001FFD30(void *, int);
 
-/* Same-size near-miss (18/104 bytes). Retail loads the 6 fields in
-   the exact order written here (+0x30 first) but this compiler
-   schedules +0x30's load last, and moves the f30!=0 branch one store
-   earlier (the store it jumps past is unconditional either way --
-   it's the branch's delay slot in both orderings, so no semantic
-   difference). Pure scheduling; not reachable from source. */
+/* Copies the six pending words at +0x24..+0x38 into +0x04..+0x18 after
+   func_001FFD30 has seen +0x20, calls the handler now at +0x10 if there
+   is one, and clears +0x68. The copies are in retail's store order, and
+   the +0x10 copy is unconditional (retail stores it in the beqz's delay
+   slot), which also makes the scheduler load +0x30 first. */
 void func_001FFC48(void *arg0) {
     char *p = (char *)arg0;
-    int f24, f34, f38, f2C, f28, f30;
 
     func_001FFD30(arg0, *(int *)(p + 0x20));
-    f30 = *(int *)(p + 0x30);
-    f24 = *(int *)(p + 0x24);
-    f34 = *(int *)(p + 0x34);
-    f38 = *(int *)(p + 0x38);
-    f2C = *(int *)(p + 0x2C);
-    f28 = *(int *)(p + 0x28);
-    *(int *)(p + 4) = f24;
-    *(int *)(p + 0x14) = f34;
-    *(int *)(p + 0x18) = f38;
-    *(int *)(p + 0xC) = f2C;
-    *(int *)(p + 8) = f28;
-    if (f30 != 0) {
-        *(int *)(p + 0x10) = f30;
-        ((void (*)(void *))f30)(arg0);
+    *(int *)(p + 4) = *(int *)(p + 0x24);
+    *(int *)(p + 0x14) = *(int *)(p + 0x34);
+    *(int *)(p + 0x18) = *(int *)(p + 0x38);
+    *(int *)(p + 0xC) = *(int *)(p + 0x2C);
+    *(int *)(p + 8) = *(int *)(p + 0x28);
+    *(int *)(p + 0x10) = *(int *)(p + 0x30);
+    if (*(int *)(p + 0x10) != 0) {
+        (*(void (**)(void *))(p + 0x10))(arg0);
     }
     *(int *)(p + 0x68) = 0;
 }

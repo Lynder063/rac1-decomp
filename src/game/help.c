@@ -155,7 +155,62 @@ void *func_001FE540(int id) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FE580);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FE588);
+extern int D_0015EF1D_i __asm__("D_0015EF1D") MACRO_ADDR;
+extern int D_0015EF1C_i __asm__("D_0015EF1C") MACRO_ADDR;
+#define D_0015EF1D_b (*(unsigned char *)&D_0015EF1D_i)
+#define D_0015EF1C_b (*(unsigned char *)&D_0015EF1C_i)
+extern int func_0022EE28(int, int, int);
+extern void func_001F7648(void *arg0, int a1, int a2, int a3, int a4, int a5,
+                          int a6, int a7, int a8);
+extern void func_001F75D0(void *a, long b, void *c, int d);
+extern int D_0013E604;
+
+/* Opens the help window: state 1 (opening), the open sound unless both
+   fade flags are clear, then the current entry's text is measured in a
+   scratch FontSetWindow buffer and the box geometry goes into HelpState's
+   pad[] for func_001FE6C0 to draw. The box's y is clamped so its bottom
+   stays 12 above the screen's; written as `screenY - 0xC - hHalf5`, CSE
+   folds it to retail's screenY - (h/2 + 0x11). The fade flags are bytes
+   read through MACRO_ADDR int aliases, which keeps retail's lui+lbu. */
+void func_001FE588(void) {
+    short win[12];
+    int idx;
+    char *text;
+    int screenY;
+    int y0;
+    short w, h;
+    int hHalf5;
+
+    ((HelpState *)D_001997D0)->state = 1;
+    ((HelpState *)D_001997D0)->x04 = 0;
+    if (D_0015EF1D_b || D_0015EF1C_b) {
+        func_0022EE28(0, 1, 0);
+    }
+
+    idx = ((HelpState *)D_001997D0)->pad[6];
+    text = D_0015F780[idx].text;
+    func_001F7648((void *)win, 0xF0, 0x1E0, 0x2C, 0x1D4, 0x100, 0x168, 0x10, 7);
+    func_001F75D0((void *)win, 0x80FFA888L, text, -1);
+
+    screenY = D_0013E604;
+    w = win[6];
+    h = win[7];
+    hHalf5 = (h >> 1) + 5;
+    y0 = screenY - 0x3C;
+
+    ((HelpState *)D_001997D0)->pad[0] = (w >> 1) + 10;
+    ((HelpState *)D_001997D0)->pad[1] = hHalf5;
+    ((HelpState *)D_001997D0)->pad[2] = 0x100;
+    ((HelpState *)D_001997D0)->pad[4] = 8;
+    ((HelpState *)D_001997D0)->pad[5] = 8;
+    ((HelpState *)D_001997D0)->pad[3] = y0;
+    if (screenY - 0xC < y0 + hHalf5) {
+        ((HelpState *)D_001997D0)->pad[3] = screenY - 0xC - hHalf5;
+    }
+}
+
+/* Retail carries 4 bytes of inter-function padding after this endlabel. */
+__asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FE6C0); /* Help_Update */
 
