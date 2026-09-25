@@ -292,7 +292,70 @@ int func_00120CA0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120D18);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00120D28);
+typedef struct {
+    char pad[0x24];
+    void *serve;
+} SifRpcClientData;
+
+extern int func_00120B28(void);
+extern int func_00118CC0(int);
+extern int func_00118BF0(int, void *);
+extern int func_00120F30(int);
+extern void func_0011AE20(int);
+extern int func_0011B2F8(void *, unsigned int, int);
+extern void func_0011A6C8();
+extern void func_00118C90(int);
+
+extern int D_001313E8;
+extern int D_001313DC;
+extern int D_001313D0;
+extern int D_001313F8;
+extern int D_00159850;
+extern char D_00159858[];
+extern char D_00152FB0[];
+extern char D_00152FD8[];
+extern char D_00132590[];
+
+/* _sceCd_scmd_prechk (libcdvd.a cdvd000.o) */
+int func_00120D28(int arg0) {
+    int i;
+    volatile int *sem = &D_001313E8;
+
+    func_00120B28();
+    if (*sem != func_00118CC0(*sem)) {
+        if (D_001313D0 > 0) {
+            func_0011A6C8(D_00152FB0, arg0, D_001313DC);
+        }
+        return 0;
+    }
+    D_001313DC = arg0;
+    func_00118BF0(D_00159850, D_00159858);
+    if (func_00120F30(1) != 0) {
+        func_00118C90(*sem);
+        return 0;
+    }
+    func_0011AE20(0);
+    if (D_001313F8 >= 0) {
+        return 1;
+    }
+    while (1) {
+        if (func_0011B2F8(D_00132590, 0x80000595, 0) < 0) {
+            if (D_001313D0 > 0) {
+                func_0011A6C8(D_00152FD8);
+            }
+            for (i = 0x100000; i != -1; i--)
+                ;
+        } else {
+            if (((SifRpcClientData *)D_00132590)->serve != 0) {
+                break;
+            }
+            for (i = 0x100000; i != -1; i--)
+                ;
+        }
+    }
+    D_001313F8 = 0;
+    return 1;
+}
 
 extern int func_0011B4C8();
 extern int func_00120D28(int);
