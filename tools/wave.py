@@ -114,8 +114,10 @@ def results(wave: dict) -> list[tuple[str, str, str, int]]:
         fresh = path.exists() and path.stat().st_mtime >= wave.get("started", 0)
         result = path.read_text(errors="replace").strip().splitlines() if fresh else []
         runs = len((work / "runs.log").read_text().splitlines()) if (work / "runs.log").exists() else 0
-        rows.append((name, result[0].strip() if result else "(no result yet)",
-                     result[1].strip() if len(result) > 1 else "", runs))
+        candidate = result[1].strip().strip("`").split()[0] if len(result) > 1 and result[1].strip() else ""
+        if candidate and not (ROOT / candidate).exists() and (work / Path(candidate).name).exists():
+            candidate = str((work / Path(candidate).name).relative_to(ROOT))  # A bare "p6.c".
+        rows.append((name, result[0].strip() if result else "(no result yet)", candidate, runs))
     return rows
 
 

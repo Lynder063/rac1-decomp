@@ -90,14 +90,36 @@ def callers(name: str) -> list[str]:
                   if p.stem != name and pattern.search(p.read_text(errors="replace")))
 
 
+def alias_name(text: str, symbol: str) -> str | None:
+    """The C name a declaration gives SYMBOL through __asm__("SYMBOL"), if any."""
+    head = text.split(f'__asm__("{symbol}")')[0].rstrip() if f'__asm__("{symbol}")' in text else None
+    if head is None:
+        return None
+    if head.endswith(")"):  # A function: skip back over its parameter list.
+        depth, i = 0, len(head)
+        for i in range(len(head) - 1, -1, -1):
+            depth += {")": 1, "(": -1}.get(head[i], 0)
+            if depth == 0:
+                break
+        head = head[:i].rstrip()
+    head = re.sub(r"(\[[^\]]*\])+$", "", head).rstrip()
+    m = re.search(r"(\w+)$", head)
+    return m.group(1) if m and m.group(1) != symbol else None
+
+
 def describe(symbol: str, source: str, index) -> str:
     entries = index.get(symbol, [])
     own = [e for e in entries if e[0] == source]
-    chosen = (own or entries)[:2]
+    chosen = (own or entries)[:3]
     if not chosen:
         return f"- `{symbol}`: not declared anywhere yet"
     status = " (matched C)" if any(e[3] == "defined" for e in entries) else ""
-    lines = [f"- `{symbol}`{status}:"] + [f"  `{text}` ({path}:{line})" for path, line, text, _ in chosen]
+    lines = [f"- `{symbol}`{status}:"]
+    for path, line, text, _ in chosen:
+        name = alias_name(text, symbol)
+        lines.append(f"  `{text}` ({path}:{line})" + (f" -> write `{name}` in C" if name else ""))
+    if len({alias_name(e[2], symbol) for e in own}) > 1:
+        lines.append("  (this file names it more than once: use the name whose type fits the access)")
     if not own and entries:
         lines.append("  (declared in another file only: add an extern of the same type)")
     return "\n".join(lines)
