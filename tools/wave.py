@@ -16,7 +16,7 @@ Plans, tracks and integrates waves of worker agents (docs/WORKER.md).
       For each EXACT result, one at a time: integrate it, run the full build,
       check it added one exact function and no size mismatch, regenerate the
       progress report and commit that function alone. A failure restores the
-      source file and moves on. Needs a clean tree.
+      source file and moves on. Needs src/ and progress/ clean.
 
 --near picks earlier attempts that came close (BYTES within 40, a size
 within 8 bytes, or a near-miss in src/); --fresh, the default, picks
@@ -167,10 +167,11 @@ def exact_in_report() -> set[str]:
 
 def land(args) -> None:
     wave = load(args.name)
-    dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"],
+    # Only src/ and the report are committed, so only they must be clean.
+    dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no", "--", "src", "progress"],
                            cwd=ROOT, capture_output=True, text=True).stdout.strip()
     if dirty:
-        sys.exit("land needs a clean tree (tracked files):\n" + dirty)
+        sys.exit("land needs src/ and progress/ clean:\n" + dirty)
     rows = {r["name"]: r for r in triage.triage()}
     landed, skipped = [], []
     for name, verdict, candidate, _ in results(wave):
