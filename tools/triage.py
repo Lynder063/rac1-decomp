@@ -43,7 +43,8 @@ import rank_candidates  # noqa: E402  (needs tools/ on the path)
 ROUTES = ("sonnet", "opus", "blocked")
 SDK_MAP = ROOT / "build-sn/mig/sdkmap_by_object.txt"
 REFERENCES = ROOT / "build-sn/ref"
-NAME_COMMENT = re.compile(r"INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\);\s*/\*\s*([A-Za-z_]\w*)")
+# A name comment is only a name: `/* ParseBin */` or `/* ParseBin(void) */`, not prose.
+NAME_COMMENT = re.compile(r"INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\);[^\S\n]*/\*[^\S\n]*([A-Za-z_]\w*)[^\S\n]*(?:\(|\*/)")
 
 
 def report_functions() -> list[dict]:
