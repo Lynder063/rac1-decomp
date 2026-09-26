@@ -12,6 +12,11 @@ Plans, tracks and integrates waves of worker agents (docs/WORKER.md).
   python3 tools/wave.py integrate NAME
       Applies the EXACT results through tools/integrate.py (in Docker).
       Run the full build afterwards, as always.
+  python3 tools/wave.py land NAME
+      For each EXACT result, one at a time: integrate it, run the full build,
+      check it added one exact function and no size mismatch, regenerate the
+      progress report and commit that function alone. A failure restores the
+      source file and moves on. Needs a clean tree.
 
 --near picks earlier attempts that came close (BYTES within 40, a size
 within 8 bytes, or a near-miss in src/); --fresh, the default, picks
@@ -30,6 +35,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
 
 import dossier  # noqa: E402
+import integrate as checker  # noqa: E402
 import triage  # noqa: E402
 
 WAVES = ROOT / "build-sn/waves"
@@ -144,6 +150,71 @@ def integrate(args) -> None:
     print("\nNext: bash tools/docker/run.sh bash tools/build_sn.sh, then the progress report and a commit.")
 
 
+TRAILER = "Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>"
+
+
+def docker(*command: str) -> subprocess.CompletedProcess:
+    return subprocess.run(["bash", "tools/docker/run.sh", *command], cwd=ROOT,
+                          capture_output=True, text=True)
+
+
+def exact_in_report() -> set[str]:
+    report = json.loads((ROOT / "progress/report.json").read_text())
+    return {f["name"] for u in report["units"] for f in u.get("functions", [])
+            if (f.get("fuzzy_match_percent") or 0) == 100}
+
+
+def land(args) -> None:
+    wave = load(args.name)
+    dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"],
+                           cwd=ROOT, capture_output=True, text=True).stdout.strip()
+    if dirty:
+        sys.exit("land needs a clean tree (tracked files):\n" + dirty)
+    rows = {r["name"]: r for r in triage.triage()}
+    landed, skipped = [], []
+    for name, verdict, candidate, _ in results(wave):
+        if not verdict.startswith("EXACT") or not candidate:
+            continue
+        exact = exact_in_report()
+        if name in exact:
+            skipped.append((name, "already exact"))
+            continue
+        reason = checker.banned(str(ROOT / candidate))
+        if reason:
+            skipped.append((name, f"refused: {reason}"))
+            continue
+        source = ROOT / "src" / f"{rows[name]['unit']}.c"
+        saved = source.read_text()
+        manifest = WAVES / f"{args.name}-{name}.MANIFEST"
+        manifest.write_text(f"{name} {candidate}\n")
+        applied = docker("python", "tools/integrate.py", str(manifest.relative_to(ROOT)), "--apply")
+        if "1/1 exact" not in applied.stdout:
+            source.write_text(saved)
+            skipped.append((name, "not exact on re-check"))
+            continue
+        build = docker("bash", "tools/build_sn.sh")
+        (WAVES / f"{args.name}-{name}.build.log").write_text(build.stdout + build.stderr)
+        count = re.search(r"exact \(size AND bytes\):\s*(\d+)", build.stdout)
+        mismatch = re.search(r"size mismatch:\s*(\d+)", build.stdout)
+        if build.returncode or not count or int(count.group(1)) != len(exact) + 1 \
+                or not mismatch or int(mismatch.group(1)):
+            source.write_text(saved)
+            skipped.append((name, "full build did not confirm it; source restored"))
+            continue
+        docker("python", "tools/gen_progress_report.py", "--no-build")
+        row = rows[name]
+        title = f"{row['symbol']} ({name})" if row["symbol"] else name
+        message = (f"feat({row['unit'].split('/')[0]}): {title} exact match\n\n"
+                   f"Matched by a Sonnet worker in wave {args.name}; full build audited.\n\n{TRAILER}")
+        subprocess.run(["git", "add", str(source.relative_to(ROOT)), "progress/report.json"], cwd=ROOT, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", message], cwd=ROOT, check=True)
+        landed.append(name)
+        print(f"landed {name}: {len(exact) + 1} exact", flush=True)
+    for name, why in skipped:
+        print(f"skipped {name}: {why}")
+    print(f"{len(landed)} landed, {len(skipped)} skipped")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -158,8 +229,9 @@ def main() -> None:
     pick.add_argument("--fresh", action="store_true")
     commands.add_parser("status").add_argument("name")
     commands.add_parser("integrate").add_argument("name")
+    commands.add_parser("land").add_argument("name")
     args = parser.parse_args()
-    {"plan": plan, "status": status, "integrate": integrate}[args.command](args)
+    {"plan": plan, "status": status, "integrate": integrate, "land": land}[args.command](args)
 
 
 if __name__ == "__main__":
