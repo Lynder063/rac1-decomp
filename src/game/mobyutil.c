@@ -506,7 +506,71 @@ int func_00215078(char *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002150A8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002150B0);
+extern float func_001F9B50(float); /* sqrt */
+
+/* D_001600D8's first 12 bytes are the classic Shepperd "next axis" table
+   {1, 2, 0}; the rest of the block is unrelated data reused at the same
+   label. Retail copies all 12 bytes at once (ldl/ldr + lw -> sdl/sdr +
+   sw), which a whole-struct assignment reproduces. */
+typedef struct {
+    int a, b, c;
+} Idx3;
+extern Idx3 D_001600D8;
+
+/* Rotation matrix (3x3 used out of 4-float-stride rows, arg1) to
+   quaternion (x,y,z,w at arg0+0x0..0xC): Shepperd's method. trace > 0
+   is the simple case; otherwise pick the largest diagonal entry i, its
+   Shepperd successors j = next[i], k = next[j], and solve from there. */
+void func_002150B0(void *arg0, void *arg1) {
+    float *q = (float *)arg0;
+    float *m = (float *)arg1;
+    int nxt[3];
+    float trace = m[0] + m[5] + m[10];
+    float s;
+
+    *(Idx3 *)nxt = D_001600D8;
+
+    if (trace > 0.0f) {
+        s = func_001F9B50(trace + 1.0f);
+        q[3] = s * 0.5f;
+        s = 0.5f / s;
+        q[0] = (m[9] - m[6]) * s;
+        q[1] = (m[2] - m[8]) * s;
+        q[2] = (m[4] - m[1]) * s;
+    } else {
+        float m3[3][3];
+        int i, j, k;
+
+        m3[0][0] = m[0];
+        m3[0][1] = m[1];
+        m3[0][2] = m[2];
+        m3[1][0] = m[4];
+        m3[1][1] = m[5];
+        m3[1][2] = m[6];
+        m3[2][0] = m[8];
+        m3[2][1] = m[9];
+        m3[2][2] = m[10];
+
+        i = 0;
+        if (m3[0][0] < m3[1][1]) {
+            i = 1;
+        }
+        if (m3[i][i] < m3[2][2]) {
+            i = 2;
+        }
+        j = nxt[i];
+        k = nxt[j];
+
+        s = func_001F9B50(m3[i][i] - (m3[j][j] + m3[k][k]) + 1.0f);
+        q[i] = s * 0.5f;
+        if (s != 0.0f) {
+            s = 0.5f / s;
+        }
+        q[3] = (m3[k][j] - m3[j][k]) * s;
+        q[j] = (m3[j][i] + m3[i][j]) * s;
+        q[k] = (m3[k][i] + m3[i][k]) * s;
+    }
+}
 
 extern void func_001FA460(void *);
 extern void func_002150B0(void *, void *);
