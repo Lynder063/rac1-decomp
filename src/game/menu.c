@@ -959,19 +959,6 @@ void func_00209070(void) {
     }
 }
 
-/*
- * Near-miss, same size (differ score 180): func_00209160 below. Every
- * instruction is right but the scheduler places them differently:
- * retail   lui b; li 3; addiu b; [lui $at; sw 3]; lw C4; sw FC; j; sw 1C
- * ours     li 3; lui b; [lui $at; sw 3]; addiu b; sw FC; lw C4; j; sw 1C
- * The compiler schedules the MACRO_ADDR store as ONE instruction; retail
- * evidently scheduled around a two-instruction store. Tried: store via a
- * volatile lvalue, reading 0xC4 into a temp before the store, taking the
- * base after the store, the constant in its own local, and every order
- * of the four statements (tools/permute.py) -- the emitted order never
- * moves. Previously stubbed for the SDA collision, now expressible with
- * MACRO_ADDR.
- */
 extern char D_0013D390[];
 /* menu.cpp's state word and flags. Stored through the assembler's lui
    macro, and $gp-relative where the access sits in a delay slot (see
@@ -984,7 +971,6 @@ extern int D_0013D3AC;
    than casting byte offsets off a char pointer, is what lets GCC keep the
    record address's lui/addiu pair together before the D_0015EFB0 store. */
 extern int D_0013D390_i[] __asm__("D_0013D390");
-extern int D_0015EFB0 MACRO_ADDR;
 
 /* Sets menu state 3, clears the record's word at +0xFC and copies +0xC4
    into +0x1C. */
