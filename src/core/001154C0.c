@@ -405,7 +405,74 @@ int func_00115CE8(Bigint_1154D0 *a, Bigint_1154D0 *b) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00115D50);
+/* newlib mprec.c diff(ptr,a,b): __mdiff, the |a-b| used by dtoa/strtod's
+ * Bigint arithmetic. cmp(a,b)==0 returns a fresh zero Bigint; otherwise
+ * swaps so a is the larger operand (sign records which), subtracts
+ * limb-by-limb with borrow, and trims leading zero limbs.
+ *
+ * Retail reuses the SAME register ($t3/$11) both as the swap's scratch
+ * temporary and, right after, as `c` (Balloc's return value) -- their
+ * live ranges never overlap. Reusing `c` itself as the swap temp here
+ * (instead of a separate `t`) to see whether that steers the allocator
+ * onto the same register for both roles the way retail's does. */
+extern int func_00115CE8(Bigint_1154D0 *a, Bigint_1154D0 *b);  /* cmp */
+extern void *func_001154D0(void *ptr, int k);        /* Balloc */
+
+#define STOREINC(xc, hi, lo) \
+    (((unsigned short *)(xc))[1] = (unsigned short)(hi), \
+     ((unsigned short *)(xc))[0] = (unsigned short)(lo), \
+     (xc)++)
+
+void *func_00115D50(void *ptr, Bigint_1154D0 *a, Bigint_1154D0 *b) {
+    Bigint_1154D0 *c;
+    unsigned int *xa, *xae, *xb, *xbe, *xc;
+    int i, wa, wb;
+    int borrow, y, z;
+
+    i = func_00115CE8(a, b);
+    if (!i) {
+        c = func_001154D0(ptr, 0);
+        c->wds = 1;
+        c->x[0] = 0;
+        return c;
+    }
+    if (i < 0) {
+        c = a;
+        a = b;
+        b = c;
+        i = 1;
+    } else {
+        i = 0;
+    }
+    c = func_001154D0(ptr, a->k);
+    c->sign = i;
+    wa = a->wds;
+    xa = a->x;
+    xae = xa + wa;
+    wb = b->wds;
+    xb = b->x;
+    xbe = xb + wb;
+    xc = c->x;
+    borrow = 0;
+    do {
+        y = (*xa & 0xffff) - (*xb & 0xffff) + borrow;
+        borrow = y >> 16;
+        z = (*xa++ >> 16) - (*xb++ >> 16) + borrow;
+        borrow = z >> 16;
+        STOREINC(xc, z, y);
+    } while (xb < xbe);
+    while (xa < xae) {
+        y = (*xa & 0xffff) + borrow;
+        borrow = y >> 16;
+        z = (*xa++ >> 16) + borrow;
+        borrow = z >> 16;
+        STOREINC(xc, z, y);
+    }
+    while (!*--xc)
+        wa--;
+    c->wds = wa;
+    return c;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00115EE0);
 

@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 28.028631051036093,
+  "fuzzy_match_percent": 28.114507028948793,
   "total_code": "465788",
-  "matched_code": "128204",
-  "matched_code_percent": 27.52410968079899,
+  "matched_code": "128604",
+  "matched_code_percent": 27.60998565871169,
   "total_functions": 1658,
-  "matched_functions": 919,
-  "matched_functions_percent": 55.428226779252114,
+  "matched_functions": 920,
+  "matched_functions_percent": 55.48854041013269,
   "complete_code": "15084",
   "complete_code_percent": 3.2383831270878596,
   "total_units": 121,
@@ -545,13 +545,13 @@
   {
    "name": "core/001154C0",
    "measures": {
-    "fuzzy_match_percent": 86.11859838274933,
+    "fuzzy_match_percent": 99.59568733153638,
     "total_code": "2968",
-    "matched_code": "2556",
-    "matched_code_percent": 86.11859838274933,
+    "matched_code": "2956",
+    "matched_code_percent": 99.59568733153638,
     "total_functions": 16,
-    "matched_functions": 13,
-    "matched_functions_percent": 81.25,
+    "matched_functions": 14,
+    "matched_functions_percent": 87.5,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -669,7 +669,7 @@
     {
      "name": "func_00115D50",
      "size": "400",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "2192",
      "metadata": {
       "virtual_address": "1138000"
@@ -17967,13 +17967,13 @@
    "id": "game",
    "name": "Game",
    "measures": {
-    "fuzzy_match_percent": 27.37783671748753,
+    "fuzzy_match_percent": 27.46566078830886,
     "total_code": "455456",
-    "matched_code": "122344",
-    "matched_code_percent": 26.86187030141221,
+    "matched_code": "122744",
+    "matched_code_percent": 26.94969437223354,
     "total_functions": 1624,
-    "matched_functions": 888,
-    "matched_functions_percent": 54.679802955665025,
+    "matched_functions": 889,
+    "matched_functions_percent": 54.741379310344826,
     "complete_code": "9224",
     "complete_code_percent": 2.025223073139886
    }
