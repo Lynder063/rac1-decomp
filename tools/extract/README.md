@@ -26,12 +26,18 @@ inside matches PAL v2.00.
 
 ```sh
 python3 tools/extract/extract.py godot baserom/SCES_509.16.iso assets/godot
-godot --path assets/godot -e
+godot --path assets/godot -e res://levels/level_00/level_00.tscn
 ```
 
-All 19 levels take about 40 seconds and 330 MB; Godot's first import takes
-about a minute. `--level N` (repeatable) exports only some levels, and
-`--terrain-lod 2` uses the coarsest terrain.
+The second command opens level 0 in the editor. Other levels are in the
+FileSystem dock under `levels/`; double-click a `level_NN.tscn` to open it.
+
+All 19 levels take about 15 seconds and 365 MB, one level per CPU core at
+a time. Godot's first import takes about a minute. Options:
+
+- `--level N` (repeatable) exports only some levels.
+- `--jobs N` limits how many levels are exported at once.
+- `--terrain-lod 2` uses the coarsest terrain.
 
 ## Regenerate
 
@@ -49,6 +55,12 @@ and regenerating replaces them. To keep an edited level:
 2. Regenerate.
 3. Copy the scene back. The meshes and textures it refers to come out
    identical, so its paths still resolve.
+
+That only works when the extractor hasn't changed since the scene was
+made. A newer extractor can write scenes with other nodes (the sky's
+WorldEnvironment, for instance), so after updating it, move your changes
+into the new scene instead. Godot saves a scene as text, so a diff
+against a fresh export shows each edit.
 
 ## Other commands
 
@@ -72,7 +84,7 @@ levels/level_NN/
   terrain.glb                one node per terrain fragment
   ties/tie_<class>.glb       one mesh per tie class
   shrubs/shrub_<class>.glb   one mesh per shrub class
-  sky.glb
+  sky.png                    the sky as a panorama, used by the WorldEnvironment
   textures/*.png             shared by the level's meshes
 ```
 
@@ -80,11 +92,12 @@ Each level scene looks like this:
 
 ```
 Level_NN
+  WorldEnvironment      the sky (sky.png) and flat ambient light
+  Sun                   a directional light, so shapes read in the editor
   Game                  turns the game's Z-up axes into Godot's Y-up
     Terrain             fragments Terrain_000... (editable children)
     Ties/Tie_NNNN       one node per placed tie
     Shrubs/Shrub_NNNN   one node per placed shrub
-    Sky                 hidden in the editor; follows the camera when run
 ```
 
 To edit a level:
@@ -112,7 +125,6 @@ Run a level (F6) to fly around it:
 | Shift | Faster |
 | Mouse wheel | Change speed |
 | F | Frame the terrain |
-| K | Toggle the sky |
 
 ## Checks
 
@@ -123,7 +135,7 @@ godot --headless --path assets/godot --script res://rc1/check.gd
 ```
 
 The Godot check loads every level scene and compares its meshes, triangles,
-textures and bounds with what the extractor wrote.
+textures, bounds and sky panorama with what the extractor wrote.
 
 ## Coverage
 
@@ -139,7 +151,11 @@ Approximations:
 - Normals are flat, and Godot lights the scene. The game's own lighting,
   baked into vertex colours, is not decoded yet.
 - Alpha-tested textures become cutouts.
-- Sky shells don't animate.
+- The sky is baked into a 2048×1024 panorama. The game centres its sky
+  shells on the camera and never moves them, so a panorama loses nothing.
+  Their blending follows the PS2's usual texture and alpha modes, which is
+  inferred rather than traced in the game's code. Sprites the game adds
+  to the sky at run time are not included.
 
 Not yet extracted: mobys (animated objects), collision, audio, video and
 each level's code overlay. [docs/ASSETS.md](../../docs/ASSETS.md) describes

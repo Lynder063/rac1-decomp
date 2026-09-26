@@ -28,7 +28,9 @@ How the decoders were checked:
   readers compiled separately. WAD decompression, terrain faces and tie
   packets all matched.
 - The current decoders reproduce that prototype's output exactly on all
-  19 levels: every vertex, UV, face, placement and texture pixel.
+  19 levels: every vertex, UV, face, placement and texture pixel. The one
+  exception is the untextured sky shells, whose colours the prototype
+  misread as texture coordinates (see "Sky").
 
 ## The disc
 
@@ -265,11 +267,26 @@ unknown, so the Godot scenes record it when it isn't 0.01.
 - **Shells:** each shell is (cluster count, flags), with bit 0 meaning
   untextured. Its 0x20-byte cluster headers start at +0x10.
 - **Clusters:** each points to its vertices (x, y, z, alpha: signed 16
-  bits, positions /1024, alpha 0x80 opaque), texture coordinates (/4096)
-  and faces (three indices and a texture, 0xff for none).
+  bits, positions /1024, alpha 0x80 opaque), a second 4-byte array per
+  vertex, and faces (three indices and a texture, 0xff for none).
+- **Second array:** texture coordinates (s, t, /4096) on textured shells,
+  but an RGBA colour on untextured ones. Its alpha always equals the
+  vertex alpha.
 - **Winding:** faces are wound the opposite way to the other geometry.
 
-The field meanings and scales are Wrench's.
+The field meanings and scales are Wrench's, except the second array on
+untextured shells. Wrench reads it as texture coordinates there too and
+paints those shells white. On this disc they are colour gradients: level
+1's runs from (53, 88, 139) to (120, 169, 201).
+
+When a level has an untextured shell, it is shell 0: a dome over the whole
+sphere, drawn first. Levels 5, 7, 10 and 15 have none, and the header
+colour shows wherever no shell reaches.
+
+The extractor composites the shells in order into a panorama. Each layer
+is blended over the last by its alpha: the texture's alpha times the
+vertex alpha, with 0x80 as full. That is the PS2's usual MODULATE and
+alpha blend, inferred rather than traced in the game's code.
 
 ## Table of contents groups
 
