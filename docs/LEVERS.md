@@ -88,10 +88,13 @@ in `config/core_rodata.txt`).
    make only the fields retail re-reads volatile.
 8. **Siblings.** Find a matched function of the same shape in the file and
    copy it first.
-9. **Last resorts.** An empty asm, `__asm__("" : "+r"(x));`, hides a value
-   from the optimizer: it stops a loop being reversed and keeps a
-   constant address in a register. `do { ... } while (0)` around one
-   store is a scheduling barrier.
+9. **Not allowed:** register pins (`register int x __asm__("$14")`), inline
+   assembly inside a function, and artificial barriers (`__asm__("" : "+r"(x))`,
+   or `do { ... } while (0)` used to block scheduling). Upstream bans them
+   ([LLM_DECOMP_INSTRUCTIONS.md](LLM_DECOMP_INSTRUCTIONS.md)), and
+   `tools/integrate.py` refuses a candidate that uses one. `__asm__` is only
+   for file-scope aliases (`extern T D_x_alias __asm__("D_x");`) and padding
+   directives.
 
 ## What to hand back
 

@@ -7,6 +7,12 @@ function's name, your role and your budget. Everything else is here, in
 ## Rules for every role
 
 - Do the work yourself. Don't start sub-agents or install software.
+- Plain C only, as upstream requires
+  ([LLM_DECOMP_INSTRUCTIONS.md](LLM_DECOMP_INSTRUCTIONS.md)): no register
+  pins, no inline assembly inside a function, no artificial barriers
+  (`__asm__("" : ...)`, `do { } while (0)`). A match that needs one isn't a
+  match: report the best plain-C candidate instead. Prefer real structs to
+  raw offset arithmetic.
 - Write only inside `build-sn/try/<func>/`. Never edit `src/`, `include/`,
   `config/`, `tools/` or `docs/`, never run the full build, never commit.
 - Every `try_func` run counts against your budget, `--diff` reruns
