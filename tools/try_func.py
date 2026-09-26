@@ -21,6 +21,10 @@ is a filter: a function that passes here still has to pass the real build
 
 Verdicts: EXACT (masked), BYTES n/size (same size, n bytes differ),
 SIZE ours/retail (a size mismatch: never keep one), COMPILE (see log.txt).
+
+Every run is logged to build-sn/try/<func>/runs.log. If that folder holds a
+BUDGET file (a number, written by tools/wave.py), runs stop once that many
+have been logged. --no-budget skips both, for tools that re-check results.
 """
 import re
 import shutil
@@ -174,26 +178,49 @@ def compare(name, seg, obj, show):
     return verdict
 
 
+def budget_check(work, count):
+    """Stop a worker that has used its BUDGET of runs.
+
+    Returns (runs so far, the budget or None)."""
+    runs = work / "runs.log"
+    used = len(runs.read_text().splitlines()) if runs.exists() else 0
+    budget = work / "BUDGET"
+    limit = int(budget.read_text().split()[0]) if budget.exists() else None
+    if limit is not None and used + count > limit:
+        sys.exit(f"BUDGET: {used} of {limit} runs used for {work.name}. "
+                 "Write RESULT.md and NOTES.md now and stop.")
+    return used, limit
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     if len(args) < 2:
         sys.exit(__doc__)
     name, cands = args[0], args[1:]
+    counted = "--no-budget" not in sys.argv
+    work = Path("build-sn/try") / name
+    used, limit = budget_check(work, len(cands)) if counted else (0, None)
     seg, src, first, last = find_stub(name)
     failed = False
     for cand in cands:
         # Several candidates: label each line, and keep going past failures.
         label = f"{Path(cand).name:10s} " if len(cands) > 1 else ""
-        obj = build(name, seg, src, first, last, Path(cand).read_text(), Path("build-sn/try") / name)
+        obj = build(name, seg, src, first, last, Path(cand).read_text(), work)
+        verdict = compare(name, seg, obj, '--diff' in sys.argv) if obj is not None else "COMPILE failed"
+        if counted:
+            used += 1
+            with open(work / "runs.log", "a") as runs:
+                runs.write(f"{Path(cand).name} {verdict}\n")
+        tally = f"   [run {used} of {limit}]" if limit else ""
         if obj is None:
             log = (Path("build-sn/try") / name / "log.txt").read_text(errors="replace")
             errs = [l for l in log.splitlines() if "error" in l.lower() or "undeclared" in l or "parse" in l]
-            print(f"{label}{name}: COMPILE failed ({src})")
+            print(f"{label}{name}: COMPILE failed ({src}){tally}")
             for l in errs[:8]:
                 print("   ", l)
             failed = True
             continue
-        print(f"{label}{name}: {compare(name, seg, obj, '--diff' in sys.argv)}   ({src})")
+        print(f"{label}{name}: {verdict}   ({src}){tally}")
     if failed:
         sys.exit(1)
 

@@ -34,7 +34,7 @@ def main() -> None:
 
     exact = []
     for name, cand in rows:
-        r = subprocess.run([sys.executable, "tools/try_func.py", name, cand],
+        r = subprocess.run([sys.executable, "tools/try_func.py", name, cand, "--no-budget"],
                            capture_output=True, text=True)
         verdict = (r.stdout.strip().splitlines() or ["COMPILE failed"])[-1]
         verdict = verdict.split(": ", 1)[-1].split("   (")[0]
