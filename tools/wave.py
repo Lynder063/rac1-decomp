@@ -101,7 +101,8 @@ def prompt(name: str, role: str, budget: int) -> str:
     return (f"You are a {role} worker on {name} in the repository /Users/flavy/Projects/rac1-decomp "
             f"(run every command from there). Follow docs/WORKER.md, the rules and the "
             f"\"{SECTION[role]}\" section; your context is build-sn/try/{name}/CONTEXT.md and "
-            f"your budget is {budget} try_func runs.")
+            f"your budget is {budget} try_func runs. Work alone: never use the Agent, "
+            f"WebSearch or WebFetch tools.")
 
 
 def load(name: str) -> dict:
