@@ -238,8 +238,10 @@ comments are overwritten safely.
   on the same game; some real names and struct layouts in `src/` comments
   (e.g. `src/game/draw.c`, `src/game/vuchain.c`) are corroborated against it
 - [RatchetModding/rac-modding-resources](https://github.com/RatchetModding/rac-modding-resources)
-- [Wrench](https://github.com/chaoticgd/wrench): Ratchet & Clank PS2 asset
-  tooling, useful for cross-referencing structures
+- [Wrench](https://github.com/chaoticgd/wrench): Ratchet & Clank PS2 modding
+  tools. Most of the level extractor's format knowledge comes from its
+  source; `tools/extract/README.md` credits it and the other projects the
+  extractor drew on
 
 ## License
 

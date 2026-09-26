@@ -175,3 +175,20 @@ the formats and the evidence for them.
 
 The decoders accept only the layouts found on this disc and raise
 `FormatError` on anything else. Nothing is skipped silently.
+
+## Credits
+
+- **[Wrench](https://github.com/chaoticgd/wrench)** by chaoticgd and
+  contributors (GPL-3.0-or-later). Most of what the extractor knows about
+  terrain, ties, shrubs, the sky, textures and placements comes from
+  reading its source. [docs/ASSETS.md](../../docs/ASSETS.md#sources-and-credits)
+  lists which files each format came from.
+- **[Replanetizer](https://github.com/RatchetModding/Replanetizer)** by
+  RatchetModding contributors, consulted for what fields mean.
+- **[OpenGOAL's jak-project](https://github.com/open-goal/jak-project)**,
+  whose extractor was the model for extracting from your own disc.
+- **[Godot Engine](https://godotengine.org)** and the Khronos Group's
+  **[glTF 2.0](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html)**,
+  which the output is built for.
+
+No code from these projects is included; the extractor is newly written.

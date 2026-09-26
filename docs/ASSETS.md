@@ -5,22 +5,49 @@ about the data on the PAL disc (`SCES_509.16` v2.00), and the evidence for
 each piece. This file describes formats and measured metadata only; it
 contains no game data.
 
-## Sources
+## Sources and credits
 
 - **The executable.** The functions named below are in our decompiled C or
   generated assembly, and they are the ground truth for everything the
   game reads directly.
-- **Wrench** by chaoticgd and contributors
-  ([github.com/chaoticgd/wrench](https://github.com/chaoticgd/wrench),
-  revision `1b48f4d`, GPL-3.0-or-later). Field meanings for geometry,
-  textures and the sky come from its source. The tables below say where a
-  layout rests on Wrench alone.
-- **Replanetizer** (RatchetModding, GPL-3.0-or-later). It reads the PS3 HD
-  collection's files, whose layouts differ from the PS2 disc, so it was
-  used for meaning only.
+- **[Wrench](https://github.com/chaoticgd/wrench)** by chaoticgd and
+  contributors (GPL-3.0-or-later). Most of the extractor's format knowledge
+  comes from reading its source at revision `1b48f4d`. Without it, each
+  of these layouts would have had to be worked out from the game's code
+  and VU microcode. The table below lists what came from where, and the
+  sections further down say where a layout rests on Wrench alone.
+- **[Replanetizer](https://github.com/RatchetModding/Replanetizer)** by
+  RatchetModding contributors (GPL-3.0-or-later). It reads the PS3 HD
+  collection's files, whose layouts differ from the PS2 disc. The earlier
+  prototype consulted it for what fields mean; none of its layouts are
+  used.
+- **[OpenGOAL's jak-project](https://github.com/open-goal/jak-project)**.
+  Its extractor was the model for this one: extract from the user's own
+  disc, check the version first, and keep the output out of the
+  repository.
+- **[Godot Engine](https://godotengine.org)** (MIT). The sky panorama
+  follows the mapping in Godot's sky shader
+  (`servers/rendering/renderer_rd/shaders/environment/sky.glsl`). Class
+  meshes share textures because Godot's glTF importer resolves image URIs
+  to imported textures.
+- **[glTF 2.0](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html)**
+  by the Khronos Group, the format of the extracted meshes.
 
-The extractor is newly written Python; no code from either project is
-used.
+The extractor contains no code from these projects; it is newly written
+Python based on the format knowledge above.
+
+| Format | Wrench source |
+|---|---|
+| Table of contents groups, level audio and scene references | [`table_of_contents.h`](https://github.com/chaoticgd/wrench/blob/1b48f4d1ed02de9e05b57802ab518f9ec39c23df/src/iso/table_of_contents.h) |
+| Level data header section names | [`level_data_wad.cpp`](https://github.com/chaoticgd/wrench/blob/1b48f4d1ed02de9e05b57802ab518f9ec39c23df/src/wrenchbuild/level/level_data_wad.cpp) |
+| Core index fields and block boundaries | [`level_core.h`](https://github.com/chaoticgd/wrench/blob/1b48f4d1ed02de9e05b57802ab518f9ec39c23df/src/wrenchbuild/level/level_core.h), [`level_core.cpp`](https://github.com/chaoticgd/wrench/blob/1b48f4d1ed02de9e05b57802ab518f9ec39c23df/src/wrenchbuild/level/level_core.cpp) |
+| WAD compression (checked against; the PAL code is the reference) | [`compression.cpp`](https://github.com/chaoticgd/wrench/blob/1b48f4d1ed02de9e05b57802ab518f9ec39c23df/src/engine/compression.cpp) |
+| Texture tables, palette swizzle and alpha | [`level_textures.cpp`](https://github.com/chaoticgd/wrench/blob/1b48f4d1ed02de9e05b57802ab518f9ec39c23df/src/wrenchbuild/level/level_textures.cpp), [`texture.cpp`](https://github.com/chaoticgd/wrench/blob/1b48f4d1ed02de9e05b57802ab518f9ec39c23df/src/core/texture.cpp), [`textures.md`](https://github.com/chaoticgd/wrench/blob/1b48f4d1ed02de9e05b57802ab518f9ec39c23df/docs/textures.md) |
+| Terrain (tfrags) | [`tfrag_low.h`](https://github.com/chaoticgd/wrench/blob/1b48f4d1ed02de9e05b57802ab518f9ec39c23df/src/engine/tfrag_low.h), [`tfrag_low.cpp`](https://github.com/chaoticgd/wrench/blob/1b48f4d1ed02de9e05b57802ab518f9ec39c23df/src/engine/tfrag_low.cpp), [`tfrag_high.cpp`](https://github.com/chaoticgd/wrench/blob/1b48f4d1ed02de9e05b57802ab518f9ec39c23df/src/engine/tfrag_high.cpp) |
+| Ties | [`tie.h`](https://github.com/chaoticgd/wrench/blob/1b48f4d1ed02de9e05b57802ab518f9ec39c23df/src/engine/tie.h), [`tie.cpp`](https://github.com/chaoticgd/wrench/blob/1b48f4d1ed02de9e05b57802ab518f9ec39c23df/src/engine/tie.cpp) |
+| Shrubs, and their winding fix | [`shrub.h`](https://github.com/chaoticgd/wrench/blob/1b48f4d1ed02de9e05b57802ab518f9ec39c23df/src/engine/shrub.h), [`shrub.cpp`](https://github.com/chaoticgd/wrench/blob/1b48f4d1ed02de9e05b57802ab518f9ec39c23df/src/engine/shrub.cpp), [`gltf.cpp`](https://github.com/chaoticgd/wrench/blob/1b48f4d1ed02de9e05b57802ab518f9ec39c23df/src/core/gltf.cpp) |
+| Sky | [`sky.h`](https://github.com/chaoticgd/wrench/blob/1b48f4d1ed02de9e05b57802ab518f9ec39c23df/src/engine/sky.h), [`sky.cpp`](https://github.com/chaoticgd/wrench/blob/1b48f4d1ed02de9e05b57802ab518f9ec39c23df/src/engine/sky.cpp) |
+| Tie and shrub instances, gameplay block offsets | [`gameplay_impl_classes.inl`](https://github.com/chaoticgd/wrench/blob/1b48f4d1ed02de9e05b57802ab518f9ec39c23df/src/instancemgr/gameplay_impl_classes.inl), [`gameplay.cpp`](https://github.com/chaoticgd/wrench/blob/1b48f4d1ed02de9e05b57802ab518f9ec39c23df/src/instancemgr/gameplay.cpp) |
 
 How the decoders were checked:
 
