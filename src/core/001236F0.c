@@ -962,12 +962,20 @@ extern int func_00124920(int);
  * are reachable separately here but not together.
  */
 
+/* scePad2LinkDriver(port): opens the link driver for `port` and, on
+   success, records the handle in its table entry. The failure path needs
+   its own early return: with one shared `return t` the compiler moves the
+   result copy to the end of the function. */
+
+extern int func_00124920(int);
+
 int func_00125020(int arg0) {
     int t = func_00124920(arg0);
-    if (t >= 0) {
-        D_0015B640[arg0].unk_04 = 1;
-        D_0015B640[arg0].unk_08 = t;
+    if (t < 0) {
+        return t;
     }
+    D_0015B640[arg0].unk_08 = t;
+    D_0015B640[arg0].unk_04 = 1;
     return t;
 }
 
