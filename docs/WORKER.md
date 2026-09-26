@@ -6,7 +6,8 @@ function's name, your role and your budget. Everything else is here, in
 
 ## Rules for every role
 
-- Do the work yourself. Don't start sub-agents or install software.
+- Do the work yourself. Don't start sub-agents, search the web or install
+  software.
 - Plain C only, as upstream requires
   ([LLM_DECOMP_INSTRUCTIONS.md](LLM_DECOMP_INSTRUCTIONS.md)): no register
   pins, no inline assembly inside a function, no artificial barriers
@@ -17,6 +18,9 @@ function's name, your role and your budget. Everything else is here, in
   `config/`, `tools/` or `docs/`, never run the full build, never commit.
 - Every `try_func` run counts against your budget, `--diff` reruns
   included. It prints `run k of N` and refuses once the budget is spent.
+- Compile only through `try_func`: no direct compiler runs, RTL dumps or
+  harnesses of your own. In wave 2 every match came within 6 runs, while
+  the workers who dumped RTL cost twice as much and matched nothing.
 - Finish by writing two files in `build-sn/try/<func>/`:
   - `RESULT.md`, exactly two lines: the verdict (`EXACT`, `BYTES n/size`,
     `SIZE ours X / retail Y` or `COMPILE`), then the best candidate's path.
@@ -42,7 +46,9 @@ function's name, your role and your budget. Everything else is here, in
 5. Test with
    `bash tools/docker/run.sh python tools/try_func.py <func> build-sn/try/<func>/pN.c`,
    adding `--diff` to see which instructions differ.
-6. Stop at `EXACT` or when the budget runs out.
+6. Stop at `EXACT`, when the budget runs out, or when three variants in a
+   row compile to the same bytes: that is an allocator or scheduler tie
+   that rewording won't move. Note where it is and stop.
 
 ## First compile
 
