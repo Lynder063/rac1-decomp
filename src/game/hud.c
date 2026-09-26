@@ -426,7 +426,76 @@ void func_001FFFA0(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FFFB8);
+/* D_00199C60's 0x90-byte bank records, seen through their +0x18 update
+   callback. */
+typedef struct HudBankCb {
+    char pad00[0x18];
+    void (*update)(struct HudBankCb *);
+    char pad1C[0x74];
+} HudBankCb;
+
+extern char D_0019A4E8_raw[] __asm__("D_0019A4E8");
+extern HudBankCb D_00199C60_cb[] __asm__("D_00199C60") NOT_SDA;
+extern int D_0015F544 MACRO_ADDR;
+extern int D_0015F6E8 MACRO_ADDR;
+extern int D_0015F760 MACRO_ADDR;
+extern int D_0015F764 MACRO_ADDR;
+extern int D_0015F768 MACRO_ADDR;
+extern char D_001994D8[];
+extern unsigned char D_00199528[];
+extern int func_001F98C0(int);
+extern void func_00201A38(int, int, int, int);
+
+/* Per-frame HUD update: unless the arena's +0x30 skip flag (cleared
+   here) or D_0015F544 is set, reset the arena's +0xC colour, run each
+   bank's +0x18 callback, then fade the D_0015F764 alpha (0..128) in
+   while the D_0015F760 timer runs, or out once it stops, and draw
+   the overlay text D_001994D8 (plus D_00199528 above 1000) with it. */
+void func_001FFFB8(void) {
+    char *arena = D_0019A4E8_raw;
+    int i;
+    HudBankCb *p;
+    int col;
+
+    if (*(int *)(arena + 0x30) != 0 || D_0015F544 != 0) {
+        *(int *)(arena + 0x30) = 0;
+        return;
+    }
+    *(int *)(arena + 0xC) = 0xFFFFF0;
+    p = D_00199C60_cb;
+    for (i = 0; i < 13; i++) {
+        if (p->update != 0) {
+            p->update(p);
+        }
+        p++;
+    }
+    if ((D_0015F760 != 0 || D_0015F764 != 0) && D_0015F6E8 == 0) {
+        if (D_0015F760 != 0) {
+            D_0015F764 += 128 / func_001F98C0(8);
+            if (D_0015F764 > 128) {
+                D_0015F764 = 128;
+            }
+        } else {
+            D_0015F764 -= 128 / func_001F98C0(8);
+            if (D_0015F764 < 0) {
+                D_0015F764 = 0;
+            }
+        }
+        col = (D_0015F764 << 24) + 0xF0F0F0;
+        func_00201A38(0x100, D_0015F768, col, (int)D_001994D8);
+        if (D_00199528[0] != 0 && D_0015F760 > 1000) {
+            func_00201A38(0x100, D_0015F768, col, (int)D_00199528);
+        }
+        if (D_0015F760 != 0) {
+            D_0015F760--;
+        }
+        if (D_0015F760 == 1000) {
+            D_0015F760 = 0;
+        }
+    } else {
+        D_0015F768 = 100;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00200190);
 
