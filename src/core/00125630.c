@@ -923,8 +923,47 @@ void func_001292E0(void *arg0) {
         func_0012C468(s, D_00153A10);
     }
 }
+typedef struct {
+    char pad_00[0x13C];
+    int  unk_13C;
+    char pad_140[0x150 - 0x140];
+    int  unk_150;
+    char pad_154[0x174 - 0x154];
+    int  unk_174;
+    int  unk_178;
+    char pad_17C[0x184 - 0x17C];
+    int  unk_184;
+    char pad_188[0x18C - 0x188];
+    int  f1[3];
+    int  f2[3];
+} State;
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001293A8);
+void func_001293A8(void *arg0) {
+    State *s = (State *)arg0;
+    int count;
+    int i;
+
+    if (s->unk_13C != 0) {
+        if (s->unk_184 == 0) {
+            count = 1;
+        } else {
+            count = s->unk_178 != 0 ? 3 : 2;
+        }
+    } else {
+        if (s->unk_174 != 3) {
+            count = 1;
+        } else {
+            count = s->unk_184 != 0 ? 3 : 2;
+        }
+    }
+
+    for (i = 0; i < count; i++) {
+        s->f1[i] = func_00128A58(s, 0x10);
+        func_00128A58(s, 1);
+        s->f2[i] = func_00128A58(s, 0x10);
+        func_00128A58(s, 1);
+    }
+}
 
 extern int func_00128A58(void *, int);
 
