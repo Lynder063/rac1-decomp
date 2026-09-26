@@ -8,7 +8,7 @@ import tempfile
 import unittest
 
 from gltf import Gltf
-from godot import GAME_TO_GODOT, Scene, number, transform, write_project
+from godot import GAME_TO_GODOT, Raw, Scene, number, transform, write_project
 from mesh import Mesh
 
 
@@ -53,21 +53,6 @@ class GltfTests(unittest.TestCase):
         self.assertEqual(doc["accessors"][primitive["attributes"]["POSITION"]]["max"], [1, 1, 0])
         self.assertEqual(doc["scenes"][0]["nodes"], [0])
 
-    def test_unlit_colours_and_untextured_materials(self):
-        mesh = triangle()
-        mesh.colours = [(1, 1, 1, 1), (1, 1, 1, 0.5), (1, 1, 1, 0)]
-        mesh.faces = {None: mesh.faces[("tie", 3)]}
-        gltf = Gltf()
-        material = gltf.material("sky_colour", None, unlit=True, colour=(0.5, 0.25, 0, 1))
-        gltf.node("Sky_0", gltf.mesh(mesh, {None: material}, normals=False))
-        doc, binary = read_glb(gltf.glb())
-        self.assertNotIn("images", doc)
-        self.assertEqual(doc["extensionsUsed"], ["KHR_materials_unlit"])
-        self.assertEqual(doc["materials"][0]["alphaMode"], "BLEND")
-        attributes = doc["meshes"][0]["primitives"][0]["attributes"]
-        self.assertNotIn("NORMAL", attributes)
-        self.assertEqual([c[3] for c in attribute(doc, binary, attributes["COLOR_0"])], [1, 0.5, 0])
-
     def test_materials_are_shared(self):
         gltf = Gltf()
         self.assertEqual(gltf.material("a", "a.png"), gltf.material("a", "a.png"))
@@ -89,16 +74,26 @@ class SceneTests(unittest.TestCase):
 
     def test_scene_text(self):
         scene = Scene()
-        scene.resource("PackedScene", "res://a.glb", "a")
+        glb = scene.resource("PackedScene", "res://a.glb", "a")
+        colour = scene.subresource("Environment", "environment", background_mode=2,
+                                   ambient_light_color=Raw("Color(1, 1, 1, 1)"))
         scene.node("Root", kind="Node3D")
-        scene.node("A", ".", instance="a", transform=transform(GAME_TO_GODOT),
+        scene.node("World", ".", "WorldEnvironment", environment=colour)
+        scene.node("A", ".", instance=glb, transform=transform(GAME_TO_GODOT),
                    visible=False, metadata__rc1_colour=[1, 2, 3], metadata__rc1_draw_distance=2.5)
         scene.editable.append("A")
         self.assertEqual(scene.text(), """[gd_scene format=3]
 
 [ext_resource type="PackedScene" path="res://a.glb" id="a"]
 
+[sub_resource type="Environment" id="environment"]
+background_mode = 2
+ambient_light_color = Color(1, 1, 1, 1)
+
 [node name="Root" type="Node3D"]
+
+[node name="World" type="WorldEnvironment" parent="."]
+environment = SubResource("environment")
 
 [node name="A" parent="." instance=ExtResource("a")]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, 0)

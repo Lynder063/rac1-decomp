@@ -131,6 +131,14 @@ def png_chunk(kind: bytes, payload: bytes) -> bytes:
             + struct.pack(">I", zlib.crc32(kind + payload)))
 
 
+def png(width: int, height: int, kind: int, pixels: bytes, *chunks: bytes) -> bytes:
+    """An 8-bit PNG (kind 2: RGB, 3: indexed) of unfiltered rows; chunks go before the data."""
+    stride = len(pixels) // height
+    rows = b"".join(b"\0" + pixels[y * stride:(y + 1) * stride] for y in range(height))
+    return (b"\x89PNG\r\n\x1a\n" + png_chunk(b"IHDR", struct.pack(">2I5B", width, height, 8, kind, 0, 0, 0))
+            + b"".join(chunks) + png_chunk(b"IDAT", zlib.compress(rows, 9)) + png_chunk(b"IEND", b""))
+
+
 @dataclass(frozen=True)
 class Texture:
     """An 8-bit indexed texture with a 256-entry RGBA32 palette (PSMT8, CSM1).
@@ -166,11 +174,6 @@ class Texture:
 
     def png(self) -> bytes:
         """An indexed PNG with straight alpha in tRNS."""
-        rgb = b"".join(bytes(c[:3]) for c in self.colours)
-        alpha = bytes(c[3] for c in self.colours)
-        w = self.width
-        rows = b"".join(b"\0" + self.pixels[y * w:(y + 1) * w] for y in range(self.height))
-        return (b"\x89PNG\r\n\x1a\n"
-                + png_chunk(b"IHDR", struct.pack(">2I5B", w, self.height, 8, 3, 0, 0, 0))
-                + png_chunk(b"PLTE", rgb) + png_chunk(b"tRNS", alpha)
-                + png_chunk(b"IDAT", zlib.compress(rows, 9)) + png_chunk(b"IEND", b""))
+        return png(self.width, self.height, 3, self.pixels,
+                   png_chunk(b"PLTE", b"".join(bytes(c[:3]) for c in self.colours)),
+                   png_chunk(b"tRNS", bytes(c[3] for c in self.colours)))

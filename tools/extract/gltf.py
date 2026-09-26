@@ -50,28 +50,22 @@ class Gltf:
         self.doc["accessors"].append(accessor)
         return len(self.doc["accessors"]) - 1
 
-    def material(self, name: str, uri: str | None, *, cutout: bool = False, unlit: bool = False,
-                 colour: tuple = (1, 1, 1, 1)) -> int:
-        """A double-sided diffuse material; cutout uses glTF MASK, unlit blends."""
-        key = (name, uri, cutout, unlit, colour)
+    def material(self, name: str, uri: str, *, cutout: bool = False) -> int:
+        """A double-sided diffuse material; cutout uses glTF's MASK mode."""
+        key = (name, uri, cutout)
         if key not in self.materials:
-            pbr = {"baseColorFactor": list(colour), "metallicFactor": 0, "roughnessFactor": 1}
-            if uri is not None:
-                self.doc["images"].append({"uri": uri})
-                self.doc["textures"].append({"source": len(self.doc["images"]) - 1, "sampler": 0})
-                pbr["baseColorTexture"] = {"index": len(self.doc["textures"]) - 1}
+            self.doc["images"].append({"uri": uri})
+            self.doc["textures"].append({"source": len(self.doc["images"]) - 1, "sampler": 0})
+            pbr = {"baseColorTexture": {"index": len(self.doc["textures"]) - 1},
+                   "metallicFactor": 0, "roughnessFactor": 1}
             material = {"name": name, "doubleSided": True, "pbrMetallicRoughness": pbr}
             if cutout:
                 material.update(alphaMode="MASK", alphaCutoff=0.5)
-            if unlit:
-                material.update(alphaMode="BLEND", extensions={"KHR_materials_unlit": {}})
-                if "KHR_materials_unlit" not in self.doc.setdefault("extensionsUsed", []):
-                    self.doc["extensionsUsed"].append("KHR_materials_unlit")
             self.doc["materials"].append(material)
             self.materials[key] = len(self.doc["materials"]) - 1
         return self.materials[key]
 
-    def mesh(self, mesh: Mesh, materials: dict, normals: bool = True) -> int:
+    def mesh(self, mesh: Mesh, materials: dict) -> int:
         """One primitive per texture, unindexed so each face keeps a flat normal.
 
         materials maps each of the mesh's texture keys to a material index.
@@ -79,23 +73,17 @@ class Gltf:
         primitives = []
         for key, faces in mesh.faces.items():
             corners = [v for face in faces for v in face]
+            flat = [face_normal(*(mesh.positions[v] for v in face)) for face in faces]
             attributes = {"POSITION": self.floats([mesh.positions[v] for v in corners], bounds=True),
+                          "NORMAL": self.floats([n for n in flat for _ in range(3)]),
                           "TEXCOORD_0": self.floats([mesh.uvs[v] for v in corners])}
-            if normals:
-                flat = [face_normal(*(mesh.positions[v] for v in face)) for face in faces]
-                attributes["NORMAL"] = self.floats([n for n in flat for _ in range(3)])
-            if mesh.colours is not None:
-                attributes["COLOR_0"] = self.floats([mesh.colours[v] for v in corners])
             primitives.append({"attributes": attributes, "material": materials[key], "mode": 4})
         self.doc["meshes"].append({"name": mesh.name, "primitives": primitives})
         return len(self.doc["meshes"]) - 1
 
-    def node(self, name: str, mesh: int, extras: dict | None = None) -> None:
-        node = {"name": name, "mesh": mesh}
-        if extras:
-            node["extras"] = extras
+    def node(self, name: str, mesh: int) -> None:
         self.doc["scenes"][0]["nodes"].append(len(self.doc["nodes"]))
-        self.doc["nodes"].append(node)
+        self.doc["nodes"].append({"name": name, "mesh": mesh})
 
     def glb(self) -> bytes:
         self.buffer.extend(bytes(-len(self.buffer) % 4))
