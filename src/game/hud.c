@@ -482,7 +482,49 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002008B8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00200A90);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00200CA0);
+extern int *D_00161000 MACRO_ADDR;
+extern int D_0013E600[];
+
+/* Appends a 1-tag + 5-quadword PACKED GIF packet to D_00161000: a GIFtag
+   (0x10000005 / 0 / 0 / 0x50000005), fixed GS register data, arg0
+   verbatim, a colour of 0x7F7F7F with alpha arg9, then a UV/XYZ pair
+   per corner: UV (arg7, arg8) and (arg7 + (1 << (arg3 + 4)),
+   arg8 + (1 << (arg4 + 4))); XY (arg1, arg2) and (arg1 + arg5,
+   arg2 + arg6), offset by D_0013E600[4]/[5] - 8, with Z from the HUD
+   arena's +0xC word. The payload is written through the advanced
+   D_00161000 (retail stores relative to it), and the arena is reached
+   through a local pointer so its address is built in a register. */
+void func_00200CA0(long arg0, int arg1, int arg2, int arg3, int arg4,
+                    int arg5, int arg6, int arg7, int arg8, int arg9) {
+    int *base;
+    long *p;
+    char *arena = D_0019A4E8_raw;
+
+    D_00161000[0] = 0x10000005;
+    D_00161000[1] = 0;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000005;
+
+    base = D_00161000;
+    D_00161000 = base + 4;
+    p = (long *)D_00161000;
+    p[0] = 0x7400000000008001L;
+    p[1] = 0x5353106;
+    p[2] = arg0;
+    p[3] = 0x156;
+    p[4] = ((long)arg9 << 24) | 0x7F7F7F;
+    p[5] = arg7 | ((long)arg8 << 16);
+    p[6] = (arg1 + D_0013E600[4] - 8)
+         | ((long)(arg2 + D_0013E600[5] - 8) << 16)
+         | ((long)*(int *)(arena + 0xC) << 32);
+    p[7] = (arg7 + (1 << (arg3 + 4)))
+         | ((long)(arg8 + (1 << (arg4 + 4))) << 16);
+    p[8] = (arg1 + arg5 + D_0013E600[4] - 8)
+         | ((long)(arg2 + arg6 + D_0013E600[5] - 8) << 16)
+         | ((long)*(int *)(arena + 0xC) << 32);
+    p[9] = 0;
+    D_00161000 = (int *)((char *)D_00161000 + 0x50);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00200E38);
 
