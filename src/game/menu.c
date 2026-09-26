@@ -740,7 +740,57 @@ void func_00208688(void *dst, unsigned char *src) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00208858);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00208860);
+/* Bit counts of the 16 nibbles. */
+typedef struct {
+    int n[16];
+} NibbleBits;
+
+extern NibbleBits D_001E83B0;
+extern unsigned char *D_001A01FC;
+
+
+/* Condenses D_001A01FC's 0x200 rows of 64 bytes (two 4-bit samples
+   each) into a 1-bit image at arg0: every four rows the per-column
+   bit counts (D_001E83B0 is the nibble popcount table, copied onto the
+   stack) are summed, and a column with 8 or more set bits becomes a
+   set bit, packed eight columns to a byte. The first byte is then
+   flagged with 0x02 and bit 0 cleared. */
+void func_00208860(void *arg0) {
+    unsigned char *dst = arg0;
+    int acc[128];
+    NibbleBits bits;
+    unsigned char *src;
+    unsigned char *out;
+    int i, j, k, m;
+
+    bits = D_001E83B0;
+    src = D_001A01FC;
+    out = dst;
+    for (i = 0; i < 0x200; i++) {
+        if ((i & 3) == 0) {
+            func_001F99B0(acc, 0, 0x200);
+        }
+        for (j = 0; j < 128; j += 2) {
+            unsigned int b = *src++;
+            acc[j] += bits.n[b & 0xF];
+            acc[j + 1] += bits.n[b >> 4];
+        }
+        if (i % 4 == 3) {
+            for (k = 0; k < 128; k++) {
+                if (acc[k] < 8) {
+                    acc[k] = 0;
+                } else {
+                    acc[k] = 1 << (k % 8);
+                }
+            }
+            for (m = 0; m < 128; m += 8) {
+                *out++ = acc[m] | acc[m + 1] | acc[m + 2] | acc[m + 3]
+                       | acc[m + 4] | acc[m + 5] | acc[m + 6] | acc[m + 7];
+            }
+        }
+    }
+    dst[0] = (dst[0] & 0xFE) | 2;
+}
 
 extern void *func_001FE540_id(int) __asm__("func_001FE540");
 extern char D_0015FE60[]; /* "%d" */
