@@ -50,6 +50,9 @@ cat >> build-sn/rac1.ld <<'EOF'
   __moddi3 = func_0011E860;
   __udivdi3 = func_0011EF28;
   __umoddi3 = func_0011F4F8;
+  /* The compiler clears large aggregate initializers with a memset
+     libcall (func_00222B98); newlib's memset lives at this address. */
+  memset = func_001153FC;
   /* dp-bit.o / fp-bit.o carry Sony's GOFAST names, which is also what the
      compilers call. */
   func_0011FA38 = __pack_d;
