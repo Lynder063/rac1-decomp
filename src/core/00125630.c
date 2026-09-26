@@ -881,7 +881,55 @@ void func_00128DA0(void *arg0) {
     func_001291C8(s, temporal_reference);  /* Update_Temporal_Reference_Tacking_Data */
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00128E68);
+extern void func_0012CC40(void *);
+extern void func_0012CA70(void *);
+extern void func_0012CBA0(void *);
+extern void func_001292E0(void *);
+extern void func_001294A0(void *);
+extern void func_0012CC30(void *);
+extern void func_001293A8(void *);
+extern void func_00128F90(void *);
+extern void func_0012CC50(void *);
+extern void func_0012CC60(void *);
+
+extern void func_00128BA8(void *);
+extern int func_00128860(void *, int);
+extern void func_00128968(void *, int);
+extern int func_00128A58(void *, int);
+
+/* _extensionAndUserData (libmpeg.a:mpc.o): extension_and_user_data */
+void func_00128E68(void *arg0) {
+    char *s = (char *)arg0;
+    void (*funcs[])(void *) = {
+        func_0012CC40,
+        func_0012CA70,
+        func_0012CBA0,
+        func_001292E0,
+        func_001294A0,
+        func_0012CC30,
+        func_0012CC40,
+        func_001293A8,
+        func_00128F90,
+        func_0012CC50,
+        func_0012CC60,
+    };
+    int code;
+    unsigned int ext_id;
+
+    func_00128BA8(s);
+    while ((code = func_00128860(s, 32)) == 0x1B5 || code == 0x1B2) {
+        if (code == 0x1B5) {
+            func_00128968(s, 32);
+            ext_id = func_00128A58(s, 4);
+            ext_id = ext_id <= 10 ? ext_id : 0;
+            funcs[ext_id](s);
+            func_00128BA8(s);
+        } else {
+            func_00128968(s, 32);
+            func_00128BA8(s);
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00128F90);
 
