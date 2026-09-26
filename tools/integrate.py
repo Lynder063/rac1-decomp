@@ -14,8 +14,20 @@ full build afterwards (tools/build_sn.sh): it is the real check.
 
 Runs where try_func does (inside tools/docker/run.sh on a Mac).
 """
+import re
 import subprocess
 import sys
+
+# Upstream bans these (docs/LLM_DECOMP_INSTRUCTIONS.md): only file-scope
+# aliases and padding directives may use __asm__.
+BANNED = [(re.compile(r"\bregister\b[^;{]*__asm__\s*\("), "register pin"),
+          (re.compile(r'__asm__\s*(?:volatile\s*|__volatile__\s*)?\(\s*""'), "empty-asm barrier"),
+          (re.compile(r"\bwhile\s*\(\s*0\s*\)"), "do/while (0) barrier")]
+
+
+def banned(path: str) -> str:
+    text = re.sub(r"/\*.*?\*/", "", open(path).read(), flags=re.S)
+    return ", ".join(reason for pattern, reason in BANNED if pattern.search(text))
 
 
 def main() -> None:
@@ -34,6 +46,10 @@ def main() -> None:
 
     exact = []
     for name, cand in rows:
+        reason = banned(cand)
+        if reason:
+            print(f"{name:14s} {'REFUSED':22s} {cand} ({reason})")
+            continue
         r = subprocess.run([sys.executable, "tools/try_func.py", name, cand, "--no-budget"],
                            capture_output=True, text=True)
         verdict = (r.stdout.strip().splitlines() or ["COMPILE failed"])[-1]
