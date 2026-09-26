@@ -136,7 +136,9 @@ Whether you're interested in matching functions, analyzing PS2 disassembly, rese
 
 The full procedure is in [`docs/WORKFLOW.md`](docs/WORKFLOW.md). In short:
 
-1. Pick a function. `python tools/rank_candidates.py` lists promising ones.
+1. Pick a function. `python tools/rank_candidates.py` lists promising ones;
+   `python tools/triage.py` sorts everything not yet exact into work queues
+   (one-function tasks, per-file batches, and blocked).
    Before decompiling, check whether the function is library code with a
    real source.
 2. Get a starting point with `python tools/m2c.py func_XXXXXXXX`. That runs
