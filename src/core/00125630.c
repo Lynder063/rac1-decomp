@@ -811,7 +811,40 @@ void func_00129180(void *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001291C8);
+/* updateTempTackData (libmpeg.a:mpc.o): Update_Temporal_Reference_Tracking_Data
+ * Updates bitstream frame numbers based on picture_coding_type (+0x150),
+ * Temporal_Reference_Base (+0x84C), and GOP reset state (+0x854).
+ */
+void func_001291C8(void *arg0, int arg1) {
+    char *s = (char *)arg0;
+    int flag = 0;
+    int x = 0;
+    int max;
+
+    if (*(int *)(s + 0x150) != 3) {
+        if (arg1 != 0) {
+            if (arg1 < 0) {
+                flag = *(int *)(s + 0x854) == 0;
+            }
+            *(int *)(s + 0x854) = 0;
+            x = arg1;
+        }
+    }
+
+    *(int *)(s + 0x1AC) = *(int *)(s + 0x84C) + arg1;
+
+    if (flag) {
+        if (x >= arg1) {
+            *(int *)(s + 0x1AC) += 0x400;
+        }
+    }
+
+    max = *(int *)(s + 0x850);
+    if (max < *(int *)(s + 0x1AC)) {
+        max = *(int *)(s + 0x1AC);
+    }
+    *(int *)(s + 0x850) = max;
+}
 
 extern int func_00128A58(void *, int);
 extern void func_00128E68(void *);
