@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 27.77357939663538,
+  "fuzzy_match_percent": 27.830257542057762,
   "total_code": "465788",
-  "matched_code": "127016",
-  "matched_code_percent": 27.269058026398277,
+  "matched_code": "127280",
+  "matched_code_percent": 27.325736171820658,
   "total_functions": 1658,
-  "matched_functions": 916,
-  "matched_functions_percent": 55.24728588661037,
+  "matched_functions": 917,
+  "matched_functions_percent": 55.30759951749096,
   "complete_code": "15084",
   "complete_code_percent": 3.2383831270878596,
   "total_units": 121,
@@ -5085,13 +5085,13 @@
   {
    "name": "core/00125630",
    "measures": {
-    "fuzzy_match_percent": 28.427128427128427,
+    "fuzzy_match_percent": 29.7876726448155,
     "total_code": "19404",
-    "matched_code": "5516",
-    "matched_code_percent": 28.427128427128427,
+    "matched_code": "5780",
+    "matched_code_percent": 29.7876726448155,
     "total_functions": 64,
-    "matched_functions": 29,
-    "matched_functions_percent": 45.3125,
+    "matched_functions": 30,
+    "matched_functions_percent": 46.875,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -5335,7 +5335,7 @@
     {
      "name": "func_00127858",
      "size": "264",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "8744",
      "metadata": {
       "virtual_address": "1210456"
@@ -17967,13 +17967,13 @@
    "id": "game",
    "name": "Game",
    "measures": {
-    "fuzzy_match_percent": 27.116999227148177,
+    "fuzzy_match_percent": 27.174963113890254,
     "total_code": "455456",
-    "matched_code": "121156",
-    "matched_code_percent": 26.60103281107286,
+    "matched_code": "121420",
+    "matched_code_percent": 26.65899669781494,
     "total_functions": 1624,
-    "matched_functions": 885,
-    "matched_functions_percent": 54.495073891625616,
+    "matched_functions": 886,
+    "matched_functions_percent": 54.556650246305416,
     "complete_code": "9224",
     "complete_code_percent": 2.025223073139886
    }

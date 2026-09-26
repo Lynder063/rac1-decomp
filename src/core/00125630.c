@@ -275,7 +275,48 @@ int func_00127748(void *arg0) {
     return val;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00127858);
+extern char D_001538E0[];
+extern int func_00127A90(void *, int);
+extern void func_00128590(void *);
+extern int func_001273A0(void *);
+extern int func_001263A8(void *, int);
+extern void func_0012C468(void *, void *);
+
+int func_00127858(void *arg0) {
+    char *s = (char *)arg0;
+    int count;
+    int ret;
+
+    *(int *)(s + 0x810) = 0;
+    *(int *)(s + 0x814) = 0;
+
+    count = *(int *)(s + 0x12C) * *(int *)(s + 0x130);
+    if (*(int *)(s + 0x174) != 3) {
+        count >>= 1;
+    }
+
+    do {
+        ret = func_00127A90(s, count);
+    } while (ret == 1 || ret == 3);
+
+    func_00128590(s);
+    if (func_001273A0(s) == 0) {
+        ret = 2;
+    }
+
+    while (((*(volatile unsigned int *)0x1000D400 >> 8) & 1) != 0)
+        ;
+
+    if (ret == 0) {
+        func_001263A8(s, (unsigned int)*(int *)(s + 0x810) < 1);
+    }
+
+    if ((unsigned int)(ret - 1) < 2) {
+        func_0012C468(s, D_001538E0);
+    }
+
+    return (unsigned int)ret < 1;
+}
 
 extern void func_00128BA8(void *);
 extern int func_00128860(void *, int);
