@@ -7,6 +7,7 @@ Each level is a scene, levels/level_NN/level_NN.tscn:
         Terrain           terrain.glb, one node per fragment (editable children)
         Ties/Tie_NNNN     instances of ties/tie_<class>.glb
         Shrubs/Shrub_NNNN instances of shrubs/shrub_<class>.glb
+        Sky               sky.glb, hidden in the editor, follows the camera
 
 Placements are node transforms in game units; fields the game stores
 per instance are node metadata (rc1_*), so a packer can write them back.
@@ -22,6 +23,7 @@ from gltf import Gltf
 from level import Level
 from mesh import Mesh
 from shrubs import shrub_classes, shrub_instances
+from sky import sky
 from terrain import terrain
 from ties import tie_classes, tie_instances
 
@@ -130,7 +132,7 @@ class LevelWriter:
                       "mesh_instances": 0, "meshes": 0, "triangles": 0}
 
     def material(self, gltf: Gltf, key, depth: int, texture=None, **options) -> int:
-        name = f"{key[0]}_{key[1]:04}"
+        name = f"{key[0]}_{key[1]:04}" if key[0] != "sky" else f"sky_{key[1]:03}"
         texture = texture or self.level.texture(*key)
         self.textures[name] = texture
         return gltf.material(name, f"{'../' * depth}textures/{name}.png",
@@ -167,6 +169,9 @@ class LevelWriter:
         self.write_objects("tie", ties, tie_instances(level.gameplay, ties))
         shrubs = shrub_classes(level)
         self.write_objects("shrub", shrubs, shrub_instances(level.gameplay, shrubs))
+        sky_offset, = unpack("<I", level.index, 0x10)
+        if sky_offset:
+            self.write_sky(sky(level.block(sky_offset)))
         return self.finish()
 
     def write_terrain(self, fragments: list[Mesh], lod: int) -> None:
@@ -196,6 +201,24 @@ class LevelWriter:
         self.stats["meshes"] += len({p["class_id"] for p in placements})
         self.stats[f"{family}s"] = {"classes": len(classes), "instances": len(placements),
                                     "class_triangles": sum(m.triangles for m in classes.values())}
+
+    def write_sky(self, data) -> None:
+        """Unlit, alpha-blended shells; untextured faces take the sky colour."""
+        gltf = Gltf()
+        background = tuple(round(c / 255, 4) for c in data.background[:3]) + (1.0,)
+        for mesh in data.shells:
+            materials = {}
+            for key in mesh.faces:
+                if key is None:
+                    materials[key] = gltf.material("sky_colour", None, unlit=True, colour=background)
+                else:
+                    materials[key] = self.material(gltf, key, 0, data.textures[key[1]], unlit=True)
+            gltf.node(mesh.name, gltf.mesh(mesh, materials, normals=False))
+        (self.dir / "sky.glb").write_bytes(gltf.glb())
+        self.scene.node("Sky", "Game", instance=self.scene.resource("PackedScene", f"{self.res}/sky.glb", "sky"),
+                        visible=False)
+        self.stats["sky"] = {"shells": len(data.shells), "triangles": sum(m.triangles for m in data.shells),
+                             "textures": len(data.textures)}
 
     def finish(self) -> dict:
         """Textures, the scene and level.json."""

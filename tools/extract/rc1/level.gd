@@ -2,10 +2,11 @@ extends Node3D
 ## An extracted level. Edit it as an ordinary scene; run it (F6) to fly around.
 ##
 ## Right mouse: look. WASD: move. Q/E: down/up. Shift: faster. Wheel: speed.
-## F: frame the terrain. Esc: release the mouse.
+## F: frame the terrain. K: toggle the sky. Esc: release the mouse.
 ## "-- --capture out.png" saves the first frame and quits.
 
 var camera: Camera3D
+var sky: Node3D
 var speed := 30.0
 var center := Vector3.ZERO
 var extent := 100.0
@@ -37,6 +38,15 @@ func _ready() -> void:
 	add_child(camera)
 	camera.make_current()
 	frame_terrain()
+	sky = get_node_or_null("Game/Sky")
+	if sky != null:
+		# The game draws the sky at infinity: push the shells out past the level.
+		var radius := 1.0
+		for node in sky.find_children("*", "MeshInstance3D", true, false):
+			radius = maxf(radius, (node as MeshInstance3D).get_aabb().get_longest_axis_size() * 0.5)
+		sky.scale = Vector3.ONE * (camera.far * 0.45 / radius)
+		sky.visible = true
+		sky.global_position = camera.global_position
 
 	var args := OS.get_cmdline_user_args()
 	var at := args.find("--capture")
@@ -79,6 +89,9 @@ func _unhandled_input(event: InputEvent) -> void:
 				Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 			KEY_F:
 				frame_terrain()
+			KEY_K:
+				if sky != null:
+					sky.visible = not sky.visible
 
 
 func _process(delta: float) -> void:
@@ -88,3 +101,5 @@ func _process(delta: float) -> void:
 		float(Input.is_physical_key_pressed(KEY_S)) - float(Input.is_physical_key_pressed(KEY_W)))
 	var boost := 4.0 if Input.is_physical_key_pressed(KEY_SHIFT) else 1.0
 	camera.position += camera.basis * direction.normalized() * speed * boost * delta
+	if sky != null:
+		sky.global_position = camera.global_position
