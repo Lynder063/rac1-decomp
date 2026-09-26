@@ -203,14 +203,13 @@ class LevelWriter:
                                     "class_triangles": sum(m.triangles for m in classes.values())}
 
     def write_sky(self, data) -> None:
-        """Unlit, alpha-blended shells; untextured faces take the sky colour."""
+        """Unlit, alpha-blended shells; untextured faces keep their vertex colours."""
         gltf = Gltf()
-        background = tuple(round(c / 255, 4) for c in data.background[:3]) + (1.0,)
         for mesh in data.shells:
             materials = {}
             for key in mesh.faces:
                 if key is None:
-                    materials[key] = gltf.material("sky_colour", None, unlit=True, colour=background)
+                    materials[key] = gltf.material("sky_colour", None, unlit=True)
                 else:
                     materials[key] = self.material(gltf, key, 0, data.textures[key[1]], unlit=True)
             gltf.node(mesh.name, gltf.mesh(mesh, materials, normals=False))
