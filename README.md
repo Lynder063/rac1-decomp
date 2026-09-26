@@ -3,6 +3,7 @@
 [![Progress report](https://github.com/Lynder063/rac1-decomp/actions/workflows/progress.yml/badge.svg)](https://github.com/Lynder063/rac1-decomp/actions/workflows/progress.yml)
 [![Code](https://decomp.dev/Lynder063/rac1-decomp.svg?mode=shield&label=Code&measure=matched_code_percent)](https://decomp.dev/Lynder063/rac1-decomp)
 [![Functions](https://decomp.dev/Lynder063/rac1-decomp.svg?mode=shield&label=Functions&measure=matched_functions)](https://decomp.dev/Lynder063/rac1-decomp)
+[![Discord](https://img.shields.io/badge/Discord-Join%20Community-5865F2?logo=discord&logoColor=white)](https://discord.gg/Sfd2B54PDG)
 
 A work-in-progress **matching decompilation** of *Ratchet & Clank* (Insomniac
 Games, 2002) for the PlayStation 2. The goal is C/C++ source that, built with
@@ -125,6 +126,12 @@ every function is at its retail address
 image matches retail outside the decompiled near-misses (834 bytes differ inside them)
 ```
 
+## Community
+
+Come hang out with us! Join the **[Ratchet & Clank Decompilation Discord](https://discord.gg/Sfd2B54PDG)**.
+
+Whether you're interested in matching functions, analyzing PS2 disassembly, researching engine quirks, or simply following along with the progress, everyone is warmly welcome!
+
 ## Contributing
 
 The full procedure is in [`docs/WORKFLOW.md`](docs/WORKFLOW.md). In short:
@@ -158,6 +165,8 @@ git clone https://github.com/simonlindholm/asm-differ tools/ext/asm-differ
 
 Known compiler behaviour, useful levers and measured dead ends are collected
 in [`docs/DECOMP_PROGRESS.md`](docs/DECOMP_PROGRESS.md).
+
+If you have questions, run into build issues, or want to collaborate with other contributors, feel free to drop by our [Discord](https://discord.gg/Sfd2B54PDG)!
 
 ## Ghidra — AI Decompilation Progress
 
@@ -223,6 +232,7 @@ comments are overwritten safely.
 
 ## Resources
 
+- [Discord](https://discord.gg/Sfd2B54PDG): community server for chat, collaboration and questions
 - [decomp.wiki](https://decomp.wiki): matching-decompilation knowledge base
 - [decomp.dev](https://decomp.dev): progress tracking
 - [splat](https://github.com/ethteck/splat),
