@@ -1690,7 +1690,66 @@ int func_002217C8(void *arg0) {
     return 8;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00221888);
+extern char D_001A01F0_c[] __asm__("D_001A01F0");
+extern char D_00151880_c[] __asm__("D_00151880");
+extern int D_0015F538 MACRO_ADDR;
+extern int D_001DE2E8[];
+extern void func_00200CA0(long, int, int, int, int, int, int, int, int, int);
+
+/* Draws the three overlay layers (textures at D_001A01F0 +0x258/0x260/
+   0x268) over the whole screen (D_00151880's +0x160/+0x162 extent).
+   States 6, 13 and 17 blink the upper two layers on D_0015F538; the
+   others inset them by D_001DE2E8[state] and scroll the bottom one.
+   Each branch reaches the two globals through its own block-scoped
+   pointers, which gives retail's registers. */
+int func_00221888(void) {
+    char *g = D_001A01F0_c;
+    int s = *(int *)(g + 0x228);
+    int k, d, u, t;
+
+    if (s < 0) {
+        return 0;
+    }
+    if (s == 6 || s == 13 || s == 17) {
+        char *g2;
+        char *fb;
+
+        func_00234C98_l(0x47, 0);
+        func_00234C98_l(8, 5);
+        g2 = D_001A01F0_c;
+        fb = D_00151880_c;
+        func_00200CA0(*(long *)(g2 + 0x258), 0, 0, 7, 7,
+                      *(short *)(fb + 0x160) << 4, *(short *)(fb + 0x162) << 4, 0, 0, 0x80);
+        func_00234C98_l(0x47, 0x360B);
+        if (D_0015F538 % 60 < 40) {
+            func_00200CA0(*(long *)(g2 + 0x260), 0, 0, 7, 7,
+                          *(short *)(fb + 0x160) << 4, *(short *)(fb + 0x162) << 4, 0, 0, 0x80);
+        }
+        if (D_0015F538 % 150 < 90) {
+            func_00200CA0(*(long *)(g2 + 0x268), 0, 0, 7, 7,
+                          *(short *)(fb + 0x160) << 4, *(short *)(fb + 0x162) << 4, 0, 0, 0x80);
+        }
+    } else {
+        char *fb;
+
+        t = D_0015F538 + s * 0x2AB;
+        k = D_001DE2E8[s];
+        d = k * 2;
+        u = t % 2048;
+        func_00234C98_l(0x47, 0);
+        func_00234C98_l(8, 0);
+        fb = D_00151880_c;
+        func_00200CA0(*(long *)(g + 0x258), k, k, 7, 7,
+                      (*(short *)(fb + 0x160) << 4) - d, (*(short *)(fb + 0x162) << 4) - d, u, 0, 0x80);
+        func_00234C98_l(0x47, 0x360B);
+        func_00234C98_l(8, 5);
+        func_00200CA0(*(long *)(g + 0x260), k, k, 7, 7,
+                      (*(short *)(fb + 0x160) << 4) - d, (*(short *)(fb + 0x162) << 4) - d, 0, 0, 0x80);
+        func_00200CA0(*(long *)(g + 0x268), k, k, 7, 7,
+                      (*(short *)(fb + 0x160) << 4) - d, (*(short *)(fb + 0x162) << 4) - d, 0, 0, 0x80);
+    }
+    return 4;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00221B58);
 
