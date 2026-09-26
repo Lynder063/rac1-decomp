@@ -2121,24 +2121,32 @@ int func_00222AD0(void *arg0) {
 extern int D_0015EFB0_m __asm__("D_0015EFB0") MACRO_ADDR;
 extern int D_0013CBE4;
 
+/* variation: separate "g" local per arm (shadowed), not shared across
+   the whole function, to see if that lets the allocator pick the
+   per-block register retail uses instead of one merged pseudo. */
+extern int D_0015EFB0_m __asm__("D_0015EFB0") MACRO_ADDR;
+extern int D_0013CBE4;
+extern char D_001D5F70[] NOT_SDA;
+
 int func_00222B00(void) {
-    int v;
-    char *g;
     if (D_0015EFB0_m != 0x10 && D_0015EFB0_m != 1) {
-        g = D_001D5F70;
-        *(int *)(g + 8) = *(int *)(*(char **)(g + 4) + 0x38);
+        char *g = D_001D5F70;
+        int val = *(int *)(*(char **)(g + 4) + 0x38);
+        *(int *)(g + 8) = val;
         return 0;
     }
-    v = D_0013CBE4;
-    if (v & 0x20) {
-        g = D_001D5F70;
-        *(int *)(g + 0xD4) = 0;
-        *(int *)(g + 8) = *(int *)(*(char **)(g + 4) + 0x38);
-        *(int *)(*(char **)(g + 4) + 0x84) = 1;
-    } else if (v & 0x10) {
-        g = D_001D5F70;
-        *(int *)(g + 8) = *(int *)(*(char **)(g + 4) + 0x38);
-        *(int *)(*(char **)(g + 4) + 0x84) = 0;
+    {
+        int v = D_0013CBE4;
+        if (v & 0x20) {
+            char *g = D_001D5F70;
+            *(int *)(g + 0xD4) = 0;
+            *(int *)(g + 8) = *(int *)(*(char **)(g + 4) + 0x38);
+            *(int *)(*(char **)(g + 4) + 0x84) = 1;
+        } else if (v & 0x10) {
+            char *g = D_001D5F70;
+            *(int *)(g + 8) = *(int *)(*(char **)(g + 4) + 0x38);
+            *(int *)(*(char **)(g + 4) + 0x84) = 0;
+        }
     }
     return 0;
 }
