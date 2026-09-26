@@ -6,6 +6,7 @@ Each level is a scene, levels/level_NN/level_NN.tscn:
       Game                game axes (Z up) rotated into Godot's (Y up)
         Terrain           terrain.glb, one node per fragment (editable children)
         Ties/Tie_NNNN     instances of ties/tie_<class>.glb
+        Shrubs/Shrub_NNNN instances of shrubs/shrub_<class>.glb
 
 Placements are node transforms in game units; fields the game stores
 per instance are node metadata (rc1_*), so a packer can write them back.
@@ -20,6 +21,7 @@ from formats import unpack
 from gltf import Gltf
 from level import Level
 from mesh import Mesh
+from shrubs import shrub_classes, shrub_instances
 from terrain import terrain
 from ties import tie_classes, tie_instances
 
@@ -163,6 +165,8 @@ class LevelWriter:
         self.write_terrain(terrain(level.block(unpack("<I", level.index, 0x08)[0]), lod), lod)
         ties = tie_classes(level)
         self.write_objects("tie", ties, tie_instances(level.gameplay, ties))
+        shrubs = shrub_classes(level)
+        self.write_objects("shrub", shrubs, shrub_instances(level.gameplay, shrubs))
         return self.finish()
 
     def write_terrain(self, fragments: list[Mesh], lod: int) -> None:
