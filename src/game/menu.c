@@ -980,13 +980,18 @@ extern int D_0015EFB0 MACRO_ADDR;
 extern int D_0015EFB4 MACRO_ADDR;
 extern int D_0013D3AC;
 
+/* Word view of the D_0013D390 record: indexing an int array here, rather
+   than casting byte offsets off a char pointer, is what lets GCC keep the
+   record address's lui/addiu pair together before the D_0015EFB0 store. */
+extern int D_0013D390_i[] __asm__("D_0013D390");
+extern int D_0015EFB0 MACRO_ADDR;
+
+/* Sets menu state 3, clears the record's word at +0xFC and copies +0xC4
+   into +0x1C. */
 void func_00209160(void) {
-    char *b = D_0013D390;
-    int t;
     D_0015EFB0 = 3;
-    t = *(int *)(b + 0xC4);
-    *(int *)(b + 0xFC) = 0;
-    *(int *)(b + 0x1C) = t;
+    D_0013D390_i[0x3F] = 0;
+    D_0013D390_i[0x07] = D_0013D390_i[0x31];
 }
 
 /* Clears the 4 and 2 flag bits of D_0015EFB4, then picks the next
