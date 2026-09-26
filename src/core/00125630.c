@@ -231,7 +231,49 @@ void func_001275C0(void *arg0, int DMV[][2], int *dmvector, int mvx, int mvy) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00127748);
+
+extern char D_001538A8[];
+extern int func_00128860(void *, int);
+extern void func_00128968(void *, int);
+extern void func_0012C430(void *, char *, int);
+
+int func_00127748(void *arg0) {
+    char *s = (char *)arg0;
+    unsigned int code;
+    int val = 0;
+    int cont;
+    int ret;
+
+    do {
+        code = func_001286E8((int)s, 0);
+        switch (code) {
+        case 35:
+            cont = 1;
+            val += 33;
+            break;
+        case 0:
+            ret = func_00128860(s, 11);
+            if (*(int *)(s + 0x848) != 0 && ret == 15) {
+                func_00128968(s, 11);
+                cont = 1;
+            } else {
+                func_0012C430(s, D_001538A8, code);
+                *(int *)(s + 0x11C) = 1;
+                return 1;
+            }
+            break;
+        case 34:
+            cont = 1;
+            break;
+        default:
+            val += code;
+            cont = 0;
+            break;
+        }
+    } while (cont);
+
+    return val;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00127858);
 

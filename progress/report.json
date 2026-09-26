@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 27.715183731654744,
+  "fuzzy_match_percent": 27.77357939663538,
   "total_code": "465788",
-  "matched_code": "126744",
-  "matched_code_percent": 27.21066236141764,
+  "matched_code": "127016",
+  "matched_code_percent": 27.269058026398277,
   "total_functions": 1658,
-  "matched_functions": 915,
-  "matched_functions_percent": 55.18697225572979,
+  "matched_functions": 916,
+  "matched_functions_percent": 55.24728588661037,
   "complete_code": "15084",
   "complete_code_percent": 3.2383831270878596,
   "total_units": 121,
@@ -5085,13 +5085,13 @@
   {
    "name": "core/00125630",
    "measures": {
-    "fuzzy_match_percent": 27.02535559678417,
+    "fuzzy_match_percent": 28.427128427128427,
     "total_code": "19404",
-    "matched_code": "5244",
-    "matched_code_percent": 27.02535559678417,
+    "matched_code": "5516",
+    "matched_code_percent": 28.427128427128427,
     "total_functions": 64,
-    "matched_functions": 28,
-    "matched_functions_percent": 43.75,
+    "matched_functions": 29,
+    "matched_functions_percent": 45.3125,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -5326,7 +5326,7 @@
     {
      "name": "func_00127748",
      "size": "272",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "8472",
      "metadata": {
       "virtual_address": "1210184"
@@ -17967,13 +17967,13 @@
    "id": "game",
    "name": "Game",
    "measures": {
-    "fuzzy_match_percent": 27.057278858989672,
+    "fuzzy_match_percent": 27.116999227148177,
     "total_code": "455456",
-    "matched_code": "120884",
-    "matched_code_percent": 26.541312442914354,
+    "matched_code": "121156",
+    "matched_code_percent": 26.60103281107286,
     "total_functions": 1624,
-    "matched_functions": 884,
-    "matched_functions_percent": 54.433497536945815,
+    "matched_functions": 885,
+    "matched_functions_percent": 54.495073891625616,
     "complete_code": "9224",
     "complete_code_percent": 2.025223073139886
    }
