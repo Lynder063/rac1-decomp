@@ -217,7 +217,8 @@ comments are overwritten safely.
 | `config/core_text.objects`, `config/text.objects` | Link order and start address of every object |
 | `Makefile.sn`, `rac1.ld.sh` | Compile and link at retail addresses |
 | `tools/` | Build, audit, progress-report and decompilation helper scripts |
-| `docs/` | Workflow, toolchain notes, progress log, Ghidra policy |
+| `tools/extract/` | Level extractor: your own disc's levels as an editable Godot project ([README](tools/extract/README.md)) |
+| `docs/` | Workflow, toolchain notes, progress log, Ghidra policy, asset formats |
 | `notes/` | Round notes from September 2026, kept as history; `docs/DECOMP_PROGRESS.md` has the current state |
 | `progress/report.json` | objdiff-format progress report read by decomp.dev |
 
