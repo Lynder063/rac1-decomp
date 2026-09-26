@@ -11,8 +11,10 @@ when complete. Never commit or share it: see LEGAL.md.
 """
 
 import argparse
+from concurrent.futures import ProcessPoolExecutor, as_completed
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 import struct
@@ -51,12 +53,25 @@ def publish(path: Path, build) -> Path:
     return dest
 
 
-def godot(disc: Disc, survey: dict, levels: list[int], lod: int, out: Path) -> None:
+def export_level(iso: Path, info: dict, out: Path, lod: int) -> dict:
+    """One level of a Godot project; runs in its own process."""
+    with Disc(iso) as disc:
+        return LevelWriter(out, load_level(disc, info)).write(lod)
+
+
+def godot(iso: Path, survey: dict, levels: list[int], lod: int, jobs: int, out: Path) -> None:
+    """Levels are independent, so they are written in parallel."""
     write_project(out, levels)
-    for level_id in levels:
-        stats = LevelWriter(out, load_level(disc, survey["levels"][level_id])).write(lod)
-        print(f"level {level_id:02}: {stats['mesh_instances']} meshes placed, "
-              f"{stats['triangles']} triangles, {stats['textures']} textures", flush=True)
+    with ProcessPoolExecutor(min(jobs, len(levels))) as pool:
+        running = [pool.submit(export_level, iso, survey["levels"][i], out, lod) for i in levels]
+        try:
+            for done in as_completed(running):
+                stats = done.result()
+                print(f"level {stats['level']:02}: {stats['mesh_instances']} meshes placed, "
+                      f"{stats['triangles']} triangles, {stats['textures']} textures", flush=True)
+        except BaseException:
+            pool.shutdown(cancel_futures=True)
+            raise
 
 
 def raw(disc: Disc, survey: dict, level_id: int, out: Path) -> None:
@@ -81,6 +96,8 @@ def main() -> None:
     export.add_argument("out", type=Path)
     export.add_argument("--level", type=int, action="append", choices=range(LEVEL_COUNT),
                         help="a level to export (repeatable; default: all)")
+    export.add_argument("--jobs", type=int, default=os.cpu_count() or 1,
+                        help="levels to export at once (default: one per CPU)")
     export.add_argument("--terrain-lod", type=int, choices=(0, 2), default=0,
                         help="terrain detail: 0 finest (default), 2 coarsest")
     dump = commands.add_parser("raw")
@@ -96,7 +113,7 @@ def main() -> None:
                 print()
             elif args.command == "godot":
                 levels = sorted(set(args.level or range(LEVEL_COUNT)))
-                dest = publish(args.out, lambda out: godot(disc, survey, levels, args.terrain_lod, out))
+                dest = publish(args.out, lambda out: godot(args.iso, survey, levels, args.terrain_lod, max(1, args.jobs), out))
                 print(f"Godot project: {dest}")
             else:
                 dest = publish(args.out, lambda out: raw(disc, survey, args.level, out))
