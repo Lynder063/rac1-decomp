@@ -2,6 +2,7 @@
 """Extract Ratchet & Clank (PAL, SCES_509.16 v2.00) levels from your own disc.
 
   extract.py survey ISO                       disc layout and references, as JSON
+  extract.py godot ISO OUT [--level N ...]    a Godot 4 project of editable levels
   extract.py raw ISO OUT --level N            one level's sections, as stored and decoded
 
 OUT must be a new directory under this repository's assets/ or build-sn/,
@@ -20,6 +21,7 @@ import tempfile
 
 from disc import LEVEL_COUNT, Disc
 from formats import FormatError
+from godot import LevelWriter, write_project
 from level import load_level
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -49,6 +51,14 @@ def publish(path: Path, build) -> Path:
     return dest
 
 
+def godot(disc: Disc, survey: dict, levels: list[int], lod: int, out: Path) -> None:
+    write_project(out, levels)
+    for level_id in levels:
+        stats = LevelWriter(out, load_level(disc, survey["levels"][level_id])).write(lod)
+        print(f"level {level_id:02}: {stats['mesh_instances']} meshes placed, "
+              f"{stats['triangles']} triangles, {stats['textures']} textures", flush=True)
+
+
 def raw(disc: Disc, survey: dict, level_id: int, out: Path) -> None:
     level = load_level(disc, survey["levels"][level_id])
     files = {"level_header.bin": level.header, "core_index.bin": level.index,
@@ -66,6 +76,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("survey").add_argument("iso", type=Path)
+    export = commands.add_parser("godot")
+    export.add_argument("iso", type=Path)
+    export.add_argument("out", type=Path)
+    export.add_argument("--level", type=int, action="append", choices=range(LEVEL_COUNT),
+                        help="a level to export (repeatable; default: all)")
+    export.add_argument("--terrain-lod", type=int, choices=(0, 2), default=0,
+                        help="terrain detail: 0 finest (default), 2 coarsest")
     dump = commands.add_parser("raw")
     dump.add_argument("iso", type=Path)
     dump.add_argument("out", type=Path)
@@ -77,6 +94,10 @@ def main() -> None:
             if args.command == "survey":
                 json.dump(survey, sys.stdout, indent=2)
                 print()
+            elif args.command == "godot":
+                levels = sorted(set(args.level or range(LEVEL_COUNT)))
+                dest = publish(args.out, lambda out: godot(disc, survey, levels, args.terrain_lod, out))
+                print(f"Godot project: {dest}")
             else:
                 dest = publish(args.out, lambda out: raw(disc, survey, args.level, out))
                 print(f"Level {args.level} sections: {dest}")
