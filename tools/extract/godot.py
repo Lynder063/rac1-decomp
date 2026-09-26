@@ -5,6 +5,10 @@ Each level is a scene, levels/level_NN/level_NN.tscn:
     Level_NN              rc1/level.gd: fly camera when the scene is run
       Game                game axes (Z up) rotated into Godot's (Y up)
         Terrain           terrain.glb, one node per fragment (editable children)
+        Ties/Tie_NNNN     instances of ties/tie_<class>.glb
+
+Placements are node transforms in game units; fields the game stores
+per instance are node metadata (rc1_*), so a packer can write them back.
 """
 
 import json
@@ -17,9 +21,12 @@ from gltf import Gltf
 from level import Level
 from mesh import Mesh
 from terrain import terrain
+from ties import tie_classes, tie_instances
 
 SCRIPTS = Path(__file__).parent / "rc1"
 GAME_TO_GODOT = [1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1]  # (x, y, z) -> (x, z, -y)
+# Placements store W = 0.01 (0.0 on some); only other values become metadata.
+STORED_W = struct.unpack("<f", struct.pack("<f", 0.01))[0]
 
 PROJECT = """config_version=5
 
@@ -154,6 +161,8 @@ class LevelWriter:
                         metadata__rc1_level=level.id)
         self.scene.node("Game", ".", "Node3D", transform=transform(GAME_TO_GODOT))
         self.write_terrain(terrain(level.block(unpack("<I", level.index, 0x08)[0]), lod), lod)
+        ties = tie_classes(level)
+        self.write_objects("tie", ties, tie_instances(level.gameplay, ties))
         return self.finish()
 
     def write_terrain(self, fragments: list[Mesh], lod: int) -> None:
@@ -165,6 +174,24 @@ class LevelWriter:
         self.stats["meshes"] += len(fragments)
         self.stats["terrain"] = {"lod": lod, "fragments": len(fragments),
                                  "triangles": sum(m.triangles for m in fragments)}
+
+    def write_objects(self, family: str, classes: dict[int, Mesh], placements: list[dict]) -> None:
+        """One GLB per class, and one instance of it per placement."""
+        group, title = f"{family.capitalize()}s", family.capitalize()
+        for class_id, mesh in classes.items():
+            path = self.glb(f"{family}s/{family}_{class_id}.glb", [mesh], 1)
+            self.scene.resource("PackedScene", path, f"{family}_{class_id}")
+        self.scene.node(group, "Game", "Node3D")
+        for p in placements:
+            fields = {f"metadata__rc1_{k}": v for k, v in p.items() if k not in ("class_id", "matrix", "stored_w")}
+            if p["stored_w"] != STORED_W:
+                fields["metadata__rc1_matrix_w"] = p["stored_w"]
+            self.scene.node(f"{title}_{p['index']:04}", f"Game/{group}", instance=f"{family}_{p['class_id']}",
+                            transform=transform(p["matrix"]), **fields)
+            self.place(classes[p["class_id"]], p["matrix"])
+        self.stats["meshes"] += len({p["class_id"] for p in placements})
+        self.stats[f"{family}s"] = {"classes": len(classes), "instances": len(placements),
+                                    "class_triangles": sum(m.triangles for m in classes.values())}
 
     def finish(self) -> dict:
         """Textures, the scene and level.json."""
