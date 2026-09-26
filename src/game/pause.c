@@ -2831,7 +2831,180 @@ int func_00224010(void *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00224040);
+extern int D_0015EFB4_mm __asm__("D_0015EFB4") MACRO_ADDR;
+extern int D_0015EF34 MACRO_ADDR;
+extern int D_0015FF4C MACRO_ADDR;
+extern int D_0015EE98 MACRO_ADDR;
+extern int D_0015EF20 MACRO_ADDR;
+extern int D_0015EF24 MACRO_ADDR;
+extern int D_0015EE84_mm __asm__("D_0015EE84") MACRO_ADDR;
+/* The 8-byte D_0015EF98 pair saved into a slot. As a char block in small
+   data, its copy is la + ldl/ldr, as in retail. */
+typedef struct {
+    char b[8];
+} SaveWord2;
+extern SaveWord2 D_0015EF98_s __asm__("D_0015EF98") MACRO_ADDR;
+extern char D_001D28F8[];
+extern int D_001D29C0;
+extern void func_00227C78(int, int);
+extern int D_0015EFB0_mm __asm__("D_0015EFB0") MACRO_ADDR;
+
+/* Save-slot menu handler (func_002243E8's sibling): on entry it may arm
+   a save (0x4FB5 prompt), then while the prompt is up it either aborts
+   (flag 0x80 in D_0015EFB4) or writes the current game into slot
+   d+0x14 of D_0013D390's 0x1C-byte records; otherwise the usual pad
+   handling, with slot selection on 0x1000/0x4000 and 0x40 either
+   loading the slot (via D_001D28F8) or re-arming. Each branch reaches
+   the globals through its own block-scoped pointers. */
+int func_00224040(char *arg0) {
+    char *g = D_001D5F70;
+    int s;
+    int old;
+
+    if (*(char **)(*(char **)(g + 4) + 0x40) != arg0) {
+        return 0;
+    }
+    s = *(int *)(arg0 + 0x4C);
+    if (s == 0) {
+        char *m = *(char **)(g + 0xD0);
+        if (m == D_001D28F8) {
+            if (*(int *)(m + 0x84) != 0) {
+                *(int *)(arg0 + 0x4C) = 1;
+            }
+        }
+        s = *(int *)(arg0 + 0x4C);
+    }
+    if (s == 1) {
+        char *g2;
+
+        func_00227C78(*(int *)(arg0 + 0x48), *(int *)(arg0 + 0x40));
+        g2 = D_001D5F70;
+        *(int *)(g2 + 0x12C) = 0x4FB5;
+        *(int *)(g2 + 0x128) = 1;
+        D_0015FF4C = 0;
+    }
+    *(int *)(arg0 + 0x4C) = 2;
+    old = *(int *)(arg0 + 0x40);
+    {
+        char *g3 = D_001D5F70;
+
+        if (*(int *)(g3 + 0x128) != 0) {
+            char *d = D_0013D390;
+            char *e;
+
+            if (*(int *)(d + 0xDC) >= 3) {
+                return 0;
+            }
+            if (*(int *)(d + 0xE4) >= 0) {
+                return 0;
+            }
+            if (*(int *)(g3 + 0x154) < 11) {
+                return 0;
+            }
+            *(int *)(g3 + 0x128) = 0;
+            if (*(int *)(d + 0xEC) != 0 || *(int *)(d + 0x1C) != 0 || D_0015FF4C != 0) {
+                char *d2 = D_0013D390;
+                char *g4 = D_001D5F70;
+
+                D_0015EFB4_mm |= 0x80;
+                *(int *)(d2 + 0xFC) = 0;
+                func_001FBC80(3, *(void **)(g4 + 4), 0);
+                return 0;
+            }
+            e = d + 0x30;
+            *(int *)(d + 0xFC) = 1;
+            *(int *)(d + 0x24 + *(int *)(d + 0x14) * 0x1C) = D_0015EE98;
+            *(int *)(d + 0x20 + *(int *)(d + 0x14) * 0x1C) = D_0015EE84_mm;
+            *(int *)(d + 0x2C + *(int *)(d + 0x14) * 0x1C) = D_0015EF24;
+            *(SaveWord2 *)(e + *(int *)(d + 0x14) * 0x1C) = D_0015EF98_s;
+            *(int *)(d + 0x28 + *(int *)(d + 0x14) * 0x1C) = D_0015EF20;
+        }
+    }
+    {
+        char *pad = D_0013CA40;
+        if (*(int *)(pad + 0x1C4) & 0xD00) {
+            char *g2 = D_001D5F70;
+            if (*(int *)(g2 + 0x124) == 0) {
+                return 1;
+            }
+        }
+    }
+    {
+        char *pad = D_0013CA40;
+        if (*(int *)(pad + 0x1C4) & 0x10) {
+            char *g2 = D_001D5F70;
+            int t = *(int *)(*(char **)(g2 + 4) + 0x38);
+            if (t != 0) {
+                *(int *)(g2 + 8) = t;
+                return 0;
+            }
+            if (*(int *)(g2 + 0x124) == 0) {
+                return -1;
+            }
+        }
+    }
+    if (D_0015EFB0_mm != 0x10 && D_0015EFB0_mm != 1) {
+        char *g2 = D_001D5F70;
+        *(int *)(g2 + 8) = *(int *)(*(char **)(g2 + 4) + 0x38);
+        return 0;
+    }
+    {
+        char *d = D_0013D390;
+        int p;
+        int x;
+
+        if (*(int *)(d + 0xDC) >= 3) {
+            return 0;
+        }
+        if (*(int *)(d + 0xE4) >= 0) {
+            return 0;
+        }
+        {
+            char *g2 = D_001D5F70;
+            if (*(int *)(g2 + 0x154) < 11) {
+                return 0;
+            }
+        }
+        if (*(int *)(d + 8) != 2) {
+            return 0;
+        }
+        if (*(int *)(arg0 + 0x30) & 1) {
+            char *pad = D_0013CA40;
+            p = *(int *)(pad + 0x1B4);
+        } else {
+            char *pad = D_0013CA40;
+            p = *(int *)(pad + 0x1A4);
+        }
+        x = D_0015EF34;
+        *(int *)(arg0 + 0x40) = x;
+        if ((p & 0x1000) && x != 0) {
+            *(int *)(arg0 + 0x40) = x - 1;
+        }
+        if ((p & 0x4000) && *(int *)(arg0 + 0x40) < 4) {
+            *(int *)(arg0 + 0x40) = *(int *)(arg0 + 0x40) + 1;
+        }
+        D_0015EF34 = *(int *)(arg0 + 0x40);
+        if (p & 0x40) {
+            char *d2 = D_0013D390;
+
+            if (*(int *)(d2 + 8) == 2) {
+                if (*(int *)(d2 + 0x20 + D_0015EF34 * 0x1C) != -1) {
+                    char *g2 = D_001D5F70;
+
+                    *(int *)(g2 + 0xD4) = 0;
+                    *(char **)(g2 + 8) = D_001D28F8;
+                    D_001D29C0 = *(int *)(arg0 + 0x40);
+                } else {
+                    *(int *)(arg0 + 0x4C) = 1;
+                }
+            }
+        }
+    }
+    if (*(int *)(arg0 + 0x40) != old) {
+        func_0022ED80(1, 0x11, *(int *)(arg0 + 0x14));
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002243E8);
 
