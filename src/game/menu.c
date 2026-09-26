@@ -1153,27 +1153,25 @@ void func_002094E0(void) {
     }
 }
 
-/*
- * Same-size near-miss (15/50 words): every instruction is retail's, but
- * the base pointer lands in $a1 and the literal 1 in $a0 where retail
- * has them the other way round. Tried: reading the index before or
- * after advancing the base, char* vs int* for the slot, unsigned index,
- * the +0xB0 folded into the index expression, the compare with the
- * constant on either side, the block in its own scope, a second local
- * for the tail. The pair never swaps -- allocator, not source shape.
- * (`b = D_0013D390;` after the block IS load-bearing: retail
- * re-materialises %lo from the %hi it kept in $a2, which is what
- * clobbering the base inside the block produces.)
- */
+extern char D_0013D390[];
+extern int D_0015EFB0 MACRO_ADDR;
+
+/* Dispatch-table handler for menu.cpp's D_0013D390 state record. First,
+   guarded by unkDC>=3 || unkE4>=0, clears a per-index slot in the
+   0xB0-byte array (D_0013D390+0xB0 + idx*0xC0) from 1 to 2 -- named as
+   its own `base` local, computed before `idx`, matching the sibling
+   func_00209238's identical slot-lookup shape (that ordering is what
+   makes the allocator put the base pointer in $a0 and the literal 1 in
+   $a1, as retail does; keeping `b` mutated in place puts them the other
+   way round). Then it re-reads the record fresh and sets D_0015EFB0
+   (the next-state word) from unk1C/unkEC/unk14/unkC+unkAC. */
 void func_00209520(void) {
     char *b = D_0013D390;
     int v;
     if (*(int *)(b + 0xDC) >= 3 || *(int *)(b + 0xE4) >= 0) {
-        int idx;
-        int *slot;
-        idx = *(int *)(b + 0xCC);
-        b += 0xB0;
-        slot = (int *)(b + idx * 0xC0);
+        char *base = b + 0xB0;
+        int idx = *(int *)(b + 0xCC);
+        int *slot = (int *)(base + idx * 0xC0);
         if (*slot == 1) {
             *slot = 2;
         }
