@@ -134,7 +134,71 @@ void func_001FF6B8(void) {
 /* Retail carries 4 bytes of inter-function padding after this endlabel. */
 __asm__(".section .text\n\tnop\n");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FF7F0); /* LinkHudBank(int, char *) */
+typedef struct {
+    int offset;
+    int unk4;
+} HudEntry;
+
+typedef struct {
+    char pad0[0x14];
+    int limits1[1];
+    char pad18[0x1C];
+    int limits2[1];
+    char pad38[0x3C];
+    int banks[1];
+} HudBankHeader;
+
+typedef struct {
+    char pad0[0x18];
+    HudBankHeader *header;
+    char pad1C[8];
+    HudEntry *table2;
+    HudEntry *table1;
+} HudArena;
+
+extern HudArena D_0019A4E8_arena __asm__("D_0019A4E8");
+
+/* LinkHudBank(int, char *) */
+void func_001FF7F0(int bank, int addr) {
+    int *banks;
+    int *slot;
+    int start;
+    int limit;
+    int i;
+
+    banks = (int *)((char *)D_0019A4E8_arena.header + 0x74);
+    slot = &banks[bank];
+    if (*slot != 0) {
+        return;
+    }
+
+    addr = (addr + 0xF) & 0xFFFFFFF0U;
+    *slot = addr;
+
+    if (bank != 0) {
+        start = D_0019A4E8_arena.header->limits1[bank - 1];
+    } else {
+        start = 0;
+    }
+    limit = D_0019A4E8_arena.header->limits1[bank];
+
+    for (i = start; i < limit; i++) {
+        D_0019A4E8_arena.table1[i].offset &= 0x7FFFFFFF;
+        D_0019A4E8_arena.table1[i].offset += addr;
+    }
+
+    if (bank != 0) {
+        start = D_0019A4E8_arena.header->limits2[bank - 1];
+    } else {
+        start = 0;
+    }
+    limit = D_0019A4E8_arena.header->limits2[bank];
+
+    for (i = start; i < limit; i++) {
+        D_0019A4E8_arena.table2[i].offset &= 0x7FFFFFFF;
+        D_0019A4E8_arena.table2[i].offset += addr;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FF950);
 

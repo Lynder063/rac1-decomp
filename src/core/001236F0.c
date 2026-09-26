@@ -675,7 +675,32 @@ void func_00124B60(void *fmt, ...) {
  * loop-counter comparison, not one driven by a statically-divisible
  * address range.
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124B88);
+extern int D_00132ED0;
+
+typedef struct {
+    char unk_00[4];
+    int  unk_04;
+    int  unk_08;
+    char *unk_0C;
+    char unk_10[0x320];
+} Ent330;
+extern Ent330 D_0015B640[];
+
+int func_00124B88(void) {
+    int p;
+    int end;
+
+    D_00132ED0 = 1;
+    p = (int)D_0015B640;
+    end = p + 0x3300;
+    do {
+        *(int *)(p + 0) = 0;
+        *(int *)(p + 4) = 0;
+        *(int *)(p + 8) = 0;
+        p += 0x330;
+    } while (p < end);
+    return 1;
+}
 
 extern int func_00124858(void *, int, int);
 extern void func_001153FC(void *, int, int);
@@ -748,14 +773,7 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00124D10);
    `addu index,base`, and reordering the C addition cannot change it
    because GCC canonicalises the PLUS first. See func_00125078 and the
    same lever on D_001E8F80 in text.c. */
-typedef struct {
-    char unk_00[4];
-    int  unk_04;
-    int  unk_08;
-    char *unk_0C;
-    char unk_10[0x320];
-} Ent330;
-extern Ent330 D_0015B640[];
+
 
 extern int func_00125020(int);
 extern int func_00125160(unsigned char *, int *);

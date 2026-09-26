@@ -219,7 +219,22 @@ void func_0012CD60(unsigned int *env) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CE48);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CF98);
+int func_0012CF98(int arg0) {
+    int ret = 0;
+
+    switch (arg0) {
+    case 0:
+        while (*(volatile int *)0x10002010 < 0) {
+        }
+        ret = 0;
+        break;
+    case 1:
+        ret = *(volatile unsigned int *)0x10002010 >> 31;
+        break;
+    }
+
+    return ret;
+}
 
 /* Sony's setD4_CHCR, linked a second time as ipuinit.o's own private copy
  * (called from sceIpuInit, which immediately follows at 0x12D068): write

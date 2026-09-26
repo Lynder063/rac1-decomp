@@ -231,9 +231,92 @@ void func_001275C0(void *arg0, int DMV[][2], int *dmvector, int mvx, int mvy) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00127748);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00127858);
+extern char D_001538A8[];
+extern int func_00128860(void *, int);
+extern void func_00128968(void *, int);
+extern void func_0012C430(void *, char *, int);
+
+int func_00127748(void *arg0) {
+    char *s = (char *)arg0;
+    unsigned int code;
+    int val = 0;
+    int cont;
+    int ret;
+
+    do {
+        code = func_001286E8((int)s, 0);
+        switch (code) {
+        case 35:
+            cont = 1;
+            val += 33;
+            break;
+        case 0:
+            ret = func_00128860(s, 11);
+            if (*(int *)(s + 0x848) != 0 && ret == 15) {
+                func_00128968(s, 11);
+                cont = 1;
+            } else {
+                func_0012C430(s, D_001538A8, code);
+                *(int *)(s + 0x11C) = 1;
+                return 1;
+            }
+            break;
+        case 34:
+            cont = 1;
+            break;
+        default:
+            val += code;
+            cont = 0;
+            break;
+        }
+    } while (cont);
+
+    return val;
+}
+
+extern char D_001538E0[];
+extern int func_00127A90(void *, int);
+extern void func_00128590(void *);
+extern int func_001273A0(void *);
+extern int func_001263A8(void *, int);
+extern void func_0012C468(void *, void *);
+
+int func_00127858(void *arg0) {
+    char *s = (char *)arg0;
+    int count;
+    int ret;
+
+    *(int *)(s + 0x810) = 0;
+    *(int *)(s + 0x814) = 0;
+
+    count = *(int *)(s + 0x12C) * *(int *)(s + 0x130);
+    if (*(int *)(s + 0x174) != 3) {
+        count >>= 1;
+    }
+
+    do {
+        ret = func_00127A90(s, count);
+    } while (ret == 1 || ret == 3);
+
+    func_00128590(s);
+    if (func_001273A0(s) == 0) {
+        ret = 2;
+    }
+
+    while (((*(volatile unsigned int *)0x1000D400 >> 8) & 1) != 0)
+        ;
+
+    if (ret == 0) {
+        func_001263A8(s, (unsigned int)*(int *)(s + 0x810) < 1);
+    }
+
+    if ((unsigned int)(ret - 1) < 2) {
+        func_0012C468(s, D_001538E0);
+    }
+
+    return (unsigned int)ret < 1;
+}
 
 extern void func_00128BA8(void *);
 extern int func_00128860(void *, int);
@@ -798,7 +881,55 @@ void func_00128DA0(void *arg0) {
     func_001291C8(s, temporal_reference);  /* Update_Temporal_Reference_Tacking_Data */
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00128E68);
+extern void func_0012CC40(void *);
+extern void func_0012CA70(void *);
+extern void func_0012CBA0(void *);
+extern void func_001292E0(void *);
+extern void func_001294A0(void *);
+extern void func_0012CC30(void *);
+extern void func_001293A8(void *);
+extern void func_00128F90(void *);
+extern void func_0012CC50(void *);
+extern void func_0012CC60(void *);
+
+extern void func_00128BA8(void *);
+extern int func_00128860(void *, int);
+extern void func_00128968(void *, int);
+extern int func_00128A58(void *, int);
+
+/* _extensionAndUserData (libmpeg.a:mpc.o): extension_and_user_data */
+void func_00128E68(void *arg0) {
+    char *s = (char *)arg0;
+    void (*funcs[])(void *) = {
+        func_0012CC40,
+        func_0012CA70,
+        func_0012CBA0,
+        func_001292E0,
+        func_001294A0,
+        func_0012CC30,
+        func_0012CC40,
+        func_001293A8,
+        func_00128F90,
+        func_0012CC50,
+        func_0012CC60,
+    };
+    int code;
+    unsigned int ext_id;
+
+    func_00128BA8(s);
+    while ((code = func_00128860(s, 32)) == 0x1B5 || code == 0x1B2) {
+        if (code == 0x1B5) {
+            func_00128968(s, 32);
+            ext_id = func_00128A58(s, 4);
+            ext_id = ext_id <= 10 ? ext_id : 0;
+            funcs[ext_id](s);
+            func_00128BA8(s);
+        } else {
+            func_00128968(s, 32);
+            func_00128BA8(s);
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00128F90);
 
@@ -811,7 +942,40 @@ void func_00129180(void *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001291C8);
+/* updateTempTackData (libmpeg.a:mpc.o): Update_Temporal_Reference_Tracking_Data
+ * Updates bitstream frame numbers based on picture_coding_type (+0x150),
+ * Temporal_Reference_Base (+0x84C), and GOP reset state (+0x854).
+ */
+void func_001291C8(void *arg0, int arg1) {
+    char *s = (char *)arg0;
+    int flag = 0;
+    int x = 0;
+    int max;
+
+    if (*(int *)(s + 0x150) != 3) {
+        if (arg1 != 0) {
+            if (arg1 < 0) {
+                flag = *(int *)(s + 0x854) == 0;
+            }
+            *(int *)(s + 0x854) = 0;
+            x = arg1;
+        }
+    }
+
+    *(int *)(s + 0x1AC) = *(int *)(s + 0x84C) + arg1;
+
+    if (flag) {
+        if (x >= arg1) {
+            *(int *)(s + 0x1AC) += 0x400;
+        }
+    }
+
+    max = *(int *)(s + 0x850);
+    if (max < *(int *)(s + 0x1AC)) {
+        max = *(int *)(s + 0x1AC);
+    }
+    *(int *)(s + 0x850) = max;
+}
 
 extern int func_00128A58(void *, int);
 extern void func_00128E68(void *);
@@ -890,8 +1054,47 @@ void func_001292E0(void *arg0) {
         func_0012C468(s, D_00153A10);
     }
 }
+typedef struct {
+    char pad_00[0x13C];
+    int  unk_13C;
+    char pad_140[0x150 - 0x140];
+    int  unk_150;
+    char pad_154[0x174 - 0x154];
+    int  unk_174;
+    int  unk_178;
+    char pad_17C[0x184 - 0x17C];
+    int  unk_184;
+    char pad_188[0x18C - 0x188];
+    int  f1[3];
+    int  f2[3];
+} State;
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001293A8);
+void func_001293A8(void *arg0) {
+    State *s = (State *)arg0;
+    int count;
+    int i;
+
+    if (s->unk_13C != 0) {
+        if (s->unk_184 == 0) {
+            count = 1;
+        } else {
+            count = s->unk_178 != 0 ? 3 : 2;
+        }
+    } else {
+        if (s->unk_174 != 3) {
+            count = 1;
+        } else {
+            count = s->unk_184 != 0 ? 3 : 2;
+        }
+    }
+
+    for (i = 0; i < count; i++) {
+        s->f1[i] = func_00128A58(s, 0x10);
+        func_00128A58(s, 1);
+        s->f2[i] = func_00128A58(s, 0x10);
+        func_00128A58(s, 1);
+    }
+}
 
 extern int func_00128A58(void *, int);
 
@@ -970,52 +1173,36 @@ int func_00129530(void *arg0) {
     return r;
 }
 
-/*
- * REVERTED (size mismatch: ours 148, retail 144). Logic is certain:
- *
- *   void func_00129600(void *arg0, int arg1, int arg2) {
- *       char *s = (char *)arg0;
- *       int v, w;
- *
- *       if (arg2 != 0) {
- *           if (*(int *)(s + 0x174) == 3) {
- *               if (*(int *)(s + 0x150) == 3) {
- *                   v = *(int *)(s + 0x1C4);
- *               } else {
- *                   v = *(int *)(s + 0x1B8);
- *               }
- *               func_00129E30(s, v, arg1 - 1, arg1);
- *           } else {
- *               if (*(int *)(s + 0x150) == 3) {
- *                   v = *(int *)(s + 0x1D4);
- *                   w = *(int *)(s + 0x1E4);
- *               } else {
- *                   v = *(int *)(s + 0x1C8);
- *                   w = *(int *)(s + 0x1D8);
- *               }
- *               func_00129F40(s, v, w, arg1 - 1);
- *           }
- *       }
- *       if (*(int *)(s + 0xF8) == 1) {
- *           *(int *)(s + 0xF8) = 2;
- *       }
- *   }
- *
- * Note the arity evidence: func_00129F40 takes FOUR arguments here but
- * only three at its call in func_0012C278, so whichever declaration is
- * in scope must be prototype-less (see the K&R note in
- * docs/DECOMP_PROGRESS.md).
- *
- * One instruction over, and it is register choice again. arg1 has to
- * move out of $5 because $5 becomes an outgoing argument. Retail moves
- * it to $7 with a single `daddu $7,$5,$0` -- $7 is free until it is
- * needed, and it is exactly where the E30 call wants arg1 anyway, while
- * the F40 path overwrites it in place with arg1 - 1. This compiler
- * parks it in $8 instead and then needs a second `move $7,$8` for the
- * E30 call. Hoisting arg1 or arg1 - 1 into named locals does not move
- * it. 2.9-ee makes the same choice (148 against 144 again).
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00129600);
+extern void func_00129E30();
+extern void func_00129F40();
+
+void func_00129600(void *arg0, int arg1, int arg2) {
+    char *s = (char *)arg0;
+    int v, w;
+
+    if (arg2 != 0) {
+        if (*(int *)(s + 0x174) == 3) {
+            if (*(int *)(s + 0x150) == 3) {
+                v = *(int *)(s + 0x1C4);
+            } else {
+                v = *(int *)(s + 0x1B8);
+            }
+            func_00129E30(s, v, arg1 - 1);
+        } else {
+            if (*(int *)(s + 0x150) == 3) {
+                v = *(int *)(s + 0x1D4);
+                w = *(int *)(s + 0x1E4);
+            } else {
+                v = *(int *)(s + 0x1C8);
+                w = *(int *)(s + 0x1D8);
+            }
+            func_00129F40(s, v, w, arg1 - 1);
+        }
+    }
+    if (*(int *)(s + 0xF8) == 1) {
+        *(int *)(s + 0xF8) = 2;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00129690);
 

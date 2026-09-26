@@ -292,7 +292,70 @@ int func_00120CA0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120D18);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00120D28);
+typedef struct {
+    char pad[0x24];
+    void *serve;
+} SifRpcClientData;
+
+extern int func_00120B28(void);
+extern int func_00118CC0(int);
+extern int func_00118BF0(int, void *);
+extern int func_00120F30(int);
+extern void func_0011AE20(int);
+extern int func_0011B2F8(void *, unsigned int, int);
+extern void func_0011A6C8();
+extern void func_00118C90(int);
+
+extern int D_001313E8;
+extern int D_001313DC;
+extern int D_001313D0;
+extern int D_001313F8;
+extern int D_00159850;
+extern char D_00159858[];
+extern char D_00152FB0[];
+extern char D_00152FD8[];
+extern char D_00132590[];
+
+/* _sceCd_scmd_prechk (libcdvd.a cdvd000.o) */
+int func_00120D28(int arg0) {
+    int i;
+    volatile int *sem = &D_001313E8;
+
+    func_00120B28();
+    if (*sem != func_00118CC0(*sem)) {
+        if (D_001313D0 > 0) {
+            func_0011A6C8(D_00152FB0, arg0, D_001313DC);
+        }
+        return 0;
+    }
+    D_001313DC = arg0;
+    func_00118BF0(D_00159850, D_00159858);
+    if (func_00120F30(1) != 0) {
+        func_00118C90(*sem);
+        return 0;
+    }
+    func_0011AE20(0);
+    if (D_001313F8 >= 0) {
+        return 1;
+    }
+    while (1) {
+        if (func_0011B2F8(D_00132590, 0x80000595, 0) < 0) {
+            if (D_001313D0 > 0) {
+                func_0011A6C8(D_00152FD8);
+            }
+            for (i = 0x100000; i != -1; i--)
+                ;
+        } else {
+            if (((SifRpcClientData *)D_00132590)->serve != 0) {
+                break;
+            }
+            for (i = 0x100000; i != -1; i--)
+                ;
+        }
+    }
+    D_001313F8 = 0;
+    return 1;
+}
 
 extern int func_0011B4C8();
 extern int func_00120D28(int);
@@ -331,14 +394,32 @@ int func_00120E98(void) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00120F30);
+extern char D_00152FF0[];
+extern int D_001313D0;
+
+/* sceCdSyncS */
+int func_00120F30(int arg0) {
+    if (arg0 == 0) {
+        if (D_001313D0 > 0) {
+            func_0011A6C8(D_00152FF0);
+        }
+        while (D_001313F0 != 0 || func_0011B6B8(D_00132590) != 0) {
+            func_00120910(0x3C);
+        }
+        return 0;
+    }
+    if (D_001313F0 != 0 || func_0011B6B8(D_00132590) != 0) {
+        return 1;
+    }
+    return 0;
+}
 
 extern void func_0011A6C8();
 extern int func_0011B6B8(void *);
 extern char D_00153000[];
 extern char D_00132E08[];
-extern int D_001313D0;
 
+/* sceCdSync */
 int func_00120FD0(int arg0) {
     if (arg0 == 0) {
         if (D_001313D0 > 0) {
@@ -352,12 +433,79 @@ int func_00120FD0(int arg0) {
     return func_0011B6B8(D_00132E08);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00121040);
+extern int D_001313EC;
+extern int D_001313D8;
+extern char D_00153010[];
+extern char D_00153038[];
+extern int D_00131408;
+
+/* _sceCd_ncmd_prechk (libcdvd.a cdvd000.o) */
+int func_00121040(int arg0) {
+    int i;
+    volatile int *sem = &D_001313EC;
+
+    func_00120B28();
+    if (*sem != func_00118CC0(*sem)) {
+        if (D_001313D0 > 0) {
+            func_0011A6C8(D_00153010, arg0, D_001313D8);
+        }
+        return 0;
+    }
+    D_001313D8 = arg0;
+    func_00118BF0(D_00159850, D_00159858);
+    if (func_00120FD0(1) != 0) {
+        func_00118C90(*sem);
+        return 0;
+    }
+    func_0011AE20(0);
+    if (D_00131408 >= 0) {
+        return 1;
+    }
+    while (1) {
+        if (func_0011B2F8(D_00132E08, 0x80000593, 0) < 0) {
+            if (D_001313D0 > 0) {
+                func_0011A6C8(D_00153038);
+            }
+            for (i = 0x100000; i != -1; i--)
+                ;
+        } else {
+            if (((SifRpcClientData *)D_00132E08)->serve != 0) {
+                break;
+            }
+            for (i = 0x100000; i != -1; i--)
+                ;
+        }
+    }
+    D_00131408 = 0;
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001211B0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00121490);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00121688);
+extern int D_00132A00;
+extern int D_001325C0;
+extern int func_00121040(int);
+extern void func_0011AD70(void *, int);
+
+/* sceCdMmode */
+int func_00121688(int arg0) {
+    int *p = &D_00132A00;
+    int r;
+
+    if (func_00121040(0x22) == 0) {
+        return 0;
+    }
+    D_00132A00 = arg0;
+    func_0011AD70(p, 4);
+    if (func_0011B4C8(D_00132E08, 0x22, 0, p, 4, &D_001325C0, 4, 0, 0) < 0) {
+        func_00118C90(D_001313EC);
+        return 0;
+    }
+    r = *(int *)((unsigned int)&D_001325C0 | 0x20000000);
+    func_00118C90(D_001313EC);
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012174C);
