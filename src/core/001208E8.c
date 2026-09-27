@@ -227,7 +227,13 @@ extern int D_001313F0;
  * Under 2.9-ee (this object's compiler) the same C with the stores written
  * 2,1,5 is the right size, 148, and 11/148: the block duplication is
  * 2.9-ee's, and what is left is where the three handle stores are
- * scheduled around the CreateSema calls. Still open.
+ * scheduled around the CreateSema calls. Storing D_001313E0 and
+ * D_001313F0 through the volatile aliases below (as the interrupt
+ * handler does) fixes those two: 6/148. The last pair is the
+ * D_001313E8 store, which ours puts before `daddu $a0,$sp,$zero` for
+ * the second call and retail after it, in the jal's delay slot. The
+ * volatile alias for D_001313E8 makes it far worse (81/148), and a
+ * struct for the semaphore parameters changes nothing. Still open.
  */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00120B28);
 
