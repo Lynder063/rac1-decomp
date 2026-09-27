@@ -123,18 +123,19 @@ def instructions(body: str) -> list[str]:
 
 
 # A quadword move of something other than a saved register ($sp-relative
-# saves and restores are ordinary). Two kinds are expressible: a 128-bit
-# zero store (`*(long long *)p = 0`), and retail's inline-asm vector copy,
-# `lq $2,0(a)` then `sq $2,0(b)`, which is qcopy() in include/common.h.
+# saves and restores are ordinary). Only retail's inline-asm vector copy,
+# `lq $2,0(a)` then `sq $2,0(b)`, is expressible: qcopy() in
+# include/common.h. A zero store (`sq $0`) is not: `*(long long *)p = 0`
+# materialises the zero with `por` first (src/game/fastfunc.c).
 BARE_QUAD = re.compile(r"\b(sq|lq)\s+\$(?!29\b|1[6-9]\b|2[0-3]\b|3[01]\b)")
 QCOPY_LQ = re.compile(r"^lq\s+\$2,\s*0x0\(\$\d+\)$")
 QCOPY_SQ = re.compile(r"^sq\s+\$2,\s*0x0\(\$\d+\)$")
 
 
 def only_qcopies(ins: list[str]) -> bool:
-    """Every bare quadword move is a zero store or one of qcopy()'s pairs."""
+    """Every bare quadword move is one of qcopy()'s pairs."""
     for k, s in enumerate(ins):
-        if not BARE_QUAD.search(s) or re.match(r"^sq\s+\$0,", s):
+        if not BARE_QUAD.search(s):
             continue
         if QCOPY_LQ.match(s) and k + 1 < len(ins) and QCOPY_SQ.match(ins[k + 1]):
             continue
