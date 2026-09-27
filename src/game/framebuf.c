@@ -73,28 +73,20 @@ void func_001FB470(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FB498); /* PutDrawBufferLarge(void) */
 
-/*
- * Close but not exact: appends a 2-word GIF/DMA-style tag pair
- * (0x30000015 / &D_00152140 / 0 / 0x50000015) to the packet buffer
- * D_00161000 points at, then advances D_00161000 by one qword (0x10).
- * Confirmed via objdump -- same fields, same values, same order, same
- * overall size (0x68 both). The only difference: retail re-derives
- * D_00161000's own ADDRESS (a fresh lui/lw pair) before every single
- * field write; this compiler computes &D_00161000 once into a register
- * and only reloads the *value* stored there each time (a strictly
- * cheaper, and here inequivalent, choice). This is a new, more extreme
- * variant of the redundant-global-reload pattern already seen elsewhere
- * (those only ever re-fetch a global's *value*, never its address, since
- * a global's address is a link-time constant with nothing to alias) --
- * tried an explicit `*(unsigned int **)&D_00161000` reinterpret-cast
- * idiom to see if defeating the compiler's confidence that it's "the
- * same" symbol reference would force a fresh lui each time; no change.
- * Not fixed via source shape; not yet clear whether this needs its own
- * open-question entry or is explained by something not yet identified.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_001FB530);
-
 extern int *D_00161000 MACRO_ADDR;
+extern char D_00152140[];
+
+/* Appends a DMA tag pair (0x30000015 / &D_00152140 / 0 / 0x50000015) to
+   the packet buffer D_00161000 points at, if there is one. */
+void func_001FB530(void) {
+    if (D_00161000 != 0) {
+        D_00161000[0] = 0x30000015;
+        D_00161000[1] = (int)D_00152140;
+        D_00161000[2] = 0;
+        D_00161000[3] = 0x50000015;
+        D_00161000 += 4;
+    }
+}
 
 /* PutDrawBufferSmall(void) */
 void func_001FB598(void) {
