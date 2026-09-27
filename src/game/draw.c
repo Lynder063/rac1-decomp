@@ -946,7 +946,46 @@ void func_001F5650(int y0, int y1, int x0, int x1, unsigned long rgba) {
 
 LINKER_REMNANT("asm/remnants/text", func_001F57F8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F5800); /* DrawTexturedQuad */
+extern char D_00160940[];
+
+/* Append a textured sprite as a four-vertex strip (PRIM 0x154): screen
+   corners in 12.4 fixed point relative to the viewport origin, UVs from
+   (u, v) to (u + uw, v + vh) in 16ths. */
+void func_001F5800(int x, int y, int w, int h, int u, int v, int uw, int vh,
+                   unsigned long rgba, unsigned long tex) {
+    int x0 = x * 16 + D_0013E600[4] - 8;
+    int x1 = (x + w) * 16 + D_0013E600[4] - 8;
+    int y0 = y * 16 + D_0013E600[5] - 8;
+    int y1 = (y + h) * 16 + D_0013E600[5] - 8;
+    int s1 = (u + uw) * 16;
+    int s0 = u * 16;
+    int vb = v + vh;
+    long *p;
+    int *base;
+
+    D_00161000[0] = 0x10000007;
+    D_00161000[1] = 0;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000007;
+    base = D_00161000;
+    D_00161000 = base + 4;
+    qcopy(base + 4, D_00160940);
+    p = (long *)(base + 8);
+    D_00161000 = base + 8;
+    p[0] = tex;
+    p[1] = 0x154;
+    p[2] = rgba;
+    p[3] = (v << 20) + s0;
+    p[4] = x0 | ((long)y0 << 16) | ((long)0xFFFFF0 << 32);
+    p[5] = (v << 20) + s1;
+    p[6] = x1 | ((long)y0 << 16) | ((long)0xFFFFF0 << 32);
+    p[7] = (vb << 20) + s0;
+    p[8] = x0 | ((long)y1 << 16) | ((long)0xFFFFF0 << 32);
+    p[9] = (vb << 20) + s1;
+    p[10] = x1 | ((long)y1 << 16) | ((long)0xFFFFF0 << 32);
+    p[11] = 0;
+    D_00161000 = (int *)((char *)D_00161000 + 0x60);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F5988);
 
