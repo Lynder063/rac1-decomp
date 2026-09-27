@@ -177,10 +177,11 @@ When agents do the matching, one orchestrator plans waves of workers
 and reviews what comes back. The workers follow [WORKER.md](WORKER.md).
 
 ```
+python3 tools/lombyte.py todo                # matched in Lombyte, not here
 python3 tools/triage.py                      # what is left, by route
-python3 tools/wave.py plan w2 --near         # or --fresh, or name functions
-python3 tools/wave.py status w2              # verdicts as workers finish
-python3 tools/wave.py integrate w2           # apply the EXACT ones, then build
+python3 tools/wave.py plan w7 --budget 10 func_X ...   # or --near / --fresh
+python3 tools/wave.py status w7              # verdicts as workers finish
+python3 tools/wave.py land w7                # one commit per EXACT, full build each
 ```
 
 - `plan` writes each function's `CONTEXT.md` (`tools/dossier.py`): the
@@ -193,3 +194,57 @@ python3 tools/wave.py integrate w2           # apply the EXACT ones, then build
   - `match`: the matching itself.
   - `compile`: turns the m2c sketch into a candidate that compiles, for a
     cheaper model to do before matching starts.
+
+### Picking a wave
+
+Measured on 2026-09-26/27 (Sonnet workers, one function each):
+
+| Pool | Workers | Exact | Code per 10 workers | Tokens per 0.1% of code |
+|---|---|---|---|---|
+| Near-misses, retries and some large new functions (waves 2-4) | 84 | 14 | +0.11% | 1.2M |
+| Everything else up to 1000 bytes (wave 5) | 51 | 3 | +0.04% | 5.0M |
+| Freshly unblocked functions (wave 6) | 25 | 7 | +0.13% | 1.0M |
+
+- **Ports first.** Functions Lombyte has matched (`tools/lombyte.py todo`,
+  66 on 2026-09-27, 6.8% of code) should match in a run or two once
+  renamed. See [SIBLING_DECOMPS.md](SIBLING_DECOMPS.md).
+- **Fresh functions pay best.** A pool that a tool fix just unblocked
+  (the `$fp` save rule, `qcopy()`) matched at 28%. Leftovers that earlier
+  waves stopped on matched at 6%.
+- **Retries with notes pay moderately**: a second round starting from
+  good notes found most of waves 3-4's matches.
+- **Small first, budget 10.** Every match under 600 bytes came within 9
+  runs; misses spent the rest of the budget for nothing. Give 20 only
+  above 600 bytes, where first attempts cost 200-330K tokens and rarely
+  match exactly.
+- At most 20 workers run at once: queue the rest.
+
+### Landing
+
+- `land` compiles each candidate again and runs the full build per
+  function. `try_func` masks relocations, so an `EXACT` can still fail
+  there (func_001E9808). When it does, change that function's
+  `RESULT.md` from `EXACT`, or every later `land` rebuilds it again.
+- The candidate's comments go into `src/` as they are. Rewrite worker
+  notes into what the function does plus the one fact that is
+  load-bearing, before starting `land`: it reads the candidates when it
+  starts.
+- A candidate defined under an alias because the file declares it with
+  another type: fix the file's prototype in its own commit (full build),
+  then land a plain definition.
+- `tools/integrate.py` refuses pins, barriers and inline asm. A `while (0)`
+  inside a macro taken from the original source (newlib's `MALLOC_ZERO`)
+  is not a barrier: review it and land it by hand.
+
+### Open work that would help the next waves
+
+- **Map per-file flags.** Run every near-miss candidate with
+  `TRY_CFLAGS=-mno-split-addresses` (and `-fopt-stack`), record which files
+  match better, and give those files their flags in `Makefile.sn`, the way
+  UYA's `tools/text_parts.txt` does.
+- **Resolve relocations in `try_func`** instead of masking them, as UYA
+  does, so false `EXACT`s stop reaching `land`.
+- **Stage near-misses in `src/`.** Candidates and notes live only in
+  `build-sn/try/`, which is not tracked. Lombyte keeps unfinished C under
+  `#else` of a `NON_MATCHING` guard, beside the retail assembly, so the
+  work is shared and the build stays exact.
