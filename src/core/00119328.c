@@ -46,7 +46,52 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001193F8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119460);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001194C8);
+typedef struct {
+    unsigned char type;
+    unsigned char id;
+} TopThreadEntry;
+
+typedef struct {
+    int counter;
+    unsigned int pad;
+    TopThreadEntry entries[0x200];
+} TopThreadContext;
+
+extern int D_00154600;
+extern char D_001527E8[];
+extern int func_00118CB0(int);
+extern int func_00118C10(int);
+extern int func_00118BC0(int);
+extern int func_00118C40(int);
+extern int func_0011A690(const char *, ...);
+
+/* topThread: kernel service dispatcher. Adapted from Lombyte (MIT) for PAL. */
+void func_001194C8(void *arg0) {
+    TopThreadContext *ctx = (TopThreadContext *)arg0;
+    int i;
+    unsigned char type;
+
+    for (;;) {
+        func_00118CB0(D_00154600);
+        i = ctx->counter & 0x1FF;
+        ctx->counter = i + 1;
+        type = ctx->entries[i].type;
+        switch (type) {
+        case 0:
+            func_00118C10(ctx->entries[i].id);
+            break;
+        case 1:
+            func_00118BC0(ctx->entries[i].id);
+            break;
+        case 2:
+            func_00118C40(ctx->entries[i].id);
+            break;
+        default:
+            func_0011A690(D_001527E8);
+            break;
+        }
+    }
+}
 
 /*
  * InitThread: start the kernel-side service thread once. Bail with -1 if
