@@ -272,7 +272,70 @@ int func_00123308(int arg0) {
     return flag;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001233E8);
+typedef struct {
+    unsigned char sts;
+    unsigned char std;
+    unsigned char mfd;
+    unsigned char rcyc;
+    unsigned short express;
+    unsigned short notify;
+    unsigned short sqwc;
+    unsigned short tqwc;
+    void *rbadr;
+    unsigned int rbmsk;
+} sceDmaEnv;
+extern unsigned char D_00153520[];
+extern unsigned char D_00153530[];
+extern unsigned char D_00153540[];
+extern sceDmaEnv D_00159AD8;
+
+/* sceDmaPutEnv. Adapted from Lombyte (MIT) for PAL. */
+int func_001233E8(void *arg0) {
+    sceDmaEnv *env = arg0;
+    unsigned int ctrl;
+    unsigned int pcr;
+    unsigned int sqwc;
+    unsigned int rbor;
+    unsigned int rbsr;
+
+    ctrl = *(volatile unsigned int *)0x1000E000;
+    pcr = *(volatile unsigned int *)0x1000E020;
+    sqwc = *(volatile unsigned int *)0x1000E030;
+    rbor = *(volatile unsigned int *)0x1000E050;
+    rbsr = *(volatile unsigned int *)0x1000E040;
+    if (env->sts >= 10) {
+        return -1;
+    }
+    if (env->std >= 10) {
+        return -2;
+    }
+    if (env->mfd >= 10) {
+        return -3;
+    }
+    if (env->rcyc >= 7) {
+        return -4;
+    }
+    ctrl = (ctrl & ~0x30) | (D_00153520[env->sts] << 4);
+    ctrl = (ctrl & ~0xC0) | (D_00153530[env->std] << 6);
+    ctrl = (ctrl & ~0xC) | (D_00153540[env->mfd] << 2);
+    if (env->rcyc != 0) {
+        ctrl |= 2;
+        ctrl = (ctrl & ~0x300) | ((env->rcyc - 1) << 8);
+    } else {
+        ctrl &= ~2;
+    }
+    pcr = (env->express << 16) | env->notify;
+    sqwc = (env->tqwc << 16) | env->sqwc;
+    rbor = (unsigned int)env->rbadr;
+    rbsr = env->rbmsk;
+    *(volatile unsigned int *)0x1000E000 = ctrl;
+    *(volatile unsigned int *)0x1000E020 = pcr;
+    *(volatile unsigned int *)0x1000E030 = sqwc;
+    *(volatile unsigned int *)0x1000E050 = rbor;
+    *(volatile unsigned int *)0x1000E040 = rbsr;
+    D_00159AD8 = *env;
+    return 0;
+}
 
 LINKER_REMNANT("asm/remnants/core_text", func_001235C0);
 

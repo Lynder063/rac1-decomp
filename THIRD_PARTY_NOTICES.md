@@ -18,6 +18,7 @@ The following functions adapt source from
 - `src/core/00119D88.c`: `func_0011B2F8` (`sceSifBindRpc`)
 - `src/core/00119D88.c`: `func_0011AE20` (`sceSifInitRpc`)
 - `src/core/00121750.c`: `func_00121B78` (`sceGsResetGraph`)
+- `src/core/00123168.c`: `func_001233E8` (`sceDmaPutEnv`)
 
 MIT License
 
