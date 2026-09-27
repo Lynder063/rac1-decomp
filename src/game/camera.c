@@ -452,7 +452,80 @@ void func_001ECC10(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001ECC48);
+/* The final mode store goes through this alias: written through
+   D_001872B0 itself, gcse keeps the entry's %hi alive in a saved register
+   across the calls, where retail rebuilds it. */
+extern short D_001872B0_h __asm__("D_001872B0") NOT_SDA;
+extern void func_00215328(void *, void *);
+extern int func_001F98C0(int);
+extern float func_001FA888(int);
+
+/* Camera mode update from arg (its +0x30 vector is copied). In mode 1
+   the sub-mode at +3 picks what is captured from it: 0 the +0x50/+0x60
+   pair, 2 the +0xC0/+0xD0 pair and func_001ECAB8's angles, otherwise
+   D_0013F450's axes and func_001EC8D8's yaw/pitch/dist into +0x70. Other
+   modes restore through func_001ECB98/func_001ECC10. Then the mode
+   becomes 3, +2 takes the sub-mode, and either the +0x10 blend resets or
+   the +0x70 timer advances. */
+void func_001ECC48(void *arg) {
+    char *arg0 = arg;
+    char *r = D_001872B0;
+    char local0[16];
+    char local1[16];
+    char local2[16];
+    unsigned char sub;
+
+    if (*(short *)r == 1) {
+        sub = r[3];
+        if (sub == 0) {
+            qcopy(r + 0x50, arg0 + 0x30);
+            func_00215328(r + 0x60, arg0);
+        } else if (sub == 2) {
+            qcopy(r + 0xC0, arg0 + 0x30);
+            func_00215328(r + 0xD0, arg0);
+            func_001ECAB8();
+        } else {
+            char *g = D_0013F450;
+
+            func_001F9DC0(local0, *(char **)(g + 0x2080) + 0xC0, 1.0f);
+            func_001F9DC0(local1, *(char **)(g + 0x2080) + 0xD0, 1.0f);
+            func_001F9DC0(local2, *(char **)(g + 0x2080) + 0xE0, 1.0f);
+            func_001EC8D8((float *)(r + 0x70), arg0 + 0x30, *(char **)(r - 0xF0) + 0x30,
+                          local0, local1, local2);
+            func_00215328(r + 0xB0, arg0);
+            qcopy(r + 0xD0, r + 0xB0);
+        }
+    } else {
+        sub = r[3];
+        if (sub == 2) {
+            func_001ECB98();
+            func_001ECAB8();
+        } else if (sub == 1) {
+            func_001ECB98();
+            qcopy(r + 0xB0, r + 0xD0);
+        } else if (sub == 0) {
+            func_001ECC10();
+        }
+    }
+    D_001872B0_h = 3;
+    *(unsigned char *)(r + 2) = r[3];
+    if (*(unsigned char *)(r + 2) == 0) {
+        char *a = r + 0x10;
+
+        *(float *)(a + 0x10) = *(float *)(a + 0x14);
+        *(int *)(a + 0xC) = 0;
+        qcopy(r + 0x40, r + 0x50);
+        *(float *)(a + 0x0) = 0;
+        *(float *)(a + 0x4) = *(float *)(a + 0x8);
+        qcopy(r + 0x30, r + 0x60);
+    } else {
+        char *b = r + 0x70;
+        int n = ++*(int *)(b + 0x14);
+
+        *(int *)(b + 0xC) = func_001F98C0(n);
+        *(float *)(b + 0x10) = 1.0f / func_001FA888(*(int *)(b + 0xC));
+    }
+}
 
 extern char D_00187180[];
 extern char D_0018C418[];
