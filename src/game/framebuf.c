@@ -71,9 +71,23 @@ void func_001FB470(void) {
     func_00122140(D_0015EFB8);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FB498); /* PutDrawBufferLarge(void) */
-
 extern int *D_00161000 MACRO_ADDR;
+extern void func_001224B0(void *);
+
+/* PutDrawBufferLarge: queue the draw environment at D_0015EFB8+0x30 as a
+   DMA ref tag when a packet buffer is open, else send it directly. */
+void func_001FB498(void) {
+    if (D_00161000 != 0) {
+        D_00161000[0] = 0x30000009;
+        D_00161000[1] = ((int)D_0015EFB8 + 0x30) & 0xFFFFFFF;
+        D_00161000[2] = 0;
+        D_00161000[3] = 0x50000009;
+        D_00161000 += 4;
+    } else {
+        func_001224B0((char *)D_0015EFB8 + 0x30);
+    }
+}
+
 extern char D_00152140[];
 
 /* Appends a DMA tag pair (0x30000015 / &D_00152140 / 0 / 0x50000015) to
