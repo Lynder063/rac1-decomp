@@ -502,15 +502,8 @@ extern void func_00122958(void *, void *);
    the GS packet in place or flushes the cache and hands the stack
    buffer to func_00122958.
 
-   D_00161000's advance is a plain pointer store (`D_00161000 = base +
-   N;`), the same idiom this file's other matched packet builders
-   (func_002014B8/func_00201640/func_002017C8) use -- MACRO_ADDR already
-   makes that a $gp-relative store. p7 holds arg2 unconditionally from
-   before the branch (retail sets it in the delay slot of the
-   useStackBuf branch, before either arm runs), but its truncation to
-   short for the call happens later, grouped with the other short args
-   (retail's sll/sra $7 sits between the other four args' truncation
-   instructions, not with the early wide assignment). */
+   p7 is set before the branch, as retail does in its delay slot, but
+   truncated to short after it, with the other short arguments. */
 void func_00201348(char *arg0, int arg1, int arg2, int arg3, int arg4, int arg5) {
     char buf[0x60];
     int nloop2;
