@@ -631,7 +631,13 @@ void func_0012F248(int arg0, int arg1, int arg2, int arg3, int arg4) {
 
 LINKER_REMNANT("asm/remnants/core_text", func_0012F280);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F288);
+/* Command 0x5A with two ints, waiting for the reply. */
+int func_0012F288(int arg0, int arg1) {
+    int local[2];
+    local[0] = arg0;
+    local[1] = arg1;
+    return func_0012E688(0x5A, 8, local);
+}
 
 /* snd_GetMovieNAX */
 void func_0012F2B8(void) {
