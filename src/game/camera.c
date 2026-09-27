@@ -78,7 +78,7 @@ float func_001EC120(float a, float b, float *p, float c, float d, float e) {
 
 /* Not a standalone function: single `addiu $sp,$sp,0x50`, no `jr $31` --
    fallthrough fragment, same category as func_00113AD8 in core_text. */
-INCLUDE_ASM("asm/nonmatchings/text", func_001EC208);
+LINKER_REMNANT("asm/remnants/text", func_001EC208);
 
 extern char D_001871D0[];
 extern void func_0020D678(void *); /* DeleteMoby */

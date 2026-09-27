@@ -267,14 +267,14 @@ extern int D_001D6860[];
 extern int D_001D74C0[];
 extern int D_001D6760[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00228A58);
+ASM_FUNC("asm/handwritten/text", func_00228A58);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00228D20);
+ASM_FUNC("asm/handwritten/text", func_00228D20);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00229098);
+ASM_FUNC("asm/handwritten/text", func_00229098);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002291E8);
+ASM_FUNC("asm/handwritten/text", func_002291E8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00229838);
+ASM_FUNC("asm/handwritten/text", func_00229838);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002298B0);
+ASM_FUNC("asm/handwritten/text", func_002298B0);

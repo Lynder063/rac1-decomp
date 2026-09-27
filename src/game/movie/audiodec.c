@@ -393,7 +393,7 @@ int func_0023C060(void) {
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C080);
+LINKER_REMNANT("asm/remnants/text", func_0023C080);
 
 extern void func_0012F248(int, int, int, int, int);
 

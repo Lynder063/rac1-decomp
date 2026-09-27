@@ -174,9 +174,9 @@ extern float func_001F9B88(float arg0);
 extern int func_0020DA68(int v);
 extern void func_0020DAB0(void);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00213A78);
+ASM_FUNC("asm/handwritten/text", func_00213A78);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00213BAC);
+LINKER_REMNANT("asm/remnants/text", func_00213BAC);
 
 typedef struct {
     int key;
@@ -204,7 +204,7 @@ void func_00213BB8(int arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00213C70);
+LINKER_REMNANT("asm/remnants/text", func_00213C70);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00213C78);
 
@@ -359,7 +359,7 @@ int func_002140B0(int arg0) {
     return ((func_001160D8() >> 16) & 0x7FFF) % arg0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002140F0);
+LINKER_REMNANT("asm/remnants/text", func_002140F0);
 
 /* As func_00214158: the old note's C, with the mtc1 nop added by the
    pipeline. */
@@ -534,7 +534,7 @@ float func_00214D28(float *p, float target, float maxstep) {
     return func_001F9B88(target - *p);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00214D80);
+LINKER_REMNANT("asm/remnants/text", func_00214D80);
 
 extern float func_001F9B50(float);
 
@@ -660,7 +660,7 @@ int func_00215078(char *arg0) {
     return *(int *)(*(char **)(arg0 + 0x78) + 0x10);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002150A8);
+LINKER_REMNANT("asm/remnants/text", func_002150A8);
 
 /* The {1, 2, 0} successor table of the quaternion extraction. */
 typedef struct {
@@ -732,7 +732,7 @@ void func_00215328(void *arg0, void *arg1) {
     func_001FA480(arg1, buf);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00215378);
+LINKER_REMNANT("asm/remnants/text", func_00215378);
 
 extern float func_001F9FA8(float);  /* sin of a half-angle */
 extern float func_001F9F90(float);  /* cos of a half-angle */
@@ -829,7 +829,7 @@ int func_00215570(void *arg0, int arg1) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00215648);
+LINKER_REMNANT("asm/remnants/text", func_00215648);
 
 extern void func_001FA588(void *, void *, void *);
 
@@ -906,7 +906,7 @@ void func_002157C0(int pal) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002158E0);
+LINKER_REMNANT("asm/remnants/text", func_002158E0);
 
 extern int func_001F9F30(float *);
 extern int func_001FA898_r(float) __asm__("func_001FA898");
@@ -1013,7 +1013,7 @@ void func_00215C00(void *arg0, float r, float y, float z) {
     out[2] = func_001F9FA8(z) * r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00215CA0);
+LINKER_REMNANT("asm/remnants/text", func_00215CA0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215CA8);
 

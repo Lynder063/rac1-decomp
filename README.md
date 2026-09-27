@@ -246,9 +246,15 @@ comments are overwritten safely.
 - [AngheloAlf's PS2 toolchain mirrors](https://github.com/AngheloAlf)
 - [bordplate/RC1](https://codeberg.org/bordplate/RC1): NTSC decomp setup; the
   source file names and boundaries of the `text` segment come from its split
-- [Lombyte](https://github.com/mateuszklysz/Lombyte): NTSC decompilation work
-  on the same game; some real names and struct layouts in `src/` comments
-  (e.g. `src/game/draw.c`, `src/game/vuchain.c`) are corroborated against it
+- [Lombyte](https://github.com/mateuszklysz/Lombyte) (MIT): matching
+  decompilation of the same game's NTSC build; some real names and struct
+  layouts in `src/` comments (e.g. `src/game/draw.c`, `src/game/vuchain.c`)
+  are corroborated against it, and `tools/lombyte.py` pairs its functions
+  with ours as starting points (see `docs/SIBLING_DECOMPS.md`)
+- [ratchet-uya-decomp](https://github.com/vetusmagnus/ratchet-uya-decomp):
+  matching decompilation of R&C 3 with the same SN compiler; its compiler
+  and flag research (per-file `-mno-split-addresses`) is summarised in
+  `docs/SIBLING_DECOMPS.md`
 - [RatchetModding/rac-modding-resources](https://github.com/RatchetModding/rac-modding-resources)
 - [Wrench](https://github.com/chaoticgd/wrench): Ratchet & Clank PS2 modding
   tools. Most of the level extractor's format knowledge comes from its

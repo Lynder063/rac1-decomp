@@ -453,7 +453,7 @@ void func_0020D790(unsigned char *s) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020D828);
+LINKER_REMNANT("asm/remnants/text", func_0020D828);
 
 extern float func_001FA888(int);
 
@@ -618,7 +618,7 @@ void func_0020DB98(char *arg0, int arg1, void *arg2, char *arg3) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020DC38);
+LINKER_REMNANT("asm/remnants/text", func_0020DC38);
 
 extern int D_0016000C MACRO_ADDR;
 extern int D_00161000 MACRO_ADDR;
@@ -908,7 +908,7 @@ void func_0020E2B0(void) {
     func_0020E200();
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020E330);
+LINKER_REMNANT("asm/remnants/text", func_0020E330);
 
 /*
  * Close but not exact (13/32 bytes): packs 4 values into a 64-bit
@@ -921,6 +921,6 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0020E330);
  */
 INCLUDE_ASM("asm/nonmatchings/text", func_0020E340);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020E360);
+ASM_FUNC("asm/handwritten/text", func_0020E360);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020E3D0);
+ASM_FUNC("asm/handwritten/text", func_0020E3D0);

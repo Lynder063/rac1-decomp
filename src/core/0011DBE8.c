@@ -73,9 +73,9 @@ extern void func_00118EB0(void);
 extern int D_00130420;
 extern int D_00130424;
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DBE8);
+ASM_FUNC("asm/handwritten/core_text", func_0011DBE8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DBF8);
+ASM_FUNC("asm/handwritten/core_text", func_0011DBF8);
 
 /* kCopy: libosd.o's own copy of the word-at-a-time copy helper (nbytes
  * rounded down to words); returns 0. Same body as func_0011DA08
@@ -89,7 +89,7 @@ int func_0011DC08(int *dst, int *src, unsigned int nbytes) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DC40);
+ASM_FUNC("asm/handwritten/core_text", func_0011DC40);
 
 extern void func_00118CF0(void *);
 extern void func_00118CE0(void *);

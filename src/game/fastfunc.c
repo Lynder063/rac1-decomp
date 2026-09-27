@@ -92,25 +92,25 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F98E8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F98F8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F9908);
+ASM_FUNC("asm/handwritten/text", func_001F9908);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F9938);
+ASM_FUNC("asm/handwritten/text", func_001F9938);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F9968);
+ASM_FUNC("asm/handwritten/text", func_001F9968);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F9978);
+ASM_FUNC("asm/handwritten/text", func_001F9978);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F9988);
+ASM_FUNC("asm/handwritten/text", func_001F9988);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F99B0);
+ASM_FUNC("asm/handwritten/text", func_001F99B0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F99D8);
+ASM_FUNC("asm/handwritten/text", func_001F99D8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F9A00);
+ASM_FUNC("asm/handwritten/text", func_001F9A00);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F9A98);
+ASM_FUNC("asm/handwritten/text", func_001F9A98);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F9AC0);
+ASM_FUNC("asm/handwritten/text", func_001F9AC0);
 
 /*
  * Not a decompile target: hand-written assembly, same idioms as the
@@ -128,11 +128,11 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F9AF0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9B20);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F9B48);
+LINKER_REMNANT("asm/remnants/text", func_001F9B48);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9B50);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F9B70);
+ASM_FUNC("asm/handwritten/text", func_001F9B70);
 
 float func_001F9B88(float arg0) {
     return __builtin_fabsf(arg0);
@@ -208,13 +208,13 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F9D10);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9D48);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F9D78);
+ASM_FUNC("asm/handwritten/text", func_001F9D78);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9DC0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9E10);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F9E58);
+ASM_FUNC("asm/handwritten/text", func_001F9E58);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9EC0);
 
@@ -224,7 +224,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F9F18);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9F30);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F9F60);
+ASM_FUNC("asm/handwritten/text", func_001F9F60);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9F90);
 
@@ -232,7 +232,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F9FA8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9FC0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FA058);
+ASM_FUNC("asm/handwritten/text", func_001FA058);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FA168);
 
@@ -244,7 +244,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FA1F8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FA218);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FA238);
+ASM_FUNC("asm/handwritten/text", func_001FA238);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FA460);
 
@@ -271,7 +271,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FA4A0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FA4F0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FA540);
+ASM_FUNC("asm/handwritten/text", func_001FA540);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FA588);
 
@@ -320,6 +320,6 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001FA898);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FA8A8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FA8F0);
+ASM_FUNC("asm/handwritten/text", func_001FA8F0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FA9E8);
+ASM_FUNC("asm/handwritten/text", func_001FA9E8);

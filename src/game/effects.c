@@ -111,7 +111,7 @@ void func_001EE3B0(void *arg0, float arg1, float arg2)
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EE6D0);
+LINKER_REMNANT("asm/remnants/text", func_001EE6D0);
 
 /* The queue of glows to draw this frame: 0x30-byte records, the count
    at +0xC0. */
@@ -168,7 +168,7 @@ void func_001EE6E0(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EE850);
+LINKER_REMNANT("asm/remnants/text", func_001EE850);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EE858);
 

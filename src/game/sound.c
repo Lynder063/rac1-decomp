@@ -548,4 +548,4 @@ void func_0022F0F0(int arg0, long arg1) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022F120);
+LINKER_REMNANT("asm/remnants/text", func_0022F120);

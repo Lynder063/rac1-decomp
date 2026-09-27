@@ -103,4 +103,4 @@ void func_00201E10(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00201E88); /* InitOnce(void) */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00202258);
+LINKER_REMNANT("asm/remnants/text", func_00202258);

@@ -145,7 +145,7 @@ int func_00121D18(void) {
     return 0x1315670 < func_00112380(&buf[n - 9]);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00121DB8);
+ASM_FUNC("asm/handwritten/core_text", func_00121DB8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00121DC8);
 

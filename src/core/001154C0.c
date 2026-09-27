@@ -474,7 +474,7 @@ void *func_00115D50(void *ptr, Bigint_1154D0 *a, Bigint_1154D0 *b) {
     return c;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00115EE0);
+LINKER_REMNANT("asm/remnants/core_text", func_00115EE0);
 
 /* newlib mprec.c d2b(ptr,_d,e,bits): splits a double into a Bigint
  * significand plus a binary exponent and precision (dtoa's first step).

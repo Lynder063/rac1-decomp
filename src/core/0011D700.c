@@ -75,4 +75,4 @@ extern int func_00118EA0(void);
 extern void func_0011D4E0(void);
 extern void func_00118EB0(void);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D700);
+ASM_FUNC("asm/handwritten/core_text", func_0011D700);

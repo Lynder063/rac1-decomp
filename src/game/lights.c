@@ -130,4 +130,154 @@ void func_00202790(int arg0) {
    explicitly. */
 __asm__(".align 4");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002027C0); /* DetachPointLight(int) */
+struct LightRecord32C {
+    u8 pad_0[0x1B];
+    u8 unk1B;
+    u8 pad_1C[0x2];
+    u16 unk1E;
+};
+
+struct LightRecord64 {
+    u8 pad_0[0x35];
+    u8 unk35;
+    u16 unk36;
+};
+
+struct LightRecord32A {
+    u8 pad_0[0x1B];
+    u8 unk1B;
+    u8 pad_1C[0x2];
+    u16 unk1E;
+};
+
+struct PointLightLinks {
+    s16 unk0;
+    s16 unk2;
+    s16 unk4;
+    s16 unk6;
+    s16 unk8;
+    s16 unkA;
+    s32 unkC;
+};
+
+extern u8 *D_001604D4 MACRO_ADDR;
+extern u8 *D_00160F8C MACRO_ADDR;
+extern u8 *D_00161050 MACRO_ADDR;
+
+extern u8 D_001E7E80[];
+extern u8 D_001E7EA0[];
+extern u8 D_001E7EC8[];
+extern s32 func_001E9730();
+
+/* Remove one point light from three packed attachment lists. Each 16-bit
+   reference stores up to four light IDs in nibbles; deleting one shifts
+   the higher IDs down and marks the record free when all are 0xF. */
+void func_002027C0(s32 arg0) {
+    s16 *firstLinks;
+    s16 *thirdLinks;
+    s16 *secondLinks;
+    s32 thirdEnd;
+    s32 firstEnd;
+    s32 secondEnd;
+    s32 thirdNibble;
+    s32 secondNibble;
+    s32 fourthNibble;
+    s32 firstNibble;
+    s32 secondLowNibble;
+    s32 thirdLowNibble;
+    s32 firstLowNibble;
+    u32 thirdPacked;
+    u32 firstPacked;
+    u32 secondPacked;
+    struct LightRecord32C *thirdRecord;
+    struct LightRecord64 *secondRecord;
+    struct LightRecord32A *firstRecord;
+    struct PointLightLinks *links;
+
+    firstNibble = arg0 & 0xFFFF;
+    links = (arg0 * 0x30) + D_0019C4C0;
+    secondNibble = (arg0 * 0x10) & 0xFFFF;
+    thirdNibble = (arg0 << 8) & 0xFFFF;
+    firstLinks = links->unkC + (links->unk0 * 2);
+    firstEnd = firstLinks + links->unk2;
+    fourthNibble = (arg0 << 0xC) & 0xFFFF;
+    if (firstLinks != firstEnd) {
+        do {
+            firstRecord = D_00161050 + (*firstLinks << 5);
+            firstPacked = firstRecord->unk1E;
+            firstLowNibble = firstPacked & 0xF;
+            if (firstLowNibble == firstNibble) {
+                firstPacked = (firstPacked >> 4) | 0xF000;
+            } else if ((firstPacked & 0xF0) == secondNibble) {
+                firstPacked = firstLowNibble | ((firstPacked >> 4) & 0xFF0) | 0xF000;
+            } else if ((firstPacked & 0xF00) == thirdNibble) {
+                firstPacked = (firstPacked & 0xFF) | ((firstPacked >> 4) & 0xF00) | 0xF000;
+            } else if ((firstPacked & 0xF000) == fourthNibble) {
+                firstPacked |= 0xF000;
+            } else {
+                func_001E9730(D_001E7E80);
+            }
+            firstLinks += 1;
+            if (firstPacked == 0xFFFF) {
+                firstRecord->unk1B = 1;
+            }
+            firstRecord->unk1E = firstPacked;
+        } while (firstLinks != firstEnd);
+    }
+    secondLinks = links->unkC + (links->unk8 * 2);
+    links->unk0 = 0;
+    secondEnd = secondLinks + links->unkA;
+    links->unk2 = 0;
+    if (secondLinks != secondEnd) {
+        do {
+            secondRecord = D_00160F8C + (*secondLinks << 6);
+            secondPacked = secondRecord->unk36;
+            secondLowNibble = secondPacked & 0xF;
+            if (secondLowNibble == firstNibble) {
+                secondPacked = (secondPacked >> 4) | 0xF000;
+            } else if ((secondPacked & 0xF0) == secondNibble) {
+                secondPacked = secondLowNibble | ((secondPacked >> 4) & 0xFF0) | 0xF000;
+            } else if ((secondPacked & 0xF00) == thirdNibble) {
+                secondPacked = (secondPacked & 0xFF) | ((secondPacked >> 4) & 0xF00) | 0xF000;
+            } else if ((secondPacked & 0xF000) == fourthNibble) {
+                secondPacked |= 0xF000;
+            } else {
+                func_001E9730(D_001E7EA0);
+            }
+            secondLinks += 1;
+            if (secondPacked == 0xFFFF) {
+                secondRecord->unk35 = 1;
+            }
+            secondRecord->unk36 = secondPacked;
+        } while (secondLinks != secondEnd);
+    }
+    thirdLinks = links->unkC + (links->unk4 * 2);
+    links->unk8 = 0;
+    thirdEnd = thirdLinks + links->unk6;
+    links->unkA = 0;
+    if (thirdLinks != thirdEnd) {
+        do {
+            thirdRecord = D_001604D4 + (*thirdLinks << 5);
+            thirdPacked = thirdRecord->unk1E;
+            thirdLowNibble = thirdPacked & 0xF;
+            if (thirdLowNibble == firstNibble) {
+                thirdPacked = (thirdPacked >> 4) | 0xF000;
+            } else if ((thirdPacked & 0xF0) == secondNibble) {
+                thirdPacked = thirdLowNibble | ((thirdPacked >> 4) & 0xFF0) | 0xF000;
+            } else if ((thirdPacked & 0xF00) == thirdNibble) {
+                thirdPacked = (thirdPacked & 0xFF) | ((thirdPacked >> 4) & 0xF00) | 0xF000;
+            } else if ((thirdPacked & 0xF000) == fourthNibble) {
+                thirdPacked |= 0xF000;
+            } else {
+                func_001E9730(D_001E7EC8);
+            }
+            thirdLinks += 1;
+            if (thirdPacked == 0xFFFF) {
+                thirdRecord->unk1B = 1;
+            }
+            thirdRecord->unk1E = thirdPacked;
+        } while (thirdLinks != thirdEnd);
+    }
+    links->unk4 = 0;
+    links->unk6 = 0;
+}

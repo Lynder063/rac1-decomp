@@ -8,11 +8,11 @@
  * sizes -- see docs/DECOMP_PROGRESS.md. Compiled as C for now.
  */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001E9080);
+LINKER_REMNANT("asm/remnants/text", func_001E9080);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001E9088); /* actuator_CalcPower */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001E94A0);
+LINKER_REMNANT("asm/remnants/text", func_001E94A0);
 
 extern int D_0015EF8C MACRO_ADDR;
 extern int D_0015F020 MACRO_ADDR;

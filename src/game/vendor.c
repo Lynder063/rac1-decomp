@@ -377,7 +377,93 @@ void func_002399A0(void *arg0, int arg1) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00239A00);
+struct VendorMenuState {
+    u8 pad_0[0x4];
+    s32 pulseTick;
+    u8 pad_8[0x44];
+    s32 scrollOffset;
+    u8 pad_50[0x8];
+    s32 selectedIndex;
+    u8 pad_5C[0x1B4];
+    s32 slotCount;
+};
+
+struct VendorItemResource {
+    u8 pad_0[0x38];
+    u16 iconId;
+};
+
+extern u8 D_001864D0[];
+extern struct VendorMenuState D_001E66C0_ui __asm__("D_001E66C0");
+extern s32 func_001F9B70();
+extern void func_001FBAB8_u(int, int, int, int, int, int, unsigned int)
+    __asm__("func_001FBAB8");
+
+/* Vendor item carousel and icon pulse. The solid black draw calls use the
+   unsigned color signature, matching retail's argument setup order. */
+void func_00239A00(void) {
+    s32 selectedOffset;
+    s32 slotOffset;
+    s32 selectedMinusThree;
+    s32 x;
+    s32 i;
+    s32 itemIndex;
+    s32 itemX;
+    s32 displayIcon;
+    s32 itemIcon;
+    u16 displayIconId;
+    u16 itemIconId;
+    s32 *slotKind;
+    s32 pulseColor;
+
+    func_001FBAB8(0, 0, 0x200, 0x80, 0x200, 0x80, 0);
+    if (D_001E66C0_ui.slotCount < 8) {
+        itemX = 0xC;
+        itemIndex = 0;
+        selectedOffset = D_001E66C0_ui.selectedIndex * 0x38;
+        pulseColor = ((func_001F9B70(((D_001E66C0_ui.pulseTick * 4) & 0x3F) - 0x20) + 0x40) * 0x10202) | 0x80000000;
+        func_001FBAB8(selectedOffset + 8, 2, selectedOffset + 0x40, 0x3A, 0x200, 0x80, pulseColor);
+        func_001FBAB8_u(selectedOffset + 0xA, 4, selectedOffset + 0x3E, 0x38, 0x200, 0x80, 0x80000000);
+        if (D_001E66C0_ui.slotCount > 0) {
+            do {
+                slotKind = (s32 *) (void *) ((u8 *)&D_001E66C0_ui + 0xD4 + itemIndex * 0x14);
+                itemIconId = ((struct VendorItemResource *) (void *) ((u8 *)D_001864D0 + slotKind[-1] * 0x4C))->iconId;
+                if (slotKind[0] == 1) {
+                    itemIcon = func_00200198(itemIconId, 2);
+                } else {
+                    itemIcon = func_00200198(itemIconId, 0);
+                }
+                func_00200468(itemIcon, itemX, 6, 0x30, 0x30, 0x80);
+                itemX += 0x38;
+                itemIndex += 1;
+            } while (itemIndex < D_001E66C0_ui.slotCount);
+        }
+    } else {
+        if (D_001E66C0_ui.scrollOffset < 0) {
+            D_001E66C0_ui.scrollOffset = (s32) (D_001E66C0_ui.scrollOffset + 4);
+        } else if (D_001E66C0_ui.scrollOffset > 0) {
+            D_001E66C0_ui.scrollOffset = (s32) (D_001E66C0_ui.scrollOffset - 4);
+        } else {
+            func_001FBAB8(0xB0, 2, 0xE8, 0x3A, 0x200, 0x80, ((func_001F9B70(((D_001E66C0_ui.pulseTick * 4) & 0x3F) - 0x20) + 0x40) * 0x10202) - (s32) 0x80000000);
+            func_001FBAB8_u(0xB2, 4, 0xE6, 0x38, 0x200, 0x80, 0x80000000);
+        }
+        x = D_001E66C0_ui.scrollOffset - 0x64;
+        i = -2;
+        do {
+            selectedMinusThree = D_001E66C0_ui.selectedIndex - 3;
+            slotOffset = ((s32) ((D_001E66C0_ui.slotCount * 2) + i + selectedMinusThree) % (s32) D_001E66C0_ui.slotCount) * 0x14;
+            displayIconId = ((struct VendorItemResource *) (void *) ((u8 *)D_001864D0 + *(s32 *)(void *)(slotOffset + ((u8 *)&D_001E66C0_ui + 0xD0)) * 0x4C))->iconId;
+            if (*(s32 *)(void *)(slotOffset + ((u8 *)&D_001E66C0_ui + 0xD4)) == 1) {
+                displayIcon = func_00200198(displayIconId, 2);
+            } else {
+                displayIcon = func_00200198(displayIconId, 0);
+            }
+            i += 1;
+            func_00200468(displayIcon, x, 6, 0x30, 0x30, 0x80808080);
+            x += 0x38;
+        } while (i < 9);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00239CF8);
 
@@ -455,7 +541,7 @@ void func_0023A478(void) {
 /* Retail carries 4 bytes of inter-function padding after this endlabel. */
 __asm__(".section .text\n\tnop\n");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023A5D8);
+LINKER_REMNANT("asm/remnants/text", func_0023A5D8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023A5E0);
 

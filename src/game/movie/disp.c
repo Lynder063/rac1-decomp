@@ -401,7 +401,7 @@ void func_0023C5E0(void *p, int texbuf, int image_w, int image_h) {
 }
 __asm__(".section .text\n\tnop\n");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C7A8); /* vblankHandler */
+ASM_FUNC("asm/handwritten/text", func_0023C7A8); /* vblankHandler */
 
 /* The sample's globals live in one heap block reached through this
    pointer (see videodec.c); voBuf sits at 0xD9168. */

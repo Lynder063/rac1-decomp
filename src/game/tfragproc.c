@@ -313,10 +313,10 @@ extern char D_001E8D10[];
 extern void func_001F9988(int);
 extern void func_001F2568(void);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002352C8);
+ASM_FUNC("asm/handwritten/text", func_002352C8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00235EF0);
+ASM_FUNC("asm/handwritten/text", func_00235EF0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00236060);
+ASM_FUNC("asm/handwritten/text", func_00236060);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002362B0);
+ASM_FUNC("asm/handwritten/text", func_002362B0);

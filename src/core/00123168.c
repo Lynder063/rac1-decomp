@@ -182,7 +182,7 @@ void func_00123208(void *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00123278);
+LINKER_REMNANT("asm/remnants/core_text", func_00123278);
 
 int func_00123280(int arg0) {
     if ((unsigned int)arg0 >> 28 == 7) {

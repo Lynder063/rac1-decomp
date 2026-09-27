@@ -87,9 +87,9 @@ int func_0011D210(void) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D248);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D358);
+LINKER_REMNANT("asm/remnants/core_text", func_0011D358);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D360);
+ASM_FUNC("asm/handwritten/core_text", func_0011D360);
 
 /*
  * A word-at-a-time copy of nbytes (rounded down to words); returns 0.
@@ -108,9 +108,9 @@ int func_0011D370(int *dst, int *src, unsigned int nbytes) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D3A8);
+ASM_FUNC("asm/handwritten/core_text", func_0011D3A8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D3B8);
+ASM_FUNC("asm/handwritten/core_text", func_0011D3B8);
 
 extern int func_0011D3B8(int, int);
 extern void func_0011D360(void *, void *, int);
@@ -171,7 +171,7 @@ int func_0011D3C8(void) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D490);
+ASM_FUNC("asm/handwritten/core_text", func_0011D490);
 
 extern int func_00118EA0(void);
 extern int func_0011D4E0(void);
@@ -190,6 +190,6 @@ int func_0011D4A0(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D4E0);
+ASM_FUNC("asm/handwritten/core_text", func_0011D4E0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D6D4);

@@ -90,7 +90,7 @@ extern void func_0011AA38(int arg0, int arg1, int arg2);
 extern void func_0011B710(void);
 extern int func_0011CBC8(int arg0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001208E8);
+ASM_FUNC("asm/handwritten/core_text", func_001208E8);
 
 extern void func_001208E4();
 extern void func_00118B20(int, void *, int);

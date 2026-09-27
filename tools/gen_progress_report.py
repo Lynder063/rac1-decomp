@@ -9,8 +9,10 @@ report is generated HERE, from a real from-scratch build, and committed
 as progress/report.json. The workflow only validates and uploads it.
 
 Match data is the same audit tools/sweep_matches.py performs: each
-decompiled function is compared with retail on size and bytes. The report
-holds names, addresses, sizes and percentages. It holds no retail bytes.
+decompiled function is compared with retail on size and bytes. Handwritten
+assembly and linker remnants are also compared byte for byte, then counted
+as finished original-source work. The report holds names, addresses, sizes
+and percentages. It holds no retail bytes.
 
 Usage:
   python tools/gen_progress_report.py            from-scratch build, then write
@@ -19,8 +21,8 @@ Usage:
                                                  report is out of date with src/
 
 --check needs neither the toolchain nor the baserom. It re-derives which
-functions have source and compares that with the committed report, so
-forgetting to regenerate after adding C fails the PR.
+functions have C source or classified original assembly and compares that
+with the committed report, so forgetting to regenerate fails the PR.
 """
 import os
 import json
@@ -47,6 +49,7 @@ def ensure_env():
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from libgcc_units import (MODULES, FUNCTIONS as LIBGCC_FUNCTIONS, SEGMENT_SOURCES,
                           object_of)
+from organize_asm import LISTS, entries
 from toolchain import TC, make_sn, sn, start_wineserver
 
 REPORT = Path("progress/report.json")
@@ -57,6 +60,9 @@ LINKED_ELF = "build-sn/rac1.elf"
 # the definition regex is lazy and skips `extern`).
 FUNC_DEF = re.compile(r"^(?!extern\b)[A-Za-z_].*?\b(func_[0-9A-Fa-f]{8})\s*\(", re.M)
 STUB = re.compile(r"INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\)")
+ORIGINAL_ASM = re.compile(
+    r"\b(ASM_FUNC|LINKER_REMNANT)\(\"asm/(handwritten|remnants)/(core_text|text)\",\s*"
+    r"(func_[0-9A-F]{8})\)")
 NONMATCHING = re.compile(r"nonmatching\s+(func_[0-9A-Fa-f]{8}),\s*(0x[0-9A-Fa-f]+)")
 WORD = re.compile(r"/\* [0-9A-F]+ [0-9A-F]{8} ([0-9A-F]{8}) \*/")
 LINKER_FILL = "CDCDCDCD"
@@ -91,6 +97,37 @@ def with_source() -> set[str]:
             stubs = set(STUB.findall(text))
             names |= {n for n in FUNC_DEF.findall(text) if n not in stubs}
     return names
+
+
+def classified_asm() -> dict[str, str]:
+    """Tracked original assembly, checked against its source include macro.
+
+    This validation uses only tracked files, so --check works in CI without
+    a baserom or generated asm directory.
+    """
+    expected = {}
+    for manifest, folder in LISTS:
+        for entry in entries(manifest):
+            segment, name = entry.split("/")
+            if name in expected:
+                sys.exit(f"*** duplicate original assembly classification: {name}")
+            expected[name] = (folder, segment)
+    found = {}
+    for sources in SEGMENT_SOURCES.values():
+        for source in sources:
+            for macro, folder, segment, name in ORIGINAL_ASM.findall(Path(source).read_text()):
+                if macro != {"handwritten": "ASM_FUNC", "remnants": "LINKER_REMNANT"}[folder]:
+                    sys.exit(f"*** {name}: wrong original assembly macro {macro}")
+                if name in found:
+                    sys.exit(f"*** duplicate original assembly include: {name}")
+                found[name] = (folder, segment)
+    if found != expected:
+        missing = sorted(set(expected) - set(found))
+        extra = sorted(set(found) - set(expected))
+        wrong = sorted(n for n in set(found) & set(expected) if found[n] != expected[n])
+        sys.exit(f"*** original assembly manifests disagree with src/: "
+                 f"missing {missing}, extra {extra}, wrong path {wrong}")
+    return {name: folder for name, (folder, _) in expected.items()}
 
 
 def unit_of(name: str, seg: str, vram: int) -> tuple[str, str, str]:
@@ -128,7 +165,7 @@ def build() -> None:
 
 
 def match_results(funcs: dict, decompiled: set[str]) -> dict[str, float]:
-    """name -> fuzzy match percent for decompiled functions (100.0 = exact,
+    """name -> fuzzy match percent for checked functions (100.0 = exact,
     size AND bytes). A size mismatch scores 0: it is not a near-miss, it
     breaks everything after it."""
     from elftools.elf.elffile import ELFFile
@@ -179,7 +216,7 @@ def match_results(funcs: dict, decompiled: set[str]) -> dict[str, float]:
 
 def measures(items: list[tuple[int, float, bool]], units: int = 0, complete_units: int = 0,
              complete_code: int = 0) -> dict:
-    """items: (size, fuzzy%, exact). uint64 fields are strings, as protobuf
+    """items: (size, fuzzy%, finished). uint64 fields are strings, as protobuf
     JSON encodes them."""
     total = sum(s for s, _, _ in items)
     matched = sum(s for s, _, e in items if e)
@@ -206,7 +243,13 @@ def measures(items: list[tuple[int, float, bool]], units: int = 0, complete_unit
 def generate() -> dict:
     funcs = retail_functions()
     decompiled = with_source()
-    fuzzy = match_results(funcs, decompiled)
+    original_asm = classified_asm()
+    if decompiled & original_asm.keys():
+        sys.exit(f"*** C source and original assembly overlap: {sorted(decompiled & original_asm.keys())}")
+    fuzzy = match_results(funcs, decompiled | original_asm.keys())
+    not_exact = sorted(name for name in original_asm if fuzzy[name] != 100.0)
+    if not_exact:
+        sys.exit(f"*** classified original assembly differs from retail: {not_exact}")
 
     units: dict[str, dict] = {}
     for name, (seg, vram, size) in sorted(funcs.items(), key=lambda kv: kv[1][1]):
@@ -236,7 +279,8 @@ def generate() -> dict:
                 "size": str(s),
                 "fuzzy_match_percent": p,
                 "address": str(v - u["start"]),
-                "metadata": {"virtual_address": str(v)},
+                "metadata": ({"virtual_address": str(v), "source_kind": original_asm[n]}
+                             if n in original_asm else {"virtual_address": str(v)}),
             } for n, v, s, p, _ in u["fns"]],
             "metadata": {
                 "complete": complete,
@@ -265,7 +309,8 @@ def check() -> None:
     report = json.loads(REPORT.read_text())
     in_report = {f["name"] for u in report["units"] for f in u["functions"]
                  if f.get("fuzzy_match_percent", 0) > 0}
-    have = with_source()
+    original_asm = classified_asm()
+    have = with_source() | original_asm.keys()
     stale_new = sorted(have - in_report)
     stale_gone = sorted(in_report - have)
     if stale_new or stale_gone:
@@ -275,9 +320,18 @@ def check() -> None:
         for n in stale_gone:
             print(f"  report says decompiled, no source any more: {n}")
         sys.exit("*** regenerate with: python tools/gen_progress_report.py")
+    reported_asm = {f["name"]: f.get("metadata", {}).get("source_kind")
+                    for u in report["units"] for f in u["functions"]
+                    if f.get("metadata", {}).get("source_kind")}
+    if reported_asm != original_asm:
+        sys.exit("*** original assembly classifications changed -- regenerate progress/report.json")
+    unfinished_asm = sorted(f["name"] for u in report["units"] for f in u["functions"]
+                            if f["name"] in original_asm and f["fuzzy_match_percent"] != 100.0)
+    if unfinished_asm:
+        sys.exit(f"*** classified original assembly is not finished in the report: {unfinished_asm}")
     m = report["measures"]
     print(f"report is current: {m['matched_functions']}/{m['total_functions']} functions, "
-          f"{m['matched_code_percent']:.2f}% code matched")
+          f"{m['matched_code_percent']:.2f}% code finished")
 
 
 def main() -> None:
@@ -291,7 +345,7 @@ def main() -> None:
     REPORT.parent.mkdir(exist_ok=True)
     REPORT.write_text(json.dumps(report, indent=1) + "\n", newline="\n")
     m = report["measures"]
-    print(f"wrote {REPORT}: {m['matched_functions']}/{m['total_functions']} functions exact, "
+    print(f"wrote {REPORT}: {m['matched_functions']}/{m['total_functions']} functions finished, "
           f"{m['matched_code_percent']:.2f}% code, {m['complete_units']}/{m['total_units']} units complete")
 
 

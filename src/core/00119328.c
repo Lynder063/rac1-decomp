@@ -38,15 +38,60 @@ extern void func_00117118(void *, void *, int, int);
 extern int func_00119008();
 extern int D_0012FCF0 NOT_SDA;
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119328);
+ASM_FUNC("asm/handwritten/core_text", func_00119328);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119390);
+ASM_FUNC("asm/handwritten/core_text", func_00119390);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001193F8);
+ASM_FUNC("asm/handwritten/core_text", func_001193F8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119460);
+ASM_FUNC("asm/handwritten/core_text", func_00119460);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001194C8);
+typedef struct {
+    unsigned char type;
+    unsigned char id;
+} TopThreadEntry;
+
+typedef struct {
+    int counter;
+    unsigned int pad;
+    TopThreadEntry entries[0x200];
+} TopThreadContext;
+
+extern int D_00154600;
+extern char D_001527E8[];
+extern int func_00118CB0(int);
+extern int func_00118C10(int);
+extern int func_00118BC0(int);
+extern int func_00118C40(int);
+extern int func_0011A690(const char *, ...);
+
+/* topThread: kernel service dispatcher. Adapted from Lombyte (MIT) for PAL. */
+void func_001194C8(void *arg0) {
+    TopThreadContext *ctx = (TopThreadContext *)arg0;
+    int i;
+    unsigned char type;
+
+    for (;;) {
+        func_00118CB0(D_00154600);
+        i = ctx->counter & 0x1FF;
+        ctx->counter = i + 1;
+        type = ctx->entries[i].type;
+        switch (type) {
+        case 0:
+            func_00118C10(ctx->entries[i].id);
+            break;
+        case 1:
+            func_00118BC0(ctx->entries[i].id);
+            break;
+        case 2:
+            func_00118C40(ctx->entries[i].id);
+            break;
+        default:
+            func_0011A690(D_001527E8);
+            break;
+        }
+    }
+}
 
 /*
  * InitThread: start the kernel-side service thread once. Bail with -1 if
@@ -136,9 +181,9 @@ int func_001195A0(void) {
     return D_0012FCF8;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119678);
+ASM_FUNC("asm/handwritten/core_text", func_00119678);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119710);
+LINKER_REMNANT("asm/remnants/core_text", func_00119710);
 
 extern int D_00154A10;
 /* Deci2Call (syscall 0x7C) returns the result; the file's later
@@ -162,7 +207,7 @@ int func_00119718(unsigned short arg0, void *arg1, void *arg2) {
     return func_00118E90_ret(1, buf);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119760);
+LINKER_REMNANT("asm/remnants/core_text", func_00119760);
 
 extern void func_00118E90(int arg0, void *arg1);
 

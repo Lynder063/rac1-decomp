@@ -465,7 +465,7 @@ void func_00234B48(void *data, int qwc) {
     D_00161000 += 4;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234B98);
+LINKER_REMNANT("asm/remnants/text", func_00234B98);
 
 void func_00234BA0(int arg0, void *src, int qwc) {
     D_00161000[0] = qwc | 0x10000000;
@@ -477,7 +477,7 @@ void func_00234BA0(int arg0, void *src, int qwc) {
     D_00161000 += qwc * 4;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234C48);
+LINKER_REMNANT("asm/remnants/text", func_00234C48);
 
 void func_00234C50(int arg0) {
     D_00161000[0] = 0x10000000;
@@ -510,7 +510,7 @@ void func_00234C98(int arg0, long arg1) {
     D_00161000 += 0xC;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234D50);
+LINKER_REMNANT("asm/remnants/text", func_00234D50);
 
 extern int D_0013E600[];
 
@@ -542,7 +542,7 @@ void func_00234D58(int x0, int x1, int y0, int y1) {
 
 __asm__(".section .text\n\tnop\n");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234E78);
+LINKER_REMNANT("asm/remnants/text", func_00234E78);
 
 extern char D_001DF180[];
 
@@ -576,7 +576,7 @@ void func_00234F40(void) {
     D_00161000 += 4;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00234FA0);
+LINKER_REMNANT("asm/remnants/text", func_00234FA0);
 
 extern char D_0013D010[];
 
@@ -636,7 +636,7 @@ void func_002350A8(void) {
     D_0016101C = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00235118);
+ASM_FUNC("asm/handwritten/text", func_00235118);
 
 extern char D_001E8D38[];
 extern char D_001E8D50[];

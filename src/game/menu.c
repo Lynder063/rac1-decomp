@@ -755,7 +755,7 @@ void func_00208688(void *dst, unsigned char *src) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00208858);
+LINKER_REMNANT("asm/remnants/text", func_00208858);
 
 /* Bit counts of the 16 nibbles. */
 typedef struct {
@@ -904,7 +904,7 @@ void func_00208C38(float *out0, float *out1, int arg2, float arg3, float arg4) {
     *out1 = (D_0019EA70[idx].c + D_0019EA70[idx].d * arg4) * (1.0f / 512.0f);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00208D30);
+LINKER_REMNANT("asm/remnants/text", func_00208D30);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00208D38);
 

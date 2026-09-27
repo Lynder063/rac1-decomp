@@ -35,7 +35,7 @@ void func_001F0F30(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F0F70);
+LINKER_REMNANT("asm/remnants/text", func_001F0F70);
 
 typedef struct {
     int x;
@@ -65,7 +65,7 @@ void func_001F0F78(int x, int y, int color, char *str) {
     *(char **)&D_0015F100 += func_00116248(*(char **)&D_0015F100, D_0015F108, str) + 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F0FF0);
+LINKER_REMNANT("asm/remnants/text", func_001F0FF0);
 
 extern int D_00189EC0[];
 
@@ -96,7 +96,7 @@ __asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F1088);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F2410);
+LINKER_REMNANT("asm/remnants/text", func_001F2410);
 
 extern void func_001FA190(void *);
 extern void func_001FA540(void *, void *, void *);
@@ -146,7 +146,7 @@ void func_001F2418(Vec3f *a0, float *a1) {
     a0->y = out[1] * 16.0f;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F2550);
+LINKER_REMNANT("asm/remnants/text", func_001F2550);
 
 void func_001F2558(void) {
 }
@@ -530,7 +530,7 @@ void func_001F45F0(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F4628);
+LINKER_REMNANT("asm/remnants/text", func_001F4628);
 
 extern int *D_00161000 MACRO_ADDR;
 extern int *D_0015F550 MACRO_ADDR;
@@ -944,7 +944,7 @@ void func_001F5650(int y0, int y1, int x0, int x1, unsigned long rgba) {
     D_00161000 = (int *)((char *)D_00161000 + 0x20);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F57F8);
+LINKER_REMNANT("asm/remnants/text", func_001F57F8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F5800); /* DrawTexturedQuad */
 
@@ -954,7 +954,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F5BB8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F5E60);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F62C0);
+LINKER_REMNANT("asm/remnants/text", func_001F62C0);
 
 /* Draws a bevelled frame: the box itself, then three shrinking bars
    above and three below it, all in grey 0x040404 with alpha a. */
@@ -1111,7 +1111,7 @@ void func_001F6968(void *a, void *b, void *c, void *d, void *e) {
     func_001F6668(a, b, c, d, e, mode, D_001DF770);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F69E8);
+LINKER_REMNANT("asm/remnants/text", func_001F69E8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F69F0);
 
@@ -1201,7 +1201,7 @@ void func_001F75D0(void *a, void *b, void *c, void *d) {
     func_001F7070(a, b, c, d, mode, D_001DF770);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F7640);
+LINKER_REMNANT("asm/remnants/text", func_001F7640);
 
 /* FontSetWindow */
 void func_001F7648(void *arg0, int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8) {

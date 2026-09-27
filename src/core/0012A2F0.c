@@ -173,11 +173,11 @@ void func_0012A2F0(void *arg0, unsigned int arg1, int arg2) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012A418);
+ASM_FUNC("asm/handwritten/core_text", func_0012A418);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012A558);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012A718);
+ASM_FUNC("asm/handwritten/core_text", func_0012A718);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012A7E8);
 
