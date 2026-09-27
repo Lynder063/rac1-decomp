@@ -734,7 +734,8 @@ extern void func_001F9CA0(void *, void *, void *);
 /* Camera update, once per frame: count the frame, run the camera
    steps, then (unless the D_0018C418 freeze flag is set) take the view
    from the target object (mode 3 blends it through func_001ED658) and
-   refresh its Euler angles; recompute the listener vectors and, with
+   refresh its Euler angles; run func_001ED708 on the two vectors at
+   D_001871A0, func_001EDB98 and func_001EE858, and, with
    D_0015EEB4 set, the matrix's third row as a cross product. */
 void func_001EDE50(void) {
     char *c;
