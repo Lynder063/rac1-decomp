@@ -969,7 +969,75 @@ void func_001F5148(void) {
     D_00161000 = (int *)((char *)D_00161000 + 0x40);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F5368);
+typedef struct {
+    char pad0[4];
+    int color;
+    long enable;
+    int step0;
+    int color0;
+    long enable0;
+    int step1;
+    int color1;
+    long enable1;
+} Stripes;
+extern short D_0015F450;             /* SDA, gp -0x78B0: Stripes * */
+extern void func_001F5650(int, int, int, int, unsigned long);
+
+#define STRIPES (*(Stripes **)&D_0015F450)
+
+/* Fills the screen in vertical stripes: an optional full-screen colour
+   first, then alternating stripes of widths step0/step1 in colours
+   color0/color1, each with its own GS register 0x42 blend word when set.
+   Adapted from Lombyte (MIT) for PAL. */
+void func_001F5368(void) {
+    int i;
+    short w;
+    long mask;
+    int c;
+    long e;
+    int v14;
+    long e18;
+    int v24;
+    long e28;
+
+    i = 0;
+    w = D_00151880[0xA9];
+    e = STRIPES->enable;
+    if (e != 0) {
+        func_00234C98(0x42, e & 0xFF000000FFL);
+    }
+    c = STRIPES->color;
+    if (c & 0xFF000000) {
+        func_001F5650(0, w, 0, D_00151880[0xA8], (unsigned long)((long)c << 0x20) >> 0x20);
+    }
+    if (w > 0) {
+        mask = 0xFF000000FFL;
+        do {
+            e18 = STRIPES->enable0;
+            if (e18 != 0) {
+                func_00234C98(0x42, e18 & mask);
+            }
+            v14 = STRIPES->color0;
+            if (v14 & 0xFF000000) {
+                func_001F5650(i, (i + STRIPES->step0 < w - 1) ? i + STRIPES->step0 : w - 1, 0,
+                              D_00151880[0xA8], (unsigned long)((long)v14 << 0x20) >> 0x20);
+            }
+            i = i + STRIPES->step0;
+            e28 = STRIPES->enable1;
+            if (e28 != 0) {
+                func_00234C98(0x42, e28 & mask);
+            }
+            v24 = STRIPES->color1;
+            if (v24 & 0xFF000000) {
+                func_001F5650(i, (i + STRIPES->step1 < w - 1) ? i + STRIPES->step1 : w - 1, 0,
+                              D_00151880[0xA8], (unsigned long)((long)v24 << 0x20) >> 0x20);
+            }
+            i = i + STRIPES->step1;
+        } while (i < w);
+    }
+}
+
+#undef STRIPES
 
 extern void func_001F5650(int, int, int, int, unsigned long);
 extern int D_0015EF88 MACRO_ADDR;

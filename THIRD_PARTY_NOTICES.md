@@ -27,6 +27,7 @@ The following functions adapt source from
 - `src/game/memcard.c`: `func_0020BBC8` (memcard_PrepData)
 - `src/core/0011CCE0.c`: `func_0011CE70` (`_sceSifLoadModuleBuffer`)
 - `src/game/loaders.c`: `func_00205220` (ParseSpaceSceneChunk)
+- `src/game/draw.c`: `func_001F5368` (screen stripe fill)
 
 MIT License
 
