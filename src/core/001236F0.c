@@ -863,7 +863,41 @@ int func_00124BC8(void *param, char *buf) {
 
 LINKER_REMNANT("asm/remnants/core_text", func_00124D10);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124D18);
+extern char D_0015B650[];
+extern void *func_00125078(int);
+extern int func_00125020(int);
+extern int func_00125160(unsigned char *, int *);
+extern void *func_00115248(void *, void *, int);
+
+/* Read entry id's current record into dst: open the entry if it is not
+   (func_00125020), fetch the record (func_00125078), copy its p[2]-byte
+   payload from +0x1C and hand the bytes after it to func_00125160 with
+   the entry's slot array. Returns the length, or -1. */
+int func_00124D18(int id, void *dst) {
+    unsigned char *p;
+
+    if (*(int *)((char *)D_0015B640 + id * 0x330) == 0) {
+        return -1;
+    }
+    if (D_0015B640[id].unk_04 == 0) {
+        if (func_00125020(id) < 0) {
+            return -1;
+        }
+    }
+    p = (unsigned char *)func_00125078(id);
+    if (p[2] != 0) {
+        unsigned char *src = p + 0x1C;
+
+        if (src != 0) {
+            func_00115248(dst, src, p[2]);
+            func_00125160(p + 0x1C + p[2], (int *)(D_0015B650 + id * 0x330));
+        }
+    }
+    if (*(int *)(p + 4) == 0) {
+        return -1;
+    }
+    return p[2];
+}
 
 /* 0x330-stride entry table. Declared as a real struct array, not
    `char[]` + byte offset: the two are not codegen-equivalent. Indexing a
