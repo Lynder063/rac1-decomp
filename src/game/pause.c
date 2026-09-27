@@ -3913,7 +3913,62 @@ void func_00228268(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002282B8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002282D0);
+extern float D_00160470[] MACRO_ADDR;
+extern float D_00160470_x __asm__("D_00160470");
+extern float D_00160474;
+extern float D_00160478;
+extern float D_00160480[] MACRO_ADDR;
+extern float D_00160480_x __asm__("D_00160480") MACRO_ADDR;
+extern float D_00160484;
+extern float D_00160488;
+extern float D_00160490;
+extern float D_00160494;
+extern float D_00160498;
+extern void func_001F9CA0(void *, void *, void *);
+
+typedef struct {
+    float v[4];
+} __attribute__((aligned(16))) PauseVec;
+
+/* Build a basis from dir: D_00160470 = dir normalised,
+   D_00160490 = that scaled, and D_00160480 = the cross product with a
+   vector built from dir's components reordered (the smallest moved), so
+   the result is perpendicular, then normalised. Compiled with
+   -mno-split-addresses (config/func_cflags.txt): every global goes
+   through the assembler's lui $at macro, and only D_00160480, declared
+   small, uses $gp when it lands in a delay slot. The aligned struct
+   copy is schedulable where qcopy's asm is not. */
+void func_002282D0(PauseVec *dir, float scale) {
+    PauseVec d;
+    float *v = d.v;
+
+    d = *dir;
+    func_001F9DC0(D_00160470, v, 1.0f);
+    D_00160490 = D_00160470_x * scale;
+    D_00160494 = D_00160474 * scale;
+    D_00160498 = D_00160478 * scale;
+    if (v[0] < v[1]) {
+        if (v[0] < v[2]) {
+            D_00160480_x = v[0];
+            D_00160484 = v[2];
+            D_00160488 = v[1];
+        } else {
+            D_00160480_x = v[1];
+            D_00160484 = v[0];
+            D_00160488 = v[2];
+        }
+    } else if (v[1] < v[2]) {
+        D_00160480_x = v[2];
+        D_00160484 = v[1];
+        D_00160488 = v[0];
+    } else {
+        D_00160480_x = v[1];
+        D_00160484 = v[0];
+        D_00160488 = v[2];
+    }
+    func_001F9CA0(D_00160480, D_00160480, D_00160470);
+    func_001F9DC0(D_00160480, D_00160480, 1.0f);
+}
 
 /*
  * Dispatch on a leading short: 0 and 1 each call a handler and advance

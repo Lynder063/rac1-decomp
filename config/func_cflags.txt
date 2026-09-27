@@ -6,3 +6,4 @@
 # -mno-split-addresses: retail reaches every global of the function
 # through the assembler's `lui $at` macro, not a %hi/%lo split, while its
 # neighbours in the same file use the split form. See docs/LEVERS.md.
+func_002282D0  -mno-split-addresses
