@@ -396,8 +396,11 @@ struct VendorItemResource {
 extern u8 D_001864D0[];
 extern struct VendorMenuState D_001E66C0_ui __asm__("D_001E66C0");
 extern s32 func_001F9B70();
-/* Vendor item carousel and icon pulse. Two constant-load order differences
-   remain in the two solid black draw calls (16 bytes of 756). */
+extern void func_001FBAB8_u(int, int, int, int, int, int, unsigned int)
+    __asm__("func_001FBAB8");
+
+/* Vendor item carousel and icon pulse. The solid black draw calls use the
+   unsigned color signature, matching retail's argument setup order. */
 void func_00239A00(void) {
     s32 selectedOffset;
     s32 slotOffset;
@@ -420,7 +423,7 @@ void func_00239A00(void) {
         selectedOffset = D_001E66C0_ui.selectedIndex * 0x38;
         pulseColor = ((func_001F9B70(((D_001E66C0_ui.pulseTick * 4) & 0x3F) - 0x20) + 0x40) * 0x10202) | 0x80000000;
         func_001FBAB8(selectedOffset + 8, 2, selectedOffset + 0x40, 0x3A, 0x200, 0x80, pulseColor);
-        func_001FBAB8(selectedOffset + 0xA, 4, selectedOffset + 0x3E, 0x38, 0x200, 0x80, 0x80000000);
+        func_001FBAB8_u(selectedOffset + 0xA, 4, selectedOffset + 0x3E, 0x38, 0x200, 0x80, 0x80000000);
         if (D_001E66C0_ui.slotCount > 0) {
             do {
                 slotKind = (s32 *) (void *) ((u8 *)&D_001E66C0_ui + 0xD4 + itemIndex * 0x14);
@@ -442,7 +445,7 @@ void func_00239A00(void) {
             D_001E66C0_ui.scrollOffset = (s32) (D_001E66C0_ui.scrollOffset - 4);
         } else {
             func_001FBAB8(0xB0, 2, 0xE8, 0x3A, 0x200, 0x80, ((func_001F9B70(((D_001E66C0_ui.pulseTick * 4) & 0x3F) - 0x20) + 0x40) * 0x10202) - (s32) 0x80000000);
-            func_001FBAB8(0xB2, 4, 0xE6, 0x38, 0x200, 0x80, 0x80000000);
+            func_001FBAB8_u(0xB2, 4, 0xE6, 0x38, 0x200, 0x80, 0x80000000);
         }
         x = D_001E66C0_ui.scrollOffset - 0x64;
         i = -2;
