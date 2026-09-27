@@ -23,6 +23,72 @@ extern void func_00114438(void *, void *);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00113B70);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00113E90);
+typedef struct MallocChunk {
+    unsigned int prev_size;
+    unsigned int size;
+    struct MallocChunk *fd;
+    struct MallocChunk *bk;
+} MallocChunk;
+
+typedef struct { char pad[8]; MallocChunk *av2[1]; } MallocState; /* av_[2] = top */
+
+extern MallocState D_0012F888;
+extern char *D_0012FCA0; /* malloc_sbrk_base */
+extern int D_0012FCB8;   /* current_mallinfo.arena (sbrked_mem) */
+
+extern void func_001154C0(void *); /* MALLOC_LOCK (__malloc_lock, empty) */
+extern void func_001154C8(void *); /* MALLOC_UNLOCK (__malloc_unlock, empty) */
+extern void *func_001161E8(void *reent_ptr, int size); /* _sbrk_r */
+
+#define TOP (D_0012F888.av2[0])
+
+/* newlib malloc_trim (_malloc_trim_r): gives whole pages of the top chunk
+ * back to the system with sbrk when it is more than a page bigger than
+ * needed after `pad`, checking first that nothing else moved the break;
+ * on failure it resyncs top and sbrked_mem with the real break. The
+ * `arena` pointer in the last block is load-bearing: it steers the delay
+ * slot of the branch before it. */
+int func_00113E90(void *reent_ptr, unsigned int pad) {
+    long top_size;
+    long extra;
+    char *current_brk;
+    char *new_brk;
+    unsigned long pagesz = 0x1000;
+
+    func_001154C0(reent_ptr);
+
+    top_size = TOP->size & ~3u;
+    extra = ((top_size - pad - 0x10 + (pagesz - 1)) / pagesz - 1) * pagesz;
+
+    if (extra < (long)pagesz) {
+        func_001154C8(reent_ptr);
+        return 0;
+    }
+
+    current_brk = (char *)func_001161E8(reent_ptr, 0);
+    if (current_brk != (char *)TOP + top_size) {
+        func_001154C8(reent_ptr);
+        return 0;
+    }
+
+    new_brk = (char *)func_001161E8(reent_ptr, -extra);
+
+    if (new_brk == (char *)-1) {
+        current_brk = (char *)func_001161E8(reent_ptr, 0);
+        top_size = current_brk - (char *)TOP;
+        if (top_size >= 0x10) {
+            D_0012FCB8 = current_brk - D_0012FCA0;
+            TOP->size = top_size | 1;
+        }
+        func_001154C8(reent_ptr);
+        return 0;
+    } else {
+        int *arena = &D_0012FCB8;
+        TOP->size = (top_size - extra) | 1;
+        *arena -= extra;
+        func_001154C8(reent_ptr);
+        return 1;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00113FFC);
