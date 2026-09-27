@@ -630,7 +630,17 @@ void func_0012F120(int arg0, int arg1, int arg2, int arg3) {
 
 LINKER_REMNANT("asm/remnants/core_text", func_0012F160);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F1A8);
+/* Command 0x3B with six ints, waiting for the reply. */
+int func_0012F1A8(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5) {
+    int local[6];
+    local[0] = arg0;
+    local[1] = arg1;
+    local[2] = arg2;
+    local[3] = arg3;
+    local[4] = arg4;
+    local[5] = arg5;
+    return func_0012E688(0x3B, 0x18, local);
+}
 
 /* snd_ResetMovieSound */
 void func_0012F1E8(void) {
