@@ -573,7 +573,16 @@ int func_0012F068(int arg0) {
 
 LINKER_REMNANT("asm/remnants/core_text", func_0012F098);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F0A8);
+/* Command 0x50 with five ints. */
+void func_0012F0A8(int arg0, int arg1, int arg2, int arg3, int arg4) {
+    int local[5];
+    local[0] = arg0;
+    local[1] = arg1;
+    local[2] = arg2;
+    local[3] = arg3;
+    local[4] = arg4;
+    func_0012E820(0x50, 0x14, local, 0, 0);
+}
 
 /* snd_PreAllocReverbWorkArea */
 void func_0012F0E8(int arg0, int arg1) {
