@@ -458,7 +458,29 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001241F0);
 
 LINKER_REMNANT("asm/remnants/core_text", func_00124338);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124340);
+/* RPC 0x10 with two request words, as func_00124528 below. */
+int func_00124340(int arg0, int arg1) {
+    char *cd = D_00159B00;
+    int *buf;
+    int r;
+
+    if (*(int *)(cd + 0x24) == 0) {
+        return -100;
+    }
+    if (func_00118CC0(D_00132EAC) < 0) {
+        return -200;
+    }
+    buf = &D_00159B80;
+    buf[1] = arg0;
+    buf[2] = arg1;
+    r = func_0011B4C8(cd, 0x10, 1, buf, 0x30, D_0015B0C0, 4, 0, 0);
+    if (r == 0) {
+        D_00132EA8 = 0x10;
+    } else {
+        func_00118C90(D_00132EAC);
+    }
+    return r;
+}
 
 extern char D_00159B00[];
 extern int D_00132EAC;
