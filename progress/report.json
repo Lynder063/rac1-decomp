@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 32.89672554896219,
+  "fuzzy_match_percent": 32.93708725858116,
   "total_code": "465788",
-  "matched_code": "151108",
-  "matched_code_percent": 32.441368176080104,
+  "matched_code": "151296",
+  "matched_code_percent": 32.481729885699075,
   "total_functions": 1658,
-  "matched_functions": 984,
-  "matched_functions_percent": 59.348612786489745,
+  "matched_functions": 985,
+  "matched_functions_percent": 59.408926417370324,
   "complete_code": "15260",
   "complete_code_percent": 3.2761685573694472,
   "total_units": 121,
@@ -2127,13 +2127,13 @@
   {
    "name": "core/00119868",
    "measures": {
-    "fuzzy_match_percent": 28.173374613003094,
+    "fuzzy_match_percent": 42.72445820433437,
     "total_code": "1292",
-    "matched_code": "364",
-    "matched_code_percent": 28.173374613003094,
+    "matched_code": "552",
+    "matched_code_percent": 42.72445820433437,
     "total_functions": 7,
-    "matched_functions": 4,
-    "matched_functions_percent": 57.142857142857146,
+    "matched_functions": 5,
+    "matched_functions_percent": 71.42857142857143,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -2197,7 +2197,7 @@
     {
      "name": "func_00119CC8",
      "size": "188",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "1120",
      "metadata": {
       "virtual_address": "1154248"
@@ -17967,13 +17967,13 @@
    "id": "game",
    "name": "Game",
    "measures": {
-    "fuzzy_match_percent": 32.356363732171715,
+    "fuzzy_match_percent": 32.39764104545774,
     "total_code": "455456",
-    "matched_code": "145248",
-    "matched_code_percent": 31.890676596641608,
+    "matched_code": "145436",
+    "matched_code_percent": 31.931953909927632,
     "total_functions": 1624,
-    "matched_functions": 953,
-    "matched_functions_percent": 58.68226600985221,
+    "matched_functions": 954,
+    "matched_functions_percent": 58.74384236453202,
     "complete_code": "9400",
     "complete_code_percent": 2.0638656643012716
    }
