@@ -13,7 +13,8 @@ function's name, your role and your budget. Everything else is here, in
   pins, no inline assembly inside a function, no artificial barriers
   (`__asm__("" : ...)`, `do { } while (0)`). A match that needs one isn't a
   match: report the best plain-C candidate instead. Prefer real structs to
-  raw offset arithmetic.
+  raw offset arithmetic. Retail's 16-byte vector copies (`lq $2,0(a)` then
+  `sq $2,0(b)`) are `qcopy(dst, src)` from `include/common.h`: call it.
 - Write only inside `build-sn/try/<func>/`. Never edit `src/`, `include/`,
   `config/`, `tools/` or `docs/`, never run the full build, never commit.
 - Every `try_func` run counts against your budget, `--diff` reruns

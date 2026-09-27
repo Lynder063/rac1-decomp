@@ -105,7 +105,9 @@ in `config/core_rodata.txt`).
    ([LLM_DECOMP_INSTRUCTIONS.md](LLM_DECOMP_INSTRUCTIONS.md)), and
    `tools/integrate.py` refuses a candidate that uses one. `__asm__` is only
    for file-scope aliases (`extern T D_x_alias __asm__("D_x");`) and padding
-   directives.
+   directives. The one exception is retail's own vector copy: `lq $2,0(a)`
+   then `sq $2,0(b)` is `qcopy(dst, src)` in `include/common.h`. A 128-bit
+   zero store is plain C (`*(long long *)p = 0`).
 
 ## What to hand back
 
