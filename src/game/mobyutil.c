@@ -264,7 +264,54 @@ void func_00213D28(MobyAnim *m, int seq, int frame) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00213DE0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00213F28);
+extern float func_001FA888(int arg0);
+extern void func_0020FC38(void *, int);
+extern char D_001B2F80[];
+
+/* Re-registers this MobyAnim in the shared slot table (D_001B2F40, via
+   func_0020DA68) when it hasn't settled yet (unk54 > 0.025, or unk60/unk64
+   nonzero) or the caller forces it (arg4 & 4): builds a flags byte from
+   arg4 bits 0/1 (0x100/0x200), hands it to func_0020FC38, snapshots this
+   moby's unkF0 vector into the matching D_001B2F80 slot, remembers the
+   old seq in unkA5 (unless it was already 0xFF), then marks seq 0xFF and
+   frame = slot. Either way it then sets nextFrame/prevSeq from arg2/arg1,
+   refreshes frame pointers (func_0020D6D0), arms the timer (unk58 = 1),
+   resets unk54, clears unk70 bit 1, stores 1/func_001FA888(arg3) into
+   unk5C, and copies a not-yet-named byte (offset 0x11) out of
+   pClass->seqs[arg1] into unk7C. */
+void func_00213F28(MobyAnim *arg0, int arg1, int arg2, int arg3, int arg4) {
+    int slot;
+    int flags;
+    unsigned char oldSeq;
+    float scale;
+
+    if (*(float *)((char *)arg0 + 0x54) > 0.025f ||
+        *(int *)((char *)arg0 + 0x60) != 0 ||
+        *(int *)((char *)arg0 + 0x64) != 0 || (arg4 & 4)) {
+        slot = func_0020DA68((int)arg0);
+        if (slot >= 0) {
+            flags = (arg4 & 1) ? (slot | 0x100) : slot;
+            func_0020FC38(arg0, (arg4 & 2) ? (flags | 0x200) : flags);
+            qcopy(D_001B2F80 + slot * 0x10, (char *)arg0 + 0xF0);
+            oldSeq = arg0->seq;
+            if (oldSeq != 0xFF) {
+                *(unsigned char *)((char *)arg0 + 0xA5) = oldSeq;
+            }
+            arg0->seq = 0xFF;
+            arg0->frame = slot;
+        }
+    }
+    arg0->nextFrame = arg2;
+    arg0->prevSeq = arg1;
+    func_0020D6D0_a(arg0);
+    *(float *)((char *)arg0 + 0x58) = 1.0f;
+    scale = 1.0f / func_001FA888(arg3);
+    *(float *)((char *)arg0 + 0x54) = 0.0f;
+    arg0->unk70 = (unsigned char)(arg0->unk70 & 0xFD);
+    arg0->unk5C = scale;
+    *(unsigned char *)((char *)arg0 + 0x7C) =
+        *((unsigned char *)arg0->pClass->seqs[arg1] + 0x11);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00214080);
 
