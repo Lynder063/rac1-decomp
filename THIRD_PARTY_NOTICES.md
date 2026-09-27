@@ -11,6 +11,7 @@ The following functions adapt source from
 - `src/game/hud.c`: `func_00201190` (HUD sprite with explicit UV corners)
 - `src/game/vendor.c`: `func_00239A00` (vendor item carousel)
 - `src/game/lights.c`: `func_002027C0` (detach point light)
+- `src/core/0011D0D0.c`: `func_0011D248` (`sceSifRebootIop`)
 
 MIT License
 

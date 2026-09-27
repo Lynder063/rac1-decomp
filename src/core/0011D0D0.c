@@ -85,7 +85,40 @@ int func_0011D210(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D248);
+extern char D_00152A60[];   /* "rom0:UDNL " */
+extern char D_00152A70[];
+extern void func_0011A6C8();
+extern void func_0011AE20(int);
+extern void func_0011AFC0(void);
+
+/* sceSifRebootIop: reset the IOP with "rom0:UDNL " + img (at most 80
+   characters). Adapted from Lombyte (MIT) for PAL. */
+int func_0011D248(char *img) {
+    char *prefix = D_00152A60;
+    char param[80];
+    char *p;
+    char *d;
+
+    p = img;
+    while (*p) {
+        p++;
+    }
+    if ((unsigned int)(p + 11 - img) > 80) {
+        func_0011A6C8(D_00152A70, img);
+        return 0;
+    }
+    func_0011AE20(0);
+    func_0011AFC0();
+    d = param;
+    while (*prefix) {
+        *d++ = *prefix++;
+    }
+    while (*img) {
+        *d++ = *img++;
+    }
+    *d = 0;
+    return func_0011D0D0(param, 0);
+}
 
 LINKER_REMNANT("asm/remnants/core_text", func_0011D358);
 
