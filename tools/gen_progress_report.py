@@ -279,8 +279,9 @@ def generate() -> dict:
                 "size": str(s),
                 "fuzzy_match_percent": p,
                 "address": str(v - u["start"]),
-                "metadata": ({"virtual_address": str(v), "source_kind": original_asm[n]}
-                             if n in original_asm else {"virtual_address": str(v)}),
+                # objdiff's schema allows no other per-function metadata;
+                # the asm classification lives in config/ (checked by --check).
+                "metadata": {"virtual_address": str(v)},
             } for n, v, s, p, _ in u["fns"]],
             "metadata": {
                 "complete": complete,
@@ -320,11 +321,6 @@ def check() -> None:
         for n in stale_gone:
             print(f"  report says decompiled, no source any more: {n}")
         sys.exit("*** regenerate with: python tools/gen_progress_report.py")
-    reported_asm = {f["name"]: f.get("metadata", {}).get("source_kind")
-                    for u in report["units"] for f in u["functions"]
-                    if f.get("metadata", {}).get("source_kind")}
-    if reported_asm != original_asm:
-        sys.exit("*** original assembly classifications changed -- regenerate progress/report.json")
     unfinished_asm = sorted(f["name"] for u in report["units"] for f in u["functions"]
                             if f["name"] in original_asm and f["fuzzy_match_percent"] != 100.0)
     if unfinished_asm:
