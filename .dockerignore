@@ -2,3 +2,5 @@
 # tiny: a working tree also holds toolchain/, baserom/ and asm/.
 *
 !requirements.txt
+# tools/docker/ghidra-mcp/Dockerfile copies its entrypoint.
+!tools/docker/ghidra-mcp/entrypoint.sh
