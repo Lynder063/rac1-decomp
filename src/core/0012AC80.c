@@ -697,7 +697,109 @@ int func_0012C058(void *arg0, int arg1, int arg2) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C0A0);
+struct MpegFieldDec
+{
+  int unk0;
+  int unk4;
+  int unk8;
+  unsigned char pad_C[0xA0];
+  int unkAC;
+  unsigned char pad_B0[0x24];
+  int unkD4;
+  unsigned char pad_D8[0x40];
+  int unk118;
+  int unk11C;
+  int unk120;
+  unsigned char pad_124[0x50];
+  int unk174;
+};
+struct MpegHandle
+{
+  unsigned char pad_0[0x8];
+  int unk8;
+  unsigned char pad_C[0x34];
+  struct MpegFieldDec *unk40;
+};
+extern int func_00129530();
+extern int func_00129690();
+extern void func_00129600();
+/* _decodeOrSkipField (libmpeg). Adapted from Lombyte (MIT) for PAL. */
+int func_0012C0A0(void *handle, int arg1, int arg2)
+{
+  struct MpegHandle *arg0 = handle;
+  struct MpegFieldDec *p;
+  int decode;
+  unsigned int ref;
+  int want;
+  long r;
+  int ret;
+  int gate;
+  decode = 0;
+  p = arg0->unk40;
+  p->unk120 = 0;
+  if ((arg2 == (-1)) || (arg1 < arg2))
+  {
+    decode = 1;
+  }
+  if (p->unk8 == 0)
+  {
+    arg0->unk8 = 0;
+    p->unk8 = 1;
+  }
+  r = func_00129690(p, 0);
+  if ((r != 0) && (decode != 0))
+  {
+    func_00129530(p);
+  }
+  p->unk120 = 1;
+  r = func_00128C90(p);
+  if (r == 0)
+  {
+    func_0012C200(arg0);
+    p->unk0 = 1;
+    return 0;
+  }
+  want = 2;
+  if (p->unkD4 != 1)
+  {
+    want = 1;
+  }
+  if (p->unk174 != want)
+  {
+    return -1;
+  }
+  ref = func_00129690(p, 1);
+  gate = 0;
+  if (ref != 0)
+  {
+    gate = 1;
+  }
+  ret = 0;
+  if (gate != 0)
+  {
+    if (decode == 0)
+    {
+      goto out;
+    }
+    r = func_00129530(p);
+    if (r != 0)
+    {
+      ret = 1;
+    }
+  }
+  out:
+  func_00129600(p, p->unk118, p->unk4);
+
+  p->unk120 = 0;
+  arg0->unk8 = p->unk118 - p->unkAC;
+  p->unk118 = p->unk118 + 1;
+  p->unk4 = (unsigned long long) (p->unk4 + 1);
+  if (decode == 0)
+  {
+    func_0012BCC8((int)arg0);
+  }
+  return ret;
+}
 
 extern void func_0012C278(void *);
 

@@ -22,6 +22,7 @@ The following functions adapt source from
 - `src/core/00125630.c`: `func_001273A0` (`_waitBdecOut`)
 - `src/core/00125630.c`: `func_001286E8` (`_ipuVdec`)
 - `src/core/00125630.c`: `func_001299E8` (`_cpr8`)
+- `src/core/0012AC80.c`: `func_0012C0A0` (`_decodeOrSkipField`)
 
 MIT License
 
