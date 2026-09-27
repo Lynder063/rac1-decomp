@@ -3222,7 +3222,58 @@ void func_00225DF8(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00225E00);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00225FB8);
+extern char D_001864D0_a[] __asm__("D_001864D0");
+extern int func_0020E3D0(void *);
+extern void func_0020ED48(void *);
+extern void func_0020DAF8(int, int, void *);
+extern void func_00214F78(void *);
+extern void func_0020EEE8(void *);
+extern void func_001E9800(void *, void *, int, int, int);
+
+typedef struct {
+    char pad00[0x10];
+    float pos[4];       /* 0x10 */
+    char pad20[4];
+    int sound;          /* 0x24 */
+    char pad28[0x28];
+    int x50;            /* 0x50 */
+    int x54;            /* 0x54 */
+    char pad58[0x10];
+    char *x68;          /* 0x68 */
+    char *x6C;          /* 0x6C */
+    char pad70[8];
+    char **cls;         /* 0x78 */
+    char pad7C[0x2A];
+    short oclass;       /* 0xA6 */
+    char padA8[0x18];
+    float mtx[16];      /* 0xC0 */
+} PauseMoby;
+
+/* Moby update: refresh its matrix from bone 4 of its class (+0x44),
+   copying the translation row to the position, re-register it, start
+   its idle sound (6 for class 0x1B1, else 0) on the D_001864D0 table
+   and reset the sound fields. */
+void func_00225FB8(PauseMoby *m) {
+    float mtx[16];
+    int id = *(int *)(*m->cls + 0x44);
+
+    func_0020E3D0(m);
+    func_0020ED48(m);
+    func_0020DAF8(id, 4, mtx);
+    qcopy(m->pos, &mtx[12]);
+    func_001FA480(m->mtx, mtx);
+    func_00214F78(m->mtx);
+    func_0020EEE8(m);
+    if (m->oclass == 0x1B1) {
+        func_001E9800(D_001864D0_a, D_001864D0, m->sound, 6, id);
+    } else {
+        func_001E9800(D_001864D0_a, D_001864D0, m->sound, 0, id);
+    }
+    m->x50 = 0;
+    m->x68 = D_001864D0;
+    m->x54 = 0;
+    m->x6C = D_001864D0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002260A8);
 
