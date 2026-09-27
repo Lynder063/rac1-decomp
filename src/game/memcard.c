@@ -201,7 +201,7 @@ int func_00209BB8(void) {
 extern int D_001A05C0[];
 extern int D_001A08C0[];
 extern int func_0020BAD8(int *p);
-extern void func_0020BD70(void *src, int i, int *table);
+extern int func_0020BD70(void *src, int i, int *table);
 extern int func_001E9730();
 extern char D_001E8500[];
 
@@ -468,7 +468,106 @@ void func_0020BCB0(char *buf, int slot, int idx) {
     memcpy(D_0013D390_s[slot].e[idx].name, buf, 8);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0020BD70); /* memcard_RestoreData(char *, char *, int, mc_data *) */
+struct RestoreEntry {
+    unsigned char *data;
+    int size;
+    int id;
+    int status;
+};
+struct RestoreBlock {
+    int id;
+    int size;
+    unsigned char data[1];
+};
+typedef struct {
+    char pad0[0xB4];
+    int errors;           /* 0xB4 */
+    char padB8[8];
+} RestoreCardSlot;
+typedef struct {
+    RestoreCardSlot slot[1];
+    char padC0[0xC];
+    int cur;              /* 0xCC */
+} RestoreCardState;
+extern RestoreCardState D_0013D390_c __asm__("D_0013D390");
+extern short D_0015FF50;               /* SDA, gp -0x6DB0: mismatch count */
+extern int func_001151B4(const void *, const void *, int); /* memcmp */
+
+/* memcard_RestoreData: unpack the save blocks after buf's 8-byte header
+   into the table entries with the same id (slot selects the element),
+   marking each entry 1 (same size), -1 (block shorter) or -2 (longer),
+   and count blocks with no entry, a wrong total and entries left
+   unrestored as errors, stored in the current card slot. Adapted from
+   Lombyte (MIT) for PAL. */
+int func_0020BD70(void *src, int slot, int *table) {
+    unsigned char *buf = src;
+    struct RestoreEntry *tbl = (struct RestoreEntry *)table;
+    struct RestoreEntry *e;
+    int errors;
+    int total;
+    int i;
+    int n;
+    unsigned char *dst;
+
+    if (func_0020BB88((char *)buf) == 0) {
+        return 1;
+    }
+    buf += 8;
+    errors = 0;
+    total = 8;
+    for (i = 0; tbl[i].data != 0; i++) {
+        tbl[i].status = 0;
+    }
+    while (((struct RestoreBlock *)buf)->id != -1) {
+        i = 0;
+        if (tbl[0].data == 0) {
+            goto missing;
+        }
+        while (tbl[i].id != ((struct RestoreBlock *)buf)->id) {
+            i++;
+            if (tbl[i].data == 0) {
+                goto missing;
+            }
+        }
+        e = (struct RestoreEntry *)(((unsigned int)i << 4) + (unsigned int)tbl);
+        if (e->data != 0) {
+            int bsize = ((struct RestoreBlock *)buf)->size;
+
+            dst = e->data + slot * e->size;
+            if (bsize == e->size) {
+                n = e->size;
+                e->status = 1;
+            } else if (bsize < e->size) {
+                n = bsize;
+                e->status = -1;
+            } else {
+                n = e->size;
+                e->status = -2;
+            }
+            if (func_001151B4(dst, ((struct RestoreBlock *)buf)->data, n) != 0) {
+                (*(int *)&D_0015FF50)++;
+            }
+            func_001F9A00(dst, ((struct RestoreBlock *)buf)->data, n);
+            total += ((n + 3) & ~3) + 8;
+        } else {
+        missing:
+            errors++;
+        }
+        buf += ((((struct RestoreBlock *)buf)->size + 3) & ~3) + 8;
+    }
+    total += 8;
+    if (total != func_0020BAD8((int *)tbl)) {
+        errors++;
+    }
+    buf += 8;
+    for (i = 0; tbl[i].data != 0 && tbl[i].id != ((struct RestoreBlock *)buf)->id; i++) {
+        if (tbl[i].status <= 0) {
+            errors++;
+        }
+    }
+    D_0013D390_c.slot[D_0013D390_c.cur].errors = errors;
+    return errors;
+}
 
 extern void func_00121A80(void *);
 extern void func_0012D818(void *);

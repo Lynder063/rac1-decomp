@@ -29,6 +29,7 @@ The following functions adapt source from
 - `src/game/loaders.c`: `func_00205220` (ParseSpaceSceneChunk)
 - `src/game/draw.c`: `func_001F5368` (screen stripe fill)
 - `src/core/00114060.c`: `func_00114060` (`__sfvwrite`)
+- `src/game/memcard.c`: `func_0020BD70` (memcard_RestoreData)
 
 MIT License
 
