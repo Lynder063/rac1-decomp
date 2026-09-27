@@ -185,6 +185,25 @@ in `config/core_rodata.txt`).
       rac1.ld.sh) (func_0011CE70).
     - A function whose callee's result sits in `$v0` untouched at the end
       under 2.9-ee: `return callee(...)` (func_0012BB30).
+    - `lq`/`sq` through `$v0` that stays inside a loop, while values read
+      before it are not reloaded after it: `qcopy`, with the values it
+      must not clobber held in locals (func_001F4C30).
+    - A `lui`-reached global that also shows up `$gp`-relative in branch
+      delay slots: plain `MACRO_ADDR` does both (func_001F5148). Keep
+      short aliases away from such a symbol: the assembler takes the
+      `.extern` size of the file's first declaration of the name.
+    - `x < CONST` where retail compares against a register holding CONST:
+      compare against a variable (`end = (char *)0x70002000`), since
+      `fold` rewrites a literal to `x <= CONST-1`.
+    - A loop invariant that retail spills to the stack in the preheader:
+      declare it inside the loop body, so loop motion (not sched1)
+      places it (func_00220690, near-miss).
+    - A register freed only because an argument was evaluated earlier:
+      pass the call-containing expression inline as the argument, and the
+      other arguments are computed before the call (func_0021AEF8).
+    - Replacing a stub whose `.s` has nops after `endlabel`: reproduce
+      them with a file-scope `__asm__(".section .text\n\tnop...")`
+      (func_0022F258), or the whole segment shifts.
 
 ## Known walls: stop and report
 
