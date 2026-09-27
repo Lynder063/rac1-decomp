@@ -339,7 +339,80 @@ unsigned char func_0022F128(void) {
     return flag;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022F258);
+typedef struct {
+    float v[4][4];     /* 0x00 */
+    int rgba[4];       /* 0x40 */
+    char uv[0x20];     /* 0x50 */
+    long gs[4];        /* 0x70 */
+} Quad_FBE0;
+
+extern char D_001D9B40[];
+extern void func_001F7EF8(void *, int, int);
+extern int D_0015F6E8 MACRO_ADDR;
+extern int func_001F98C0(int);
+extern void func_001F9C48(void *, void *, float);
+extern int func_001FA9E8(void *, int *, float);
+extern float func_00214358(void *, int, float);
+typedef struct {
+    char pad[0x20];
+    int mode;
+    short level;
+    short set;
+} FlareCfg;
+extern FlareCfg D_0013E130;
+extern float D_001D9B60[][4][4];
+
+/* Draws a light flare quad at arg0's position (+0x00; the matrix is at
+   +0xC0) when func_001FA9E8 finds it on screen, with the alpha it
+   returns. In D_0015F6E8 mode 6 with flare set 3, the flare fades as
+   D_0013E130's level passes func_001F98C0(150), and its depth comes from
+   func_00214358. The corners are D_001D9B60[set]. */
+void func_0022F258(char *arg0) {
+    float a[4];
+    Quad_FBE0 q;
+    float b[4];
+    int alpha;
+    float z;
+    int i;
+
+    alpha = 0;
+    func_001F9C48(a, arg0, 1.0f / 1024.0f);
+    if (func_001FA9E8(a, &alpha, 32.0f) < 0) {
+        return;
+    }
+    if (D_0015F6E8 == 6 && D_0013E130.mode == 3
+        && D_0013E130.level > func_001F98C0(150)) {
+        alpha -= (D_0013E130.level - func_001F98C0(150)) * 4;
+        if (alpha <= 0) {
+            return;
+        }
+    }
+    q.gs[1] = func_001F4868(0);
+    q.gs[2] = 0xFF9000000260;
+    q.gs[3] = 0x8000000044;
+    q.gs[0] = 0;
+    func_001F9A98(q.uv, D_001D9B40, 0x20);
+    func_001F9C30(b, arg0, 1.0f / 1024.0f);
+    z = *(float *)(arg0 + 0x18) + 0.1f;
+    if (D_0015F6E8 == 6) {
+        z = func_00214358(arg0 + 0x10, 0, 0.5f) + 0.1f;
+    }
+    for (i = 0; i < 4; i++) {
+        float *v;
+
+        q.rgba[i] = ((alpha >> 1) << 24) | 0x808080;
+        v = q.v[i];
+        func_001F9EC0(v, D_001D9B60[D_0013E130.set][i], arg0 + 0xC0);
+        func_001F9BD8(v, v, arg0 + 0x10);
+        v[2] = z;
+    }
+    func_001F7EF8(&q, 0, 0);
+}
+
+/* The five nops of padding after func_0022F258 (they sat after
+   `endlabel` in its .s, so the stub carried them); see func_001F6668's
+   note in draw.c. */
+__asm__(".section .text\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n");
 
 LINKER_REMNANT("asm/remnants/text", func_0022F498);
 
@@ -365,13 +438,6 @@ extern float D_001D9DE0[][4];
 extern short D_001605F0;
 extern void func_001F7EF8(void *, int, int);
 extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
-
-typedef struct {
-    float v[4][4];     /* 0x00 */
-    int rgba[4];       /* 0x40 */
-    char uv[0x20];     /* 0x50 */
-    long gs[4];        /* 0x70 */
-} Quad_FBE0;
 
 /* Its 0x8000000044 is built as ps2eeas built it (tools/ps2eeas_dli.py). */
 void func_0022FBE0(void) {
