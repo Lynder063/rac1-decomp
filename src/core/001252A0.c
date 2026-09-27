@@ -140,7 +140,9 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001252A0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00125300);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00125340);
+LINKER_REMNANT("asm/remnants/core_text", func_00125340);
+
+INCLUDE_ASM("asm/nonmatchings/core_text", func_00125358);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00125380);
 

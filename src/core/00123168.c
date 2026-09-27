@@ -274,7 +274,9 @@ int func_00123308(int arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001233E8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001235C0);
+LINKER_REMNANT("asm/remnants/core_text", func_001235C0);
+
+INCLUDE_ASM("asm/nonmatchings/core_text", func_001235C8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00123630);
 

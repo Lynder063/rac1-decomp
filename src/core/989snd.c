@@ -221,11 +221,17 @@ void func_0012E038(void *arg0, int arg1) {
     p[0] = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E058);
+LINKER_REMNANT("asm/remnants/core_text", func_0012E058);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E1B8);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E060);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E2D8);
+LINKER_REMNANT("asm/remnants/core_text", func_0012E1B8);
+
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E1C8);
+
+LINKER_REMNANT("asm/remnants/core_text", func_0012E2D8);
+
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E2E8);
 
 extern int func_0012E820(int, int, void *, int, int);
 
@@ -249,7 +255,9 @@ void func_0012E380(int arg0) {
     func_0012E820(0xB, 4, &local, 0, 0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E3B0);
+LINKER_REMNANT("asm/remnants/core_text", func_0012E3B0);
+
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E3C0);
 
 /* snd_SetGroupVoiceRange */
 void func_0012E3F8(int arg0, int arg1, int arg2) {
@@ -260,11 +268,17 @@ void func_0012E3F8(int arg0, int arg1, int arg2) {
     func_0012E820(0x4E, 0xC, local, 0, 0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E438);
+LINKER_REMNANT("asm/remnants/core_text", func_0012E438);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E490);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E448);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E4D8);
+LINKER_REMNANT("asm/remnants/core_text", func_0012E490);
+
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E4A8);
+
+LINKER_REMNANT("asm/remnants/core_text", func_0012E4D8);
+
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E4F8);
 
 /* snd_PauseAllSoundsInGroup */
 void func_0012E528(int arg0) {
@@ -284,7 +298,9 @@ void func_0012E588(int arg0, int arg1, int arg2) {
     func_0012E820(0x19, 4, &local, arg1, arg2);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E5B8);
+LINKER_REMNANT("asm/remnants/core_text", func_0012E5B8);
+
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E600);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E648);
 
@@ -379,7 +395,9 @@ void func_0012ED10(void) {
     func_0012E820(0x34, 0, 0, 0, 0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012ED40);
+LINKER_REMNANT("asm/remnants/core_text", func_0012ED40);
+
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012ED48);
 
 /* snd_PauseVAGStream */
 void func_0012EDB0(int arg0) {
@@ -524,7 +542,9 @@ int func_0012F068(int arg0) {
     return old;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F098);
+LINKER_REMNANT("asm/remnants/core_text", func_0012F098);
+
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F0A8);
 
 /* snd_PreAllocReverbWorkArea */
 void func_0012F0E8(int arg0, int arg1) {
@@ -544,14 +564,18 @@ void func_0012F120(int arg0, int arg1, int arg2, int arg3) {
     func_0012E820(0x10, 0x10, local, 0, 0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F160);
+LINKER_REMNANT("asm/remnants/core_text", func_0012F160);
+
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F1A8);
 
 /* snd_ResetMovieSound */
 void func_0012F1E8(void) {
     func_0012E688(0x3D, 0, 0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F210);
+LINKER_REMNANT("asm/remnants/core_text", func_0012F210);
+
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F220);
 
 /* snd_StartMovieSound */
 void func_0012F248(int arg0, int arg1, int arg2, int arg3, int arg4) {
@@ -564,7 +588,9 @@ void func_0012F248(int arg0, int arg1, int arg2, int arg3, int arg4) {
     func_0012E688(0x3E, 0x14, local);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F280);
+LINKER_REMNANT("asm/remnants/core_text", func_0012F280);
+
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F288);
 
 /* snd_GetMovieNAX */
 void func_0012F2B8(void) {

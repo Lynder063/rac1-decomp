@@ -452,9 +452,13 @@ void func_00124010(int arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00124068);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001241E8);
+LINKER_REMNANT("asm/remnants/core_text", func_001241E8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124338);
+INCLUDE_ASM("asm/nonmatchings/core_text", func_001241F0);
+
+LINKER_REMNANT("asm/remnants/core_text", func_00124338);
+
+INCLUDE_ASM("asm/nonmatchings/core_text", func_00124340);
 
 extern char D_00159B00[];
 extern int D_00132EAC;
@@ -835,7 +839,9 @@ int func_00124BC8(void *param, char *buf) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124D10);
+LINKER_REMNANT("asm/remnants/core_text", func_00124D10);
+
+INCLUDE_ASM("asm/nonmatchings/core_text", func_00124D18);
 
 /* 0x330-stride entry table. Declared as a real struct array, not
    `char[]` + byte offset: the two are not codegen-equivalent. Indexing a

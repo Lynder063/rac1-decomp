@@ -916,7 +916,9 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011C5C0);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011C820);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011CAE0);
+LINKER_REMNANT("asm/remnants/core_text", func_0011CAE0);
+
+INCLUDE_ASM("asm/nonmatchings/core_text", func_0011CB40);
 
 extern int D_0012FDAC;
 extern char D_00158140[];
