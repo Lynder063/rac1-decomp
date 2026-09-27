@@ -753,7 +753,63 @@ long func_00128638(void *arg0) {
 }
 
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001286E8);
+typedef struct {
+    unsigned char pad0[0x11C];
+    int unk11C;
+    unsigned char pad120[0x6F8];
+    int unk818;
+    unsigned char pad81C[0x1C];
+    int unk838;
+    int unk83C;
+    unsigned char pad840[0x18];
+    void *cbData;
+} MpegVdec;
+
+#define IPU_CMD  ((volatile unsigned long *)0x10002000)
+#define IPU_CTRL ((volatile unsigned int *)0x10002010)
+#define IPU_BP   ((volatile unsigned int *)0x10002020)
+#define IPU_TOP  ((unsigned long *)0x10002030)
+
+/* _ipuVdec (libmpeg). Adapted from Lombyte (MIT) for PAL. */
+short func_001286E8(int arg0, int tbl) {
+    MpegVdec *d = (MpegVdec *)arg0;
+    int i;
+    int j;
+    unsigned int cmd;
+    long r;
+    long top;
+    unsigned int bp;
+
+    i = 0;
+    j = 0;
+    while ((*IPU_CTRL & 0x80004000) == 0x80000000) {
+        if (j++ > 5000) {
+            func_0012BCC8((int)d->cbData);
+            j = 0;
+        }
+    }
+    cmd = (tbl << 26) | 0x30000000;
+    *(volatile unsigned int *)IPU_CMD = cmd;
+    d->unk818 = D_00132F70[(int)cmd >> 28];
+    r = *IPU_CMD;
+    while (r < 0) {
+        if (i++ > 5000) {
+            func_0012BCC8((int)d->cbData);
+            i = 0;
+        }
+        r = *IPU_CMD;
+    }
+    bp = *IPU_BP;
+    top = *IPU_TOP;
+    d->unk838 = top;
+    if (top < 0) {
+        d->unk83C = -(bp & 0x1F) & 0x1F;
+    } else {
+        d->unk83C = 32;
+    }
+    d->unk11C = (int)r == 0;
+    return (short)r;
+}
 
 /*
  * REVERTED -- decode is complete and believed correct; blocked on

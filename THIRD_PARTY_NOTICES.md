@@ -20,6 +20,7 @@ The following functions adapt source from
 - `src/core/00121750.c`: `func_00121B78` (`sceGsResetGraph`)
 - `src/core/00123168.c`: `func_001233E8` (`sceDmaPutEnv`)
 - `src/core/00125630.c`: `func_001273A0` (`_waitBdecOut`)
+- `src/core/00125630.c`: `func_001286E8` (`_ipuVdec`)
 
 MIT License
 
