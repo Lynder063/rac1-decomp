@@ -426,7 +426,76 @@ void func_001FFFA0(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FFFB8);
+/* D_00199C60's 0x90-byte bank records, seen through their +0x18 update
+   callback. */
+typedef struct HudBankCb {
+    char pad00[0x18];
+    void (*update)(struct HudBankCb *);
+    char pad1C[0x74];
+} HudBankCb;
+
+extern char D_0019A4E8_raw[] __asm__("D_0019A4E8");
+extern HudBankCb D_00199C60_cb[] __asm__("D_00199C60") NOT_SDA;
+extern int D_0015F544 MACRO_ADDR;
+extern int D_0015F6E8 MACRO_ADDR;
+extern int D_0015F760 MACRO_ADDR;
+extern int D_0015F764 MACRO_ADDR;
+extern int D_0015F768 MACRO_ADDR;
+extern char D_001994D8[];
+extern unsigned char D_00199528[];
+extern int func_001F98C0(int);
+extern void func_00201A38(int, int, int, int);
+
+/* Per-frame HUD update: unless the arena's +0x30 skip flag (cleared
+   here) or D_0015F544 is set, reset the arena's +0xC colour, run each
+   bank's +0x18 callback, then fade the D_0015F764 alpha (0..128) in
+   while the D_0015F760 timer runs, or out once it stops, and draw
+   the overlay text D_001994D8 (plus D_00199528 above 1000) with it. */
+void func_001FFFB8(void) {
+    char *arena = D_0019A4E8_raw;
+    int i;
+    HudBankCb *p;
+    int col;
+
+    if (*(int *)(arena + 0x30) != 0 || D_0015F544 != 0) {
+        *(int *)(arena + 0x30) = 0;
+        return;
+    }
+    *(int *)(arena + 0xC) = 0xFFFFF0;
+    p = D_00199C60_cb;
+    for (i = 0; i < 13; i++) {
+        if (p->update != 0) {
+            p->update(p);
+        }
+        p++;
+    }
+    if ((D_0015F760 != 0 || D_0015F764 != 0) && D_0015F6E8 == 0) {
+        if (D_0015F760 != 0) {
+            D_0015F764 += 128 / func_001F98C0(8);
+            if (D_0015F764 > 128) {
+                D_0015F764 = 128;
+            }
+        } else {
+            D_0015F764 -= 128 / func_001F98C0(8);
+            if (D_0015F764 < 0) {
+                D_0015F764 = 0;
+            }
+        }
+        col = (D_0015F764 << 24) + 0xF0F0F0;
+        func_00201A38(0x100, D_0015F768, col, (int)D_001994D8);
+        if (D_00199528[0] != 0 && D_0015F760 > 1000) {
+            func_00201A38(0x100, D_0015F768, col, (int)D_00199528);
+        }
+        if (D_0015F760 != 0) {
+            D_0015F760--;
+        }
+        if (D_0015F760 == 1000) {
+            D_0015F760 = 0;
+        }
+    } else {
+        D_0015F768 = 100;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00200190);
 
@@ -482,9 +551,125 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002008B8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00200A90);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00200CA0);
+extern int *D_00161000 MACRO_ADDR;
+extern int D_0013E600[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00200E38);
+/* Appends a 1-tag + 5-quadword PACKED GIF packet to D_00161000: a GIFtag
+   (0x10000005 / 0 / 0 / 0x50000005), fixed GS register data, arg0
+   verbatim, a colour of 0x7F7F7F with alpha arg9, then a UV/XYZ pair
+   per corner: UV (arg7, arg8) and (arg7 + (1 << (arg3 + 4)),
+   arg8 + (1 << (arg4 + 4))); XY (arg1, arg2) and (arg1 + arg5,
+   arg2 + arg6), offset by D_0013E600[4]/[5] - 8, with Z from the HUD
+   arena's +0xC word. The payload is written through the advanced
+   D_00161000 (retail stores relative to it), and the arena is reached
+   through a local pointer so its address is built in a register. */
+void func_00200CA0(long arg0, int arg1, int arg2, int arg3, int arg4,
+                    int arg5, int arg6, int arg7, int arg8, int arg9) {
+    int *base;
+    long *p;
+    char *arena = D_0019A4E8_raw;
+
+    D_00161000[0] = 0x10000005;
+    D_00161000[1] = 0;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000005;
+
+    base = D_00161000;
+    D_00161000 = base + 4;
+    p = (long *)D_00161000;
+    p[0] = 0x7400000000008001L;
+    p[1] = 0x5353106;
+    p[2] = arg0;
+    p[3] = 0x156;
+    p[4] = ((long)arg9 << 24) | 0x7F7F7F;
+    p[5] = arg7 | ((long)arg8 << 16);
+    p[6] = (arg1 + D_0013E600[4] - 8)
+         | ((long)(arg2 + D_0013E600[5] - 8) << 16)
+         | ((long)*(int *)(arena + 0xC) << 32);
+    p[7] = (arg7 + (1 << (arg3 + 4)))
+         | ((long)(arg8 + (1 << (arg4 + 4))) << 16);
+    p[8] = (arg1 + arg5 + D_0013E600[4] - 8)
+         | ((long)(arg2 + arg6 + D_0013E600[5] - 8) << 16)
+         | ((long)*(int *)(arena + 0xC) << 32);
+    p[9] = 0;
+    D_00161000 = (int *)((char *)D_00161000 + 0x50);
+}
+
+extern int *D_00161000 MACRO_ADDR;
+extern int D_0013E600[];
+extern char D_0019A4E8_raw[] __asm__("D_0019A4E8");
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_001F9BD8(float *, float *, float *);
+extern void func_001F9BF0(float *, float *, float *);
+
+/* func_00200CA0's rotated sibling: a 1-tag + 6-quadword PACKED GIF
+   packet for a w x h sprite at (x, y) turned by rot. The four corners
+   are pos +- a +- b with a = h * (sin, cos) and b = w * (-cos, sin)
+   (func_001F9BD8 adds, func_001F9BF0 subtracts vectors), each packed as
+   XYZ2 with D_0013E600[4]/[5] - 8 and the HUD arena's +0xC depth; UVs
+   run from (0, 0) to (u * 16, v << 20). */
+void func_00200E38(int u, int v, long tex, float x, float y, float w, float h, float rot) {
+    float a[4];
+    float b[4];
+    float pos[4];
+    float c0[4];
+    float c1[4];
+    float c2[4];
+    float c3[4];
+    int *base;
+    long *p;
+    int *vp;
+    char *arena;
+
+    pos[0] = x;
+    pos[1] = y;
+    a[0] = h * func_001F9FA8(rot);
+    a[1] = h * func_001F9F90(rot);
+    b[0] = -w * func_001F9F90(rot);
+    b[1] = w * func_001F9FA8(rot);
+    func_001F9BD8(c0, pos, a);
+    func_001F9BF0(c0, c0, b);
+    func_001F9BD8(c1, pos, a);
+    func_001F9BD8(c1, c1, b);
+    func_001F9BF0(c2, pos, a);
+    func_001F9BF0(c2, c2, b);
+    func_001F9BF0(c3, pos, a);
+    func_001F9BD8(c3, c3, b);
+
+    D_00161000[0] = 0x10000007;
+    D_00161000[1] = 0;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000007;
+    base = D_00161000;
+    D_00161000 = base + 4;
+    p = (long *)D_00161000;
+    vp = D_0013E600;
+    arena = D_0019A4E8_raw;
+    p[0] = 0xB400000000008001L;
+    p[1] = 0x53535353106L;
+    p[2] = tex;
+    p[3] = 0x154;
+    p[4] = 0x807F7F7FL;
+    p[5] = u * 16;
+    p[6] = ((int)c0[0] + vp[4] - 8)
+         | ((long)((int)c0[1] + vp[5] - 8) << 16)
+         | ((long)*(int *)(arena + 0xC) << 32);
+    p[7] = v * 0x100000 + u * 16;
+    p[8] = ((int)c1[0] + vp[4] - 8)
+         | ((long)((int)c1[1] + vp[5] - 8) << 16)
+         | ((long)*(int *)(arena + 0xC) << 32);
+    p[9] = 0;
+    p[10] = ((int)c2[0] + vp[4] - 8)
+          | ((long)((int)c2[1] + vp[5] - 8) << 16)
+          | ((long)*(int *)(arena + 0xC) << 32);
+    p[11] = v * 0x100000;
+    p[12] = ((int)c3[0] + vp[4] - 8)
+          | ((long)((int)c3[1] + vp[5] - 8) << 16)
+          | ((long)*(int *)(arena + 0xC) << 32);
+    p[13] = 0;
+    D_00161000 = (int *)((char *)D_00161000 + 0x70);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00201190);
 

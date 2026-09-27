@@ -1690,7 +1690,66 @@ int func_002217C8(void *arg0) {
     return 8;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00221888);
+extern char D_001A01F0_c[] __asm__("D_001A01F0");
+extern char D_00151880_c[] __asm__("D_00151880");
+extern int D_0015F538 MACRO_ADDR;
+extern int D_001DE2E8[];
+extern void func_00200CA0(long, int, int, int, int, int, int, int, int, int);
+
+/* Draws the three overlay layers (textures at D_001A01F0 +0x258/0x260/
+   0x268) over the whole screen (D_00151880's +0x160/+0x162 extent).
+   States 6, 13 and 17 blink the upper two layers on D_0015F538; the
+   others inset them by D_001DE2E8[state] and scroll the bottom one.
+   Each branch reaches the two globals through its own block-scoped
+   pointers, which gives retail's registers. */
+int func_00221888(void) {
+    char *g = D_001A01F0_c;
+    int s = *(int *)(g + 0x228);
+    int k, d, u, t;
+
+    if (s < 0) {
+        return 0;
+    }
+    if (s == 6 || s == 13 || s == 17) {
+        char *g2;
+        char *fb;
+
+        func_00234C98_l(0x47, 0);
+        func_00234C98_l(8, 5);
+        g2 = D_001A01F0_c;
+        fb = D_00151880_c;
+        func_00200CA0(*(long *)(g2 + 0x258), 0, 0, 7, 7,
+                      *(short *)(fb + 0x160) << 4, *(short *)(fb + 0x162) << 4, 0, 0, 0x80);
+        func_00234C98_l(0x47, 0x360B);
+        if (D_0015F538 % 60 < 40) {
+            func_00200CA0(*(long *)(g2 + 0x260), 0, 0, 7, 7,
+                          *(short *)(fb + 0x160) << 4, *(short *)(fb + 0x162) << 4, 0, 0, 0x80);
+        }
+        if (D_0015F538 % 150 < 90) {
+            func_00200CA0(*(long *)(g2 + 0x268), 0, 0, 7, 7,
+                          *(short *)(fb + 0x160) << 4, *(short *)(fb + 0x162) << 4, 0, 0, 0x80);
+        }
+    } else {
+        char *fb;
+
+        t = D_0015F538 + s * 0x2AB;
+        k = D_001DE2E8[s];
+        d = k * 2;
+        u = t % 2048;
+        func_00234C98_l(0x47, 0);
+        func_00234C98_l(8, 0);
+        fb = D_00151880_c;
+        func_00200CA0(*(long *)(g + 0x258), k, k, 7, 7,
+                      (*(short *)(fb + 0x160) << 4) - d, (*(short *)(fb + 0x162) << 4) - d, u, 0, 0x80);
+        func_00234C98_l(0x47, 0x360B);
+        func_00234C98_l(8, 5);
+        func_00200CA0(*(long *)(g + 0x260), k, k, 7, 7,
+                      (*(short *)(fb + 0x160) << 4) - d, (*(short *)(fb + 0x162) << 4) - d, 0, 0, 0x80);
+        func_00200CA0(*(long *)(g + 0x268), k, k, 7, 7,
+                      (*(short *)(fb + 0x160) << 4) - d, (*(short *)(fb + 0x162) << 4) - d, 0, 0, 0x80);
+    }
+    return 4;
+}
 
 extern float func_001FA7D8(float, int);
 extern int func_001F9B70(int); /* abs */
@@ -2225,7 +2284,61 @@ int func_00222B00(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00222B98);
+typedef struct {
+    short s[12];
+} TextBox;
+
+extern char D_001603E8[];
+extern int D_001D6044;
+extern void func_00234C98_l(int, long) __asm__("func_00234C98");
+extern void func_001F4630(int);
+extern void func_001F4748(void);
+extern void *func_001FE540_id(int) __asm__("func_001FE540");
+extern void func_001F75D0(TextBox *, long, char *, int);
+
+/* Draws the two-line prompt box (text 0x4FB3 for D_001D6044 in 0..2,
+   0x4FB5 for 3, else D_001603E8) sized from arg0's +0x20/+0x24. The box
+   is an aggregate initializer: this compiler clears it with a memset
+   libcall, fills a temporary and copies that into the local with
+   ldl/ldr/sdl/sdr pairs, exactly retail's sequence. */
+int func_00222B98(char *arg0) {
+    char *text;
+    int v;
+
+    func_00234C98_l(0x42, 0x44);
+    func_00234C98_l(0x47, 0x2004B);
+    func_001F4630(0);
+    text = D_001603E8;
+    v = D_001D6044;
+    switch (v) {
+    case 0:
+    case 1:
+    case 2:
+        text = func_001FE540_id(0x4FB3);
+        break;
+    case 3:
+        text = func_001FE540_id(0x4FB5);
+        break;
+    }
+    {
+        TextBox c = { { 1, *(int *)(arg0 + 0x24) + 1, 1, *(int *)(arg0 + 0x20) + 1,
+                        *(int *)(arg0 + 0x20) >> 1, 5, 0, 0, 0x10, 5 } };
+
+        func_001F75D0(&c, 0x80000000L, text, -1);
+        c.s[5] = (*(int *)(arg0 + 0x24) - c.s[7]) >> 1;
+        c.s[9] ^= 4;
+        func_001F75D0(&c, 0x80000000L, text, -1);
+        c.s[0]--;
+        c.s[1]--;
+        c.s[2]--;
+        c.s[3]--;
+        c.s[4]--;
+        c.s[5]--;
+        func_001F75D0(&c, 0x80FFA888L, text, -1);
+    }
+    func_001F4748();
+    return 2;
+}
 
 extern int D_001D48A8[];
 
@@ -2463,7 +2576,184 @@ int func_00223478(void *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00223490);
+extern int D_001D2E74;
+extern char D_001D5418[];
+extern char D_001D54C8[];
+extern char D_001D5588[];
+extern char D_001D5618[];
+extern char D_001D5630[];
+
+/* A timed text sequence (credits-style): arg0+0x50 is the step, +0x40
+   a countdown (func_001F98C0-scaled), +0x3C a scroll that advances 10 a
+   frame (20 while all four shoulder buttons are held, which also halves
+   the countdown), +0x34 the current text (a D_001D5xxx page or a text
+   id) with D_001D2E74 its title id. Case bodies are in retail's layout
+   order (4 before 3), and the shared "wait, then next step" tail is
+   written out in each case: cross-jumping merges it, leaving each
+   case's own argument load in its branch's delay slot. */
+int func_00223490(char *arg0) {
+    char *pad = D_0013CA40;
+    char *g = D_001D5F70;
+    int fast = (*(long *)(pad + 0x1A0) & 0xF) == 0xF;
+    int x;
+
+    if (*(int *)(g + 0xDC) == 0 || (fast && (*(int *)(pad + 0x1A0) & 0x10))) {
+        if (*(int *)(pad + 0x1C4) & 0xD00) {
+            if (*(int *)(g + 0x124) == 0) {
+                return 1;
+            }
+        }
+        {
+            char *pad2 = D_0013CA40;
+            if (*(int *)(pad2 + 0x1C4) & 0x10) {
+                char *g2 = D_001D5F70;
+                int t = *(int *)(*(char **)(g2 + 4) + 0x38);
+                if (t != 0) {
+                    *(int *)(g2 + 8) = t;
+                    return 0;
+                }
+                if (*(int *)(g2 + 0x124) == 0) {
+                    return -1;
+                }
+            }
+        }
+    }
+    x = *(int *)(arg0 + 0x40);
+    *(int *)(arg0 + 0x40) = x - 1;
+    if (fast) {
+        *(int *)(arg0 + 0x40) = x - 2;
+    }
+    if (*(int *)(arg0 + 0x40) < 0) {
+        *(int *)(arg0 + 0x40) = 0;
+    }
+    switch (*(int *)(arg0 + 0x50)) {
+    case 0:
+        *(int *)(arg0 + 0x50) = *(int *)(arg0 + 0x50) + 1;
+        *(int *)(arg0 + 0x40) = func_001F98C0(0xB4);
+        *(int *)(arg0 + 0x3C) = 0;
+        D_001D2E74 = 0x50A9;
+        *(char **)(arg0 + 0x34) = D_001D5418;
+        break;
+    case 1:
+    case 5:
+    case 8:
+    case 12:
+    case 16:
+        if (*(int *)(arg0 + 0x40) != 0) {
+            return 0;
+        }
+        *(int *)(arg0 + 0x54) = 0;
+        *(int *)(arg0 + 0x50) = *(int *)(arg0 + 0x50) + 1;
+        break;
+    case 2:
+    case 6:
+    case 9:
+    case 13:
+    case 17:
+        x = *(int *)(arg0 + 0x3C);
+        *(int *)(arg0 + 0x3C) = x + 10;
+        if (fast) {
+            *(int *)(arg0 + 0x3C) = x + 20;
+        }
+        if (*(int *)(arg0 + 0x54) == 0) {
+            return 0;
+        }
+        *(int *)(arg0 + 0x40) = func_001F98C0(0xB4);
+        *(int *)(arg0 + 0x50) = *(int *)(arg0 + 0x50) + 1;
+        break;
+    case 4:
+        if (*(int *)(arg0 + 0x40) != 0) {
+            return 0;
+        }
+        *(int *)(arg0 + 0x50) = 5;
+        *(int *)(arg0 + 0x40) = func_001F98C0(0xB4);
+        *(int *)(arg0 + 0x3C) = 0;
+        D_001D2E74 = 0x50D6;
+        *(char **)(arg0 + 0x34) = D_001D54C8;
+        break;
+    case 3:
+        if (*(int *)(arg0 + 0x40) != 0) {
+            return 0;
+        }
+        D_001D2E74 = 0x50D4;
+        *(int *)(arg0 + 0x34) = 0x50D5;
+        *(int *)(arg0 + 0x40) = func_001F98C0(0xF0);
+        *(int *)(arg0 + 0x3C) = 0;
+        *(int *)(arg0 + 0x50) = *(int *)(arg0 + 0x50) + 1;
+        break;
+    case 7:
+        if (*(int *)(arg0 + 0x40) != 0) {
+            return 0;
+        }
+        D_001D2E74 = 0x510B;
+        *(char **)(arg0 + 0x34) = D_001D5588;
+        *(int *)(arg0 + 0x40) = func_001F98C0(0xF0);
+        *(int *)(arg0 + 0x3C) = 0;
+        *(int *)(arg0 + 0x50) = *(int *)(arg0 + 0x50) + 1;
+        break;
+    case 10:
+        if (*(int *)(arg0 + 0x40) != 0) {
+            return 0;
+        }
+        D_001D2E74 = 0x513B;
+        *(int *)(arg0 + 0x34) = 0x513C;
+        *(int *)(arg0 + 0x40) = func_001F98C0(0xF0);
+        *(int *)(arg0 + 0x3C) = 0;
+        *(int *)(arg0 + 0x50) = *(int *)(arg0 + 0x50) + 1;
+        break;
+    case 11:
+        if (*(int *)(arg0 + 0x40) != 0) {
+            return 0;
+        }
+        *(int *)(arg0 + 0x40) = func_001F98C0(0xB4);
+        *(int *)(arg0 + 0x3C) = 0;
+        D_001D2E74 = 0x513D;
+        *(char **)(arg0 + 0x34) = D_001D5618;
+        *(int *)(arg0 + 0x50) = 12;
+        break;
+    case 14:
+        if (*(int *)(arg0 + 0x40) != 0) {
+            return 0;
+        }
+        D_001D2E74 = 0;
+        *(int *)(arg0 + 0x34) = 0x5148;
+        *(int *)(arg0 + 0x40) = func_001F98C0(0xF0);
+        *(int *)(arg0 + 0x3C) = 0;
+        *(int *)(arg0 + 0x50) = *(int *)(arg0 + 0x50) + 1;
+        break;
+    case 15:
+        if (*(int *)(arg0 + 0x40) != 0) {
+            return 0;
+        }
+        *(int *)(arg0 + 0x40) = func_001F98C0(0xB4);
+        *(int *)(arg0 + 0x3C) = 0;
+        D_001D2E74 = 0x5149;
+        *(char **)(arg0 + 0x34) = D_001D5630;
+        *(int *)(arg0 + 0x50) = 16;
+        break;
+    case 18:
+        if (*(int *)(arg0 + 0x40) != 0) {
+            return 0;
+        }
+        D_001D2E74 = 0;
+        *(int *)(arg0 + 0x34) = 0x517A;
+        *(int *)(arg0 + 0x50) = *(int *)(arg0 + 0x50) + 1;
+        *(int *)(arg0 + 0x40) = func_001F98C0(300);
+        break;
+    case 19:
+        if (*(int *)(arg0 + 0x40) != 0) {
+            return 0;
+        }
+        {
+            char *g3 = D_001D5F70;
+            if (*(int *)(g3 + 0xDC) != 0) {
+                return 1;
+            }
+        }
+        break;
+    }
+    return 0;
+}
 
 /* A text box on the menu's own geometry (func_00227A30's box, then
    arg0+0x18..0x24: top y + 4, bottom y + h - 4, x, x + w, centre).
@@ -2623,7 +2913,180 @@ int func_00224010(void *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00224040);
+extern int D_0015EFB4_mm __asm__("D_0015EFB4") MACRO_ADDR;
+extern int D_0015EF34 MACRO_ADDR;
+extern int D_0015FF4C MACRO_ADDR;
+extern int D_0015EE98 MACRO_ADDR;
+extern int D_0015EF20 MACRO_ADDR;
+extern int D_0015EF24 MACRO_ADDR;
+extern int D_0015EE84_mm __asm__("D_0015EE84") MACRO_ADDR;
+/* The 8-byte D_0015EF98 pair saved into a slot. As a char block in small
+   data, its copy is la + ldl/ldr, as in retail. */
+typedef struct {
+    char b[8];
+} SaveWord2;
+extern SaveWord2 D_0015EF98_s __asm__("D_0015EF98") MACRO_ADDR;
+extern char D_001D28F8[];
+extern int D_001D29C0;
+extern void func_00227C78(int, int);
+extern int D_0015EFB0_mm __asm__("D_0015EFB0") MACRO_ADDR;
+
+/* Save-slot menu handler (func_002243E8's sibling): on entry it may arm
+   a save (0x4FB5 prompt), then while the prompt is up it either aborts
+   (flag 0x80 in D_0015EFB4) or writes the current game into slot
+   d+0x14 of D_0013D390's 0x1C-byte records; otherwise the usual pad
+   handling, with slot selection on 0x1000/0x4000 and 0x40 either
+   loading the slot (via D_001D28F8) or re-arming. Each branch reaches
+   the globals through its own block-scoped pointers. */
+int func_00224040(char *arg0) {
+    char *g = D_001D5F70;
+    int s;
+    int old;
+
+    if (*(char **)(*(char **)(g + 4) + 0x40) != arg0) {
+        return 0;
+    }
+    s = *(int *)(arg0 + 0x4C);
+    if (s == 0) {
+        char *m = *(char **)(g + 0xD0);
+        if (m == D_001D28F8) {
+            if (*(int *)(m + 0x84) != 0) {
+                *(int *)(arg0 + 0x4C) = 1;
+            }
+        }
+        s = *(int *)(arg0 + 0x4C);
+    }
+    if (s == 1) {
+        char *g2;
+
+        func_00227C78(*(int *)(arg0 + 0x48), *(int *)(arg0 + 0x40));
+        g2 = D_001D5F70;
+        *(int *)(g2 + 0x12C) = 0x4FB5;
+        *(int *)(g2 + 0x128) = 1;
+        D_0015FF4C = 0;
+    }
+    *(int *)(arg0 + 0x4C) = 2;
+    old = *(int *)(arg0 + 0x40);
+    {
+        char *g3 = D_001D5F70;
+
+        if (*(int *)(g3 + 0x128) != 0) {
+            char *d = D_0013D390;
+            char *e;
+
+            if (*(int *)(d + 0xDC) >= 3) {
+                return 0;
+            }
+            if (*(int *)(d + 0xE4) >= 0) {
+                return 0;
+            }
+            if (*(int *)(g3 + 0x154) < 11) {
+                return 0;
+            }
+            *(int *)(g3 + 0x128) = 0;
+            if (*(int *)(d + 0xEC) != 0 || *(int *)(d + 0x1C) != 0 || D_0015FF4C != 0) {
+                char *d2 = D_0013D390;
+                char *g4 = D_001D5F70;
+
+                D_0015EFB4_mm |= 0x80;
+                *(int *)(d2 + 0xFC) = 0;
+                func_001FBC80(3, *(void **)(g4 + 4), 0);
+                return 0;
+            }
+            e = d + 0x30;
+            *(int *)(d + 0xFC) = 1;
+            *(int *)(d + 0x24 + *(int *)(d + 0x14) * 0x1C) = D_0015EE98;
+            *(int *)(d + 0x20 + *(int *)(d + 0x14) * 0x1C) = D_0015EE84_mm;
+            *(int *)(d + 0x2C + *(int *)(d + 0x14) * 0x1C) = D_0015EF24;
+            *(SaveWord2 *)(e + *(int *)(d + 0x14) * 0x1C) = D_0015EF98_s;
+            *(int *)(d + 0x28 + *(int *)(d + 0x14) * 0x1C) = D_0015EF20;
+        }
+    }
+    {
+        char *pad = D_0013CA40;
+        if (*(int *)(pad + 0x1C4) & 0xD00) {
+            char *g2 = D_001D5F70;
+            if (*(int *)(g2 + 0x124) == 0) {
+                return 1;
+            }
+        }
+    }
+    {
+        char *pad = D_0013CA40;
+        if (*(int *)(pad + 0x1C4) & 0x10) {
+            char *g2 = D_001D5F70;
+            int t = *(int *)(*(char **)(g2 + 4) + 0x38);
+            if (t != 0) {
+                *(int *)(g2 + 8) = t;
+                return 0;
+            }
+            if (*(int *)(g2 + 0x124) == 0) {
+                return -1;
+            }
+        }
+    }
+    if (D_0015EFB0_mm != 0x10 && D_0015EFB0_mm != 1) {
+        char *g2 = D_001D5F70;
+        *(int *)(g2 + 8) = *(int *)(*(char **)(g2 + 4) + 0x38);
+        return 0;
+    }
+    {
+        char *d = D_0013D390;
+        int p;
+        int x;
+
+        if (*(int *)(d + 0xDC) >= 3) {
+            return 0;
+        }
+        if (*(int *)(d + 0xE4) >= 0) {
+            return 0;
+        }
+        {
+            char *g2 = D_001D5F70;
+            if (*(int *)(g2 + 0x154) < 11) {
+                return 0;
+            }
+        }
+        if (*(int *)(d + 8) != 2) {
+            return 0;
+        }
+        if (*(int *)(arg0 + 0x30) & 1) {
+            char *pad = D_0013CA40;
+            p = *(int *)(pad + 0x1B4);
+        } else {
+            char *pad = D_0013CA40;
+            p = *(int *)(pad + 0x1A4);
+        }
+        x = D_0015EF34;
+        *(int *)(arg0 + 0x40) = x;
+        if ((p & 0x1000) && x != 0) {
+            *(int *)(arg0 + 0x40) = x - 1;
+        }
+        if ((p & 0x4000) && *(int *)(arg0 + 0x40) < 4) {
+            *(int *)(arg0 + 0x40) = *(int *)(arg0 + 0x40) + 1;
+        }
+        D_0015EF34 = *(int *)(arg0 + 0x40);
+        if (p & 0x40) {
+            char *d2 = D_0013D390;
+
+            if (*(int *)(d2 + 8) == 2) {
+                if (*(int *)(d2 + 0x20 + D_0015EF34 * 0x1C) != -1) {
+                    char *g2 = D_001D5F70;
+
+                    *(int *)(g2 + 0xD4) = 0;
+                    *(char **)(g2 + 8) = D_001D28F8;
+                    D_001D29C0 = *(int *)(arg0 + 0x40);
+                } else {
+                    *(int *)(arg0 + 0x4C) = 1;
+                }
+            }
+        }
+    }
+    if (*(int *)(arg0 + 0x40) != old) {
+        func_0022ED80(1, 0x11, *(int *)(arg0 + 0x14));
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002243E8);
 
