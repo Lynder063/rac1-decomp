@@ -57,4 +57,18 @@ typedef double f64;
  */
 #define MACRO_ADDR __attribute__((section(".sdata")))
 
+/*
+ * Copies one 16-byte quadword from src to dst through $2, the way retail's
+ * own source did: an inline-asm copy shaped like libvu0's sceVu0CopyVector
+ * (which uses $6). Each address goes into its own register and is read at
+ * offset 0, which no C copy reproduces: a long long or aligned-struct copy
+ * folds the offset into lq/sq. First matched on func_001ECC10 (camera.c).
+ *
+ * This is the one sanctioned inline asm. Candidates call it; they never
+ * write asm inside a function themselves (tools/integrate.py refuses that).
+ */
+static __inline__ void qcopy(void *dst, void *src) {
+    __asm__ __volatile__("lq $2,0x0(%1)\n\tsq $2,0x0(%0)" : : "r"(dst), "r"(src) : "$2", "memory");
+}
+
 #endif /* COMMON_H */
