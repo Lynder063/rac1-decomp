@@ -435,7 +435,9 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BB30);
 
 LINKER_REMNANT("asm/remnants/core_text", func_0012BB78);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BB88);
+int func_0012BB88(char *p) {
+    return **(int **)(p + 0x40);
+}
 
 int func_0012BB98(void *arg0) {
     return ((Wrapper *)arg0)->obj->unk004 == 0;
