@@ -13,6 +13,7 @@ The following functions adapt source from
 - `src/game/lights.c`: `func_002027C0` (detach point light)
 - `src/core/0011D0D0.c`: `func_0011D248` (`sceSifRebootIop`)
 - `src/game/menu.c`: `func_00208338` (read sector, track size)
+- `src/game/loaders.c`: `func_00203038` (unpack point records)
 
 MIT License
 
