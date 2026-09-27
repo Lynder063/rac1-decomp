@@ -6,4 +6,6 @@
 # -mno-split-addresses: retail reaches every global of the function
 # through the assembler's `lui $at` macro, not a %hi/%lo split, while its
 # neighbours in the same file use the split form. See docs/LEVERS.md.
+# -fno-schedule-insns: no first scheduling pass (Lombyte builds some SDK
+# units this way, e.g. sceSifInitIopHeap).
 func_002282D0  -mno-split-addresses
