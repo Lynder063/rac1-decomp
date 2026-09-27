@@ -163,6 +163,29 @@ in `config/core_rodata.txt`).
     a `%hi` of a `D_`/`func_` symbol as a constant, so this is handled;
     if the full build still disagrees on one `lui`, look here first.
 
+12. **Found this session, each with a matched example:**
+    - Operand order of an `addu`: `base - (-(i * 4))` keeps the base
+      first where `base + i * 4` puts the index first (func_00205220,
+      from Lombyte).
+    - A zeroed 16-byte vector cleared with `por`/`sq`: a partial
+      initializer of a 16-byte aligned type (`typedef float V[4]
+      __attribute__((aligned(16)))`, like sceVu0FVECTOR); a plain
+      `float[4]` gets a memset call (func_00208248). An aligned struct
+      assignment gives a schedulable `lq`/`sq` copy where `qcopy`'s asm
+      is a barrier (func_002282D0, func_002153E8).
+    - A GIF/DMA packet step per block: block-scoped base pointers give
+      each step its own register (func_001F5650).
+    - A callee that never returns (`exit`, func_001138B8): declare it
+      `__attribute__((noreturn))`, as newlib does (func_00124650).
+    - A value retail keeps as a 64-bit constant (`lui 0xFFFF; ori 0xFFFF`
+      for -1): the operand is `unsigned int`, compared or stored as
+      `0xFFFFFFFFU` (func_001235C8, func_0012E1C8).
+    - A copy of constant size in retail's code but a call for a variable
+      size: the builtin `memcpy` (`memcpy` is mapped to func_00115248 in
+      rac1.ld.sh) (func_0011CE70).
+    - A function whose callee's result sits in `$v0` untouched at the end
+      under 2.9-ee: `return callee(...)` (func_0012BB30).
+
 ## Known walls: stop and report
 
 No plain-C wording has reached these. Name the one you hit in NOTES.md
