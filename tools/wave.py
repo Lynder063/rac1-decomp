@@ -52,7 +52,7 @@ def closeness(row: dict) -> int | None:
     m = re.match(r"BYTES (\d+)/", verdict)
     if m and int(m.group(1)) <= CLOSE_BYTES:
         return int(m.group(1))
-    m = re.search(r"SIZE ours (\d+) / retail (\d+)", verdict)
+    m = re.search(r"SIZE \(?(?:ours )?(\d+)(?: / retail |/)(\d+)", verdict)
     if m and abs(int(m.group(1)) - int(m.group(2))) <= CLOSE_SIZE:
         return abs(int(m.group(1)) - int(m.group(2)))
     return None
