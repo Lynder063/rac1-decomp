@@ -613,7 +613,10 @@ void func_0012F1E8(void) {
 
 LINKER_REMNANT("asm/remnants/core_text", func_0012F210);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012F220);
+/* Command 0x3C with no data, waiting for the reply. */
+int func_0012F220(void) {
+    return func_0012E688(0x3C, 0, 0);
+}
 
 /* snd_StartMovieSound */
 void func_0012F248(int arg0, int arg1, int arg2, int arg3, int arg4) {
