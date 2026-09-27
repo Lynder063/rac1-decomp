@@ -93,7 +93,22 @@ tested 15 compilers and 8 flag sets. What carries over:
   masking them, so two stores to different globals in the wrong order
   no longer pass.
 - It counts hand-written functions and linker remnants as done, rather
-  than as unmatched.
+  than as unmatched: they live in `asm/handwritten/` and `asm/remnants/`,
+  included with `ASM_FUNC` / `LINKER_REMNANT`. Here the same kinds of code
+  (hand-written functions, dead-strip remnants, fragments) are about 90K
+  bytes, about 19% of our code, still counted as unmatched. Changing that
+  is a reporting decision for upstream, not matching work.
+- It writes VU0 functions as C with inline asm, as their original source
+  was. That doesn't carry over to us: our large VU functions (51
+  functions, 67K bytes) have no gcc stack frame and use trapping
+  `add`/`sub`, so they were hand-written assembly. At most about 45 small
+  VU0/SIMD functions (3-5K bytes) could fit that pattern.
+- It puts retail's extra padding after a function (more zero words than
+  gcc's alignment adds) into the source ahead of time, with a
+  `TEXT_PADDING(N)` macro (`tools/trailing_padding.py`), so converting the
+  function to C needs no special step. Here workers still emit those nops
+  themselves after the function (LEVERS.md); doing it ahead of time is
+  worth copying.
 
 Try a flag on one candidate with `TRY_CFLAGS`, set inside the container:
 
