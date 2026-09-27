@@ -262,7 +262,13 @@ void func_0012E380(int arg0) {
 
 LINKER_REMNANT("asm/remnants/core_text", func_0012E3B0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E3C0);
+/* Command 0xD with two ints. */
+void func_0012E3C0(int arg0, int arg1) {
+    int local[2];
+    local[0] = arg0;
+    local[1] = arg1;
+    func_0012E820(0xD, 8, local, 0, 0);
+}
 
 /* snd_SetGroupVoiceRange */
 void func_0012E3F8(int arg0, int arg1, int arg2) {
