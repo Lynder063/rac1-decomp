@@ -749,7 +749,53 @@ void func_00215380(void *arg0, void *axis, float angle) {
     *(float *)((char *)arg0 + 0xC) = func_001F9F90(half);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002153E8);
+typedef struct {
+    float m[4][4];
+} __attribute__((aligned(16))) Mtx44;
+extern void func_001F9BC0(float *);
+extern void func_001FA218(float *, float *);
+extern void func_001FA238(float *, float *);
+
+/* Matrix to Euler angles: on a copy of src with the translation cleared,
+   read the Z angle from row 0, undo it (func_001FA218 builds the Z
+   rotation, func_001FA540 multiplies), read and undo Y the same way,
+   then read X from row 1; out = (x, y, z). The last undo vector is
+   filled but never used. The 16-byte aligned struct copy is retail's
+   four interleaved lq/sq. */
+void func_002153E8(Mtx44 *src, float *out) {
+    float rot[16];
+    Mtx44 m;
+    float v[4];
+    float x;
+    float y;
+    float z;
+
+    m = *src;
+    func_001F9BC0(m.m[3]);
+    m.m[3][3] = 1.0f;
+    z = func_001FA058(m.m[0][0], m.m[0][1]);
+    v[0] = 0.0f;
+    v[1] = 0.0f;
+    v[2] = -z;
+    func_001FA218(rot, v);
+    func_001FA540(&m, rot, &m);
+    y = func_001FA058(m.m[0][0], -m.m[0][2]);
+    v[0] = 0.0f;
+    v[2] = 0.0f;
+    v[1] = -y;
+    func_001FA238(rot, v);
+    func_001FA540(&m, rot, &m);
+    x = func_001FA058(m.m[1][1], m.m[1][2]);
+    v[1] = 0.0f;
+    v[0] = -x;
+    v[2] = 0.0f;
+    out[2] = z;
+    out[1] = y;
+    out[0] = x;
+}
+
+/* 12 bytes of post-endlabel nop padding in retail -- see func_001F6668. */
+__asm__(".section .text\n\tnop\n\tnop\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215518);
 
