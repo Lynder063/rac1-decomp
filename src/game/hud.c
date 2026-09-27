@@ -587,8 +587,8 @@ void func_00200468(int tex, int x, int y, int w, int h, int alpha) {
 }
 
 /* func_00200468 drawn as a four-vertex strip (PRIM 0x154) instead of a
-   sprite: UVs (tw, 0), (0, 0)... per corner in the order (x, y+h),
-   (x, y), (x+w, y+h), (x+w, y), mirrored horizontally. */
+   sprite, the texture turned a quarter: corners (x, y+h), (x, y),
+   (x+w, y+h), (x+w, y) take UVs (tw, 0), (tw, th), (0, 0), (0, th). */
 void func_00200650(int tex, int x, int y, int w, int h, int alpha) {
     char *arena = D_0019A4E8_raw;
     unsigned char *e = (unsigned char *)(*(char **)(arena + 0x24)
