@@ -454,7 +454,62 @@ void func_001ECC10(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001ECC48);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001ECEA0);
+extern char D_00187180[];
+extern char D_0018C418[];
+extern char D_00187390[];
+extern float D_0015EE60 MACRO_ADDR;
+extern float func_00214220(float, float, float);
+extern void func_00215328(void *, void *);
+extern void func_001FA5C8(void *, void *, void *, float);
+extern void func_001FA6C0(void *, void *);
+extern void func_001FA480(void *, void *);
+
+/* Camera blend step toward to: while the position (cam[3]) or rotation
+   (cam[0]) blend hasn't reached 1, move cam+0x40 from cam+0x30 toward
+   to's position by the eased factor (func_00214220), copy it to
+   D_00187180 unless the D_0018C418 flag is set, slerp the rotation
+   (func_001FA5C8) into cam+0x50 and load it as the view matrix, then
+   advance both blends by their rates times D_0015EE60, capped at 1.
+   Returns 1 once both are complete. */
+int func_001ECEA0(void *arg0, void *arg1) {
+    float *to = arg0;
+    float *cam = arg1;
+    float m[4];
+    float q[16];
+    char *st;
+    float t;
+    float *rot;
+
+    if (cam[3] == 1.0f && cam[0] == 1.0f) {
+        return 1;
+    }
+    t = func_00214220(0.0f, 1.0f, cam[3]);
+    func_001F9BD8(cam + 12, D_0013F590, cam + 12);
+    st = D_0018C418;
+    cam[16] = cam[12] + (to[12] - cam[12]) * t;
+    cam[17] = cam[13] + (to[13] - cam[13]) * t;
+    cam[18] = cam[14] + (to[14] - cam[14]) * t;
+    if (*(int *)(st + 0x14) == 0) {
+        qcopy(D_00187180, cam + 16);
+    }
+    func_00215328(m, to);
+    rot = cam + 20;
+    t = func_00214220(0.0f, 1.0f, cam[0]);
+    func_001FA5C8(rot, cam + 8, m, t);
+    func_001FA6C0(rot, q);
+    if (*(int *)(st + 0x14) == 0) {
+        func_001FA480(D_00187390, q);
+    }
+    cam[3] += cam[4] * D_0015EE60;
+    if (1.0f < cam[3]) {
+        cam[3] = 1.0f;
+    }
+    cam[0] += cam[1] * D_0015EE60;
+    if (1.0f < cam[0]) {
+        cam[0] = 1.0f;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001ED080);
 
