@@ -1398,7 +1398,114 @@ int func_00129948(void *arg0, void *arg1) {
     return ok;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001299E8);
+struct Cpr8Mpeg {
+    unsigned char pad_0[0xD8];
+    int unkD8;
+    unsigned char pad_DC[0x4];
+    int unkE0;
+    int unkE4;
+    unsigned char pad_E8[0x8C];
+    int unk174;
+};
+
+struct Cpr8Pic {
+    int unk0;
+    unsigned char pad_4[0x8];
+    int unkC;
+    int unk10;
+};
+
+/* _cpr8 (libmpeg): copy a decoded picture to its destination with two
+   chained DMA transfers per row, per field (two fields when +0xE0 gives
+   an interlaced width). Adapted from Lombyte (MIT) for PAL; its
+   goto-shaped control flow is what matches. */
+void func_001299E8(struct Cpr8Mpeg *arg0, struct Cpr8Pic *arg1) {
+    struct Cpr8Mpeg *m;
+    int fields;
+    int base;
+    int intr2;
+    int intr1;
+    int width;
+    int i;
+    int dst;
+    int src;
+    int qwc;
+    int row;
+    int stride;
+    int w;
+    int f;
+
+    m = (struct Cpr8Mpeg *)arg0;
+    src = arg1->unk0 & 0x0FFFFFFF;
+    base = arg0->unkD8 & 0x0FFFFFFF;
+    if (m->unk174 == 3) {
+        goto block_3;
+    }
+    width = m->unkE0;
+    w = width;
+    if (width != 0) {
+        goto block_8;
+    }
+    goto block_4;
+block_3:
+    w = m->unkE0;
+block_4:
+    row = arg1->unk10 * 0x180;
+    qwc = row >> 4;
+    if (w == 0) {
+        goto block_6;
+    }
+    stride = (w >> 4) * 0x180;
+    goto block_7;
+block_6:
+    stride = row;
+block_7:
+    fields = 1;
+    goto block_9;
+block_8:
+    stride = (width >> 4) * 0xC0;
+    row = ((int) arg1->unk10 >> 1) * 0x180;
+    fields = 2;
+    qwc = row >> 4;
+block_9:
+    f = 0;
+    while (f < fields) {
+        dst = base;
+        for (i = 0; i < arg1->unkC; i++) {
+            intr1 = func_0011D960();
+            *(volatile int *)0x1000D480 = 0;
+            *(volatile int *)0x1000D410 = src;
+            *(volatile int *)0x1000D420 = qwc;
+            *(volatile int *)0x1000D400 = 0x101;
+            if (intr1 == 0) {
+                goto block_15;
+            }
+            func_0011D9A8();
+        block_15:
+            while (*(volatile unsigned int *)0x1000D400 & 0x100) {
+            }
+            intr2 = func_0011D960();
+            *(volatile int *)0x1000D080 = 0;
+            *(volatile int *)0x1000D010 = dst;
+            *(volatile int *)0x1000D020 = qwc;
+            *(volatile int *)0x1000D000 = 0x100;
+            if (intr2 == 0) {
+                goto block_19;
+            }
+            func_0011D9A8();
+        block_19:
+            while (*(volatile unsigned int *)0x1000D000 & 0x100) {
+            }
+            while (*(volatile unsigned int *)0x1000D020 != 0) {
+            }
+            dst += stride;
+            src += row;
+        }
+        f++;
+        base += m->unkE4 * 0xC0;
+    }
+    return;
+}
 
 int func_00129C78(void *arg0) {
     Obj40 *s = (Obj40 *)arg0;

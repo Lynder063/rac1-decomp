@@ -21,6 +21,7 @@ The following functions adapt source from
 - `src/core/00123168.c`: `func_001233E8` (`sceDmaPutEnv`)
 - `src/core/00125630.c`: `func_001273A0` (`_waitBdecOut`)
 - `src/core/00125630.c`: `func_001286E8` (`_ipuVdec`)
+- `src/core/00125630.c`: `func_001299E8` (`_cpr8`)
 
 MIT License
 
