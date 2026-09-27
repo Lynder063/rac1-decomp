@@ -45,8 +45,9 @@ def main() -> None:
 
     cand = Path(a.candidate).read_text().rstrip("\n").splitlines()
     # The file already declares most of what a candidate carries: keep only
-    # the extern lines it lacks, and one blank line where others went.
-    existing = {l.strip() for l in lines}
+    # the extern lines not declared above it, and one blank line where others
+    # went. A declaration further down doesn't count: C needs it first.
+    existing = {l.strip() for l in lines[:first]}
     cand = [l for l in cand if not (l.startswith("extern ") and l.strip() in existing)]
     cand = [l for i, l in enumerate(cand) if l.strip() or (i and cand[i - 1].strip())]
     while cand and not cand[0].strip():
@@ -74,9 +75,12 @@ def main() -> None:
     while note > 0 and not lines[note].strip():  # A note may sit a blank line up.
         note -= 1
     if a.drop_note and lines[note].rstrip().endswith("*/"):
-        start = note
-        while not lines[start].lstrip().startswith("/*"):
-            start -= 1
+        opener = note
+        while "/*" not in lines[opener]:
+            opener -= 1
+        # Only a comment standing alone is a note, never one trailing code.
+        if lines[opener].lstrip().startswith("/*"):
+            start = opener
     lines[start:last + 1] = cand
     src.write_text("\n".join(lines) + "\n")
     print(f"{a.name}: {src}:{start + 1} ({'stub' if is_stub else 'definition'} replaced, {len(cand)} lines)")
