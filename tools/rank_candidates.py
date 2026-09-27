@@ -122,6 +122,28 @@ def instructions(body: str) -> list[str]:
     return out
 
 
+# A quadword move of something other than a saved register ($sp-relative
+# saves and restores are ordinary). Two kinds are expressible: a 128-bit
+# zero store (`*(long long *)p = 0`), and retail's inline-asm vector copy,
+# `lq $2,0(a)` then `sq $2,0(b)`, which is qcopy() in include/common.h.
+BARE_QUAD = re.compile(r"\b(sq|lq)\s+\$(?!29\b|1[6-9]\b|2[0-3]\b|3[01]\b)")
+QCOPY_LQ = re.compile(r"^lq\s+\$2,\s*0x0\(\$\d+\)$")
+QCOPY_SQ = re.compile(r"^sq\s+\$2,\s*0x0\(\$\d+\)$")
+
+
+def only_qcopies(ins: list[str]) -> bool:
+    """Every bare quadword move is a zero store or one of qcopy()'s pairs."""
+    for k, s in enumerate(ins):
+        if not BARE_QUAD.search(s) or re.match(r"^sq\s+\$0,", s):
+            continue
+        if QCOPY_LQ.match(s) and k + 1 < len(ins) and QCOPY_SQ.match(ins[k + 1]):
+            continue
+        if QCOPY_SQ.match(s) and k and QCOPY_LQ.match(ins[k - 1]):
+            continue
+        return False
+    return True
+
+
 def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     """Returns (verdict, category, detail)."""
     vram = int(name.split("_")[1], 16)
@@ -224,8 +246,11 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
             run = 1
     if len(ins) > 4 and best >= 4:
         return "blocked", "varargs definition", "needs stdarg.h"
-    if re.search(r"\b(sq|lq)\s+\$(?!29\b|1[6-9]\b|2[0-3]\b|31\b)", text):
-        return "blocked", "bare quadword", ""
+    qcopy = False
+    if BARE_QUAD.search(text):
+        if not only_qcopies(ins):
+            return "blocked", "bare quadword", ""
+        qcopy = True
 
     # --- the $at macro store form (retail builds an address in $1 and
     # stores through it) was blocked here for many rounds. UNBLOCKED:
@@ -350,6 +375,8 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
             detail += " ($gp in slot)"
         else:
             detail = (detail + "; " if detail else "") + "MACRO_ADDR ($gp in slot)"
+    if qcopy:
+        detail = (detail + "; " if detail else "") + "qcopy() for 16-byte copies"
     return "candidate", "candidate", detail
 
 
