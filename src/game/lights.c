@@ -67,7 +67,51 @@ extern void func_001166FC(Cfg13 *, void *);
 extern short D_0015F9D0;
 extern void func_00201960(int, int, int, int, int);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00202260); /* UpdateAllPointLights */
+extern char D_0019BEC0[];
+extern float D_00187198;
+extern char D_0019C2C0[];
+extern char D_0019C4C0[];
+extern float func_001FA748(float, float);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern float func_001F9D10(void *, void *);
+extern void func_002023E0(int);
+extern void func_00202790(int);
+
+/* Per-frame light update: the ambient colour (0.8 grey, -0.3) and a key
+   light 0.8 rad behind the camera heading, tilted down; then every
+   active point light (0x30-byte records at D_0019C4C0, positions from
+   D_0019C2C0) that has moved more than 8 units is re-placed and either
+   created (state 1 -> 2) or refreshed (state 2). */
+void func_00202260(void) {
+    char *l = D_0019BEC0;
+    float ang;
+    int i;
+
+    *(float *)(l + 0x34C) = -0.3f;
+    *(float *)(l + 0x340) = 0.8f;
+    *(float *)(l + 0x344) = 0.8f;
+    *(float *)(l + 0x348) = 0.8f;
+    ang = func_001FA748(D_00187198, -0.8f);
+    *(float *)(l + 0x350) = func_001F9F90(ang) * 0.866f;
+    *(float *)(l + 0x354) = func_001F9FA8(ang) * 0.866f;
+    *(float *)(l + 0x358) = -0.5f;
+    *(int *)(l + 0x35C) = 0;
+    for (i = 0; i < 8; i++) {
+        char *src = D_0019C2C0 + i * 0x20;
+        char *dst = D_0019C4C0 + i * 0x30;
+
+        if (*(int *)(dst + 0x10) != 0 && func_001F9D10(src + 0x10, dst + 0x20) > 8.0f) {
+            qcopy(dst + 0x20, src + 0x10);
+            if (*(int *)(dst + 0x10) == 1) {
+                func_002023E0(i);
+                *(int *)(dst + 0x10) = 2;
+            } else if (*(int *)(dst + 0x10) == 2) {
+                func_00202790(i);
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002023E0); /* CreatePointLight */
 

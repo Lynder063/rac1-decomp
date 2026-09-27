@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 31.447997801574964,
+  "fuzzy_match_percent": 31.530438740371157,
   "total_code": "465788",
-  "matched_code": "144756",
-  "matched_code_percent": 31.077657646826452,
+  "matched_code": "145140",
+  "matched_code_percent": 31.160098585622645,
   "total_functions": 1658,
-  "matched_functions": 964,
-  "matched_functions_percent": 58.142340168878164,
+  "matched_functions": 965,
+  "matched_functions_percent": 58.20265379975874,
   "complete_code": "15260",
   "complete_code_percent": 3.2761685573694472,
   "total_units": 121,
@@ -10546,13 +10546,13 @@
   {
    "name": "game/lights",
    "measures": {
-    "fuzzy_match_percent": 2.0793950850661624,
+    "fuzzy_match_percent": 20.226843100189036,
     "total_code": "2116",
-    "matched_code": "44",
-    "matched_code_percent": 2.0793950850661624,
+    "matched_code": "428",
+    "matched_code_percent": 20.226843100189036,
     "total_functions": 4,
-    "matched_functions": 1,
-    "matched_functions_percent": 25.0,
+    "matched_functions": 2,
+    "matched_functions_percent": 50.0,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -10562,7 +10562,7 @@
     {
      "name": "func_00202260",
      "size": "384",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "0",
      "metadata": {
       "virtual_address": "2105952"
@@ -17967,13 +17967,13 @@
    "id": "game",
    "name": "Game",
    "measures": {
-    "fuzzy_match_percent": 30.874771657415863,
+    "fuzzy_match_percent": 30.959082765404343,
     "total_code": "455456",
-    "matched_code": "138896",
-    "matched_code_percent": 30.496030351998876,
+    "matched_code": "139280",
+    "matched_code_percent": 30.580341459987352,
     "total_functions": 1624,
-    "matched_functions": 933,
-    "matched_functions_percent": 57.45073891625616,
+    "matched_functions": 934,
+    "matched_functions_percent": 57.51231527093596,
     "complete_code": "9400",
     "complete_code_percent": 2.0638656643012716
    }
