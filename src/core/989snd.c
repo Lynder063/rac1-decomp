@@ -304,7 +304,10 @@ void func_0012E4A8(int arg0) {
 
 LINKER_REMNANT("asm/remnants/core_text", func_0012E4D8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E4F8);
+/* Command 0x18 with no data. */
+void func_0012E4F8(void) {
+    func_0012E820(0x18, 0, 0, 0, 0);
+}
 
 /* snd_PauseAllSoundsInGroup */
 void func_0012E528(int arg0) {
