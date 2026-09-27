@@ -164,7 +164,7 @@ extern char D_00153C48[];
 extern char D_00153C78[];
 extern char D_00153C90[];
 extern char D_00153CC8[];
-extern int func_0012CE48(void *);
+extern void func_0012CE48(unsigned int *);
 
 /*
  * Write a CHCR value to IPU DMA channel 3 (fromIPU, 0x1000B000) or 4
