@@ -169,7 +169,46 @@ int func_001219C8(void) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00121A80);
+extern char D_001530F0[];
+extern char D_00153110[];
+
+typedef struct {
+    unsigned char stat;
+    unsigned char second;
+    unsigned char minute;
+    unsigned char hour;
+    unsigned char pad;
+    unsigned char day;
+    unsigned char month;
+    unsigned char year;
+} sceCdCLOCK;
+
+/* sceCdReadClock: S-command 0xF (RPC 1 on D_00132E08, 16-byte reply in
+ * D_001325C0). Copies the sceCdCLOCK 4 bytes into the reply out through
+ * the uncached mirror and returns the reply's status word. sceCdCLOCK is
+ * all u_char, so the copy is an unaligned ldl/ldr + sdl/sdr; it must not
+ * be volatile (gcc would call memcpy), the +4 goes before the uncached OR,
+ * and the status word is read before the release call. */
+int func_00121A80(void *out) {
+    int r;
+    if (func_00121040(0xF) == 0) {
+        return 0;
+    }
+    if (D_001313D0 > 0) {
+        func_0011A6C8(D_001530F0);
+    }
+    if (func_0011B4C8(D_00132E08, 1, 0, 0, 0, &D_001325C0, 0x10, 0, 0) < 0) {
+        func_00118C90(D_001313EC);
+        return 0;
+    }
+    *(sceCdCLOCK *)out = *(sceCdCLOCK *)(((unsigned int)&D_001325C0 + 4) | 0x20000000);
+    if (D_001313D0 > 0) {
+        func_0011A6C8(D_00153110);
+    }
+    r = *(int *)((unsigned int)&D_001325C0 | 0x20000000);
+    func_00118C90(D_001313EC);
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00121B78);
 
