@@ -103,6 +103,8 @@ def build(name, seg, src, first, last, candidate, work):
                 return None
             if not run([sys.executable, "tools/fix_trunc_slot.py", str(s[0]), str(s[3])], log):
                 return None
+            if not run([sys.executable, "tools/fix_volatile_slot.py", str(s[3]), str(s[3])], log):
+                return None
             if not run([sys.executable, "tools/check_macro_slots.py", str(s[3])], log):
                 return None
             if not run(sn(CC, *CFLAGS, "-c", str(s[3]), "-o", str(obj)), log):
