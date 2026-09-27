@@ -19,8 +19,16 @@ with retail. Verdicts: `EXACT`, `BYTES n/size` (same size, n bytes off),
 
 - Retail assembly: `asm/nonmatchings/{text,core_text}/func_X.s`.
 - Strings: `grep -n D_XXXXXXXX -A2 asm/data/*.s` (printf is `func_001E9730`).
-- `tools/compiler_sweep.py FILE.c`: a core file compiled whole under both compilers.
-- RTL dumps: add `-da` to the compile (see `build-sn/try/func_0020D6D0/dump.sh`).
+- Extra compiler flags for one run: set `TRY_CFLAGS` inside the container,
+  `bash tools/docker/run.sh sh -c "TRY_CFLAGS=-mno-split-addresses python tools/try_func.py func_X pN.c"`.
+- For the orchestrator, not workers: `tools/compiler_sweep.py FILE.c` (a core
+  file compiled whole under both compilers) and RTL dumps (`-da`, see
+  `build-sn/try/func_0020D6D0/dump.sh`).
+
+try_func masks relocations, so `EXACT` means the instructions match; the
+full build at landing also checks which symbol each one reaches. Two
+stores to different globals in the wrong order, or a call to the wrong
+function, pass try_func and fail there.
 
 Registers: `$4`-`$11` = arguments (EABI), `$2`/`$3` = v0/v1, `$16`-`$23` =
 saved, `$29` = sp, `$31` = ra, `$28` = gp (0x166D00). Float arguments
@@ -34,8 +42,28 @@ go in `$f12`, `$f13`, `$f14`... `long` is 64-bit, `long long` 128-bit.
   `extern int f_i(int) __asm__("func_...");`. Watch declarations later in
   the file too.
 - Define the function under its own name. No string literals (declare
-  `extern char D_xxx[];`).
+  `extern char D_xxx[];`). One exception: when the file already declares
+  the function with another type (boilerplate like
+  `extern int func_X(void *);`, or a `void (void)` update-pointer type),
+  define it as `T name(args) __asm__("func_X")` and say so in NOTES.md;
+  the file's prototype gets fixed when it lands.
+- `CONTEXT.md` is written when the wave is planned. A neighbour may have
+  landed since: check the file for declarations it doesn't list.
 - Read the note above a stub, but don't trust it: many were wrong.
+
+## Start here
+
+1. **Lombyte first.** `python3 tools/lombyte.py func_X` finds the same
+   function in Lombyte, the matching decompilation of the US build
+   ([SIBLING_DECOMPS.md](SIBLING_DECOMPS.md)). If it is matched there, port
+   it: rename functions and globals to ours, keep its control flow.
+2. **List every global and how retail reaches it**: through `$gp`
+   (sized declaration), `lui`/`%lo` split across two registers (plain
+   declaration), `lui` then a load into the same register (`MACRO_ADDR`),
+   or never through `$gp` (`NOT_SDA`). That list decides the declarations
+   before any statement is written.
+3. **Check the known walls below.** If the difference is one of them, say
+   so in NOTES.md and stop.
 
 ## The build already does these, so never write them in C
 
@@ -109,6 +137,36 @@ in `config/core_rodata.txt`).
    then `sq $2,0(b)` is `qcopy(dst, src)` in `include/common.h`. A 128-bit
    zero store (`sq $zero`) has no known C form: `*(long long *)p = 0`
    adds a `por` first.
+
+10. **Per-file flags.** Retail built some source files with
+    `-mno-split-addresses` ([SIBLING_DECOMPS.md](SIBLING_DECOMPS.md)).
+    There a global is one assembler macro, so no `%hi` survives a call and
+    each access starts with a fresh `lui`. If what's left is `%hi` values
+    in saved registers (more `$s` registers or a bigger frame than retail,
+    or a `lui` retail repeats and you share), run the candidate once with
+    `TRY_CFLAGS=-mno-split-addresses` and report the result in NOTES.md,
+    even when it doesn't match: which files need which flags isn't mapped
+    yet. Don't imitate it by giving one global two alias names. A `div`
+    without the zero-divide trap wants `-mno-check-zero-division`.
+
+## Known walls: stop and report
+
+No plain-C wording has reached these. Name the one you hit in NOTES.md
+and stop, rather than spending the budget on it:
+
+- A 128-bit zero store (`sq $zero`): C adds a `por` first
+  (`src/game/fastfunc.c`, func_001F9BC0).
+- An extra `nop` between a `jal` and the branch on its result
+  (func_0012F3F8, func_0012F4A8 in `src/core/wad.c`).
+- A register allocation that three different wordings leave unchanged
+  (`WORKER.md`'s stop rule).
+- Hand-written code: trapping `add`/`addi`, `$at` used as an ordinary
+  register, a result left outside `$v0`, or COP2 control registers
+  (`cfc2`/`ctc2`). The original was assembly.
+- Callee-saved registers stored with `sd` where our compiler emits `sq`
+  (no available compiler reproduces it; see UYA's compiler matrix).
+- A lone `%hi` whose `%lo` comes after a call can link as the wrong half
+  in the full build (func_001E9808): report it, it's a tooling issue.
 
 ## What to hand back
 
