@@ -231,7 +231,12 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E1C8);
 
 LINKER_REMNANT("asm/remnants/core_text", func_0012E2D8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E2E8);
+extern int func_0012E820(int, int, void *, int, int);
+
+/* Command 8 with no data. */
+void func_0012E2E8(void) {
+    func_0012E820(8, 0, 0, 0, 0);
+}
 
 extern int func_0012E820(int, int, void *, int, int);
 
