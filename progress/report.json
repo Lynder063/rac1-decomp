@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 30.57292158664457,
+  "fuzzy_match_percent": 30.620153374496553,
   "total_code": "465788",
-  "matched_code": "140680",
-  "matched_code_percent": 30.202581431896057,
+  "matched_code": "140900",
+  "matched_code_percent": 30.24981321974804,
   "total_functions": 1658,
-  "matched_functions": 949,
-  "matched_functions_percent": 57.23763570566948,
+  "matched_functions": 950,
+  "matched_functions_percent": 57.29794933655006,
   "complete_code": "15260",
   "complete_code_percent": 3.2761685573694472,
   "total_units": 121,
@@ -7683,13 +7683,13 @@
   {
    "name": "game/camera",
    "measures": {
-    "fuzzy_match_percent": 31.547619047619047,
+    "fuzzy_match_percent": 34.27579365079365,
     "total_code": "8064",
-    "matched_code": "2544",
-    "matched_code_percent": 31.547619047619047,
+    "matched_code": "2764",
+    "matched_code_percent": 34.27579365079365,
     "total_functions": 26,
-    "matched_functions": 13,
-    "matched_functions_percent": 50.0,
+    "matched_functions": 14,
+    "matched_functions_percent": 53.84615384615385,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -7807,7 +7807,7 @@
     {
      "name": "func_001ECAB8",
      "size": "220",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "2688",
      "metadata": {
       "virtual_address": "2017976"
@@ -17967,13 +17967,13 @@
    "id": "game",
    "name": "Game",
    "measures": {
-    "fuzzy_match_percent": 29.979844375746506,
+    "fuzzy_match_percent": 30.028147614698238,
     "total_code": "455456",
-    "matched_code": "134820",
-    "matched_code_percent": 29.601103070329515,
+    "matched_code": "135040",
+    "matched_code_percent": 29.649406309281247,
     "total_functions": 1624,
-    "matched_functions": 918,
-    "matched_functions_percent": 56.52709359605911,
+    "matched_functions": 919,
+    "matched_functions_percent": 56.58866995073892,
     "complete_code": "9400",
     "complete_code_percent": 2.0638656643012716
    }

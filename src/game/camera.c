@@ -395,7 +395,33 @@ void func_001EC8D8(float *out, void *p0, void *p1, void *dir0, void *dir1,
     out[2] = func_001F9CB8(diff);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001ECAB8);
+extern void func_001EC8D8(float *out, void *p0, void *p1, void *dir0, void *dir1,
+                           void *axis);
+extern char D_001872B0[];
+
+/* Builds three unit vectors from D_0013F450's +0x2080 pointer table
+   (+0xC0/+0xD0/+0xE0 offsets, re-read at each call as retail does),
+   stashes two of them into D_001872B0's record (+0x90, +0xA0), calls
+   func_001EC8D8 to compute the camera's yaw/pitch/dist into +0x70,
+   then copies +0xD0 back over +0xB0 (retail's qcopy, see common.h). */
+void func_001ECAB8(void) {
+    char *g = D_0013F450;
+    char *r = D_001872B0;
+    char local0[16];
+    char local1[16];
+    char local2[16];
+
+    func_001F9DC0(local0, *(char **)(g + 0x2080) + 0xC0, 1.0f);
+    func_001F9DC0(local1, *(char **)(g + 0x2080) + 0xD0, 1.0f);
+    func_001F9DC0(local2, *(char **)(g + 0x2080) + 0xE0, 1.0f);
+
+    qcopy(r + 0x90, local0);
+    qcopy(r + 0xA0, local2);
+
+    func_001EC8D8((float *)(r + 0x70), r + 0xC0, g + 0x80, local0, local1, local2);
+
+    qcopy(r + 0xB0, r + 0xD0);
+}
 
 /*
  * Reverted: size mismatch (ours=96, retail=116 -- 20 bytes short).
