@@ -431,7 +431,18 @@ int func_0012BB20(void) {
 
 LINKER_REMNANT("asm/remnants/core_text", func_0012BB28);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BB30);
+extern int func_0012BDD0(void *);
+
+int func_0012BB30(char *p, unsigned int addr, int size) {
+    char *t = *(char **)(p + 0x40);
+
+    *(int *)(t + 0xB0) = 1;
+    *(int *)(t + 0xD8) = (addr & 0x0FFFFFFF) | 0x20000000;
+    *(int *)(t + 0xE4) = size;
+    *(int *)(t + 0xE0) = 0;
+    *(int *)(t + 0xDC) = 0;
+    return func_0012BDD0(p);
+}
 
 LINKER_REMNANT("asm/remnants/core_text", func_0012BB78);
 

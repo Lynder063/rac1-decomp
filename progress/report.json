@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 52.00880395104144,
+  "fuzzy_match_percent": 52.02426454799227,
   "total_code": "465700",
-  "matched_code": "240824",
-  "matched_code_percent": 51.712261112304056,
+  "matched_code": "240896",
+  "matched_code_percent": 51.72772170925489,
   "total_functions": 1680,
-  "matched_functions": 1310,
-  "matched_functions_percent": 77.97619047619048,
+  "matched_functions": 1311,
+  "matched_functions_percent": 78.03571428571429,
   "complete_code": "83876",
   "complete_code_percent": 18.010736525660295,
   "total_units": 121,
@@ -5873,13 +5873,13 @@
   {
    "name": "core/0012AC80",
    "measures": {
-    "fuzzy_match_percent": 49.87605354486862,
+    "fuzzy_match_percent": 50.76846802181458,
     "total_code": "8068",
-    "matched_code": "3940",
-    "matched_code_percent": 48.834903321765,
+    "matched_code": "4012",
+    "matched_code_percent": 49.727317798710956,
     "total_functions": 48,
-    "matched_functions": 38,
-    "matched_functions_percent": 79.16666666666667,
+    "matched_functions": 39,
+    "matched_functions_percent": 81.25,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -5988,7 +5988,7 @@
     {
      "name": "func_0012BB30",
      "size": "72",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "3760",
      "metadata": {
       "virtual_address": "1227568"
@@ -18165,13 +18165,13 @@
    "id": "game",
    "name": "Game",
    "measures": {
-    "fuzzy_match_percent": 51.90197818028496,
+    "fuzzy_match_percent": 51.91778956799775,
     "total_code": "455368",
-    "matched_code": "234964",
-    "matched_code_percent": 51.59870697984926,
+    "matched_code": "235036",
+    "matched_code_percent": 51.61451836756206,
     "total_functions": 1646,
-    "matched_functions": 1279,
-    "matched_functions_percent": 77.70352369380316,
+    "matched_functions": 1280,
+    "matched_functions_percent": 77.76427703523694,
     "complete_code": "78016",
     "complete_code_percent": 17.13251699724179
    }
