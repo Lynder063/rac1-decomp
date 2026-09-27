@@ -281,7 +281,18 @@ void func_0012E3F8(int arg0, int arg1, int arg2) {
 
 LINKER_REMNANT("asm/remnants/core_text", func_0012E438);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E448);
+/* Command 0x11 with six ints; the last two arguments are passed through. */
+void func_0012E448(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5,
+                   int arg6, int arg7) {
+    int local[6];
+    local[0] = arg0;
+    local[1] = arg1;
+    local[2] = arg2;
+    local[3] = arg3;
+    local[4] = arg4;
+    local[5] = arg5;
+    func_0012E820(0x11, 0x18, local, arg6, arg7);
+}
 
 LINKER_REMNANT("asm/remnants/core_text", func_0012E490);
 
