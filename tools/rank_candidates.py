@@ -197,7 +197,7 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
         return "blocked", "padding-prefixed", "leading 0xCDCDCDCD not from C"
     if VU0_LO <= vram <= VU0_HI:
         return "blocked", "VU0 cluster", "0x1F9B20-0x1FB598"
-    if re.search(r"\b(v[a-z]+\.[xyzw]+|vcallms|qmfc2|qmtc2|pxor|pcpyud|pextlw|pnor)\b", text):
+    if re.search(r"\b(v[a-z]+\.[xyzw]+|vcallms|qmfc2|qmtc2|cfc2|ctc2|pxor|pcpyud|pextlw|pnor)\b", text):
         return "blocked", "SIMD/COP2", ""
     if re.search(r"\b(adda|madd|msub)\.s\b", text):
         return "blocked", "FPU accumulate", "adda.s/madd.s not plain-C"
