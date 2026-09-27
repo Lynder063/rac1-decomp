@@ -489,10 +489,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0020D928);
 /* Attach a fresh node to arg0's list at +0x64, seeded with 1.0f scales. */
 /* AttachManipulator */
 void func_0020D960(char *arg0, int arg1, unsigned char *arg2) {
-    char *e;
-    char *f;
-    char *tbl;
-    int idx;
+    unsigned char *e;
 
     if (arg2[1] != 0) {
         return;
@@ -504,11 +501,8 @@ void func_0020D960(char *arg0, int arg1, unsigned char *arg2) {
     *(float *)(arg2 + 0x24) = 1.0f;
     *(float *)(arg2 + 0x28) = 1.0f;
 
-    tbl = *(char **)(*(char **)(arg0 + 0x24) + 0x1C);
-    idx = arg2[0];
-    e = *(char **)(tbl + idx * 4 + 4);
-    f = *(unsigned char *)e + e;
-    *(int *)(arg2 + 4) = (*(unsigned char *)(f + 4) << 6) + 0x70000000;
+    e = *(unsigned char **)(*(char **)(*(char **)(arg0 + 0x24) + 0x1C) + arg2[0] * 4 + 4);
+    *(int *)(arg2 + 4) = e[*e + 4] * 0x40 + 0x70000000;
 
     *(int *)(arg2 + 8) = *(int *)(arg0 + 0x64);
     *(int *)(arg0 + 0x64) = (int)arg2;
