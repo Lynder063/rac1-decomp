@@ -750,8 +750,8 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00215648);
 extern void func_001FA588(void *, void *, void *);
 
 /* Conjugate-style sandwich: arg0 = arg2 * (arg1 with w = 0) * a, where
-      a is arg2 negated with its w kept (func_001FA588 is the quaternion
-      multiply). The 16-byte copy of arg1 is qcopy's lq/sq. */
+   a is arg2 negated with its w kept (func_001FA588 is the quaternion
+   multiply). The 16-byte copy of arg1 is qcopy's lq/sq. */
 void func_00215650(void *arg0, void *arg1, void *arg2) {
     float a[4];
     float b[4];
