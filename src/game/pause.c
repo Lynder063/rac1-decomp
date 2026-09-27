@@ -3220,8 +3220,6 @@ void func_00225DF0(void) {
 void func_00225DF8(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00225E00);
-
 extern char D_001864D0_a[] __asm__("D_001864D0");
 extern int func_0020E3D0(void *);
 extern void func_0020ED48(void *);
@@ -3230,6 +3228,7 @@ extern void func_00214F78(void *);
 extern void func_0020EEE8(void *);
 extern void func_001E9800(void *, void *, int, int, int);
 
+/* The pause-screen mobys these updates drive. */
 typedef struct {
     char pad00[0x10];
     float pos[4];       /* 0x10 */
@@ -3248,6 +3247,75 @@ typedef struct {
     char padA8[0x18];
     float mtx[16];      /* 0xC0 */
 } PauseMoby;
+
+/* D_001864D0's 0x4C-byte per-class records. */
+typedef struct {
+    char pad00[0xC];
+    int bone;           /* 0x0C */
+    int cls;            /* 0x10 */
+    char pad14[4];
+    int still;          /* 0x18 */
+    char pad1C[0x30];
+} PauseClassRec;
+
+extern PauseClassRec D_001864D0_r[] __asm__("D_001864D0");
+extern void func_00213DE0(void *, int, int, int);
+extern void func_0020D9D8(int, void *);
+extern void func_0020D960(int, int, void *);
+
+/* Moby update with a per-class record: find the class in D_001864D0 (0x4C
+   bytes each, 0x25 of them), refresh the matrix from the record's bone,
+   and either register the moby (+0x18 set) or restart its idle sound;
+   also re-sync the D_001D6160 animation group while its +1 flag is up.
+   The two store groups are in the order that schedules as retail's. */
+void func_00225E00(void *arg0) {
+    PauseMoby *m = arg0;
+    unsigned char *b = arg0;
+    float mtx[16];
+    int id = *(int *)(*m->cls + 0x44);
+    int i;
+    int still;
+    int sync;
+    unsigned char *s;
+
+    if ((b[0x70] & 2) && b[0x53] != 1) {
+        func_00213DE0(m, 1, 0, 0);
+    }
+    for (i = 0; i < 0x25; i++) {
+        if (D_001864D0_r[i].cls == m->oclass) {
+            break;
+        }
+    }
+    func_0020DAF8(id, D_001864D0_r[i].bone, mtx);
+    qcopy(m->pos, &mtx[12]);
+    func_0020ED48(m);
+    still = D_001864D0_r[i].still == 0;
+    func_001FA480(m->mtx, mtx);
+    if (!still) {
+        func_00214F78(m->mtx);
+    }
+    func_0020EEE8(m);
+    sync = 0;
+    s = (unsigned char *)D_001D6160;
+    if (s[1] != 0) {
+        sync = 1;
+        func_0020D9D8(id, s);
+    }
+    if (still) {
+        func_001E9800(D_001864D0_a, D_001864D0, m->sound, 0, id);
+        m->x68 = D_001864D0;
+        m->x54 = 0;
+        m->x6C = D_001864D0;
+        *(int *)(b + 0x58) = 0;
+        m->x50 = 0;
+    }
+    if (sync) {
+        func_0020D960(id, 0, s);
+        *(int *)(s + 0x20) = 0;
+        *(int *)(s + 0x24) = 0;
+        *(int *)(s + 0x28) = 0;
+    }
+}
 
 /* Moby update: refresh its matrix from bone 4 of its class (+0x44),
    copying the translation row to the position, re-register it, start
