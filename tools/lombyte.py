@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+"""
+Finds a PAL function's counterpart in Lombyte, the matching decompilation
+of the same game's US build (github.com/mateuszklysz/Lombyte, MIT;
+docs/SIBLING_DECOMPS.md). A function Lombyte has matched is the best
+starting point there is: same source, same compiler family.
+
+  python3 tools/lombyte.py map              # rebuild the US-to-PAL map
+  python3 tools/lombyte.py func_X [...]     # counterpart, status, C file
+  python3 tools/lombyte.py NAME [...]       # a Lombyte name's PAL function
+  python3 tools/lombyte.py todo             # matched there, not here
+
+The map pairs functions by aligning both builds' function-size sequences
+(runs of three or more equal sizes), so a paired function has the same
+size in both. It lives in build-sn/lombyte_ntsc_pal_map.json. Lombyte is
+looked for in $LOMBYTE, else ~/Projects/Lombyte.
+"""
+import difflib
+import json
+import os
+import re
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+LOMBYTE = Path(os.environ.get("LOMBYTE", Path.home() / "Projects/Lombyte"))
+MAP = ROOT / "build-sn/lombyte_ntsc_pal_map.json"
+
+
+def functions(report: Path, key) -> list[tuple[int, int, str, bool]]:
+    rows = []
+    for unit in json.loads(report.read_text())["units"]:
+        for f in unit.get("functions", []):
+            rows.append((key(f), int(f["size"]), f["name"], (f.get("fuzzy_match_percent") or 0) == 100))
+    return sorted(r for r in rows if r[0] is not None)
+
+
+def build_map() -> list[dict]:
+    theirs = functions(LOMBYTE / "progress/report.json",
+                       lambda f: int(f.get("metadata", {}).get("virtual_address") or 0))
+    ours = functions(ROOT / "progress/report.json",
+                     lambda f: int(f["name"][5:], 16) if f["name"].startswith("func_") else None)
+    match = difflib.SequenceMatcher(None, [s for _, s, _, _ in theirs], [s for _, s, _, _ in ours],
+                                    autojunk=False)
+    pairs = []
+    for a, b, n in match.get_matching_blocks():
+        if n < 3:
+            continue
+        for k in range(n):
+            t, o = theirs[a + k], ours[b + k]
+            pairs.append({"pal": o[2], "size": o[1], "ntsc": t[2], "ntsc_exact": t[3], "pal_exact": o[3]})
+    MAP.parent.mkdir(parents=True, exist_ok=True)
+    MAP.write_text(json.dumps(pairs, indent=1) + "\n")
+    return pairs
+
+
+def load_map() -> list[dict]:
+    return json.loads(MAP.read_text()) if MAP.exists() else build_map()
+
+
+def source_of(name: str) -> list[str]:
+    """Lombyte C files that define NAME (as a C name or an asm label):
+    a column-0 line naming it before `(` and not ending in `;`."""
+    pattern = re.compile(rf"(?m)^(?!extern\b)[A-Za-z_][^;\n]*\b{re.escape(name)}\b\s*\([^;\n]*$"
+                         rf"|__asm__\(\"{re.escape(name)}\"\)")
+    hits = []
+    for path in (LOMBYTE / "src").rglob("*.c"):
+        if pattern.search(path.read_text(errors="replace")):
+            hits.append(str(path))
+    return hits
+
+
+def main() -> None:
+    args = sys.argv[1:]
+    if not args:
+        sys.exit(__doc__)
+    if not LOMBYTE.is_dir():
+        sys.exit(f"no Lombyte checkout at {LOMBYTE} (set $LOMBYTE)")
+    if args[0] == "map":
+        pairs = build_map()
+        todo = [p for p in pairs if p["ntsc_exact"] and not p["pal_exact"]]
+        print(f"{len(pairs)} functions paired; {len(todo)} matched in Lombyte only "
+              f"({sum(p['size'] for p in todo)} bytes). Written to {MAP.relative_to(ROOT)}.")
+        return
+    pairs = load_map()
+    if args[0] == "todo":
+        for p in sorted((p for p in pairs if p["ntsc_exact"] and not p["pal_exact"]), key=lambda p: p["size"]):
+            print(f"{p['pal']}  {p['size']:>5}  {p['ntsc']}")
+        return
+    by_pal = {p["pal"]: p for p in pairs}
+    by_ntsc = {p["ntsc"]: p for p in pairs}
+    for name in args:
+        if not name.startswith("func_"):
+            p = by_ntsc.get(name)
+            print(f"{name}: " + (f"PAL {p['pal']} ({p['size']} bytes)" if p else "no PAL counterpart in the map"))
+            continue
+        p = by_pal.get(name)
+        if not p:
+            print(f"{name}: no Lombyte counterpart in the map")
+            continue
+        state = "matched in Lombyte" if p["ntsc_exact"] else "not matched in Lombyte either"
+        files = source_of(p["ntsc"])
+        print(f"{name}: Lombyte {p['ntsc']} ({p['size']} bytes), {state}")
+        for f in files:
+            print(f"  {f}")
+
+
+if __name__ == "__main__":
+    main()
