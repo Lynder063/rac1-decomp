@@ -1093,7 +1093,64 @@ void func_00128E68(void *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00128F90);
+typedef struct {
+    unsigned char pad_0[0xD4];
+    int pict_struct0;
+    unsigned char pad_D8[0x8C];
+    int f_code00;
+    int f_code01;
+    int f_code10;
+    int f_code11;
+    int picture_structure;
+    int top_field_first;
+    int frame_pred_frame_dct;
+    int concealment_mvs;
+    int repeat_first_field;
+    int progressive_frame;
+} PicExt;
+
+/* _pictureCodingExtension: parse an MPEG-2 picture coding extension:
+   the four f_codes, intra DC precision, q_scale_type, intra VLC format
+   and alternate scan straight into IPU_CTRL (0x10002010), the rest into
+   the decoder state; the composite display fields are skipped. Adapted
+   from Lombyte (MIT) for PAL. */
+void func_00128F90(void *arg) {
+    PicExt *arg0 = arg;
+    int temp_2_35;
+    int temp_6_65;
+    int temp_6_77;
+    int temp_6_89;
+
+    arg0->f_code00 = func_00128A58(arg0, 4);
+    arg0->f_code01 = func_00128A58(arg0, 4);
+    arg0->f_code10 = func_00128A58(arg0, 4);
+    arg0->f_code11 = func_00128A58(arg0, 4);
+    *(int *)0x10002010 = (*(int *)0x10002010 & 0xFFFCFFFF) | (func_00128A58(arg0, 2) << 0x10);
+    temp_2_35 = func_00128A58(arg0, 2);
+    arg0->picture_structure = temp_2_35;
+    if (arg0->pict_struct0 == 0) {
+        arg0->pict_struct0 = temp_2_35;
+    }
+    arg0->top_field_first = func_00128A58(arg0, 1);
+    arg0->frame_pred_frame_dct = func_00128A58(arg0, 1);
+    arg0->concealment_mvs = func_00128A58(arg0, 1);
+    temp_6_65 = (*(volatile unsigned int *)0x10002010 & 0xFFBFFFFF) | (func_00128A58(arg0, 1) << 0x16);
+    *(volatile unsigned int *)0x10002010 = temp_6_65;
+    temp_6_77 = (*(volatile unsigned int *)0x10002010 & 0xFFDFFFFF) | (func_00128A58(arg0, 1) << 0x15);
+    *(volatile unsigned int *)0x10002010 = temp_6_77;
+    temp_6_89 = (*(volatile unsigned int *)0x10002010 & 0xFFEFFFFF) | (func_00128A58(arg0, 1) << 0x14);
+    *(volatile unsigned int *)0x10002010 = temp_6_89;
+    arg0->repeat_first_field = func_00128A58(arg0, 1);
+    func_00128A58(arg0, 1);
+    arg0->progressive_frame = func_00128A58(arg0, 1);
+    if (func_00128A58(arg0, 1) != 0) {
+        func_00128A58(arg0, 1);
+        func_00128A58(arg0, 3);
+        func_00128A58(arg0, 1);
+        func_00128A58(arg0, 7);
+        func_00128A58(arg0, 8);
+    }
+}
 
 extern void func_00128968(void *, int);
 extern int func_00128A58(void *, int);

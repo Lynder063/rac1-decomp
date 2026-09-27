@@ -31,6 +31,7 @@ The following functions adapt source from
 - `src/core/00114060.c`: `func_00114060` (`__sfvwrite`)
 - `src/game/memcard.c`: `func_0020BD70` (memcard_RestoreData)
 - `src/core/0012AC80.c`: `func_0012C990` (`_setDefaultQM`)
+- `src/core/00125630.c`: `func_00128F90` (`_pictureCodingExtension`)
 
 MIT License
 
