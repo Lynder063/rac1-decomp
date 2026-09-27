@@ -1692,7 +1692,81 @@ int func_002217C8(void *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00221888);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00221B58);
+extern float func_001FA7D8(float, int);
+extern int func_001F9B70(int); /* abs */
+
+extern char D_001864D0[];
+extern int D_0015F538 MACRO_ADDR;
+extern char D_001603D8[];
+extern char D_001603E0[];
+extern short D_001602B0; /* SDA, gp -0x6A50 */
+
+/* The icon slots are a real member: written as pointer arithmetic, gcc
+   strength-reduces the index into a 7th saved register (retail uses 6). */
+typedef struct {
+    char pad[0x30];
+    int slots[8];
+} PauseIcons;
+
+/* Draws the pause menu's ring of 8 icons and the quick-select overlay.
+   arg0 is the pause-state object: unk20/unk24 give the viewport
+   width/height (used for the ring's center and radius), unk50 the
+   selected slot (drawn with a pulsing highlight box), and slots[i]
+   indexes an icon-info table (D_001864D0, 0x4C bytes/entry) and a byte
+   flags table (D_0013E620) when nonzero. */
+int func_00221B58(char *arg0) {
+    int v0, v1;
+    int flag;
+    float cx, cy, radius;
+    char *iconTab;
+    int i;
+
+    func_001F4630(0);
+    v1 = *(int *)(arg0 + 0x20);
+    iconTab = D_001864D0;
+    v0 = *(int *)(arg0 + 0x24);
+    flag = v1 < v0;
+    /* v1 doubles as `selected`: retail's movz reuses the same register
+       that already holds v1 (loaded straight into it), so the C must
+       overwrite v1 itself rather than assign a fresh local -- that
+       fresh local costs an extra `move` before the conditional one. */
+    cx = (float)v1 * 0.5f;
+    cy = (float)v0 * 0.5f;
+    if (flag == 0) {
+        v1 = v0;
+    }
+    radius = (float)v1 * 0.5f - 40.0f;
+    i = 0;
+    do {
+        float ang, t, x, y;
+        int idx;
+
+        ang = (float)i * 0.7853982f + -1.5707964f;
+        t = func_001FA7D8(ang, flag);
+        x = cx + func_001F9F90(t) * radius;
+        y = cy + func_001F9FA8(t) * radius;
+        if (i == *(int *)(arg0 + 0x50)) {
+            unsigned int color = ((func_001F9B70((D_0015F538 & 0x3F) - 0x20) + 0x40) * 0x10202) | 0x80000000;
+            func_00201640((int)x - 0x13, (int)y - 0x13, (int)x + 0x13, (int)y + 0x13, color, 0);
+            func_00201640((int)x - 0x12, (int)y - 0x12, (int)x + 0x12, (int)y + 0x12, *(int *)&D_001602B0, 0);
+        }
+        idx = ((PauseIcons *)arg0)->slots[i];
+        if (idx == 0) {
+            func_00201640((int)x - 0xF, (int)y - 0xF, (int)x + 0xF, (int)y + 0xF, 0x40404040L, 0);
+        } else {
+            int id = func_00200198(*(unsigned short *)(iconTab + idx * 0x4C + 0x38), D_0013E620[idx] == 0 ? 0 : 4);
+            func_00200468(id, (int)x - 0x11, (int)y - 0x11, 0x20, 0x20, 0x80);
+        }
+        i += 1;
+        flag = 0xE99E;
+    } while (i < 8);
+    func_00200468(func_00200198(0xE99E, 0), 8, 0x27, 0x20, -0x20, 0x80);
+    func_00200468(func_00200198(0xE99E, 0), *(int *)(arg0 + 0x20) - 0xA, 0x27, -0x20, -0x20, 0x80);
+    func_001F68E8_c(0x28, 0xF, 0x80FFA888L, D_001603D8, -1);
+    func_001F68E8_c(*(int *)(arg0 + 0x20) - 0x3C, 0xF, 0x80FFA888L, D_001603E0, -1);
+    func_001F4748();
+    return 2;
+}
 
 extern void func_0022ED80(int, int, int);
 extern void func_001FBC80(int, void *, int);
