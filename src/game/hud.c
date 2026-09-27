@@ -635,7 +635,42 @@ void func_00200650(int tex, int x, int y, int w, int h, int alpha) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002008B0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002008B8);
+/* func_00200468 with the position and size already in 16ths of a pixel. */
+void func_002008B8(int tex, int x, int y, int w, int h, int alpha) {
+    char *arena = D_0019A4E8_raw;
+    unsigned char *e = (unsigned char *)(*(char **)(arena + 0x24)
+        + *(short *)(*(char **)(arena + 0x20) + tex * 4 + 2) * 8);
+    int th;
+    int tw;
+    int *base;
+    long *p;
+
+    tw = 1 << e[6];
+    th = 1 << e[7];
+    D_00161000[0] = 0x10000005;
+    D_00161000[1] = 0;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000005;
+
+    base = D_00161000;
+    D_00161000 = base + 4;
+    p = (long *)D_00161000;
+    p[0] = 0x7400000000008001L;
+    p[1] = 0x5353106;
+    p[2] = func_00200248(tex);
+    p[3] = 0x156;
+    p[4] = ((long)alpha << 24) | 0x7F7F7F;
+    p[5] = 0;
+    p[6] = (x + D_0013E600[4] - 8)
+         | ((long)(y + D_0013E600[5] - 8) << 16)
+         | ((long)*(int *)(arena + 0xC) << 32);
+    p[7] = (th << 20) + tw * 16;
+    p[8] = (x + w + D_0013E600[4] - 8)
+         | ((long)(y + h + D_0013E600[5] - 8) << 16)
+         | ((long)*(int *)(arena + 0xC) << 32);
+    p[9] = 0;
+    D_00161000 = (int *)((char *)D_00161000 + 0x50);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00200A90);
 
