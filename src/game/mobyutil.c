@@ -262,11 +262,49 @@ void func_00213D28(MobyAnim *m, int seq, int frame) {
     m->unk70 &= ~2;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00213DE0);
-
 extern float func_001FA888(int arg0);
 extern void func_0020FC38(void *, int);
 extern char D_001B2F80[];
+
+/* As func_00213F28 below, for a plain sequence change: clamp the frame
+   to the sequence's last one; if the moby hasn't settled, park the
+   current pose in a D_001B2F80 blend slot (seq 0xFF, frame = slot). Then
+   set the new sequence and frame and arm the blend timer from arg3. */
+void func_00213DE0(MobyAnim *arg0, int arg1, int arg2, int arg3) {
+    int n = arg0->pClass->seqs[arg1]->nframes;
+    int slot;
+    unsigned char oldSeq;
+    float scale;
+
+    if (arg2 >= n) {
+        arg2 = n - 1;
+    }
+    if (*(float *)((char *)arg0 + 0x54) > 0.025f ||
+        *(int *)((char *)arg0 + 0x60) != 0 ||
+        *(int *)((char *)arg0 + 0x64) != 0) {
+        slot = func_0020DA68((int)arg0);
+        if (slot >= 0) {
+            func_0020FC38(arg0, slot | 0x300);
+            qcopy(D_001B2F80 + slot * 0x10, (char *)arg0 + 0xF0);
+            oldSeq = arg0->seq;
+            if (oldSeq != 0xFF) {
+                *(unsigned char *)((char *)arg0 + 0xA5) = oldSeq;
+            }
+            arg0->seq = 0xFF;
+            arg0->frame = slot;
+        }
+    }
+    arg0->nextFrame = arg2;
+    arg0->prevSeq = arg1;
+    func_0020D6D0_a(arg0);
+    *(float *)((char *)arg0 + 0x58) = 1.0f;
+    scale = 1.0f / func_001FA888(arg3);
+    *(float *)((char *)arg0 + 0x54) = 0.0f;
+    arg0->unk70 = (unsigned char)(arg0->unk70 & 0xFD);
+    arg0->unk5C = scale;
+    *(unsigned char *)((char *)arg0 + 0x7C) =
+        *((unsigned char *)arg0->pClass->seqs[arg1] + 0x11);
+}
 
 /* Re-registers this MobyAnim in the shared slot table (D_001B2F40, via
    func_0020DA68) when it hasn't settled yet (unk54 > 0.025, or unk60/unk64
