@@ -640,42 +640,23 @@ extern void func_00208860(void *dst);
    int it stays out. */
 extern int D_0015EE84 MACRO_ADDR;
 
-/*
- * Byte MISMATCH kept in place: size-exact (0xA8) and the instruction
- * stream is identical to retail instruction for instruction. All 18
- * differing words are allocator destination choice -- retail keeps the
- * parameter in $s1 and the result in $s0, we do the reverse, and the
- * $v0/$v1 and one scheduling swap at +0x78 follow from that. Swapping
- * the declaration order of the two locals gives byte-identical output
- * (18/42 either way), which is the recorded dead end reconfirmed.
- *
- * The useful find here is D_0015EE84 read BOTH ways in one function:
- * gp-relative in the else arm (it is the branch delay slot's fill) and
- * through lui/%lo in the arm that has just made a call. gp is
- * 0x00166D00 and gp-0x7E7C is exactly D_0015EE84, so these are one
- * object, not two. One `extern short` (small enough for -G2's SDA) plus
- * one `extern int ... NOT_SDA` aliased onto the same asm symbol gives
- * both spellings from one source, and nothing else tried produced the
- * lui/%lo form after the call.
- */
-void func_00208338(void *arg0) {
-    int r;
-    int idx;
+/* Read a sector into arg0 from the open file (D_001A01F0 slot state) or
+   clear it when none is open, and track the largest read per slot in
+   D_0013D668. Adapted from Lombyte (MIT) for PAL. */
+void func_00208338(int arg0) {
+    int n;
 
     func_00209040();
     if (D_001A01F0[0xA] == 0) {
-        func_001F99B0(arg0, 0, 0x800);
+        func_001F99B0((void *)arg0, 0, 0x800);
         return;
     }
-    r = func_001FAA28(arg0, 0x800, D_001A01F0[5], D_001A01F0[3]);
-    if (r == -1) {
-        func_00208860(arg0);
-        idx = D_0015EE84;
-    } else {
-        idx = D_0015EE84;
+    n = func_001FAA28((void *)arg0, 0x800, D_001A01F0[5], D_001A01F0[3]);
+    if (n == -1) {
+        func_00208860((void *)arg0);
     }
-    if (D_0013D668[idx] < r) {
-        D_0013D668[idx] = r;
+    if (D_0013D668[D_0015EE84] < n) {
+        D_0013D668[D_0015EE84] = n;
     }
 }
 

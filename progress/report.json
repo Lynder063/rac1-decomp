@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 52.52072149452437,
+  "fuzzy_match_percent": 52.52608975735452,
   "total_code": "465700",
-  "matched_code": "243208",
-  "matched_code_percent": 52.224178655786986,
+  "matched_code": "243376",
+  "matched_code_percent": 52.26025338200558,
   "total_functions": 1680,
-  "matched_functions": 1320,
-  "matched_functions_percent": 78.57142857142857,
+  "matched_functions": 1321,
+  "matched_functions_percent": 78.63095238095238,
   "complete_code": "83876",
   "complete_code_percent": 18.010736525660295,
   "total_units": 121,
@@ -11179,13 +11179,13 @@
   {
    "name": "game/menu",
    "measures": {
-    "fuzzy_match_percent": 82.7864077669903,
+    "fuzzy_match_percent": 83.02912621359224,
     "total_code": "10300",
-    "matched_code": "8384",
-    "matched_code_percent": 81.39805825242719,
+    "matched_code": "8552",
+    "matched_code_percent": 83.02912621359224,
     "total_functions": 92,
-    "matched_functions": 88,
-    "matched_functions_percent": 95.65217391304348,
+    "matched_functions": 89,
+    "matched_functions_percent": 96.73913043478261,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -11672,7 +11672,7 @@
     {
      "name": "func_00208338",
      "size": "168",
-     "fuzzy_match_percent": 85.11904761904762,
+     "fuzzy_match_percent": 100.0,
      "address": "4496",
      "metadata": {
       "virtual_address": "2130744"
@@ -18165,13 +18165,13 @@
    "id": "game",
    "name": "Game",
    "measures": {
-    "fuzzy_match_percent": 52.42551079566417,
+    "fuzzy_match_percent": 52.43100086084222,
     "total_code": "455368",
-    "matched_code": "237348",
-    "matched_code_percent": 52.12223959522847,
+    "matched_code": "237516",
+    "matched_code_percent": 52.159132833224994,
     "total_functions": 1646,
-    "matched_functions": 1289,
-    "matched_functions_percent": 78.31105710814094,
+    "matched_functions": 1290,
+    "matched_functions_percent": 78.37181044957472,
     "complete_code": "78016",
     "complete_code_percent": 17.13251699724179
    }
