@@ -586,7 +586,78 @@ void func_0011B248(void *bind, void *data) {
     func_0011AC08(0x80000008, (int)rend, 0x40, 0, 0, 0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011B2F8);
+typedef struct {
+    int unk0;
+    int unk4;
+    int unk8;
+    char pad_C[0x4];
+    int unk10;
+    char pad_14[0x10];
+    int unk24;
+} BindClient;
+
+typedef struct {
+    char pad_0[0x14];
+    int unk14;
+    int unk18;
+    int unk1C;
+    int unk20;
+} BindPacket;
+
+extern char D_00156900[];
+extern int func_00118C70(void *);   /* CreateSema */
+extern void func_00118C80(int);     /* DeleteSema */
+extern int func_00118CB0(int);      /* WaitSema */
+
+/* sceSifBindRpc. Adapted from Lombyte (MIT) for PAL. */
+int func_0011B2F8(void *client, int arg1, int arg2) {
+    BindClient *arg0 = client;
+    int sema_param[6];
+    int temp_2_31;
+    BindPacket *temp_2_15;
+
+    arg0->unk10 = 0;
+    arg0->unk24 = 0;
+    temp_2_15 = (BindPacket *)func_0011AFE8(D_00156900);
+    if (temp_2_15 == 0) {
+        return -1;
+    }
+    arg0->unk4 = temp_2_15->unk18;
+    arg0->unk0 = (int)temp_2_15;
+    temp_2_15->unk20 = arg1;
+    temp_2_15->unk14 = (int)temp_2_15;
+    temp_2_15->unk1C = (int)arg0;
+    if (arg2 & 1) {
+        goto block_7;
+    }
+    sema_param[1] = 1;
+    sema_param[2] = 0;
+    temp_2_31 = func_00118C70(sema_param);
+    arg0->unk8 = temp_2_31;
+    if (temp_2_31 >= 0) {
+        goto block_4;
+    }
+    func_0011B090(temp_2_15);
+    return -3;
+block_4:
+    if (func_0011ABC8(0x80000009, (int)temp_2_15, 0x40, 0, 0, 0) != 0) {
+        goto block_6;
+    }
+    func_0011B090(temp_2_15);
+    func_00118C80(arg0->unk8);
+    return -2;
+block_6:
+    func_00118CB0(arg0->unk8);
+    func_00118C80(arg0->unk8);
+    return 0;
+block_7:
+    arg0->unk8 = -1;
+    if (func_0011ABC8(0x80000009, (int)temp_2_15, 0x40, 0, 0, 0) != 0) {
+        return 0;
+    }
+    func_0011B090(temp_2_15);
+    return -2;
+}
 
 extern void func_00119678(int thread_id);
 
