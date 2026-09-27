@@ -92,12 +92,13 @@ tested 15 compilers and 8 flag sets. What carries over:
 - Its `try_func.py` resolves relocations to real addresses instead of
   masking them, so two stores to different globals in the wrong order
   no longer pass.
-- It counts hand-written functions and linker remnants as done, rather
-  than as unmatched: they live in `asm/handwritten/` and `asm/remnants/`,
-  included with `ASM_FUNC` / `LINKER_REMNANT`. Here the same kinds of code
-  (hand-written functions, dead-strip remnants, fragments) are about 90K
-  bytes, about 19% of our code, still counted as unmatched. Changing that
-  is a reporting decision for upstream, not matching work.
+- It counts hand-written functions and linker remnants as done: they live
+  in `asm/handwritten/` and `asm/remnants/`, included with `ASM_FUNC` /
+  `LINKER_REMNANT`. We adopted that reporting policy for the 212 confirmed
+  handwritten functions and 69 dead-strip remnants (83,796 bytes) listed
+  in `config/`. Fragment buckets remain unmatched pending boundary fixes.
+  The full build audit still counts exact C matches separately; see
+  `docs/ASM_CLASSIFICATION.md`.
 - It writes VU0 functions as C with inline asm, as their original source
   was. That doesn't carry over to us: our large VU functions (51
   functions, 67K bytes) have no gcc stack frame and use trapping

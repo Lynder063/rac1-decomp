@@ -54,9 +54,13 @@ classes through, each caught only by luck:
 
 **Where the numbers live.** `progress/report.json` (published on
 [decomp.dev](https://decomp.dev/Lynder063/rac1-decomp)) is the source of
-truth for what has source and what matches. `tools/gen_progress_report.py`
+truth for what has source and what is finished. `tools/gen_progress_report.py`
 regenerates it from a from-scratch build, and CI fails when it is out of
-date with `src/`. It leaves out retail's linker fill (the `0xCDCDCDCD`
+date with `src/` or the original-assembly manifests. The report counts
+byte-verified handwritten assembly and dead-strip remnants as finished;
+`tools/sweep_matches.py` still reports exact C matches separately. See
+`docs/ASM_CLASSIFICATION.md` for the tracked list and setup procedure.
+It leaves out retail's linker fill (the `0xCDCDCDCD`
 runs between objects that splat also emits as 4-byte "functions"; 38 of
 them, 200 bytes): fill is not code, and the build reproduces it byte for
 byte. Totals written in prose go stale, so this file no
