@@ -66,7 +66,47 @@ void func_001EB300(int arg0) {
     *(char **)&D_0015F780 = p;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EB338); /* Transition_UpdateMovieCamera(void) */
+extern char D_0018CC20[];
+extern float D_0018CEB0;
+extern char D_00187180[];
+extern void func_001F3140(void);
+extern void func_00125358(float *);
+extern void func_001254A0(float *, float *, float);
+extern void func_00125548(float *, float *, float);
+extern void func_001253F8(float *, float *, float);
+
+/* Transition_UpdateMovieCamera: the current keyframe (0x20 bytes: position,
+   a flag byte at +0xC, then X/Y/Z angles) sets the camera position and
+   its orientation matrix (negated first two rows); returns the flag. */
+unsigned char func_001EB338(void) {
+    char *t = D_0018CC20;
+    char *key = *(char **)(t + 0x54) + *(int *)(t + 0x38) * 32;
+    unsigned char flag = key[0xC];
+    float *ang = (float *)(key + 0x10);
+    char *pos;
+    char *cam;
+    float m[16];
+
+    D_0018CEB0 = 0.63f;
+    func_001F3140();
+    pos = D_00187180;
+    qcopy(pos, key);
+    func_00125358(m);
+    func_001254A0(m, m, *(float *)(key + 0x10));
+    func_00125548(m, m, ang[1]);
+    func_001253F8(m, m, ang[2]);
+    cam = pos - 0x140;
+    *(float *)(cam + 0x350) = -m[8];
+    *(float *)(cam + 0x360) = -m[0];
+    *(float *)(cam + 0x370) = m[4];
+    *(float *)(cam + 0x354) = -m[9];
+    *(float *)(cam + 0x364) = -m[1];
+    *(float *)(cam + 0x374) = m[5];
+    *(float *)(cam + 0x358) = -m[10];
+    *(float *)(cam + 0x368) = -m[2];
+    *(float *)(cam + 0x378) = m[6];
+    return flag;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EB458); /* Transition_FUN_001eb0a8 */
 

@@ -545,7 +545,50 @@ __asm__(".section .text\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001ED818);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EDB98);
+extern char D_00187040[];
+extern char D_00194220[];
+extern int D_0015F6E8 MACRO_ADDR;
+extern int func_001EFE10(void *, void *, int, int, int);
+extern int func_001F0F00(void);
+extern float func_00214440(void *, int);
+
+/* Camera-inside-water test: cast a ray through the camera focus from
+   0.75 above to 0.75 below (up to six hits); on the first hit that is
+   not a water surface, flag D_00187040+0x394 when the focus is below the
+   surface height + 0.04. Off for camera mode 6 or while D_0015F6E8 is
+   set. */
+void func_001EDB98(void) {
+    char *cam = D_00187040;
+    float a[4];
+    float b[4];
+    int i;
+
+    if (*(short *)(*(char **)(cam + 0x180) + 0x86) == 6 || D_0015F6E8 != 0) {
+        *(int *)(cam + 0x394) = 0;
+        return;
+    }
+    qcopy(a, cam + 0x140);
+    qcopy(b, cam + 0x140);
+    a[2] += 0.75f;
+    b[2] -= 0.75f;
+    i = 0;
+    while (i < 6 && func_001EFE10(a, b, 0x12, 0, 0) != 0) {
+        if (func_001F0F00() == 0) {
+            float h = func_00214440(D_00194220, 0) + 0.04f;
+            char *c2 = D_00187040;
+
+            if (*(float *)(c2 + 0x148) < h) {
+                *(int *)(c2 + 0x394) = 1;
+            } else {
+                *(int *)(c2 + 0x394) = 0;
+            }
+            return;
+        }
+        qcopy(a, D_00194220);
+        i++;
+        a[2] -= 0.01f;
+    }
+}
 
 extern int D_0015F09C MACRO_ADDR;
 extern int D_0015F0A0 MACRO_ADDR;

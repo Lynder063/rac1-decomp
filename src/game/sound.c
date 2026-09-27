@@ -295,20 +295,17 @@ extern void func_001F9E58(void *, void *, float);
 extern void func_001F9BD8(void *, void *, void *);
 extern void func_001EFE10(void *, void *, int, int, int);
 
-/*
- * Byte mismatch, correct size (0x9C), 3 of 39 words: retail sets up
- * func_001F9BD8's three arguments as $a0, $a1, then $a2 (the last in
- * the call's delay slot) and we emit $a2, $a0, $a1. Same instructions,
- * same registers, scheduler order only.
- */
-void func_0022D970(void *arg0, void *arg1) {
+/* Aim the vector from the frame at D_00187180 toward arg0+0x20, scaled to
+   3/4 and 64, and return the line test from arg1 to its end. The int
+   return keeps retail's argument order for func_001F9BD8. */
+int func_0022D970(void *arg0, void *arg1) {
     float v[4];
 
     func_001F9BF0(v, (char *)arg0 + 0x20, D_00187180);
     func_001F9C30(v, v, 0.75f);
     func_001F9E58(v, v, 64.0f);
     func_001F9BD8(v, v, D_00187180);
-    func_001EFE10(arg1, v, 0x82, *(int *)((char *)arg0 + 0x18), 0);
+    return func_001EFE10_a(arg1, v, 0x82, *(int *)((char *)arg0 + 0x18), 0);
 }
 
 extern float func_001FA888(int);

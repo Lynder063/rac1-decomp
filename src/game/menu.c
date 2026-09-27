@@ -580,7 +580,24 @@ int func_00208240(void) {
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00208248);
+typedef float FVec4[4] __attribute__((aligned(16)));
+extern float func_001F9D48(float *, float *);
+
+/* True when (x, y) is within 35 of the point (161.5, 249), or always
+   while D_001A04A8 is set. Both vectors are 16-byte aligned like the
+   SDK's sceVu0FVECTOR; a partial initializer then clears the whole
+   quadword with one por/sq (a plain float[4] gets a memset call). */
+int func_00208248(int x, int y) {
+    if (D_001A04A8 == 0) {
+        FVec4 p = { (float)x, (float)y };
+        FVec4 c = { 0 };
+
+        c[0] = 161.5f;
+        c[1] = 249.0f;
+        return func_001F9D48(p, c) <= 35.0f ? 1 : 0;
+    }
+    return 1;
+}
 
 extern unsigned char D_0013D502 NOT_SDA;
 

@@ -291,7 +291,53 @@ extern void func_0012EE70(int);
 extern void func_0012EF48(int);
 extern void func_0012E2E8(void);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022F128); /* FUN_0022de10_rename */
+extern char D_0018CC20_c[] __asm__("D_0018CC20");
+extern float D_0018CEB0;
+extern unsigned char D_0015EEB4_m[4] __asm__("D_0015EEB4") MACRO_ADDR;
+extern void func_00125358(float *);
+extern void func_001254A0(float *, float *, float);
+extern void func_00125548(float *, float *, float);
+extern void func_001253F8(float *, float *, float);
+extern void func_001F9CA0(void *, void *, void *);
+
+/* Movie-camera keyframe step (as func_001EB338): the keyframe's +0x1C
+   sets D_0018CEB0, its position and X/Y/Z angles set the camera position
+   and matrix rows, and with the D_0015EEB4 flag set the row at +0x220 is
+   rebuilt from the other two by func_001F9CA0. Returns the flag byte.
+   The flag is read through a 4-byte MACRO_ADDR alias: over -G2, so the
+   macro expands to lui/lbu through the destination register. */
+unsigned char func_0022F128(void) {
+    char *t = D_0018CC20_c;
+    char *key = *(char **)(t + 0x54) + *(int *)(t + 0x38) * 32;
+    unsigned char flag = key[0xC];
+    float *ang = (float *)(key + 0x10);
+    char *pos;
+    char *cam;
+    float m[16];
+
+    D_0018CEB0 = ang[3];
+    func_001F3140();
+    pos = D_00187180;
+    qcopy(pos, key);
+    func_00125358(m);
+    func_001254A0(m, m, *(float *)(key + 0x10));
+    func_00125548(m, m, ang[1]);
+    func_001253F8(m, m, ang[2]);
+    cam = pos - 0x140;
+    *(float *)(cam + 0x350) = -m[8];
+    *(float *)(cam + 0x360) = -m[0];
+    *(float *)(cam + 0x370) = m[4];
+    *(float *)(cam + 0x354) = -m[9];
+    *(float *)(cam + 0x364) = -m[1];
+    *(float *)(cam + 0x374) = m[5];
+    *(float *)(cam + 0x358) = -m[10];
+    *(float *)(cam + 0x368) = -m[2];
+    *(float *)(cam + 0x378) = m[6];
+    if (D_0015EEB4_m[0] != 0) {
+        func_001F9CA0(pos + 0x220, pos + 0x230, pos + 0x210);
+    }
+    return flag;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022F258);
 

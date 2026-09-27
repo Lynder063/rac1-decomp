@@ -113,7 +113,60 @@ void func_001EE3B0(void *arg0, float arg1, float arg2)
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EE6D0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EE6E0);
+/* The queue of glows to draw this frame: 0x30-byte records, the count
+   at +0xC0. */
+typedef struct {
+    char pad00[0x20];
+    unsigned char *moby;    /* 0x20 */
+    short onScreen;         /* 0x24 */
+    char pad26[0xA];
+} GlowSlot;
+
+typedef struct {
+    GlowSlot slot[4];
+    int count;              /* 0xC0 */
+} GlowQueue;
+
+extern GlowQueue D_00189400;
+extern int D_001414D4;
+extern int D_0013E600[];
+extern float func_001FA888(int);
+extern void func_001F2418(float *, void *);
+extern void func_001EE3B0(void *, float, float);
+
+/* Draws every queued glow whose moby is live (not in state 0xFE/0xFD):
+   at its projected screen position (func_001F2418, then relative to the
+   D_0013E600 offset in 1/16 units) or, for off-screen ones, at the
+   screen centre; then empties the queue. Nothing in level 0x72. */
+void func_001EE6E0(void) {
+    float centre[4];
+    float pos[4];
+    int i;
+
+    if (D_001414D4 == 0x72) {
+        D_00189400.count = 0;
+    }
+    if (D_00189400.count != 0) {
+        centre[0] = func_001FA888(D_0013E600[2]);
+        centre[1] = func_001FA888(D_0013E600[3]);
+        for (i = 0; i < D_00189400.count; i++) {
+            GlowSlot *s = &D_00189400.slot[i];
+
+            if (s->moby == 0 || s->moby[0x20] == 0xFE || s->moby[0x20] == 0xFD) {
+                continue;
+            }
+            if (s->onScreen != 0) {
+                func_001F2418(pos, s);
+                pos[0] = (pos[0] - func_001FA888(D_0013E600[4])) * 0.0625f;
+                pos[1] = (pos[1] - func_001FA888(D_0013E600[5])) * 0.0625f;
+            } else {
+                qcopy(pos, centre);
+            }
+            func_001EE3B0(s, pos[0], pos[1]);
+        }
+        D_00189400.count = 0;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EE850);
 

@@ -1116,7 +1116,60 @@ int func_0021EF60(char *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021EFA0);
+extern char D_001864D0[];
+extern char D_00187040[];
+extern void *func_00226720_a(int) __asm__("func_00226720");
+extern void func_0021F200(char *);
+
+/* Keeps the item preview moby in step with the highlighted entry: drop it
+   when the entry's class (D_001864D0 record +0x3A) is -1, spawn it in
+   front of the camera focus when there is none yet, or respawn it with
+   the old one's position and orientation when the class changed. */
+int func_0021EFA0(char *arg0) {
+    char *q = *(char **)(D_001D5F74 + 0x40);
+    int item = *(short *)(*(int *)(q + 0x3C) * 10 + *(char **)(q + 0x48) + 6);
+    short cur;
+    char *rec;
+    short want;
+
+    cur = *(char **)(arg0 + 0x44) != 0 ? *(short *)(*(char **)(arg0 + 0x44) + 0xA6) : -1;
+    rec = D_001864D0 + item * 0x4C;
+    want = *(short *)(rec + 0x3A);
+    if (want != -1 && cur == -1) {
+        char *o = func_00226720_a(want);
+
+        if (o != 0) {
+            char *t = D_00187040;
+
+            *(char **)(arg0 + 0x44) = o;
+            *(short *)(o + 0x34) = 0;
+            *(float *)(o + 0x10) = *(float *)(t + 0x140) + 6.0f;
+            *(float *)(o + 0x14) = *(float *)(t + 0x144);
+            *(float *)(o + 0x18) = *(float *)(t + 0x148) - 0.3f;
+            *(float *)(o + 0x48) = 3.1415927f;
+            *(void **)(o + 0x74) = (void *)func_0021F200;
+            **(void ***)(o + 0x78) = arg0;
+        }
+    } else if (want == -1) {
+        *(int *)(arg0 + 0x44) = func_002267C0(*(int *)(arg0 + 0x44));
+    } else if (cur != want) {
+        char *n = func_00226720_a(want);
+
+        if (n != 0) {
+            char *old;
+
+            *(short *)(n + 0x34) = 0;
+            old = *(char **)(arg0 + 0x44);
+            qcopy(n + 0x10, old + 0x10);
+            qcopy(n + 0x40, old + 0x40);
+            *(int *)(n + 0x74) = *(int *)(old + 0x74);
+            **(void ***)(n + 0x78) = arg0;
+        }
+        func_002267C0(*(int *)(arg0 + 0x44));
+        *(char **)(arg0 + 0x44) = n;
+    }
+    return 0;
+}
 
 extern char *D_001D5F74 NOT_SDA;
 extern void func_0020E180(int, int);
@@ -3104,7 +3157,7 @@ extern char D_001D61E0[];
 extern char D_00186410[];
 extern void func_001E9790(void *);
 extern void func_00225DF0(void);
-extern void func_00226250(void);
+extern void func_00226250(void *);
 
 /* Menu setup: resets the pad bindings, marks D_001D5F70's selections
    unset, fetches three entries with func_00226EA8, clears the 24 flag
@@ -3220,60 +3273,180 @@ void func_00225DF0(void) {
 void func_00225DF8(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00225E00);
+extern char D_001864D0_a[] __asm__("D_001864D0");
+extern int func_0020E3D0(void *);
+extern void func_0020ED48(void *);
+extern void func_0020DAF8(int, int, void *);
+extern void func_00214F78(void *);
+extern void func_0020EEE8(void *);
+extern void func_001E9800(void *, void *, int, int, int);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00225FB8);
+/* The pause-screen mobys these updates drive. */
+typedef struct {
+    char pad00[0x10];
+    float pos[4];       /* 0x10 */
+    char pad20[4];
+    int sound;          /* 0x24 */
+    char pad28[0x28];
+    int x50;            /* 0x50 */
+    int x54;            /* 0x54 */
+    char pad58[0x10];
+    char *x68;          /* 0x68 */
+    char *x6C;          /* 0x6C */
+    char pad70[8];
+    char **cls;         /* 0x78 */
+    char pad7C[0x2A];
+    short oclass;       /* 0xA6 */
+    char padA8[0x18];
+    float mtx[16];      /* 0xC0 */
+} PauseMoby;
+
+/* D_001864D0's 0x4C-byte per-class records. */
+typedef struct {
+    char pad00[0xC];
+    int bone;           /* 0x0C */
+    int cls;            /* 0x10 */
+    char pad14[4];
+    int still;          /* 0x18 */
+    char pad1C[0x30];
+} PauseClassRec;
+
+extern PauseClassRec D_001864D0_r[] __asm__("D_001864D0");
+extern void func_00213DE0(void *, int, int, int);
+extern void func_0020D9D8(int, void *);
+extern void func_0020D960(int, int, void *);
+
+/* Moby update with a per-class record: find the class in D_001864D0 (0x4C
+   bytes each, 0x25 of them), refresh the matrix from the record's bone,
+   and either register the moby (+0x18 set) or restart its idle sound;
+   also re-sync the D_001D6160 animation group while its +1 flag is up.
+   The two store groups are in the order that schedules as retail's. */
+void func_00225E00(void *arg0) {
+    PauseMoby *m = arg0;
+    unsigned char *b = arg0;
+    float mtx[16];
+    int id = *(int *)(*m->cls + 0x44);
+    int i;
+    int still;
+    int sync;
+    unsigned char *s;
+
+    if ((b[0x70] & 2) && b[0x53] != 1) {
+        func_00213DE0(m, 1, 0, 0);
+    }
+    for (i = 0; i < 0x25; i++) {
+        if (D_001864D0_r[i].cls == m->oclass) {
+            break;
+        }
+    }
+    func_0020DAF8(id, D_001864D0_r[i].bone, mtx);
+    qcopy(m->pos, &mtx[12]);
+    func_0020ED48(m);
+    still = D_001864D0_r[i].still == 0;
+    func_001FA480(m->mtx, mtx);
+    if (!still) {
+        func_00214F78(m->mtx);
+    }
+    func_0020EEE8(m);
+    sync = 0;
+    s = (unsigned char *)D_001D6160;
+    if (s[1] != 0) {
+        sync = 1;
+        func_0020D9D8(id, s);
+    }
+    if (still) {
+        func_001E9800(D_001864D0_a, D_001864D0, m->sound, 0, id);
+        m->x68 = D_001864D0;
+        m->x54 = 0;
+        m->x6C = D_001864D0;
+        *(int *)(b + 0x58) = 0;
+        m->x50 = 0;
+    }
+    if (sync) {
+        func_0020D960(id, 0, s);
+        *(int *)(s + 0x20) = 0;
+        *(int *)(s + 0x24) = 0;
+        *(int *)(s + 0x28) = 0;
+    }
+}
+
+/* Moby update: refresh its matrix from bone 4 of its class (+0x44),
+   copying the translation row to the position, re-register it, start
+   its idle sound (6 for class 0x1B1, else 0) on the D_001864D0 table
+   and reset the sound fields. */
+void func_00225FB8(PauseMoby *m) {
+    float mtx[16];
+    int id = *(int *)(*m->cls + 0x44);
+
+    func_0020E3D0(m);
+    func_0020ED48(m);
+    func_0020DAF8(id, 4, mtx);
+    qcopy(m->pos, &mtx[12]);
+    func_001FA480(m->mtx, mtx);
+    func_00214F78(m->mtx);
+    func_0020EEE8(m);
+    if (m->oclass == 0x1B1) {
+        func_001E9800(D_001864D0_a, D_001864D0, m->sound, 6, id);
+    } else {
+        func_001E9800(D_001864D0_a, D_001864D0, m->sound, 0, id);
+    }
+    m->x50 = 0;
+    m->x68 = D_001864D0;
+    m->x54 = 0;
+    m->x6C = D_001864D0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002260A8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00226250);
+extern void func_00213DE0(void *, int, int, int);
 
-/*
- * Reverted: size mismatch (ours=152, retail=144 -- 8 bytes over).
- *
- *   extern int func_0020E3D0(int);
- *   extern void func_0020ED48(void *);
- *   extern void func_0020DAF8(char *, int, char *);
- *   extern void func_00214F78(float *);
- *   extern void func_0020EEE8(void *);
- *
- *   void func_00226380(void *arg0) {
- *       char *p = (char *)arg0;
- *       int *ptr = *(int **)(p + 0x78);
- *       int *rec = (int *)*ptr;
- *       int handle;
- *       short flag;
- *       int sel;
- *       char buf[0x40];
- *       char *dst2;
- *
- *       func_0020E3D0((int)p);
- *       handle = *(int *)((char *)rec + 0x44);
- *       func_0020ED48(p);
- *       flag = *(short *)(p + 0xA6);
- *       sel = ((flag ^ 0x197) != 0) ? 0x1D : 0x1E;
- *       func_0020DAF8((char *)handle, sel, buf);
- *       *(unsigned long long *)(p + 0x10) =
- *           *(unsigned long long *)(buf + 0x30);
- *       dst2 = p + 0xC0;
- *       func_001FA480(dst2, buf);
- *       func_00214F78((float *)dst2);
- *       func_0020EEE8(p);
- *   }
- *
- * Call args and struct offsets confirmed correct against
- * func_0020DAF8's own already-matched body (arg2+0x30 is exactly
- * what gets copied to p+0x10 here). Two residuals: retail computes
- * `rec = *ptr` before the func_0020E3D0 call and only the final
- * +0x44 dereference lands in the call's delay slot; this compiler
- * defers `rec`'s own load to after the call too, since nothing
- * forces it earlier. Retail also encodes the ternary as
- * `movn`-picks-0x1D (matching the source polarity written here);
- * this compiler canonicizes the XOR-inequality test into the
- * opposite `movz`-picks-0x1E form regardless, the same class already
- * seen on func_001F0FF8.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00226380);
+/* Moby 0x259 update: while flag 0x02 is set, keep its animation on 1 (or,
+   for class 0x25F in state 6, run the 6 animation until its timer +0x20
+   runs out and then blend back to 1), then refresh its matrix from bone 5
+   as func_00225FB8 does. */
+void func_00226250(void *arg0) {
+    PauseMoby *m = arg0;
+    unsigned char *b = (unsigned char *)m;
+    float mtx[16];
+    int id = *(int *)(*m->cls + 0x44);
+
+    if (b[0x70] & 2) {
+        if (m->oclass == 0x25F) {
+            if (b[0x52] == 6) {
+                if (--b[0x20] == 0) {
+                    if (b[0x53] != 1) {
+                        func_00213DE0(m, 1, 0, 10);
+                    }
+                } else if (b[0x53] != 6) {
+                    func_00213DE0(m, 6, 0, 0);
+                }
+            } else if (b[0x53] != 1) {
+                func_00213DE0(m, 1, 0, 0);
+            }
+        } else if (b[0x53] != 1) {
+            func_00213DE0(m, 1, 0, 0);
+        }
+    }
+    func_0020DAF8(id, 5, mtx);
+    qcopy(m->pos, &mtx[12]);
+    func_001FA480(m->mtx, mtx);
+    func_00214F78(m->mtx);
+    func_0020EEE8(m);
+}
+
+/* func_00225FB8's sibling: refresh the matrix from bone 0x1E (class 0x197) or 0x1D, copy its translation row to the position and re-register. func_0020E3D0 takes the moby, and the bone test is written == 0x197 so the movn picks 0x1D as retail does. */
+void func_00226380(PauseMoby *m) {
+    float mtx[16];
+    int id = *(int *)(*m->cls + 0x44);
+
+    func_0020E3D0(m);
+    func_0020ED48(m);
+    func_0020DAF8(id, m->oclass == 0x197 ? 0x1E : 0x1D, mtx);
+    qcopy(m->pos, &mtx[12]);
+    func_001FA480(m->mtx, mtx);
+    func_00214F78(m->mtx);
+    func_0020EEE8(m);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00226410);
 

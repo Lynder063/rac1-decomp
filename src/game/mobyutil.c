@@ -262,11 +262,49 @@ void func_00213D28(MobyAnim *m, int seq, int frame) {
     m->unk70 &= ~2;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00213DE0);
-
 extern float func_001FA888(int arg0);
 extern void func_0020FC38(void *, int);
 extern char D_001B2F80[];
+
+/* As func_00213F28 below, for a plain sequence change: clamp the frame
+   to the sequence's last one; if the moby hasn't settled, park the
+   current pose in a D_001B2F80 blend slot (seq 0xFF, frame = slot). Then
+   set the new sequence and frame and arm the blend timer from arg3. */
+void func_00213DE0(MobyAnim *arg0, int arg1, int arg2, int arg3) {
+    int n = arg0->pClass->seqs[arg1]->nframes;
+    int slot;
+    unsigned char oldSeq;
+    float scale;
+
+    if (arg2 >= n) {
+        arg2 = n - 1;
+    }
+    if (*(float *)((char *)arg0 + 0x54) > 0.025f ||
+        *(int *)((char *)arg0 + 0x60) != 0 ||
+        *(int *)((char *)arg0 + 0x64) != 0) {
+        slot = func_0020DA68((int)arg0);
+        if (slot >= 0) {
+            func_0020FC38(arg0, slot | 0x300);
+            qcopy(D_001B2F80 + slot * 0x10, (char *)arg0 + 0xF0);
+            oldSeq = arg0->seq;
+            if (oldSeq != 0xFF) {
+                *(unsigned char *)((char *)arg0 + 0xA5) = oldSeq;
+            }
+            arg0->seq = 0xFF;
+            arg0->frame = slot;
+        }
+    }
+    arg0->nextFrame = arg2;
+    arg0->prevSeq = arg1;
+    func_0020D6D0_a(arg0);
+    *(float *)((char *)arg0 + 0x58) = 1.0f;
+    scale = 1.0f / func_001FA888(arg3);
+    *(float *)((char *)arg0 + 0x54) = 0.0f;
+    arg0->unk70 = (unsigned char)(arg0->unk70 & 0xFD);
+    arg0->unk5C = scale;
+    *(unsigned char *)((char *)arg0 + 0x7C) =
+        *((unsigned char *)arg0->pClass->seqs[arg1] + 0x11);
+}
 
 /* Re-registers this MobyAnim in the shared slot table (D_001B2F40, via
    func_0020DA68) when it hasn't settled yet (unk54 > 0.025, or unk60/unk64
@@ -428,7 +466,58 @@ float func_00214440(float *pos, void *out) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00214538);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00214550);
+extern char D_00194200[];
+extern void func_001F9E10(float *, float *, float);
+extern void func_001F9DC0(void *, void *, float);
+extern float func_001F9B98(float, float);
+extern float func_001F9B90(float, float);
+
+/* Shadow range probe: cast a ray down (8 units) from the moby position
+   shifted against the light direction D_001CAE00 by its size, then a
+   second one along the light from just above; +0x84/+0x88 get the lower
+   and upper hit height (at most 4 apart), or 0 when nothing is below. */
+void func_00214550(char *m) {
+    float dir[4];
+    float p[4];
+    float a[4];
+    float b[4];
+    float h2;
+    float h1;
+    float t;
+    char *hit;
+
+    qcopy(dir, D_001CAE00);
+    func_001F9E10(dir, dir, 1.0f);
+    func_001F9C30(p, m, 0.0009765625f);
+    qcopy(a, p);
+    a[0] -= dir[0] * *(float *)(m + 0xC) * 0.000732421875f;
+    a[1] -= dir[1] * *(float *)(m + 0xC) * 0.000732421875f;
+    qcopy(b, a);
+    b[2] -= 8.0f;
+    if (func_001EFE10_a(a, b, 0x22, 0, 0) != 0) {
+        qcopy(a, p);
+        hit = D_00194200;
+        h1 = *(float *)(hit + 0x28);
+        a[2] = a[2] + *(float *)(m + 0xC) * 0.00048828125f;
+        a[0] = a[0] + dir[0] * *(float *)(m + 0xC) * 0.000732421875f;
+        a[1] = a[1] + dir[1] * *(float *)(m + 0xC) * 0.000732421875f;
+        func_001F9DC0(dir, dir, (a[2] - h1) / -dir[2]);
+        func_001F9BD8(b, a, dir);
+        h2 = h1;
+        if (func_001EFE10_a(a, b, 0x22, 0, 0) != 0) {
+            h2 = *(float *)(hit + 0x28);
+        }
+        *(float *)(m + 0x84) = func_001F9B98(h1, h2) - 0.25f;
+        t = func_001F9B90(h1, h2) + 0.25f;
+        *(float *)(m + 0x88) = t;
+        if (*(float *)(m + 0x84) + 4.0f < t) {
+            *(float *)(m + 0x88) = *(float *)(m + 0x84) + 4.0f;
+        }
+    } else {
+        *(float *)(m + 0x84) = 0.0f;
+        *(float *)(m + 0x88) = 0.0f;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00214770);
 
@@ -698,23 +787,20 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00215648);
 
 extern void func_001FA588(void *, void *, void *);
 
-/* Same-size near-miss (46/140 bytes): quaternion multiply of the
-   negated arg2 by (arg1 with w zeroed), then by the untouched arg2.
-   Three local quadword scratch buffers give the allocator enough
-   freedom that this compiler's own scratch-register choices and
-   call-argument-setup scheduling diverge from retail's throughout,
-   despite matching frame size and instruction count. */
+/* Conjugate-style sandwich: arg0 = arg2 * (arg1 with w = 0) * a, where
+   a is arg2 negated with its w kept (func_001FA588 is the quaternion
+   multiply). The 16-byte copy of arg1 is qcopy's lq/sq. */
 void func_00215650(void *arg0, void *arg1, void *arg2) {
-    char buf0[16];
-    char buf1[16];
-    char buf2[16];
+    float a[4];
+    float b[4];
+    float c[4];
 
-    func_001F9C30(buf0, arg2, -1.0f);
-    *(float *)(buf0 + 0xC) = *(float *)((char *)arg2 + 0xC);
-    *(unsigned long long *)buf1 = *(unsigned long long *)arg1;
-    *(float *)(buf1 + 0xC) = 0.0f;
-    func_001FA588(buf2, arg2, buf1);
-    func_001FA588(arg0, buf2, buf0);
+    func_001F9C30(a, arg2, -1.0f);
+    a[3] = ((float *)arg2)[3];
+    qcopy(b, arg1);
+    b[3] = 0.0f;
+    func_001FA588(c, arg2, b);
+    func_001FA588(arg0, c, a);
 }
 
 extern void func_00215380(void *arg0, void *axis, float angle);
@@ -809,7 +895,26 @@ void func_002158E8(float *v, int *out) {
     *out = func_001F9F30(buf);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00215A10);
+typedef float FVec4[4] __attribute__((aligned(16)));
+extern void func_001F9F18(float *, int);
+
+/* Unpack the packed colour *arg1 into a float vector, centre its
+   channels on 127 and scale by alpha/10000 into arg0. The 127 vector is
+   a 16-byte aligned (sceVu0FVECTOR-style) local cleared by its
+   initializer (one por/sq), then filled. */
+void func_00215A10(float *arg0, int *arg1) {
+    float v[4];
+    FVec4 mid = { 0 };
+    float scale;
+
+    mid[0] = 127.0f;
+    mid[1] = 127.0f;
+    mid[2] = 127.0f;
+    func_001F9F18(v, *arg1);
+    scale = v[3] * 0.0001f;
+    func_001F9BF0(v, v, mid);
+    func_001F9C30(arg0, v, scale);
+}
 
 extern int func_001FA898_r(float) __asm__("func_001FA898");
 
