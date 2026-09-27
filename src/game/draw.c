@@ -1261,7 +1261,72 @@ void func_001F7648(void *arg0, int a1, int a2, int a3, int a4, int a5, int a6, i
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F7680);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F7868);
+extern short D_0015F448;              /* SDA, gp -0x78B8 */
+extern int D_0015F704 MACRO_ADDR;
+extern unsigned short D_0010E800 NOT_SDA;
+extern char D_0010E810[];
+extern char D_00187180[];
+extern void func_001FA1C0(float *, float);
+extern void func_00234B48(void *, int);
+extern void func_00234FA8(void);
+
+/* Build the VU1 setup packet: load microprogram 7 if another is
+   resident, then a DIRECT/UNPACK chain with the two camera matrices
+   (each scaled to 1024 and biased in z by D_0015F448), the screen scale
+   and offsets from D_0018CE00, and the GIF register setup; the DMA tag's
+   qword count is patched in at the end. */
+void func_001F7868(void) {
+    float m[16];
+    char *cam;
+    char *g;
+    int *base;
+    int *p;
+
+    func_001FA1C0(m, 1024.0f);
+    cam = D_00187180;
+    func_001F9C30(&m[12], cam, -1024.0f);
+    m[15] = 1.0f;
+    if (D_0015F704 != 7) {
+        func_00234B48(D_0010E810, D_0010E800);
+        D_0015F704 = 7;
+    }
+    D_00161000[0] = 0x10000000;
+    D_00161000[1] = 0;
+    D_00161000[2] = 0x11000000;
+    D_00161000[3] = 0x01000404;
+    base = D_00161000;
+    base[4] = 0;
+    base[5] = 0;
+    base[6] = 0;
+    base[7] = 0x6C0C43A4;
+    p = base + 8;
+    func_001FA540(p, cam - 0x100, m);
+    *(float *)(p + 14) += *(float *)&D_0015F448;
+    p = base + 0x18;
+    func_001FA540(p, cam - 0x80, m);
+    *(float *)(p + 14) += *(float *)&D_0015F448;
+    g = (char *)D_0018CE00;
+    base[0x28] = 0x8000;
+    base[0x29] = 0x303EC000;
+    base[0x2A] = 0x412;
+    *(float *)(base + 0x2B) = *(float *)(g + 0x210);
+    p = base + 0x2C;
+    qcopy(p, g + 0x190);
+    p = base + 0x30;
+    qcopy(p, g + 0x1A0);
+    *(float *)(base + 0x34) = *(float *)(g + 0x22C);
+    *(float *)(base + 0x35) = *(float *)(g + 0x228);
+    base[0x36] = 0;
+    base[0x37] = 0;
+    base[0x38] = 0x03000000;
+    base[0x39] = 0x020001D2;
+    base[0x3A] = 0x15000000;
+    base[0x3B] = 0;
+    p = base + 0x3C;
+    D_00161000[0] |= ((char *)p - (char *)D_00161000 >> 4) - 1;
+    D_00161000 = p;
+    func_00234FA8();
+}
 
 extern void func_001FB608(int, int, int);
 extern short D_001519EE NOT_SDA;
