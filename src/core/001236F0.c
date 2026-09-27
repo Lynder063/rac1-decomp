@@ -454,7 +454,43 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00124068);
 
 LINKER_REMNANT("asm/remnants/core_text", func_001241E8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001241F0);
+/* sceMcGetDir-style RPC 0xD (libmc): name (non-empty), mode, the table
+   size and the table, whose cache is written back first (func_0011AD70)
+   when count >= 0. Shape as sceMcOpen (func_001238B0). */
+int func_001241F0(int port, int slot, char *name, int mode, int count, void *table) {
+    char *cd = D_00159B00;
+    char *fp;
+    int r;
+
+    if (*(int *)(cd + 0x24) == 0) {
+        return -100;
+    }
+    if (func_00118CC0(D_00132EAC) < 0) {
+        return -200;
+    }
+    if (name == 0 || *name == 0) {
+        func_00118C90(D_00132EAC);
+        return -210;
+    }
+    fp = D_00159BB0;
+    *(int *)(fp + 0x0) = port;
+    *(int *)(fp + 0x4) = slot;
+    *(int *)(fp + 0x8) = mode;
+    *(int *)(fp + 0xC) = count;
+    *(void **)(fp + 0x10) = table;
+    func_00116B00(fp + 0x14, name, 0x3FF);
+    fp[0x413] = 0;
+    if (count >= 0) {
+        func_0011AD70(table, count << 6);
+    }
+    r = func_0011B4C8(cd, 0xD, 1, fp, 0x414, D_0015B0C0, 4, 0, 0);
+    if (r == 0) {
+        D_00132EA8 = 0xD;
+    } else {
+        func_00118C90(D_00132EAC);
+    }
+    return r;
+}
 
 LINKER_REMNANT("asm/remnants/core_text", func_00124338);
 
