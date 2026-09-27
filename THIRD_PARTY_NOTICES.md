@@ -8,6 +8,7 @@ The following functions adapt source from
 - `src/core/00119328.c`: `func_001194C8` (`topThread`)
 - `src/core/00119D88.c`: `func_0011C208` (`sceClose`)
 - `src/game/hud.c`: `func_00201190` (HUD sprite with explicit UV corners)
+- `src/game/vendor.c`: `func_00239A00` (vendor item carousel)
 
 MIT License
 
