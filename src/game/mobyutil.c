@@ -428,7 +428,58 @@ float func_00214440(float *pos, void *out) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00214538);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00214550);
+extern char D_00194200[];
+extern void func_001F9E10(float *, float *, float);
+extern void func_001F9DC0(void *, void *, float);
+extern float func_001F9B98(float, float);
+extern float func_001F9B90(float, float);
+
+/* Shadow range probe: cast a ray down (8 units) from the moby position
+   shifted against the light direction D_001CAE00 by its size, then a
+   second one along the light from just above; +0x84/+0x88 get the lower
+   and upper hit height (at most 4 apart), or 0 when nothing is below. */
+void func_00214550(char *m) {
+    float dir[4];
+    float p[4];
+    float a[4];
+    float b[4];
+    float h2;
+    float h1;
+    float t;
+    char *hit;
+
+    qcopy(dir, D_001CAE00);
+    func_001F9E10(dir, dir, 1.0f);
+    func_001F9C30(p, m, 0.0009765625f);
+    qcopy(a, p);
+    a[0] -= dir[0] * *(float *)(m + 0xC) * 0.000732421875f;
+    a[1] -= dir[1] * *(float *)(m + 0xC) * 0.000732421875f;
+    qcopy(b, a);
+    b[2] -= 8.0f;
+    if (func_001EFE10_a(a, b, 0x22, 0, 0) != 0) {
+        qcopy(a, p);
+        hit = D_00194200;
+        h1 = *(float *)(hit + 0x28);
+        a[2] = a[2] + *(float *)(m + 0xC) * 0.00048828125f;
+        a[0] = a[0] + dir[0] * *(float *)(m + 0xC) * 0.000732421875f;
+        a[1] = a[1] + dir[1] * *(float *)(m + 0xC) * 0.000732421875f;
+        func_001F9DC0(dir, dir, (a[2] - h1) / -dir[2]);
+        func_001F9BD8(b, a, dir);
+        h2 = h1;
+        if (func_001EFE10_a(a, b, 0x22, 0, 0) != 0) {
+            h2 = *(float *)(hit + 0x28);
+        }
+        *(float *)(m + 0x84) = func_001F9B98(h1, h2) - 0.25f;
+        t = func_001F9B90(h1, h2) + 0.25f;
+        *(float *)(m + 0x88) = t;
+        if (*(float *)(m + 0x84) + 4.0f < t) {
+            *(float *)(m + 0x88) = *(float *)(m + 0x84) + 4.0f;
+        }
+    } else {
+        *(float *)(m + 0x84) = 0.0f;
+        *(float *)(m + 0x88) = 0.0f;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00214770);
 
