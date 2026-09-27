@@ -316,7 +316,27 @@ float func_00214220(float a, float b, float t) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002142B8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00214358);
+extern int func_001EFE10_a(void *, void *, int, int, int) __asm__("func_001EFE10");
+extern char D_00194220[];
+
+/* Builds two 16-byte copies of *arg0: one with byte offset 8 (a float)
+   forced to 0.01f, the other with its offset-8 float bumped by arg2.
+   Passes both to func_001EFE10 (a collision/line test elsewhere in the
+   file's neighbours); returns D_00194220's float at +8 on success, else
+   0.0f. */
+f32 func_00214358(void *arg0, s32 arg1, f32 arg2) {
+    char sp0[16];
+    char sp1[16];
+
+    qcopy(sp0, arg0);
+    *(f32 *)(sp0 + 8) = 0.01f;
+    qcopy(sp1, arg0);
+    *(f32 *)(sp1 + 8) = *(f32 *)(sp1 + 8) + arg2;
+    if (func_001EFE10_a(sp1, sp0, arg1 | 2, 0, 0) != 0) {
+        return *(f32 *)(D_00194220 + 8);
+    }
+    return 0.0f;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002143D0);
 
