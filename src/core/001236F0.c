@@ -945,30 +945,10 @@ int func_00124EE0(int port) {
 
 extern int func_00124920(int);
 
-/*
- * Close, not exact (28/84), same size. Logic confirmed: call
- * func_00124920(arg0); if it returns >= 0, mark entry arg0 of the
- * 0x330-stride table D_0015B640 as {+4 = 1, +8 = result}; return the
- * result either way.
- *
- * Retail computes the entry address once into $5, copies it to $3, and
- * stores with displacements 8($5) and 4($3) -- a redundant register
- * copy. Writing the address once into a `char *e` local coalesces to a
- * single register and comes out 4 bytes SHORT (a size mismatch, so not
- * keepable); recomputing the address per store restores the right size
- * but makes the compiler fold the +4 into the address constant instead
- * of using a store displacement. Two pointer locals (`f = e`) coalesce
- * straight back to one register. So the size and the addressing form
- * are reachable separately here but not together.
- */
-
 /* scePad2LinkDriver(port): opens the link driver for `port` and, on
    success, records the handle in its table entry. The failure path needs
    its own early return: with one shared `return t` the compiler moves the
    result copy to the end of the function. */
-
-extern int func_00124920(int);
-
 int func_00125020(int arg0) {
     int t = func_00124920(arg0);
     if (t < 0) {

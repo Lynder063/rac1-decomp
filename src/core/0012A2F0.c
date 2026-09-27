@@ -183,12 +183,10 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012A7E8);
 
 extern long func_0012AAC8(void *, int);
 
-extern long func_0012AAC8(void *, int);
-
-/* p2 got S1(0xC),S2(0x24) to the front correctly by writing them last in
-   source, but reversed the middle block. This keeps that trailing pair
-   (S2 then S1, so S1 truly last per the "repeated store" tie rule) and
-   writes the middle group in retail's own order so it lands unreversed. */
+/* _sysbitInit: points the bit stream at arg0 at the arg3-byte ring buffer
+   at arg2, reading from arg1, and resets it. The store order is
+   load-bearing (LEVERS.md lever 3): arg1's +0x8 store has to come before
+   its +0xC store, after the other fields in retail's order. */
 void func_0012AA70(void *arg0, int arg1, int arg2, int arg3) {
     char *p = (char *)arg0;
     *(int *)(p + 0x28) = arg3;
