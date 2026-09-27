@@ -3104,7 +3104,7 @@ extern char D_001D61E0[];
 extern char D_00186410[];
 extern void func_001E9790(void *);
 extern void func_00225DF0(void);
-extern void func_00226250(void);
+extern void func_00226250(void *);
 
 /* Menu setup: resets the pad bindings, marks D_001D5F70's selections
    unset, fetches three entries with func_00226EA8, clears the 24 flag
@@ -3277,7 +3277,41 @@ void func_00225FB8(PauseMoby *m) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002260A8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00226250);
+extern void func_00213DE0(void *, int, int, int);
+
+/* Moby 0x259 update: while flag 0x02 is set, keep its animation on 1 (or,
+   for class 0x25F in state 6, run the 6 animation until its timer +0x20
+   runs out and then blend back to 1), then refresh its matrix from bone 5
+   as func_00225FB8 does. */
+void func_00226250(void *arg0) {
+    PauseMoby *m = arg0;
+    unsigned char *b = (unsigned char *)m;
+    float mtx[16];
+    int id = *(int *)(*m->cls + 0x44);
+
+    if (b[0x70] & 2) {
+        if (m->oclass == 0x25F) {
+            if (b[0x52] == 6) {
+                if (--b[0x20] == 0) {
+                    if (b[0x53] != 1) {
+                        func_00213DE0(m, 1, 0, 10);
+                    }
+                } else if (b[0x53] != 6) {
+                    func_00213DE0(m, 6, 0, 0);
+                }
+            } else if (b[0x53] != 1) {
+                func_00213DE0(m, 1, 0, 0);
+            }
+        } else if (b[0x53] != 1) {
+            func_00213DE0(m, 1, 0, 0);
+        }
+    }
+    func_0020DAF8(id, 5, mtx);
+    qcopy(m->pos, &mtx[12]);
+    func_001FA480(m->mtx, mtx);
+    func_00214F78(m->mtx);
+    func_0020EEE8(m);
+}
 
 /* func_00225FB8's sibling: refresh the matrix from bone 0x1E (class 0x197) or 0x1D, copy its translation row to the position and re-register. func_0020E3D0 takes the moby, and the bone test is written == 0x197 so the movn picks 0x1D as retail does. */
 void func_00226380(PauseMoby *m) {
