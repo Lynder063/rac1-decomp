@@ -1069,7 +1069,33 @@ void func_0012C8B0(unsigned int *out0, unsigned int *out1, unsigned int *out2,
     *out8 = (unsigned int)UncAddr((char *)addr2 + q * 384);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012C990);
+/* _setDefaultQM: tell the callback (type 2) that the default quantiser
+   matrix load starts, then with the IPU idle and reset, DMA the matrix
+   at addr to IPU_TO (tag 4 qwords, chcr 0x101) with interrupts held
+   off, send command cmd and wait, and report type 3. Adapted from
+   Lombyte (MIT) for PAL. */
+void func_0012C990(void *arg, int cmd, int addr) {
+    char *mp = arg;
+    int cb[8];
+    int intr;
+
+    cb[0] = 2;
+    func_0012BC78(*(void **)(mp + 0x858), cb);
+    func_00128590(mp);
+    *(volatile int *)0x10002000 = 0;
+    func_00128590(mp);
+    intr = func_0011D960();
+    *(volatile int *)0x1000B410 = addr & 0x0FFFFFFF;
+    *(volatile int *)0x1000B420 = 4;
+    *(volatile int *)0x1000B400 = 0x101;
+    if (intr != 0) {
+        func_0011D9A8();
+    }
+    func_00128560(mp, cmd);
+    func_00128590(mp);
+    cb[0] = 3;
+    func_0012BC78(*(void **)(mp + 0x858), cb);
+}
 
 extern int func_00128A58(void *, int);
 extern void func_0012C468(void *, void *);
