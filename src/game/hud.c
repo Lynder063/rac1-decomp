@@ -830,7 +830,42 @@ void func_00200E38(int u, int v, long tex, float x, float y, float w, float h, f
     D_00161000 = (int *)((char *)D_00161000 + 0x70);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00201190);
+typedef struct {
+    char pad0[0xC];
+    int depth;
+} HudDepthView;
+
+/* HUD sprite packet with explicit UV corners, adapted from Lombyte (MIT). */
+void func_00201190(int tex, int x0, int y0, int x1, int y1,
+                   int u0, int v0, int u1, int v1, int alpha) {
+    int *base;
+    long *p;
+    HudDepthView *arena;
+
+    D_00161000[0] = 0x10000005;
+    D_00161000[1] = 0;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000005;
+    base = D_00161000;
+    D_00161000 = base + 4;
+    p = (long *)D_00161000;
+    p[0] = ((long)0xE800 << 47) | 0x8001;
+    p[1] = 0x5353106;
+    p[2] = func_00200248(tex);
+    p[3] = 0x156;
+    p[4] = ((long)alpha << 24) | 0x7F7F7F;
+    p[5] = u0 | ((long)v0 << 16);
+    arena = (HudDepthView *)D_0019A4E8_raw;
+    p[6] = (x0 + D_0013E600[4] - 8)
+         | ((long)(y0 + D_0013E600[5] - 8) << 16)
+         | ((long)arena->depth << 32);
+    p[7] = u1 | ((long)v1 << 16);
+    p[8] = (x1 + D_0013E600[4] - 8)
+         | ((long)(y1 + D_0013E600[5] - 8) << 16)
+         | ((long)arena->depth << 32);
+    p[9] = 0;
+    D_00161000 = (int *)((char *)D_00161000 + 0x50);
+}
 
 extern int *D_00161000 MACRO_ADDR;
 extern void func_00122630(void *, int, int, int, int, int, int, int);
