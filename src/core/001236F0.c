@@ -450,7 +450,53 @@ void func_00124010(int arg0) {
     if (D_00159B30 != 0) *D_00159B30 = *(int *)(p + 0x90);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124068);
+extern int D_00159B80_a[] __asm__("D_00159B80");
+
+/* sceMcGetInfo-style RPC 1 (libmc): asks for the card type, free space
+   and format state (each only when its result pointer is given); the
+   reply lands in D_0015A000 and func_00124010 copies it out. */
+int func_00124068(int port, int slot, int *type, int *free, int *format) {
+    int r;
+
+    {
+        char *cd = D_00159B00;
+        if (*(int *)(cd + 0x24) == 0) {
+            return -100;
+        }
+    }
+    if (func_00118CC0(D_00132EAC) < 0) {
+        return -200;
+    }
+    D_00159B80_a[1] = port;
+    D_00159B80_a[2] = slot;
+    D_00159B80_a[7] = (int)D_0015A000;
+    if (type != 0) {
+        D_00159B80_a[5] = 1;
+    } else {
+        D_00159B80_a[5] = 0;
+    }
+    if (free != 0) {
+        D_00159B80_a[4] = 1;
+    } else {
+        D_00159B80_a[4] = 0;
+    }
+    if (format != 0) {
+        D_00159B80_a[3] = 1;
+    } else {
+        D_00159B80_a[3] = 0;
+    }
+    D_00159B28 = type;
+    D_00159B2C = free;
+    D_00159B30 = format;
+    func_0011AD70(D_0015A000, 0xC0);
+    r = func_0011B4C8(D_00159B00, 1, 1, D_00159B80_a, 0x30, D_0015B0C0, 4, func_00124010, D_0015A000);
+    if (r == 0) {
+        D_00132EA8 = 1;
+    } else {
+        func_00118C90(D_00132EAC);
+    }
+    return r;
+}
 
 LINKER_REMNANT("asm/remnants/core_text", func_001241E8);
 
