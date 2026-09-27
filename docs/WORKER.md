@@ -36,20 +36,37 @@ function's name, your role and your budget. Everything else is here, in
    declarations of everything it calls and uses, its callers' prototypes,
    matched functions of a similar shape in the same file, and earlier
    attempts. If there were earlier attempts, read their notes and start
-   from the best candidate; don't repeat what failed.
-2. Read [LEVERS.md](LEVERS.md).
-3. Start from the best earlier candidate, or else the original source when
-   `CONTEXT.md` names one, or else `m2c.c`, or else
+   from the best candidate; don't repeat what failed. Check the source
+   file too: declarations added since the dossier was written win.
+2. Read [LEVERS.md](LEVERS.md), and do its "Start here" steps before
+   writing C:
+   - `python3 tools/lombyte.py <func>`: if Lombyte has matched the same
+     function, port its C (see [SIBLING_DECOMPS.md](SIBLING_DECOMPS.md)).
+     That usually takes one or two runs.
+   - List every global and how retail reaches it; that decides the
+     declarations.
+   - Compare the assembly with "Known walls". If it hits one, say which in
+     NOTES.md and stop.
+3. Start from, in this order: Lombyte's C, the best earlier candidate, the
+   original source when `CONTEXT.md` names one, `m2c.c`, or
    `bash tools/docker/run.sh python tools/m2c.py <func>`.
 4. Write each candidate as `build-sn/try/<func>/pN.c`, taking the next free
    number: the function plus only the externs it needs. Copy declarations
-   from `CONTEXT.md` exactly; a second declaration with another type fails.
+   from `CONTEXT.md` or the file exactly; a second declaration with
+   another type fails.
 5. Test with
    `bash tools/docker/run.sh python tools/try_func.py <func> build-sn/try/<func>/pN.c`,
-   adding `--diff` to see which instructions differ.
-6. Stop at `EXACT`, when the budget runs out, or when three variants in a
+   adding `--diff` to see which instructions differ. Change one thing at a
+   time and keep only what improves the verdict.
+6. When the instructions are right and only `%hi` handling differs (more
+   saved registers or a bigger frame than retail, or a `lui` retail
+   repeats), spend one run on `-mno-split-addresses` (LEVERS.md lever 10)
+   and report what it did.
+7. Stop at `EXACT`, when the budget runs out, or when three variants in a
    row compile to the same bytes: that is an allocator or scheduler tie
-   that rewording won't move. Note where it is and stop.
+   that rewording won't move. Note where it is and stop. Matches come
+   early: in the waves so far, every function under 600 bytes that
+   matched did so within 9 runs.
 
 ## First compile
 
