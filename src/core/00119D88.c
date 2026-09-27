@@ -830,7 +830,85 @@ int func_0011BF48(void) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011BF80);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011C208);
+typedef struct {
+    int handle;
+    int active;
+} CloseIob;
+
+typedef struct {
+    int sema;
+    int result;
+    int size;
+    int handle;
+    int slot;
+} CloseState;
+
+typedef struct {
+    int count;
+    int maxCount;
+    int initialCount;
+    int waitThreads;
+    int attr;
+    int option;
+} CloseSema;
+
+extern CloseState D_00156980;
+extern char D_001575C0[];
+extern char D_00158080[];
+extern void func_00118C80(int);
+extern int func_00118CB0(int);
+extern int func_0011B4C8();
+extern int func_0011BC40_arg(int) __asm__("func_0011BC40");
+
+/* sceClose: close a SIF file handle, adapted from Lombyte (MIT) for PAL. */
+int func_0011C208(unsigned int fd) {
+    CloseSema sema;
+    int result;
+    int sid;
+    int rpcResult;
+    CloseIob *iob;
+    CloseState *state = &D_00156980;
+
+    iob = func_0011B7F8(fd);
+    func_0011BC40_arg(1);
+    if (D_0012FD94 == 0) {
+        func_0011BC70();
+        return -1;
+    }
+    if (iob == 0 || iob->active == 0) {
+        func_0011BC70();
+        return -9;
+    }
+    state->handle = iob->handle;
+    sema.maxCount = 1;
+    state->slot = ((char *)iob - D_00157E80) >> 4;
+    sema.initialCount = 0;
+    sema.option = 0;
+    sid = func_00118C70(&sema);
+    state->sema = sid;
+    state->result = (int)&result;
+    state->size = 4;
+    rpcResult = func_0011B4C8(D_00158080, 1, 0, state, 0x14,
+                                D_001575C0, 4, 0, 0);
+    if (rpcResult < 0) {
+        func_00118C80(sid);
+        func_0011BC70();
+        return -11;
+    }
+    iob->active = 0;
+    rpcResult = *(int *)((unsigned int)D_001575C0 | 0x20000000);
+    func_0011BC70();
+    if (rpcResult == 0) {
+        func_00118C80(sid);
+        return -11;
+    }
+    func_00118CB0(sid);
+    func_00118C80(sid);
+    if (result < 0) {
+        return result;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011C388);
 

@@ -6,6 +6,7 @@ The following functions adapt source from
 [Lombyte](https://github.com/mateuszklysz/Lombyte) for the PAL executable:
 
 - `src/core/00119328.c`: `func_001194C8` (`topThread`)
+- `src/core/00119D88.c`: `func_0011C208` (`sceClose`)
 - `src/game/hud.c`: `func_00201190` (HUD sprite with explicit UV corners)
 
 MIT License
