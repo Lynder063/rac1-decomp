@@ -17,6 +17,7 @@ The following functions adapt source from
 - `src/core/00112380.c`: `func_001123A8` (`_calloc_r`)
 - `src/core/00119D88.c`: `func_0011B2F8` (`sceSifBindRpc`)
 - `src/core/00119D88.c`: `func_0011AE20` (`sceSifInitRpc`)
+- `src/core/00121750.c`: `func_00121B78` (`sceGsResetGraph`)
 
 MIT License
 

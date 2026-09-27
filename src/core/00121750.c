@@ -200,7 +200,55 @@ int func_00121A80(CdClock *out) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00121B78);
+typedef struct {
+    short sceGsInterMode;
+    short sceGsOutMode;
+    short sceGsFFMode;
+    short sceGsVersion;
+    volatile int (*sceGsVSCfunc)(int);
+    int sceGsVSCid;
+} sceGsGParam;
+
+extern void *func_00121D08(void);          /* sceGsGetGParam */
+extern int func_00118DE0();                /* GsPutIMR */
+extern int func_00118AA0();                /* RemoveIntcHandler */
+extern int func_00119328();
+extern void func_00118A50(int, int, int);  /* SetGsCrt */
+
+/* sceGsResetGraph. Adapted from Lombyte (MIT) for PAL. */
+void func_00121B78(short mode, short inter, short out, short ff) {
+    sceGsGParam *gp;
+
+    switch (mode) {
+    case 0:
+        gp = (sceGsGParam *)func_00121D08();
+        *(volatile unsigned long *)0x12001000 = 0x200;
+        gp->sceGsInterMode = inter;
+        gp->sceGsOutMode = out;
+        gp->sceGsVersion = (short)((*(volatile unsigned long *)0x12001000 >> 16) & 0xFF);
+        func_00118DE0(0xFF00);
+        gp->sceGsFFMode = (ff != 0);
+        if (gp->sceGsVSCfunc != 0) {
+            func_00119328(2);
+            func_00118AA0(2, gp->sceGsVSCid);
+            gp->sceGsVSCfunc = 0;
+            gp->sceGsVSCid = 0;
+        }
+        func_00118A50(inter & 1, out & 0xFF, ff & 1);
+        break;
+    case 1:
+        *(volatile unsigned long *)0x12001000 = 0x100;
+        break;
+    case 5:
+        gp = (sceGsGParam *)func_00121D08();
+        gp->sceGsFFMode = (ff != 0);
+        gp->sceGsInterMode = inter;
+        gp->sceGsOutMode = out;
+        gp->sceGsVersion = (short)((*(volatile unsigned long *)0x12001000 >> 16) & 0xFF);
+        func_00118A50(inter & 1, out & 0xFF, ff & 1);
+        break;
+    }
+}
 
 extern char D_00132E40[];
 
