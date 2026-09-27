@@ -385,32 +385,53 @@ extern int func_0020BB10(void *data, int len);
  * The remaining residual is allocator destination choice, the recorded
  * dead end.
  */
-/* memcard_PrepData */
-int func_0020BBC8(void *dst, int i, int *table) {
-    char *out = (char *)dst + 8;
-    int total = 0;
+struct SaveBlock {
+    unsigned char *base;
+    int size;
+    int id;
+    int pad;
+};
 
-    if (table[0] != 0) {
+struct SaveHeader {
+    int size;
+    int checksum;
+};
+
+/* memcard_PrepData: pack the save blocks (id, size, data, 4-aligned) after
+   an 8-byte header, end with an id -1 record, checksum it. Adapted from
+   Lombyte (MIT) for PAL. */
+int func_0020BBC8(void *dst, int slot, int *table) {
+    struct SaveHeader *out = dst;
+    struct SaveBlock *blk = table;
+    unsigned char *p;
+    int total;
+    unsigned char *src;
+
+    total = 0;
+    p = (unsigned char *)(out + 1);
+    if (blk->base != 0) {
+        struct SaveBlock *block = blk;
+        int mask = -4;
+
         do {
-            char *src = (char *)table[0] + i * table[1];
-
+            src = block->base + slot * block->size;
             total += 8;
-            *(int *)out = table[2];
-            *(int *)(out + 4) = table[1];
-            out += 8;
-            func_001F9A00(out, src, table[1]);
-            out += table[1];
-            total += table[1];
-            table += 4;
-            out = (char *)(((int)out + 3) & -4);
-            total = (total + 3) & -4;
-        } while (table[0] != 0);
+            ((int *)p)[0] = block->id;
+            ((int *)p)[1] = block->size;
+            p += 8;
+            func_001F9A00(p, src, block->size);
+            p += block->size;
+            total += block->size;
+            p = (unsigned char *)(((int)p + 3) & mask);
+            total = (total + 3) & mask;
+            block++;
+        } while (block->base != 0);
     }
     total += 8;
-    *(int *)(out + 4) = 0;
-    *(int *)out = -1;
-    *(int *)((char *)dst + 4) = func_0020BB10((char *)dst + 8, total);
-    *(int *)dst = total;
+    ((int *)p)[1] = 0;
+    ((int *)p)[0] = -1;
+    out->checksum = func_0020BB10(out + 1, total);
+    out->size = total;
     return total + 8;
 }
 

@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 53.52029203349796,
+  "fuzzy_match_percent": 53.52866652351299,
   "total_code": "465700",
-  "matched_code": "248072",
-  "matched_code_percent": 53.268627872020616,
+  "matched_code": "248304",
+  "matched_code_percent": 53.31844535108439,
   "total_functions": 1680,
-  "matched_functions": 1332,
-  "matched_functions_percent": 79.28571428571429,
+  "matched_functions": 1333,
+  "matched_functions_percent": 79.3452380952381,
   "complete_code": "85264",
   "complete_code_percent": 18.30878247799012,
   "total_units": 121,
@@ -12032,13 +12032,13 @@
   {
    "name": "game/memcard",
    "measures": {
-    "fuzzy_match_percent": 23.98301737756714,
+    "fuzzy_match_percent": 24.368088467614534,
     "total_code": "10128",
-    "matched_code": "2236",
-    "matched_code_percent": 22.07740916271722,
+    "matched_code": "2468",
+    "matched_code_percent": 24.368088467614534,
     "total_functions": 14,
-    "matched_functions": 11,
-    "matched_functions_percent": 78.57142857142857,
+    "matched_functions": 12,
+    "matched_functions_percent": 85.71428571428571,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -12138,7 +12138,7 @@
     {
      "name": "func_0020BBC8",
      "size": "232",
-     "fuzzy_match_percent": 83.1896551724138,
+     "fuzzy_match_percent": 100.0,
      "address": "8552",
      "metadata": {
       "virtual_address": "2145224"
@@ -18165,13 +18165,13 @@
    "id": "game",
    "name": "Game",
    "measures": {
-    "fuzzy_match_percent": 53.44776093181778,
+    "fuzzy_match_percent": 53.45632543349554,
     "total_code": "455368",
-    "matched_code": "242212",
-    "matched_code_percent": 53.19038667627062,
+    "matched_code": "242444",
+    "matched_code_percent": 53.24133448112296,
     "total_functions": 1646,
-    "matched_functions": 1301,
-    "matched_functions_percent": 79.0400972053463,
+    "matched_functions": 1302,
+    "matched_functions_percent": 79.10085054678007,
     "complete_code": "79404",
     "complete_code_percent": 17.437325415927337
    }
