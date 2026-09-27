@@ -276,7 +276,22 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_001233E8);
 
 LINKER_REMNANT("asm/remnants/core_text", func_001235C0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001235C8);
+extern int func_00123280(int);
+extern void func_00123208(void *);
+
+/* Reset the record at p with func_00123208, keep func_00123280(arg1) in
+   p[12] unless it holds -1, clear p[8], and set flags 0x105 in p[0] with
+   bits 2-3 cleared. The -1 test is unsigned, as retail builds 0xFFFFFFFF. */
+void func_001235C8(int *p, int arg1) {
+    int r = func_00123280(arg1);
+
+    func_00123208(p);
+    if ((unsigned int)p[12] != 0xFFFFFFFFU) {
+        p[12] = r;
+    }
+    p[8] = 0;
+    p[0] = (p[0] & ~0xC) | 0x105;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00123630);
 
