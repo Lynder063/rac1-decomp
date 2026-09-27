@@ -52,7 +52,10 @@ among them.
 3. Declare things the way this file already does. Keep Lombyte's
    control flow and statement order; they are what matched.
 4. Credit it in the candidate's comment ("from Lombyte (MIT), adapted to
-   PAL") and in the commit message.
+   PAL") and in the commit message. MIT also requires Lombyte's copyright
+   and permission notice with any substantial copy: the first port adds a
+   `THIRD_PARTY_NOTICES.md` carrying Lombyte's `LICENSE` ("Copyright (c)
+   2026 Mateusz Kłysz"), and later ports list themselves there.
 
 Lombyte builds some units with a patched EE-GCC 2.9 whose flags
 reproduce codegen stock compilers lack (`sq`/`lq` saves, classic
