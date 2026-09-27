@@ -895,7 +895,26 @@ void func_002158E8(float *v, int *out) {
     *out = func_001F9F30(buf);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00215A10);
+typedef float FVec4[4] __attribute__((aligned(16)));
+extern void func_001F9F18(float *, int);
+
+/* Unpack the packed colour *arg1 into a float vector, centre its
+   channels on 127 and scale by alpha/10000 into arg0. The 127 vector is
+   a 16-byte aligned (sceVu0FVECTOR-style) local cleared by its
+   initializer (one por/sq), then filled. */
+void func_00215A10(float *arg0, int *arg1) {
+    float v[4];
+    FVec4 mid = { 0 };
+    float scale;
+
+    mid[0] = 127.0f;
+    mid[1] = 127.0f;
+    mid[2] = 127.0f;
+    func_001F9F18(v, *arg1);
+    scale = v[3] * 0.0001f;
+    func_001F9BF0(v, v, mid);
+    func_001F9C30(arg0, v, scale);
+}
 
 extern int func_001FA898_r(float) __asm__("func_001FA898");
 
