@@ -650,7 +650,24 @@ void func_00215650(void *arg0, void *arg1, void *arg2) {
     func_001FA588(arg0, buf2, buf0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002156E0);
+extern void func_00215380(void *arg0, void *axis, float angle);
+extern void func_00215650(void *arg0, void *arg1, void *arg2);
+
+/* dst = vec rotated `angle` around axis. A tiny angle skips the rotation
+   (dst = vec); otherwise the axis is normalised to unit length and turned
+   into an axis-angle quaternion in a scratch buffer, which then rotates
+   vec into dst. */
+void func_002156E0(void *dst, void *vec, void *axis, float angle) {
+    float q[4];
+
+    if (func_001F9B88(angle) < 0.00001f) {
+        qcopy(dst, vec);
+        return;
+    }
+    func_001F9DC0(q, axis, 1.0f);
+    func_00215380(q, q, angle);
+    func_00215650(dst, vec, q);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215788);
 
