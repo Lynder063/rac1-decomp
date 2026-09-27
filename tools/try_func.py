@@ -26,6 +26,7 @@ Every run is logged to build-sn/try/<func>/runs.log. If that folder holds a
 BUDGET file (a number, written by tools/wave.py), runs stop once that many
 have been logged. --no-budget skips both, for tools that re-check results.
 """
+import os
 import re
 import shutil
 import subprocess
@@ -46,7 +47,7 @@ CC = "toolchain/sn-prodg-24/local/sce/ee/gcc/bin/ee-gcc2953.exe"
 CC29 = "toolchain/sn-prodg-24/local/sce/ee/gcc/bin/ee-gcc.exe"
 EE29_INC = "-Itoolchain/sn-prodg-24/local/sce/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111/include"
 EE29_SOURCES = ee29_sources()
-CFLAGS = ["-O2", "-G2", "-Iinclude", "-Wa,-I,."]
+CFLAGS = ["-O2", "-G2", "-Iinclude", "-Wa,-I,."] + os.environ.get("TRY_CFLAGS", "").split()  # extra flags for experiments
 BASEROM = "baserom/SCES_509.16"
 STUB = re.compile(r'^\s*INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\)')
 SIZE = re.compile(r"nonmatching\s+(func_[0-9A-Fa-f]{8}),\s*(0x[0-9A-Fa-f]+)")
