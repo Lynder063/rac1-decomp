@@ -227,7 +227,44 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E060);
 
 LINKER_REMNANT("asm/remnants/core_text", func_0012E1B8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E1C8);
+extern short D_0015EDC8;
+extern short D_0015ED88;
+extern short D_0015EDD0;
+extern long D_0015EDD8 MACRO_ADDR;
+extern unsigned int D_0015EE00 MACRO_ADDR;
+extern int D_00137C40;
+extern int D_0015ECE8;
+extern char D_00153FC0[];
+extern char D_00153FF8[];
+extern char D_00153E20[];
+extern int func_0012EF48(int);
+extern void func_0012DDC0(void);
+
+/* Start an IOP stream (command 0x57) for arg0, unless one is already
+   pending (D_0015EDC8) or the CD is busy (func_0012EF48); the reply word
+   lands in D_0015EE00. */
+void func_0012E1C8(int arg0, int arg1, long arg2) {
+    *(int *)&D_0015ED88 = 0;
+    if (*(int *)&D_0015EDC8 != 0) {
+        func_00116078(D_00153FC0);
+        return;
+    }
+    if (func_0012EF48(1) == 1) {
+        func_00116078(D_00153FF8);
+        return;
+    }
+    D_00137C40 = arg0;
+    D_0015EE00 = 0xFFFFFFFF;
+    *(int *)&D_0015EDD0 = arg1;
+    D_0015EDD8 = arg2;
+    while (func_0011B6B8(&D_0015ECE8) != 0) {
+        func_00116078(D_00153E20);
+        func_0012DDC0();
+        func_00118D80(0);
+    }
+    *(int *)&D_0015EDC8 = 1;
+    func_0011B4C8(&D_0015ECE8, 0x57, 1, &D_00137C40, 4, &D_0015EE00, 4, 0, 0);
+}
 
 LINKER_REMNANT("asm/remnants/core_text", func_0012E2D8);
 
