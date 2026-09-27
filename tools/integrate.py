@@ -19,9 +19,11 @@ import subprocess
 import sys
 
 # Upstream bans these (docs/LLM_DECOMP_INSTRUCTIONS.md): only file-scope
-# aliases and padding directives may use __asm__.
+# aliases and padding directives may use __asm__. Retail's vector copy is
+# qcopy() in include/common.h; a candidate calls it and writes no asm.
 BANNED = [(re.compile(r"\bregister\b[^;{]*__asm__\s*\("), "register pin"),
           (re.compile(r'__asm__\s*(?:volatile\s*|__volatile__\s*)?\(\s*""'), "empty-asm barrier"),
+          (re.compile(r'__asm__\s*(?:volatile\s*|__volatile__\s*)?\(\s*"[^".][^"]*[\s$:][^"]*"'), "inline asm"),
           (re.compile(r"\bwhile\s*\(\s*0\s*\)"), "do/while (0) barrier")]
 
 
