@@ -25,6 +25,7 @@ The following functions adapt source from
 - `src/core/0012AC80.c`: `func_0012C0A0` (`_decodeOrSkipField`)
 - `src/core/00113B70.c`: `func_00113B70` (`_free_r`)
 - `src/game/memcard.c`: `func_0020BBC8` (memcard_PrepData)
+- `src/core/0011CCE0.c`: `func_0011CE70` (`_sceSifLoadModuleBuffer`)
 
 MIT License
 

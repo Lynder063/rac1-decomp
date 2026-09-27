@@ -133,7 +133,43 @@ int func_0011CDE0(void) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011CE70);
+struct SifLoadCmd {
+    int unk0;
+    int unk4;
+};
+#define SIFCMD ((struct SifLoadCmd *) D_00158300)
+/* _sceSifLoadModuleBuffer. Adapted from Lombyte (MIT) for PAL. */
+int func_0011CE70(int arg0, int arg1, int arg2, void *out) {
+    int *arg3 = out;
+    int var_2_18;
+    int temp;
+
+    var_2_18 = 0xFFFF0000;
+    if (func_0011CCE0() < 0) {
+        return var_2_18;
+    }
+    if (func_0011CDE0() != 0) {
+        return 0xFFFEFFFC;
+    }
+    SIFCMD->unk0 = arg0;
+    if (arg2 != 0) {
+        if (arg1 >= 0xFD) {
+            memcpy(D_00158300 + 0x104, (void *) arg2, 0xFC);
+            SIFCMD->unk4 = 0xFC;
+        } else {
+            memcpy(D_00158300 + 0x104, (void *) arg2, arg1);
+            SIFCMD->unk4 = arg1;
+        }
+    } else {
+        SIFCMD->unk4 = 0;
+    }
+    if (func_0011B4C8(D_00158500, 6, 0, D_00158300, 0x200, D_00158300, 8, 0, 0) < 0) {
+        return 0xFFFEFFFF;
+    }
+    temp = SIFCMD->unk0;
+    *arg3 = SIFCMD->unk4;
+    return temp;
+}
 
 extern int func_0011CE70(int arg0, int arg1, int arg2, void *arg3);
 

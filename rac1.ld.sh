@@ -53,6 +53,9 @@ cat >> build-sn/rac1.ld <<'EOF'
   /* The compiler clears large aggregate initializers with a memset
      libcall (func_00222B98); newlib's memset lives at this address. */
   memset = func_001153FC;
+  /* memcpy with a non-constant size stays a call (func_0011CE70);
+     newlib's memcpy lives here. */
+  memcpy = func_00115248;
   /* dp-bit.o / fp-bit.o carry Sony's GOFAST names, which is also what the
      compilers call. */
   func_0011FA38 = __pack_d;
