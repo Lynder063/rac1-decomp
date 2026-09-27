@@ -652,7 +652,64 @@ int func_001245F8(void) {
     return D_0015B180;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124650);
+extern char D_0015B130[];
+extern char D_001535D8[];
+extern char D_001535F0[];
+extern char D_00153618[];
+extern char D_00153640[];
+extern int D_0015B600[];
+extern char D_0015B580[];
+extern void func_001138B8(int) __attribute__((noreturn)); /* exit */
+extern void func_00124B60(void *, ...);
+extern int func_001247E8(int);
+
+/* Bind the two IOP servers 0x80000900 and 0x8000091B (retrying with a
+   busy wait; exit(-1) if binding fails), check the server version
+   (func_001245F8: major 2), clear the 16-word table D_0015B600 and read
+   the configuration into D_0015B580. Returns 1, or 0 on a version
+   mismatch. */
+int func_00124650(void) {
+    int i;
+    int v;
+
+    func_0011AE20(0);
+    for (;;) {
+        if (func_0011B2F8(D_0015B108, 0x80000900, 0) < 0) {
+            func_00124B60(D_001535D8);
+            func_001138B8(-1);
+        }
+        if (*(int *)(D_0015B108 + 0x24) != 0) {
+            break;
+        }
+        i = 0x10000;
+        while (i--) {
+        }
+    }
+    for (;;) {
+        if (func_0011B2F8(D_0015B130, 0x8000091B, 0) < 0) {
+            func_00124B60(D_001535D8);
+            func_001138B8(-1);
+        }
+        if (*(int *)(D_0015B130 + 0x24) != 0) {
+            break;
+        }
+        i = 0x10000;
+        while (i--) {
+        }
+    }
+    v = func_001245F8();
+    if (v >> 8 != 2) {
+        func_0011A6C8(D_001535F0);
+        func_0011A6C8(D_00153618, 2, 0, v >> 8, v & 0xFF);
+        return 0;
+    }
+    for (i = 15; i >= 0; i--) {
+        D_0015B600[i] = 0;
+    }
+    func_00124B60(D_00153640, D_0015B580);
+    func_001247E8((int)D_0015B580);
+    return 1;
+}
 
 extern void func_00124B60(void *, ...);
 extern char D_00153658[];
