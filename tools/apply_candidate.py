@@ -14,7 +14,7 @@ comment that ends right above the stub or definition, blank lines aside:
 the old revert or near-miss note that the match makes obsolete. Without
 --comment, a stub's trailing name comment (`INCLUDE_ASM(...); /* Name */`)
 is kept, unless the candidate has a comment of its own above the
-definition. Extern lines the file already has are left out.
+definition. Extern and #include lines the file already has are left out.
 
 The full build decides, as always: run tools/build_sn.sh afterwards.
 """
@@ -48,7 +48,7 @@ def main() -> None:
     # the extern lines not declared above it, and one blank line where others
     # went. A declaration further down doesn't count: C needs it first.
     existing = {l.strip() for l in lines[:first]}
-    cand = [l for l in cand if not (l.startswith("extern ") and l.strip() in existing)]
+    cand = [l for l in cand if not (l.startswith(("extern ", "#include")) and l.strip() in existing)]
     cand = [l for i, l in enumerate(cand) if l.strip() or (i and cand[i - 1].strip())]
     while cand and not cand[0].strip():
         cand.pop(0)
