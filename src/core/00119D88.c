@@ -918,7 +918,31 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011C820);
 
 LINKER_REMNANT("asm/remnants/core_text", func_0011CAE0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011CB40);
+extern int func_0011B2F8(void *, int, int);
+extern char D_00158140[];
+extern int D_0012FDAC;
+
+/* sceSifInitIopHeap: bind the RPC client D_00158140 to IOP server
+   0x80000003, busy-waiting until the server answers; -1 if binding fails.
+   Built with -fno-schedule-insns (config/func_cflags.txt), the flag
+   Lombyte builds this SDK unit with. */
+int func_0011CB40(void) {
+    int i;
+
+    for (;;) {
+        if (func_0011B2F8(D_00158140, 0x80000003, 0) < 0) {
+            return -1;
+        }
+        if (*(int *)(D_00158140 + 0x24) != 0) {
+            break;
+        }
+        i = 0x100000;
+        while (i--) {
+        }
+    }
+    D_0012FDAC = 0;
+    return 0;
+}
 
 extern int D_0012FDAC;
 extern char D_00158140[];

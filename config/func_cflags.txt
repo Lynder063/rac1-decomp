@@ -9,3 +9,4 @@
 # -fno-schedule-insns: no first scheduling pass (Lombyte builds some SDK
 # units this way, e.g. sceSifInitIopHeap).
 func_002282D0  -mno-split-addresses
+func_0011CB40  -fno-schedule-insns
