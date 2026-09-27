@@ -1,0 +1,8 @@
+# Extra compiler flags for single functions (tools/func_cflags.py splices
+# them into their file's compiled assembly). One function per line:
+#
+#   func_XXXXXXXX  flags...
+#
+# -mno-split-addresses: retail reaches every global of the function
+# through the assembler's `lui $at` macro, not a %hi/%lo split, while its
+# neighbours in the same file use the split form. See docs/LEVERS.md.

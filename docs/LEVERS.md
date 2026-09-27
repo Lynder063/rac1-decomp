@@ -138,16 +138,22 @@ in `config/core_rodata.txt`).
    zero store (`sq $zero`) has no known C form: `*(long long *)p = 0`
    adds a `por` first.
 
-10. **Per-file flags.** Retail built some source files with
-    `-mno-split-addresses` ([SIBLING_DECOMPS.md](SIBLING_DECOMPS.md)).
-    There a global is one assembler macro, so no `%hi` survives a call and
-    each access starts with a fresh `lui`. If what's left is `%hi` values
-    in saved registers (more `$s` registers or a bigger frame than retail,
-    or a `lui` retail repeats and you share), run the candidate once with
-    `TRY_CFLAGS=-mno-split-addresses` and report the result in NOTES.md,
-    even when it doesn't match: which files need which flags isn't mapped
-    yet. Don't imitate it by giving one global two alias names. A `div`
-    without the zero-divide trap wants `-mno-check-zero-division`.
+10. **Per-function flags.** Retail built some functions with
+    `-mno-split-addresses` ([SIBLING_DECOMPS.md](SIBLING_DECOMPS.md)),
+    next to split-address neighbours in the same file, so it is a
+    per-function setting (compiling all of pause.c with it breaks 49
+    functions). There a global is one assembler macro: every access is
+    `lui $at` + `%lo(sym)($at)` (loads, stores and FP ones alike), no
+    `%hi` survives a call, and gcc never puts such an access in a delay
+    slot. If that's what retail shows, or what's left is `%hi` values in
+    saved registers, run the candidate with
+    `TRY_CFLAGS=-mno-split-addresses`. When it matches, add the function
+    to `config/func_cflags.txt`: the build and try_func compile it with
+    those flags and splice it into the file's assembly
+    (`tools/func_cflags.py`). A small global (declared `MACRO_ADDR`) still
+    goes through `$gp` when it lands in a delay slot. First match:
+    func_002282D0. A `div` without the zero-divide trap wants
+    `-mno-check-zero-division`.
 
 ## Known walls: stop and report
 

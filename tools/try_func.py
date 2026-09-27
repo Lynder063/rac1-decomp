@@ -107,6 +107,11 @@ def build(name, seg, src, first, last, candidate, work):
             return obj
         if not run(sn(CC, *CFLAGS, "-S", "-o", str(s[0]), str(c)), log):
             return None
+        if seg == "text":
+            # per-function flags (config/func_cflags.txt), as Makefile.sn does
+            if not run([sys.executable, "tools/func_cflags.py", str(c), str(s[0]), "--",
+                        *sn(CC, *CFLAGS)], log):
+                return None
         if seg == "core_text":
             if not run([sys.executable, "tools/fix_core_spills.py", str(s[0]), str(s[1])], log):
                 return None
