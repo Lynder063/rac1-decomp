@@ -47,7 +47,12 @@ There are two ways to run it:
 
 - **Windows**, natively, with **Git Bash** and Python 3.10 or newer.
 - **Linux and macOS**, through 32-bit Wine in a container
-  (`tools/docker/`). Works with **Podman** (Fedora, RHEL, etc.) or **Docker** (Ubuntu, Debian, macOS OrbStack/Docker Desktop). Prebuilt images are automatically pulled from GitHub Container Registry (`ghcr.io/lynder063/rac1-build:latest`), so you don't need to wait 15 minutes compiling the image locally. The container build reproduces the Windows build's progress report byte for byte.
+  (`tools/docker/`). Works with **Podman** (Fedora, RHEL, etc.) or **Docker**
+  (Ubuntu, Debian, macOS OrbStack/Docker Desktop). The image is pulled
+  from GitHub Container Registry (`ghcr.io/lynder063/rac1-build:latest`),
+  so there is no 15-minute local image build. The container build
+  reproduces the Windows build's progress report byte for byte. See
+  [`docs/CONTAINERS.md`](docs/CONTAINERS.md).
 
 Every command below runs the same on both. On Linux and macOS, prefix it with
 `bash tools/docker/run.sh` (which automatically pulls or builds the container and runs the command inside it):
@@ -114,17 +119,21 @@ bash tools/build_sn.sh
 
 This builds and links `build-sn/rac1.elf`, then audits every decompiled
 function against the retail executable on size and bytes. The output looks
-like this (these are the numbers as of 2026-09-24; decomp.dev has the
+like this (these are the numbers as of 2026-09-27; decomp.dev has the
 current ones):
 
 ```
-=== 926 decompiled functions audited ===
-  exact (size AND bytes): 903
+=== 1002 decompiled functions audited ===
+  exact (size AND bytes): 989
   size mismatch:          0   (always revert these -- see docs)
-  byte mismatch:          23
+  byte mismatch:          13
 every function is at its retail address
-image matches retail outside the decompiled near-misses (834 bytes differ inside them)
+image matches retail outside the decompiled near-misses (559 bytes differ inside them)
 ```
+
+Hand-written assembly and the linker's dead-strip remnants are included as
+assembly on purpose and count as finished in the progress report
+([`docs/ASM_CLASSIFICATION.md`](docs/ASM_CLASSIFICATION.md)).
 
 ## Community
 
@@ -168,52 +177,12 @@ git clone https://github.com/simonlindholm/asm-differ tools/ext/asm-differ
 Known compiler behaviour, useful levers and measured dead ends are collected
 in [`docs/DECOMP_PROGRESS.md`](docs/DECOMP_PROGRESS.md).
 
+For LLM agents, [`docs/CONTAINERS.md`](docs/CONTAINERS.md) describes a
+Ghidra container that serves decompilation and disassembly over MCP, and
+`tools/export_dataset.py` exports every exact match with its retail
+assembly as training pairs.
+
 If you have questions, run into build issues, or want to collaborate with other contributors, feel free to drop by our [Discord](https://discord.gg/Sfd2B54PDG)!
-
-## Ghidra — AI Decompilation Progress
-
-AI-generated C code from the [rac1-ai-platform](https://github.com/Lynder063/rac1-ai-platform)
-can be imported into Ghidra as plate comments and EOL markers, giving you a
-starting point for every function directly inside the disassembler.
-
-### Setup
-
-The import is a two-step process:
-
-**Step 1 — Export** (run with Python 3, outside Ghidra):
-
-```bash
-# Auto-discovers the platform DB if rac1-ai-platform lives next to this repo
-python tools/ghidra_export_progress.py
-
-# Or point at the DB explicitly
-python tools/ghidra_export_progress.py --db C:/path/to/rac1-ai-platform/data/ai_decomp.db
-
-# Only export 100% byte-exact matches
-python tools/ghidra_export_progress.py --matched-only
-
-# Only export functions with >= 50% match
-python tools/ghidra_export_progress.py --min-pct 50
-```
-
-This writes `tools/ghidra_import.json` (gitignored — generated data).
-
-**Step 2 — Import** (run inside Ghidra):
-
-1. Open the RaC1 `.elf` (`SCES_509.16`) in Ghidra and run **Auto Analyse**.
-2. Open **Window → Script Manager**.
-3. Click the gear icon → **Edit Script Paths** → add the full path to `<repo>/tools/`.
-4. Find `ghidra_import_progress` in the list and click **Run ▶**.
-
-### What gets added
-
-| Function status | Ghidra annotation |
-|---|---|
-| Any AI-generated C code | **Plate comment** above the function with status, source file, and full C body |
-| Exact match (100%) | Plate comment **+ EOL comment** `[AI-MATCHED 100%]` on the first instruction |
-
-Re-run Step 1 any time you want a fresh export, then re-run Step 2 — existing
-comments are overwritten safely.
 
 ## Project structure
 
@@ -228,8 +197,9 @@ comments are overwritten safely.
 | `config/core_text.objects`, `config/text.objects` | Link order and start address of every object |
 | `Makefile.sn`, `rac1.ld.sh` | Compile and link at retail addresses |
 | `tools/` | Build, audit, progress-report and decompilation helper scripts |
+| `tools/docker/` | The build container and the Ghidra MCP container ([docs](docs/CONTAINERS.md)) |
 | `tools/extract/` | Level extractor: your own disc's levels as an editable Godot project ([README](tools/extract/README.md)) |
-| `docs/` | Workflow, toolchain notes, progress log, Ghidra policy, asset formats |
+| `docs/` | Workflow, toolchain notes, progress log, containers, asset formats |
 | `notes/` | Round notes from September 2026, kept as history; `docs/DECOMP_PROGRESS.md` has the current state |
 | `progress/report.json` | objdiff-format progress report read by decomp.dev |
 

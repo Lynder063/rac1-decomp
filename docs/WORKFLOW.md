@@ -52,8 +52,9 @@ python tools/m2c.py func_XXXXXXXX    # m2c sketch, with context
 ```
 
 m2c output is a reference. It is never matching as emitted, and it
-mis-decodes branch-likely (`bnel`) conditions. Ghidra output
-(`docs/ghidra/`) is reference only too, and is never pasted into `src/`.
+mis-decodes branch-likely (`bnel`) conditions. Ghidra output (from the
+MCP container, `docs/CONTAINERS.md`) is reference only too, and is never
+pasted into `src/`.
 
 Look for **family siblings** before writing anything: grep
 `asm/nonmatchings/` for the distinguishing call or constant. The family

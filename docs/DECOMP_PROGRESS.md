@@ -1282,7 +1282,7 @@ It fills about half of these slots in both segments, and what decides
 it is not known.
 
 ps2eeas cannot simply replace `ee-as` here: it recurses without end on
-some of the retail stubs INCLUDE_ASM feeds it. `tools/fix_short_loops.py`
+some of the retail stubs INCLUDE_ASM feeds it. `tools/ps2eeas_nops.py` (then named `fix_short_loops.py`)
 reproduces the padding instead, on compiled game code only: it measures
 each loop in a first assembly (so macro expansion and delay slots are
 never guessed) and puts the nops before the branch, inside the compiler's
@@ -1306,7 +1306,7 @@ differences from GNU `ee-as`:
   code and GNU does not.
 
 Switching assemblers would first need the small-data expansion
-reimplemented. Until then `fix_short_loops.py` is the pipeline.
+reimplemented. Until then `tools/ps2eeas_nops.py` is the pipeline.
 
 The original analysis follows.
 
