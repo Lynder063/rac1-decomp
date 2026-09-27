@@ -28,6 +28,7 @@ The following functions adapt source from
 - `src/core/0011CCE0.c`: `func_0011CE70` (`_sceSifLoadModuleBuffer`)
 - `src/game/loaders.c`: `func_00205220` (ParseSpaceSceneChunk)
 - `src/game/draw.c`: `func_001F5368` (screen stripe fill)
+- `src/core/00114060.c`: `func_00114060` (`__sfvwrite`)
 
 MIT License
 
