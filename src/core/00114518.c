@@ -122,7 +122,103 @@ void func_00114578(File_114578 *fp) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001146C8);
+typedef struct MallocChunk {
+    unsigned int prev_size;
+    unsigned int size;
+    struct MallocChunk *fd;
+    struct MallocChunk *bk;
+} MallocChunk;
+
+extern struct MallocChunk *D_0012F888[3]; /* malloc_av_ bins; av_[2] is `top` */
+extern unsigned long D_0012FC98; /* malloc_top_pad (unsigned long) */
+extern char *D_0012FCA0;         /* malloc_sbrk_base */
+extern int D_0012FCB8;           /* current_mallinfo.arena (sbrked_mem) */
+extern unsigned long D_0012FCA8; /* malloc_max_sbrked_mem */
+extern unsigned long D_0012FCB0; /* malloc_max_total_mem */
+
+extern void *func_001161E8(void *reent_ptr, unsigned int size); /* _sbrk_r */
+extern int func_00113B70(void *reent_ptr, void *mem);           /* _free_r */
+
+#define TOP (D_0012F888[2])
+#define INITIAL_TOP ((MallocChunk *)D_0012F888)
+
+/* newlib malloc_extend_top: grows the arena's top chunk with sbrk for an
+ * nb-byte request no free chunk could satisfy, both when sbrk returns
+ * memory right after the old top and when it doesn't (then the old top is
+ * fenced off and freed). TOP has to be an array element: through a cast
+ * pointer the compiler keeps base+8 in a register instead of reloading
+ * the address after each sbrk call as retail does. */
+void func_001146C8(void *reent_ptr, unsigned int nb) {
+    char *brk;
+    unsigned int front_misalign;
+    unsigned int correction;
+    char *new_brk;
+    unsigned int top_size;
+
+    MallocChunk *old_top = TOP;
+    unsigned int old_top_size = old_top->size & ~3u;
+    char *old_end = (char *)old_top + old_top_size;
+
+    unsigned int sbrk_size = nb + D_0012FC98 + 0x10;
+    unsigned long pagesz = 0x1000;
+
+    if (D_0012FCA0 != (char *)-1)
+        sbrk_size = (sbrk_size + (pagesz - 1)) & ~(pagesz - 1);
+
+    brk = (char *)func_001161E8(reent_ptr, sbrk_size);
+
+    if (brk == (char *)-1 || (brk < old_end && old_top != INITIAL_TOP))
+        return;
+
+    D_0012FCB8 += sbrk_size;
+
+    if (brk == old_end) {
+        top_size = sbrk_size + old_top_size;
+        TOP->size = top_size | 1;
+    } else {
+        if (D_0012FCA0 == (char *)-1)
+            D_0012FCA0 = brk;
+        else
+            D_0012FCB8 += brk - old_end;
+
+        front_misalign = (unsigned int)(brk + 8) & 0xF;
+        if (front_misalign > 0) {
+            correction = 0x10 - front_misalign;
+            brk += correction;
+        } else
+            correction = 0;
+
+        correction += pagesz - ((unsigned int)(brk + sbrk_size) & (pagesz - 1));
+
+        new_brk = (char *)func_001161E8(reent_ptr, correction);
+        if (new_brk == (char *)-1)
+            return;
+
+        D_0012FCB8 += correction;
+
+        TOP = (MallocChunk *)brk;
+        top_size = new_brk - brk + correction;
+        TOP->size = top_size | 1;
+
+        if (old_top != INITIAL_TOP) {
+            if (old_top_size < 0x10) {
+                TOP->size = 1;
+                return;
+            }
+            old_top_size = (old_top_size - 12) & ~0xFu;
+            old_top->size = (old_top->size & 1) | old_top_size;
+            *(unsigned int *)((char *)old_top + old_top_size + 4) = 5;
+            *(unsigned int *)((char *)old_top + old_top_size + 8) = 5;
+            if (old_top_size >= 0x10)
+                func_00113B70(reent_ptr, (char *)old_top + 8);
+        }
+    }
+
+    if (D_0012FCB8 > D_0012FCA8)
+        D_0012FCA8 = D_0012FCB8;
+    if ((unsigned long)D_0012FCB8 > D_0012FCB0)
+        D_0012FCB0 = D_0012FCB8;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00114920);
 

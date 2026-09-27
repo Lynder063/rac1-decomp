@@ -1009,19 +1009,6 @@ void func_00209070(void) {
     }
 }
 
-/*
- * Near-miss, same size (differ score 180): func_00209160 below. Every
- * instruction is right but the scheduler places them differently:
- * retail   lui b; li 3; addiu b; [lui $at; sw 3]; lw C4; sw FC; j; sw 1C
- * ours     li 3; lui b; [lui $at; sw 3]; addiu b; sw FC; lw C4; j; sw 1C
- * The compiler schedules the MACRO_ADDR store as ONE instruction; retail
- * evidently scheduled around a two-instruction store. Tried: store via a
- * volatile lvalue, reading 0xC4 into a temp before the store, taking the
- * base after the store, the constant in its own local, and every order
- * of the four statements (tools/permute.py) -- the emitted order never
- * moves. Previously stubbed for the SDA collision, now expressible with
- * MACRO_ADDR.
- */
 extern char D_0013D390[];
 /* menu.cpp's state word and flags. Stored through the assembler's lui
    macro, and $gp-relative where the access sits in a delay slot (see
@@ -1030,13 +1017,17 @@ extern int D_0015EFB0 MACRO_ADDR;
 extern int D_0015EFB4 MACRO_ADDR;
 extern int D_0013D3AC;
 
+/* Word view of the D_0013D390 record: indexing an int array here, rather
+   than casting byte offsets off a char pointer, is what lets GCC keep the
+   record address's lui/addiu pair together before the D_0015EFB0 store. */
+extern int D_0013D390_i[] __asm__("D_0013D390");
+
+/* Sets menu state 3, clears the record's word at +0xFC and copies +0xC4
+   into +0x1C. */
 void func_00209160(void) {
-    char *b = D_0013D390;
-    int t;
     D_0015EFB0 = 3;
-    t = *(int *)(b + 0xC4);
-    *(int *)(b + 0xFC) = 0;
-    *(int *)(b + 0x1C) = t;
+    D_0013D390_i[0x3F] = 0;
+    D_0013D390_i[0x07] = D_0013D390_i[0x31];
 }
 
 /* Clears the 4 and 2 flag bits of D_0015EFB4, then picks the next
@@ -1203,27 +1194,25 @@ void func_002094E0(void) {
     }
 }
 
-/*
- * Same-size near-miss (15/50 words): every instruction is retail's, but
- * the base pointer lands in $a1 and the literal 1 in $a0 where retail
- * has them the other way round. Tried: reading the index before or
- * after advancing the base, char* vs int* for the slot, unsigned index,
- * the +0xB0 folded into the index expression, the compare with the
- * constant on either side, the block in its own scope, a second local
- * for the tail. The pair never swaps -- allocator, not source shape.
- * (`b = D_0013D390;` after the block IS load-bearing: retail
- * re-materialises %lo from the %hi it kept in $a2, which is what
- * clobbering the base inside the block produces.)
- */
+extern char D_0013D390[];
+extern int D_0015EFB0 MACRO_ADDR;
+
+/* Dispatch-table handler for menu.cpp's D_0013D390 state record. First,
+   guarded by unkDC>=3 || unkE4>=0, clears a per-index slot in the
+   0xB0-byte array (D_0013D390+0xB0 + idx*0xC0) from 1 to 2 -- named as
+   its own `base` local, computed before `idx`, matching the sibling
+   func_00209238's identical slot-lookup shape (that ordering is what
+   makes the allocator put the base pointer in $a0 and the literal 1 in
+   $a1, as retail does; keeping `b` mutated in place puts them the other
+   way round). Then it re-reads the record fresh and sets D_0015EFB0
+   (the next-state word) from unk1C/unkEC/unk14/unkC+unkAC. */
 void func_00209520(void) {
     char *b = D_0013D390;
     int v;
     if (*(int *)(b + 0xDC) >= 3 || *(int *)(b + 0xE4) >= 0) {
-        int idx;
-        int *slot;
-        idx = *(int *)(b + 0xCC);
-        b += 0xB0;
-        slot = (int *)(b + idx * 0xC0);
+        char *base = b + 0xB0;
+        int idx = *(int *)(b + 0xCC);
+        int *slot = (int *)(base + idx * 0xC0);
         if (*slot == 1) {
             *slot = 2;
         }

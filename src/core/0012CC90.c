@@ -164,7 +164,7 @@ extern char D_00153C48[];
 extern char D_00153C78[];
 extern char D_00153C90[];
 extern char D_00153CC8[];
-extern int func_0012CE48(void *);
+extern void func_0012CE48(unsigned int *);
 
 /*
  * Write a CHCR value to IPU DMA channel 3 (fromIPU, 0x1000B000) or 4
@@ -217,7 +217,50 @@ void func_0012CD60(unsigned int *env) {
     env[8] = *(volatile unsigned int *)0x10002010;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012CE48);
+/* sceIpuRestartDMA: given the env sceIpuStopDMA (func_0012CD60) filled,
+ * work out how many quadwords the IPU's bitstream pointer (env[7], IPU_BP)
+ * had already consumed (its FIFO+chain counts, bits 8-10/16-17) and fold
+ * that back into the saved D4 MADR/QWC; restart D3 (fromIPU) first if it
+ * still had a QWC left, reissue the BP position to the IPU command
+ * register, wait for the IPU to go idle, then restart D4 (toIPU) with the
+ * corrected MADR/QWC if there is anything left to transfer.
+ *
+ * The masked BP value needs its own local right after the load: masking
+ * `bp` again at the store keeps it alive across func_0012CC90 and moves
+ * qwc4 and madr4 into the wrong saved registers. */
+
+void func_0012CE48(unsigned int *env) {
+    unsigned int bp = env[7];
+    unsigned int bpLow = bp & 0x7F;
+    unsigned int madrSaved = env[0];
+    unsigned int cnt = ((bp >> 16) & 3) + ((bp >> 8) & 0xF);
+    unsigned int d3madr = env[4];
+    unsigned int qwc4 = env[2] + cnt;
+    unsigned int madr4 = madrSaved - (cnt << 4);
+
+    if (d3madr != 0 && env[5] != 0) {
+        *(volatile unsigned int *)0x1000B010 = d3madr;
+        *(volatile unsigned int *)0x1000B020 = env[5];
+        func_0012CC90(env[6] | 0x100);
+    }
+
+    while (*(volatile int *)0x10002010 < 0) {
+    }
+    *(volatile unsigned int *)0x10002000 = bpLow;
+    while (*(volatile int *)0x10002010 < 0) {
+    }
+
+    if (madr4 == 0) {
+        return;
+    }
+    if (qwc4 == 0) {
+        return;
+    }
+    *(volatile unsigned int *)0x1000B410 = madr4;
+    *(volatile unsigned int *)0x1000B430 = env[1];
+    *(volatile unsigned int *)0x1000B420 = qwc4;
+    func_0012CCF8(env[3] | 0x100);
+}
 
 int func_0012CF98(int arg0) {
     int ret = 0;

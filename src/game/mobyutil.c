@@ -264,7 +264,54 @@ void func_00213D28(MobyAnim *m, int seq, int frame) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00213DE0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00213F28);
+extern float func_001FA888(int arg0);
+extern void func_0020FC38(void *, int);
+extern char D_001B2F80[];
+
+/* Re-registers this MobyAnim in the shared slot table (D_001B2F40, via
+   func_0020DA68) when it hasn't settled yet (unk54 > 0.025, or unk60/unk64
+   nonzero) or the caller forces it (arg4 & 4): builds a flags byte from
+   arg4 bits 0/1 (0x100/0x200), hands it to func_0020FC38, snapshots this
+   moby's unkF0 vector into the matching D_001B2F80 slot, remembers the
+   old seq in unkA5 (unless it was already 0xFF), then marks seq 0xFF and
+   frame = slot. Either way it then sets nextFrame/prevSeq from arg2/arg1,
+   refreshes frame pointers (func_0020D6D0), arms the timer (unk58 = 1),
+   resets unk54, clears unk70 bit 1, stores 1/func_001FA888(arg3) into
+   unk5C, and copies a not-yet-named byte (offset 0x11) out of
+   pClass->seqs[arg1] into unk7C. */
+void func_00213F28(MobyAnim *arg0, int arg1, int arg2, int arg3, int arg4) {
+    int slot;
+    int flags;
+    unsigned char oldSeq;
+    float scale;
+
+    if (*(float *)((char *)arg0 + 0x54) > 0.025f ||
+        *(int *)((char *)arg0 + 0x60) != 0 ||
+        *(int *)((char *)arg0 + 0x64) != 0 || (arg4 & 4)) {
+        slot = func_0020DA68((int)arg0);
+        if (slot >= 0) {
+            flags = (arg4 & 1) ? (slot | 0x100) : slot;
+            func_0020FC38(arg0, (arg4 & 2) ? (flags | 0x200) : flags);
+            qcopy(D_001B2F80 + slot * 0x10, (char *)arg0 + 0xF0);
+            oldSeq = arg0->seq;
+            if (oldSeq != 0xFF) {
+                *(unsigned char *)((char *)arg0 + 0xA5) = oldSeq;
+            }
+            arg0->seq = 0xFF;
+            arg0->frame = slot;
+        }
+    }
+    arg0->nextFrame = arg2;
+    arg0->prevSeq = arg1;
+    func_0020D6D0_a(arg0);
+    *(float *)((char *)arg0 + 0x58) = 1.0f;
+    scale = 1.0f / func_001FA888(arg3);
+    *(float *)((char *)arg0 + 0x54) = 0.0f;
+    arg0->unk70 = (unsigned char)(arg0->unk70 & 0xFD);
+    arg0->unk5C = scale;
+    *(unsigned char *)((char *)arg0 + 0x7C) =
+        *((unsigned char *)arg0->pClass->seqs[arg1] + 0x11);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00214080);
 
@@ -316,7 +363,27 @@ float func_00214220(float a, float b, float t) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002142B8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00214358);
+extern int func_001EFE10_a(void *, void *, int, int, int) __asm__("func_001EFE10");
+extern char D_00194220[];
+
+/* Builds two 16-byte copies of *arg0: one with byte offset 8 (a float)
+   forced to 0.01f, the other with its offset-8 float bumped by arg2.
+   Passes both to func_001EFE10 (a collision/line test elsewhere in the
+   file's neighbours); returns D_00194220's float at +8 on success, else
+   0.0f. */
+f32 func_00214358(void *arg0, s32 arg1, f32 arg2) {
+    char sp0[16];
+    char sp1[16];
+
+    qcopy(sp0, arg0);
+    *(f32 *)(sp0 + 8) = 0.01f;
+    qcopy(sp1, arg0);
+    *(f32 *)(sp1 + 8) = *(f32 *)(sp1 + 8) + arg2;
+    if (func_001EFE10_a(sp1, sp0, arg1 | 2, 0, 0) != 0) {
+        return *(f32 *)(D_00194220 + 8);
+    }
+    return 0.0f;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002143D0);
 
@@ -650,7 +717,24 @@ void func_00215650(void *arg0, void *arg1, void *arg2) {
     func_001FA588(arg0, buf2, buf0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002156E0);
+extern void func_00215380(void *arg0, void *axis, float angle);
+extern void func_00215650(void *arg0, void *arg1, void *arg2);
+
+/* dst = vec rotated `angle` around axis. A tiny angle skips the rotation
+   (dst = vec); otherwise the axis is normalised to unit length and turned
+   into an axis-angle quaternion in a scratch buffer, which then rotates
+   vec into dst. */
+void func_002156E0(void *dst, void *vec, void *axis, float angle) {
+    float q[4];
+
+    if (func_001F9B88(angle) < 0.00001f) {
+        qcopy(dst, vec);
+        return;
+    }
+    func_001F9DC0(q, axis, 1.0f);
+    func_00215380(q, q, angle);
+    func_00215650(dst, vec, q);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215788);
 

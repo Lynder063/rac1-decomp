@@ -122,6 +122,29 @@ def instructions(body: str) -> list[str]:
     return out
 
 
+# A quadword move of something other than a saved register ($sp-relative
+# saves and restores are ordinary). Only retail's inline-asm vector copy,
+# `lq $2,0(a)` then `sq $2,0(b)`, is expressible: qcopy() in
+# include/common.h. A zero store (`sq $0`) is not: `*(long long *)p = 0`
+# materialises the zero with `por` first (src/game/fastfunc.c).
+BARE_QUAD = re.compile(r"\b(sq|lq)\s+\$(?!29\b|1[6-9]\b|2[0-3]\b|3[01]\b)")
+QCOPY_LQ = re.compile(r"^lq\s+\$2,\s*0x0\(\$\d+\)$")
+QCOPY_SQ = re.compile(r"^sq\s+\$2,\s*0x0\(\$\d+\)$")
+
+
+def only_qcopies(ins: list[str]) -> bool:
+    """Every bare quadword move is one of qcopy()'s pairs."""
+    for k, s in enumerate(ins):
+        if not BARE_QUAD.search(s):
+            continue
+        if QCOPY_LQ.match(s) and k + 1 < len(ins) and QCOPY_SQ.match(ins[k + 1]):
+            continue
+        if QCOPY_SQ.match(s) and k and QCOPY_LQ.match(ins[k - 1]):
+            continue
+        return False
+    return True
+
+
 def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     """Returns (verdict, category, detail)."""
     vram = int(name.split("_")[1], 16)
@@ -197,7 +220,7 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
         return "blocked", "padding-prefixed", "leading 0xCDCDCDCD not from C"
     if VU0_LO <= vram <= VU0_HI:
         return "blocked", "VU0 cluster", "0x1F9B20-0x1FB598"
-    if re.search(r"\b(v[a-z]+\.[xyzw]+|vcallms|qmfc2|qmtc2|pxor|pcpyud|pextlw|pnor)\b", text):
+    if re.search(r"\b(v[a-z]+\.[xyzw]+|vcallms|qmfc2|qmtc2|cfc2|ctc2|pxor|pcpyud|pextlw|pnor)\b", text):
         return "blocked", "SIMD/COP2", ""
     if re.search(r"\b(adda|madd|msub)\.s\b", text):
         return "blocked", "FPU accumulate", "adda.s/madd.s not plain-C"
@@ -224,8 +247,11 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
             run = 1
     if len(ins) > 4 and best >= 4:
         return "blocked", "varargs definition", "needs stdarg.h"
-    if re.search(r"\b(sq|lq)\s+\$(?!29\b|1[6-9]\b|2[0-3]\b|31\b)", text):
-        return "blocked", "bare quadword", ""
+    qcopy = False
+    if BARE_QUAD.search(text):
+        if not only_qcopies(ins):
+            return "blocked", "bare quadword", ""
+        qcopy = True
 
     # --- the $at macro store form (retail builds an address in $1 and
     # stores through it) was blocked here for many rounds. UNBLOCKED:
@@ -350,6 +376,8 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
             detail += " ($gp in slot)"
         else:
             detail = (detail + "; " if detail else "") + "MACRO_ADDR ($gp in slot)"
+    if qcopy:
+        detail = (detail + "; " if detail else "") + "qcopy() for 16-byte copies"
     return "candidate", "candidate", detail
 
 

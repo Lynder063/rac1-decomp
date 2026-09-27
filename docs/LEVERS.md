@@ -78,26 +78,41 @@ in `config/core_rodata.txt`).
    with no branches, order moves registers: try the permutations.
 4. **Copies that survive.** Read a value twice (test, then assign);
    `n = x++;`; re-read a global at each use; a `static inline` accessor
-   per read; assign a pointer in the loop condition.
+   per read; assign a pointer in the loop condition. The other way round:
+   a value derived from a load (`bp & 0x7F`) gets its own local right
+   after the load, so the raw value dies there instead of taking a saved
+   register across a call.
 5. **Return shape.** One return with the value set per arm, or
    `if (x) return 1;` per arm with one shared `return 0;`. Failure path last.
 6. **Memory shape.** Structs, not byte offsets (a struct member can't alias
    a scalar global, so it can move above one); one `char *` local per block
    reading a global; scaled indices in their own locals (base-first `addu`).
+   An array element (`bins[2]`), not a cast pointer (`*(T **)(base + 8)`),
+   lets the offset fold into the load. Use the SDK's real types: an
+   all-`u_char` struct copies with unaligned `ldl`/`ldr`. Pointer
+   arithmetic instead of integer arithmetic (or back) changes what the
+   compiler shares between expressions: it stopped three multiplies
+   from merging in `_initRefImages`.
 7. **`volatile`** keeps an access out of delay slots and keeps store order;
    make only the fields retail re-reads volatile.
 8. **Siblings.** Find a matched function of the same shape in the file and
-   copy it first.
-9. **Last resorts.** An empty asm, `__asm__("" : "+r"(x));`, hides a value
-   from the optimizer: it stops a loop being reversed and keeps a
-   constant address in a register. `do { ... } while (0)` around one
-   store is a scheduling barrier.
+   copy it first, and look in `include/` for the library's own macros and
+   types (`include/ezmpeg.h`, the SDK headers) before writing an
+   expression by hand.
+9. **Not allowed:** register pins (`register int x __asm__("$14")`), inline
+   assembly inside a function, and artificial barriers (`__asm__("" : "+r"(x))`,
+   or `do { ... } while (0)` used to block scheduling). Upstream bans them
+   ([LLM_DECOMP_INSTRUCTIONS.md](LLM_DECOMP_INSTRUCTIONS.md)), and
+   `tools/integrate.py` refuses a candidate that uses one. `__asm__` is only
+   for file-scope aliases (`extern T D_x_alias __asm__("D_x");`) and padding
+   directives. The one exception is retail's own vector copy: `lq $2,0(a)`
+   then `sq $2,0(b)` is `qcopy(dst, src)` in `include/common.h`. A 128-bit
+   zero store (`sq $zero`) has no known C form: `*(long long *)p = 0`
+   adds a `por` first.
 
 ## What to hand back
 
-Per function, `build-sn/try/func_X/RESULT.md`: line 1 the verdict, line 2
-the candidate file, then a few lines on what it does and which lever
-mattered. Put a short comment above the definition in the candidate:
-what the function does and, if needed, why the C is shaped that way. One
-line per finished function in your batch's `MANIFEST`:
-`func_X build-sn/try/func_X/cN.c`.
+As [WORKER.md](WORKER.md) says: `RESULT.md` holds exactly two lines, the
+verdict and the candidate file; what you tried and what mattered goes in
+`NOTES.md`. Put a short comment above the definition in the candidate:
+what the function does and, if needed, why the C is shaped that way.

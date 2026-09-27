@@ -10,10 +10,11 @@ is already C (a near-miss being fixed).
 
 --comment puts a block comment right above the definition, replacing a
 one-line comment the candidate has there. --drop-note removes the block
-comment that ends right above the stub or definition: the old revert or
-near-miss note that the match makes obsolete. Without --comment, a
-stub's trailing name comment (`INCLUDE_ASM(...); /* Name */`) is kept,
-unless the candidate has a comment of its own above the definition.
+comment that ends right above the stub or definition, blank lines aside:
+the old revert or near-miss note that the match makes obsolete. Without
+--comment, a stub's trailing name comment (`INCLUDE_ASM(...); /* Name */`)
+is kept, unless the candidate has a comment of its own above the
+definition. Extern and #include lines the file already has are left out.
 
 The full build decides, as always: run tools/build_sn.sh afterwards.
 """
@@ -43,6 +44,14 @@ def main() -> None:
     name_comment = m.group(1) if m else None
 
     cand = Path(a.candidate).read_text().rstrip("\n").splitlines()
+    # The file already declares most of what a candidate carries: keep only
+    # the extern lines not declared above it, and one blank line where others
+    # went. A declaration further down doesn't count: C needs it first.
+    existing = {l.strip() for l in lines[:first]}
+    cand = [l for l in cand if not (l.startswith(("extern ", "#include")) and l.strip() in existing)]
+    cand = [l for i, l in enumerate(cand) if l.strip() or (i and cand[i - 1].strip())]
+    while cand and not cand[0].strip():
+        cand.pop(0)
     # The definition's first line: its signature may wrap onto more lines.
     d = next((i for i, l in enumerate(cand)
               if re.match(rf"^(?!extern\b)[A-Za-z_][\w \t\*]*\b{a.name}\s*\(", l)
@@ -62,10 +71,16 @@ def main() -> None:
         cand.insert(d, name_comment)
 
     start = first
-    if a.drop_note and lines[first - 1].rstrip().endswith("*/"):
-        start = first - 1
-        while not lines[start].lstrip().startswith("/*"):
-            start -= 1
+    note = first - 1
+    while note > 0 and not lines[note].strip():  # A note may sit a blank line up.
+        note -= 1
+    if a.drop_note and lines[note].rstrip().endswith("*/"):
+        opener = note
+        while "/*" not in lines[opener]:
+            opener -= 1
+        # Only a comment standing alone is a note, never one trailing code.
+        if lines[opener].lstrip().startswith("/*"):
+            start = opener
     lines[start:last + 1] = cand
     src.write_text("\n".join(lines) + "\n")
     print(f"{a.name}: {src}:{start + 1} ({'stub' if is_stub else 'definition'} replaced, {len(cand)} lines)")

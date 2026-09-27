@@ -966,7 +966,48 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F62C0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F62C8); /* DrawUIFrame */
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F6410);
+/* Emits a 9-point cross/star pattern of func_001F5650 draws around
+   (a0, a1, a2, a3), offset by +-1/3/5 along each axis, all sharing the
+   colour/flags word a4. The first call passes a4 with only its top byte
+   kept and the low nibble forced to 4; the rest pass a4 unchanged. */
+void func_001F6410(int a0, int a1, int a2, int a3, int a4) {
+    int color;
+    int t0, t1, t2;
+    int t_a0m5, t4, t5;
+    int t_a0p3, t6, t_a2m3;
+    int t_a1p3, t3, t_a3p1;
+
+    color = (a4 & (int)0xFF000000) | 4;
+    func_001F5650(a0, a1, a2, a3, color);
+
+    t0 = a0 + 1;
+    t1 = a2 + 3;
+    t2 = a3 + 5;
+    func_001F5650(a0 - 1, t0, t1, t2, a4);
+
+    t_a0m5 = a0 - 5;
+    t4 = a2 - 1;
+    t5 = a3 - 3;
+    func_001F5650(a0 - 3, t_a0m5, t4, t5, a4);
+
+    t3 = a1 - 3;
+    func_001F5650(t_a0m5, t3, t4, a2 + 1, a4);
+
+    t_a0p3 = a0 + 3;
+    t6 = a1 + 1;
+    t_a2m3 = a2 - 3;
+    func_001F5650(t_a0p3, t6, t_a2m3, a2 - 5, a4);
+
+    func_001F5650(a1 - 1, t6, t_a2m3, t5, a4);
+
+    t_a1p3 = a1 + 3;
+    t_a3p1 = a3 + 1;
+    func_001F5650(t_a1p3, a1 + 5, t1, t_a3p1, a4);
+
+    func_001F5650(t_a0p3, t_a1p3, a3 - 1, t_a3p1, a4);
+
+    func_001F5650(t0, t3, a3 + 3, t2, a4);
+}
 
 /* gp-relative: declared as a 2-byte type purely so -G2 places it in the
    small-data area (placement is decided by DECLARED size), then accessed

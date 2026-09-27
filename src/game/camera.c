@@ -395,71 +395,62 @@ void func_001EC8D8(float *out, void *p0, void *p1, void *dir0, void *dir1,
     out[2] = func_001F9CB8(diff);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001ECAB8);
+extern void func_001EC8D8(float *out, void *p0, void *p1, void *dir0, void *dir1,
+                           void *axis);
+extern char D_001872B0[];
 
-/*
- * Reverted: size mismatch (ours=96, retail=116 -- 20 bytes short).
- *
- *   extern char D_001872B0[];
- *   extern void func_001F9BD8(void *, void *, void *);
- *   extern char D_0013F590[];
- *
- *   void func_001ECB98(void) {
- *       char *base = D_001872B0;
- *       if (*(unsigned char *)(base + 2) == 0) {
- *           *(unsigned long long *)(base + 0xC0) =
- *               *(unsigned long long *)(base + 0x50);
- *           if (*(unsigned char *)(base + 3) == 2) {
- *               func_001F9BD8(base + 0x60, D_0013F590, base + 0x60);
- *           }
- *           *(unsigned long long *)(base + 0xD0) =
- *               *(unsigned long long *)(base + 0x60);
- *       }
- *   }
- *
- * Two 128-bit (lq/sq) field copies bracketing an optional
- * func_001F9BD8 vector-add call; `unsigned long long` is correct here
- * for once, same exception as func_001ECC10 just above. Retail keeps
- * the first copy as a fully separate, unconditional block before the
- * flag test; this compiler folds its store into the following
- * branch's delay slot instead (still unconditional either way, since
- * delay slots always execute -- not a semantic difference, but it
- * costs several instructions retail didn't need to duplicate/keep
- * apart). Tried forcing the copy through explicit `dst1`/`src1`
- * pointer locals -- no change.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_001ECB98);
+/* Builds three unit vectors from D_0013F450's +0x2080 pointer table
+   (+0xC0/+0xD0/+0xE0 offsets, re-read at each call as retail does),
+   stashes two of them into D_001872B0's record (+0x90, +0xA0), calls
+   func_001EC8D8 to compute the camera's yaw/pitch/dist into +0x70,
+   then copies +0xD0 back over +0xB0 (retail's qcopy, see common.h). */
+void func_001ECAB8(void) {
+    char *g = D_0013F450;
+    char *r = D_001872B0;
+    char local0[16];
+    char local1[16];
+    char local2[16];
 
-/* Two conditional 16-byte block copies via bare `lq`/`sq` -- no plain-C
-   representation available (same "not attempted, no plain-C
-   representation" category as func_001F9BC0 in core_text). */
-/*
- * Reverted: size mismatch (ours=44, retail=56 -- 12 bytes short).
- *
- *   extern char D_001872B0[];
- *
- *   void func_001ECC10(void) {
- *       char *base = D_001872B0;
- *       if (*(unsigned char *)(base + 2) != 0) {
- *           *(unsigned long long *)(base + 0x50) =
- *               *(unsigned long long *)(base + 0xC0);
- *           *(unsigned long long *)(base + 0x60) =
- *               *(unsigned long long *)(base + 0xD0);
- *       }
- *   }
- *
- * Two 8-byte (lq/sq quadword) field copies gated by a flag byte.
- * `unsigned long long` for the 128-bit lq/sq is correct here (the
- * usual [[rac1-64bit-field-type]] trap runs the other way -- this is
- * the one place `long long` is what retail actually uses). Retail
- * fully materializes each of the four addresses (base+0x50/0x60/0xC0/
- * 0xD0) before the lq/sq with a zero immediate offset; this compiler
- * always folds the offset directly into the lq/sq instruction
- * instead, needing 3 fewer instructions per pair. Tried both the
- * folded-offset expression form and four explicit pointer locals
- * (`char *dst1 = base+0x50; ...`) -- identical output either way.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_001ECC10);
+    func_001F9DC0(local0, *(char **)(g + 0x2080) + 0xC0, 1.0f);
+    func_001F9DC0(local1, *(char **)(g + 0x2080) + 0xD0, 1.0f);
+    func_001F9DC0(local2, *(char **)(g + 0x2080) + 0xE0, 1.0f);
+
+    qcopy(r + 0x90, local0);
+    qcopy(r + 0xA0, local2);
+
+    func_001EC8D8((float *)(r + 0x70), r + 0xC0, g + 0x80, local0, local1, local2);
+
+    qcopy(r + 0xB0, r + 0xD0);
+}
+
+extern void func_001F9BD8(void *, void *, void *);
+extern char D_0013F590[];
+
+/* When the flag at +2 is clear, copies the 16-byte vector at +0x50 to
+   +0xC0 with retail's qcopy, optionally runs func_001F9BD8 on +0x60,
+   then copies +0x60 to +0xD0. Sibling of func_001ECC10 just above it. */
+void func_001ECB98(void) {
+    char *base = D_001872B0;
+    if (*(unsigned char *)(base + 2) == 0) {
+        qcopy(base + 0xC0, base + 0x50);
+        if (*(unsigned char *)(base + 3) == 2) {
+            func_001F9BD8(base + 0xC0, D_0013F590, base + 0xC0);
+        }
+        qcopy(base + 0xD0, base + 0x60);
+    }
+}
+
+extern char D_001872B0[];
+
+/* When the flag at +2 is set, copies the 16-byte vectors at +0xC0 and
+   +0xD0 back to +0x50 and +0x60 with retail's qcopy (see common.h). */
+void func_001ECC10(void) {
+    char *base = D_001872B0;
+    if (*(unsigned char *)(base + 2) != 0) {
+        qcopy(base + 0x50, base + 0xC0);
+        qcopy(base + 0x60, base + 0xD0);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001ECC48);
 
@@ -467,7 +458,38 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001ECEA0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001ED080);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001ED658);
+extern int D_0018C42C;
+extern char D_00187390[];
+extern int func_001ECEA0(void *, void *);
+extern int func_001ED080(void *, void *);
+
+/* Picks the update path by the flag at D_001872B0+2 (func_001ECEA0 when
+   clear, func_001ED080 when set), each passed arg0 and a slot inside
+   D_001872B0. On success, unless D_0018C42C is set, copies four 16-byte
+   vectors from arg0 into D_00187390's block (retail's qcopy); the last
+   destination is -0x210 from D_00187390, a different member reached by
+   pointer arithmetic on the same char array. Either way it clears
+   D_001872B0's leading halfword and its flag byte. */
+void func_001ED658(char *arg0) {
+    char *base = D_001872B0;
+    int result;
+
+    if (*(unsigned char *)(base + 2) == 0) {
+        result = func_001ECEA0(arg0, base + 0x10);
+    } else {
+        result = func_001ED080(arg0, base + 0x70);
+    }
+    if (result != 0) {
+        if (D_0018C42C == 0) {
+            qcopy(D_00187390, arg0);
+            qcopy(D_00187390 + 0x10, arg0 + 0x10);
+            qcopy(D_00187390 + 0x20, arg0 + 0x20);
+            qcopy(D_00187390 - 0x210, arg0 + 0x30);
+        }
+        *(short *)base = 0;
+        base[2] = 0;
+    }
+}
 
 extern void func_001F9908(int *arg0);
 extern float func_001FA888(int arg0);

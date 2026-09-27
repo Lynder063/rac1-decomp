@@ -99,11 +99,12 @@ def decode(text, addr):
 
 def reads_fpr(mnemonic: str, operands: str, reg: str) -> bool:
     """Does this instruction read FP register REG? Normally the first
-    operand is the destination; compares, stores, moves out of the FPU and
-    the accumulator ops (adda.s ...) read all of theirs."""
+    operand is the destination; compares, stores (swc1, or s.s as the
+    compiler writes them), moves out of the FPU and the accumulator ops
+    (adda.s ...) read all of theirs."""
     parts = [o.strip() for o in operands.split(",")]
     used = re.compile(re.escape(reg) + r"(?![0-9])")
-    if (mnemonic.startswith("c.") or mnemonic in ("swc1", "mfc1")
+    if (mnemonic.startswith("c.") or mnemonic in ("swc1", "s.s", "mfc1")
             or re.match(r"(adda|suba|mula|madda|msuba)\.s$", mnemonic)):
         return any(used.search(p) for p in parts)
     return any(used.search(p) for p in parts[1:])

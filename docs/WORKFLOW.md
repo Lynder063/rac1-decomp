@@ -170,3 +170,26 @@ If a new library module is added, update `tools/libgcc_units.py`,
 | objdiff units = real TUs | **not yet**: units are our files, not retail's TUs. Refine as splits become known (the `.cpp` names above are the first evidence) |
 | RC1's NTSC flags `-G8 -O2 -ffast-math -fno-exceptions` (GCC 2.95.2) | **`-ffast-math` measured and rejected**: a whole build with it gives 363 exact vs 364. It breaks `func_0022DB48` and improves nothing. `-G8` was already ruled out (float constants would pool into `.lit4`, which retail never does). `-fno-exceptions` only matters for C++. RC1 decompiles almost nothing, so its flags were never verified against matches |
 | decomp-permuter / decomp.me | we have `tools/permute.py`. decomp.me has no SN ProDG compiler preset for this game yet, so it cannot be used for collaboration on it as-is |
+
+## Agent waves
+
+When agents do the matching, one orchestrator plans waves of workers
+and reviews what comes back. The workers follow [WORKER.md](WORKER.md).
+
+```
+python3 tools/triage.py                      # what is left, by route
+python3 tools/wave.py plan w2 --near         # or --fresh, or name functions
+python3 tools/wave.py status w2              # verdicts as workers finish
+python3 tools/wave.py integrate w2           # apply the EXACT ones, then build
+```
+
+- `plan` writes each function's `CONTEXT.md` (`tools/dossier.py`): the
+  declarations of everything it calls and uses, its callers' prototypes,
+  similar matched functions and earlier attempts. Workers start from that
+  instead of searching the tree.
+- `plan` also writes a `BUDGET` of `try_func` runs, which `try_func`
+  enforces.
+- Roles:
+  - `match`: the matching itself.
+  - `compile`: turns the m2c sketch into a candidate that compiles, for a
+    cheaper model to do before matching starts.

@@ -280,36 +280,31 @@ int func_00205790(void) {
 
 extern int D_001A01F0[];
 
-/*
- * Same three parallel arrays func_002054E0 walks: 0x278/4 = 0x9E,
- * 0x28C/4 = 0xA3 and 0x2A4/4 = 0xA9 into D_001A01F0. Moves entry `b`
- * onto entry `a` and frees `b`.
- *
- * Byte mismatch, correct size (0x9C), 22 of 39 words: the instruction
- * sequence is right and the whole residual is that retail puts b*4 in
- * $s1 and a*4 in $s2 where we do the reverse (allocator destination
- * choice -- see docs).
- *
- * The `base` local is load-bearing and is a NEW data point for the
- * two-sided base-pointer lever. Writing the three pointers as
- * `&D_001A01F0[0x9E]` etc. folds the first offset into the symbol's
- * %lo, anchoring everything on D_001A01F0+0x278 and costing an
- * instruction (152 vs 156 bytes). Naming the unoffset base first keeps
- * the raw symbol address live in $s0 and derives all three with
- * separate addius, which is retail's shape. Writing the same accesses
- * as D_001A01F0[0x9E + a] is worse still (184 bytes): it adds the
- * constant to the index before the shift instead of reusing one a*4.
- */
+extern void func_001F9A98(void *, void *, int);
+extern int D_001A01F0[];
+
+/* Same three parallel arrays func_002054E0 walks: 0x278/4 = 0x9E,
+   0x28C/4 = 0xA3 and 0x2A4/4 = 0xA9 into D_001A01F0. Moves entry `b`
+   onto entry `a` and frees `b`.
+
+   Where the pointers are derived is load-bearing. Naming the unoffset
+   `base` keeps the symbol's address live and derives each array with
+   its own addiu (`&D_001A01F0[0x9E]` folds the offset into %lo and
+   loses an instruction). `flags` is derived only after the call, as in
+   retail: deriving it up front with the others swaps a*4 and b*4
+   between $s1 and $s2. */
 void func_00205830(int a, int b) {
     int *base = D_001A01F0;
     int *dst = base + 0x9E;
-    int *slot = base + 0xA3;
     int *size = base + 0xA9;
+    int *flags;
 
     func_001F9A98((void *)dst[a], (void *)dst[b], size[b] << 4);
-    slot[a] = slot[b];
+
+    flags = base + 0xA3;
+    flags[a] = flags[b];
     size[a] = size[b];
-    slot[b] = -1;
+    flags[b] = -1;
 }
 
 extern int D_001A01F0[];

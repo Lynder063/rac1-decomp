@@ -110,7 +110,77 @@ extern void func_00123650(void *);
 extern char D_001534E0[];
 extern int D_00132E70[];
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001236F0);
+typedef struct {
+    char pad[0x24];
+    void *serve;
+} SifRpcClientData;
+
+extern int D_00132EAC;
+extern int func_00123F30(int, int *, int *);
+extern int func_00118CB0(int);
+extern int func_0011AE20(int);
+extern char D_00159B00[];
+extern int D_00159B80;
+extern char D_0015B0C0[];
+extern int func_0011B2F8(void *, int, int);
+extern char D_00153550[];
+extern int func_0011B4C8();
+extern char D_00153568[];
+extern char D_00153590[];
+
+/* sceMcInit (libmc): one-shot init. Creates the module semaphore
+   D_00132EAC if not already valid, resets any pending command
+   (func_00123F30, sceMcSync), takes the semaphore, brings up the SIF RPC
+   layer (sceSifInitRpc) and loops binding the IOP memory-card RPC server
+   (0x80000400) until D_00159B00's SifRpcClientData.serve is set,
+   busy-waiting between binds; a bind failure prints and hangs forever.
+   Once bound, issues RPC 0xFE (a handshake/version query) and validates
+   the two version words in the reply, printing and clearing serve on any
+   failure. Each ->serve access is a fresh cast of D_00159B00, matching
+   the local SifRpcClientData idiom already used in
+   src/core/001208E8.c, rather than a cached pointer local. */
+int func_001236F0(void) {
+    int buf[8];
+    int *rbuf;
+    int i;
+    int r;
+
+    if (D_00132EAC < 0) {
+        buf[5] = 0;
+        buf[2] = 1;
+        buf[1] = 1;
+        D_00132EAC = func_00118C70(buf);
+    }
+    func_00123F30(0, 0, 0);
+    func_00118CB0(D_00132EAC);
+    func_0011AE20(0);
+    for (;;) {
+        if (func_0011B2F8(D_00159B00, 0x80000400, 0) < 0) {
+            func_0011A6C8(D_00153550);
+            for (;;) ;
+        }
+        if (((SifRpcClientData *)D_00159B00)->serve != 0) break;
+        for (i = 0x100000; i != 0; i--) ;
+    }
+    r = func_0011B4C8(D_00159B00, 0xFE, 0, &D_00159B80, 0x30, D_0015B0C0, 0xC, 0, 0);
+    func_00118C90(D_00132EAC);
+    if (r < 0) {
+        ((SifRpcClientData *)D_00159B00)->serve = 0;
+        return r - 100;
+    }
+    rbuf = (int *)D_0015B0C0;
+    if (rbuf[1] < 0x20A) {
+        func_0011A6C8(D_00153568);
+        ((SifRpcClientData *)D_00159B00)->serve = 0;
+        return -0x78;
+    }
+    if (rbuf[2] < 0x20E) {
+        func_0011A6C8(D_00153590);
+        ((SifRpcClientData *)D_00159B00)->serve = 0;
+        return -0x79;
+    }
+    return *(int *)D_0015B0C0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001238A8);
 
@@ -875,29 +945,17 @@ int func_00124EE0(int port) {
 
 extern int func_00124920(int);
 
-/*
- * Close, not exact (28/84), same size. Logic confirmed: call
- * func_00124920(arg0); if it returns >= 0, mark entry arg0 of the
- * 0x330-stride table D_0015B640 as {+4 = 1, +8 = result}; return the
- * result either way.
- *
- * Retail computes the entry address once into $5, copies it to $3, and
- * stores with displacements 8($5) and 4($3) -- a redundant register
- * copy. Writing the address once into a `char *e` local coalesces to a
- * single register and comes out 4 bytes SHORT (a size mismatch, so not
- * keepable); recomputing the address per store restores the right size
- * but makes the compiler fold the +4 into the address constant instead
- * of using a store displacement. Two pointer locals (`f = e`) coalesce
- * straight back to one register. So the size and the addressing form
- * are reachable separately here but not together.
- */
-
+/* scePad2LinkDriver(port): opens the link driver for `port` and, on
+   success, records the handle in its table entry. The failure path needs
+   its own early return: with one shared `return t` the compiler moves the
+   result copy to the end of the function. */
 int func_00125020(int arg0) {
     int t = func_00124920(arg0);
-    if (t >= 0) {
-        D_0015B640[arg0].unk_04 = 1;
-        D_0015B640[arg0].unk_08 = t;
+    if (t < 0) {
+        return t;
     }
+    D_0015B640[arg0].unk_08 = t;
+    D_0015B640[arg0].unk_04 = 1;
     return t;
 }
 
