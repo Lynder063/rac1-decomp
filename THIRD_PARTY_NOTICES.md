@@ -14,6 +14,7 @@ The following functions adapt source from
 - `src/core/0011D0D0.c`: `func_0011D248` (`sceSifRebootIop`)
 - `src/game/menu.c`: `func_00208338` (read sector, track size)
 - `src/game/loaders.c`: `func_00203038` (unpack point records)
+- `src/core/00112380.c`: `func_001123A8` (`_calloc_r`)
 
 MIT License
 

@@ -16,24 +16,52 @@ int func_00112380(int arg0) {
     return (int)func_00116F68(arg0, 0, 10);
 }
 
-/*
- * newlib's _calloc_r (mallocr.c): malloc n * size, then clear it with
- * Doug Lea's MALLOC_ZERO macro (unrolled for up to 9 words, memset past
- * that). The decode is certain, and every instruction matches. Written
- * as mallocr.c has it, it comes out 4 bytes short (184 vs 188) under
- * both 2.95.3 and 2.9-ee:
- *
- *   if ((mem = func_00114920(ptr, n * size)) == 0) return 0;
- *   else { csz = chunksize(mem2chunk(mem)); MALLOC_ZERO(mem, csz - 4);
- *          return mem; }
- *
- * Retail keeps the `return 0` as a fall-through block (`bnel` to the
- * body, then `b end` with $v0 = 0 in its slot). gcc threads it into the
- * epilogue instead, as a beqz with $v0 = 0 in the slot. None of these
- * changed that: a result variable, returning inside the if, the chunk
- * pointer spelled out, -O1/-O3/-Os, -fno-thread-jumps. The exact C tried
- * is in build-sn/try/func_001123A8 while that directory exists.
- */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001123A8);
+extern void *func_00114920(void *, unsigned int);          /* _malloc_r */
+extern void *func_001153FC_c(void *, int, unsigned int) __asm__("func_001153FC"); /* memset */
+
+/* newlib's MALLOC_ZERO (mallocr.c, dlmalloc 2.6.5, public domain),
+   verbatim: its do/while(0) is the library's own macro wrapper. */
+#define MALLOC_ZERO(charp, nbytes)                                            \
+do {                                                                          \
+    unsigned int mzsz = (nbytes);                                             \
+    if (mzsz <= 9 * 4) {                                                      \
+        unsigned int *mz = (unsigned int *)(charp);                           \
+        if (mzsz >= 5 * 4) {                                                  \
+            *mz++ = 0;                                                        \
+            *mz++ = 0;                                                        \
+            if (mzsz >= 7 * 4) {                                              \
+                *mz++ = 0;                                                    \
+                *mz++ = 0;                                                    \
+                if (mzsz >= 9 * 4) {                                          \
+                    *mz++ = 0;                                                \
+                    *mz++ = 0;                                                \
+                }                                                             \
+            }                                                                 \
+        }                                                                     \
+        *mz++ = 0;                                                            \
+        *mz++ = 0;                                                            \
+        *mz = 0;                                                              \
+    } else {                                                                  \
+        func_001153FC_c((charp), 0, mzsz);                                    \
+    }                                                                         \
+} while (0)
+
+/* _calloc_r (newlib): allocate, then zero the chunk's usable size.
+   Adapted from Lombyte (MIT) for PAL. */
+void *func_001123A8(void *ptr, unsigned int n, unsigned int elem_size) {
+    unsigned int sz = n * elem_size;
+    void *mem;
+
+    mem = func_00114920(ptr, sz);
+    if (mem == 0) {
+        return 0;
+    } else {
+        unsigned int *p = (unsigned int *)((char *)mem - 4);
+        unsigned int csz = *p & ~(unsigned int)3;
+
+        MALLOC_ZERO(mem, csz - 4);
+        return mem;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00112464);
