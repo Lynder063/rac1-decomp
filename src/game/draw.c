@@ -901,7 +901,73 @@ void func_001F4F90(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F5148);
+extern char D_00160920[];
+extern char D_00160930[];
+
+/* Letterbox bars: while D_0015F544 is set the bar height D_0015F548
+   grows to 24, otherwise it shrinks to 0. While it is non-zero, append
+   a GIF packet (the D_00160920/D_00160930 register descriptors, PRIM
+   0x104) drawing two full-width strips, the height in 16ths reaching in
+   from the top and bottom of the D_0013E600 viewport, the same packet
+   steps as func_001F5650. */
+void func_001F5148(void) {
+    int h;
+
+    if (D_0015F544 != 0) {
+        if (D_0015F548 < 24) {
+            D_0015F548++;
+        }
+    } else {
+        if (D_0015F548 == 0) {
+            return;
+        }
+        D_0015F548--;
+    }
+    h = D_0015F548;
+    if (h == 0) {
+        return;
+    }
+    h <<= 4;
+    D_00161000[0] = 0x10000007;
+    D_00161000[1] = 0;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000007;
+    {
+        int *base = D_00161000;
+        D_00161000 = base + 4;
+        qcopy(D_00161000, D_00160920);
+        *(short *)(base + 4) = 0x8001;
+    }
+    {
+        int *base = D_00161000;
+        long *p;
+        D_00161000 = base + 4;
+        p = (long *)D_00161000;
+        p[0] = 0x104;
+        p[1] = 0x80000000;
+    }
+    {
+        int *base = D_00161000;
+        D_00161000 = base + 4;
+        qcopy(D_00161000, D_00160930);
+        *(short *)(base + 4) = 0x8008;
+    }
+    {
+        int *base = D_00161000;
+        long *p;
+        D_00161000 = base + 4;
+        p = (long *)D_00161000;
+        p[0] = D_0013E600[4] | ((long)D_0013E600[5] << 16) | ((long)0xFFFFF3 << 32);
+        p[1] = D_0013E600[4] | ((long)(D_0013E600[5] + h) << 16) | ((long)0xFFFFF3 << 32);
+        p[2] = D_0013E600[6] | ((long)D_0013E600[5] << 16) | ((long)0xFFFFF3 << 32);
+        p[3] = D_0013E600[6] | ((long)(D_0013E600[5] + h) << 16) | ((long)0xFFFFF3 << 32);
+        p[4] = D_0013E600[6] | ((long)D_0013E600[7] << 16) | ((long)0xFFFFF3 << 32);
+        p[5] = D_0013E600[6] | ((long)(D_0013E600[7] - h) << 16) | ((long)0xFFFFF3 << 32);
+        p[6] = D_0013E600[4] | ((long)D_0013E600[7] << 16) | ((long)0xFFFFF3 << 32);
+        p[7] = D_0013E600[4] | ((long)(D_0013E600[7] - h) << 16) | ((long)0xFFFFF3 << 32);
+    }
+    D_00161000 = (int *)((char *)D_00161000 + 0x40);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F5368);
 
