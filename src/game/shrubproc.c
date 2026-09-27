@@ -267,8 +267,8 @@ extern int D_001D6860[];
 extern int D_001D74C0[];
 extern int D_001D6760[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00229F00);
+ASM_FUNC("asm/handwritten/text", func_00229F00);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022B648);
+ASM_FUNC("asm/handwritten/text", func_0022B648);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022B8F8);
+ASM_FUNC("asm/handwritten/text", func_0022B8F8);

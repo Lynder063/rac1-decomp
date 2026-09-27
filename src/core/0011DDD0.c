@@ -82,9 +82,9 @@ extern void func_0011DBF8(int, void *, int);
 extern int func_0011DC40(int);
 extern void func_00118D80(int);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DDD0);
+ASM_FUNC("asm/handwritten/core_text", func_0011DDD0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DDE0);
+ASM_FUNC("asm/handwritten/core_text", func_0011DDE0);
 
 /* kCopy: alarm.o's own copy of the word-at-a-time copy helper (nbytes
  * rounded down to words); returns 0. Same body as func_0011DA08
@@ -98,7 +98,7 @@ int func_0011DDF0(int *dst, int *src, unsigned int nbytes) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DE28);
+ASM_FUNC("asm/handwritten/core_text", func_0011DE28);
 
 extern void func_0011DDD0(int, int);
 extern void func_0011DDE0(void *, void *, int);

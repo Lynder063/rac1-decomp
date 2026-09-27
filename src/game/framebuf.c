@@ -51,7 +51,7 @@ extern void func_001F3008(void);
 extern void func_001F3140(void);
 extern int D_0018E840[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FAA28);
+ASM_FUNC("asm/handwritten/text", func_001FAA28);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FAB20);
 
@@ -272,4 +272,4 @@ void func_001FBAB8(int x0, int y0, int x1, int y1, int w, int h, unsigned int rg
     func_00234C50(0x13000000);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FBC78);
+LINKER_REMNANT("asm/remnants/text", func_001FBC78);

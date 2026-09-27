@@ -75,9 +75,9 @@ extern int func_00118EA0(void);
 extern void func_0011D4E0(void);
 extern void func_00118EB0(void);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D960);
+ASM_FUNC("asm/handwritten/core_text", func_0011D960);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D9A8);
+ASM_FUNC("asm/handwritten/core_text", func_0011D9A8);
 
 extern int func_00118C70(void *);
 extern int D_00130420;
@@ -123,9 +123,9 @@ int *func_0011DA40(int *p, int *end, int val) {
     return p;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DA80);
+ASM_FUNC("asm/handwritten/core_text", func_0011DA80);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DA90);
+LINKER_REMNANT("asm/remnants/core_text", func_0011DA90);
 
 extern void func_0011DB98(int, int);
 extern int func_0011DA80(int, int, void *);
@@ -165,7 +165,7 @@ void func_0011DA98(void) {
     D_00130408 = a;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DB98);
+ASM_FUNC("asm/handwritten/core_text", func_0011DB98);
 
 extern void func_0011D9C0(void);
 extern void func_0011DA98(void);

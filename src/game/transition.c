@@ -136,4 +136,4 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001EBB48);
 
 /* Not a standalone function: single `addiu $sp,$sp,0x30`, no `jr $31` --
    fallthrough fragment, same category as func_00113AD8 in core_text. */
-INCLUDE_ASM("asm/nonmatchings/text", func_001EC030);
+LINKER_REMNANT("asm/remnants/text", func_001EC030);

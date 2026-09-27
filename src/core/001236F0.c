@@ -182,7 +182,7 @@ int func_001236F0(void) {
     return *(int *)D_0015B0C0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001238A8);
+LINKER_REMNANT("asm/remnants/core_text", func_001238A8);
 
 extern char D_00159B00[];
 extern int D_00132EAC;
@@ -390,7 +390,7 @@ int func_00123C30(int fd, void *buf, int nbyte) {
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00123D48);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00123EC0);
+ASM_FUNC("asm/handwritten/core_text", func_00123EC0);
 
 extern int func_00118BE0(void);
 extern int func_00118C00(void);
@@ -663,7 +663,7 @@ int func_00124920(int port) {
     return buf[1];
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00124A68);
+LINKER_REMNANT("asm/remnants/core_text", func_00124A68);
 
 extern char D_001537A0[];
 

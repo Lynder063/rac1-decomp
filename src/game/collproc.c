@@ -23,11 +23,11 @@ typedef struct {
 } DispatchRec;
 extern DispatchRec D_001E8F80[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EFD70);
+ASM_FUNC("asm/handwritten/text", func_001EFD70);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EFE10);
+ASM_FUNC("asm/handwritten/text", func_001EFE10);
 
 /* Marked "Handwritten function" by spimdisasm (uses `addi`, not `addiu`)
    -- same category as the syscall wrappers in core_text, not a decompile
    target, no C source ever existed for it. */
-INCLUDE_ASM("asm/nonmatchings/text", func_001F0F00);
+ASM_FUNC("asm/handwritten/text", func_001F0F00);

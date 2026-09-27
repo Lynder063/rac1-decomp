@@ -164,7 +164,7 @@ extern signed char D_001331D8[];
 extern int func_0012D4E0(int);
 extern int func_0012D4B0(int);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D868); /* _start */
+ASM_FUNC("asm/handwritten/core_text", func_0012D868); /* _start */
 
 extern void func_0011DDA0(int);
 
@@ -174,4 +174,4 @@ void func_0012DA28(void) {
     func_0011DDA0(0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DA30);
+ASM_FUNC("asm/handwritten/core_text", func_0012DA30);

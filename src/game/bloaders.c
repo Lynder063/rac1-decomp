@@ -119,4 +119,4 @@ void func_001E96B8(void) {
     D_0015EFC8 = localbuf[0];
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001E9728);
+LINKER_REMNANT("asm/remnants/text", func_001E9728);

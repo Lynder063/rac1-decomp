@@ -405,7 +405,7 @@ int func_0012D3F0(void) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D440);
+LINKER_REMNANT("asm/remnants/core_text", func_0012D440);
 
 extern unsigned char D_001331D6[];
 extern void func_00118DC0(void *, int, int);

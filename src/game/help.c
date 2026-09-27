@@ -114,7 +114,7 @@ void func_001FE438(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FE4C0);
+LINKER_REMNANT("asm/remnants/text", func_001FE4C0);
 
 typedef struct {
     char *text;   /* 0x0 */
@@ -153,7 +153,7 @@ void *func_001FE540(int id) {
     return D_00199A68;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FE580);
+LINKER_REMNANT("asm/remnants/text", func_001FE580);
 
 extern int D_0015EF1D_i __asm__("D_0015EF1D") MACRO_ADDR;
 extern int D_0015EF1C_i __asm__("D_0015EF1C") MACRO_ADDR;
@@ -413,4 +413,4 @@ void func_001FF560(short id) {
     D_0015EF30++;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FF660);
+LINKER_REMNANT("asm/remnants/text", func_001FF660);

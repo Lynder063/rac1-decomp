@@ -38,13 +38,13 @@ extern void func_00117118(void *, void *, int, int);
 extern int func_00119008();
 extern int D_0012FCF0 NOT_SDA;
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119328);
+ASM_FUNC("asm/handwritten/core_text", func_00119328);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119390);
+ASM_FUNC("asm/handwritten/core_text", func_00119390);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001193F8);
+ASM_FUNC("asm/handwritten/core_text", func_001193F8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119460);
+ASM_FUNC("asm/handwritten/core_text", func_00119460);
 
 typedef struct {
     unsigned char type;
@@ -181,9 +181,9 @@ int func_001195A0(void) {
     return D_0012FCF8;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119678);
+ASM_FUNC("asm/handwritten/core_text", func_00119678);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119710);
+LINKER_REMNANT("asm/remnants/core_text", func_00119710);
 
 extern int D_00154A10;
 /* Deci2Call (syscall 0x7C) returns the result; the file's later
@@ -207,7 +207,7 @@ int func_00119718(unsigned short arg0, void *arg1, void *arg2) {
     return func_00118E90_ret(1, buf);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119760);
+LINKER_REMNANT("asm/remnants/core_text", func_00119760);
 
 extern void func_00118E90(int arg0, void *arg1);
 

@@ -19,7 +19,7 @@ extern void func_00113968(void);
 extern void func_00114438(void *, void *);
 extern char D_00152470[];
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00116070);
+LINKER_REMNANT("asm/remnants/core_text", func_00116070);
 
 extern int func_001170A0(void *, const char *, va_list); /* vfprintf */
 

@@ -327,9 +327,9 @@ int func_0011AC08(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5) {
     return func_0011AA90(arg0, 0x1, arg1, arg2, arg3, arg4, arg5);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AC48);
+ASM_FUNC("asm/handwritten/core_text", func_0011AC48);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AD70);
+ASM_FUNC("asm/handwritten/core_text", func_0011AD70);
 
 /*
  * NOT a match, despite being recorded as one until now. Retail is a bare
@@ -788,7 +788,7 @@ void func_0011BC70(void) {
     func_00118C90(D_0012FD9C);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011BC80);
+ASM_FUNC("asm/handwritten/core_text", func_0011BC80);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011BCB0);
 

@@ -22,7 +22,7 @@ extern void func_00116408(void *arg0);
 extern void func_00113968(void);
 extern void func_00114438(void *, void *);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001144D0);
+LINKER_REMNANT("asm/remnants/core_text", func_001144D0);
 
 extern char D_00152470[];
 
@@ -32,7 +32,7 @@ void *func_001144D8(void *arg0) {
     return D_00152470;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001144E8);
+LINKER_REMNANT("asm/remnants/core_text", func_001144E8);
 
 void *func_001144F0(void) {
     return func_001144D8(D_0012F86C);

@@ -341,7 +341,7 @@ unsigned char func_0022F128(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022F258);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022F498);
+LINKER_REMNANT("asm/remnants/text", func_0022F498);
 
 extern int D_0015F6E4 MACRO_ADDR;
 extern int D_0015F6FC_m __asm__("D_0015F6FC") MACRO_ADDR;

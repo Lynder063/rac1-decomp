@@ -321,8 +321,8 @@ extern void func_00238688(void *);
 extern char D_001E3500[];
 extern char D_001E4700[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00236F00);
+ASM_FUNC("asm/handwritten/text", func_00236F00);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002383D8);
+ASM_FUNC("asm/handwritten/text", func_002383D8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00238688);
+ASM_FUNC("asm/handwritten/text", func_00238688);

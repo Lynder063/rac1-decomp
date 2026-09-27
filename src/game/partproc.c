@@ -216,16 +216,16 @@ extern void func_00217F68(void *);
  * non-trapping `addiu`.
  * Instruction selection, not source shape, so nothing in C reaches it.
  */
-INCLUDE_ASM("asm/nonmatchings/text", func_00218928);
+ASM_FUNC("asm/handwritten/text", func_00218928);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00218930);
+ASM_FUNC("asm/handwritten/text", func_00218930);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00218A78);
+LINKER_REMNANT("asm/remnants/text", func_00218A78);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00218A80);
+ASM_FUNC("asm/handwritten/text", func_00218A80);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00218B10);
+ASM_FUNC("asm/handwritten/text", func_00218B10);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00219704);
+ASM_FUNC("asm/handwritten/text", func_00219704);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00219778);
+LINKER_REMNANT("asm/remnants/text", func_00219778);

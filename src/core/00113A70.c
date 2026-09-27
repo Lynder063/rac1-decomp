@@ -43,7 +43,7 @@ void func_00113AC8(void *arg0) {
     func_00114438(arg0, func_00113968);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00113AD8);
+LINKER_REMNANT("asm/remnants/core_text", func_00113AD8);
 
 /* newlib's __sinit (findfp.c): the reent's three built-in FILEs become
    stdin, stdout and stderr through std() (func_00113A70), then the glue

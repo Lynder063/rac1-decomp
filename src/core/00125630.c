@@ -145,39 +145,39 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00125F88);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_001263A8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001265C8);
+ASM_FUNC("asm/handwritten/core_text", func_001265C8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00126640);
+ASM_FUNC("asm/handwritten/core_text", func_00126640);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001266D8);
+ASM_FUNC("asm/handwritten/core_text", func_001266D8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00126790);
+ASM_FUNC("asm/handwritten/core_text", func_00126790);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00126860);
+ASM_FUNC("asm/handwritten/core_text", func_00126860);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00126910);
+ASM_FUNC("asm/handwritten/core_text", func_00126910);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001269C8);
+ASM_FUNC("asm/handwritten/core_text", func_001269C8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00126AC0);
+ASM_FUNC("asm/handwritten/core_text", func_00126AC0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00126BC0);
+ASM_FUNC("asm/handwritten/core_text", func_00126BC0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00126C60);
+ASM_FUNC("asm/handwritten/core_text", func_00126C60);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00126D10);
+ASM_FUNC("asm/handwritten/core_text", func_00126D10);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00126DF0);
+ASM_FUNC("asm/handwritten/core_text", func_00126DF0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00126ED8);
+ASM_FUNC("asm/handwritten/core_text", func_00126ED8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00126FB0);
+ASM_FUNC("asm/handwritten/core_text", func_00126FB0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00127080);
+ASM_FUNC("asm/handwritten/core_text", func_00127080);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001271A0);
+ASM_FUNC("asm/handwritten/core_text", func_001271A0);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001272B8);
+ASM_FUNC("asm/handwritten/core_text", func_001272B8);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00127318);
 

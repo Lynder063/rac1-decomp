@@ -387,7 +387,7 @@ int func_0023DE98(VideoDec *vd, unsigned char *mpegWork, int mpegWorkSize,
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023DF98);
+LINKER_REMNANT("asm/remnants/text", func_0023DF98);
 
 extern void func_0012B008(void);
 
@@ -479,7 +479,7 @@ int func_0023E0B0(void *arg0) {
     return func_0023D9E0((char *)arg0 + 0x48);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E0D0);
+LINKER_REMNANT("asm/remnants/text", func_0023E0D0);
 
 extern int func_0023CBE0(unsigned char *, int, unsigned char *, int,
                          unsigned char *, int, unsigned char *, int); /* cpy2area */

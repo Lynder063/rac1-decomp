@@ -71,7 +71,7 @@ extern void func_002027C0(int);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00202AA8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00202EF8);
+LINKER_REMNANT("asm/remnants/text", func_00202EF8);
 
 extern int D_001601C0 MACRO_ADDR;
 extern char D_001CE500[];
@@ -493,7 +493,7 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00204C60);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00204FC0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00205218);
+LINKER_REMNANT("asm/remnants/text", func_00205218);
 
 extern void func_00204FC0(void *);
 extern int D_0018CC20 NOT_SDA;

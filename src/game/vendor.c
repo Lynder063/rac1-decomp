@@ -541,7 +541,7 @@ void func_0023A478(void) {
 /* Retail carries 4 bytes of inter-function padding after this endlabel. */
 __asm__(".section .text\n\tnop\n");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023A5D8);
+LINKER_REMNANT("asm/remnants/text", func_0023A5D8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023A5E0);
 

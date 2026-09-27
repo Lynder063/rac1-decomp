@@ -23,4 +23,4 @@ typedef struct {
 } DispatchRec;
 extern DispatchRec D_001E8F80[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EE9F8);
+ASM_FUNC("asm/handwritten/text", func_001EE9F8);

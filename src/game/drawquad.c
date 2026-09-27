@@ -51,22 +51,22 @@ extern void func_001F3008(void);
 extern void func_001F3140(void);
 extern int D_0018E840[];
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F7C60);
+ASM_FUNC("asm/handwritten/text", func_001F7C60);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F7DD8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F7E98);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F7EF8);
+ASM_FUNC("asm/handwritten/text", func_001F7EF8);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F84AC);
+ASM_FUNC("asm/handwritten/text", func_001F84AC);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F852C);
+ASM_FUNC("asm/handwritten/text", func_001F852C);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F856C);
+ASM_FUNC("asm/handwritten/text", func_001F856C);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F8B6C);
+ASM_FUNC("asm/handwritten/text", func_001F8B6C);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F91B8);
+ASM_FUNC("asm/handwritten/text", func_001F91B8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F9478);

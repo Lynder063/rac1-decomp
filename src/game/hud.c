@@ -200,7 +200,7 @@ void func_001FF7F0(int bank, int addr) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FF950);
+LINKER_REMNANT("asm/remnants/text", func_001FF950);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001FF958); /* Hud_SendResidentBank(int, char *, bool) */
 
@@ -374,7 +374,7 @@ void func_001FFD30(void *arg0, int arg1) {
     *(int *)(self + 0x44) = *(unsigned short *)((char *)tbl[7] + r * 8 + 4);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FFD98);
+LINKER_REMNANT("asm/remnants/text", func_001FFD98);
 
 /* Stores arg1 into +0x24 of the record whose +0x64 is arg0, and into
    +0x04 when its +0x68 is 0. Indexing the extern array at each access,
@@ -497,7 +497,7 @@ void func_001FFFB8(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00200190);
+LINKER_REMNANT("asm/remnants/text", func_00200190);
 
 extern char D_0019A4E8_raw[] __asm__("D_0019A4E8");
 extern int func_001FF668(int);
@@ -633,7 +633,7 @@ void func_00200650(int tex, int x, int y, int w, int h, int alpha) {
     D_00161000 = (int *)((char *)D_00161000 + 0x70);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002008B0);
+LINKER_REMNANT("asm/remnants/text", func_002008B0);
 
 /* func_00200468 with the position and size already in 16ths of a pixel. */
 void func_002008B8(int tex, int x, int y, int w, int h, int alpha) {
