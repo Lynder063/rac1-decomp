@@ -169,7 +169,36 @@ int func_001219C8(void) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00121A80);
+extern char D_001530F0[];
+extern char D_00153110[];
+typedef struct {
+    char b[8];
+} CdClock;
+
+/* sceCdReadClock: S-command 0xF, RPC 1 with a 0x10-byte reply; the
+   8-byte clock after the status word is copied out uncached. Failure
+   path first, as in func_00121930. */
+int func_00121A80(CdClock *out) {
+    int r;
+
+    if (func_00121040(0xF) == 0) {
+        return 0;
+    }
+    if (D_001313D0 > 0) {
+        func_0011A6C8(D_001530F0);
+    }
+    if (func_0011B4C8(D_00132E08, 1, 0, 0, 0, &D_001325C0, 0x10, 0, 0) < 0) {
+        func_00118C90(D_001313EC);
+        return 0;
+    }
+    *out = *(CdClock *)(((unsigned int)&D_001325C0 + 4) | 0x20000000);
+    if (D_001313D0 > 0) {
+        func_0011A6C8(D_00153110);
+    }
+    r = *(int *)((unsigned int)&D_001325C0 | 0x20000000);
+    func_00118C90(D_001313EC);
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00121B78);
 
