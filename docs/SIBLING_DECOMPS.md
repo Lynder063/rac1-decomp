@@ -120,3 +120,23 @@ bash tools/docker/run.sh sh -c \
 
 The build still uses one set of flags for all game code. Which of our
 files need which flags is not mapped yet.
+
+### UYA's flags measured on this build (2026-09-27)
+
+- `-fopt-stack` and `-mno-check-zero-division` don't apply: our retail
+  saves `$s` registers with `sq` in 16-byte slots, and its `div`s carry
+  the `break 7` trap, which is what the default flags produce.
+- `-mno-split-addresses` and `-G8` were run over seven candidates whose
+  residuals involve address formation or registers (func_001FF958,
+  func_00213C78, func_00227A70, func_00200248, func_00201A38, plus the
+  exact func_0020D960 as a control). Neither flag fixed any of them.
+  `-mno-split-addresses` changed the size of three and broke the exact
+  control (47 of 120 bytes differ); `-G8` only fails to compile where a
+  declaration relies on `-G2` small-data placement. So hud.c, mobyutil.c,
+  pause.c and mobyfunc.c are split-address, `-G2` files as built. The
+  flag stays a per-function experiment for other files.
+- Both SN assemblers UYA uses are in our toolchain mirrors
+  (`sn-prodg-3.01/.../ee/bin/Ps2EeAs.exe`, `sn-prodg-24/.../ee/bin/ps2eeas.exe`).
+  Using ps2eeas for the whole text segment was measured before and is
+  worse (DECOMP_PROGRESS.md); `tools/ps2eeas_nops.py` reproduces the nops
+  it adds. UYA's per-function `@ps2as` is not tried here yet.
