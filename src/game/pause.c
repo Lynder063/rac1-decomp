@@ -1116,7 +1116,60 @@ int func_0021EF60(char *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021EFA0);
+extern char D_001864D0[];
+extern char D_00187040[];
+extern void *func_00226720_a(int) __asm__("func_00226720");
+extern void func_0021F200(char *);
+
+/* Keeps the item preview moby in step with the highlighted entry: drop it
+   when the entry's class (D_001864D0 record +0x3A) is -1, spawn it in
+   front of the camera focus when there is none yet, or respawn it with
+   the old one's position and orientation when the class changed. */
+int func_0021EFA0(char *arg0) {
+    char *q = *(char **)(D_001D5F74 + 0x40);
+    int item = *(short *)(*(int *)(q + 0x3C) * 10 + *(char **)(q + 0x48) + 6);
+    short cur;
+    char *rec;
+    short want;
+
+    cur = *(char **)(arg0 + 0x44) != 0 ? *(short *)(*(char **)(arg0 + 0x44) + 0xA6) : -1;
+    rec = D_001864D0 + item * 0x4C;
+    want = *(short *)(rec + 0x3A);
+    if (want != -1 && cur == -1) {
+        char *o = func_00226720_a(want);
+
+        if (o != 0) {
+            char *t = D_00187040;
+
+            *(char **)(arg0 + 0x44) = o;
+            *(short *)(o + 0x34) = 0;
+            *(float *)(o + 0x10) = *(float *)(t + 0x140) + 6.0f;
+            *(float *)(o + 0x14) = *(float *)(t + 0x144);
+            *(float *)(o + 0x18) = *(float *)(t + 0x148) - 0.3f;
+            *(float *)(o + 0x48) = 3.1415927f;
+            *(void **)(o + 0x74) = (void *)func_0021F200;
+            **(void ***)(o + 0x78) = arg0;
+        }
+    } else if (want == -1) {
+        *(int *)(arg0 + 0x44) = func_002267C0(*(int *)(arg0 + 0x44));
+    } else if (cur != want) {
+        char *n = func_00226720_a(want);
+
+        if (n != 0) {
+            char *old;
+
+            *(short *)(n + 0x34) = 0;
+            old = *(char **)(arg0 + 0x44);
+            qcopy(n + 0x10, old + 0x10);
+            qcopy(n + 0x40, old + 0x40);
+            *(int *)(n + 0x74) = *(int *)(old + 0x74);
+            **(void ***)(n + 0x78) = arg0;
+        }
+        func_002267C0(*(int *)(arg0 + 0x44));
+        *(char **)(arg0 + 0x44) = n;
+    }
+    return 0;
+}
 
 extern char *D_001D5F74 NOT_SDA;
 extern void func_0020E180(int, int);
