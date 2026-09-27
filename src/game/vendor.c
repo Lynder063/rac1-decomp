@@ -584,7 +584,54 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023AA38);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023B008);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023B018);
+typedef struct {
+    int x;
+    int y;
+    int z;
+    unsigned short w;
+    unsigned short h;
+} ZoneBox;
+extern ZoneBox *D_00161294 MACRO_ADDR;
+extern char *D_00161290 MACRO_ADDR;
+extern int D_00161298 MACRO_ADDR;
+extern float D_001E69E0[];
+extern int func_001FA898_i(float) __asm__("func_001FA898");
+
+/* Index of the zone whose box (in 1/1024 units, 0x800 deep) holds the
+   point and whose 4x4 cell mask at +0x1E has the point's cell set, or
+   -1. Cells are sized and offset by the grid in D_001E69E0. */
+int func_0023B018(float x, float y, float z) {
+    int ix = func_001FA898_i(x * 1024.0f);
+    int iy = func_001FA898_i(y * 1024.0f);
+    int iz = func_001FA898_i(z * 1024.0f);
+    ZoneBox *b = D_00161294;
+    int i;
+
+    for (i = 0; i < D_00161298; i++, b++) {
+        char *zn;
+        int cx;
+        int cy;
+        int bit;
+
+        if (ix < b->x || iy < b->y || iz < b->z) {
+            continue;
+        }
+        if (ix >= b->x + b->w || iy >= b->y + b->h || iz >= b->z + 0x800) {
+            continue;
+        }
+        zn = D_00161290 + i * 0x1190;
+        cx = func_001FA898_i((x - (*(float *)(zn + 0) + D_001E69E0[2])) / D_001E69E0[4]);
+        cy = func_001FA898_i((y - (*(float *)(zn + 4) + D_001E69E0[3])) / D_001E69E0[5]);
+        bit = 1 << (((cx >> 2) & 3) | (cy & 0xC));
+        if (*(unsigned short *)(zn + 0x1E) & bit) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/* 12 bytes of post-endlabel nop padding in retail -- see func_001F6668. */
+__asm__(".section .text\n\tnop\n\tnop\n\tnop\n");
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023B1E8);
 
