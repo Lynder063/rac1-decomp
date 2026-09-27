@@ -488,7 +488,77 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00200E38);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00201190);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00201348); /* Hud_sendTexture(char *, int, int, int, int, int) */
+extern int *D_00161000 MACRO_ADDR;
+extern void func_00122630(void *, int, int, int, int, int, int, int);
+extern void func_00118D80(int);
+extern void func_00122958(void *, void *);
+
+/* Hud_sendTexture(char *tex, int x, int y, int levelShift, int sizeShift,
+   int useStackBuf): builds a mip level count (clamped to >=1) and a
+   packed GIF NLOOP for the closing tag, then either (useStackBuf==0)
+   opens a GS packet in D_00161000 and writes straight into it, or
+   builds into a stack buffer; either way calls func_00122630 to fill it
+   with (x, levels, y, 1<<levelShift, 1<<sizeShift), then either closes
+   the GS packet in place or flushes the cache and hands the stack
+   buffer to func_00122958.
+
+   D_00161000's advance is a plain pointer store (`D_00161000 = base +
+   N;`), the same idiom this file's other matched packet builders
+   (func_002014B8/func_00201640/func_002017C8) use -- MACRO_ADDR already
+   makes that a $gp-relative store. p7 holds arg2 unconditionally from
+   before the branch (retail sets it in the delay slot of the
+   useStackBuf branch, before either arm runs), but its truncation to
+   short for the call happens later, grouped with the other short args
+   (retail's sll/sra $7 sits between the other four args' truncation
+   instructions, not with the early wide assignment). */
+void func_00201348(char *arg0, int arg1, int arg2, int arg3, int arg4, int arg5) {
+    char buf[0x60];
+    int nloop2;
+    int levels;
+    int p7;
+    short p5, p6, p10, p11;
+    void *dst;
+    int *base;
+
+    nloop2 = 1 << (arg3 + arg4 - 4);
+    levels = (1 << arg3) >> 6;
+    if (levels <= 0) {
+        levels = 1;
+    }
+
+    p7 = arg2;
+    if (arg5 == 0) {
+        D_00161000[0] = 0x10000006;
+        D_00161000[1] = 0;
+        D_00161000[2] = 0;
+        D_00161000[3] = 0x50000006;
+        base = D_00161000;
+        dst = base + 4;
+        D_00161000 = base + 0x1C;
+    } else {
+        dst = buf;
+    }
+
+    p5 = arg1;
+    p6 = levels;
+    p7 = (short)p7;
+    p10 = 1 << arg3;
+    p11 = 1 << arg4;
+
+    func_00122630(dst, p5, p6, p7, 0, 0, p10, p11);
+
+    if (arg5 == 0) {
+        int *cur = D_00161000;
+        cur[0] = 0x30000000 | nloop2;
+        D_00161000[1] = (int)arg0;
+        D_00161000[2] = 0;
+        D_00161000[3] = 0x50000000 | nloop2;
+        D_00161000 = D_00161000 + 4;
+    } else {
+        func_00118D80(0);
+        func_00122958(dst, arg0);
+    }
+}
 
 extern int *D_00161000 MACRO_ADDR;
 extern int D_0013E600[];
