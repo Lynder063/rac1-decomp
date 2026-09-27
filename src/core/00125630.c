@@ -186,7 +186,78 @@ void func_00127378(int arg0) {
     *p = (*p & 0xFF7FFFFF) | (arg0 << 23);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_001273A0);
+typedef struct {
+    unsigned char pad0[0x838];
+    int unk838;
+    int unk83C;
+    unsigned char pad840[0x18];
+    void *cbData;
+} MpegDec;
+
+extern char D_00153888[];
+extern void func_00128590(void *);
+extern void func_0012BC78(int, void *);
+extern void func_0012C468(void *, void *);
+
+#define IPU_CTRL   ((volatile unsigned int *)0x10002010)
+#define IPU_BP     ((volatile unsigned int *)0x10002020)
+#define IPU_TOP    ((unsigned long *)0x10002030)
+#define D3_CHCR    ((volatile unsigned int *)0x1000B400)
+#define D3_QWC     ((volatile unsigned int *)0x1000B420)
+#define D4_CHCR    ((volatile unsigned int *)0x1000B000)
+#define D4_QWC     ((volatile unsigned int *)0x1000B020)
+#define D_ENABLER  ((volatile unsigned int *)0x1000F520)
+#define D_ENABLEW  ((volatile unsigned int *)0x1000F590)
+
+/* _waitBdecOut (libmpeg). Adapted from Lombyte (MIT) for PAL. */
+int func_001273A0(void *arg0) {
+    MpegDec *d = arg0;
+    int cb1[8];
+    int cb2[8];
+    int ret;
+    int intr;
+    unsigned int bp;
+    long top;
+    unsigned int rest;
+
+    ret = 1;
+    func_00128590(d);
+    if (*D4_QWC != 0 && !(*IPU_CTRL & 0x4000)) {
+        do {
+            if (*D3_QWC == 0 && !(*D3_CHCR & 0x100)) {
+                cb1[0] = 1;
+                func_0012BC78((int)d->cbData, cb1);
+            }
+        } while (*D4_QWC != 0 && !(*IPU_CTRL & 0x4000));
+    }
+    bp = *IPU_BP;
+    top = *IPU_TOP;
+    d->unk838 = top;
+    if (top < 0) {
+        rest = bp & 0x1F;
+        d->unk83C = rest ? 32 - rest : 0;
+    } else {
+        d->unk83C = 32;
+    }
+    if (*IPU_CTRL & 0x4000) {
+        func_0012C468(d, D_00153888);
+        cb2[0] = 2;
+        func_0012BC78((int)d->cbData, cb2);
+        *(unsigned int *)0x10002010 = 0x40000000;
+        cb2[0] = 3;
+        func_0012BC78((int)d->cbData, cb2);
+        intr = func_0011D960();
+        *D_ENABLEW = *D_ENABLER | 0x10000;
+        *D4_CHCR = 0;
+        *D_ENABLEW = *D_ENABLER & ~0x10000;
+        if (intr) {
+            func_0011D9A8();
+        }
+        ret = 0;
+        *D4_QWC = 0;
+    }
+    return ret;
+}
 
 /* func_001286E8 returns a short: its epilogue sign-extends $v0. */
 extern short func_001286E8(int, int);
