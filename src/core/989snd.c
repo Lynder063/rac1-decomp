@@ -437,7 +437,22 @@ void func_0012ED10(void) {
 
 LINKER_REMNANT("asm/remnants/core_text", func_0012ED40);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012ED48);
+extern int func_0012E820_l(int, int, void *, int, long) __asm__("func_0012E820");
+
+/* Command 0x2C: seven words, the middle two each packing two 16-bit
+   values; the last two arguments are passed through. */
+void func_0012ED48(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5,
+                   int arg6, int arg7, int arg8, int arg9, long arg10) {
+    int local[7];
+    local[0] = arg0;
+    local[1] = arg1;
+    local[2] = (arg4 << 16) | (arg2 & 0xFFFF);
+    local[3] = (arg5 << 16) | (arg3 & 0xFFFF);
+    local[4] = arg6;
+    local[5] = arg7;
+    local[6] = arg8;
+    func_0012E820_l(0x2C, 0x1C, local, arg9, arg10);
+}
 
 /* snd_PauseVAGStream */
 void func_0012EDB0(int arg0) {
