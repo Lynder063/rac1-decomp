@@ -296,7 +296,11 @@ void func_0012E448(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5,
 
 LINKER_REMNANT("asm/remnants/core_text", func_0012E490);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E4A8);
+/* Command 0x15 with one int. */
+void func_0012E4A8(int arg0) {
+    int local = arg0;
+    func_0012E820(0x15, 4, &local, 0, 0);
+}
 
 LINKER_REMNANT("asm/remnants/core_text", func_0012E4D8);
 
