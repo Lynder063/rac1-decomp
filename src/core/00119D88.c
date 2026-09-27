@@ -347,7 +347,74 @@ ASM_FUNC("asm/handwritten/core_text", func_0011AD70);
  */
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AE1C);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AE20);
+typedef struct {
+    int pid;
+    void *pkt_table;
+    int pkt_table_len;
+    int unk0C;
+    int unk10;
+    void *rdata_table;
+    int rdata_table_len;
+    void *client_table;
+    int client_table_len;
+    int rdata_table_idx;
+} SifRpcData;
+
+extern int D_0012FD08 NOT_SDA;
+extern char D_00155100[];
+extern char D_00155900[];
+extern char D_00156100[];
+extern SifRpcData D_00156900_d __asm__("D_00156900");
+extern int func_0011D960(void);           /* DI */
+extern void func_0011D9A8(void);          /* EI */
+extern void func_0011A780(void);          /* sceSifInitCmd */
+extern int func_00118E70(int);            /* sceSifGetReg */
+extern int func_00118E60(int, int);       /* sceSifSetReg */
+extern void func_0011B0E0(char *);
+extern void func_0011B248(void *, void *);
+extern void func_0011B438(void *, void *);
+extern void func_0011B198(void *, void *);
+
+/* sceSifInitRpc: once, set up the RPC tables and command handlers, then
+   tell the IOP (SIF register 0x80000002) and wait for it. Adapted from
+   Lombyte (MIT) for PAL. */
+void func_0011AE20(int mode) {
+    int *packet;
+
+    func_0011D960();
+    if (D_0012FD08) {
+        func_0011D9A8();
+        return;
+    }
+    D_0012FD08 = 1;
+    func_0011D9A8();
+    func_0011A780();
+    func_0011D960();
+    D_00156900_d.pkt_table = (void *)((unsigned int)D_00155100 | 0x20000000);
+    D_00156900_d.pkt_table_len = 32;
+    D_00156900_d.unk0C = 0;
+    D_00156900_d.unk10 = 0;
+    D_00156900_d.rdata_table = (void *)((unsigned int)D_00155900 | 0x20000000);
+    D_00156900_d.rdata_table_len = 32;
+    D_00156900_d.client_table = (void *)((unsigned int)D_00156100 | 0x20000000);
+    D_00156900_d.client_table_len = 32;
+    D_00156900_d.rdata_table_idx = 0;
+    D_00156900_d.pid = 1;
+    func_0011AA38(0x80000008, (int)func_0011B0E0, (int)&D_00156900_d);
+    func_0011AA38(0x80000009, (int)func_0011B248, (int)&D_00156900_d);
+    func_0011AA38(0x8000000A, (int)func_0011B438, (int)&D_00156900_d);
+    func_0011AA38(0x8000000C, (int)func_0011B198, (int)&D_00156900_d);
+    func_0011D9A8();
+    if (func_00118E70(0x80000002)) {
+        return;
+    }
+    packet = (int *)(D_00155100 + 64);
+    packet[3] = 1;
+    func_0011ABC8(0x80000002, (int)packet, 16, 0, 0, 0);
+    while (func_0011A758(0) == 0) {
+    }
+    func_00118E60(0x80000002, 1);
+}
 
 extern void func_0011AA00(void);
 extern int D_0012FD08 NOT_SDA;

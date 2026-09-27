@@ -16,6 +16,7 @@ The following functions adapt source from
 - `src/game/loaders.c`: `func_00203038` (unpack point records)
 - `src/core/00112380.c`: `func_001123A8` (`_calloc_r`)
 - `src/core/00119D88.c`: `func_0011B2F8` (`sceSifBindRpc`)
+- `src/core/00119D88.c`: `func_0011AE20` (`sceSifInitRpc`)
 
 MIT License
 
