@@ -964,7 +964,19 @@ INCLUDE_ASM("asm/nonmatchings/text", func_001F5E60);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F62C0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F62C8); /* DrawUIFrame */
+/* Draws a bevelled frame: the box itself, then three shrinking bars
+   above and three below it, all in grey 0x040404 with alpha a. */
+void func_001F62C8(int x0, int x1, int y0, int y1, int a) {
+    int col = (a << 24) | 0x40404;
+
+    func_001F5650(x0, x1, y0, y1, col);
+    func_001F5650(x0 + 1, x1 - 1, y0 - 2, y0, col);
+    func_001F5650(x0 + 2, x1 - 2, y0 - 3, y0 - 2, col);
+    func_001F5650(x0 + 4, x1 - 4, y0 - 4, y0 - 3, col);
+    func_001F5650(x0 + 1, x1 - 1, y1, y1 + 2, col);
+    func_001F5650(x0 + 2, x1 - 2, y1 + 2, y1 + 3, col);
+    func_001F5650(x0 + 4, x1 - 4, y1 + 3, y1 + 4, col);
+}
 
 /* Emits a 9-point cross/star pattern of func_001F5650 draws around
    (a0, a1, a2, a3), offset by +-1/3/5 along each axis, all sharing the
