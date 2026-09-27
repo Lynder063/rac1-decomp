@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 51.67307873968415,
+  "fuzzy_match_percent": 51.67350811957371,
   "total_code": "465788",
-  "matched_code": "238844",
-  "matched_code_percent": 51.27740517145139,
+  "matched_code": "239308",
+  "matched_code_percent": 51.37702130583012,
   "total_functions": 1658,
-  "matched_functions": 1274,
-  "matched_functions_percent": 76.83956574185765,
+  "matched_functions": 1275,
+  "matched_functions_percent": 76.89987937273824,
   "complete_code": "83876",
   "complete_code_percent": 18.007333808513746,
   "total_units": 121,
@@ -7525,13 +7525,13 @@
   {
    "name": "game/bmain",
    "measures": {
-    "fuzzy_match_percent": 28.170731707317074,
+    "fuzzy_match_percent": 28.29268292682927,
     "total_code": "1640",
-    "matched_code": "0",
-    "matched_code_percent": 0.0,
+    "matched_code": "464",
+    "matched_code_percent": 28.29268292682927,
     "total_functions": 2,
-    "matched_functions": 0,
-    "matched_functions_percent": 0.0,
+    "matched_functions": 1,
+    "matched_functions_percent": 50.0,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -7541,7 +7541,7 @@
     {
      "name": "func_001E9808",
      "size": "464",
-     "fuzzy_match_percent": 99.56896551724138,
+     "fuzzy_match_percent": 100.0,
      "address": "0",
      "metadata": {
       "virtual_address": "2005000"
@@ -17967,13 +17967,13 @@
    "id": "game",
    "name": "Game",
    "measures": {
-    "fuzzy_match_percent": 51.55865769690157,
+    "fuzzy_match_percent": 51.55909681725567,
     "total_code": "455456",
-    "matched_code": "232984",
-    "matched_code_percent": 51.15400829059229,
+    "matched_code": "233448",
+    "matched_code_percent": 51.25588421274503,
     "total_functions": 1624,
-    "matched_functions": 1243,
-    "matched_functions_percent": 76.53940886699507,
+    "matched_functions": 1244,
+    "matched_functions_percent": 76.60098522167488,
     "complete_code": "78016",
     "complete_code_percent": 17.12920677299234
    }

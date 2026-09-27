@@ -155,6 +155,14 @@ in `config/core_rodata.txt`).
     func_002282D0. A `div` without the zero-divide trap wants
     `-mno-check-zero-division`.
 
+11. **Orphan `%hi`.** When loop optimisation hoists a global's `lui`
+    and never pairs it with a `%lo` (retail does this too, e.g. a `%hi`
+    copied to a saved register nothing reads), our linker fills that
+    `lui` wrongly while try_func, which masks relocations, says `EXACT`.
+    `tools/fix_orphan_hi.py` (run by the build and try_func) writes such
+    a `%hi` of a `D_`/`func_` symbol as a constant, so this is handled;
+    if the full build still disagrees on one `lui`, look here first.
+
 ## Known walls: stop and report
 
 No plain-C wording has reached these. Name the one you hit in NOTES.md

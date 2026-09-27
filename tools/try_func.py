@@ -129,6 +129,8 @@ def build(name, seg, src, first, last, candidate, work):
         if not run([sys.executable, "tools/check_macro_slots.py", str(s[2])], log):
             return None
         if seg == "text":
+            if not run([sys.executable, "tools/fix_orphan_hi.py", str(s[2]), str(s[2])], log):
+                return None
             first = work / "c.o"
             if not run(sn(CC, *CFLAGS, "-c", str(s[2]), "-o", str(first)), log):
                 return None
