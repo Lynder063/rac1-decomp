@@ -100,7 +100,47 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_00119910);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119AA8);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119BF8);
+/* The input ring func_00119868 sets up: size, count, read/write heads. */
+typedef struct {
+    int size;
+    int count;
+    char *rp;
+    char *wp;
+} TtyQueue;
+
+typedef struct {
+    int sock;
+    int unk04;
+    int unk08;
+    int unk0C;
+    char *wbuf;
+    char *rbuf;
+    TtyQueue *queue;    /* 0x18 */
+} TtyState2;
+
+extern TtyState2 D_00154B50_t __asm__("D_00154B50");
+extern TtyQueue *D_00154B68;
+
+/* sceTtyRead: block for each byte until the handler queues one; stop
+   after a newline. */
+int func_00119BF8(char *buf, int len) {
+    int i;
+
+    for (i = 0; i < len; i++) {
+        while (((volatile TtyQueue *)D_00154B68)->count == 0) {
+        }
+        {
+            TtyState2 *t = &D_00154B50_t;
+
+            buf[i] = *t->queue->rp;
+            func_001198D0((char *)t->queue);
+        }
+        if (buf[i] == '\n' || buf[i] == '\r') {
+            return i + 1;
+        }
+    }
+    return i;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119CC8);
 
