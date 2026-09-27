@@ -167,7 +167,105 @@ extern void func_0011DDA0(int);
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DB68); /* snd_StartSoundSystem */
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DDC0); /* snd_FlushSoundCommands */
+typedef void (*SndCallback)(int, long);
+struct SndCommand {
+    SndCallback fn;
+    int pad4;
+    long arg;
+};
+/* All SDA ($gp); read through casts like the rest of this file. */
+extern short D_0015ED80;   /* pending RPC record */
+extern short D_0015ED90;   /* stop callback */
+extern short D_0015ED94;   /* stop requested */
+extern short D_0015ED98;
+extern short D_0015ED9C;   /* abort */
+extern short D_0015EDA0;   /* int *count[2] */
+extern short D_0015EDB0;   /* struct SndCommand *cmd[2] */
+extern short D_0015EDB8;   /* int *reply[2] */
+extern short D_0015EDC0;   /* current buffer */
+extern short D_0015EDC4;
+extern short D_0015EDC8;   /* CD read pending */
+extern short D_0015EDD0;   /* CD read callback */
+extern short D_0015EDE0;   /* abort callback */
+extern short D_0015EDE8;   /* its argument (64-bit) */
+/* volatile: retail's compiler keeps its 64-bit accesses out of delay
+   slots, so they stay lui-based rather than going through $gp. */
+extern volatile long D_0015EDD8_l __asm__("D_0015EDD8") MACRO_ADDR;
+extern unsigned int D_0015EE00 MACRO_ADDR;
+extern int D_00133204[];
+extern int func_0012DFB0(void);
+extern void func_0012EB18(void);
+extern int func_0012EF48(int);
+
+#define SDA_I(x) (*(int *)&(x))
+#define SND_COUNT ((int **)&D_0015EDA0)
+#define SND_CMDS ((struct SndCommand **)&D_0015EDB0)
+#define SND_REPLY ((int **)&D_0015EDB8)
+
+/* snd_FlushSoundCommands: once the pending RPC completes, run the
+   callbacks queued with the other command buffer (or the abort callback);
+   finish a CD read (FlushCache, then its callback with the reply word);
+   send the next batch when idle; and poll a stop request. Returns
+   whether an RPC or a CD read is still in flight. Adapted from Lombyte
+   (MIT) for PAL. */
+int func_0012DDC0(void) {
+    int i;
+    int idx;
+    SndCallback fn;
+    long arg;
+
+    if (SDA_I(D_0015ED80) != 0 && func_0012DFB0() != 0) {
+        if (SDA_I(D_0015ED9C) != 0) {
+            if ((SndCallback)SDA_I(D_0015EDE0) != 0) {
+                ((SndCallback)SDA_I(D_0015EDE0))(D_00133204[0], *(long *)&D_0015EDE8);
+            }
+            SDA_I(D_0015EDE0) = 0;
+            SDA_I(D_0015ED9C) = 0;
+        } else {
+            idx = SDA_I(D_0015EDC0) != 1;
+            for (i = 0; i < *SND_COUNT[idx]; i++) {
+                if (SND_CMDS[idx][i].fn != 0) {
+                    SND_CMDS[idx][i].fn(SND_REPLY[idx][i + 1], SND_CMDS[idx][i].arg);
+                }
+            }
+        }
+    }
+    if (SDA_I(D_0015EDC8) != 0) {
+        func_00118D80(0);
+        if (D_0015EE00 != 0xFFFFFFFF) {
+            if ((SndCallback)SDA_I(D_0015EDD0) != 0) {
+                arg = D_0015EDD8_l;
+                fn = (SndCallback)SDA_I(D_0015EDD0);
+                SDA_I(D_0015EDD0) = 0;
+                D_0015EDD8_l = 0;
+                fn(D_0015EE00, arg);
+            }
+            D_0015EE00 = 0;
+            SDA_I(D_0015EDC8) = 0;
+        }
+    }
+    if (SDA_I(D_0015ED80) == 0) {
+        if (*SND_COUNT[SDA_I(D_0015EDC0)] != 0 && SDA_I(D_0015EDC4) == 0) {
+            func_0012EB18();
+        }
+    }
+    if (SDA_I(D_0015ED94) != 0) {
+        func_0012EF48(1);
+        if (SDA_I(D_0015ED98) != 0) {
+            SDA_I(D_0015ED94) = 0;
+            SDA_I(D_0015ED98) = 0;
+            if ((void (*)(int))SDA_I(D_0015ED90) != 0) {
+                ((void (*)(int))SDA_I(D_0015ED90))(1);
+            }
+        }
+    }
+    return SDA_I(D_0015ED80) != 0 || SDA_I(D_0015EDC8) != 0;
+}
+
+#undef SDA_I
+#undef SND_COUNT
+#undef SND_CMDS
+#undef SND_REPLY
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DFA0);
 
@@ -238,7 +336,7 @@ extern char D_00153FC0[];
 extern char D_00153FF8[];
 extern char D_00153E20[];
 extern int func_0012EF48(int);
-extern void func_0012DDC0(void);
+extern int func_0012DDC0(void);
 
 /* Start an IOP stream (command 0x57) for arg0, unless one is already
    pending (D_0015EDC8) or the CD is busy (func_0012EF48); the reply word
@@ -390,7 +488,7 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E820); /* snd_SendIOPCommandN
    pointers to the per-queue message-count int). */
 extern short D_0015EDC0;
 extern short D_0015EDA0;
-extern void func_0012DDC0(void);
+extern int func_0012DDC0(void);
 
 /* snd_PostMessage */
 void func_0012EAE0(void) {
@@ -413,7 +511,7 @@ void func_0012EC30(void) {
     *(int *)&D_0015EDC4 = 1;
 }
 
-extern void func_0012DDC0(void);
+extern int func_0012DDC0(void);
 
 /*
  * Close, not exact (2/32), same size. Retail saves/restores $ra with
@@ -563,7 +661,7 @@ int func_0012EE98(int arg0, int arg1, int arg2) {
 
 extern int func_00120F30(int);
 extern void func_00118D80(int);
-extern void func_0012DDC0(void);
+extern int func_0012DDC0(void);
 
 /* snd_StreamSafeCdSync */
 int func_0012EF48(int arg0) {
