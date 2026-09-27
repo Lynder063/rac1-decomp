@@ -114,6 +114,53 @@ extern char D_00132E40[];
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00122818);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00122958);
+extern void func_0011A6C8(void *);
+extern char D_001532D0[];
+
+typedef struct {
+    long q[12];
+} GsLoadImage;
+
+/* sceGsExecLoadImage(src, dst): waits for the GS transfer unit
+ * (0x1000A000 bit 8) to go idle, starts an image load from src (its
+ * 0x70000000 scratchpad segment tagged with bit 31) sized by the 15-bit
+ * field in src->q[10], waits again and starts the transfer to dst.
+ * Returns -1 after 0x1000000 polls in total. The abort is written out in
+ * each loop, not shared through a goto: the compiler merges the two copies
+ * into retail's single call, where a shared label needs an extra branch. */
+int func_00122958(GsLoadImage *src, void *dst) {
+    unsigned int count = 0;
+
+    while (*(volatile unsigned int *)0x1000A000 & 0x100) {
+        if (count++ > 0x1000000) {
+            func_0011A6C8(D_001532D0);
+            return -1;
+        }
+    }
+
+    *(volatile unsigned int *)0x1000A020 = 6;
+    if (((unsigned int)src & 0x70000000) == 0x70000000) {
+        *(volatile unsigned int *)0x1000A010 = ((unsigned int)src & 0x0FFFFFFF) | 0x80000000;
+    } else {
+        *(volatile unsigned int *)0x1000A010 = (unsigned int)src & 0x0FFFFFFF;
+    }
+    *(volatile unsigned int *)0x1000A000 = 0x101;
+
+    while (*(volatile unsigned int *)0x1000A000 & 0x100) {
+        if (count++ > 0x1000000) {
+            func_0011A6C8(D_001532D0);
+            return -1;
+        }
+    }
+
+    *(volatile unsigned int *)0x1000A020 = (unsigned int)(int)(src->q[10] & 0x7FFF);
+    if (((unsigned int)dst & 0x70000000) == 0x70000000) {
+        *(volatile unsigned int *)0x1000A010 = ((unsigned int)dst & 0x0FFFFFFF) | 0x80000000;
+    } else {
+        *(volatile unsigned int *)0x1000A010 = (unsigned int)dst & 0x0FFFFFFF;
+    }
+    *(volatile unsigned int *)0x1000A000 = 0x101;
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00122AD4);
