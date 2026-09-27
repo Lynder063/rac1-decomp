@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 32.93708725858116,
+  "fuzzy_match_percent": 33.09681657749878,
   "total_code": "465788",
-  "matched_code": "151296",
-  "matched_code_percent": 32.481729885699075,
+  "matched_code": "152040",
+  "matched_code_percent": 32.641459204616694,
   "total_functions": 1658,
-  "matched_functions": 985,
-  "matched_functions_percent": 59.408926417370324,
+  "matched_functions": 986,
+  "matched_functions_percent": 59.4692400482509,
   "complete_code": "15260",
   "complete_code_percent": 3.2761685573694472,
   "total_units": 121,
@@ -10546,13 +10546,13 @@
   {
    "name": "game/lights",
    "measures": {
-    "fuzzy_match_percent": 20.226843100189036,
+    "fuzzy_match_percent": 55.3875236294896,
     "total_code": "2116",
-    "matched_code": "428",
-    "matched_code_percent": 20.226843100189036,
+    "matched_code": "1172",
+    "matched_code_percent": 55.3875236294896,
     "total_functions": 4,
-    "matched_functions": 2,
-    "matched_functions_percent": 50.0,
+    "matched_functions": 3,
+    "matched_functions_percent": 75.0,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -10589,7 +10589,7 @@
     {
      "name": "func_002027C0",
      "size": "744",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "1376",
      "metadata": {
       "virtual_address": "2107328"
@@ -17967,13 +17967,13 @@
    "id": "game",
    "name": "Game",
    "measures": {
-    "fuzzy_match_percent": 32.39764104545774,
+    "fuzzy_match_percent": 32.56099381718541,
     "total_code": "455456",
-    "matched_code": "145436",
-    "matched_code_percent": 31.931953909927632,
+    "matched_code": "146180",
+    "matched_code_percent": 32.09530668165531,
     "total_functions": 1624,
-    "matched_functions": 954,
-    "matched_functions_percent": 58.74384236453202,
+    "matched_functions": 955,
+    "matched_functions_percent": 58.80541871921182,
     "complete_code": "9400",
     "complete_code_percent": 2.0638656643012716
    }

@@ -10,6 +10,7 @@ The following functions adapt source from
 - `src/core/00119868.c`: `func_00119CC8` (`sceTtyInit`)
 - `src/game/hud.c`: `func_00201190` (HUD sprite with explicit UV corners)
 - `src/game/vendor.c`: `func_00239A00` (vendor item carousel)
+- `src/game/lights.c`: `func_002027C0` (detach point light)
 
 MIT License
 
