@@ -99,24 +99,25 @@ extern void func_001E94E8(void *arg0, void *arg1, int arg2, int arg3);
 extern long D_0015EFC8;
 extern unsigned char D_001AAF40[];
 
+extern int D_0015EF88_m __asm__("D_0015EF88") MACRO_ADDR;
+extern volatile long D_0015EFC8_v __asm__("D_0015EFC8") MACRO_ADDR;
+
 /*
- * Same-size near-miss (27/108, kept). LoadDebugFont: forwards the
+ * Same-size near-miss (3/108, kept). LoadDebugFont: forwards the
  * D_00137C80[2]/[3] stream position to func_002176C8, then loads a
  * PSMT8H texture (D_001AAF40) into VRAM via func_001E94E8, caching
- * the returned descriptor's first field into D_0015EFC8. Residuals
- * are both scheduling/allocator choices: the `D_0015EF88 + 0xC0000`
- * address computation is interleaved differently with the `0x3FFC00`
- * constant build (tried both operand orders, no change), and the
- * final `D_0015EFC8` store computes its address into $at after the
- * stack restore where this compiler always picks an ordinary
- * register and hoists the `lui` earlier.
+ * the returned descriptor's first field into D_0015EFC8. Retail reaches
+ * both globals with assembler macros: D_0015EF88 through a MACRO_ADDR
+ * alias, and the 64-bit D_0015EFC8 store through a volatile MACRO_ADDR
+ * alias, which keeps it `lui $at`-based after the stack restore. What
+ * is left: the D_0015EF88 load goes to $v0, where retail uses $v1.
  */
 void func_001E96B8(void) {
     long localbuf[3];
 
     func_002176C8(D_001AAF40, D_00137C80[2], D_00137C80[3]);
-    func_001E94E8(D_001AAF40, localbuf, D_0015EF88 + 0xC0000, 0x3FFC00);
-    D_0015EFC8 = localbuf[0];
+    func_001E94E8(D_001AAF40, localbuf, D_0015EF88_m + 0xC0000, 0x3FFC00);
+    D_0015EFC8_v = localbuf[0];
 }
 
 LINKER_REMNANT("asm/remnants/text", func_001E9728);
