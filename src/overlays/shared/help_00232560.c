@@ -629,7 +629,41 @@ void func_L00_00234420(float *dst, float *src, float z) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002344B0);
+extern int func_001FA898(float);
+extern float func_001FA888(int);
+
+/* The height at the top of a jump from POS with velocity VEL losing STEP
+   per frame. In view mode 0 (D_0013F450 + 0x20B3) it rises for
+   n = VEL.z / STEP frames (func_001FA898 truncates, func_001FA888
+   converts back), to z + VEL.z n - STEP n(n + 1)/2; in modes 1 and 2
+   n uses the velocity along the view's up axis (func_L00_002342F8) and
+   the height is z + VEL.z / 2. The frame count goes to *STEPS when
+   given; other modes give 0. */
+float func_L00_002344B0(float *pos, float *vel, int *steps, float step) {
+    int n;
+    int k;
+    float a;
+    float r;
+
+    switch (*(unsigned char *)(D_0013F450 + 0x20B3)) {
+    case 0:
+        n = func_001FA898(vel[2] / step);
+        a = func_001FA888(n);
+        r = pos[2] + vel[2] * a - func_001FA888((n * n + n) >> 1) * step;
+        if (steps != 0) {
+            *steps = n;
+        }
+        return r;
+    case 1:
+    case 2:
+        k = func_001FA898(func_L00_002342F8(vel) / step);
+        if (steps != 0) {
+            *steps = k;
+        }
+        return pos[2] + vel[2] * 0.5f;
+    }
+    return 0.0f;
+}
 extern float func_001F9CE8(void *);
 extern float func_L00_001FF860(float, float);
 
