@@ -2,7 +2,27 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L00_002EB0D8);
+extern int D_0015EED0[] MACRO_ADDR;
+extern short D_L00_00161E80;
+extern short D_L00_0015F044;
+extern void func_L00_002E5B68();
+extern void func_L00_002E74B0(void *);
+extern void func_001E9768();
+extern void func_L00_002E6CE0(void *);
+extern void func_L00_002EB060(void *);
+extern void func_L00_002E72E8(void *);
+void func_L00_002EB0D8(char *m) {
+    char *p = *(char **)(m + 0x70) + 0x1D0;
+    *(float *)&D_L00_0015F044 = ((float *)&D_L00_00161E80)[D_0015EED0[5]];
+    func_L00_002E5B68(m);
+    func_L00_002E74B0(m);
+    func_001E9768(m);
+    func_L00_002E6CE0(m);
+    func_001E9768(m, p);
+    func_L00_002EB060(m);
+    func_001E9768(m);
+    func_L00_002E72E8(m);
+}
 INCLUDE_ASM("asm/overlays", func_L00_002EB170);
 INCLUDE_ASM("asm/overlays", func_L00_002EB280);
 INCLUDE_ASM("asm/overlays", func_L00_002EB3A0);
