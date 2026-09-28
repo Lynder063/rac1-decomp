@@ -106,7 +106,17 @@ INCLUDE_ASM("asm/overlays", func_L00_0025AAC0);
 INCLUDE_ASM("asm/overlays", func_L00_0025AC00);
 INCLUDE_ASM("asm/overlays", func_L00_0025AD38);
 INCLUDE_ASM("asm/overlays", func_L00_0025AD60);
-INCLUDE_ASM("asm/overlays", func_L00_0025AFA8);
+typedef struct { int a[4]; } Vk __attribute__((aligned(16)));
+extern void func_L00_001FFED8(void *, int, float);
+extern void func_001FA588(void *, void *, void *);
+void func_L00_0025AFA8(void *a, float *v) {
+    Vk t0, t1, t2;
+    func_L00_001FFED8(&t2, 0, v[0]);
+    func_L00_001FFED8(&t1, 1, v[1]);
+    func_L00_001FFED8(&t0, 2, v[2]);
+    func_001FA588(a, &t2, &t1);
+    func_001FA588(a, a, &t0);
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025B040);
 INCLUDE_ASM("asm/overlays", func_L00_0025B168);
 INCLUDE_ASM("asm/overlays", func_L00_0025B178);
