@@ -5,8 +5,9 @@ Add the nops retail's assembler added, to compiled game code.
 Retail's text segment was assembled by SN Systems' own ps2eeas, not the
 GNU as this build uses, and ps2eeas inserts nops GNU as does not.
 core_text was assembled by the same GNU as the build runs (the compiler
-driver's ee/bin/as.exe), so this runs on src/game/ objects only. Three
-rules:
+driver's ee/bin/as.exe), so this runs on src/game/ objects, plus
+989snd.o, whose retail code has ps2eeas's short-loop padding on loops
+with calls (func_0012E688, func_0012EC60). Three rules:
 
 1. Short loops (the R5900 short-loop erratum). Every backward branch
    whose loop -- the target through the branch itself -- is shorter than

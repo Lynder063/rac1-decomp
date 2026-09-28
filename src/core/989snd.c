@@ -573,11 +573,6 @@ void func_0012EC40(void) {
    gp 0x166D00 - 0x7F38 = 0x15EDC8 (drain-commands-first flag). */
 extern short D_0015ED8C;
 extern short D_0015EDBC;   /* the word at +0xC, SDA ($gp -0x7F38) */
-/* snd_FlushSoundCommands: declared void elsewhere in this file (every
-   other call site discards its result), so its int-returning form is
-   reached through an alias here, as func_00119718/func_00118E90 do
-   elsewhere in core_text for the same reason. */
-extern int func_0012DDC0_ret(void) __asm__("func_0012DDC0");
 extern int func_0012EF48(int);              /* snd_StreamSafeCdSync */
 extern int func_0012E688(int, int, void *); /* snd_SendIOPCommandAndWait */
 
@@ -594,7 +589,7 @@ int func_0012EC60(int arg0, int arg1, int arg2, int arg3) {
         return 0;
     }
     if (*(int *)((char *)&D_0015EDBC + 0xC) != 0) {
-        while (({ int r = func_0012DDC0_ret(); __asm__ __volatile__("nop\n\tnop\n\tnop\n\tnop"); r; }) != 0) {
+        while (func_0012DDC0() != 0) {
         }
     }
     func_0012EF48(0);

@@ -143,6 +143,12 @@ def build(name, seg, src, first, last, candidate, work):
                 return None
             if not run([sys.executable, "tools/ps2eeas_nops.py", str(s[2]), str(first), str(s[3])], log):
                 return None
+        elif src.name == "989snd.c":
+            first = work / "c.o"
+            if not run(sn(CC, *CFLAGS, "-c", str(s[2]), "-o", str(first)), log):
+                return None
+            if not run([sys.executable, "tools/ps2eeas_nops.py", str(s[2]), str(first), str(s[3])], log):
+                return None
         else:
             shutil.copy(s[2], s[3])
         if not run(sn(CC, *CFLAGS, "-c", str(s[3]), "-o", str(obj)), log):
