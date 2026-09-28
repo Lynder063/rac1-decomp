@@ -85,13 +85,14 @@ regnames:
 # and every offset are left exactly as v1.14 emitted them. No offset
 # arithmetic, which is what makes it safe. (fix_core_spills keys on
 # address, so the objects from 0x12DB18 on keep their sq spills.)
-build-sn/core/%.o: src/core/%.c config/func_cflags.txt tools/func_cflags.py tools/fix_core_spills.py tools/fix_tail_calls.py tools/fix_trunc_slot.py tools/check_macro_slots.py
+build-sn/core/%.o: src/core/%.c config/func_cflags.txt tools/func_cflags.py tools/fix_core_spills.py tools/fix_tail_calls.py tools/fix_trunc_slot.py tools/fix_macro_load_delay.py tools/check_macro_slots.py
 	@mkdir -p build-sn/core
 	$(CC_CORE) $(CFLAGS) -S -o build-sn/core/$*.s $<
 	python tools/func_cflags.py $< build-sn/core/$*.s -- $(CC_CORE) $(CFLAGS)
 	python tools/fix_core_spills.py build-sn/core/$*.s build-sn/core/$*_sp.s
 	python tools/fix_tail_calls.py build-sn/core/$*_sp.s build-sn/core/$*_fixed.s
 	python tools/fix_trunc_slot.py build-sn/core/$*_fixed.s build-sn/core/$*_fixed.s
+	if [ "$*" = 989snd ]; then python tools/fix_macro_load_delay.py build-sn/core/$*_fixed.s build-sn/core/$*_fixed.s; fi
 	python tools/check_macro_slots.py build-sn/core/$*_fixed.s
 	$(CC_CORE) $(CFLAGS) -c build-sn/core/$*_fixed.s -o $@
 

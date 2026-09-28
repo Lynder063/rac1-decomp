@@ -125,6 +125,9 @@ def build(name, seg, src, first, last, candidate, work):
             return None
         if not run([sys.executable, "tools/fix_trunc_slot.py", str(s[2]), str(s[2])], log):
             return None
+        if src.name == "989snd.c":
+            if not run([sys.executable, "tools/fix_macro_load_delay.py", str(s[2]), str(s[2])], log):
+                return None
         if seg == "text":
             if not run([sys.executable, "tools/fix_jump_tables.py", str(s[2]), str(s[2])], log):
                 return None
