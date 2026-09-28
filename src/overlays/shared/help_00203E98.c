@@ -108,7 +108,20 @@ f32 func_L00_00209598(f32 a, f32 b, f32 c, f32 d)
 }
 INCLUDE_ASM("asm/overlays", func_L00_00209690);
 INCLUDE_ASM("asm/overlays", func_L00_00209748);
-INCLUDE_ASM("asm/overlays", func_L00_00209850);
+typedef float V[4] __attribute__((aligned(16)));
+
+extern void func_001F9BC0(float *);
+extern void func_L00_00209748(float *, float, float, float);
+
+/* Builds a {0,0,0.6,0} param vector and forwards it (plus the caller's
+   position) to func_L00_00209748. */
+void func_L00_00209850(float x, float y, float z) {
+    V buf;
+
+    func_001F9BC0(buf);
+    buf[2] = 0.6f;
+    func_L00_00209748(buf, x, y, z);
+}
 INCLUDE_ASM("asm/overlays", func_L00_002098B8);
 INCLUDE_ASM("asm/overlays", func_L00_00209940);
 INCLUDE_ASM("asm/overlays", func_L00_00209BB8);
