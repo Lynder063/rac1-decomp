@@ -586,7 +586,30 @@ INCLUDE_ASM("asm/overlays", func_L00_00235088);
 INCLUDE_ASM("asm/overlays", func_L00_002352D0);
 INCLUDE_ASM("asm/overlays", func_L00_002353B8);
 INCLUDE_ASM("asm/overlays", func_L00_00235608);
-INCLUDE_ASM("asm/overlays", func_L00_002356D0);
+extern float func_00214358(void *, int, float);
+extern float func_001F9B88(float);
+
+/* Probes 0.75 behind the position at D_0013F450 + 0x80 along the first
+   matrix row (+0x0), half a unit up, for the ground height
+   (func_00214358). If that is within 0.3 of the position's z, records
+   the old position as the target (func_L00_00234768, with the float at
+   +0x98) and moves the position onto the probe. */
+void func_L00_002356D0(void) {
+    char *base = D_0013F450;
+    float v[4] __attribute__((aligned(16)));
+    float h;
+
+    func_001F9C30(v, base, -0.75f);
+    func_001F9BD8(v, v, base + 0x80);
+    v[2] += 0.5f;
+    h = func_00214358(v, 0, 0.5f);
+    v[2] = h;
+    if (func_001F9B88(*(float *)(base + 0x88) - h) > 0.3f) {
+        return;
+    }
+    func_L00_00234768((float *)(base + 0x80), 1, *(float *)(base + 0x98));
+    qcopy(base + 0x80, v);
+}
 extern char D_001416F8[];
 extern void func_L00_00239F40(void);
 extern void func_L00_00239FC0(void);
