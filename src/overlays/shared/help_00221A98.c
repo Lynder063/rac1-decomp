@@ -49,4 +49,29 @@ int func_L00_00229348(void *a0, int a1) {
     return 1;
 }
 INCLUDE_ASM("asm/overlays", func_L00_002293E8);
-INCLUDE_ASM("asm/overlays", func_L00_00229778);
+extern char D_0013F450[];
+extern void func_0020D678(void *); /* DeleteMoby */
+
+/* Deletes and clears any moby cached at D_0013F450+0x1614, then clears
+   flag bits 0x41 on the two moby pointers cached at +0x1180 and +0x1184,
+   when set. */
+void func_L00_00229778(void) {
+    char *g = D_0013F450;
+    void *m;
+    void *a;
+    void *b;
+
+    m = *(void **)(g + 0x1614);
+    if (m != 0) {
+        func_0020D678(m);
+        *(void **)(g + 0x1614) = 0;
+    }
+    a = *(void **)(g + 0x1180);
+    if (a != 0) {
+        *(unsigned short *)((char *)a + 0x34) &= 0xFFBE;
+    }
+    b = *(void **)(g + 0x1184);
+    if (b != 0) {
+        *(unsigned short *)((char *)b + 0x34) &= 0xFFBE;
+    }
+}
