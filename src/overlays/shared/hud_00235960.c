@@ -35,7 +35,9 @@ void func_L00_00236208(void) {
     }
 }
 typedef struct {
-    char pad0[0x48];
+    char pad0[0x8];
+    int unk08;
+    char padC[0x3C];
     short unk48;
     short unk4A;
     char pad4C[0xC];
@@ -103,7 +105,30 @@ INCLUDE_ASM("asm/overlays", func_L00_00236F38);
 INCLUDE_ASM("asm/overlays", func_L00_002377E0);
 INCLUDE_ASM("asm/overlays", func_L00_00237B70);
 INCLUDE_ASM("asm/overlays", func_L00_00237B90);
-INCLUDE_ASM("asm/overlays", func_L00_00238148);
+extern char D_0013F450[];
+extern unsigned char D_0013E629 NOT_SDA;
+extern void func_L00_00236830(HudElem *);
+
+/* Sets E up with func_L00_00236830, then +0x08 to 10 or, without the
+   flag D_0013E629, 5. In mode 9 (D_0013F450 + 0x10B8) with +0x20A4 clear
+   it restarts the timer at 30 + func_001F9850(120); otherwise it caps it
+   at 30. */
+void func_L00_00238148(HudElem *e) {
+    char *base;
+
+    func_L00_00236830(e);
+    if (D_0013E629 != 0) {
+        e->unk08 = 10;
+    } else {
+        e->unk08 = 5;
+    }
+    base = D_0013F450;
+    if (*(int *)(base + 0x10B8) == 9 && *(unsigned char *)(base + 0x20A4) == 0) {
+        e->unk7C = func_001F9850(0x78) + 0x1E;
+    } else if (e->unk7C > 0x1E) {
+        e->unk7C = 0x1E;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002381D0);
 INCLUDE_ASM("asm/overlays", func_L00_00238478);
 INCLUDE_ASM("asm/overlays", func_L00_00238530);
