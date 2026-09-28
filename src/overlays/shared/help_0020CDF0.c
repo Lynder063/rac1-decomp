@@ -65,7 +65,44 @@ INCLUDE_ASM("asm/overlays", func_L00_002136A8);
 INCLUDE_ASM("asm/overlays", func_L00_00213970);
 INCLUDE_ASM("asm/overlays", func_L00_00213A08);
 INCLUDE_ASM("asm/overlays", func_L00_00213A60);
-INCLUDE_ASM("asm/overlays", func_L00_00213E60);
+/*
+ * Advances a 16-item spawn queue: for each slot, ask
+ * func_L00_00213A60(i) to process it; stop early once it reports done
+ * (returns 1). Otherwise copy the next entry from a 32-item circular
+ * table (D_0013F450 + 0x1B00) into the working record at
+ * D_0013F450 + 0x80, decrementing the countdown at +0x21B4 and
+ * stepping the circular index at +0x21B0 backwards (mod 32) once every
+ * two slots.
+ *
+ * D_0013F450 is D_0013E633 + 0xE1D, the big shared blob already declared
+ * this way in src/game/camera.c and src/game/pause.c.
+ */
+extern char D_0013F450[];
+extern int func_L00_00213A60(int index);
+
+typedef struct {
+    int x, y, z, w;
+} Quad;
+
+void func_L00_00213E60(void) {
+    Quad *dst = (Quad *)(D_0013F450 + 0x80);
+    Quad *table = (Quad *)((char *)dst + 0x1A80);
+    int i;
+
+    for (i = 0; i < 16; i++) {
+        char *base;
+
+        if (func_L00_00213A60(i) == 1)
+            return;
+
+        base = D_0013F450;
+        if (*(int *)(base + 0x21B4) >= 2) {
+            (*(int *)(base + 0x21B4))--;
+            *(int *)(base + 0x21B0) = (*(int *)(base + 0x21B0) + 31) % 32;
+        }
+        qcopy(dst, &table[*(int *)(base + 0x21B0)]);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00213F38);
 INCLUDE_ASM("asm/overlays", func_L00_002144A0);
 INCLUDE_ASM("asm/overlays", func_L00_00214520);
