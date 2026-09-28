@@ -8,7 +8,24 @@ INCLUDE_ASM("asm/overlays", func_L00_002A5AC0);
 INCLUDE_ASM("asm/overlays", func_L00_002A5B20);
 INCLUDE_ASM("asm/overlays", func_L00_002A5F68);
 INCLUDE_ASM("asm/overlays", func_L00_002A6058);
-INCLUDE_ASM("asm/overlays", func_L00_002A6070);
+extern void *func_0020D348(int oClass);
+extern void func_L00_00251E30(void *);
+
+/* Spawns a moby of class 0x3EF, sets its +0x30 byte and ORs 0x41 into
+   its +0x34 flags, copies the caller's 16-byte position/orientation
+   vector into its +0x10, and hands it to func_L00_00251E30. Returns
+   the new moby, or NULL if the spawn failed. */
+void *func_L00_002A6070(void *arg0) {
+    void *m = func_0020D348(0x3EF);
+
+    if (m != 0) {
+        *(unsigned char *)((char *)m + 0x30) = 0xFF;
+        *(unsigned short *)((char *)m + 0x34) |= 0x41;
+        qcopy((char *)m + 0x10, arg0);
+        func_L00_00251E30(m);
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002A60D8);
 INCLUDE_ASM("asm/overlays", func_L00_002A62D0);
 INCLUDE_ASM("asm/overlays", func_L00_002A6A38);
