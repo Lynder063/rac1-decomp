@@ -142,7 +142,19 @@ float func_L00_00211EE8(void) {
     }
     return len;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00211F28);
+/* Whether T lies in the window that ends at D_0013F450 + 0xAA8 and is
+   +0xAAC long (T before the end, within that length of it). */
+int func_L00_00211F28(float t) {
+    char *base = D_0013F450;
+    float end = *(float *)(base + 0xAA8);
+
+    if (t < end) {
+        if (end - t <= *(float *)(base + 0xAAC)) {
+            return 1;
+        }
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00211F68);
 INCLUDE_ASM("asm/overlays", func_L00_00211F80);
 INCLUDE_ASM("asm/overlays", func_L00_002122A0);
