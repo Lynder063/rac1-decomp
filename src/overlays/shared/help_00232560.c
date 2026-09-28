@@ -570,7 +570,18 @@ void func_L00_00234768(float *pos, int arg, float t) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_002347B8);
 INCLUDE_ASM("asm/overlays", func_L00_00234800);
-INCLUDE_ASM("asm/overlays", func_L00_00235040);
+extern int func_L00_002630A8(int, void *, void *, float);
+
+/* Calls func_L00_002630A8 with the id at D_0013F450 + 0x22DA, the vector
+   at +0x80 (as both pointers) and the float at +0x234; when it returns
+   nonzero, sets the short at +0x1F6 to 4. */
+void func_L00_00235040(void) {
+    char *base = D_0013F450;
+
+    if (func_L00_002630A8(*(short *)(base + 0x22DA), base + 0x80, base + 0x80, *(float *)(base + 0x234)) != 0) {
+        *(short *)(base + 0x1F6) = 4;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00235088);
 INCLUDE_ASM("asm/overlays", func_L00_002352D0);
 INCLUDE_ASM("asm/overlays", func_L00_002353B8);
