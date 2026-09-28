@@ -78,7 +78,25 @@ INCLUDE_ASM("asm/overlays", func_L00_00233A90);
 INCLUDE_ASM("asm/overlays", func_L00_00233AC8);
 INCLUDE_ASM("asm/overlays", func_L00_00233B08);
 INCLUDE_ASM("asm/overlays", func_L00_00233B50);
-INCLUDE_ASM("asm/overlays", func_L00_00233CC0);
+extern unsigned char D_0013D5E4 NOT_SDA;
+
+/* Returns 1 in states 0x3F, 0x70 and 0x71 of D_0013F450 + 0x2084, or in
+   state 0 while the flags at +0x12E7 and D_0013D5E4 are set and the
+   short at +0x30E is below func_001F9850(4); otherwise the short at
+   +0x308. One `||` condition: retail sends every true test to a single
+   `r = 1` block after the call. */
+int func_L00_00233CC0(void) {
+    char *base = D_0013F450;
+    int state = *(int *)(base + 0x2084);
+    int r = *(short *)(base + 0x308);
+
+    if (state == 0x3F || state == 0x71 || state == 0x70
+        || (*(unsigned char *)(base + 0x12E7) != 0 && D_0013D5E4 != 0 && state == 0
+            && *(short *)(base + 0x30E) < func_001F9850(4))) {
+        r = 1;
+    }
+    return r;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00233D50);
 extern float func_001F9F90(float);
 extern float func_001F9FA8(float);
