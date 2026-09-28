@@ -87,7 +87,7 @@ extern void func_001F9EE8(void *, void *, void *);
 
 /* Sets OUT to the point (X, Y, Z, 0) (cleared first by func_001F9BC0),
    then transforms it by the matrix at D_0013F450 and adds the vector at
-   D_0013F450 + 0x80: a camera-space point taken to world space. */
+   D_0013F450 + 0x80. */
 void func_L00_00233EE0(float *out, float x, float y, float z) {
     char *base;
 
