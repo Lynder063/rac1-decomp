@@ -28,7 +28,21 @@ INCLUDE_ASM("asm/overlays", func_L18_002D9440);
 INCLUDE_ASM("asm/overlays", func_L18_002D9460);
 INCLUDE_ASM("asm/overlays", func_L18_002D96B0);
 INCLUDE_ASM("asm/overlays", func_L18_002D9B00);
-INCLUDE_ASM("asm/overlays", func_L18_002D9C48);
+typedef struct {
+    char pad0[0x20];
+    unsigned char state;
+} Level18State;
+
+/* Return one for the active state; advance state two to five. */
+int func_L18_002D9C48(Level18State *obj) {
+    if (obj->state == 1) {
+        return 1;
+    }
+    if (obj->state == 2) {
+        obj->state = 5;
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L18_002D9C78);
 INCLUDE_ASM("asm/overlays", func_L18_002D9C90);
 INCLUDE_ASM("asm/overlays", func_L18_002D9CA8);
