@@ -5,7 +5,13 @@
 INCLUDE_ASM("asm/overlays", func_L00_0020CDF0);
 INCLUDE_ASM("asm/overlays", func_L00_0020D3A0);
 INCLUDE_ASM("asm/overlays", func_L00_0020D5F0);
-INCLUDE_ASM("asm/overlays", func_L00_0020D990);
+extern void func_L00_00233EE0(float *, float, float, float);
+
+/* OUT = the camera-space point (0.3, 0, 1.34) in world space
+   (func_L00_00233EE0). */
+void func_L00_0020D990(float *out) {
+    func_L00_00233EE0(out, 0.3f, 0.0f, 1.34f);
+}
 INCLUDE_ASM("asm/overlays", func_L00_0020D9C8);
 INCLUDE_ASM("asm/overlays", func_L00_0020DAF8);
 INCLUDE_ASM("asm/overlays", func_L00_0020DB30);
