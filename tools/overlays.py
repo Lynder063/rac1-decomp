@@ -81,6 +81,22 @@ def fingerprint(b: bytes) -> str:
     return hashlib.sha1(trim(masked(b))).hexdigest()[:16]
 
 
+def ends_in_jump(w: int) -> bool:
+    """jr, j or b (beq $0, $0): the last instruction of a function whose
+    delay slot follows it."""
+    return (w & 0xFC1FFFFF) == 0x00000008 or w >> 26 == 2 or w >> 16 == 0x1000
+
+
+def code_size(b: bytes) -> int:
+    """The function's size: its bytes without the padding after it, but
+    with a nop in the delay slot of its final jump, which trim() takes for
+    padding."""
+    t = trim(b)
+    if len(t) < len(b) and t and ends_in_jump(words(t[-4:])[0]):
+        return len(t) + 4
+    return len(t)
+
+
 def split(text: bytes, base: int, extra=()) -> list[tuple[int, int]]:
     """(offset, size) of each function: starts at call targets, after
     returns, after tail calls followed by a frame opener, at a frame opener
@@ -177,7 +193,7 @@ def catalogue() -> None:
             if not trim(body):
                 continue
             fp = fingerprint(body)
-            entry = found.setdefault(fp, {"size": len(trim(body)), "places": []})
+            entry = found.setdefault(fp, {"size": code_size(body), "places": []})
             entry["places"].append((lid, base + off))
     rows = []
     for fp, e in found.items():
