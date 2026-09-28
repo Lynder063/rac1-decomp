@@ -214,7 +214,12 @@ INCLUDE_ASM("asm/overlays", func_L00_00260878);
 INCLUDE_ASM("asm/overlays", func_L00_002608D0);
 INCLUDE_ASM("asm/overlays", func_L00_002608F0);
 INCLUDE_ASM("asm/overlays", func_L00_0026093C);
-INCLUDE_ASM("asm/overlays", func_L00_00260958);
+extern float func_002140F8(float, float);
+void func_L00_00260958(float *v, float s) {
+    v[0] += func_002140F8(-s, s);
+    v[1] += func_002140F8(-s, s);
+    v[2] += func_002140F8(-s, s);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00260AB0);
 INCLUDE_ASM("asm/overlays", func_L00_00260B68);
 INCLUDE_ASM("asm/overlays", func_L00_00260D30);
