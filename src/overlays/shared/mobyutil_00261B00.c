@@ -85,7 +85,13 @@ void func_L00_00264DB8(int arg0, int arg1) {
     func_001166FC(D_L00_00179218, func_001FE540(arg0));
     D_L00_0015F720 = arg1;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00264E28);
+extern char D_L00_00179218[] NOT_SDA;
+extern void func_00116248(void *, int, int);
+void func_L00_00264E28(int a, int b, int c) {
+    if (c == -1) c = func_001F9850(0xB4);
+    func_00116248(D_L00_00179218, func_001FE540(a), b);
+    D_L00_0015F720 = c;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00264EA8);
 INCLUDE_ASM("asm/overlays", func_L00_00265050);
 INCLUDE_ASM("asm/overlays", func_L00_002653A0);
