@@ -237,7 +237,21 @@ void func_L00_00260958(float *v, float s) {
     v[2] += func_002140F8(-s, s);
 }
 INCLUDE_ASM("asm/overlays", func_L00_00260AB0);
-INCLUDE_ASM("asm/overlays", func_L00_00260B68);
+extern int D_L00_001601B4 MACRO_ADDR;
+extern void func_001F9EC0(void *, void *, void *);
+int func_L00_00260B68(float *p, int idx) {
+    float a[4] __attribute__((aligned(16)));
+    float b[4] __attribute__((aligned(16)));
+    char *e;
+    if (idx >= 0) {
+        e = (char *)D_L00_001601B4 + idx * 128;
+        func_001F9BF0(a, p, e + 0x30);
+        a[3] = 0;
+        func_001F9EC0(b, a, e + 0x40);
+        if (func_001F9CB8(b) < 1.0f) return 1;
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00260D30);
 INCLUDE_ASM("asm/overlays", func_L00_00260FB0);
 INCLUDE_ASM("asm/overlays", func_L00_00261458);
