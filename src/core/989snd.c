@@ -521,7 +521,47 @@ void func_0012E600(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5,
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E648);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E688); /* snd_SendIOPCommandAndWait */
+extern unsigned char D_00133240_c[] __asm__("D_00133240");
+extern int D_00133200_w[] __asm__("D_00133200");
+extern int func_0012E038_s(int *, int) __asm__("func_0012E038");
+
+/* snd_SendIOPCommandAndWait: copy the command data into the send buffer,
+   flush pending commands, wait for the RPC server, call command cmd and
+   wait for its reply; the reply's second word is the result. Adapted
+   from Lombyte (MIT) for PAL. */
+int func_0012E688(int cmd, int size, void *arg) {
+    unsigned char *data = arg;
+    int i;
+    int result;
+
+    for (i = 0; i < size; i++) {
+        D_00133240_c[i] = data[i];
+    }
+    goto check;
+    do {
+        func_0012DDC0();
+        func_00118D80(0);
+check:;
+    } while (*(int *)&D_0015ED80 != 0);
+    func_0012E038_s(D_00133200_w, 1);
+    while (func_0011B6B8(&D_0015ECC0) != 0) {
+        func_00116078(D_00153E20);
+        func_0012DDC0();
+        func_00118D80(0);
+    }
+    if (size != 0) {
+        func_0011B4C8(&D_0015ECC0, cmd, 1, D_00133240_c, size, D_00133200_w, 0xC, 0, 0);
+    } else {
+        func_0011B4C8(&D_0015ECC0, cmd, 1, 0, 0, D_00133200_w, 0xC, 0, 0);
+    }
+    while (func_0012DFB0() == 0) {
+    }
+    result = D_00133200_w[1];
+    if (*((int **)&D_0015EDA0)[*(int *)&D_0015EDC0] != 0 && *(int *)&D_0015EDC4 == 0) {
+        func_0012EB18();
+    }
+    return result;
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E820); /* snd_SendIOPCommandNoWait */
 
