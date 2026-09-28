@@ -13,7 +13,7 @@ the tools involved.
 |---|---|---|
 | `baserom/overlays/level_NN/{lit,bss,data,vtbl,camvtbl,sndvtbl,text}.bin` and `manifest.json` (record addresses) | no, game data | `tools/overlays.py dump` |
 | `config/overlays/functions.tsv`: every distinct function, its name, kind and places | yes | `tools/overlays.py catalogue` |
-| `asm/overlays/<name>.s`: one file per distinct non-exe function, from its canonical level | no, generated | `tools/overlay_asm.py` (to write) |
+| `asm/overlays/<name>.s`: one file per distinct non-exe function, from its canonical level | no, generated | `tools/overlay_asm.py` |
 | `src/overlays/...`: C and `INCLUDE_ASM` stubs for overlay functions | yes | generated stubs, then matching |
 
 ## Names
@@ -53,6 +53,25 @@ resident and is shared by every level.
    each shared and level function, disassembled from its canonical level
    in the executable's `asm/nonmatchings` style, so `INCLUDE_ASM` and the
    assembler take it unchanged.
+
+   `python3 tools/overlays.py dump`, then `python3 tools/overlay_asm.py`
+   (it runs spimdisasm in the build container; about 25 minutes).
+   `tools/setup_asm.sh` runs it last when `baserom/overlays/` exists. Each
+   level is disassembled whole, split exactly at the catalogue's places.
+   Of 3,307 functions, 2,990 are written; a sample of 60 assembles to
+   retail's bytes (relocations masked) except as noted below. Open:
+   - **Jump tables**: the 317 functions that dispatch through one are
+     skipped (`build-sn/overlays/asm_work/skipped_jumptables.txt`). Their
+     tables are in the level's `data` record, not `lit`.
+   - **Resident data** (below 0x15F000) that the executable's asm names is
+     left as raw `lui (0x... >> 16)` pairs where spimdisasm had no symbol.
+   - **Assembler padding**: GNU as pads some backward branches in a stub
+     that ps2eeas did not (func_L00_002422D8 comes out 28 bytes long, and
+     naming the raw pairs moves the padding rather than removing it). It
+     affects only the stub's own bytes, so matching is unaffected; the
+     per-level rebuild needs it fixed.
+   - A branch into the next function assembles only with that function in
+     the same file.
 2. **Sources and matching**: `src/overlays/` stubs, grouped per canonical
    level, and `tools/try_func.py` support for `func_LNN_*` names (retail bytes
    from the dump). The executable build stays untouched.

@@ -39,3 +39,13 @@ python tools/sn_regnames.py asm
 python tools/fix_denormal_floats.py asm
 python tools/organize_asm.py
 echo "asm/ ready ($(find asm -type f -name '*.s' | wc -l) files)"
+
+# Level code overlays (docs/OVERLAYS.md): asm/overlays/<name>.s for every
+# distinct shared/level function, from baserom/overlays/ (assumes
+# `python3 tools/overlays.py dump` has already populated it -- that needs
+# baserom/SCES_509.16.iso, so it is not repeated here).
+if [ -d baserom/overlays ]; then
+    python tools/overlay_asm.py
+else
+    echo "baserom/overlays missing: skipping asm/overlays (run tools/overlays.py dump first)"
+fi
