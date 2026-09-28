@@ -52,6 +52,7 @@
     "complete": true,
     "source_path": "src/core/00112380.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -104,6 +105,7 @@
     "complete": false,
     "source_path": "src/core/00112468.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -138,6 +140,7 @@
     "complete": true,
     "source_path": "src/core/001138A8.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -181,6 +184,7 @@
     "complete": true,
     "source_path": "src/core/001138B8.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -242,6 +246,7 @@
     "complete": true,
     "source_path": "src/core/00113A70.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -285,6 +290,7 @@
     "complete": true,
     "source_path": "src/core/00113B70.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -319,6 +325,7 @@
     "complete": true,
     "source_path": "src/core/00114000.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -362,6 +369,7 @@
     "complete": true,
     "source_path": "src/core/00114060.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -423,6 +431,7 @@
     "complete": true,
     "source_path": "src/core/001144D0.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -538,6 +547,7 @@
     "complete": false,
     "source_path": "src/core/00114518.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -707,6 +717,7 @@
     "complete": false,
     "source_path": "src/core/001154C0.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -804,6 +815,7 @@
     "complete": false,
     "source_path": "src/core/00116070.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -838,6 +850,7 @@
     "complete": true,
     "source_path": "src/core/00116248.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -953,6 +966,7 @@
     "complete": false,
     "source_path": "src/core/001162B8.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -987,6 +1001,7 @@
     "complete": true,
     "source_path": "src/core/00116CC0.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -1030,6 +1045,7 @@
     "complete": true,
     "source_path": "src/core/00116D30.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -1118,6 +1134,7 @@
     "complete": false,
     "source_path": "src/core/00116FA0.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -1161,6 +1178,7 @@
     "complete": true,
     "source_path": "src/core/001188C8.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -1951,6 +1969,7 @@
     "complete": false,
     "source_path": "src/core/00118A40.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -2120,6 +2139,7 @@
     "complete": false,
     "source_path": "src/core/00119328.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -2208,6 +2228,7 @@
     "complete": false,
     "source_path": "src/core/00119868.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -2755,6 +2776,7 @@
     "complete": false,
     "source_path": "src/core/00119D88.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -2825,6 +2847,7 @@
     "complete": false,
     "source_path": "src/core/0011CCE0.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -2958,6 +2981,7 @@
     "complete": false,
     "source_path": "src/core/0011D0D0.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -2992,6 +3016,7 @@
     "complete": true,
     "source_path": "src/core/0011D700.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -3107,6 +3132,7 @@
     "complete": true,
     "source_path": "src/core/0011D960.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -3186,6 +3212,7 @@
     "complete": true,
     "source_path": "src/core/0011DBE8.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -3247,6 +3274,7 @@
     "complete": false,
     "source_path": "src/core/0011DD68.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -3317,6 +3345,7 @@
     "complete": true,
     "source_path": "src/core/0011DDD0.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -3369,6 +3398,7 @@
     "complete": true,
     "source_path": "src/libgcc/libgcc2.c",
     "progress_categories": [
+     "executable",
      "libgcc"
     ]
    }
@@ -3403,6 +3433,7 @@
     "complete": true,
     "source_path": "src/libgcc/libgcc2.c",
     "progress_categories": [
+     "executable",
      "libgcc"
     ]
    }
@@ -3437,6 +3468,7 @@
     "complete": true,
     "source_path": "src/libgcc/libgcc2.c",
     "progress_categories": [
+     "executable",
      "libgcc"
     ]
    }
@@ -3471,6 +3503,7 @@
     "complete": true,
     "source_path": "src/libgcc/libgcc2.c",
     "progress_categories": [
+     "executable",
      "libgcc"
     ]
    }
@@ -3505,6 +3538,7 @@
     "complete": false,
     "source_path": "src/libgcc/libgcc2.c",
     "progress_categories": [
+     "executable",
      "libgcc"
     ]
    }
@@ -3539,6 +3573,7 @@
     "complete": true,
     "source_path": "src/libgcc/libgcc2.c",
     "progress_categories": [
+     "executable",
      "libgcc"
     ]
    }
@@ -3573,6 +3608,7 @@
     "complete": false,
     "source_path": "src/libgcc/libgcc2.c",
     "progress_categories": [
+     "executable",
      "libgcc"
     ]
    }
@@ -3607,6 +3643,7 @@
     "complete": false,
     "source_path": "src/libgcc/libgcc2.c",
     "progress_categories": [
+     "executable",
      "libgcc"
     ]
    }
@@ -3758,6 +3795,7 @@
     "complete": true,
     "source_path": "src/libgcc/fp-bit.c",
     "progress_categories": [
+     "executable",
      "libgcc"
     ]
    }
@@ -3873,6 +3911,7 @@
     "complete": true,
     "source_path": "src/libgcc/fp-bit.c",
     "progress_categories": [
+     "executable",
      "libgcc"
     ]
    }
@@ -3916,6 +3955,7 @@
     "complete": false,
     "source_path": "src/core/001207B8.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -4103,6 +4143,7 @@
     "complete": false,
     "source_path": "src/core/001208E8.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -4182,6 +4223,7 @@
     "complete": false,
     "source_path": "src/core/00121750.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -4234,6 +4276,7 @@
     "complete": false,
     "source_path": "src/core/00121D18.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -4268,6 +4311,7 @@
     "complete": true,
     "source_path": "src/core/00122140.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -4311,6 +4355,7 @@
     "complete": true,
     "source_path": "src/core/00122200.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -4354,6 +4399,7 @@
     "complete": true,
     "source_path": "src/core/001224B0.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -4388,6 +4434,7 @@
     "complete": false,
     "source_path": "src/core/00122630.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -4431,6 +4478,7 @@
     "complete": false,
     "source_path": "src/core/00122818.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -4465,6 +4513,7 @@
     "complete": false,
     "source_path": "src/core/00122AD8.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -4607,6 +4656,7 @@
     "complete": false,
     "source_path": "src/core/00123168.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -4983,6 +5033,7 @@
     "complete": false,
     "source_path": "src/core/001236F0.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -5026,6 +5077,7 @@
     "complete": false,
     "source_path": "src/core/00125218.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -5132,6 +5184,7 @@
     "complete": false,
     "source_path": "src/core/001252A0.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -5733,6 +5786,7 @@
     "complete": false,
     "source_path": "src/core/00125630.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -5866,6 +5920,7 @@
     "complete": false,
     "source_path": "src/core/0012A2F0.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -6323,6 +6378,7 @@
     "complete": false,
     "source_path": "src/core/0012AC80.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -6366,6 +6422,7 @@
     "complete": true,
     "source_path": "src/core/0012CC70.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -6607,6 +6664,7 @@
     "complete": false,
     "source_path": "src/core/0012CC90.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -6659,6 +6717,7 @@
     "complete": true,
     "source_path": "src/core/crt0.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -6702,6 +6761,7 @@
     "complete": false,
     "source_path": "src/core/boot.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -7294,6 +7354,7 @@
     "complete": false,
     "source_path": "src/core/989snd.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -7328,6 +7389,7 @@
     "complete": true,
     "source_path": "src/core/permcb.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -7380,6 +7442,7 @@
     "complete": true,
     "source_path": "src/core/wad.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -7450,6 +7513,7 @@
     "complete": false,
     "source_path": "src/game/actuator.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -7502,6 +7566,7 @@
     "complete": false,
     "source_path": "src/game/bloaders.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -7716,6 +7781,7 @@
     "complete": true,
     "source_path": "src/game/stub.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -7759,6 +7825,7 @@
     "complete": false,
     "source_path": "src/game/bmain.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -7874,6 +7941,7 @@
     "complete": false,
     "source_path": "src/game/transition.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -8133,6 +8201,7 @@
     "complete": false,
     "source_path": "src/game/camera.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -8221,6 +8290,7 @@
     "complete": false,
     "source_path": "src/game/effects.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -8255,6 +8325,7 @@
     "complete": true,
     "source_path": "src/game/cmecpu.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -8307,6 +8378,7 @@
     "complete": true,
     "source_path": "src/game/collproc.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -9079,6 +9151,7 @@
     "complete": false,
     "source_path": "src/game/draw.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -9194,6 +9267,7 @@
     "complete": false,
     "source_path": "src/game/drawquad.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -9930,6 +10004,7 @@
     "complete": false,
     "source_path": "src/game/fastfunc.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -10081,6 +10156,7 @@
     "complete": false,
     "source_path": "src/game/framebuf.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -10133,6 +10209,7 @@
     "complete": false,
     "source_path": "src/game/freeze.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -10284,6 +10361,7 @@
     "complete": false,
     "source_path": "src/game/help.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -10651,6 +10729,7 @@
     "complete": false,
     "source_path": "src/game/hud.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -10685,6 +10764,7 @@
     "complete": true,
     "source_path": "src/game/init.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -10737,6 +10817,7 @@
     "complete": false,
     "source_path": "src/game/initonce.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -10798,6 +10879,7 @@
     "complete": false,
     "source_path": "src/game/lights.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -11021,6 +11103,7 @@
     "complete": false,
     "source_path": "src/game/loaders.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -11172,6 +11255,7 @@
     "complete": false,
     "source_path": "src/game/map.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -12025,6 +12109,7 @@
     "complete": false,
     "source_path": "src/game/menu.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -12176,6 +12261,7 @@
     "complete": false,
     "source_path": "src/game/memcard.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -12264,6 +12350,7 @@
     "complete": false,
     "source_path": "src/game/miscproc.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -12451,6 +12538,7 @@
     "complete": false,
     "source_path": "src/game/missionfunc.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -12755,6 +12843,7 @@
     "complete": false,
     "source_path": "src/game/mobyfunc.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -12933,6 +13022,7 @@
     "complete": true,
     "source_path": "src/game/mobyproc.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -13507,6 +13597,7 @@
     "complete": false,
     "source_path": "src/game/mobyutil.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -13712,6 +13803,7 @@
     "complete": false,
     "source_path": "src/game/music.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -13908,6 +14000,7 @@
     "complete": false,
     "source_path": "src/game/stream.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -13969,6 +14062,7 @@
     "complete": false,
     "source_path": "src/game/pad.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -14057,6 +14151,7 @@
     "complete": true,
     "source_path": "src/game/partproc.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -14100,6 +14195,7 @@
     "complete": false,
     "source_path": "src/game/partupd.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -15520,6 +15616,7 @@
     "complete": false,
     "source_path": "src/game/pause.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -15599,6 +15696,7 @@
     "complete": true,
     "source_path": "src/game/shadowproc.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -15651,6 +15749,7 @@
     "complete": true,
     "source_path": "src/game/shrubfunc.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -15703,6 +15802,7 @@
     "complete": true,
     "source_path": "src/game/shrubproc.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -15809,6 +15909,7 @@
     "complete": false,
     "source_path": "src/game/skyfunc.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -15897,6 +15998,7 @@
     "complete": true,
     "source_path": "src/game/skyproc.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -16102,6 +16204,7 @@
     "complete": false,
     "source_path": "src/game/sound.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -16307,6 +16410,7 @@
     "complete": false,
     "source_path": "src/game/space.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -16377,6 +16481,7 @@
     "complete": true,
     "source_path": "src/game/stash.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -16438,6 +16543,7 @@
     "complete": true,
     "source_path": "src/game/tfragfunc.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -16697,6 +16803,7 @@
     "complete": false,
     "source_path": "src/game/vuchain.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -16758,6 +16865,7 @@
     "complete": true,
     "source_path": "src/game/tfragproc.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -16837,6 +16945,7 @@
     "complete": true,
     "source_path": "src/game/tiefunc.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -16889,6 +16998,7 @@
     "complete": true,
     "source_path": "src/game/tieproc.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -16977,6 +17087,7 @@
     "complete": false,
     "source_path": "src/game/update.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -17173,6 +17284,7 @@
     "complete": false,
     "source_path": "src/game/vendor.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -17270,6 +17382,7 @@
     "complete": false,
     "source_path": "src/game/movie/movie.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -17394,6 +17507,7 @@
     "complete": true,
     "source_path": "src/game/movie/audiodec.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -17464,6 +17578,7 @@
     "complete": true,
     "source_path": "src/game/movie/disp.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -17516,6 +17631,7 @@
     "complete": true,
     "source_path": "src/game/movie/read.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -17595,6 +17711,7 @@
     "complete": true,
     "source_path": "src/game/movie/readbuf.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -17647,6 +17764,7 @@
     "complete": true,
     "source_path": "src/game/movie/strfile.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -17825,6 +17943,7 @@
     "complete": false,
     "source_path": "src/game/movie/vibuf.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -18048,6 +18167,7 @@
     "complete": true,
     "source_path": "src/game/movie/videodec.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -18154,6 +18274,7 @@
     "complete": true,
     "source_path": "src/game/movie/vobuf.c",
     "progress_categories": [
+     "executable",
      "game"
     ]
    }
@@ -18188,6 +18309,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/bloaders_001EB380.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -18420,6 +18542,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/camera_001EB508.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -18454,6 +18577,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/camera_001FC308.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -18641,6 +18765,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/draw_001F3A78.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -18675,6 +18800,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/draw_0020BF88.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -18772,6 +18898,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/drawquad_001FD1D8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -18806,6 +18933,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/drawquad_00216EE4.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -18840,6 +18968,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/drawquad_0021F9C8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -19045,6 +19174,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/effects_001EE2E0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -19394,6 +19524,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/fastfunc_001FEF78.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -19437,6 +19568,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/fastfunc_00211A38.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -19471,6 +19603,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/framebuf_002016D0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -19514,6 +19647,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/freeze_00203970.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -19611,6 +19745,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/help_001FFED0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -19645,6 +19780,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/help_00200890.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -20327,6 +20463,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/help_00203E98.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -20964,6 +21101,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/help_0020CDF0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -21187,6 +21325,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/help_00214D60.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -21221,6 +21360,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/help_002180F8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -21291,6 +21431,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/help_0021A2E0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -21379,6 +21520,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/help_0021D6B8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -21557,6 +21699,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/help_00221A98.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -21591,6 +21734,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/help_00222E18.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -21814,6 +21958,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/help_002274A8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -21857,6 +22002,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/help_002284A8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -21927,6 +22073,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/help_002297E0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -21961,6 +22108,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/help_0022A340.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -22454,6 +22602,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/help_00232560.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -22641,6 +22790,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/help_00237B00.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -23134,6 +23284,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/hud_00235960.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -23168,6 +23319,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/hud_0023A0E8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -23202,6 +23354,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/hud_0024A080.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -23299,6 +23452,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/hud_00263490.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -23369,6 +23523,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/initonce_0023E4C8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -23403,6 +23558,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/initonce_00252E80.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -23446,6 +23602,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/lights_0023FA70.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -23570,6 +23727,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/loaders_00240398.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -23685,6 +23843,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/map_002465F8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -23728,6 +23887,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/memcard_0024DFB0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -24248,6 +24408,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/menu_00249720.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -24309,6 +24470,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/miscproc_0024E798.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -24361,6 +24523,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/miscproc_00250720.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -24395,6 +24558,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/miscproc_00259040.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -24474,6 +24638,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/miscproc_00262BB0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -24508,6 +24673,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/miscproc_002677B4.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -24614,6 +24780,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/missionfunc_0024EEF0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -24657,6 +24824,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/mobyfunc_00242868.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -24898,6 +25066,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/mobyfunc_0024FD50.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -24941,6 +25110,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/mobyfunc_002649C8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -25182,6 +25352,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/mobyproc_00251A78.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -25252,6 +25423,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/mobyutil_00249488.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -25295,6 +25467,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/mobyutil_0024D8A8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -26292,6 +26465,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/mobyutil_00258BC8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -26380,6 +26554,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/mobyutil_0025D750.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -26765,6 +26940,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/mobyutil_00261B00.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -26799,6 +26975,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/mobyutil_00266060.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -26977,6 +27154,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/mobyutil_0026E8E0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -27020,6 +27198,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/mobyutil_002785C0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -27063,6 +27242,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/mobyutil_0027C260.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -27097,6 +27277,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/mobyutil_00289960.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -27149,6 +27330,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/mobyutil_0028AA68.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -27201,6 +27383,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/movie_audiodec_002EFC90.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -27235,6 +27418,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/movie_strfile_002F0A30.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -27287,6 +27471,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/music_002664B0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -27348,6 +27533,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/pad_00268760.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -27409,6 +27595,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/partproc_002697A0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -27443,6 +27630,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/partproc_00273A80.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -27486,6 +27674,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/partupd_0025F0A0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -27529,6 +27718,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/partupd_00260EE8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -28103,6 +28293,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/partupd_0026A130.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -28623,6 +28814,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/partupd_00272158.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -28657,6 +28849,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/partupd_002803B8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -28853,6 +29046,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/partupd_00280428.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -28896,6 +29090,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/partupd_00295880.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -28939,6 +29134,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/partupd_0029B070.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -28982,6 +29178,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/partupd_002A1098.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -29277,6 +29474,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/pause_00277208.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -29311,6 +29509,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/pause_0029C2A0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -29345,6 +29544,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/shrubproc_0027A1F0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -29379,6 +29579,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/shrubproc_0027D038.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -29584,6 +29785,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/shrubproc_0028A198.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -29618,6 +29820,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/shrubproc_002949A0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -29652,6 +29855,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/shrubproc_00298F68.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -29686,6 +29890,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/shrubproc_002A0190.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -29720,6 +29925,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/shrubproc_002A9018.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -29754,6 +29960,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/shrubproc_002B3050.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -29788,6 +29995,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/shrubproc_002B4AC0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -29822,6 +30030,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/skyfunc_002A0D78.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -29865,6 +30074,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/skyproc_0028D958.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -29899,6 +30109,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/sound_0027FF38.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -30032,6 +30243,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/sound_0028EB98.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -30066,6 +30278,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/sound_002A2C90.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -30154,6 +30367,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/space_0028FB78.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -30188,6 +30402,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/space_002A3680.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -30258,6 +30473,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/start_001EAD88.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -30301,6 +30517,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/stash_00295010.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -30452,6 +30669,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/stream_002670E0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -30495,6 +30713,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/stub_001EB430.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -30538,6 +30757,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/tfragproc_002963D8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -30707,6 +30927,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/tieproc_00299108.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -30822,6 +31043,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/update_0029B6A0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -30856,6 +31078,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/update_002AFD00.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -31124,6 +31347,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_00292AC0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -31455,6 +31679,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_00298BB8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -31579,6 +31804,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_00299AF0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -31649,6 +31875,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_0029FD68.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -31890,6 +32117,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002A1B58.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -32230,6 +32458,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002A5138.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -32615,6 +32844,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002A5218.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -32802,6 +33032,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002AB910.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -32872,6 +33103,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002B0068.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -33230,6 +33462,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002B2A28.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -33507,6 +33740,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002B33E8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -33595,6 +33829,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002B8FC0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -33953,6 +34188,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002B90A8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -34257,6 +34493,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002BA7C8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -34336,6 +34573,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002BD3D0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -34604,6 +34842,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002C12B0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -34737,6 +34976,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002C6B30.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -34996,6 +35236,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002C96D0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -35210,6 +35451,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002C99E0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -35577,6 +35819,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002CF2C0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -35872,6 +36115,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002D1168.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -36113,6 +36357,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002D3DF8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -36255,6 +36500,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002D7C00.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -36649,6 +36895,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002D9438.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -36989,6 +37236,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002D9548.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -37671,6 +37919,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002E1660.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -37705,6 +37954,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002E4BA0.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -38072,6 +38322,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002EB0D8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -38466,6 +38717,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002F7700.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -38527,6 +38779,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002F9438.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -38705,6 +38958,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_002FF000.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -38766,6 +39020,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vendor_0031AD00.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -38863,6 +39118,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vuchain_002A21A8.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -38906,6 +39162,7 @@
     "complete": false,
     "source_path": "src/overlays/shared/vuchain_002B8C00.c",
     "progress_categories": [
+     "level_code",
      "common"
     ]
    }
@@ -38949,6 +39206,7 @@
     "complete": false,
     "source_path": "src/overlays/l00/initonce_0023E300.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_00"
     ]
@@ -38984,6 +39242,7 @@
     "complete": false,
     "source_path": "src/overlays/l00/shrubproc_0028A608.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_00"
     ]
@@ -39082,6 +39341,7 @@
     "complete": false,
     "source_path": "src/overlays/l00/vendor_002DB278.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_00"
     ]
@@ -39135,6 +39395,7 @@
     "complete": false,
     "source_path": "src/overlays/l01/help_002343F8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_01"
     ]
@@ -39179,6 +39440,7 @@
     "complete": false,
     "source_path": "src/overlays/l01/help_0023D688.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_01"
     ]
@@ -39214,6 +39476,7 @@
     "complete": false,
     "source_path": "src/overlays/l01/help_00243078.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_01"
     ]
@@ -39249,6 +39512,7 @@
     "complete": false,
     "source_path": "src/overlays/l01/miscproc_002635C8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_01"
     ]
@@ -39293,6 +39557,7 @@
     "complete": false,
     "source_path": "src/overlays/l01/mobyutil_0026FFC0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_01"
     ]
@@ -39355,6 +39620,7 @@
     "complete": false,
     "source_path": "src/overlays/l01/partupd_0027F6C8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_01"
     ]
@@ -39579,6 +39845,7 @@
     "complete": false,
     "source_path": "src/overlays/l01/vendor_002BA898.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_01"
     ]
@@ -39893,6 +40160,7 @@
     "complete": false,
     "source_path": "src/overlays/l01/vendor_002FABE8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_01"
     ]
@@ -39973,6 +40241,7 @@
     "complete": false,
     "source_path": "src/overlays/l02/help_0021BC90.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_02"
     ]
@@ -40026,6 +40295,7 @@
     "complete": false,
     "source_path": "src/overlays/l02/help_0022BE40.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_02"
     ]
@@ -40070,6 +40340,7 @@
     "complete": false,
     "source_path": "src/overlays/l02/hud_0023D600.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_02"
     ]
@@ -40105,6 +40376,7 @@
     "complete": false,
     "source_path": "src/overlays/l02/initonce_00240A00.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_02"
     ]
@@ -40473,6 +40745,7 @@
     "complete": false,
     "source_path": "src/overlays/l02/vendor_002A59D8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_02"
     ]
@@ -40607,6 +40880,7 @@
     "complete": false,
     "source_path": "src/overlays/l02/vendor_002E21F8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_02"
     ]
@@ -40651,6 +40925,7 @@
     "complete": false,
     "source_path": "src/overlays/l03/help_00205E28.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_03"
     ]
@@ -40686,6 +40961,7 @@
     "complete": false,
     "source_path": "src/overlays/l03/help_00216D38.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_03"
     ]
@@ -40721,6 +40997,7 @@
     "complete": false,
     "source_path": "src/overlays/l03/help_0021CDA8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_03"
     ]
@@ -40756,6 +41033,7 @@
     "complete": false,
     "source_path": "src/overlays/l03/initonce_0022D028.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_03"
     ]
@@ -40791,6 +41069,7 @@
     "complete": false,
     "source_path": "src/overlays/l03/mobyutil_00250B88.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_03"
     ]
@@ -41024,6 +41303,7 @@
     "complete": false,
     "source_path": "src/overlays/l03/vendor_00293720.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_03"
     ]
@@ -41365,6 +41645,7 @@
     "complete": false,
     "source_path": "src/overlays/l03/vendor_002CB280.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_03"
     ]
@@ -41418,6 +41699,7 @@
     "complete": false,
     "source_path": "src/overlays/l04/fastfunc_001F2F68.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_04"
     ]
@@ -41480,6 +41762,7 @@
     "complete": false,
     "source_path": "src/overlays/l04/mobyutil_0024D4A8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_04"
     ]
@@ -41515,6 +41798,7 @@
     "complete": false,
     "source_path": "src/overlays/l04/shrubproc_0027D6D0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_04"
     ]
@@ -41694,6 +41978,7 @@
     "complete": false,
     "source_path": "src/overlays/l04/vendor_0029FCF0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_04"
     ]
@@ -41882,6 +42167,7 @@
     "complete": false,
     "source_path": "src/overlays/l04/vendor_002CB800.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_04"
     ]
@@ -41980,6 +42266,7 @@
     "complete": false,
     "source_path": "src/overlays/l04/vuchain_00293490.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_04"
     ]
@@ -42042,6 +42329,7 @@
     "complete": false,
     "source_path": "src/overlays/l05/help_0023A638.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_05"
     ]
@@ -42077,6 +42365,7 @@
     "complete": false,
     "source_path": "src/overlays/l05/help_00245208.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_05"
     ]
@@ -42112,6 +42401,7 @@
     "complete": false,
     "source_path": "src/overlays/l05/help_0024D680.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_05"
     ]
@@ -42147,6 +42437,7 @@
     "complete": false,
     "source_path": "src/overlays/l05/help_00256148.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_05"
     ]
@@ -42191,6 +42482,7 @@
     "complete": false,
     "source_path": "src/overlays/l05/partupd_0029CA28.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_05"
     ]
@@ -42514,6 +42806,7 @@
     "complete": false,
     "source_path": "src/overlays/l05/vendor_002D28D0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_05"
     ]
@@ -42828,6 +43121,7 @@
     "complete": false,
     "source_path": "src/overlays/l05/vendor_0030EB68.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_05"
     ]
@@ -42863,6 +43157,7 @@
     "complete": false,
     "source_path": "src/overlays/l06/drawquad_00216B38.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_06"
     ]
@@ -42898,6 +43193,7 @@
     "complete": false,
     "source_path": "src/overlays/l06/fastfunc_002172B0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_06"
     ]
@@ -42987,6 +43283,7 @@
     "complete": false,
     "source_path": "src/overlays/l06/help_00223630.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_06"
     ]
@@ -43022,6 +43319,7 @@
     "complete": false,
     "source_path": "src/overlays/l06/help_00235E08.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_06"
     ]
@@ -43057,6 +43355,7 @@
     "complete": false,
     "source_path": "src/overlays/l06/help_0023BBE8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_06"
     ]
@@ -43452,6 +43751,7 @@
     "complete": false,
     "source_path": "src/overlays/l06/vendor_002B5990.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_06"
     ]
@@ -43766,6 +44066,7 @@
     "complete": false,
     "source_path": "src/overlays/l06/vendor_002FE5D0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_06"
     ]
@@ -43801,6 +44102,7 @@
     "complete": false,
     "source_path": "src/overlays/l07/initonce_002664F0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_07"
     ]
@@ -43836,6 +44138,7 @@
     "complete": false,
     "source_path": "src/overlays/l07/map_00270BE0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_07"
     ]
@@ -43871,6 +44174,7 @@
     "complete": false,
     "source_path": "src/overlays/l07/mobyutil_00282EB0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_07"
     ]
@@ -43915,6 +44219,7 @@
     "complete": false,
     "source_path": "src/overlays/l07/partupd_0029D2B8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_07"
     ]
@@ -44319,6 +44624,7 @@
     "complete": false,
     "source_path": "src/overlays/l07/vendor_002CE470.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_07"
     ]
@@ -44552,6 +44858,7 @@
     "complete": false,
     "source_path": "src/overlays/l07/vendor_00313D28.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_07"
     ]
@@ -44623,6 +44930,7 @@
     "complete": false,
     "source_path": "src/overlays/l07/vendor_0031BDB8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_07"
     ]
@@ -44667,6 +44975,7 @@
     "complete": false,
     "source_path": "src/overlays/l08/help_0021DFB8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_08"
     ]
@@ -44702,6 +45011,7 @@
     "complete": false,
     "source_path": "src/overlays/l08/help_00231228.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_08"
     ]
@@ -44737,6 +45047,7 @@
     "complete": false,
     "source_path": "src/overlays/l08/help_00237818.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_08"
     ]
@@ -44772,6 +45083,7 @@
     "complete": false,
     "source_path": "src/overlays/l08/mobyutil_0026B0E8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_08"
     ]
@@ -44825,6 +45137,7 @@
     "complete": false,
     "source_path": "src/overlays/l08/partupd_0027ACC8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_08"
     ]
@@ -45103,6 +45416,7 @@
     "complete": false,
     "source_path": "src/overlays/l08/vendor_002B9438.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_08"
     ]
@@ -45336,6 +45650,7 @@
     "complete": false,
     "source_path": "src/overlays/l08/vendor_002E0258.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_08"
     ]
@@ -45542,6 +45857,7 @@
     "complete": false,
     "source_path": "src/overlays/l08/vendor_002EAF48.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_08"
     ]
@@ -45595,6 +45911,7 @@
     "complete": false,
     "source_path": "src/overlays/l09/drawquad_0021E3E8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_09"
     ]
@@ -45936,6 +46253,7 @@
     "complete": false,
     "source_path": "src/overlays/l09/vendor_002C2B08.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_09"
     ]
@@ -45980,6 +46298,7 @@
     "complete": false,
     "source_path": "src/overlays/l09/vendor_0030B5E8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_09"
     ]
@@ -46348,6 +46667,7 @@
     "complete": false,
     "source_path": "src/overlays/l10/vendor_00296BD8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_10"
     ]
@@ -46545,6 +46865,7 @@
     "complete": false,
     "source_path": "src/overlays/l10/vendor_002E30F8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_10"
     ]
@@ -46589,6 +46910,7 @@
     "complete": false,
     "source_path": "src/overlays/l11/help_0023CD98.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_11"
     ]
@@ -46624,6 +46946,7 @@
     "complete": false,
     "source_path": "src/overlays/l11/help_0024E240.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_11"
     ]
@@ -46659,6 +46982,7 @@
     "complete": false,
     "source_path": "src/overlays/l11/help_00254158.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_11"
     ]
@@ -47072,6 +47396,7 @@
     "complete": false,
     "source_path": "src/overlays/l11/vendor_002CC828.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_11"
     ]
@@ -47494,6 +47819,7 @@
     "complete": false,
     "source_path": "src/overlays/l11/vendor_00312BD8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_11"
     ]
@@ -47556,6 +47882,7 @@
     "complete": false,
     "source_path": "src/overlays/l11/vendor_0031EFC0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_11"
     ]
@@ -47618,6 +47945,7 @@
     "complete": false,
     "source_path": "src/overlays/l12/help_0022E428.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_12"
     ]
@@ -47653,6 +47981,7 @@
     "complete": false,
     "source_path": "src/overlays/l12/help_002407C0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_12"
     ]
@@ -47688,6 +48017,7 @@
     "complete": false,
     "source_path": "src/overlays/l12/help_00246938.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_12"
     ]
@@ -47750,6 +48080,7 @@
     "complete": false,
     "source_path": "src/overlays/l12/mobyutil_00272D90.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_12"
     ]
@@ -48073,6 +48404,7 @@
     "complete": false,
     "source_path": "src/overlays/l12/vendor_002C0310.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_12"
     ]
@@ -48351,6 +48683,7 @@
     "complete": false,
     "source_path": "src/overlays/l12/vendor_002EDAA0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_12"
     ]
@@ -48395,6 +48728,7 @@
     "complete": false,
     "source_path": "src/overlays/l13/mobyutil_00266128.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_13"
     ]
@@ -48430,6 +48764,7 @@
     "complete": false,
     "source_path": "src/overlays/l13/partupd_002811B0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_13"
     ]
@@ -48465,6 +48800,7 @@
     "complete": false,
     "source_path": "src/overlays/l13/sound_002994D0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_13"
     ]
@@ -48689,6 +49025,7 @@
     "complete": false,
     "source_path": "src/overlays/l13/vendor_002B2020.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_13"
     ]
@@ -49057,6 +49394,7 @@
     "complete": false,
     "source_path": "src/overlays/l13/vendor_002C2638.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_13"
     ]
@@ -49353,6 +49691,7 @@
     "complete": false,
     "source_path": "src/overlays/l13/vendor_002EBD00.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_13"
     ]
@@ -49460,6 +49799,7 @@
     "complete": false,
     "source_path": "src/overlays/l13/vendor_0030CAE0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_13"
     ]
@@ -49522,6 +49862,7 @@
     "complete": false,
     "source_path": "src/overlays/l14/help_0021E3A8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_14"
     ]
@@ -49557,6 +49898,7 @@
     "complete": false,
     "source_path": "src/overlays/l14/help_002306C8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_14"
     ]
@@ -49592,6 +49934,7 @@
     "complete": false,
     "source_path": "src/overlays/l14/help_00235DC8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_14"
     ]
@@ -49627,6 +49970,7 @@
     "complete": false,
     "source_path": "src/overlays/l14/initonce_00246A90.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_14"
     ]
@@ -50130,6 +50474,7 @@
     "complete": false,
     "source_path": "src/overlays/l14/vendor_002ACCC0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_14"
     ]
@@ -50498,6 +50843,7 @@
     "complete": false,
     "source_path": "src/overlays/l14/vendor_002E0538.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_14"
     ]
@@ -50821,6 +51167,7 @@
     "complete": false,
     "source_path": "src/overlays/l14/vendor_002FF358.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_14"
     ]
@@ -50874,6 +51221,7 @@
     "complete": false,
     "source_path": "src/overlays/l15/help_00204AC0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_15"
     ]
@@ -50909,6 +51257,7 @@
     "complete": false,
     "source_path": "src/overlays/l15/help_00217348.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_15"
     ]
@@ -50944,6 +51293,7 @@
     "complete": false,
     "source_path": "src/overlays/l15/help_0021D7A8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_15"
     ]
@@ -50979,6 +51329,7 @@
     "complete": false,
     "source_path": "src/overlays/l15/initonce_0022E478.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_15"
     ]
@@ -51014,6 +51365,7 @@
     "complete": false,
     "source_path": "src/overlays/l15/mobyutil_00248E58.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_15"
     ]
@@ -51049,6 +51401,7 @@
     "complete": false,
     "source_path": "src/overlays/l15/partupd_00266900.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_15"
     ]
@@ -51336,6 +51689,7 @@
     "complete": false,
     "source_path": "src/overlays/l15/vendor_0029C1D0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_15"
     ]
@@ -51461,6 +51815,7 @@
     "complete": false,
     "source_path": "src/overlays/l15/vendor_002EDB50.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_15"
     ]
@@ -51532,6 +51887,7 @@
     "complete": false,
     "source_path": "src/overlays/l16/help_00209D98.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_16"
     ]
@@ -51567,6 +51923,7 @@
     "complete": false,
     "source_path": "src/overlays/l16/help_00214C88.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_16"
     ]
@@ -51602,6 +51959,7 @@
     "complete": false,
     "source_path": "src/overlays/l16/help_0021EA88.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_16"
     ]
@@ -51637,6 +51995,7 @@
     "complete": false,
     "source_path": "src/overlays/l16/help_00227818.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_16"
     ]
@@ -52212,6 +52571,7 @@
     "complete": false,
     "source_path": "src/overlays/l16/vendor_002A50F0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_16"
     ]
@@ -52427,6 +52787,7 @@
     "complete": false,
     "source_path": "src/overlays/l16/vendor_002E7C70.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_16"
     ]
@@ -52480,6 +52841,7 @@
     "complete": false,
     "source_path": "src/overlays/l17/help_00202740.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_17"
     ]
@@ -52515,6 +52877,7 @@
     "complete": false,
     "source_path": "src/overlays/l17/help_00214F68.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_17"
     ]
@@ -52550,6 +52913,7 @@
     "complete": false,
     "source_path": "src/overlays/l17/help_0021ED38.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_17"
     ]
@@ -52585,6 +52949,7 @@
     "complete": false,
     "source_path": "src/overlays/l17/help_002260F0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_17"
     ]
@@ -52620,6 +52985,7 @@
     "complete": false,
     "source_path": "src/overlays/l17/mobyutil_00254B40.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_17"
     ]
@@ -52664,6 +53030,7 @@
     "complete": false,
     "source_path": "src/overlays/l17/partupd_00270A28.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_17"
     ]
@@ -52906,6 +53273,7 @@
     "complete": false,
     "source_path": "src/overlays/l17/vendor_002AA068.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_17"
     ]
@@ -53157,6 +53525,7 @@
     "complete": false,
     "source_path": "src/overlays/l17/vendor_002F1558.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_17"
     ]
@@ -53201,6 +53570,7 @@
     "complete": false,
     "source_path": "src/overlays/l18/help_00214138.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_18"
     ]
@@ -53236,6 +53606,7 @@
     "complete": false,
     "source_path": "src/overlays/l18/help_0021F1D8.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_18"
     ]
@@ -53271,6 +53642,7 @@
     "complete": false,
     "source_path": "src/overlays/l18/help_002284E0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_18"
     ]
@@ -53306,6 +53678,7 @@
     "complete": false,
     "source_path": "src/overlays/l18/help_0022F058.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_18"
     ]
@@ -53341,6 +53714,7 @@
     "complete": false,
     "source_path": "src/overlays/l18/mobyutil_00267000.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_18"
     ]
@@ -53376,6 +53750,7 @@
     "complete": false,
     "source_path": "src/overlays/l18/pause_00282F48.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_18"
     ]
@@ -53960,6 +54335,7 @@
     "complete": false,
     "source_path": "src/overlays/l18/vendor_002A8400.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_18"
     ]
@@ -54265,6 +54641,7 @@
     "complete": false,
     "source_path": "src/overlays/l18/vendor_002F2AE0.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_18"
     ]
@@ -54462,6 +54839,7 @@
     "complete": false,
     "source_path": "src/overlays/l18/vendor_002F9D48.c",
     "progress_categories": [
+     "level_code",
      "levels",
      "level_18"
     ]
@@ -54470,6 +54848,36 @@
  ],
  "version": 2,
  "categories": [
+  {
+   "id": "executable",
+   "name": "Executable",
+   "measures": {
+    "fuzzy_match_percent": 55.67146231479493,
+    "total_code": "465700",
+    "matched_code": "258632",
+    "matched_code_percent": 55.5361820914752,
+    "total_functions": 1680,
+    "matched_functions": 1356,
+    "matched_functions_percent": 80.71428571428571,
+    "complete_code": "88644",
+    "complete_code_percent": 19.034571612626156
+   }
+  },
+  {
+   "id": "level_code",
+   "name": "Level code",
+   "measures": {
+    "fuzzy_match_percent": 0.07078579672451432,
+    "total_code": "3226636",
+    "matched_code": "2284",
+    "matched_code_percent": 0.07078579672451432,
+    "total_functions": 3307,
+    "matched_functions": 11,
+    "matched_functions_percent": 0.33262775929845784,
+    "complete_code": "0",
+    "complete_code_percent": 0.0
+   }
+  },
   {
    "id": "game",
    "name": "Executable game code",

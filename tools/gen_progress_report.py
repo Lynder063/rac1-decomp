@@ -183,11 +183,11 @@ def overlay_dirs() -> list[tuple[Path, list[str]]]:
     out = []
     shared = OVERLAYS_SRC / "shared"
     if shared.is_dir():
-        out.append((shared, ["common"]))
+        out.append((shared, ["level_code", "common"]))
     for i in range(NUM_LEVELS):
         d = OVERLAYS_SRC / f"l{i:02d}"
         if d.is_dir():
-            out.append((d, ["levels", f"level_{i:02d}"]))
+            out.append((d, ["level_code", "levels", f"level_{i:02d}"]))
     return out
 
 
@@ -270,13 +270,13 @@ def overlay_units(file_map: dict, fuzzy: dict) -> tuple[list[dict], list, dict, 
     complete_code) for src/overlays/shared/ and src/overlays/lNN/: one unit
     per file, its functions the file's INCLUDE_ASM'd or defined
     func_LNN_XXXXXXXX names in file order (docs/OVERLAYS.md, "Plan" step 3).
-    cat_items/cat_complete cover "common", "levels" and "level_NN" -- a
+    cat_items/cat_complete cover "level_code", "common", "levels" and "level_NN" -- a
     level file's items count under both "levels" and its own "level_NN"."""
     catalogue = overlay_catalogue()
     out_units = []
     all_items = []
-    cat_items = {"common": [], "levels": []}
-    cat_complete = {"common": 0, "levels": 0}
+    cat_items = {"level_code": [], "common": [], "levels": []}
+    cat_complete = {"level_code": 0, "common": 0, "levels": 0}
     for i in range(NUM_LEVELS):
         cat_items[f"level_{i:02d}"] = []
         cat_complete[f"level_{i:02d}"] = 0
@@ -494,7 +494,7 @@ def generate() -> dict:
             "metadata": {
                 "complete": complete,
                 "source_path": u["src"],
-                "progress_categories": [u["cat"]],
+                "progress_categories": ["executable", u["cat"]],
             },
         })
 
@@ -507,7 +507,15 @@ def generate() -> dict:
     (overlay_out_units, overlay_items, overlay_cat_items, overlay_cat_complete,
      overlay_complete_units, overlay_complete_code) = overlay_units(overlay_map, overlay_fuzzy)
 
+    # The two halves of the game's code, each as one number: the
+    # executable (SCES_509.16) and all level code (common + level-specific).
     categories = [
+        {"id": "executable", "name": "Executable",
+         "measures": measures(cat_items["game"] + cat_items["libgcc"],
+                              complete_code=cat_complete["game"] + cat_complete["libgcc"])},
+        {"id": "level_code", "name": "Level code",
+         "measures": measures(overlay_cat_items["level_code"],
+                              complete_code=overlay_cat_complete["level_code"])},
         {"id": "game", "name": "Executable game code",
          "measures": measures(cat_items["game"], complete_code=cat_complete["game"])},
         {"id": "libgcc", "name": "libgcc",
