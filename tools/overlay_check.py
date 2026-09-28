@@ -132,10 +132,28 @@ def place_in_level(name: str, level: int, near: int) -> int:
     row = load_catalogue().get(name)
     if row is None:
         raise Unresolved(name)
-    matches = sorted({a for lv, a in row[2] if lv == level})
+    matches = places_in_level(name, level)
     if not matches:
         raise Unresolved(name)
     return min(matches, key=lambda a: abs(a - near))
+
+
+def places_in_level(name: str, level: int) -> list[int]:
+    """Every address the catalogue gives NAME in LEVEL (empty if none)."""
+    row = load_catalogue().get(name)
+    return sorted({a for lv, a in row[2] if lv == level}) if row else []
+
+
+_owners = {}
+
+
+def same_function(level: int, a: int, b: int) -> bool:
+    """Whether A and B are two places of one catalogued function in LEVEL."""
+    if level not in _owners:
+        _owners[level] = {addr: name for name, (_k, _s, places) in load_catalogue().items()
+                          for lv, addr in places if lv == level}
+    owner = _owners[level].get(a)
+    return owner is not None and owner == _owners[level].get(b)
 
 
 def resolve_symbol(name: str, level: int, near: int) -> int:
@@ -215,6 +233,28 @@ class Placer:
         self.unknown_types = []
         self.base_rodata = None
         self.rodata_error = None
+        self.retail = None         # retail's bytes of the function, once known
+
+    def place_text_offset(self, toff: int, near: int) -> int:
+        """Where offset TOFF of our .text lands. The assembler writes a
+        reference to a function defined in the same file against the .text
+        section, so it follows our file's layout; retail interleaves other
+        functions (the executable's among them). So an offset inside another
+        named function is placed through that function's own address."""
+        owner = None
+        for sym in self.symtab.iter_symbols():
+            if (sym["st_shndx"] == self.sym["st_shndx"] and sym["st_size"]
+                    and sym["st_value"] <= toff < sym["st_value"] + sym["st_size"]
+                    and (FUNC_L.match(sym.name) or FUNC.match(sym.name))):
+                owner = sym
+                break
+        if owner is None or owner.name == self.name:
+            return self.base_text + toff
+        return resolve_symbol(owner.name, self.level, near) + (toff - owner["st_value"])
+
+    def is_text_section(self, sym) -> bool:
+        return (sym["st_info"]["type"] == "STT_SECTION"
+                and section_name(self.elf, sym["st_shndx"]) == ".text")
 
     def note_unresolved(self, what: str):
         if what not in self.unresolved:
@@ -361,6 +401,12 @@ class Placer:
                 continue
             ahl = (hi_imm << 16) + sign16(lo_imm)
             value = (s + ahl) & 0xFFFFFFFF
+            if self.is_text_section(self.sym_of(hi_rel)):
+                try:
+                    value = self.place_text_offset(ahl, self.base_text + hi_off) & 0xFFFFFFFF
+                except Unresolved as e:
+                    self.note_unresolved(str(e.what))
+                    continue
             new_lo = value & 0xFFFF
             new_hi = ((value - sign16(new_lo)) >> 16) & 0xFFFF
             orig_hi_word = self.word_at(orig, hi_off)
@@ -386,6 +432,20 @@ class Placer:
                 addend = (word & 0x03FFFFFF) << 2
                 p = self.base_text + o
                 target = ((addend + s) & 0x0FFFFFFF) | (p & 0xF0000000)
+                if self.is_text_section(self.sym_of(rel)):
+                    try:
+                        target = self.place_text_offset(addend, near)
+                    except Unresolved as e:
+                        self.note_unresolved(str(e.what))
+                        continue
+                # A function with several identical copies in this level
+                # (file-static helpers): the call is right if it reaches any
+                # of them, so take the copy retail calls.
+                if self.retail is not None:
+                    r = self.word_at(self.retail, o - self.off)
+                    theirs = ((r & 0x03FFFFFF) << 2) | (p & 0xF0000000)
+                    if theirs != target and same_function(self.level, target, theirs):
+                        target = theirs
                 new_field = (target >> 2) & 0x03FFFFFF
                 ours[o:o + 4] = ((word & 0xFC000000) | new_field).to_bytes(4, "little")
             elif rtype == R_MIPS_GPREL16:
@@ -404,6 +464,12 @@ class Placer:
                     self.note_unresolved(str(e.what))
                     continue
                 new_word = (s + word) & 0xFFFFFFFF
+                if self.is_text_section(self.sym_of(rel)):
+                    try:
+                        new_word = self.place_text_offset(word, near) & 0xFFFFFFFF
+                    except Unresolved as e:
+                        self.note_unresolved(str(e.what))
+                        continue
                 ours[o:o + 4] = new_word.to_bytes(4, "little")
             else:
                 self.unknown_types.append((o - self.off, rtype))
@@ -444,6 +510,7 @@ def check(obj_path, name: str, show: bool = False) -> str:
         return placer.rodata_error
 
     ours = bytearray(padded_orig)
+    placer.retail = retail
     placer.apply(ours, bytes(padded_orig))
 
     if placer.unresolved or placer.unknown_types:
