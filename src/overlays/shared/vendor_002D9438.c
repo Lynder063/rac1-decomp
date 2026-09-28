@@ -4,7 +4,22 @@
 
 INCLUDE_ASM("asm/overlays", func_L00_002D9438);
 INCLUDE_ASM("asm/overlays", func_L00_002D95D8);
-INCLUDE_ASM("asm/overlays", func_L00_002D95E8);
+extern char *func_0020D348(int);
+char *func_L00_002D95E8(char *a) {
+    char *m;
+    if (a[0x20] < 0) return 0;
+    m = func_0020D348(0x326);
+    if (m != 0) {
+        char *p = *(char **)(m + 0x78);
+        *(unsigned char *)(m + 0x30) = 0x40;
+        *(unsigned char *)(m + 0x20) = 0;
+        *(char **)(p + 0xC) = a;
+        *(int *)(m + 0x94) = 0;
+        *(unsigned short *)(m + 0x34) |= 0x41;
+        qcopy(m + 0x10, a + 0x10);
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002D9668);
 INCLUDE_ASM("asm/overlays", func_L00_002D98C8);
 INCLUDE_ASM("asm/overlays", func_L00_002D99C0);
