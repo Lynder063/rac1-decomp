@@ -32,4 +32,69 @@ INCLUDE_ASM("asm/overlays", func_L00_002C0B18);
 INCLUDE_ASM("asm/overlays", func_L00_002C0BB8);
 INCLUDE_ASM("asm/overlays", func_L00_002C0CF8);
 INCLUDE_ASM("asm/overlays", func_L00_002C1110);
-INCLUDE_ASM("asm/overlays", func_L00_002C11D0);
+typedef struct {
+    f32 x, y, z, w;
+} Vec4;
+
+typedef struct {
+    char pad[0x10];
+    Vec4 vec;
+    u8 field20;
+} EffectSrc;
+
+typedef struct {
+    char pad[0x46];
+    s16 field46;
+} SubStruct;
+
+typedef struct {
+    char pad[0x24];
+    SubStruct *sub;
+} TopStruct;
+
+extern TopStruct *D_L00_00173F58;
+
+extern int func_L00_001EFFF0(Vec4 *, Vec4 *, int, void *, int);
+extern int func_L00_001F3958(void);
+
+/*
+ * Nudges a copy of a0's vector by -0.3/+1.0 on Z, hands both to the
+ * particle spawner (func_L00_001EFFF0), and lets an active state check
+ * or a small dispatch table (keyed by func_L00_001F3958's result)
+ * override the default return value (a0's byte at +0x20) with 11.
+ */
+int func_L00_002C11D0(EffectSrc *a0) {
+    Vec4 v1, v2;
+    int result;
+
+    result = a0->field20;
+    qcopy(&v1, &a0->vec);
+    qcopy(&v2, &a0->vec);
+    v1.z -= 0.3f;
+    v2.z += 1.0f;
+    if (func_L00_001EFFF0(&v2, &v1, 6, a0, 0) != 0) {
+        TopStruct *p = D_L00_00173F58;
+        if (p != 0) {
+            SubStruct *sub = p->sub;
+            if (sub != 0) {
+                if (sub->field46 == 5) {
+                    result = 11;
+                    goto end;
+                }
+            }
+        }
+        switch (func_L00_001F3958()) {
+        case 0:
+        case 1:
+        case 3:
+        case 8:
+        case 11:
+        case 12:
+        case 13:
+            result = 11;
+            break;
+        }
+    }
+end:
+    return result;
+}
