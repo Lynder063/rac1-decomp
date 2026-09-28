@@ -3,7 +3,21 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L00_00258BC8);
-INCLUDE_ASM("asm/overlays", func_L00_00258C80);
+extern int func_001160D8(void);
+
+/* Random float in [lo, hi], randomly negated: uses a 12-bit fraction
+   (bits 16-27 of the RNG word) for the magnitude and bit 16 for the
+   sign. */
+float func_L00_00258C80(float lo, float hi) {
+    int v = func_001160D8() >> 16;
+    float range = hi - lo;
+    float r = lo + (float)(v & 0xFFF) * range * 0.000244140625f;
+
+    if (v & 1) {
+        r = -r;
+    }
+    return r;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00258DB0);
 INCLUDE_ASM("asm/overlays", func_L00_00258E58);
 INCLUDE_ASM("asm/overlays", func_L00_00258F28);
