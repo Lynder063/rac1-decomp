@@ -188,11 +188,4 @@ Whether you're interested in matching functions, analyzing PS2 disassembly, rese
   source; `tools/extract/README.md` credits it and the other projects the
   extractor drew on
 
-## License
 
-To be decided for the project's own code. The files in `src/libgcc/` that
-come from GCC keep their original license (GPL v2 with the libgcc linking
-exception), as stated in each file's header.
-
-*Ratchet & Clank* is a trademark of Sony Interactive Entertainment. This
-project is not affiliated with or endorsed by Sony or Insomniac Games.
