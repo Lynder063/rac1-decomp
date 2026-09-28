@@ -152,7 +152,12 @@ INCLUDE_ASM("asm/overlays", func_L00_0025CC58);
 INCLUDE_ASM("asm/overlays", func_L00_0025CCF0);
 INCLUDE_ASM("asm/overlays", func_L00_0025CE58);
 INCLUDE_ASM("asm/overlays", func_L00_0025D038);
-INCLUDE_ASM("asm/overlays", func_L00_0025D0E0);
+void func_L00_0025D0E0(int *a, int *b, int *c, int mask) {
+    int x, y;
+    if (mask & 1) { x = *b; y = *a; *a = x; *b = y; }
+    if (mask & 2) { x = *c; y = *b; *b = x; *c = y; }
+    if (mask & 4) { x = *a; y = *c; *c = x; *a = y; }
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025D140);
 extern void func_001F9BF0(void *, void *, void *);
 extern void func_001FA4A0(void *, void *);
