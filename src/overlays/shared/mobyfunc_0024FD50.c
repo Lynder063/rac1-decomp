@@ -13,7 +13,31 @@ INCLUDE_ASM("asm/overlays", func_L00_00250418);
 INCLUDE_ASM("asm/overlays", func_L00_00250478);
 INCLUDE_ASM("asm/overlays", func_L00_002506D0);
 INCLUDE_ASM("asm/overlays", func_L00_00250700);
-INCLUDE_ASM("asm/overlays", func_L00_00250800);
+/* Scale the object's local vertex (built via func_002116A0 into a local
+   0x40-byte scratch buffer) by arg0+0x2C in 1/1024 units, writing the
+   scaled result to arg2, then run arg2 through the two per-object
+   transforms at arg0+0xC0 and arg0+0x10.  Same family as func_0020DAF8 in
+   src/game/mobyfunc.c, but the scaling target here is a caller-supplied
+   vec4 (arg2) rather than a field of a caller-supplied 0x40-byte struct.
+   0x3A800000 is exactly 2^-10. */
+
+extern void func_002116A0(void *, int, int *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9EC0(void *, void *, void *);
+extern void func_001F9BD8(void *, void *, void *);
+
+void func_L00_00250800(char *arg0, int arg1, void *arg2) {
+    char buf[0x40];
+    int n;
+    float s;
+
+    s = *(float *)(arg0 + 0x2C) * 0.0009765625f;
+    n = arg1;
+    func_002116A0(arg0, 1, &n, buf);
+    func_001F9C30(arg2, buf + 0x30, s);
+    func_001F9EC0(arg2, arg2, arg0 + 0xC0);
+    func_001F9BD8(arg2, arg2, arg0 + 0x10);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00250928);
 INCLUDE_ASM("asm/overlays", func_L00_002510F0);
 INCLUDE_ASM("asm/overlays", func_L00_002512D8);
