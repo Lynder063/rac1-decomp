@@ -121,6 +121,35 @@ Measured on the dump (2026-09-27):
   functions are nearly all table entries. Vtable pointers land on the
   catalogue's function starts (3,983 of 3,987).
 
+## Roles
+
+Each level's program dispatches through three tables in its records:
+
+| Record | Entry | Ends at |
+|---|---|---|
+| `vtbl` | 12 bytes: `{oClass, update function, pointer to a 6-word table}`, one per moby class the level has | oClass -1; the 6-word tables follow it |
+| `camvtbl` | 20 bytes: `{camera id, init, activate, update, exit}` | id -1 |
+| `sndvtbl` | 8 bytes: `{id, function}` | id -1 |
+
+`python3 tools/overlays.py names` reads them from the dump and writes
+`config/overlays/names.tsv`: every catalogued function a table points at,
+with its roles (`UpdateMoby_<oClass>`, `InitCamera_<id>`, ...,
+`SoundFunc_<id>`) and the levels that use it that way. On the dump of
+2026-09-28 that is 690 functions, 610 with a single role: 475 level and
+210 shared functions (1.03 MB, a third of all level code) and 5
+executable ones. A function with many roles is a generic one (an empty
+`Exit`, a class that reuses another's update). An update function gets
+the moby in `$a0`. `tools/dossier.py` puts the role in `CONTEXT.md`.
+
+The names stay `func_LNN_XXXXXXXX` everywhere else: a role is a hint for
+the worker, and the oClass numbers are RaC1's own (Deadlocked's differ).
+
+Four table pointers are not a catalogued function start: 0x10 into the
+24-byte func_L00_002EDB58 (InitCamera_7 in levels 0, 1 and 8) and 8 into
+the 16-byte func_L08_002DB438 (UpdateMoby_324 in level 8). Each is two
+small functions the split joined; the next catalogue run can use the
+table pointers as split points.
+
 ## Relatives
 
 `python3 tools/overlays.py families` lists, for each shared and level

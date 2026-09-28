@@ -190,6 +190,7 @@ def write(names: list[str]) -> None:
     exact_by_unit = {u["name"]: [(f["name"], int(f["size"])) for f in u.get("functions", [])
                                  if (f.get("fuzzy_match_percent") or 0) == 100] for u in report["units"]}
     rows = {r["name"]: r for r in triage.triage()}
+    roles = load_overlay_roles()
     index = declaration_index()
     for name in names:
         row = rows.get(name)
@@ -210,6 +211,7 @@ def write(names: list[str]) -> None:
                f"- Triage: {row['reason'] or 'no known blocker'}"]
         if row["symbol"]:
             out.append(f"- Real name: {row['symbol']}" + (f" ({row['library']})" if row["library"] else ""))
+        out += role_lines(roles.get(name, []))
         if row["reference"]:
             out.append(f"- Original source: {row['reference']} (start from it, not from m2c)")
         sketch = ROOT / "build-sn/try" / name / "m2c.c"
@@ -261,6 +263,29 @@ def load_overlay_families() -> dict[str, tuple[str, str, int, float]]:
     return rows
 
 
+def load_overlay_roles() -> dict[str, list[str]]:
+    """name -> ["UpdateMoby_809:00/01/14", ...], from config/overlays/names.tsv
+    (docs/OVERLAYS.md, "Roles"): what the levels' dispatch records use it for."""
+    path = ROOT / "config/overlays/names.tsv"
+    if not path.exists():
+        return {}
+    rows = {}
+    for line in path.read_text().splitlines():
+        if line and not line.startswith("#"):
+            name, roles = line.split("\t")
+            rows[name] = roles.split(",")
+    return rows
+
+
+def role_lines(roles: list[str]) -> list[str]:
+    if not roles:
+        return []
+    shown = ", ".join(r.replace(":", " in levels ", 1) for r in roles[:6])
+    more = f" (+{len(roles) - 6} more)" if len(roles) > 6 else ""
+    return [f"- Role, from the levels' dispatch records: {shown}{more}. An UpdateMoby_<oClass> "
+            "takes the moby in $a0 (a partial `Moby` struct is in src/game/mobyfunc.c)."]
+
+
 def overlay_functions_in(path: Path) -> list[tuple[str, bool]]:
     """[(name, already matched C)] for every overlay function PATH defines
     or stubs, in file order -- "the functions next to it" for the worker."""
@@ -294,6 +319,7 @@ def overlay_write(names: list[str]) -> None:
     in and its neighbours there, and its family relative."""
     catalogue = load_overlay_catalogue()
     families = load_overlay_families()
+    roles = load_overlay_roles()
     findex = overlay_file_index()
     index = declaration_index()
     for name in names:
@@ -307,6 +333,7 @@ def overlay_write(names: list[str]) -> None:
         out = [f"# {name}", "",
                f"- Kind: {kind}, {size} bytes, in {levels_count} level(s): "
                + ", ".join(f"{lv:02d}" for lv in levels),
+               *role_lines(roles.get(name, [])),
                "- Retail assembly: asm/overlays/" + name + ".s"
                + ("" if asm else " (missing -- run tools/overlay_asm.py, or wait: it's being regenerated)"),
                "- No m2c sketch: tools/m2c.py only reads asm/nonmatchings/. Start from the "

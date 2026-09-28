@@ -6,6 +6,7 @@ Level code overlays: each level's program, which replaces the executable's
   python3 tools/overlays.py dump        # baserom/overlays/level_NN/ (local)
   python3 tools/overlays.py catalogue   # config/overlays/functions.tsv
   python3 tools/overlays.py families    # config/overlays/families.tsv
+  python3 tools/overlays.py names       # config/overlays/names.tsv
 
 `dump` writes every level's overlay records from the disc image
 (baserom/SCES_509.16.iso) to baserom/overlays/level_NN/, one file per
@@ -274,8 +275,73 @@ def families() -> None:
           f"executable. Written to {FAMILIES.relative_to(ROOT)}.")
 
 
+NAMES = ROOT / "config/overlays/names.tsv"
+CAMERA_ROLES = ("InitCamera", "ActivateCamera", "UpdateCamera", "ExitCamera")
+
+
+def vtbl_roles(level: int) -> list[tuple[int, str]]:
+    """(address, role) for every function a level's dispatch records point at.
+
+    vtbl: 12-byte entries {oClass, update, pointer to a 6-word table}, one per
+    moby class the level has; the update is UpdateMoby_<oClass>. The 6-word
+    tables follow the entry that ends the list.
+    camvtbl: 20-byte entries {camera id, init, activate, update, exit}.
+    sndvtbl: 8-byte entries {id, function}.
+    Every list ends at an id of -1; a null function pointer is skipped."""
+    d = DUMP / f"level_{level:02d}"
+
+    def record(name: str) -> tuple[int, ...]:
+        b = (d / f"{name}.bin").read_bytes()
+        return struct.unpack(f"<{len(b) // 4}I", b)
+
+    out = []
+    w = record("vtbl")
+    for i in range(0, len(w) - 2, 3):
+        if w[i] == 0xFFFFFFFF:
+            break
+        out.append((w[i + 1], f"UpdateMoby_{w[i]}"))
+    w = record("camvtbl")
+    for i in range(0, len(w) - 4, 5):
+        if w[i] == 0xFFFFFFFF:
+            break
+        out += [(w[i + 1 + j], f"{role}_{w[i]}") for j, role in enumerate(CAMERA_ROLES)]
+    w = record("sndvtbl")
+    for i in range(0, len(w) - 1, 2):
+        if w[i] == 0xFFFFFFFF:
+            break
+        out.append((w[i + 1], f"SoundFunc_{w[i]}"))
+    return [(addr, role) for addr, role in out if addr]
+
+
+def names() -> None:
+    """config/overlays/names.tsv: the role each dispatch record gives a
+    catalogued function (docs/OVERLAYS.md, "Roles")."""
+    at = {(level, addr): name for name, _, _, places in read_catalogue()
+          for level, addr in places}
+    roles: dict[str, dict[str, set[int]]] = {}
+    unplaced = 0
+    for d in sorted(DUMP.glob("level_*")):
+        level = int(d.name[6:])
+        for addr, role in vtbl_roles(level):
+            name = at.get((level, addr))
+            if name is None:
+                unplaced += 1
+                continue
+            roles.setdefault(name, {}).setdefault(role, set()).add(level)
+    lines = ["# name\troles (role:levels)"]
+    for name in sorted(roles, key=lambda n: (n[5:7] if n.startswith("func_L") else "", n)):
+        lines.append(name + "\t" + ",".join(
+            f"{role}:{'/'.join(f'{lv:02d}' for lv in sorted(levels))}"
+            for role, levels in sorted(roles[name].items(), key=lambda kv: (len(kv[0]), kv[0]))))
+    NAMES.write_text("\n".join(lines) + "\n")
+    one = sum(1 for r in roles.values() if len(r) == 1)
+    print(f"{len(roles)} functions have a role ({one} exactly one); {unplaced} record "
+          f"pointers are not a catalogued function start. "
+          f"Written to {NAMES.relative_to(ROOT)}.")
+
+
 def main() -> None:
-    commands = {"dump": dump, "catalogue": catalogue, "families": families}
+    commands = {"dump": dump, "catalogue": catalogue, "families": families, "names": names}
     if len(sys.argv) != 2 or sys.argv[1] not in commands:
         sys.exit(__doc__)
     commands[sys.argv[1]]()
