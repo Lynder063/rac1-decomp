@@ -10,7 +10,31 @@ INCLUDE_ASM("asm/overlays", func_L00_00232980);
 INCLUDE_ASM("asm/overlays", func_L00_00232A18);
 INCLUDE_ASM("asm/overlays", func_L00_00232A30);
 INCLUDE_ASM("asm/overlays", func_L00_00232A3C);
-INCLUDE_ASM("asm/overlays", func_L00_00232A78);
+extern char D_0013F450[];
+extern int func_L00_00232A18(int, int *);
+extern void func_00213DE0(void *, int, int, int);
+extern int func_001F9850(int);
+
+/* When the animation at D_0013F450 + 0x2278 is set and enabled (+0x227C),
+   starts the sequence func_L00_00232A18 picks for A0; if none is ready and
+   the animation has a previous sequence (+0x53), restarts sequence 0.
+   Retail reloads the animation pointer at each use. */
+void func_L00_00232A78(int a0, int a1, float a2) {
+    char *base = D_0013F450;
+    int buf[4];
+    int ok;
+
+    if (*(void **)(base + 0x2278) != 0) {
+        if (*(int *)(base + 0x227C) != 0) {
+            ok = func_L00_00232A18(a0, buf);
+            if (ok != 0) {
+                func_00213DE0(*(void **)(base + 0x2278), buf[0], a1, (int)a2);
+            } else if (*(unsigned char *)(*(char **)(base + 0x2278) + 0x53) != 0) {
+                func_00213DE0(*(void **)(base + 0x2278), 0, 0, func_001F9850(7));
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00232B20);
 INCLUDE_ASM("asm/overlays", func_L00_00232B78);
 INCLUDE_ASM("asm/overlays", func_L00_00232C10);
