@@ -172,7 +172,7 @@ If a new library module is added, update `tools/libgcc_units.py`,
 | Mixed `$gp` and `lui` access to one variable within a file suggests a TU boundary | **relevant**: our `NOT_SDA` / `extern short` workarounds may be compensating for compiling two giant files where retail had many TUs. Use it as a split hint when a variable is addressed both ways |
 | objdiff units = real TUs | **not yet**: units are our files, not retail's TUs. Refine as splits become known (the `.cpp` names above are the first evidence) |
 | RC1's NTSC flags `-G8 -O2 -ffast-math -fno-exceptions` (GCC 2.95.2) | **`-ffast-math` measured and rejected**: a whole build with it gives 363 exact vs 364. It breaks `func_0022DB48` and improves nothing. `-G8` was already ruled out (float constants would pool into `.lit4`, which retail never does). `-fno-exceptions` only matters for C++. RC1 decompiles almost nothing, so its flags were never verified against matches |
-| decomp-permuter / decomp.me | we have `tools/permute.py`. decomp.me has no SN ProDG compiler preset for this game yet, so it cannot be used for collaboration on it as-is |
+| decomp-permuter / decomp.me | **adopted, locally**: `tools/permuter_setup.py` runs the real decomp-permuter against our own compiler, inside the container (docs/PERMUTER.md). decomp.me itself still has no SN ProDG compiler preset for this game, so it cannot be used for collaboration on it as-is |
 
 ## Agent waves
 
