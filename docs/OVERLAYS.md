@@ -142,7 +142,7 @@ executable ones. A function with many roles is a generic one (an empty
 the moby in `$a0`. `tools/dossier.py` puts the role in `CONTEXT.md`.
 
 The names stay `func_LNN_XXXXXXXX` everywhere else: a role is a hint for
-the worker, and the oClass numbers are RaC1's own (Deadlocked's differ).
+the worker, and the oClass numbers are RaC1's own.
 
 Four table pointers are not a catalogued function start: 0x10 into the
 24-byte func_L00_002EDB58 (InitCamera_7 in levels 0, 1 and 8) and 8 into
