@@ -41,7 +41,9 @@ typedef struct {
     char pad10[0x38];
     short unk48;
     short unk4A;
-    char pad4C[0xC];
+    char pad4C[0x4];
+    int unk50;
+    int unk54;
     int w;
     int h;
     int flags;
@@ -311,7 +313,36 @@ void func_L00_0023ABB0(HudElem *e) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_0023AC68);
-INCLUDE_ASM("asm/overlays", func_L00_0023AFD8);
+extern short D_00140A86 NOT_SDA;
+extern int func_00200198(int, int);
+extern void func_L00_00236468(HudElem *, int *, int *, int, int);
+extern void func_L00_0023C058(int, int, int, int, int, int);
+extern void func_00200468(int, int, int, int, int, int);
+
+/* Draws a HUD meter: a 256 x 64 element placed from its position (+0x50,
+   +0x54) by func_L00_00236400 and func_L00_00236468, then texture 0x7558
+   frame 1 as a bar 27 + 221 * value / max (+0x74, +0x08) long
+   (func_L00_0023C058), frame 0 as the 256 x 64 frame, and frame 2 as a
+   32 x 32 icon that is visible only while D_00140A86 is set. Returns the
+   width. The position is two scalars, not an array: that gives retail's
+   argument order. */
+int func_L00_0023AFD8(HudElem *e) {
+    int x;
+    int y;
+    int len;
+
+    x = e->unk50;
+    y = e->unk54;
+    e->w = 0x100;
+    e->h = 0x40;
+    func_L00_00236400(e, &x, &y);
+    func_L00_00236468(e, &x, &y, e->unk6C, 0);
+    len = e->unk74 * 0xDD / e->unk08 + 0x1B;
+    func_L00_0023C058(func_00200198(0x7558, 1), x, y, len, 0x40, 0x80);
+    func_00200468(func_00200198(0x7558, 0), x, y, 0x100, 0x40, 0x80);
+    func_00200468(func_00200198(0x7558, 2), x, y, 0x20, 0x20, D_00140A86 != 0 ? 0x80 : 0);
+    return e->w;
+}
 /* func_L00_00236750 without the offsets: a 32 x 32 element with a timer
    of 30 + func_001F9850(120). */
 void func_L00_0023B0F8(HudElem *e) {
