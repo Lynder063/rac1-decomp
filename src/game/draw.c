@@ -1220,7 +1220,56 @@ void func_001F5988(float x, float y, float w, float h, int u, int v, int uw, int
     D_00161000 = (int *)((char *)D_00161000 + 0x60);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F5BB8);
+extern char D_00160960[];
+
+/* func_001F5988, skipped when the rectangle lies outside 0x7000..0x9000
+   (12.4), with a CLAMP register (REGION_CLAMP to the texel rectangle)
+   after the PRIM and a closing (5, 0) pair. */
+void func_001F5BB8(float x, float y, float w, float h, int u, int v, int uw, int vh,
+                   unsigned long rgba, unsigned long tex) {
+    int x0 = func_001FA898_r(x * 16.0f) + D_0013E600[4] - 8;
+    int x1 = func_001FA898_r((x + w) * 16.0f) + D_0013E600[4] - 8;
+    int y0 = func_001FA898_r(y * 16.0f) + D_0013E600[5] - 8;
+    int y1 = func_001FA898_r((y + h) * 16.0f) + D_0013E600[5] - 8;
+    int s1;
+    int s0;
+    int vb;
+    int ub;
+    long *p;
+    int *base;
+
+    if (x0 > 0x9000 || x1 < 0x7000 || y0 > 0x9000 || y1 < 0x7000) {
+        return;
+    }
+    D_00161000[0] = 0x10000008;
+    D_00161000[1] = 0;
+    D_00161000[2] = 0;
+    D_00161000[3] = 0x50000008;
+    ub = u + uw;
+    vb = v + vh;
+    s0 = u * 16;
+    s1 = ub * 16;
+    base = D_00161000;
+    D_00161000 = base + 4;
+    qcopy(base + 4, D_00160960);
+    p = (long *)(base + 8);
+    D_00161000 = base + 8;
+    p[0] = tex;
+    p[1] = 0x154;
+    p[2] = 0xA | ((long)u << 4) | ((long)ub << 14) | ((long)v << 24) | ((long)vb << 34);
+    p[3] = rgba;
+    p[4] = (v << 20) + s0;
+    p[5] = x0 | ((long)y0 << 16) | ((long)0xFFFFF0 << 32);
+    p[6] = (v << 20) + s1;
+    p[7] = x1 | ((long)y0 << 16) | ((long)0xFFFFF0 << 32);
+    p[8] = (vb << 20) + s0;
+    p[9] = x0 | ((long)y1 << 16) | ((long)0xFFFFF0 << 32);
+    p[10] = (vb << 20) + s1;
+    p[11] = x1 | ((long)y1 << 16) | ((long)0xFFFFF0 << 32);
+    p[12] = 5;
+    p[13] = 0;
+    D_00161000 = (int *)((char *)D_00161000 + 0x70);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F5E60);
 
