@@ -2,4 +2,11 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L07_00282EB0);
+extern void func_L00_0025A208(int *);
+
+/* Test whether the current moby identifier matches the requested one. */
+int func_L07_00282EB0(int id) {
+    int current;
+    func_L00_0025A208(&current);
+    return current == id;
+}
