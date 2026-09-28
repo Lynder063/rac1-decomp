@@ -201,7 +201,13 @@ INCLUDE_ASM("asm/overlays", func_L00_0025CB90);
 INCLUDE_ASM("asm/overlays", func_L00_0025CC58);
 INCLUDE_ASM("asm/overlays", func_L00_0025CCF0);
 INCLUDE_ASM("asm/overlays", func_L00_0025CE58);
-INCLUDE_ASM("asm/overlays", func_L00_0025D038);
+unsigned int func_L00_0025D038(float r, float g, float b, float a) {
+    unsigned int x = func_001FA898(r * 255.0f) & 0xFF;
+    unsigned int y = func_001FA898(g * 255.0f) & 0xFF;
+    unsigned int z = func_001FA898(b * 255.0f) & 0xFF;
+    unsigned int w = func_001FA898(a * 255.0f);
+    return x | (y << 8) | (z << 16) | (w << 24);
+}
 void func_L00_0025D0E0(int *a, int *b, int *c, int mask) {
     int x, y;
     if (mask & 1) { x = *b; y = *a; *a = x; *b = y; }
