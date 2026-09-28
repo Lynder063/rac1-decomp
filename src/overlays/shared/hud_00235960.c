@@ -34,7 +34,37 @@ void func_L00_00236208(void) {
         func_001FFC48(&D_L00_0017DD50[i]);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00236400);
+typedef struct {
+    char pad0[0x58];
+    int w;
+    int h;
+    int flags;
+} HudAlignRec;
+
+/* Aligns a HUD element's anchor by its flags (+0x60): unless bit 0 or 1
+   is set, *Y moves up by half the height (+0x5C); unless bit 2 is set,
+   *X moves left by the width (+0x58) with bit 3, else by half of it.
+   Returns 0. The flags are read once for the first test and again after
+   the store; `(flags ^ 1) & 1` is retail's xori / andi test of bit 0. */
+int func_L00_00236400(HudAlignRec *rec, int *x, int *y) {
+    int w = rec->w;
+    int h = rec->h;
+    int flags = rec->flags;
+
+    if ((flags ^ 1) & 1) {
+        if (!(flags & 2)) {
+            *y -= h >> 1;
+        }
+    }
+    if (!(rec->flags & 4)) {
+        if (rec->flags & 8) {
+            *x -= w;
+        } else {
+            *x -= w >> 1;
+        }
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00236468);
 INCLUDE_ASM("asm/overlays", func_L00_00236610);
 INCLUDE_ASM("asm/overlays", func_L00_002366DC);
