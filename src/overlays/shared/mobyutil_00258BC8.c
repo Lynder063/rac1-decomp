@@ -19,7 +19,13 @@ float func_L00_00258C80(float lo, float hi) {
     return r;
 }
 INCLUDE_ASM("asm/overlays", func_L00_00258DB0);
-INCLUDE_ASM("asm/overlays", func_L00_00258E58);
+float func_L00_00258E58(float a, float b, float c, float d, float t) {
+    float p = (d - c) - (a - b);
+    float q = (a - b) - p;
+    float t2 = t * t;
+    float t3 = t2 * t;
+    return p * t3 + q * t2 + (c - a) * t + b;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00258F28);
 extern float func_001F9F90(float x);
 extern void func_001F9BF0(void *dst, void *a, void *b); /* dst = a - b (vector) */
