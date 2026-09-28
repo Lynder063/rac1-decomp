@@ -193,7 +193,9 @@ void func_L00_00232B20(void) {
     }
 }
 typedef struct {
-    char pad0[0x1C];
+    char pad0[0x10];
+    unsigned char count;
+    char pad11[0xB];
     int ids[1];
 } AnimBank;
 
@@ -235,7 +237,26 @@ void func_L00_00232B78(void) {
     obj->id[1] = obj->model->banks[obj->bank[1]]->ids[obj->seq[1]];
 }
 INCLUDE_ASM("asm/overlays", func_L00_00232C10);
-INCLUDE_ASM("asm/overlays", func_L00_00232DF8);
+extern void func_0020D6D0(void *);
+
+/* Starts sequence SEQ of bank BANK on the animation at D_0013F450 +
+   0x2080: SEQ in slot 0, the next one (clamped to the bank's last) in
+   slot 1, both slots on BANK, time 0x54 reset, then func_0020D6D0. */
+void func_L00_00232DF8(int bank, int seq) {
+    AnimState *obj = *(AnimState **)(D_0013F450 + 0x2080);
+    int last;
+
+    obj->seq[0] = seq;
+    obj->seq[1] = seq + 1;
+    last = obj->model->banks[bank]->count - 1;
+    if (last < obj->seq[1]) {
+        obj->seq[1] = last;
+    }
+    obj->bank[0] = bank;
+    obj->bank[1] = bank;
+    obj->f54 = 0.0f;
+    func_0020D6D0(obj);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00232E60);
 INCLUDE_ASM("asm/overlays", func_L00_00232EA8);
 INCLUDE_ASM("asm/overlays", func_L00_00232EC0);
