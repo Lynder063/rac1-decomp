@@ -80,7 +80,50 @@ int func_L00_00236400(HudElem *rec, int *x, int *y) {
     }
     return 0;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00236468);
+extern float func_001FA888(int);
+extern int func_001FA898(float);
+extern float D_L00_0017E4A0[];
+extern float D_L00_0017E500[];
+
+/* Slides a HUD element in or out from its anchored edge: step T moves by
+   D (back while the timer +0x7C runs, forward otherwise), clamped to
+   0..23, picks a ramp value from D_L00_0017E4A0 (timer running) or
+   D_L00_0017E500, and offsets *Y by it times (height + 52) for flags 1
+   (up) / 2 (down), or *X by it times (width + 20) for flags 4 (left) /
+   8 (right), rounded (func_001FA888 / func_001FA898 convert). */
+void func_L00_00236468(HudElem *e, int *x, int *y, int t, int d) {
+    int dx = 0;
+    int dy = 0;
+    float s;
+
+    if (e->unk7C != 0) {
+        t -= d;
+    } else {
+        t += d;
+    }
+    if (t < 0) {
+        t = 0;
+    }
+    if (t > 23) {
+        t = 23;
+    }
+    if (e->unk7C != 0) {
+        s = D_L00_0017E4A0[t];
+    } else {
+        s = D_L00_0017E500[t];
+    }
+    if (e->flags & 1) {
+        dy = -func_001FA898(s * (func_001FA888(e->h) + 52.0f) + 0.5f);
+    } else if (e->flags & 2) {
+        dy = func_001FA898(s * (func_001FA888(e->h) + 52.0f) + 0.5f);
+    } else if (e->flags & 4) {
+        dx = -func_001FA898(s * (func_001FA888(e->w) + 20.0f) + 0.5f);
+    } else if (e->flags & 8) {
+        dx = func_001FA898(s * (func_001FA888(e->w) + 20.0f) + 0.5f);
+    }
+    *x += dx;
+    *y += dy;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00236610);
 INCLUDE_ASM("asm/overlays", func_L00_002366DC);
 extern int func_001F9850(int);
