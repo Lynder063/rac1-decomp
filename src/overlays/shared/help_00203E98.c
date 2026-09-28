@@ -5,7 +5,24 @@
 INCLUDE_ASM("asm/overlays", func_L00_00203E98);
 INCLUDE_ASM("asm/overlays", func_L00_00203ED8);
 INCLUDE_ASM("asm/overlays", func_L00_00203F08);
-INCLUDE_ASM("asm/overlays", func_L00_00203F20);
+extern char D_L00_00179510[] NOT_SDA;
+extern unsigned char D_0014171B[] NOT_SDA;
+extern void func_001FF560(int);
+int func_L00_00203F20(int a, int b) {
+    int c;
+    unsigned char *h;
+    if (*(int *)D_L00_00179510 != 0) return 0;
+    c = *(int *)(D_L00_00179510 + 0x24);
+    if (c != -1) return 0;
+    h = D_0014171B + 0x100B5;
+    if (*(int *)(h + 0x50) != 0) return 0;
+    if (*(int *)(h + 0x1C) != c) return 0;
+    if (*(unsigned short *)(D_0014171B + 0x34D + b * 8) == 0xFFFF) return 0;
+    *(int *)(D_L00_00179510 + 0x28) = b;
+    *(int *)(D_L00_00179510 + 0x24) = a;
+    func_001FF560(a);
+    return 1;
+}
 extern char D_L00_00179510[] NOT_SDA;
 extern char *D_L00_0015F740 MACRO_ADDR;
 extern unsigned char D_0014171B[] NOT_SDA;
