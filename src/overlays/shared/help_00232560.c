@@ -78,7 +78,51 @@ int func_L00_00232608(int key, int *out) {
     return 0;
 }
 INCLUDE_ASM("asm/overlays", func_L00_002326D0);
-INCLUDE_ASM("asm/overlays", func_L00_00232850);
+extern int func_L00_002056D0(int);
+extern int func_L00_00258BC8(int, int);
+
+/* Picks at random (func_L00_00258BC8) one of the entries whose seq is ID
+   in the mode's sequence table (see func_L00_00232608) and returns 1 with
+   its key and argument bytes in *KEY and *ARG; with no match, *KEY = 1
+   and it returns 0. `tbl - -n` keeps retail's index-first addu, which
+   `tbl + n` and `&tbl[n]` turn round. */
+int func_L00_00232850(int id, int *key, int *arg) {
+    SeqEntry *tbl;
+    int list[20];
+    int count;
+    int want;
+    int i;
+    SeqEntry *e;
+
+    count = 0;
+    want = func_L00_002056D0(id);
+    if (func_L00_0020DB30(3) == 2) {
+        tbl = D_L00_0017BCF0;
+    } else if (func_L00_0020DB30(3) == 3) {
+        tbl = D_L00_0017BCD0;
+    } else {
+        int mode = func_L00_0020DB30(3);
+        tbl = (SeqEntry *)&D_L00_0015F798;
+        if (mode != 4) {
+            tbl = 0;
+        }
+    }
+    if (tbl != 0) {
+        for (i = 0; tbl[i].seq != -1; i++) {
+            if (want == tbl[i].seq) {
+                list[count++] = i;
+            }
+        }
+    }
+    if (count != 0) {
+        e = tbl - -list[func_L00_00258BC8(0, count - 1)];
+        *key = e->key;
+        *arg = e->unk3;
+        return 1;
+    }
+    *key = 1;
+    return 0;
+}
 extern char D_0013F450[];
 extern int func_L00_00232850(int, int *, int *);
 
