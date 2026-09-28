@@ -231,6 +231,29 @@ and stop, rather than spending the budget on it:
 - A lone `%hi` whose `%lo` comes after a call can link as the wrong half
   in the full build (func_001E9808): report it, it's a tooling issue.
 
+## Overlay functions
+
+`func_LNN_XXXXXXXX` is level code ([OVERLAYS.md](OVERLAYS.md)), stubbed in
+`src/overlays/`. `CONTEXT.md` covers most of this for your function.
+
+- Assembly: `asm/overlays/<name>.s`, same format as the executable's.
+- `D_XXXXXXXX` and `func_XXXXXXXX` below 0x15F000 are the resident core,
+  declared as usual. `D_LNN_XXXXXXXX` is level data: nothing declares it
+  yet, so declare it in the candidate, typed from how the assembly uses it
+  (lever 2 applies). Keep the name. Never write a level address as a
+  number (`*(int *)0x1B24D4`): the data sits elsewhere in other levels,
+  and try_func refuses a literal where retail's assembly has a symbol.
+  A `$gp` offset at 0x15F000 or above is level data too.
+- No m2c sketch. Start from the function's relative in `CONTEXT.md`
+  (usually the same source built for another level): if it has matched C,
+  adapt that. Otherwise start from a matched neighbour in the file, or the
+  assembly.
+- `EXACT` is strict: try_func links the candidate at the function's
+  address in its level and compares every byte, relocations included. A
+  wrong callee or global fails here.
+- Don't build the executable to check one: it doesn't include
+  `src/overlays/`.
+
 ## What to hand back
 
 As [WORKER.md](WORKER.md) says: `RESULT.md` holds exactly two lines, the

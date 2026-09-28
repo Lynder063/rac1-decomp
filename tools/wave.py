@@ -3,7 +3,7 @@
 Plans, tracks and integrates waves of worker agents (docs/WORKER.md).
 
   python3 tools/wave.py plan NAME [--role match|compile] [--count N]
-                         [--budget N] [--near | --fresh] [func_X ...]
+                         [--budget N] [--near | --fresh | --overlay] [func_X ...]
       Picks functions (the ones named, or from tools/triage.py), writes each
       one's CONTEXT.md and m2c sketch, starts a fresh BUDGET of try_func
       runs, and prints each worker's one-line prompt.
@@ -22,6 +22,18 @@ Plans, tracks and integrates waves of worker agents (docs/WORKER.md).
 within 8 bytes, or a near-miss in src/); --fresh, the default, picks
 functions nobody has tried, smallest first. Waves are recorded in
 build-sn/waves/NAME.json.
+
+Overlay functions (func_LNN_XXXXXXXX, docs/OVERLAYS.md) are a separate
+pool: named explicitly (func_L00_... on the command line, same as any
+other function) or picked with --overlay, which orders the catalogue's
+shared-and-level functions the way docs/OVERLAYS.md's "Relatives" section
+recommends -- shared code present in all 19 levels first, smaller first --
+after screening asm/overlays/<name>.s through rank_candidates' blocked
+patterns and skipping anything already matched. A wave is either all
+overlay names or all executable ones, never mixed. `land` treats an
+overlay wave differently (see land_overlay()): no full build (the
+executable does not link src/overlays/), and progress/report.json does
+not count overlay functions yet -- see the TODO where it's called.
 """
 import argparse
 import json
@@ -36,12 +48,33 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 import dossier  # noqa: E402
 import integrate as checker  # noqa: E402
+import rank_candidates  # noqa: E402
 import triage  # noqa: E402
 
 WAVES = ROOT / "build-sn/waves"
 TRY = ROOT / "build-sn/try"
 SECTION = {"match": "Matching", "compile": "First compile"}
 CLOSE_BYTES, CLOSE_SIZE = 40, 8
+ALL_LEVELS = 19  # docs/OVERLAYS.md: how many levels there are in total
+
+OVERLAY_NAME = re.compile(r"^func_L\d{2}_[0-9A-Fa-f]{8}$")
+OVERLAY_STUB_LINE = re.compile(r"^\s*INCLUDE_ASM\([^)]*\bfunc_L\d{2}_[0-9A-Fa-f]{8}\)")
+OVERLAY_DEF_LINE = re.compile(r"^(?!extern\b)[A-Za-z_].*?\bfunc_L\d{2}_[0-9A-Fa-f]{8}\s*\(")
+# The same trailing-comment convention exe stubs use for a known real name
+# (tools/triage.py's NAME_COMMENT); overlay stubs don't have one yet, but a
+# worker or a future generator may leave one the same way.
+OVERLAY_NAME_COMMENT = re.compile(
+    r"INCLUDE_ASM\([^)]*\b(func_L\d{2}_[0-9A-Fa-f]{8})\);[^\S\n]*/\*[^\S\n]*([A-Za-z_]\w*)[^\S\n]*(?:\(|\*/)")
+
+
+def is_overlay_wave(names: list[str]) -> bool:
+    """True if NAMES are all overlay functions, False if all executable;
+    exits if it's a mix (docs/OVERLAYS.md functions and exe functions are
+    matched, integrated and landed differently)."""
+    overlay = [bool(OVERLAY_NAME.match(n)) for n in names]
+    if any(overlay) and not all(overlay):
+        sys.exit("a wave must be all overlay functions or all executable functions, not both")
+    return bool(names) and overlay[0]
 
 
 def closeness(row: dict) -> int | None:
@@ -61,6 +94,8 @@ def closeness(row: dict) -> int | None:
 def choose(args) -> list[str]:
     if args.funcs:
         return args.funcs
+    if getattr(args, "overlay", False):
+        return choose_overlay(args)
     rows = [r for r in triage.triage() if r["route"] != "blocked"]
     if args.near:
         close = [(closeness(r), r["name"]) for r in rows]
@@ -69,10 +104,47 @@ def choose(args) -> list[str]:
     return [r["name"] for r in sorted(fresh, key=lambda r: r["size"])][:args.count]
 
 
+def choose_overlay(args) -> list[str]:
+    """The default overlay pool (docs/OVERLAYS.md, "Relatives"): shared
+    functions present in every level first, smaller first within that,
+    after screening each one's asm/overlays/<name>.s through
+    rank_candidates' blocked-pattern triage and skipping anything already
+    matched (kind "exe" is executable code under another name -- it has no
+    src/overlays file of its own to land into) or without an asm file yet
+    (docs/OVERLAYS.md's jump-table functions, or asm/overlays regenerating)."""
+    catalogue = dossier.load_overlay_catalogue()
+    findex = dossier.overlay_file_index()
+    rows = []
+    for name, (kind, size, levels_count, _places) in catalogue.items():
+        if kind == "exe":
+            continue
+        entry = findex.get(name)
+        if entry is None:
+            continue
+        _path, fns = entry
+        is_c = next((c for n, c in fns if n == name), False)
+        if is_c:
+            continue
+        asm = ROOT / "asm/overlays" / f"{name}.s"
+        if not asm.exists():
+            continue
+        verdict, _cat, _detail = rank_candidates.classify(name, asm.read_text(errors="replace"), "text", size)
+        if verdict == "blocked":
+            continue
+        rank = 0 if (kind == "shared" and levels_count == ALL_LEVELS) else 1
+        rows.append((rank, size, name))
+    rows.sort()
+    return [name for _, _, name in rows][:args.count]
+
+
 def plan(args) -> None:
     names = choose(args)
     if not names:
         sys.exit("nothing to plan")
+    overlay = is_overlay_wave(names)
+    if overlay and args.role == "compile":
+        sys.exit("no m2c sketch exists for overlay functions yet, so there is nothing for a "
+                  "compile worker to start from (docs/OVERLAYS.md); use --role match")
     stamp = time.strftime("%Y%m%d-%H%M%S")
     for name in names:
         work = TRY / name
@@ -80,17 +152,20 @@ def plan(args) -> None:
         if (work / "runs.log").exists():  # A fresh budget for this round.
             (work / "runs.log").rename(work / f"runs.{stamp}.log")
         (work / "BUDGET").write_text(f"{args.budget}\n")
-    needs_sketch = [n for n in names if not (TRY / n / "m2c.c").exists()]
-    broken = [n for n in names if n not in needs_sketch
-              and "{" not in (TRY / n / "m2c.c").read_text(errors="replace")]
-    if args.role == "compile" and broken:
-        sys.exit(f"no m2c sketch for {', '.join(broken)}: a compile worker needs one")
-    if needs_sketch:
-        dossier.sketches(needs_sketch)
-    dossier.write(names)
+    if overlay:
+        dossier.overlay_write(names)
+    else:
+        needs_sketch = [n for n in names if not (TRY / n / "m2c.c").exists()]
+        broken = [n for n in names if n not in needs_sketch
+                  and "{" not in (TRY / n / "m2c.c").read_text(errors="replace")]
+        if args.role == "compile" and broken:
+            sys.exit(f"no m2c sketch for {', '.join(broken)}: a compile worker needs one")
+        if needs_sketch:
+            dossier.sketches(needs_sketch)
+        dossier.write(names)
     WAVES.mkdir(parents=True, exist_ok=True)
     record = {"name": args.name, "role": args.role, "budget": args.budget, "created": stamp,
-              "started": time.time(), "functions": names}
+              "started": time.time(), "functions": names, "pool": "overlay" if overlay else "exe"}
     (WAVES / f"{args.name}.json").write_text(json.dumps(record, indent=2) + "\n")
     print(f"\nwave {args.name}: {len(names)} {args.role} workers, budget {args.budget} runs each\n")
     for name in names:
@@ -131,7 +206,7 @@ def results(wave: dict) -> list[tuple[str, str, str, int]]:
 def status(args) -> None:
     wave = load(args.name)
     rows = results(wave)
-    print(f"wave {wave['name']}: {wave['role']}, budget {wave['budget']}")
+    print(f"wave {wave['name']}: {wave['role']}, budget {wave['budget']}, pool {wave.get('pool', 'exe')}")
     for name, verdict, candidate, runs in rows:
         print(f"  {name}  {verdict[:40]:40}  runs {runs:>2}/{wave['budget']}  {candidate}")
     exact = sum(v.startswith("EXACT") for _, v, _, _ in rows)
@@ -167,6 +242,13 @@ def exact_in_report() -> set[str]:
 
 def land(args) -> None:
     wave = load(args.name)
+    if is_overlay_wave(wave["functions"]):
+        land_overlay(args, wave)
+    else:
+        land_exe(args, wave)
+
+
+def land_exe(args, wave: dict) -> None:
     # Only src/ and the report are committed, so only they must be clean.
     dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no", "--", "src", "progress"],
                            cwd=ROOT, capture_output=True, text=True).stdout.strip()
@@ -217,6 +299,129 @@ def land(args) -> None:
     print(f"{len(landed)} landed, {len(skipped)} skipped")
 
 
+def overlay_known_name(saved_text: str, name: str) -> str | None:
+    """A trailing name comment on NAME's stub line (`INCLUDE_ASM(...); /*
+    Name */`), if one is there -- the same convention tools/triage.py reads
+    for executable stubs; overlay stubs don't carry one yet as generated,
+    but a worker or a future catalogue update may leave one the same way."""
+    for fn, sym in OVERLAY_NAME_COMMENT.findall(saved_text):
+        if fn == name:
+            return sym
+    return None
+
+
+def overlay_source_of(name: str, findex) -> Path | None:
+    entry = findex.get(name)
+    return entry[0] if entry else None
+
+
+def overlay_is_stub(source: Path, name: str) -> bool:
+    for line in source.read_text(errors="replace").splitlines():
+        if name in line and OVERLAY_STUB_LINE.match(line):
+            return True
+    return False
+
+
+def extract_definition(source: Path, name: str) -> str:
+    """NAME's C definition exactly as it stands in SOURCE right now, for
+    re-checking the landed file itself rather than the pre-apply candidate
+    (apply_candidate.py's own edits -- dropped externs, a moved comment --
+    are text changes only, but this is the same belt-and-braces the
+    executable land() gets from its full build, which overlay code has
+    none of)."""
+    lines = source.read_text().splitlines()
+    for i, line in enumerate(lines):
+        if name in line and OVERLAY_DEF_LINE.match(line) and not line.rstrip().endswith(";"):
+            depth, seen, j = 0, False, i
+            for j in range(i, len(lines)):
+                depth += lines[j].count("{") - lines[j].count("}")
+                seen = seen or "{" in lines[j]
+                if seen and depth == 0:
+                    break
+            return "\n".join(lines[i:j + 1]) + "\n"
+    sys.exit(f"{name}: no C definition found in {source} right after landing it")
+
+
+def land_overlay(args, wave: dict) -> None:
+    """Lands overlay EXACTs (docs/OVERLAYS.md). Differs from land_exe():
+
+    - No full build: the executable does not link src/overlays/, so
+      tools/build_sn.sh cannot see these functions either way.
+    - The re-check after applying is tools/try_func.py itself, run again
+      against the function's own definition as it now sits in the landed
+      file (overlay_check.check() already does the strict, unmasked
+      relocation compare -- see docs/OVERLAYS.md's "Plan" step 2).
+    - progress/report.json has no overlay units yet (another agent is
+      adding them to tools/gen_progress_report.py); see the TODO below.
+    """
+    dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no", "--", "src", "progress"],
+                           cwd=ROOT, capture_output=True, text=True).stdout.strip()
+    if dirty:
+        sys.exit("land needs src/ and progress/ clean:\n" + dirty)
+    findex = dossier.overlay_file_index()
+    landed, skipped = [], []
+    for name, verdict, candidate, _ in results(wave):
+        if not verdict.startswith("EXACT") or not candidate:
+            continue
+        source = overlay_source_of(name, findex)
+        if source is None:
+            skipped.append((name, "not found under src/overlays/"))
+            continue
+        if not overlay_is_stub(source, name):
+            skipped.append((name, "already landed (no longer a stub)"))
+            continue
+        reason = checker.banned(str(ROOT / candidate))
+        if reason:
+            skipped.append((name, f"refused: {reason}"))
+            continue
+        saved = source.read_text()
+        known = overlay_known_name(saved, name)
+        manifest = WAVES / f"{args.name}-{name}.MANIFEST"
+        manifest.write_text(f"{name} {candidate}\n")
+        applied = docker("python", "tools/integrate.py", str(manifest.relative_to(ROOT)), "--apply")
+        if "1/1 exact" not in applied.stdout:
+            source.write_text(saved)
+            skipped.append((name, "not exact on re-check"))
+            continue
+        recheck = WAVES / f"{args.name}-{name}.landed.c"
+        recheck.write_text(extract_definition(source, name))
+        verify = docker("python", "tools/try_func.py", name, str(recheck.relative_to(ROOT)), "--no-budget")
+        (WAVES / f"{args.name}-{name}.verify.log").write_text(verify.stdout + verify.stderr)
+        if "EXACT" not in verify.stdout:
+            source.write_text(saved)
+            skipped.append((name, "not exact re-checked against the landed file"))
+            continue
+        # TODO(overlays): progress/report.json does not count overlay units
+        # yet (tools/gen_progress_report.py is being extended for them). It
+        # is still called here, the way land_exe() calls it, so that landing
+        # picks it up automatically once it can -- but only when a build
+        # already exists, since overlay landing does not need or produce
+        # one (the executable does not build src/overlays/).
+        elf = ROOT / "build-sn/rac1.elf"
+        report_note = ""
+        if elf.exists():
+            docker("python", "tools/gen_progress_report.py", "--no-build")
+        else:
+            report_note = (" (progress/report.json not refreshed: no build-sn/rac1.elf yet, "
+                            "and it doesn't count overlay functions yet regardless)")
+        title = f"{known} ({name})" if known else name
+        message = (f"feat(overlays): {title} exact match\n\n"
+                   f"Matched by a Sonnet worker in wave {args.name}; checked strictly against "
+                   f"{name}'s real address in its level with tools/overlay_check.py "
+                   f"(docs/OVERLAYS.md). No executable build: src/overlays/ isn't linked into "
+                   f"it.{report_note}\n\n{TRAILER}")
+        add = [str(source.relative_to(ROOT))]
+        if elf.exists():
+            add.append("progress/report.json")
+        subprocess.run(["git", "add", *add], cwd=ROOT, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", message], cwd=ROOT, check=True)
+        landed.append(name)
+        print(f"landed {name}", flush=True)
+    for name, why in skipped:
+        print(f"skipped {name}: {why}")
+    print(f"{len(landed)} landed, {len(skipped)} skipped")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -229,6 +434,7 @@ def main() -> None:
     pick = p.add_mutually_exclusive_group()
     pick.add_argument("--near", action="store_true")
     pick.add_argument("--fresh", action="store_true")
+    pick.add_argument("--overlay", action="store_true")
     commands.add_parser("status").add_argument("name")
     commands.add_parser("integrate").add_argument("name")
     commands.add_parser("land").add_argument("name")

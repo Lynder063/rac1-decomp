@@ -24,12 +24,14 @@ from libgcc_units import SEGMENT_SOURCES  # noqa: E402
 
 FUNC_DEF = re.compile(r"^(?!extern\b)[A-Za-z_].*?\b(func_[0-9A-Fa-f]{8})\s*\(", re.M)
 STUB = re.compile(r"INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\)")
-JTBL = re.compile(r"%hi\((jtbl_[0-9A-F]{8})\)")
+JTBL = re.compile(r"%hi\((jtbl_(?:L\d\d_)?[0-9A-F]{8})\)")
 
 
 def retail_tables(func: str) -> list[str]:
     """The jump tables retail's FUNC uses, in the order it first uses them."""
     p = Path(f"asm/nonmatchings/text/{func}.s")
+    if not p.exists():
+        p = Path(f"asm/overlays/{func}.s")        # level code (docs/OVERLAYS.md)
     if not p.exists():
         return []
     return list(dict.fromkeys(JTBL.findall(p.read_text())))

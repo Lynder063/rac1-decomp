@@ -182,7 +182,7 @@ and reviews what comes back. The workers follow [WORKER.md](WORKER.md).
 ```
 python3 tools/lombyte.py todo                # matched in Lombyte, not here
 python3 tools/triage.py                      # what is left, by route
-python3 tools/wave.py plan w7 --budget 10 func_X ...   # or --near / --fresh
+python3 tools/wave.py plan w7 --budget 10 func_X ...   # or --near / --fresh / --overlay
 python3 tools/wave.py status w7              # verdicts as workers finish
 python3 tools/wave.py land w7                # one commit per EXACT, full build each
 ```
@@ -207,6 +207,20 @@ Measured on 2026-09-26/27 (Sonnet workers, one function each):
 | Near-misses, retries and some large new functions (waves 2-4) | 84 | 14 | +0.11% | 1.2M |
 | Everything else up to 1000 bytes (wave 5) | 51 | 3 | +0.04% | 5.0M |
 | Freshly unblocked functions (wave 6) | 25 | 7 | +0.13% | 1.0M |
+
+"Code" there is the executable's (466 KB). Level code, measured
+2026-09-28, is counted against all of the game's code (3.69 MB):
+
+| Pool | Workers | Exact | Bytes matched | Bytes per 1M tokens |
+|---|---|---|---|---|
+| Common level code in all 19 levels, 156-440 bytes (ov1, ov2) | 24 | 11 | 2,284 | about 850 |
+| For comparison: wave 6 above | 25 | 7 | about 2,300 | about 470 |
+
+- **Level code matches well.** Many level functions are copies or
+  variants of executable functions that already have C (the sound bank,
+  interpolation and moby helpers), and workers found them in `src/game/`.
+  The ones that stopped short stopped on the usual ties (register order,
+  branch-likely, store order).
 
 - **Ports first.** Functions Lombyte has matched (`tools/lombyte.py todo`,
   66 on 2026-09-27, 6.8% of code) should match in a run or two once
@@ -238,6 +252,20 @@ Measured on 2026-09-26/27 (Sonnet workers, one function each):
 - `tools/integrate.py` refuses pins, barriers and inline asm. A `while (0)`
   inside a macro taken from the original source (newlib's `MALLOC_ZERO`)
   is not a barrier: review it and land it by hand.
+
+### Overlay pool
+
+Overlay functions (`func_LNN_XXXXXXXX`, docs/OVERLAYS.md) are their own
+pool: name them on the `plan` line, or let `--overlay` pick shared code in
+all 19 levels first, smaller first, after the usual triage of
+`asm/overlays/<name>.s`. A wave is all overlay or all executable. There is
+no m2c sketch for them, so no `--role compile`.
+
+`land` checks an overlay match by re-running try_func on the landed file
+(the strict check, docs/OVERLAYS.md) instead of the full build, which
+doesn't include `src/overlays/`. It regenerates the progress report when
+`build-sn/rac1.elf` exists, and commits `feat(overlays): <name> exact
+match`.
 
 ### Open work that would help the next waves
 

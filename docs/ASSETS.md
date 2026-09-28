@@ -157,9 +157,25 @@ The first section is code. Its records are
 
 So each level brings its own, much larger build of the game program; the
 executable's `main` is the program that runs before the first level loads.
-How much of the level code is the same engine relinked, and how much is
-specific to a level, is not measured yet. Deduplicating it is the first
-step towards decompiling it.
+
+`tools/overlay_scan.py` measures the overlap. It compares instructions with
+their link-dependent fields masked and splits functions at calls, returns
+and tail calls (so the figures are approximate). On 2026-09-27:
+
+| | Bytes |
+|---|---|
+| The executable's game code (`text`), 1,036 functions | 348K |
+| Of those, found in each level's text (about 979 functions) | 321K |
+| Distinct overlay code also in the executable | 270K |
+| Distinct overlay code shared by two or more levels, not in the executable | 1.19M |
+| ...of which in all 19 levels | 594K |
+| Distinct overlay code of a single level | 2.03M (about 107K per level) |
+
+The executable's program is a subset of every level's. All distinct game
+code comes to about 3.5 MB, ten times the executable's; with the resident
+SDK code (`core_text`) the whole program is about 3.7 MB. Decompiling the
+levels means splitting their overlays, as `config/splat.yaml` does for the
+executable, and counting each distinct function once.
 
 ### Core index
 
