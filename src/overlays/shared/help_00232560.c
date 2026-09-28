@@ -446,7 +446,37 @@ void func_L00_00233EE0(float *out, float x, float y, float z) {
     func_001F9BD8(out, out, base + 0x80);
 }
 INCLUDE_ASM("asm/overlays", func_L00_00233F68);
-INCLUDE_ASM("asm/overlays", func_L00_00233F88);
+extern void func_001FA218(void *, void *);
+
+/* Moves SRC by R into DST along the current animation's heading (+0x48
+   of the object at D_0013F450 + 0x2080): in view mode 0 (+0x20B3) as
+   (R cos, R sin) added to a copy; in modes 1 and 2 as (R, 0, 0) taken
+   through the rotation func_001FA218 builds from its angles (+0x40). The
+   switch gives retail's case tree. */
+void func_L00_00233F88(float *dst, float *src, float r) {
+    char *base = D_0013F450;
+    float m[16] __attribute__((aligned(16)));
+    float off[4] __attribute__((aligned(16)));
+    float angle;
+
+    switch (*(unsigned char *)(base + 0x20B3)) {
+    case 0:
+        qcopy(dst, src);
+        dst[0] += func_001F9F90(*(float *)(*(char **)(base + 0x2080) + 0x48)) * r;
+        dst[1] += func_001F9FA8(*(float *)(*(char **)(base + 0x2080) + 0x48)) * r;
+        break;
+    case 1:
+    case 2:
+        angle = 0.0f;
+        off[0] = func_001F9F90(angle) * r;
+        off[1] = func_001F9FA8(angle) * r;
+        off[2] = angle;
+        func_001FA218(m, *(char **)(base + 0x2080) + 0x40);
+        func_001F9EE8(off, off, m);
+        func_001F9BD8(dst, src, off);
+        break;
+    }
+}
 extern void func_001FA218(void *, void *);
 
 /* Moves SRC by DZ along the view's z into DST: in view mode 0
