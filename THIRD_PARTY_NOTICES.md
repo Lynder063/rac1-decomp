@@ -36,6 +36,7 @@ The following functions adapt source from
 - `src/game/loaders.c`: `func_00204FC0` (update_world_object_animation)
 - `src/core/989snd.c`: `func_0012E688` (snd_SendIOPCommandAndWait)
 - `src/core/00125630.c`: `func_00128860` (`_peepBit`)
+- `src/core/0011D0D0.c`: `func_0011D0D0` (`sceSifResetIop`)
 
 MIT License
 

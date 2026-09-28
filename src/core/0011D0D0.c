@@ -72,7 +72,69 @@ extern char D_00158528[];
 extern int D_0012FDB4;
 extern int func_0011CE70(int arg0, int arg1, int arg2, void *arg3);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011D0D0);
+typedef struct {
+    u64 psize : 8;
+    u64 dsize : 24;
+    u64 dest : 32;
+    s32 cid;
+    u32 opt;
+} SifCmdHeader;
+
+typedef struct {
+    SifCmdHeader header;
+    s32 arglen;
+    s32 mode;
+    char arg[80];
+} SifResetPacket;
+
+typedef struct {
+    u32 data;
+    u32 addr;
+    s32 size;
+    s32 mode;
+} SifDmaData;
+
+extern SifResetPacket D_00158540;
+extern void func_00118DA0(void);
+extern u32 func_00118E70_u(u32 reg) __asm__("func_00118E70");
+extern u32 func_00118E60(u32 reg, u32 val);
+extern void func_0011AD70(void *p, s32 size);
+extern u32 func_00118E20(SifDmaData *dma, s32 count);
+
+/* sceSifResetIop: like sceSifRebootIop (func_0011D248) but with a caller
+   -supplied argument string and reboot mode. Adapted from Lombyte (MIT)
+   for PAL. */
+s32 func_0011D0D0(const char *arg, s32 mode) {
+    SifDmaData dma;
+    u32 addr;
+    s32 arglen;
+
+    func_00118DA0();
+    addr = func_00118E70_u(0x80000000);
+    D_00158540.mode = mode;
+    for (arglen = 0; arg[arglen] != 0; arglen++) {
+        D_00158540.arg[arglen] = arg[arglen];
+    }
+    D_00158540.header.dest = 0;
+    D_00158540.arglen = arglen;
+    D_00158540.header.cid = 0x80000003;
+    D_00158540.header.dsize = 0;
+    D_00158540.header.psize = sizeof(SifResetPacket);
+    dma.data = (u32)&D_00158540;
+    dma.addr = addr;
+    dma.size = sizeof(SifResetPacket);
+    dma.mode = 0x44;
+    func_0011AD70(&D_00158540, sizeof(SifResetPacket));
+    func_00118E60(4, 0x40000);
+    if (func_00118E20(&dma, 1)) {
+        func_00118E60(4, 0x10000);
+        func_00118E60(4, 0x20000);
+        func_00118E60(0x80000002, 0);
+        func_00118E60(0x80000000, 0);
+        return 1;
+    }
+    return 0;
+}
 
 extern int func_00118E70(int);
 extern void func_00118EC0(void);
