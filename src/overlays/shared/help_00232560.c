@@ -82,8 +82,9 @@ int func_L00_00232608(int key, int *out) {
    for ID (and ID is nonzero), it starts them with ARG and T, unless the
    first already plays its sequence. Otherwise, unless the first's
    current sequence maps to key 0 (func_L00_00232608, checked only when
-   +0x208C is clear), it sends both to sequence 1 over func_001F9850(7)
-   frames, or (0x13) in mode 8 (+0x2090) of game mode 2. The pair are
+   +0x208C is clear), it sends both to sequence 1 with func_001F9850(7),
+   or func_001F9850(0x13) when +0x2090 is 8 and func_L00_0020DB30(3) is 2,
+   as the last func_00213DE0 argument. The pair are
    two scalars next to the spilled ID, which gives retail's 0x80 frame;
    the block pointer is re-formed for each stage, as retail does. */
 void func_L00_002326D0(int id, int arg, float t) {
