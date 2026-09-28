@@ -79,7 +79,25 @@ INCLUDE_ASM("asm/overlays", func_L00_0025C498);
 INCLUDE_ASM("asm/overlays", func_L00_0025C700);
 INCLUDE_ASM("asm/overlays", func_L00_0025C710);
 INCLUDE_ASM("asm/overlays", func_L00_0025C7A8);
-INCLUDE_ASM("asm/overlays", func_L00_0025C7F0);
+extern float func_001F9B88(float arg0);
+
+void func_L00_0025C7F0(float *ptr, float rate, float b, float c, float limit) {
+    float v = *ptr + (b * rate - c * (*ptr));
+
+    *ptr = v;
+    if (0.0f < limit) {
+        if (limit < v) {
+            *ptr = limit;
+        } else if (v < -limit) {
+            *ptr = -limit;
+        }
+    }
+    if (func_001F9B88(rate) < *ptr) {
+        *ptr = func_001F9B88(rate);
+    } else if (*ptr < -func_001F9B88(rate)) {
+        *ptr = -func_001F9B88(rate);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025C918);
 INCLUDE_ASM("asm/overlays", func_L00_0025CB90);
 INCLUDE_ASM("asm/overlays", func_L00_0025CC58);
