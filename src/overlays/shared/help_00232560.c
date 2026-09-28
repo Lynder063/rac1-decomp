@@ -151,7 +151,29 @@ void func_L00_00234420(float *dst, float *src, float z) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_002344B0);
-INCLUDE_ASM("asm/overlays", func_L00_002345B0);
+extern float func_001F9CE8(void *);
+extern float func_L00_001FF860(float, float);
+
+/* Returns func_L00_001FF860 (handwritten, apparently an atan2) of V's z
+   and its xy length (func_001F9CE8): V's pitch. In view modes 1 and 2
+   (D_0013F450 + 0x20B3) V is first transformed by the matrix at +0x40,
+   in an aligned stack copy; any other mode gives 0. The switch gives
+   retail's case tree. */
+float func_L00_002345B0(float *v) {
+    char *base = D_0013F450;
+    float tmp[4] __attribute__((aligned(16)));
+
+    switch (*(unsigned char *)(base + 0x20B3)) {
+    case 0:
+        return func_L00_001FF860(v[2], func_001F9CE8(v));
+    case 1:
+    case 2:
+        qcopy(tmp, v);
+        func_001F9EE8(tmp, tmp, base + 0x40);
+        return func_L00_001FF860(tmp[2], func_001F9CE8(tmp));
+    }
+    return 0.0f;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00234638);
 INCLUDE_ASM("asm/overlays", func_L00_00234674);
 INCLUDE_ASM("asm/overlays", func_L00_002346C0);
