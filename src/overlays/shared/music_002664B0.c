@@ -4,4 +4,10 @@
 
 INCLUDE_ASM("asm/overlays", func_L00_002664B0);
 INCLUDE_ASM("asm/overlays", func_L00_002664F4);
-INCLUDE_ASM("asm/overlays", func_L00_002666C8);
+extern char D_001517D0[];
+void func_L00_002666C8(int v) {
+    char *b = D_001517D0;
+    if (*(short *)(b + 0x40) & 0x8000) *(short *)(b + 0x42) = v;
+    if (*(short *)(b + 0x78) & 0x8000) *(short *)(b + 0x7A) = v;
+    if (*(short *)(b + 0x5C) & 0x8000) *(short *)(b + 0x5E) = v;
+}
