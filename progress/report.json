@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 7.203515606380351,
+  "fuzzy_match_percent": 7.205357258927681,
   "total_code": "3692336",
-  "matched_code": "265348",
-  "matched_code_percent": 7.186453237191849,
+  "matched_code": "265416",
+  "matched_code_percent": 7.188294889739178,
   "total_functions": 4987,
-  "matched_functions": 1392,
-  "matched_functions_percent": 27.91257268899138,
+  "matched_functions": 1393,
+  "matched_functions_percent": 27.932624824543815,
   "complete_code": "88644",
   "complete_code_percent": 2.4007565941994446,
   "total_units": 378,
@@ -22116,13 +22116,13 @@
   {
    "name": "overlays/shared/help_00232560",
    "measures": {
-    "fuzzy_match_percent": 25.75187969924812,
+    "fuzzy_match_percent": 26.284461152882205,
     "total_code": "12768",
-    "matched_code": "3288",
-    "matched_code_percent": 25.75187969924812,
+    "matched_code": "3356",
+    "matched_code_percent": 26.284461152882205,
     "total_functions": 52,
-    "matched_functions": 24,
-    "matched_functions_percent": 46.15384615384615,
+    "matched_functions": 25,
+    "matched_functions_percent": 48.07692307692308,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -22591,7 +22591,7 @@
     {
      "name": "func_L00_00235790",
      "size": "68",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "12848",
      "metadata": {
       "virtual_address": "2316176"
@@ -54867,13 +54867,13 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 0.1674809306038859,
+    "fuzzy_match_percent": 0.16958838864997478,
     "total_code": "3226636",
-    "matched_code": "5404",
-    "matched_code_percent": 0.1674809306038859,
+    "matched_code": "5472",
+    "matched_code_percent": 0.16958838864997478,
     "total_functions": 3307,
-    "matched_functions": 34,
-    "matched_functions_percent": 1.0281221651043242,
+    "matched_functions": 35,
+    "matched_functions_percent": 1.058361052313275,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -54912,13 +54912,13 @@
    "id": "common",
    "name": "Common level code",
    "measures": {
-    "fuzzy_match_percent": 0.4525523483480667,
+    "fuzzy_match_percent": 0.45824693748346057,
     "total_code": "1194116",
-    "matched_code": "5404",
-    "matched_code_percent": 0.4525523483480667,
+    "matched_code": "5472",
+    "matched_code_percent": 0.45824693748346057,
     "total_functions": 1928,
-    "matched_functions": 34,
-    "matched_functions_percent": 1.7634854771784232,
+    "matched_functions": 35,
+    "matched_functions_percent": 1.8153526970954357,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }

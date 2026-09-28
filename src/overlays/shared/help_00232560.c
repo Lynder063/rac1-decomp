@@ -587,4 +587,15 @@ INCLUDE_ASM("asm/overlays", func_L00_002352D0);
 INCLUDE_ASM("asm/overlays", func_L00_002353B8);
 INCLUDE_ASM("asm/overlays", func_L00_00235608);
 INCLUDE_ASM("asm/overlays", func_L00_002356D0);
-INCLUDE_ASM("asm/overlays", func_L00_00235790);
+extern char D_001416F8[];
+extern void func_L00_00239F40(void);
+extern void func_L00_00239FC0(void);
+extern void func_L00_0023A1A0(void);
+extern int func_001FFB38_p(int, int, void *, void *, void *, void *, int) __asm__("func_001FFB38");
+
+/* Registers HUD bank 1 (func_001FFB38, id 0x7535) with the three level
+   callbacks and the data at D_001416F8. func_001FFB38 is declared with
+   int parameters in hud.c; the alias passes pointers. */
+void func_L00_00235790(void) {
+    func_001FFB38_p(1, 0x7535, func_L00_00239F40, func_L00_00239FC0, func_L00_0023A1A0, D_001416F8, 8);
+}
