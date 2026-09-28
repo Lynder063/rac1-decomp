@@ -5,7 +5,35 @@
 INCLUDE_ASM("asm/overlays", func_L00_00235960);
 INCLUDE_ASM("asm/overlays", func_L00_00235CA0);
 INCLUDE_ASM("asm/overlays", func_L00_00235FF8);
-INCLUDE_ASM("asm/overlays", func_L00_00236208);
+typedef struct {
+    int unk00, unk04;
+    char pad08[0x18];
+    int unk20, unk24;
+    char pad28[0x3C];
+    int unk64, unk68, unk6C;
+    char pad70[0xC];
+    int unk7C;
+    char pad80[0x10];
+} HudBank;
+
+extern HudBank D_L00_0017DD50[];
+extern int func_001FFB38(int, int, int, int, int, int, int);
+extern void func_001FFC48(void *);
+
+/* The level's HUD bank reset, a shorter func_001FF6B8 (src/game/hud.c):
+   for each of the 13 bank records at D_L00_0017DD50, func_001FFB38(i,
+   0xFFFF, 0, 0, 0, 0, 1), +0x7C = 0, +0x6C = -6, then reloads it with
+   func_001FFC48. */
+void func_L00_00236208(void) {
+    int i;
+
+    for (i = 0; i < 13; i++) {
+        func_001FFB38(i, 0xFFFF, 0, 0, 0, 0, 1);
+        D_L00_0017DD50[i].unk7C = 0;
+        D_L00_0017DD50[i].unk6C = -6;
+        func_001FFC48(&D_L00_0017DD50[i]);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00236400);
 INCLUDE_ASM("asm/overlays", func_L00_00236468);
 INCLUDE_ASM("asm/overlays", func_L00_00236610);
