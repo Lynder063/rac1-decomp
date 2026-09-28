@@ -44,7 +44,11 @@ typedef struct {
     int w;
     int h;
     int flags;
-    char pad64[0x18];
+    char pad64[0x8];
+    int unk6C;
+    unsigned char cnt[4];
+    int unk74;
+    int unk78;
     int unk7C;
     void *unk80;
 } HudElem;
@@ -179,7 +183,44 @@ void func_L00_0023A658(HudElem *e) {
 INCLUDE_ASM("asm/overlays", func_L00_0023A690);
 INCLUDE_ASM("asm/overlays", func_L00_0023A788);
 INCLUDE_ASM("asm/overlays", func_L00_0023AB88);
-INCLUDE_ASM("asm/overlays", func_L00_0023ABB0);
+/* A word reached through $gp: under -G2 that takes a declaration of at
+   most two bytes. */
+extern short D_L00_0015F8D0;
+
+/* Steps a two-digit HUD counter (+0x70, +0x71): while the flag at
+   D_0013F450 + 0x2048 is set, restarts the timer at func_001F9850(10)
+   and raises the first digit, then the second, up to D_L00_0015F8D0;
+   otherwise clears the timer, sets +0x6C to 1 and lowers the second
+   digit, then the first, setting +0x6C to -6 once both are 0. The
+   second digit goes through a pointer kept across the call, as retail
+   holds e + 0x70 in a saved register; the limit is read before the
+   timer is stored. */
+void func_L00_0023ABB0(HudElem *e) {
+    unsigned char *c = e->cnt;
+    int max;
+    int t;
+
+    if (*(int *)(D_0013F450 + 0x2048) != 0) {
+        t = func_001F9850(10);
+        max = *(int *)&D_L00_0015F8D0;
+        e->unk7C = t;
+        if (e->cnt[0] < max) {
+            e->cnt[0]++;
+        } else if (c[1] < max) {
+            c[1]++;
+        }
+    } else {
+        e->unk7C = 0;
+        e->unk6C = 1;
+        if (c[1] != 0) {
+            c[1]--;
+        } else if (e->cnt[0] != 0) {
+            e->cnt[0]--;
+        } else {
+            e->unk6C = -6;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_0023AC68);
 INCLUDE_ASM("asm/overlays", func_L00_0023AFD8);
 /* func_L00_00236750 without the offsets: a 32 x 32 element with a timer
