@@ -207,6 +207,20 @@ Measured on 2026-09-26/27 (Sonnet workers, one function each):
 | Everything else up to 1000 bytes (wave 5) | 51 | 3 | +0.04% | 5.0M |
 | Freshly unblocked functions (wave 6) | 25 | 7 | +0.13% | 1.0M |
 
+"Code" there is the executable's (466 KB). Level code, measured
+2026-09-28, is counted against all of the game's code (3.69 MB):
+
+| Pool | Workers | Exact | Bytes matched | Bytes per 1M tokens |
+|---|---|---|---|---|
+| Common level code in all 19 levels, 156-440 bytes (ov1, ov2) | 24 | 11 | 2,284 | about 850 |
+| For comparison: wave 6 above | 25 | 7 | about 2,300 | about 470 |
+
+- **Level code matches well.** Many level functions are copies or
+  variants of executable functions that already have C (the sound bank,
+  interpolation and moby helpers), and workers found them in `src/game/`.
+  The ones that stopped short stopped on the usual ties (register order,
+  branch-likely, store order).
+
 - **Ports first.** Functions Lombyte has matched (`tools/lombyte.py todo`,
   66 on 2026-09-27, 6.8% of code) should match in a run or two once
   renamed. See [SIBLING_DECOMPS.md](SIBLING_DECOMPS.md).

@@ -131,3 +131,22 @@ another level: level code is often the same source built with small
 changes. Match one, then start its relative from that C. Matching order:
 shared code in all 19 levels first, then one function per family, then
 the rest.
+
+## Status
+
+2026-09-28: 11 level functions matched (2,284 bytes of common level
+code), from two waves of 24 Sonnet workers. The near-misses' notes are
+in `build-sn/try/func_L00_*/`. Found along the way, and fixed:
+
+- the catalogue dropped a final jump's delay-slot `nop` from 302 sizes;
+- the assembler pads backward branches in stubs (now `.word`s);
+- calls to a function in the same file, or to one of several identical
+  copies of a helper, resolved to the wrong address in the check;
+- jump tables in compiled level code were refused;
+- spimdisasm left some level data unnamed, and `CONTEXT.md` gave `$gp`
+  globals at 0x15F000 and up executable names.
+
+Open: some near-misses needed per-file flags (`-G8 -mno-split-addresses`
+for func_L00_00235FF8), and retail keeps a redundant `andi` in
+func_L00_00286128 that our compiler drops: the level code may have been
+built with other flags, which isn't mapped yet.
