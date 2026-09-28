@@ -217,4 +217,23 @@ INCLUDE_ASM("asm/overlays", func_L00_0023D750);
 INCLUDE_ASM("asm/overlays", func_L00_0023D838);
 INCLUDE_ASM("asm/overlays", func_L00_0023D9C0);
 INCLUDE_ASM("asm/overlays", func_L00_0023DB30);
-INCLUDE_ASM("asm/overlays", func_L00_0023DD70);
+extern int D_L00_001C4198[];
+extern unsigned char D_0015EED0[] MACRO_ADDR;
+
+/* Adds the id D_L00_001C4198[IDX] to the 0xFF-terminated byte list at
+   D_0015EED0 (ids in the low six bits) unless it is already there. The
+   list is MACRO_ADDR: its first byte, loaded in a delay slot, is reached
+   through $gp as retail does, the address itself through lui. */
+void func_L00_0023DD70(int idx) {
+    int id = D_L00_001C4198[idx];
+    int i;
+
+    if (id == 0) {
+        return;
+    }
+    for (i = 0; (D_0015EED0[i] & 0x3F) != id && D_0015EED0[i] != 0xFF; i++) {
+    }
+    if (D_0015EED0[i] == 0xFF) {
+        D_0015EED0[i] = id;
+    }
+}
