@@ -415,7 +415,46 @@ void func_L00_0023B890(void) {
     D_L00_0015FA44 = 0;
 }
 INCLUDE_ASM("asm/overlays", func_L00_0023BAB8);
-INCLUDE_ASM("asm/overlays", func_L00_0023C058);
+extern char D_L00_0017E5D8[];
+extern int *D_L00_00161280 MACRO_ADDR;
+extern int D_0013E600[];
+extern long func_00200248(int);
+
+/* The level's func_00200468 (src/game/hud.c) with the UV given: draws
+   texture TEX as a sprite at (x, y), w x h, with ALPHA, through the
+   packet pointer D_L00_00161280, the far UV being (w, h) itself rather
+   than the texture's full size. The arena pointer is taken after the
+   TEX0 call, where retail forms it. */
+void func_L00_0023C058(int tex, int x, int y, int w, int h, int alpha) {
+    char *arena;
+    int *base;
+    long *p;
+
+    D_L00_00161280[0] = 0x10000005;
+    D_L00_00161280[1] = 0;
+    D_L00_00161280[2] = 0;
+    D_L00_00161280[3] = 0x50000005;
+
+    base = D_L00_00161280;
+    D_L00_00161280 = base + 4;
+    p = (long *)D_L00_00161280;
+    p[0] = 0x7400000000008001L;
+    p[1] = 0x5353106;
+    p[2] = func_00200248(tex);
+    arena = D_L00_0017E5D8;
+    p[3] = 0x156;
+    p[4] = ((long)alpha << 24) | 0x7F7F7F;
+    p[5] = 0;
+    p[6] = (x * 16 + D_0013E600[4] - 8)
+         | ((long)(y * 16 + D_0013E600[5] - 8) << 16)
+         | ((long)*(int *)(arena + 0xC) << 32);
+    p[7] = (h << 20) + w * 16;
+    p[8] = ((x + w) * 16 + D_0013E600[4] - 8)
+         | ((long)((y + h) * 16 + D_0013E600[5] - 8) << 16)
+         | ((long)*(int *)(arena + 0xC) << 32);
+    p[9] = 0;
+    D_L00_00161280 = (int *)((char *)D_L00_00161280 + 0x50);
+}
 INCLUDE_ASM("asm/overlays", func_L00_0023C458);
 INCLUDE_ASM("asm/overlays", func_L00_0023D750);
 INCLUDE_ASM("asm/overlays", func_L00_0023D838);
