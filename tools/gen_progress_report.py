@@ -317,8 +317,8 @@ def overlay_units(file_map: dict, fuzzy: dict) -> tuple[list[dict], list, dict, 
                     "size": str(size),
                     "fuzzy_match_percent": fuzzy.get(name, 0.0),
                     "address": str(addr - start),
-                    "metadata": ({"virtual_address": str(addr), "source_kind": "c"} if is_c
-                                 else {"virtual_address": str(addr)}),
+                    # objdiff's schema allows no other per-function metadata.
+                    "metadata": {"virtual_address": str(addr)},
                 } for name, addr, size, is_c in rows],
                 "metadata": {
                     "complete": complete,
@@ -487,8 +487,9 @@ def generate() -> dict:
                 "size": str(s),
                 "fuzzy_match_percent": p,
                 "address": str(v - u["start"]),
-                "metadata": ({"virtual_address": str(v), "source_kind": original_asm[n]}
-                             if n in original_asm else {"virtual_address": str(v)}),
+                # objdiff's schema allows no other per-function metadata;
+                # the asm classification lives in config/ (checked by --check).
+                "metadata": {"virtual_address": str(v)},
             } for n, v, s, p, _ in u["fns"]],
             "metadata": {
                 "complete": complete,
@@ -554,11 +555,6 @@ def check() -> None:
         for n in stale_gone:
             print(f"  report says decompiled, no source any more: {n}")
         sys.exit("*** regenerate with: python tools/gen_progress_report.py")
-    reported_asm = {f["name"]: f.get("metadata", {}).get("source_kind")
-                    for u in report["units"] for f in u["functions"]
-                    if f.get("metadata", {}).get("source_kind") in ("handwritten", "remnants")}
-    if reported_asm != original_asm:
-        sys.exit("*** original assembly classifications changed -- regenerate progress/report.json")
     unfinished_asm = sorted(f["name"] for u in report["units"] for f in u["functions"]
                             if f["name"] in original_asm and f["fuzzy_match_percent"] != 100.0)
     if unfinished_asm:
@@ -567,12 +563,14 @@ def check() -> None:
     # Level code overlays (docs/OVERLAYS.md, "Plan" step 3): re-derive which
     # func_LNN_XXXXXXXX are C (not INCLUDE_ASM) from src/overlays/ and
     # config/overlays/functions.tsv alone -- no toolchain, no baserom -- and
-    # compare that against the committed report's own "source_kind": "c"
-    # markers. This cannot re-verify EXACT-ness (that needs a real build),
-    # only that the report has not gone stale about which functions have C.
+    # compare that against the overlay functions the committed report counts
+    # as matched (only exact C is ever committed). This cannot re-verify
+    # EXACT-ness (that needs a real build), only that the report has not
+    # gone stale about which functions have C.
     _overlay_map, have_c = overlay_c_functions()
     reported_c = {f["name"] for u in report["units"] for f in u["functions"]
-                  if f.get("metadata", {}).get("source_kind") == "c"}
+                  if u["name"].startswith("overlays/")
+                  and f.get("fuzzy_match_percent", 0) == 100.0}
     stale_new_c = sorted(have_c - reported_c)
     stale_gone_c = sorted(reported_c - have_c)
     if stale_new_c or stale_gone_c:
