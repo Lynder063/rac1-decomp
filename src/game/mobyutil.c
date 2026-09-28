@@ -1015,7 +1015,82 @@ void func_00215C00(void *arg0, float r, float y, float z) {
 
 LINKER_REMNANT("asm/remnants/text", func_00215CA0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00215CA8);
+typedef struct {
+    float v[4];
+} __attribute__((aligned(16))) PathPt;
+typedef struct {
+    int count;
+    char pad[0xC];
+    PathPt pts[1];        /* 0x10 */
+} Path;
+extern void func_001F9C08(void *, void *, void *, float);
+extern float func_001F9CE8(void *);
+extern float func_001FA790(float, float);
+extern float func_001FA748(float, float);
+
+/* Samples a path of points at arg t: lerps the position between point
+   floor(t) and the next into pos and, unless flags bit 0 is set, writes
+   the rotation interpolated between the two segments' directions (and
+   the points' w as roll) into rot. Without wrap the last segment clamps. */
+void func_00215CA8(Path *path, int wrap, void *pos, float *rot, int flags, float t) {
+    PathPt a;
+    PathPt b;
+    PathPt c;
+    PathPt d;
+    int i;
+    int j;
+    int k;
+    int clamp = 0;
+    float f;
+    float yaw;
+    float pitch;
+    float yaw2;
+    float pitch2;
+    float roll;
+    float roll2;
+
+    i = func_001FA898_r(t);
+    if (!wrap && i >= path->count - 2) {
+        i = path->count - 2;
+        clamp = 1;
+    }
+    f = t - (float)i;
+    if (clamp && f > 1.0f) {
+        f = 1.0f;
+    }
+    j = i + 1;
+    k = i + 2;
+    if (k >= path->count) {
+        j = j % path->count;
+        k = k % path->count;
+    }
+    roll2 = 0.0f;
+    qcopy(&a, &path->pts[i]);
+    qcopy(&b, &path->pts[j]);
+    func_001F9C08(pos, &a, &b, f);
+    if (flags & 1) {
+        return;
+    }
+    func_001F9BF0(&d, &b, &a);
+    yaw = func_001FA058(d.v[0], d.v[1]);
+    pitch = func_001FA058(func_001F9CE8(&d), d.v[2]);
+    roll = a.v[3];
+    if (clamp) {
+        yaw2 = yaw;
+        pitch2 = pitch;
+        roll = 0.0f;
+    } else {
+        qcopy(&c, &path->pts[k]);
+        func_001F9BF0(&d, &c, &b);
+        yaw2 = func_001FA058(d.v[0], d.v[1]);
+        pitch2 = func_001FA058(func_001F9CE8(&d), d.v[2]);
+        roll2 = b.v[3];
+    }
+    rot[0] = 0.0f;
+    rot[1] = -func_001FA748(func_001FA790(pitch2, pitch) * f, pitch);
+    rot[2] = func_001FA748(func_001FA790(yaw2, yaw) * f, yaw);
+    rot[3] = -func_001FA748(func_001FA790(roll2, roll) * f, roll);
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215F20);
 
