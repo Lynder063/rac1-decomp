@@ -182,7 +182,14 @@ INCLUDE_ASM("asm/overlays", func_L00_0023AB88);
 INCLUDE_ASM("asm/overlays", func_L00_0023ABB0);
 INCLUDE_ASM("asm/overlays", func_L00_0023AC68);
 INCLUDE_ASM("asm/overlays", func_L00_0023AFD8);
-INCLUDE_ASM("asm/overlays", func_L00_0023B0F8);
+/* func_L00_00236750 without the offsets: a 32 x 32 element with a timer
+   of 30 + func_001F9850(120). */
+void func_L00_0023B0F8(HudElem *e) {
+    e->unk7C = func_001F9850(0x78) + 0x1E;
+    e->w = 0x20;
+    e->h = 0x20;
+    func_L00_00236610(e);
+}
 INCLUDE_ASM("asm/overlays", func_L00_0023B140);
 INCLUDE_ASM("asm/overlays", func_L00_0023B430);
 INCLUDE_ASM("asm/overlays", func_L00_0023B440);
