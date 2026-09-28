@@ -81,7 +81,13 @@ void *func_L00_0026FBC8(void *arg0) {
     return p;
 }
 INCLUDE_ASM("asm/overlays", func_L00_0026FCE8);
-INCLUDE_ASM("asm/overlays", func_L00_0026FEE8);
+extern int func_001F9938(void *);
+extern void func_L00_002688A8(void *);
+void func_L00_0026FEE8(char *a) {
+    if (func_001F9938(a + 10) != 0) {
+        func_L00_002688A8(a);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_0026FF20);
 INCLUDE_ASM("asm/overlays", func_L00_00270120);
 INCLUDE_ASM("asm/overlays", func_L00_002703E8);
