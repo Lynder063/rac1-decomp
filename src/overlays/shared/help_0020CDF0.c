@@ -131,7 +131,17 @@ INCLUDE_ASM("asm/overlays", func_L00_00211908);
 INCLUDE_ASM("asm/overlays", func_L00_00211A18);
 INCLUDE_ASM("asm/overlays", func_L00_00211A38);
 INCLUDE_ASM("asm/overlays", func_L00_00211D28);
-INCLUDE_ASM("asm/overlays", func_L00_00211EE8);
+extern float func_001F9CE8(void *);
+
+/* The xy length of the vector at D_0013F450 + 0x1D20, capped at 1. */
+float func_L00_00211EE8(void) {
+    float len = func_001F9CE8(D_0013F450 + 0x1D20);
+
+    if (1.0f < len) {
+        len = 1.0f;
+    }
+    return len;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00211F28);
 INCLUDE_ASM("asm/overlays", func_L00_00211F68);
 INCLUDE_ASM("asm/overlays", func_L00_00211F80);
