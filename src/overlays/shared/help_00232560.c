@@ -259,7 +259,13 @@ void func_L00_00232DF8(int bank, int seq) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_00232E60);
 INCLUDE_ASM("asm/overlays", func_L00_00232EA8);
-INCLUDE_ASM("asm/overlays", func_L00_00232EC0);
+/* Stores ID at D_0013F450 + 0xAB8, or func_001F9850(5) when ID is -1. */
+void func_L00_00232EC0(int id) {
+    if (id == -1) {
+        id = func_001F9850(5);
+    }
+    *(int *)(D_0013F450 + 0xAB8) = id;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00232EF0);
 INCLUDE_ASM("asm/overlays", func_L00_00233410);
 INCLUDE_ASM("asm/overlays", func_L00_00233868);
