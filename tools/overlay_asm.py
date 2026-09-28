@@ -605,6 +605,29 @@ def unname_hardware(content: str) -> str:
     return HWADDR_RE.sub(repl, content)
 
 
+PAIRED_LO = re.compile(r"^(\s*/\*[^*]*\*/\s+)(l[bhwdq]u?|lwc1|lqc2|s[bhwdq]|swc1|sqc2|addiu)(\s+.*?)"
+                       r"\(0x([0-9A-F]+) & 0xFFFF\)(.*)$")
+
+
+def name_paired_addresses(content: str, level: int) -> str:
+    """Name a data address spimdisasm paired but left as numbers,
+    `(0xADDR >> 16)` / `(0xADDR & 0xFFFF)` in a load, store or addiu, by the
+    docs' rule: D_XXXXXXXX below 0x15F000, D_LNN_XXXXXXXX above. `ori`
+    pairs are constants (the compiler never builds an address with ori)."""
+    named, out = {}, []
+    for line in content.split("\n"):
+        m = PAIRED_LO.match(line)
+        if m and 0x100000 <= int(m.group(4), 16) < RAM_END:
+            addr = int(m.group(4), 16)
+            named[addr] = f"D_{addr:08X}" if addr < RESIDENT_MAX else f"D_L{level:02d}_{addr:08X}"
+            line = f"{m.group(1)}{m.group(2)}{m.group(3)}%lo({named[addr]}){m.group(5)}"
+        out.append(line)
+    content = "\n".join(out)
+    for addr, name in named.items():
+        content = re.sub(rf"(lui\s+\$\d+, )\(0x{addr:X} >> 16\)", rf"\g<1>%hi({name})", content)
+    return content
+
+
 def qualify(content: str, level: int) -> str:
     """Peel the autogen suffix off, requalifying anything spimdisasm named
     on its own that falls in this level's own range (docs/OVERLAYS.md,
@@ -684,6 +707,7 @@ def generate(levels=None):
             n_jtbl_resolved += 1
         content = qualify(content, lv)
         content = unname_hardware(content)
+        content = name_paired_addresses(content, lv)
         content, n_branch = neutralize_far_branches(content, lv, addr, addr + size, level_entries, targets)
         n_branches_neutralized += n_branch
         content, _ = word_backward_branches(content)
