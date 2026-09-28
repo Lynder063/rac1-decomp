@@ -282,7 +282,57 @@ void func_L00_00232EC0(int id) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_00232EF0);
 INCLUDE_ASM("asm/overlays", func_L00_00233410);
-INCLUDE_ASM("asm/overlays", func_L00_00233868);
+extern int D_L00_0015F6A8 MACRO_ADDR;
+
+typedef struct {
+    char *a;
+    char *b;
+    char pad8[0x48];
+} ObjPair;
+
+/* Sets bit 0 of the flags (0x34) of every object the block at D_0013F450
+   holds: the one at +0xA88, both of each of the seven pairs at +0x1090,
+   the one at +0x118C and, when +0x20A4 is 1, the one at +0x1624. In mode
+   8 (+0x10B8) it then clears bits 0 and 6 of the first pair's first
+   object, if D_L00_0015F6A8 is clear and the object's byte 0x20 is set.
+   Each of the three stages takes its own pointer to the block: retail
+   re-forms the address from the saved %hi after the loop and again
+   before the last test. */
+void func_L00_00233868(void) {
+    char *base = D_0013F450;
+    char *tail;
+    char *last;
+    char *obj;
+    int i;
+
+    *(unsigned short *)(*(char **)(base + 0xA88) + 0x34) |= 1;
+    for (i = 0; i < 7; i++) {
+        if (((ObjPair *)(base + 0x1090))[i].a != 0) {
+            *(unsigned short *)(((ObjPair *)(base + 0x1090))[i].a + 0x34) |= 1;
+        }
+        if (((ObjPair *)(base + 0x1090))[i].b != 0) {
+            *(unsigned short *)(((ObjPair *)(base + 0x1090))[i].b + 0x34) |= 1;
+        }
+    }
+    tail = D_0013F450;
+    obj = *(char **)(tail + 0x118C);
+    if (obj != 0) {
+        *(unsigned short *)(obj + 0x34) |= 1;
+    }
+    if (*(unsigned char *)(tail + 0x20A4) == 1) {
+        obj = *(char **)(tail + 0x1624);
+        if (obj != 0) {
+            *(unsigned short *)(obj + 0x34) |= 1;
+        }
+    }
+    last = D_0013F450;
+    if (*(int *)(last + 0x10B8) == 8) {
+        obj = ((ObjPair *)(last + 0x1090))[0].a;
+        if (obj != 0 && D_L00_0015F6A8 == 0 && *(unsigned char *)(obj + 0x20) != 0) {
+            *(unsigned short *)(obj + 0x34) &= ~0x41;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00233950);
 /* Sets bit 0 of the flags (0x34) of the objects at D_0013F450 + 0x2080
    and, when present, +0x1620. */
