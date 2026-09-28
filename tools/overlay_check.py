@@ -479,6 +479,7 @@ class Placer:
                 self.unknown_types.append((o - self.off, rtype))
 
 
+RESIDENT_SYM = re.compile(r"\b(?:D|func)_([0-9A-Fa-f]{8})\b")
 STUB_INSN = re.compile(r"\s*/\* [0-9A-F]+ ([0-9A-F]{8}) [0-9A-F]{8} \*/\s+(\S+)\s+(.*)")
 
 
@@ -486,7 +487,12 @@ def symbol_offsets(name: str, address: int) -> dict[int, str]:
     """Offsets where retail's assembly (asm/overlays/NAME.s) references a
     symbol: %hi/%lo operands and calls. The candidate needs a relocation at
     each: a literal address there matches this level's bytes but is wrong
-    in the other levels, where the data sits elsewhere."""
+    in the other levels, where the data sits elsewhere.
+
+    Resident symbols (D_/func_XXXXXXXX below RESIDENT_MAX) sit at the same
+    address in every level, so a literal is right for them; our assembler
+    leaves one when it fills a branch delay slot with a copy of the
+    target's `lui` (func_L00_00212790). They are not listed."""
     p = ROOT / f"asm/overlays/{name}.s"
     out = {}
     if not p.exists():
@@ -497,6 +503,9 @@ def symbol_offsets(name: str, address: int) -> dict[int, str]:
             continue
         op, args = m.group(2), m.group(3)
         if "%hi(" in args or "%lo(" in args or (op in ("jal", "j") and args.strip().startswith("func_")):
+            r = RESIDENT_SYM.search(args)
+            if r and int(r.group(1), 16) < RESIDENT_MAX:
+                continue
             out[int(m.group(1), 16) - address] = f"{op} {args.strip()}"
     return out
 
