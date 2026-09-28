@@ -111,7 +111,33 @@ INCLUDE_ASM("asm/overlays", func_L00_00238C30);
 INCLUDE_ASM("asm/overlays", func_L00_002394A8);
 INCLUDE_ASM("asm/overlays", func_L00_00239510);
 INCLUDE_ASM("asm/overlays", func_L00_00239918);
-INCLUDE_ASM("asm/overlays", func_L00_00239F40);
+typedef struct {
+    short unk0;
+    short unk2;
+    short unk4;
+    short unk6;
+} HudCounter;
+
+extern HudCounter D_L00_0015FB68 MACRO_ADDR;
+
+/* func_L00_00236710 for a 64 x 64 element with offset 0x48 at 32, then
+   points +0x80 at the four shorts of D_L00_0015FB68 and sets them to
+   0, 0, 0, 1. They are declared as one 8-byte struct: as separate shorts
+   -G2 would put them in $gp's reach, where retail stores them through
+   lui $at. */
+void func_L00_00239F40(HudElem *e) {
+    e->unk7C = func_001F9850(0xB4) + 0x1E;
+    e->w = 0x40;
+    e->h = 0x40;
+    e->unk48 = 0x20;
+    e->unk4A = 0;
+    func_L00_00236610(e);
+    e->unk80 = &D_L00_0015FB68;
+    D_L00_0015FB68.unk0 = 0;
+    D_L00_0015FB68.unk2 = 0;
+    D_L00_0015FB68.unk4 = 0;
+    D_L00_0015FB68.unk6 = 1;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00239FC0);
 INCLUDE_ASM("asm/overlays", func_L00_0023A1A0);
 INCLUDE_ASM("asm/overlays", func_L00_0023A658);
