@@ -321,7 +321,49 @@ void func_0012E038(void *arg0, int arg1) {
 
 LINKER_REMNANT("asm/remnants/core_text", func_0012E058);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012E060);
+extern short D_0015EDC8;
+extern short D_0015ED88;
+extern int D_00137C40_a[] __asm__("D_00137C40");
+extern int D_0015ECE8;
+extern char D_00153EA8[];
+extern char D_00153ED8[];
+extern char D_00153EF8[];
+extern char D_00153E20[];
+extern int func_0012DDC0(void);
+
+/* IOP command 3 with two words, waiting for the reply word in
+   D_0015EE00; 0 (and a message) when a stream is pending, the CD is
+   busy or the RPC fails (error 0x106 in D_0015ED88). */
+unsigned int func_0012E060(int arg0, int arg1) {
+    *(int *)&D_0015ED88 = 0;
+    if (*(int *)&D_0015EDC8 != 0) {
+        func_00116078(D_00153EA8);
+        return 0;
+    }
+    if (func_0012EF48(1) == 1) {
+        func_00116078(D_00153ED8);
+        return 0;
+    }
+    D_00137C40_a[1] = arg1;
+    D_0015EE00 = 0xFFFFFFFF;
+    D_00137C40_a[0] = arg0;
+    while (func_0011B6B8(&D_0015ECE8) != 0) {
+        func_00116078(D_00153E20);
+        func_0012DDC0();
+        func_00118D80(0);
+    }
+    if (func_0011B4C8(&D_0015ECE8, 3, 1, D_00137C40_a, 8, &D_0015EE00, 4, 0, 0) < 0) {
+        func_00116078(D_00153EF8);
+        *(int *)&D_0015ED88 = 0x106;
+        return 0;
+    }
+    if (D_0015EE00 == 0xFFFFFFFF) {
+        do {
+            func_00118D80(0);
+        } while (D_0015EE00 == 0xFFFFFFFF);
+    }
+    return D_0015EE00;
+}
 
 LINKER_REMNANT("asm/remnants/core_text", func_0012E1B8);
 
