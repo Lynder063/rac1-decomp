@@ -56,7 +56,50 @@ INCLUDE_ASM("asm/overlays", func_L00_002124E8);
 INCLUDE_ASM("asm/overlays", func_L00_00212550);
 INCLUDE_ASM("asm/overlays", func_L00_002125F0);
 INCLUDE_ASM("asm/overlays", func_L00_00212740);
-INCLUDE_ASM("asm/overlays", func_L00_00212790);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_001FA218(void *, void *);
+extern void func_001F9EE8(void *, void *, void *);
+extern void func_00215C00(void *, float, float, float);
+
+/* D_0013E633 + 0xE1D lands on D_0013F450 (see src/game/camera.c). */
+extern char D_0013F450[];
+
+/* Builds a direction vector into D_0013F450+0xE0: either func_00215C00's
+   spherical formula from D_0013F450's +0x194 radius, the clamped angle
+   arg0 (falling back to +0x98 above pi) and +0x2E4, or, when +0x20B3 is
+   set, a flat vector (r,0,0) rotated by the matrix func_001FA218 builds
+   from the +0x2080 table's +0x40 axis. */
+void func_L00_00212790(float arg0) {
+    char *g = D_0013F450;
+    float y;
+    float r;
+    float out[4];
+
+    y = *(float *)(g + 0x98);
+    if (arg0 <= 3.14159274f) {
+        y = arg0;
+    }
+    r = *(float *)(g + 0x194);
+
+    if (*(unsigned char *)(g + 0x20B3) != 0) {
+        float matrix[16];
+        float vec[4];
+
+        vec[0] = func_001F9F90(0.0f) * r;
+        vec[1] = func_001F9FA8(0.0f) * r;
+        vec[2] = 0.0f;
+
+        func_001FA218(matrix, *(char **)(g + 0x2080) + 0x40);
+        func_001F9EE8(vec, vec, matrix);
+
+        qcopy(out, vec);
+    } else {
+        func_00215C00(out, r, y, *(float *)(g + 0x2E4));
+    }
+
+    qcopy(D_0013F450 + 0xE0, out);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00212878);
 INCLUDE_ASM("asm/overlays", func_L00_002129D0);
 INCLUDE_ASM("asm/overlays", func_L00_00212D70);
