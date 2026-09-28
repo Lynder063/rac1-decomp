@@ -6,7 +6,35 @@ INCLUDE_ASM("asm/overlays", func_L00_00232560);
 INCLUDE_ASM("asm/overlays", func_L00_00232608);
 INCLUDE_ASM("asm/overlays", func_L00_002326D0);
 INCLUDE_ASM("asm/overlays", func_L00_00232850);
-INCLUDE_ASM("asm/overlays", func_L00_00232980);
+extern char D_0013F450[];
+extern int func_L00_00232850(int, int *, int *);
+
+/* Unless the flag at D_0013F450 + 0x20A4 is set, and only while state
+   +0x11A4 is 2: asks func_L00_00232850 for a pair of values for the
+   current animation's id (+0x2080, byte 0x53), and when it finds one,
+   copies the float at +0xA90 to field 0x58 of both objects at +0x1180 and
+   +0x1184 that exist. The pair goes in a two-int stack array (&buf[1] is
+   retail's `ori $6, $sp, 4`). */
+void func_L00_00232980(void) {
+    char *base = D_0013F450;
+    int buf[2];
+
+    if (*(unsigned char *)(base + 0x20A4) != 0) {
+        return;
+    }
+    if (*(int *)(base + 0x11A4) != 2) {
+        return;
+    }
+    if (func_L00_00232850(*(unsigned char *)(*(char **)(base + 0x2080) + 0x53), &buf[0], &buf[1]) == 0) {
+        return;
+    }
+    if (*(char **)(base + 0x1180) != 0) {
+        *(float *)(*(char **)(base + 0x1180) + 0x58) = *(float *)(base + 0xA90);
+    }
+    if (*(char **)(base + 0x1184) != 0) {
+        *(float *)(*(char **)(base + 0x1184) + 0x58) = *(float *)(base + 0xA90);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00232A18);
 INCLUDE_ASM("asm/overlays", func_L00_00232A30);
 INCLUDE_ASM("asm/overlays", func_L00_00232A3C);
