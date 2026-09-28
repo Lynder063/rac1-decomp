@@ -158,7 +158,18 @@ void func_L00_0025D0E0(int *a, int *b, int *c, int mask) {
     if (mask & 2) { x = *c; y = *b; *b = x; *c = y; }
     if (mask & 4) { x = *a; y = *c; *c = x; *a = y; }
 }
-INCLUDE_ASM("asm/overlays", func_L00_0025D140);
+extern void func_L00_0025D0E0(int *, int *, int *, int);
+unsigned func_L00_0025D140(unsigned c, int mask) {
+    int v[3];
+    unsigned a;
+    if (mask == 0) return c;
+    v[0] = c & 0xFF;
+    v[1] = ((int)(c & 0xFF00)) >> 8;
+    v[2] = (c >> 16) & 0xFF;
+    a = c >> 24;
+    func_L00_0025D0E0(&v[0], &v[1], &v[2], mask);
+    return (a << 24) | (v[2] << 16) | (v[1] << 8) | v[0];
+}
 extern void func_001F9BF0(void *, void *, void *);
 extern void func_001FA4A0(void *, void *);
 extern void func_001F9EE8(void *, void *, void *);
