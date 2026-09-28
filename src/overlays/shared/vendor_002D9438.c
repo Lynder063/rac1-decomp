@@ -29,7 +29,21 @@ INCLUDE_ASM("asm/overlays", func_L00_002D9E30);
 INCLUDE_ASM("asm/overlays", func_L00_002D9EA0);
 INCLUDE_ASM("asm/overlays", func_L00_002DACC0);
 INCLUDE_ASM("asm/overlays", func_L00_002DB428);
-INCLUDE_ASM("asm/overlays", func_L00_002DB480);
+typedef struct { int a[16]; } V __attribute__((aligned(16)));
+extern void func_001FA218(void *, void *);
+extern void func_001FA460(void *, void *);
+extern void func_001FA540(void *, void *, void *);
+extern void func_001FA480(void *, void *);
+extern void func_0020EEE8(void *);
+void func_L00_002DB480(char *a, char *b, void *c) {
+    V t0, t1, t2;
+    func_001FA218(&t0, c);
+    func_001FA460(&t1, a + 0xC0);
+    func_001FA540(&t2, &t1, &t0);
+    func_001FA480(b + 0xC0, &t2);
+    *(unsigned short *)(b + 0x34) |= 4;
+    func_0020EEE8(b);
+}
 INCLUDE_ASM("asm/overlays", func_L00_002DB508);
 int func_L00_002DB690(char *a) {
     int (*fn)(char *) = *(int (**)(char *))(*(char **)(*(char **)(a + 0x24) + 0x2C) + 0xC);
