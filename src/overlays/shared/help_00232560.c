@@ -77,7 +77,64 @@ int func_L00_00232608(int key, int *out) {
     *out = 0;
     return 0;
 }
-INCLUDE_ASM("asm/overlays", func_L00_002326D0);
+/* Picks the sequences for the pair of objects at D_0013F450 + 0x1180 /
+   +0x1184 while state +0x11A4 is 2. When func_L00_00232850 finds a pair
+   for ID (and ID is nonzero), it starts them with ARG and T, unless the
+   first already plays its sequence. Otherwise, unless the first's
+   current sequence maps to key 0 (func_L00_00232608, checked only when
+   +0x208C is clear), it sends both to sequence 1 over func_001F9850(7)
+   frames, or (0x13) in mode 8 (+0x2090) of game mode 2. The pair are
+   two scalars next to the spilled ID, which gives retail's 0x80 frame;
+   the block pointer is re-formed for each stage, as retail does. */
+void func_L00_002326D0(int id, int arg, float t) {
+    char *base = D_0013F450;
+    char *blk2;
+    char *blk3;
+    char *a;
+    char *b;
+    int seq0;
+    int seq1;
+    int ok;
+    int seq;
+
+    if (*(int *)(base + 0x11A4) != 2) {
+        return;
+    }
+    a = *(char **)(base + 0x1180);
+    b = *(char **)(base + 0x1184);
+    if (a == 0 || b == 0) {
+        return;
+    }
+    if (func_L00_00232850(id, &seq0, &seq1) != 0 && id != 0) {
+        if (*(unsigned char *)(a + 0x53) == seq0) {
+            return;
+        }
+        func_00213DE0(a, seq0, arg, (int)t);
+        func_00213DE0(b, seq1, arg, (int)t);
+        return;
+    }
+    blk2 = D_0013F450;
+    ok = 1;
+    if (*(int *)(blk2 + 0x208C) == 0 && func_L00_00232608(*(unsigned char *)(a + 0x53), &id) != 0) {
+        if (id == 0) {
+            ok = 0;
+        }
+    }
+    if (!ok) {
+        return;
+    }
+    seq = func_001F9850(7);
+    blk3 = D_0013F450;
+    if (*(int *)(blk3 + 0x2090) == 8 && func_L00_0020DB30(3) == 2) {
+        seq = func_001F9850(0x13);
+    }
+    if (*(unsigned char *)(a + 0x53) != 1) {
+        func_00213DE0(a, 1, 0, seq);
+    }
+    if (*(unsigned char *)(b + 0x53) != 1) {
+        func_00213DE0(b, 1, 0, seq);
+    }
+}
 extern int func_L00_002056D0(int);
 extern int func_L00_00258BC8(int, int);
 
