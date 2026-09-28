@@ -13,7 +13,15 @@ INCLUDE_ASM("asm/overlays", func_L00_00262DF0);
 INCLUDE_ASM("asm/overlays", func_L00_002630A8);
 INCLUDE_ASM("asm/overlays", func_L00_002633D8);
 INCLUDE_ASM("asm/overlays", func_L00_002634F8);
-INCLUDE_ASM("asm/overlays", func_L00_00263578);
+void func_L00_00263578(int a, char *b) {
+    if (*(int *)(b + 0x13C) == 0) {
+        *(int *)(b + 0x134) = a;
+        *(int *)(b + 0x13C) = 1;
+        *(short *)(b + 0x132) = 0;
+        *(int *)(b + 0x138) = 0;
+        *(short *)(b + 0x130) = 0;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002635A0);
 INCLUDE_ASM("asm/overlays", func_L00_00263680);
 INCLUDE_ASM("asm/overlays", func_L00_002638B8);
