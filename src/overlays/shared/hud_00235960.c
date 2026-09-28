@@ -74,7 +74,17 @@ int func_L00_00236400(HudElem *rec, int *x, int *y) {
 INCLUDE_ASM("asm/overlays", func_L00_00236468);
 INCLUDE_ASM("asm/overlays", func_L00_00236610);
 INCLUDE_ASM("asm/overlays", func_L00_002366DC);
-INCLUDE_ASM("asm/overlays", func_L00_00236710);
+extern int func_001F9850(int);
+extern void func_L00_00236610(HudElem *);
+
+/* Resets a HUD element: a timer of 30 + func_001F9850(180) (+0x7C),
+   offsets 0x48 / 0x4A cleared, then func_L00_00236610. */
+void func_L00_00236710(HudElem *e) {
+    e->unk7C = func_001F9850(0xB4) + 0x1E;
+    e->unk48 = 0;
+    e->unk4A = 0;
+    func_L00_00236610(e);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00236750);
 INCLUDE_ASM("asm/overlays", func_L00_002367A8);
 INCLUDE_ASM("asm/overlays", func_L00_00236830);
