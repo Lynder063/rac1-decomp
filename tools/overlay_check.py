@@ -386,6 +386,10 @@ class Placer:
                 if self.base_rodata is None:
                     raise Unresolved(".rodata (unplaced)")
                 return self.base_rodata + sym["st_value"]
+            if secname and secname.startswith(".rodata.jtbl_"):
+                # tools/fix_jump_tables.py names each compiled table's
+                # section after the retail table it replaces.
+                return resolve_symbol(secname[len(".rodata."):], self.level, near) + sym["st_value"]
             raise Unresolved(f"section {secname or sym['st_shndx']}")
         return resolve_symbol(sym.name, self.level, near)
 
