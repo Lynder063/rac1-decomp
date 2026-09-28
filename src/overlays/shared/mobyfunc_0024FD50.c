@@ -40,7 +40,13 @@ void func_L00_00250800(char *arg0, int arg1, void *arg2) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_00250928);
 INCLUDE_ASM("asm/overlays", func_L00_002510F0);
-INCLUDE_ASM("asm/overlays", func_L00_002512D8);
+extern int D_0015EE84 MACRO_ADDR;
+extern unsigned char D_0014C150[];
+void func_L00_002512D8(int idx) {
+    if (idx != 0xFF) {
+        D_0014C150[idx + D_0015EE84 * 16] = 0xFF;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00251328);
 INCLUDE_ASM("asm/overlays", func_L00_00251358);
 INCLUDE_ASM("asm/overlays", func_L00_00251388);
