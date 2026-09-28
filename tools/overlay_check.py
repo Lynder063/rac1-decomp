@@ -479,6 +479,28 @@ class Placer:
                 self.unknown_types.append((o - self.off, rtype))
 
 
+STUB_INSN = re.compile(r"\s*/\* [0-9A-F]+ ([0-9A-F]{8}) [0-9A-F]{8} \*/\s+(\S+)\s+(.*)")
+
+
+def symbol_offsets(name: str, address: int) -> dict[int, str]:
+    """Offsets where retail's assembly (asm/overlays/NAME.s) references a
+    symbol: %hi/%lo operands and calls. The candidate needs a relocation at
+    each: a literal address there matches this level's bytes but is wrong
+    in the other levels, where the data sits elsewhere."""
+    p = ROOT / f"asm/overlays/{name}.s"
+    out = {}
+    if not p.exists():
+        return out
+    for line in p.read_text(errors="replace").splitlines():
+        m = STUB_INSN.match(line)
+        if not m:
+            continue
+        op, args = m.group(2), m.group(3)
+        if "%hi(" in args or "%lo(" in args or (op in ("jal", "j") and args.strip().startswith("func_")):
+            out[int(m.group(1), 16) - address] = f"{op} {args.strip()}"
+    return out
+
+
 def check(obj_path, name: str, show: bool = False) -> str:
     m = OVERLAY_NAME.match(name)
     if not m:
@@ -525,6 +547,12 @@ def check(obj_path, name: str, show: bool = False) -> str:
     ours_func = bytes(ours[placer.off:placer.off + placer.size])
     diff = sum(1 for a, b in zip(ours_func, retail) if a != b)
     if diff == 0:
+        relocated = {rel["r_offset"] - placer.off for rel in placer.relocations()}
+        missing = sorted(set(symbol_offsets(name, address)) - relocated)
+        if missing:
+            refs = symbol_offsets(name, address)
+            return ("LINK literal address where retail references a symbol: "
+                    + ", ".join(f"+0x{o:x} ({refs[o]})" for o in missing[:4]))
         return "EXACT"
     if show:
         vram = address

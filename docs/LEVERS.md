@@ -177,7 +177,10 @@ and stop, rather than spending the budget on it:
 - `D_XXXXXXXX` and `func_XXXXXXXX` below 0x15F000 are the resident core,
   declared as usual. `D_LNN_XXXXXXXX` is level data: nothing declares it
   yet, so declare it in the candidate, typed from how the assembly uses it
-  (lever 2 applies). Keep the name.
+  (lever 2 applies). Keep the name. Never write a level address as a
+  number (`*(int *)0x1B24D4`): the data sits elsewhere in other levels,
+  and try_func refuses a literal where retail's assembly has a symbol.
+  A `$gp` offset at 0x15F000 or above is level data too.
 - No m2c sketch. Start from the function's relative in `CONTEXT.md`
   (usually the same source built for another level): if it has matched C,
   adapt that. Otherwise start from a matched neighbour in the file, or the

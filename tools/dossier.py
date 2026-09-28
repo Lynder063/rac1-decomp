@@ -73,7 +73,11 @@ def references(name: str) -> tuple[list[str], list[str]]:
     text = re.sub(r"/\*.*?\*/", "", path.read_text(errors="replace"))
     calls = list(dict.fromkeys(c for c in CALL.findall(text) if c != name))
     data = list(DATA.findall(text))
-    data += [f"D_{(GP_BASE + int(off, 16)) & 0xFFFFFFFF:08X}" for off in GP.findall(text)]
+    level = re.match(r"func_L(\d\d)_", name)
+    for off in GP.findall(text):
+        addr = (GP_BASE + int(off, 16)) & 0xFFFFFFFF
+        # In level code, 0x15F000 and up is the level's own data (docs/OVERLAYS.md).
+        data.append(f"D_L{level.group(1)}_{addr:08X}" if level and addr >= 0x15F000 else f"D_{addr:08X}")
     return calls, list(dict.fromkeys(data))
 
 
