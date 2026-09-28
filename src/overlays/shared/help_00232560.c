@@ -138,7 +138,33 @@ INCLUDE_ASM("asm/overlays", func_L00_00233F68);
 INCLUDE_ASM("asm/overlays", func_L00_00233F88);
 INCLUDE_ASM("asm/overlays", func_L00_00234090);
 INCLUDE_ASM("asm/overlays", func_L00_00234150);
-INCLUDE_ASM("asm/overlays", func_L00_00234250);
+extern float func_001F9CE8(void *);
+extern void func_001FA218(void *, void *);
+extern void func_001FA4A0(void *, void *);
+
+/* The xy length (func_001F9CE8) of V. In view modes 1 and 2
+   (D_0013F450 + 0x20B3) V is first taken through the inverse of the
+   rotation func_001FA218 builds from the angles at +0x40 of the object
+   at +0x2080 (func_001FA4A0 transposes it); other modes give 0. The
+   switch gives retail's case tree. */
+float func_L00_00234250(float *v) {
+    char *base = D_0013F450;
+    float m[16] __attribute__((aligned(16)));
+    float inv[16] __attribute__((aligned(16)));
+    float out[4] __attribute__((aligned(16)));
+
+    switch (*(unsigned char *)(base + 0x20B3)) {
+    case 0:
+        return func_001F9CE8(v);
+    case 1:
+    case 2:
+        func_001FA218(m, *(char **)(base + 0x2080) + 0x40);
+        func_001FA4A0(inv, m);
+        func_001F9EE8(out, v, inv);
+        return func_001F9CE8(out);
+    }
+    return 0.0f;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002342F8);
 extern void func_001F9EE8(void *, void *, void *);
 
