@@ -201,6 +201,15 @@ in `config/core_rodata.txt`).
     - A register freed only because an argument was evaluated earlier:
       pass the call-containing expression inline as the argument, and the
       other arguments are computed before the call (func_0021AEF8).
+    - A 64-bit global that retail reaches with a `lui` macro outside
+      delay slots, where MACRO_ADDR alone lets a delay slot turn it
+      `$gp`-relative: a `volatile long` MACRO_ADDR alias (func_0012DDC0).
+    - Toolchain passes added for retail assemblers: 2.9-ee objects get a
+      volatile store moved into the next unfilled `jal` slot
+      (tools/fix_volatile_slot.py; func_0012C990, func_00128F90), and
+      989snd.o gets a load-delay nop after a `lui` macro load
+      (tools/fix_macro_load_delay.py; func_0012E060) plus ps2eeas's
+      short-loop padding (tools/ps2eeas_nops.py; func_0012E688).
     - Replacing a stub whose `.s` has nops after `endlabel`: reproduce
       them with a file-scope `__asm__(".section .text\n\tnop...")`
       (func_0022F258), or the whole segment shifts.
