@@ -92,9 +92,9 @@ build-sn/core/%.o: src/core/%.c config/func_cflags.txt tools/func_cflags.py tool
 	python tools/fix_core_spills.py build-sn/core/$*.s build-sn/core/$*_sp.s
 	python tools/fix_tail_calls.py build-sn/core/$*_sp.s build-sn/core/$*_fixed.s
 	python tools/fix_trunc_slot.py build-sn/core/$*_fixed.s build-sn/core/$*_fixed.s
-	if [ "$*" = 989snd ]; then python tools/fix_macro_load_delay.py build-sn/core/$*_fixed.s build-sn/core/$*_fixed.s; fi
+	if [ "$*" = 989snd ] || [ "$*" = wad ]; then python tools/fix_macro_load_delay.py build-sn/core/$*_fixed.s build-sn/core/$*_fixed.s; fi
 	python tools/check_macro_slots.py build-sn/core/$*_fixed.s
-	if [ "$*" = 989snd ]; then \
+	if [ "$*" = 989snd ] || [ "$*" = wad ]; then \
 	  $(CC_CORE) $(CFLAGS) -c build-sn/core/$*_fixed.s -o build-sn/core/$*_first.o && \
 	  python tools/ps2eeas_nops.py build-sn/core/$*_fixed.s build-sn/core/$*_first.o build-sn/core/$*_fixed.s; fi
 	$(CC_CORE) $(CFLAGS) -c build-sn/core/$*_fixed.s -o $@

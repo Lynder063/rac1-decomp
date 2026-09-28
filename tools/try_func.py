@@ -125,7 +125,7 @@ def build(name, seg, src, first, last, candidate, work):
             return None
         if not run([sys.executable, "tools/fix_trunc_slot.py", str(s[2]), str(s[2])], log):
             return None
-        if src.name == "989snd.c":
+        if src.name in ("989snd.c", "wad.c"):
             if not run([sys.executable, "tools/fix_macro_load_delay.py", str(s[2]), str(s[2])], log):
                 return None
         if seg == "text":
@@ -143,7 +143,7 @@ def build(name, seg, src, first, last, candidate, work):
                 return None
             if not run([sys.executable, "tools/ps2eeas_nops.py", str(s[2]), str(first), str(s[3])], log):
                 return None
-        elif src.name == "989snd.c":
+        elif src.name in ("989snd.c", "wad.c"):
             first = work / "c.o"
             if not run(sn(CC, *CFLAGS, "-c", str(s[2]), "-o", str(first)), log):
                 return None
