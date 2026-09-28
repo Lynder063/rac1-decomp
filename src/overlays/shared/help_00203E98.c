@@ -167,7 +167,16 @@ void func_L00_00209850(float x, float y, float z) {
     buf[2] = 0.6f;
     func_L00_00209748(buf, x, y, z);
 }
-INCLUDE_ASM("asm/overlays", func_L00_002098B8);
+typedef struct { int w[9]; } T;
+extern T D_L00_001E7F90;
+extern unsigned char D_0013E633[] NOT_SDA;
+extern void func_L00_00250928(int, int, void *, void *);
+void func_L00_002098B8(int a) {
+    T t;
+    if (a == 0) a = *(int *)(D_0013E633 + 0x2E9D);
+    t = D_L00_001E7F90;
+    func_L00_00250928(a, 9, &t, D_0013E633 + 0x18DD);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00209940);
 INCLUDE_ASM("asm/overlays", func_L00_00209BB8);
 INCLUDE_ASM("asm/overlays", func_L00_00209CB0);
