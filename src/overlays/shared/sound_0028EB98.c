@@ -2,7 +2,17 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L00_0028EB98);
+extern char D_0013E633[];
+int func_L00_0028EB98(int a, int i) {
+    if (i >= 0) {
+        char *p = D_0013E633 + 0x1D + i * 0x70;
+        if (*(int *)(p + 0x88) == a) {
+            int t = *(unsigned char *)(p + 0x74);
+            if (t == 1 || t == 2) return 1;
+        }
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0028EBF0);
 INCLUDE_ASM("asm/overlays", func_L00_0028EC28);
 INCLUDE_ASM("asm/overlays", func_L00_0028EF68);
