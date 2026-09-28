@@ -2,7 +2,27 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L00_002EB0D8);
+extern int D_0015EED0[] MACRO_ADDR;
+extern short D_L00_00161E80;
+extern short D_L00_0015F044;
+extern void func_L00_002E5B68();
+extern void func_L00_002E74B0(void *);
+extern void func_001E9768();
+extern void func_L00_002E6CE0(void *);
+extern void func_L00_002EB060(void *);
+extern void func_L00_002E72E8(void *);
+void func_L00_002EB0D8(char *m) {
+    char *p = *(char **)(m + 0x70) + 0x1D0;
+    *(float *)&D_L00_0015F044 = ((float *)&D_L00_00161E80)[D_0015EED0[5]];
+    func_L00_002E5B68(m);
+    func_L00_002E74B0(m);
+    func_001E9768(m);
+    func_L00_002E6CE0(m);
+    func_001E9768(m, p);
+    func_L00_002EB060(m);
+    func_001E9768(m);
+    func_L00_002E72E8(m);
+}
 INCLUDE_ASM("asm/overlays", func_L00_002EB170);
 INCLUDE_ASM("asm/overlays", func_L00_002EB280);
 INCLUDE_ASM("asm/overlays", func_L00_002EB3A0);
@@ -17,7 +37,16 @@ INCLUDE_ASM("asm/overlays", func_L00_002EC0C8);
 INCLUDE_ASM("asm/overlays", func_L00_002EC208);
 INCLUDE_ASM("asm/overlays", func_L00_002EC210);
 INCLUDE_ASM("asm/overlays", func_L00_002EC2D0);
-INCLUDE_ASM("asm/overlays", func_L00_002EC6C8);
+extern void func_L00_002EC2D0(void *);
+extern void func_L00_001EDA28(void *, float);
+void func_L00_002EC6C8(char *a) {
+    char *p = *(char **)(a + 0x70) + 0xE0;
+    func_L00_002EC2D0(a);
+    if (*(int *)(p + 0x40) != 0) {
+        a[0x89] = 0;
+        func_L00_001EDA28(a + 0x30, 0.5f);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002EC728);
 INCLUDE_ASM("asm/overlays", func_L00_002EC7D0);
 INCLUDE_ASM("asm/overlays", func_L00_002EC860);
@@ -44,6 +73,22 @@ INCLUDE_ASM("asm/overlays", func_L00_002EDE38);
 INCLUDE_ASM("asm/overlays", func_L00_002EE6E0);
 INCLUDE_ASM("asm/overlays", func_L00_002EE7F8);
 INCLUDE_ASM("asm/overlays", func_L00_002EE948);
-INCLUDE_ASM("asm/overlays", func_L00_002EED60);
+extern char *D_L00_0015F050 MACRO_ADDR;
+extern int D_L00_0015F6A8 MACRO_ADDR;
+extern int func_L00_002EE7F8(void *);
+extern void func_L00_002EE948(void *);
+int func_L00_002EED60(char *a) {
+    char *p = *(char **)(D_L00_0015F050 + *(short *)(a + 0x84) * 32 + 0x1C);
+    if (*(short *)(p + 0x26) != 0) return 0;
+    if (D_L00_0015F6A8 != 0) {
+        if (func_L00_002EE7F8(a) != 0) {
+            *(short *)(p + 0x26) = 0;
+            *(int *)(p + 0x20) = 0;
+            return 0;
+        }
+    }
+    func_L00_002EE948(a);
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002EEE00);
 INCLUDE_ASM("asm/overlays", func_L00_002EEF88);

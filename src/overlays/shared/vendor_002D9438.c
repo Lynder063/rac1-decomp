@@ -4,7 +4,22 @@
 
 INCLUDE_ASM("asm/overlays", func_L00_002D9438);
 INCLUDE_ASM("asm/overlays", func_L00_002D95D8);
-INCLUDE_ASM("asm/overlays", func_L00_002D95E8);
+extern char *func_0020D348(int);
+char *func_L00_002D95E8(char *a) {
+    char *m;
+    if (a[0x20] < 0) return 0;
+    m = func_0020D348(0x326);
+    if (m != 0) {
+        char *p = *(char **)(m + 0x78);
+        *(unsigned char *)(m + 0x30) = 0x40;
+        *(unsigned char *)(m + 0x20) = 0;
+        *(char **)(p + 0xC) = a;
+        *(int *)(m + 0x94) = 0;
+        *(unsigned short *)(m + 0x34) |= 0x41;
+        qcopy(m + 0x10, a + 0x10);
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002D9668);
 INCLUDE_ASM("asm/overlays", func_L00_002D98C8);
 INCLUDE_ASM("asm/overlays", func_L00_002D99C0);
@@ -14,7 +29,21 @@ INCLUDE_ASM("asm/overlays", func_L00_002D9E30);
 INCLUDE_ASM("asm/overlays", func_L00_002D9EA0);
 INCLUDE_ASM("asm/overlays", func_L00_002DACC0);
 INCLUDE_ASM("asm/overlays", func_L00_002DB428);
-INCLUDE_ASM("asm/overlays", func_L00_002DB480);
+typedef struct { int a[16]; } V __attribute__((aligned(16)));
+extern void func_001FA218(void *, void *);
+extern void func_001FA460(void *, void *);
+extern void func_001FA540(void *, void *, void *);
+extern void func_001FA480(void *, void *);
+extern void func_0020EEE8(void *);
+void func_L00_002DB480(char *a, char *b, void *c) {
+    V t0, t1, t2;
+    func_001FA218(&t0, c);
+    func_001FA460(&t1, a + 0xC0);
+    func_001FA540(&t2, &t1, &t0);
+    func_001FA480(b + 0xC0, &t2);
+    *(unsigned short *)(b + 0x34) |= 4;
+    func_0020EEE8(b);
+}
 INCLUDE_ASM("asm/overlays", func_L00_002DB508);
 int func_L00_002DB690(char *a) {
     int (*fn)(char *) = *(int (**)(char *))(*(char **)(*(char **)(a + 0x24) + 0x2C) + 0xC);
@@ -58,7 +87,16 @@ INCLUDE_ASM("asm/overlays", func_L00_002E0690);
 INCLUDE_ASM("asm/overlays", func_L00_002E0888);
 INCLUDE_ASM("asm/overlays", func_L00_002E0958);
 INCLUDE_ASM("asm/overlays", func_L00_002E09A8);
-INCLUDE_ASM("asm/overlays", func_L00_002E0AE8);
+extern void func_0023B5D0(void *);
+void func_L00_002E0AE8(char *a) {
+    if (*(unsigned char *)(a + 0x70) & 2) {
+        float o = 1.0f;
+        if (0.0f < *(float *)(a + 0x58)) o = 0.0f;
+        *(float *)(a + 0x54) = o;
+        *(float *)(a + 0x58) = 0.0f;
+    }
+    func_0023B5D0(a);
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E0BE0);
 INCLUDE_ASM("asm/overlays", func_L00_002E0CB8);
 INCLUDE_ASM("asm/overlays", func_L00_002E0E50);

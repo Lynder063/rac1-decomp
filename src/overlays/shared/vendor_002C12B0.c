@@ -3,7 +3,18 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L00_002C12B0);
-INCLUDE_ASM("asm/overlays", func_L00_002C2A20);
+extern unsigned char D_0013A5E0[] NOT_SDA;
+extern unsigned char D_0013E633[] NOT_SDA;
+extern void func_L00_002C2A80(void *);
+void func_L00_002C2A20(char *m) {
+    if (*(int *)(*(char **)(m + 0x78) + 4) != 0) {
+        func_L00_002C2A80(m);
+    } else if (*(int *)(D_0013A5E0 + 0x2600) & *(int *)(D_0013E633 + 0x1EBD)) {
+        m[0xBC] = 1;
+    } else {
+        m[0xBC] = 0;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002C2A80);
 INCLUDE_ASM("asm/overlays", func_L00_002C2C30);
 INCLUDE_ASM("asm/overlays", func_L00_002C2DD8);

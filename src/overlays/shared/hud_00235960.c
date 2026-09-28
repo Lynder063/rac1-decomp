@@ -231,7 +231,25 @@ INCLUDE_ASM("asm/overlays", func_L00_002381D0);
 INCLUDE_ASM("asm/overlays", func_L00_00238478);
 INCLUDE_ASM("asm/overlays", func_L00_00238530);
 INCLUDE_ASM("asm/overlays", func_L00_00238C30);
-INCLUDE_ASM("asm/overlays", func_L00_002394A8);
+extern int D_L00_0015FB48 MACRO_ADDR;
+extern void *D_L00_0015FB78 MACRO_ADDR;
+extern short D_L00_0015F820;
+extern short D_L00_0015F7F8;
+extern short D_L00_0015F7FC;
+extern short D_L00_0015F80C;
+void func_L00_002394A8(char *a) {
+    int x = *(int *)&D_L00_0015F7F8;
+    int y = *(int *)&D_L00_0015F7FC;
+    D_L00_0015FB48 = 4;
+    D_L00_0015FB78 = &D_L00_0015F820;
+    *(short *)(a + 0x48) = 0;
+    *(short *)(a + 0x4A) = 0;
+    *(int *)(a + 0x58) = x;
+    *(int *)(a + 0x5C) = y;
+    *(int *)(a + 0x74) = -2;
+    *(int *)(a + 0x78) = func_001F9850(30);
+    *(int *)&D_L00_0015F80C = 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00239510);
 INCLUDE_ASM("asm/overlays", func_L00_00239918);
 typedef struct {
