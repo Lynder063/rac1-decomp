@@ -678,7 +678,48 @@ int func_0012BDD0(void *arg0) {
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BF40);
+extern int func_00129690(void *, int);
+extern int func_00129530(void *);
+extern void func_00129600(void *, int, int);
+
+/* _decodeOrSkipFrame (libmpeg): sibling of func_0012C0A0
+   (_decodeOrSkipField), for the frame-picture path. Adapted from
+   Lombyte (MIT) for PAL. */
+int func_0012BF40(void *arg0, int arg1, int arg2) {
+    Wrapper *w = (Wrapper *)arg0;
+    Obj40 *p = w->obj;
+    int flag = 0;
+    int t;
+    int ret;
+
+    if (arg2 == -1 || arg1 < arg2) {
+        if (p->unk008 == 0) {
+            w->unk08 = 0;
+            p->unk008 = 1;
+        }
+        if (func_00129690(p, 0) == 0) {
+            t = 0;
+        } else {
+            t = 0;
+            t = func_00129530(p) != t;
+        }
+        ret = t;
+    } else {
+        flag = 1;
+        ret = func_00129690(p, 0);
+        func_0012BCC8((int)w);
+    }
+    func_00129600(p, p->unk118, p->unk004);
+    if (p->unk174 != 3 && flag == 0) {
+        p->unk120 = (p->unk120 == 0);
+    }
+    w->unk08 = p->unk118 - p->unk0AC;
+    if (p->unk120 == 0) {
+        p->unk118 = p->unk118 + 1;
+        p->unk004 = p->unk004 + 1;
+    }
+    return ret;
+}
 
 extern int func_0012C0A0(void *, int, int);
 extern int func_0012BF40(void *, int, int);
