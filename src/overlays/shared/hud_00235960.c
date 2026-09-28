@@ -163,7 +163,21 @@ INCLUDE_ASM("asm/overlays", func_L00_0023B430);
 INCLUDE_ASM("asm/overlays", func_L00_0023B440);
 INCLUDE_ASM("asm/overlays", func_L00_0023B610);
 INCLUDE_ASM("asm/overlays", func_L00_0023B750);
-INCLUDE_ASM("asm/overlays", func_L00_0023B890);
+/* Reached through $gp: under -G2 that takes a declaration of at most two
+   bytes, though the variable is a word. */
+extern short D_L00_0015FA40;
+extern int D_L00_0015FA44 MACRO_ADDR;
+extern int D_L00_0015FA48 MACRO_ADDR;
+extern void func_L00_00236208(void);
+
+/* Resets the HUD banks (func_L00_00236208), then D_L00_0015FA40 = 1,
+   D_L00_0015FA48 = -1 and D_L00_0015FA44 = 0. */
+void func_L00_0023B890(void) {
+    func_L00_00236208();
+    *(int *)&D_L00_0015FA40 = 1;
+    D_L00_0015FA48 = -1;
+    D_L00_0015FA44 = 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0023BAB8);
 INCLUDE_ASM("asm/overlays", func_L00_0023C058);
 INCLUDE_ASM("asm/overlays", func_L00_0023C458);
