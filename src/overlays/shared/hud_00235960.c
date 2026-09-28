@@ -140,7 +140,17 @@ void func_L00_00239F40(HudElem *e) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_00239FC0);
 INCLUDE_ASM("asm/overlays", func_L00_0023A1A0);
-INCLUDE_ASM("asm/overlays", func_L00_0023A658);
+extern HudCounter D_L00_0015FB70 MACRO_ADDR;
+extern void func_L00_0023B0F8(HudElem *);
+
+/* Sets E up with func_L00_0023B0F8, points +0x80 at the shorts of
+   D_L00_0015FB70 (declared like D_L00_0015FB68, out of $gp's reach) and
+   clears the first. */
+void func_L00_0023A658(HudElem *e) {
+    func_L00_0023B0F8(e);
+    e->unk80 = &D_L00_0015FB70;
+    D_L00_0015FB70.unk0 = 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0023A690);
 INCLUDE_ASM("asm/overlays", func_L00_0023A788);
 INCLUDE_ASM("asm/overlays", func_L00_0023AB88);
