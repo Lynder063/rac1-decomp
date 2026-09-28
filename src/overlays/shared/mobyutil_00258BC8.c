@@ -2,7 +2,10 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L00_00258BC8);
+extern int func_001160D8(void);
+int func_L00_00258BC8(int lo, int hi) {
+    return ((func_001160D8() >> 16) & 0x7FFF) % (hi - lo + 1) + lo;
+}
 extern int func_001160D8(void);
 
 /* Random float in [lo, hi], randomly negated: uses a 12-bit fraction
