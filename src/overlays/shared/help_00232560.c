@@ -81,7 +81,24 @@ INCLUDE_ASM("asm/overlays", func_L00_00233B50);
 INCLUDE_ASM("asm/overlays", func_L00_00233CC0);
 INCLUDE_ASM("asm/overlays", func_L00_00233D50);
 INCLUDE_ASM("asm/overlays", func_L00_00233E48);
-INCLUDE_ASM("asm/overlays", func_L00_00233EE0);
+extern void func_001F9BC0(void *);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_001F9EE8(void *, void *, void *);
+
+/* Sets OUT to the point (X, Y, Z, 0) (cleared first by func_001F9BC0),
+   then transforms it by the matrix at D_0013F450 and adds the vector at
+   D_0013F450 + 0x80: a camera-space point taken to world space. */
+void func_L00_00233EE0(float *out, float x, float y, float z) {
+    char *base;
+
+    func_001F9BC0(out);
+    base = D_0013F450;
+    out[0] = x;
+    out[1] = y;
+    out[2] = z;
+    func_001F9EE8(out, out, base);
+    func_001F9BD8(out, out, base + 0x80);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00233F68);
 INCLUDE_ASM("asm/overlays", func_L00_00233F88);
 INCLUDE_ASM("asm/overlays", func_L00_00234090);
