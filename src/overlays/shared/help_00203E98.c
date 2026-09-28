@@ -51,7 +51,61 @@ INCLUDE_ASM("asm/overlays", func_L00_002086C8);
 INCLUDE_ASM("asm/overlays", func_L00_00208E98);
 INCLUDE_ASM("asm/overlays", func_L00_00209088);
 INCLUDE_ASM("asm/overlays", func_L00_002091D8);
-INCLUDE_ASM("asm/overlays", func_L00_00209598);
+extern u8 D_0013F450[] NOT_SDA;
+
+extern f32 func_00214D28(f32 *p, f32 target, f32 maxstep);
+
+f32 func_L00_00209598(f32 a, f32 b, f32 c, f32 d)
+{
+    u8 *g = D_0013F450;
+    f32 thresh = *(f32 *)(g + 0xAA8);
+    f32 step;
+    f32 negone = -1.0f;
+
+    if (thresh < a) {
+        step = a - thresh;
+    } else {
+        s32 flag = *(s32 *)(g + 0xA9C);
+        f32 rate = 2.0f;
+
+        if (flag == 0) {
+            rate = 0.5f / *(f32 *)(g + 0xA94);
+        }
+
+        {
+            void *obj = *(void **)(g + 0x2080);
+            s32 idx = *(u8 *)((u8 *)obj + 0x53);
+            u8 *arr = *(u8 **)((u8 *)obj + 0x24);
+            void *entry = *(void **)(arr + (idx << 2) + 0x48);
+            s32 cnt = *(u8 *)((u8 *)entry + 0x10);
+            step = a + (rate * (f32)cnt - thresh);
+        }
+    }
+
+    if (b > 0.0f) {
+        u8 *g2 = D_0013F450;
+        f32 rate2 = *(f32 *)(g2 + 0xA94);
+
+        if (*(s32 *)(g2 + 0xA9C) != 0) {
+            void *obj2 = *(void **)(g2 + 0x2080);
+            rate2 = *(f32 *)(*(void **)((u8 *)obj2 + 0x6C));
+        }
+
+        {
+            f32 target = c * step;
+            f32 speed = b * rate2;
+            f32 result = target / speed;
+
+            if (d == negone) {
+                *(f32 *)(g2 + 0xA90) = result;
+                return negone;
+            }
+            return func_00214D28((f32 *)(g2 + 0xA90), result, d);
+        }
+    }
+
+    return 0.0f;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00209690);
 INCLUDE_ASM("asm/overlays", func_L00_00209748);
 INCLUDE_ASM("asm/overlays", func_L00_00209850);

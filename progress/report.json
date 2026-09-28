@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 6.51076366094468,
+  "fuzzy_match_percent": 6.517480116043012,
   "total_code": "3692424",
-  "matched_code": "239024",
-  "matched_code_percent": 6.473362755739861,
+  "matched_code": "239272",
+  "matched_code_percent": 6.480079210838192,
   "total_functions": 4965,
-  "matched_functions": 1279,
-  "matched_functions_percent": 25.760322255790534,
+  "matched_functions": 1280,
+  "matched_functions_percent": 25.780463242698893,
   "complete_code": "83876",
   "complete_code_percent": 2.271570112208132,
   "total_units": 378,
@@ -19735,13 +19735,13 @@
   {
    "name": "overlays/shared/help_00203E98",
    "measures": {
-    "fuzzy_match_percent": 0.0,
+    "fuzzy_match_percent": 0.7727782624953259,
     "total_code": "32092",
-    "matched_code": "0",
-    "matched_code_percent": 0.0,
+    "matched_code": "248",
+    "matched_code_percent": 0.7727782624953259,
     "total_functions": 73,
-    "matched_functions": 0,
-    "matched_functions_percent": 0.0,
+    "matched_functions": 1,
+    "matched_functions_percent": 1.36986301369863,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -20192,10 +20192,11 @@
     {
      "name": "func_L00_00209598",
      "size": "248",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "22272",
      "metadata": {
-      "virtual_address": "2135448"
+      "virtual_address": "2135448",
+      "source_kind": "c"
      }
     },
     {
@@ -54597,13 +54598,13 @@
    "id": "common",
    "name": "Common level code",
    "measures": {
-    "fuzzy_match_percent": 0.17050269823032269,
+    "fuzzy_match_percent": 0.19127119978293566,
     "total_code": "1194116",
-    "matched_code": "2036",
-    "matched_code_percent": 0.17050269823032269,
+    "matched_code": "2284",
+    "matched_code_percent": 0.19127119978293566,
     "total_functions": 1928,
-    "matched_functions": 10,
-    "matched_functions_percent": 0.5186721991701245,
+    "matched_functions": 11,
+    "matched_functions_percent": 0.5705394190871369,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
