@@ -43,7 +43,27 @@ INCLUDE_ASM("asm/overlays", func_L00_002E87C8);
 INCLUDE_ASM("asm/overlays", func_L00_002E89D0);
 INCLUDE_ASM("asm/overlays", func_L00_002E89E0);
 INCLUDE_ASM("asm/overlays", func_L00_002E8AC8);
-INCLUDE_ASM("asm/overlays", func_L00_002E8E78);
+typedef float V[4] __attribute__((aligned(16)));
+
+extern V D_L00_00173F60;
+extern void func_001F9BF0(float *, float *, float *);
+extern float func_001F9C78(void *a, void *b);
+
+/* Only for arg1==1: true when arg2 is past the edge plane
+   (D_L00_00173F60 - arg2) . (arg0->+0x70 + 0x130) < 0. */
+int func_L00_002E8E78(void *arg0, int arg1, float *arg2) {
+    V diff;
+    char *ptr2;
+
+    if (arg1 == 1) {
+        ptr2 = *(char **)((char *)arg0 + 0x70) + 0x130;
+        func_001F9BF0(diff, D_L00_00173F60, arg2);
+        if (func_001F9C78(diff, ptr2) < 0.0f) {
+            return 1;
+        }
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E8EE0);
 INCLUDE_ASM("asm/overlays", func_L00_002E91D0);
 INCLUDE_ASM("asm/overlays", func_L00_002E9828);
