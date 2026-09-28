@@ -30,7 +30,14 @@ void func_L00_002BFE98(char *a) {
     *(int *)(g + 0x1F08) = *(int *)(a + 0x4C);
     *(float *)(g + 0x1EE4) = *(float *)(a + 0x5C);
 }
-INCLUDE_ASM("asm/overlays", func_L00_002BFED0);
+void func_L00_002BFED0(char *a) {
+    char *g = D_0013F450;
+    *(float *)(a + 0x40) = *(float *)(g + 0x1ED0);
+    *(float *)(a + 0x44) = *(float *)(g + 0x1ED4);
+    *(float *)(a + 0x48) = *(float *)(g + 0x1ED8);
+    *(int *)(a + 0x4C) = *(int *)(g + 0x1F08);
+    *(float *)(a + 0x5C) = *(float *)(g + 0x1EE4);
+}
 INCLUDE_ASM("asm/overlays", func_L00_002BFF08);
 INCLUDE_ASM("asm/overlays", func_L00_002BFF50);
 INCLUDE_ASM("asm/overlays", func_L00_002BFF88);
