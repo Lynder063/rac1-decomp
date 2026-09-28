@@ -5,6 +5,7 @@ Level code overlays: each level's program, which replaces the executable's
 
   python3 tools/overlays.py dump        # baserom/overlays/level_NN/ (local)
   python3 tools/overlays.py catalogue   # config/overlays/functions.tsv
+  python3 tools/overlays.py families    # config/overlays/families.tsv
 
 `dump` writes every level's overlay records from the disc image
 (baserom/SCES_509.16.iso) to baserom/overlays/level_NN/, one file per
@@ -21,7 +22,16 @@ link-dependent fields masked. Every distinct function gets one name:
 
 The catalogue holds names, sizes, fingerprint hashes and addresses, never
 bytes, so it is tracked.
+
+`families` finds, for every shared and level function, its nearest
+relative among all distinct functions (the executable's included): the
+most similar one within 15% of its size, comparing masked instructions by
+alignment. Many level functions are another function compiled with small
+changes; once one of them is matched, its C is the starting point for the
+other. Relatives at 75% or more are written to config/overlays/families.tsv.
 """
+import bisect
+import difflib
 import hashlib
 import json
 import struct
@@ -194,8 +204,62 @@ def catalogue() -> None:
           f". Written to {CATALOGUE.relative_to(ROOT)}.")
 
 
+FAMILIES = ROOT / "config/overlays/families.tsv"
+RELATIVE = 0.75             # least similarity worth listing
+
+
+def read_catalogue() -> list[tuple[str, str, int, list[tuple[int, int]]]]:
+    rows = []
+    for line in CATALOGUE.read_text().splitlines():
+        if line.startswith("#"):
+            continue
+        name, kind, size, _, _, places = line.split("\t")
+        rows.append((name, kind, int(size),
+                     [(int(p[:2]), int(p[3:], 16)) for p in places.split(",")]))
+    return rows
+
+
+def families() -> None:
+    texts = {}
+    for d in sorted(DUMP.glob("level_*")):
+        text = next(r for r in json.loads((d / "manifest.json").read_text())["records"]
+                    if r["name"] == "text")
+        texts[int(d.name[6:])] = (text["address"], (d / "text.bin").read_bytes())
+    funcs = []                       # (size, name, kind, masked words)
+    for name, kind, size, places in read_catalogue():
+        level, addr = places[0]
+        base, data = texts[level]
+        funcs.append((size, name, kind, words(masked(data[addr - base:addr - base + size]))))
+    funcs.sort()
+    sizes = [f[0] for f in funcs]
+    rows = []
+    for size, name, kind, w in funcs:
+        if kind == "exe" or size < 64:
+            continue
+        best, relative = RELATIVE, None
+        for s2, n2, k2, w2 in funcs[bisect.bisect_left(sizes, size * 0.85):
+                                    bisect.bisect_right(sizes, size * 1.15)]:
+            if n2 == name:
+                continue
+            sm = difflib.SequenceMatcher(None, w, w2, autojunk=False)
+            if sm.real_quick_ratio() < best or sm.quick_ratio() < best:
+                continue
+            ratio = sm.ratio()
+            if ratio >= best:
+                best, relative = ratio, (n2, k2, s2)
+        if relative:
+            rows.append((name, kind, size, *relative, best))
+    lines = ["# name\tkind\tsize\trelative\trelative kind\trelative size\tsimilarity"]
+    lines += [f"{n}\t{k}\t{s}\t{rn}\t{rk}\t{rs}\t{r:.2f}" for n, k, s, rn, rk, rs, r in
+              sorted(rows, key=lambda r: -r[2])]
+    FAMILIES.write_text("\n".join(lines) + "\n")
+    print(f"{len(rows)} functions ({sum(r[2] for r in rows)} bytes) have a relative at "
+          f"{RELATIVE:.0%} or more; {sum(1 for r in rows if r[4] == 'exe')} of them in the "
+          f"executable. Written to {FAMILIES.relative_to(ROOT)}.")
+
+
 def main() -> None:
-    commands = {"dump": dump, "catalogue": catalogue}
+    commands = {"dump": dump, "catalogue": catalogue, "families": families}
     if len(sys.argv) != 2 or sys.argv[1] not in commands:
         sys.exit(__doc__)
     commands[sys.argv[1]]()
