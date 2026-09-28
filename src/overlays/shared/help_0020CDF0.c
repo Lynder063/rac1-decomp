@@ -15,14 +15,45 @@ void func_L00_0020D990(float *out) {
 INCLUDE_ASM("asm/overlays", func_L00_0020D9C8);
 INCLUDE_ASM("asm/overlays", func_L00_0020DAF8);
 INCLUDE_ASM("asm/overlays", func_L00_0020DB30);
-INCLUDE_ASM("asm/overlays", func_L00_0020DB68);
+extern int func_L00_0020DB30(int);
+
+/* Whether func_L00_0020DB30(ARG) is one of 10, 17, 20 or 25. */
+int func_L00_0020DB68(int arg) {
+    int v = func_L00_0020DB30(arg);
+
+    if (v == 0x11 || v == 10 || v == 0x14 || v == 0x19) {
+        return 1;
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0020DBB0);
 INCLUDE_ASM("asm/overlays", func_L00_0020DBD8);
 INCLUDE_ASM("asm/overlays", func_L00_0020DC00);
 INCLUDE_ASM("asm/overlays", func_L00_0020DC50);
 INCLUDE_ASM("asm/overlays", func_L00_0020DC68);
 INCLUDE_ASM("asm/overlays", func_L00_0020DCB4);
-INCLUDE_ASM("asm/overlays", func_L00_0020DCF0);
+extern char D_0013F450[];
+
+typedef struct {
+    char pad0[0x2128];
+    float ring[32];
+    int head;
+    int count;
+} RingBlock;
+
+/* The value BACK entries ago (at most 31, and at most the entry count
+   +0x21AC) in the 32-float ring at D_0013F450 + 0x2128 whose newest
+   entry is +0x21A8. The ring as a struct array gives retail's base-first
+   index add. */
+float func_L00_0020DCF0(int back) {
+    RingBlock *b = (RingBlock *)D_0013F450;
+    int n = back < 32 ? back : 31;
+
+    if (b->count < n) {
+        n = b->count;
+    }
+    return b->ring[(b->head - n + 31) % 32];
+}
 INCLUDE_ASM("asm/overlays", func_L00_0020DD48);
 INCLUDE_ASM("asm/overlays", func_L00_0020DF90);
 INCLUDE_ASM("asm/overlays", func_L00_0020E0A8);
