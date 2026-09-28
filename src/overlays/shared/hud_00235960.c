@@ -85,7 +85,15 @@ void func_L00_00236710(HudElem *e) {
     e->unk4A = 0;
     func_L00_00236610(e);
 }
-INCLUDE_ASM("asm/overlays", func_L00_00236750);
+/* func_L00_00236710 for a 32 x 32 element. */
+void func_L00_00236750(HudElem *e) {
+    e->unk7C = func_001F9850(0xB4) + 0x1E;
+    e->unk48 = 0;
+    e->unk4A = 0;
+    e->w = 0x20;
+    e->h = 0x20;
+    func_L00_00236610(e);
+}
 INCLUDE_ASM("asm/overlays", func_L00_002367A8);
 INCLUDE_ASM("asm/overlays", func_L00_00236830);
 INCLUDE_ASM("asm/overlays", func_L00_00236AB8);
