@@ -547,7 +547,7 @@ typedef struct {
 } VoBuf;
 #define voBuf (*(VoBuf *)((char *)D_0016130C + 0xD9168))
 extern void func_0023E5B8(VoBuf *);    /* voBufReset */
-extern void func_0023E298(VideoDec *); /* decBs0 */
+extern int func_0023E298(VideoDec *); /* decBs0 */
 
 /* videoDecMain(VideoDec *) */
 /* videoDecMain(void *) */
@@ -565,7 +565,61 @@ void func_0023E1F8(VideoDec *vd) {
     func_0023E058((int *)vd, VD_STATE_END);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E298); /* decBs0(VideoDec *) */
+typedef struct {
+    char hdr[0x40];
+    char body[0x138C0 - 0x40];
+} VoTag;
+typedef struct {
+    char v[0xD0000];
+} VoData;
+
+extern int func_0012BB88(sceMpeg *);                      /* sceMpegIsEnd */
+extern int func_0012BB30(sceMpeg *, void *, int);         /* sceMpegGetPicture */
+extern void func_0012BBA8(sceMpeg *);                     /* sceMpegReset */
+extern VoData *func_0023E658_v(VoBuf *) __asm__("func_0023E658"); /* voBufGetData */
+extern void func_0023E5E0_v(VoBuf *) __asm__("func_0023E5E0");    /* voBufIncCount */
+extern void func_0023C5E0(void *, int, int, int);         /* setImageTag */
+extern void func_0023BF48(char *);                        /* ErrMessage */
+extern char D_001E8E68[];
+extern char D_001E8E80[];
+
+/* decBs0(VideoDec *) */
+int func_0023E298(VideoDec *vd) {
+    VoData *voData;
+    int status = 1;
+    int i;
+
+    while (!func_0012BB88(&vd->mpeg)) {
+        if (func_0023E050((int *)vd) == VD_STATE_ABORT) {
+            status = -1;
+            func_001E9730(D_001E8E68);
+            break;
+        }
+
+        while (!(voData = func_0023E658_v(&voBuf))) {
+            func_0023BB40();
+        }
+
+        if (func_0012BB30(&vd->mpeg, voData->v, 0x340) < 0) {
+            func_0023BF48(D_001E8E80);
+        }
+
+        if (vd->mpeg.frameCount == 0) {
+            int image_w = vd->mpeg.width;
+            int image_h = vd->mpeg.height;
+
+            for (i = 0; i < voBuf.size; i++) {
+                func_0023C5E0(((VoTag *)voBuf.tag)[i].body,
+                              (int)((VoData *)voBuf.data)[i].v, image_w, image_h);
+            }
+        }
+
+        func_0023E5E0_v(&voBuf);
+        func_0023BB40();
+    }
+    func_0012BBA8(&vd->mpeg);
+    return status;
+}
 
 extern char D_00161328[];
 
