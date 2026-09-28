@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 7.45907198044815,
+  "fuzzy_match_percent": 7.461021965498264,
   "total_code": "3692336",
-  "matched_code": "274784",
-  "matched_code_percent": 7.442009611259647,
+  "matched_code": "274856",
+  "matched_code_percent": 7.443959596309762,
   "total_functions": 4987,
-  "matched_functions": 1470,
-  "matched_functions_percent": 29.476639262081413,
+  "matched_functions": 1471,
+  "matched_functions_percent": 29.49669139763385,
   "complete_code": "90172",
   "complete_code_percent": 2.442139610262988,
   "total_units": 378,
@@ -23566,13 +23566,13 @@
   {
    "name": "overlays/shared/lights_0023FA70",
    "measures": {
-    "fuzzy_match_percent": 0.0,
+    "fuzzy_match_percent": 28.125,
     "total_code": "256",
-    "matched_code": "0",
-    "matched_code_percent": 0.0,
+    "matched_code": "72",
+    "matched_code_percent": 28.125,
     "total_functions": 2,
-    "matched_functions": 0,
-    "matched_functions_percent": 0.0,
+    "matched_functions": 1,
+    "matched_functions_percent": 50.0,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -23582,7 +23582,7 @@
     {
      "name": "func_L00_0023FA70",
      "size": "72",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "0",
      "metadata": {
       "virtual_address": "2357872"
@@ -54867,13 +54867,13 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 0.4415744447157969,
+    "fuzzy_match_percent": 0.44380587088224394,
     "total_code": "3226636",
-    "matched_code": "14248",
-    "matched_code_percent": 0.4415744447157969,
+    "matched_code": "14320",
+    "matched_code_percent": 0.44380587088224394,
     "total_functions": 3307,
-    "matched_functions": 110,
-    "matched_functions_percent": 3.326277592984578,
+    "matched_functions": 111,
+    "matched_functions_percent": 3.356516480193529,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -54912,13 +54912,13 @@
    "id": "common",
    "name": "Common level code",
    "measures": {
-    "fuzzy_match_percent": 1.193183911780765,
+    "fuzzy_match_percent": 1.1992134767476526,
     "total_code": "1194116",
-    "matched_code": "14248",
-    "matched_code_percent": 1.193183911780765,
+    "matched_code": "14320",
+    "matched_code_percent": 1.1992134767476526,
     "total_functions": 1928,
-    "matched_functions": 110,
-    "matched_functions_percent": 5.7053941908713695,
+    "matched_functions": 111,
+    "matched_functions_percent": 5.757261410788382,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
