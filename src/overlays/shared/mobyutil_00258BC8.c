@@ -7,7 +7,30 @@ INCLUDE_ASM("asm/overlays", func_L00_00258C80);
 INCLUDE_ASM("asm/overlays", func_L00_00258DB0);
 INCLUDE_ASM("asm/overlays", func_L00_00258E58);
 INCLUDE_ASM("asm/overlays", func_L00_00258F28);
-INCLUDE_ASM("asm/overlays", func_L00_00258FA8);
+extern float func_001F9F90(float x);
+extern void func_001F9BF0(void *dst, void *a, void *b); /* dst = a - b (vector) */
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+
+/* Vector cosine interpolation: dst = a + (b - a) * ((1 - cos(t * pi)) * 0.5).
+   Scalar analogue matched at src/game/mobyutil.c:func_00214220. */
+void func_L00_00258FA8(void *dst, void *a, void *b, float t) {
+    float tmp[4];
+    float ease;
+
+    if (t == 0.0f) {
+        qcopy(dst, a);
+        return;
+    }
+    if (t == 1.0f) {
+        qcopy(dst, b);
+        return;
+    }
+    ease = (1.0f - func_001F9F90(t * 3.14159274f)) * 0.5f;
+    func_001F9BF0(tmp, b, a);
+    func_001F9C30(tmp, tmp, ease);
+    func_001F9BD8(dst, a, tmp);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00259088);
 INCLUDE_ASM("asm/overlays", func_L00_00259148);
 INCLUDE_ASM("asm/overlays", func_L00_002592B0);
