@@ -16,6 +16,37 @@ INCLUDE_ASM("asm/overlays", func_L00_00227F48);
 INCLUDE_ASM("asm/overlays", func_L00_00228180);
 INCLUDE_ASM("asm/overlays", func_L00_00228510);
 INCLUDE_ASM("asm/overlays", func_L00_00228770);
-INCLUDE_ASM("asm/overlays", func_L00_00229348);
+extern int D_0013A5E0[];
+
+extern int func_L00_00267BA8(int, void *, void *);
+extern int func_L00_00222520(void);
+extern int func_L00_00267C48(int, void *, void *, int);
+extern void func_L00_00222B80(int, int);
+
+/* Loads a record into A0 (type 0x40). If the flags at D_0013A5E0 + 0x2600
+   have 0x2 or 0x8 set, saves it back and signals state 0xB; otherwise
+   signals state 7 unless A1. Returns whether it signalled. */
+int func_L00_00229348(void *a0, int a1) {
+    s32 buf;
+    int len;
+
+    if (!func_L00_00267BA8(0x40, a0, &buf))
+        return 0;
+
+    len = func_L00_00222520();
+
+    if ((*(int *)((char *) D_0013A5E0 + 0x2600) & 0xA) != 0) {
+        if (len > 0 && func_L00_00267C48(0x40, (void *) 0x1F000, (char *) a0 + len, len)) {
+            func_L00_00222B80(0xB, 1);
+            return 1;
+        }
+    }
+
+    if (a1 != 0)
+        return 0;
+
+    func_L00_00222B80(0x7, 1);
+    return 1;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002293E8);
 INCLUDE_ASM("asm/overlays", func_L00_00229778);

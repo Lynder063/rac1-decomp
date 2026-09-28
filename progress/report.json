@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 6.457106666637772,
+  "fuzzy_match_percent": 6.4613325040578875,
   "total_code": "3691576",
-  "matched_code": "236988",
-  "matched_code_percent": 6.4196971699891865,
+  "matched_code": "237144",
+  "matched_code_percent": 6.423923007409302,
   "total_functions": 4965,
-  "matched_functions": 1269,
-  "matched_functions_percent": 25.55891238670695,
+  "matched_functions": 1270,
+  "matched_functions_percent": 25.579053373615306,
   "complete_code": "83876",
   "complete_code_percent": 2.272091919548724,
   "total_units": 378,
@@ -21469,13 +21469,13 @@
   {
    "name": "overlays/shared/help_00221A98",
    "measures": {
-    "fuzzy_match_percent": 0.0,
+    "fuzzy_match_percent": 0.4870738104158861,
     "total_code": "32028",
-    "matched_code": "0",
-    "matched_code_percent": 0.0,
+    "matched_code": "156",
+    "matched_code_percent": 0.4870738104158861,
     "total_functions": 17,
-    "matched_functions": 0,
-    "matched_functions_percent": 0.0,
+    "matched_functions": 1,
+    "matched_functions_percent": 5.882352941176471,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -21611,10 +21611,11 @@
     {
      "name": "func_L00_00229348",
      "size": "156",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "30896",
      "metadata": {
-      "virtual_address": "2265928"
+      "virtual_address": "2265928",
+      "source_kind": "c"
      }
     },
     {
@@ -54587,13 +54588,13 @@
    "id": "common",
    "name": "Common level code",
    "measures": {
-    "fuzzy_match_percent": 0.0,
+    "fuzzy_match_percent": 0.013071150629928913,
     "total_code": "1193468",
-    "matched_code": "0",
-    "matched_code_percent": 0.0,
+    "matched_code": "156",
+    "matched_code_percent": 0.013071150629928913,
     "total_functions": 1928,
-    "matched_functions": 0,
-    "matched_functions_percent": 0.0,
+    "matched_functions": 1,
+    "matched_functions_percent": 0.05186721991701245,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
