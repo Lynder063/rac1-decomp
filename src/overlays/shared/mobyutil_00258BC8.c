@@ -67,7 +67,13 @@ INCLUDE_ASM("asm/overlays", func_L00_0025A2F0);
 INCLUDE_ASM("asm/overlays", func_L00_0025A344);
 INCLUDE_ASM("asm/overlays", func_L00_0025A43C);
 INCLUDE_ASM("asm/overlays", func_L00_0025A458);
-INCLUDE_ASM("asm/overlays", func_L00_0025A468);
+int func_L00_0025A468(int *p, int b) {
+    int w = *p;
+    int v = (w >> 24) - b;
+    if (v < 0) v = 0;
+    *p = (w & 0xFFFFFF) | (v << 24);
+    return v == 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025A4A0);
 INCLUDE_ASM("asm/overlays", func_L00_0025A540);
 INCLUDE_ASM("asm/overlays", func_L00_0025A5D8);
