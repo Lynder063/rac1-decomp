@@ -896,7 +896,37 @@ void func_L00_00235040(void) {
 INCLUDE_ASM("asm/overlays", func_L00_00235088);
 INCLUDE_ASM("asm/overlays", func_L00_002352D0);
 INCLUDE_ASM("asm/overlays", func_L00_002353B8);
-INCLUDE_ASM("asm/overlays", func_L00_00235608);
+extern void func_0020DAF8(int, int, void *);
+extern void func_001FA480(void *, void *);
+extern void func_0020EEE8(void *);
+extern void func_L00_00209940(void *, void *, void *, int, int);
+extern char D_L00_0017A708[];
+extern char D_L00_0017C780[];
+extern char D_L00_0015F788[];
+
+/* Places moby MOBY from matrix ID (func_0020DAF8: translation row to +0x10,
+   func_001FA480 of the matrix to +0xC0), updates it (func_0020EEE8), starts its sequence
+   table for func_L00_00209940 (class 0x1B1: D_L00_0017A708 with 6,
+   others D_L00_0015F788 with 0), then clears +0x50 / +0x54 and points
+   +0x68 / +0x6C at D_L00_0017C780. The four tail stores are in the order
+   decomp-permuter found for retail's schedule. */
+void func_L00_00235608(int id, char *moby) {
+    float m[16] __attribute__((aligned(16)));
+
+    func_0020DAF8(id, 4, m);
+    qcopy(moby + 0x10, &m[12]);
+    func_001FA480(moby + 0xC0, m);
+    func_0020EEE8(moby);
+    if (*(short *)(moby + 0xA6) == 0x1B1) {
+        func_L00_00209940(D_L00_0017A708, D_L00_0017C780, *(void **)(moby + 0x24), 6, id);
+    } else {
+        func_L00_00209940(D_L00_0015F788, D_L00_0017C780, *(void **)(moby + 0x24), 0, id);
+    }
+    *(char **)(moby + 0x68) = D_L00_0017C780;
+    *(int *)(moby + 0x54) = 0;
+    *(char **)(moby + 0x6C) = D_L00_0017C780;
+    *(int *)(moby + 0x50) = 0;
+}
 extern float func_00214358(void *, int, float);
 extern float func_001F9B88(float);
 
