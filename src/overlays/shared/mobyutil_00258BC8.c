@@ -181,7 +181,16 @@ float func_L00_0025D288(void *a, void *b, void *c, int d) {
     func_001F9EE8(w, v0, v2);
     return w[d];
 }
-INCLUDE_ASM("asm/overlays", func_L00_0025D308);
+typedef struct { int a[4]; } Vq __attribute__((aligned(16)));
+extern void func_L00_001FF4B0(void *, void *, float);
+extern float func_001F9C78(void *, void *);
+extern void func_001F9BF0(void *dst, void *a, void *b);
+void func_L00_0025D308(void *a, void *b, void *c, float s) {
+    Vq t0, t1;
+    func_L00_001FF4B0(&t1, c, 1.0f);
+    func_001F9C30(&t0, &t1, func_001F9C78(&t1, b) * s);
+    func_001F9BF0(a, b, &t0);
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025D390);
 INCLUDE_ASM("asm/overlays", func_L00_0025D3A0);
 INCLUDE_ASM("asm/overlays", func_L00_0025D3F0);
