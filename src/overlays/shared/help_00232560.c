@@ -88,7 +88,30 @@ INCLUDE_ASM("asm/overlays", func_L00_00234090);
 INCLUDE_ASM("asm/overlays", func_L00_00234150);
 INCLUDE_ASM("asm/overlays", func_L00_00234250);
 INCLUDE_ASM("asm/overlays", func_L00_002342F8);
-INCLUDE_ASM("asm/overlays", func_L00_002343A0);
+extern void func_001F9EE8(void *, void *, void *);
+
+/* Places a point by the view mode at D_0013F450 + 0x20B3: in mode 0 it
+   copies SRC to DST as is; in modes 1 and 2 it transforms it by the
+   matrix at +0x40, sets z, then transforms the result by the matrix at
+   +0x0. Either way DST's z becomes Z. Written as a switch: retail's
+   bltz / slti 3 range test is gcc's case tree, which an if chain folds
+   to one sltu. */
+void func_L00_002343A0(float *dst, float *src, float z) {
+    char *base = D_0013F450;
+
+    switch (*(unsigned char *)(base + 0x20B3)) {
+    case 0:
+        qcopy(dst, src);
+        dst[2] = z;
+        break;
+    case 1:
+    case 2:
+        func_001F9EE8(dst, src, base + 0x40);
+        dst[2] = z;
+        func_001F9EE8(dst, dst, base);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00234420);
 INCLUDE_ASM("asm/overlays", func_L00_002344B0);
 INCLUDE_ASM("asm/overlays", func_L00_002345B0);
