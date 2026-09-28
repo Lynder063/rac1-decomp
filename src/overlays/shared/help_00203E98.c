@@ -8,7 +8,18 @@ INCLUDE_ASM("asm/overlays", func_L00_00203F08);
 INCLUDE_ASM("asm/overlays", func_L00_00203F20);
 INCLUDE_ASM("asm/overlays", func_L00_00203FB8);
 INCLUDE_ASM("asm/overlays", func_L00_00204040);
-INCLUDE_ASM("asm/overlays", func_L00_00204130);
+extern char D_L00_00179510[] NOT_SDA;
+extern int func_001F9850(int);
+extern void func_L00_00203E98(void);
+void func_L00_00204130(void) {
+    char *g = D_L00_00179510;
+    if (*(short *)(g + 0x38) == 0) {
+        *(short *)(g + 0x38) = 1;
+        *(int *)(g + 0x3C) = func_001F9850(0x3C);
+        func_L00_00203E98();
+        if (*(int *)g == 0) *(int *)g = 8;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00204190);
 INCLUDE_ASM("asm/overlays", func_L00_00205110);
 INCLUDE_ASM("asm/overlays", func_L00_00205158);
