@@ -2,4 +2,18 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L18_00282F48);
+typedef struct {
+    char pad0[0xE0];
+    char *save_data;
+} Level18PauseState;
+
+extern Level18PauseState D_L18_001BA9F0;
+extern void func_0020BA00(char *);
+
+/* Serialize save data once and retain its destination buffer. */
+void func_L18_00282F48(char *save_data) {
+    if (D_L18_001BA9F0.save_data == 0) {
+        D_L18_001BA9F0.save_data = save_data;
+        func_0020BA00(save_data);
+    }
+}
