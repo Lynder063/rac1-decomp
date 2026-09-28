@@ -7,7 +7,32 @@ INCLUDE_ASM("asm/overlays", func_L00_0028EBF0);
 INCLUDE_ASM("asm/overlays", func_L00_0028EC28);
 INCLUDE_ASM("asm/overlays", func_L00_0028EF68);
 INCLUDE_ASM("asm/overlays", func_L00_0028F0B0);
-INCLUDE_ASM("asm/overlays", func_L00_0028F140);
+extern int func_0022EB08(void *, int, int, int, int);
+extern char D_0013E650[];
+
+extern unsigned char D_L00_001BDBB0[];
+extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
+extern int D_L00_0015F654 MACRO_ADDR;
+extern int D_L00_0015F6D0 MACRO_ADDR;
+extern char *D_L00_0015F6D4 MACRO_ADDR;
+
+/* Starts a sound bank entry chosen by (a0, a1, a2) offset from a
+   level-specific table row, the same shape as func_0022EE28. */
+int func_L00_0028F140(int a0, int a1, int a2, int a3, int a4) {
+    int idx = D_L00_001BDBB0[D_0015EE84_m] + a0 * 4 + a1 * 2 + a2 + D_L00_0015F654;
+    int h;
+
+    if (idx >= D_L00_0015F6D0) {
+        return -1;
+    }
+    h = func_0022EB08(D_L00_0015F6D4 + idx * 32, a3, a4, 0, 0x400);
+    if (h >= 0) {
+        char *rec = D_0013E650 + h * 0x70;
+        *(int *)(rec + 0x88) = a4;
+        *(short *)(rec + 0x7E) = idx;
+    }
+    return h;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0028F208);
 INCLUDE_ASM("asm/overlays", func_L00_0028F210);
 INCLUDE_ASM("asm/overlays", func_L00_0028F230);
