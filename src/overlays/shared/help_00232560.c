@@ -180,7 +180,18 @@ void func_L00_00232A78(int a0, int a1, float a2) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00232B20);
+/* With the animation at D_0013F450 + 0x2278 set and enabled (+0x227C),
+   and a sequence ready for the current id (func_L00_00232A18), copies
+   the float at +0xA90 to the animation's field 0x58. */
+void func_L00_00232B20(void) {
+    char *base = D_0013F450;
+    int buf[4];
+
+    if (*(void **)(base + 0x2278) != 0 && *(int *)(base + 0x227C) != 0
+        && func_L00_00232A18(*(unsigned char *)(*(char **)(base + 0x2080) + 0x53), buf) != 0) {
+        *(float *)(*(char **)(base + 0x2278) + 0x58) = *(float *)(base + 0xA90);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00232B78);
 INCLUDE_ASM("asm/overlays", func_L00_00232C10);
 INCLUDE_ASM("asm/overlays", func_L00_00232DF8);
