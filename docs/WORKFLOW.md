@@ -181,7 +181,7 @@ and reviews what comes back. The workers follow [WORKER.md](WORKER.md).
 ```
 python3 tools/lombyte.py todo                # matched in Lombyte, not here
 python3 tools/triage.py                      # what is left, by route
-python3 tools/wave.py plan w7 --budget 10 func_X ...   # or --near / --fresh
+python3 tools/wave.py plan w7 --budget 10 func_X ...   # or --near / --fresh / --overlay
 python3 tools/wave.py status w7              # verdicts as workers finish
 python3 tools/wave.py land w7                # one commit per EXACT, full build each
 ```
@@ -237,6 +237,20 @@ Measured on 2026-09-26/27 (Sonnet workers, one function each):
 - `tools/integrate.py` refuses pins, barriers and inline asm. A `while (0)`
   inside a macro taken from the original source (newlib's `MALLOC_ZERO`)
   is not a barrier: review it and land it by hand.
+
+### Overlay pool
+
+Overlay functions (`func_LNN_XXXXXXXX`, docs/OVERLAYS.md) are their own
+pool: name them on the `plan` line, or let `--overlay` pick shared code in
+all 19 levels first, smaller first, after the usual triage of
+`asm/overlays/<name>.s`. A wave is all overlay or all executable. There is
+no m2c sketch for them, so no `--role compile`.
+
+`land` checks an overlay match by re-running try_func on the landed file
+(the strict check, docs/OVERLAYS.md) instead of the full build, which
+doesn't include `src/overlays/`. It regenerates the progress report when
+`build-sn/rac1.elf` exists, and commits `feat(overlays): <name> exact
+match`.
 
 ### Open work that would help the next waves
 

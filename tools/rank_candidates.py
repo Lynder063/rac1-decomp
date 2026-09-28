@@ -30,6 +30,12 @@ Usage:
   python tools/rank_candidates.py --check func_00218928 func_001F84AC
   grep -rl 'dsll32' asm/nonmatchings | ... | python tools/rank_candidates.py --check -
 
+--check also takes overlay names (func_LNN_XXXXXXXX, docs/OVERLAYS.md): it
+screens asm/overlays/<name>.s through the same classify() rules. The bulk
+ranking above (no --check) only covers the executable's two segments;
+tools/wave.py's overlay pool calls classify() itself over the whole
+catalogue instead.
+
 SCREEN YOUR FAMILY-GREPS THROUGH --check.
 
 Family-grep (find one match, then grep asm/nonmatchings for siblings
@@ -56,11 +62,26 @@ from libgcc_units import SEGMENT_SOURCES as SEGMENTS, ee29_sources, object_of
 
 EE29 = ee29_sources()
 
+# Overlay functions (docs/OVERLAYS.md): func_LNN_XXXXXXXX, whose asm lives in
+# the flat asm/overlays/ directory rather than under asm/nonmatchings/<seg>.
+# They are never ee29 (that only applies to Sony SDK objects in core_text),
+# so classify() below only needs their address, not a segment lookup.
+OVERLAY_NAME = re.compile(r"^func_L\d{2}_([0-9A-Fa-f]{8})$")
+OVERLAY_ASM = Path("asm/overlays")
+
+
+def vram_of(name: str) -> int:
+    """The function's address, from either naming form (docs/OVERLAYS.md,
+    "Names")."""
+    m = OVERLAY_NAME.match(name)
+    return int(m.group(1), 16) if m else int(name.split("_")[1], 16)
+
 
 def segment_text(seg: str) -> str:
     """All game source for a segment (core_text is split across files)."""
     return "\n".join(Path(p).read_text(errors="replace") for p in SEGMENTS[seg])
-FUNCNAME = re.compile(r"\b(func_[0-9A-Fa-f]{8})\b")
+# Matches both func_XXXXXXXX and the overlay form func_LNN_XXXXXXXX.
+FUNCNAME = re.compile(r"\b(func_(?:L\d{2}_)?[0-9A-Fa-f]{8})\b")
 
 
 def already_attempted() -> set[str]:
@@ -90,7 +111,7 @@ def already_attempted() -> set[str]:
     for f in Path("src").rglob("*.c"):
         src = f.read_text(errors="replace")
         seen |= set(re.findall(
-            r"(?m)^(?![^\n]*INCLUDE_ASM)[^\n]*\*/\s*INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\)", src))
+            r"(?m)^(?![^\n]*INCLUDE_ASM)[^\n]*\*/\s*INCLUDE_ASM\([^)]*\b(func_(?:L\d{2}_)?[0-9A-Fa-f]{8})\)", src))
     return seen
 
 
@@ -146,8 +167,11 @@ def only_qcopies(ins: list[str]) -> bool:
 
 
 def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
-    """Returns (verdict, category, detail)."""
-    vram = int(name.split("_")[1], 16)
+    """Returns (verdict, category, detail).
+
+    NAME may be an overlay function (func_LNN_XXXXXXXX); pass seg="text"
+    for those (they are never ee29, and never core_text objects)."""
+    vram = vram_of(name)
     ins = instructions(body)
     text = "\n".join(ins)
     # Objects built with Sony's 2.9-ee make two of the risky signatures
@@ -392,6 +416,24 @@ def check_names(names: list[str]) -> None:
     attempted = already_attempted()
     width = max((len(n) for n in names), default=20)
     for name in names:
+        if OVERLAY_NAME.match(name):
+            p = OVERLAY_ASM / f"{name}.s"
+            if not p.exists():
+                print(f"  {name:<{width}}  ?         not found in {OVERLAY_ASM}")
+                continue
+            body = p.read_text(errors="replace")
+            m = re.search(r"nonmatching\s+\S+,\s*(0x[0-9A-Fa-f]+)", body)
+            size = int(m.group(1), 16) if m else 0
+            verdict, cat, detail = classify(name, body, "text", size)
+            if verdict == "candidate" and name in attempted:
+                verdict, cat = "risky", "already attempted"
+                detail = "discussed in docs/notes -- see reason there"
+            # Whether it's still a stub isn't checked here (that needs a
+            # scan of src/overlays/, which tools/wave.py's overlay pool
+            # already does); this only screens the assembly's shape.
+            print(f"  {name:<{width}}  {verdict:<9} {size:#7x}  {cat}"
+                  f"{' -- ' + detail if detail else ''}")
+            continue
         hit = None
         for seg in SEGMENTS:
             p = Path(f"asm/nonmatchings/{seg}/{name}.s")

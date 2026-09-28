@@ -15,6 +15,13 @@ build-sn/try/<func>/CONTEXT.md, so it doesn't have to search for it:
   python3 tools/dossier.py func_X [func_Y ...]          # CONTEXT.md only
   python3 tools/dossier.py --m2c func_X [func_Y ...]    # + m2c.c sketch (Docker)
 
+func_LNN_XXXXXXXX names (docs/OVERLAYS.md) are overlay functions: their
+CONTEXT.md is written by overlay_write() instead, since they have no
+progress-report row yet, and adds what an overlay worker needs instead of
+a triage reason: which levels it's in, the src/overlays file it lands in
+and its neighbours there, and its relative from config/overlays/families.tsv.
+--m2c is not offered for them: tools/m2c.py only reads asm/nonmatchings/.
+
 Scripts do this for free; every line here is a search a worker doesn't pay for.
 """
 import json
@@ -30,14 +37,27 @@ sys.path.insert(0, str(ROOT / "tools"))
 import triage  # noqa: E402
 
 GP_BASE = 0x166D00
-SYMBOL = re.compile(r"\b((?:func|D)_[0-9A-Fa-f]{8})\b")
-CALL = re.compile(r"\bj(?:al)?\s+(func_[0-9A-Fa-f]{8})\b")
-DATA = re.compile(r"%(?:hi|lo)\((D_[0-9A-Fa-f]{8})\)")
+# The optional (?:L\d{2}_)? makes every pattern below match both an
+# executable name (func_XXXXXXXX / D_XXXXXXXX) and an overlay one
+# (func_LNN_XXXXXXXX / D_LNN_XXXXXXXX), without changing what it matches
+# for plain executable assembly.
+SYMBOL = re.compile(r"\b((?:func|D)_(?:L\d{2}_)?[0-9A-Fa-f]{8})\b")
+CALL = re.compile(r"\bj(?:al)?\s+(func_(?:L\d{2}_)?[0-9A-Fa-f]{8})\b")
+DATA = re.compile(r"%(?:hi|lo)\((D_(?:L\d{2}_)?[0-9A-Fa-f]{8})\)")
 GP = re.compile(r"(-?0x[0-9A-Fa-f]+)\(\$28\)")
-ALIAS = re.compile(r'__asm__\("((?:func|D)_[0-9A-Fa-f]{8})"\)')
+ALIAS = re.compile(r'__asm__\("((?:func|D)_(?:L\d{2}_)?[0-9A-Fa-f]{8})"\)')
+
+OVERLAY_NAME = re.compile(r"^func_L\d{2}_[0-9A-Fa-f]{8}$")
+OVERLAY_DATA_L = re.compile(r"^D_L\d{2}_[0-9A-Fa-f]{8}$")
+OVERLAY_STUB = re.compile(r"INCLUDE_ASM\([^)]*\b(func_L\d{2}_[0-9A-Fa-f]{8})\)")
+OVERLAY_DEF = re.compile(r"^(?!extern\b)[A-Za-z_].*?\b(func_L\d{2}_[0-9A-Fa-f]{8})\s*\(")
+ALL_LEVELS = 19  # docs/OVERLAYS.md: every level; a "shared" function may be in fewer.
 
 
 def asm_path(name: str) -> Path | None:
+    if OVERLAY_NAME.match(name):
+        path = ROOT / "asm/overlays" / f"{name}.s"
+        return path if path.exists() else None
     for seg in ("text", "core_text"):
         path = ROOT / "asm/nonmatchings" / seg / f"{name}.s"
         if path.exists():
@@ -86,7 +106,10 @@ def declaration_index() -> dict[str, list[tuple[str, int, str, str]]]:
 
 def callers(name: str) -> list[str]:
     pattern = re.compile(rf"\bjal\s+{name}\b")
-    return sorted(p.stem for p in (ROOT / "asm/nonmatchings").rglob("*.s")
+    dirs = [ROOT / "asm/nonmatchings"]
+    if (ROOT / "asm/overlays").is_dir():  # overlay code can call back into it too
+        dirs.append(ROOT / "asm/overlays")
+    return sorted(p.stem for d in dirs for p in d.rglob("*.s")
                   if p.stem != name and pattern.search(p.read_text(errors="replace")))
 
 
@@ -112,6 +135,10 @@ def describe(symbol: str, source: str, index) -> str:
     own = [e for e in entries if e[0] == source]
     chosen = (own or entries)[:3]
     if not chosen:
+        if OVERLAY_DATA_L.match(symbol):
+            return (f"- `{symbol}`: level data, no declaration anywhere yet -- declare it "
+                    f"yourself (a plain `extern <type> {symbol};` in the candidate, sized "
+                    "and typed from how it's used; nothing in include/ names it)")
         return f"- `{symbol}`: not declared anywhere yet"
     status = " (matched C)" if any(e[3] == "defined" for e in entries) else ""
     lines = [f"- `{symbol}`{status}:"]
@@ -201,6 +228,133 @@ def write(names: list[str]) -> None:
         print(f"{name}: build-sn/try/{name}/CONTEXT.md ({len(calls)} calls, {len(data)} globals)")
 
 
+def load_overlay_catalogue() -> dict[str, tuple[str, int, int, list[tuple[int, int]]]]:
+    """name -> (kind, size, levels count, [(level, address), ...]),
+    from config/overlays/functions.tsv (docs/OVERLAYS.md, "Names")."""
+    rows = {}
+    path = ROOT / "config/overlays/functions.tsv"
+    for line in path.read_text().splitlines():
+        if not line or line.startswith("#"):
+            continue
+        name, kind, size, _fp, levels, places = line.split("\t")
+        place_list = [(int(p[:2]), int(p[3:], 16)) for p in places.split(",")]
+        rows[name] = (kind, int(size), int(levels), place_list)
+    return rows
+
+
+def load_overlay_families() -> dict[str, tuple[str, str, int, float]]:
+    """name -> (relative, relative kind, relative size, similarity),
+    from config/overlays/families.tsv (docs/OVERLAYS.md, "Relatives")."""
+    rows = {}
+    path = ROOT / "config/overlays/families.tsv"
+    if not path.exists():
+        return rows
+    for line in path.read_text().splitlines():
+        if not line or line.startswith("#"):
+            continue
+        name, _kind, _size, relative, rel_kind, rel_size, similarity = line.split("\t")
+        rows[name] = (relative, rel_kind, int(rel_size), float(similarity))
+    return rows
+
+
+def overlay_functions_in(path: Path) -> list[tuple[str, bool]]:
+    """[(name, already matched C)] for every overlay function PATH defines
+    or stubs, in file order -- "the functions next to it" for the worker."""
+    out = []
+    for line in path.read_text(errors="replace").splitlines():
+        m = OVERLAY_STUB.search(line)
+        if m:
+            out.append((m.group(1), False))
+            continue
+        m = OVERLAY_DEF.match(line)
+        if m and not line.rstrip().endswith(";"):
+            out.append((m.group(1), True))
+    return out
+
+
+def overlay_file_index() -> dict[str, tuple[Path, list[tuple[str, bool]]]]:
+    """name -> (its src/overlays file, that file's whole function list),
+    over every src/overlays/**/*.c file. Built once per dossier run."""
+    index: dict[str, tuple[Path, list[tuple[str, bool]]]] = {}
+    for path in sorted((ROOT / "src/overlays").rglob("*.c")):
+        fns = overlay_functions_in(path)
+        for name, _is_c in fns:
+            index[name] = (path, fns)
+    return index
+
+
+def overlay_write(names: list[str]) -> None:
+    """CONTEXT.md for overlay functions (docs/OVERLAYS.md): no progress-report
+    row or triage reason exists for these yet, so this covers what an
+    overlay worker needs instead -- which levels it's in, the file it lands
+    in and its neighbours there, and its family relative."""
+    catalogue = load_overlay_catalogue()
+    families = load_overlay_families()
+    findex = overlay_file_index()
+    index = declaration_index()
+    for name in names:
+        row = catalogue.get(name)
+        if row is None:
+            print(f"{name}: not in config/overlays/functions.tsv; skipped")
+            continue
+        kind, size, levels_count, places = row
+        levels = sorted({lv for lv, _addr in places})
+        asm = asm_path(name)
+        out = [f"# {name}", "",
+               f"- Kind: {kind}, {size} bytes, in {levels_count} level(s): "
+               + ", ".join(f"{lv:02d}" for lv in levels),
+               "- Retail assembly: asm/overlays/" + name + ".s"
+               + ("" if asm else " (missing -- run tools/overlay_asm.py, or wait: it's being regenerated)"),
+               "- No m2c sketch: tools/m2c.py only reads asm/nonmatchings/. Start from the "
+               "relative below, a matched neighbour in this file, or the assembly directly.",
+               "- The executable does not build src/overlays/: no full build to verify "
+               "against here, only tools/try_func.py's stricter overlay check "
+               "(docs/OVERLAYS.md's per-function EXACT, not the executable's masked one)."]
+        entry = findex.get(name)
+        source = str(entry[0].relative_to(ROOT)) if entry else ""
+        if entry:
+            path, fns = entry
+            out.append(f"- Lands in: {source}")
+            out.append("- Functions in this file, in order:")
+            for fn, is_c in fns:
+                mark = "matched C" if is_c else "INCLUDE_ASM stub"
+                flag = "  <-- this one" if fn == name else ""
+                out.append(f"  - `{fn}` ({mark}){flag}")
+        else:
+            out.append("- Not found under src/overlays/ yet (unexpected for a catalogued function)")
+
+        calls, data = references(name)
+        out += ["", "## Calls", *(describe(c, source, index) for c in calls)] if calls else ["", "## Calls", "- None."]
+        out += ["", "## Globals", *(describe(d, source, index) for d in data)] if data else ["", "## Globals", "- None."]
+
+        found = callers(name)
+        out += ["", "## Called from", f"- {', '.join(found) if found else 'no direct calls found in asm'}"]
+
+        fam = families.get(name)
+        if fam:
+            relative, rel_kind, rel_size, similarity = fam
+            rel_entry = findex.get(relative)
+            status = " (not under src/overlays/ yet)"
+            if rel_entry:
+                rel_path, rel_fns = rel_entry
+                rel_is_c = next((c for n, c in rel_fns if n == relative), False)
+                status = (f", already matched in {rel_path.relative_to(ROOT)}" if rel_is_c
+                          else f", still a stub in {rel_path.relative_to(ROOT)}")
+            out += ["", "## Relative (docs/OVERLAYS.md, \"Relatives\")",
+                    f"- `{relative}` ({rel_kind}, {rel_size} bytes, {similarity:.0%} similar){status}",
+                    "  Start from its C if matched C is available; either way it's a same-shape "
+                    "sibling to check against, not a finished answer -- masking hides constants, "
+                    "so two functions can share a fingerprint and still differ."]
+        else:
+            out += ["", "## Relative", "- None recorded in config/overlays/families.tsv."]
+
+        out += ["", "## Earlier attempts", *attempts(name)]
+        work = ROOT / "build-sn/try" / name
+        work.mkdir(parents=True, exist_ok=True)
+        (work / "CONTEXT.md").write_text("\n".join(out) + "\n")
+        print(f"{name}: build-sn/try/{name}/CONTEXT.md ({len(calls)} calls, {len(data)} globals)")
+
+
 def sketches(names: list[str]) -> None:
     """m2c sketches for all names in one container run."""
     loop = "; ".join(f"python tools/m2c.py {n} > build-sn/try/{n}/m2c.c 2>&1" for n in names)
@@ -220,6 +374,13 @@ def main() -> None:
     names = [a for a in args if a.startswith("func_")]
     if not names:
         sys.exit(__doc__)
+    overlay = [n for n in names if OVERLAY_NAME.match(n)]
+    exe = [n for n in names if n not in overlay]
+    if overlay and exe:
+        sys.exit("dossier.py: mix of overlay and executable names; run them separately")
+    if overlay:
+        overlay_write(overlay)
+        return
     if "--m2c" in args:
         sketches(names)
     write(names)
