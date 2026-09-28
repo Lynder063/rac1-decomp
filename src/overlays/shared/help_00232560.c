@@ -112,7 +112,27 @@ void func_L00_002343A0(float *dst, float *src, float z) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00234420);
+extern void func_L00_001FF500(float *, float *, float);
+
+/* Like func_L00_002343A0, but instead of setting z it scales the point's
+   xy to length Z (func_L00_001FF500): in view mode 0 (D_0013F450 +
+   0x20B3) directly, in modes 1 and 2 between the transforms by the
+   matrices at +0x40 and +0x0. The switch gives retail's case tree. */
+void func_L00_00234420(float *dst, float *src, float z) {
+    char *base = D_0013F450;
+
+    switch (*(unsigned char *)(base + 0x20B3)) {
+    case 0:
+        func_L00_001FF500(dst, src, z);
+        break;
+    case 1:
+    case 2:
+        func_001F9EE8(dst, src, base + 0x40);
+        func_L00_001FF500(dst, dst, z);
+        func_001F9EE8(dst, dst, base);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002344B0);
 INCLUDE_ASM("asm/overlays", func_L00_002345B0);
 INCLUDE_ASM("asm/overlays", func_L00_00234638);
