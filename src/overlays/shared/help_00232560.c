@@ -270,7 +270,18 @@ INCLUDE_ASM("asm/overlays", func_L00_00232EF0);
 INCLUDE_ASM("asm/overlays", func_L00_00233410);
 INCLUDE_ASM("asm/overlays", func_L00_00233868);
 INCLUDE_ASM("asm/overlays", func_L00_00233950);
-INCLUDE_ASM("asm/overlays", func_L00_00233A90);
+/* Sets bit 0 of the flags (0x34) of the objects at D_0013F450 + 0x2080
+   and, when present, +0x1620. */
+void func_L00_00233A90(void) {
+    char *base = D_0013F450;
+    char *obj;
+
+    *(unsigned short *)(*(char **)(base + 0x2080) + 0x34) |= 1;
+    obj = *(char **)(base + 0x1620);
+    if (obj != 0) {
+        *(unsigned short *)(obj + 0x34) |= 1;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00233AC8);
 INCLUDE_ASM("asm/overlays", func_L00_00233B08);
 INCLUDE_ASM("asm/overlays", func_L00_00233B50);
