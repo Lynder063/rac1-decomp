@@ -11,8 +11,6 @@ build-sn/try/<func>/CONTEXT.md, so it doesn't have to search for it:
   - matched functions in the same file that share the most calls and
     globals, to copy the style of;
   - earlier attempts: the last verdict, notes and best candidate.
-  - for a function with a real name, Deadlocked's version of it from
-    that game's debug symbols (tools/dlsyms.py, docs/DL_SYMBOLS.md).
 
   python3 tools/dossier.py func_X [func_Y ...]          # CONTEXT.md only
   python3 tools/dossier.py --m2c func_X [func_Y ...]    # + m2c.c sketch (Docker)
@@ -36,7 +34,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
 
-import dlsyms  # noqa: E402
 import triage  # noqa: E402
 
 GP_BASE = 0x166D00
@@ -194,7 +191,6 @@ def write(names: list[str]) -> None:
                                  if (f.get("fuzzy_match_percent") or 0) == 100] for u in report["units"]}
     rows = {r["name"]: r for r in triage.triage()}
     roles = load_overlay_roles()
-    dl_funcs = dlsyms.functions() if dlsyms.available() else None
     index = declaration_index()
     for name in names:
         row = rows.get(name)
@@ -223,7 +219,6 @@ def write(names: list[str]) -> None:
             out.append(f"- m2c sketch: build-sn/try/{name}/m2c.c (a starting point, never matching as is)")
         elif sketch.exists():
             out.append(f"- m2c failed on this function (its message is in build-sn/try/{name}/m2c.c)")
-        out += dl_section(name, dl_funcs)
         out += ["", "## Earlier attempts", *attempts(name)]
         out += ["", "## Calls", *(describe(c, source, index) for c in calls)] if calls else ["", "## Calls", "- None."]
         out += ["", "## Globals", *(describe(d, source, index) for d in data)] if data else ["", "## Globals", "- None."]
@@ -237,21 +232,6 @@ def write(names: list[str]) -> None:
         work.mkdir(parents=True, exist_ok=True)
         (work / "CONTEXT.md").write_text("\n".join(out) + "\n")
         print(f"{name}: build-sn/try/{name}/CONTEXT.md ({len(calls)} calls, {len(data)} globals)")
-
-
-def dl_section(name: str, dl_funcs) -> list[str]:
-    """Deadlocked's entry for a named function (tools/dlsyms.py,
-    docs/DL_SYMBOLS.md): parameter names, locals and their registers."""
-    if dl_funcs is None:
-        return []
-    found = dlsyms.entry_for(name, dl_funcs)
-    if not found:
-        return []
-    return ["", f"## Deadlocked's {found[1][1].split('*/')[1].strip().split('(')[0].split()[-1]} "
-            "(debug symbols, docs/DL_SYMBOLS.md)",
-            "Same engine, a later game: the code usually changed, so this is a guide to names, "
-            "types and variable order, not source. `/* s0 16 */` is the register the variable "
-            "lived in there.", "```c", *found[1], "```"]
 
 
 def load_overlay_catalogue() -> dict[str, tuple[str, int, int, list[tuple[int, int]]]]:
