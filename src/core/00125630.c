@@ -860,7 +860,33 @@ short func_001286E8(int arg0, int tbl) {
  * are right, but n is parked in $a3 and negated early where retail
  * keeps it in $s2 and negates it at the end. Still open.
  */
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00128860);
+/* _peepBit: return the next count bits of the IPU bit stream without
+   consuming them, refilling the 32-bit window from the IPU (FDEC) when
+   it runs short and nudging the callback while the IPU stays busy.
+   Adapted from Lombyte (MIT) for PAL. */
+int func_00128860(void *arg, int count) {
+    char *ctx = arg;
+    int counter;
+
+    if (*(int *)(ctx + 0x818) == 0 && *(int *)(ctx + 0x83C) >= count) {
+        goto done;
+    }
+    counter = 0;
+    if ((*(volatile unsigned int *)0x10002010 & 0x80004000) == 0x80000000) {
+        do {
+            if (counter++ >= 0x1389) {
+                func_0012BCC8(*(void **)(ctx + 0x858));
+                counter = 0;
+            }
+        } while ((*(volatile unsigned int *)0x10002010 & 0x80004000) == 0x80000000);
+    }
+    *(volatile unsigned int *)0x10002000 = 0x40000000;
+    *(int *)(ctx + 0x818) = D_00132F70[4];
+    *(int *)(ctx + 0x838) = func_00128638(ctx);
+    *(int *)(ctx + 0x83C) = 0x20;
+done:
+    return (unsigned int)*(int *)(ctx + 0x838) >> (0x20 - count);
+}
 
 /*
  * IPU command send: func_00128590's wait (IPU_CTRL & 0x80004000 ==
