@@ -3,7 +3,14 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L00_0028FB78);
-INCLUDE_ASM("asm/overlays", func_L00_0028FC68);
+extern char *D_0013E130;
+void func_L00_0028FC68(void) {
+    char *m = D_0013E130;
+    if (m != 0) {
+        *(unsigned short *)(m + 0x34) |= 3;
+        *(int *)(D_0013E130 + 0x94) = 0;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_0028FCA0);
 INCLUDE_ASM("asm/overlays", func_L00_0028FFB0);
 INCLUDE_ASM("asm/overlays", func_L00_00290030);
