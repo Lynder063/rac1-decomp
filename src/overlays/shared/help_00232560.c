@@ -2,7 +2,37 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L00_00232560);
+extern char D_0013F450[];
+extern int func_L00_00232850(int, int *, int *);
+extern void func_00213DE0(void *, int, int, int);
+extern int func_001F9850(int);
+
+/* With both objects at D_0013F450 + 0x1180 and +0x1184 present and the
+   first's byte 0x53 equal to 1, asks func_L00_00232850 for a pair of
+   sequences and starts one on each object (func_00213DE0). Each
+   sequence is read into a local before the func_001F9850 call, as
+   retail holds it in a saved register across it. */
+void func_L00_00232560(void) {
+    char *base = D_0013F450;
+    char *a = *(char **)(base + 0x1180);
+    char *b = *(char **)(base + 0x1184);
+    int buf[2];
+    int seq;
+
+    if (a == 0 || b == 0) {
+        return;
+    }
+    if (*(unsigned char *)(a + 0x53) != 1) {
+        return;
+    }
+    if (func_L00_00232850(0, &buf[0], &buf[1]) == 0) {
+        return;
+    }
+    seq = buf[0];
+    func_00213DE0(a, seq, 0, func_001F9850(7));
+    seq = buf[1];
+    func_00213DE0(b, seq, 0, func_001F9850(7));
+}
 INCLUDE_ASM("asm/overlays", func_L00_00232608);
 INCLUDE_ASM("asm/overlays", func_L00_002326D0);
 INCLUDE_ASM("asm/overlays", func_L00_00232850);
