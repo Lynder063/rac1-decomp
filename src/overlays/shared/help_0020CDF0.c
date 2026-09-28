@@ -163,7 +163,21 @@ INCLUDE_ASM("asm/overlays", func_L00_00212430);
 INCLUDE_ASM("asm/overlays", func_L00_002124E8);
 INCLUDE_ASM("asm/overlays", func_L00_00212550);
 INCLUDE_ASM("asm/overlays", func_L00_002125F0);
-INCLUDE_ASM("asm/overlays", func_L00_00212740);
+extern float func_00214D28(float *, float, float);
+
+/* Steps the value at D_0013F450 + 0x194 towards the target at +0x190
+   (func_00214D28), by at most UP when it is below the target and DOWN
+   otherwise. */
+void func_L00_00212740(float up, float down) {
+    char *base = D_0013F450;
+    float target = *(float *)(base + 0x190);
+
+    if (*(float *)(base + 0x194) < target) {
+        func_00214D28((float *)(base + 0x194), target, up);
+    } else {
+        func_00214D28((float *)(base + 0x194), target, down);
+    }
+}
 extern float func_001F9F90(float);
 extern float func_001F9FA8(float);
 extern void func_001FA218(void *, void *);
