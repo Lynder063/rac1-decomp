@@ -165,7 +165,30 @@ float func_L00_00234250(float *v) {
     }
     return 0.0f;
 }
-INCLUDE_ASM("asm/overlays", func_L00_002342F8);
+extern float func_001F9C78(void *, void *);
+
+/* V's z in view mode 0 (D_0013F450 + 0x20B3); in modes 1 and 2 the dot
+   product of V with (0, 0, 1) taken through the rotation func_001FA218
+   builds from the angles at +0x40 of the object at +0x2080; other modes
+   give 0. The switch gives retail's case tree. */
+float func_L00_002342F8(float *v) {
+    char *base = D_0013F450;
+    float m[16] __attribute__((aligned(16)));
+    float axis[4] __attribute__((aligned(16)));
+
+    switch (*(unsigned char *)(base + 0x20B3)) {
+    case 0:
+        return v[2];
+    case 1:
+    case 2:
+        func_001F9BC0(axis);
+        axis[2] = 1.0f;
+        func_001FA218(m, *(char **)(base + 0x2080) + 0x40);
+        func_001F9EE8(axis, axis, m);
+        return func_001F9C78(axis, v);
+    }
+    return 0.0f;
+}
 extern void func_001F9EE8(void *, void *, void *);
 
 /* Places a point by the view mode at D_0013F450 + 0x20B3: in mode 0 it
