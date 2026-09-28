@@ -55,23 +55,22 @@ resident and is shared by every level.
    assembler take it unchanged.
 
    `python3 tools/overlays.py dump`, then `python3 tools/overlay_asm.py`
-   (it runs spimdisasm in the build container; about 25 minutes).
-   `tools/setup_asm.sh` runs it last when `baserom/overlays/` exists. Each
-   level is disassembled whole, split exactly at the catalogue's places.
-   Of 3,307 functions, 2,990 are written; a sample of 60 assembles to
-   retail's bytes (relocations masked) except as noted below. Open:
-   - **Jump tables**: the 317 functions that dispatch through one are
-     skipped (`build-sn/overlays/asm_work/skipped_jumptables.txt`). Their
-     tables are in the level's `data` record, not `lit`.
-   - **Resident data** (below 0x15F000) that the executable's asm names is
-     left as raw `lui (0x... >> 16)` pairs where spimdisasm had no symbol.
-   - **Assembler padding**: GNU as pads some backward branches in a stub
-     that ps2eeas did not (func_L00_002422D8 comes out 28 bytes longer, and
-     naming the raw pairs moves the padding rather than removing it). It
-     affects only the stub's own bytes, so matching is unaffected; the
-     per-level rebuild needs it fixed.
-   - A branch into the next function assembles only with that function in
-     the same file.
+   (spimdisasm in the build container, two passes per level; about 50
+   minutes). `tools/setup_asm.sh` runs it last when `baserom/overlays/`
+   exists. Each level is disassembled whole, split exactly at the
+   catalogue's places, and all 3,307 functions are written:
+   - **Jump tables** come from the level's `data` record (not `lit`) and
+     are emitted after the function as `dlabel jtbl_LNN_...` in `.rodata`.
+   - **Resident names**: the executable's core symbols are given to
+     spimdisasm, and addresses still raw after a first pass are named
+     `D_XXXXXXXX` (resident) or `D_LNN_XXXXXXXX` (level data) for a second.
+     Addresses outside main RAM (the scratchpad, 0x70000000) stay numbers.
+   - **Branches written as `.word`** (retail's encoding, the instruction in
+     a comment): a branch out of the function, unless its target is the
+     next function in the same file; and every backward branch, because
+     GNU as's R5900 short-loop fix miscounts after a forward branch and
+     pads loops retail's assembler did not (func_L00_002422D8), and no
+     option turns it off.
 2. **Sources and matching**: `src/overlays/shared/` for shared functions
    and `src/overlays/lNN/` for each level's own, as `INCLUDE_ASM` stubs,
    in link order (see Layout). A file runs until the executable unit its
