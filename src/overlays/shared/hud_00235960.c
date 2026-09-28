@@ -103,7 +103,55 @@ void func_L00_00236750(HudElem *e) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_002367A8);
 INCLUDE_ASM("asm/overlays", func_L00_00236830);
-INCLUDE_ASM("asm/overlays", func_L00_00236AB8);
+extern void func_L00_0023B440(void *);
+
+/* A counter whose digits (+0x70, +0x71) drift at random: the target +0x78
+   is *(+0x0C) clamped to [0, +0x08]; when it differs from the shown value
+   (+0x74) the timer restarts at func_001F9850(180), and the shown value
+   follows once +0x6C reaches 24. While the timer is at least
+   func_001F9850(5) each digit rises when below func_001F9850(8), else
+   they fall (setting +0x6C to 1 while any is left). Ends with
+   func_L00_0023B440 on the block at +0x40. */
+void func_L00_00236AB8(HudElem *e) {
+    unsigned char *c = e->cnt;
+    int v;
+    int cap;
+
+    if (e->unk0C != 0) {
+        v = *e->unk0C;
+        cap = e->unk08;
+        if (v < 0) {
+            v = 0;
+        }
+        e->unk78 = v;
+        if (cap < v) {
+            e->unk78 = cap;
+        }
+    }
+    if (e->unk74 != e->unk78) {
+        e->unk7C = func_001F9850(0xB4);
+        if (e->unk6C >= 0x18) {
+            e->unk74 = e->unk78;
+        }
+    }
+    if (e->unk7C >= func_001F9850(5)) {
+        if (c[0] < func_001F9850(8)) {
+            c[0]++;
+        } else if (c[1] < func_001F9850(8)) {
+            c[1]++;
+        }
+    } else {
+        if (c[1] != 0 || c[0] != 0) {
+            e->unk6C = 1;
+        }
+        if (c[1] != 0) {
+            c[1]--;
+        } else if (c[0] != 0) {
+            c[0]--;
+        }
+    }
+    func_L00_0023B440((char *)e + 0x40);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00236BF8);
 INCLUDE_ASM("asm/overlays", func_L00_00236DE8);
 INCLUDE_ASM("asm/overlays", func_L00_00236F38);
