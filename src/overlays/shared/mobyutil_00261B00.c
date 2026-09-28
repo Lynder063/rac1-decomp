@@ -62,7 +62,17 @@ void func_L00_00263D68(void *a, void *b) {
 INCLUDE_ASM("asm/overlays", func_L00_00263DB0);
 INCLUDE_ASM("asm/overlays", func_L00_00264130);
 INCLUDE_ASM("asm/overlays", func_L00_00264140);
-INCLUDE_ASM("asm/overlays", func_L00_002644E0);
+typedef struct { float f[4]; } V __attribute__((aligned(16)));
+extern int D_L00_0015FD58 MACRO_ADDR;
+extern unsigned char *D_L00_0015FD68 MACRO_ADDR;
+extern float D_L00_0015FD60 MACRO_ADDR, D_L00_0015FD64 MACRO_ADDR;
+float func_L00_002644E0(V *p) {
+    V v = *p;
+    int y = (int)v.f[1];
+    int x = (int)v.f[0];
+    float t = (float)(D_L00_0015FD68 + D_L00_0015FD58 * y)[x] / 255.0f;
+    return (D_L00_0015FD64 - D_L00_0015FD60) * (1.0f - t) + D_L00_0015FD60;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00264570);
 INCLUDE_ASM("asm/overlays", func_L00_00264690);
 INCLUDE_ASM("asm/overlays", func_L00_00264860);
