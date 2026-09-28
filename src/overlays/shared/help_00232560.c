@@ -329,7 +329,36 @@ int func_L00_00233CC0(void) {
     }
     return r;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00233D50);
+extern void func_L00_001FF4B0(void *, void *, float);
+
+/* Moves SRC down by H along the view's normal into DST: in view mode 0
+   (D_0013F450 + 0x20B3) only z, as SRC's z - H; in mode 1 along the unit
+   vector at +0x270 (func_L00_001FF4B0 scales it to -H); in mode 2 the same
+   in state 0x3E with the short at +0x30E clear, else by +H along the
+   vector at +0x290. That one is named from the symbol, not the base
+   local: retail forms it with its own lui. */
+void func_L00_00233D50(float *dst, float *src, float h) {
+    char *base = D_0013F450;
+    float d[4] __attribute__((aligned(16)));
+
+    switch (*(unsigned char *)(base + 0x20B3)) {
+    case 0:
+        dst[2] = src[2] - h;
+        break;
+    case 1:
+        func_L00_001FF4B0(d, base + 0x270, -h);
+        func_001F9BD8(dst, src, d);
+        break;
+    case 2:
+        if (*(int *)(base + 0x2084) == 0x3E && *(short *)(base + 0x30E) == 0) {
+            func_L00_001FF4B0(d, base + 0x270, -h);
+        } else {
+            func_L00_001FF4B0(d, D_0013F450 + 0x290, h);
+        }
+        func_001F9BD8(dst, src, d);
+        break;
+    }
+}
 extern float func_001F9F90(float);
 extern float func_001F9FA8(float);
 extern void func_001F9BD8(void *, void *, void *);
