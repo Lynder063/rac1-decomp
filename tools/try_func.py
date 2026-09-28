@@ -36,6 +36,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from libgcc_units import SEGMENT_SOURCES, ee29_sources  # noqa: E402
 from toolchain import sn  # noqa: E402
+import overlay_check  # noqa: E402
 
 import rabbitizer as rz  # noqa: E402
 from elftools.elf.elffile import ELFFile  # noqa: E402
@@ -55,10 +56,39 @@ SIZE = re.compile(r"nonmatching\s+(func_[0-9A-Fa-f]{8}),\s*(0x[0-9A-Fa-f]+)")
 
 DEF = re.compile(r"^(?!extern\b)[A-Za-z_].*?\b(func_[0-9A-Fa-f]{8})\s*\(")
 
+# Overlay functions (docs/OVERLAYS.md): func_LNN_XXXXXXXX, checked through
+# overlay_check instead of the masked compare() below. Their sources live
+# under src/overlays/ (any subdirectory), not in SEGMENT_SOURCES.
+OVERLAY_NAME = re.compile(r"^func_L\d{2}_[0-9A-Fa-f]{8}$")
+OVERLAY_STUB = re.compile(r"^\s*INCLUDE_ASM\([^)]*\b(func_L\d{2}_[0-9A-Fa-f]{8})\)")
+OVERLAY_DEF = re.compile(r"^(?!extern\b)[A-Za-z_].*?\b(func_L\d{2}_[0-9A-Fa-f]{8})\s*\(")
+
+
+def find_overlay_stub(name):
+    """Like find_stub, but over every src/overlays/**/*.c file."""
+    for src in sorted(Path("src/overlays").rglob("*.c")):
+        lines = src.read_text(errors="replace").splitlines()
+        for i, line in enumerate(lines):
+            m = OVERLAY_STUB.match(line)
+            if m and m.group(1) == name:
+                return "text", src, i, i
+        for i, line in enumerate(lines):
+            m = OVERLAY_DEF.match(line)
+            if m and m.group(1) == name and not line.rstrip().endswith(";"):
+                depth, seen = 0, False
+                for j in range(i, len(lines)):
+                    depth += lines[j].count("{") - lines[j].count("}")
+                    seen = seen or "{" in lines[j]
+                    if seen and depth == 0:
+                        return "text", src, i, j
+    sys.exit(f"{name}: neither an INCLUDE_ASM stub nor a C definition under src/overlays/")
+
 
 def find_stub(name):
     """(segment, source, first line, last line) of NAME's INCLUDE_ASM line,
     or of its C definition when it is already decompiled."""
+    if OVERLAY_NAME.match(name):
+        return find_overlay_stub(name)
     for seg, srcs in SEGMENT_SOURCES.items():
         for src in srcs:
             lines = Path(src).read_text(errors="replace").splitlines()
@@ -202,12 +232,18 @@ def main():
     work = Path("build-sn/try") / name
     used, limit = budget_check(work, len(cands)) if counted else (0, None)
     seg, src, first, last = find_stub(name)
+    is_overlay = bool(OVERLAY_NAME.match(name))
     failed = False
     for cand in cands:
         # Several candidates: label each line, and keep going past failures.
         label = f"{Path(cand).name:10s} " if len(cands) > 1 else ""
         obj = build(name, seg, src, first, last, Path(cand).read_text(), work)
-        verdict = compare(name, seg, obj, '--diff' in sys.argv) if obj is not None else "COMPILE failed"
+        if obj is None:
+            verdict = "COMPILE failed"
+        elif is_overlay:
+            verdict = overlay_check.check(obj, name, '--diff' in sys.argv)
+        else:
+            verdict = compare(name, seg, obj, '--diff' in sys.argv)
         if counted:
             used += 1
             with open(work / "runs.log", "a") as runs:
