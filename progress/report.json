@@ -1,16 +1,16 @@
 {
  "measures": {
-  "fuzzy_match_percent": 7.490921736266689,
+  "fuzzy_match_percent": 7.493521716333508,
   "total_code": "3692336",
-  "matched_code": "275960",
-  "matched_code_percent": 7.473859367078186,
+  "matched_code": "276056",
+  "matched_code_percent": 7.476459347145005,
   "total_functions": 4987,
-  "matched_functions": 1486,
-  "matched_functions_percent": 29.797473430920395,
-  "complete_code": "90524",
-  "complete_code_percent": 2.4516728705079927,
+  "matched_functions": 1487,
+  "matched_functions_percent": 29.817525566472828,
+  "complete_code": "90620",
+  "complete_code_percent": 2.4542728505748124,
   "total_units": 378,
-  "complete_units": 57
+  "complete_units": 58
  },
  "units": [
   {
@@ -44075,23 +44075,23 @@
   {
    "name": "overlays/l07/initonce_002664F0",
    "measures": {
-    "fuzzy_match_percent": 0.0,
+    "fuzzy_match_percent": 100.0,
     "total_code": "96",
-    "matched_code": "0",
-    "matched_code_percent": 0.0,
+    "matched_code": "96",
+    "matched_code_percent": 100.0,
     "total_functions": 1,
-    "matched_functions": 0,
-    "matched_functions_percent": 0.0,
-    "complete_code": "0",
-    "complete_code_percent": 0.0,
+    "matched_functions": 1,
+    "matched_functions_percent": 100.0,
+    "complete_code": "96",
+    "complete_code_percent": 100.0,
     "total_units": 1,
-    "complete_units": 0
+    "complete_units": 1
    },
    "functions": [
     {
      "name": "func_L07_002664F0",
      "size": "96",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "0",
      "metadata": {
       "virtual_address": "2516208"
@@ -44099,7 +44099,7 @@
     }
    ],
    "metadata": {
-    "complete": false,
+    "complete": true,
     "source_path": "src/overlays/l07/initonce_002664F0.c",
     "progress_categories": [
      "level_code",
@@ -54867,15 +54867,15 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 0.47802107210109845,
+    "fuzzy_match_percent": 0.48099630698969453,
     "total_code": "3226636",
-    "matched_code": "15424",
-    "matched_code_percent": 0.47802107210109845,
+    "matched_code": "15520",
+    "matched_code_percent": 0.48099630698969453,
     "total_functions": 3307,
-    "matched_functions": 126,
-    "matched_functions_percent": 3.8100997883277894,
-    "complete_code": "352",
-    "complete_code_percent": 0.010909194591518845
+    "matched_functions": 127,
+    "matched_functions_percent": 3.8403386755367404,
+    "complete_code": "448",
+    "complete_code_percent": 0.013884429480114894
    }
   },
   {
@@ -54927,15 +54927,15 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 0.019680003148800505,
+    "fuzzy_match_percent": 0.024403203904512626,
     "total_code": "2032520",
-    "matched_code": "400",
-    "matched_code_percent": 0.019680003148800505,
+    "matched_code": "496",
+    "matched_code_percent": 0.024403203904512626,
     "total_functions": 1379,
-    "matched_functions": 5,
-    "matched_functions_percent": 0.36258158085569253,
-    "complete_code": "352",
-    "complete_code_percent": 0.017318402770944444
+    "matched_functions": 6,
+    "matched_functions_percent": 0.43509789702683105,
+    "complete_code": "448",
+    "complete_code_percent": 0.022041603526656565
    }
   },
   {
@@ -55047,15 +55047,15 @@
    "id": "level_07",
    "name": "Level 07",
    "measures": {
-    "fuzzy_match_percent": 0.07312408594892564,
+    "fuzzy_match_percent": 0.20812239847001912,
     "total_code": "71112",
-    "matched_code": "52",
-    "matched_code_percent": 0.07312408594892564,
+    "matched_code": "148",
+    "matched_code_percent": 0.20812239847001912,
     "total_functions": 75,
-    "matched_functions": 1,
-    "matched_functions_percent": 1.3333333333333333,
-    "complete_code": "52",
-    "complete_code_percent": 0.07312408594892564
+    "matched_functions": 2,
+    "matched_functions_percent": 2.6666666666666665,
+    "complete_code": "148",
+    "complete_code_percent": 0.20812239847001912
    }
   },
   {
