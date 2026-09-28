@@ -65,7 +65,31 @@ INCLUDE_ASM("asm/overlays", func_L00_00259088);
 INCLUDE_ASM("asm/overlays", func_L00_00259148);
 INCLUDE_ASM("asm/overlays", func_L00_002592B0);
 INCLUDE_ASM("asm/overlays", func_L00_00259418);
-INCLUDE_ASM("asm/overlays", func_L00_00259428);
+typedef struct { float a[4]; } Vs __attribute__((aligned(16)));
+extern int D_L00_00173F40[];
+extern int func_L00_001EFFF0(void *, void *, int, int, int);
+int func_L00_00259428(Vs *p, int x, int y, float f, float g) {
+    Vs t0;
+    Vs t1;
+    int r;
+    qcopy(&t0, p);
+    t0.a[2] += f;
+    qcopy(&t1, p);
+    t1.a[2] -= g;
+    if (t1.a[2] < 0.0f) {
+        t1.a[2] = 0.0f;
+    }
+    r = func_L00_001EFFF0(&t0, &t1, 0x22, x, 0);
+    if (D_L00_00173F40[7] < 0) {
+        r = 0;
+    }
+    if (y) {
+        if (D_L00_00173F40[6]) {
+            r = 0;
+        }
+    }
+    return r;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002594C8);
 INCLUDE_ASM("asm/overlays", func_L00_00259868);
 INCLUDE_ASM("asm/overlays", func_L00_00259B08);
