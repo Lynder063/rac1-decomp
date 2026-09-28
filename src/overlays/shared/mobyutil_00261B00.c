@@ -12,7 +12,20 @@ INCLUDE_ASM("asm/overlays", func_L00_00262DE8);
 INCLUDE_ASM("asm/overlays", func_L00_00262DF0);
 INCLUDE_ASM("asm/overlays", func_L00_002630A8);
 INCLUDE_ASM("asm/overlays", func_L00_002633D8);
-INCLUDE_ASM("asm/overlays", func_L00_002634F8);
+extern void func_001FA218(void *, void *);
+extern void func_001FA540(void *, void *, void *);
+extern void func_002153E8(void *, void *);
+void func_L00_002634F8(char *a, float x, float y, float z) {
+    float in[3];
+    float t[16], u[16];
+    in[0] = x;
+    in[1] = y;
+    in[2] = z;
+    func_001FA218(t, in);
+    func_001FA218(u, a + 0x40);
+    func_001FA540(u, u, t);
+    func_002153E8(u, a + 0x40);
+}
 void func_L00_00263578(int a, char *b) {
     if (*(int *)(b + 0x13C) == 0) {
         *(int *)(b + 0x134) = a;
