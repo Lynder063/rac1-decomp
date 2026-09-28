@@ -68,8 +68,44 @@ INCLUDE_ASM("asm/overlays", func_L00_0020F750);
 INCLUDE_ASM("asm/overlays", func_L00_0020F7F8);
 INCLUDE_ASM("asm/overlays", func_L00_0020FC18);
 INCLUDE_ASM("asm/overlays", func_L00_00210340);
-INCLUDE_ASM("asm/overlays", func_L00_00210418);
-INCLUDE_ASM("asm/overlays", func_L00_00210478);
+extern int func_001F9850(int);
+
+/* For events 9, 11, 13, 16 and 23: sets the short at D_0013F450 +
+   0x22CE to 3 and +0x1DC to func_001F9850(70). */
+void func_L00_00210418(int id) {
+    char *base;
+
+    switch (id) {
+    case 9:
+    case 11:
+    case 13:
+    case 16:
+    case 23:
+        base = D_0013F450;
+        *(short *)(base + 0x22CE) = 3;
+        *(short *)(base + 0x1DC) = func_001F9850(0x46);
+        break;
+    }
+}
+/* For events 9, 11, 13-16, 18, 19, 22, 23 and 26: sets the short at
+   D_0013F450 + 0x1DA to func_001F9850(70). */
+void func_L00_00210478(int id) {
+    switch (id) {
+    case 9:
+    case 11:
+    case 13:
+    case 14:
+    case 15:
+    case 16:
+    case 18:
+    case 19:
+    case 22:
+    case 23:
+    case 26:
+        *(short *)(D_0013F450 + 0x1DA) = func_001F9850(0x46);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002104C8);
 INCLUDE_ASM("asm/overlays", func_L00_00210558);
 INCLUDE_ASM("asm/overlays", func_L00_00210E00);
