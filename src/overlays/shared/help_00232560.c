@@ -33,7 +33,50 @@ void func_L00_00232560(void) {
     seq = buf[1];
     func_00213DE0(b, seq, 0, func_001F9850(7));
 }
-INCLUDE_ASM("asm/overlays", func_L00_00232608);
+typedef struct {
+    short seq;
+    unsigned char key;
+    unsigned char unk3;
+} SeqEntry;
+
+extern int func_L00_0020DB30(int);
+extern SeqEntry D_L00_0017BCF0[];
+extern SeqEntry D_L00_0017BCD0[];
+/* A table like the others, but retail reaches it through $gp, which
+   under -G2 takes a declaration of at most two bytes. */
+extern short D_L00_0015F798;
+
+/* Looks KEY up in the sequence table for the mode func_L00_0020DB30(3)
+   reports (2, 3 or 4; any other mode has none); the table ends at a seq
+   of -1. Stores the entry's seq in *OUT and returns 1, or stores 0 and
+   returns 0. Mode 4's table is assigned first and cleared when the mode,
+   held in a local, differs: retail's addiu / movn select. */
+int func_L00_00232608(int key, int *out) {
+    SeqEntry *tbl;
+    int i;
+
+    if (func_L00_0020DB30(3) == 2) {
+        tbl = D_L00_0017BCF0;
+    } else if (func_L00_0020DB30(3) == 3) {
+        tbl = D_L00_0017BCD0;
+    } else {
+        int mode = func_L00_0020DB30(3);
+        tbl = (SeqEntry *)&D_L00_0015F798;
+        if (mode != 4) {
+            tbl = 0;
+        }
+    }
+    if (tbl != 0) {
+        for (i = 0; tbl[i].seq != -1; i++) {
+            if (key == tbl[i].key) {
+                *out = tbl[i].seq;
+                return 1;
+            }
+        }
+    }
+    *out = 0;
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002326D0);
 INCLUDE_ASM("asm/overlays", func_L00_00232850);
 extern char D_0013F450[];
