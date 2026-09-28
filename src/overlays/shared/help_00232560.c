@@ -333,7 +333,67 @@ void func_L00_00233868(void) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00233950);
+/* Undoes func_L00_00233868: clears bit 0 of the flags (0x34) of the
+   objects at D_0013F450 + 0xA88, in the seven pairs at +0x1090, at
+   +0x118C and (when +0x20A4 is 1) at +0x1624. While the short at +0x22D8
+   is set it flags the objects at +0x1180, +0x1184 and +0x118C with 0x41,
+   and the first pair's first object too when +0x20AF is set, or +0x20AE
+   is set in mode 8 (+0x10B8). Each stage takes a fresh pointer to the
+   block, as retail re-forms it from the saved %hi before each one. */
+void func_L00_00233950(void) {
+    char *base = D_0013F450;
+    char *blk2;
+    char *blk3;
+    char *blk4;
+    char *obj;
+    int i;
+
+    *(unsigned short *)(*(char **)(base + 0xA88) + 0x34) &= ~1;
+    for (i = 0; i < 7; i++) {
+        if (((ObjPair *)(base + 0x1090))[i].a != 0) {
+            *(unsigned short *)(((ObjPair *)(base + 0x1090))[i].a + 0x34) &= ~1;
+        }
+        if (((ObjPair *)(base + 0x1090))[i].b != 0) {
+            *(unsigned short *)(((ObjPair *)(base + 0x1090))[i].b + 0x34) &= ~1;
+        }
+    }
+    blk2 = D_0013F450;
+    obj = *(char **)(blk2 + 0x118C);
+    if (obj != 0) {
+        *(unsigned short *)(obj + 0x34) &= ~1;
+    }
+    if (*(unsigned char *)(blk2 + 0x20A4) == 1) {
+        obj = *(char **)(blk2 + 0x1624);
+        if (obj != 0) {
+            *(unsigned short *)(obj + 0x34) &= ~1;
+        }
+    }
+    blk3 = D_0013F450;
+    if (*(short *)(blk3 + 0x22D8) != 0) {
+        obj = *(char **)(blk3 + 0x1180);
+        if (obj != 0) {
+            *(unsigned short *)(obj + 0x34) |= 0x41;
+        }
+        obj = *(char **)(blk3 + 0x1184);
+        if (obj != 0) {
+            *(unsigned short *)(obj + 0x34) |= 0x41;
+        }
+        obj = *(char **)(blk3 + 0x118C);
+        if (obj != 0) {
+            *(unsigned short *)(obj + 0x34) |= 0x41;
+        }
+    }
+    blk4 = D_0013F450;
+    if ((*(unsigned char *)(blk4 + 0x20AE) != 0 && *(int *)(blk4 + 0x10B8) == 8)
+        || *(unsigned char *)(blk4 + 0x20AF) != 0) {
+        char *blk5 = D_0013F450;
+
+        obj = ((ObjPair *)(blk5 + 0x1090))[0].a;
+        if (obj != 0) {
+            *(unsigned short *)(obj + 0x34) |= 0x41;
+        }
+    }
+}
 /* Sets bit 0 of the flags (0x34) of the objects at D_0013F450 + 0x2080
    and, when present, +0x1620. */
 void func_L00_00233A90(void) {
