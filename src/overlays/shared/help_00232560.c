@@ -548,7 +548,26 @@ INCLUDE_ASM("asm/overlays", func_L00_00234638);
 INCLUDE_ASM("asm/overlays", func_L00_00234674);
 INCLUDE_ASM("asm/overlays", func_L00_002346C0);
 INCLUDE_ASM("asm/overlays", func_L00_00234718);
-INCLUDE_ASM("asm/overlays", func_L00_00234768);
+extern void func_L00_00222B80(int, int);
+
+/* Records a target: POS at D_0013F450 + 0x1640, ARG at +0x1650 and T at
+   +0x164C, and unless the state (+0x2084) is already 0x65-0x67, enters
+   state 0x65 (func_L00_00222B80). The copy goes to the symbol's address
+   and the base is named after it, which gives retail's base derived back
+   from the copy's address; the stores are in reverse. */
+void func_L00_00234768(float *pos, int arg, float t) {
+    char *base;
+    int state;
+
+    qcopy(D_0013F450 + 0x1640, pos);
+    base = D_0013F450;
+    state = *(int *)(base + 0x2084);
+    *(int *)(base + 0x1650) = arg;
+    *(float *)(base + 0x164C) = t;
+    if (state < 0x65 || state > 0x67) {
+        func_L00_00222B80(0x65, 1);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002347B8);
 INCLUDE_ASM("asm/overlays", func_L00_00234800);
 INCLUDE_ASM("asm/overlays", func_L00_00235040);
