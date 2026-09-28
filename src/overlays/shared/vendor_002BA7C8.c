@@ -6,7 +6,31 @@ INCLUDE_ASM("asm/overlays", func_L00_002BA7C8);
 INCLUDE_ASM("asm/overlays", func_L00_002BBC78);
 INCLUDE_ASM("asm/overlays", func_L00_002BBDE8);
 INCLUDE_ASM("asm/overlays", func_L00_002BC3B8);
-INCLUDE_ASM("asm/overlays", func_L00_002BC668);
+typedef struct { int a[4]; } Vu __attribute__((aligned(16)));
+extern char *func_0020D348(int);
+extern void func_001F9BC0(void *);
+extern void func_0020EEE8(void *);
+extern void func_L00_00251E30(void *);
+char *func_L00_002BC668(char *src) {
+    char *m = func_0020D348(0xB3);
+    if (m != 0) {
+        char *p = *(char **)(m + 0x78);
+        *(unsigned char *)(m + 0x30) = 0xFF;
+        *(short *)(m + 0x32) = 0xFF;
+        m[0x31] = 1;
+        *(short *)(m + 0x34) = 0x204;
+        m[0x23] = 0x50;
+        m[0x20] = 0;
+        *(char **)(p + 8) = src;
+        func_001F9BC0(m + 0x40);
+        *(Vu *)(m + 0xC0) = *(Vu *)(src + 0xC0);
+        *(Vu *)(m + 0xD0) = *(Vu *)(src + 0xD0);
+        *(Vu *)(m + 0xE0) = *(Vu *)(src + 0xE0);
+        func_0020EEE8(m);
+        func_L00_00251E30(m);
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002BC708);
 INCLUDE_ASM("asm/overlays", func_L00_002BC860);
 INCLUDE_ASM("asm/overlays", func_L00_002BCE08);
