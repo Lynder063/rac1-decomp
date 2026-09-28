@@ -37,7 +37,8 @@ void func_L00_00236208(void) {
 typedef struct {
     char pad0[0x8];
     int unk08;
-    char padC[0x3C];
+    int *unk0C;
+    char pad10[0x38];
     short unk48;
     short unk4A;
     char pad4C[0xC];
@@ -180,7 +181,47 @@ void func_L00_0023A658(HudElem *e) {
     e->unk80 = &D_L00_0015FB70;
     D_L00_0015FB70.unk0 = 0;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0023A690);
+/* Words reached through $gp: under -G2 that takes declarations of at
+   most two bytes. */
+extern short D_L00_0015F904;
+extern short D_L00_0015F908;
+extern int D_0015EE98 MACRO_ADDR;
+
+/* Steps the element's tick (the short at +0x80) modulo 60; when the value
+   D_0015EE98 changes, records it (+0x74) and restarts the timer at
+   func_001F9850(90). Then, like func_L00_0023ABB0, while the timer is at
+   least func_001F9850(5) it raises the first digit, then the second, up
+   to D_L00_0015F904 / D_L00_0015F908; otherwise it lowers them and
+   sets +0x6C to 1, or to -6 once both are 0. D_0015EE98 is read before
+   the tick update, where retail loads it. */
+void func_L00_0023A690(HudElem *e) {
+    unsigned char *c = e->cnt;
+    short *tick = e->unk80;
+    int v;
+
+    v = D_0015EE98;
+    *tick = (*tick + 1) % 60;
+    if (e->unk74 != v) {
+        e->unk74 = v;
+        e->unk7C = func_001F9850(0x5A);
+    }
+    if (e->unk7C >= func_001F9850(5)) {
+        if (e->cnt[0] < *(int *)&D_L00_0015F904) {
+            e->cnt[0]++;
+        } else if (c[1] < *(int *)&D_L00_0015F908) {
+            c[1]++;
+        }
+    } else {
+        e->unk6C = 1;
+        if (c[1] != 0) {
+            c[1]--;
+        } else if (e->cnt[0] != 0) {
+            e->cnt[0]--;
+        } else {
+            e->unk6C = -6;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_0023A788);
 INCLUDE_ASM("asm/overlays", func_L00_0023AB88);
 /* A word reached through $gp: under -G2 that takes a declaration of at
