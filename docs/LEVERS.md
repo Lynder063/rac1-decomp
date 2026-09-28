@@ -221,8 +221,6 @@ and stop, rather than spending the budget on it:
 
 - A 128-bit zero store (`sq $zero`): C adds a `por` first
   (`src/game/fastfunc.c`, func_001F9BC0).
-- An extra `nop` between a `jal` and the branch on its result
-  (func_0012F3F8, func_0012F4A8 in `src/core/wad.c`).
 - A register allocation that three different wordings leave unchanged
   (`WORKER.md`'s stop rule).
 - Hand-written code: trapping `add`/`addi`, `$at` used as an ordinary
