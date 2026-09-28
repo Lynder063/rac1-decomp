@@ -193,7 +193,35 @@ void func_L00_00234090(float *dst, float *src, float dz) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00234150);
+extern float func_001F9C78(void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BF0(void *, void *, void *);
+
+/* Takes SRC's component along the view's normal out, into DST: in view
+   mode 0 (D_0013F450 + 0x20B3) z is zeroed; in mode 1 the normal is the
+   vector at +0x270 scaled to unit length (func_L00_001FF4B0), in mode 2
+   the one at +0x290 as is. DST = SRC - dot(n, SRC) n. */
+void func_L00_00234150(float *dst, float *src) {
+    char *base = D_0013F450;
+    float n[4] __attribute__((aligned(16)));
+
+    switch (*(unsigned char *)(base + 0x20B3)) {
+    case 0:
+        qcopy(dst, src);
+        dst[2] = 0.0f;
+        break;
+    case 1:
+        func_L00_001FF4B0(n, base + 0x270, 1.0f);
+        func_001F9C30(n, n, func_001F9C78(n, src));
+        func_001F9BF0(dst, src, n);
+        break;
+    case 2:
+        func_001F9C30(n, base + 0x290, func_001F9C78(base + 0x290, src));
+        func_001F9BF0(dst, src, n);
+        break;
+    }
+}
 extern float func_001F9CE8(void *);
 extern void func_001FA218(void *, void *);
 extern void func_001FA4A0(void *, void *);
