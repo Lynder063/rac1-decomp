@@ -257,7 +257,21 @@ void func_L00_00232DF8(int bank, int seq) {
     obj->f54 = 0.0f;
     func_0020D6D0(obj);
 }
-INCLUDE_ASM("asm/overlays", func_L00_00232E60);
+/* Queues sequence SEQ of bank BANK (D_0013F450 + 0xAB0 / 0xAB4) when BANK
+   is valid and SEQ is below the count of the current animation's bank.
+   The base pointer is a local inside the test, as retail forms it only
+   there. */
+void func_L00_00232E60(int bank, int seq) {
+    if (bank >= 0) {
+        char *base = D_0013F450;
+        AnimState *obj = *(AnimState **)(base + 0x2080);
+
+        if (seq < obj->model->banks[obj->bank[1]]->count) {
+            *(int *)(base + 0xAB0) = bank;
+            *(int *)(base + 0xAB4) = seq;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00232EA8);
 /* Stores ID at D_0013F450 + 0xAB8, or func_001F9850(5) when ID is -1. */
 void func_L00_00232EC0(int id) {
