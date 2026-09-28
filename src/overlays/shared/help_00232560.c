@@ -192,7 +192,48 @@ void func_L00_00232B20(void) {
         *(float *)(*(char **)(base + 0x2278) + 0x58) = *(float *)(base + 0xA90);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00232B78);
+typedef struct {
+    char pad0[0x1C];
+    int ids[1];
+} AnimBank;
+
+typedef struct {
+    char pad0[0x48];
+    AnimBank *banks[1];
+} AnimModel;
+
+typedef struct {
+    char pad0[0x24];
+    AnimModel *model;
+    char pad28[0x28];
+    unsigned char seq[2];
+    unsigned char bank[2];
+    float f54;
+    float f58;
+    float f5C;
+    char pad60[8];
+    int id[2];
+} AnimState;
+
+/* Syncs the animation at D_0013F450 + 0x2278 to the one at +0x2080:
+   takes the float at +0xA94 into 0x5C, copies the source's 0x54 and its
+   sequence byte 0x51 into both sequence slots, then looks each slot's id
+   up in its bank of the model. The typed structs give retail's
+   base-first index adds, which byte offsets turn round. */
+void func_L00_00232B78(void) {
+    char *base = D_0013F450;
+    AnimState *obj = *(AnimState **)(base + 0x2278);
+
+    if (obj == 0) {
+        return;
+    }
+    obj->f5C = *(float *)(base + 0xA94);
+    obj->f54 = *(float *)(*(char **)(base + 0x2080) + 0x54);
+    obj->seq[0] = *(unsigned char *)(*(char **)(base + 0x2080) + 0x51);
+    obj->seq[1] = *(unsigned char *)(*(char **)(base + 0x2080) + 0x51);
+    obj->id[0] = obj->model->banks[obj->bank[0]]->ids[obj->seq[0]];
+    obj->id[1] = obj->model->banks[obj->bank[1]]->ids[obj->seq[1]];
+}
 INCLUDE_ASM("asm/overlays", func_L00_00232C10);
 INCLUDE_ASM("asm/overlays", func_L00_00232DF8);
 INCLUDE_ASM("asm/overlays", func_L00_00232E60);
