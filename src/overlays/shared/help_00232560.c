@@ -419,7 +419,57 @@ void func_L00_00233AC8(void) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_00233B08);
-INCLUDE_ASM("asm/overlays", func_L00_00233B50);
+extern float func_L00_001FF860(float, float);
+extern void func_001F9BC0(void *);
+extern void func_001FA218(void *, void *);
+extern void func_001F9EE8(void *, void *, void *);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+
+typedef struct {
+    float v[4];
+} __attribute__((aligned(16))) QVec;
+
+/* The heading (func_L00_001FF860 of x and y) of the x axis turned by the
+   angles at D_0013F450 + 0x90. When the vector at +0x270 is tilted (x or
+   y nonzero), the axis is first taken into its frame: turned by minus
+   the vector's heading about z, by minus its resulting pitch about y,
+   then back about z. The rotation source is named from the symbol and
+   the base after it, which gives retail's base derived from that
+   address. */
+float func_L00_00233B50(void) {
+    char *base;
+    float m[16] __attribute__((aligned(16)));
+    float dir[4] __attribute__((aligned(16)));
+    float rz[4] __attribute__((aligned(16)));
+    float ry[4] __attribute__((aligned(16)));
+    QVec up;
+    float zero;
+
+    zero = 0.0f;
+    dir[0] = func_001F9F90(zero);
+    dir[1] = func_001F9FA8(zero);
+    dir[2] = zero;
+    func_001FA218(m, D_0013F450 + 0x90);
+    base = D_0013F450;
+    func_001F9EE8(dir, dir, m);
+    if (*(float *)(base + 0x270) != zero || *(float *)(base + 0x274) != zero) {
+        up = *(QVec *)(base + 0x270);
+        func_001F9BC0(rz);
+        func_001F9BC0(ry);
+        rz[2] = -func_L00_001FF860(*(float *)(base + 0x270), *(float *)(base + 0x274));
+        func_001FA218(m, rz);
+        func_001F9EE8(dir, dir, m);
+        func_001F9EE8(&up, &up, m);
+        ry[1] = -func_L00_001FF860(up.v[2], up.v[0]);
+        func_001FA218(m, ry);
+        func_001F9EE8(dir, dir, m);
+        rz[2] = -rz[2];
+        func_001FA218(m, rz);
+        func_001F9EE8(dir, dir, m);
+    }
+    return func_L00_001FF860(dir[0], dir[1]);
+}
 extern unsigned char D_0013D5E4 NOT_SDA;
 
 /* Returns 1 in states 0x3F, 0x70 and 0x71 of D_0013F450 + 0x2084, or in
