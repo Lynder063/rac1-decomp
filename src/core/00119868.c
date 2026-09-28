@@ -96,7 +96,85 @@ void func_001198D0(char *self) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00119910);
+typedef struct {
+    unsigned short len;
+} TtyHdr;
+
+struct TtyRing {
+    int size;
+    int count;
+    char *rp;
+    char *wp;
+};
+
+typedef struct {
+    int sock;
+    volatile int wlen;
+    volatile int rlen;
+    volatile int busy;
+    char *wbuf;
+    char *rbuf;
+    struct TtyRing *queue;  /* func_00119868's input ring */
+} TtyHandlerState;
+
+extern void func_0011A690(const char *, ...);
+extern int func_001197C0_r(int, char *, unsigned short) __asm__("func_001197C0");
+extern int func_001197F8_r(int, char *, unsigned short) __asm__("func_001197F8");
+extern char D_00152810[];
+extern char D_00152838[];
+extern char D_00152850[];
+extern char D_00152868[];
+
+/* sceTtyHandler: the DECI2 event callback (1/2 read, 3 write, 4 write done). */
+void func_00119910(int event, int param, TtyHandlerState *ti) {
+    int n;
+
+    switch (event) {
+    case 1:
+    case 2:
+        if (param != 0) {
+            if ((unsigned int)(ti->rlen + param) > 0x140) {
+                func_0011A690(D_00152810);
+            }
+            {
+                int off = ti->rlen;
+
+                n = func_001197C0_r(ti->sock, ti->rbuf + off, param);
+            }
+            if (n < 0) {
+                func_0011A690(D_00152838);
+            }
+            ti->rlen += n;
+        } else {
+            TtyHdr *h = (TtyHdr *)ti->rbuf;
+
+            for (n = 0xC; n < h->len; n++) {
+                *ti->queue->wp = ti->rbuf[n];
+                func_00119890((char *)ti->queue);
+            }
+            ti->rlen = 0;
+        }
+        break;
+    case 3: {
+        int w = func_001197F8_r(ti->sock, ti->wbuf, ti->wlen);
+
+        if (w < 0) {
+            func_0011A690(D_00152850, w);
+            ti->busy = 0;
+        } else {
+            ti->wbuf += w;
+            ti->wlen -= w;
+        }
+        break;
+    }
+    case 4:
+        if (ti->wlen != 0) {
+            func_0011A690(D_00152868, ti->wlen);
+        }
+        ti->busy = 0;
+        break;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/core_text", func_00119AA8);
 
