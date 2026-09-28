@@ -187,7 +187,7 @@ int func_0012F348(int lba, int sectors, void *buf) {
 
     do {
         func_00121750(lba, sectors, buf, &hdr);
-        while (({ int r = func_00120F30(1); __asm__ __volatile__("nop"); r; }) != 0) {
+        while (func_00120F30(1) != 0) {
             func_00122598(0);
         }
     } while (func_00121930() != 0);
@@ -203,16 +203,10 @@ extern void func_00122598(int);
 extern int func_00121930(void);
 extern int D_00137C80[];
 
-/*
- * Same-size near-miss (41/176, kept). Same request/poll/retry shape
- * as func_0012F348 above, reading 6 fixed sectors into a stack buffer
- * and copying 0x2960 bytes of it into D_00137C80. Retail's missing
- * nop after `jal func_00120F30` (the usual GPR-result-feeds-a-branch
- * hazard class) is exactly offset here by an extra nop this compiler
- * inserts before the final copy loop, so the total size matches even
- * though the two residuals don't cancel semantically -- purely a
- * coincidence of counting, not a real fix.
- */
+/* Same request/poll/retry shape as func_0012F348 above, reading 6 fixed
+   sectors into a stack buffer and copying 0x2960 bytes of it into
+   D_00137C80. The nop after `jal func_00120F30` in the poll loop is
+   ps2eeas's short-loop padding (tools/ps2eeas_nops.py). */
 int func_0012F3F8(void) {
     char buf[0x3000];
     StreamHdr hdr;
@@ -239,20 +233,13 @@ int func_0012F3F8(void) {
 extern int D_0013A548[];
 extern int D_0013A5E0[];
 
-/*
- * Same-size near-miss (45/204, kept). Same request/poll/retry shape
- * as func_0012F348/func_0012F3F8 above, but the entry (sector number)
- * comes from an 8-byte-stride table indexed by arg0, and the whole
- * thing retries with a fresh table reload each time (retail's `bnel`
- * back to the top reloads `*entry`, matching a plain `do { ... } while
- * (...)` where the call argument is re-read from the pointer each
- * pass). Residuals: the two constant-address computations (`lui`/
- * `addiu`) are ordered oppositely at entry, and the usual GPR-result
- * hazard-nop after `jal func_00120F30` is offset by an extra nop
- * before the final copy loop, same as func_0012F3F8.
- */
+/* As func_0012F3F8 but the sector number comes from an 8-byte-stride
+   table indexed by arg0 and re-read on every retry, and 0x2434 bytes are
+   copied into D_0013A5E0. The entry address is formed after the header
+   stores, which orders the two constant-address computations as retail
+   does. */
 int func_0012F4A8(int arg0) {
-    int *entry = &D_0013A548[arg0 * 2];
+    int *entry;
     char buf[0x2800];
     StreamHdr hdr;
     unsigned int i;
@@ -261,6 +248,7 @@ int func_0012F4A8(int arg0) {
     hdr.b[1] = D_0015EE58[0];
     hdr.b[2] = 0;
     hdr.b[3] = 0;
+    entry = &D_0013A548[arg0 * 2];
 
     do {
         func_00121750(*entry, 5, buf, &hdr);
