@@ -158,7 +158,22 @@ int func_L00_00211F28(float t) {
 INCLUDE_ASM("asm/overlays", func_L00_00211F68);
 INCLUDE_ASM("asm/overlays", func_L00_00211F80);
 INCLUDE_ASM("asm/overlays", func_L00_002122A0);
-INCLUDE_ASM("asm/overlays", func_L00_002123B0);
+extern char D_0013E633[] NOT_SDA;
+extern void func_001FA218(void *, void *);
+extern void func_001FA540(void *, void *, void *);
+extern void func_002153E8(void *, void *);
+typedef float W[4] __attribute__((aligned(16)));
+void func_L00_002123B0(float x, float y, float z) {
+    float in[3];
+    float t[16], u[16];
+    in[0] = x;
+    in[1] = y;
+    in[2] = z;
+    func_001FA218(t, in);
+    func_001FA218(u, D_0013E633 + 0xEAD);
+    func_001FA540(u, u, t);
+    func_002153E8(u, D_0013E633 + 0xEAD);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00212430);
 extern char D_0013F450[] NOT_SDA;
 extern void func_L00_00212430(int, float, float, float);
