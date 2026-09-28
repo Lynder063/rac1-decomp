@@ -80,7 +80,24 @@ INCLUDE_ASM("asm/overlays", func_L00_00233B08);
 INCLUDE_ASM("asm/overlays", func_L00_00233B50);
 INCLUDE_ASM("asm/overlays", func_L00_00233CC0);
 INCLUDE_ASM("asm/overlays", func_L00_00233D50);
-INCLUDE_ASM("asm/overlays", func_L00_00233E48);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_001F9EE8(void *, void *, void *);
+
+/* The polar form of func_L00_00233EE0: sets OUT to (R cos ANGLE,
+   R sin ANGLE, Z) via func_001F9F90 / func_001F9FA8, then transforms it
+   by the matrix at D_0013F450 and adds the vector at D_0013F450 + 0x80. */
+void func_L00_00233E48(float *out, float r, float angle, float z) {
+    char *base;
+
+    out[0] = func_001F9F90(angle) * r;
+    out[1] = func_001F9FA8(angle) * r;
+    base = D_0013F450;
+    out[2] = z;
+    func_001F9EE8(out, out, base);
+    func_001F9BD8(out, out, base + 0x80);
+}
 extern void func_001F9BC0(void *);
 extern void func_001F9BD8(void *, void *, void *);
 extern void func_001F9EE8(void *, void *, void *);
