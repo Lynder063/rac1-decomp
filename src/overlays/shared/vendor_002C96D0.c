@@ -9,7 +9,16 @@ INCLUDE_ASM("asm/overlays", func_L00_002CA6B8);
 INCLUDE_ASM("asm/overlays", func_L00_002CA728);
 INCLUDE_ASM("asm/overlays", func_L00_002CABB8);
 INCLUDE_ASM("asm/overlays", func_L00_002CABC0);
-INCLUDE_ASM("asm/overlays", func_L00_002CC210);
+extern int func_L00_002DCDA8(void *);
+int func_L00_002CC210(char *a) {
+    int r = func_L00_002DCDA8(a);
+    if (r == 0) {
+        if (*(unsigned char *)(a + 0x20) == 5) a[0x20] = 1;
+    } else {
+        a[0x20] = 5;
+    }
+    return r;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002CC2B0);
 extern int func_L00_002DD2D0(void *);
 int func_L00_002CC360(char *a) {
