@@ -179,3 +179,16 @@ Open: some near-misses needed per-file flags (`-G8 -mno-split-addresses`
 for func_L00_00235FF8), and retail keeps a redundant `andi` in
 func_L00_00286128 that our compiler drops: the level code may have been
 built with other flags, which isn't mapped yet.
+
+2026-09-28 flag sweep: the best candidate of each of the seven level
+near-misses left (func_L00_00233B08, 002352D0, 00235CA0, 00236DE8,
+0023B610, 0023BAB8, 0023D750) was rerun with `-G8`,
+`-mno-split-addresses` and both. None matched or improved:
+
+- `-mno-split-addresses` made four worse (00233B08 8 → 43 bytes off,
+  002352D0 and 0023BAB8 change size) and left the rest as they were.
+- `-G8` doesn't compile help_00232560.c, whose declarations rely on
+  `-G2` placement, and changed nothing in hud_00235960.c.
+
+So these residuals are not a file-wide flag. func_L00_00235FF8's flags
+stay a per-function exception until a second function needs them.
