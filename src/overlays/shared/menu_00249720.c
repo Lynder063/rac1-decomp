@@ -25,7 +25,10 @@ int func_L00_0024A460(float a, float b, float x) {
 INCLUDE_ASM("asm/overlays", func_L00_0024A490);
 INCLUDE_ASM("asm/overlays", func_L00_0024A4DC);
 INCLUDE_ASM("asm/overlays", func_L00_0024A510);
-INCLUDE_ASM("asm/overlays", func_L00_0024A570);
+extern unsigned char D_0013D4EA[];
+int func_L00_0024A570(float a, float b, float x) {
+    return x >= 233.0f && x <= 235.0f && D_0013D4EA[0] != 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0024A5C0);
 INCLUDE_ASM("asm/overlays", func_L00_0024A60C);
 INCLUDE_ASM("asm/overlays", func_L00_0024A798);
