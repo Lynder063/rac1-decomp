@@ -112,7 +112,20 @@ INCLUDE_ASM("asm/overlays", func_L00_00210E00);
 INCLUDE_ASM("asm/overlays", func_L00_00210FE0);
 INCLUDE_ASM("asm/overlays", func_L00_002110C0);
 INCLUDE_ASM("asm/overlays", func_L00_002111E8);
-INCLUDE_ASM("asm/overlays", func_L00_00211338);
+extern void func_L00_001FF500(float *, float *, float);
+
+/* With EACH, scales V's x and y by S and z by Z; otherwise scales its xy
+   to length S (func_L00_001FF500) and sets z to Z. */
+void func_L00_00211338(float *v, int each, float s, float z) {
+    if (each) {
+        v[0] *= s;
+        v[1] *= s;
+        v[2] *= z;
+    } else {
+        func_L00_001FF500(v, v, s);
+        v[2] = z;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002113A0);
 INCLUDE_ASM("asm/overlays", func_L00_00211908);
 INCLUDE_ASM("asm/overlays", func_L00_00211A18);
