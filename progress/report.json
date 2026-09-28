@@ -1,16 +1,16 @@
 {
  "measures": {
-  "fuzzy_match_percent": 7.482688466055094,
+  "fuzzy_match_percent": 7.486696768658107,
   "total_code": "3692336",
-  "matched_code": "275656",
-  "matched_code_percent": 7.465626096866591,
+  "matched_code": "275804",
+  "matched_code_percent": 7.469634399469604,
   "total_functions": 4987,
-  "matched_functions": 1483,
-  "matched_functions_percent": 29.737317024263085,
-  "complete_code": "90220",
-  "complete_code_percent": 2.4434396002963976,
+  "matched_functions": 1484,
+  "matched_functions_percent": 29.75736915981552,
+  "complete_code": "90368",
+  "complete_code_percent": 2.447447902899411,
   "total_units": 378,
-  "complete_units": 54
+  "complete_units": 55
  },
  "units": [
   {
@@ -53687,23 +53687,23 @@
   {
    "name": "overlays/l18/mobyutil_00267000",
    "measures": {
-    "fuzzy_match_percent": 0.0,
+    "fuzzy_match_percent": 100.0,
     "total_code": "148",
-    "matched_code": "0",
-    "matched_code_percent": 0.0,
+    "matched_code": "148",
+    "matched_code_percent": 100.0,
     "total_functions": 1,
-    "matched_functions": 0,
-    "matched_functions_percent": 0.0,
-    "complete_code": "0",
-    "complete_code_percent": 0.0,
+    "matched_functions": 1,
+    "matched_functions_percent": 100.0,
+    "complete_code": "148",
+    "complete_code_percent": 100.0,
     "total_units": 1,
-    "complete_units": 0
+    "complete_units": 1
    },
    "functions": [
     {
      "name": "func_L18_00267000",
      "size": "148",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "0",
      "metadata": {
       "virtual_address": "2519040"
@@ -53711,7 +53711,7 @@
     }
    ],
    "metadata": {
-    "complete": false,
+    "complete": true,
     "source_path": "src/overlays/l18/mobyutil_00267000.c",
     "progress_categories": [
      "level_code",
@@ -54867,15 +54867,15 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 0.46859949495387765,
+    "fuzzy_match_percent": 0.4731863154071299,
     "total_code": "3226636",
-    "matched_code": "15120",
-    "matched_code_percent": 0.46859949495387765,
+    "matched_code": "15268",
+    "matched_code_percent": 0.4731863154071299,
     "total_functions": 3307,
-    "matched_functions": 123,
-    "matched_functions_percent": 3.7193831267009374,
-    "complete_code": "48",
-    "complete_code_percent": 0.0014876174442980243
+    "matched_functions": 124,
+    "matched_functions_percent": 3.749622013909888,
+    "complete_code": "196",
+    "complete_code_percent": 0.006074437897550266
    }
   },
   {
@@ -54927,15 +54927,15 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 0.004723200755712121,
+    "fuzzy_match_percent": 0.012004801920768308,
     "total_code": "2032520",
-    "matched_code": "96",
-    "matched_code_percent": 0.004723200755712121,
+    "matched_code": "244",
+    "matched_code_percent": 0.012004801920768308,
     "total_functions": 1379,
-    "matched_functions": 2,
-    "matched_functions_percent": 0.145032632342277,
-    "complete_code": "48",
-    "complete_code_percent": 0.0023616003778560604
+    "matched_functions": 3,
+    "matched_functions_percent": 0.21754894851341552,
+    "complete_code": "196",
+    "complete_code_percent": 0.009643201542912247
    }
   },
   {
@@ -55212,15 +55212,15 @@
    "id": "level_18",
    "name": "Level 18",
    "measures": {
-    "fuzzy_match_percent": 0.062021914409758114,
+    "fuzzy_match_percent": 0.1576390324581352,
     "total_code": "154784",
-    "matched_code": "96",
-    "matched_code_percent": 0.062021914409758114,
+    "matched_code": "244",
+    "matched_code_percent": 0.1576390324581352,
     "total_functions": 119,
-    "matched_functions": 2,
-    "matched_functions_percent": 1.680672268907563,
-    "complete_code": "48",
-    "complete_code_percent": 0.031010957204879057
+    "matched_functions": 3,
+    "matched_functions_percent": 2.5210084033613445,
+    "complete_code": "196",
+    "complete_code_percent": 0.12662807525325614
    }
   }
  ]
