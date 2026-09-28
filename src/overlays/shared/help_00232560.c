@@ -335,10 +335,10 @@ void func_L00_00233868(void) {
 }
 /* Undoes func_L00_00233868: clears bit 0 of the flags (0x34) of the
    objects at D_0013F450 + 0xA88, in the seven pairs at +0x1090, at
-   +0x118C and (when +0x20A4 is 1) at +0x1624. While the short at +0x22D8
-   is set it flags the objects at +0x1180, +0x1184 and +0x118C with 0x41,
-   and the first pair's first object too when +0x20AF is set, or +0x20AE
-   is set in mode 8 (+0x10B8). Each stage takes a fresh pointer to the
+   +0x118C and (when +0x20A4 is 1) at +0x1624. Then it flags with 0x41
+   the objects at +0x1180, +0x1184 and +0x118C while the short at +0x22D8
+   is set, and the first pair's first object when +0x20AF is set, or
+   +0x20AE is set in mode 8 (+0x10B8). Each stage takes a fresh pointer to the
    block, as retail re-forms it from the saved %hi before each one. */
 void func_L00_00233950(void) {
     char *base = D_0013F450;
