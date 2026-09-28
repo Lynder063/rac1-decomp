@@ -228,7 +228,26 @@ INCLUDE_ASM("asm/overlays", func_L00_00212D70);
 INCLUDE_ASM("asm/overlays", func_L00_00212E70);
 INCLUDE_ASM("asm/overlays", func_L00_002136A8);
 INCLUDE_ASM("asm/overlays", func_L00_00213970);
-INCLUDE_ASM("asm/overlays", func_L00_00213A08);
+extern float func_001F9C78(void *, void *);
+
+typedef struct {
+    float v[4];
+} __attribute__((aligned(16))) QVec;
+
+/* The component of V along the heading at D_0013F450 + 0x98, in the
+   xy plane: dot(V, (cos, sin, 0)). V is copied first as an aligned
+   struct, which gives retail's schedulable lq / sq. */
+float func_L00_00213A08(QVec *v) {
+    char *base = D_0013F450;
+    QVec p;
+    float dir[4] __attribute__((aligned(16)));
+
+    p = *v;
+    dir[0] = func_001F9F90(*(float *)(base + 0x98));
+    dir[1] = func_001F9FA8(*(float *)(base + 0x98));
+    dir[2] = 0.0f;
+    return func_001F9C78(&p, dir);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00213A60);
 /*
  * Advances a 16-item spawn queue: for each slot, ask
