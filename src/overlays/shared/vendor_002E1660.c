@@ -99,7 +99,13 @@ void func_L00_002E9AF8(void) {
         *(char *)(*(char **)(p + 0x70) + 0x116) = 1;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002E9B30);
+void func_L00_002E9B30(void) {
+    char *p = D_L00_00166F00;
+    if (*(short *)(p + 0x86) == 0) {
+        char *q = *(char **)(p + 0x70) + 0x1A8;
+        *(int *)(q + 0x10) |= 3;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E9B60);
 INCLUDE_ASM("asm/overlays", func_L00_002E9D78);
 INCLUDE_ASM("asm/overlays", func_L00_002E9DC8);
