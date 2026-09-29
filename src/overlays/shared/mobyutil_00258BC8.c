@@ -376,7 +376,19 @@ void func_L00_002607A8(void *a, float x) {
         func_L00_001FF4B0(a, a, x);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002607F8);
+extern int D_L00_00160098 MACRO_ADDR;
+
+void func_L00_002607F8(int a, short *list, short max) {
+    int k = ((a - D_L00_00160098) << 8) >> 16;
+    int i;
+    for (i = 1; i <= list[0]; i++) {
+        if (list[i] == k) return;
+    }
+    if (list[0] < max) {
+        list[0]++;
+        list[list[0]] = k;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00260878);
 INCLUDE_ASM("asm/overlays", func_L00_002608D0);
 INCLUDE_ASM("asm/overlays", func_L00_002608F0);
