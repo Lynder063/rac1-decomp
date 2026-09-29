@@ -263,7 +263,13 @@ float func_L00_0025C918(float *p, float *v, float t, float u1, float u2, float e
     }
     return d;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0025CB90);
+float func_L00_0025CB90(int n, float x, float y) {
+    float d = func_001FA790(x, y);
+    if (n == 0 || d * (float)n > 0.0f) return d;
+    if (func_001F9B88(d) <= 0.0017453292f) return 0.0f;
+    if (d > 0.0f) return d - 6.2831855f;
+    return d + 6.2831855f;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025CC58);
 INCLUDE_ASM("asm/overlays", func_L00_0025CCF0);
 INCLUDE_ASM("asm/overlays", func_L00_0025CE58);
