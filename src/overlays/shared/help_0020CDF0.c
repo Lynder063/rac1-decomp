@@ -203,7 +203,23 @@ void func_L00_002123B0(float x, float y, float z) {
     func_001FA540(u, u, t);
     func_002153E8(u, D_0013E633 + 0xEAD);
 }
-INCLUDE_ASM("asm/overlays", func_L00_00212430);
+typedef struct { float x, y, z, w; } Vp __attribute__((aligned(16)));
+extern void func_001F9EE8(void *, void *, void *);
+extern float func_L00_001FF860(float, float);
+extern float func_L00_0025CCF0(char *, char *, int, float, float, float, float);
+
+void func_L00_00212430(int m, float x, float y, float z) {
+    Vp v;
+    Vp t;
+    char *p = D_0013E633 + 0xF8D;
+    float zero = 0.0f;
+    float a;
+    func_001F9EE8(&v, p, p - 0x130);
+    a = func_L00_001FF860(v.x, v.y);
+    t.x = zero;
+    *(float *)(p + 0x18) = func_L00_0025CCF0((char *)&t, p + 0x14, m, a, x, y, z);
+    func_L00_002123B0(zero, zero, t.x);
+}
 extern char D_0013F450[] NOT_SDA;
 extern void func_L00_00212430(int, float, float, float);
 extern float func_L00_0025CCF0(char *, char *, int, float, float, float, float);
