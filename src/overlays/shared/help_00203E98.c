@@ -186,7 +186,23 @@ f32 func_L00_00209598(f32 a, f32 b, f32 c, f32 d)
 
     return 0.0f;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00209690);
+extern unsigned char D_0013E633[] NOT_SDA;
+extern int func_001FA898(float);
+extern float func_L00_002001D8(void *, float);
+
+float func_L00_00209690(float *a, int n) {
+    char buf[16] __attribute__((aligned(16)));
+    char *d = (char *)D_0013E633 + 0xE1D;
+    int i = func_001FA898(*(float *)(d + 0xAA8));
+    int m = n - 1;
+    int p = (i + m) % n;
+    float w;
+    if (*(int *)(d + 0xA98) & 2) {
+        p = m;
+    }
+    w = func_L00_002001D8(buf, *(float *)(d + 0xAA8));
+    return w * a[i] + (*(float *)(d + 0xAAC) - w) * a[p];
+}
 INCLUDE_ASM("asm/overlays", func_L00_00209748);
 typedef float V[4] __attribute__((aligned(16)));
 
