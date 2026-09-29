@@ -35,7 +35,17 @@ INCLUDE_ASM("asm/overlays", func_L00_00216D40);
 INCLUDE_ASM("asm/overlays", func_L00_00216E98);
 INCLUDE_ASM("asm/overlays", func_L00_00216F58);
 INCLUDE_ASM("asm/overlays", func_L00_00217570);
-INCLUDE_ASM("asm/overlays", func_L00_002175D0);
+typedef struct { char pad[0x2218]; int a[8]; int b[8]; } G;
+extern G D_0013F450 NOT_SDA;
+extern int func_0022ED80(int, int, int);
+
+void func_L00_002175D0(int idx, int a, int b) {
+    G *g = &D_0013F450;
+    if (g->a[idx] == -1) {
+        g->a[idx] = func_0022ED80(b, 4, a);
+    }
+    g->b[idx] = a;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00217648);
 INCLUDE_ASM("asm/overlays", func_L00_00217680);
 INCLUDE_ASM("asm/overlays", func_L00_00217698);
