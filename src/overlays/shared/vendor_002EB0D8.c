@@ -47,7 +47,24 @@ void func_L00_002EC6C8(char *a) {
         func_L00_001EDA28(a + 0x30, 0.5f);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002EC728);
+extern void func_L00_001ED900(void *, void *, void *);
+extern float func_001FA748(float, float);
+extern void func_001FA218(void *, void *);
+extern void func_001FA480(void *, void *);
+void func_L00_002EC728(void *arg) {
+    char *a = arg;
+    float m[16];
+    char *p = *(char **)(a + 0x70) + 0xB0;
+    func_L00_001ED900(a + 0x30, a + 0x50, p);
+    *(float *)(a + 0x50) = func_001FA748(*(float *)(a + 0x50), *(float *)(p + 0x18));
+    *(int *)(a + 0x40) = 0;
+    *(float *)(a + 0x44) = func_001FA748(*(float *)(a + 0x54), *(float *)(a + 0x5C));
+    *(float *)(a + 0x48) = func_001FA748(3.14159274101257324f, *(float *)(a + 0x50));
+    *(float *)(a + 0x48) = func_001FA748(*(float *)(a + 0x48), *(float *)(a + 0x60));
+    *(int *)(a + 0x4C) = 0;
+    func_001FA218(m, a + 0x40);
+    func_001FA480(a, m);
+}
 extern void func_L00_001EB448(void *, void *, float);
 extern void func_L00_001EB430(void *);
 extern void func_L00_001FF200(void *);
