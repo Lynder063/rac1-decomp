@@ -64,7 +64,14 @@ void func_L00_00263B78(float x, float y, char *a, float *p, float *q) {
     *q = t;
     *(float *)(a + 0x18) += t;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00263BF8);
+extern float func_001F9F90(float);
+
+void func_L00_00263BF8(float *o, float *a, float *b, float r, float l1, float l2) {
+    o[0x10] = r * func_001F9FA8(*a) * func_001F9FA8(*b);
+    o[0x11] = r * func_001F9FA8(*a) * func_001F9F90(*b);
+    *a = func_001FA748(*a, l1);
+    *b = func_001FA748(*b, l2);
+}
 extern void func_00215C00(void *);
 extern void func_001F9BD8(void *, void *, void *);
 void func_L00_00263D68(void *a, void *b) {
