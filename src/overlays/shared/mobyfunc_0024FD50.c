@@ -5,7 +5,15 @@
 INCLUDE_ASM("asm/overlays", func_L00_0024FD50);
 INCLUDE_ASM("asm/overlays", func_L00_0024FEF8);
 INCLUDE_ASM("asm/overlays", func_L00_0024FF10);
-INCLUDE_ASM("asm/overlays", func_L00_0024FFE8);
+void func_L00_0024FFE8(unsigned char *a, int dx, int dy) {
+    int i;
+    int n = a[4] + a[5];
+    int *t = *(int **)a;
+    for (i = 0; i < n; i++, t += 4) {
+        unsigned short *e = *(unsigned short **)t;
+        int c = ((unsigned char *)e)[2]; int cnt; e += 2; if (c != 0) { cnt = c; do { e[0] = e[0] + dx; e[1] = e[1] + dy; e += 2; cnt--; } while (cnt != 0); }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00250060);
 INCLUDE_ASM("asm/overlays", func_L00_00250120);
 INCLUDE_ASM("asm/overlays", func_L00_002501C8);
