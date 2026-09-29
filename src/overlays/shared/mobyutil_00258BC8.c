@@ -21,7 +21,18 @@ float func_L00_00258C80(float lo, float hi) {
     }
     return r;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00258DB0);
+extern float func_002140F8(float, float);
+extern float func_00214158(void);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+void func_L00_00258DB0(float *o, float lo, float hi) {
+    float a = func_002140F8(lo, hi);
+    float b = func_00214158();
+    float c = func_00214158();
+    o[0] = func_001F9F90(b) * func_001F9FA8(c) * a;
+    o[1] = func_001F9FA8(b) * func_001F9FA8(c) * a;
+    o[2] = func_001F9F90(c) * a;
+}
 float func_L00_00258E58(float a, float b, float c, float d, float t) {
     float p = (d - c) - (a - b);
     float q = (a - b) - p;
