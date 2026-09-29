@@ -231,7 +231,22 @@ void func_L00_002124E8(int a, float x, float y, float z) {
         *(float *)(g + 0x188) = func_L00_0025CCF0(g + 0x98, g + 0x184, a, *(float *)(g + 0x180), x, y, z);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00212550);
+extern float D_0015EE64 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+extern void func_L00_002124E8(int, float, float, float);
+void func_L00_00212550(void) {
+    float a, b, c;
+    if (func_L00_0020DB30(0) == 16) {
+        a = D_0015EE64 * 0.006f;
+        b = D_0015EE64 * 0.07f;
+        c = D_0015EE6C * 13.962634086608887f;
+    } else {
+        a = D_0015EE64 * 0.002f;
+        b = D_0015EE64 * 0.07f;
+        c = D_0015EE6C * 6.981317043304443f;
+    }
+    func_L00_002124E8(0, a, b, c);
+}
 INCLUDE_ASM("asm/overlays", func_L00_002125F0);
 extern float func_00214D28(float *, float, float);
 
