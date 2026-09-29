@@ -38,7 +38,20 @@ INCLUDE_ASM("asm/overlays", func_L16_002D0B28);
 INCLUDE_ASM("asm/overlays", func_L16_002D0B60);
 INCLUDE_ASM("asm/overlays", func_L16_002D0B70);
 INCLUDE_ASM("asm/overlays", func_L16_002D0C18);
-INCLUDE_ASM("asm/overlays", func_L16_002D0D98);
+typedef struct {
+    char pad0[0x2C0];
+    char *vectors;
+} Level16VendorVectorData;
+
+typedef struct {
+    char pad0[0x78];
+    Level16VendorVectorData *data;
+} Level16VendorVectorMoby;
+
+/* Copy the selected 16-byte vendor vector. */
+void func_L16_002D0D98(Level16VendorVectorMoby *moby, int index, void *out) {
+    qcopy(out, moby->data->vectors + index * 16 + 16);
+}
 INCLUDE_ASM("asm/overlays", func_L16_002D0DC0);
 INCLUDE_ASM("asm/overlays", func_L16_002D1310);
 INCLUDE_ASM("asm/overlays", func_L16_002D1420);
