@@ -58,7 +58,23 @@ INCLUDE_ASM("asm/overlays", func_L18_002F8680);
 INCLUDE_ASM("asm/overlays", func_L18_002F86E8);
 INCLUDE_ASM("asm/overlays", func_L18_002F8B00);
 INCLUDE_ASM("asm/overlays", func_L18_002F8CE0);
-INCLUDE_ASM("asm/overlays", func_L18_002F8F10);
+typedef struct {
+    char pad0[0x20];
+    unsigned char state;
+    char pad21[0x10];
+    unsigned char substate;
+    char pad32[2];
+    unsigned short flags;
+} Level18VendorMobyShort;
+
+/* Activate the vendor moby and set its initial flags. */
+void func_L18_002F8F10(Level18VendorMobyShort *moby) {
+    if (moby->state == 0) {
+        moby->state = 1;
+        moby->flags |= 3;
+        moby->substate = 0;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L18_002F8F38);
 INCLUDE_ASM("asm/overlays", func_L18_002F90A0);
 INCLUDE_ASM("asm/overlays", func_L18_002F94B0);
