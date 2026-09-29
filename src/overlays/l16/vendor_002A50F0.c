@@ -5,7 +5,15 @@
 INCLUDE_ASM("asm/overlays", func_L16_002A50F0);
 INCLUDE_ASM("asm/overlays", func_L16_002C5030);
 INCLUDE_ASM("asm/overlays", func_L16_002C57E8);
-INCLUDE_ASM("asm/overlays", func_L16_002C5A08);
+typedef struct {
+    char pad0[0x20];
+    unsigned char state;
+} Level16VendorMoby;
+
+/* Check whether this vendor moby is in state six. */
+int func_L16_002C5A08(Level16VendorMoby *moby) {
+    return moby->state == 6;
+}
 INCLUDE_ASM("asm/overlays", func_L16_002C7218);
 INCLUDE_ASM("asm/overlays", func_L16_002C75D0);
 INCLUDE_ASM("asm/overlays", func_L16_002CA848);
