@@ -4,7 +4,37 @@
 
 INCLUDE_ASM("asm/overlays", func_L18_002F2AE0);
 INCLUDE_ASM("asm/overlays", func_L18_002F3038);
-INCLUDE_ASM("asm/overlays", func_L18_002F30C8);
+typedef struct {
+    char pad0[0x30];
+    char update_data[0x300];
+    int field330;
+    char pad334[4];
+    int field338;
+    char pad33C[8];
+    int field344;
+} Level18VendorData;
+
+typedef struct {
+    char pad0[0x20];
+    unsigned char state;
+    char pad21[0x57];
+    Level18VendorData *data;
+    char pad7C[0x2A];
+    short class_id;
+} Level18VendorMoby;
+
+extern void func_L12_0027C368(Level18VendorMoby *, void *, int);
+
+/* Reset this vendor moby's counters before its per-frame update. */
+void func_L18_002F30C8(Level18VendorMoby *moby) {
+    Level18VendorData *data = moby->data;
+    if (moby->class_id == 0x565) {
+        moby->state = 1;
+        data->field330 = 0;
+        data->field344 = 0;
+    }
+    func_L12_0027C368(moby, data->update_data, data->field338);
+}
 INCLUDE_ASM("asm/overlays", func_L18_002F3108);
 INCLUDE_ASM("asm/overlays", func_L18_002F3268);
 INCLUDE_ASM("asm/overlays", func_L18_002F33D8);
