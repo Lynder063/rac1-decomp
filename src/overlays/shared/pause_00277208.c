@@ -49,4 +49,23 @@ INCLUDE_ASM("asm/overlays", func_L00_00286128);
 INCLUDE_ASM("asm/overlays", func_L00_002862E0);
 INCLUDE_ASM("asm/overlays", func_L00_00286498);
 INCLUDE_ASM("asm/overlays", func_L00_002864CC);
-INCLUDE_ASM("asm/overlays", func_L00_002864E0);
+typedef struct { int off; int pad; unsigned short len; short kind; short a; short b; } Ent;
+extern int func_L00_00286498(int, int);
+extern void func_L00_001FF040(int, void *, unsigned short);
+
+void func_L00_002864E0(int *h) {
+    int i;
+
+    for (i = 0; i < *h; i++) {
+        int m = func_L00_00286498(((Ent *)(h + 1))[i].b, ((Ent *)(h + 1))[i].a);
+        if (m != 0) {
+            int dst;
+            if (((Ent *)(h + 1))[i].kind == 1) {
+                dst = ((Ent *)(h + 1))[i].off + m;
+            } else {
+                dst = ((Ent *)(h + 1))[i].off + *(int *)(m + 0x78);
+            }
+            func_L00_001FF040(dst, &((Ent *)(h + 1))[i].pad, ((Ent *)(h + 1))[i].len);
+        }
+    }
+}
