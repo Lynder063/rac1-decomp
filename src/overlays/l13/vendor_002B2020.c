@@ -12,7 +12,20 @@ INCLUDE_ASM("asm/overlays", func_L13_002B5B08);
 INCLUDE_ASM("asm/overlays", func_L13_002B5C08);
 INCLUDE_ASM("asm/overlays", func_L13_002B5E30);
 INCLUDE_ASM("asm/overlays", func_L13_002B60D8);
-INCLUDE_ASM("asm/overlays", func_L13_002B6168);
+typedef struct {
+    char pad0[0x228];
+    void *value;
+} Level13VendorMoby;
+
+extern void func_L00_002688A8(void *);
+
+/* Release the vendor moby's attached object and clear its reference. */
+void func_L13_002B6168(Level13VendorMoby *moby) {
+    if (moby->value != 0) {
+        func_L00_002688A8(moby->value);
+        moby->value = 0;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L13_002B61A0);
 INCLUDE_ASM("asm/overlays", func_L13_002B6288);
 INCLUDE_ASM("asm/overlays", func_L13_002B9800);
