@@ -1,16 +1,16 @@
 {
  "measures": {
-  "fuzzy_match_percent": 7.659920440609955,
+  "fuzzy_match_percent": 7.6614370956489335,
   "total_code": "3692336",
-  "matched_code": "282200",
-  "matched_code_percent": 7.642858071421452,
+  "matched_code": "282256",
+  "matched_code_percent": 7.6443747264604305,
   "total_functions": 4987,
-  "matched_functions": 1541,
-  "matched_functions_percent": 30.90034088630439,
-  "complete_code": "90880",
-  "complete_code_percent": 2.4613144632557815,
+  "matched_functions": 1542,
+  "matched_functions_percent": 30.920393021856828,
+  "complete_code": "90936",
+  "complete_code_percent": 2.4628311182947598,
   "total_units": 378,
-  "complete_units": 60
+  "complete_units": 61
  },
  "units": [
   {
@@ -48773,23 +48773,23 @@
   {
    "name": "overlays/l13/sound_002994D0",
    "measures": {
-    "fuzzy_match_percent": 0.0,
+    "fuzzy_match_percent": 100.0,
     "total_code": "56",
-    "matched_code": "0",
-    "matched_code_percent": 0.0,
+    "matched_code": "56",
+    "matched_code_percent": 100.0,
     "total_functions": 1,
-    "matched_functions": 0,
-    "matched_functions_percent": 0.0,
-    "complete_code": "0",
-    "complete_code_percent": 0.0,
+    "matched_functions": 1,
+    "matched_functions_percent": 100.0,
+    "complete_code": "56",
+    "complete_code_percent": 100.0,
     "total_units": 1,
-    "complete_units": 0
+    "complete_units": 1
    },
    "functions": [
     {
      "name": "func_L13_002994D0",
      "size": "56",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "0",
      "metadata": {
       "virtual_address": "2725072"
@@ -48797,7 +48797,7 @@
     }
    ],
    "metadata": {
-    "complete": false,
+    "complete": true,
     "source_path": "src/overlays/l13/sound_002994D0.c",
     "progress_categories": [
      "level_code",
@@ -54867,15 +54867,15 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 0.6714113398598417,
+    "fuzzy_match_percent": 0.673146893544856,
     "total_code": "3226636",
-    "matched_code": "21664",
-    "matched_code_percent": 0.6714113398598417,
+    "matched_code": "21720",
+    "matched_code_percent": 0.673146893544856,
     "total_functions": 3307,
-    "matched_functions": 181,
-    "matched_functions_percent": 5.473238584820079,
-    "complete_code": "708",
-    "complete_code_percent": 0.02194235730339586
+    "matched_functions": 182,
+    "matched_functions_percent": 5.503477472029029,
+    "complete_code": "764",
+    "complete_code_percent": 0.02367791098841022
    }
   },
   {
@@ -54927,15 +54927,15 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 0.037195205951232956,
+    "fuzzy_match_percent": 0.03995040639206502,
     "total_code": "2032520",
-    "matched_code": "756",
-    "matched_code_percent": 0.037195205951232956,
+    "matched_code": "812",
+    "matched_code_percent": 0.03995040639206502,
     "total_functions": 1379,
-    "matched_functions": 8,
-    "matched_functions_percent": 0.580130529369108,
-    "complete_code": "708",
-    "complete_code_percent": 0.03483360557337689
+    "matched_functions": 9,
+    "matched_functions_percent": 0.6526468455402465,
+    "complete_code": "764",
+    "complete_code_percent": 0.03758880601420896
    }
   },
   {
@@ -55137,15 +55137,15 @@
    "id": "level_13",
    "name": "Level 13",
    "measures": {
-    "fuzzy_match_percent": 0.0,
+    "fuzzy_match_percent": 0.05421313506815366,
     "total_code": "103296",
-    "matched_code": "0",
-    "matched_code_percent": 0.0,
+    "matched_code": "56",
+    "matched_code_percent": 0.05421313506815366,
     "total_functions": 103,
-    "matched_functions": 0,
-    "matched_functions_percent": 0.0,
-    "complete_code": "0",
-    "complete_code_percent": 0.0
+    "matched_functions": 1,
+    "matched_functions_percent": 0.970873786407767,
+    "complete_code": "56",
+    "complete_code_percent": 0.05421313506815366
    }
   },
   {
