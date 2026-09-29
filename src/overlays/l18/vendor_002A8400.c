@@ -38,7 +38,24 @@ INCLUDE_ASM("asm/overlays", func_L18_002D79F0);
 INCLUDE_ASM("asm/overlays", func_L18_002D7F48);
 INCLUDE_ASM("asm/overlays", func_L18_002D8070);
 INCLUDE_ASM("asm/overlays", func_L18_002D8140);
-INCLUDE_ASM("asm/overlays", func_L18_002D81B0);
+typedef struct {
+    char pad0[0x24];
+    float scale;
+    char pad28[4];
+    int mode;
+} Level18VendorActionData;
+
+typedef struct {
+    char pad0[0x78];
+    Level18VendorActionData *data;
+} Level18VendorActionMoby;
+
+/* Initialize the vendor action mode and scale. */
+void func_L18_002D81B0(Level18VendorActionMoby *moby) {
+    Level18VendorActionData *data = moby->data;
+    data->mode = 5;
+    data->scale = 1.5f;
+}
 INCLUDE_ASM("asm/overlays", func_L18_002D8F10);
 INCLUDE_ASM("asm/overlays", func_L18_002D9358);
 INCLUDE_ASM("asm/overlays", func_L18_002D93C0);
