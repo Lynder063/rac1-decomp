@@ -156,7 +156,33 @@ void func_L00_002064C0(void) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_00206578);
 INCLUDE_ASM("asm/overlays", func_L00_00206698);
-INCLUDE_ASM("asm/overlays", func_L00_00206808);
+extern void func_0020DAF8(void *, int, void *);
+extern void func_001FA480(void *, void *);
+extern void func_002153E8(void *, void *);
+extern void func_00213DE0(void *, int, int, int);
+extern void func_L00_002514B8(void *);
+extern void func_L00_00251E30(void *);
+
+void func_L00_00206808(void) {
+    long buf[8];
+    char *g = (char *)D_0013F450;
+    char *m = *(char **)(g + 0xA88);
+    char *a;
+    m[0x7F] = 0;
+    a = *(char **)(g + 0x2080);
+    if ((((*(unsigned short *)(a + 0x34)) ^ 1) & 1) != 0) {
+        func_0020DAF8(a, 5, buf);
+        qcopy(m + 0x10, (char *)buf + 0x30);
+        func_001FA480(m + 0xC0, buf);
+        func_002153E8(buf, m + 0x40);
+        *(unsigned short *)(m + 0x34) = *(unsigned short *)(m + 0x34) & 0xFFBE;
+        func_00213DE0(m, 0x81, 0, func_001F9850(0xA));
+        func_L00_002514B8(m);
+        func_L00_00251E30(m);
+    } else {
+        *(unsigned short *)(m + 0x34) = *(unsigned short *)(m + 0x34) | 0x41;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002068C8);
 INCLUDE_ASM("asm/overlays", func_L00_00207220);
 INCLUDE_ASM("asm/overlays", func_L00_00207310);
