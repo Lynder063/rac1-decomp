@@ -13,7 +13,25 @@ INCLUDE_ASM("asm/overlays", func_L18_002D6D08);
 INCLUDE_ASM("asm/overlays", func_L18_002D70E8);
 INCLUDE_ASM("asm/overlays", func_L18_002D7310);
 INCLUDE_ASM("asm/overlays", func_L18_002D74F8);
-INCLUDE_ASM("asm/overlays", func_L18_002D7580);
+typedef struct {
+    char pad0[0x20];
+    unsigned char state;
+    char pad21[0x9B];
+    unsigned char saved_state;
+} Level18VendorMoby;
+
+extern int func_L00_002DCFD0(Level18VendorMoby *);
+
+/* Switch to state four while active, then restore the saved state. */
+int func_L18_002D7580(Level18VendorMoby *moby) {
+    int active = func_L00_002DCFD0(moby);
+    if (active != 0) {
+        moby->state = 4;
+    } else if (moby->state == 4) {
+        moby->state = moby->saved_state;
+    }
+    return active;
+}
 INCLUDE_ASM("asm/overlays", func_L18_002D7670);
 INCLUDE_ASM("asm/overlays", func_L18_002D76D8);
 INCLUDE_ASM("asm/overlays", func_L18_002D79F0);
