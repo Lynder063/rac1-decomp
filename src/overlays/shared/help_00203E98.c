@@ -77,7 +77,42 @@ void func_L00_00205598(void) {
     func_L00_00232EA8();
     func_L00_00222B80(0, 1);
 }
-INCLUDE_ASM("asm/overlays", func_L00_00205618);
+typedef struct { char pad[0x24]; int v; char pad2[0x24]; } Rec;
+extern Rec D_L00_00179BC0[] NOT_SDA;
+extern int func_L00_0020DB30(int);
+
+int func_L00_00205618(int a) {
+    char *g = (char *)D_0013F450;
+    int c = *(unsigned char *)(g + 0x20A4);
+    if (c == 2 || (c < 3 ? c == 1 : c == 3)) {
+        return 0;
+    }
+    {
+        char *g2 = (char *)D_0013F450;
+        if (*(int *)(g2 + 0x22A8) == 1) {
+            return 0x54;
+        }
+        if (*(unsigned char *)(g2 + 0x12E2) != 0) {
+            return 0x6E;
+        }
+        if (a == 0) {
+            return 0;
+        }
+        if (*(unsigned char *)(g2 + 0x20A8) == 0) {
+            return 0;
+        }
+        if (*(unsigned char *)(g2 + 0x20AA) == 0) {
+            return 0;
+        }
+        if (*(short *)(g2 + 0x22C8) != 0) {
+            return 0;
+        }
+    }
+    {
+        int i = func_L00_0020DB30(0);
+        return D_L00_00179BC0[i].v;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002056D0);
 INCLUDE_ASM("asm/overlays", func_L00_002056D8);
 INCLUDE_ASM("asm/overlays", func_L00_00205728);
