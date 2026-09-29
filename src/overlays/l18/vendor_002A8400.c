@@ -92,7 +92,20 @@ INCLUDE_ASM("asm/overlays", func_L18_002DD848);
 INCLUDE_ASM("asm/overlays", func_L18_002DD8A8);
 INCLUDE_ASM("asm/overlays", func_L18_002E09F8);
 INCLUDE_ASM("asm/overlays", func_L18_002E0E90);
-INCLUDE_ASM("asm/overlays", func_L18_002E0F80);
+typedef struct {
+    char pad0[0x60];
+    float value;
+} Level18VendorFloatData;
+
+typedef struct {
+    char pad0[0x78];
+    Level18VendorFloatData *data;
+} Level18VendorFloatMoby;
+
+/* Read the vendor moby's current float value. */
+float func_L18_002E0F80(Level18VendorFloatMoby *moby) {
+    return moby->data->value;
+}
 INCLUDE_ASM("asm/overlays", func_L18_002E0F90);
 INCLUDE_ASM("asm/overlays", func_L18_002E36B0);
 INCLUDE_ASM("asm/overlays", func_L18_002EAB58);
