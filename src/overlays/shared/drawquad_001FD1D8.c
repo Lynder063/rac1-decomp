@@ -8,5 +8,28 @@ INCLUDE_ASM("asm/overlays", func_L00_001FD6A8);
 INCLUDE_ASM("asm/overlays", func_L00_001FDE48);
 INCLUDE_ASM("asm/overlays", func_L00_001FE688);
 INCLUDE_ASM("asm/overlays", func_L00_001FE940);
-INCLUDE_ASM("asm/overlays", func_L00_001FE9C8);
+typedef struct { char pad[0x10]; short life; unsigned short ang; char pad2[4]; float f; char pad3[4]; } P;
+extern P D_L00_0016EB40[16];
+extern float D_0015EE6C MACRO_ADDR;
+extern float func_001FA790(float, float);
+extern void func_001F99B0(void *, int, int);
+
+void func_L00_001FE9C8(void) {
+    int i;
+    P *p = D_L00_0016EB40;
+    for (i = 15; i >= 0; i--, p++) {
+        if (p->life > 0) {
+            p->f = func_001FA790(p->f, D_0015EE6C * 5.2359877f);
+            if (p->life > 12) {
+                p->ang = p->ang + 5;
+            } else {
+                p->ang = p->ang - 5;
+            }
+            p->life = p->life - 1;
+            if (p->life <= 0) {
+                func_001F99B0(p, 0, 0x20);
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_001FEE20);

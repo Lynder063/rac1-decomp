@@ -19,7 +19,23 @@ int func_L00_002CC210(char *a) {
     }
     return r;
 }
-INCLUDE_ASM("asm/overlays", func_L00_002CC2B0);
+extern char *func_L00_002DCD40(char *);
+extern int func_L00_002DD0E0(char *, int, int, float);
+extern void func_0022ED80(int, int, char *);
+
+int func_L00_002CC2B0(char *m, int a, int b, float f) {
+    char *h = func_L00_002DCD40(m);
+    int r = func_L00_002DD0E0(m, a, b, f);
+    if (r != 0) {
+        m[0x20] = 5;
+    } else if ((unsigned char)m[0x20] == 5) {
+        m[0x20] = 1;
+    }
+    if (*(short *)(h + 0x68) == 6) {
+        func_0022ED80(1, 0, m);
+    }
+    return r;
+}
 extern int func_L00_002DD2D0(void *);
 int func_L00_002CC360(char *a) {
     int r = func_L00_002DD2D0(a);
@@ -37,7 +53,17 @@ INCLUDE_ASM("asm/overlays", func_L00_002CDAB8);
 INCLUDE_ASM("asm/overlays", func_L00_002CE390);
 INCLUDE_ASM("asm/overlays", func_L00_002CE6A0);
 INCLUDE_ASM("asm/overlays", func_L00_002CF170);
-INCLUDE_ASM("asm/overlays", func_L00_002CF328);
+extern int func_L00_00273478(void *, int, float, float, unsigned, unsigned);
+
+void func_L00_002CF328(char *m) {
+    char *p = *(char **)(m + 0x78);
+    if (*(int *)(p + 0x4C) == 0) {
+        *(int *)(p + 0x4C) = func_L00_00273478(m, 0, 0.05f, 0.01f, 0x80808080, 0x10808080);
+    }
+    if (*(int *)(p + 0x50) == 0) {
+        *(int *)(p + 0x50) = func_L00_00273478(m, 1, 0.05f, 0.01f, 0x80808080, 0x10808080);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002CF3D8);
 INCLUDE_ASM("asm/overlays", func_L00_002CF6A0);
 INCLUDE_ASM("asm/overlays", func_L00_002CF808);

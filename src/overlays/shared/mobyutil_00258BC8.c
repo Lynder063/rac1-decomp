@@ -21,7 +21,18 @@ float func_L00_00258C80(float lo, float hi) {
     }
     return r;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00258DB0);
+extern float func_002140F8(float, float);
+extern float func_00214158(void);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+void func_L00_00258DB0(float *o, float lo, float hi) {
+    float a = func_002140F8(lo, hi);
+    float b = func_00214158();
+    float c = func_00214158();
+    o[0] = func_001F9F90(b) * func_001F9FA8(c) * a;
+    o[1] = func_001F9FA8(b) * func_001F9FA8(c) * a;
+    o[2] = func_001F9F90(c) * a;
+}
 float func_L00_00258E58(float a, float b, float c, float d, float t) {
     float p = (d - c) - (a - b);
     float q = (a - b) - p;
@@ -61,11 +72,40 @@ void func_L00_00258FA8(void *dst, void *a, void *b, float t) {
     func_001F9C30(tmp, tmp, ease);
     func_001F9BD8(dst, a, tmp);
 }
-INCLUDE_ASM("asm/overlays", func_L00_00259088);
+void func_L00_00259088(float *out, float *a, float *b, float ang) {
+    float s = (1.0f - func_001F9F90(ang * 3.1415927f)) * 0.5f;
+    out[0] = func_001FA748(a[0], func_001FA790(b[0], a[0]) * s);
+    out[1] = func_001FA748(a[1], func_001FA790(b[1], a[1]) * s);
+    out[2] = func_001FA748(a[2], func_001FA790(b[2], a[2]) * s);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00259148);
 INCLUDE_ASM("asm/overlays", func_L00_002592B0);
 INCLUDE_ASM("asm/overlays", func_L00_00259418);
-INCLUDE_ASM("asm/overlays", func_L00_00259428);
+typedef struct { float a[4]; } Vs __attribute__((aligned(16)));
+extern int D_L00_00173F40[];
+extern int func_L00_001EFFF0(void *, void *, int, int, int);
+int func_L00_00259428(Vs *p, int x, int y, float f, float g) {
+    Vs t0;
+    Vs t1;
+    int r;
+    qcopy(&t0, p);
+    t0.a[2] += f;
+    qcopy(&t1, p);
+    t1.a[2] -= g;
+    if (t1.a[2] < 0.0f) {
+        t1.a[2] = 0.0f;
+    }
+    r = func_L00_001EFFF0(&t0, &t1, 0x22, x, 0);
+    if (D_L00_00173F40[7] < 0) {
+        r = 0;
+    }
+    if (y) {
+        if (D_L00_00173F40[6]) {
+            r = 0;
+        }
+    }
+    return r;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002594C8);
 INCLUDE_ASM("asm/overlays", func_L00_00259868);
 INCLUDE_ASM("asm/overlays", func_L00_00259B08);
@@ -84,8 +124,24 @@ int func_L00_0025A468(int *p, int b) {
     *p = (w & 0xFFFFFF) | (v << 24);
     return v == 0;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0025A4A0);
-INCLUDE_ASM("asm/overlays", func_L00_0025A540);
+extern int func_001FA898(float);
+extern float func_001FA888(int);
+float func_L00_0025A4A0(float *a, float *b, int *out, float f) {
+    int n = func_001FA898(b[2] / f);
+    float s = func_001FA888(n);
+    float r = a[2] + b[2] * s - func_001FA888((n * n + n) >> 1) * f;
+    if (out) {
+        *out = n;
+    }
+    return r;
+}
+extern float func_001FA888(int);
+void func_L00_0025A540(void *a, void *b, void *c, int d, float f) {
+    float t[4];
+    func_001F9C30(t, c, func_001FA888(d));
+    t[2] -= func_001FA888((d * d + d) >> 1) * f;
+    func_001F9BD8(a, b, t);
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025A5D8);
 INCLUDE_ASM("asm/overlays", func_L00_0025A748);
 INCLUDE_ASM("asm/overlays", func_L00_0025A778);
@@ -106,16 +162,61 @@ INCLUDE_ASM("asm/overlays", func_L00_0025AAC0);
 INCLUDE_ASM("asm/overlays", func_L00_0025AC00);
 INCLUDE_ASM("asm/overlays", func_L00_0025AD38);
 INCLUDE_ASM("asm/overlays", func_L00_0025AD60);
-INCLUDE_ASM("asm/overlays", func_L00_0025AFA8);
+typedef struct { int a[4]; } Vk __attribute__((aligned(16)));
+extern void func_L00_001FFED8(void *, int, float);
+extern void func_001FA588(void *, void *, void *);
+void func_L00_0025AFA8(void *a, float *v) {
+    Vk t0, t1, t2;
+    func_L00_001FFED8(&t2, 0, v[0]);
+    func_L00_001FFED8(&t1, 1, v[1]);
+    func_L00_001FFED8(&t0, 2, v[2]);
+    func_001FA588(a, &t2, &t1);
+    func_001FA588(a, a, &t0);
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025B040);
 INCLUDE_ASM("asm/overlays", func_L00_0025B168);
-INCLUDE_ASM("asm/overlays", func_L00_0025B178);
+void func_L00_0025B178(char *o) {
+    float a[4];
+    float b[4];
+    void *p = o + 0x10;
+    qcopy(a, p);
+    a[2] = a[2] - 16.0f;
+    if (a[2] < 0.5f) {
+        a[2] = 0.5f;
+    }
+    qcopy(b, p);
+    b[2] = b[2] + 0.5f;
+    if (func_L00_001EFFF0(b, a, 0x22, 0, 0) != 0) {
+        float *t = (float *)D_L00_00173F40;
+        *(float *)(o + 0x84) = t[10] - 0.2f;
+        *(float *)(o + 0x88) = t[10] + 0.2f;
+    } else {
+        *(int *)(o + 0x84) = 0;
+        *(int *)(o + 0x88) = 0;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025B478);
 INCLUDE_ASM("asm/overlays", func_L00_0025B4AC);
 INCLUDE_ASM("asm/overlays", func_L00_0025B4D0);
 INCLUDE_ASM("asm/overlays", func_L00_0025BA50);
 INCLUDE_ASM("asm/overlays", func_L00_0025BBA0);
-INCLUDE_ASM("asm/overlays", func_L00_0025BC48);
+typedef struct { float x, y, z, w; } Vc0 __attribute__((aligned(16)));
+extern void func_001F9BF0(void *, void *, void *);
+extern float func_001F9CE8(void *);
+
+float func_L00_0025BC48(float *a, float *b, float *out, float speed, float g) {
+    Vc0 d;
+    float t;
+    func_001F9BF0(&d, b, a);
+    t = func_001F9CE8(&d) / speed;
+    if (out) {
+        *out = t;
+    }
+    if (t == 0.0f) {
+        return 0.0f;
+    }
+    return -((a[2] - b[2]) + g * (t * t) * 0.5f) / t;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025BCF8);
 INCLUDE_ASM("asm/overlays", func_L00_0025C488);
 INCLUDE_ASM("asm/overlays", func_L00_0025C498);
@@ -146,12 +247,39 @@ void func_L00_0025C7F0(float *ptr, float rate, float b, float c, float limit) {
         *ptr = -func_001F9B88(rate);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_0025C918);
-INCLUDE_ASM("asm/overlays", func_L00_0025CB90);
+extern void func_L00_0025C7F0(float *ptr, float rate, float b, float c, float limit);
+extern float func_001F9B88(float);
+
+float func_L00_0025C918(float *p, float *v, float t, float u1, float u2, float eps) {
+    float n, d;
+    func_L00_0025C7F0(v, t - *p, u1, u2, eps);
+    n = *p + *v;
+    d = t - n;
+    *p = n;
+    if (func_001F9B88(d) < eps * 0.01f) {
+        *p = t;
+        *(int *)v = 0;
+        return *v;
+    }
+    return d;
+}
+float func_L00_0025CB90(int n, float x, float y) {
+    float d = func_001FA790(x, y);
+    if (n == 0 || d * (float)n > 0.0f) return d;
+    if (func_001F9B88(d) <= 0.0017453292f) return 0.0f;
+    if (d > 0.0f) return d - 6.2831855f;
+    return d + 6.2831855f;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025CC58);
 INCLUDE_ASM("asm/overlays", func_L00_0025CCF0);
 INCLUDE_ASM("asm/overlays", func_L00_0025CE58);
-INCLUDE_ASM("asm/overlays", func_L00_0025D038);
+unsigned int func_L00_0025D038(float r, float g, float b, float a) {
+    unsigned int x = func_001FA898(r * 255.0f) & 0xFF;
+    unsigned int y = func_001FA898(g * 255.0f) & 0xFF;
+    unsigned int z = func_001FA898(b * 255.0f) & 0xFF;
+    unsigned int w = func_001FA898(a * 255.0f);
+    return x | (y << 8) | (z << 16) | (w << 24);
+}
 void func_L00_0025D0E0(int *a, int *b, int *c, int mask) {
     int x, y;
     if (mask & 1) { x = *b; y = *a; *a = x; *b = y; }
@@ -248,7 +376,19 @@ void func_L00_002607A8(void *a, float x) {
         func_L00_001FF4B0(a, a, x);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002607F8);
+extern int D_L00_00160098 MACRO_ADDR;
+
+void func_L00_002607F8(int a, short *list, short max) {
+    int k = ((a - D_L00_00160098) << 8) >> 16;
+    int i;
+    for (i = 1; i <= list[0]; i++) {
+        if (list[i] == k) return;
+    }
+    if (list[0] < max) {
+        list[0]++;
+        list[list[0]] = k;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00260878);
 INCLUDE_ASM("asm/overlays", func_L00_002608D0);
 INCLUDE_ASM("asm/overlays", func_L00_002608F0);
@@ -259,7 +399,28 @@ void func_L00_00260958(float *v, float s) {
     v[1] += func_002140F8(-s, s);
     v[2] += func_002140F8(-s, s);
 }
-INCLUDE_ASM("asm/overlays", func_L00_00260AB0);
+typedef struct { float x, y, z, w; } Vp __attribute__((aligned(16)));
+extern char *D_L00_001601BC MACRO_ADDR;
+extern void func_001F9EC0(void *, void *, void *);
+
+int func_L00_00260AB0(void *p, int i) {
+    Vp a;
+    Vp b;
+    char *e;
+    if (i < 0) {
+        return 0;
+    }
+    e = D_L00_001601BC + i * 128;
+    func_001F9BF0(&a, p, e + 0x30);
+    a.w = 0;
+    func_001F9EC0(&b, &a, e + 0x40);
+    if (func_001F9CE8(&b) < 1.0f) {
+        if (-1.0f <= b.z && b.z <= 1.0f) {
+            return 1;
+        }
+    }
+    return 0;
+}
 extern int D_L00_001601B4 MACRO_ADDR;
 extern void func_001F9EC0(void *, void *, void *);
 int func_L00_00260B68(float *p, int idx) {
@@ -280,7 +441,38 @@ INCLUDE_ASM("asm/overlays", func_L00_00260FB0);
 INCLUDE_ASM("asm/overlays", func_L00_00261458);
 INCLUDE_ASM("asm/overlays", func_L00_00261478);
 INCLUDE_ASM("asm/overlays", func_L00_00261568);
-INCLUDE_ASM("asm/overlays", func_L00_002616E0);
-INCLUDE_ASM("asm/overlays", func_L00_002617B0);
+extern int func_L00_0025D390(char *);
+extern void func_001FA218(void *, void *);
+extern void func_001FA540(void *, void *, void *);
+extern void func_002153E8(void *, void *);
+
+int func_L00_002616E0(int x, char *o, float *a, float *c, float *b, float *d) {
+    float m[16];
+    float v[4];
+    float w[4];
+    float pad[12];
+    if (func_L00_0025D390(o) == 0) return 0;
+    func_001F9BF0(v, a, o + 0x10);
+    func_001FA4A0(m, o + 0xC0);
+    func_001F9EE8(b, v, m);
+    func_001FA218(w, c);
+    func_001FA540(w, m, w);
+    func_002153E8(w, d);
+    return 1;
+}
+typedef struct { int a[16]; } Mx __attribute__((aligned(16)));
+typedef struct { int a[4]; } Vx __attribute__((aligned(16)));
+extern void func_001FA218(void *, void *);
+extern void func_001FA540(void *, void *, void *);
+extern void func_002153E8(void *, void *);
+void func_L00_002617B0(char *a, Vx *b, void *c, void *d) {
+    Mx t0, t1, t2;
+    func_001FA218(&t0, c);
+    func_001FA4A0(&t0, &t0);
+    func_001FA218(&t1, d);
+    func_001FA540(&t2, &t0, &t1);
+    func_002153E8(&t2, a);
+    qcopy(a + 0x10, b);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00261848);
 INCLUDE_ASM("asm/overlays", func_L00_002618D8);

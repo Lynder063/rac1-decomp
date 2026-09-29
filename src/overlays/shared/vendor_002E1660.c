@@ -62,7 +62,14 @@ void func_L00_002E5D50(void *out, float f) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_002E5DE0);
 INCLUDE_ASM("asm/overlays", func_L00_002E6498);
-INCLUDE_ASM("asm/overlays", func_L00_002E6A68);
+extern float func_001EC120(void *, float, float, float, float, float);
+
+void func_L00_002E6A68(char *m, float *out, float *in, float a, float b, float c) {
+    char *p = *(char **)(m + 0x70);
+    out[0] = func_001EC120(p + 0xE0, out[0], in[0], a, b, c);
+    out[1] = func_001EC120(p + 0xE4, out[1], in[1], a, b, c);
+    out[2] = func_001EC120(p + 0xE8, out[2], in[2], a, b, c);
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E6B28);
 INCLUDE_ASM("asm/overlays", func_L00_002E6BE0);
 INCLUDE_ASM("asm/overlays", func_L00_002E6CE0);
@@ -183,7 +190,37 @@ void func_L00_002E9E20(int a, float x, float y) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_002E9E60);
 INCLUDE_ASM("asm/overlays", func_L00_002EA068);
-INCLUDE_ASM("asm/overlays", func_L00_002EA3F0);
+extern float D_L00_0015F040 MACRO_ADDR;
+extern void func_001F9C08(float, void *, void *, void *);
+extern float func_001F9CB8(void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+
+void func_L00_002EA3F0(int m) {
+    char *p = *(char **)(m + 0x70);
+    char *r = p + 0x1D0;
+    char *q = p + 0x130;
+    if (*(short *)(p + 0x10) > 0) {
+        float v[4];
+        float f;
+        float lim;
+        func_001F9BF0(v, (float *)p, (float *)(p + 0x90));
+        func_001F9C08(D_L00_0015F040, q, q, v);
+        f = func_001F9CB8(q);
+        lim = *(float *)(q + 0x2C);
+        if (lim < f) {
+            f = lim;
+            func_L00_001FF4B0(q, q, f);
+            *(float *)(r + 0x30) = *(float *)(q + 0x2C) - f;
+        } else {
+            float t = lim - *(float *)(r + 0x30);
+            if (f < t) {
+                f = t;
+                func_L00_001FF4B0(q, q, f);
+            }
+            *(float *)(r + 0x30) = *(float *)(q + 0x2C) - f;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002EA4C0);
 INCLUDE_ASM("asm/overlays", func_L00_002EA9C8);
 INCLUDE_ASM("asm/overlays", func_L00_002EABD0);

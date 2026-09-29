@@ -31,7 +31,27 @@ void func_L00_00227E08(void) {
     case 3: func_L00_00222B80(0x53, 1); break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00227E90);
+extern void func_L00_0020ED30(void);
+
+int func_L00_00227E90(void) {
+    char *p = (char *)D_0013E633 + 0xE1D;
+    int s = *(int *)(p + 0x2084);
+    if ((unsigned)(s - 2) < 2 || s == 0) {
+        if (*(unsigned char *)(p + 0x20A8) != 0) {
+            if (*(int *)(p + 0x1BC) < func_001F9850(6)) {
+                if (*(float *)(p + 0x229C) < 0.7f) {
+                    if (*(unsigned char *)(p + 0x20AB) == 0) {
+                        func_L00_0020ED30();
+                        *(int *)(p + 0xD14) = 2;
+                        func_L00_00222B80(0x23, 1);
+                        return 1;
+                    }
+                }
+            }
+        }
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00227F48);
 INCLUDE_ASM("asm/overlays", func_L00_00228180);
 INCLUDE_ASM("asm/overlays", func_L00_00228510);

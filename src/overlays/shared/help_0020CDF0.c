@@ -81,7 +81,19 @@ void func_L00_0020ED30(void) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_0020EDC0);
 INCLUDE_ASM("asm/overlays", func_L00_0020F118);
-INCLUDE_ASM("asm/overlays", func_L00_0020F750);
+extern float func_001F9B88(float);
+float func_L00_0020F750(float *a, float *b) {
+    float s = 0.0f;
+    int i, j;
+    for (i = 0; i < 3; i++) {
+        float *q = (float *)((i << 4) + (int)b);
+        float *p = (float *)((i << 4) + (int)a);
+        for (j = 0; j < 3; j++) {
+            s += func_001F9B88(*p++ - *q++);
+        }
+    }
+    return s;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0020F7F8);
 INCLUDE_ASM("asm/overlays", func_L00_0020FC18);
 INCLUDE_ASM("asm/overlays", func_L00_00210340);
@@ -123,7 +135,21 @@ void func_L00_00210478(int id) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002104C8);
+extern int func_L00_002347B8(void);
+extern int D_L00_0015F6A8 MACRO_ADDR;
+int func_L00_002104C8(void) {
+    char *g;
+    if (func_L00_002347B8() == 0 && D_L00_0015F6A8 == 0) {
+        g = D_0013F450;
+        if (*(unsigned char *)(g + 0x20A4) == 0) {
+            if (*(unsigned *)(g + 0x208C) < 3 || *(int *)(g + 0x2084) == 7 || *(int *)(g + 0x2084) == 9 || *(int *)(g + 0x2084) == 0xE) {
+                char *h = D_0013F450;
+                return *(unsigned char *)(h + 0x12E4) == 0;
+            }
+        }
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00210558);
 INCLUDE_ASM("asm/overlays", func_L00_00210E00);
 INCLUDE_ASM("asm/overlays", func_L00_00210FE0);
@@ -191,7 +217,23 @@ void func_L00_002123B0(float x, float y, float z) {
     func_001FA540(u, u, t);
     func_002153E8(u, D_0013E633 + 0xEAD);
 }
-INCLUDE_ASM("asm/overlays", func_L00_00212430);
+typedef struct { float x, y, z, w; } Vp __attribute__((aligned(16)));
+extern void func_001F9EE8(void *, void *, void *);
+extern float func_L00_001FF860(float, float);
+extern float func_L00_0025CCF0(char *, char *, int, float, float, float, float);
+
+void func_L00_00212430(int m, float x, float y, float z) {
+    Vp v;
+    Vp t;
+    char *p = D_0013E633 + 0xF8D;
+    float zero = 0.0f;
+    float a;
+    func_001F9EE8(&v, p, p - 0x130);
+    a = func_L00_001FF860(v.x, v.y);
+    t.x = zero;
+    *(float *)(p + 0x18) = func_L00_0025CCF0((char *)&t, p + 0x14, m, a, x, y, z);
+    func_L00_002123B0(zero, zero, t.x);
+}
 extern char D_0013F450[] NOT_SDA;
 extern void func_L00_00212430(int, float, float, float);
 extern float func_L00_0025CCF0(char *, char *, int, float, float, float, float);
@@ -203,7 +245,22 @@ void func_L00_002124E8(int a, float x, float y, float z) {
         *(float *)(g + 0x188) = func_L00_0025CCF0(g + 0x98, g + 0x184, a, *(float *)(g + 0x180), x, y, z);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00212550);
+extern float D_0015EE64 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+extern void func_L00_002124E8(int, float, float, float);
+void func_L00_00212550(void) {
+    float a, b, c;
+    if (func_L00_0020DB30(0) == 16) {
+        a = D_0015EE64 * 0.006f;
+        b = D_0015EE64 * 0.07f;
+        c = D_0015EE6C * 13.962634086608887f;
+    } else {
+        a = D_0015EE64 * 0.002f;
+        b = D_0015EE64 * 0.07f;
+        c = D_0015EE6C * 6.981317043304443f;
+    }
+    func_L00_002124E8(0, a, b, c);
+}
 INCLUDE_ASM("asm/overlays", func_L00_002125F0);
 extern float func_00214D28(float *, float, float);
 
@@ -269,7 +326,24 @@ INCLUDE_ASM("asm/overlays", func_L00_002129D0);
 INCLUDE_ASM("asm/overlays", func_L00_00212D70);
 INCLUDE_ASM("asm/overlays", func_L00_00212E70);
 INCLUDE_ASM("asm/overlays", func_L00_002136A8);
-INCLUDE_ASM("asm/overlays", func_L00_00213970);
+extern char D_0013E633[];
+extern void func_001F9C30(void *, void *, float);
+extern float func_001F9CB8(void *);
+extern void func_001F9BC0(void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+void func_L00_00213970(float a, float b) {
+    char *p = D_0013E633 + 0x173D;
+    char *q = p - 0x920;
+    float v;
+    func_00215C00(p, *(float *)(q + 0x930), *(float *)(q + 0x938), *(float *)(q + 0x934));
+    func_001F9C30(p, p, a);
+    v = func_001F9CB8(p);
+    if (v <= b) {
+        func_001F9BC0(p);
+    } else {
+        func_L00_001FF4B0(p, p, v - b);
+    }
+}
 extern float func_001F9C78(void *, void *);
 
 typedef struct {

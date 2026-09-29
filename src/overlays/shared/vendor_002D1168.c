@@ -39,7 +39,26 @@ INCLUDE_ASM("asm/overlays", func_L00_002D83D8);
 INCLUDE_ASM("asm/overlays", func_L00_002D8898);
 INCLUDE_ASM("asm/overlays", func_L00_002D90A0);
 INCLUDE_ASM("asm/overlays", func_L00_002D9208);
-INCLUDE_ASM("asm/overlays", func_L00_002D9340);
+typedef struct { int a[4]; } Vy __attribute__((aligned(16)));
+extern char *func_0020D348(int);
+extern void func_L00_0025E210(void *);
+extern void func_L00_00251328(void *, int, int, int);
+extern float func_00214158(void);
+extern void func_L00_00251E30(void *);
+char *func_L00_002D9340(Vy *src, float f) {
+    char *m = func_0020D348(0x307);
+    if (m != 0) {
+        func_L00_0025E210(m);
+        func_L00_00251328(m, 0x28, 0x28, 0x46);
+        *(unsigned char *)(m + 0x30) = 0xFF;
+        *(short *)(m + 0x32) = 0x40;
+        *(float *)(m + 0x2C) *= f;
+        qcopy(m + 0x10, src);
+        *(float *)(m + 0x48) = func_00214158();
+        func_L00_00251E30(m);
+    }
+    return m;
+}
 extern void func_0020D678(void);
 void func_L00_002D93E8(char *a) {
     *(float *)(a + 0x2C) = *(float *)(a + 0x2C) * 1.025f;
