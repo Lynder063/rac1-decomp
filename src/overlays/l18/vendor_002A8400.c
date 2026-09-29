@@ -13,14 +13,49 @@ INCLUDE_ASM("asm/overlays", func_L18_002D6D08);
 INCLUDE_ASM("asm/overlays", func_L18_002D70E8);
 INCLUDE_ASM("asm/overlays", func_L18_002D7310);
 INCLUDE_ASM("asm/overlays", func_L18_002D74F8);
-INCLUDE_ASM("asm/overlays", func_L18_002D7580);
+typedef struct {
+    char pad0[0x20];
+    unsigned char state;
+    char pad21[0x9B];
+    unsigned char saved_state;
+} Level18VendorMoby;
+
+extern int func_L00_002DCFD0(Level18VendorMoby *);
+
+/* Switch to state four while active, then restore the saved state. */
+int func_L18_002D7580(Level18VendorMoby *moby) {
+    int active = func_L00_002DCFD0(moby);
+    if (active != 0) {
+        moby->state = 4;
+    } else if (moby->state == 4) {
+        moby->state = moby->saved_state;
+    }
+    return active;
+}
 INCLUDE_ASM("asm/overlays", func_L18_002D7670);
 INCLUDE_ASM("asm/overlays", func_L18_002D76D8);
 INCLUDE_ASM("asm/overlays", func_L18_002D79F0);
 INCLUDE_ASM("asm/overlays", func_L18_002D7F48);
 INCLUDE_ASM("asm/overlays", func_L18_002D8070);
 INCLUDE_ASM("asm/overlays", func_L18_002D8140);
-INCLUDE_ASM("asm/overlays", func_L18_002D81B0);
+typedef struct {
+    char pad0[0x24];
+    float scale;
+    char pad28[4];
+    int mode;
+} Level18VendorActionData;
+
+typedef struct {
+    char pad0[0x78];
+    Level18VendorActionData *data;
+} Level18VendorActionMoby;
+
+/* Initialize the vendor action mode and scale. */
+void func_L18_002D81B0(Level18VendorActionMoby *moby) {
+    Level18VendorActionData *data = moby->data;
+    data->mode = 5;
+    data->scale = 1.5f;
+}
 INCLUDE_ASM("asm/overlays", func_L18_002D8F10);
 INCLUDE_ASM("asm/overlays", func_L18_002D9358);
 INCLUDE_ASM("asm/overlays", func_L18_002D93C0);
@@ -28,7 +63,21 @@ INCLUDE_ASM("asm/overlays", func_L18_002D9440);
 INCLUDE_ASM("asm/overlays", func_L18_002D9460);
 INCLUDE_ASM("asm/overlays", func_L18_002D96B0);
 INCLUDE_ASM("asm/overlays", func_L18_002D9B00);
-INCLUDE_ASM("asm/overlays", func_L18_002D9C48);
+typedef struct {
+    char pad0[0x20];
+    unsigned char state;
+} Level18State;
+
+/* Return one for the active state; advance state two to five. */
+int func_L18_002D9C48(Level18State *obj) {
+    if (obj->state == 1) {
+        return 1;
+    }
+    if (obj->state == 2) {
+        obj->state = 5;
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L18_002D9C78);
 INCLUDE_ASM("asm/overlays", func_L18_002D9C90);
 INCLUDE_ASM("asm/overlays", func_L18_002D9CA8);
@@ -43,7 +92,20 @@ INCLUDE_ASM("asm/overlays", func_L18_002DD848);
 INCLUDE_ASM("asm/overlays", func_L18_002DD8A8);
 INCLUDE_ASM("asm/overlays", func_L18_002E09F8);
 INCLUDE_ASM("asm/overlays", func_L18_002E0E90);
-INCLUDE_ASM("asm/overlays", func_L18_002E0F80);
+typedef struct {
+    char pad0[0x60];
+    float value;
+} Level18VendorFloatData;
+
+typedef struct {
+    char pad0[0x78];
+    Level18VendorFloatData *data;
+} Level18VendorFloatMoby;
+
+/* Read the vendor moby's current float value. */
+float func_L18_002E0F80(Level18VendorFloatMoby *moby) {
+    return moby->data->value;
+}
 INCLUDE_ASM("asm/overlays", func_L18_002E0F90);
 INCLUDE_ASM("asm/overlays", func_L18_002E36B0);
 INCLUDE_ASM("asm/overlays", func_L18_002EAB58);

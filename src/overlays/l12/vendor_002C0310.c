@@ -5,7 +5,22 @@
 INCLUDE_ASM("asm/overlays", func_L12_002C0310);
 INCLUDE_ASM("asm/overlays", func_L12_002C0940);
 INCLUDE_ASM("asm/overlays", func_L12_002E29C8);
-INCLUDE_ASM("asm/overlays", func_L12_002E2B08);
+typedef struct {
+    char pad0[0x20];
+    unsigned char state;
+} Level12VendorStateMoby;
+
+extern int func_L00_002DD2D0(Level12VendorStateMoby *);
+
+/* Move the vendor moby to state eight unless it is in state nine or eleven. */
+int func_L12_002E2B08(Level12VendorStateMoby *moby) {
+    int result = func_L00_002DD2D0(moby);
+    if (moby->state == 9 || moby->state == 11) {
+        return 0;
+    }
+    moby->state = 8;
+    return result;
+}
 INCLUDE_ASM("asm/overlays", func_L12_002E2B88);
 INCLUDE_ASM("asm/overlays", func_L12_002E2BF8);
 INCLUDE_ASM("asm/overlays", func_L12_002E2CB8);
