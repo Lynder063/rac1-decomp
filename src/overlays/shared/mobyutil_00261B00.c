@@ -104,7 +104,30 @@ void func_L00_00264E28(int a, int b, int c) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_00264EA8);
 INCLUDE_ASM("asm/overlays", func_L00_00265050);
-INCLUDE_ASM("asm/overlays", func_L00_002653A0);
+extern int D_L00_0015F670 MACRO_ADDR;
+extern int D_L00_0015F674 MACRO_ADDR;
+extern short D_L00_00161F04_g __asm__("D_L00_00161F04");
+extern short D_L00_00161F08_g __asm__("D_L00_00161F08");
+extern int func_001FFB38(int, int, void *, void *, void *, int, int);
+extern void func_L00_002377E0(void);
+extern void func_L00_00237B70(void);
+extern void func_L00_00237B90(void);
+extern void func_L00_002367A8(int, int);
+void func_L00_002653A0(void) {
+    if (D_L00_0015F670 != 0) {
+        D_L00_0015F670 = D_L00_0015F670 - 1;
+        if (D_L00_0015F670 == 0) {
+            D_L00_0015F674 = 0;
+        }
+    }
+    if (D_L00_0015F674 == 0 || (*(int *)&D_L00_00161F08_g) == 0) {
+        (*(int *)&D_L00_00161F04_g) = -1;
+    } else if ((*(int *)&D_L00_00161F04_g) == -1) {
+        (*(int *)&D_L00_00161F04_g) = func_001FFB38(0xC, 0, (void *)((char *)func_L00_002377E0 + 0x340), func_L00_00237B70, func_L00_00237B90, 0, 0);
+    } else {
+        func_L00_002367A8((*(int *)&D_L00_00161F04_g), 0xA);
+    }
+}
 extern int D_L00_0015F674 MACRO_ADDR;
 extern int D_L00_0015F670 MACRO_ADDR;
 extern int D_L00_00161F04 MACRO_ADDR;
