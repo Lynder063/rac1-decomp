@@ -11,7 +11,30 @@ INCLUDE_ASM("asm/overlays", func_L18_002FB6B0);
 INCLUDE_ASM("asm/overlays", func_L18_002FBAA0);
 INCLUDE_ASM("asm/overlays", func_L18_002FBB88);
 INCLUDE_ASM("asm/overlays", func_L18_002FBCE8);
-INCLUDE_ASM("asm/overlays", func_L18_002FBD40);
+typedef struct {
+    char pad0[0x84];
+    void *child;
+} Level18VendorData;
+
+typedef struct {
+    char pad0[0x78];
+    Level18VendorData *data;
+    char pad7C[0x2A];
+    short class_id;
+} Level18VendorMoby;
+
+extern void func_0020D678(void *);
+
+/* Remove a vendor moby and any child it owns. */
+void func_L18_002FBD40(Level18VendorMoby *moby) {
+    if (moby->class_id == 0x630) {
+        void *child = moby->data->child;
+        if (child != 0) {
+            func_0020D678(child);
+        }
+        func_0020D678(moby);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L18_002FC188);
 INCLUDE_ASM("asm/overlays", func_L18_002FD058);
 INCLUDE_ASM("asm/overlays", func_L18_002FD5C0);
