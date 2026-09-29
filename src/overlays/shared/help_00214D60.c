@@ -8,7 +8,27 @@ INCLUDE_ASM("asm/overlays", func_L00_00215738);
 INCLUDE_ASM("asm/overlays", func_L00_00215A90);
 INCLUDE_ASM("asm/overlays", func_L00_002162B8);
 INCLUDE_ASM("asm/overlays", func_L00_00216648);
-INCLUDE_ASM("asm/overlays", func_L00_002167C8);
+typedef struct { float x, y, z, w; } Vx __attribute__((aligned(16)));
+typedef struct { int a[16]; } Mx __attribute__((aligned(16)));
+extern char D_0013E633[] NOT_SDA;
+extern void func_001FA218(void *, void *);
+extern void func_001FA4A0(void *, void *);
+extern void func_001F9EE8(void *, void *, void *);
+extern float func_001F9B50(float);
+extern float func_L00_001FF860(float, float);
+
+void func_L00_002167C8(Vx *in, float *out) {
+    Mx m0;
+    Mx n0;
+    Vx v0;
+    Vx *v = &v0;
+    qcopy(v, in);
+    func_001FA218(&m0, (char *)*(int *)(D_0013E633 + 0x2E9D) + 0x40);
+    func_001FA4A0(&n0, &m0);
+    func_001F9EE8(v, v, &n0);
+    out[0] = func_L00_001FF860(func_001F9B50(v0.x * v0.x + v0.z * v0.z), v0.y);
+    out[1] = -func_L00_001FF860(v0.z, v0.x);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00216880);
 INCLUDE_ASM("asm/overlays", func_L00_00216B40);
 INCLUDE_ASM("asm/overlays", func_L00_00216D40);
