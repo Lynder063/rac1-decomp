@@ -14,7 +14,40 @@ void func_L00_0024FFE8(unsigned char *a, int dx, int dy) {
         int c = ((unsigned char *)e)[2]; int cnt; e += 2; if (c != 0) { cnt = c; do { e[0] = e[0] + dx; e[1] = e[1] + dy; e += 2; cnt--; } while (cnt != 0); }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00250060);
+typedef struct Slot {
+    short id;
+    short s2;
+    unsigned char used;
+    char pad5[7];
+    void *p0C;
+    void *p10;
+    int p14;
+    char pad18[4];
+    void *p1C;
+    char pad20[0x20];
+} Slot;
+extern Slot D_L00_0018EEC0[];
+extern char D_L00_001870C0[];
+
+Slot *func_L00_00250060(char *o, int id) {
+    int i = 0;
+    Slot *s;
+    unsigned char *r;
+    for (i = 0; i < 6 && D_L00_0018EEC0[i].used != 0; i++) {
+    }
+    s = &D_L00_0018EEC0[i];
+    s->used = 1;
+    s->id = id;
+    id = (short)id;
+    s->p10 = D_L00_001870C0 + i * 0x1500;
+    s->p14 = *(int *)(o + 0x24);
+    r = *(unsigned char **)(*(char **)(*(char **)(o + 0x24) + 0x1C) + id * 4 + 4);
+    s->s2 = r[2];
+    s->p0C = r + (r[0] + 4);
+    s->p1C = *(void **)(o + 0x60);
+    *(Slot **)(o + 0x60) = s;
+    return s;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00250120);
 INCLUDE_ASM("asm/overlays", func_L00_002501C8);
 INCLUDE_ASM("asm/overlays", func_L00_00250418);
