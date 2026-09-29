@@ -80,7 +80,25 @@ INCLUDE_ASM("asm/overlays", func_L16_002E5EC0);
 INCLUDE_ASM("asm/overlays", func_L16_002E6478);
 INCLUDE_ASM("asm/overlays", func_L16_002E66C0);
 INCLUDE_ASM("asm/overlays", func_L16_002E6908);
-INCLUDE_ASM("asm/overlays", func_L16_002E6B48);
+typedef struct {
+    float value;
+} Level16VendorTurnData;
+
+typedef struct {
+    char pad0[0x20];
+    unsigned char state;
+    char pad21[0x57];
+    Level16VendorTurnData *data;
+    char pad7C[0x40];
+    unsigned char active;
+} Level16VendorTurnMoby;
+
+/* Start the vendor moby's turn and mark it active. */
+void func_L16_002E6B48(Level16VendorTurnMoby *moby) {
+    moby->data->value = -3.1415925f;
+    moby->active = 1;
+    moby->state = 2;
+}
 INCLUDE_ASM("asm/overlays", func_L16_002E7270);
 INCLUDE_ASM("asm/overlays", func_L16_002E7670);
 INCLUDE_ASM("asm/overlays", func_L16_002E7890);
