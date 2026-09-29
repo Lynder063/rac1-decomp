@@ -9,7 +9,22 @@ INCLUDE_ASM("asm/overlays", func_L13_002EE148);
 INCLUDE_ASM("asm/overlays", func_L13_002EE238);
 INCLUDE_ASM("asm/overlays", func_L13_002EE590);
 INCLUDE_ASM("asm/overlays", func_L13_002EE8E0);
-INCLUDE_ASM("asm/overlays", func_L13_002F4BE8);
+typedef struct {
+    char pad0[0x34];
+    unsigned short flags;
+    char pad36[0x5E];
+    int field94;
+} Level13VendorMoby;
+
+extern char D_0013DE6E[];
+
+/* Clear a vendor moby's field and set its flags unless it is the current target. */
+void func_L13_002F4BE8(Level13VendorMoby *moby) {
+    if (*(void **)(D_0013DE6E + 0x2C2) != moby) {
+        moby->field94 = 0;
+        moby->flags |= 3;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L13_002F4C10);
 INCLUDE_ASM("asm/overlays", func_L13_002F9D18);
 INCLUDE_ASM("asm/overlays", func_L13_002F9F10);
