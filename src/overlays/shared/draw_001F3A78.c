@@ -25,7 +25,23 @@ void func_L00_001F91B0(void) {
         func_001F3D78();
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_001F9248);
+extern int func_L00_002016D0(void);
+extern void func_001FB530(void);
+extern void func_L00_002781D8(int);
+extern void func_001FBE80(void);
+
+void func_L00_001F9248(void) {
+    if (D_L00_0015F6BC == 0) {
+        if (func_L00_002016D0() == 0) {
+            func_001FB530();
+            D_L00_0015F4F4 = 0x100FF;
+            func_001F3D78();
+        } else {
+            if (func_L00_002016D0() == 3) func_L00_002781D8(1);
+        }
+        func_001FBE80();
+    }
+}
 extern int D_L00_0015F6BC MACRO_ADDR;
 extern void func_L00_002781D8(int);
 void func_L00_001F92C0(void) { if (D_L00_0015F6BC == 0) func_L00_002781D8(0); }
