@@ -80,7 +80,16 @@ int func_L00_0028F140(int a0, int a1, int a2, int a3, int a4) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_0028F208);
 INCLUDE_ASM("asm/overlays", func_L00_0028F210);
-INCLUDE_ASM("asm/overlays", func_L00_0028F230);
+typedef struct { int k; int v; } TE;
+extern TE D_L00_001EAD00[];
+
+void func_L00_0028F230(short *a) {
+    int i;
+    for (i = 0; D_L00_001EAD00[i].k != -1 && D_L00_001EAD00[i].k != a[0]; i++) {
+    }
+    a[1] = i;
+    *(int *)(a + 2) = D_L00_001EAD00[i].v;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0028F3E0);
 INCLUDE_ASM("asm/overlays", func_L00_0028F410);
 INCLUDE_ASM("asm/overlays", func_L00_0028F458);
