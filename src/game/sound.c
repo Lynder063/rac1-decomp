@@ -301,10 +301,10 @@ extern void func_001EFE10(void *, void *, int, int, int);
 int func_0022D970(void *arg0, void *arg1) {
     float v[4];
 
-    func_001F9BF0(v, (char *)arg0 + 0x20, D_00187180);
-    func_001F9C30(v, v, 0.75f);
+    FastVecSub(v, (char *)arg0 + 0x20, D_00187180);
+    FastVecScale(v, v, 0.75f);
     func_001F9E58(v, v, 64.0f);
-    func_001F9BD8(v, v, D_00187180);
+    FastVecAdd(v, v, D_00187180);
     return func_001EFE10_a(arg1, v, 0x82, *(int *)((char *)arg0 + 0x18), 0);
 }
 
@@ -339,7 +339,7 @@ extern void func_0022DA10_v(void *, float, float, float) __asm__("func_0022DA10"
 
 void func_0022DB00(void *arg0, int arg1) {
     char *s = (char *)arg0;
-    float v = func_001F9D10(arg1, D_00187180);
+    float v = FastVecDist(arg1, D_00187180);
     float *p = *(float **)(s + 0x8);
     func_0022DA10_v(p, v, p[0], p[1]);
 }
@@ -361,7 +361,7 @@ void func_0022DB48(void *arg0, void *arg1, void *arg2) {
     func_001F9BF0_a(v, arg1, D_00187180_a);
     func_001F9EE8(v, v, arg2);
     t = func_001F9BB0(func_001F9CE8(v) - 1.0f, 0.0f, 1.0f);
-    func_001FA898(-func_001FA058_a(v[0], v[1]) * 180.0f * t * 0.31830987f);
+    truncate_float_to_s32(-func_001FA058_a(v[0], v[1]) * 180.0f * t * 0.31830987f);
 }
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022DBE8);

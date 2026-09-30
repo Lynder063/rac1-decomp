@@ -114,8 +114,8 @@ long func_00205520(char *p) {
 
     t.clut = p + 0x20;
     t.clutSize = 0x400;
-    t.tw = func_001F9968(*(int *)(p + 8));
-    t.th = func_001F9968(*(int *)(p + 0xC));
+    t.tw = log2dim(*(int *)(p + 8));
+    t.th = log2dim(*(int *)(p + 0xC));
     t.pix = p + 0x20 + t.clutSize;
     addr = D_0015EF74;
     cbp = addr >> 8;
@@ -274,7 +274,7 @@ int func_00205790(void) {
         }
         i++;
     }
-    func_00205830(0, i);
+    move_map_entry_slot(0, i);
     return i;
 }
 
@@ -299,7 +299,7 @@ void func_00205830(int a, int b) {
     int *size = base + 0xA9;
     int *flags;
 
-    func_001F9A98((void *)dst[a], (void *)dst[b], size[b] << 4);
+    FastMemCopy((void *)dst[a], (void *)dst[b], size[b] << 4);
 
     flags = base + 0xA3;
     flags[a] = flags[b];
@@ -332,13 +332,13 @@ extern int *D_001602E0_m __asm__("D_001602E0") MACRO_ADDR;
    ternary that gives retail's select (slti/movn). */
 int func_00205918(void) {
     char *m = (char *)D_001A01F0;
-    int off = D_0013D5E9 ? 0x100 : 0;
+    int off = gHaveMapOMatic ? 0x100 : 0;
     int key;
     int i;
     int step;
 
     key = *(int *)(m + 0x224) + off;
-    if (func_002058D0(key) == -1) {
+    if (findMapSlot(key) == -1) {
         return key;
     }
     i = 0;
@@ -353,7 +353,7 @@ int func_00205918(void) {
         if (j >= 0) {
             if (j < 20 && D_001602E0_m[j] != 0) {
                 key = D_001602E0_m[j] + off;
-                if (func_002058D0(key) == -1) {
+                if (findMapSlot(key) == -1) {
                     return key;
                 }
             }
@@ -408,7 +408,7 @@ int func_00205AA8(void) {
     }
     {
         int i;
-        cur = func_00205A50(D_001A01F0[0x89]);
+        cur = find_id_in_terminated_table(D_001A01F0[0x89]);
         if (cur == -1) {
             return 1;
         }
@@ -418,7 +418,7 @@ int func_00205AA8(void) {
                 if (D_001A01F0[0xA3 + i] == -1) {
                     return i;
                 }
-                d = func_001F9B70(func_00205A50(D_001A01F0[0xA3 + i] & 0xFF) - cur);
+                d = func_001F9B70(find_id_in_terminated_table(D_001A01F0[0xA3 + i] & 0xFF) - cur);
                 if (best < d) {
                     best = d;
                     bestIdx = i;

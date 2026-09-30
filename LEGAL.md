@@ -64,6 +64,17 @@ is not risk-free, and it is a deliberate choice specific to this project —
 not one to extend further (e.g. to hosting extracted assets, or a prebuilt
 ROM) without thinking it through again.
 
+## Sources used for the code
+
+The C is reconstructed from the retail executable, with open-source
+libraries (newlib, libgcc) and public projects about this game as
+references. Sony's SDK source, samples and headers, and leaked or NDA
+material of any kind, are not used (CONTRIBUTING.md, "Sources"). Code
+found to have been derived from such material is reverted to assembly:
+on 2026-09-30, the 81 functions of `movie/` (Sony's ezmpeg MPEG
+streaming sample, as built into the game) and libmpeg's
+`_initRefImages`, together with `include/ezmpeg.h`.
+
 ## Practical implication
 
 This repo will not build into a runnable game for anyone who doesn't

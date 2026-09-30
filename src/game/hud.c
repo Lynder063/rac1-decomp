@@ -114,7 +114,7 @@ void func_001FF6B8(void) {
     for (i = 0; i < 13; i++) {
         D_00199C60_b[i].unk64 = -1;
         D_00199C60_b[i].unk20 = 0x10000;
-        func_001FFB38(i, 0xFFFF, 0, 0, 0, 0, 1);
+        queue_animation_update(i, 0xFFFF, 0, 0, 0, 0, 1);
         D_00199C60_b[i].unk7C = 0;
         D_00199C60_b[i].unk6C = -6;
         D_00199C60_b[i].unk04 = 0;
@@ -127,7 +127,7 @@ void func_001FF6B8(void) {
     buf = D_0015FAB8;
     D_0015FAC0 = buf + 0x2800;
     D_0015FABC = buf;
-    func_001F99D8(buf, 0x2800);
+    FastMemZero16(buf, 0x2800);
     D_0015FAB8[0x20] = 0xFF;
 }
 
@@ -223,7 +223,7 @@ int func_001FFAB8(int size) {
     int cur;
 
     if (p[4] == 0) {
-        func_001FFA90();
+        Hud_HeapReset();
     }
     if (p[5] - p[4] < size) {
         return 0;
@@ -292,7 +292,7 @@ int func_001FFB38(int arg0, int arg1, int arg2, int arg3, int arg4,
     *(int *)(p + 0x7C) = 0;
     *(int *)(p + 0x70) = 0;
     if (r3 != 0) {
-        func_001FFC48(p);
+        apply_pending_animation(p);
     }
     return *(int *)(p + 0x64);
 }
@@ -307,7 +307,7 @@ extern void func_001FFD30(void *, int);
 void func_001FFC48(void *arg0) {
     char *p = (char *)arg0;
 
-    func_001FFD30(arg0, *(int *)(p + 0x20));
+    load_animation_definition(arg0, *(int *)(p + 0x20));
     *(int *)(p + 4) = *(int *)(p + 0x24);
     *(int *)(p + 0x14) = *(int *)(p + 0x34);
     *(int *)(p + 0x18) = *(int *)(p + 0x38);
@@ -362,7 +362,7 @@ void func_001FFD30(void *arg0, int arg1) {
     int r;
     unsigned short v;
 
-    r = func_001FF668(arg1);
+    r = Hud_GetIconIndex(arg1);
     /* base materialized only after the call, so it lands in a temp
        register rather than a callee-saved one; tbl[7] is volatile because
        retail re-loads that pointer field before each record access. */
@@ -517,7 +517,7 @@ int func_00200198(int iconId, int sub) {
     int frame;
     short *pair;
 
-    idx = func_001FF668(iconId);
+    idx = Hud_GetIconIndex(iconId);
     arena = D_0019A4E8_raw;
     row = (unsigned short *)(idx * 8 + *(int *)(arena + 0x1C));
     if (row[0] == 0xFFFF) {
@@ -571,7 +571,7 @@ void func_00200468(int tex, int x, int y, int w, int h, int alpha) {
     p = (long *)D_00161000;
     p[0] = 0x7400000000008001L;
     p[1] = 0x5353106;
-    p[2] = func_00200248(tex);
+    p[2] = GetFrameTex(tex);
     p[3] = 0x156;
     p[4] = ((long)alpha << 24) | 0x7F7F7F;
     p[5] = 0;
@@ -610,7 +610,7 @@ void func_00200650(int tex, int x, int y, int w, int h, int alpha) {
     p = (long *)D_00161000;
     p[0] = 0xB400000000008001L;
     p[1] = 0x53535353106L;
-    p[2] = func_00200248(tex);
+    p[2] = GetFrameTex(tex);
     p[3] = 0x154;
     p[4] = ((long)alpha << 24) | 0x7F7F7F;
     p[5] = tw * 16;
@@ -657,7 +657,7 @@ void func_002008B8(int tex, int x, int y, int w, int h, int alpha) {
     p = (long *)D_00161000;
     p[0] = 0x7400000000008001L;
     p[1] = 0x5353106;
-    p[2] = func_00200248(tex);
+    p[2] = GetFrameTex(tex);
     p[3] = 0x156;
     p[4] = ((long)alpha << 24) | 0x7F7F7F;
     p[5] = 0;
@@ -695,7 +695,7 @@ void func_00200A90(int tex, int x, int y, int w, int h, int u, int v, int alpha)
     p = (long *)D_00161000;
     p[0] = 0x7400000000008001L;
     p[1] = 0x5353106;
-    p[2] = func_00200248(tex);
+    p[2] = GetFrameTex(tex);
     p[3] = 0x156;
     p[4] = ((long)alpha << 24) | 0x7F7F7F;
     p[5] = u | ((long)v << 16);
@@ -783,18 +783,18 @@ void func_00200E38(int u, int v, long tex, float x, float y, float w, float h, f
 
     pos[0] = x;
     pos[1] = y;
-    a[0] = h * func_001F9FA8(rot);
-    a[1] = h * func_001F9F90(rot);
-    b[0] = -w * func_001F9F90(rot);
-    b[1] = w * func_001F9FA8(rot);
-    func_001F9BD8(c0, pos, a);
-    func_001F9BF0(c0, c0, b);
-    func_001F9BD8(c1, pos, a);
-    func_001F9BD8(c1, c1, b);
-    func_001F9BF0(c2, pos, a);
-    func_001F9BF0(c2, c2, b);
-    func_001F9BF0(c3, pos, a);
-    func_001F9BD8(c3, c3, b);
+    a[0] = h * FastSin(rot);
+    a[1] = h * FastCos(rot);
+    b[0] = -w * FastCos(rot);
+    b[1] = w * FastSin(rot);
+    FastVecAdd(c0, pos, a);
+    FastVecSub(c0, c0, b);
+    FastVecAdd(c1, pos, a);
+    FastVecAdd(c1, c1, b);
+    FastVecSub(c2, pos, a);
+    FastVecSub(c2, c2, b);
+    FastVecSub(c3, pos, a);
+    FastVecAdd(c3, c3, b);
 
     D_00161000[0] = 0x10000007;
     D_00161000[1] = 0;
@@ -851,7 +851,7 @@ void func_00201190(int tex, int x0, int y0, int x1, int y1,
     p = (long *)D_00161000;
     p[0] = ((long)0xE800 << 47) | 0x8001;
     p[1] = 0x5353106;
-    p[2] = func_00200248(tex);
+    p[2] = GetFrameTex(tex);
     p[3] = 0x156;
     p[4] = ((long)alpha << 24) | 0x7F7F7F;
     p[5] = u0 | ((long)v0 << 16);
@@ -1078,11 +1078,11 @@ extern void func_00200650(int, int, int, int, int, int);
  * (mirrored via func_00200650), all using the same GetIconFrame glyph
  * in its two variants. */
 void func_00201960(int a0, int a1, int a2, int a3, int a4) {
-    int v0 = func_00200198(0x7580, 0);
-    int v1 = func_00200198(0x7580, 1);
+    int v0 = GetIconFrame(0x7580, 0);
+    int v1 = GetIconFrame(0x7580, 1);
 
-    func_00200468(v1, a0, a1, 0x20, a3, a4);
-    func_00200468(v0, a0 + 0x20, a1, a2 - 0x40, a3, a4);
+    HudSprite(v1, a0, a1, 0x20, a3, a4);
+    HudSprite(v0, a0 + 0x20, a1, a2 - 0x40, a3, a4);
     a0 = a0 + a2;
     func_00200650(v1, a0 - 0x20, a1, 0x20, a3, a4);
 }
@@ -1107,9 +1107,9 @@ void func_00201A38(int a, int b, int c, int d) {
     int m = c & 0xFF000000;
     int t;
     if (hi >= 0x51) hi = 0x50;
-    t = func_001F6FD8(a + 1, b + 1, m, d, -1) - 0x20;
-    func_00201960(t, b - 8, (a - t) * 2, 0x20, hi);
-    func_001F6FD8(a, b, c, d, -1);
+    t = FontPrintCenterLarge(a + 1, b + 1, m, d, -1) - 0x20;
+    draw_stretchable_ui_frame(t, b - 8, (a - t) * 2, 0x20, hi);
+    FontPrintCenterLarge(a, b, c, d, -1);
 }
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00201AE0);

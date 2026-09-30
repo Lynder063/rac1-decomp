@@ -48,12 +48,18 @@ function's name, your role and your budget. Everything else is here, in
    - Compare the assembly with "Known walls". If it hits one, say which in
      NOTES.md and stop.
 3. Start from, in this order: Lombyte's C, the best earlier candidate, the
-   original source when `CONTEXT.md` names one, `m2c.c`, or
+   open-source original when `CONTEXT.md` names one, `m2c.c`, or
    `bash tools/docker/run.sh python tools/m2c.py <func>`.
+   Never use Sony SDK source, samples or headers, or any leaked
+   material (CONTRIBUTING.md, "Sources"); if a function looks like SDK
+   sample code, decode it from the assembly like any other.
 4. Write each candidate as `build-sn/try/<func>/pN.c`, taking the next free
    number: the function plus only the externs it needs. Copy declarations
    from `CONTEXT.md` or the file exactly; a second declaration with
-   another type fails.
+   another type fails. Declare and define with address names
+   (`func_X`, `D_X`); inside the body, call or use a symbol by the name
+   `CONTEXT.md` gives it (`include/names.h`, docs/NAMES.md) when it is
+   not a candidate. Both spellings compile to the same code.
 5. Test with
    `bash tools/docker/run.sh python tools/try_func.py <func> build-sn/try/<func>/pN.c`,
    adding `--diff` to see which instructions differ. Change one thing at a

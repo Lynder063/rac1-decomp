@@ -242,7 +242,7 @@ int func_00217628(int arg0, int arg1, int arg2) {
         return 0;
     }
     if (func_0012EE98(arg1, arg2, arg0, d + 0x30) == 0) {
-        func_001E9730(D_001E8980);
+        STUB_printf(D_001E8980);
         func_001F9978();
         return 0;
     }
@@ -293,7 +293,7 @@ int func_002176C8(void) {
     if (r != 0) {
         while (d = (char *)D_001517D0, *(short *)(d + 0x8) != 0) {
             func_00122598(0);
-            func_00217130();
+            music_Update();
             func_0012EC40();
             func_0012DDC0();
             func_0012EC30();
@@ -319,13 +319,13 @@ short func_00217748(int arg0) {
         char *d;
         while (d = (char *)D_001517D0, *(short *)(d + 0x8) != 0) {
             func_00122598(0);
-            func_00217130();
+            music_Update();
             func_0012EC40();
             func_0012DDC0();
             func_0012EC30();
         }
     } else {
-        func_00217130();
+        music_Update();
         func_0012EC40();
         func_0012DDC0();
         func_0012EC30();
@@ -370,7 +370,7 @@ void func_00217860(int arg0, long arg1) {
         }
     } else {
         short *b = D_001517D0;
-        func_002167C0(b[0x2A], b[0x2C], b[0x2B]);
+        music_start_track_by_id(b[0x2A], b[0x2C], b[0x2B]);
     }
 }
 
@@ -388,7 +388,7 @@ void func_002178C0(int arg0, long arg1) {
         }
     } else {
         short *b = D_001517D0;
-        func_002169B8(b[0x1C], b[0x1E], b[0x1D]);
+        music_PreseekTrack(b[0x1C], b[0x1E], b[0x1D]);
     }
 }
 
@@ -453,7 +453,7 @@ void func_00217A08(int arg0, long arg1) {
     short *p = (short *)(int)arg1;
     if (p != 0) {
         if (*(unsigned int *)p != 0xFFFFFFFF) {
-            func_001E9730(D_00160168);
+            STUB_printf(D_00160168);
         } else {
             *(int *)p = arg0;
             if (arg0 == 0) {

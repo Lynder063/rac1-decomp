@@ -1350,6 +1350,11 @@ a decompiled function. `func_<ADDR>` stays the symbol name, because the
 build and every tool read the address from it. The build is byte-identical
 with the comments in place.
 
+2026-09-30: these names, and those RC1, Lombyte and ReRAC have added
+since, are now also usable in C: `config/names.tsv` and the generated
+`include/names.h` (macros onto the address names), applied to the bodies
+of every decompiled function. See docs/NAMES.md.
+
 Tool fix found on the way: `rank_candidates.py` looked for documented
 reverts in `src/*.c` only. After the split those files are in
 subdirectories, so it silently found none, and 6 already-attempted stubs

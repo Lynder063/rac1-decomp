@@ -51,18 +51,18 @@ from libgcc_units import (MODULES, FUNCTIONS as LIBGCC_FUNCTIONS, SEGMENT_SOURCE
                           object_of)
 from organize_asm import LISTS, entries
 from toolchain import TC, make_sn, sn, start_wineserver
+from levels import NUM_LEVELS, dirname as level_dirname, title as level_title
 
 REPORT = Path("progress/report.json")
 BASEROM = "baserom/SCES_509.16"
 LINKED_ELF = "build-sn/rac1.elf"
 
 # Level code overlays (docs/OVERLAYS.md, "Plan" step 3): src/overlays/shared/
-# and src/overlays/lNN/ get one unit per file, alongside the executable's own
-# units. NUM_LEVELS matches the lNN directories docs/OVERLAYS.md's Layout
-# measurement found (l00..l18).
+# and src/overlays/lNN_<planet>/ get one unit per file, alongside the
+# executable's own units. The level directories and their labels come from
+# tools/levels.py.
 OVERLAYS_SRC = Path("src/overlays")
 OVERLAYS_CATALOGUE = Path("config/overlays/functions.tsv")
-NUM_LEVELS = 19
 OVERLAY_NAME = re.compile(r"^func_L(\d{2})_([0-9A-Fa-f]{8})$")
 WORK_ROOT = Path("build-sn/overlays/report")
 
@@ -177,7 +177,7 @@ def overlay_catalogue() -> dict[str, tuple[str, int]]:
 
 def overlay_dirs() -> list[tuple[Path, list[str]]]:
     """(directory, progress_categories) for src/overlays/shared/ and every
-    src/overlays/lNN/ that exists. Any other file directly under
+    src/overlays/lNN_<planet>/ that exists. Any other file directly under
     src/overlays/ (e.g. a test file) is not part of either directory and is
     ignored."""
     out = []
@@ -185,7 +185,7 @@ def overlay_dirs() -> list[tuple[Path, list[str]]]:
     if shared.is_dir():
         out.append((shared, ["level_code", "common"]))
     for i in range(NUM_LEVELS):
-        d = OVERLAYS_SRC / f"l{i:02d}"
+        d = OVERLAYS_SRC / level_dirname(i)
         if d.is_dir():
             out.append((d, ["level_code", "levels", f"level_{i:02d}"]))
     return out
@@ -224,7 +224,7 @@ def overlay_file_functions(path: Path) -> list[tuple[str, bool]]:
 
 def overlay_file_map() -> dict[Path, list[tuple[str, bool]]]:
     """path -> [(name, is_c), ...] for every file under src/overlays/shared/
-    or src/overlays/lNN/."""
+    or src/overlays/lNN_<planet>/."""
     return {path: overlay_file_functions(path)
             for directory, _ in overlay_dirs()
             for path in sorted(directory.glob("*.c"))}
@@ -267,7 +267,7 @@ def overlay_match_results(file_map: dict) -> dict[str, float]:
 
 def overlay_units(file_map: dict, fuzzy: dict) -> tuple[list[dict], list, dict, dict, int, int]:
     """(out_units, all_items, cat_items, cat_complete, complete_units,
-    complete_code) for src/overlays/shared/ and src/overlays/lNN/: one unit
+    complete_code) for src/overlays/shared/ and src/overlays/lNN_<planet>/: one unit
     per file, its functions the file's INCLUDE_ASM'd or defined
     func_LNN_XXXXXXXX names in file order (docs/OVERLAYS.md, "Plan" step 3).
     cat_items/cat_complete cover "level_code", "common", "levels" and "level_NN" -- a
@@ -525,7 +525,7 @@ def generate() -> dict:
         {"id": "levels", "name": "Level-specific code",
          "measures": measures(overlay_cat_items["levels"], complete_code=overlay_cat_complete["levels"])},
     ] + [
-        {"id": f"level_{i:02d}", "name": f"Level {i:02d}",
+        {"id": f"level_{i:02d}", "name": level_title(i),
          "measures": measures(overlay_cat_items[f"level_{i:02d}"],
                               complete_code=overlay_cat_complete[f"level_{i:02d}"])}
         for i in range(NUM_LEVELS)

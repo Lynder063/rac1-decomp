@@ -50,4 +50,9 @@ if [ "$CONTAINER_CLI" = "podman" ]; then
 fi
 
 # ${a[@]+...}: bash 3.2 (macOS) treats an empty array as unset under set -u.
-exec $CONTAINER_CLI run --rm $tty ${sec_opts[@]+"${sec_opts[@]}"} --platform linux/386 -v "$repo:$repo" -w "$repo" "$IMAGE_TO_RUN" "$@"
+# --init: a tiny init as PID 1 reaps orphaned processes. Without it the
+# command is PID 1, and a long Python run that starts thousands of Wine
+# processes (gen_progress_report.py compiling every overlay file) never
+# reaps the orphans; process creation then fails partway through with
+# Wine's "Not enough space".
+exec $CONTAINER_CLI run --rm --init $tty ${sec_opts[@]+"${sec_opts[@]}"} --platform linux/386 -v "$repo:$repo" -w "$repo" "$IMAGE_TO_RUN" "$@"

@@ -332,10 +332,10 @@ void func_00236958(void) {
     ((int *)D_00161068)[2] = 0;
     ((int *)D_00161068)[3] = 0;
     if (D_0018A3B0[6] != 0 && D_0018A3B0[5] != 0) {
-        size = func_002383D8(D_0015EF74);
-        func_00234E80();
+        size = BuildTieTextureDma(D_0015EF74);
+        VU1_texFlush();
         if (size > 0x400000) {
-            func_001E9730(D_001E8D80);
+            STUB_printf(D_001E8D80);
         }
         if (D_00161074 < size) {
             D_00161074 = size;
@@ -382,10 +382,10 @@ extern char D_001E2D00[];
 extern char D_001E4100[];
 
 void func_00236B58(void) {
-    func_00236A98();
-    func_001F9A98(D_001E3300, D_001E4500, 0x200);
-    func_001F9A98(D_001E2D00, D_001E4100, 0x400);
-    func_00236A98();
+    PatchTieGifs();
+    FastMemCopy(D_001E3300, D_001E4500, 0x200);
+    FastMemCopy(D_001E2D00, D_001E4100, 0x400);
+    PatchTieGifs();
 }
 
 extern void func_00238688(void *);
@@ -393,8 +393,8 @@ extern char D_001E3500[];
 extern char D_001E4700[];
 
 void func_00236BB0(void) {
-    func_00238688(D_001E3500);
-    func_00238688(D_001E4700);
+    LightTies(D_001E3500);
+    LightTies(D_001E4700);
 }
 
 extern int D_00161000 MACRO_ADDR;
@@ -423,12 +423,12 @@ void func_00236BE0(void) {
     func_001F2560(D_00161030, 1);
     if (D_0018A3C8 != 0) {
         func_00118D80(0);
-        func_00236F00();
-        func_001F9AF0(D_001E3500, 0x3600, 0x40);
+        TieProc();
+        write_dma_channel(D_001E3500, 0x3600, 0x40);
     }
     func_001F2560(D_00161040, 5);
-    func_00236958();
-    func_001F9A98((void *)D_00161000, D_001DF3B0, 0x20);
+    DmaTieTextures();
+    FastMemCopy((void *)D_00161000, D_001DF3B0, 0x20);
     func_001F2558(D_00161040, 5);
 }
 
@@ -467,13 +467,13 @@ void func_00236CA8(void) {
         DrawCfg_236CA8 *d = (DrawCfg_236CA8 *)D_0018A3B0;
         if (d->unk18 != 0) {
             func_00118D80(0);
-            func_00236F00();
-            func_001F9AF0(D_001E4700, 0x3600, 0x40);
+            TieProc();
+            write_dma_channel(D_001E4700, 0x3600, 0x40);
         }
     }
-    func_00236958();
-    func_001F9A98(D_001E4500, D_001E3300, 0x200);
-    func_001F9A98(D_001E4100, D_001E2D00, 0x400);
+    DmaTieTextures();
+    FastMemCopy(D_001E4500, D_001E3300, 0x200);
+    FastMemCopy(D_001E4100, D_001E2D00, 0x400);
     {
         int i;
         int n = D_0016104C;
@@ -497,12 +497,12 @@ void func_00236CA8(void) {
         D_00161000 = p;
         if (d->unk18 != 0) {
             func_00118D80(0);
-            func_00236F00();
-            func_001F9AF0(D_001E3500, 0x3600, 0x40);
+            TieProc();
+            write_dma_channel(D_001E3500, 0x3600, 0x40);
         }
     }
     func_001F2560(D_00161040, 5);
-    func_00236958();
+    DmaTieTextures();
     {
         int i;
         int n = D_0016104C;
@@ -510,6 +510,6 @@ void func_00236CA8(void) {
             *(short *)(D_001E1A00[i] + 0x24) &= ~8;
         }
     }
-    func_001F9A98((void *)D_00161000, D_001DF3B0, 0x20);
+    FastMemCopy((void *)D_00161000, D_001DF3B0, 0x20);
     func_001F2558(D_00161040, 5);
 }

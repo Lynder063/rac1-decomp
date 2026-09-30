@@ -5,8 +5,8 @@ The full procedure is in [`docs/WORKFLOW.md`](docs/WORKFLOW.md). In short:
 1. Pick a function. `python tools/rank_candidates.py` lists promising ones;
    `python tools/triage.py` sorts everything not yet exact into work queues
    (one-function tasks, per-file batches, and blocked).
-   Before decompiling, check whether the function is library code with a
-   real source.
+   Before decompiling, check whether the function is library code with an
+   open-source original (see Sources below).
 2. Get a starting point with `python tools/m2c.py func_XXXXXXXX`. That runs
    [m2c](https://github.com/matt-kempster/m2c) with context from
    `sh tools/gen_ctx.sh` (or `python tools/gen_ctx.py` on Windows).
@@ -30,6 +30,29 @@ m2c and asm-differ are used from local clones (not vendored):
 git clone https://github.com/matt-kempster/m2c tools/ext/m2c
 git clone https://github.com/simonlindholm/asm-differ tools/ext/asm-differ
 ```
+
+## Sources
+
+C here is reconstructed from the retail executable's own code. Allowed
+as references:
+
+- the retail binary (our assembly, Ghidra, m2c), and SDK library
+  *binaries* the toolchain ships (`.a` archives: their code and symbol
+  names, used the same way as the retail binary);
+- open-source code under its own license: newlib, libgcc/GCC, and
+  anything else whose license permits it, credited in
+  `THIRD_PARTY_NOTICES.md`;
+- other public decompilations and ports of this game (Lombyte, RC1,
+  ReRAC: docs/SIBLING_DECOMPS.md), credited, and public hardware
+  documentation.
+
+**Never** use Sony's SDK source, sample code or headers, or any leaked or
+NDA material, even when copies circulate inside leaked source releases
+of other games. Not as code, not as types or macros, not as a reference
+to check a match against. On 2026-09-30 the movie code (`movie/*`, Sony's
+ezmpeg sample in retail) and one libmpeg helper were reverted to
+assembly for exactly this: they had been compiled from that sample's
+source. They are to be redone from the assembly alone.
 
 Known compiler behaviour, useful levers and measured dead ends are collected
 in [`docs/DECOMP_PROGRESS.md`](docs/DECOMP_PROGRESS.md).

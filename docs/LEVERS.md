@@ -116,17 +116,18 @@ in `config/core_rodata.txt`).
    a scalar global, so it can move above one); one `char *` local per block
    reading a global; scaled indices in their own locals (base-first `addu`).
    An array element (`bins[2]`), not a cast pointer (`*(T **)(base + 8)`),
-   lets the offset fold into the load. Use the SDK's real types: an
-   all-`u_char` struct copies with unaligned `ldl`/`ldr`. Pointer
+   lets the offset fold into the load. Field types matter: an
+   all-`u_char` struct copies with unaligned `ldl`/`ldr`, so give a
+   struct the member types its loads and stores show. Pointer
    arithmetic instead of integer arithmetic (or back) changes what the
-   compiler shares between expressions: it stopped three multiplies
-   from merging in `_initRefImages`.
+   compiler shares between expressions: it can stop multiplies from
+   merging.
 7. **`volatile`** keeps an access out of delay slots and keeps store order;
    make only the fields retail re-reads volatile.
 8. **Siblings.** Find a matched function of the same shape in the file and
-   copy it first, and look in `include/` for the library's own macros and
-   types (`include/ezmpeg.h`, the SDK headers) before writing an
-   expression by hand.
+   copy it first, and look in `include/` for macros and types already
+   reconstructed before writing an expression by hand (only from
+   permitted sources: CONTRIBUTING.md, "Sources").
 9. **Not allowed:** register pins (`register int x __asm__("$14")`), inline
    assembly inside a function, and artificial barriers (`__asm__("" : "+r"(x))`,
    or `do { ... } while (0)` used to block scheduling). Upstream bans them

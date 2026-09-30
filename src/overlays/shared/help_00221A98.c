@@ -8,12 +8,12 @@ INCLUDE_ASM("asm/overlays", func_L00_002222F0);
 extern int func_001F9850(int);
 extern int func_L00_00222580(void);
 int func_L00_00222520(void) {
-    int r = func_001F9850(12);
+    int r = scale_ticks(12);
     int t = func_L00_00222580();
     if (t == 2) {
         r = 0;
     } else if (t == 3) {
-        r = func_001F9850(12);
+        r = scale_ticks(12);
     }
     return r;
 }
@@ -38,7 +38,7 @@ int func_L00_00227E90(void) {
     int s = *(int *)(p + 0x2084);
     if ((unsigned)(s - 2) < 2 || s == 0) {
         if (*(unsigned char *)(p + 0x20A8) != 0) {
-            if (*(int *)(p + 0x1BC) < func_001F9850(6)) {
+            if (*(int *)(p + 0x1BC) < scale_ticks(6)) {
                 if (*(float *)(p + 0x229C) < 0.7f) {
                     if (*(unsigned char *)(p + 0x20AB) == 0) {
                         func_L00_0020ED30();
@@ -103,7 +103,7 @@ void func_L00_00229778(void) {
 
     m = *(void **)(g + 0x1614);
     if (m != 0) {
-        func_0020D678(m);
+        DeleteMoby(m);
         *(void **)(g + 0x1614) = 0;
     }
     a = *(void **)(g + 0x1180);

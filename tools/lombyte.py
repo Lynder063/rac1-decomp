@@ -30,6 +30,11 @@ MAP = ROOT / "build-sn/lombyte_ntsc_pal_map.json"
 def functions(report: Path, key) -> list[tuple[int, int, str, bool]]:
     rows = []
     for unit in json.loads(report.read_text())["units"]:
+        # Both reports also hold level overlay code (Lombyte's level_NN/...
+        # and shared/..., our overlays/...): those addresses are in the
+        # levels' own address space, and would corrupt the alignment.
+        if unit["name"].split("/")[0] in ("shared", "overlays") or unit["name"].startswith("level_"):
+            continue
         for f in unit.get("functions", []):
             rows.append((key(f), int(f["size"]), f["name"], (f.get("fuzzy_match_percent") or 0) == 100))
     return sorted(r for r in rows if r[0] is not None)
@@ -39,7 +44,7 @@ def build_map() -> list[dict]:
     theirs = functions(LOMBYTE / "progress/report.json",
                        lambda f: int(f.get("metadata", {}).get("virtual_address") or 0))
     ours = functions(ROOT / "progress/report.json",
-                     lambda f: int(f["name"][5:], 16) if f["name"].startswith("func_") else None)
+                     lambda f: int(f["name"][5:], 16) if re.fullmatch(r"func_[0-9A-Fa-f]{8}", f["name"]) else None)
     match = difflib.SequenceMatcher(None, [s for _, s, _, _ in theirs], [s for _, s, _, _ in ours],
                                     autojunk=False)
     pairs = []

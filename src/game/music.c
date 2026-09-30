@@ -215,7 +215,7 @@ void func_002161E0(void) {
     func_0012EC60(4, 0xF000, 0, 1);
     while (func_0012DDC0() != 0) {
     }
-    func_00216270();
+    register_audio_stream_callback();
 }
 
 extern void func_0012F068(void *);
@@ -796,7 +796,7 @@ void func_00216F48(MusicPlaying *p) {
                 func_0012EDB0(p->handle);
                 p->state |= 0x8000;
             }
-            if (func_001F9938(&p->fadeT) == 2) {
+            if (FastDecTimer(&p->fadeT) == 2) {
                 p->fade = 4;
             }
         } else if (p->state & 0x8000) {

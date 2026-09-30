@@ -146,7 +146,7 @@ extern char D_00199A68[];
 /* msg_string(int). The table load sits in the bgezl slot, where the
    MACRO_ADDR access becomes $gp-relative. */
 void *func_001FE540(int id) {
-    int i = func_001FE4D0(id);
+    int i = Help_FindIndex(id);
     if (i >= 0) {
         return D_0015F780[i].text;
     }
@@ -189,7 +189,7 @@ void func_001FE588(void) {
 
     idx = ((HelpState *)D_001997D0)->pad[6];
     text = D_0015F780[idx].text;
-    func_001F7648((void *)win, 0xF0, 0x1E0, 0x2C, 0x1D4, 0x100, 0x168, 0x10, 7);
+    FontSetWindow((void *)win, 0xF0, 0x1E0, 0x2C, 0x1D4, 0x100, 0x168, 0x10, 7);
     func_001F75D0((void *)win, 0x80FFA888L, text, -1);
 
     screenY = D_0013E604;
@@ -231,7 +231,7 @@ void func_001FF0C8(void) {
 
     ((HelpState *)D_001997D0)->pad[4] = 0x20;
     ((HelpState *)D_001997D0)->pad[5] = 0x20;
-    func_001F62C8(((HelpState *)D_001997D0)->pad[3] - 0x20,
+    DrawUIFrame(((HelpState *)D_001997D0)->pad[3] - 0x20,
                   ((HelpState *)D_001997D0)->pad[3] + 0x20,
                   ((HelpState *)D_001997D0)->pad[2] - 0x20,
                   ((HelpState *)D_001997D0)->pad[2] + 0x20, 0x60);
@@ -243,7 +243,7 @@ void func_001FF0C8(void) {
     if (alpha > 0x80) {
         alpha = 0x80;
     }
-    func_001F5800(((HelpState *)D_001997D0)->pad[2] - 0x20,
+    DrawTexturedQuad(((HelpState *)D_001997D0)->pad[2] - 0x20,
                   ((HelpState *)D_001997D0)->pad[3] - 0x20, 0x40, 0x40, 0, 0, 0x40, 0x40,
                   (alpha << 24) | 0x808080, func_001F4868_l(4));
 }
@@ -274,7 +274,7 @@ void func_001FF1B0(void) {
 
             ((HelpState *)D_001997D0)->pad[4] = s;
             ((HelpState *)D_001997D0)->pad[5] = s;
-            func_001F62C8(((HelpState *)D_001997D0)->pad[3] - s,
+            DrawUIFrame(((HelpState *)D_001997D0)->pad[3] - s,
                           ((HelpState *)D_001997D0)->pad[3] + s,
                           ((HelpState *)D_001997D0)->pad[2] - s,
                           ((HelpState *)D_001997D0)->pad[2] + s, 0x60);
@@ -282,7 +282,7 @@ void func_001FF1B0(void) {
         break;
     case 2:
         if (D_0015EF1D_b) {
-            func_001FF0C8();
+            Help_DrawPrompt();
         }
         break;
     case 3:
@@ -293,7 +293,7 @@ void func_001FF1B0(void) {
 
             ((HelpState *)D_001997D0)->pad[4] = a;
             ((HelpState *)D_001997D0)->pad[5] = b;
-            func_001F62C8(((HelpState *)D_001997D0)->pad[3] - b,
+            DrawUIFrame(((HelpState *)D_001997D0)->pad[3] - b,
                           ((HelpState *)D_001997D0)->pad[3] + b,
                           ((HelpState *)D_001997D0)->pad[2] - a,
                           ((HelpState *)D_001997D0)->pad[2] + a, 0x60);
@@ -301,7 +301,7 @@ void func_001FF1B0(void) {
             if (alpha < 0) {
                 alpha = 0;
             }
-            func_001F5800(((HelpState *)D_001997D0)->pad[2] - 0x20,
+            DrawTexturedQuad(((HelpState *)D_001997D0)->pad[2] - 0x20,
                           ((HelpState *)D_001997D0)->pad[3] - 0x20, 0x40, 0x40, 0, 0, 0x40, 0x40,
                           (alpha << 24) | 0x808080, func_001F4868_l(4));
         }
@@ -316,7 +316,7 @@ void func_001FF1B0(void) {
 
             ((HelpState *)D_001997D0)->pad[4] = ((HelpState *)D_001997D0)->pad[0];
             ((HelpState *)D_001997D0)->pad[5] = ((HelpState *)D_001997D0)->pad[1];
-            func_001F62C8(((HelpState *)D_001997D0)->pad[3] - ((HelpState *)D_001997D0)->pad[1],
+            DrawUIFrame(((HelpState *)D_001997D0)->pad[3] - ((HelpState *)D_001997D0)->pad[1],
                           ((HelpState *)D_001997D0)->pad[3] + ((HelpState *)D_001997D0)->pad[1],
                           ((HelpState *)D_001997D0)->pad[2] - ((HelpState *)D_001997D0)->pad[0],
                           ((HelpState *)D_001997D0)->pad[2] + ((HelpState *)D_001997D0)->pad[0], 0x60);
@@ -326,7 +326,7 @@ void func_001FF1B0(void) {
                 col = ((4 - ((HelpState *)D_001997D0)->x04) << 29) | 0xFFA888;
             }
             text = D_0015F780[((HelpState *)D_001997D0)->pad[6]].text;
-            func_001F7648((void *)win, 0xF0, 0x1E0, 0x2C, 0x1D4, 0x100,
+            FontSetWindow((void *)win, 0xF0, 0x1E0, 0x2C, 0x1D4, 0x100,
                           ((HelpState *)D_001997D0)->pad[3], 0x10, 3);
             func_001F75D0((void *)win, col, text, -1);
         }
@@ -338,7 +338,7 @@ void func_001FF1B0(void) {
             int a = ((HelpState *)D_001997D0)->pad[5]
                   - (((HelpState *)D_001997D0)->pad[5] - 8) * ((HelpState *)D_001997D0)->x04 / 8;
 
-            func_001F62C8(((HelpState *)D_001997D0)->pad[3] - a,
+            DrawUIFrame(((HelpState *)D_001997D0)->pad[3] - a,
                           ((HelpState *)D_001997D0)->pad[3] + a,
                           ((HelpState *)D_001997D0)->pad[2] - b,
                           ((HelpState *)D_001997D0)->pad[2] + b,

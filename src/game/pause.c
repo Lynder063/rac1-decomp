@@ -245,7 +245,7 @@ extern int D_0015F6E8 MACRO_ADDR;
    func_0020C7A0 return values, which moves the next temporary to $v1. */
 void func_00219C70(int arg0) {
     func_0012E528(0x1D);
-    func_00216EF0(0);
+    music_Pause(0);
     func_0012DDC0_i();
     if (D_0018C42C != 0) {
         D_0015F754 = 1;
@@ -497,7 +497,7 @@ int func_0021AEF8(char *arg0) {
     int top = y;
     int i;
 
-    func_001F4630(0);
+    SetupGifPaging(0);
     for (i = 0; i < *(int *)(arg0 + 0x40); i++) {
         char *e = *(char **)(arg0 + 0x48) + i * 10;
 
@@ -508,21 +508,21 @@ int func_0021AEF8(char *arg0) {
             func_00201640(x - 0x10, y - 0x10, x + 0x210, y + 0x210,
                           *(int *)&D_001602B0, 1);
         }
-        func_002008B8(func_00200198(*(unsigned short *)e, *(short *)(e + 2)), x, y,
+        func_002008B8(GetIconFrame(*(unsigned short *)e, *(short *)(e + 2)), x, y,
                       0x200, 0x200, 0x80);
         y += 0x252;
     }
     if (top < 0) {
         func_00201640(0, 0, *(int *)(arg0 + 0x20), 0x14, *(int *)&D_001602B0, 0);
-        func_00200468(func_00200198(0xE99E, 6), x >> 4, 2, 0x20, 0x10, 0x80);
+        HudSprite(GetIconFrame(0xE99E, 6), x >> 4, 2, 0x20, 0x10, 0x80);
     }
     if (*(int *)(arg0 + 0x24) * 16 < y) {
         func_00201640(0, *(int *)(arg0 + 0x24) - 0x14, *(int *)(arg0 + 0x20),
                       *(int *)(arg0 + 0x24), *(int *)&D_001602B0, 0);
-        func_00200650(func_00200198(0xE99E, 6), x >> 4, *(int *)(arg0 + 0x24) - 0x12,
+        func_00200650(GetIconFrame(0xE99E, 6), x >> 4, *(int *)(arg0 + 0x24) - 0x12,
                       0x20, 0x10, 0x80);
     }
-    func_001F4748();
+    DoGifPaging();
     return 2;
 }
 
@@ -576,7 +576,7 @@ int func_0021B138(void) {
     for (i = 0; i < 12 && ids[i] != -1; i++) {
         if (D_0015EEC0[ids[i]] != 0) {
             D_001D3E90[n].val = names[i];
-            D_001D3E90[n].addr = &D_0015EEB0[ids[i]];
+            D_001D3E90[n].addr = &gCheats[ids[i]];
             D_001D3E90[n].c1 = 0x4F5A;
             D_001D3E90[n].c2 = 0x4F5B;
             D_001D3E90[n].zero = 0;
@@ -635,7 +635,7 @@ int func_0021C6C0(int start, int col1, int col2) {
     } else {
         t = 1.0f;
     }
-    return func_001FA8A8(col1, col2, t);
+    return FastTweenColor(col1, col2, t);
 }
 
 /* Pause page link walk: with arg1 clear, follow arg0's +0x4C chain for
@@ -733,7 +733,7 @@ int func_0021CDA0(void) {
     if (D_001517D0[4] != 0) {
         char *g = D_001D5F70;
         if (*(unsigned char *)(g + 0xCB) != 0) {
-            func_00217588();
+            request_audio_stream_break();
             g[0xCB] = 0;
             D_001A01F0_slots.flags[D_001A01F0_slots.sel] = -1;
             D_001A01F0_slots.sel = -1;
@@ -879,7 +879,7 @@ extern char D_001D0A88[];
 
 int func_0021DA98(void *arg0) {
     *(char **)((char *)arg0 + 0x34) =
-        (D_0013D5CA != 0) ? D_001D0A50 : D_001D0A88;
+        (gHaveHeliPack != 0) ? D_001D0A50 : D_001D0A88;
     return 0;
 }
 
@@ -987,7 +987,7 @@ extern int D_001997FC;
 
 int func_0021E2D0(int arg0) {
     if (D_001517D0[4] != 0 && *(int *)(arg0 + 0x50) == 1) {
-        func_00217588();
+        request_audio_stream_break();
     }
     func_00226D50(1);
     {
@@ -1139,7 +1139,7 @@ int func_0021EE00(char *arg0) {
         {
             char *slots2 = arg0 + 0x44;
             int off2 = i * 4;
-            func_0020E180(*(int *)(slots2 + off2), 1);
+            DrawMobyList(*(int *)(slots2 + off2), 1);
         }
     }
     return 4;
@@ -1237,25 +1237,25 @@ int func_0021F118(char *arg0) {
         return 0;
     }
     if (*(int *)(arg0 + 0x44) != 0) {
-        func_0020E180(*(int *)(arg0 + 0x44), 1);
+        DrawMobyList(*(int *)(arg0 + 0x44), 1);
         if (*(int *)(arg0 + 0x48) != 0) {
-            func_0020E180(*(int *)(arg0 + 0x48), 1);
+            DrawMobyList(*(int *)(arg0 + 0x48), 1);
         }
         return 8;
     }
-    func_001F4630(0);
+    SetupGifPaging(0);
     func_00227A30(buf, arg0);
     buf[8] = 0x10;
     buf[9] = 3;
     func_001F7560(buf, 0x80FFA888L, func_001FE540_id(0x4F4D), -1);
-    func_001F4748();
+    DoGifPaging();
     return 2;
 }
 
 extern float func_001FA748(float, float);
 
 void func_0021F200(char *arg0) {
-    *(float *)(arg0 + 0x48) = func_001FA748(*(float *)(arg0 + 0x48), 0.01f);
+    *(float *)(arg0 + 0x48) = FastAddRots(*(float *)(arg0 + 0x48), 0.01f);
 }
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021F238);
@@ -1274,11 +1274,11 @@ int func_0021F610(char *arg0) {
     }
     v = *(int *)(arg0 + 0x44);
     if (v != 0) {
-        func_0020E180(v, 1);
+        DrawMobyList(v, 1);
     }
     v = *(int *)(arg0 + 0x48);
     if (v != 0) {
-        func_0020E180(v, 1);
+        DrawMobyList(v, 1);
     }
     return 8;
 }
@@ -1365,10 +1365,10 @@ int func_0021F898(char *arg0) {
     box[8] = 0x10;
     box[9] = 1;
     box[1] = h;
-    func_001F4630(0);
+    SetupGifPaging(0);
     func_00234C98_l(0x47, 0x2004B);
     func_001F7560(box, 0x80FFA888L, func_001FE540_id(0x4F6D), -1);
-    func_001F6EA8(cx, y1, 0x80FFA888L, func_001FE540_id(0x4F3F), -1);
+    FontPrintCenter(cx, y1, 0x80FFA888L, func_001FE540_id(0x4F3F), -1);
     a = func_001F6600(func_001FE540_id(0x5250), -1);
     b = func_001F6600(func_001FE540_id(0x5254), -1);
     if (b >= a) {
@@ -1377,7 +1377,7 @@ int func_0021F898(char *arg0) {
     x = (*(int *)(arg0 + 0x20) - a) >> 1;
     func_001F68E8_c(x, y2, 0x80FFA888L, func_001FE540_id(0x5250), -1);
     func_001F68E8_c(x, y3, 0x80FFA888L, func_001FE540_id(0x5254), -1);
-    func_001F4748();
+    DoGifPaging();
     return 2;
 }
 
@@ -1445,9 +1445,9 @@ int func_0021FF80(char *arg0) {
     *(float *)(o + 0x14) = *(float *)(t + 0x144) + D_001603A4_f;
     *(float *)(o + 0x18) = *(float *)(t + 0x148) - 0.1f;
     if (*(int *)(arg0 + 0x44) != 0) {
-        func_0020E180(*(int *)(arg0 + 0x44), 1);
+        DrawMobyList(*(int *)(arg0 + 0x44), 1);
     }
-    func_001F4630(0);
+    SetupGifPaging(0);
     count = 0;
     {
         int k;
@@ -1463,7 +1463,7 @@ int func_0021FF80(char *arg0) {
                     0x80000000L, buf, -1);
     func_001F6CF8_c(*(int *)(arg0 + 0x20) - 0x11, (D_0013E600[1] >> 1) - 9,
                     0x80FFA888L, buf, -1);
-    func_001F4748();
+    DoGifPaging();
     if (0) {
         /* no code: registers the 2-byte view last (see above) */
         (void)D_001603A4_s;
@@ -1475,7 +1475,7 @@ extern float func_001FA748(float, float);
 
 void func_00220128(void *arg0) {
     *(float *)((char *)arg0 + 0x40) =
-        func_001FA748(*(float *)((char *)arg0 + 0x40), 0.02f);
+        FastAddRots(*(float *)((char *)arg0 + 0x40), 0.02f);
 }
 
 /* func_00234C98's second parameter is 64-bit (as in draw.c and
@@ -1527,12 +1527,12 @@ int func_00220160(char *arg0) {
             func_00116248(q, D_001603D0, total / 1000, total % 1000);
         }
     }
-    func_001F4630(0);
+    SetupGifPaging(0);
     func_00227A30(box, arg0);
     box[8] = 0x10;
     box[9] = 3;
     func_001F7560(box, 0x80FFA888L, text, -1);
-    func_001F4748();
+    DoGifPaging();
     return 2;
 }
 
@@ -1540,8 +1540,8 @@ extern void func_00234C98(int, int);
 extern void func_00205E70(void);
 
 int func_00220338(void) {
-    func_00234C98(0x42, 0x44);
-    func_00234C98(0x47, 0xB);
+    VU1_addGSregister(0x42, 0x44);
+    VU1_addGSregister(0x47, 0xB);
     func_00205E70();
     return 8;
 }
@@ -1559,9 +1559,9 @@ int func_00220370(char *arg0) {
     int maxw, w;
     int x, y, step;
 
-    func_00234C98(0x42, 0x44);
-    func_00234C98(0x47, 0xB);
-    func_001F4630(0);
+    VU1_addGSregister(0x42, 0x44);
+    VU1_addGSregister(0x47, 0xB);
+    SetupGifPaging(0);
     maxw = func_001F6620(func_001FE540_id(0x4EEE), -1);
     w = func_001F6620(func_001FE540_id(0x4EFA), -1);
     if (w >= maxw) {
@@ -1606,7 +1606,7 @@ int func_00220370(char *arg0) {
     y += step;
     func_001F6968_c(x, y, 0x80FFA888L, func_001FE540_id(0x4EE0), -1);
     func_001F6598();
-    func_001F4748();
+    DoGifPaging();
     return 2;
 }
 __asm__(".section .text\n\tnop\n");
@@ -1625,12 +1625,12 @@ extern void *func_001FE540_id(int) __asm__("func_001FE540");
    calls, then two banner draws. 0x80FFA888 is spelled `long` (64-bit)
    so it builds via ori/dsll/ori rather than a sign-extending lui. */
 int func_00220600(void) {
-    func_00234C98(0x42, 0x44);
-    func_00234C98(0x47, 0xB);
-    func_001F4630(0);
+    VU1_addGSregister(0x42, 0x44);
+    VU1_addGSregister(0x47, 0xB);
+    SetupGifPaging(0);
     func_001F68E8_c(4, 7, 0x80FFA888L, func_001FE540_id(0x4EE0), -1);
     func_001F68E8_c(4, 0x17, 0x80FFA888L, func_001FE540_id(0x4F05), -1);
-    func_001F4748();
+    DoGifPaging();
     return 2;
 }
 
@@ -1645,8 +1645,8 @@ void func_002208F8(int x, int y, int flag) {
     func_00201640(x - 5, y - 5, x + 5, y + 5, 0x80FFA888L, 0);
     func_00201640(x - 4, y - 4, x + 4, y + 4, *(int *)&D_001602B0, 0);
     if (flag != 0) {
-        int c = func_00200198(0xE99E, 1);
-        func_00200468(c, x - 0xD, y - 0x12, 0x1E, 0x1E, 0x80);
+        int c = GetIconFrame(0xE99E, 1);
+        HudSprite(c, x - 0xD, y - 0x12, 0x1E, 0x1E, 0x80);
     }
 }
 
@@ -1664,7 +1664,7 @@ int func_00220C90(void *arg0) {
     if (*(int *)((char *)arg0 + 0x44) < 2) {
         return 0;
     }
-    func_001F5800(0, 0, D_00151880[0xB0], D_00151880[0xB1], 0, 0,
+    DrawTexturedQuad(0, 0, D_00151880[0xB0], D_00151880[0xB1], 0, 0,
                   *(int *)((char *)arg0 + 0x38),
                   *(int *)((char *)arg0 + 0x3C), 0x80808080L, D_001A0448);
     return 0x10;
@@ -1782,12 +1782,12 @@ int func_002217C8(void *arg0) {
         return 0;
     }
     c = 0x80808080L;
-    func_001F4630(0);
-    func_001F5800(0, 0, 0x100, 0x100, 0, 0, 0x100, 0x100, c,
+    SetupGifPaging(0);
+    DrawTexturedQuad(0, 0, 0x100, 0x100, 0, 0, 0x100, 0x100, c,
                   func_00205520(*(int *)((char *)arg0 + 0x48)));
-    func_001F5800(0x100, 0, 0x100, 0x100, 0, 0, 0x100, 0x100, c,
+    DrawTexturedQuad(0x100, 0, 0x100, 0x100, 0, 0, 0x100, 0x100, c,
                   func_00205520(*(int *)((char *)arg0 + 0x4C)));
-    func_001F4748();
+    DoGifPaging();
     return 8;
 }
 
@@ -1881,7 +1881,7 @@ int func_00221B58(char *arg0) {
     char *iconTab;
     int i;
 
-    func_001F4630(0);
+    SetupGifPaging(0);
     v1 = *(int *)(arg0 + 0x20);
     iconTab = D_001864D0;
     v0 = *(int *)(arg0 + 0x24);
@@ -1902,9 +1902,9 @@ int func_00221B58(char *arg0) {
         int idx;
 
         ang = (float)i * 0.7853982f + -1.5707964f;
-        t = func_001FA7D8(ang, flag);
-        x = cx + func_001F9F90(t) * radius;
-        y = cy + func_001F9FA8(t) * radius;
+        t = FastNormalizeAngle(ang, flag);
+        x = cx + FastCos(t) * radius;
+        y = cy + FastSin(t) * radius;
         if (i == *(int *)(arg0 + 0x50)) {
             unsigned int color = ((func_001F9B70((D_0015F538 & 0x3F) - 0x20) + 0x40) * 0x10202) | 0x80000000;
             func_00201640((int)x - 0x13, (int)y - 0x13, (int)x + 0x13, (int)y + 0x13, color, 0);
@@ -1914,17 +1914,17 @@ int func_00221B58(char *arg0) {
         if (idx == 0) {
             func_00201640((int)x - 0xF, (int)y - 0xF, (int)x + 0xF, (int)y + 0xF, 0x40404040L, 0);
         } else {
-            int id = func_00200198(*(unsigned short *)(iconTab + idx * 0x4C + 0x38), D_0013E620[idx] == 0 ? 0 : 4);
-            func_00200468(id, (int)x - 0x11, (int)y - 0x11, 0x20, 0x20, 0x80);
+            int id = GetIconFrame(*(unsigned short *)(iconTab + idx * 0x4C + 0x38), D_0013E620[idx] == 0 ? 0 : 4);
+            HudSprite(id, (int)x - 0x11, (int)y - 0x11, 0x20, 0x20, 0x80);
         }
         i += 1;
         flag = 0xE99E;
     } while (i < 8);
-    func_00200468(func_00200198(0xE99E, 0), 8, 0x27, 0x20, -0x20, 0x80);
-    func_00200468(func_00200198(0xE99E, 0), *(int *)(arg0 + 0x20) - 0xA, 0x27, -0x20, -0x20, 0x80);
+    HudSprite(GetIconFrame(0xE99E, 0), 8, 0x27, 0x20, -0x20, 0x80);
+    HudSprite(GetIconFrame(0xE99E, 0), *(int *)(arg0 + 0x20) - 0xA, 0x27, -0x20, -0x20, 0x80);
     func_001F68E8_c(0x28, 0xF, 0x80FFA888L, D_001603D8, -1);
     func_001F68E8_c(*(int *)(arg0 + 0x20) - 0x3C, 0xF, 0x80FFA888L, D_001603E0, -1);
-    func_001F4748();
+    DoGifPaging();
     return 2;
 }
 
@@ -2008,7 +2008,7 @@ int func_00221E60(char *arg0) {
                         char *g3 = D_001D5F70;
                         func_001FBC80(6, *(void **)(g3 + 4), 0);
                     } else {
-                        func_001F4E08(4);
+                        FadeToBlack(4);
                         *(int *)(arg0 + 0x3C) = func_001F98C0(0x10);
                         *(unsigned char *)&D_0016044C_i = !*(unsigned char *)&D_0016044C_i;
                     }
@@ -2244,11 +2244,11 @@ typedef struct {
 int func_00222848(MenuObj40 *arg0) {
     int i;
 
-    for (i = 0; i < 20 && D_0013D618[i] != 0; i++) {
-        D_001D6648[i].a = *(unsigned short *)((char *)D_001DE0C0 + D_0013D618[i] * 12);
+    for (i = 0; i < 20 && gGalaxyList[i] != 0; i++) {
+        D_001D6648[i].a = *(unsigned short *)((char *)D_001DE0C0 + gGalaxyList[i] * 12);
         D_001D6648[i].b = 1;
         D_001D6648[i].c = 0;
-        D_001D6648[i].d = *(unsigned short *)((char *)D_001DE0C0 + D_0013D618[i] * 12 + 4);
+        D_001D6648[i].d = *(unsigned short *)((char *)D_001DE0C0 + gGalaxyList[i] * 12 + 4);
     }
     D_001D6648[i].a = 0;
     arg0->sel = 0;
@@ -2408,7 +2408,7 @@ int func_00222B98(char *arg0) {
 
     func_00234C98_l(0x42, 0x44);
     func_00234C98_l(0x47, 0x2004B);
-    func_001F4630(0);
+    SetupGifPaging(0);
     text = D_001603E8;
     v = D_001D6044;
     switch (v) {
@@ -2437,7 +2437,7 @@ int func_00222B98(char *arg0) {
         c.s[5]--;
         func_001F75D0(&c, 0x80FFA888L, text, -1);
     }
-    func_001F4748();
+    DoGifPaging();
     return 2;
 }
 
@@ -2549,22 +2549,22 @@ extern void func_00200E38_f(float, float, int, int, int, float, float, float)
 int func_00222FA8(char *arg0) {
     Glyph2 buf;
 
-    func_001F4630(0);
+    SetupGifPaging(0);
     if (*(int *)(arg0 + 0x38) != 0) {
         buf = *(Glyph2 *)D_001603F0;
         func_001F68E8_c(4, *(int *)(arg0 + 0x24) / 2 - 8, 0x80FFA888L, &buf, -1);
         func_00200E38_f(640.0f, (float)(*(int *)(arg0 + 0x24) << 3), 0x20, 0x10,
-                        func_00200248(func_00200198(0xE99E, 6)), 128.0f,
+                        GetFrameTex(GetIconFrame(0xE99E, 6)), 128.0f,
                         256.0f, 0.0f);
     } else {
         buf = *(Glyph2 *)D_001603F8;
         func_001F68E8_c(*(int *)(arg0 + 0x20) - 0x18,
                         *(int *)(arg0 + 0x24) / 2 - 8, 0x80FFA888L, &buf, -1);
         func_00200E38_f(192.0f, (float)(*(int *)(arg0 + 0x24) << 3), 0x20, 0x10,
-                        func_00200248(func_00200198(0xE99E, 6)), 128.0f,
+                        GetFrameTex(GetIconFrame(0xE99E, 6)), 128.0f,
                         256.0f, 3.14159274f);
     }
-    func_001F4748();
+    DoGifPaging();
     return 2;
 }
 
@@ -2584,17 +2584,17 @@ int func_00223140(char *arg0) {
     char *p = *(char **)(D_001D5F74 + 0x40);
     int row = *(int *)(*(char **)(p + 0x34) + *(int *)(p + 0x40) * 12 + 4);
 
-    func_001F4630(0);
+    SetupGifPaging(0);
     if (row == -1) {
-        func_001F6EA8(*(int *)(arg0 + 0x20) / 2, *(int *)(arg0 + 0x24) / 2 - 8,
+        FontPrintCenter(*(int *)(arg0 + 0x20) / 2, *(int *)(arg0 + 0x24) / 2 - 8,
                       0x80FFA888L, func_001FE540_id(0x5019), -1);
     } else {
-        func_001F6EA8(*(int *)(arg0 + 0x20) / 2, *(int *)(arg0 + 0x24) / 3 - 8,
+        FontPrintCenter(*(int *)(arg0 + 0x20) / 2, *(int *)(arg0 + 0x24) / 3 - 8,
                       0x80FFA888L, func_001FE540_id(D_001DE0C0_i[row].a), -1);
-        func_001F6EA8(*(int *)(arg0 + 0x20) / 2, *(int *)(arg0 + 0x24) * 2 / 3 - 8,
+        FontPrintCenter(*(int *)(arg0 + 0x20) / 2, *(int *)(arg0 + 0x24) * 2 / 3 - 8,
                       0x80FFA888L, func_001FE540_id(D_001DE0C0_i[row].b), -1);
     }
-    func_001F4748();
+    DoGifPaging();
     return 2;
 }
 
@@ -2638,32 +2638,32 @@ int func_002232E0(void) {
         int i;
 
         {
-            unsigned char *m = D_0013D510;
+            unsigned char *m = gSkillPoints;
             tag = m[0x1D];
         }
         for (i = 0; i < 4; i++) {
             save[i] = D_0014C008[i];
         }
-        func_001F9A00(tbl0, D_0015EEB0, 0xC);
+        func_001F9A00(tbl0, gCheats, 0xC);
         func_001F9A00(tbl1, D_0015EEC0, 0xC);
         {
             char *g = D_001D5F70;
-            func_00209CE8(*(int *)(g + 0xE0));
+            memcard_RestoreGame(*(int *)(g + 0xE0));
         }
         {
-            unsigned char *m2 = D_0013D510;
+            unsigned char *m2 = gSkillPoints;
             m2[0x1D] = tag;
         }
         for (i = 0; i < 4; i++) {
             D_0014C008[i] = save[i];
         }
-        func_001F9A00(D_0015EEB0, tbl0, 0xC);
+        func_001F9A00(gCheats, tbl0, 0xC);
         func_001F9A00(D_0015EEC0, tbl1, 0xC);
         D_0015EFA0 = 1;
         D_0015F6CC = 0;
-        func_0020BFC8(0, -1);
+        memcard_Save(0, -1);
         func_00228268();
-        func_001F4E08(func_001F98C0(0x10));
+        FadeToBlack(func_001F98C0(0x10));
         D_0013F450[0x20B1] = 1;
         return -1;
     }
@@ -2873,7 +2873,7 @@ int func_00223810(char *arg0) {
 
     func_00234C98_l(0x47, 0x30000);
     func_00234C98_l(0x42, 0x8000000044L);
-    func_001F4630(0);
+    SetupGifPaging(0);
     func_00227A30(box, arg0);
     box[9] = 9;
     box[3] = *(int *)(arg0 + 0x18) + *(int *)(arg0 + 0x20);
@@ -2923,7 +2923,7 @@ int func_00223810(char *arg0) {
     case 0:
         break;
     }
-    func_001F4748();
+    DoGifPaging();
     return 2;
 }
 
@@ -2954,16 +2954,16 @@ int func_002239F0(char *arg0) {
     buf = tmp;
     x = 0x18;
     y = 4;
-    func_001F4630(0);
-    func_00200468(func_00200198(0xE99A, 6), 4, y + 8, 0x10, 0x10, 0x80);
+    SetupGifPaging(0);
+    HudSprite(GetIconFrame(0xE99A, 6), 4, y + 8, 0x10, 0x10, 0x80);
     buf.x = x;
     buf.y = y;
     func_001F7560(&buf, 0x80FFA888L, func_001FE540_id(0x5187), -1);
     y = (short)buf.fE + 0x10;
     buf.y = y;
-    func_00200468(func_00200198(0xE99A, 6), 4, y + 8, 0x10, 0x10, 0x80);
+    HudSprite(GetIconFrame(0xE99A, 6), 4, y + 8, 0x10, 0x10, 0x80);
     func_001F7560(&buf, 0x80FFA888L, func_001FE540_id(0x5188), -1);
-    func_001F4748();
+    DoGifPaging();
     return 2;
 }
 
@@ -2983,20 +2983,20 @@ int func_00223E40(char *arg0) {
     char *b = D_0013D390;
     int row = ((PageTbl *)b)->rec[*(int *)(*(char **)(*(char **)(g + 4) + 0x40) + 0x40)].row;
 
-    func_001F4630(0);
+    SetupGifPaging(0);
     if (*(int *)(b + 0xDC) < 3 && *(int *)(b + 0xE4) < 0
         && *(int *)(g + 0x154) >= 0xB && *(int *)(b + 8) == 2) {
         if (row == -1) {
-            func_001F6EA8(*(int *)(arg0 + 0x20) / 2, *(int *)(arg0 + 0x24) / 2 - 8,
+            FontPrintCenter(*(int *)(arg0 + 0x20) / 2, *(int *)(arg0 + 0x24) / 2 - 8,
                           0x80FFA888L, func_001FE540_id(0x521C), -1);
         } else {
-            func_001F6EA8(*(int *)(arg0 + 0x20) / 2, 4, 0x80FFA888L,
+            FontPrintCenter(*(int *)(arg0 + 0x20) / 2, 4, 0x80FFA888L,
                           func_001FE540_id(D_001DE0C0_i[row].a), -1);
-            func_001F6EA8(*(int *)(arg0 + 0x20) / 2, 0x14, 0x80FFA888L,
+            FontPrintCenter(*(int *)(arg0 + 0x20) / 2, 0x14, 0x80FFA888L,
                           func_001FE540_id(D_001DE0C0_i[row].b), -1);
         }
     }
-    func_001F4748();
+    DoGifPaging();
     return 2;
 }
 
@@ -3096,7 +3096,7 @@ int func_00224040(char *arg0) {
             }
             e = d + 0x30;
             *(int *)(d + 0xFC) = 1;
-            *(int *)(d + 0x24 + *(int *)(d + 0x14) * 0x1C) = D_0015EE98;
+            *(int *)(d + 0x24 + *(int *)(d + 0x14) * 0x1C) = gBolts;
             *(int *)(d + 0x20 + *(int *)(d + 0x14) * 0x1C) = D_0015EE84_mm;
             *(int *)(d + 0x2C + *(int *)(d + 0x14) * 0x1C) = D_0015EF24;
             *(SaveWord2 *)(e + *(int *)(d + 0x14) * 0x1C) = D_0015EF98_s;
@@ -3271,7 +3271,7 @@ int func_00225358(char *arg0) {
         v[2] = 0;
         g = D_001D5F70;
         *(int *)(g + 0xC0) = -1;
-        func_001F99B0(D_00186410, 0, 0x40);
+        FastMemSet(D_00186410, 0, 0x40);
         func_001E9790(m);
     }
     m = func_00226720_a(0x259);
@@ -3393,14 +3393,14 @@ void func_00225E00(void *arg0) {
     still = D_001864D0_r[i].still == 0;
     func_001FA480(m->mtx, mtx);
     if (!still) {
-        func_00214F78(m->mtx);
+        normalize_vector_triplet(m->mtx);
     }
     func_0020EEE8(m);
     sync = 0;
     s = (unsigned char *)D_001D6160;
     if (s[1] != 0) {
         sync = 1;
-        func_0020D9D8(id, s);
+        DetachManipulator(id, s);
     }
     if (still) {
         func_001E9800(D_001864D0_a, D_001864D0, m->sound, 0, id);
@@ -3411,7 +3411,7 @@ void func_00225E00(void *arg0) {
         m->x50 = 0;
     }
     if (sync) {
-        func_0020D960(id, 0, s);
+        AttachManipulator(id, 0, s);
         *(int *)(s + 0x20) = 0;
         *(int *)(s + 0x24) = 0;
         *(int *)(s + 0x28) = 0;
@@ -3431,7 +3431,7 @@ void func_00225FB8(PauseMoby *m) {
     func_0020DAF8(id, 4, mtx);
     qcopy(m->pos, &mtx[12]);
     func_001FA480(m->mtx, mtx);
-    func_00214F78(m->mtx);
+    normalize_vector_triplet(m->mtx);
     func_0020EEE8(m);
     if (m->oclass == 0x1B1) {
         func_001E9800(D_001864D0_a, D_001864D0, m->sound, 6, id);
@@ -3478,7 +3478,7 @@ void func_00226250(void *arg0) {
     func_0020DAF8(id, 5, mtx);
     qcopy(m->pos, &mtx[12]);
     func_001FA480(m->mtx, mtx);
-    func_00214F78(m->mtx);
+    normalize_vector_triplet(m->mtx);
     func_0020EEE8(m);
 }
 
@@ -3492,7 +3492,7 @@ void func_00226380(PauseMoby *m) {
     func_0020DAF8(id, m->oclass == 0x197 ? 0x1E : 0x1D, mtx);
     qcopy(m->pos, &mtx[12]);
     func_001FA480(m->mtx, mtx);
-    func_00214F78(m->mtx);
+    normalize_vector_triplet(m->mtx);
     func_0020EEE8(m);
 }
 
@@ -3543,7 +3543,7 @@ int func_002267C0(int arg0) {
     if (arg0 == 0) {
         return 0;
     }
-    func_0020D678((void *)arg0);
+    DeleteMoby((void *)arg0);
     *(long *)(arg0 + 0x38) = D_0015F6F0;
     return 0;
 }
@@ -3577,7 +3577,7 @@ int func_00226CF8(void *arg0) {
     int i = 0x17;
     do {
         if (*p != 0) {
-            func_0020E180(*p, 1);
+            DrawMobyList(*p, 1);
         }
         i--;
         p++;
@@ -3611,8 +3611,8 @@ int func_00226EA8(int invert) {
         if ((f & 1) == 0 && D_001D6448_t[i].key != 0 &&
             (D_001D6448_t[i].flags & 2) == 0) {
             D_001D6448_t[i].flags |= 2;
-            n = func_00227018(D_001D6448_t[i].key);
-            func_001F99B0(D_001D6448_t[i].key, 0xDEADBEEF, n);
+            n = get_stream_buffer_size(D_001D6448_t[i].key);
+            FastMemSet(D_001D6448_t[i].key, 0xDEADBEEF, n);
             return D_001D6448_t[i].key;
         }
     }
@@ -3635,7 +3635,7 @@ int func_00226F68(int key) {
                     g = D_001D5F70;
                     D_001D6448_t[i].flags ^= 4;
                     if (*(unsigned char *)(g + 0xCB) != 0) {
-                        func_00217588();
+                        request_audio_stream_break();
                         g[0xCB] = 0;
                     }
                 }
@@ -3752,7 +3752,7 @@ int func_002279D0(void) {
     if (D_001517D0[4] != 0) {
         char *g = D_001D5F70;
         if (*(unsigned char *)(g + 0xCB) != 0) {
-            func_00217588();
+            request_audio_stream_break();
             g[0xCB] = 0;
         }
     }
@@ -3845,7 +3845,7 @@ void func_00227C78(int arg0, int arg1) {
     func_0012D818(D_0015EF98);
     func_00208FA0();
     func_00208338(D_00141FC0 + (D_0015EE84 << 11));
-    func_0020BA00((char *)arg0);
+    memcard_MakeWholeSave((char *)arg0);
     *(int *)(b + 0xF4) = arg0;
     *(int *)(b + 0x14) = arg1;
     *(int *)(b + 0xC8) = 0;
@@ -3868,7 +3868,7 @@ void func_00227D20(int arg0, int arg1) {
     func_00209DC0();
     func_00121A80(D_0015EF98);
     func_0012D818(D_0015EF98);
-    func_0020BA00((char *)arg0);
+    memcard_MakeWholeSave((char *)arg0);
     {
         char *b = D_0013D390;
         *(int *)(b + 0xC8) = 0;
@@ -3915,9 +3915,9 @@ extern char D_001D2BF8[];
    branches (HImode has no conditional move), the int ones become
    movz/movn. */
 void func_00228160(void) {
-    int a = func_00216198() >= 15;
-    int b = func_00216198() >= 30;
-    int c = func_00216150() >= 10;
+    int a = count_nonzero_entries_up_to_30() >= 15;
+    int b = count_nonzero_entries_up_to_30() >= 30;
+    int c = count_nonzero_entries_up_to_10() >= 10;
 
     {
         char *g = D_001D2B80;
@@ -3954,9 +3954,9 @@ extern int D_001D74C0[];
 extern int D_001D6760[];
 
 void func_00228268(void) {
-    func_001F99B0(D_001D6860, 0, 0xC60);
-    func_001F99B0(D_001D74C0, 0, 0xC60);
-    func_001F99B0(D_001D6760, 0, 0x100);
+    FastMemSet(D_001D6860, 0, 0xC60);
+    FastMemSet(D_001D74C0, 0, 0xC60);
+    FastMemSet(D_001D6760, 0, 0x100);
 }
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002282B8);
@@ -4014,7 +4014,7 @@ void func_002282D0(PauseVec *dir, float scale) {
         D_00160484 = v[0];
         D_00160488 = v[2];
     }
-    func_001F9CA0(D_00160480, D_00160480, D_00160470);
+    FastVecCross(D_00160480, D_00160480, D_00160470);
     func_001F9DC0(D_00160480, D_00160480, 1.0f);
 }
 

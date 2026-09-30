@@ -220,7 +220,7 @@ int func_0020C940(short type, int arg) {
         if (arg < 0x79) return D_0013D6B8_r[arg].d >= 2;
         break;
     case 6:
-        return D_0013D490[arg] != 0;
+        return gSpecialItems[arg] != 0;
     case 7:
         return ((int (*)(void))arg)() != 0;
     case 8:
@@ -306,7 +306,7 @@ extern int D_0013D9B4 NOT_SDA;
 extern unsigned char D_0013D490[];
 
 int func_0020CBA8(void) {
-    if (D_0013D9B4 != 0 && D_0013D490[0x20] != 0 && D_0013D490[0x21] != 0) return 1;
+    if (D_0013D9B4 != 0 && gSpecialItems[0x20] != 0 && gSpecialItems[0x21] != 0) return 1;
     return 0;
 }
 
@@ -362,7 +362,7 @@ int func_0020CCD0(void) {
     if (D_0013D6B8_r[20].d != 0 && D_0013D6B8_r[24].d == 0) {
         return 1;
     }
-    if (D_0013D6B8_r[24].d != 0 && D_0013D5CA != 0 && D_0013D6B8_r[22].d == 0) {
+    if (D_0013D6B8_r[24].d != 0 && gHaveHeliPack != 0 && D_0013D6B8_r[22].d == 0) {
         return 2;
     }
     return 0;
@@ -388,14 +388,14 @@ int func_0020CD58(void) {
 extern unsigned char D_0013D5DD NOT_SDA;
 
 int func_0020CD80(void) {
-    if (D_0013D5DD != 0) return 2;
+    if (gHaveMorphORay != 0) return 2;
     return D_0013DC34 != 0;
 }
 
 extern unsigned char D_0013D5E7 NOT_SDA;
 
 int func_0020CDA8(void) {
-    return D_0013D5E7 != 0;
+    return gHaveHologuise != 0;
 }
 
 int func_0020CDB8(void) {

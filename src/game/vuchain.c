@@ -414,7 +414,7 @@ void func_002349B8(void) {
     if (D_00161014 < size) {
         D_00161014 = size;
         if (D_0016100C_m < size) {
-            func_001E9730(D_001E8CF8);
+            STUB_printf(D_001E8CF8);
             err = 1;
         }
     }
@@ -443,8 +443,8 @@ void func_00234AC8(int mask) {
     while ((*(int *)&D_00160FE0 & mask) != 0) {
         func_001F9988(0x400);
         if (i > 100000) {
-            func_001E9730(D_001E8D10);
-            func_001F2568();
+            STUB_printf(D_001E8D10);
+            ResetVideoPipeline();
             break;
         }
         i++;
@@ -473,7 +473,7 @@ void func_00234BA0(int arg0, void *src, int qwc) {
     D_00161000[2] = 0x1000404;
     D_00161000[3] = arg0 | (qwc << 16) | 0x6C000000;
     D_00161000 += 4;
-    func_001F9A98(D_00161000, src, qwc * 16);
+    FastMemCopy(D_00161000, src, qwc * 16);
     D_00161000 += qwc * 4;
 }
 
@@ -611,7 +611,7 @@ void func_00235018(void) {
             *(int *)0x1000E010 = 0x20000;
         }
         D_00161018 = func_00118AB0(1, (void *)func_00235118, (void *)0);
-        D_0016101C = func_00118AB0(0xF, (void *)func_00235218, (void *)0);
+        D_0016101C = func_00118AB0(0xF, (void *)print_register_values_and_halt, (void *)0);
         func_00119460(1);
     }
 }
@@ -646,9 +646,9 @@ void func_00235218(void) {
     int a = *(volatile int *)0x10009000;
     int b = *(volatile int *)0x10009030;
 
-    func_001E9730(D_001E8D38);
-    func_001E9730(D_001E8D50, a, b);
-    func_001E9730(D_001E8D68);
+    STUB_printf(D_001E8D38);
+    STUB_printf(D_001E8D50, a, b);
+    STUB_printf(D_001E8D68);
     while (1) {
         ;
     }

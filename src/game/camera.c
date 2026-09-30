@@ -22,8 +22,8 @@ extern void *D_001871C0 NOT_SDA;
 
 /* BackupCurrentCam */
 void func_001EC038(void) {
-    func_001F9A98(D_00189310, D_001871C0, 0xA0);
-    func_001F9A98(D_001899D0, D_001899D0 - 0x500, 0x280);
+    FastMemCopy(D_00189310, D_001871C0, 0xA0);
+    FastMemCopy(D_001899D0, D_001899D0 - 0x500, 0x280);
     *(void **)(D_00189310 + 0x70) = D_001899D0;
 }
 
@@ -68,10 +68,10 @@ float func_001EC120(float a, float b, float *p, float c, float d, float e) {
             *p = -e;
         }
     }
-    if (func_001F9B88(diff) < *p) {
-        *p = func_001F9B88(diff);
-    } else if (-func_001F9B88(diff) > *p) {
-        *p = -func_001F9B88(diff);
+    if (FastAbsF(diff) < *p) {
+        *p = FastAbsF(diff);
+    } else if (-FastAbsF(diff) > *p) {
+        *p = -FastAbsF(diff);
     }
     return a + *p;
 }
@@ -96,7 +96,7 @@ void func_001EC210(void *arg0) {
         }
     } else {
         if (*(void **)(c + 0xC4) != 0) {
-            func_0020D678(*(void **)(c + 0xC4));
+            DeleteMoby(*(void **)(c + 0xC4));
             *(void **)(c + 0xC4) = 0;
         }
     }
@@ -214,7 +214,7 @@ int func_001EC5B8(void *cur, void *other) {
         if (o != 0 && *(short *)(o + 0x7E) == 0 && !(state[8] > *(unsigned char *)(o + 0x7C))) {
             return 0;
         }
-        if (func_00215570(D_0013F4D0, *(int *)(p + 0xC))) {
+        if (is_point_inside_clip_volume(gHeroPos, *(int *)(p + 0xC))) {
             return 1;
         }
         break;
@@ -295,13 +295,13 @@ int func_001EC7C8(void) {
     CamSlot *rec;
     int i;
 
-    func_001EC780(cur);
+    Camera_Exit(cur);
 
     for (i = 0; i < 0x30; i++) {
         if (D_00189C50[i] != 0) {
             rec = &D_00187510[i];
             if (rec != cur) {
-                if (func_001EC5B8(rec, cur)) {
+                if (Camera_ActivationCheckPriority(rec, cur)) {
                     cur = rec;
                     changed = 1;
                 }
@@ -318,7 +318,7 @@ int func_001EC7C8(void) {
         char *dst;
         float v;
 
-        func_001EC210(cur);
+        Camera_handleCollWithHero(cur);
         if (fn0C != 0) {
             fn0C(cur);
         }
@@ -329,7 +329,7 @@ int func_001EC7C8(void) {
         *(float *)(dst + 4) = *(float *)(src + 4);
         *(float *)(dst + 8) = *(float *)(src + 8);
     }
-    func_001EC098();
+    ExecuteCamPostUpdFuncs();
     return -1;
 }
 
@@ -356,43 +356,43 @@ void func_001EC8D8(float *out, void *p0, void *p1, void *dir0, void *dir1,
     float angle1, angle2;
     float a0, a1;
 
-    func_001F9BF0(diff, p0, p1);
-    d1 = func_001F9C78(diff, axis);
+    FastVecSub(diff, p0, p1);
+    d1 = FastVecDot(diff, axis);
     func_001F9DC0(proj, axis, d1);
-    func_001F9BF0(perp, diff, proj);
+    FastVecSub(perp, diff, proj);
 
-    d2 = func_001F9C78(dir0, perp);
-    lenPerp = func_001F9CB8(perp);
+    d2 = FastVecDot(dir0, perp);
+    lenPerp = FastVecLength(perp);
     if (lenPerp == 0.0f) {
         lenPerp = 0.0001f;
     }
-    angle1 = func_001F9FC0(d2 / lenPerp);
+    angle1 = FastArcSin(d2 / lenPerp);
     a0 = 1.57079637f - angle1;
 
     func_001F9DC0(unit, perp, 1.0f);
-    d3 = func_001F9C78(dir1, unit);
+    d3 = FastVecDot(dir1, unit);
     if (d3 < 0.0f) {
         a0 = -a0;
     }
     out[0] = a0;
 
-    func_002156E0(rotated, dir0, axis, a0);
-    d4 = func_001F9C78(rotated, diff);
-    lenDiff = func_001F9CB8(diff);
+    build_look_at_matrix(rotated, dir0, axis, a0);
+    d4 = FastVecDot(rotated, diff);
+    lenDiff = FastVecLength(diff);
     if (lenDiff == 0.0f) {
         lenDiff = 0.0001f;
     }
-    angle2 = func_001F9FC0(d4 / lenDiff);
+    angle2 = FastArcSin(d4 / lenDiff);
     a1 = -(1.57079637f - angle2);
 
     func_001F9DC0(unit, diff, 1.0f);
-    d5 = func_001F9C78(axis, unit);
+    d5 = FastVecDot(axis, unit);
     if (d5 < 0.0f) {
         a1 = 1.57079637f - angle2;
     }
     out[1] = a1;
 
-    out[2] = func_001F9CB8(diff);
+    out[2] = FastVecLength(diff);
 }
 
 extern void func_001EC8D8(float *out, void *p0, void *p1, void *dir0, void *dir1,
@@ -418,7 +418,7 @@ void func_001ECAB8(void) {
     qcopy(r + 0x90, local0);
     qcopy(r + 0xA0, local2);
 
-    func_001EC8D8((float *)(r + 0x70), r + 0xC0, g + 0x80, local0, local1, local2);
+    Camera_Pos2Polar3d((float *)(r + 0x70), r + 0xC0, g + 0x80, local0, local1, local2);
 
     qcopy(r + 0xB0, r + 0xD0);
 }
@@ -434,7 +434,7 @@ void func_001ECB98(void) {
     if (*(unsigned char *)(base + 2) == 0) {
         qcopy(base + 0xC0, base + 0x50);
         if (*(unsigned char *)(base + 3) == 2) {
-            func_001F9BD8(base + 0xC0, D_0013F590, base + 0xC0);
+            FastVecAdd(base + 0xC0, D_0013F590, base + 0xC0);
         }
         qcopy(base + 0xD0, base + 0x60);
     }
@@ -490,7 +490,7 @@ void func_001ECC48(void *arg) {
             func_001F9DC0(local0, *(char **)(g + 0x2080) + 0xC0, 1.0f);
             func_001F9DC0(local1, *(char **)(g + 0x2080) + 0xD0, 1.0f);
             func_001F9DC0(local2, *(char **)(g + 0x2080) + 0xE0, 1.0f);
-            func_001EC8D8((float *)(r + 0x70), arg0 + 0x30, *(char **)(r - 0xF0) + 0x30,
+            Camera_Pos2Polar3d((float *)(r + 0x70), arg0 + 0x30, *(char **)(r - 0xF0) + 0x30,
                           local0, local1, local2);
             func_00215328(r + 0xB0, arg0);
             qcopy(r + 0xD0, r + 0xB0);
@@ -498,13 +498,13 @@ void func_001ECC48(void *arg) {
     } else {
         sub = r[3];
         if (sub == 2) {
-            func_001ECB98();
+            Camera_stagePendingTransform();
             func_001ECAB8();
         } else if (sub == 1) {
-            func_001ECB98();
+            Camera_stagePendingTransform();
             qcopy(r + 0xB0, r + 0xD0);
         } else if (sub == 0) {
-            func_001ECC10();
+            Camera_commitPendingTransform();
         }
     }
     D_001872B0_h = 3;
@@ -557,7 +557,7 @@ int func_001ECEA0(void *arg0, void *arg1) {
         return 1;
     }
     t = func_00214220(0.0f, 1.0f, cam[3]);
-    func_001F9BD8(cam + 12, D_0013F590, cam + 12);
+    FastVecAdd(cam + 12, D_0013F590, cam + 12);
     st = D_0018C418;
     cam[16] = cam[12] + (to[12] - cam[12]) * t;
     cam[17] = cam[13] + (to[13] - cam[13]) * t;
@@ -656,7 +656,7 @@ void func_001ED708(char *arg0, int arg1) {
         func_001F9908((int *)(arg0 + 8));
         ratio = func_001FA888(*(int *)(arg0 + 8)) / func_001FA888(*(int *)(arg0 + 0xC));
         shake = *(float *)arg0
-                * func_001F9F90(func_001FA7D8(func_001FA888(*(int *)(arg0 + 8)) * 2.0f))
+                * FastCos(FastNormalizeAngle(func_001FA888(*(int *)(arg0 + 8)) * 2.0f))
                 * ratio * ratio;
         *(float *)(arg0 + 4) = shake;
         if (arg1 == 0) {
@@ -664,7 +664,7 @@ void func_001ED708(char *arg0, int arg1) {
         } else {
             func_001F9DC0(buf, D_00187390, shake);
         }
-        func_001F9BD8(D_00187180, D_00187180, buf);
+        FastVecAdd(D_00187180, D_00187180, buf);
     } else {
         *(int *)(arg0 + 0xC) = 0;
     }
@@ -828,7 +828,7 @@ void func_001EDE50(void) {
     func_001EDE08();
     func_001EDCE8();
     func_001ED818();
-    func_001EC7C8();
+    UpdateAllCameras();
     target = *(char **)(c + 0x180);
     if ((unsigned short)(*(unsigned short *)(c + 0x270) - 1) < 2) {
         func_001ECC48(*(void **)(c + 0x184));
@@ -859,7 +859,7 @@ frozen:
     func_001EDB98();
     func_001EE858(v - 0x20);
     if (D_0015EEB4_m[0] != 0) {
-        func_001F9CA0(v + 0x200, v + 0x210, v + 0x1F0);
+        FastVecCross(v + 0x200, v + 0x210, v + 0x1F0);
     }
 }
 
