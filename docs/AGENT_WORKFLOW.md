@@ -15,9 +15,9 @@ the level-code catalogue the waves draw from.
 
 | Role | Model | Does |
 |---|---|---|
-| Lead | Opus | plans, launches, refills, reviews, lands, commits; matches nothing itself |
-| Worker | Sonnet | takes 8 functions from the wave's queue, 2 at a time, up to 10 runs each |
-| (none) | Haiku | no tier: see [Why Sonnet only](#why-sonnet-only) |
+| Lead | Opus 5.5 | plans, launches, refills, reviews, lands, commits; matches nothing itself |
+| Worker | Sonnet 5.5 (`model: sonnet`) | takes 8 functions from the wave's queue, 2 at a time, up to 10 runs each |
+| (none) | Haiku 4.5 | no tier: see [Why Sonnet only](#why-sonnet-only) |
 | Clone tool | no model | copies matched C onto variants of the same function |
 
 - At most 8 workers at once (2 or 3 on a small plan: the loop is the same,
