@@ -81,6 +81,67 @@ void func_L08_0030A428(int x) {
         func_L00_001FDE48(a[i], c[i], e[i], D_L08_001F8820, 1);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L08_0030A4F0);
+extern void func_L08_0030A278(int);
+extern void func_L08_0030A350(int);
+extern void func_L08_0030A428(int);
+extern short D_L08_00162420;
+extern short D_L08_00162440;
+extern short D_L08_00162450;
+extern int D_L08_00162424 MACRO_ADDR;
+extern int D_L08_00162428 MACRO_ADDR;
+extern int D_L08_00162444 MACRO_ADDR;
+extern int D_L08_00162480 MACRO_ADDR;
+
+// Draws three rows of HUD elements with their colours.
+void func_L08_0030A4F0(void) {
+    VU1_addGSregister(0x42, 0x8000000044L);
+    VU1_addGSregister(8, 0);
+    VU1_addGSregister(0x14, 0xFF9000000260L);
+    VU1_addGSregister(0x47, 0x513F1);
+    func_001F7868();
+    VU1_addGSregister(6, GetEffectTex(0x3A));
+    VU1_addGSregister(0x42, (long)*(int *)&D_L08_00162420 << 32 | 0x64);
+    func_L08_0030A278(0);
+    VU1_addGSregister(6, GetEffectTex(0x3B));
+    VU1_addGSregister(0x42, (long)((D_L08_00162424 * *(unsigned char *)&D_L08_00162480) >> 8) << 32 | 0x62);
+    func_L08_0030A278(1);
+    VU1_addGSregister(0x42, (long)((D_L08_00162428 * *(unsigned char *)&D_L08_00162480) >> 8) << 32 | 0x68);
+    func_L08_0030A278(2);
+    VU1_addGSregister(6, GetEffectTex(0x3C));
+    VU1_addGSregister(0x42, (long)*(int *)&D_L08_00162440 << 32 | 0x48);
+    func_L08_0030A350(0);
+    VU1_addGSregister(0x42, (long)D_L08_00162444 << 32 | 0x48);
+    func_L08_0030A350(1);
+    VU1_addGSregister(6, GetEffectTex(0x3D));
+    VU1_addGSregister(0x42, (long)*(int *)&D_L08_00162450 << 32 | 0x48);
+    func_L08_0030A428(0);
+}
 INCLUDE_ASM("asm/overlays", func_L08_0030AC70);
-INCLUDE_ASM("asm/overlays", func_L08_0030D0C0);
+extern char *func_L00_0025B478(void *, int, int);
+extern int func_0022ED80(int, int, int);
+extern void func_L01_00279790(void *);
+extern void func_L00_00264EA8(void *, int, int, int, int, int, int);
+extern void func_L01_00279E10(void *, int);
+extern void func_0020D678(void *);
+
+// Moby state machine: wait, check hit on first probe, then clean up and delete.
+void func_L08_0030D0C0(char *m) {
+    int hit = 0;
+    char *r = func_L00_0025B478(m, 0x10000, 0);
+    switch (*(unsigned char *)(m + 0x20)) {
+    case 0:
+        m[0x20] = 1;
+        break;
+    case 1:
+        if (r != 0 && *(float *)(r + 0x2C) > 0.0f) hit = 1;
+        if (hit) m[0x20] = 2;
+        break;
+    case 2:
+        func_0022ED80(0, 0, (int)m);
+        func_L01_00279790(m);
+        func_L00_00264EA8(m, 0x736, 1, 0x737, 1, 1, 2);
+        func_L01_00279E10(m, 0x735);
+        DeleteMoby(m);
+        break;
+    }
+}

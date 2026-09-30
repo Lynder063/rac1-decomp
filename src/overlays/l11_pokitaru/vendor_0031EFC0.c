@@ -4,7 +4,23 @@
 
 INCLUDE_ASM("asm/overlays", func_L11_0031EFC0);
 INCLUDE_ASM("asm/overlays", func_L11_0031F760);
-INCLUDE_ASM("asm/overlays", func_L11_0031FB18);
+extern void func_L08_00259040(void *, int, int, void *);
+extern void func_L00_001FDE48(int, int, int, void *, int);
+extern char D_L11_00217A30[];
+extern char D_L11_00217A18[];
+extern int D_L11_00215450[];
+extern int D_L11_00207BC0[];
+extern int D_L11_00215408[];
+extern int D_L11_002154E0[];
+
+/* Builds 17 entries from parallel tables. */
+void func_L11_0031FB18(int arg) {
+    int i;
+    for (i = 0; i < 17; i++) {
+        func_L08_00259040(D_L11_00217A30, D_L11_00215450[i], D_L11_00207BC0[i], D_L11_00217A18 + arg * 8);
+        func_L00_001FDE48(D_L11_00207BC0[i], D_L11_00215408[i], D_L11_002154E0[i], D_L11_00217A30, 1);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L11_0031FBF0);
 INCLUDE_ASM("asm/overlays", func_L11_0031FDA0);
 INCLUDE_ASM("asm/overlays", func_L11_003205C0);

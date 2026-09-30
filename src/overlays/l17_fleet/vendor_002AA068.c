@@ -31,9 +31,115 @@ void func_L17_002EBF08(unsigned char a, unsigned char b, unsigned char c, unsign
 }
 INCLUDE_ASM("asm/overlays", func_L17_002EC5D0);
 INCLUDE_ASM("asm/overlays", func_L17_002EC7D8);
-INCLUDE_ASM("asm/overlays", func_L17_002ED258);
+extern unsigned char D_0013A5E0[];
+extern unsigned char D_0013E633[];
+extern int D_L17_0015F6A8 MACRO_ADDR;
+extern char D_L17_00167750[];
+extern short D_L17_001621EC;
+extern int func_001F9908(void *);
+extern int func_001F9850(int);
+extern int func_L17_002EC7D8(int, char *, char *, char *, float, float, float, char *, char *);
+#define W(p, o) (*(int *)((char *)(p) + (o)))
+#define P(p, o) (*(char **)((char *)(p) + (o)))
+#define H(p, o) (*(short *)((char *)(p) + (o)))
+#define B(p, o) (*(unsigned char *)((char *)(p) + (o)))
+#define FLAG (D_0013E633[0x2413])
+
+/* picks the moby to home in on, keeping or dropping the current target */
+void func_L17_002ED258(int a, char *p) {
+    char *g = 0;
+    char *pad;
+    char *t;
+    char *r;
+    float v[4];
+    int h;
+    if (!(D_L17_0015F6A8 >= 3 && D_L17_0015F6A8 <= 4)) {
+        func_001F9908((int *)(p + 0x8C));
+    }
+    if (W(p, 0x8C) != 0 && P(p, 0x88) != 0 && H(P(p, 0x88), 0xA6) == W(p, 0x128) &&
+        B(P(p, 0x88), 0x20) != 0xFE && B(P(p, 0x88), 0x20) != 0xFD) {
+        pad = (char *)D_0013A5E0 + 0x2460;
+        if (B(P(p, 0x88), 0x31) != 0) {
+            if (W(pad, 0x1B4) & 0x2000) {
+                goto take;
+            }
+            if (FLAG != 0) {
+                goto skip;
+            }
+        }
+    }
+    pad = (char *)D_0013A5E0 + 0x2460;
+    if (W(pad, 0x1B4) & 0x2000) {
+take:
+        g = P(p, 0x88);
+    }
+    W(p, 0xEC) = 0;
+    W(p, 0x128) = -1;
+    W(p, 0x88) = 0;
+skip:
+    qcopy(v, D_L17_00167750);
+    r = (char *)func_L17_002EC7D8(a, p, D_L17_00167750 - 0x10, (char *)v, 0.19634955f, 0.19634955f, 255.0f, P(p, 0x88), g);
+    if ((r != P(p, 0x88) && W(p, 0x8C) >= 0x1F5) || FLAG == 0) {
+        W(p, 0xEC) = 0;
+        W(p, 0x128) = -1;
+        W(p, 0x88) = 0;
+    }
+    if (r != 0 && (P(p, 0x88) == 0 || (H(P(p, 0x88), 0xA6) != 0x3EB && H(r, 0xA6) == 0x3EB)) && FLAG != 0) {
+        P(p, 0x88) = r;
+        h = *(int *)&D_L17_001621EC;
+        W(p, 0x128) = H(r, 0xA6);
+        W(p, 0x8C) = h;
+    }
+    if (r != P(p, 0x88)) {
+        W(p, 0x118) = W(p, 0x118) + 1;
+        if (scale_ticks(0x3C) < W(p, 0x118)) {
+            W(p, 0xEC) = 0;
+            W(p, 0x128) = -1;
+            W(p, 0x88) = 0;
+        }
+    } else {
+        W(p, 0x118) = 0;
+    }
+    t = P(p, 0x88);
+    if (t != 0 && W(p, 0x84) == 0) {
+        if (H(t, 0xA6) != W(p, 0x128) || B(t, 0x20) == 0xFE || B(t, 0x20) == 0xFD) {
+            W(p, 0x88) = 0;
+            W(p, 0x128) = -1;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L17_002ED498);
-INCLUDE_ASM("asm/overlays", func_L17_002EDAF0);
+extern void func_00215C00(void *, float, float, float);
+extern int func_0022ED80(int, int, int);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_L00_00250800(void *, int, void *);
+extern int func_L11_00309C18(void *, void *, void *, float, float);
+extern void func_L11_003126D8(void *, void *, void *, int);
+extern short D_L17_001620EC;
+extern short D_L17_001620F0;
+extern short D_L17_00162120;
+
+/* Builds a rotated offset vector from the moby, flips a facing flag on a pad press, and updates the aim. */
+void func_L17_002EDAF0(char *moby, char *obj, float p2, float p3) {
+    char a[16];
+    char b[16];
+    char c[16];
+    char d[16];
+    func_00215C00(a, *(float *)&D_L17_001620EC * *(float *)&D_L17_00162120, p2, p3);
+    FastVecAdd(a, a, obj);
+    if (func_001F9908(obj + 0x80) && (*(int *)(D_0013A5E0 + 0x2610) & 0x84)) {
+        func_0022ED80(3, 0, (int)moby);
+        func_L00_001FF4B0(c, a, 2.2f);
+        func_L00_00250800(moby, 3 + (obj[0x61] & 1), b);
+        FastVecAdd(b, b, c);
+        func_L11_00309C18(moby, a, b, 200.0f, -1.0f);
+        *(int *)(obj + 0x80) = *(int *)&D_L17_001620F0;
+        obj[0x61] ^= 1;
+    }
+    func_L00_001FF4B0(a, a, 23.0f);
+    FastVecAdd(d, a, moby + 0x10);
+    func_L11_003126D8(d, obj + 0xE0, obj + 0xE4, 0);
+}
 INCLUDE_ASM("asm/overlays", func_L17_002EDC40);
 INCLUDE_ASM("asm/overlays", func_L17_002EDE50);
 INCLUDE_ASM("asm/overlays", func_L17_002EEB08);

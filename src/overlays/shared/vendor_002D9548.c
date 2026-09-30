@@ -52,7 +52,34 @@ INCLUDE_ASM("asm/overlays", func_L06_002F4C00);
 INCLUDE_ASM("asm/overlays", func_L06_002F4CF8);
 INCLUDE_ASM("asm/overlays", func_L06_002F6330);
 INCLUDE_ASM("asm/overlays", func_L06_002F86B8);
-INCLUDE_ASM("asm/overlays", func_L06_002F8978);
+extern int func_002140B0(int);
+extern int func_001F9850(int);
+
+/* fills random floats and sound handles in the moby's data block */
+void func_L06_002F8978(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    float *f = (float *)data;
+    int *p;
+    int i;
+    int arg;
+    for (i = 3; i >= 0; i--, f++) {
+        *f = (float)random_integer_below(0xFF);
+    }
+    p = (int *)(data + 0x20);
+    *(float *)(data + 0x10) = -2.0f;
+    *(float *)(data + 0x14) = -4.25f;
+    *(float *)(data + 0x18) = 2.25f;
+    *(float *)(data + 0x1C) = 4.5f;
+    arg = 0x3F;
+    for (i = 3; i >= 0; i--, p++) {
+        *p = scale_ticks(arg);
+        arg += 0x40;
+    }
+    *(float *)(data + 0x30) = 1.75f;
+    *(float *)(data + 0x34) = 2.25f;
+    *(float *)(data + 0x3C) = 1.75f;
+    *(float *)(data + 0x38) = 2.25f;
+}
 INCLUDE_ASM("asm/overlays", func_L06_002F8A58);
 INCLUDE_ASM("asm/overlays", func_L06_002F8D60);
 INCLUDE_ASM("asm/overlays", func_L06_002F8EE8);

@@ -96,6 +96,62 @@ void func_L17_002F7018(int n, V3 *b, V3 *a, int unused, float *out) {
         out[i * 2 + 1] = (r.v.y / len + 0.5f) * 4.0f;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L17_002F71D0);
+extern int func_001F4868(int);
+extern void func_00234C98(int, long);
+extern void func_001F7868(void);
+extern void func_L00_001FDE48(int, int, int, void *, int);
+extern char D_L17_001DEB70[];
+extern short D_L17_00162470;
+extern short D_L17_00162478;
+extern short D_L17_00162480;
+extern short D_L17_00162488;
+extern short D_L17_00162490;
+
+// Sets up draw state, then draws two entries from five parallel int tables.
+void func_L17_002F71D0(void) {
+    int i;
+    float *p;
+    VU1_addGSregister(6, GetEffectTex(0x30));
+    VU1_addGSregister(0x42, 0x2000000064L);
+    VU1_addGSregister(8, 0);
+    VU1_addGSregister(0x14, 0xFF9000000260L);
+    func_001F7868();
+    p = (float *)D_L17_001DEB70;
+    for (i = 0; i < 2; i++) {
+        func_L17_002F7018(((int *)&D_L17_00162470)[i], ((int *)&D_L17_00162488)[i], ((int *)&D_L17_00162478)[i], ((int *)&D_L17_00162480)[i], p);
+        func_L00_001FDE48(((int *)&D_L17_00162470)[i], ((int *)&D_L17_00162478)[i], ((int *)&D_L17_00162490)[i], p, 1);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L17_002F74E8);
-INCLUDE_ASM("asm/overlays", func_L17_002F7C78);
+/* Computes a per-vertex 2D sphere-map texture coordinate from position and normal arrays. */
+void func_L17_002F7C78(int n, char *nrm, char *pos, int unused, float *out) {
+    float a[4];
+    float t[4];
+    float r[4];
+    float c[4];
+    int i;
+    for (i = 0; i < n; i++) {
+        float *p = (float *)(i * 12 + (int)pos);
+        float *q;
+        float len;
+        t[3] = 1.0f;
+        t[0] = p[0];
+        t[1] = p[1];
+        t[2] = p[2];
+        FastVecSub(a, D_L17_00167740, t);
+        func_L00_001FF4B0(a, a, 1.0f);
+        c[3] = 1.0f;
+        q = (float *)(i * 12 + (int)nrm);
+        c[0] = q[0];
+        c[1] = q[1];
+        c[2] = q[2];
+        func_L00_001FF4B0(c, c, 1.0f);
+        FastVecScale(r, c, FastVecDot(c, a) * 2.0f);
+        FastVecSub(r, a, r);
+        func_L00_001FF4B0(r, r, 1.0f);
+        r[2] += 1.0f;
+        len = FastVecLength(r) * 2.0f;
+        out[i * 2] = (r[0] / len + 0.5f) * 4.0f;
+        out[i * 2 + 1] = (r[1] / len + 0.5f) * 4.0f;
+    }
+}

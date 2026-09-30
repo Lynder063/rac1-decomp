@@ -9,7 +9,15 @@ INCLUDE_ASM("asm/overlays", func_L00_001EB598);
 INCLUDE_ASM("asm/overlays", func_L00_001EB5A8);
 INCLUDE_ASM("asm/overlays", func_L00_001EB5B0);
 INCLUDE_ASM("asm/overlays", func_L00_001EB6A8);
-INCLUDE_ASM("asm/overlays", func_L00_001EB7C8);
+typedef struct { char pad[0x254]; int p; char pad2[0x18]; short s; char pad3[1]; char c; char pad4[0x14]; float f0; char pad5[8]; float f1; } S;
+extern S D_L00_00166D80;
+
+/* resets the camera sub-object's short at 0x7E to 1 and byte at 0x7D to 0 */
+void func_L00_001EB7C8(void) {
+    char *g = (char *)&D_L00_00166D80;
+    *(short *)(*(char **)(g + 0x180) + 0x7E) = 1;
+    *(*(char **)(g + 0x180) + 0x7D) = 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_001EB890);
 INCLUDE_ASM("asm/overlays", func_L00_001EBDA0);
 INCLUDE_ASM("asm/overlays", func_L00_001EC090);

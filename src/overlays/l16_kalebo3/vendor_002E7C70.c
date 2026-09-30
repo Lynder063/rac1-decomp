@@ -96,7 +96,35 @@ void func_L16_002EA1B8(void) {
 INCLUDE_ASM("asm/overlays", func_L16_002EA2F8);
 INCLUDE_ASM("asm/overlays", func_L16_002EA6E8);
 INCLUDE_ASM("asm/overlays", func_L16_002EA828);
-INCLUDE_ASM("asm/overlays", func_L16_002EAC18);
+extern char D_L16_001DF580[][16];
+extern char D_L16_001DF5A0[];
+extern short D_L16_00162050;
+extern short D_L16_00162058;
+extern short D_L16_00162060;
+extern short D_L16_00162068;
+extern short D_L16_00162070;
+
+// Sets up the draw state, then draws the two entries of the level's table.
+void func_L16_002EAC18(void) {
+    int *a = (int *)&D_L16_00162050;
+    int *b = (int *)&D_L16_00162058;
+    int *c = (int *)&D_L16_00162060;
+    int *d = (int *)&D_L16_00162068;
+    int *e = (int *)&D_L16_00162070;
+    int i;
+
+    VU1_addGSregister(6, GetEffectTex(0x29));
+    VU1_addGSregister(0x42, 0x4000000064);
+    VU1_addGSregister(8, 0);
+    VU1_addGSregister(0x14, 0xFF9000000260);
+    func_001F7868();
+    for (i = 0; i < 2; i++) {
+        if (FastBSphereCheck(D_L16_001DF580[i], 512.0f) != -1) {
+            func_L16_002EA010(a[i], d[i], b[i], c[i], D_L16_001DF5A0);
+            func_L00_001FDE48(a[i], b[i], e[i], D_L16_001DF5A0, 1);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L16_002EAD58);
 extern short D_L16_00162078[1];
 extern short D_L16_00162088[1];

@@ -31,7 +31,28 @@ INCLUDE_ASM("asm/overlays", func_L14_00306890);
 INCLUDE_ASM("asm/overlays", func_L14_00306A88);
 INCLUDE_ASM("asm/overlays", func_L14_00306B08);
 INCLUDE_ASM("asm/overlays", func_L14_00306BE0);
-INCLUDE_ASM("asm/overlays", func_L14_00306EC0);
+extern int func_002140B0(int);
+extern int func_001F9850(int);
+
+/* initialises a moby's data block: random floats, constants and sound ids */
+void func_L14_00306EC0(char *moby) {
+    char *d = *(char **)(moby + 0x78);
+    int i;
+    for (i = 0; i < 4; i++) {
+        *(float *)(d + 0x20 + i * 4) = (float)random_integer_below(0xFF);
+    }
+    *(float *)(d + 0x30) = -1.0f;
+    *(float *)(d + 0x34) = -2.25f;
+    *(float *)(d + 0x38) = 1.25f;
+    *(float *)(d + 0x3C) = 2.5f;
+    for (i = 0; i < 4; i++) {
+        *(int *)(d + 0x40 + i * 4) = scale_ticks(0x3F + i * 0x40);
+    }
+    *(float *)(d + 0x50) = 2.0f;
+    *(float *)(d + 0x54) = 2.5f;
+    *(float *)(d + 0x5C) = 2.0f;
+    *(float *)(d + 0x58) = 2.5f;
+}
 INCLUDE_ASM("asm/overlays", func_L14_00306FA0);
 INCLUDE_ASM("asm/overlays", func_L14_003071B0);
 INCLUDE_ASM("asm/overlays", func_L14_003075E0);
@@ -42,7 +63,12 @@ INCLUDE_ASM("asm/overlays", func_L14_00308000);
 INCLUDE_ASM("asm/overlays", func_L14_00308368);
 INCLUDE_ASM("asm/overlays", func_L14_00308998);
 INCLUDE_ASM("asm/overlays", func_L14_00308AA8);
-INCLUDE_ASM("asm/overlays", func_L14_00308EB0);
+extern void func_L12_002BD3D0(void *, int, int, int);
+extern char D_L14_001F62C0[];
+extern int func_001F4868(int);
+void func_L14_00308EB0(void) {
+    func_L12_002BD3D0(D_L14_001F62C0, 0x13, GetEffectTex(0x2E), GetEffectTex(0x2F));
+}
 INCLUDE_ASM("asm/overlays", func_L14_00308F08);
 INCLUDE_ASM("asm/overlays", func_L14_00309C48);
 INCLUDE_ASM("asm/overlays", func_L14_00314A40);

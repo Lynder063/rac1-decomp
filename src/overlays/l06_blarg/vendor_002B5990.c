@@ -46,7 +46,54 @@ INCLUDE_ASM("asm/overlays", func_L06_002F8430);
 INCLUDE_ASM("asm/overlays", func_L06_002F91A8);
 INCLUDE_ASM("asm/overlays", func_L06_002FA618);
 INCLUDE_ASM("asm/overlays", func_L06_002FAAC8);
-INCLUDE_ASM("asm/overlays", func_L06_002FAB28);
+extern float func_L00_001FF860(float, float);
+extern float func_001F9D10(void *, void *);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_001F9BD8(void *, void *, void *);
+extern float func_001FA790(float, float);
+extern float func_001FA850(float, float);
+extern float func_001FA748(float, float);
+extern char D_0013E633[];
+extern short D_L06_00161F68;
+/* angle from a moby to its owner, clamped to the gaps between obstacles in its list */
+float func_L06_002FAB28(char *self) {
+    char *owner = *(char **)(*(char **)(self + 0x78) + 0x160);
+    float hi, lo, ang, dist, v[3];
+    short *p;
+    if ((unsigned char)self[0x21] == 0xFF) {
+        return func_L00_001FF860(*(float *)(self + 0x10) - *(float *)(owner + 0x10),
+                                 *(float *)(self + 0x14) - *(float *)(owner + 0x14));
+    }
+    lo = -(*(float *)&D_L06_00161F68 * 0.017453292f);
+    hi = *(float *)&D_L06_00161F68 * 0.017453292f;
+    ang = func_L00_001FF860(*(float *)(self + 0x10) - *(float *)(owner + 0x10),
+                            *(float *)(self + 0x14) - *(float *)(owner + 0x14));
+    dist = FastVecDist(owner + 0x10, self + 0x10);
+    v[0] = FastCos(ang) * 2.0f;
+    v[1] = FastSin(ang) * 2.0f;
+    v[2] = 0.0f;
+    FastVecAdd(v, v, D_0013E633 + 0xE9D);
+    p = D_L06_001AC340[(unsigned char)self[0x21]];
+    if (p == 0) {
+        return 0.0f;
+    }
+    do {
+        int idx = *(unsigned short *)p & 0x7FFF;
+        char *e = (char *)(idx * 256 + (int)D_L06_00160058);
+        if ((unsigned char)e[0x20] == 8 || FastVecDist(e + 0x10, owner + 0x10) < dist) {
+            float d = func_L00_001FF860(*(float *)(D_L06_00160058 + idx * 256 + 0x10) - *(float *)(owner + 0x10),
+                                        *(float *)(D_L06_00160058 + idx * 256 + 0x14) - *(float *)(owner + 0x14));
+            float r = FastSubRots(d, ang);
+            if (r > 0.0f && r < hi) {
+                hi = r;
+            } else if (r < 0.0f && r > lo) {
+                lo = r;
+            }
+        }
+    } while (*p++ >= 0);
+    return FastAddRots(FastAddRots(lo, FastDiffRots(hi, lo) * 0.5f), ang);
+}
 INCLUDE_ASM("asm/overlays", func_L06_002FAD78);
 INCLUDE_ASM("asm/overlays", func_L06_002FADE0);
 INCLUDE_ASM("asm/overlays", func_L06_002FAE58);
@@ -109,7 +156,39 @@ void func_L06_002FC8E0(char *arg) {
     *D_L06_001B0FB0[*(int *)(data + 0xEC)] = *(int *)(data + 0x114);
     func_L00_002EC0C8(2);
 }
-INCLUDE_ASM("asm/overlays", func_L06_002FCA98);
+/* Steers a moby's camera-like orientation toward a target point, returns 1 when done. */
+int func_L06_002FCA98(char *moby) {
+    float v0[4], m[4], v1[4], v2[4];
+    char *data;
+    char *pos;
+    char *x;
+    float t;
+    data = *(char **)(moby + 0x78);
+    clear_u64_value(m);
+    if (*(unsigned char *)(moby + 0x53) == 6) {
+        qcopy(v0, D_L06_00167640);
+        pos = moby + 0x10;
+    } else {
+        t = *(float *)&D_0015EE70_s * 0.5f;
+        func_00214D88((float *)(data + 0x118), (float *)(data + 0x11C), 1.0f, t, t, D_0015EE6C * 0.5f);
+        func_L00_001FF4B0(v1, moby + 0xC0, 8.0f);
+        FastVecAdd(v1, v1, moby + 0x10);
+        x = D_0013E633 + 0xE1D;
+        v1[2] = *(float *)(x + 0x88) + 2.0f;
+        func_L00_001FF4B0(v2, x, -7.0f);
+        FastVecAdd(v2, v2, x + 0x80);
+        v2[2] += 4.0f;
+        pos = moby + 0x10;
+        func_001F9C08(v0, v1, v2, *(float *)(data + 0x118));
+    }
+    m[2] = func_L00_001FF860(*(float *)(moby + 0x10) - v0[0], *(float *)(moby + 0x14) - v0[1]);
+    m[1] = -func_L00_001FF860(func_001F9D48(v0, pos), *(float *)(moby + 0x18) - v0[2])
+         - (1.0f - *(float *)(data + 0x118)) * 30.0f * 0.017453293f;
+    func_L00_002EBE88(v0);
+    func_L00_002EBEE0(m);
+    if (*(float *)(data + 0x118) >= 1.0f && *(unsigned char *)(moby + 0x53) == 1) return 1;
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L06_002FD0B8);
 INCLUDE_ASM("asm/overlays", func_L06_002FD3E0);
 INCLUDE_ASM("asm/overlays", func_L06_002FDA60);

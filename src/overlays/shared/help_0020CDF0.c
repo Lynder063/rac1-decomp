@@ -36,7 +36,15 @@ int func_L00_0020DBB0(int arg) {
     }
     return 0;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0020DBD8);
+// Returns whether the kind of arg is 0x1C or 0x1D.
+int func_L00_0020DBD8(int arg) {
+    int v = func_L00_0020DB30(arg);
+
+    if (v >= 0x1C && v <= 0x1D) {
+        return 1;
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0020DC00);
 INCLUDE_ASM("asm/overlays", func_L00_0020DC50);
 INCLUDE_ASM("asm/overlays", func_L00_0020DC68);

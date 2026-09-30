@@ -66,7 +66,18 @@ int func_L03_002DDF10(unsigned char *moby, char *data) {
 }
 INCLUDE_ASM("asm/overlays", func_L03_002DDF90);
 INCLUDE_ASM("asm/overlays", func_L03_002DE088);
-INCLUDE_ASM("asm/overlays", func_L03_002DE4B8);
+extern short D_L03_00161C58;
+extern short D_L03_00161C5C;
+extern short D_L03_00161C60;
+extern short D_L03_00161C64;
+extern short D_L03_00161C68;
+extern void func_L00_00263B78(float x, float y, char *a, float *p, float *q);
+/* sets two aim angles on a moby from level constants scaled by degrees-to-radians */
+void func_L03_002DE4B8(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    func_L00_00263B78(*(float *)&D_L03_00161C58, *(float *)&D_L03_00161C5C * 0.017453292f * D_0015EE6C, moby, (float *)(data + 0xAC), (float *)(data + 0xA8));
+    func_L00_00263BF8((float *)moby, (float *)(data + 0xB0), (float *)(data + 0xB4), *(float *)&D_L03_00161C60, *(float *)&D_L03_00161C64 * 0.017453292f * D_0015EE6C, *(float *)&D_L03_00161C68 * 0.017453292f * D_0015EE6C);
+}
 INCLUDE_ASM("asm/overlays", func_L03_002E08E8);
 INCLUDE_ASM("asm/overlays", func_L03_002E1598);
 extern void func_0022ED80(int, int, int);

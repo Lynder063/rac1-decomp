@@ -4,7 +4,32 @@
 
 INCLUDE_ASM("asm/overlays", func_L08_002B9438);
 INCLUDE_ASM("asm/overlays", func_L08_002B94B0);
-INCLUDE_ASM("asm/overlays", func_L08_002D35E8);
+extern char *func_0020D348(int);
+extern int func_001F9850(int);
+extern float func_002140F8(float, float);
+extern float func_L00_001FF860(float, float);
+extern void func_L00_00251E30(void *);
+/* Spawns a moby of class 0xF8 at a position and facing derived from a vector. */
+char *func_L08_002D35E8(int arg, char *pos, char *vec) {
+    char *m = CreateMoby(0xF8);
+    if (m != 0) {
+        char *d = *(char **)(m + 0x78);
+        *(unsigned char *)(m + 0x30) = 0xFF;
+        *(short *)(m + 0x32) = 0xFF;
+        m[0x31] = 1;
+        m[0x20] = 1;
+        *(int *)(d + 0x30) = arg;
+        *(int *)(d + 0x20) = scale_ticks(300);
+        *(float *)(d + 0x2C) = 1.0f;
+        *(int *)(d + 0x24) = 0;
+        qcopy(m + 0x10, pos);
+        qcopy(d + 0x10, vec);
+        *(float *)(m + 0x40) = random_float_between(-180.0f, 180.0f) * 0.017453292f;
+        *(float *)(m + 0x48) = func_L00_001FF860(*(float *)vec, *(float *)(vec + 4)) + 1.5707964f;
+        func_L00_00251E30(m);
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L08_002D36F8);
 INCLUDE_ASM("asm/overlays", func_L08_002D55E0);
 INCLUDE_ASM("asm/overlays", func_L08_002D5FA8);

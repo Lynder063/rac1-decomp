@@ -62,4 +62,43 @@ void func_L08_002E9F78(char *a) {
 INCLUDE_ASM("asm/overlays", func_L08_002EA0A8);
 INCLUDE_ASM("asm/overlays", func_L08_002EA930);
 INCLUDE_ASM("asm/overlays", func_L08_002EAB30);
-INCLUDE_ASM("asm/overlays", func_L08_002EADF0);
+extern void func_L00_00251E30();
+extern void func_001F9C30(void *, void *, float);
+extern short D_L08_00161DC8;
+
+// Updates the moby's attached parts: pose each one, scale one value, then run the flagged ones.
+void func_L08_002EADF0(char *arg) {
+    char *data = *(char **)(arg + 0x78);
+    float v0[4];
+    float v1[4];
+    float v2[4];
+    int i;
+    char *p;
+    char *parts = data + 0x60;
+    for (i = 0; i < 16; i++) {
+        char *e = parts + 0x1C + i * 16;
+        char *part = *(char **)(e - 0xC);
+        if (part != 0) {
+            *(float *)(part + 0x48) = *(float *)(arg + 0x48);
+            func_L00_00250800(part, *(int *)(e - 4), v0);
+            func_L00_00250800(*(void **)(e - 8), *(int *)e, v1);
+            FastVecSub(v2, v1, v0);
+            FastVecAdd(part + 0x10, part + 0x10, v2);
+        }
+    }
+    if (*(char **)(data + 0x90) != 0) {
+        *(float *)(*(char **)(data + 0x90) + 0x40) = FastAddRots(*(float *)(*(char **)(data + 0x90) + 0x40), *(float *)&D_L08_00161DC8 * 0.0174532925f * D_0015EE6C);
+    }
+    p = parts + 0x10;
+    for (i = 0; i < 16; i++) {
+        char *o = *(char **)p;
+        if (o != 0) {
+            func_L00_00251E30(o);
+            o = *(char **)p;
+            if (*(unsigned short *)(o + 0x34) & 0x8000) {
+                FastVecScale(o + 0xD0, o + 0xD0, -1.0f);
+            }
+        }
+        p += 16;
+    }
+}
