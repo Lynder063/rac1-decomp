@@ -2,8 +2,33 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L02_002A59D8);
-INCLUDE_ASM("asm/overlays", func_L02_002A59F8);
+extern void func_L02_002A52B0(void *);
+
+void func_L02_002A59D8(void) {
+    char scratch[0x40];
+    func_L02_002A52B0(scratch);
+}
+extern void func_L02_002A52D0(void *);
+extern void func_001F9AF0(void *, int, int);
+extern char D_L02_001CB680[];
+
+void func_L02_002A59F8(int a, int b, int c, int d, float x, float y, float z, float w, int e, int f, int g) {
+    char scratch[0x40];
+    scratch[0x30] = a;
+    scratch[0x31] = b;
+    scratch[0x32] = c;
+    *(float *)(scratch + 0x20) = x;
+    *(float *)(scratch + 0x24) = y;
+    *(float *)(scratch + 0x28) = z;
+    *(float *)(scratch + 0x2C) = w;
+    *(short *)(scratch + 0x3C) = e;
+    scratch[0x3E] = f;
+    scratch[0x33] = d;
+    ((unsigned char *)scratch)[0x3F] = 0x80;
+    *(int *)(scratch + 0x1C) = g;
+    func_L02_002A52D0(scratch);
+    func_001F9AF0(D_L02_001CB680, 0x70002800, 0xF8);
+}
 INCLUDE_ASM("asm/overlays", func_L02_002D4E50);
 INCLUDE_ASM("asm/overlays", func_L02_002D5098);
 INCLUDE_ASM("asm/overlays", func_L02_002D51D0);
@@ -13,10 +38,57 @@ INCLUDE_ASM("asm/overlays", func_L02_002D6B60);
 INCLUDE_ASM("asm/overlays", func_L02_002D6C30);
 INCLUDE_ASM("asm/overlays", func_L02_002D6EA0);
 INCLUDE_ASM("asm/overlays", func_L02_002D70C0);
-INCLUDE_ASM("asm/overlays", func_L02_002D7550);
+extern void func_00213DE0(void *, int, int, int);
+extern float func_L00_001FF860(float, float);
+extern void func_L00_00251E30(void *);
+
+void func_L02_002D7550(unsigned char *moby, void *position, float *direction) {
+    char *data = *(char **)(moby + 0x78);
+    moby[0x20] = 0x1B;
+    *(unsigned short *)(moby + 0x34) &= 0xFFBE;
+    if (moby[0x53] != 0xB) {
+        func_00213DE0(moby, 0xB, 0, 1);
+    }
+    qcopy(moby + 0x10, position);
+    qcopy(data + 0x40, direction);
+    *(float *)(moby + 0x48) = func_L00_001FF860(direction[0], direction[1]);
+    func_L00_00251E30(moby);
+}
 INCLUDE_ASM("asm/overlays", func_L02_002D7648);
-INCLUDE_ASM("asm/overlays", func_L02_002D7778);
-INCLUDE_ASM("asm/overlays", func_L02_002D77F8);
+extern int func_L02_002D6A90(void *);
+extern void func_L02_002D51D0(void *);
+extern void func_0020D678(void *);
+
+void func_L02_002D7778(unsigned char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    int result = func_L02_002D6A90(moby);
+    *(int *)(data + 0x27C) = result;
+    if (result != 0) {
+        moby[0x20] = 0x1A;
+        *(int *)(moby + 0x58) = 0;
+        qcopy(moby + 0x10, data + 0x220);
+        *(int *)(moby + 0x94) = 0;
+        *(float *)(moby + 0x18) -= 10.0f;
+    } else {
+        func_L02_002D51D0(moby);
+        func_0020D678(moby);
+    }
+}
+extern char *D_L02_001B0DB0[];
+extern int func_L00_0025A778(void *, void *, int);
+extern int func_001F9850(int);
+
+void func_L02_002D77F8(unsigned char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    char *entry = D_L02_001B0DB0[*(int *)(data + 0x290)];
+    if (func_L00_0025A778(moby + 0x10, entry + 0x10, *(int *)entry) == 0) {
+        moby[0x20] = 0x12;
+        if (moby[0x53]) {
+            func_00213DE0(moby, 0, 0, func_001F9850(20));
+        }
+        *(int *)(data + 0x298) = 1;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L02_002D8B80);
 INCLUDE_ASM("asm/overlays", func_L02_002D99F0);
 INCLUDE_ASM("asm/overlays", func_L02_002DD170);

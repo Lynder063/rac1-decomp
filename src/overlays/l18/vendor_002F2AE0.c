@@ -3,7 +3,21 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L18_002F2AE0);
-INCLUDE_ASM("asm/overlays", func_L18_002F3038);
+extern void func_L18_002F3108(int, int);
+extern void func_L18_002FBCE8(int, int);
+
+void func_L18_002F3038(unsigned char *moby) {
+    char *state = *(char **)(moby + 0x78);
+    if (*(short *)(moby + 0xA6) == 0x565 && moby[0x20] == 1) {
+        if (*(int *)(state + 0xC) != -1) {
+            func_L18_002F3108(0x802, *(int *)(state + 0xC));
+            func_L18_002F3108(0x908, *(int *)(state + 0xC));
+            func_L18_002F3108(0x954, *(int *)(state + 0xC));
+        }
+        moby[0x20] = 2;
+        func_L18_002FBCE8(moby[0x21], 1);
+    }
+}
 typedef struct {
     char pad0[0x30];
     char update_data[0x300];
@@ -54,7 +68,16 @@ INCLUDE_ASM("asm/overlays", func_L18_002F8270);
 INCLUDE_ASM("asm/overlays", func_L18_002F8408);
 INCLUDE_ASM("asm/overlays", func_L18_002F8488);
 INCLUDE_ASM("asm/overlays", func_L18_002F8518);
-INCLUDE_ASM("asm/overlays", func_L18_002F8680);
+typedef union { long long quad; float f[4]; } L18Vector;
+extern float func_L00_001FF860(float, float);
+extern float func_001FA790(float, float);
+
+void func_L18_002F8680(char *source, char *dest, L18Vector *from, L18Vector *to) {
+    L18Vector a, b;
+    a.quad = from->quad;
+    b.quad = to->quad;
+    *(float *)(dest + 0x68) = func_001FA790(func_L00_001FF860(b.f[0] - a.f[0], b.f[1] - a.f[1]), *(float *)(source + 0x48));
+}
 INCLUDE_ASM("asm/overlays", func_L18_002F86E8);
 INCLUDE_ASM("asm/overlays", func_L18_002F8B00);
 INCLUDE_ASM("asm/overlays", func_L18_002F8CE0);

@@ -66,7 +66,16 @@ INCLUDE_ASM("asm/overlays", func_L16_002D72C0);
 INCLUDE_ASM("asm/overlays", func_L16_002D7628);
 INCLUDE_ASM("asm/overlays", func_L16_002D7B08);
 INCLUDE_ASM("asm/overlays", func_L16_002DF780);
-INCLUDE_ASM("asm/overlays", func_L16_002E2248);
+extern void func_0022ED80(int, int, void *);
+
+void func_L16_002E2248(unsigned char *moby) {
+    int state = 1;
+    if (moby[0x20] == state) {
+        func_0022ED80(0, 0, moby);
+        state = 7;
+        moby[0x20] = state;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L16_002E2290);
 INCLUDE_ASM("asm/overlays", func_L16_002E22DC);
 INCLUDE_ASM("asm/overlays", func_L16_002E45F8);

@@ -23,6 +23,51 @@ INCLUDE_ASM("asm/overlays", func_L17_002EDE50);
 INCLUDE_ASM("asm/overlays", func_L17_002EEB08);
 INCLUDE_ASM("asm/overlays", func_L17_002EFA20);
 INCLUDE_ASM("asm/overlays", func_L17_002EFDC0);
-INCLUDE_ASM("asm/overlays", func_L17_002F04D0);
-INCLUDE_ASM("asm/overlays", func_L17_002F0580);
+extern char D_L17_00167740[];
+typedef struct {
+    char pad0[0xD0];
+    float x, y;
+    char pad1[0x2FC - 0xD8];
+    void *current;
+    char pad2[8];
+    short active;
+    char pad3[0x22DA - 0x30A];
+    unsigned short index;
+} CameraGlobals;
+extern CameraGlobals D_0013F450;
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_001FF500(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_001F9BC0(void *);
+extern float func_L00_001FF860(float, float);
+
+void func_L17_002F04D0(char *moby, char *temp, char *state) {
+    func_001F9BF0(temp, D_L17_00167740, moby + 0x10);
+    func_L00_001FF500(temp, temp, 2.5f);
+    *(float *)(temp + 8) = 1.5f;
+    func_001F9BD8(temp, temp, moby + 0x10);
+    func_001F9BC0(state);
+    *(float *)(state + 8) = func_L00_001FF860(D_0013F450.x - *(float *)temp,
+                                                 D_0013F450.y - *(float *)(temp + 4));
+    *(int *)(state + 4) = 0;
+}
+extern char D_L17_001B10B0[];
+extern char D_L17_001DA240[];
+extern void func_001F9EC0(void *, void *, void *);
+
+void func_L17_002F0580(char *moby) {
+    char *state = *(char **)(moby + 0x78);
+    if (D_0013F450.active && D_0013F450.current == moby) {
+        char *vec = *(char **)(D_L17_001B10B0 + *(int *)(state + 0x80) * 4) + 0x10;
+        char *point = moby + 0xC0;
+        int i;
+        for (i = 10; i >= 0; i--) {
+            func_001F9EC0(vec, D_L17_001DA240 + (10 - i) * 0x10, point);
+            func_001F9BD8(vec, vec, moby + 0x10);
+            *(float *)(vec + 0xC) = 1.0f;
+            vec += 0x10;
+        }
+        D_0013F450.index = *(unsigned short *)(state + 0x80);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L17_002F0678);

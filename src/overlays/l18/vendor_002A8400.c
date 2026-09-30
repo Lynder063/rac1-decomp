@@ -2,6 +2,8 @@
 #include "common.h"
 #include "include_asm.h"
 
+extern char *func_0020D348(int);
+
 INCLUDE_ASM("asm/overlays", func_L18_002A8400);
 INCLUDE_ASM("asm/overlays", func_L18_002A87D0);
 INCLUDE_ASM("asm/overlays", func_L18_002D6440);
@@ -32,7 +34,22 @@ int func_L18_002D7580(Level18VendorMoby *moby) {
     }
     return active;
 }
-INCLUDE_ASM("asm/overlays", func_L18_002D7670);
+extern int func_001F9850(int);
+extern void func_00213DE0(void *, int, int, int);
+
+void func_L18_002D7670(unsigned char *arg) {
+    unsigned short flags;
+    arg[0x20] = 5;
+    if (arg[0x53] != 0) {
+        func_00213DE0(arg, 0, 0, func_001F9850(10));
+    }
+    flags = *(unsigned short *)(arg + 0x34);
+    arg[0x31] = 0;
+    flags |= 1;
+    *(int *)(arg + 0x94) = 0;
+    flags &= 0xEFFF;
+    *(unsigned short *)(arg + 0x34) = flags;
+}
 INCLUDE_ASM("asm/overlays", func_L18_002D76D8);
 INCLUDE_ASM("asm/overlays", func_L18_002D79F0);
 INCLUDE_ASM("asm/overlays", func_L18_002D7F48);
@@ -57,7 +74,19 @@ void func_L18_002D81B0(Level18VendorActionMoby *moby) {
     data->scale = 1.5f;
 }
 INCLUDE_ASM("asm/overlays", func_L18_002D8F10);
-INCLUDE_ASM("asm/overlays", func_L18_002D9358);
+extern int func_L00_0028EB98(void *, int);
+extern int func_0022EEB8(int, int, void *);
+
+void func_L18_002D9358(unsigned char *arg, int value) {
+    char *data = *(char **)(arg + 0x78);
+    if (arg[0x20] != 2) {
+        arg[0x20] = 2;
+        *(int *)(data + 0x6C) = value;
+    }
+    if (!func_L00_0028EB98(arg, *(int *)(data + 0x70))) {
+        *(int *)(data + 0x70) = func_0022EEB8(0x12, 0, arg);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L18_002D93C0);
 INCLUDE_ASM("asm/overlays", func_L18_002D9440);
 INCLUDE_ASM("asm/overlays", func_L18_002D9460);
@@ -87,7 +116,18 @@ INCLUDE_ASM("asm/overlays", func_L18_002DCE10);
 INCLUDE_ASM("asm/overlays", func_L18_002DD270);
 INCLUDE_ASM("asm/overlays", func_L18_002DD4B8);
 INCLUDE_ASM("asm/overlays", func_L18_002DD650);
-INCLUDE_ASM("asm/overlays", func_L18_002DD7D0);
+char *func_L18_002DD7D0(void *owner, void *vector, float value) {
+    char *moby = func_0020D348(0x274);
+    if (moby != 0) {
+        char *data = *(char **)(moby + 0x78);
+        ((unsigned char *)moby)[0x30] = 0xFF;
+        qcopy(moby + 0x10, vector);
+        *(float *)data = value;
+        *(int *)(data + 0x08) = 3;
+        *(void **)(data + 0x0C) = owner;
+    }
+    return moby;
+}
 INCLUDE_ASM("asm/overlays", func_L18_002DD848);
 INCLUDE_ASM("asm/overlays", func_L18_002DD8A8);
 INCLUDE_ASM("asm/overlays", func_L18_002E09F8);
@@ -107,11 +147,52 @@ float func_L18_002E0F80(Level18VendorFloatMoby *moby) {
     return moby->data->value;
 }
 INCLUDE_ASM("asm/overlays", func_L18_002E0F90);
-INCLUDE_ASM("asm/overlays", func_L18_002E36B0);
+extern void func_001F9BC0(void *);
+extern void func_001FA1F8(void *, void *);
+
+char *func_L18_002E36B0(void *vector) {
+    char *moby = func_0020D348(0x326);
+    if (moby != 0) {
+        char *data = *(char **)(moby + 0x78);
+        moby[0x30] = 0x40;
+        moby[0x20] = 0;
+        *(char **)(data + 0x0C) = moby;
+        *(int *)(moby + 0x94) = 0;
+        *(unsigned short *)(moby + 0x34) |= 0x41;
+        qcopy(moby + 0x10, vector);
+        func_001F9BC0(moby + 0x40);
+        func_001FA1F8(moby + 0xC0, moby + 0x40);
+    }
+    return moby;
+}
 INCLUDE_ASM("asm/overlays", func_L18_002EAB58);
 INCLUDE_ASM("asm/overlays", func_L18_002EB260);
-INCLUDE_ASM("asm/overlays", func_L18_002EB4E0);
-INCLUDE_ASM("asm/overlays", func_L18_002EB558);
+char *func_L18_002EB4E0(void *owner, void *vector, int value) {
+    char *moby = func_0020D348(0x3D7);
+    if (moby != 0) {
+        char *data;
+        ((unsigned char *)moby)[0x30] = 0xFF;
+        qcopy(moby + 0x10, vector);
+        data = *(char **)(moby + 0x78);
+        *(void **)(data + 0x20) = owner;
+        *(int *)(data + 0x28) = 5;
+        *(int *)(data + 0x34) = value;
+        *(int *)(data + 0x24) = 0;
+    }
+    return moby;
+}
+
+void func_L18_002EB558(unsigned char *arg, void *src, void *position, int active, float speed) {
+    char *data = *(char **)(arg + 0x78);
+    qcopy(arg + 0x10, src);
+    *(int *)(data + 0x28) = func_001F9850(5);
+    *(float *)(data + 0x24) = speed;
+    if (active && arg[0x20] == 0) {
+        arg[0x20] = 1;
+        *(int *)(data + 0x28) = 0;
+        qcopy(data, position);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L18_002EB5E8);
 INCLUDE_ASM("asm/overlays", func_L18_002EB988);
 INCLUDE_ASM("asm/overlays", func_L18_002EBBF0);

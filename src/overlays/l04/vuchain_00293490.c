@@ -3,7 +3,12 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L04_00293490);
-INCLUDE_ASM("asm/overlays", func_L04_00293530);
+void func_L04_00293530(void *unused, char *arg) {
+    *(float *)(arg + 0x10C) = -0.19634955f;
+    *(float *)(arg + 0x110) = 1.5707964f;
+    *(float *)(arg + 0x1BC) = -1.5707964f;
+    *(float *)(arg + 0x1C0) = 0.19634955f;
+}
 INCLUDE_ASM("asm/overlays", func_L04_00293578);
 INCLUDE_ASM("asm/overlays", func_L04_00293990);
 INCLUDE_ASM("asm/overlays", func_L04_002939E8);

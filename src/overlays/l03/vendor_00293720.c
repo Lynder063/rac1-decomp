@@ -15,11 +15,30 @@ INCLUDE_ASM("asm/overlays", func_L03_0029E370);
 INCLUDE_ASM("asm/overlays", func_L03_0029E498);
 INCLUDE_ASM("asm/overlays", func_L03_0029ED60);
 INCLUDE_ASM("asm/overlays", func_L03_002BC038);
-INCLUDE_ASM("asm/overlays", func_L03_002C6F40);
+int func_L03_002C6F40(unsigned char *moby) {
+    if (moby && moby[0x20] != 0xFE && moby[0x20] != 0xFD && *(short *)(moby + 0xA6) == 0x23D && moby[0x20] == 5) {
+        return 1;
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L03_002C6F80);
 INCLUDE_ASM("asm/overlays", func_L03_002C7DE8);
 INCLUDE_ASM("asm/overlays", func_L03_002C8000);
-INCLUDE_ASM("asm/overlays", func_L03_002C8068);
+extern float func_0020D830(void *);
+
+int func_L03_002C8068(unsigned char *moby) {
+    unsigned char state;
+    char *data;
+    data = *(char **)(moby + 0x78);
+    if (!moby) return 0;
+    state = moby[0x20];
+    if (state == 0xFE) return 0;
+    if (state == 0xFD) return 0;
+    if (*(short *)(moby + 0xA6) != 0x23E) return 0;
+    if (moby[0x52] == 10 && func_0020D830(moby) >= 10.0f) return 1;
+    if (moby[0x20] == 10 || moby[0x20] == 13 || *(int *)(data + 0x284) == -1) return 1;
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L03_002C8160);
 INCLUDE_ASM("asm/overlays", func_L03_002C81E0);
 INCLUDE_ASM("asm/overlays", func_L03_002C8398);
