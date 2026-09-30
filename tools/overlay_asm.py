@@ -5,6 +5,7 @@ config/overlays/functions.tsv (docs/OVERLAYS.md, "Plan" step 1).
 
   python3 tools/overlays.py dump      # if not already done
   python3 tools/overlay_asm.py
+  python3 tools/overlay_asm.py --fix-branches   # after stubs move between files
 
 Needs baserom/overlays/level_NN/{text.bin,manifest.json} (tools/overlays.py
 dump) and config/overlays/functions.tsv (tools/overlays.py catalogue).
@@ -495,6 +496,61 @@ def neutralize_far_branches(content, lv, func_start, func_end, level_entries, ta
     return "".join(out_lines), changed
 
 
+_STUB_OR_DEF_RE = re.compile(r"\b(func_L\d\d_[0-9A-Fa-f]{8})\b")
+_FUNC_TARGET_RE = re.compile(r"\bfunc_L\d\d_[0-9A-Fa-f]{8}\b")
+
+
+def source_files() -> dict:
+    """name -> the src/overlays/ file that stubs or defines it (its first
+    mention at the start of a line there)."""
+    out = {}
+    for path in sorted((ROOT / "src/overlays").glob("*/*.c")):
+        for line in path.read_text(errors="replace").splitlines():
+            if line.startswith("INCLUDE_ASM") or (line[:1].isalpha() and not line.startswith("extern")):
+                m = _STUB_OR_DEF_RE.search(line)
+                if m:
+                    out.setdefault(m.group(1), path)
+    return out
+
+
+def neutralize_cross_file(content, name, files):
+    """A branch kept symbolic because its target is a function of this
+    level only assembles when that function's stub is in the same source
+    file. The generator assumes tools/overlay_src.py's layout; stubs added
+    later (tools/overlay_variants.py) can sit elsewhere. Where they do,
+    write the branch as retail's word, like any other far branch."""
+    home = files.get(name)
+    out_lines, changed = [], 0
+    for line in content.splitlines(keepends=True):
+        m = _BRANCH_LINE_RE.match(line)
+        t = _FUNC_TARGET_RE.search(m.group("text")) if m else None
+        word = int.from_bytes(bytes.fromhex(m.group("bytes")), "little") if m else 0
+        if (not t or m.group("text").startswith(".word") or branch_target(word, int(m.group("vaddr"), 16)) is None
+                or home is None or files.get(t.group(0)) == home):
+            out_lines.append(line)
+            continue
+        newline = "\n" if line.endswith("\n") else ""
+        out_lines.append(
+            f"{m.group('pre')}{m.group('vaddr')}{m.group('mid')}{m.group('bytes')}{m.group('post')}"
+            f"{m.group('sp')}.word 0x{word:08X} /* {m.group('text').strip()} */{newline}")
+        changed += 1
+    return "".join(out_lines), changed
+
+
+def fix_branches() -> None:
+    """The cross-file pass alone, over the asm/overlays files already there
+    (after stubs move between files, without an hour of disassembly)."""
+    files = source_files()
+    total = 0
+    for path in sorted(OUT.glob("func_L*.s")):
+        content, n = neutralize_cross_file(path.read_text(), path.stem, files)
+        if n:
+            path.write_text(content)
+            total += n
+            print(f"{path.name}: {n}")
+    print(f"{total} cross-file branch(es) written as words")
+
+
 def _dispatch(jobs):
     """Run spimdisasm over every job -- in-process if it's already
     importable (e.g. this script is itself running inside the build
@@ -676,6 +732,7 @@ def generate(levels=None):
             if name is not None and name in targets and targets[name][:2] == (lv, addr):
                 canonical_paths[name] = (split_dir / f"f{addr:08X}" / f"{name}.s", lv, size)
 
+    src_files = source_files()
     print(f"disassembling {len(jobs)} level(s) with spimdisasm, pass 1/2 (resident + function symbols)...")
     _dispatch(jobs)
     n_extra = write_extra_symbols(jobs)
@@ -709,6 +766,8 @@ def generate(levels=None):
         content = unname_hardware(content)
         content = name_paired_addresses(content, lv)
         content, n_branch = neutralize_far_branches(content, lv, addr, addr + size, level_entries, targets)
+        n_branches_neutralized += n_branch
+        content, n_branch = neutralize_cross_file(content, name, src_files)
         n_branches_neutralized += n_branch
         content, _ = word_backward_branches(content)
         if targets[name][1] % 8:
@@ -747,6 +806,9 @@ def main():
         _worker_main(sys.argv[2])
         return
     levels = None
+    if len(sys.argv) >= 2 and sys.argv[1] == "--fix-branches":
+        fix_branches()
+        return
     if len(sys.argv) >= 2 and sys.argv[1] == "--levels":
         levels = [int(x) for x in sys.argv[2].split(",")]
     generate(levels)

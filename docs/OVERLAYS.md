@@ -218,6 +218,7 @@ variants of executable functions are in `exe_variants.c`.
 
 ```
 python3 tools/overlay_variants.py stubs     # after regenerating the catalogue
+python3 tools/overlay_asm.py --fix-branches # stubs moved: recheck branches between files
 bash tools/docker/run.sh python tools/overlay_variants.py clone
 ```
 
