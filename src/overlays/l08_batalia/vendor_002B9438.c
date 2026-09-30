@@ -27,13 +27,13 @@ extern int D_L08_001B0FB0[];
 void func_L08_002DDB68(char *moby) {
     char *data = *(char **)(moby + 0x78);
     if (*(float *)(data + 0x104) > 0.9f) {
-        func_00215F80(0xA, 0x1F4D);
+        try_set_help_message(0xA, 0x1F4D);
     } else if (*(int *)(data + 0x120) == D_L08_001B0FB0[*(int *)(data + 0x80)]) {
-        func_00215F80(0xA, 0x1F50);
+        try_set_help_message(0xA, 0x1F50);
     } else if (*(int *)(data + 0x120) == D_L08_001B0FB0[*(int *)(data + 0x88)]) {
-        func_00215F80(0xA, 0x1F4F);
+        try_set_help_message(0xA, 0x1F4F);
     } else {
-        func_00215F80(0xA, 0x1F4E);
+        try_set_help_message(0xA, 0x1F4E);
     }
 }
 INCLUDE_ASM("asm/overlays", func_L08_002DDC18);

@@ -33,12 +33,12 @@ void func_L00_002D9D00(char *m, float *out, int i) {
     Vz v;
     char *pv = *(char **)(m + 0x78);
     char *o;
-    func_002156E0(&v, D_L00_001E3FF0 + i * 16, *(float *)(pv + 0x2C), pv + 0x20);
+    build_look_at_matrix(&v, D_L00_001E3FF0 + i * 16, *(float *)(pv + 0x2C), pv + 0x20);
     o = *(char **)(pv + (i << 2) + 0x30);
     if (o != 0 && *(unsigned char *)(m + 0x20) == 2) {
         func_L00_001FF4B0(&v, &v, *(float *)(o + 0x28));
     }
-    func_001F9BD8(out, pv + 0x10, &v);
+    FastVecAdd(out, pv + 0x10, &v);
     out[2] += *(float *)pv;
 }
 INCLUDE_ASM("asm/overlays", func_L00_002D9DB8);
@@ -56,7 +56,7 @@ void func_L00_002DB480(char *a, char *b, void *c) {
     V t0, t1, t2;
     func_001FA218(&t0, c);
     func_001FA460(&t1, a + 0xC0);
-    func_001FA540(&t2, &t1, &t0);
+    sce_vu0_mul_matrix(&t2, &t1, &t0);
     func_001FA480(b + 0xC0, &t2);
     *(unsigned short *)(b + 0x34) |= 4;
     func_0020EEE8(b);

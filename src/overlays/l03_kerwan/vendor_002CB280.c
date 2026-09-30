@@ -23,9 +23,9 @@ extern void func_00215F80(int, int);
 
 void func_L03_002D44C8(void *arg, int mode) {
     if (mode == 1) {
-        func_00215F80(8, 0xBC9);
+        try_set_help_message(8, 0xBC9);
     } else {
-        func_00215F80(8, 0xBC9);
+        try_set_help_message(8, 0xBC9);
     }
 }
 INCLUDE_ASM("asm/overlays", func_L03_002D4560);

@@ -32,10 +32,10 @@ void func_L04_002C5B88(char *arg) {
     char *data = *(char **)(arg + 0x78);
     void *other = *(void **)(data + 0xF8);
     if (other != 0) {
-        func_0020D678(other);
+        DeleteMoby(other);
     }
     func_L04_002C5A50(arg);
-    func_0020D678(arg);
+    DeleteMoby(arg);
 }
 INCLUDE_ASM("asm/overlays", func_L04_002C5BD0);
 INCLUDE_ASM("asm/overlays", func_L04_002C7BD8);

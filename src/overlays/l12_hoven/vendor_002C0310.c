@@ -62,7 +62,7 @@ void func_L12_002E8588(unsigned char *moby) {
     case 1:
         {
             int value = *(int *)(data + 0xC);
-            if (value == -1 || func_00215570(D_L12_001672C0, value)) {
+            if (value == -1 || is_point_inside_clip_volume(D_L12_001672C0, value)) {
                 AddDrawCallback((void *)func_L12_002E8530, moby);
             }
         }
@@ -98,9 +98,9 @@ void func_L12_002E9A50(Level12VendorMoby *moby) {
     moby->fieldB4 = 0;
     func_L00_002584A8(moby, 0, -1);
     if (moby->data->child != 0) {
-        func_0020D678(moby->data->child);
+        DeleteMoby(moby->data->child);
     }
-    func_0020D678(moby);
+    DeleteMoby(moby);
 }
 extern void func_L12_0027C9B8(void *, void *, int);
 extern void func_L00_00250800(void *, int, void *);

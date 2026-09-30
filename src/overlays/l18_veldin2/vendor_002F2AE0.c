@@ -76,7 +76,7 @@ void func_L18_002F8680(char *source, char *dest, L18Vector *from, L18Vector *to)
     L18Vector a, b;
     a.quad = from->quad;
     b.quad = to->quad;
-    *(float *)(dest + 0x68) = func_001FA790(func_L00_001FF860(b.f[0] - a.f[0], b.f[1] - a.f[1]), *(float *)(source + 0x48));
+    *(float *)(dest + 0x68) = FastSubRots(func_L00_001FF860(b.f[0] - a.f[0], b.f[1] - a.f[1]), *(float *)(source + 0x48));
 }
 INCLUDE_ASM("asm/overlays", func_L18_002F86E8);
 INCLUDE_ASM("asm/overlays", func_L18_002F8B00);

@@ -30,9 +30,9 @@ void func_L18_002FBD40(Level18VendorMoby *moby) {
     if (moby->class_id == 0x630) {
         void *child = moby->data->child;
         if (child != 0) {
-            func_0020D678(child);
+            DeleteMoby(child);
         }
-        func_0020D678(moby);
+        DeleteMoby(moby);
     }
 }
 INCLUDE_ASM("asm/overlays", func_L18_002FC188);

@@ -14,6 +14,6 @@ extern void func_0020BA00(char *);
 void func_L18_00282F48(char *save_data) {
     if (D_L18_001BA9F0.save_data == 0) {
         D_L18_001BA9F0.save_data = save_data;
-        func_0020BA00(save_data);
+        memcard_MakeWholeSave(save_data);
     }
 }

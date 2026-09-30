@@ -160,7 +160,7 @@ char *func_L18_002E36B0(void *vector) {
         *(int *)(moby + 0x94) = 0;
         *(unsigned short *)(moby + 0x34) |= 0x41;
         qcopy(moby + 0x10, vector);
-        func_001F9BC0(moby + 0x40);
+        clear_u64_value(moby + 0x40);
         func_001FA1F8(moby + 0xC0, moby + 0x40);
     }
     return moby;

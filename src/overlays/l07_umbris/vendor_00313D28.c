@@ -12,8 +12,8 @@ extern float func_002140F8(float, float);
 
 void func_L07_00314D00(float *out, float value) {
     float neg = -value;
-    out[0] += func_002140F8(neg, value);
-    out[1] += func_002140F8(neg, value);
+    out[0] += random_float_between(neg, value);
+    out[1] += random_float_between(neg, value);
 }
 INCLUDE_ASM("asm/overlays", func_L07_00314D68);
 INCLUDE_ASM("asm/overlays", func_L07_00314ED0);
@@ -35,7 +35,7 @@ void func_L07_0031AA68(char *arg, char *other) {
     if (other != 0) {
         *(int *)(dst + 0x98) = scale_ticks(*(int *)(other + 0x84));
     }
-    func_0020D678(arg);
+    DeleteMoby(arg);
 }
 INCLUDE_ASM("asm/overlays", func_L07_0031AAB0);
 INCLUDE_ASM("asm/overlays", func_L07_0031B318);

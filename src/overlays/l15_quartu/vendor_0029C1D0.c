@@ -32,7 +32,7 @@ char *func_L15_002E92C8(void *unused, void *vector) {
         moby[0x20] = 0;
         moby[0xBC] = 0;
         *(int *)(data + 0x10) = 0;
-        func_001F9BC0(data);
+        clear_u64_value(data);
         qcopy(moby + 0x10, vector);
         field = *(char **)(moby + 0x24);
         *(int *)(moby + 0x94) = *(int *)(field + 0x10);

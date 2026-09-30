@@ -36,8 +36,8 @@ void func_L07_0030E820(unsigned char *moby) {
         moby[0x30] = 0xFF;
         break;
     case 1:
-        if (!func_00215570(D_L07_00166EC0, **(int **)(moby + 0x78))) {
-            AddDrawCallback((void *)func_00216270, moby);
+        if (!is_point_inside_clip_volume(D_L07_00166EC0, **(int **)(moby + 0x78))) {
+            AddDrawCallback((void *)register_audio_stream_callback, moby);
         }
         break;
     }
@@ -91,7 +91,7 @@ INCLUDE_ASM("asm/overlays", func_L07_00313298);
 extern float func_001F9D10(void *, void *);
 
 void func_L07_003134B8(char *moby) {
-    float distance = func_001F9D10(moby + 0x10, D_L07_00166EC0);
+    float distance = FastVecDist(moby + 0x10, D_L07_00166EC0);
     char *state;
     if (distance > 80.0f) distance = 80.0f;
     state = D_L07_00166EC0 - 0x140;

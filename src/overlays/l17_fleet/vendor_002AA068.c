@@ -42,11 +42,11 @@ extern void func_001F9BC0(void *);
 extern float func_L00_001FF860(float, float);
 
 void func_L17_002F04D0(char *moby, char *temp, char *state) {
-    func_001F9BF0(temp, D_L17_00167740, moby + 0x10);
+    FastVecSub(temp, D_L17_00167740, moby + 0x10);
     func_L00_001FF500(temp, temp, 2.5f);
     *(float *)(temp + 8) = 1.5f;
-    func_001F9BD8(temp, temp, moby + 0x10);
-    func_001F9BC0(state);
+    FastVecAdd(temp, temp, moby + 0x10);
+    clear_u64_value(state);
     *(float *)(state + 8) = func_L00_001FF860(D_0013F450.x - *(float *)temp,
                                                  D_0013F450.y - *(float *)(temp + 4));
     *(int *)(state + 4) = 0;
@@ -63,7 +63,7 @@ void func_L17_002F0580(char *moby) {
         int i;
         for (i = 10; i >= 0; i--) {
             func_001F9EC0(vec, D_L17_001DA240 + (10 - i) * 0x10, point);
-            func_001F9BD8(vec, vec, moby + 0x10);
+            FastVecAdd(vec, vec, moby + 0x10);
             *(float *)(vec + 0xC) = 1.0f;
             vec += 0x10;
         }

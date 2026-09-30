@@ -18,7 +18,7 @@ void func_L12_0027C9B8(unsigned char *parent, unsigned char *child, int mode) {
     MobyAnimAdvance(child);
     func_L00_00251E30(child);
     func_001FA480(child + 0xC0, workspace);
-    func_00214F78(child + 0xC0);
+    normalize_vector_triplet(child + 0xC0);
     func_0020EEE8(child);
     if (*(unsigned short *)(parent + 0x34) & 1)
         *(unsigned short *)(child + 0x34) |= 0x41;

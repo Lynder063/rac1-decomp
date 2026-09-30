@@ -17,14 +17,14 @@ unsigned char *func_L00_002729B8(void *a, void *b, float f) {
     unsigned char *r = func_00218928(0x2F);
     if (r != 0) {
         qcopy(r + 0x10, a);
-        *(int *)(r + 4) = ((func_002140B0(8) + 0x28) << 24) | 0x808080;
-        r[9] = func_001FA898(2.0f) + 0x20;
+        *(int *)(r + 4) = ((random_integer_below(8) + 0x28) << 24) | 0x808080;
+        r[9] = truncate_float_to_s32(2.0f) + 0x20;
         r[3] = 0x48;
         r[1] = 0;
         r[2] = *(unsigned char *)D_L00_001B24BC;
         *(float *)(r + 0xC) = f;
         qcopy(r + 0x20, b);
-        r[8] = func_002140B0(0x100);
+        r[8] = random_integer_below(0x100);
     }
     return r;
 }
@@ -34,8 +34,8 @@ extern void func_L00_002688A8(void *);
 void func_L00_00272A88(char *m) {
     char *v = m + 0x20;
     int t;
-    func_001F9C30(v, v, 0.975f);
-    func_001F9BD8(m + 0x10, m + 0x10, v);
+    FastVecScale(v, v, 0.975f);
+    FastVecAdd(m + 0x10, m + 0x10, v);
     *(float *)(m + 0xC) += 14700.0f;
     m[8] += v[0x10];
     t = *(int *)(m + 4) + 0xFE000000;
@@ -53,10 +53,10 @@ extern void func_L00_002688A8(void *);
 void func_L00_00272B28(char *m) {
     char *v = m + 0x20;
     m[8] += v[0x1C];
-    func_001F9BD8(m + 0x10, m + 0x10, v);
-    *(int *)(m + 4) = func_001FA8A8(*(int *)(v + 0x18), *(int *)(v + 0x14),
-        func_001F9B88(func_001FA888(*(short *)(m + 0xA)) * *(float *)(v + 0x10) - 1.0f));
-    if (func_001F9938(m + 0xA)) {
+    FastVecAdd(m + 0x10, m + 0x10, v);
+    *(int *)(m + 4) = FastTweenColor(*(int *)(v + 0x18), *(int *)(v + 0x14),
+        FastAbsF(func_001FA888(*(short *)(m + 0xA)) * *(float *)(v + 0x10) - 1.0f));
+    if (FastDecTimer(m + 0xA)) {
         KillPart(m);
     }
 }
@@ -66,12 +66,12 @@ INCLUDE_ASM("asm/overlays", func_L00_00272D68);
 void func_L00_00272E60(char *m) {
     char *v;
     float f;
-    if (func_001F9938(m + 0xA)) {
+    if (FastDecTimer(m + 0xA)) {
         KillPart(m);
     } else {
         v = m + 0x20;
         f = func_001FA888(*(short *)(m + 0xA)) * *(float *)(v + 0x10);
-        *(int *)(m + 4) = func_001FA8A8(*(int *)(v + 0xC), *(int *)(v + 8), f);
+        *(int *)(m + 4) = FastTweenColor(*(int *)(v + 0xC), *(int *)(v + 8), f);
         *(float *)(m + 0xC) = ((*(float *)(m + 0x20) - *(float *)(v + 4)) * f + *(float *)(v + 4)) * 210000.0f;
     }
 }
@@ -118,7 +118,7 @@ INCLUDE_ASM("asm/overlays", func_L00_00275040);
 void func_L00_002751A8(char *m) {
     char *v = m + 0x20;
     int t;
-    func_001F9BD8(m + 0x10, m + 0x10, v);
+    FastVecAdd(m + 0x10, m + 0x10, v);
     *(float *)(m + 0xC) += *(float *)(v + 0x10);
     m[8] += 1;
     t = *(unsigned short *)(m + 0xA) - 1;
@@ -165,7 +165,7 @@ extern int func_001F9938(void *);
 extern short D_L00_00160300;
 void func_L00_002766B0(char *a) {
     func_L00_0025A468(a + 4, *(void **)&D_L00_00160300);
-    if (func_001F9938(a + 0xA) != 0) {
+    if (FastDecTimer(a + 0xA) != 0) {
         KillPart(a);
     }
 }
@@ -179,10 +179,10 @@ void func_L00_00276700(char *m) {
     w = v.w;
     v.w = 0;
     t = func_001FA888(*(short *)(m + 0xA)) / w;
-    *(int *)(m + 4) = (func_001FA898(t * 38.0f) << 24) | 0x808080;
-    *(char *)(m + 8) = func_001FA898(t * 33.0f);
-    func_001F9BD8(m + 0x10, m + 0x10, &v);
-    if (func_001F9938(m + 0xA)) {
+    *(int *)(m + 4) = (truncate_float_to_s32(t * 38.0f) << 24) | 0x808080;
+    *(char *)(m + 8) = truncate_float_to_s32(t * 33.0f);
+    FastVecAdd(m + 0x10, m + 0x10, &v);
+    if (FastDecTimer(m + 0xA)) {
         KillPart(m);
     }
 }

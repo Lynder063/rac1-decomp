@@ -47,8 +47,8 @@ extern void func_001F9BD8(void *, void *, void *);
 extern void func_L00_002688A8(void *);
 void func_L00_0026D690(char *a) {
     int t;
-    func_001F9BD8(a + 0x10, a + 0x10, a + 0x30);
-    func_001F9BD8(a + 0x20, a + 0x20, a + 0x30);
+    FastVecAdd(a + 0x10, a + 0x10, a + 0x30);
+    FastVecAdd(a + 0x20, a + 0x20, a + 0x30);
     t = *(int *)(a + 4) + 0xFA000000;
     *(int *)(a + 4) = t;
     *(int *)(a + 0xC) = t;
@@ -69,7 +69,7 @@ INCLUDE_ASM("asm/overlays", func_L00_0026EBC0);
 extern int func_001F9908(void *);
 void func_L00_0026ECA0(char *a) {
     char *b = a + 0x20;
-    func_001F9BD8(a + 0x10, a + 0x10, b);
+    FastVecAdd(a + 0x10, a + 0x10, b);
     *(unsigned *)(a + 4) = (*(unsigned *)(a + 4) & 0xFFFFFF) + (((*(int *)(b + 0x18) * *(int *)(b + 0x10)) / *(int *)(b + 0x14)) << 24);
     if (func_001F9908(a + 0x30)) KillPart(a);
 }
@@ -95,7 +95,7 @@ void *func_L00_0026FBC8(void *arg0) {
         *(void **)(p + 0x20) = arg0;
         *(float *)(q + 4) = 0.0f;
         *(float *)(q + 8) = scaled;
-        *(float *)(q + 0xC) = func_002140F8(*(float *)(q + 4), 1.0f);
+        *(float *)(q + 0xC) = random_float_between(*(float *)(q + 4), 1.0f);
         *(float *)(q + 0x10) = 1.0f;
         *(float *)(q + 0x14) = 1.0f;
         *(float *)(q + 0x18) = 1.0f;
@@ -105,7 +105,7 @@ void *func_L00_0026FBC8(void *arg0) {
         p[9] = (char)(func_001FA898_r(4.0f) + 0x40);
         p[1] = 0;
         p[3] = 0x48;
-        *(float *)(p + 0xC) = func_002140F8(50000.0f, 50000.0f);
+        *(float *)(p + 0xC) = random_float_between(50000.0f, 50000.0f);
         p[8] = (char)func_001FA898_r(*(float *)(q + 0xC) * 255.0f);
         p[2] = *D_L00_001B2420;
     }
@@ -116,7 +116,7 @@ INCLUDE_ASM("asm/overlays", func_L00_0026FCE8);
 extern int func_001F9938(void *);
 extern void func_L00_002688A8(void *);
 void func_L00_0026FEE8(char *a) {
-    if (func_001F9938(a + 10) != 0) {
+    if (FastDecTimer(a + 10) != 0) {
         KillPart(a);
     }
 }
@@ -132,7 +132,7 @@ INCLUDE_ASM("asm/overlays", func_L00_00270BC8);
 INCLUDE_ASM("asm/overlays", func_L00_00270DB0);
 void func_L00_002715B0(char *a) {
     if (*(short *)(a + 0xA) != -1) {
-        if (func_001F9938(a + 0xA) != 0) {
+        if (FastDecTimer(a + 0xA) != 0) {
             KillPart(a);
         }
     }

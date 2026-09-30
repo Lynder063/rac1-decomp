@@ -103,7 +103,7 @@ void func_L00_00229778(void) {
 
     m = *(void **)(g + 0x1614);
     if (m != 0) {
-        func_0020D678(m);
+        DeleteMoby(m);
         *(void **)(g + 0x1614) = 0;
     }
     a = *(void **)(g + 0x1180);

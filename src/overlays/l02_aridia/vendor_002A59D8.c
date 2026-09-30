@@ -27,7 +27,7 @@ void func_L02_002A59F8(int a, int b, int c, int d, float x, float y, float z, fl
     ((unsigned char *)scratch)[0x3F] = 0x80;
     *(int *)(scratch + 0x1C) = g;
     func_L02_002A52D0(scratch);
-    func_001F9AF0(D_L02_001CB680, 0x70002800, 0xF8);
+    write_dma_channel(D_L02_001CB680, 0x70002800, 0xF8);
 }
 INCLUDE_ASM("asm/overlays", func_L02_002D4E50);
 INCLUDE_ASM("asm/overlays", func_L02_002D5098);
@@ -71,7 +71,7 @@ void func_L02_002D7778(unsigned char *moby) {
         *(float *)(moby + 0x18) -= 10.0f;
     } else {
         func_L02_002D51D0(moby);
-        func_0020D678(moby);
+        DeleteMoby(moby);
     }
 }
 extern char *D_L02_001B0DB0[];

@@ -89,7 +89,7 @@ float func_L00_0020F750(float *a, float *b) {
         float *q = (float *)((i << 4) + (int)b);
         float *p = (float *)((i << 4) + (int)a);
         for (j = 0; j < 3; j++) {
-            s += func_001F9B88(*p++ - *q++);
+            s += FastAbsF(*p++ - *q++);
         }
     }
     return s;
@@ -214,7 +214,7 @@ void func_L00_002123B0(float x, float y, float z) {
     in[2] = z;
     func_001FA218(t, in);
     func_001FA218(u, D_0013E633 + 0xEAD);
-    func_001FA540(u, u, t);
+    sce_vu0_mul_matrix(u, u, t);
     func_002153E8(u, D_0013E633 + 0xEAD);
 }
 typedef struct { float x, y, z, w; } Vp __attribute__((aligned(16)));
@@ -307,8 +307,8 @@ void func_L00_00212790(float arg0) {
         float matrix[16];
         float vec[4];
 
-        vec[0] = func_001F9F90(0.0f) * r;
-        vec[1] = func_001F9FA8(0.0f) * r;
+        vec[0] = FastCos(0.0f) * r;
+        vec[1] = FastSin(0.0f) * r;
         vec[2] = 0.0f;
 
         func_001FA218(matrix, *(char **)(g + 0x2080) + 0x40);
@@ -336,10 +336,10 @@ void func_L00_00213970(float a, float b) {
     char *q = p - 0x920;
     float v;
     func_00215C00(p, *(float *)(q + 0x930), *(float *)(q + 0x938), *(float *)(q + 0x934));
-    func_001F9C30(p, p, a);
-    v = func_001F9CB8(p);
+    FastVecScale(p, p, a);
+    v = FastVecLength(p);
     if (v <= b) {
-        func_001F9BC0(p);
+        clear_u64_value(p);
     } else {
         func_L00_001FF4B0(p, p, v - b);
     }
@@ -359,10 +359,10 @@ float func_L00_00213A08(QVec *v) {
     float dir[4] __attribute__((aligned(16)));
 
     p = *v;
-    dir[0] = func_001F9F90(*(float *)(base + 0x98));
-    dir[1] = func_001F9FA8(*(float *)(base + 0x98));
+    dir[0] = FastCos(*(float *)(base + 0x98));
+    dir[1] = FastSin(*(float *)(base + 0x98));
     dir[2] = 0.0f;
-    return func_001F9C78(&p, dir);
+    return FastVecDot(&p, dir);
 }
 INCLUDE_ASM("asm/overlays", func_L00_00213A60);
 /*

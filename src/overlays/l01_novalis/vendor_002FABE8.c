@@ -48,7 +48,7 @@ extern void func_0020D678(void *);
 void func_L01_00309020(void *arg) {
     char *item = func_L00_0025B478(arg, 0x10000, 0);
     if (item != 0 && *(float *)(item + 0x2C) > 0.0f) {
-        func_0020D678(arg);
+        DeleteMoby(arg);
     }
 }
 INCLUDE_ASM("asm/overlays", func_L01_0030AFD0);

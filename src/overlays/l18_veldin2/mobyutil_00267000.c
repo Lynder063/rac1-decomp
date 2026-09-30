@@ -29,7 +29,7 @@ void func_L18_00267000(Level18Moby *moby, float scale) {
     if (effect == 0) {
         return;
     }
-    alpha = func_001FA898(func_001F9D10(D_0013E633 + 0xE9D, moby->position) * 8.0f * scale) - 1;
+    alpha = truncate_float_to_s32(FastVecDist(D_0013E633 + 0xE9D, moby->position) * 8.0f * scale) - 1;
     if (alpha >= 256) {
         alpha = 255;
     } else if (alpha < 0) {

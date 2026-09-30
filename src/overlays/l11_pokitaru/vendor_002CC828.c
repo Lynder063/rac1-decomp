@@ -28,7 +28,7 @@ extern void func_L11_002D3970(void *);
 
 void func_L11_002D2168(unsigned char *moby) {
     func_L02_002E2110(moby);
-    if (moby[0x31] && func_001F9D10(moby + 0x10, D_L11_00167840) < 38.0f) {
+    if (moby[0x31] && FastVecDist(moby + 0x10, D_L11_00167840) < 38.0f) {
         func_L00_0025B178(moby);
         moby[0x7F] = 30;
     }
@@ -53,18 +53,18 @@ void func_L11_002F4040(char *moby) {
     char *data = *(char **)(moby + 0x78);
     switch (*(int *)(data + 0x10)) {
     case 0:
-        func_00215F80(0xB, 0x2B0D);
+        try_set_help_message(0xB, 0x2B0D);
         break;
     case 3:
-        func_00215F80(0xB, 0x2B0B);
+        try_set_help_message(0xB, 0x2B0B);
         break;
     case 1:
     case 2:
     case 4:
-        func_00215F80(0xB, 0x2B0C);
+        try_set_help_message(0xB, 0x2B0C);
         break;
     default:
-        func_00215F80(0xB, 0);
+        try_set_help_message(0xB, 0);
         break;
     }
 }
@@ -110,7 +110,7 @@ void func_L11_002F46C0(unsigned char *moby) {
     case 0:
         moby[0x30] = 0xFF;
         moby[0x20] = 1;
-        if (*(int *)state == -1) func_0020D678(moby);
+        if (*(int *)state == -1) DeleteMoby(moby);
         break;
     case 1:
         if (D_0013F450.timer > 194.0f && D_0013F450.mode != 0x32) {
@@ -172,7 +172,7 @@ char *func_L11_00310A70(void *position, void *vector, int id) {
         data = *(char **)(moby + 0x78);
         qcopy(moby + 0x10, position);
         qcopy(data + 0x10, vector);
-        angle = func_00214158();
+        angle = random_angle_radians();
         *(int *)(moby + 0x40) = 0;
         *(float *)(moby + 0x48) = angle;
         *(float *)(moby + 0x44) = 0.7853982f;

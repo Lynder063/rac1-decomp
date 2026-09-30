@@ -33,7 +33,7 @@ void func_L12_00306178(Level12VendorCounterMoby *moby) {
     int count = scale_ticks(0x50);
     int value = data->value;
     if (value < count) {
-        func_001F55C0(0xAA, 0, 0, (count - value) * 0x50 / count);
+        emit_rgba_draw_packet(0xAA, 0, 0, (count - value) * 0x50 / count);
     }
 }
 INCLUDE_ASM("asm/overlays", func_L12_003061E0);

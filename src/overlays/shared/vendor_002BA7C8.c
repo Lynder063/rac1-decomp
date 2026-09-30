@@ -22,7 +22,7 @@ char *func_L00_002BC668(char *src) {
         m[0x23] = 0x50;
         m[0x20] = 0;
         *(char **)(p + 8) = src;
-        func_001F9BC0(m + 0x40);
+        clear_u64_value(m + 0x40);
         *(Vu *)(m + 0xC0) = *(Vu *)(src + 0xC0);
         *(Vu *)(m + 0xD0) = *(Vu *)(src + 0xD0);
         *(Vu *)(m + 0xE0) = *(Vu *)(src + 0xE0);

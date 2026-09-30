@@ -87,8 +87,8 @@ char *func_L11_0031C210(void *position, void *vector, void *owner, float scale) 
         char *data = *(char **)(moby + 0x78);
         moby[0x20] = 1;
         qcopy(moby + 0x10, position);
-        *(float *)(moby + 0x40) = func_00214158();
-        *(float *)(moby + 0x48) = func_00214158();
+        *(float *)(moby + 0x40) = random_angle_radians();
+        *(float *)(moby + 0x48) = random_angle_radians();
         *(short *)(moby + 0x32) = 0xFF;
         ((unsigned char *)moby)[0x30] = 0xFF;
         moby[0x31] = 1;

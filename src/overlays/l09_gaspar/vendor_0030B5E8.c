@@ -6,8 +6,8 @@ extern float func_001FA790(float, float);
 extern float func_001FA748(float, float);
 
 void func_L09_0030B5E8(float *dst, float a, float b, float scale) {
-    float v = func_001FA790(b, a) * scale;
+    float v = FastSubRots(b, a) * scale;
     *dst = v;
-    *dst = func_001FA748(v, a);
+    *dst = FastAddRots(v, a);
 }
 INCLUDE_ASM("asm/overlays", func_L09_0030B648);

@@ -14,7 +14,7 @@ void func_L00_00269E88(char *m) {
     int t = *(short *)(m + 0xA) * *(int *)(m + 0x20) / scale_ticks(0x1B);
     int a;
     *(int *)(m + 4) = (*(int *)(m + 4) & 0xFFFFFF) | (t << 24);
-    if (func_001F9938(m + 0xA)) {
+    if (FastDecTimer(m + 0xA)) {
         KillPart(m);
     } else {
         a = scale_ticks(0x1B);

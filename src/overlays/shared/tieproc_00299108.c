@@ -41,9 +41,9 @@ extern int D_L00_0015F6A8 MACRO_ADDR;
 extern int D_L00_0015F6BC MACRO_ADDR;
 extern int D_L00_0015F4FC MACRO_ADDR;
 void func_L00_0029AF70(void) {
-    func_00234AC8(1);
-    func_001F4E08(0xC);
-    func_00217588();
+    VU1_syncChain(1);
+    FadeToBlack(0xC);
+    request_audio_stream_break();
     D_L00_0015F6A8 = 0;
     D_L00_0015F6BC = 1;
     D_L00_0015F4FC = 0;

@@ -37,7 +37,7 @@ extern void func_L00_0025F4A8_alt(void *, void *, void *, float, float, int, int
 
 void func_L13_00307550(char *moby) {
     char vector[16];
-    func_001F9BC0(vector);
+    clear_u64_value(vector);
     func_L00_0025F4A8_alt(moby, vector, moby + 0x10, 2.0f, 1.0f, 12, 4, 18,
                            4.0f, 3.0f, 1.0f, 2.0f, 0, 20.0f, 1, 1, -1, 0);
 }
@@ -47,7 +47,7 @@ extern void func_L00_0025F4A8(void *, void *, void *, float, float, int, int, in
 
 void func_L13_003075E0(char *moby) {
     char vector[16];
-    func_001F9BC0(vector);
+    clear_u64_value(vector);
     func_L00_0025F4A8(moby, vector, moby + 0x10, 0.0f, 0.0f, 5, 1, 5,
                        0.0f, 0.0f, 0.0f, 0, 1.0f, 0.0f, 0, 1, -1, 0);
 }
