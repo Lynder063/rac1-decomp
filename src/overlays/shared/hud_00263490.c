@@ -6,7 +6,27 @@ INCLUDE_ASM("asm/overlays", func_L05_00263490);
 INCLUDE_ASM("asm/overlays", func_L05_00263500);
 INCLUDE_ASM("asm/overlays", func_L05_002638F8);
 INCLUDE_ASM("asm/overlays", func_L05_00264C88);
-INCLUDE_ASM("asm/overlays", func_L05_00266B90);
+extern int func_001F9850(int);
+
+typedef struct {
+    char pad0[0x48];
+    short unk48;
+    short unk4A;
+    char pad4C[0xC];
+    int w;
+    int h;
+    char pad60[0x1C];
+    int unk7C;
+} HudElem;
+
+/* Sets up a HUD element: timer, 128x128 size, zero offsets. */
+void func_L05_00266B90(HudElem *e) {
+    e->unk7C = scale_ticks(0xB4) + 0x1E;
+    e->w = 0x80;
+    e->unk48 = 0;
+    e->h = 0x80;
+    e->unk4A = 0;
+}
 INCLUDE_ASM("asm/overlays", func_L05_00266BD8);
 INCLUDE_ASM("asm/overlays", func_L05_00266D10);
 INCLUDE_ASM("asm/overlays", func_L05_002670A0);

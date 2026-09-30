@@ -29,11 +29,52 @@ INCLUDE_ASM("asm/overlays", func_L00_002D4EC0);
 INCLUDE_ASM("asm/overlays", func_L00_002D5AC0);
 INCLUDE_ASM("asm/overlays", func_L00_002D6610);
 INCLUDE_ASM("asm/overlays", func_L00_002D6978);
+int func_L00_002D6B90(char *a) {
+    int r = func_L00_002DCDA8(a);
+    if (r == 0) {
+        if (*(unsigned char *)(a + 0x20) == 9) a[0x20] = 5;
+    } else {
+        a[0x20] = 9;
+    }
+    return r;
+}
+int func_L00_002D6C80(char *a) {
+    int r = func_L00_002DD2D0(a);
+    a[0x20] = 9;
+    return r;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002D6CB0);
 INCLUDE_ASM("asm/overlays", func_L00_002D6CE0);
 INCLUDE_ASM("asm/overlays", func_L00_002D6E38);
 INCLUDE_ASM("asm/overlays", func_L00_002D7298);
-INCLUDE_ASM("asm/overlays", func_L00_002D80A0);
+extern int func_002140B0(int);
+
+/* Fills the random float, constant and random int slots of a moby's data block. */
+void func_L00_002D80A0(char *a) {
+    char *d = *(char **)(a + 0x78);
+    char *p = d + 0x10;
+    int i;
+    int arg;
+    for (i = 3; i >= 0; i--) {
+        *(float *)p = random_integer_below(0xFF);
+        p += 4;
+    }
+    p = d + 0x30;
+    *(float *)(d + 0x20) = -1.0f;
+    *(float *)(d + 0x24) = -2.25f;
+    *(float *)(d + 0x28) = 1.25f;
+    *(float *)(d + 0x2C) = 2.5f;
+    arg = 0x3F;
+    for (i = 3; i >= 0; i--) {
+        *(int *)p = scale_ticks(arg);
+        arg += 0x40;
+        p += 4;
+    }
+    *(float *)(d + 0x40) = 2.5f;
+    *(float *)(d + 0x44) = 3.0f;
+    *(float *)(d + 0x4C) = 2.5f;
+    *(float *)(d + 0x48) = 3.0f;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002D8180);
 INCLUDE_ASM("asm/overlays", func_L00_002D83D8);
 INCLUDE_ASM("asm/overlays", func_L00_002D8898);

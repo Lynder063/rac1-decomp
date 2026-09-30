@@ -880,6 +880,7 @@ void func_L00_00234768(float *pos, int arg, float t) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_002347B8);
+INCLUDE_ASM("asm/overlays", func_L00_002347F0);
 INCLUDE_ASM("asm/overlays", func_L00_00234800);
 extern int func_L00_002630A8(int, void *, void *, float);
 

@@ -5,7 +5,43 @@
 INCLUDE_ASM("asm/overlays", func_L08_002EAF48);
 INCLUDE_ASM("asm/overlays", func_L08_002EB770);
 INCLUDE_ASM("asm/overlays", func_L08_002EB980);
-INCLUDE_ASM("asm/overlays", func_L08_002F2288);
+extern void func_00234C98(int, long);
+extern void func_001F7868(void);
+extern int func_001F4868(int);
+extern void func_L08_002F2000(int);
+extern void func_L08_002F20D8(int);
+extern void func_L08_002F21B0(int);
+extern short D_L08_00161E60;
+extern short D_L08_00161E80;
+extern short D_L08_00161E90;
+extern int D_L08_00161E64 MACRO_ADDR;
+extern int D_L08_00161E68 MACRO_ADDR;
+extern int D_L08_00161E84 MACRO_ADDR;
+extern int D_L08_00161E98 MACRO_ADDR;
+/* Draws three rows of HUD elements with their colours. */
+void func_L08_002F2288(void) {
+    VU1_addGSregister(0x42, 0x8000000044L);
+    VU1_addGSregister(8, 0);
+    VU1_addGSregister(0x14, 0xFF9000000260L);
+    VU1_addGSregister(0x47, 0x513F1);
+    func_001F7868();
+    VU1_addGSregister(6, GetEffectTex(0x3A));
+    VU1_addGSregister(0x42, (long)*(int *)&D_L08_00161E60 << 32 | 0x44);
+    func_L08_002F2000(0);
+    VU1_addGSregister(6, GetEffectTex(0x3B));
+    VU1_addGSregister(0x42, (long)((D_L08_00161E64 * *(unsigned char *)&D_L08_00161E98) >> 8) << 32 | 0x62);
+    func_L08_002F2000(1);
+    VU1_addGSregister(0x42, (long)((D_L08_00161E68 * *(unsigned char *)&D_L08_00161E98) >> 8) << 32 | 0x68);
+    func_L08_002F2000(2);
+    VU1_addGSregister(6, GetEffectTex(0x3C));
+    VU1_addGSregister(0x42, (long)*(int *)&D_L08_00161E80 << 32 | 0x48);
+    func_L08_002F20D8(0);
+    VU1_addGSregister(0x42, (long)D_L08_00161E84 << 32 | 0x48);
+    func_L08_002F20D8(1);
+    VU1_addGSregister(6, GetEffectTex(0x3D));
+    VU1_addGSregister(0x42, (long)*(int *)&D_L08_00161E90 << 32 | 0x48);
+    func_L08_002F21B0(0);
+}
 INCLUDE_ASM("asm/overlays", func_L08_002F2A08);
 INCLUDE_ASM("asm/overlays", func_L08_002F5980);
 INCLUDE_ASM("asm/overlays", func_L08_002F7258);
@@ -20,5 +56,92 @@ INCLUDE_ASM("asm/overlays", func_L08_00307FF0);
 INCLUDE_ASM("asm/overlays", func_L08_00308A00);
 INCLUDE_ASM("asm/overlays", func_L08_00309998);
 INCLUDE_ASM("asm/overlays", func_L08_0030A150);
-INCLUDE_ASM("asm/overlays", func_L08_0030A428);
+INCLUDE_ASM("asm/overlays", func_L08_0030A278);
+INCLUDE_ASM("asm/overlays", func_L08_0030A350);
+typedef struct { int a, b; } Pair;
+extern char D_L08_001F8820[];
+extern Pair D_L08_00162498[] MACRO_ADDR;
+extern short D_L08_00162458;
+extern short D_L08_00162460;
+extern short D_L08_00162468;
+extern short D_L08_00162478;
+extern void func_L08_00259040(void *, int, int, void *);
+extern void func_L00_001FDE48(int, int, int, void *, int);
+
+/* Runs the two-entry setup loop for slot `x`: one call fills from the tables, the second applies them. */
+void func_L08_0030A428(int x) {
+    int i;
+    int *a = (int *)&D_L08_00162458;
+    int *b = (int *)&D_L08_00162468;
+    int *c = (int *)&D_L08_00162460;
+    int *e = (int *)&D_L08_00162478;
+
+    for (i = 0; i < 2; i++) {
+        func_L08_00259040(D_L08_001F8820, b[i], a[i], &D_L08_00162498[x]);
+        func_L00_001FDE48(a[i], c[i], e[i], D_L08_001F8820, 1);
+    }
+}
+extern void func_L08_0030A278(int);
+extern void func_L08_0030A350(int);
+extern void func_L08_0030A428(int);
+extern short D_L08_00162420;
+extern short D_L08_00162440;
+extern short D_L08_00162450;
+extern int D_L08_00162424 MACRO_ADDR;
+extern int D_L08_00162428 MACRO_ADDR;
+extern int D_L08_00162444 MACRO_ADDR;
+extern int D_L08_00162480 MACRO_ADDR;
+
+// Draws three rows of HUD elements with their colours.
+void func_L08_0030A4F0(void) {
+    VU1_addGSregister(0x42, 0x8000000044L);
+    VU1_addGSregister(8, 0);
+    VU1_addGSregister(0x14, 0xFF9000000260L);
+    VU1_addGSregister(0x47, 0x513F1);
+    func_001F7868();
+    VU1_addGSregister(6, GetEffectTex(0x3A));
+    VU1_addGSregister(0x42, (long)*(int *)&D_L08_00162420 << 32 | 0x64);
+    func_L08_0030A278(0);
+    VU1_addGSregister(6, GetEffectTex(0x3B));
+    VU1_addGSregister(0x42, (long)((D_L08_00162424 * *(unsigned char *)&D_L08_00162480) >> 8) << 32 | 0x62);
+    func_L08_0030A278(1);
+    VU1_addGSregister(0x42, (long)((D_L08_00162428 * *(unsigned char *)&D_L08_00162480) >> 8) << 32 | 0x68);
+    func_L08_0030A278(2);
+    VU1_addGSregister(6, GetEffectTex(0x3C));
+    VU1_addGSregister(0x42, (long)*(int *)&D_L08_00162440 << 32 | 0x48);
+    func_L08_0030A350(0);
+    VU1_addGSregister(0x42, (long)D_L08_00162444 << 32 | 0x48);
+    func_L08_0030A350(1);
+    VU1_addGSregister(6, GetEffectTex(0x3D));
+    VU1_addGSregister(0x42, (long)*(int *)&D_L08_00162450 << 32 | 0x48);
+    func_L08_0030A428(0);
+}
 INCLUDE_ASM("asm/overlays", func_L08_0030AC70);
+extern char *func_L00_0025B478(void *, int, int);
+extern int func_0022ED80(int, int, int);
+extern void func_L01_00279790(void *);
+extern void func_L00_00264EA8(void *, int, int, int, int, int, int);
+extern void func_L01_00279E10(void *, int);
+extern void func_0020D678(void *);
+
+// Moby state machine: wait, check hit on first probe, then clean up and delete.
+void func_L08_0030D0C0(char *m) {
+    int hit = 0;
+    char *r = func_L00_0025B478(m, 0x10000, 0);
+    switch (*(unsigned char *)(m + 0x20)) {
+    case 0:
+        m[0x20] = 1;
+        break;
+    case 1:
+        if (r != 0 && *(float *)(r + 0x2C) > 0.0f) hit = 1;
+        if (hit) m[0x20] = 2;
+        break;
+    case 2:
+        func_0022ED80(0, 0, (int)m);
+        func_L01_00279790(m);
+        func_L00_00264EA8(m, 0x736, 1, 0x737, 1, 1, 2);
+        func_L01_00279E10(m, 0x735);
+        DeleteMoby(m);
+        break;
+    }
+}

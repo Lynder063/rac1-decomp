@@ -198,6 +198,74 @@ python3 tools/wave.py land w7                # one commit per EXACT, full build 
   - `compile`: turns the m2c sketch into a candidate that compiles, for a
     cheaper model to do before matching starts.
 
+### Queue waves
+
+The full description, with the lead's loop, the measurements and what
+went wrong, is in [AGENT_WORKFLOW.md](AGENT_WORKFLOW.md). In short:
+
+Modelled on Thief3-Decomp's tiered workflow: the aim is the most matches
+per token.
+
+```
+python3 tools/wave.py plan q1 --queue --overlay --count 40 --max-size 300 --budget 8
+python3 tools/wave.py tokens q1      # tokens per worker and per match
+```
+
+- Each worker takes N functions from the wave, COUNT at a time
+  (`wave.py claim`), so the startup cost (system prompt, protocol) is paid
+  once per worker instead of once per function. Its whole prompt is one
+  line: `Read docs/QUEUE.md and follow it exactly. WAVE=q1 ID=s01 N=6 COUNT=2`.
+  IDs are never reused within a wave.
+- [QUEUE.md](QUEUE.md) is the workers' whole instruction set (about 1.3K
+  tokens), in place of WORKER.md and LEVERS.md. Add an idiom to it only
+  when a landed function shows it.
+- A claim prints the function's packet: dossier, assembly, and matched C
+  to start from (the function it is a variant of, its nearest relative,
+  short matched functions of its file).
+- Verdicts come from `runs.log`, which try_func writes: workers write no
+  RESULT.md, and their final message is one JSON line. Trust the log, not
+  the message.
+- `status` and `land` work as for any wave.
+- Before a queue wave, run `tools/overlay_variants.py clone`
+  ([OVERLAYS.md](OVERLAYS.md#variants)): it matches variants of matched
+  functions with no model.
+
+Trials of 2026-09-30 (input tokens include cache reads, as
+`wave.py tokens` counts them):
+
+| Wave | Model | Functions | Exact | Input tokens per match |
+|---|---|---|---|---|
+| q2: common code, 97-300 bytes | Sonnet | 12 | 3 (336 bytes) | 1.61M |
+| q1: 8-92 bytes | Sonnet | 17 | 4 (124 bytes) | 214K |
+| q1: 8-92 bytes | Haiku | 15 | 4 (100 bytes) | 1.02M |
+| q3: `--family`, 64-500 bytes | Sonnet | 12 | 9 landed (1,236 bytes), 1 rejected | 157K |
+| q4: `--family`, 32-600 bytes | Sonnet | 56 | 34 (11,128 bytes) | 1.15M |
+| q5: `--family`, 32-600 bytes, after q4 | Sonnet | 64 | 44 (13,316 bytes) | 325K |
+
+- **A queue worker is cheap per function.** The harness counted about 81K
+  tokens for each q2 worker, six functions each, where a one-function
+  worker of the earlier waves used about 112K for one.
+- **No Haiku tier here.** On the same queue Haiku used almost five times
+  Sonnet's tokens per match, more than its lower price makes up for.
+  Sonnet recognised an unmatchable entry and stopped without a run;
+  Haiku spent its runs on it.
+- **Small catalogue entries are often fragments**, not functions: a piece
+  the splitter cut at a call target or after a return, which branches out
+  of itself or reads registers it never sets. About half of q1 was that.
+  They need merging back into their function in the catalogue before
+  they can match; until then keep `--min-size` at 32 or more and expect
+  workers to stop on them.
+- What is left of the common code under 300 bytes matched at 25%: the
+  earlier waves and the variants took the easy part.
+- **Family order pays best.** With `--family`, nine of q3's twelve
+  functions came with a matched relative's C in their packet, and half of
+  the matches took one run. One match was rejected at review (it read an
+  unassigned local). Matching func_L01_00252E80 brought 17 variants with
+  it through `overlay_variants.py clone`, with no model. Plan waves this
+  way by default, and run `clone` after landing.
+- Workers sometimes stop after one claim; the lead refills the queue with
+  a new worker (a new ID) until `status` shows nothing pending.
+
 ### Picking a wave
 
 Measured on 2026-09-26/27 (Sonnet workers, one function each):

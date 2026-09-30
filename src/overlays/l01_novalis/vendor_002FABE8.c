@@ -9,11 +9,45 @@ INCLUDE_ASM("asm/overlays", func_L01_002FB440);
 INCLUDE_ASM("asm/overlays", func_L01_002FB588);
 INCLUDE_ASM("asm/overlays", func_L01_002FB898);
 INCLUDE_ASM("asm/overlays", func_L01_002FBBD8);
-INCLUDE_ASM("asm/overlays", func_L01_002FC058);
+typedef struct {
+    char pad0[0x44];
+    short n;
+    char pad1[0x132];
+    char *m[1];
+} G;
+extern int D_L01_0015F6A8 MACRO_ADDR;
+extern unsigned char D_0015EEB0[] MACRO_ADDR;
+extern G D_L01_0016CD60;
+extern unsigned char D_L01_0017C940[];
+extern void func_0020D960(char *, int, void *);
+
+/* Arms the 0x32B mobys' marker record once, while the level flag is 2. */
+void func_L01_002FC058(void) {
+    if (D_L01_0015F6A8 == 2 && gCheats[0] != 0) {
+        int i;
+        for (i = 0; i < D_L01_0016CD60.n; i++) {
+            char *moby = D_L01_0016CD60.m[i];
+            if (*(short *)(moby + 0xA6) == 0x32B) {
+                unsigned char *q = D_L01_0017C940;
+                if (q[1] == 0) {
+                    AttachManipulator(moby, 0, q);
+                    *(float *)(q + 0x20) = 2.75f;
+                    *(float *)(q + 0x24) = 2.75f;
+                    *(float *)(q + 0x28) = 2.75f;
+                }
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_002FC140);
 INCLUDE_ASM("asm/overlays", func_L01_002FCC80);
 INCLUDE_ASM("asm/overlays", func_L01_002FE4C0);
 INCLUDE_ASM("asm/overlays", func_L01_002FED78);
+extern char D_L01_001FBF40[];
+void func_L01_002FFF00(void) {
+    DefaultVtbl_DeleteMoby();
+    func_L01_002BA898(4, D_L01_001FBF40);
+}
 INCLUDE_ASM("asm/overlays", func_L01_002FFF30);
 INCLUDE_ASM("asm/overlays", func_L01_00300140);
 INCLUDE_ASM("asm/overlays", func_L01_00300C38);
@@ -66,6 +100,43 @@ INCLUDE_ASM("asm/overlays", func_L01_0030CDF0);
 INCLUDE_ASM("asm/overlays", func_L01_0030D248);
 INCLUDE_ASM("asm/overlays", func_L01_0030D568);
 INCLUDE_ASM("asm/overlays", func_L01_0030E4C8);
-INCLUDE_ASM("asm/overlays", func_L01_003102F0);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern float func_001F9C78(void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern float func_001F9CB8(void *);
+extern char D_L01_001672C0[];
+extern float D_L01_001621A0 MACRO_ADDR;
+extern float D_L01_001621A4 MACRO_ADDR;
+
+/* Projects each of n point/normal pairs onto a 2D texture coordinate. */
+void func_L01_003102F0(int n, char *pts, char *nrm, int unused, float *out) {
+    float v0[4];
+    float v1[4];
+    float v2[4];
+    float v3[4];
+    int i;
+    for (i = 0; i < n; i++) {
+        float len;
+        v1[0] = *(float *)(nrm + i * 12);
+        v1[1] = *(float *)(nrm + i * 12 + 4);
+        v1[2] = *(float *)(nrm + i * 12 + 8);
+        v1[3] = 1.0f;
+        FastVecSub(v0, v1, D_L01_001672C0);
+        func_L00_001FF4B0(v0, v0, 1.0f);
+        v3[0] = -*(float *)(pts + i * 12);
+        v3[1] = -*(float *)(pts + i * 12 + 4);
+        v3[2] = -*(float *)(pts + i * 12 + 8);
+        v3[3] = 1.0f;
+        func_L00_001FF4B0(v3, v3, 1.0f);
+        FastVecScale(v2, v3, FastVecDot(v3, v0) * 2.0f);
+        FastVecSub(v2, v0, v2);
+        func_L00_001FF4B0(v2, v2, 1.0f);
+        v2[2] += 1.0f;
+        len = FastVecLength(v2) * 2.0f;
+        out[i * 2] = (v2[0] / len + 0.5f) * 2.0f + D_L01_001621A0;
+        out[i * 2 + 1] = (v2[1] / len + 0.5f) * 2.0f + D_L01_001621A4;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_003104B8);
 INCLUDE_ASM("asm/overlays", func_L01_003105E0);

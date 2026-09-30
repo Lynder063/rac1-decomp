@@ -42,7 +42,18 @@ void func_L00_002D9D00(char *m, float *out, int i) {
     out[2] += *(float *)pv;
 }
 INCLUDE_ASM("asm/overlays", func_L00_002D9DB8);
-INCLUDE_ASM("asm/overlays", func_L00_002D9E30);
+extern char D_0013E633[] NOT_SDA;
+extern int func_L00_001EFFF0(void *, void *, int, int, int);
+
+// tests a sightline from a moby (raised 0.5) to the player's position (raised 0.5); true if clear
+int func_L00_002D9E30(char *m) {
+    Vz a, b;
+    qcopy(&a, m + 0x10);
+    a.z += 0.5f;
+    qcopy(&b, *(char **)(D_0013E633 + 0x2E9D) + 0x10);
+    b.z += 0.5f;
+    return func_L00_001EFFF0(&a, &b, 0x12, 0, 0) == 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002D9EA0);
 INCLUDE_ASM("asm/overlays", func_L00_002DACC0);
 INCLUDE_ASM("asm/overlays", func_L00_002DB428);
@@ -64,6 +75,13 @@ void func_L00_002DB480(char *a, char *b, void *c) {
 INCLUDE_ASM("asm/overlays", func_L00_002DB508);
 int func_L00_002DB690(char *a) {
     int (*fn)(char *) = *(int (**)(char *))(*(char **)(*(char **)(a + 0x24) + 0x2C) + 0xC);
+    if (fn != 0) {
+        return fn(a);
+    }
+    return 1;
+}
+int func_L00_002DB6C8(char *a) {
+    int (*fn)(char *) = *(int (**)(char *))(*(char **)(*(char **)(a + 0x24) + 0x2C) + 0x4);
     if (fn != 0) {
         return fn(a);
     }

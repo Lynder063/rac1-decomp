@@ -45,7 +45,28 @@ void func_L00_002EBC50(void) {
     if (h->p != 0) func_0022ED80(0, 0, h->p);
 }
 INCLUDE_ASM("asm/overlays", func_L00_002EBCC0);
-INCLUDE_ASM("asm/overlays", func_L00_002EBE88);
+extern char *D_L00_00166F00;
+extern char *func_L00_001EB578(int);
+
+/* Copies a vector into the current object's slot, switching to state 5 first. */
+void func_L00_002EBE88(char *src) {
+    char *g = D_L00_00166F00;
+    char *p;
+    if (*(short *)(g + 0x86) != 5)
+        p = func_L00_001EB578(5);
+    else
+        p = g;
+    qcopy(*(char **)(p + 0x70) + 0x80, src);
+}
+void func_L00_002EBEE0(char *src) {
+    char *g = D_L00_00166F00;
+    char *p;
+    if (*(short *)(g + 0x86) != 5)
+        p = func_L00_001EB578(5);
+    else
+        p = g;
+    qcopy(*(char **)(p + 0x70) + 0x90, src);
+}
 INCLUDE_ASM("asm/overlays", func_L00_002EBF38);
 INCLUDE_ASM("asm/overlays", func_L00_002EBF50);
 INCLUDE_ASM("asm/overlays", func_L00_002EC0C8);

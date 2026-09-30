@@ -126,8 +126,13 @@ void func_L00_002E9900(float x, float y, int flag) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002E9940);
-extern char *D_L00_00166F00;
+void func_L00_002E9940(float value) {
+    char *moby = D_L00_00166F00;
+    if (*(short *)(moby + 0x86) == 0) {
+        char *data = *(char **)(moby + 0x70);
+        *(float *)(data + 0x22C) = value;
+    }
+}
 void func_L00_002E9968(float x, float y) {
     char *p = D_L00_00166F00;
     if (*(short *)(p + 0x86) == 0) {
@@ -139,7 +144,20 @@ void func_L00_002E9968(float x, float y) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_002E99A0);
 INCLUDE_ASM("asm/overlays", func_L00_002E99E4);
-INCLUDE_ASM("asm/overlays", func_L00_002E9A18);
+void func_L00_002E99F0(float value) {
+    char *moby = D_L00_00166F00;
+    if (*(short *)(moby + 0x86) == 0) {
+        char *data = *(char **)(moby + 0x70);
+        *(float *)(data + 0x1CC) = value;
+    }
+}
+void func_L00_002E9A18(int value) {
+    char *moby = D_L00_00166F00;
+    if (*(short *)(moby + 0x86) == 0) {
+        char *data = *(char **)(moby + 0x70);
+        *(short *)(data + 0x10) = value;
+    }
+}
 void func_L00_002E9A40(float a, float b) {
     char *p = D_L00_00166F00;
     if (*(short *)(p + 0x86) == 0) {

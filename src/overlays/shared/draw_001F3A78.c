@@ -60,5 +60,6 @@ void func_L00_001F9D40(void *a) {
     VU1_initChain();
     func_L00_002A21A8(a, D_0015EF84, *(int *)((char *)D_0013E15A + 0x4AA) << 11);
 }
+INCLUDE_ASM("asm/overlays", func_L00_001FB7F8);
 INCLUDE_ASM("asm/overlays", func_L00_001FCAD8);
 INCLUDE_ASM("asm/overlays", func_L00_001FCC50);

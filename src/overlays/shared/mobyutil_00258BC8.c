@@ -143,7 +143,11 @@ void func_L00_0025A540(void *a, void *b, void *c, int d, float f) {
     FastVecAdd(a, b, t);
 }
 INCLUDE_ASM("asm/overlays", func_L00_0025A5D8);
-INCLUDE_ASM("asm/overlays", func_L00_0025A748);
+extern void func_00214358(void *, int, float);
+
+void func_L00_0025A748(void *arg) {
+    func_00214358(arg, 0x20, 0.5f);
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025A778);
 INCLUDE_ASM("asm/overlays", func_L00_0025A848);
 INCLUDE_ASM("asm/overlays", func_L00_0025A868);
@@ -155,7 +159,13 @@ void func_L00_0025A890(char *a, int b, int c, float d) {
     *(int *)(a + 0x20) = 0;
     clear_u64_value(a);
 }
-INCLUDE_ASM("asm/overlays", func_L00_0025A8C0);
+void func_L00_0025A8C0(char *arg, int a, int b, void *src, float scale) {
+    *(int *)(arg + 0x10) = a;
+    *(int *)(arg + 0x14) = b;
+    *(float *)(arg + 0x1C) = scale;
+    *(int *)(arg + 0x20) = 1;
+    qcopy(arg, src);
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025A8E8);
 INCLUDE_ASM("asm/overlays", func_L00_0025AA20);
 INCLUDE_ASM("asm/overlays", func_L00_0025AAC0);
@@ -321,6 +331,7 @@ void func_L00_0025D308(void *a, void *b, void *c, float s) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_0025D390);
 INCLUDE_ASM("asm/overlays", func_L00_0025D3A0);
+INCLUDE_ASM("asm/overlays", func_L00_0025D3D0);
 INCLUDE_ASM("asm/overlays", func_L00_0025D3F0);
 INCLUDE_ASM("asm/overlays", func_L00_0025D5B0);
 INCLUDE_ASM("asm/overlays", func_L00_0025D6F0);

@@ -5,7 +5,23 @@
 INCLUDE_ASM("asm/overlays", func_L00_002C96D0);
 INCLUDE_ASM("asm/overlays", func_L00_002C9820);
 INCLUDE_ASM("asm/overlays", func_L00_002C9DC8);
-INCLUDE_ASM("asm/overlays", func_L00_002CA6B8);
+// resets the fields of a record (if non-null) to their defaults
+void func_L00_002CA6B8(char *a) {
+    if (a != 0) {
+        *(int *)(a + 0x78) = 0;
+        *(float *)(a + 0x7C) = 0.05f;
+        *(float *)(a + 0x80) = 0.863f;
+        *(int *)(a + 0x84) = 4;
+        *(int *)(a + 0x88) = 3;
+        *(float *)(a + 0x8C) = 0.625f;
+        *(short *)(a + 0x9C) = -1;
+        *(short *)(a + 0x9E) = -1;
+        *(int *)(a + 0xA0) = -1;
+        *(int *)(a + 0xA4) = -1;
+        *(int *)(a + 0xA8) = -1;
+        *(int *)(a + 0xAC) = -1;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002CA728);
 INCLUDE_ASM("asm/overlays", func_L00_002CABB8);
 INCLUDE_ASM("asm/overlays", func_L00_002CABC0);

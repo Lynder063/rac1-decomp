@@ -59,8 +59,12 @@ Evidence for the order:
 ## Names
 
 The catalogue deduplicates functions by comparing instructions with their
-link-dependent fields masked (jump targets, `lui` values, `$gp` offsets,
-non-stack memory offsets; see `mask()` in `tools/overlays.py`).
+address fields masked: jump targets, the `lui` of a RAM address, `$gp`
+offsets, and immediates on a register that holds or derives from such a
+`lui` (see `identity()` in `tools/overlays.py`). Constants, float halves
+and struct offsets are compared, so two functions that differ in a number
+are two functions (see [Variants](#variants)). Two copies that only call
+different functions are one function: the call target is a relocation.
 
 - **exe**: the same code as an executable game function. It keeps that
   name (`func_XXXXXXXX`) and its C lives in `src/game/` as now.
@@ -201,6 +205,30 @@ another level: level code is often the same source built with small
 changes. Match one, then start its relative from that C. Matching order:
 shared code in all 19 levels first, then one function per family, then
 the rest.
+
+## Variants
+
+137 catalogued functions (23 KB) are *variants*: the same instructions as
+another function except for a constant, a float or a struct offset (a moby
+class of `0x23D` against `0x23E`, 95.0 against 58.5). The catalogue lists
+each with its parent in `config/overlays/variants.tsv`; the parent is the
+executable's function of that shape, or the first one in the catalogue.
+A variant's stub sits right after its parent in the parent's file, and
+variants of executable functions are in `exe_variants.c`.
+
+```
+python3 tools/overlay_variants.py stubs     # after regenerating the catalogue
+python3 tools/overlay_asm.py --fix-branches # stubs moved: recheck branches between files
+bash tools/docker/run.sh python tools/overlay_variants.py clone
+```
+
+`clone` matches variants without a model. It takes the parent's C, renames
+the function and the symbols its assembly names differently, replaces the
+numbers that differ between the two functions' instructions, and keeps
+the result when the strict check says EXACT. Run it after each wave: every
+newly matched parent can bring its variants along. It leaves alone a
+variant whose difference has no literal in the C (a struct field) or
+whose parent is in the executable.
 
 ## Status
 

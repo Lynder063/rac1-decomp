@@ -128,7 +128,49 @@ INCLUDE_ASM("asm/overlays", func_L00_00270738);
 INCLUDE_ASM("asm/overlays", func_L00_002708A0);
 INCLUDE_ASM("asm/overlays", func_L00_002709A0);
 INCLUDE_ASM("asm/overlays", func_L00_00270AD8);
-INCLUDE_ASM("asm/overlays", func_L00_00270BC8);
+extern float func_00214158(void);
+extern int func_001160D8(void);
+extern unsigned char *D_L00_001B2430;
+
+/* Spawns a particle at a with velocity b, colour class c and tag d. */
+void *func_L00_00270BC8(char *a, char *b, unsigned char c, int d) {
+    char *p = func_00218928(0x28);
+
+    if (p != 0) {
+        char *q = p + 0x20;
+        float f;
+        int rnd;
+
+        qcopy(p + 0x10, a);
+        qcopy(q, b);
+        *(int *)(p + 4) = func_L00_0025D038(0.7f, 0.7f, 0.7f, 0.08f);
+        p[9] = (char)(func_001FA898_r(4.0f) + 0x40);
+        p[1] = 0;
+        p[3] = 0x44;
+        f = random_angle_radians();
+        *(float *)(q + 0x10) = f;
+        p[8] = (char)(int)(f * 256.0f);
+        p[2] = D_L00_001B2430[func_001160D8() & 7];
+        q[0x18] = c;
+        *(short *)(q + 0x14) = 0;
+        *(short *)(q + 0x16) = 0;
+        if (c < 5) {
+            int n;
+            int y;
+
+            *(float *)(p + 0xC) = random_float_between(7000.0f, 10000.0f);
+            rnd = func_001160D8();
+            n = (int)(8.0f / (D_0015EE60 * 0.443f));
+            y = n * 6 / 7;
+            *(short *)(p + 0xA) = n - rnd % y;
+        } else {
+            *(short *)(p + 0xA) = (int)(8.0f / (D_0015EE60 * 0.443f));
+            *(float *)(p + 0xC) = 10000.0f;
+        }
+        *(int *)(q + 0x1C) = d;
+    }
+    return p;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00270DB0);
 void func_L00_002715B0(char *a) {
     if (*(short *)(a + 0xA) != -1) {
@@ -137,6 +179,44 @@ void func_L00_002715B0(char *a) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002715F8);
+/* Spawns a particle of type 0x2A at a with velocity b, class c and tag d. */
+void *func_L00_002715F8(char *a, char *b, unsigned char c, int d) {
+    char *p = func_00218928(0x2A);
+
+    if (p != 0) {
+        char *q = p + 0x20;
+        float f;
+        int rnd;
+
+        qcopy(p + 0x10, a);
+        qcopy(q, b);
+        *(int *)(p + 4) = func_L00_0025D038(0.7f, 0.7f, 0.7f, 0.08f);
+        p[9] = (char)(func_001FA898_r(4.0f) + 0x40);
+        p[1] = 0;
+        p[3] = 0x44;
+        f = random_float_between(0.0f, 1.0f);
+        *(float *)(q + 0x10) = f;
+        p[8] = (char)(int)(f * 256.0f);
+        p[2] = D_L00_001B2430[func_001160D8() & 7];
+        q[0x18] = c;
+        *(short *)(q + 0x14) = 0;
+        *(short *)(q + 0x16) = 0;
+        if (c < 5) {
+            int n;
+            int y;
+
+            *(float *)(p + 0xC) = random_float_between(7000.0f, 10000.0f);
+            rnd = func_001160D8();
+            n = (int)(8.0f / (D_0015EE60 * 0.443f));
+            y = n * 6 / 7;
+            *(short *)(p + 0xA) = n - rnd % y;
+        } else {
+            *(short *)(p + 0xA) = (int)(8.0f / (D_0015EE60 * 0.443f));
+            *(float *)(p + 0xC) = 10000.0f;
+        }
+        *(int *)(q + 0x1C) = d;
+    }
+    return p;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002717E8);
 INCLUDE_ASM("asm/overlays", func_L00_00271F40);

@@ -4,6 +4,27 @@
 
 INCLUDE_ASM("asm/overlays", func_L04_002B0068);
 INCLUDE_ASM("asm/overlays", func_L04_002B0290);
-INCLUDE_ASM("asm/overlays", func_L04_002C5938);
+extern void func_001F9EC0(void *, void *, void *);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_L04_002C5560(void *, void *, void *, int, float, float);
+extern char D_L04_001D2F60[];
+extern short D_L04_00161940;
+
+/* Builds two direction vectors from a table and relative to a moby, then hands them to the L04 effect spawner. */
+void func_L04_002C5938(char *a, int i, int j, int k) {
+    float v0[4], v10[4];
+    char *pi, *pj;
+    pi = D_L04_001D2F60 + i * 16;
+    qcopy(v0, pi);
+    v0[3] = 1.0f;
+    func_001F9EC0(v0, v0, a + 0xC0);
+    FastVecAdd(v0, v0, a + 0x10);
+    pj = D_L04_001D2F60 + j * 16;
+    qcopy(v10, pj);
+    v10[3] = 1.0f;
+    func_001F9EC0(v10, v10, a + 0xC0);
+    FastVecAdd(v10, v10, a + 0x10);
+    func_L04_002C5560(a, v0, v10, k, *(float *)(pi + 0xC) * *(float *)&D_L04_00161940, *(float *)(pj + 0xC) * *(float *)&D_L04_00161940);
+}
 INCLUDE_ASM("asm/overlays", func_L04_002C5A50);
 INCLUDE_ASM("asm/overlays", func_L04_002CF460);

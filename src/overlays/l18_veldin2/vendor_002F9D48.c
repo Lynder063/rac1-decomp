@@ -44,3 +44,25 @@ INCLUDE_ASM("asm/overlays", func_L18_002FDCA0);
 INCLUDE_ASM("asm/overlays", func_L18_002FDCC4);
 INCLUDE_ASM("asm/overlays", func_L18_002FDD20);
 INCLUDE_ASM("asm/overlays", func_L18_002FDF58);
+int func_L18_002FE070(char *a) {
+    int r = func_L00_002DCDA8(a);
+    if (r == 0) {
+        if (*(unsigned char *)(a + 0x20) == 7) a[0x20] = 2;
+    } else {
+        a[0x20] = 7;
+    }
+    return r;
+}
+void func_L18_002FE1C0(unsigned char *arg) {
+    unsigned short flags;
+    arg[0x20] = 8;
+    if (arg[0x53] != 0) {
+        func_00213DE0(arg, 0, 0, scale_ticks(10));
+    }
+    flags = *(unsigned short *)(arg + 0x34);
+    arg[0x31] = 0;
+    flags |= 1;
+    *(int *)(arg + 0x94) = 0;
+    flags &= 0xEFFF;
+    *(unsigned short *)(arg + 0x34) = flags;
+}

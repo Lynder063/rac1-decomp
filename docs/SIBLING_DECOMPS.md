@@ -205,3 +205,29 @@ files need which flags is not mapped yet.
   Using ps2eeas for the whole text segment was measured before and is
   worse (DECOMP_PROGRESS.md); `tools/ps2eeas_nops.py` reproduces the nops
   it adds. UYA's per-function `@ps2as` is not tried here yet.
+
+### `nop; nop` before `div.s`, `sqrt.s` and `rsqrt.s` (2026-09-30)
+
+UYA's open problem (two `nop`s in front of most float divides and square
+roots; none of its compilers or assemblers adds them) is a compiler
+feature, not an assembler one. Sony's 2.96-ee-001003-1 compiler, the Linux
+`cc1` under `toolchain/sn-prodg-24/local/sce/ee/gcc/lib/gcc-lib/ee/2.96-ee-001003-1/`,
+has two output templates for each of the three instructions:
+
+```
+div.s   %0,%1,%2
+%(nop\n\tnop\n\tdiv.s\t%0,%1,%2%)      (inside .set noreorder)
+```
+
+- The padded one is its default: a test file compiled with `-O2` or `-O0`
+  gets `nop; nop; div.s` for every divide (nine of nine). A divide in a
+  branch delay slot was not tested.
+- `-mno-handle-ee-div-pipeline-bug` selects the plain one. The flag is
+  the workaround for the EE's divide pipeline bug.
+- SN's 2.95.2/2.95.3 and Sony's 2.9-ee-991111 have only the plain
+  template and no such flag, so no option makes them pad.
+- Retail Ratchet & Clank 1 (PAL) has no padded divide among 1,671 (the few
+  single `nop`s are the usual one after `mtc1`), so this does not apply
+  here.
+
+Not explained yet: UYA functions that mix two, one and no `nop`s.

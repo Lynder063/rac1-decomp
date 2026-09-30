@@ -54,9 +54,98 @@ INCLUDE_ASM("asm/overlays", func_L18_002F3268);
 INCLUDE_ASM("asm/overlays", func_L18_002F33D8);
 INCLUDE_ASM("asm/overlays", func_L18_002F3710);
 INCLUDE_ASM("asm/overlays", func_L18_002F39F8);
-INCLUDE_ASM("asm/overlays", func_L18_002F3A80);
+typedef float FVec4[4] __attribute__((aligned(16)));
+typedef struct {
+    FVec4 v;
+} FRow;
+extern short D_L18_001623A0;
+extern short D_L18_001623A4;
+extern short D_L18_001623A8;
+extern short D_L18_001623AC;
+extern short D_L18_001623B0;
+extern short D_L18_001623B4;
+extern short D_L18_001623B8;
+extern short D_L18_00162398;
+extern float D_L18_001DAA60[][2];
+extern FRow D_L18_001DA680[];
+extern short D_L18_001DA8D0[][4][2];
+extern int func_001F4868(int);
+extern void func_001FA190(void *);
+extern void func_L00_001FD1D8(void *, void *, int);
+
+/* Draws 25 textured quads from the L18 tables, in the moby's frame. */
+void func_L18_002F3A80(char *moby) {
+    FRow m[4];
+    int colors[4];
+    float uv[4][2];
+    unsigned long pkt[4];
+    float mat[4][4];
+    char *data = *(char **)(moby + 0x78);
+    int i;
+    int j;
+
+    pkt[1] = GetEffectTex((*(int *)&D_L18_001623B4));
+    pkt[3] = (*(int *)&D_L18_001623A0) | (long)(*(int *)&D_L18_001623A4) << 2 | (long)(*(int *)&D_L18_001623A8) << 4 |
+             (long)(*(int *)&D_L18_001623AC) << 6 | (long)(*(int *)&D_L18_001623B0) << 32;
+    pkt[2] = 0xFF9000000260;
+    pkt[0] = 0;
+    func_001FA190(mat);
+    mat[3][2] = *(float *)(moby + 0x18) - *(float *)data;
+    colors[3] = (*(int *)&D_L18_001623B8);
+    colors[2] = (*(int *)&D_L18_001623B8);
+    colors[1] = (*(int *)&D_L18_001623B8);
+    colors[0] = (*(int *)&D_L18_001623B8);
+    for (i = 0; i < 25; i++) {
+        float ofs = *(float *)&D_L18_00162398;
+        for (j = 0; j < 4; j++) {
+            int a = D_L18_001DA8D0[i][j][0];
+            int b = D_L18_001DA8D0[i][j][1];
+            qcopy(&m[j], &D_L18_001DA680[a]);
+            uv[j][0] = D_L18_001DAA60[b][0] + ofs;
+            uv[j][1] = D_L18_001DAA60[b][1];
+        }
+        func_L00_001FD1D8(m, mat, 0);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L18_002F3C28);
-INCLUDE_ASM("asm/overlays", func_L18_002F3DD0);
+extern float D_L18_001DB660[][2];
+extern FRow D_L18_001DB2F0[];
+extern short D_L18_001DB500[][4][2];
+
+/* Draws 22 textured quads from the L18 tables, in the moby's frame. */
+void func_L18_002F3DD0(char *moby) {
+    FRow m[4];
+    int colors[4];
+    float uv[4][2];
+    unsigned long pkt[4];
+    float mat[4][4];
+    char *data = *(char **)(moby + 0x78);
+    int i;
+    int j;
+
+    pkt[1] = GetEffectTex((*(int *)&D_L18_001623B4));
+    pkt[3] = (*(int *)&D_L18_001623A0) | (long)(*(int *)&D_L18_001623A4) << 2 | (long)(*(int *)&D_L18_001623A8) << 4 |
+             (long)(*(int *)&D_L18_001623AC) << 6 | (long)(*(int *)&D_L18_001623B0) << 32;
+    pkt[2] = 0xFF9000000260;
+    pkt[0] = 0;
+    func_001FA190(mat);
+    mat[3][2] = *(float *)(moby + 0x18) - *(float *)data;
+    colors[3] = (*(int *)&D_L18_001623B8);
+    colors[2] = (*(int *)&D_L18_001623B8);
+    colors[1] = (*(int *)&D_L18_001623B8);
+    colors[0] = (*(int *)&D_L18_001623B8);
+    for (i = 0; i < 22; i++) {
+        float ofs = *(float *)&D_L18_00162398;
+        for (j = 0; j < 4; j++) {
+            int a = D_L18_001DB500[i][j][0];
+            int b = D_L18_001DB500[i][j][1];
+            qcopy(&m[j], &D_L18_001DB2F0[a]);
+            uv[j][0] = D_L18_001DB660[b][0] + ofs;
+            uv[j][1] = D_L18_001DB660[b][1];
+        }
+        func_L00_001FD1D8(m, mat, 0);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L18_002F3F78);
 INCLUDE_ASM("asm/overlays", func_L18_002F4050);
 INCLUDE_ASM("asm/overlays", func_L18_002F7278);

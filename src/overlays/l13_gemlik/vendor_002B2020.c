@@ -28,10 +28,100 @@ void func_L13_002B6168(Level13VendorMoby *moby) {
 }
 INCLUDE_ASM("asm/overlays", func_L13_002B61A0);
 INCLUDE_ASM("asm/overlays", func_L13_002B6288);
+extern int func_001F4868(int);
+extern void func_L11_003121C0(float, float, float, float, float, int, int, int, int, int, int, int, int);
+extern float func_001FA748(float, float);
+void func_L13_002B9590(unsigned char a, unsigned char b, unsigned char c, unsigned char d, float x, float y, float s, float ang) {
+    int h;
+    float w;
+    h = GetEffectTex(0x37);
+    w = s * 20.0f;
+    func_L11_003121C0(x, y, w, w, ang, 0x3F, 0x3F, h, 0xFFFFF3, a, b, c, d);
+    ang = FastAddRots(ang, 1.5707964f);
+    func_L11_003121C0(x, y, w, w, ang, 0x3F, 0x3F, h, 0xFFFFF3, a, b, c, d);
+    ang = FastAddRots(ang, 1.5707964f);
+    func_L11_003121C0(x, y, w, w, ang, 0x3F, 0x3F, h, 0xFFFFF3, a, b, c, d);
+    ang = FastAddRots(ang, 1.5707964f);
+    func_L11_003121C0(x, y, w, w, ang, 0x3F, 0x3F, h, 0xFFFFF3, a, b, c, d);
+}
 INCLUDE_ASM("asm/overlays", func_L13_002B9800);
 INCLUDE_ASM("asm/overlays", func_L13_002B9C68);
 INCLUDE_ASM("asm/overlays", func_L13_002B9E50);
-INCLUDE_ASM("asm/overlays", func_L13_002BA828);
+extern unsigned char D_0013A5E0[];
+extern unsigned char D_0013E633[];
+extern int D_L13_0015F6A8 MACRO_ADDR;
+extern char D_L13_00167150[];
+extern void func_001F9908(int *arg0);
+extern int func_001F9850(int);
+extern int func_L13_002B9E50(int, char *, char *, void *, float, float, float, char *, char *);
+
+#define W(p, o) (*(int *)((char *)(p) + (o)))
+#define P(p, o) (*(char **)((char *)(p) + (o)))
+#define H(p, o) (*(short *)((char *)(p) + (o)))
+#define B(p, o) (*(unsigned char *)((char *)(p) + (o)))
+#define FLAG (D_0013E633[0x2413])
+
+/* Per-frame target tracking: validates the current target, re-picks one and drops it when lost. */
+void func_L13_002BA828(int a, char *p) {
+    char *g = 0;
+    char *pad;
+    char *t;
+    char *r;
+    float v[4];
+    if (!(D_L13_0015F6A8 >= 3 && D_L13_0015F6A8 <= 4)) {
+        func_001F9908((int *)(p + 0x8C));
+    }
+    if (W(p, 0x8C) != 0 && P(p, 0x88) != 0 && H(P(p, 0x88), 0xA6) == W(p, 0x124) &&
+        B(P(p, 0x88), 0x20) != 0xFE && B(P(p, 0x88), 0x20) != 0xFD) {
+        pad = (char *)D_0013A5E0 + 0x2460;
+        if (B(P(p, 0x88), 0x31) != 0) {
+            if (W(pad, 0x1B4) & 0x2000) {
+                goto take;
+            }
+            if (FLAG != 0) {
+                goto skip;
+            }
+        }
+    }
+    pad = (char *)D_0013A5E0 + 0x2460;
+    if (W(pad, 0x1B4) & 0x2000) {
+take:
+        g = P(p, 0x88);
+    }
+    W(p, 0xEC) = 0;
+    W(p, 0x124) = -1;
+    W(p, 0x88) = 0;
+skip:
+    qcopy(v, D_L13_00167150);
+    r = (char *)func_L13_002B9E50(a, p, D_L13_00167150 - 0x10, v, 0.19634955f, 0.19634955f, 255.0f, P(p, 0x88), g);
+    if ((r != P(p, 0x88) && W(p, 0x8C) >= 0x1F5) || FLAG == 0) {
+        W(p, 0xEC) = 0;
+        W(p, 0x124) = -1;
+        W(p, 0x88) = 0;
+    }
+    if (r != 0 && (P(p, 0x88) == 0 || (H(P(p, 0x88), 0xA6) != 0x3EB && H(r, 0xA6) == 0x3EB)) && FLAG != 0) {
+        P(p, 0x88) = r;
+        W(p, 0x124) = H(r, 0xA6);
+        W(p, 0x8C) = W(p, 0x138);
+    }
+    if (r != P(p, 0x88)) {
+        W(p, 0x118) = W(p, 0x118) + 1;
+        if (scale_ticks(0x3C) < W(p, 0x118)) {
+            W(p, 0xEC) = 0;
+            W(p, 0x124) = -1;
+            W(p, 0x88) = 0;
+        }
+    } else {
+        W(p, 0x118) = 0;
+    }
+    t = P(p, 0x88);
+    if (t != 0 && W(p, 0x84) == 0) {
+        if (H(t, 0xA6) != W(p, 0x124) || B(t, 0x20) == 0xFE || B(t, 0x20) == 0xFD) {
+            W(p, 0x88) = 0;
+            W(p, 0x124) = -1;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L13_002BAA68);
 INCLUDE_ASM("asm/overlays", func_L13_002BB068);
 INCLUDE_ASM("asm/overlays", func_L13_002BB1C8);

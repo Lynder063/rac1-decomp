@@ -33,8 +33,58 @@ INCLUDE_ASM("asm/overlays", func_L01_002F0850);
 INCLUDE_ASM("asm/overlays", func_L01_002F0938);
 INCLUDE_ASM("asm/overlays", func_L01_002F0B48);
 INCLUDE_ASM("asm/overlays", func_L01_002F0E60);
+extern int func_L00_002DCFD0(void *);
+int func_L01_002F0ED0(char *a) {
+    int r = func_L00_002DCFD0(a);
+    if (r == 0) {
+        if (*(unsigned char *)(a + 0x20) == 14) a[0x20] = 1;
+    } else {
+        a[0x20] = 14;
+    }
+    return r;
+}
+int func_L01_002F0F70(char *a) {
+    int r = func_L00_002DD2D0(a);
+    a[0x20] = 14;
+    return r;
+}
+INCLUDE_ASM("asm/overlays", func_L01_002F0FA0);
 INCLUDE_ASM("asm/overlays", func_L01_002F0FD0);
-INCLUDE_ASM("asm/overlays", func_L01_002F30F0);
+int func_L01_002F3050(char *a) {
+    int r = func_L00_002DCDA8(a);
+    if (r == 0) {
+        if (*(unsigned char *)(a + 0x20) == 7) a[0x20] = 1;
+    } else {
+        a[0x20] = 7;
+    }
+    return r;
+}
+extern char *func_L00_002DCD40(char *);
+extern int func_L00_002DD0E0(char *, int, int, float);
+extern void func_0022ED80(int, int, char *);
+
+/* runs the moby update and sets its state byte */
+int func_L01_002F30F0(char *m, int a, int b, float f) {
+    char *h = func_L00_002DCD40(m);
+    int r = func_L00_002DD0E0(m, a, b, f);
+    if (r != 0) {
+        m[0x20] = 7;
+    } else if ((unsigned char)m[0x20] == 7) {
+        m[0x20] = 1;
+    }
+    if (h != 0) {
+        if (*(short *)(h + 0x68) == 6) {
+            func_0022ED80(2, 0, m);
+        }
+    }
+    return r;
+}
+int func_L01_002F31A0(char *a) {
+    int r = func_L00_002DD2D0(a);
+    a[0x20] = 7;
+    return r;
+}
+INCLUDE_ASM("asm/overlays", func_L01_002F31D0);
 INCLUDE_ASM("asm/overlays", func_L01_002F3F40);
 INCLUDE_ASM("asm/overlays", func_L01_002F4290);
 INCLUDE_ASM("asm/overlays", func_L01_002F6418);

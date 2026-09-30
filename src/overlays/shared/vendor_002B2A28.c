@@ -8,7 +8,12 @@ INCLUDE_ASM("asm/overlays", func_L14_002B3B78);
 INCLUDE_ASM("asm/overlays", func_L14_002B4128);
 INCLUDE_ASM("asm/overlays", func_L14_002B41B0);
 INCLUDE_ASM("asm/overlays", func_L14_002B44B8);
-INCLUDE_ASM("asm/overlays", func_L14_002B4568);
+// Manipulate moby flags and clear field
+void func_L14_002B4568(char *moby) {
+    unsigned short *field = (unsigned short *)(moby + 0x34);
+    *field = (*field | 0x41) & 0xEFFF;
+    *(int *)(moby + 0x94) = 0;
+}
 INCLUDE_ASM("asm/overlays", func_L14_002B4580);
 INCLUDE_ASM("asm/overlays", func_L14_002B45A8);
 INCLUDE_ASM("asm/overlays", func_L14_002B4668);
@@ -33,6 +38,7 @@ INCLUDE_ASM("asm/overlays", func_L14_003000B0);
 INCLUDE_ASM("asm/overlays", func_L14_00300130);
 INCLUDE_ASM("asm/overlays", func_L14_00300AC8);
 INCLUDE_ASM("asm/overlays", func_L14_00300F80);
+INCLUDE_ASM("asm/overlays", func_L14_00301090);
 INCLUDE_ASM("asm/overlays", func_L14_00302A58);
 INCLUDE_ASM("asm/overlays", func_L14_00302C80);
 INCLUDE_ASM("asm/overlays", func_L14_00303270);

@@ -4,7 +4,14 @@
 
 INCLUDE_ASM("asm/overlays", func_L12_002BD3D0);
 INCLUDE_ASM("asm/overlays", func_L12_002E7EE0);
-INCLUDE_ASM("asm/overlays", func_L12_002E8530);
+extern int func_001F4868(int);
+extern void func_L12_002BD3D0(void *, int, int, int);
+extern char D_L12_001F5740[];
+
+/* calls func_L12_002BD3D0 with two looked-up ids */
+void func_L12_002E8530(void) {
+    func_L12_002BD3D0(D_L12_001F5740, 0x2F, GetEffectTex(0x2C), GetEffectTex(0x2D));
+}
 INCLUDE_ASM("asm/overlays", func_L12_00309A50);
 INCLUDE_ASM("asm/overlays", func_L12_00309AE8);
 INCLUDE_ASM("asm/overlays", func_L12_00309CF8);

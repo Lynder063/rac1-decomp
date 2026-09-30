@@ -10,6 +10,71 @@ INCLUDE_ASM("asm/overlays", func_L15_002EF410);
 INCLUDE_ASM("asm/overlays", func_L15_002F8D30);
 INCLUDE_ASM("asm/overlays", func_L15_002F8D9C);
 INCLUDE_ASM("asm/overlays", func_L15_002F99F8);
-INCLUDE_ASM("asm/overlays", func_L15_002F9AE8);
+extern void func_001F9BF0(void *dst, void *a, void *b);
+extern float func_001F9C78(void *a, void *b);
+extern void func_001F9C30(void *, void *, float);
+extern float func_001F9CB8(void *a);
+extern float func_L00_001FF860(float, float);
+extern float func_001FA850(float, float);
+extern float func_001F9FC0(float x);
+extern float func_001F9B88(float);
+extern char *D_L15_0015F050 MACRO_ADDR;
+extern char *D_L15_0016016C MACRO_ADDR;
+extern char D_L15_00167490[];
+extern char D_L15_00167300[];
+/* tests whether the target lies within a cone of the player's axis */
+int func_L15_002F9AE8(char *moby, float a, float b) {
+    float d[4];
+    float p[4];
+    float q[4];
+    float r[4];
+    char *data;
+    char *vec = D_L15_00167490;
+    char *g;
+    float dot1;
+    float dot2;
+    float lenq;
+    float lenr;
+    float dot3;
+    float den;
+    char *tbl = D_L15_0015F050;
+    char *src;
+
+    data = *(char **)(tbl + *(short *)(moby + 0x84) * 32 + 0x1C);
+    src = D_L15_0016016C + *(int *)(data + 0x48) * 128;
+    if (a == 0.0f && b == 0.0f) {
+        return 1;
+    }
+    g = D_L15_00167300;
+    FastVecSub(d, src + 0x30, *(char **)(g + 0x180) + 0x30);
+    dot1 = FastVecDot(d, (vec + 0x30));
+    FastVecScale(p, (vec + 0x30), dot1);
+    FastVecSub(q, d, p);
+    lenq = FastVecLength(q);
+    dot2 = FastVecDot(*(char **)(g + 0x180), (vec + 0x30));
+    FastVecScale(p, (vec + 0x30), dot2);
+    FastVecSub(r, *(char **)(g + 0x180), p);
+    lenr = FastVecLength(r);
+    if (b != 0.0f) {
+        float t1 = func_L00_001FF860(lenq, dot1);
+        float t2 = func_L00_001FF860(lenr, dot2);
+        float t3 = FastDiffRots(t1, t2);
+        if (b * 0.017453292f < t3) {
+            return 0;
+        }
+    }
+    if (a == 0.0f) {
+        return 1;
+    }
+    dot3 = FastVecDot(q, r);
+    den = lenr * lenq;
+    if (den == 0.0f) {
+        return 0;
+    }
+    if (FastAbsF(1.5707964f - FastArcSin(dot3 / den)) < a * 0.017453292f) {
+        return 1;
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L15_002F9D38);
 INCLUDE_ASM("asm/overlays", func_L15_002F9FF8);

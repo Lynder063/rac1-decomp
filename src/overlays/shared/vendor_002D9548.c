@@ -3,7 +3,26 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L06_002D9548);
-INCLUDE_ASM("asm/overlays", func_L06_002D98E0);
+extern char *func_0020D348_m(int) __asm__("func_0020D348");
+extern void func_L00_00251E30(void *);
+
+/* Spawns moby class 0x12E at the owner's position, copying its fields. */
+char *func_L06_002D98E0(char *owner) {
+    char *moby = func_0020D348_m(0x12E);
+    if (moby != 0) {
+        ((unsigned char *)moby)[0x30] = 0x60;
+        *(short *)(moby + 0x32) = 0x60;
+        moby[0x31] = 1;
+        *(int *)(moby + 0x40) = 0;
+        *(int *)(moby + 0x44) = 0;
+        *(float *)(moby + 0x48) = *(float *)(owner + 0x48);
+        *(long *)(moby + 0x38) = *(long *)(owner + 0x38);
+        *(unsigned short *)(moby + 0x34) |= 0x1000;
+        qcopy(moby + 0x10, owner + 0x10);
+        func_L00_00251E30(moby);
+    }
+    return moby;
+}
 INCLUDE_ASM("asm/overlays", func_L06_002D9970);
 INCLUDE_ASM("asm/overlays", func_L06_002D9B08);
 INCLUDE_ASM("asm/overlays", func_L06_002D9F68);
@@ -33,6 +52,34 @@ INCLUDE_ASM("asm/overlays", func_L06_002F4C00);
 INCLUDE_ASM("asm/overlays", func_L06_002F4CF8);
 INCLUDE_ASM("asm/overlays", func_L06_002F6330);
 INCLUDE_ASM("asm/overlays", func_L06_002F86B8);
+extern int func_002140B0(int);
+extern int func_001F9850(int);
+
+/* fills random floats and sound handles in the moby's data block */
+void func_L06_002F8978(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    float *f = (float *)data;
+    int *p;
+    int i;
+    int arg;
+    for (i = 3; i >= 0; i--, f++) {
+        *f = (float)random_integer_below(0xFF);
+    }
+    p = (int *)(data + 0x20);
+    *(float *)(data + 0x10) = -2.0f;
+    *(float *)(data + 0x14) = -4.25f;
+    *(float *)(data + 0x18) = 2.25f;
+    *(float *)(data + 0x1C) = 4.5f;
+    arg = 0x3F;
+    for (i = 3; i >= 0; i--, p++) {
+        *p = scale_ticks(arg);
+        arg += 0x40;
+    }
+    *(float *)(data + 0x30) = 1.75f;
+    *(float *)(data + 0x34) = 2.25f;
+    *(float *)(data + 0x3C) = 1.75f;
+    *(float *)(data + 0x38) = 2.25f;
+}
 INCLUDE_ASM("asm/overlays", func_L06_002F8A58);
 INCLUDE_ASM("asm/overlays", func_L06_002F8D60);
 INCLUDE_ASM("asm/overlays", func_L06_002F8EE8);

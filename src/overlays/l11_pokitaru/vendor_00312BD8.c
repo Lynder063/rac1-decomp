@@ -100,4 +100,50 @@ char *func_L11_0031C210(void *position, void *vector, void *owner, float scale) 
 }
 INCLUDE_ASM("asm/overlays", func_L11_0031C2D8);
 INCLUDE_ASM("asm/overlays", func_L11_0031C508);
-INCLUDE_ASM("asm/overlays", func_L11_0031ED48);
+extern char *func_L00_0025B478(void *, int, int);
+extern void func_0022ED80(int, int, int);
+extern void func_L01_00279790(void *);
+extern void func_L00_00264EA8(void *, int, int, int, int, int, int);
+extern void func_L01_00279E10(void *, int);
+extern void func_0020D678(void *);
+void func_L11_0031EC48(char *m) {
+    int hit = 0;
+    char *r = func_L00_0025B478(m, 0x10000, 0);
+    switch (*(unsigned char *)(m + 0x20)) {
+    case 0:
+        m[0x20] = 1;
+        break;
+    case 1:
+        if (r != 0 && *(float *)(r + 0x2C) > 0.0f) hit = 1;
+        if (hit) m[0x20] = 2;
+        break;
+    case 2:
+        func_0022ED80(0, 0, (int)m);
+        func_L01_00279790(m);
+        func_L00_00264EA8(m, 0x745, 1, 0x745, 1, 11, 2);
+        func_L01_00279E10(m, 0x744);
+        DeleteMoby(m);
+        break;
+    }
+}
+extern void func_L08_00259040(void *, int, int, void *);
+extern void func_L00_001FDE48(int, int, int, void *, int);
+extern int D_L11_001FFA30[];
+extern int D_L11_001FFA10[];
+extern short D_L11_001625C0;
+extern short D_L11_001625D0;
+extern short D_L11_001625E0;
+extern short D_L11_00162600;
+
+// Runs four setup calls over parallel tables, offset by the argument.
+void func_L11_0031ED48(int arg) {
+    int *a = (int *)&D_L11_001625C0;
+    int *b = (int *)&D_L11_001625D0;
+    int *c = (int *)&D_L11_001625E0;
+    int *d = (int *)&D_L11_00162600;
+    int i;
+    for (i = 0; i < 4; i++) {
+        func_L08_00259040(D_L11_001FFA30, c[i], a[i], (char *)D_L11_001FFA10 + arg * 8);
+        func_L00_001FDE48(a[i], b[i], d[i], D_L11_001FFA30, 1);
+    }
+}

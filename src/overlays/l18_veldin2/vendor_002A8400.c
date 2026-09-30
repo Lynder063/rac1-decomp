@@ -90,6 +90,51 @@ void func_L18_002D9358(unsigned char *arg, int value) {
 INCLUDE_ASM("asm/overlays", func_L18_002D93C0);
 INCLUDE_ASM("asm/overlays", func_L18_002D9440);
 INCLUDE_ASM("asm/overlays", func_L18_002D9460);
+extern int D_L18_0015F6B0 MACRO_ADDR;
+extern short D_L18_00161AAC;
+extern short D_L18_00161AB0;
+extern short D_L18_00161AB4;
+extern short D_L18_00161AB8;
+extern short D_L18_00161ABC;
+extern short D_L18_00161AC0;
+extern short D_L18_00161AC4;
+extern short D_L18_00161AC8;
+extern short D_L18_00161ACC;
+extern void func_001F62C8(int, int, int, int, int);
+extern float func_001FA888(int);
+extern float func_001F9FA8(float);
+extern int func_001FA8A8(int, int, float);
+extern int func_002140B0(int);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern int func_001F6FD8(int a, int b, int c, int d, int e);
+#define W(x) (*(int *)&(x))
+
+/* Draws the level timer as "H:MM:SS.t" text with a pulsing colour. */
+void func_L18_002D9488(char *moby) {
+    char buf[8];
+    char *data = *(char **)(moby + 0x78);
+    float v;
+    int col;
+
+    DrawUIFrame(W(D_L18_00161ABC) + W(D_L18_00161AB0), W(D_L18_00161AC0) + W(D_L18_00161AB0),
+                  W(D_L18_00161AC4) + W(D_L18_00161AAC), W(D_L18_00161AC8) + W(D_L18_00161AAC), W(D_L18_00161ACC));
+    v = FastSin(func_001FA888(D_L18_0015F6B0 % 60) / 60.0f * 6.28318f) * 3.0f + 0.5f;
+    if (v > 1.0f) {
+        v = 1.0f;
+    } else if (v < 0.0f) {
+        v = 0.0f;
+    }
+    col = FastTweenColor(W(D_L18_00161AB4), W(D_L18_00161AB8), v);
+    buf[0] = 0x30;
+    buf[1] = *(int *)(data + 0x6C) / scale_ticks(0xE10) + 0x30;
+    buf[2] = 0x3A;
+    buf[3] = *(int *)(data + 0x6C) % scale_ticks(0xE10) / scale_ticks(0x258) + 0x30;
+    buf[4] = *(int *)(data + 0x6C) % scale_ticks(0x258) / scale_ticks(0x3C) + 0x30;
+    buf[5] = 0x3A;
+    buf[6] = *(int *)(data + 0x6C) % scale_ticks(0x3C) / scale_ticks(6) + 0x30;
+    buf[7] = func_001FA898_r((float)random_integer_below(10)) + 0x30;
+    FontPrintCenterLarge(W(D_L18_00161AAC), W(D_L18_00161AB0), col, (int)buf, 8);
+}
 INCLUDE_ASM("asm/overlays", func_L18_002D96B0);
 INCLUDE_ASM("asm/overlays", func_L18_002D9B00);
 typedef struct {
@@ -166,6 +211,10 @@ char *func_L18_002E36B0(void *vector) {
     return moby;
 }
 INCLUDE_ASM("asm/overlays", func_L18_002EAB58);
+extern void func_L01_0026F090(char *arg, int val);
+void func_L18_002EB240(char *arg) {
+    func_L01_0026F090(arg, 0x2);
+}
 INCLUDE_ASM("asm/overlays", func_L18_002EB260);
 char *func_L18_002EB4E0(void *owner, void *vector, int value) {
     char *moby = CreateMoby(0x3D7);

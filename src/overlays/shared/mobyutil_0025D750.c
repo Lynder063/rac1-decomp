@@ -2,7 +2,13 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L02_0025D750);
+// Add and subtract a delta from a moby field, storing results
+void func_L02_0025D750(char *moby) {
+    float delta = 0.2f;
+    float val = *(float *)(moby + 0x18);
+    *(float *)(moby + 0x84) = val - delta;
+    *(float *)(moby + 0x88) = val + delta;
+}
 INCLUDE_ASM("asm/overlays", func_L02_0025D778);
 INCLUDE_ASM("asm/overlays", func_L02_002612C0);
 INCLUDE_ASM("asm/overlays", func_L02_00264950);

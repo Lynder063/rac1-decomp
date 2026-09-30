@@ -5,7 +5,56 @@
 INCLUDE_ASM("asm/overlays", func_L10_002E30F8);
 INCLUDE_ASM("asm/overlays", func_L10_002E4E50);
 INCLUDE_ASM("asm/overlays", func_L10_002E52B0);
-INCLUDE_ASM("asm/overlays", func_L10_002E5C00);
+extern unsigned char D_0013E633[];
+extern short D_L10_00161EC8;
+extern short *D_L10_001ABFC0[];
+typedef struct { char p0[0x10]; float x; float y; char p1[8]; unsigned char state; char p2[0xDF]; } Ent;
+extern Ent *D_L10_00160058 MACRO_ADDR;
+extern float func_L00_001FF860(float, float);
+extern float func_001F9D10(void *, void *);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_001F9BD8(void *, void *, void *);
+extern float func_001FA790(float, float);
+extern float func_001FA850(float, float);
+extern float func_001FA748(float, float);
+
+/* Computes the aim angle of a moby relative to its owner, narrowed by nearby table entries. */
+float func_L10_002E5C00(char *self) {
+    char *owner = *(char **)(*(char **)(self + 0x78) + 0x160);
+    float hi, lo, ang, dist, v[3];
+    short *p;
+    if ((unsigned char)self[0x21] == 0xFF) {
+        return func_L00_001FF860(*(float *)(self + 0x10) - *(float *)(owner + 0x10),
+                                 *(float *)(self + 0x14) - *(float *)(owner + 0x14));
+    }
+    lo = -(*(float *)&D_L10_00161EC8 * 0.017453292f);
+    hi = *(float *)&D_L10_00161EC8 * 0.017453292f;
+    ang = func_L00_001FF860(*(float *)(self + 0x10) - *(float *)(owner + 0x10),
+                            *(float *)(self + 0x14) - *(float *)(owner + 0x14));
+    dist = FastVecDist(owner + 0x10, self + 0x10);
+    v[0] = FastCos(ang) * 2.0f;
+    v[1] = FastSin(ang) * 2.0f;
+    v[2] = 0.0f;
+    FastVecAdd(v, v, D_0013E633 + 0xE9D);
+    p = D_L10_001ABFC0[(unsigned char)self[0x21]];
+    if (p != 0) {
+        do {
+            int idx = *(unsigned short *)p & 0x7FFF;
+            if (D_L10_00160058[idx].state == 5 || FastVecDist(&D_L10_00160058[idx].x, owner + 0x10) < dist) {
+                float d = func_L00_001FF860(D_L10_00160058[idx].x - *(float *)(owner + 0x10),
+                                            D_L10_00160058[idx].y - *(float *)(owner + 0x14));
+                float r = FastSubRots(d, ang);
+                if (r > 0.0f && r < hi) {
+                    hi = r;
+                } else if (r < 0.0f && r > lo) {
+                    lo = r;
+                }
+            }
+        } while (*p++ >= 0);
+    }
+    return FastAddRots(FastAddRots(lo, FastDiffRots(hi, lo) * 0.5f), ang);
+}
 INCLUDE_ASM("asm/overlays", func_L10_002E5E48);
 INCLUDE_ASM("asm/overlays", func_L10_002E6D28);
 INCLUDE_ASM("asm/overlays", func_L10_002E6FA0);
@@ -21,3 +70,19 @@ INCLUDE_ASM("asm/overlays", func_L10_002EBDC8);
 INCLUDE_ASM("asm/overlays", func_L10_002EC098);
 INCLUDE_ASM("asm/overlays", func_L10_002ECAB0);
 INCLUDE_ASM("asm/overlays", func_L10_002ECBA0);
+char *func_L10_002ECC80(char *owner) {
+    char *moby = CreateMoby(0x781);
+    if (moby != 0) {
+        ((unsigned char *)moby)[0x30] = 0xFF;
+        *(short *)(moby + 0x32) = 0xFF;
+        moby[0x31] = 1;
+        *(int *)(moby + 0x40) = 0;
+        *(int *)(moby + 0x44) = 0;
+        *(float *)(moby + 0x48) = *(float *)(owner + 0x48);
+        *(long *)(moby + 0x38) = *(long *)(owner + 0x38);
+        qcopy(moby + 0x10, owner + 0x10);
+        *(float *)(moby + 0x18) = 59.0f;
+        func_L00_00251E30(moby);
+    }
+    return moby;
+}

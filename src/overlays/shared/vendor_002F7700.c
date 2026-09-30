@@ -8,7 +8,13 @@ INCLUDE_ASM("asm/overlays", func_L01_002F9908);
 INCLUDE_ASM("asm/overlays", func_L01_002F9AF0);
 INCLUDE_ASM("asm/overlays", func_L01_002FC890);
 INCLUDE_ASM("asm/overlays", func_L01_002FC988);
-INCLUDE_ASM("asm/overlays", func_L01_002FE498);
+extern char D_L01_001E3780[];
+extern void func_L01_002BA380(char *, int);
+
+/* Register this level's vendor data set. */
+void func_L01_002FE498(void) {
+    func_L01_002BA380(D_L01_001E3780, 0x15);
+}
 INCLUDE_ASM("asm/overlays", func_L01_00300400);
 INCLUDE_ASM("asm/overlays", func_L01_003004F0);
 INCLUDE_ASM("asm/overlays", func_L01_003015F8);
@@ -16,6 +22,34 @@ INCLUDE_ASM("asm/overlays", func_L01_00303810);
 INCLUDE_ASM("asm/overlays", func_L01_00303A20);
 INCLUDE_ASM("asm/overlays", func_L01_00309078);
 INCLUDE_ASM("asm/overlays", func_L01_00309758);
+extern int func_002140B0(int);
+extern int func_001F9850(int);
+
+/* fills random floats and sound handles in the moby's data block */
+void func_L01_00309848(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    float *f = (float *)(data + 0x20);
+    int *p;
+    int i;
+    int arg;
+    for (i = 3; i >= 0; i--, f++) {
+        *f = (float)random_integer_below(0xFF);
+    }
+    p = (int *)(data + 0x40);
+    *(float *)(data + 0x30) = -1.0f;
+    *(float *)(data + 0x34) = -2.25f;
+    *(float *)(data + 0x38) = 1.25f;
+    *(float *)(data + 0x3C) = 2.5f;
+    arg = 0x3F;
+    for (i = 3; i >= 0; i--, p++) {
+        *p = scale_ticks(arg);
+        arg += 0x40;
+    }
+    *(float *)(data + 0x50) = 2.5f;
+    *(float *)(data + 0x54) = 3.0f;
+    *(float *)(data + 0x5C) = 2.5f;
+    *(float *)(data + 0x58) = 3.0f;
+}
 INCLUDE_ASM("asm/overlays", func_L01_00309928);
 INCLUDE_ASM("asm/overlays", func_L01_00309BB8);
 INCLUDE_ASM("asm/overlays", func_L01_00309DC8);
@@ -24,7 +58,37 @@ INCLUDE_ASM("asm/overlays", func_L01_00309FB0);
 INCLUDE_ASM("asm/overlays", func_L01_0030A6A8);
 INCLUDE_ASM("asm/overlays", func_L01_0030A808);
 INCLUDE_ASM("asm/overlays", func_L01_0030A8C8);
-INCLUDE_ASM("asm/overlays", func_L01_0030ABC0);
+typedef struct L01Moby L01Moby;
+typedef struct {
+    char pad[0x14];
+    L01Moby *slots[3];
+} L01MobyData;
+
+struct L01Moby {
+    char pad0[0x31];
+    unsigned char state;
+    char pad32[2];
+    unsigned short flags;
+    char pad36[0x42];
+    L01MobyData *data;
+    char pad7c[0x18];
+    int field94;
+};
+
+/* Mark the parent and its three attached objects active. */
+void func_L01_0030ABC0(L01Moby *moby) {
+    L01Moby **slots = moby->data->slots;
+    int i;
+    moby->field94 = 0;
+    moby->flags |= 1;
+    moby->state = 0;
+    for (i = 2; i >= 0; i--, slots++) {
+        if (*slots != 0) {
+            (*slots)->flags |= 1;
+            (*slots)->state = 0;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_0030AC10);
 INCLUDE_ASM("asm/overlays", func_L01_0030C9F0);
 INCLUDE_ASM("asm/overlays", func_L01_0030D380);
@@ -35,8 +99,32 @@ INCLUDE_ASM("asm/overlays", func_L01_0030E6E0);
 INCLUDE_ASM("asm/overlays", func_L01_0030E9C8);
 INCLUDE_ASM("asm/overlays", func_L01_0030EC58);
 INCLUDE_ASM("asm/overlays", func_L01_0030F178);
-INCLUDE_ASM("asm/overlays", func_L01_0030F240);
-INCLUDE_ASM("asm/overlays", func_L01_0030F2A8);
+extern void func_L00_00264690(void *, int, float, float);
+
+/* Initialize both consecutive effect entries. */
+void func_L01_0030F240(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    char *entry = data + 0x70;
+    int i;
+    for (i = 1; i >= 0; i--) {
+        func_L00_00264690(entry, 0x2528AA28, 0.1f, 0.08f);
+        entry += 0x10;
+    }
+}
+extern void func_L00_00250800(void *, int, void *);
+extern void func_001F49B0(void (*)(char *), char *);
+
+/* Attach two effect entries and register their update callback. */
+void func_L01_0030F2A8(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    char *entry = data + 0x70;
+    int i;
+    for (i = 0; i < 2; i++) {
+        func_L00_00250800(moby, i + 3, entry);
+        entry += 0x10;
+    }
+    AddDrawCallback(func_L01_0030F240, moby);
+}
 INCLUDE_ASM("asm/overlays", func_L01_0030F318);
 INCLUDE_ASM("asm/overlays", func_L01_00316270);
 INCLUDE_ASM("asm/overlays", func_L01_00316730);

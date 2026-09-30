@@ -35,7 +35,16 @@ void func_L00_0028BBF8(void) {
     SkyDrawShell(2);
 }
 INCLUDE_ASM("asm/overlays", func_L00_0028BC70);
-INCLUDE_ASM("asm/overlays", func_L00_0028BD70);
+/* Shrub proc init variant: set up, conditional call, finish. */
+void func_L00_0028BD70(void) {
+    func_001FA190(D_L00_001BDB70);
+    SkyDrawShell(0);
+    if (*(short *)(D_L00_001605DC + 8) == 0) func_L00_0028A198(0x78, 8);
+    func_L00_0028A3E0();
+    SkySpriteProc();
+    VU1_addGSregister(0x42, 0x8000000044L);
+    SkyDrawShell(1);
+}
 INCLUDE_ASM("asm/overlays", func_L00_0028BF60);
 INCLUDE_ASM("asm/overlays", func_L00_0028C358);
 INCLUDE_ASM("asm/overlays", func_L00_0028C478);

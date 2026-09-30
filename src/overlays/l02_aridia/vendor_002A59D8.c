@@ -9,7 +9,7 @@ void func_L02_002A59D8(void) {
     func_L02_002A52B0(scratch);
 }
 extern void func_L02_002A52D0(void *);
-extern void func_001F9AF0(void *, int, int);
+extern void func_L02_002100E8(void *, int, int);
 extern char D_L02_001CB680[];
 
 void func_L02_002A59F8(int a, int b, int c, int d, float x, float y, float z, float w, int e, int f, int g) {
@@ -27,10 +27,36 @@ void func_L02_002A59F8(int a, int b, int c, int d, float x, float y, float z, fl
     ((unsigned char *)scratch)[0x3F] = 0x80;
     *(int *)(scratch + 0x1C) = g;
     func_L02_002A52D0(scratch);
-    write_dma_channel(D_L02_001CB680, 0x70002800, 0xF8);
+    func_L02_002100E8(D_L02_001CB680, 0x70002800, 0xF8);
 }
 INCLUDE_ASM("asm/overlays", func_L02_002D4E50);
-INCLUDE_ASM("asm/overlays", func_L02_002D5098);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9EC0(void *, void *, void *);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_L02_002D4E50(void *, void *, void *, int, float, float);
+extern float D_L02_001D3500[][4];
+extern short D_L02_00161A50;
+extern short D_L02_00161A60;
+
+/* Transforms two table vectors by the moby's matrix and passes them on. */
+void func_L02_002D5098(char *moby, int a, int b, int d) {
+    float va[4];
+    float vb[4];
+    float *pa = D_L02_001D3500[a];
+    float *pb;
+    qcopy(va, pa);
+    va[3] = 1.0f;
+    FastVecSub(va, va, &D_L02_00161A50);
+    func_001F9EC0(va, va, moby + 0xC0);
+    FastVecAdd(va, va, moby + 0x10);
+    pb = D_L02_001D3500[b];
+    qcopy(vb, pb);
+    vb[3] = 1.0f;
+    FastVecSub(vb, vb, &D_L02_00161A50);
+    func_001F9EC0(vb, vb, moby + 0xC0);
+    FastVecAdd(vb, vb, moby + 0x10);
+    func_L02_002D4E50(moby, va, vb, d, pa[3] * *(float *)&D_L02_00161A60, pb[3] * *(float *)&D_L02_00161A60);
+}
 INCLUDE_ASM("asm/overlays", func_L02_002D51D0);
 INCLUDE_ASM("asm/overlays", func_L02_002D5250);
 INCLUDE_ASM("asm/overlays", func_L02_002D6A90);

@@ -4,10 +4,24 @@
 
 INCLUDE_ASM("asm/overlays", func_L02_002A5218);
 INCLUDE_ASM("asm/overlays", func_L02_002A5238);
-INCLUDE_ASM("asm/overlays", func_L02_002A52B0);
+extern void func_L02_002A5238(char *arg, int val);
+
+// Call vendor setup with fixed parameter
+void func_L02_002A52B0(char *arg) {
+    func_L02_002A5238(arg, 0x80);
+}
 INCLUDE_ASM("asm/overlays", func_L02_002A52D0);
 INCLUDE_ASM("asm/overlays", func_L02_002A58C0);
 INCLUDE_ASM("asm/overlays", func_L02_002CCD18);
+int func_L02_002D75F8(char *a) {
+    int r = func_L00_002DCDA8(a);
+    if (r == 0) {
+        if (*(unsigned char *)(a + 0x20) == 9) a[0x20] = 1;
+    } else {
+        a[0x20] = 9;
+    }
+    return r;
+}
 INCLUDE_ASM("asm/overlays", func_L02_002D9D48);
 INCLUDE_ASM("asm/overlays", func_L02_002D9F08);
 INCLUDE_ASM("asm/overlays", func_L02_002DA728);
@@ -18,27 +32,317 @@ INCLUDE_ASM("asm/overlays", func_L02_002DBD70);
 INCLUDE_ASM("asm/overlays", func_L02_002DC2C0);
 INCLUDE_ASM("asm/overlays", func_L02_002DDAE8);
 INCLUDE_ASM("asm/overlays", func_L02_002E1888);
-INCLUDE_ASM("asm/overlays", func_L02_002E2110);
+typedef struct {
+    char pad0[0x44];
+    short count;
+    char pad46[0x132];
+    char *mobys[1];
+} Level02MobyList;
+extern void func_0020D960(char *, int, unsigned char *);
+extern int D_L02_0015F6A8 MACRO_ADDR;
+extern unsigned char D_0015EEB0[] MACRO_ADDR;
+extern Level02MobyList D_L02_0016CEE0;
+extern unsigned char D_L02_0017CAC0[];
+/* Re-arms the matching entry of the moby list when the level mode is 2. */
+void func_L02_002E2110(char *moby) {
+    int i;
+    if (D_L02_0015F6A8 == 2 && gCheats[0] != 0) {
+        for (i = 0; i < D_L02_0016CEE0.count; i++) {
+            char *e = D_L02_0016CEE0.mobys[i];
+            if (*(short *)(e + 0xA6) == *(short *)(moby + 0xA6)) {
+                unsigned char *s = D_L02_0017CAC0;
+                if (s[1] == 0) {
+                    AttachManipulator(e, 0, s);
+                    *(float *)(s + 0x20) = 2.75f;
+                    *(float *)(s + 0x24) = 2.75f;
+                    *(float *)(s + 0x28) = 2.75f;
+                }
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L02_002EB648);
-INCLUDE_ASM("asm/overlays", func_L02_002EBC08);
+extern int func_002140B0(int);
+extern int func_001F9850(int);
+
+/* Initialises a moby's data block: four random floats, fixed constants, four random ints. */
+void func_L02_002EBC08(char *moby) {
+    float *d = *(float **)(moby + 0x78);
+    int *q;
+    int i;
+
+    for (i = 0; i < 4; i++) {
+        d[i] = (float)random_integer_below(0xFF);
+    }
+    d[4] = -1.0f;
+    d[5] = -2.25f;
+    d[6] = 1.25f;
+    d[7] = 2.5f;
+    q = (int *)(d + 8);
+    for (i = 0; i < 4; i++) {
+        q[i] = scale_ticks(0x3F + i * 0x40);
+    }
+    d[12] = 2.5f;
+    d[13] = 3.0f;
+    d[15] = 2.5f;
+    d[14] = 3.0f;
+}
 INCLUDE_ASM("asm/overlays", func_L02_002EBCE8);
-INCLUDE_ASM("asm/overlays", func_L02_002ED740);
-INCLUDE_ASM("asm/overlays", func_L02_002ED828);
+extern int func_L00_0025A208(int *, int, int, int);
+extern int func_L00_0025A2F0(int *, int, int, int);
+extern void func_L00_00264690(void *, int, float, float);
+
+/* Walks the moby list matching this moby's id and pulses each match's data slots while it is bright. */
+void func_L02_002ED740(char *self) {
+    char *cur;
+    func_L00_0025A208((int *)&cur, *(unsigned char *)(self + 0x21), 0, 0);
+    while (cur != 0) {
+        if (*(unsigned char *)(cur + 0x31) != 0) {
+            char *data = *(char **)(cur + 0x78);
+            if (*(short *)(cur + 0xA6) == *(short *)(self + 0xA6)) {
+                if ((*(int *)(data + 0xB0) & 0xFF) > 0x80) {
+                    char *q = data + 0x80;
+                    int i;
+                    for (i = 2; i >= 0; i--) {
+                        func_L00_00264690(q, *(int *)(data + 0xB0), 0.9f, 0.45f);
+                        q += 0x10;
+                    }
+                }
+            }
+        }
+        func_L00_0025A2F0((int *)&cur, (int)cur, 0, 0);
+    }
+}
+extern int D_L02_0015F6B0 MACRO_ADDR;
+extern void func_L00_00250800(void *, int, void *);
+extern void func_001F49B0(void (*)(void), void *);
+
+/* Refreshes a moby's three sub-objects, packs its colour bytes, and queues a redraw when the global changed. */
+void func_L02_002ED828(char *moby) {
+    int i;
+    char *data;
+    char *p;
+    int v;
+    int r, g, b, c;
+    int *q;
+
+    if (*(unsigned char *)(moby + 0x21) == 0xFF) {
+        return;
+    }
+    data = *(char **)(moby + 0x78);
+    p = data + 0x80;
+    for (i = 0; i < 3; i++) {
+        func_L00_00250800(moby, i + 3, p);
+        p += 0x10;
+    }
+    v = D_L02_0015F6B0;
+    r = *(unsigned char *)(moby + 0x92);
+    g = *(unsigned char *)(moby + 0x91);
+    b = *(unsigned char *)(moby + 0x90);
+    c = (r << 16) | 0x30000000;
+    c |= g << 8;
+    c |= b;
+    *(int *)(data + 0xB0) = c;
+    if (v != 0) {
+        q = *(int **)(data + 0xB4);
+        if (v != *q) {
+            *q = v;
+            AddDrawCallback(func_L02_002ED740, moby);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L02_002ED8F0);
-INCLUDE_ASM("asm/overlays", func_L02_002EDE68);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_00250800(void *, int, void *);
+extern void func_001F9C30(void *, void *, float);
+extern void func_L00_00258DB0(float *, float, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern float func_002140F8(float, float);
+extern int func_001FA8A8(int, int, float);
+extern float func_001F9878(float);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern char *func_00219780(void *, void *, void *, int, int, int, int, int, int);
+extern float D_0015EE6C MACRO_ADDR;
+extern short D_L02_00162014;
+extern short D_L02_00162018;
+extern short D_L02_0016201C;
+extern short D_L02_00162020;
+extern short D_L02_00162024;
+extern short D_L02_00162028;
+extern short D_L02_0016202C;
+extern short D_L02_00162030;
+extern short D_L02_00162034;
+extern short D_L02_00162038;
+extern short D_L02_0016203C;
+extern short D_L02_00162040;
+extern short D_L02_00162044;
+extern short D_L02_00162048;
+extern short D_L02_0016204C;
+
+/* Spawns three particles around a moby with randomized direction, speed and colour. */
+void func_L02_002EDE68(char *m, void *arg1) {
+    float v10[4], v20[4], v30[4], v40[4], v50[4];
+    int i;
+    FastVecSub(v30, m + 0x10, arg1);
+    for (i = 0; i < 3; i++) {
+        int a, b, c, d, e;
+        char *p;
+        func_L00_00250800(m, i, v50);
+        FastVecScale(v10, v30, *(float *)&D_L02_00162014);
+        FastVecScale(v20, v30, *(float *)&D_L02_00162018);
+        rand_vec(v40, 0.0f, *(float *)&D_L02_0016201C * D_0015EE6C);
+        FastVecAdd(v20, v20, v40);
+        v10[3] = random_float_between(*(float *)&D_L02_00162030, *(float *)&D_L02_00162034);
+        v20[3] = random_float_between(*(float *)&D_L02_00162038, *(float *)&D_L02_0016203C);
+        a = FastTweenColor(*(int *)&D_L02_00162040, *(int *)&D_L02_00162044, random_float_between(0.0f, 1.0f));
+        b = FastTweenColor(*(int *)&D_L02_00162048, *(int *)&D_L02_0016204C, random_float_between(0.0f, 1.0f));
+        c = func_001FA898_r(func_001F9878((float)*(int *)&D_L02_00162020 * random_float_between(0.0f, 1.0f) + 1.0f));
+        d = func_001FA898_r(func_001F9878((float)*(int *)&D_L02_00162024 * (random_float_between(-*(float *)&D_L02_0016202C, *(float *)&D_L02_0016202C) + 1.0f)));
+        e = func_001FA898_r(func_001F9878((float)*(int *)&D_L02_00162028 * (random_float_between(-*(float *)&D_L02_0016202C, *(float *)&D_L02_0016202C) + 1.0f)));
+        p = func_00219780(v50, v10, v20, a, b, c, d, e, -1);
+        if (p != 0) p[9] = func_001FA898_r(8.0f) + 0x60;
+    }
+}
+INCLUDE_ASM("asm/overlays", func_L02_002EE0A0);
 INCLUDE_ASM("asm/overlays", func_L02_002EE188);
 INCLUDE_ASM("asm/overlays", func_L02_002EE250);
 INCLUDE_ASM("asm/overlays", func_L02_002EE858);
 INCLUDE_ASM("asm/overlays", func_L02_002EEA90);
-INCLUDE_ASM("asm/overlays", func_L02_002F3398);
-INCLUDE_ASM("asm/overlays", func_L02_002F79A8);
-INCLUDE_ASM("asm/overlays", func_L02_002F79D0);
+extern char *func_L00_0025B478(void *, int, int);
+extern void func_0022ED80(int, int, int);
+extern void func_L01_00279790(void *);
+extern void func_L00_00264EA8(void *, int, int, int, int, int, int);
+extern void func_L01_00279E10(void *, int);
+extern void func_0020D678(void *);
+
+/* Update for a moby that waits for a float flag on a nearby object then runs a delete sequence. */
+void func_L02_002F3398(char *m) {
+    int hit = 0;
+    char *r = func_L00_0025B478(m, 0x10000, 0);
+    switch (*(unsigned char *)(m + 0x20)) {
+    case 0:
+        m[0x20] = 1;
+        break;
+    case 1:
+        if (r != 0 && *(float *)(r + 0x2C) > 0.0f) hit = 1;
+        if (hit) m[0x20] = 2;
+        break;
+    case 2:
+        func_0022ED80(0, 0, (int)m);
+        func_L01_00279790(m);
+        func_L00_00264EA8(m, 0x71D, 1, 0x71D, 1, 5, 2);
+        func_L01_00279E10(m, 0x71C);
+        DeleteMoby(m);
+        break;
+    }
+}
+extern char *D_L02_00167480;
+
+/* Store the selected value only while this level object is inactive. */
+void func_L02_002F79A8(int value) {
+    char *moby = D_L02_00167480;
+    if (*(short *)(moby + 0x86) == 0) {
+        char *data = *(char **)(moby + 0x70);
+        *(int *)(data + 0x218) = value;
+    }
+}
+/* Update the active object's coordinates without replacing zero fields. */
+void func_L02_002F79D0(float x, float y, float z) {
+    char *moby = D_L02_00167480;
+    if (*(short *)(moby + 0x86) == 0) {
+        char *data = *(char **)(moby + 0x70) + 0x1D0;
+        if (*(float *)(data + 0x3C) != 0.0f) {
+            *(float *)(data + 0x3C) = x;
+        }
+        if (*(float *)(data + 0x40) != 0.0f) {
+            *(float *)(data + 0x40) = y;
+        }
+        if (*(float *)(data + 0x44) != 0.0f) {
+            *(float *)(data + 0x44) = z;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L02_002F9ED8);
 INCLUDE_ASM("asm/overlays", func_L02_002FBB10);
-INCLUDE_ASM("asm/overlays", func_L02_002FBB48);
+extern float D_L02_0016768C;
+extern void func_L00_002E99A0(int, float, float);
+extern void func_L02_002FBBA8(void);
+extern void func_L02_001FC308(void (*)(void));
+
+/* Start the timed effect while its duration is nonzero. */
+void func_L02_002FBB48(void) {
+    if (D_L02_0016768C != 0.0f) {
+        func_L00_002E99A0(1, D_L02_0016768C * 0.35f + 0.0f, 0.005f);
+        func_L02_001FC308(func_L02_002FBBA8);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L02_002FBBA8);
 INCLUDE_ASM("asm/overlays", func_L02_002FBC00);
 INCLUDE_ASM("asm/overlays", func_L02_002FCA80);
-INCLUDE_ASM("asm/overlays", func_L02_002FCBC0);
+extern char *D_L02_0015F050 MACRO_ADDR;
+extern char D_L02_00167490[];
+extern char D_L02_00167300[];
+extern float func_001F9C78(void *, void *);
+extern float func_001F9CB8(void *);
+extern float func_L00_001FF860(float, float);
+extern float func_001FA850(float, float);
+extern float func_001F9FC0(float);
+extern float func_001F9B88(float);
+
+/* Checks whether the target's direction is within a and b degrees of the reference axis. */
+int func_L02_002FCBC0(char *moby, float a, float b) {
+    float d[4];
+    float p[4];
+    float q[4];
+    float r[4];
+    char *data;
+    char *vec = D_L02_00167490;
+    char *g;
+    float dot1;
+    float dot2;
+    float lenq;
+    float lenr;
+    float dot3;
+    float den;
+
+    char *tbl = D_L02_0015F050;
+    char *src;
+
+    data = *(char **)(tbl + *(short *)(moby + 0x84) * 32 + 0x1C);
+    src = *(char **)(data + 0x48);
+    if (a == 0.0f && b == 0.0f) {
+        return 1;
+    }
+    g = D_L02_00167300;
+    FastVecSub(d, src + 0x10, *(char **)(g + 0x180) + 0x30);
+    dot1 = FastVecDot(d, (vec + 0x30));
+    FastVecScale(p, (vec + 0x30), dot1);
+    FastVecSub(q, d, p);
+    lenq = FastVecLength(q);
+    dot2 = FastVecDot(*(char **)(g + 0x180), (vec + 0x30));
+    FastVecScale(p, (vec + 0x30), dot2);
+    FastVecSub(r, *(char **)(g + 0x180), p);
+    lenr = FastVecLength(r);
+    if (b != 0.0f) {
+        float t1 = func_L00_001FF860(lenq, dot1);
+        float t2 = func_L00_001FF860(lenr, dot2);
+        float t3 = FastDiffRots(t1, t2);
+        if (b * 0.017453292f < t3) {
+            return 0;
+        }
+    }
+    if (a == 0.0f) {
+        return 1;
+    }
+    dot3 = FastVecDot(q, r);
+    den = lenr * lenq;
+    if (den == 0.0f) {
+        return 0;
+    }
+    if (FastAbsF(1.5707964f - FastArcSin(dot3 / den)) < a * 0.017453292f) {
+        return 1;
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L02_002FCE00);
 INCLUDE_ASM("asm/overlays", func_L02_002FD6D0);

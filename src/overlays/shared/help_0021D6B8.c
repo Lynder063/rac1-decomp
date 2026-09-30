@@ -8,4 +8,15 @@ INCLUDE_ASM("asm/overlays", func_L06_00228390);
 INCLUDE_ASM("asm/overlays", func_L06_00229868);
 INCLUDE_ASM("asm/overlays", func_L06_0022A868);
 INCLUDE_ASM("asm/overlays", func_L06_00235038);
-INCLUDE_ASM("asm/overlays", func_L06_00239CD0);
+extern unsigned char D_0013E633[];
+extern void func_L06_00235E08(int, int);
+
+// Dispatches on a mode byte and calls func_L06_00235E08 with a matching id.
+void func_L06_00239CD0(void) {
+    switch (D_0013E633[0x2EC1]) {
+    case 0: func_L06_00235E08(0, 1); break;
+    case 1: func_L06_00235E08(0x43, 1); break;
+    case 3: func_L06_00235E08(0x53, 1); break;
+    }
+}
+INCLUDE_ASM("asm/overlays", func_L06_002431A0);

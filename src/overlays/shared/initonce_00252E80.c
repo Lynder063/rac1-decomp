@@ -2,4 +2,23 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L01_00252E80);
+extern void func_0022C7E0(void);
+extern void func_L00_0028A6F8(void);
+extern void func_L00_0028A5A8(void);
+extern void func_0022C870(void);
+extern void func_00234C98(int, long);
+extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
+extern int D_0015EF88 MACRO_ADDR;
+
+// Level init: pick a setup by mode, then issue two draw commands.
+void func_L01_00252E80(void) {
+    SetupSkyGifPaging();
+    if (D_0015EE84_m == 1) {
+        UpdateSkyShellsAnimated();
+    } else {
+        UpdateSkyShellsStatic();
+    }
+    DoSkyGifPaging();
+    VU1_addGSregister(0x47, 0x5360B);
+    VU1_addGSregister(0x4E, 0x1000000 | (D_0015EF88 >> 13));
+}

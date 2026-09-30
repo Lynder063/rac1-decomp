@@ -14,12 +14,38 @@ INCLUDE_ASM("asm/overlays", func_L11_0030BCD8);
 INCLUDE_ASM("asm/overlays", func_L11_0030C728);
 INCLUDE_ASM("asm/overlays", func_L11_0030FB58);
 INCLUDE_ASM("asm/overlays", func_L11_003102C8);
+/* Recognize the active vendor object state. */
+int func_L11_00310738(char *moby) {
+    if (*(short *)(moby + 0xA6) == 0x49B &&
+        ((unsigned char *)moby)[0x20] == 2) {
+        return 1;
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L11_00311F98);
 INCLUDE_ASM("asm/overlays", func_L11_003121C0);
-INCLUDE_ASM("asm/overlays", func_L11_00312510);
+extern int func_001F4868(int);
+extern void func_L11_003121C0(float, float, float, float, float, int, int, int, int, int, int, int, int);
+extern float func_001FA748(float, float);
+
+/* Draws four quads with the angle advanced by a quarter turn each time. */
+void func_L11_00312510(unsigned char a, unsigned char b, unsigned char c, unsigned char d, float x, float y, float s, float ang) {
+    int h;
+    float w;
+    h = GetEffectTex(0x42);
+    w = s * 20.0f;
+    func_L11_003121C0(x, y, w, w, ang, 0x3F, 0x3F, h, 0xFFFFF3, a, b, c, d);
+    ang = FastAddRots(ang, 1.5707964f);
+    func_L11_003121C0(x, y, w, w, ang, 0x3F, 0x3F, h, 0xFFFFF3, a, b, c, d);
+    ang = FastAddRots(ang, 1.5707964f);
+    func_L11_003121C0(x, y, w, w, ang, 0x3F, 0x3F, h, 0xFFFFF3, a, b, c, d);
+    ang = FastAddRots(ang, 1.5707964f);
+    func_L11_003121C0(x, y, w, w, ang, 0x3F, 0x3F, h, 0xFFFFF3, a, b, c, d);
+}
 INCLUDE_ASM("asm/overlays", func_L11_003126D8);
 INCLUDE_ASM("asm/overlays", func_L11_00312780);
 INCLUDE_ASM("asm/overlays", func_L11_0031A738);
 INCLUDE_ASM("asm/overlays", func_L11_0031AAE0);
 INCLUDE_ASM("asm/overlays", func_L11_0031B630);
 INCLUDE_ASM("asm/overlays", func_L11_0031B8A8);
+INCLUDE_ASM("asm/overlays", func_L11_0031FCC8);
