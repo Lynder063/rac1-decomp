@@ -167,7 +167,10 @@ char *func_L18_002E36B0(void *vector) {
     return moby;
 }
 INCLUDE_ASM("asm/overlays", func_L18_002EAB58);
-INCLUDE_ASM("asm/overlays", func_L18_002EB240);
+extern void func_L01_0026F090(char *arg, int val);
+void func_L18_002EB240(char *arg) {
+    func_L01_0026F090(arg, 0x2);
+}
 INCLUDE_ASM("asm/overlays", func_L18_002EB260);
 char *func_L18_002EB4E0(void *owner, void *vector, int value) {
     char *moby = func_0020D348(0x3D7);

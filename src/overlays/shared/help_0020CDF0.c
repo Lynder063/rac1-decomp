@@ -27,7 +27,15 @@ int func_L00_0020DB68(int arg) {
     }
     return 0;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0020DBB0);
+// True when the value from func_L00_0020DB30 is 5, 6 or 7.
+int func_L00_0020DBB0(int arg) {
+    int v = func_L00_0020DB30(arg);
+
+    if (v >= 5 && v <= 7) {
+        return 1;
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0020DBD8);
 INCLUDE_ASM("asm/overlays", func_L00_0020DC00);
 INCLUDE_ASM("asm/overlays", func_L00_0020DC50);
@@ -59,7 +67,10 @@ INCLUDE_ASM("asm/overlays", func_L00_0020DD48);
 INCLUDE_ASM("asm/overlays", func_L00_0020DF90);
 INCLUDE_ASM("asm/overlays", func_L00_0020E0A8);
 INCLUDE_ASM("asm/overlays", func_L00_0020E0E8);
-INCLUDE_ASM("asm/overlays", func_L00_0020E0F0);
+// Returns the constant 0x75.
+int func_L00_0020E0F0(void) {
+    return 0x75;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0020E100);
 INCLUDE_ASM("asm/overlays", func_L00_0020E3B8);
 INCLUDE_ASM("asm/overlays", func_L00_0020E9F8);

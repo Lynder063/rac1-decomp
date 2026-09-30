@@ -17,6 +17,28 @@ INCLUDE_ASM("asm/overlays", func_L05_00254B38);
 INCLUDE_ASM("asm/overlays", func_L05_00254DE8);
 INCLUDE_ASM("asm/overlays", func_L05_002559A0);
 INCLUDE_ASM("asm/overlays", func_L05_002559B8);
-INCLUDE_ASM("asm/overlays", func_L05_002559DC);
+/* returns 0x7E when arg is nonzero, else 0x68 */
+int func_L05_002559DC(int arg) {
+    int r = 0x7E;
+    if (arg == 0)
+        r = 0x68;
+    return r;
+}
 INCLUDE_ASM("asm/overlays", func_L05_002559F0);
-INCLUDE_ASM("asm/overlays", func_L05_0025BDA8);
+extern unsigned char D_0013E633[] NOT_SDA;
+extern char D_L05_0017C168[];
+
+// Clears two slots in the game state block and refills them when the flag is set and the mode is 0x15 or 0x16.
+void func_L05_0025BDA8(void) {
+    char *g = (char *)D_0013E633 + 0xE1D;
+    int v = *(int *)(g + 0x86C);
+
+    *(int *)(g + 0x2278) = 0;
+    *(int *)(g + 0x227C) = 0;
+    if (v != 0) {
+        if ((unsigned)(*(int *)(g + 0x208C) - 0x15) < 2) {
+            *(int *)(g + 0x2278) = v;
+            *(int *)(g + 0x227C) = (int)D_L05_0017C168;
+        }
+    }
+}

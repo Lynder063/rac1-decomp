@@ -42,7 +42,18 @@ void func_L00_002D9D00(char *m, float *out, int i) {
     out[2] += *(float *)pv;
 }
 INCLUDE_ASM("asm/overlays", func_L00_002D9DB8);
-INCLUDE_ASM("asm/overlays", func_L00_002D9E30);
+extern char D_0013E633[] NOT_SDA;
+extern int func_L00_001EFFF0(void *, void *, int, int, int);
+
+// tests a sightline from a moby (raised 0.5) to the player's position (raised 0.5); true if clear
+int func_L00_002D9E30(char *m) {
+    Vz a, b;
+    qcopy(&a, m + 0x10);
+    a.z += 0.5f;
+    qcopy(&b, *(char **)(D_0013E633 + 0x2E9D) + 0x10);
+    b.z += 0.5f;
+    return func_L00_001EFFF0(&a, &b, 0x12, 0, 0) == 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002D9EA0);
 INCLUDE_ASM("asm/overlays", func_L00_002DACC0);
 INCLUDE_ASM("asm/overlays", func_L00_002DB428);

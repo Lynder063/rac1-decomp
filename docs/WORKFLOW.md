@@ -227,6 +227,31 @@ python3 tools/wave.py tokens q1      # tokens per worker and per match
   ([OVERLAYS.md](OVERLAYS.md#variants)): it matches variants of matched
   functions with no model.
 
+Trials of 2026-09-30 (input tokens include cache reads, as
+`wave.py tokens` counts them):
+
+| Wave | Model | Functions | Exact | Input tokens per match |
+|---|---|---|---|---|
+| q2: common code, 97-300 bytes | Sonnet | 12 | 3 (336 bytes) | 1.61M |
+| q1: 8-92 bytes | Sonnet | 17 | 4 (124 bytes) | 214K |
+| q1: 8-92 bytes | Haiku | 15 | 4 (100 bytes) | 1.02M |
+
+- **A queue worker is cheap per function.** The harness counted about 81K
+  tokens for each q2 worker, six functions each, where a one-function
+  worker of the earlier waves used about 112K for one.
+- **No Haiku tier here.** On the same queue Haiku used almost five times
+  Sonnet's tokens per match, more than its lower price makes up for.
+  Sonnet recognised an unmatchable entry and stopped without a run;
+  Haiku spent its runs on it.
+- **Small catalogue entries are often fragments**, not functions: a piece
+  the splitter cut at a call target or after a return, which branches out
+  of itself or reads registers it never sets. About half of q1 was that.
+  They need merging back into their function in the catalogue before
+  they can match; until then keep `--min-size` at 32 or more and expect
+  workers to stop on them.
+- What is left of the common code under 300 bytes matched at 25%: the
+  earlier waves and the variants took the easy part.
+
 ### Picking a wave
 
 Measured on 2026-09-26/27 (Sonnet workers, one function each):

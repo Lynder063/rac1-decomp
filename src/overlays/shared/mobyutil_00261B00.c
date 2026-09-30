@@ -98,7 +98,23 @@ INCLUDE_ASM("asm/overlays", func_L00_00264570);
 INCLUDE_ASM("asm/overlays", func_L00_00264690);
 INCLUDE_ASM("asm/overlays", func_L00_00264860);
 INCLUDE_ASM("asm/overlays", func_L00_00264870);
-INCLUDE_ASM("asm/overlays", func_L00_00264B40);
+extern unsigned char D_0015EEB4_m[4] __asm__("D_0015EEB4") MACRO_ADDR;
+extern void func_0020D960(int, int, void *);
+extern void func_0020D9D8(int, void *);
+
+/* Sets a moby's three float fields to x, running its setup call first when it has a flag byte; without the global flag only runs func_0020D9D8 on a flagged moby. */
+void func_L00_00264B40(float x, int a, int b, unsigned char *m) {
+    if (D_0015EEB4_m[3] != 0) {
+        if (m[1] == 0) {
+            func_0020D960(a, b, m);
+        }
+        *(float *)(m + 0x20) = x;
+        *(float *)(m + 0x24) = x;
+        *(float *)(m + 0x28) = x;
+    } else if (m[1] != 0) {
+        func_0020D9D8(a, m);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00264BB0);
 INCLUDE_ASM("asm/overlays", func_L00_00264BC8);
 INCLUDE_ASM("asm/overlays", func_L00_00264BD8);

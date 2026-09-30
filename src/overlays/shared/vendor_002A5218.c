@@ -4,7 +4,12 @@
 
 INCLUDE_ASM("asm/overlays", func_L02_002A5218);
 INCLUDE_ASM("asm/overlays", func_L02_002A5238);
-INCLUDE_ASM("asm/overlays", func_L02_002A52B0);
+extern void func_L02_002A5238(char *arg, int val);
+
+// Call vendor setup with fixed parameter
+void func_L02_002A52B0(char *arg) {
+    func_L02_002A5238(arg, 0x80);
+}
 INCLUDE_ASM("asm/overlays", func_L02_002A52D0);
 INCLUDE_ASM("asm/overlays", func_L02_002A58C0);
 INCLUDE_ASM("asm/overlays", func_L02_002CCD18);
