@@ -85,6 +85,17 @@ compile). No string literals: `extern char D_xxx[];`.
   argument passed straight on: keep the parameter order and types.
 - An `addu` with the index first: `base + i * 4`. With the base first:
   index in its own local, or `base - (-(i * 4))`.
+- `sltiu $2, $2, 3` after `addiu $2, $3, -5`: a range test, written
+  `v >= 5 && v <= 7` (func_L00_0020DBB0).
+- `movn`/`movz`: a default then one conditional assignment,
+  `r = 0x7E; if (arg == 0) r = 0x68;` (func_L05_002559DC). Swap which
+  value is the default to get the other instruction.
+- A jump table in retail: a `switch` with one `case` label per value, even
+  when several cases do the same thing; merged labels give a compare tree
+  (func_L14_002F2880). Cases may skip a value.
+- A global read as `lui` + `lw` in one register: declare it `MACRO_ADDR`
+  (from `common.h`), under an alias if the file already declares the name:
+  `extern int D_x_m __asm__("D_x") MACRO_ADDR;` (func_L01_00252E80).
 - A variant of matched C ("differs only in a number" in the packet): copy
   it and change the constant, offset or callee the assembly shows.
 

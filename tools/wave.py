@@ -19,7 +19,10 @@ Plans, tracks and integrates waves of worker agents (docs/WORKER.md).
   python3 tools/wave.py integrate NAME
       Applies the EXACT results through tools/integrate.py (in Docker).
       Run the full build afterwards, as always.
-  python3 tools/wave.py land NAME
+  python3 tools/wave.py land NAME [--batch] [--reject func_X ...]
+      (--batch, overlay waves: apply and re-check every EXACT, leave the
+      report and the one commit to the lead; --reject skips matches the
+      lead's review turned down.)
       For each EXACT result, one at a time: integrate it, run the full build,
       check it added one exact function and no size mismatch, regenerate the
       progress report and commit that function alone. A failure restores the
@@ -122,8 +125,9 @@ def choose_overlay(args) -> list[str]:
     catalogue = dossier.load_overlay_catalogue()
     findex = dossier.overlay_file_index()
     rows = []
+    pieces = fragments()
     for name, (kind, size, levels_count, _places) in catalogue.items():
-        if kind == "exe":
+        if kind == "exe" or name in pieces:
             continue
         entry = findex.get(name)
         if entry is None:
@@ -146,6 +150,27 @@ def choose_overlay(args) -> list[str]:
     if args.family:
         rows = family_order(rows, findex)
     return [name for _, _, name in rows][:args.count]
+
+
+BRANCH_OUT = re.compile(r"\b(b[a-z0-9]*)\s+(?:[^,\n]+,\s*)*(func_L\d\d_[0-9A-F]{8}|\.L[0-9A-F]{8})")
+
+
+def fragments() -> set[str]:
+    """Catalogue entries that are pieces of a larger function, not
+    functions: one that branches (not calls) outside itself. The entry such
+    a branch lands in may still be a whole function (a shared return that
+    is also called), so it stays in the pool. The splitter cuts at call targets
+    and after returns, which also cuts functions with an early return or a
+    shared tail. No C matches a piece alone."""
+    out = set()
+    for path in (ROOT / "asm/overlays").glob("func_L*.s"):
+        text = path.read_text(errors="replace")
+        labels = set(re.findall(r"^\s*(\.L[0-9A-F]{8}):", text, flags=re.M))
+        for m in BRANCH_OUT.finditer(text):
+            target = m.group(2)
+            if target.startswith("func_") or target not in labels:
+                out.add(path.stem)
+    return out
 
 
 def family_order(rows: list, findex: dict) -> list:
@@ -575,7 +600,7 @@ def land_overlay(args, wave: dict) -> None:
     findex = dossier.overlay_file_index()
     landed, skipped = [], []
     for name, verdict, candidate, _ in results(wave):
-        if not verdict.startswith("EXACT") or not candidate:
+        if not verdict.startswith("EXACT") or not candidate or name in args.reject:
             continue
         source = overlay_source_of(name, findex)
         if source is None:
@@ -604,6 +629,10 @@ def land_overlay(args, wave: dict) -> None:
         if "EXACT" not in verify.stdout:
             source.write_text(saved)
             skipped.append((name, "not exact re-checked against the landed file"))
+            continue
+        if args.batch:      # the lead regenerates the report and commits the batch
+            landed.append(name)
+            print(f"landed {name}", flush=True)
             continue
         # TODO(overlays): progress/report.json does not count overlay units
         # yet (tools/gen_progress_report.py is being extended for them). It
@@ -660,7 +689,10 @@ def main() -> None:
     commands.add_parser("tokens").add_argument("name")
     commands.add_parser("status").add_argument("name")
     commands.add_parser("integrate").add_argument("name")
-    commands.add_parser("land").add_argument("name")
+    l = commands.add_parser("land")
+    l.add_argument("name")
+    l.add_argument("--batch", action="store_true")
+    l.add_argument("--reject", nargs="*", default=[])
     args = parser.parse_args()
     {"plan": plan, "status": status, "integrate": integrate, "land": land,
      "claim": claim, "tokens": tokens}[args.command](args)
