@@ -158,11 +158,18 @@ Why it is shaped this way:
 | q2 | leftover common code, 97-300 bytes, no family order | 12 | 3 (336 bytes) | 1.61M |
 | q3 | `--family`, 64-500 bytes | 12 | 9 landed (1,236 bytes), 1 rejected | 157K |
 | q4 | `--family`, 32-600 bytes | 56 | 34 (11,128 bytes) | 1.15M |
+| q5 | `--family`, 32-600 bytes, right after q4 | 64 | 44 (13,316 bytes) | 325K |
 
 Input tokens include cache reads, as `wave.py tokens` counts them. q4's
 functions average 327 bytes against q3's 137, and a long function means a
 long conversation re-read at every run, so tokens per match grow faster
-than size; per matched byte q4 cost about 3,500 input tokens.
+than size: q4 cost about 3,500 input tokens per matched byte.
+
+q5 shows what the order is for. Its functions were as large as q4's, but
+q4's matches were their relatives, so most packets carried C to port: the
+workers needed about half the runs, and a matched byte cost about 1,100
+input tokens, a third of q4's. Run waves back to back, each one planned
+after the last has reported.
 
 Matching `func_L01_00252E80` in q3 brought 17 variants with it through
 `clone`. Across the first day the clone tool matched 37 functions with no
@@ -223,6 +230,8 @@ The cheapest match is the one no worker makes.
 | A match read an unassigned local to reproduce a leftover register | rejected at review; QUEUE.md forbids it |
 | A stub branched into a function in another file, so nothing in its file assembled and four functions were lost | `overlay_asm.py --fix-branches` writes such branches as words |
 | The catalogue merged functions that differ in a constant, so matched C called the wrong copy | the catalogue compares constants now (`identity()` in `tools/overlays.py`) |
+| Matches failed to land: a candidate redeclared a function its file now defines, with the prototype its author guessed | `land` drops the clashing `extern` and re-checks; the file's declaration wins |
+| Workers matched variants the clone tool would have matched for free | run `clone` before `plan`, and after every landing |
 | A later wave's match was counted for an earlier worker | `wave.py` reads each wave's own run log |
 | A tool-testing agent deleted match history in `build-sn/try/` | workers write only files they create; nothing under `build-sn/try/` or `build-sn/waves/` is scratch |
 

@@ -240,6 +240,7 @@ Trials of 2026-09-30 (input tokens include cache reads, as
 | q1: 8-92 bytes | Haiku | 15 | 4 (100 bytes) | 1.02M |
 | q3: `--family`, 64-500 bytes | Sonnet | 12 | 9 landed (1,236 bytes), 1 rejected | 157K |
 | q4: `--family`, 32-600 bytes | Sonnet | 56 | 34 (11,128 bytes) | 1.15M |
+| q5: `--family`, 32-600 bytes, after q4 | Sonnet | 64 | 44 (13,316 bytes) | 325K |
 
 - **A queue worker is cheap per function.** The harness counted about 81K
   tokens for each q2 worker, six functions each, where a one-function

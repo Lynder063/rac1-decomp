@@ -625,6 +625,25 @@ def land_overlay(args, wave: dict) -> None:
         manifest = WAVES / f"{args.name}-{name}.MANIFEST"
         manifest.write_text(f"{name} {candidate}\n")
         applied = docker("python", "tools/integrate.py", str(manifest.relative_to(ROOT)), "--apply")
+        # A candidate written before its neighbours landed can redeclare a
+        # function the file now defines or declares, with the type its
+        # author guessed. Drop those externs (the file's declaration wins)
+        # and try again; the strict check still decides.
+        for attempt in range(1, 4):
+            log = TRY / name / "log.txt"
+            clash = set(re.findall(r"conflicting types for `(\w+)'", log.read_text(errors="replace"))) \
+                if "1/1 exact" not in applied.stdout and log.exists() else set()
+            if not clash:
+                break
+            text = (ROOT / candidate).read_text()
+            kept = [l for l in text.splitlines(keepends=True)
+                    if not (l.startswith("extern") and any(re.search(rf"\b{c}\b", l) for c in clash))]
+            if len(kept) == len(text.splitlines()):
+                break
+            candidate = str((TRY / name / f"lead{attempt}.c").relative_to(ROOT))
+            (ROOT / candidate).write_text("".join(kept))
+            manifest.write_text(f"{name} {candidate}\n")
+            applied = docker("python", "tools/integrate.py", str(manifest.relative_to(ROOT)), "--apply")
         if "1/1 exact" not in applied.stdout:
             source.write_text(saved)
             skipped.append((name, "not exact on re-check"))
