@@ -100,7 +100,7 @@ void func_00202F00(int *hdr, int base, int *list, int count) {
         int c = base + *list++;
         int d = *list++;
         D_001CDD00[D_001601C0].a = (a << 4) + b;
-        D_001CDD00[D_001601C0].b = (c << 4) + func_001F9968(d);
+        D_001CDD00[D_001601C0].b = (c << 4) + log2dim(d);
     }
 }
 
@@ -204,8 +204,8 @@ void func_00203118(SkyDefL *s) {
 
             D_0016055C_s->pages[i].unk0A = a >> 4;
             D_0016055C_s->pages[i].unk08 = b >> 4;
-            D_0016055C_s->pages[i].unk0C = func_001F9968(c);
-            D_0016055C_s->pages[i].unk0E = func_001F9968(d);
+            D_0016055C_s->pages[i].unk0C = log2dim(c);
+            D_0016055C_s->pages[i].unk0E = log2dim(d);
             D_0016055C_s->pages[i].tag = 0;
         }
     }

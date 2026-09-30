@@ -25,13 +25,13 @@ void func_L00_0028FFB0(void) {
     
     if (*(int *)(g + 0x22A8) <= 0) *(int *)(g + 0x22A8) = 1;
     *(int *)&D_L00_0015F6BC = 1;
-    func_00216EF0(0);
+    music_Pause(0);
     {
         char *p = (char *)D_0014171B + 0x100B5;
         unsigned short h = *(unsigned short *)(p + 0x5A);
         if ((unsigned short)(h - 6) >= 2) *(short *)(p + 0x5A) = 5;
     }
-    func_0022DD68();
+    sound_update();
     func_L00_00203FB8();
     func_L00_0028FCA0(0);
     *(short *)(D_0013E15A + 2) = 0;

@@ -92,22 +92,22 @@ void func_00202260(void) {
     *(float *)(l + 0x340) = 0.8f;
     *(float *)(l + 0x344) = 0.8f;
     *(float *)(l + 0x348) = 0.8f;
-    ang = func_001FA748(D_00187198, -0.8f);
-    *(float *)(l + 0x350) = func_001F9F90(ang) * 0.866f;
-    *(float *)(l + 0x354) = func_001F9FA8(ang) * 0.866f;
+    ang = FastAddRots(D_00187198, -0.8f);
+    *(float *)(l + 0x350) = FastCos(ang) * 0.866f;
+    *(float *)(l + 0x354) = FastSin(ang) * 0.866f;
     *(float *)(l + 0x358) = -0.5f;
     *(int *)(l + 0x35C) = 0;
     for (i = 0; i < 8; i++) {
         char *src = D_0019C2C0 + i * 0x20;
         char *dst = D_0019C4C0 + i * 0x30;
 
-        if (*(int *)(dst + 0x10) != 0 && func_001F9D10(src + 0x10, dst + 0x20) > 8.0f) {
+        if (*(int *)(dst + 0x10) != 0 && FastVecDist(src + 0x10, dst + 0x20) > 8.0f) {
             qcopy(dst + 0x20, src + 0x10);
             if (*(int *)(dst + 0x10) == 1) {
-                func_002023E0(i);
+                CreatePointLight(i);
                 *(int *)(dst + 0x10) = 2;
             } else if (*(int *)(dst + 0x10) == 2) {
-                func_00202790(i);
+                RefreshPointLight(i);
             }
         }
     }
@@ -120,8 +120,8 @@ extern void func_002027C0(int);
 
 /* RefreshPointLight */
 void func_00202790(int arg0) {
-    func_002027C0(arg0);
-    func_002023E0(arg0);
+    DetachPointLight(arg0);
+    CreatePointLight(arg0);
 }
 /* Retail aligns the next function to 16 bytes, and this function's .s
    stub carried one padding word to do it. Decompiling to C drops that
@@ -215,7 +215,7 @@ void func_002027C0(s32 arg0) {
             } else if ((firstPacked & 0xF000) == fourthNibble) {
                 firstPacked |= 0xF000;
             } else {
-                func_001E9730(D_001E7E80);
+                STUB_printf(D_001E7E80);
             }
             firstLinks += 1;
             if (firstPacked == 0xFFFF) {
@@ -242,7 +242,7 @@ void func_002027C0(s32 arg0) {
             } else if ((secondPacked & 0xF000) == fourthNibble) {
                 secondPacked |= 0xF000;
             } else {
-                func_001E9730(D_001E7EA0);
+                STUB_printf(D_001E7EA0);
             }
             secondLinks += 1;
             if (secondPacked == 0xFFFF) {
@@ -269,7 +269,7 @@ void func_002027C0(s32 arg0) {
             } else if ((thirdPacked & 0xF000) == fourthNibble) {
                 thirdPacked |= 0xF000;
             } else {
-                func_001E9730(D_001E7EC8);
+                STUB_printf(D_001E7EC8);
             }
             thirdLinks += 1;
             if (thirdPacked == 0xFFFF) {

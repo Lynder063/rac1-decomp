@@ -316,7 +316,7 @@ unsigned char func_0022F128(void) {
     float m[16];
 
     D_0018CEB0 = ang[3];
-    func_001F3140();
+    UpdateViewContext();
     pos = D_00187180;
     qcopy(pos, key);
     func_00125358(m);
@@ -334,7 +334,7 @@ unsigned char func_0022F128(void) {
     *(float *)(cam + 0x368) = -m[2];
     *(float *)(cam + 0x378) = m[6];
     if (D_0015EEB4_m[0] != 0) {
-        func_001F9CA0(pos + 0x220, pos + 0x230, pos + 0x210);
+        FastVecCross(pos + 0x220, pos + 0x230, pos + 0x210);
     }
     return flag;
 }
@@ -387,12 +387,12 @@ void func_0022F258(char *arg0) {
             return;
         }
     }
-    q.gs[1] = func_001F4868(0);
+    q.gs[1] = GetEffectTex(0);
     q.gs[2] = 0xFF9000000260;
     q.gs[3] = 0x8000000044;
     q.gs[0] = 0;
-    func_001F9A98(q.uv, D_001D9B40, 0x20);
-    func_001F9C30(b, arg0, 1.0f / 1024.0f);
+    FastMemCopy(q.uv, D_001D9B40, 0x20);
+    FastVecScale(b, arg0, 1.0f / 1024.0f);
     z = *(float *)(arg0 + 0x18) + 0.1f;
     if (D_0015F6E8 == 6) {
         z = func_00214358(arg0 + 0x10, 0, 0.5f) + 0.1f;
@@ -403,7 +403,7 @@ void func_0022F258(char *arg0) {
         q.rgba[i] = ((alpha >> 1) << 24) | 0x808080;
         v = q.v[i];
         func_001F9EC0(v, D_001D9B60[D_0013E130.set][i], arg0 + 0xC0);
-        func_001F9BD8(v, v, arg0 + 0x10);
+        FastVecAdd(v, v, arg0 + 0x10);
         v[2] = z;
     }
     func_001F7EF8(&q, 0, 0);
@@ -451,12 +451,12 @@ void func_0022FBE0(void) {
     q.gs[1] = D_00160680;
     q.gs[2] = 0xFF9000000260;
     q.gs[3] = 0x8000000044;
-    func_001F9A98(q.uv, D_001D9B40, 0x20);
+    FastMemCopy(q.uv, D_001D9B40, 0x20);
     if ((unsigned)D_0015EE84_m < 0x13) s = D_001D9E20[D_0015EE84_m];
     for (i = 0; i < 4; i++) {
         q.rgba[i] = 0x80808080;
-        func_001F9C30(q.v[i], D_001D9DE0[i], s);
-        func_001F9BD8(q.v[i], q.v[i], &D_001605F0);
+        FastVecScale(q.v[i], D_001D9DE0[i], s);
+        FastVecAdd(q.v[i], q.v[i], &D_001605F0);
     }
     func_001F7EF8(&q, 0, 0);
     func_00234C98_l(0x47, 0x5360B);
@@ -473,7 +473,7 @@ extern long D_00160688 MACRO_ADDR;
 void func_0022FD20(int arg0) {
     func_00234C98_l(0x47, 0x31801);
     func_00234C98_l(0x42, ((long)0x8000 << 24) | 0x44);
-    func_001F5800(0x20, D_0013E604 - 0x58, 0x100, 0x20, 0, 0, 0x100, 0x20,
+    DrawTexturedQuad(0x20, D_0013E604 - 0x58, 0x100, 0x20, 0, 0, 0x100, 0x20,
                   (arg0 << 24) | 0x808080, D_00160688);
     func_00234C98_l(0x47, 0x5360B);
 }
@@ -497,12 +497,12 @@ void func_00232200(void) {
         switch (D_0013E150) {
         case 0:
         case 8:
-            func_001F45F0();
+            drawNormalFrame();
             break;
         case 3:
         case 7:
             *(int *)&D_0015F534 = 0x7F;
-            func_001F3D78();
+            DrawDebugProfiler();
             break;
         case 4:
             func_002305A0();
@@ -553,7 +553,7 @@ void func_00232920(int id) {
     func_00122598(0);
     func_00120858(0, 0);
     func_00123168(func_0012F308);
-    func_001F4E08(4);
+    FadeToBlack(4);
     D_0013E650[0x6B] |= 0x10;
 }
 

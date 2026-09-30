@@ -206,16 +206,16 @@ Moby *func_0020D348(int oClass) {
             if (m->state == 0xFF) {
                 m[1].state = 0xFF;
             }
-            func_0020D440(m, oClass);
+            InitMobyInstance(m, oClass);
             m->pvars = D_00160028 + (m - (Moby *)D_0016001C) * 0x80;
-            func_001F99B0(m->pvars, 0, 0x80);
+            FastMemSet(m->pvars, 0, 0x80);
             if (D_0015FFFC != 0) {
                 D_0015FFFC--;
             }
             return m;
         }
     }
-    func_001E9730(D_001E86F0, D_0015F6F0, oClass);
+    STUB_printf(D_001E86F0, D_0015F6F0, oClass);
     return 0;
 }
 
@@ -312,7 +312,7 @@ void func_0020D440(void *arg0, int oClass) {
     int idx;
     MobyIClass *pClass;
 
-    func_001F99B0(m, 0, 0x100);
+    FastMemSet(m, 0, 0x100);
     c = D_001B3E40[oClass];
     m->unk23 = 0x80;
     m->oClass = c;
@@ -445,7 +445,7 @@ void func_0020D790(unsigned char *s) {
         if (*(unsigned char **)(e + 0x88) != s) {
             s[0x7D] = 0xFF;
         } else if (*(short *)(e + 0x7E) != s[0x7C]) {
-            func_0022EAB0(id);
+            sound_KillChannel(id);
             s[0x7D] = 0xFF;
         }
     } else if (s[0x7C] != 0xFF) {
@@ -533,7 +533,7 @@ void func_0020D9D8(void *arg0, void *arg1) {
             *(char **)(cur + 8) = *(char **)(node + 8);
         }
     }
-    func_001F99B0(node, 0, 0x40);
+    FastMemSet(node, 0, 0x40);
 }
 
 extern int D_001B2F40[];
@@ -592,10 +592,10 @@ void func_0020DAF8(char *arg0, int arg1, char *arg2) {
     n = arg1;
     func_002116A0(arg0, 1, &n, arg2);
     v = arg2 + 0x30;
-    func_001F9C30(v, v, s);
+    FastVecScale(v, v, s);
     func_001FA460_2(buf, arg0 + 0xC0);
-    func_001FA540(arg2, buf, arg2);
-    func_001F9BD8(v, v, arg0 + 0x10);
+    sce_vu0_mul_matrix(arg2, buf, arg2);
+    FastVecAdd(v, v, arg0 + 0x10);
 }
 
 /* The many-vertex form of the same thing: arg1 blocks of 0x10 bytes
@@ -609,10 +609,10 @@ void func_0020DB98(char *arg0, int arg1, void *arg2, char *arg3) {
     func_00211548(arg0, arg1, arg2, arg3);
     if (n > 0) {
         do {
-            func_001F9C30(v, v, s);
+            FastVecScale(v, v, s);
             n--;
             func_001F9EC0(v, v, arg0 + 0xC0);
-            func_001F9BD8(v, v, arg0 + 0x10);
+            FastVecAdd(v, v, arg0 + 0x10);
             v += 0x10;
         } while (n != 0);
     }
@@ -640,7 +640,7 @@ void func_0020DC40(void) {
     ((int *)D_0016000C)[3] = 0;
     if (D_0018A3B0[10] != 0 && D_0018A3B0[9] != 0) {
         func_00212258(D_0015EF74);
-        func_00234E80();
+        VU1_texFlush();
     }
     ((int *)D_00161000)[0] = 0x20000000;
     ((int *)D_00161000)[1] = D_0016000C + 0x10;
@@ -720,8 +720,8 @@ void func_0020DE20(void) {
 
     func_0020E360((void *)D_001414D0, buf);
     a = func_001FA058(buf[0], buf[1]);
-    D_001CAE00[0] = func_001F9F90(a) * 0.14f;
-    D_001CAE00[1] = func_001F9FA8(a) * 0.14f;
+    D_001CAE00[0] = FastCos(a) * 0.14f;
+    D_001CAE00[1] = FastSin(a) * 0.14f;
     D_001CAE00[2] = -0.99f;
 }
 
@@ -783,14 +783,14 @@ extern int D_0015F71C MACRO_ADDR;
    load, scheduled into the jal delay slot, becomes $gp-relative. */
 void func_0020DFF8(void) {
     func_00118D80(0);
-    func_001F9A98((void *)0x70003800, D_00165600, 0x800);
-    func_00212578(D_0015F718, D_0015F71C);
+    FastMemCopy((void *)0x70003800, D_00165600, 0x800);
+    MobyAnimProc(D_0015F718, D_0015F71C);
 }
 
 
 /* InitMobyClassDists(void) */
 void func_0020E040(void) {
-    func_001F99B0((void *)0x70003A00, (void *)0x40000000, 0x380);
+    FastMemSet((void *)0x70003A00, (void *)0x40000000, 0x380);
 }
 
 extern void func_001F9A98(void *, void *, int);
@@ -798,12 +798,12 @@ extern char D_001B3200[];
 
 /* StashMobyClassDists(void) */
 void func_0020E068(void) {
-    func_001F9A98(D_001B3200, (void *)0x70003A00, 0x380);
+    FastMemCopy(D_001B3200, (void *)0x70003A00, 0x380);
 }
 
 /* RestoreMobyClassDists(void) */
 void func_0020E098(void) {
-    func_001F9A98((void *)0x70003A00, D_001B3200, 0x380);
+    FastMemCopy((void *)0x70003A00, D_001B3200, 0x380);
 }
 
 extern void func_00234B48(void *, int);
@@ -831,10 +831,10 @@ extern int D_00161008 MACRO_ADDR;
 void func_0020E0C8(void) {
     int p;
 
-    func_00234B48(D_0010FAA0, D_0010FA90);
+    VU1_addDataRef(D_0010FAA0, D_0010FA90);
     D_0015F704 = 6;
-    func_002347F0(D_00100080);
-    func_00234C98(0x47, 0x5360B);
+    VU0_loadMicroProgram(D_00100080);
+    VU1_addGSregister(0x47, 0x5360B);
     p = D_00161000;
     D_0016000C = p;
     D_0015EF74 = D_0015EF78;
@@ -850,11 +850,11 @@ extern int func_00212658(int, int, int, int);
 
 /* DrawMobyList */
 void func_0020E180(int arg0, int arg1) {
-    func_00234C98(0x47, 0x5360B);
+    VU1_addGSregister(0x47, 0x5360B);
     func_00118D80(0);
-    func_0020E098();
+    RestoreMobyClassDists();
     D_00160014 = func_00212658(arg0, D_00160014, arg1, 0);
-    func_0020E068();
+    StashMobyClassDists();
     D_00160014 -= 0x10;
 }
 
@@ -872,10 +872,10 @@ extern int D_00160040 MACRO_ADDR;
    right, D_0015FFF0 is a plain array, not MACRO_ADDR. */
 void func_0020E200(void) {
     func_001F2560(D_0015FFE0, 3);
-    func_0020DC40();
+    DmaMobyTextures();
     func_001F2558(D_0015FFE0, 5);
     if (D_0018A3B0[10] != 0) {
-        func_0020DFF8();
+        ProcessMobyAnimData();
         if (D_00160038 != 0) {
             func_00212508();
         }
@@ -897,15 +897,15 @@ extern void func_0020E200(void);
 
 /* DrawMobys */
 void func_0020E2B0(void) {
-    func_0020E0C8();
+    DrawMobysSetup();
     if (D_0018A3D8 != 0) {
-        func_0020E040();
+        InitMobyClassDists();
         D_00160014 = func_00212658(D_00160018, D_00160014, -1, 1);
         if (D_00161000 > D_00161008) {
-            func_001E9730(D_001E8730);
+            STUB_printf(D_001E8730);
         }
     }
-    func_0020E200();
+    DrawMobysCleanUp();
 }
 
 LINKER_REMNANT("asm/remnants/text", func_0020E330);

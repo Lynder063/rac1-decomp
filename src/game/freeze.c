@@ -76,7 +76,7 @@ void func_001FBC80(int arg0, int arg1, int arg2) {
     *(int *)(s + 0x30) = arg2;
     if (D_0015F6E8 != 3) {
         func_0012E528(0x1D);
-        func_00216EF0(0);
+        music_Pause(0);
     }
     *(int *)(s + 0x18) = arg1;
     *(int *)(s + 0x14) = D_0015F6E8;
@@ -86,9 +86,9 @@ void func_001FBC80(int arg0, int arg1, int arg2) {
     switch (arg0) {
     case 0: {
         char *p = D_00193400;
-        *(int *)(p + 8) = func_001FE540(0x4F6E);
-        *(int *)(p + 0xC) = func_001FE540(0x524D);
-        *(int *)(p + 0x10) = func_001FE540(0x524E);
+        *(int *)(p + 8) = msg_string(0x4F6E);
+        *(int *)(p + 0xC) = msg_string(0x524D);
+        *(int *)(p + 0x10) = msg_string(0x524E);
         *(int *)(p + 4) = 0;
         *(int *)(p + 0x1C) = 0;
         *(int *)(p + 0x20) = 0;
@@ -97,7 +97,7 @@ void func_001FBC80(int arg0, int arg1, int arg2) {
         break;
     }
     case 2: {
-        int v = func_001FE540(0x524F);
+        int v = msg_string(0x524F);
         char *p = D_00193400;
         *(int *)(p + 8) = v;
         *(int *)(p + 0xC) = 0;
@@ -107,9 +107,9 @@ void func_001FBC80(int arg0, int arg1, int arg2) {
     case 1:
     case 4: {
         char *p = D_00193400;
-        *(int *)(p + 8) = func_001FE540(0x522E);
-        *(int *)(p + 0xC) = func_001FE540(0x4EE0);
-        *(int *)(p + 0x10) = func_001FE540(0x524F);
+        *(int *)(p + 8) = msg_string(0x522E);
+        *(int *)(p + 0xC) = msg_string(0x4EE0);
+        *(int *)(p + 0x10) = msg_string(0x524F);
         *(int *)(p + 4) = 0;
         break;
     }

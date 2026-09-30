@@ -161,7 +161,7 @@ void func_001FB608(int a, int b, int c) {
     D_0015EFD0 = (unsigned long)(c >> 8) | ((unsigned long)(1 << x) << 14)
                | ((unsigned long)0 << 20) | ((unsigned long)a << 26)
                | ((unsigned long)b << 30) | ((unsigned long)1 << 34);
-    func_001F99D8(D_00161000, 0xF0);
+    FastMemZero16(D_00161000, 0xF0);
     D_00161000[0] = 0x1000000E;
     D_00161000[1] = 0;
     D_00161000[2] = 0;
@@ -235,7 +235,7 @@ void func_001FBAB8(int x0, int y0, int x1, int y1, int w, int h, unsigned int rg
     int hw, hh;
 
     func_00234C50(0x13000000);
-    func_00234C98(0x42, 0x64);
+    VU1_addGSregister(0x42, 0x64);
     ax = (x0 << 4) + 0x8000;
     ay = (y0 << 4) + 0x8000;
     bx = (x1 << 4) + 0x8000;
@@ -268,7 +268,7 @@ void func_001FBAB8(int x0, int y0, int x1, int y1, int w, int h, unsigned int rg
         q[11] = X1 | (Y1 << 16);
     }
     D_00161000 += 0x18;
-    func_00234C98(0x42, 0x8000000044L);
+    VU1_addGSregister(0x42, 0x8000000044L);
     func_00234C50(0x13000000);
 }
 

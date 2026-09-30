@@ -1,11 +1,14 @@
 # Sibling decompilations
 
-Two other projects decompile Ratchet & Clank games with the same
-compilers. Both are useful: one has already matched functions we
-haven't, the other has mapped retail's compiler flags. Neither is part
-of this build. Clone them next to this repository:
+Other projects decompile or reimplement Ratchet & Clank games. Lombyte
+and RC1 match the US build of this game, and RC1 has mapped per-file
+compiler flags; ReRAC documents what the code does; ratchet-uya-decomp
+mapped retail's flags for a later game. None is part of this build.
+Clone them next to this repository:
 
 ```sh
+git clone https://codeberg.org/bordplate/RC1 ~/Projects/RC1
+git clone https://github.com/re-rac/rerac ~/Projects/rerac
 git clone https://github.com/mateuszklysz/Lombyte ~/Projects/Lombyte
 git clone https://github.com/vetusmagnus/ratchet-uya-decomp ~/Projects/ratchet-uya-decomp
 ```
@@ -67,6 +70,68 @@ Lombyte's newlib ports keep newlib's own macros, such as `MALLOC_ZERO`,
 whose body is `do { ... } while (0)`. That is the original source, not
 an artificial barrier, but `tools/integrate.py` refuses any `while (0)`,
 so such a candidate is landed by hand after review.
+
+## bordplate/RC1: the same game, NTSC, with per-file flags
+
+[RC1](https://codeberg.org/bordplate/RC1) matches the US boot ELF with
+EE-GCC 2.95.2 (`-G8 -O2 -ffast-math -fno-exceptions`, SN's assembler
+optional). Its hand-named `config/symbols.txt` is where
+`config/symbol_names.txt` came from. Since 2026-09 an automated loop
+matches functions there and names them; `decomp_state/matched.json`
+lists 247 matched functions (2026-09-30), each with a note on what made
+it match. Its names reach us through `tools/names.py` (docs/NAMES.md);
+its C ports like Lombyte's (US addresses, `tools/lombyte.py` finds the
+PAL counterpart).
+
+What carries over most is its Makefile: per-object flags, each verified
+against the whole NTSC boot image. Retail built some translation units
+differently:
+
+| RC1 object | Flags |
+|---|---|
+| `menu`, `menu_post_mid`, `menu_post_gadgets` | `-fno-schedule-insns` |
+| `menu_post`, `menu_post_pages`, `menu_post_pages_end`, `transition` | `-fno-schedule-insns -mno-split-addresses` |
+| `menu_callbacks` | `-fno-schedule-insns2` |
+| `pause_sched` | `-fno-schedule-insns` |
+| `pause_post`, `pause_post2` | `-G0` |
+| `movie/movie_mid`, `movie/videodec_post`, `movie/movie_post_audio`, `movie/videodec_nodata`, `movie/disp` | `-mno-split-addresses` |
+| `permcb`, `vuchain`, `draw_post_reset` | `-mno-split-addresses` |
+
+RC1 splits some of our units finer (`menu` into several objects), so a
+flag applies to a range of functions, not necessarily our whole file.
+Its notes (`decomp_state/notes/`) record what each matched function
+needed.
+
+**Measured here (2026-09-30): the flags do not carry over.** They are
+relative to RC1's compiler setup (EE-GCC 2.95.2, `-G8 -ffast-math`), not
+to retail's objects as our SN 2.95.3 build sees them:
+
+- Six exact `menu.c` functions inside RC1's `menu` object (func_00207200,
+  002072C0, 00207340, 00207648, 00207780, 00207930) under RC1's
+  `-fno-schedule-insns`: three stay exact, 00207200 goes to 14/188
+  bytes off, 00207340 to 2/104, and 00207930 changes size.
+- The one near-miss in that range, func_00227A70 (pause.c, inside RC1's
+  `pause_post2`, built there with `-G0`): 57/144 bytes off with default
+  flags, `-G0`, `-fno-schedule-insns` and both; 62/144 with
+  `-fno-schedule-insns2`; a size change with `-mno-split-addresses`. Its
+  residual is source shape: retail keeps `%hi(D_001D5F70)` in `$t2`
+  across the loop and forms the index with other registers.
+
+So treat an RC1 flag as a hint to test per function, never as a file
+setting.
+
+## ReRAC: the same game as a native PC port
+
+[ReRAC](https://github.com/re-rac/rerac) (ISC) reimplements the game in
+Rust from the US disc and Ghidra. It is not a decompilation, but its
+design docs (`docs/plan/`, `docs/formats/`) describe what much of the
+engine and level code does: the moby update mechanism and the per-class
+update table (`moby_update_catalogue.md`), hero states, particles, HUD,
+camera, collision queries. Its `tools/ghidra/names/doc_names.csv` names
+the functions those docs discuss; the verified ones are in our
+`include/names.h`, the rest are candidates in `config/names.tsv`.
+Addresses there are US: the level programs' through Lombyte's overlay
+catalogue (docs/NAMES.md).
 
 ## ratchet-uya-decomp: Up Your Arsenal
 

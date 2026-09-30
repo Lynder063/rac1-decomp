@@ -28,11 +28,11 @@ extern float func_001F9FA8(float);
 extern void func_001F9BD8(void *, void *, void *);
 
 void func_L00_001ED900(float *o, float *v, void *m) {
-    o[0] = v[2] * func_001F9F90(v[1]) * func_001F9F90(v[0]);
-    o[1] = v[2] * func_001F9F90(v[1]) * func_001F9FA8(v[0]);
-    o[2] = v[2] * func_001F9FA8(v[1]);
+    o[0] = v[2] * FastCos(v[1]) * FastCos(v[0]);
+    o[1] = v[2] * FastCos(v[1]) * FastSin(v[0]);
+    o[2] = v[2] * FastSin(v[1]);
     *(int *)(o + 3) = 0;
-    func_001F9BD8(o, o, m);
+    FastVecAdd(o, o, m);
 }
 typedef float W[4] __attribute__((aligned(16)));
 extern void func_001F9BF0(float *);
@@ -43,12 +43,12 @@ extern float func_001F9CB8(float *);
 int func_L00_001ED9B0(float *a) {
     W v;
     float t;
-    func_001F9BF0(v);
+    FastVecSub(v);
     a[1] = func_L00_001FF860(func_001F9CE8(v), v[2]);
     t = func_L00_001FF860(v[0], v[1]);
-    func_001FA790(t, a[0]);
+    FastSubRots(t, a[0]);
     a[0] = t;
-    a[2] = func_001F9CB8(v);
+    a[2] = FastVecLength(v);
     return 0;
 }
 INCLUDE_ASM("asm/overlays", func_L00_001EDA28);

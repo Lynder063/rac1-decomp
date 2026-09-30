@@ -12,13 +12,13 @@ extern int D_0015EF88 MACRO_ADDR;
 
 // Level init: pick a setup by mode, then issue two draw commands.
 void func_L01_00252E80(void) {
-    func_0022C7E0();
+    SetupSkyGifPaging();
     if (D_0015EE84_m == 1) {
-        func_L00_0028A6F8();
+        UpdateSkyShellsAnimated();
     } else {
-        func_L00_0028A5A8();
+        UpdateSkyShellsStatic();
     }
-    func_0022C870();
-    func_00234C98(0x47, 0x5360B);
-    func_00234C98(0x4E, 0x1000000 | (D_0015EF88 >> 13));
+    DoSkyGifPaging();
+    VU1_addGSregister(0x47, 0x5360B);
+    VU1_addGSregister(0x4E, 0x1000000 | (D_0015EF88 >> 13));
 }

@@ -132,9 +132,9 @@ void func_001F2418(Vec3f *a0, float *a1) {
     m[3][0] = -D_00187040_cam.focus[0] * 1024.0f;
     m[3][1] = -D_00187040_cam.focus[1] * 1024.0f;
     m[3][2] = -D_00187040_cam.focus[2] * 1024.0f;
-    func_001FA540(m2, D_00187040_cam.viewMtx, m);
+    sce_vu0_mul_matrix(m2, D_00187040_cam.viewMtx, m);
 
-    func_001F9C30(v, a1, 1024.0f);
+    FastVecScale(v, a1, 1024.0f);
     v[3] = 1.0f;
     func_001F9EE8(out, v, m2);
 
@@ -182,19 +182,19 @@ void func_001F2568(void) {
 
     D_0015F6FC_m = 1;
     D_00160FE0_v = 0;
-    func_002350A8();
+    DMAC_VIF1_Disable();
     func_00123308(1);
-    func_0020C268();
+    InitDma();
     flag = D_0015EE80;
     func_00121B78(0, 1, flag ? 3 : 2, 0);
     func_001207B8();
-    func_002348E8();
+    VU1_initChain();
     pal = D_0015EF78;
     D_00161000 = 0;
-    func_001F3890();
+    SetPalMode();
     D_0015EF78 = pal;
-    func_002348E8();
-    func_00235018();
+    VU1_initChain();
+    DMAC_VIF1_Enable();
 }
 
 /* Retail carries 4 bytes of inter-function padding after this endlabel. */
@@ -242,7 +242,7 @@ void func_001F2930(int arg0) {
         *(float *)&D_0018CE00[0x8B] = D_0015F584.f[3];
         D_001601BC = 0x1F4000;
     }
-    func_001F3140();
+    UpdateViewContext();
     D_0015F598 = 0;
 }
 __asm__(".section .text\n\tnop\n");
@@ -293,7 +293,7 @@ int func_001F2B10(int a0, int a1, int a2, int a3, int a4, int a5, float t) {
     int b2;
 
     if (t < 0.5f) {
-        r = func_001F2A38(a0, a1, a2);
+        r = ParseOcclGrid(a0, a1, a2);
         if (r != 0) {
             return r;
         }
@@ -301,7 +301,7 @@ int func_001F2B10(int a0, int a1, int a2, int a3, int a4, int a5, float t) {
         b1 = a4;
         b2 = a5;
     } else {
-        r = func_001F2A38(a3, a4, a5);
+        r = ParseOcclGrid(a3, a4, a5);
         if (r != 0) {
             return r;
         }
@@ -309,7 +309,7 @@ int func_001F2B10(int a0, int a1, int a2, int a3, int a4, int a5, float t) {
         b1 = a1;
         b2 = a2;
     }
-    return func_001F2A38(b0, b1, b2);
+    return ParseOcclGrid(b0, b1, b2);
 }
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F2BC8); /* BuildOcclVisibility(void) */
@@ -327,9 +327,9 @@ extern char D_001940C0[];
 void func_001F2FB8(void) {
     int state = D_0018C434;
     if (state == 0) {
-        func_001F99B0(D_001940C0, -1, 0x80);
+        FastMemSet(D_001940C0, -1, 0x80);
     } else if (state == 2) {
-        func_001F2BC8();
+        BuildOcclVisibility();
     }
 }
 
@@ -422,7 +422,7 @@ void func_001F3760(int w, int h, float a2, float a3, float a4, float a5, float a
     ctx[0x87] = a4;
     ctx[0x8A] = a5;
     ctx[0x8B] = a6;
-    func_001F3140();
+    UpdateViewContext();
 }
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001F3890); /* SetPalMode(int) */
@@ -490,7 +490,7 @@ void func_001F3C10(void) {
     D_00161000[2] = 0;
     D_00161000[3] = 0x5000000B;
     D_00161000 += 4;
-    func_00234C98(0x3D, (long)D_0018CE00[0x8C] | ((long)D_0018CE00[0x8D] << 8) |
+    VU1_addGSregister(0x3D, (long)D_0018CE00[0x8C] | ((long)D_0018CE00[0x8D] << 8) |
                         ((long)D_0018CE00[0x8E] << 16));
 }
 
@@ -524,9 +524,9 @@ extern int D_0015F6FC_m __asm__("D_0015F6FC") MACRO_ADDR;
    lui $2 / lw $2 (an older note filed it as an allocator question). */
 void func_001F45F0(void) {
     if (D_0015F6FC_m == 0) {
-        func_001FB530();
+        framebuf_appendLargeSetup();
         *(int *)&D_0015F534 = 0x7F;
-        func_001F3D78();
+        DrawDebugProfiler();
     }
 }
 
@@ -626,7 +626,7 @@ void func_001F4748(void) {
     D_0015F550[3] = 0;
     if (D_0018A3DC != 0) {
         func_0020C2F8();
-        func_00234E80();
+        VU1_texFlush();
     }
     D_00161000[0] = 0x20000000;
     D_00161000[1] = (int)(D_0015F550 + 4);
@@ -736,7 +736,7 @@ void func_001F4C30(void) {
     int i;
     int j;
 
-    pkt[1] = func_001F4868(0);
+    pkt[1] = GetEffectTex(0);
     pkt[2] = 0xFF9000000260;
     pkt[0] = 5;
     pkt[3] = 0x8000000044;
@@ -792,23 +792,23 @@ void func_001F4E08(int frames, unsigned int color) {
     int n;
     int q;
 
-    func_00234AC8(1);
+    VU1_syncChain(1);
     func_00122598_i(0);
     D_0015F538 = D_0015F538 + 1;
-    func_002348E8();
+    VU1_initChain();
     n = frames - 1;
 
     if (n >= 0) {
         do {
-            func_001FB498();
-            func_001FB530();
-            func_001F55C0(0, 0, 0, 0x80);
-            func_001FB598();
+            PutDrawBufferLarge();
+            framebuf_appendLargeSetup();
+            emit_rgba_draw_packet(0, 0, 0, 0x80);
+            PutDrawBufferSmall();
 
             q = (n << 7) / (n + 1);
             n--;
 
-            func_00234C98(1, (long)(0x80 - q) << 24);
+            VU1_addGSregister(1, (long)(0x80 - q) << 24);
 
             D_00161000[0] = 0x30000014;
             D_00161000[1] = (int)D_0013CED0;
@@ -816,20 +816,20 @@ void func_001F4E08(int frames, unsigned int color) {
             D_00161000[3] = 0x50000014;
             D_00161000 += 4;
 
-            func_00234AC8(1);
+            VU1_syncChain(1);
             func_00122598_i(0);
             D_0015F538 = D_0015F538 + 1;
-            func_002349B8();
-            func_00234948();
+            VU1_sendChain();
+            VU1_swapChain();
         } while (n >= 0);
     }
 
-    func_00234AC8(1);
+    VU1_syncChain(1);
     func_00122598_i(0);
     D_0015F538 = D_0015F538 + 1;
-    func_002348E8();
-    func_001FB498();
-    func_001FB530();
+    VU1_initChain();
+    PutDrawBufferLarge();
+    framebuf_appendLargeSetup();
 }
 
 typedef struct {
@@ -883,7 +883,7 @@ void func_001F4F90(void) {
             short w, h;
             int hw, hh;
 
-            func_001F7648(win, 0xC8, 0x208, 0x28, 0x1D8, 0x100, D_0013E600[1] - 0x38, 0x12, 7);
+            FontSetWindow(win, 0xC8, 0x208, 0x28, 0x1D8, 0x100, D_0013E600[1] - 0x38, 0x12, 7);
             func_001F7560_l(win, 0x80B0B0B0, D_0018CC20_s.subs + p->text[idx], -1);
             win[5] = D_0013E600[1] - 0x3C;
             w = win[6];
@@ -893,7 +893,7 @@ void func_001F4F90(void) {
             if (win[5] + hh > D_0013E600[1] - 0x14) {
                 win[5] = D_0013E600[1] - 0x14 - hh;
             }
-            func_001F62C8(win[5] - hh, win[5] + hh, 0x100 - hw, 0x100 + hw, 0x60);
+            DrawUIFrame(win[5] - hh, win[5] + hh, 0x100 - hw, 0x100 + hw, 0x60);
             win[9] &= ~4;
             func_001F7560_l(win, 0x80B0B0B0, D_0018CC20_s.subs + p->text[idx], -1);
             return;
@@ -1004,32 +1004,32 @@ void func_001F5368(void) {
     w = D_00151880[0xA9];
     e = STRIPES->enable;
     if (e != 0) {
-        func_00234C98(0x42, e & 0xFF000000FFL);
+        VU1_addGSregister(0x42, e & 0xFF000000FFL);
     }
     c = STRIPES->color;
     if (c & 0xFF000000) {
-        func_001F5650(0, w, 0, D_00151880[0xA8], (unsigned long)((long)c << 0x20) >> 0x20);
+        DrawRectOverlay_FiiiiUl(0, w, 0, D_00151880[0xA8], (unsigned long)((long)c << 0x20) >> 0x20);
     }
     if (w > 0) {
         mask = 0xFF000000FFL;
         do {
             e18 = STRIPES->enable0;
             if (e18 != 0) {
-                func_00234C98(0x42, e18 & mask);
+                VU1_addGSregister(0x42, e18 & mask);
             }
             v14 = STRIPES->color0;
             if (v14 & 0xFF000000) {
-                func_001F5650(i, (i + STRIPES->step0 < w - 1) ? i + STRIPES->step0 : w - 1, 0,
+                DrawRectOverlay_FiiiiUl(i, (i + STRIPES->step0 < w - 1) ? i + STRIPES->step0 : w - 1, 0,
                               D_00151880[0xA8], (unsigned long)((long)v14 << 0x20) >> 0x20);
             }
             i = i + STRIPES->step0;
             e28 = STRIPES->enable1;
             if (e28 != 0) {
-                func_00234C98(0x42, e28 & mask);
+                VU1_addGSregister(0x42, e28 & mask);
             }
             v24 = STRIPES->color1;
             if (v24 & 0xFF000000) {
-                func_001F5650(i, (i + STRIPES->step1 < w - 1) ? i + STRIPES->step1 : w - 1, 0,
+                DrawRectOverlay_FiiiiUl(i, (i + STRIPES->step1 < w - 1) ? i + STRIPES->step1 : w - 1, 0,
                               D_00151880[0xA8], (unsigned long)((long)v24 << 0x20) >> 0x20);
             }
             i = i + STRIPES->step1;
@@ -1052,16 +1052,16 @@ void func_001F54E8(char *arg0) {
     long v = *(long *)(arg0 + 8);
 
     if (v != 0) {
-        func_00234C98(0x42, v & 0xFF000000FFL);
+        VU1_addGSregister(0x42, v & 0xFF000000FFL);
     }
     if ((*(int *)(arg0 + 4) & 0xFF000000) != 0) {
-        func_00234C98(0x4E, (D_0015EF88 >> 13) | 0x1000000 | 0x100000000L);
-        func_001F5650(0, D_00151880[0xA9], 0, D_00151880[0xA8],
+        VU1_addGSregister(0x4E, (D_0015EF88 >> 13) | 0x1000000 | 0x100000000L);
+        DrawRectOverlay_FiiiiUl(0, D_00151880[0xA9], 0, D_00151880[0xA8],
                       *(unsigned int *)(arg0 + 4));
-        func_00234C98(0x4E, 0x1000000 | (D_0015EF88 >> 13));
+        VU1_addGSregister(0x4E, 0x1000000 | (D_0015EF88 >> 13));
     }
     if (*(long *)(arg0 + 8) != 0) {
-        func_00234C98(0x42, 0x8000000044L);
+        VU1_addGSregister(0x42, 0x8000000044L);
     }
 }
 
@@ -1074,7 +1074,7 @@ extern int *D_00161000 MACRO_ADDR;
 extern char D_0013CD90[];
 
 void func_001F55C0(int a, int b, int c, int d) {
-    func_00234C98(1, (long)a | ((long)b << 8) | ((long)c << 16) | ((long)d << 24));
+    VU1_addGSregister(1, (long)a | ((long)b << 8) | ((long)c << 16) | ((long)d << 24));
     D_00161000[0] = 0x30000014;
     D_00161000[1] = (int)D_0013CD90;
     D_00161000[2] = 0;
@@ -1280,13 +1280,13 @@ LINKER_REMNANT("asm/remnants/text", func_001F62C0);
 void func_001F62C8(int x0, int x1, int y0, int y1, int a) {
     int col = (a << 24) | 0x40404;
 
-    func_001F5650(x0, x1, y0, y1, col);
-    func_001F5650(x0 + 1, x1 - 1, y0 - 2, y0, col);
-    func_001F5650(x0 + 2, x1 - 2, y0 - 3, y0 - 2, col);
-    func_001F5650(x0 + 4, x1 - 4, y0 - 4, y0 - 3, col);
-    func_001F5650(x0 + 1, x1 - 1, y1, y1 + 2, col);
-    func_001F5650(x0 + 2, x1 - 2, y1 + 2, y1 + 3, col);
-    func_001F5650(x0 + 4, x1 - 4, y1 + 3, y1 + 4, col);
+    DrawRectOverlay_FiiiiUl(x0, x1, y0, y1, col);
+    DrawRectOverlay_FiiiiUl(x0 + 1, x1 - 1, y0 - 2, y0, col);
+    DrawRectOverlay_FiiiiUl(x0 + 2, x1 - 2, y0 - 3, y0 - 2, col);
+    DrawRectOverlay_FiiiiUl(x0 + 4, x1 - 4, y0 - 4, y0 - 3, col);
+    DrawRectOverlay_FiiiiUl(x0 + 1, x1 - 1, y1, y1 + 2, col);
+    DrawRectOverlay_FiiiiUl(x0 + 2, x1 - 2, y1 + 2, y1 + 3, col);
+    DrawRectOverlay_FiiiiUl(x0 + 4, x1 - 4, y1 + 3, y1 + 4, col);
 }
 
 /* Emits a 9-point cross/star pattern of func_001F5650 draws around
@@ -1301,35 +1301,35 @@ void func_001F6410(int a0, int a1, int a2, int a3, int a4) {
     int t_a1p3, t3, t_a3p1;
 
     color = (a4 & (int)0xFF000000) | 4;
-    func_001F5650(a0, a1, a2, a3, color);
+    DrawRectOverlay_FiiiiUl(a0, a1, a2, a3, color);
 
     t0 = a0 + 1;
     t1 = a2 + 3;
     t2 = a3 + 5;
-    func_001F5650(a0 - 1, t0, t1, t2, a4);
+    DrawRectOverlay_FiiiiUl(a0 - 1, t0, t1, t2, a4);
 
     t_a0m5 = a0 - 5;
     t4 = a2 - 1;
     t5 = a3 - 3;
-    func_001F5650(a0 - 3, t_a0m5, t4, t5, a4);
+    DrawRectOverlay_FiiiiUl(a0 - 3, t_a0m5, t4, t5, a4);
 
     t3 = a1 - 3;
-    func_001F5650(t_a0m5, t3, t4, a2 + 1, a4);
+    DrawRectOverlay_FiiiiUl(t_a0m5, t3, t4, a2 + 1, a4);
 
     t_a0p3 = a0 + 3;
     t6 = a1 + 1;
     t_a2m3 = a2 - 3;
-    func_001F5650(t_a0p3, t6, t_a2m3, a2 - 5, a4);
+    DrawRectOverlay_FiiiiUl(t_a0p3, t6, t_a2m3, a2 - 5, a4);
 
-    func_001F5650(a1 - 1, t6, t_a2m3, t5, a4);
+    DrawRectOverlay_FiiiiUl(a1 - 1, t6, t_a2m3, t5, a4);
 
     t_a1p3 = a1 + 3;
     t_a3p1 = a3 + 1;
-    func_001F5650(t_a1p3, a1 + 5, t1, t_a3p1, a4);
+    DrawRectOverlay_FiiiiUl(t_a1p3, a1 + 5, t1, t_a3p1, a4);
 
-    func_001F5650(t_a0p3, t_a1p3, a3 - 1, t_a3p1, a4);
+    DrawRectOverlay_FiiiiUl(t_a0p3, t_a1p3, a3 - 1, t_a3p1, a4);
 
-    func_001F5650(t0, t3, a3 + 3, t2, a4);
+    DrawRectOverlay_FiiiiUl(t0, t3, a3 + 3, t2, a4);
 }
 
 /* gp-relative: declared as a 2-byte type purely so -G2 places it in the
@@ -1380,15 +1380,15 @@ extern unsigned char D_001DF770[];
 extern unsigned char D_001DFB10[];
 
 int func_001F6600(unsigned char *arg0, int arg1) {
-    return func_001F65B0(arg0, arg1, D_001DF3D0);
+    return measure_text_width(arg0, arg1, D_001DF3D0);
 }
 
 int func_001F6620(unsigned char *arg0, int arg1) {
-    return func_001F65B0(arg0, arg1, D_001DF770);
+    return measure_text_width(arg0, arg1, D_001DF770);
 }
 
 int func_001F6640(unsigned char *arg0, int arg1) {
-    return func_001F65B0(arg0, arg1, D_001DFB10);
+    return measure_text_width(arg0, arg1, D_001DFB10);
 }
 
 /*
@@ -1418,16 +1418,16 @@ extern void func_001F6668(void *, void *, void *, void *, void *, int,
    the fifth through seventh in $8/$9/$10. */
 /* FontPrintLarge */
 void func_001F68E8(void *a, void *b, void *c, void *d, void *e) {
-    int mode = func_001F4868(1);
+    int mode = GetEffectTex(1);
 
-    func_001F6668(a, b, c, d, e, mode, D_001DF3D0);
+    FontPrint(a, b, c, d, e, mode, D_001DF3D0);
 }
 
 /* FontPrintSmall */
 void func_001F6968(void *a, void *b, void *c, void *d, void *e) {
-    int mode = func_001F4868(2);
+    int mode = GetEffectTex(2);
 
-    func_001F6668(a, b, c, d, e, mode, D_001DF770);
+    FontPrint(a, b, c, d, e, mode, D_001DF770);
 }
 
 LINKER_REMNANT("asm/remnants/text", func_001F69E8);
@@ -1446,23 +1446,23 @@ extern int func_001F6620(unsigned char *, int);
    helper returns. */
 void func_001F6CF8(char *a, void *b, void *c, unsigned char *d, int e) {
     char *p = a - func_001F6600(d, e);
-    int mode = func_001F4868(1);
+    int mode = GetEffectTex(1);
 
-    func_001F6668(p, b, c, d, (void *)e, mode, D_001DF3D0);
+    FontPrint(p, b, c, d, (void *)e, mode, D_001DF3D0);
 }
 
 void func_001F6D88(char *a, void *b, void *c, unsigned char *d, int e) {
     char *p = a - func_001F6620(d, e);
-    int mode = func_001F4868(2);
+    int mode = GetEffectTex(2);
 
-    func_001F6668(p, b, c, d, (void *)e, mode, D_001DF770);
+    FontPrint(p, b, c, d, (void *)e, mode, D_001DF770);
 }
 
 void func_001F6E18(char *a, void *b, void *c, unsigned char *d, int e) {
     char *p = a - func_001F6640(d, e);
-    int mode = func_001F4868(3);
+    int mode = GetEffectTex(3);
 
-    func_001F6668(p, b, c, d, (void *)e, mode, D_001DFB10);
+    FontPrint(p, b, c, d, (void *)e, mode, D_001DFB10);
 }
 
 /* func_001F6EA8/func_001F6F40/func_001F6FD8 are the func_001F6CF8 triple
@@ -1472,9 +1472,9 @@ void func_001F6E18(char *a, void *b, void *c, unsigned char *d, int e) {
 /* FontPrintCenter */
 int func_001F6EA8(int a, int b, int c, int d, int e) {
     int p = a - (func_001F6600((unsigned char *)d, e) >> 1);
-    int mode = func_001F4868(1);
+    int mode = GetEffectTex(1);
 
-    func_001F6668((void *)p, (void *)b, (void *)c, (void *)d, (void *)e,
+    FontPrint((void *)p, (void *)b, (void *)c, (void *)d, (void *)e,
                   mode, D_001DF3D0);
     return p;
 }
@@ -1482,9 +1482,9 @@ int func_001F6EA8(int a, int b, int c, int d, int e) {
 /* FontPrintCenterSmall */
 int func_001F6F40(int a, int b, int c, int d, int e) {
     int p = a - (func_001F6620((unsigned char *)d, e) >> 1);
-    int mode = func_001F4868(2);
+    int mode = GetEffectTex(2);
 
-    func_001F6668((void *)p, (void *)b, (void *)c, (void *)d, (void *)e,
+    FontPrint((void *)p, (void *)b, (void *)c, (void *)d, (void *)e,
                   mode, D_001DF770);
     return p;
 }
@@ -1492,9 +1492,9 @@ int func_001F6F40(int a, int b, int c, int d, int e) {
 /* FontPrintCenterLarge */
 int func_001F6FD8(int a, int b, int c, int d, int e) {
     int p = a - (func_001F6640((unsigned char *)d, e) >> 1);
-    int mode = func_001F4868(3);
+    int mode = GetEffectTex(3);
 
-    func_001F6668((void *)p, (void *)b, (void *)c, (void *)d, (void *)e,
+    FontPrint((void *)p, (void *)b, (void *)c, (void *)d, (void *)e,
                   mode, D_001DFB10);
     return p;
 }
@@ -1509,15 +1509,15 @@ extern void func_001F7070(void *, void *, void *, void *, int, unsigned char *);
    fifth and sixth in $8/$9, which is why they appear alongside $4-$7
    rather than on the stack. */
 void func_001F7560(void *a, void *b, void *c, void *d) {
-    int mode = func_001F4868(1);
+    int mode = GetEffectTex(1);
 
-    func_001F7070(a, b, c, d, mode, D_001DF3D0);
+    FontPrintWindow(a, b, c, d, mode, D_001DF3D0);
 }
 
 void func_001F75D0(void *a, void *b, void *c, void *d) {
-    int mode = func_001F4868(2);
+    int mode = GetEffectTex(2);
 
-    func_001F7070(a, b, c, d, mode, D_001DF770);
+    FontPrintWindow(a, b, c, d, mode, D_001DF770);
 }
 
 LINKER_REMNANT("asm/remnants/text", func_001F7640);
@@ -1564,10 +1564,10 @@ void func_001F7868(void) {
 
     func_001FA1C0(m, 1024.0f);
     cam = D_00187180;
-    func_001F9C30(&m[12], cam, -1024.0f);
+    FastVecScale(&m[12], cam, -1024.0f);
     m[15] = 1.0f;
     if (D_0015F704 != 7) {
-        func_00234B48(D_0010E810, D_0010E800);
+        VU1_addDataRef(D_0010E810, D_0010E800);
         D_0015F704 = 7;
     }
     D_00161000[0] = 0x10000000;
@@ -1580,10 +1580,10 @@ void func_001F7868(void) {
     base[6] = 0;
     base[7] = 0x6C0C43A4;
     p = base + 8;
-    func_001FA540(p, cam - 0x100, m);
+    sce_vu0_mul_matrix(p, cam - 0x100, m);
     *(float *)(p + 14) += *(float *)&D_0015F448;
     p = base + 0x18;
-    func_001FA540(p, cam - 0x80, m);
+    sce_vu0_mul_matrix(p, cam - 0x80, m);
     *(float *)(p + 14) += *(float *)&D_0015F448;
     g = (char *)D_0018CE00;
     base[0x28] = 0x8000;
@@ -1636,11 +1636,11 @@ void func_001F7A50(int a, int b, int flag, float f) {
     func_001FB608(a, b, base);
     func_001F3760(1 << a, 1 << b, f, 0.0f, 524288.0f, 255.0f, 0.0f);
     if (flag != 0) {
-        func_00234C98(0x47, 0);
+        VU1_addGSregister(0x47, 0);
     } else {
-        func_00234C98(0x47, 0x30000);
+        VU1_addGSregister(0x47, 0x30000);
     }
-    func_00234C98(0x42, 0x8000000044L);
+    VU1_addGSregister(0x42, 0x8000000044L);
 }
 
 __asm__(".section .text\n\tnop\n");
@@ -1650,9 +1650,9 @@ extern void func_001F3008(void);
 extern void func_001F3140(void);
 
 void func_001F7B40(void) {
-    func_001FB498();
-    func_001F3008();
-    func_001F3140();
+    PutDrawBufferLarge();
+    InitViewContext();
+    UpdateViewContext();
 }
 
 /* Two prototypes for one symbol: func_001F55C0 passes a 64-bit value
@@ -1666,16 +1666,16 @@ extern void func_001F8B6C(void);
 
 void func_001F7B70(void) {
     if (D_0015F578 != 0) {
-        func_00234C98(8, 5);
-        func_00234C98(0x14, 0x61);
-        func_00234C98(0x47, 0x513F1);
-        func_00234C98(0x4A, 1);
+        VU1_addGSregister(8, 5);
+        VU1_addGSregister(0x14, 0x61);
+        VU1_addGSregister(0x47, 0x513F1);
+        VU1_addGSregister(0x4A, 1);
         func_001F91B8();
         *(float *)&D_0015F448 = -0.04f;
         func_001F7868();
         func_001F8B6C();
         *(int *)&D_0015F448 = 0;
-        func_00234C98(0x4A, 0);
+        VU1_addGSregister(0x4A, 0);
     }
 }
 

@@ -348,7 +348,7 @@ void func_0022C870(void) {
     D_00160570_p[3] = 0;
     if (D_0018A3B0[1] != 0) {
         func_0020C2F8();
-        func_00234E80();
+        VU1_texFlush();
     }
     D_00161000_p[0] = 0x20000000;
     D_00161000_p[1] = (int)(D_00160570_p + 4);
@@ -377,9 +377,9 @@ void func_0022C9A8(int idx) {
     if (idx < def->count) {
         void *shell = def->shells[idx];
         if (*(int *)((char *)shell + 4) != 0) {
-            func_0022CC40(shell);
+            SkyDrawShellGouraud(shell);
         } else {
-            func_0022CA00(shell);
+            SkyDrawShellTextured(shell);
         }
     }
 }

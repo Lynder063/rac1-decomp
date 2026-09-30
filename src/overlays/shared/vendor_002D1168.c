@@ -20,7 +20,7 @@ extern void func_00213DE0(void *, int, int, int);
 void func_L00_002D4C80(char *a) {
     if (*(int *)(D_0013E633 + 0x2EA1) == 8) {
         if (*(unsigned char *)(a + 0x53) != 6) {
-            func_00213DE0(a, 6, 0, func_001F9850(10));
+            func_00213DE0(a, 6, 0, scale_ticks(10));
         }
     }
 }
@@ -60,7 +60,7 @@ extern void func_L00_00251328(void *, int, int, int);
 extern float func_00214158(void);
 extern void func_L00_00251E30(void *);
 char *func_L00_002D9340(Vy *src, float f) {
-    char *m = func_0020D348(0x307);
+    char *m = CreateMoby(0x307);
     if (m != 0) {
         func_L00_0025E210(m);
         func_L00_00251328(m, 0x28, 0x28, 0x46);
@@ -68,7 +68,7 @@ char *func_L00_002D9340(Vy *src, float f) {
         *(short *)(m + 0x32) = 0x40;
         *(float *)(m + 0x2C) *= f;
         qcopy(m + 0x10, src);
-        *(float *)(m + 0x48) = func_00214158();
+        *(float *)(m + 0x48) = random_angle_radians();
         func_L00_00251E30(m);
     }
     return m;
@@ -77,5 +77,5 @@ extern void func_0020D678(void);
 void func_L00_002D93E8(char *a) {
     *(float *)(a + 0x2C) = *(float *)(a + 0x2C) * 1.025f;
     a[0x23] = a[0x23] - 3;
-    if ((unsigned char)a[0x23] < 4) func_0020D678();
+    if ((unsigned char)a[0x23] < 4) DeleteMoby();
 }

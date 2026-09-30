@@ -45,6 +45,13 @@ Run everything from the repository root.
   pin an order, no read of a local that was never assigned. A match that
   needs one is not a match: stop instead. A function that reads a register
   it never sets, or branches outside itself, is a fragment: stop at once.
+- Sources: work from the assembly and from what the packet gives you.
+  Never use Sony SDK source, sample code or headers, or any leaked
+  material, from memory either (CONTRIBUTING.md, "Sources"). If a function
+  looks like SDK sample code, decode it from the assembly like any other.
+- Matched C in a packet may call functions by readable names
+  (`include/names.h` macros for the address names). Define and declare
+  with the address name (`func_...`, `D_...`); in a body either works.
 - Never write a level address as a number. Use the symbol the assembly
   names (`D_L05_001B24D4`), declared in the candidate.
 

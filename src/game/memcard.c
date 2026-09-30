@@ -216,17 +216,17 @@ void func_00209CE8(int arg0) {
     int b;
     int i;
 
-    a = func_0020BAD8(D_001A05C0);
-    b = func_0020BAD8(D_001A08C0);
+    a = memcard_GetDataSize(D_001A05C0);
+    b = memcard_GetDataSize(D_001A08C0);
     if (*(int *)p != a || *(int *)(p + 4) != b) {
-        func_001E9730(D_001E8500);
+        STUB_printf(D_001E8500);
         return;
     }
     p += 8;
-    func_0020BD70(p, 0, D_001A05C0);
+    memcard_RestoreData(p, 0, D_001A05C0);
     p += a;
     for (i = 0; i < 0x14; i++) {
-        func_0020BD70(p, i, D_001A08C0);
+        memcard_RestoreData(p, i, D_001A08C0);
         p += b;
     }
 }
@@ -262,11 +262,11 @@ void func_00209DC0(void) {
     func_002176C8_i(a, D_00137C80[4], D_00137C80[5]);
     s2 = D_0015EEF0;
     s1 = D_0015EEEC;
-    s0 = D_0015EEE8;
-    func_00209CE8(a + *(int *)(a + 0x10));
+    s0 = gStereo;
+    memcard_RestoreGame(a + *(int *)(a + 0x10));
     D_0015EEF0 = s2;
     D_0015EEEC = s1;
-    D_0015EEE8 = s0;
+    gStereo = s0;
     D_0015EE84_m = 0;
 }
 
@@ -285,12 +285,12 @@ extern int func_0020BBC8(void *dst, int i, int *table);
 void func_0020BA00(char *out) {
     int i;
 
-    *(int *)out = func_0020BAD8(D_001A05C0);
-    *(int *)(out + 4) = func_0020BAD8(D_001A08C0);
+    *(int *)out = memcard_GetDataSize(D_001A05C0);
+    *(int *)(out + 4) = memcard_GetDataSize(D_001A08C0);
     out += 8;
-    out += func_0020BBC8(out, 0, D_001A05C0);
+    out += memcard_PrepData(out, 0, D_001A05C0);
     for (i = 0; i < 0x14; i++) {
-        out += func_0020BBC8(out, i, D_001A08C0);
+        out += memcard_PrepData(out, i, D_001A08C0);
     }
 }
 
@@ -307,7 +307,7 @@ extern char D_001E8690[];
 /* memcard_Init */
 void func_0020BAA8(void) {
     if (func_001236F0()) {
-        func_001E9730(D_001E8690);
+        STUB_printf(D_001E8690);
     }
 }
 
@@ -358,7 +358,7 @@ int func_0020BB88(char *buf) {
     int len = p[0];
     int sum = p[1];
     int result = 0;
-    if (sum != 0) result = func_0020BB10(p + 2, len) == sum;
+    if (sum != 0) result = memcard_Checksum(p + 2, len) == sum;
     return result;
 }
 
@@ -430,7 +430,7 @@ int func_0020BBC8(void *dst, int slot, int *table) {
     total += 8;
     ((int *)p)[1] = 0;
     ((int *)p)[0] = -1;
-    out->checksum = func_0020BB10(out + 1, total);
+    out->checksum = memcard_Checksum(out + 1, total);
     out->size = total;
     return total + 8;
 }
@@ -455,7 +455,7 @@ extern int func_0020BB88(char *); /* memcard_TestChecksum */
    itself and copying the name with memcpy both matter for retail's
    registers; re-indexing the entry per store keeps its daddu copies. */
 void func_0020BCB0(char *buf, int slot, int idx) {
-    D_0013D390_s[slot].e[idx].valid = func_0020BB88(buf) == 0;
+    D_0013D390_s[slot].e[idx].valid = memcard_TestChecksum(buf) == 0;
     buf += 0x10;
     D_0013D390_s[slot].e[idx].a = *(int *)buf;
     buf += 0xC;
@@ -509,7 +509,7 @@ int func_0020BD70(void *src, int slot, int *table) {
     int n;
     unsigned char *dst;
 
-    if (func_0020BB88((char *)buf) == 0) {
+    if (memcard_TestChecksum((char *)buf) == 0) {
         return 1;
     }
     buf += 8;
@@ -556,7 +556,7 @@ int func_0020BD70(void *src, int slot, int *table) {
         buf += ((((struct RestoreBlock *)buf)->size + 3) & ~3) + 8;
     }
     total += 8;
-    if (total != func_0020BAD8((int *)tbl)) {
+    if (total != memcard_GetDataSize((int *)tbl)) {
         errors++;
     }
     buf += 8;
@@ -639,13 +639,13 @@ int func_0020BFC8(int slot, int flags) {
         char *q = D_0013D390;
         char *names = q + 0x30;
 
-        *(int *)(q + *(int *)(q + 0x14) * 0x1C + 0x24) = D_0015EE98;
+        *(int *)(q + *(int *)(q + 0x14) * 0x1C + 0x24) = gBolts;
         *(int *)(q + *(int *)(q + 0x14) * 0x1C + 0x20) = D_0015EE84_m;
         *(int *)(q + *(int *)(q + 0x14) * 0x1C + 0x2C) = D_0015EF24;
         memcpy(names + *(int *)(q + 0x14) * 0x1C, D_0015EF98, 8);
         *(int *)(q + *(int *)(q + 0x14) * 0x1C + 0x28) = D_0015EF20;
-        func_0020BBC8(D_0014EFD0, 0, D_001A05C0);
-        func_0020BBC8(D_001507D0, *(int *)(q + 0xD0), D_001A08C0);
+        memcard_PrepData(D_0014EFD0, 0, D_001A05C0);
+        memcard_PrepData(D_001507D0, *(int *)(q + 0xD0), D_001A08C0);
         if (flags >= 0) {
             D_0013DE60[D_0015EE84_m] = saved;
             D_0015EE84_m = *(int *)(q + 0xD0);

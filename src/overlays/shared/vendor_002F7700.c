@@ -96,7 +96,7 @@ void func_L01_0030F2A8(char *moby) {
         func_L00_00250800(moby, i + 3, entry);
         entry += 0x10;
     }
-    func_001F49B0(func_L01_0030F240, moby);
+    AddDrawCallback(func_L01_0030F240, moby);
 }
 INCLUDE_ASM("asm/overlays", func_L01_0030F318);
 INCLUDE_ASM("asm/overlays", func_L01_00316270);

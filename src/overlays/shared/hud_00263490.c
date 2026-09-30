@@ -21,7 +21,7 @@ typedef struct {
 
 /* Sets up a HUD element: timer, 128x128 size, zero offsets. */
 void func_L05_00266B90(HudElem *e) {
-    e->unk7C = func_001F9850(0xB4) + 0x1E;
+    e->unk7C = scale_ticks(0xB4) + 0x1E;
     e->w = 0x80;
     e->unk48 = 0;
     e->h = 0x80;

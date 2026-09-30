@@ -16,6 +16,46 @@ the tools involved.
 | `asm/overlays/<name>.s`: one file per distinct non-exe function, from its canonical level | no, generated | `tools/overlay_asm.py` |
 | `src/overlays/...`: C and `INCLUDE_ASM` stubs for overlay functions | yes | generated stubs, then matching |
 
+## Levels
+
+A level is known by its index everywhere: `baserom/overlays/level_NN/`,
+the `NN` in `func_LNN_*` and `D_LNN_*`, and the report category
+`level_NN`. Only the source directory and the report's label carry the
+planet, from `tools/levels.py`:
+
+| NN | Directory | Planet |
+|---|---|---|
+| 00 | `l00_veldin1` | Veldin |
+| 01 | `l01_novalis` | Novalis |
+| 02 | `l02_aridia` | Aridia |
+| 03 | `l03_kerwan` | Kerwan |
+| 04 | `l04_eudora` | Eudora |
+| 05 | `l05_rilgar` | Rilgar |
+| 06 | `l06_blarg` | Blarg Station (Nebula G34) |
+| 07 | `l07_umbris` | Umbris |
+| 08 | `l08_batalia` | Batalia |
+| 09 | `l09_gaspar` | Gaspar |
+| 10 | `l10_orxon` | Orxon |
+| 11 | `l11_pokitaru` | Pokitaru |
+| 12 | `l12_hoven` | Hoven |
+| 13 | `l13_gemlik` | Gemlik Base |
+| 14 | `l14_oltanis` | Oltanis |
+| 15 | `l15_quartu` | Quartu |
+| 16 | `l16_kalebo3` | Kalebo III |
+| 17 | `l17_fleet` | Drek's Fleet |
+| 18 | `l18_veldin2` | Veldin (return) |
+
+Evidence for the order:
+
+- The save's unlocked-planet flags are one byte per level in this order
+  (offset 0x00 Veldin 1 through 0x12 Veldin 2; community memory map,
+  "Ratchet & Clank Series Addresses", RaC1 sheet).
+- Each level's own debug strings agree: level 02 has the Surfer Agent
+  and shark paths (Skid McMarx and the sand sharks of Aridia), 03 the
+  train and Helga (Kerwan), 05 the Race Girl and the Bouncer (Rilgar's
+  hoverbike race), 13 a boss timer and tractor beam (the Qwark fight at
+  Gemlik Base).
+
 ## Names
 
 The catalogue deduplicates functions by comparing instructions with their
@@ -76,7 +116,8 @@ resident and is shared by every level.
      pads loops retail's assembler did not (func_L00_002422D8), and no
      option turns it off.
 2. **Sources and matching**: `src/overlays/shared/` for shared functions
-   and `src/overlays/lNN/` for each level's own, as `INCLUDE_ASM` stubs,
+   and `src/overlays/lNN_<planet>/` for each level's own (see Levels), as
+   `INCLUDE_ASM` stubs,
    in link order (see Layout). A file runs until the executable unit its
    functions follow changes, or about 32 KB; it is named after that unit
    and its first function (`hud_00235960.c`). A function that branches

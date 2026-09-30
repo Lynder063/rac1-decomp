@@ -23,7 +23,7 @@ void func_L00_002634F8(char *a, float x, float y, float z) {
     in[2] = z;
     func_001FA218(t, in);
     func_001FA218(u, a + 0x40);
-    func_001FA540(u, u, t);
+    sce_vu0_mul_matrix(u, u, t);
     func_002153E8(u, a + 0x40);
 }
 void func_L00_00263578(int a, char *b) {
@@ -45,7 +45,7 @@ void func_L00_002638B8(char *o) {
         for (i = 0; i < *(int *)(o + 0x138); i++) {
             int *p = (int *)(o + 0x120) + i;
             if (*p != 0) {
-                func_0020D678(*p);
+                DeleteMoby(*p);
                 *p = 0;
             }
         }
@@ -58,19 +58,19 @@ extern float func_001FA748(float, float);
 extern float func_001F9FA8(float);
 void func_L00_00263B78(float x, float y, char *a, float *p, float *q) {
     float t;
-    *p = func_001FA748(*p, y);
+    *p = FastAddRots(*p, y);
     *(float *)(a + 0x18) -= *q;
-    t = func_001F9FA8(*p) * x;
+    t = FastSin(*p) * x;
     *q = t;
     *(float *)(a + 0x18) += t;
 }
 extern float func_001F9F90(float);
 
 void func_L00_00263BF8(float *o, float *a, float *b, float r, float l1, float l2) {
-    o[0x10] = r * func_001F9FA8(*a) * func_001F9FA8(*b);
-    o[0x11] = r * func_001F9FA8(*a) * func_001F9F90(*b);
-    *a = func_001FA748(*a, l1);
-    *b = func_001FA748(*b, l2);
+    o[0x10] = r * FastSin(*a) * FastSin(*b);
+    o[0x11] = r * FastSin(*a) * FastCos(*b);
+    *a = FastAddRots(*a, l1);
+    *b = FastAddRots(*b, l2);
 }
 extern void func_00215C00(void *);
 extern void func_001F9BD8(void *, void *, void *);
@@ -78,7 +78,7 @@ void func_L00_00263D68(void *a, void *b) {
     typedef float W[4] __attribute__((aligned(16)));
     W v;
     func_00215C00(v);
-    func_001F9BD8(a, v, b);
+    FastVecAdd(a, v, b);
 }
 INCLUDE_ASM("asm/overlays", func_L00_00263DB0);
 INCLUDE_ASM("asm/overlays", func_L00_00264130);
@@ -106,13 +106,13 @@ extern void func_0020D9D8(int, void *);
 void func_L00_00264B40(float x, int a, int b, unsigned char *m) {
     if (D_0015EEB4_m[3] != 0) {
         if (m[1] == 0) {
-            func_0020D960(a, b, m);
+            AttachManipulator(a, b, m);
         }
         *(float *)(m + 0x20) = x;
         *(float *)(m + 0x24) = x;
         *(float *)(m + 0x28) = x;
     } else if (m[1] != 0) {
-        func_0020D9D8(a, m);
+        DetachManipulator(a, m);
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_00264BB0);
@@ -127,16 +127,16 @@ extern void func_001166FC(void *, int);
 
 void func_L00_00264DB8(int arg0, int arg1) {
     if (arg1 == -1) {
-        arg1 = func_001F9850(0xB4);
+        arg1 = scale_ticks(0xB4);
     }
-    func_001166FC(D_L00_00179218, func_001FE540(arg0));
+    func_001166FC(D_L00_00179218, msg_string(arg0));
     D_L00_0015F720 = arg1;
 }
 extern char D_L00_00179218[] NOT_SDA;
 extern void func_00116248(void *, int, int);
 void func_L00_00264E28(int a, int b, int c) {
-    if (c == -1) c = func_001F9850(0xB4);
-    func_00116248(D_L00_00179218, func_001FE540(a), b);
+    if (c == -1) c = scale_ticks(0xB4);
+    func_00116248(D_L00_00179218, msg_string(a), b);
     D_L00_0015F720 = c;
 }
 INCLUDE_ASM("asm/overlays", func_L00_00264EA8);
@@ -160,7 +160,7 @@ void func_L00_002653A0(void) {
     if (D_L00_0015F674 == 0 || (*(int *)&D_L00_00161F08_g) == 0) {
         (*(int *)&D_L00_00161F04_g) = -1;
     } else if ((*(int *)&D_L00_00161F04_g) == -1) {
-        (*(int *)&D_L00_00161F04_g) = func_001FFB38(0xC, 0, (void *)((char *)func_L00_002377E0 + 0x340), func_L00_00237B70, func_L00_00237B90, 0, 0);
+        (*(int *)&D_L00_00161F04_g) = queue_animation_update(0xC, 0, (void *)((char *)func_L00_002377E0 + 0x340), DefaultVtbl_DeleteMoby, func_L00_00237B90, 0, 0);
     } else {
         func_L00_002367A8((*(int *)&D_L00_00161F04_g), 0xA);
     }

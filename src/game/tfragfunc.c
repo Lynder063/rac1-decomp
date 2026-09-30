@@ -335,7 +335,7 @@ void func_00234380(void) {
     c = D_00160FA0[2] * D_0018D020;
     ab = 1.0f / (a - b);
     bc = 1.0f / (b - c);
-    func_001F99D8(D_001DEB70, 0x40);
+    FastMemZero16(D_001DEB70, 0x40);
     D_001DEB70[0][0] = ab * 0.5f;
     D_001DEB70[0][1] = -ab;
     D_001DEB70[1][0] = bc * 0.5f;
@@ -371,11 +371,11 @@ void func_002344D8(void) {
     ((int *)D_00160FBC)[2] = 0;
     ((int *)D_00160FBC)[3] = 0;
     if (D_0018A3B0[4] != 0 && D_0018A3B0[3] != 0) {
-        func_00235EF0();
+        ComputeTfragTextureUsage();
         size = func_00236060(D_0015EF74);
-        func_00234E80();
+        VU1_texFlush();
         if (size > 0x400000) {
-            func_001E9730(D_001E8CE0);
+            STUB_printf(D_001E8CE0);
         }
         if (D_00160FC4 < size) {
             D_00160FC4 = size;
@@ -461,19 +461,19 @@ void func_002346C0(void) {
     D_00161000 = p;
     func_001F2560(D_00160F70, 1);
     func_001FA190(m);
-    func_001F9C30(m[3], D_00187180, -1024.0f);
+    FastVecScale(m[3], D_00187180, -1024.0f);
     m[3][3] = 1.0f;
-    func_001FA540(m, D_00187180 - 0x100, m);
-    func_00234BA0(5, m, 4);
-    func_00234BA0(0x14D, m, 4);
+    sce_vu0_mul_matrix(m, D_00187180 - 0x100, m);
+    write_vif_unpack_packet(5, m, 4);
+    write_vif_unpack_packet(0x14D, m, 4);
     if (D_0018A3B0[4] != 0) {
         func_00118D80(0);
-        func_002352C8();
+        TfragProc();
     }
     func_001F2560(D_00160F80, 2);
-    func_002344D8();
+    DmaTfragTextures();
     if (D_0018A3B0[4] != 0) {
-        func_001F9AF0(D_001E1600, 0x3000, 0x40);
+        write_dma_channel(D_001E1600, 0x3000, 0x40);
     }
     func_001F2558(D_00160F80, 2);
 }

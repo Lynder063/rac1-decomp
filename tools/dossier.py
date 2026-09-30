@@ -191,6 +191,7 @@ def write(names: list[str]) -> None:
                                  if (f.get("fuzzy_match_percent") or 0) == 100] for u in report["units"]}
     rows = {r["name"]: r for r in triage.triage()}
     roles = load_overlay_roles()
+    known = load_names()
     index = declaration_index()
     for name in names:
         row = rows.get(name)
@@ -211,6 +212,7 @@ def write(names: list[str]) -> None:
                f"- Triage: {row['reason'] or 'no known blocker'}"]
         if row["symbol"]:
             out.append(f"- Real name: {row['symbol']}" + (f" ({row['library']})" if row["library"] else ""))
+        out += name_lines(known.get(name))
         out += role_lines(roles.get(name, []))
         if row["reference"]:
             out.append(f"- Original source: {row['reference']} (start from it, not from m2c)")
@@ -277,6 +279,28 @@ def load_overlay_roles() -> dict[str, list[str]]:
     return rows
 
 
+def load_names() -> dict[str, dict]:
+    """symbol -> its row in config/names.tsv (docs/NAMES.md)."""
+    path = ROOT / "config/names.tsv"
+    if not path.exists():
+        return {}
+    rows = {}
+    for line in path.read_text().splitlines():
+        if line and not line.startswith("#"):
+            sym, name, tier, source, evidence, alts = (line.split("\t") + [""] * 6)[:6]
+            rows[sym] = {"name": name, "tier": tier, "source": source, "alts": alts}
+    return rows
+
+
+def name_lines(row: dict | None) -> list[str]:
+    if not row:
+        return []
+    use = ("" if row["tier"] == "candidate"
+           else f"; C can call it `{row['name']}` (include/names.h), but define it as the address name")
+    alts = f"; also called {row['alts'].replace(',', ', ')}" if row["alts"] else ""
+    return [f"- Name: {row['name']} ({row['tier']}, from {row['source']}{alts}){use}"]
+
+
 def role_lines(roles: list[str]) -> list[str]:
     if not roles:
         return []
@@ -320,6 +344,7 @@ def overlay_write(names: list[str]) -> None:
     catalogue = load_overlay_catalogue()
     families = load_overlay_families()
     roles = load_overlay_roles()
+    known = load_names()
     findex = overlay_file_index()
     index = declaration_index()
     for name in names:
@@ -333,6 +358,7 @@ def overlay_write(names: list[str]) -> None:
         out = [f"# {name}", "",
                f"- Kind: {kind}, {size} bytes, in {levels_count} level(s): "
                + ", ".join(f"{lv:02d}" for lv in levels),
+               *name_lines(known.get(name)),
                *role_lines(roles.get(name, [])),
                "- Retail assembly: asm/overlays/" + name + ".s"
                + ("" if asm else " (missing -- run tools/overlay_asm.py, or wait: it's being regenerated)"),

@@ -34,11 +34,11 @@ extern int D_0015EF88 MACRO_ADDR;
 /* func_00234C98 is (int, long) and D_0015EF88 MACRO_ADDR; the older
    sq/sd note is obsolete. */
 void func_001E9E70(void) {
-    func_0022C7E0();
-    func_0022C188();
-    func_0022C870();
-    func_00234C98(0x47, 0x5360B);
-    func_00234C98(0x4E, 0x1000000 | (D_0015EF88 >> 13));
+    SetupSkyGifPaging();
+    SkyLevelGeneric___maybe();
+    DoSkyGifPaging();
+    VU1_addGSregister(0x47, 0x5360B);
+    VU1_addGSregister(0x4E, 0x1000000 | (D_0015EF88 >> 13));
 }
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001E9EC8);
@@ -88,7 +88,7 @@ unsigned char func_001EB338(void) {
     float m[16];
 
     D_0018CEB0 = 0.63f;
-    func_001F3140();
+    UpdateViewContext();
     pos = D_00187180;
     qcopy(pos, key);
     func_00125358(m);

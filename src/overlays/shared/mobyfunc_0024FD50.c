@@ -75,9 +75,9 @@ void func_L00_00250800(char *arg0, int arg1, void *arg2) {
     s = *(float *)(arg0 + 0x2C) * 0.0009765625f;
     n = arg1;
     func_002116A0(arg0, 1, &n, buf);
-    func_001F9C30(arg2, buf + 0x30, s);
+    FastVecScale(arg2, buf + 0x30, s);
     func_001F9EC0(arg2, arg2, arg0 + 0xC0);
-    func_001F9BD8(arg2, arg2, arg0 + 0x10);
+    FastVecAdd(arg2, arg2, arg0 + 0x10);
 }
 INCLUDE_ASM("asm/overlays", func_L00_00250928);
 INCLUDE_ASM("asm/overlays", func_L00_002510F0);

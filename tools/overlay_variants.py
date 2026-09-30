@@ -9,7 +9,8 @@ constant, a float or a struct offset.
 
 `stubs` adds a stub for every catalogued shared or level function that
 src/overlays/ doesn't have yet, in address order: after the function
-before it in its level, in the directory of its kind (shared/ or lNN/).
+before it in its level, in the directory of its kind (shared/ or
+lNN_<planet>/, tools/levels.py).
 A function that a neighbour branches into goes in that neighbour's file.
 
 `clone` writes a variant's C from its parent's, with no model: the
@@ -29,6 +30,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "tools"))
+import levels  # noqa: E402
+
 SRC = ROOT / "src/overlays"
 ASM = ROOT / "asm/overlays"
 CATALOGUE = ROOT / "config/overlays/functions.tsv"
@@ -89,7 +93,7 @@ def stubs() -> None:
     kinds = {r[0]: r[1] for r in rows(CATALOGUE)}
     for name in new:
         line = f'INCLUDE_ASM("asm/overlays", {name});'
-        home = "shared" if kinds[name] == "shared" else f"l{name[6:8]}"
+        home = "shared" if kinds[name] == "shared" else levels.dirname(int(name[6:8]))
         level = sorted(n for n in have if n[:8] == name[:8])
         before = [n for n in level if n < name]
         after = [n for n in level if n > name]
@@ -205,6 +209,9 @@ def clone(only: list[str]) -> None:
     cat = rows(CATALOGUE)
     places = {r[0]: (int(r[5].split(",")[0][:2]), int(r[5].split(",")[0][3:], 16), int(r[2])) for r in cat}
     exact, tried = [], 0
+    names_h = ROOT / "include/names.h"
+    readable = dict(re.findall(r"^#define\s+(\w+)\s+((?:func_|D_)\w+)\s*$", names_h.read_text(), flags=re.M)) \
+        if names_h.exists() else {}
     for name, par, kind, size in rows(VARIANTS):
         if only and name not in only:
             continue
@@ -220,6 +227,9 @@ def clone(only: list[str]) -> None:
             continue
         rename = {o: n for o, n in zip(old_syms, new_syms) if o != n}
         rename[par] = name
+        # Bodies may use include/names.h's readable names: back to the
+        # address names first, so a symbol that differs gets renamed.
+        body = re.sub(r"\b[A-Za-z_]\w*\b", lambda m: readable.get(m.group(0), m.group(0)), body)
         body = re.sub("|".join(rf"\b{o}\b" for o in rename), lambda m: rename[m.group(0)], body)
         # Declarations the body needs, from the parent's file, unless the
         # variant's own file (it may be another one) already declares the name.

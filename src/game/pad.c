@@ -289,7 +289,7 @@ void func_00217F68(void *arg0) {
             for (i = n; i < 4; i++) {
                 p->act[i] = buf[i];
             }
-            func_00218188(p);
+            ClearPadInput(p);
             p->f18C = 2;
             break;
         case 1:
@@ -300,12 +300,12 @@ void func_00217F68(void *arg0) {
             }
             break;
         case 2:
-            func_00218188(p);
+            ClearPadInput(p);
             p->f18C = s;
             break;
         }
     } else {
-        func_00218188(p);
+        ClearPadInput(p);
         p->state = 0;
     }
     p->f188 = 0;

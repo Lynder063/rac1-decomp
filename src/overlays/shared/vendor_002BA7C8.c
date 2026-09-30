@@ -12,7 +12,7 @@ extern void func_001F9BC0(void *);
 extern void func_0020EEE8(void *);
 extern void func_L00_00251E30(void *);
 char *func_L00_002BC668(char *src) {
-    char *m = func_0020D348(0xB3);
+    char *m = CreateMoby(0xB3);
     if (m != 0) {
         char *p = *(char **)(m + 0x78);
         *(unsigned char *)(m + 0x30) = 0xFF;
@@ -22,7 +22,7 @@ char *func_L00_002BC668(char *src) {
         m[0x23] = 0x50;
         m[0x20] = 0;
         *(char **)(p + 8) = src;
-        func_001F9BC0(m + 0x40);
+        clear_u64_value(m + 0x40);
         *(Vu *)(m + 0xC0) = *(Vu *)(src + 0xC0);
         *(Vu *)(m + 0xD0) = *(Vu *)(src + 0xD0);
         *(Vu *)(m + 0xE0) = *(Vu *)(src + 0xE0);
@@ -88,7 +88,7 @@ INCLUDE_ASM("asm/overlays", func_L00_002C0CF8);
 extern void func_L00_0025E210(void *);
 
 char *func_L00_002C1110(int owner, void *pos, void *rot) {
-    char *m = func_0020D348(0xBA);
+    char *m = CreateMoby(0xBA);
     if (m != 0) {
         char *p;
         *(unsigned char *)(m + 0x30) = 0xFF;
@@ -157,7 +157,7 @@ int func_L00_002C11D0(EffectSrc *a0) {
                 }
             }
         }
-        switch (func_L00_001F3958()) {
+        switch (CollType()) {
         case 0:
         case 1:
         case 3:

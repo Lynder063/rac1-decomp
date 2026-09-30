@@ -57,7 +57,7 @@ void func_001E94E8(void *arg0, void *arg1, int tbp, int cbp) {
     unsigned long *out = arg1;
     int c;
 
-    func_001F99B0(&d, 0, sizeof(d));
+    FastMemSet(&d, 0, sizeof(d));
     d.clut = (char *)pif + 0x20;
     if (pif->psm == 0) {
         d.clutSize = 0x400;
@@ -65,8 +65,8 @@ void func_001E94E8(void *arg0, void *arg1, int tbp, int cbp) {
         d.clutSize = 0x200;
     }
     c = cbp >> 8;
-    d.tw = func_001F9968(pif->w);
-    d.th = func_001F9968(pif->h);
+    d.tw = log2dim(pif->w);
+    d.th = log2dim(pif->h);
     d.image = (char *)pif + (d.clutSize + 0x20);
     d.imageSize = pif->w * pif->h;
     func_00122630(&li, c, 1, pif->psm, 0, 0, 16, 16);
@@ -115,8 +115,8 @@ extern volatile long D_0015EFC8_v __asm__("D_0015EFC8") MACRO_ADDR;
 void func_001E96B8(void) {
     long localbuf[3];
 
-    func_002176C8(D_001AAF40, D_00137C80[2], D_00137C80[3]);
-    func_001E94E8(D_001AAF40, localbuf, D_0015EF88_m + 0xC0000, 0x3FFC00);
+    Load(D_001AAF40, D_00137C80[2], D_00137C80[3]);
+    LoadPifAsPSMT8H(D_001AAF40, localbuf, D_0015EF88_m + 0xC0000, 0x3FFC00);
     D_0015EFC8_v = localbuf[0];
 }
 
