@@ -62,13 +62,13 @@ void func_001E9808(int level) {
     D_0015EFD8 = 2;
     D_0013E650[0x6B] |= 8;
     func_00118D80(0);
-    func_0022EFE8();
-    func_00216D88();
-    func_001F4E08(func_001F98C0(12));
+    sound_StopAllSounds();
+    music_Stop();
+    FadeToBlack(func_001F98C0(12));
     D_0015F6E8 = 1;
     func_00118D80(0);
-    func_0022EFE8();
-    func_00216D88();
+    sound_StopAllSounds();
+    music_Stop();
     func_0012EF48(0);
     for (;;) {
         char *ld = D_0013D390;
@@ -86,9 +86,9 @@ void func_001E9808(int level) {
     func_00122598(0);
     func_00120858(0, 0);
     func_00123168(func_0012F308);
-    func_00201348(0x1000000, D_0015EF88, 0x1B, 6, 6, 1);
+    Hud_sendTexture(0x1000000, D_0015EF88, 0x1B, 6, 6, 1);
     D_0015EFD8 = 0;
-    func_001F4E08(4);
+    FadeToBlack(4);
     D_0015F6E8 = 0;
     D_0013E650[0x6B] |= 0x10;
 }

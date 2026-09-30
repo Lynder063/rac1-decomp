@@ -86,7 +86,7 @@ extern int D_001A01F0[];
 extern int *D_001602E0;
 
 int func_002071A8(int x1, int y1) {
-    return func_00209048(x1, y1, 0xD3, 0xDB, 0x129, 0xF9);
+    return menu_pointIsClockwise(x1, y1, 0xD3, 0xDB, 0x129, 0xF9);
 }
 
 extern unsigned char D_0013D49C NOT_SDA;
@@ -211,16 +211,16 @@ int func_00207648(int arg0, int arg1, float unused1, float unused2,
     Menu13F450 *s = &D_0013F450;
     int a = s->unk208C == 17 || s->unk208C == 18 || s->unk12E4 == 1;
 
-    if (func_00209048(arg0, arg1, 0x93, 0x168, 0x182, 0x168) != 0
+    if (menu_pointIsClockwise(arg0, arg1, 0x93, 0x168, 0x182, 0x168) != 0
         && arg1 >= 0x135 && D_001A04A8 != 0 && arg3 >= 47.7f) {
         return 1;
     }
     if (!a) {
         return 0;
     }
-    if (func_00209048(arg0, arg1, 0xC5, 0x9A, 0x13C, 0xE1) != 0
-        && func_00209048(arg0, arg1, 0xD6, 0xC3, 0x157, 0xC5) != 0
-        && func_00209048(arg0, arg1, 0x107, 0xDA, 0x171, 0xA0) != 0) {
+    if (menu_pointIsClockwise(arg0, arg1, 0xC5, 0x9A, 0x13C, 0xE1) != 0
+        && menu_pointIsClockwise(arg0, arg1, 0xD6, 0xC3, 0x157, 0xC5) != 0
+        && menu_pointIsClockwise(arg0, arg1, 0x107, 0xDA, 0x171, 0xA0) != 0) {
         return 1;
     }
     return 0;
@@ -236,31 +236,31 @@ int func_00207648(int arg0, int arg1, float unused1, float unused2,
    as branches instead of an sltu. */
 int func_00207780(int arg0, int arg1) {
     if (arg1 < 0xE9) {
-        if (func_00209048(arg0, arg1, 0x132, 0xA0, 0x15F, 0xD8)
-            && func_00209048(arg0, arg1, 0x14D, 0xD8, 0x181, 0x9A)
-            && func_00209048(arg0, arg1, 0x182, 0xB4, 0x137, 0x93)
-            && func_00209048(arg0, arg1, 0x157, 0x8C, 0x130, 0xAA)) {
+        if (menu_pointIsClockwise(arg0, arg1, 0x132, 0xA0, 0x15F, 0xD8)
+            && menu_pointIsClockwise(arg0, arg1, 0x14D, 0xD8, 0x181, 0x9A)
+            && menu_pointIsClockwise(arg0, arg1, 0x182, 0xB4, 0x137, 0x93)
+            && menu_pointIsClockwise(arg0, arg1, 0x157, 0x8C, 0x130, 0xAA)) {
             return 1;
         }
         return 0;
     }
     {
-        int a = func_00209048(arg0, arg1, 0x8F, 0x115, 0x148, 0x14B);
-        int b = func_00209048(arg0, arg1, 0xE7, 0x108, 0x127, 0x164);
+        int a = menu_pointIsClockwise(arg0, arg1, 0x8F, 0x115, 0x148, 0x14B);
+        int b = menu_pointIsClockwise(arg0, arg1, 0xE7, 0x108, 0x127, 0x164);
         if (a == 0 && b == 0) {
             return 0;
         }
     }
     {
-        int a = func_00209048(arg0, arg1, 0xED, 0x15F, 0x154, 0x10E);
-        int b = func_00209048(arg0, arg1, 0xA2, 0x12B, 0x16F, 0x147);
+        int a = menu_pointIsClockwise(arg0, arg1, 0xED, 0x15F, 0x154, 0x10E);
+        int b = menu_pointIsClockwise(arg0, arg1, 0xA2, 0x12B, 0x16F, 0x147);
         if (a == 0 && b == 0) {
             return 0;
         }
     }
     {
-        int a = func_00209048(arg0, arg1, 0x132, 0x163, 0x141, 0xCC);
-        int b = func_00209048(arg0, arg1, 0xC2, 0x108, 0x1A0, 0x12E);
+        int a = menu_pointIsClockwise(arg0, arg1, 0x132, 0x163, 0x141, 0xCC);
+        int b = menu_pointIsClockwise(arg0, arg1, 0xC2, 0x108, 0x1A0, 0x12E);
         if (!a && !b) {
             return 0;
         }
@@ -288,7 +288,7 @@ int func_00207930(int arg0, int arg1, float unused1, float unused2, float arg3) 
         return 0;
     }
     if (arg3 >= 51.5f && arg3 <= 54.0f
-        && func_00209048(arg0, arg1, 0x10A, 0xE5, 0x124, 0xF9) != 0) {
+        && menu_pointIsClockwise(arg0, arg1, 0x10A, 0xE5, 0x124, 0xF9) != 0) {
         return 1;
     }
     return 0;
@@ -303,8 +303,8 @@ extern int D_001A04B4 NOT_SDA;
    into an sltu only when the store sets a whole register, and a subreg
    store keeps retail's beqz. */
 int func_002079F0(int x1, int y1) {
-    int a = func_00209048(x1, y1, 0x99, 0xED, 0x160, 0x117);
-    int b = func_00209048(x1, y1, 0x10E, 0xF7, 0x13D, 0x119);
+    int a = menu_pointIsClockwise(x1, y1, 0x99, 0xED, 0x160, 0x117);
+    int b = menu_pointIsClockwise(x1, y1, 0x10E, 0xF7, 0x13D, 0x119);
     int r = 0;
 
     if (D_001A04B4 != 0) {
@@ -362,7 +362,7 @@ int func_00207B30(int arg0, int arg1, float unused1, float unused2, float arg3) 
         return a;
     }
     result = a;
-    if (func_00209048(arg0, arg1, 0xD9, 0xB8, 0x156, 0xD2) != 0) {
+    if (menu_pointIsClockwise(arg0, arg1, 0xD9, 0xB8, 0x156, 0xD2) != 0) {
         result = 0;
     }
     return result;
@@ -381,10 +381,10 @@ int func_00207BE8(int arg0, int arg1, float unused1, float unused2, float arg3) 
     if (arg3 < 71.5f) {
         return 0;
     }
-    if (func_00209048(arg0, arg1, 0x131, 0xE2, 0xC6, 0x93) != 0) {
+    if (menu_pointIsClockwise(arg0, arg1, 0x131, 0xE2, 0xC6, 0x93) != 0) {
         return 0;
     }
-    return func_00209048(arg0, arg1, 0x190, 0x89, 0xD1, 0xFB) == 0;
+    return menu_pointIsClockwise(arg0, arg1, 0x190, 0x89, 0xD1, 0xFB) == 0;
 }
 
 extern unsigned char D_0013D4C5 NOT_SDA;
@@ -648,7 +648,7 @@ void func_00208338(int arg0) {
 
     func_00209040();
     if (D_001A01F0[0xA] == 0) {
-        func_001F99B0((void *)arg0, 0, 0x800);
+        FastMemSet((void *)arg0, 0, 0x800);
         return;
     }
     n = func_001FAA28((void *)arg0, 0x800, D_001A01F0[5], D_001A01F0[3]);
@@ -725,13 +725,13 @@ void func_00208688(void *dst, unsigned char *src) {
         for (j = 0; j < 16; j++) {
             *p++ = table[*src++];
         }
-        func_001F9A98(dst, rowbuf, 0x40);
+        FastMemCopy(dst, rowbuf, 0x40);
         dst = (char *)dst + 0x40;
-        func_001F9A98(dst, rowbuf, 0x40);
+        FastMemCopy(dst, rowbuf, 0x40);
         dst = (char *)dst + 0x40;
-        func_001F9A98(dst, rowbuf, 0x40);
+        FastMemCopy(dst, rowbuf, 0x40);
         dst = (char *)dst + 0x40;
-        func_001F9A98(dst, rowbuf, 0x40);
+        FastMemCopy(dst, rowbuf, 0x40);
         dst = (char *)dst + 0x40;
     }
 }
@@ -766,7 +766,7 @@ void func_00208860(void *arg0) {
     out = dst;
     for (i = 0; i < 0x200; i++) {
         if ((i & 3) == 0) {
-            func_001F99B0(acc, 0, 0x200);
+            FastMemSet(acc, 0, 0x200);
         }
         for (j = 0; j < 128; j += 2) {
             unsigned int b = *src++;

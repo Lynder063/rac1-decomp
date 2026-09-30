@@ -16,7 +16,7 @@ extern void func_L00_00251E30(void *);
    vector into its +0x10, and hands it to func_L00_00251E30. Returns
    the new moby, or NULL if the spawn failed. */
 void *func_L00_002A6070(void *arg0) {
-    void *m = func_0020D348(0x3EF);
+    void *m = CreateMoby(0x3EF);
 
     if (m != 0) {
         *(unsigned char *)((char *)m + 0x30) = 0xFF;
@@ -68,9 +68,9 @@ extern void func_L00_001FF4B0(float *, float *, float);
 void func_L00_002A96B8(float *v) {
     float k = 1.8325957f;
     float a = func_L00_001FF860(v[0], v[1]);
-    float t = func_001FA850(*(float *)(D_0013E633 + 0xEB5), a);
+    float t = FastDiffRots(*(float *)(D_0013E633 + 0xEB5), a);
     if (t > k) t = k;
-    func_L00_001FF4B0(v, v, func_001F9CB8(v) * ((k - t) / k * 0.3f + 0.7f));
+    func_L00_001FF4B0(v, v, FastVecLength(v) * ((k - t) / k * 0.3f + 0.7f));
 }
 INCLUDE_ASM("asm/overlays", func_L00_002A9768);
 INCLUDE_ASM("asm/overlays", func_L00_002AA998);

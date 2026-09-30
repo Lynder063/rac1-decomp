@@ -410,7 +410,7 @@ int func_0023D018(ViBuf *f, long long *data, long long *tag, int size,
     param.maxCount = 1;
     f->sema = func_00118C70(&param);
 
-    func_0023D090(f);
+    viBufReset(f);
 
     f->totalBytes = 0;
 
@@ -436,16 +436,16 @@ int func_0023D090(ViBuf *f) {
     }
 
     for (i = 0; i < f->n; i++) {
-        func_0023CFF0((long *)(f->tag + i),
+        scTag2((long *)(f->tag + i),
                       (int)DmaAddr((char *)f->data + VIBUF_ELM_SIZE * i),
                       DMA_ID_REF, VIBUF_ELM_SIZE / 16);
     }
-    func_0023CFF0((long *)(f->tag + i), (int)DmaAddr(f->tag), DMA_ID_NEXT, 0);
+    scTag2((long *)(f->tag + i), (int)DmaAddr(f->tag), DMA_ID_NEXT, 0);
 
     *D4_QWC = 0;
     *D4_MADR = (unsigned int)DmaAddr(f->data);
     *D4_TADR = (unsigned int)DmaAddr(f->tag);
-    func_0023CF80((0 << 8) | (1 << 2) | 1);
+    setD4_CHCR((0 << 8) | (1 << 2) | 1);
 
     return 1;
 }
@@ -511,14 +511,14 @@ int func_0023D340(ViBuf *f) {
     func_00118CB0(f->sema);
 
     if (!f->isActive) {
-        func_0023BF48(D_001E8E50);
+        ErrMessage(D_001E8E50);
         return 0;
     }
 
-    func_0023CF80((DMA_ID_REFE << 28) | (0 << 8) | (1 << 2) | 1);
+    setD4_CHCR((DMA_ID_REFE << 28) | (0 << 8) | (1 << 2) | 1);
     d4chcr = *D4_CHCR;
 
-    index = func_0023CEC8(f, (void *)*D4_MADR);
+    index = getFIFOindex(f, (void *)*D4_MADR);
     consume = (index + f->n - f->dmaStart) % f->n;
     f->dmaStart = (f->dmaStart + consume) % f->n;
     f->dmaN -= consume;
@@ -529,7 +529,7 @@ int func_0023D340(ViBuf *f) {
 
     if (read_n > 0) {
         last = (f->dmaStart + f->dmaN - 1 + f->n) % f->n;
-        func_0023CFF0((long *)(f->tag + last),
+        scTag2((long *)(f->tag + last),
                       (int)((char *)f->data + VIBUF_ELM_SIZE * last),
                       DMA_ID_REF, VIBUF_ELM_SIZE / 16);
         isNewData = 1;
@@ -538,7 +538,7 @@ int func_0023D340(ViBuf *f) {
     index = read_start;
     for (i = 0; i < read_n; i++) {
         id = (i == read_n - 1) ? DMA_ID_REFE : DMA_ID_REF;
-        func_0023CFF0((long *)(f->tag + index),
+        scTag2((long *)(f->tag + index),
                       (int)((char *)f->data + VIBUF_ELM_SIZE * index), id,
                       VIBUF_ELM_SIZE / 16);
         index = (index + 1) % f->n;
@@ -550,7 +550,7 @@ int func_0023D340(ViBuf *f) {
         if (isNewData) {
             d4chcr = (d4chcr & 0x0fffffff) | (DMA_ID_REF << 28);
         }
-        func_0023CF80(d4chcr | 0x100);
+        setD4_CHCR(d4chcr | 0x100);
     }
 
     func_00118C90(f->sema);
@@ -568,7 +568,7 @@ int func_0023D340(ViBuf *f) {
 int func_0023D540(ViBuf *f) {
     func_00118CB0(f->sema);
     f->isActive = 0;
-    func_0023CF80((0 << 8) | (1 << 2) | 1);
+    setD4_CHCR((0 << 8) | (1 << 2) | 1);
     f->env.d4madr = *D4_MADR;
     f->env.d4tadr = *D4_TADR;
     f->env.d4qwc = *D4_QWC;
@@ -577,7 +577,7 @@ int func_0023D540(ViBuf *f) {
         do {
         } while (DGET_IPU_CTRL() & 0xf0);
     }
-    func_0023CF10(0);
+    setD3_CHCR(0);
     f->env.d3madr = *D3_MADR;
     f->env.d3qwc = *D3_QWC;
     f->env.d3chcr = *D3_CHCR;
@@ -594,7 +594,7 @@ extern int func_00118C80(int); /* DeleteSema */
 
 /* viBufDelete(ViBuf *) */
 int func_0023D988(ViBuf *f) {
-    func_0023CF80((0 << 8) | (1 << 2) | 1);
+    setD4_CHCR((0 << 8) | (1 << 2) | 1);
     *D4_QWC = 0;
     *D4_MADR = 0;
     *D4_TADR = 0;
@@ -681,7 +681,7 @@ int func_0023DBE0(ViBuf *f, TimeStamp *ts) {
 
     if (f->count_ts < f->n_ts) {
 
-        func_0023DA88(f, ts);
+        viBufModifyPts(f, ts);
 
         if (ts->pts >= 0 || ts->dts >= 0) {
 

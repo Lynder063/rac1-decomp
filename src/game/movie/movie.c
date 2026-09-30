@@ -351,11 +351,11 @@ int func_0023B670(int arg0, int arg1, int arg2, char *heap, int arg4) {
     D_00161318 = 0;
     func_00118BA0(func_00118BE0(), 1);
     D_00161314 = 1;
-    if (func_0023BB90(arg0, arg1, arg4)) {
+    if (initAll(arg0, arg1, arg4)) {
         D_00161314 = 2;
         func_0023B740(D_0016130C + 0xD9048, D_0016130C, D_0016130C + 0xD9040);
     }
-    func_0023BE38();
+    termAll();
     D_00161308 = 0;
     D_0016130C = 0;
     return 0;
@@ -378,7 +378,7 @@ extern void func_0023C2C0(void *); /* audioDecSend */
 
 /* isAudioOK: ezmpeg's `return audioDecIsPreset(&audioDec);` */
 int func_0023BB60(void) {
-    return func_0023C2B0(D_0016130C + 0xD9100);
+    return audioDecIsPageFull(D_0016130C + 0xD9100);
 }
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023BB90); /* initAll(int, int, int) */
@@ -400,17 +400,17 @@ extern int func_0023CE28(void *);
    int result moves the next temporary from $v0 to $v1. */
 void func_0023BE38(void) {
     func_00120F30(0);
-    func_0023CD28(D_0016130C);
-    func_0023E5B0(D_0016130C + 0xD9168);
+    readBufDelete(D_0016130C);
+    voBufDelete(D_0016130C + 0xD9168);
     func_00118B80(D_00161310);
     func_00118B60(D_00161310);
     func_001193F8(2);
     func_00118AD0(2, *(int *)(D_0016130C + 0xD90F8));
     func_00119328(2);
     func_00118AA0(2, *(int *)(D_0016130C + 0xD90FC));
-    func_0023E008(D_0016130C + 0xD9048);
-    func_0023C060(D_0016130C + 0xD9100);
-    func_0023CE28(D_0016130C + 0xD9040);
+    videoDecDelete(D_0016130C + 0xD9048);
+    audioDecDelete(D_0016130C + 0xD9100);
+    strFileDelete(D_0016130C + 0xD9040);
     func_00120F30(0);
     *(volatile unsigned int *)0x1000E000 &= ~2u;
 }
@@ -419,10 +419,10 @@ extern char D_001612F8[];
 
 /* ErrMessage */
 int func_0023BF48(int arg0) {
-    return func_001E9730(D_001612F8, arg0);
+    return STUB_printf(D_001612F8, arg0);
 }
 
 /* proceedAudio: ezmpeg's `audioDecSend(&audioDec);` */
 void func_0023BF70(void) {
-    func_0023C2C0(D_0016130C + 0xD9100);
+    audioDecSend(D_0016130C + 0xD9100);
 }

@@ -363,7 +363,7 @@ extern int func_0012F1A8(int, int, int, int, int, int);
    The two returns give retail's slti/xori; `return ad->iopBuff >= 0;`
    gives nor/srl. */
 int func_0023BFA0(AudioDecR *ad, unsigned char *buff, int buffSize, int type) {
-    func_001F99D8(ad->sshd, 0x20);
+    FastMemZero16(ad->sshd, 0x20);
     ad->state = 0;
     ad->strType = 3;
     ad->hdrCount = 0;
@@ -503,7 +503,7 @@ extern void func_0023C390(void *);
 /* audioDecSend */
 void func_0023C2C0(void *arg0) {
     if (((Obj23C *)arg0)->state != 0) {
-        func_0023C390(arg0);
+        sendADPCM(arg0);
     }
 }
 

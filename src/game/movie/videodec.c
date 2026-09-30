@@ -374,15 +374,15 @@ int func_0023DE98(VideoDec *vd, unsigned char *mpegWork, int mpegWorkSize,
                   TimeStamp *pts, int n_pts) {
     func_0012B918(&vd->mpeg, mpegWork, mpegWorkSize);
 
-    func_0012BC50(&vd->mpeg, 0, (sceMpegCallback)func_0023E450, 0);
-    func_0012BC50(&vd->mpeg, 1, func_0023E478, 0);
+    func_0012BC50(&vd->mpeg, 0, (sceMpegCallback)mpegError, 0);
+    func_0012BC50(&vd->mpeg, 1, mpegNodata, 0);
     func_0012BC50(&vd->mpeg, 2, func_0023E4B0, 0);
-    func_0012BC50(&vd->mpeg, 3, func_0023E4E0, 0);
+    func_0012BC50(&vd->mpeg, 3, mpegRestartVideoDMA, 0);
     func_0012BC50(&vd->mpeg, 5, (sceMpegCallback)func_0023E510, 0);
 
-    func_0023E000(vd);
+    videoDecReset(vd);
 
-    func_0023D018(&vd->vibuf, data, tag, tagSize, pts, n_pts);
+    viBufCreate(&vd->vibuf, data, tag, tagSize, pts, n_pts);
 
     return 1;
 }
@@ -403,14 +403,14 @@ extern void func_0023D1F0(ViBuf *, unsigned char **, int *, unsigned char **,
 /* videoDecBeginPut(VideoDec *, unsigned char **, int *, unsigned char **, int *) */
 void func_0023DFC0(VideoDec *vd, unsigned char **ptr0, int *len0,
                    unsigned char **ptr1, int *len1) {
-    func_0023D1F0(&vd->vibuf, ptr0, len0, ptr1, len1);
+    viBufBeginPut(&vd->vibuf, ptr0, len0, ptr1, len1);
 }
 
 extern void func_0023D2E8(ViBuf *, int); /* viBufEndPut */
 
 /* videoDecEndPut(VideoDec *, int) */
 void func_0023DFE0(VideoDec *vd, int size) {
-    func_0023D2E8(&vd->vibuf, size);
+    viBufEndPut(&vd->vibuf, size);
 }
 
 /* videoDecReset(VideoDec *) */
@@ -423,7 +423,7 @@ extern void func_0012BB20(void *);
 
 /* videoDecDelete(VideoDec *) */
 int func_0023E008(void *arg0) {
-    func_0023D988((char *)arg0 + 0x48);
+    viBufDelete((char *)arg0 + 0x48);
     func_0012BB20(arg0);
     return 1;
 }
@@ -469,14 +469,14 @@ int func_0023E068(VideoDec *vd, long pts_val, long dts_val,
     ts.dts = dts_val;
     ts.pos = start - (unsigned char *)vd->vibuf.data;
     ts.len = len;
-    return func_0023DBE0(&videoDec.vibuf, &ts);
+    return viBufPutTs(&videoDec.vibuf, &ts);
 }
 
 extern int func_0023D9E0(void *);
 
 /* videoDecInputCount(VideoDec *) */
 int func_0023E0B0(void *arg0) {
-    return func_0023D9E0((char *)arg0 + 0x48);
+    return viBufCount((char *)arg0 + 0x48);
 }
 
 LINKER_REMNANT("asm/remnants/text", func_0023E0D0);
@@ -503,7 +503,7 @@ int func_0023E0D8(VideoDec *vd) {
     int d0, d1;
     int len;
 
-    func_0023DFC0(vd, &pd0, &d0, &pd1, &d1);
+    videoDecBeginPut(vd, &pd0, &d0, &pd1, &d1);
 
     if (d0 + d1 < 4) {
         return 0;
@@ -512,11 +512,11 @@ int func_0023E0D8(VideoDec *vd) {
     pd0Unc = (unsigned char *)UncAddr(pd0);
     pd1Unc = (unsigned char *)UncAddr(pd1);
 
-    len = func_0023CBE0(pd0Unc, d0, pd1Unc, d1, seq_end_code.c, 4, 0, 0);
+    len = cpy2area(pd0Unc, d0, pd1Unc, d1, seq_end_code.c, 4, 0, 0);
 
-    func_0023DFE0(&videoDec, len);
+    videoDecEndPut(&videoDec, len);
 
-    func_0023DA30(&vd->vibuf);
+    viBufFlush(&vd->vibuf);
 
     if (vd->state == VD_STATE_NORMAL) {
         vd->state = VD_STATE_FLUSH;
@@ -531,7 +531,7 @@ extern int func_0012BB98(void *);
 /* videoDecIsFlushed(VideoDec *) */
 int func_0023E1B0(void *arg0) {
     int r = 0;
-    if (func_0023E0B0(arg0) == 0) {
+    if (videoDecInputCount(arg0) == 0) {
         r = func_0012BB98(arg0) != 0;
     }
     return r;
@@ -552,17 +552,17 @@ extern int func_0023E298(VideoDec *); /* decBs0 */
 /* videoDecMain(VideoDec *) */
 /* videoDecMain(void *) */
 void func_0023E1F8(VideoDec *vd) {
-    func_0023D090((char *)&vd->vibuf);
-    func_0023E5B8(&voBuf);
+    viBufReset((char *)&vd->vibuf);
+    voBufReset(&voBuf);
 
-    func_0023E298(vd);
+    decBs0(vd);
 
     while (voBuf.count) {
-        if (func_0023E050((int *)vd) == VD_STATE_ABORT) {
+        if (videoDecGetState((int *)vd) == VD_STATE_ABORT) {
             break;
         }
     }
-    func_0023E058((int *)vd, VD_STATE_END);
+    videoDecSetState((int *)vd, VD_STATE_END);
 }
 
 typedef struct {
@@ -590,18 +590,18 @@ int func_0023E298(VideoDec *vd) {
     int i;
 
     while (!func_0012BB88(&vd->mpeg)) {
-        if (func_0023E050((int *)vd) == VD_STATE_ABORT) {
+        if (videoDecGetState((int *)vd) == VD_STATE_ABORT) {
             status = -1;
-            func_001E9730(D_001E8E68);
+            STUB_printf(D_001E8E68);
             break;
         }
 
         while (!(voData = func_0023E658_v(&voBuf))) {
-            func_0023BB40();
+            switchThread();
         }
 
         if (func_0012BB30(&vd->mpeg, voData->v, 0x340) < 0) {
-            func_0023BF48(D_001E8E80);
+            ErrMessage(D_001E8E80);
         }
 
         if (vd->mpeg.frameCount == 0) {
@@ -609,13 +609,13 @@ int func_0023E298(VideoDec *vd) {
             int image_h = vd->mpeg.height;
 
             for (i = 0; i < voBuf.size; i++) {
-                func_0023C5E0(((VoTag *)voBuf.tag)[i].body,
+                setImageTag(((VoTag *)voBuf.tag)[i].body,
                               (int)((VoData *)voBuf.data)[i].v, image_w, image_h);
             }
         }
 
         func_0023E5E0_v(&voBuf);
-        func_0023BB40();
+        switchThread();
     }
     func_0012BBA8(&vd->mpeg);
     return status;
@@ -625,7 +625,7 @@ extern char D_00161328[];
 
 /* mpegError(sceMpeg *, sceMpegCbDataError *, void *) */
 int func_0023E450(sceMpeg *mp, sceMpegCbDataError *cberror, void *anyData) {
-    func_001E9730(D_00161328, cberror->errMessage);
+    STUB_printf(D_00161328, cberror->errMessage);
     return 1;
 }
 
@@ -637,20 +637,20 @@ extern int func_0023DCF0(ViBuf *, TimeStamp *); /* viBufGetTs */
 
 /* mpegNodata(sceMpeg *, sceMpegCbData *, void *) */
 int func_0023E478(sceMpeg *mp, sceMpegCbData *cbdata, void *anyData) {
-    func_0023BB40();
-    func_0023D340(&videoDec.vibuf);
+    switchThread();
+    viBufAddDMA(&videoDec.vibuf);
     return 1;
 }
 
 /* mpegStopDMA */
 int func_0023E4B0(sceMpeg *mp, sceMpegCbData *cbdata, void *anyData) {
-    func_0023D540(&videoDec.vibuf);
+    viBufStopDMA(&videoDec.vibuf);
     return 1;
 }
 
 /* mpegRestartDMA */
 int func_0023E4E0(sceMpeg *mp, sceMpegCbData *cbdata, void *anyData) {
-    func_0023D650(&videoDec.vibuf);
+    viBufRestartDMA(&videoDec.vibuf);
     return 1;
 }
 
@@ -658,7 +658,7 @@ int func_0023E4E0(sceMpeg *mp, sceMpegCbData *cbdata, void *anyData) {
 int func_0023E510(sceMpeg *mp, sceMpegCbDataTimeStamp *cbts, void *anyData) {
     TimeStamp ts;
 
-    func_0023DCF0(&videoDec.vibuf, &ts);
+    viBufGetTs(&videoDec.vibuf, &ts);
     cbts->pts = ts.pts;
     cbts->dts = ts.dts;
     return 1;

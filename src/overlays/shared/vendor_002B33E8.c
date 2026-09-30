@@ -9,7 +9,7 @@ INCLUDE_ASM("asm/overlays", func_L00_002B4918);
 INCLUDE_ASM("asm/overlays", func_L00_002B4F40);
 extern char *func_0020D348(int);
 char *func_L00_002B5428(int a) {
-    char *m = func_0020D348(0xA7);
+    char *m = CreateMoby(0xA7);
     if (m != 0) {
         int *p = *(int **)(m + 0x78);
         p[1] = a;
@@ -46,7 +46,7 @@ void func_L00_002B6E10(int a, int *b) {
     func_L00_00222B80(0, 1);
     func_L00_002B6AE0(a, 1);
     func_L00_00204190();
-    func_0020D678(a);
+    DeleteMoby(a);
     D_L00_00167114 = 0;
 }
 INCLUDE_ASM("asm/overlays", func_L00_002B6E90);

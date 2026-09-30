@@ -53,7 +53,7 @@ void func_001EE3B0(void *arg0, float arg1, float arg2)
 {
     float forty = 40.0f;
     char *p = (char *)arg0;
-    int handle = func_001F4868(*(int *)(p + 0x18));
+    int handle = GetEffectTex(*(int *)(p + 0x18));
     int mode = *(int *)(p + 0x2C);
     float angle = *(float *)(p + 0x1C);
     float k;
@@ -66,16 +66,16 @@ void func_001EE3B0(void *arg0, float arg1, float arg2)
                           forty * *(float *)(p + 0x10), angle,
                           0x3F, 0x3F, handle, 0xFFFFF3, *(int *)(p + 0x14), 0, 0,
                           0.0f, 0.0f);
-            angle = func_001FA748(angle, *(float *)(p + 0x28));
+            angle = FastAddRots(angle, *(float *)(p + 0x28));
         }
         break;
     case 1: {
         float tmp[6];
 
-        tmp[0] = func_001F9FA8(angle) * forty * *(float *)(p + 0x10);
-        tmp[1] = func_001F9F90(angle) * forty * *(float *)(p + 0x10);
-        tmp[4] = func_001F9F90(angle) * forty * *(float *)(p + 0x10);
-        tmp[5] = func_001F9FA8(angle) * -forty * *(float *)(p + 0x10);
+        tmp[0] = FastSin(angle) * forty * *(float *)(p + 0x10);
+        tmp[1] = FastCos(angle) * forty * *(float *)(p + 0x10);
+        tmp[4] = FastCos(angle) * forty * *(float *)(p + 0x10);
+        tmp[5] = FastSin(angle) * -forty * *(float *)(p + 0x10);
 
         k = *(float *)(p + 0x10) * forty;
         func_001F5E60(arg1, arg2, k, k, angle,
@@ -156,7 +156,7 @@ void func_001EE6E0(void) {
                 continue;
             }
             if (s->onScreen != 0) {
-                func_001F2418(pos, s);
+                projectWorldPoint(pos, s);
                 pos[0] = (pos[0] - func_001FA888(D_0013E600[4])) * 0.0625f;
                 pos[1] = (pos[1] - func_001FA888(D_0013E600[5])) * 0.0625f;
             } else {

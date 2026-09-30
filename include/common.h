@@ -2,6 +2,7 @@
 #define COMMON_H
 
 #include "include_asm.h"
+#include "names.h"   /* readable names for func_/D_ symbols (docs/NAMES.md) */
 
 /* Standard fixed-width types for PS2 Emotion Engine (GCC 2.95.3) */
 typedef signed char s8;

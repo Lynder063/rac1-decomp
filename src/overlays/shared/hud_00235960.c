@@ -28,10 +28,10 @@ void func_L00_00236208(void) {
     int i;
 
     for (i = 0; i < 13; i++) {
-        func_001FFB38(i, 0xFFFF, 0, 0, 0, 0, 1);
+        queue_animation_update(i, 0xFFFF, 0, 0, 0, 0, 1);
         D_L00_0017DD50[i].unk7C = 0;
         D_L00_0017DD50[i].unk6C = -6;
-        func_001FFC48(&D_L00_0017DD50[i]);
+        apply_pending_animation(&D_L00_0017DD50[i]);
     }
 }
 typedef struct {
@@ -113,13 +113,13 @@ void func_L00_00236468(HudElem *e, int *x, int *y, int t, int d) {
         s = D_L00_0017E500[t];
     }
     if (e->flags & 1) {
-        dy = -func_001FA898(s * (func_001FA888(e->h) + 52.0f) + 0.5f);
+        dy = -truncate_float_to_s32(s * (func_001FA888(e->h) + 52.0f) + 0.5f);
     } else if (e->flags & 2) {
-        dy = func_001FA898(s * (func_001FA888(e->h) + 52.0f) + 0.5f);
+        dy = truncate_float_to_s32(s * (func_001FA888(e->h) + 52.0f) + 0.5f);
     } else if (e->flags & 4) {
-        dx = -func_001FA898(s * (func_001FA888(e->w) + 20.0f) + 0.5f);
+        dx = -truncate_float_to_s32(s * (func_001FA888(e->w) + 20.0f) + 0.5f);
     } else if (e->flags & 8) {
-        dx = func_001FA898(s * (func_001FA888(e->w) + 20.0f) + 0.5f);
+        dx = truncate_float_to_s32(s * (func_001FA888(e->w) + 20.0f) + 0.5f);
     }
     *x += dx;
     *y += dy;
@@ -132,14 +132,14 @@ extern void func_L00_00236610(HudElem *);
 /* Resets a HUD element: a timer of 30 + func_001F9850(180) (+0x7C),
    offsets 0x48 / 0x4A cleared, then func_L00_00236610. */
 void func_L00_00236710(HudElem *e) {
-    e->unk7C = func_001F9850(0xB4) + 0x1E;
+    e->unk7C = scale_ticks(0xB4) + 0x1E;
     e->unk48 = 0;
     e->unk4A = 0;
     func_L00_00236610(e);
 }
 /* func_L00_00236710 for a 32 x 32 element. */
 void func_L00_00236750(HudElem *e) {
-    e->unk7C = func_001F9850(0xB4) + 0x1E;
+    e->unk7C = scale_ticks(0xB4) + 0x1E;
     e->unk48 = 0;
     e->unk4A = 0;
     e->w = 0x20;
@@ -174,15 +174,15 @@ void func_L00_00236AB8(HudElem *e) {
         }
     }
     if (e->unk74 != e->unk78) {
-        e->unk7C = func_001F9850(0xB4);
+        e->unk7C = scale_ticks(0xB4);
         if (e->unk6C >= 0x18) {
             e->unk74 = e->unk78;
         }
     }
-    if (e->unk7C >= func_001F9850(5)) {
-        if (c[0] < func_001F9850(8)) {
+    if (e->unk7C >= scale_ticks(5)) {
+        if (c[0] < scale_ticks(8)) {
             c[0]++;
-        } else if (c[1] < func_001F9850(8)) {
+        } else if (c[1] < scale_ticks(8)) {
             c[1]++;
         }
     } else {
@@ -215,14 +215,14 @@ void func_L00_00238148(HudElem *e) {
     char *base;
 
     func_L00_00236830(e);
-    if (D_0013E629 != 0) {
+    if (gGoldSuckCannon != 0) {
         e->unk08 = 10;
     } else {
         e->unk08 = 5;
     }
     base = D_0013F450;
     if (*(int *)(base + 0x10B8) == 9 && *(unsigned char *)(base + 0x20A4) == 0) {
-        e->unk7C = func_001F9850(0x78) + 0x1E;
+        e->unk7C = scale_ticks(0x78) + 0x1E;
     } else if (e->unk7C > 0x1E) {
         e->unk7C = 0x1E;
     }
@@ -247,7 +247,7 @@ void func_L00_002394A8(char *a) {
     *(int *)(a + 0x58) = x;
     *(int *)(a + 0x5C) = y;
     *(int *)(a + 0x74) = -2;
-    *(int *)(a + 0x78) = func_001F9850(30);
+    *(int *)(a + 0x78) = scale_ticks(30);
     *(int *)&D_L00_0015F80C = 0;
 }
 INCLUDE_ASM("asm/overlays", func_L00_00239510);
@@ -267,7 +267,7 @@ extern HudCounter D_L00_0015FB68 MACRO_ADDR;
    -G2 would put them in $gp's reach, where retail stores them through
    lui $at. */
 void func_L00_00239F40(HudElem *e) {
-    e->unk7C = func_001F9850(0xB4) + 0x1E;
+    e->unk7C = scale_ticks(0xB4) + 0x1E;
     e->w = 0x40;
     e->h = 0x40;
     e->unk48 = 0x20;
@@ -310,13 +310,13 @@ void func_L00_0023A690(HudElem *e) {
     short *tick = e->unk80;
     int v;
 
-    v = D_0015EE98;
+    v = gBolts;
     *tick = (*tick + 1) % 60;
     if (e->unk74 != v) {
         e->unk74 = v;
-        e->unk7C = func_001F9850(0x5A);
+        e->unk7C = scale_ticks(0x5A);
     }
-    if (e->unk7C >= func_001F9850(5)) {
+    if (e->unk7C >= scale_ticks(5)) {
         if (e->cnt[0] < *(int *)&D_L00_0015F904) {
             e->cnt[0]++;
         } else if (c[1] < *(int *)&D_L00_0015F908) {
@@ -353,7 +353,7 @@ void func_L00_0023ABB0(HudElem *e) {
     int t;
 
     if (*(int *)(D_0013F450 + 0x2048) != 0) {
-        t = func_001F9850(10);
+        t = scale_ticks(10);
         max = *(int *)&D_L00_0015F8D0;
         e->unk7C = t;
         if (e->cnt[0] < max) {
@@ -399,15 +399,15 @@ int func_L00_0023AFD8(HudElem *e) {
     func_L00_00236400(e, &x, &y);
     func_L00_00236468(e, &x, &y, e->unk6C, 0);
     len = e->unk74 * 0xDD / e->unk08 + 0x1B;
-    func_L00_0023C058(func_00200198(0x7558, 1), x, y, len, 0x40, 0x80);
-    func_00200468(func_00200198(0x7558, 0), x, y, 0x100, 0x40, 0x80);
-    func_00200468(func_00200198(0x7558, 2), x, y, 0x20, 0x20, D_00140A86 != 0 ? 0x80 : 0);
+    func_L00_0023C058(GetIconFrame(0x7558, 1), x, y, len, 0x40, 0x80);
+    HudSprite(GetIconFrame(0x7558, 0), x, y, 0x100, 0x40, 0x80);
+    HudSprite(GetIconFrame(0x7558, 2), x, y, 0x20, 0x20, D_00140A86 != 0 ? 0x80 : 0);
     return e->w;
 }
 /* func_L00_00236750 without the offsets: a 32 x 32 element with a timer
    of 30 + func_001F9850(120). */
 void func_L00_0023B0F8(HudElem *e) {
-    e->unk7C = func_001F9850(0x78) + 0x1E;
+    e->unk7C = scale_ticks(0x78) + 0x1E;
     e->w = 0x20;
     e->h = 0x20;
     func_L00_00236610(e);
@@ -458,7 +458,7 @@ void func_L00_0023C058(int tex, int x, int y, int w, int h, int alpha) {
     p = (long *)D_L00_00161280;
     p[0] = 0x7400000000008001L;
     p[1] = 0x5353106;
-    p[2] = func_00200248(tex);
+    p[2] = GetFrameTex(tex);
     arena = D_L00_0017E5D8;
     p[3] = 0x156;
     p[4] = ((long)alpha << 24) | 0x7F7F7F;
@@ -509,26 +509,26 @@ extern void func_L00_00261848(int);
    func_L00_00261848 with D_0015EE84 when that is set, and advances
    D_0015EF24 by 180. */
 void func_L00_0023D9C0(void) {
-    func_00216270();
+    register_audio_stream_callback();
     func_002348B8();
-    func_00201E10();
+    InitMemSlots();
     D_0015EF74 = D_0015EF8C;
     D_0015EF78 = D_0015EF8C;
-    func_001F99B0(D_L00_00173FC0, 0x87654321, 0x10);
-    func_001F99B0(D_L00_00197F40, -1, 0x800);
-    func_001F99B0(D_L00_0019AD00, -1, 0xE00);
-    func_001F99B0(D_L00_0019A600, 0, 0xE0);
-    func_001F99B0(D_L00_001C5E00, -1, 0xC00);
-    func_001F99B0(D_L00_001C7A00, -1, 0x800);
-    func_001F99B0(D_L00_001C7200, 0, 0x80);
-    func_001F99B0(D_L00_001BC540, -1, 0x400);
-    func_001F99B0(D_L00_001BD740, -1, 0x400);
-    func_001F99B0(D_L00_001BD140, 0, 0x40);
-    func_001F3008();
-    func_001F3140();
-    func_002348E8();
+    FastMemSet(D_L00_00173FC0, 0x87654321, 0x10);
+    FastMemSet(D_L00_00197F40, -1, 0x800);
+    FastMemSet(D_L00_0019AD00, -1, 0xE00);
+    FastMemSet(D_L00_0019A600, 0, 0xE0);
+    FastMemSet(D_L00_001C5E00, -1, 0xC00);
+    FastMemSet(D_L00_001C7A00, -1, 0x800);
+    FastMemSet(D_L00_001C7200, 0, 0x80);
+    FastMemSet(D_L00_001BC540, -1, 0x400);
+    FastMemSet(D_L00_001BD740, -1, 0x400);
+    FastMemSet(D_L00_001BD140, 0, 0x40);
+    InitViewContext();
+    UpdateViewContext();
+    VU1_initChain();
     func_L00_002697A0();
-    func_00235018();
+    DMAC_VIF1_Enable();
     func_L00_0023DB30();
     if (D_0015EE84 != 0) {
         func_L00_00261848(D_0015EE84);

@@ -417,7 +417,7 @@ extern void func_0023E710(void *); /* voBufDecCount */
 /* handler_endimage */
 int func_0023C910(int val) {
     if (D_001612E8) {
-        func_0023E710(D_0016130C + 0xD9168);
+        voBufDecCount(D_0016130C + 0xD9168);
         D_001612E8 = 0;
     }
     ExitHandler();

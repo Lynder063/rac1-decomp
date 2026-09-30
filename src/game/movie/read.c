@@ -392,20 +392,20 @@ int func_0023C9C0(sceMpeg *mp, sceMpegCbDataStr *cbstr, void *data) {
     unsigned char *pd0Unc, *pd1Unc;
     int len;
 
-    func_0023DFC0((VideoDec *)(D_0016130C + 0xD9048), &pd0, &d0, &pd1, &d1);
+    videoDecBeginPut((VideoDec *)(D_0016130C + 0xD9048), &pd0, &d0, &pd1, &d1);
 
     pd0Unc = (unsigned char *)UncAddr(pd0);
     pd1Unc = (unsigned char *)UncAddr(pd1);
 
-    len = func_0023CBE0(pd0Unc, d0, pd1Unc, d1, ps0, s0, ps1, s1);
+    len = cpy2area(pd0Unc, d0, pd1Unc, d1, ps0, s0, ps1, s1);
 
     if (len > 0) {
-        if (!func_0023E068((VideoDec *)(D_0016130C + 0xD9048), cbstr->pts, cbstr->dts, pd0, len)) {
-            func_0023BF48(D_001E8E38);
+        if (!videoDecPutTs((VideoDec *)(D_0016130C + 0xD9048), cbstr->pts, cbstr->dts, pd0, len)) {
+            ErrMessage(D_001E8E38);
         }
     }
 
-    func_0023DFE0((VideoDec *)(D_0016130C + 0xD9048), len);
+    videoDecEndPut((VideoDec *)(D_0016130C + 0xD9048), len);
 
     return (len > 0) ? 1 : 0;
 }
@@ -467,11 +467,11 @@ int func_0023CAF8(sceMpeg *mp, sceMpegCbDataStr *cbstr, void *data) {
     s0 = min(rb->data + rb->size - ps0, slen);
     s1 = slen - s0;
 
-    func_0023C128(D_0016130C + 0xD9100, &pd0, &d0, &pd1, &d1);
+    audioDecBeginPut(D_0016130C + 0xD9100, &pd0, &d0, &pd1, &d1);
 
-    len = func_0023CBE0(pd0, d0, pd1, d1, ps0, s0, rb->data, s1);
+    len = cpy2area(pd0, d0, pd1, d1, ps0, s0, rb->data, s1);
 
-    func_0023C1F8(D_0016130C + 0xD9100, len);
+    audioDecEndPut(D_0016130C + 0xD9100, len);
 
     return (len > 0) ? 1 : 0;
 }

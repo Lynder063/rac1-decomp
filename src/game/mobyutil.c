@@ -382,10 +382,10 @@ extern float func_002140F8(float, float);
 extern void func_00215C00(void *, float, float, float);
 
 void func_002141A8(void *arg0, float arg1, float arg2) {
-    float r1 = func_00214158();
-    float r2 = func_00214158();
+    float r1 = random_angle_radians();
+    float r2 = random_angle_radians();
 
-    func_00215C00(arg0, func_002140F8(arg1, arg2), r1, r2);
+    func_00215C00(arg0, random_float_between(arg1, arg2), r1, r2);
 }
 
 /* Cosine interpolation: a + (b - a) * ((1 - cos(t * pi)) * 0.5). */
@@ -396,7 +396,7 @@ float func_00214220(float a, float b, float t) {
     if (t == 1.0f) {
         return b;
     }
-    return a + (b - a) * ((1.0f - func_001F9F90(t * 3.14159274f)) * 0.5f);
+    return a + (b - a) * ((1.0f - FastCos(t * 3.14159274f)) * 0.5f);
 }
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002142B8);
@@ -451,7 +451,7 @@ float func_00214440(float *pos, void *out) {
             return h;
         }
     }
-    if (D_0016129C != 0 && func_001F9B88(pos[2] - D_001612A0[2]) < 0.5f
+    if (D_0016129C != 0 && FastAbsF(pos[2] - D_001612A0[2]) < 0.5f
         && func_001F9D48(pos, D_001612A0) < D_001612A0[3]) {
         if (out != 0) {
             func_001F9BC8(out);
@@ -488,7 +488,7 @@ void func_00214550(char *m) {
 
     qcopy(dir, D_001CAE00);
     func_001F9E10(dir, dir, 1.0f);
-    func_001F9C30(p, m, 0.0009765625f);
+    FastVecScale(p, m, 0.0009765625f);
     qcopy(a, p);
     a[0] -= dir[0] * *(float *)(m + 0xC) * 0.000732421875f;
     a[1] -= dir[1] * *(float *)(m + 0xC) * 0.000732421875f;
@@ -502,7 +502,7 @@ void func_00214550(char *m) {
         a[0] = a[0] + dir[0] * *(float *)(m + 0xC) * 0.000732421875f;
         a[1] = a[1] + dir[1] * *(float *)(m + 0xC) * 0.000732421875f;
         func_001F9DC0(dir, dir, (a[2] - h1) / -dir[2]);
-        func_001F9BD8(b, a, dir);
+        FastVecAdd(b, a, dir);
         h2 = h1;
         if (func_001EFE10_a(a, b, 0x22, 0, 0) != 0) {
             h2 = *(float *)(hit + 0x28);
@@ -531,7 +531,7 @@ float func_00214D28(float *p, float target, float maxstep) {
         d = -maxstep;
     }
     *p = *p + d;
-    return func_001F9B88(target - *p);
+    return FastAbsF(target - *p);
 }
 
 LINKER_REMNANT("asm/remnants/text", func_00214D80);
@@ -553,9 +553,9 @@ float func_00214D88(float *p1, float *p2, float a, float b, float c, float d) {
     if (*p2 * diff >= 0.0f && diff != 0.0f) {
         float half = *p2 * *p2 / c * 0.5f;
 
-        if (func_001F9B88(diff) < half) {
-            float s = func_001F9B88(diff);
-            s += func_001F9B88(*p2);
+        if (FastAbsF(diff) < half) {
+            float s = FastAbsF(diff);
+            s += FastAbsF(*p2);
             if (half < s) {
                 func_00214D28(p2, 0.0f, c);
             } else {
@@ -574,8 +574,8 @@ float func_00214D88(float *p1, float *p2, float a, float b, float c, float d) {
             }
         }
         {
-            float m1 = func_001F9B88(diff);
-            float m2 = func_001F9B88(*p2);
+            float m1 = FastAbsF(diff);
+            float m2 = FastAbsF(*p2);
 
             if (m2 < m1) {
                 *p1 = *p1 + *p2;
@@ -745,8 +745,8 @@ extern void func_001F9C30(void *, void *, float);
 void func_00215380(void *arg0, void *axis, float angle) {
     float half = angle * 0.5f;
 
-    func_001F9C30(arg0, axis, func_001F9FA8(half));
-    *(float *)((char *)arg0 + 0xC) = func_001F9F90(half);
+    FastVecScale(arg0, axis, FastSin(half));
+    *(float *)((char *)arg0 + 0xC) = FastCos(half);
 }
 
 typedef struct {
@@ -771,20 +771,20 @@ void func_002153E8(Mtx44 *src, float *out) {
     float z;
 
     m = *src;
-    func_001F9BC0(m.m[3]);
+    clear_u64_value(m.m[3]);
     m.m[3][3] = 1.0f;
     z = func_001FA058(m.m[0][0], m.m[0][1]);
     v[0] = 0.0f;
     v[1] = 0.0f;
     v[2] = -z;
     func_001FA218(rot, v);
-    func_001FA540(&m, rot, &m);
+    sce_vu0_mul_matrix(&m, rot, &m);
     y = func_001FA058(m.m[0][0], -m.m[0][2]);
     v[0] = 0.0f;
     v[2] = 0.0f;
     v[1] = -y;
     func_001FA238(rot, v);
-    func_001FA540(&m, rot, &m);
+    sce_vu0_mul_matrix(&m, rot, &m);
     x = func_001FA058(m.m[1][1], m.m[1][2]);
     v[1] = 0.0f;
     v[0] = -x;
@@ -819,7 +819,7 @@ int func_00215570(void *arg0, int arg1) {
         return 0;
     }
     m = &D_00160134[arg1];
-    func_001F9BF0(d, arg0, m->pos);
+    FastVecSub(d, arg0, m->pos);
     d[3] = 0.0f;
     func_001F9EC0(v, d, m->mtx);
     if (v[0] >= -1.0f && v[0] <= 1.0f && v[1] >= -1.0f && v[1] <= 1.0f
@@ -841,7 +841,7 @@ void func_00215650(void *arg0, void *arg1, void *arg2) {
     float b[4];
     float c[4];
 
-    func_001F9C30(a, arg2, -1.0f);
+    FastVecScale(a, arg2, -1.0f);
     a[3] = ((float *)arg2)[3];
     qcopy(b, arg1);
     b[3] = 0.0f;
@@ -859,12 +859,12 @@ extern void func_00215650(void *arg0, void *arg1, void *arg2);
 void func_002156E0(void *dst, void *vec, void *axis, float angle) {
     float q[4];
 
-    if (func_001F9B88(angle) < 0.00001f) {
+    if (FastAbsF(angle) < 0.00001f) {
         qcopy(dst, vec);
         return;
     }
     func_001F9DC0(q, axis, 1.0f);
-    func_00215380(q, q, angle);
+    build_quaternion_from_axis_angle(q, q, angle);
     func_00215650(dst, vec, q);
 }
 
@@ -917,9 +917,9 @@ extern int func_001FA898_r(float) __asm__("func_001FA898");
    which goes in w; x, y, z become v / (n / 10000) + 127. */
 void func_002158E8(float *v, int *out) {
     float buf[4];
-    float a = func_001F9B88(v[0]);
-    float b = func_001F9B88(v[1]);
-    float c = func_001F9B88(v[2]);
+    float a = FastAbsF(v[0]);
+    float b = FastAbsF(v[1]);
+    float c = FastAbsF(v[2]);
     float m;
     int n;
     float s;
@@ -938,7 +938,7 @@ void func_002158E8(float *v, int *out) {
     buf[0] = v[0] * s + 127.0f;
     buf[1] = v[1] * s + 127.0f;
     buf[2] = v[2] * s + 127.0f;
-    *out = func_001F9F30(buf);
+    *out = FastVectorToPackedChars(buf);
 }
 
 typedef float FVec4[4] __attribute__((aligned(16)));
@@ -956,10 +956,10 @@ void func_00215A10(float *arg0, int *arg1) {
     mid[0] = 127.0f;
     mid[1] = 127.0f;
     mid[2] = 127.0f;
-    func_001F9F18(v, *arg1);
+    FastVectorFromPackedChars(v, *arg1);
     scale = v[3] * 0.0001f;
-    func_001F9BF0(v, v, mid);
-    func_001F9C30(arg0, v, scale);
+    FastVecSub(v, v, mid);
+    FastVecScale(arg0, v, scale);
 }
 
 extern int func_001FA898_r(float) __asm__("func_001FA898");
@@ -990,8 +990,8 @@ extern float func_00215A98(int, float);
 
 int func_00215B18(char *arg0, float arg1) {
     float now = func_0020D830();
-    float a = func_00215A98(4, now - arg1);
-    float b = func_00215A98(4, *(float *)(arg0 + 0x58) * *(float *)(arg0 + 0x5C));
+    float a = round_float_to_decimal_places(4, now - arg1);
+    float b = round_float_to_decimal_places(4, *(float *)(arg0 + 0x58) * *(float *)(arg0 + 0x5C));
 
     if (arg1 <= now && a < b) {
         return 1;
@@ -1008,9 +1008,9 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00215BA8);
 void func_00215C00(void *arg0, float r, float y, float z) {
     float *out = (float *)arg0;
 
-    out[0] = func_001F9F90(y) * r * func_001F9F90(z);
-    out[1] = func_001F9FA8(y) * r * func_001F9F90(z);
-    out[2] = func_001F9FA8(z) * r;
+    out[0] = FastCos(y) * r * FastCos(z);
+    out[1] = FastSin(y) * r * FastCos(z);
+    out[2] = FastSin(z) * r;
 }
 
 LINKER_REMNANT("asm/remnants/text", func_00215CA0);
@@ -1071,7 +1071,7 @@ void func_00215CA8(Path *path, int wrap, void *pos, float *rot, int flags, float
     if (flags & 1) {
         return;
     }
-    func_001F9BF0(&d, &b, &a);
+    FastVecSub(&d, &b, &a);
     yaw = func_001FA058(d.v[0], d.v[1]);
     pitch = func_001FA058(func_001F9CE8(&d), d.v[2]);
     roll = a.v[3];
@@ -1081,15 +1081,15 @@ void func_00215CA8(Path *path, int wrap, void *pos, float *rot, int flags, float
         roll = 0.0f;
     } else {
         qcopy(&c, &path->pts[k]);
-        func_001F9BF0(&d, &c, &b);
+        FastVecSub(&d, &c, &b);
         yaw2 = func_001FA058(d.v[0], d.v[1]);
         pitch2 = func_001FA058(func_001F9CE8(&d), d.v[2]);
         roll2 = b.v[3];
     }
     rot[0] = 0.0f;
-    rot[1] = -func_001FA748(func_001FA790(pitch2, pitch) * f, pitch);
-    rot[2] = func_001FA748(func_001FA790(yaw2, yaw) * f, yaw);
-    rot[3] = -func_001FA748(func_001FA790(roll2, roll) * f, roll);
+    rot[1] = -FastAddRots(FastSubRots(pitch2, pitch) * f, pitch);
+    rot[2] = FastAddRots(FastSubRots(yaw2, yaw) * f, yaw);
+    rot[3] = -FastAddRots(FastSubRots(roll2, roll) * f, roll);
 }
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00215F20);
@@ -1109,7 +1109,7 @@ int func_00215F80(int arg0, int arg1) {
 
     if (cur == arg0) {
         if (arg1 != 0) {
-            func_001FFE88(func_001FE540(arg1));
+            copy_text_to_shared_buffer(msg_string(arg1));
         }
         D_00161388 = arg1;
         D_0015F6B0 = 2;
@@ -1117,7 +1117,7 @@ int func_00215F80(int arg0, int arg1) {
     }
     if (cur == 0) {
         if (arg1 != 0) {
-            func_001FFE88(func_001FE540(arg1));
+            copy_text_to_shared_buffer(msg_string(arg1));
         }
         D_0015F6B4 = arg0;
         D_0015F6B0 = 2;
@@ -1128,12 +1128,12 @@ int func_00215F80(int arg0, int arg1) {
 }
 
 int func_00216028(int arg0, int arg1) {
-    int busy = func_00215F80(arg0, arg1);
+    int busy = try_set_help_message(arg0, arg1);
     if (busy != 0) {
         return busy;
     }
     if (arg1 != 0) {
-        func_001FFE88(func_001FE540(arg1));
+        copy_text_to_shared_buffer(msg_string(arg1));
     }
     D_0015F6B4 = arg0;
     D_0015F6B0 = 2;
@@ -1142,8 +1142,8 @@ int func_00216028(int arg0, int arg1) {
 }
 
 int func_00216098(void) {
-    int a = func_002160E0();
-    int b = func_00216150();
+    int a = count_nonzero_entries_up_to_40();
+    int b = count_nonzero_entries_up_to_10();
     int v = a - b * 4;
     if (v < 0) v = 0;
     return (v < 0x29) ? v : 0x28;
@@ -1184,7 +1184,7 @@ int func_00216198(void) {
     int count = 0;
     int i;
     for (i = 0; i < 0x20; i++) {
-        if (D_0013D510[i] != 0) count = count + 1;
+        if (gSkillPoints[i] != 0) count = count + 1;
     }
     if (count < 0) count = 0;
     return (count < 0x1F) ? count : 0x1E;

@@ -345,7 +345,7 @@ void func_00239838(void) {
     if (func_00116810_s(*(char **)(v + 0x2C)) - *(int *)(v + 0x44) / 20 > 0) {
         *(int *)(v + 0x44) += 2;
     } else {
-        func_002391A8(func_001FE540_id(D_001E62B8[func_002140B0(0x18)]));
+        set_scrolling_status_message(func_001FE540_id(D_001E62B8[random_integer_below(0x18)]));
     }
     w = D_001E66C0;
     func_00239628(*(char **)(w + 0x2C), -*(int *)(w + 0x44), 8, 2.0f);
@@ -360,7 +360,7 @@ extern int D_001E66E4;
 void func_00239948(void) {
     func_001FBAB8(0, 0, 0x200, 0x80, 0x200, 0x80, 0);
     if (D_001611A8 == 1) {
-        func_0020E180(D_001E66E4, 1);
+        DrawMobyList(D_001E66E4, 1);
     }
 }
 
@@ -429,11 +429,11 @@ void func_00239A00(void) {
                 slotKind = (s32 *) (void *) ((u8 *)&D_001E66C0_ui + 0xD4 + itemIndex * 0x14);
                 itemIconId = ((struct VendorItemResource *) (void *) ((u8 *)D_001864D0 + slotKind[-1] * 0x4C))->iconId;
                 if (slotKind[0] == 1) {
-                    itemIcon = func_00200198(itemIconId, 2);
+                    itemIcon = GetIconFrame(itemIconId, 2);
                 } else {
-                    itemIcon = func_00200198(itemIconId, 0);
+                    itemIcon = GetIconFrame(itemIconId, 0);
                 }
-                func_00200468(itemIcon, itemX, 6, 0x30, 0x30, 0x80);
+                HudSprite(itemIcon, itemX, 6, 0x30, 0x30, 0x80);
                 itemX += 0x38;
                 itemIndex += 1;
             } while (itemIndex < D_001E66C0_ui.slotCount);
@@ -454,12 +454,12 @@ void func_00239A00(void) {
             slotOffset = ((s32) ((D_001E66C0_ui.slotCount * 2) + i + selectedMinusThree) % (s32) D_001E66C0_ui.slotCount) * 0x14;
             displayIconId = ((struct VendorItemResource *) (void *) ((u8 *)D_001864D0 + *(s32 *)(void *)(slotOffset + ((u8 *)&D_001E66C0_ui + 0xD0)) * 0x4C))->iconId;
             if (*(s32 *)(void *)(slotOffset + ((u8 *)&D_001E66C0_ui + 0xD4)) == 1) {
-                displayIcon = func_00200198(displayIconId, 2);
+                displayIcon = GetIconFrame(displayIconId, 2);
             } else {
-                displayIcon = func_00200198(displayIconId, 0);
+                displayIcon = GetIconFrame(displayIconId, 0);
             }
             i += 1;
-            func_00200468(displayIcon, x, 6, 0x30, 0x30, 0x80808080);
+            HudSprite(displayIcon, x, 6, 0x30, 0x30, 0x80808080);
             x += 0x38;
         } while (i < 9);
     }
@@ -529,7 +529,7 @@ void func_0023A478(void) {
             } else {
                 price = ((WeaponInfo *)(D_001E02B0 + v->slots[idx].type * 0x18))->price;
             }
-            if (D_0015EE98 >= price) {
+            if (gBolts >= price) {
                 func_001F6F40_c(0x28, 0x14, 0x80F0F0F0L, func_001FE540_id(0x4EE0), -1);
             }
         }
@@ -575,9 +575,9 @@ extern void func_001F3008(void);
 extern void func_001F3140(void);
 
 void func_0023AA08(void) {
-    func_001FB498();
-    func_001F3008();
-    func_001F3140();
+    PutDrawBufferLarge();
+    InitViewContext();
+    UpdateViewContext();
 }
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023AA38);
@@ -663,6 +663,6 @@ void func_0023B5D0(char *arg0) {
     func_0020DB98(arg0, 4, &cfg, p);
     func_001F9BF0_b(a, p + 0x10, p);
     func_001F9BF0_b(b, p + 0x20, p);
-    *(float *)(p + 0x40) = func_001F9CB8(a);
-    *(float *)(p + 0x44) = func_001F9CB8(b);
+    *(float *)(p + 0x40) = FastVecLength(a);
+    *(float *)(p + 0x44) = FastVecLength(b);
 }

@@ -431,7 +431,7 @@ void func_0023E5E0(char *arg0) {
 
 /* voBufGetData(VoBuf *) */
 int func_0023E658(int *arg0) {
-    if (func_0023E5C8(arg0) != 0) {
+    if (voBufIsFull(arg0) != 0) {
         return 0;
     }
     return arg0[0] + arg0[2] * 0xD0000;
@@ -449,7 +449,7 @@ int func_0023E698(int *arg0) {
 int func_0023E6A8(void *arg0) {
     char *s = (char *)arg0;
 
-    if (func_0023E698((int *)arg0) != 0) {
+    if (voBufIsEmpty((int *)arg0) != 0) {
         return 0;
     }
     return *(int *)(s + 0x4) + ((*(volatile int *)(s + 0x8) - *(volatile int *)(s + 0xC) + *(int *)(s + 0x10)) % *(int *)(s + 0x10)) * 0x138C0;

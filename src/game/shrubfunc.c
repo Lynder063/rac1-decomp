@@ -288,10 +288,10 @@ void func_00229C08(void) {
     ((int *)D_001604F0)[2] = 0;
     ((int *)D_001604F0)[3] = 0;
     if (D_0018A3B0[8] != 0 && D_0018A3B0[7] != 0) {
-        size = func_0022B648(D_0015EF74);
-        func_00234E80();
+        size = BuildShrubTextureDma(D_0015EF74);
+        VU1_texFlush();
         if (size > 0x400000) {
-            func_001E9730(D_001E8C00);
+            STUB_printf(D_001E8C00);
         }
         if (D_001604F8 < size) {
             D_001604F8 = size;
@@ -362,10 +362,10 @@ void func_00229E50(void) {
     func_001F2560(D_001604B0, 1);
     if (D_0018A3D0 != 0) {
         func_00118D80(0);
-        func_00229F00();
-        func_001F9AF0(D_001D9240, 0x3200, 0x40);
+        ShrubProc();
+        write_dma_channel(D_001D9240, 0x3200, 0x40);
     }
     func_001F2560(D_001604C0, 7);
-    func_00229C08();
+    DmaShrubTextures();
     func_001F2558(D_001604C0, 7);
 }

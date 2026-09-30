@@ -22,7 +22,7 @@ void func_L00_001F91B0(void) {
     if (D_L00_0015F6BC == 0 && D_001414F5[0xC] == 0) {
         D_L00_0015F4F4 = 0x100FF;
         if (D_L00_0015F6A8 == 3) D_L00_0015F4F4 = 0x7F;
-        func_001F3D78();
+        DrawDebugProfiler();
     }
 }
 extern int func_L00_002016D0(void);
@@ -33,9 +33,9 @@ extern void func_001FBE80(void);
 void func_L00_001F9248(void) {
     if (D_L00_0015F6BC == 0) {
         if (func_L00_002016D0() == 0) {
-            func_001FB530();
+            framebuf_appendLargeSetup();
             D_L00_0015F4F4 = 0x100FF;
-            func_001F3D78();
+            DrawDebugProfiler();
         } else {
             if (func_L00_002016D0() == 3) func_L00_002781D8(1);
         }
@@ -54,10 +54,10 @@ extern int func_00122598(int);
 extern void func_002348E8(void);
 extern void func_L00_002A21A8(void *, int, int);
 void func_L00_001F9D40(void *a) {
-    func_00234AC8(1);
+    VU1_syncChain(1);
     func_00122598(0);
     D_L00_0015F4F8 = D_L00_0015F4F8 + 1;
-    func_002348E8();
+    VU1_initChain();
     func_L00_002A21A8(a, D_0015EF84, *(int *)((char *)D_0013E15A + 0x4AA) << 11);
 }
 INCLUDE_ASM("asm/overlays", func_L00_001FCAD8);
