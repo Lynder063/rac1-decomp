@@ -46,11 +46,46 @@ INCLUDE_ASM("asm/overlays", func_L02_002EE250);
 INCLUDE_ASM("asm/overlays", func_L02_002EE858);
 INCLUDE_ASM("asm/overlays", func_L02_002EEA90);
 INCLUDE_ASM("asm/overlays", func_L02_002F3398);
-INCLUDE_ASM("asm/overlays", func_L02_002F79A8);
-INCLUDE_ASM("asm/overlays", func_L02_002F79D0);
+extern char *D_L02_00167480;
+
+/* Store the selected value only while this level object is inactive. */
+void func_L02_002F79A8(int value) {
+    char *moby = D_L02_00167480;
+    if (*(short *)(moby + 0x86) == 0) {
+        char *data = *(char **)(moby + 0x70);
+        *(int *)(data + 0x218) = value;
+    }
+}
+/* Update the active object's coordinates without replacing zero fields. */
+void func_L02_002F79D0(float x, float y, float z) {
+    char *moby = D_L02_00167480;
+    if (*(short *)(moby + 0x86) == 0) {
+        char *data = *(char **)(moby + 0x70) + 0x1D0;
+        if (*(float *)(data + 0x3C) != 0.0f) {
+            *(float *)(data + 0x3C) = x;
+        }
+        if (*(float *)(data + 0x40) != 0.0f) {
+            *(float *)(data + 0x40) = y;
+        }
+        if (*(float *)(data + 0x44) != 0.0f) {
+            *(float *)(data + 0x44) = z;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L02_002F9ED8);
 INCLUDE_ASM("asm/overlays", func_L02_002FBB10);
-INCLUDE_ASM("asm/overlays", func_L02_002FBB48);
+extern float D_L02_0016768C;
+extern void func_L00_002E99A0(int, float, float);
+extern void func_L02_002FBBA8(void);
+extern void func_L02_001FC308(void (*)(void));
+
+/* Start the timed effect while its duration is nonzero. */
+void func_L02_002FBB48(void) {
+    if (D_L02_0016768C != 0.0f) {
+        func_L00_002E99A0(1, D_L02_0016768C * 0.35f + 0.0f, 0.005f);
+        func_L02_001FC308(func_L02_002FBBA8);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L02_002FBBA8);
 INCLUDE_ASM("asm/overlays", func_L02_002FBC00);
 INCLUDE_ASM("asm/overlays", func_L02_002FCA80);

@@ -3,11 +3,34 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L15_001FFED0);
-INCLUDE_ASM("asm/overlays", func_L15_00200D20);
+extern unsigned char D_0013E633[];
+extern unsigned char D_0013E15A[];
+extern void func_L00_00207948(int, int);
+
+/* Show the indexed help prompt when its flag and message are active. */
+void func_L15_00200D20(void) {
+    unsigned char *base = D_0013E633 + 0xE1D;
+    int index = *(int *)(base + 0x10B8);
+    if (index >= 0 && *(D_0013E15A + 0x4C6 + index) != 0) {
+        int first = *(int *)(base + 0x1090);
+        if (first != 0) {
+            func_L00_00207948(first, *(int *)(base + 0x2080));
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L15_00200D70);
 INCLUDE_ASM("asm/overlays", func_L15_002092E0);
 INCLUDE_ASM("asm/overlays", func_L15_00209A88);
 INCLUDE_ASM("asm/overlays", func_L15_0020A960);
 INCLUDE_ASM("asm/overlays", func_L15_0020ADD8);
 INCLUDE_ASM("asm/overlays", func_L15_00216568);
-INCLUDE_ASM("asm/overlays", func_L15_0021B2C8);
+extern void func_L15_00217348(int, int);
+
+/* Select the message associated with the current help mode. */
+void func_L15_0021B2C8(void) {
+    switch (D_0013E633[0x2EC1]) {
+    case 0: func_L15_00217348(0, 1); break;
+    case 2: func_L15_00217348(0x5A, 1); break;
+    case 3: func_L15_00217348(0x53, 1); break;
+    }
+}

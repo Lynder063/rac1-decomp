@@ -14,7 +14,14 @@ INCLUDE_ASM("asm/overlays", func_L11_0030BCD8);
 INCLUDE_ASM("asm/overlays", func_L11_0030C728);
 INCLUDE_ASM("asm/overlays", func_L11_0030FB58);
 INCLUDE_ASM("asm/overlays", func_L11_003102C8);
-INCLUDE_ASM("asm/overlays", func_L11_00310738);
+/* Recognize the active vendor object state. */
+int func_L11_00310738(char *moby) {
+    if (*(short *)(moby + 0xA6) == 0x49B &&
+        ((unsigned char *)moby)[0x20] == 2) {
+        return 1;
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L11_00311F98);
 INCLUDE_ASM("asm/overlays", func_L11_003121C0);
 INCLUDE_ASM("asm/overlays", func_L11_00312510);

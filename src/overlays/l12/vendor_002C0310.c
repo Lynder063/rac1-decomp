@@ -3,7 +3,11 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L12_002C0310);
-INCLUDE_ASM("asm/overlays", func_L12_002C0918);
+extern void func_L01_002BA380(char *, int);
+extern char D_L12_001CC1C0[];
+void func_L12_002C0918(void) {
+    func_L01_002BA380(D_L12_001CC1C0, 0x11);
+}
 INCLUDE_ASM("asm/overlays", func_L12_002C0940);
 extern int func_L00_002DCDA8(void *);
 extern void func_L01_0026F040(int, int);

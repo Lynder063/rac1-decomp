@@ -53,4 +53,8 @@ INCLUDE_ASM("asm/overlays", func_L05_0030D230);
 INCLUDE_ASM("asm/overlays", func_L05_0030D3F0);
 INCLUDE_ASM("asm/overlays", func_L05_0030DED8);
 INCLUDE_ASM("asm/overlays", func_L05_0030EA88);
-INCLUDE_ASM("asm/overlays", func_L05_0030EB40);
+extern void func_L01_002BA380(char *, int);
+extern char D_L05_001D6BC0[];
+void func_L05_0030EB40(void) {
+    func_L01_002BA380(D_L05_001D6BC0, 0x30);
+}
