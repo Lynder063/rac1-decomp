@@ -31,6 +31,9 @@ Run everything from the repository root.
    Stopping is a normal outcome. Write no RESULT.md: the runs are logged.
 5. Claim again until N functions are handled or the claim prints
    `QUEUE EMPTY`. Do not stop earlier: finishing one claim is not the end.
+   If every try_func run for a function fails on a file other than your
+   candidate (another stub's assembly), say so in NOTES.md and move on:
+   that is for the lead to fix.
 6. Your final message is one line and nothing else:
    `{"id": "<ID>", "exact": ["func_..."], "stopped": ["func_..."], "idiom": "<25 words at most, or empty>"}`
 
@@ -68,9 +71,12 @@ compile). No string literals: `extern char D_xxx[];`.
 - Arguments `$a0`-`$a3`, `$t0`-`$t3`; floats `$f12`, `$f13`, `$f14`...;
   results `$v0`, `$f0`. `$s0`-`$s7` are saved, `$gp` is 0x166D00.
 - `func_XXXXXXXX` and `D_XXXXXXXX` are the resident executable;
-  `func_LNN_...` and `D_LNN_...` belong to the level. A `%gp_rel` access
-  is a small global (declare it with its real size); `lui` + `%lo` is any
-  other global.
+  `func_LNN_...` and `D_LNN_...` belong to the level. `lui` + `%lo` is an
+  ordinary global. A `%gp_rel` access is a small one: at `-G2` only
+  objects of two bytes or less go through `$gp`, so declare it
+  `extern short D_x;` (or `char`) and read a word as `*(int *)&D_x`, a
+  float as `*(float *)&D_x`. This is the project's convention
+  (`include/common.h`).
 - A moby (game object) is a `char *`/struct pointer with fields at fixed
   offsets: state byte at 0x20, position vector at 0x10, its own data
   pointer at 0x78. Matched code in the packet shows the usual spellings.

@@ -139,6 +139,8 @@ def choose_overlay(args) -> list[str]:
         asm = ROOT / "asm/overlays" / f"{name}.s"
         if not asm.exists():
             continue
+        if any((TRY / name).glob("runs*.log")):     # an earlier wave tried it: a retry, not fresh
+            continue
         verdict, _cat, _detail = rank_candidates.classify(name, asm.read_text(errors="replace"), "text", size)
         if verdict == "blocked":
             continue
@@ -181,7 +183,9 @@ def family_order(rows: list, findex: dict) -> list:
     each match opens the most ports."""
     def matched(name: str) -> bool:
         entry = findex.get(name)
-        return bool(entry and any(n == name and is_c for n, is_c in entry[1]))
+        if entry and any(n == name and is_c for n, is_c in entry[1]):
+            return True
+        return logged(TRY / name, "")[0].startswith("EXACT")    # matched, not landed yet
     edges = []
     for path, a, b, sim in ((ROOT / "config/overlays/families.tsv", 0, 3, 6),
                             (ROOT / "config/overlays/variants.tsv", 0, 1, None)):
@@ -282,16 +286,19 @@ def results(wave: dict) -> list[tuple[str, str, str, int]]:
             candidate = str((work / Path(candidate).name).relative_to(ROOT))  # A bare "p6.c".
         verdict = result[0].strip() if result else "(no result yet)"
         if not result and wave.get("queue"):
-            verdict, candidate = logged(work, verdict)
+            verdict, candidate = logged(work, verdict, wave)
         rows.append((name, verdict, candidate, runs))
     return rows
 
 
-def logged(work: Path, default: str) -> tuple[str, str]:
+def logged(work: Path, default: str, wave: dict | None = None) -> tuple[str, str]:
     """The best run in WORK/runs.log (a queue wave's record: try_func
     writes it, so nothing depends on what a worker reports): an EXACT, or
     else the closest BYTES, or else the last verdict."""
-    log = work / "runs.log"
+    # A later plan renames runs.log to runs.<its stamp>.log: this wave's
+    # runs are in the first such file stamped after it, or in runs.log.
+    later = sorted(p for p in work.glob("runs.*.log") if wave and p.name[5:-4] > wave.get("created", ""))
+    log = later[0] if later else work / "runs.log"
     runs = [l.split(None, 1) for l in log.read_text().splitlines() if " " in l] if log.exists() else []
     if not runs:
         return default, ""
@@ -403,7 +410,7 @@ def tokens(args) -> None:
     sizes = {n: s for n, (_k, s, *_r) in dossier.load_overlay_catalogue().items()} if wave.get("pool") == "overlay" else {}
     mine = {}
     for path in sorted(claims(wave).glob("func_*")) if claims(wave).is_dir() else []:
-        verdict, _ = logged(TRY / path.name, "(no runs)")
+        verdict, _ = logged(TRY / path.name, "(no runs)", wave)
         mine.setdefault(path.read_text().strip(), []).append((path.name, verdict.startswith("EXACT")))
     keys = ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens", "output_tokens")
     usage = {}

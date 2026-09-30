@@ -200,6 +200,9 @@ python3 tools/wave.py land w7                # one commit per EXACT, full build 
 
 ### Queue waves
 
+The full description, with the lead's loop, the measurements and what
+went wrong, is in [AGENT_WORKFLOW.md](AGENT_WORKFLOW.md). In short:
+
 Modelled on Thief3-Decomp's tiered workflow: the aim is the most matches
 per token.
 
@@ -236,6 +239,7 @@ Trials of 2026-09-30 (input tokens include cache reads, as
 | q1: 8-92 bytes | Sonnet | 17 | 4 (124 bytes) | 214K |
 | q1: 8-92 bytes | Haiku | 15 | 4 (100 bytes) | 1.02M |
 | q3: `--family`, 64-500 bytes | Sonnet | 12 | 9 landed (1,236 bytes), 1 rejected | 157K |
+| q4: `--family`, 32-600 bytes | Sonnet | 56 | 34 (11,128 bytes) | 1.15M |
 
 - **A queue worker is cheap per function.** The harness counted about 81K
   tokens for each q2 worker, six functions each, where a one-function
