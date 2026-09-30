@@ -7,6 +7,13 @@ Plans, tracks and integrates waves of worker agents (docs/WORKER.md).
       Picks functions (the ones named, or from tools/triage.py), writes each
       one's CONTEXT.md and m2c sketch, starts a fresh BUDGET of try_func
       runs, and prints each worker's one-line prompt.
+  python3 tools/wave.py plan NAME --queue [--min-size N] [--max-size N] ...
+      A queue wave (docs/QUEUE.md): workers take several functions each.
+  python3 tools/wave.py claim NAME ID [--count N]
+      For a queue worker: claims the next N functions and prints each
+      one's packet (dossier, assembly, matched C to start from).
+  python3 tools/wave.py tokens NAME
+      Tokens per worker and per match, from the sub-agent transcripts.
   python3 tools/wave.py status NAME
       One line per function: verdict, runs used, best candidate.
   python3 tools/wave.py integrate NAME
@@ -131,10 +138,53 @@ def choose_overlay(args) -> list[str]:
         verdict, _cat, _detail = rank_candidates.classify(name, asm.read_text(errors="replace"), "text", size)
         if verdict == "blocked":
             continue
+        if not args.min_size <= size <= args.max_size:
+            continue
         rank = 0 if (kind == "shared" and levels_count == ALL_LEVELS) else 1
         rows.append((rank, size, name))
     rows.sort()
+    if args.family:
+        rows = family_order(rows, findex)
     return [name for _, _, name in rows][:args.count]
+
+
+def family_order(rows: list, findex: dict) -> list:
+    """ROWS reordered for reuse (docs/OVERLAYS.md, "Relatives"): first the
+    functions with a matched relative or variant parent (their packet
+    carries that C: a port), most similar first; then one function, the
+    smallest, of each family nobody has matched, largest family first, so
+    each match opens the most ports."""
+    def matched(name: str) -> bool:
+        entry = findex.get(name)
+        return bool(entry and any(n == name and is_c for n, is_c in entry[1]))
+    edges = []
+    for path, a, b, sim in ((ROOT / "config/overlays/families.tsv", 0, 3, 6),
+                            (ROOT / "config/overlays/variants.tsv", 0, 1, None)):
+        for row in (l.split("\t") for l in path.read_text().splitlines() if not l.startswith("#")):
+            edges.append((row[a], row[b], float(row[sim]) if sim else 1.0))
+    group = {}
+    def find(x):
+        while group.setdefault(x, x) != x:
+            group[x] = x = group[group[x]]
+        return x
+    best = {}
+    for a, b, sim in edges:
+        if sim >= 0.9:
+            group[find(a)] = find(b)
+        for x, y in ((a, b), (b, a)):
+            if matched(y):
+                best[x] = max(best.get(x, 0), sim)
+    size_of = {name: size for _, size, name in rows}
+    members = {}
+    for name in size_of:
+        members.setdefault(find(name), []).append(name)
+    ports = sorted((r for r in rows if r[2] in best), key=lambda r: -best[r[2]])
+    firsts = sorted((min(m, key=size_of.get) for m in members.values()
+                     if len(m) > 1 and not any(n in best for n in m)),
+                    key=lambda n: -sum(size_of[x] for x in members[find(n)]))
+    picked = {r[2] for r in ports} | set(firsts)
+    by_name = {r[2]: r for r in rows}
+    return ports + [by_name[n] for n in firsts] + [r for r in rows if r[2] not in picked]
 
 
 def plan(args) -> None:
@@ -165,8 +215,14 @@ def plan(args) -> None:
         dossier.write(names)
     WAVES.mkdir(parents=True, exist_ok=True)
     record = {"name": args.name, "role": args.role, "budget": args.budget, "created": stamp,
-              "started": time.time(), "functions": names, "pool": "overlay" if overlay else "exe"}
+              "started": time.time(), "functions": names, "pool": "overlay" if overlay else "exe",
+              "queue": args.queue}
     (WAVES / f"{args.name}.json").write_text(json.dumps(record, indent=2) + "\n")
+    if args.queue:
+        print(f"\nwave {args.name}: a queue of {len(names)} functions, budget {args.budget} runs each. "
+              f"One prompt per worker (ID unique, N functions each, COUNT claimed at a time):\n\n"
+              f"Read docs/QUEUE.md and follow it exactly. WAVE={args.name} ID=s01 N=6 COUNT=2")
+        return
     print(f"\nwave {args.name}: {len(names)} {args.role} workers, budget {args.budget} runs each\n")
     for name in names:
         print(prompt(name, args.role, args.budget))
@@ -199,8 +255,154 @@ def results(wave: dict) -> list[tuple[str, str, str, int]]:
         candidate = result[1].strip().strip("`").split()[0] if len(result) > 1 and result[1].strip() else ""
         if candidate and not (ROOT / candidate).exists() and (work / Path(candidate).name).exists():
             candidate = str((work / Path(candidate).name).relative_to(ROOT))  # A bare "p6.c".
-        rows.append((name, result[0].strip() if result else "(no result yet)", candidate, runs))
+        verdict = result[0].strip() if result else "(no result yet)"
+        if not result and wave.get("queue"):
+            verdict, candidate = logged(work, verdict)
+        rows.append((name, verdict, candidate, runs))
     return rows
+
+
+def logged(work: Path, default: str) -> tuple[str, str]:
+    """The best run in WORK/runs.log (a queue wave's record: try_func
+    writes it, so nothing depends on what a worker reports): an EXACT, or
+    else the closest BYTES, or else the last verdict."""
+    log = work / "runs.log"
+    runs = [l.split(None, 1) for l in log.read_text().splitlines() if " " in l] if log.exists() else []
+    if not runs:
+        return default, ""
+    def rank(run):
+        verdict = run[1]
+        if verdict.startswith("EXACT"):
+            return (0, 0)
+        m = re.match(r"BYTES (\d+)/", verdict)
+        return (1, int(m.group(1))) if m else (2, 0)
+    candidate, verdict = min(runs, key=rank)
+    path = work / candidate
+    return verdict.strip(), str(path.relative_to(ROOT)) if path.exists() else ""
+
+
+def claims(wave: dict) -> Path:
+    return WAVES / f"{wave['name']}.claims"
+
+
+def claim(args) -> None:
+    """Hands the next unclaimed functions of a queue wave to worker ID and
+    prints each one's packet: its dossier, its assembly and matched C to
+    start from. Creating the claim file is the lock."""
+    wave = load(args.name)
+    claims(wave).mkdir(parents=True, exist_ok=True)
+    got = []
+    for name in wave["functions"]:
+        if len(got) == args.count:
+            break
+        try:
+            with open(claims(wave) / name, "x") as f:
+                f.write(args.id + "\n")
+        except FileExistsError:
+            continue
+        got.append(name)
+    if not got:
+        print("QUEUE EMPTY")
+        return
+    for name in got:
+        print(packet(name, wave["budget"]))
+
+
+def packet(name: str, budget: int) -> str:
+    work = TRY / name
+    context = (work / "CONTEXT.md").read_text(errors="replace").splitlines() if (work / "CONTEXT.md").exists() else []
+    keep = [l for l in context[1:] if not l.startswith(("  - `func_", "- No m2c", "- The executable does not",
+                                                        "- Functions in this file", "- Retail assembly"))]
+    asm_path = next((p for p in (ROOT / "asm/overlays" / f"{name}.s",
+                                 *ROOT.glob(f"asm/nonmatchings/*/{name}.s")) if p.exists()), None)
+    asm = [re.sub(r"^\s*/\*[^*]*\*/\s*", "    ", l) for l in asm_path.read_text().splitlines()
+           if l.strip() and not l.startswith((".section", "/* Handwritten", "nonmatching"))] if asm_path else []
+    out = [f"===== {name}: budget {budget} runs, work in build-sn/try/{name}/ =====", *keep,
+           "", "## Assembly", *asm]
+    for label, other in start_from(name):
+        out += ["", f"## Matched C to start from: {label}", other]
+    return "\n".join(out) + "\n"
+
+
+def start_from(name: str) -> list[tuple[str, str]]:
+    """Matched C worth starting from: the function this one is a variant of
+    or its variants, its nearest relative, then up to two short matched
+    functions of its own file."""
+    if not OVERLAY_NAME.match(name):
+        return []
+    findex = dossier.overlay_file_index()
+    def c_of(other: str) -> str | None:
+        entry = findex.get(other)
+        if entry and any(n == other and is_c for n, is_c in entry[1]):
+            return extract_definition(entry[0], other)
+        return None
+    wanted = []
+    for path, a, b, label in ((ROOT / "config/overlays/variants.tsv", 0, 1, "differs only in a number"),
+                              (ROOT / "config/overlays/families.tsv", 0, 3, "its nearest relative")):
+        for row in (l.split("\t") for l in path.read_text().splitlines() if path.exists() and not l.startswith("#")):
+            if row[a] == name:
+                wanted.append((row[b], label))
+            elif row[b] == name and "variants" in path.name:
+                wanted.append((row[a], label))
+    entry = findex.get(name)
+    if entry:
+        wanted += [(n, "same file") for n, is_c in entry[1] if is_c]
+    out, seen = [], set()
+    for other, label in wanted:
+        body = None if other in seen else c_of(other)
+        seen.add(other)
+        if body and (label != "same file" or body.count("\n") <= 25):
+            out.append((f"{other} ({label})", body))
+        if len(out) == 3:
+            break
+    return out
+
+
+def tokens(args) -> None:
+    """Tokens each worker of a queue wave used, from Claude Code's sub-agent
+    transcripts (a worker's prompt carries WAVE= and ID=), against what it
+    matched according to runs.log."""
+    wave = load(args.name)
+    sizes = {n: s for n, (_k, s, *_r) in dossier.load_overlay_catalogue().items()} if wave.get("pool") == "overlay" else {}
+    mine = {}
+    for path in sorted(claims(wave).glob("func_*")) if claims(wave).is_dir() else []:
+        verdict, _ = logged(TRY / path.name, "(no runs)")
+        mine.setdefault(path.read_text().strip(), []).append((path.name, verdict.startswith("EXACT")))
+    keys = ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens", "output_tokens")
+    usage = {}
+    for path in (Path.home() / ".claude/projects").glob("*/*/subagents/agent-*.jsonl"):
+        ident, last, model = None, {}, "?"
+        for line in path.open(errors="replace"):
+            row = json.loads(line)
+            message = row.get("message") or {}
+            if ident is None and row.get("type") == "user":
+                found = re.search(rf"WAVE={re.escape(wave['name'])} ID=(\w+)", json.dumps(message.get("content")))
+                if not found:
+                    break
+                ident = found.group(1)
+            if row.get("type") == "assistant" and message.get("usage"):
+                last[message.get("id")] = message["usage"]    # streamed rows repeat a message
+                model = message.get("model", model)
+        if ident:
+            total = usage.setdefault(ident, [model, {k: 0 for k in keys}])[1]
+            for u in last.values():
+                for k in keys:
+                    total[k] += u.get(k) or 0
+    print(f"{'worker':8} {'model':24} {'handled':>7} {'exact':>5} {'bytes':>6} {'input':>10} {'output':>8}")
+    by_model = {}
+    for ident in sorted(set(mine) | set(usage)):
+        model, t = usage.get(ident, ("(no transcript)", {k: 0 for k in keys}))
+        done = mine.get(ident, [])
+        exact = [n for n, e in done if e]
+        nbytes = sum(sizes.get(n, 0) for n in exact)
+        read = t["input_tokens"] + t["cache_creation_input_tokens"] + t["cache_read_input_tokens"]
+        print(f"{ident:8} {model:24} {len(done):7} {len(exact):5} {nbytes:6} {read:10} {t['output_tokens']:8}")
+        m = by_model.setdefault(model, [0, 0, 0, 0, 0])
+        for i, v in enumerate((len(done), len(exact), nbytes, read, t["output_tokens"])):
+            m[i] += v
+    for model, (done, exact, nbytes, read, out) in by_model.items():
+        per = f"{read // exact:,} input tokens per match" if exact else "no match"
+        print(f"{model}: {exact} of {done} exact, {nbytes} bytes, {per}, {out:,} output tokens")
 
 
 def status(args) -> None:
@@ -435,11 +637,21 @@ def main() -> None:
     pick.add_argument("--near", action="store_true")
     pick.add_argument("--fresh", action="store_true")
     pick.add_argument("--overlay", action="store_true")
+    p.add_argument("--queue", action="store_true")
+    p.add_argument("--family", action="store_true")
+    p.add_argument("--min-size", type=int, default=0)
+    p.add_argument("--max-size", type=int, default=10 ** 9)
+    c = commands.add_parser("claim")
+    c.add_argument("name")
+    c.add_argument("id")
+    c.add_argument("--count", type=int, default=2)
+    commands.add_parser("tokens").add_argument("name")
     commands.add_parser("status").add_argument("name")
     commands.add_parser("integrate").add_argument("name")
     commands.add_parser("land").add_argument("name")
     args = parser.parse_args()
-    {"plan": plan, "status": status, "integrate": integrate, "land": land}[args.command](args)
+    {"plan": plan, "status": status, "integrate": integrate, "land": land,
+     "claim": claim, "tokens": tokens}[args.command](args)
 
 
 if __name__ == "__main__":

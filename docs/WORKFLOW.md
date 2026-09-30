@@ -198,6 +198,35 @@ python3 tools/wave.py land w7                # one commit per EXACT, full build 
   - `compile`: turns the m2c sketch into a candidate that compiles, for a
     cheaper model to do before matching starts.
 
+### Queue waves
+
+Modelled on Thief3-Decomp's tiered workflow: the aim is the most matches
+per token.
+
+```
+python3 tools/wave.py plan q1 --queue --overlay --count 40 --max-size 300 --budget 8
+python3 tools/wave.py tokens q1      # tokens per worker and per match
+```
+
+- Each worker takes N functions from the wave, COUNT at a time
+  (`wave.py claim`), so the startup cost (system prompt, protocol) is paid
+  once per worker instead of once per function. Its whole prompt is one
+  line: `Read docs/QUEUE.md and follow it exactly. WAVE=q1 ID=s01 N=6 COUNT=2`.
+  IDs are never reused within a wave.
+- [QUEUE.md](QUEUE.md) is the workers' whole instruction set (about 1.3K
+  tokens), in place of WORKER.md and LEVERS.md. Add an idiom to it only
+  when a landed function shows it.
+- A claim prints the function's packet: dossier, assembly, and matched C
+  to start from (the function it is a variant of, its nearest relative,
+  short matched functions of its file).
+- Verdicts come from `runs.log`, which try_func writes: workers write no
+  RESULT.md, and their final message is one JSON line. Trust the log, not
+  the message.
+- `status` and `land` work as for any wave.
+- Before a queue wave, run `tools/overlay_variants.py clone`
+  ([OVERLAYS.md](OVERLAYS.md#variants)): it matches variants of matched
+  functions with no model.
+
 ### Picking a wave
 
 Measured on 2026-09-26/27 (Sonnet workers, one function each):
