@@ -49,6 +49,31 @@ INCLUDE_ASM("asm/overlays", func_L12_00309590);
 INCLUDE_ASM("asm/overlays", func_L12_00309730);
 INCLUDE_ASM("asm/overlays", func_L12_0030A7A8);
 INCLUDE_ASM("asm/overlays", func_L12_0030A880);
-INCLUDE_ASM("asm/overlays", func_L12_0030CAA8);
+extern char *func_L00_0025B478(void *, int, int);
+extern void func_0022ED80(int, int, int);
+extern void func_L01_00279790(void *);
+extern void func_L00_00264EA8(void *, int, int, int, int, int, int);
+extern void func_L01_00279E10(void *, int);
+extern void func_0020D678(void *);
+void func_L12_0030CAA8(char *m) {
+    int hit = 0;
+    char *r = func_L00_0025B478(m, 0x10000, 0);
+    switch (*(unsigned char *)(m + 0x20)) {
+    case 0:
+        m[0x20] = 1;
+        break;
+    case 1:
+        if (r != 0 && *(float *)(r + 0x2C) > 0.0f) hit = 1;
+        if (hit) m[0x20] = 2;
+        break;
+    case 2:
+        func_0022ED80(0, 0, (int)m);
+        func_L01_00279790(m);
+        func_L00_00264EA8(m, 0x748, 1, 0x748, 1, 11, 2);
+        func_L01_00279E10(m, 0x747);
+        DeleteMoby(m);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L12_0030D248);
 INCLUDE_ASM("asm/overlays", func_L12_0030D3D0);

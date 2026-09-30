@@ -24,10 +24,82 @@ INCLUDE_ASM("asm/overlays", func_L05_00319C08);
 INCLUDE_ASM("asm/overlays", func_L05_0031AA20);
 INCLUDE_ASM("asm/overlays", func_L05_0031AAA8);
 INCLUDE_ASM("asm/overlays", func_L05_0031AB00);
-INCLUDE_ASM("asm/overlays", func_L05_0031AB08);
-INCLUDE_ASM("asm/overlays", func_L05_0031ABA0);
-INCLUDE_ASM("asm/overlays", func_L05_0031AC50);
-INCLUDE_ASM("asm/overlays", func_L05_0031ADF8);
+extern float func_00214D88(float, float, float, float, float *, float *);
+extern void func_00215CA8(int *, int, void *, float *, int, float);
+
+/* Advances a moby's path: steps the path position and returns whether it has reached the end. */
+int func_L05_0031AB08(char *m) {
+    char *d = *(char **)(m + 0x78);
+    int *path;
+    func_00214D88(1.0f, *(float *)(d + 0xD8), *(float *)(d + 0xD8), *(float *)(d + 0xD4), (float *)(d + 0xC0), (float *)(d + 0xC4));
+    path = *(int **)(d + 0xAC);
+    func_00215CA8(path, 0, d + 0x60, (float *)(d + 0x70), 0, *(float *)(d + 0xC0) * (float)(*path - 1));
+    return *(float *)(d + 0xC0) >= 1.0f;
+}
+extern void func_00215F80(int, int);
+
+/* Plays the sound that goes with the moby's current variant. */
+void func_L05_0031ABA0(char *moby) {
+    switch (*(short *)(*(char **)(moby + 0x78) + 0xB6)) {
+    case 0: try_set_help_message(8, 0x13A5); break;
+    case 1: try_set_help_message(8, 0x1398); break;
+    case 2: try_set_help_message(8, 0x139A); break;
+    case 3: try_set_help_message(8, 0x139C); break;
+    case 4: try_set_help_message(8, 0x1399); break;
+    default: try_set_help_message(8, 0x139B); break;
+    }
+}
+extern float func_001FA748(float, float);
+extern float func_001F9FA8(float);
+extern float D_0015EE6C MACRO_ADDR;
+/* Wobbles a moby's position and rotation from its sine-driven state. */
+void func_L05_0031AC50(char *moby) {
+    char *d = *(char **)(moby + 0x78);
+    float s, t, w;
+    qcopy(moby + 0x10, d + 0x60);
+    qcopy(moby + 0x40, d + 0x70);
+    s = FastAddRots(*(float *)(d + 0xC8), D_0015EE6C * 2.0943951f);
+    *(float *)(d + 0xC8) = s;
+    t = FastSin(s);
+    w = D_0015EE6C * 1.6929693f;
+    *(float *)(moby + 0x18) += t * 0.25f;
+    s = FastAddRots(*(float *)(d + 0xCC), w);
+    *(float *)(d + 0xCC) = s;
+    t = FastAddRots(*(float *)(moby + 0x44), FastSin(s) * 0.08726646f);
+    w = D_0015EE6C * 0.9250245f;
+    *(float *)(moby + 0x44) = t;
+    s = FastAddRots(*(float *)(d + 0xD0), w);
+    *(float *)(d + 0xD0) = s;
+    *(float *)(moby + 0x40) = FastAddRots(*(float *)(moby + 0x40), FastSin(s) * 0.08726646f);
+    if (*(float *)(moby + 0x40) > 0.17453292f) *(float *)(moby + 0x40) = 0.17453292f;
+    else if (*(float *)(moby + 0x40) < -0.17453292f) *(float *)(moby + 0x40) = -0.17453292f;
+    if (*(float *)(moby + 0x44) > 0.17453292f) *(float *)(moby + 0x44) = 0.17453292f;
+    else if (*(float *)(moby + 0x44) < -0.17453292f) *(float *)(moby + 0x44) = -0.17453292f;
+}
+extern void func_001F9EC0(void *, void *, void *);
+extern void func_001F9BD8(void *, void *, void *);
+extern char *D_L05_001B0CB0[];
+extern char D_L05_00215F40[];
+extern char D_0013F450[];
+
+/* Transforms the 7 vectors of a level table entry into the moby's space and records its index. */
+void func_L05_0031ADF8(char *a) {
+    char *data = *(char **)(a + 0x78);
+    int idx = *(int *)(data + 0xDC);
+    if (idx != -1) {
+        char *p = D_L05_001B0CB0[idx];
+        if (*(int *)p == 7) {
+            int i;
+            char *g;
+            for (i = 0; i < 7; i++) {
+                func_001F9EC0(p + 0x10 + i * 16, D_L05_00215F40 + i * 16, a + 0xC0);
+                FastVecAdd(p + 0x10 + i * 16, p + 0x10 + i * 16, a + 0x10);
+            }
+            g = D_0013F450;
+            *(unsigned short *)(g + 0x22DA) = *(unsigned short *)(data + 0xDC);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L05_0031C0F0);
 INCLUDE_ASM("asm/overlays", func_L05_0031DDF0);
 INCLUDE_ASM("asm/overlays", func_L05_0031E468);

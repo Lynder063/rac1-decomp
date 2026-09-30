@@ -30,7 +30,21 @@ void func_L03_002D44C8(void *arg, int mode) {
 }
 INCLUDE_ASM("asm/overlays", func_L03_002D4560);
 INCLUDE_ASM("asm/overlays", func_L03_002D4CE0);
-INCLUDE_ASM("asm/overlays", func_L03_002D5008);
+extern void func_L00_00263B78(float, float, char *, float *, float *);
+extern void func_L00_00263BF8(void *, char *, char *, float, float, float);
+extern float D_0015EE6C MACRO_ADDR;
+extern short D_L03_00161B70_g __asm__("D_L03_00161B70");
+extern short D_L03_00161B74_g __asm__("D_L03_00161B74");
+extern short D_L03_00161B78_g __asm__("D_L03_00161B78");
+extern short D_L03_00161B7C_g __asm__("D_L03_00161B7C");
+extern short D_L03_00161B80_g __asm__("D_L03_00161B80");
+
+/* Sets two speed pairs on a moby's data from level constants scaled by degrees-to-radians and the frame scale. */
+void func_L03_002D5008(char *m) {
+    char *d = *(char **)(m + 0x78);
+    func_L00_00263B78(*(float *)&D_L03_00161B70_g, *(float *)&D_L03_00161B74_g * 0.0174532925f * D_0015EE6C, m, (float *)(d + 0xEC), (float *)(d + 0xE8));
+    func_L00_00263BF8(m, d + 0xF0, d + 0xF4, *(float *)&D_L03_00161B78_g, *(float *)&D_L03_00161B7C_g * 0.0174532925f * D_0015EE6C, *(float *)&D_L03_00161B80_g * 0.0174532925f * D_0015EE6C);
+}
 INCLUDE_ASM("asm/overlays", func_L03_002D5220);
 INCLUDE_ASM("asm/overlays", func_L03_002D5650);
 INCLUDE_ASM("asm/overlays", func_L03_002D5790);
@@ -55,7 +69,31 @@ INCLUDE_ASM("asm/overlays", func_L03_002DE088);
 INCLUDE_ASM("asm/overlays", func_L03_002DE4B8);
 INCLUDE_ASM("asm/overlays", func_L03_002E08E8);
 INCLUDE_ASM("asm/overlays", func_L03_002E1598);
-INCLUDE_ASM("asm/overlays", func_L03_002E3D10);
+extern void func_0022ED80(int, int, int);
+extern void func_L01_00279790(void *);
+extern void func_L00_00264EA8(void *, int, int, int, int, int, int);
+extern void func_L01_00279E10(void *, int);
+extern void func_0020D678(void *);
+void func_L03_002E3D10(char *m) {
+    int hit = 0;
+    char *r = func_L00_0025B478(m, 0x10000, 0);
+    switch (*(unsigned char *)(m + 0x20)) {
+    case 0:
+        m[0x20] = 1;
+        break;
+    case 1:
+        if (r != 0 && *(float *)(r + 0x2C) > 0.0f) hit = 1;
+        if (hit) m[0x20] = 2;
+        break;
+    case 2:
+        func_0022ED80(0, 0, (int)m);
+        func_L01_00279790(m);
+        func_L00_00264EA8(m, 0x725, 1, 0x725, 1, 1, 2);
+        func_L01_00279E10(m, 0x724);
+        DeleteMoby(m);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L03_002ECBA8);
 INCLUDE_ASM("asm/overlays", func_L03_002ECD40);
 INCLUDE_ASM("asm/overlays", func_L03_002ECEC8);

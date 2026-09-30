@@ -20,7 +20,32 @@ INCLUDE_ASM("asm/overlays", func_L08_002DBF68);
 INCLUDE_ASM("asm/overlays", func_L08_002DD128);
 INCLUDE_ASM("asm/overlays", func_L08_002DD440);
 INCLUDE_ASM("asm/overlays", func_L08_002DD4F8);
-INCLUDE_ASM("asm/overlays", func_L08_002DD818);
+extern float func_001FA748(float, float);
+extern float D_0015EE6C MACRO_ADDR;
+extern float func_001F9FA8(float);
+void func_L08_002DD818(char *moby) {
+    char *d = *(char **)(moby + 0x78);
+    float s, t, w;
+    qcopy(moby + 0x10, d + 0x60);
+    qcopy(moby + 0x40, d + 0x70);
+    s = FastAddRots(*(float *)(d + 0xEC), D_0015EE6C * 2.0943951f);
+    *(float *)(d + 0xEC) = s;
+    t = FastSin(s);
+    w = D_0015EE6C * 1.6929693f;
+    *(float *)(moby + 0x18) += t * 0.25f;
+    s = FastAddRots(*(float *)(d + 0xF0), w);
+    *(float *)(d + 0xF0) = s;
+    t = FastAddRots(*(float *)(moby + 0x44), FastSin(s) * 0.08726646f);
+    w = D_0015EE6C * 0.9250245f;
+    *(float *)(moby + 0x44) = t;
+    s = FastAddRots(*(float *)(d + 0xF4), w);
+    *(float *)(d + 0xF4) = s;
+    *(float *)(moby + 0x40) = FastAddRots(*(float *)(moby + 0x40), FastSin(s) * 0.08726646f);
+    if (*(float *)(moby + 0x40) > 0.17453292f) *(float *)(moby + 0x40) = 0.17453292f;
+    else if (*(float *)(moby + 0x40) < -0.17453292f) *(float *)(moby + 0x40) = -0.17453292f;
+    if (*(float *)(moby + 0x44) > 0.17453292f) *(float *)(moby + 0x44) = 0.17453292f;
+    else if (*(float *)(moby + 0x44) < -0.17453292f) *(float *)(moby + 0x44) = -0.17453292f;
+}
 INCLUDE_ASM("asm/overlays", func_L08_002DD9C0);
 extern void func_00215F80(int, int);
 extern int D_L08_001B0FB0[];
@@ -37,7 +62,33 @@ void func_L08_002DDB68(char *moby) {
         try_set_help_message(0xA, 0x1F4E);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L08_002DDC18);
+extern char *func_0020D348(int);
+extern int func_001F9850(int);
+extern float func_002140F8(float, float);
+extern float func_L00_001FF860(float, float);
+extern void func_L00_00251E30(void *);
+/* Spawns a moby of class 0x1A9 at a position, with a random spin and a heading from a vector. */
+char *func_L08_002DDC18(char *src, char *pos, char *vec) {
+    char *moby = CreateMoby(0x1A9);
+    char *data;
+    if (moby) {
+        data = *(char **)(moby + 0x78);
+        *(unsigned char *)(moby + 0x30) = 0xFF;
+        *(short *)(moby + 0x32) = 0xFF;
+        moby[0x31] = 1;
+        moby[0x20] = 1;
+        *(char **)(data + 0x20) = src;
+        *(int *)(data + 0x10) = scale_ticks(0x12C);
+        *(float *)(data + 0x1C) = 1.0f;
+        *(int *)(data + 0x14) = 0;
+        qcopy(moby + 0x10, pos);
+        qcopy(data, vec);
+        *(float *)(moby + 0x40) = random_float_between(-180.0f, 180.0f) * 0.017453293f;
+        *(float *)(moby + 0x48) = func_L00_001FF860(*(float *)vec, *(float *)(vec + 4)) + 1.5707964f;
+        func_L00_00251E30(moby);
+    }
+    return moby;
+}
 INCLUDE_ASM("asm/overlays", func_L08_002DDD20);
 INCLUDE_ASM("asm/overlays", func_L08_002DE738);
 INCLUDE_ASM("asm/overlays", func_L08_002DF750);

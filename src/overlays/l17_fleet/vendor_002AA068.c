@@ -13,7 +13,22 @@ INCLUDE_ASM("asm/overlays", func_L17_002DD8D0);
 INCLUDE_ASM("asm/overlays", func_L17_002EA2C8);
 INCLUDE_ASM("asm/overlays", func_L17_002EA8F8);
 INCLUDE_ASM("asm/overlays", func_L17_002EAFC8);
-INCLUDE_ASM("asm/overlays", func_L17_002EBF08);
+extern int func_001F4868(int);
+extern void func_L11_003121C0(float, float, float, float, float, int, int, int, int, int, int, int, int);
+extern float func_001FA748(float, float);
+void func_L17_002EBF08(unsigned char a, unsigned char b, unsigned char c, unsigned char d, float x, float y, float s, float ang) {
+    int h;
+    float w;
+    h = GetEffectTex(0x2E);
+    w = s * 20.0f;
+    func_L11_003121C0(x, y, w, w, ang, 0x3F, 0x3F, h, 0xFFFFF3, a, b, c, d);
+    ang = FastAddRots(ang, 1.5707964f);
+    func_L11_003121C0(x, y, w, w, ang, 0x3F, 0x3F, h, 0xFFFFF3, a, b, c, d);
+    ang = FastAddRots(ang, 1.5707964f);
+    func_L11_003121C0(x, y, w, w, ang, 0x3F, 0x3F, h, 0xFFFFF3, a, b, c, d);
+    ang = FastAddRots(ang, 1.5707964f);
+    func_L11_003121C0(x, y, w, w, ang, 0x3F, 0x3F, h, 0xFFFFF3, a, b, c, d);
+}
 INCLUDE_ASM("asm/overlays", func_L17_002EC5D0);
 INCLUDE_ASM("asm/overlays", func_L17_002EC7D8);
 INCLUDE_ASM("asm/overlays", func_L17_002ED258);

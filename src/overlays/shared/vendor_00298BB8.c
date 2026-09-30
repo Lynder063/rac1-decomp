@@ -14,7 +14,18 @@ INCLUDE_ASM("asm/overlays", func_L15_0029B2B0);
 INCLUDE_ASM("asm/overlays", func_L15_0029B428);
 INCLUDE_ASM("asm/overlays", func_L15_0029B488);
 INCLUDE_ASM("asm/overlays", func_L15_0029B750);
-INCLUDE_ASM("asm/overlays", func_L15_0029BD88);
+extern void func_L00_00264690(void *, int, float, float);
+
+/* Applies the same effect to three consecutive 16-byte slots of a moby's data, tagged with its colour word. */
+void func_L15_0029BD88(char *m) {
+    int v = (*(int *)(m + 0x90) & 0xFFFFFF) | 0x30000000;
+    char *p = *(char **)(m + 0x78) + 0x2A0;
+    int i;
+    for (i = 2; i >= 0; i--) {
+        func_L00_00264690(p, v, 0.2f, 0.08f);
+        p += 0x10;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L15_0029BE10);
 INCLUDE_ASM("asm/overlays", func_L15_0029BFF8);
 INCLUDE_ASM("asm/overlays", func_L15_0029C168);

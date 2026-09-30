@@ -28,7 +28,16 @@ int func_L17_002F1B50(char *a) {
 }
 INCLUDE_ASM("asm/overlays", func_L17_002F1BB0);
 INCLUDE_ASM("asm/overlays", func_L17_002F1D20);
-INCLUDE_ASM("asm/overlays", func_L17_002F1F58);
+extern void func_L00_00264690(void *, int, float, float);
+void func_L17_002F1F58(char *m) {
+    int v = (*(int *)(m + 0x90) & 0xFFFFFF) | 0x30000000;
+    char *p = *(char **)(m + 0x78) + 0x200;
+    int i;
+    for (i = 2; i >= 0; i--) {
+        func_L00_00264690(p, v, 0.2f, 0.08f);
+        p += 0x10;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L17_002F1FE0);
 INCLUDE_ASM("asm/overlays", func_L17_002F2458);
 INCLUDE_ASM("asm/overlays", func_L17_002F2BD8);
@@ -45,7 +54,48 @@ INCLUDE_ASM("asm/overlays", func_L17_002F6AF0);
 INCLUDE_ASM("asm/overlays", func_L17_002F6AF8);
 INCLUDE_ASM("asm/overlays", func_L17_002F6DA0);
 INCLUDE_ASM("asm/overlays", func_L17_002F6ED0);
-INCLUDE_ASM("asm/overlays", func_L17_002F7018);
+extern char D_L17_00167740[];
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern float func_001F9C78(void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern float func_001F9CB8(void *);
+
+typedef struct { float x, y, z; } V3;
+typedef struct { V3 v; float w; } V4;
+
+/* Projects each direction pair into 2D texture coordinates (reflection mapping). */
+void func_L17_002F7018(int n, V3 *b, V3 *a, int unused, float *out) {
+    V4 v0;
+    V4 p;
+    V4 r;
+    V4 q;
+    int i;
+    for (i = 0; i < n; i++) {
+        float d;
+        float len;
+        p.w = 1.0f;
+        p.v.x = a[i].x;
+        p.v.y = a[i].y;
+        p.v.z = a[i].z;
+        FastVecSub(&v0, &p, D_L17_00167740);
+        func_L00_001FF4B0(&v0, &v0, 1.0f);
+        q.w = 1.0f;
+        q.v.x = b[i].x;
+        q.v.y = b[i].y;
+        q.v.z = b[i].z;
+        func_L00_001FF4B0(&q, &q, 1.0f);
+        d = FastVecDot(&q, &v0);
+        FastVecScale(&r, &q, d + d);
+        FastVecSub(&r, &v0, &r);
+        func_L00_001FF4B0(&r, &r, 1.0f);
+        r.v.z = r.v.z + 1.0f;
+        len = FastVecLength(&r);
+        len = len + len;
+        out[i * 2] = (r.v.x / len + 0.5f) * 4.0f;
+        out[i * 2 + 1] = (r.v.y / len + 0.5f) * 4.0f;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L17_002F71D0);
 INCLUDE_ASM("asm/overlays", func_L17_002F74E8);
 INCLUDE_ASM("asm/overlays", func_L17_002F7C78);

@@ -10,7 +10,53 @@ INCLUDE_ASM("asm/overlays", func_L06_00300AB0);
 INCLUDE_ASM("asm/overlays", func_L06_00300DA8);
 INCLUDE_ASM("asm/overlays", func_L06_00301FE8);
 INCLUDE_ASM("asm/overlays", func_L06_003020B8);
-INCLUDE_ASM("asm/overlays", func_L06_00303630);
+extern int D_L06_0015F6B0 MACRO_ADDR;
+extern short D_L06_00162158;
+extern short D_L06_0016215C;
+extern short D_L06_00162160;
+extern short D_L06_00162164;
+extern short D_L06_00162168;
+extern short D_L06_0016216C;
+extern short D_L06_00162170;
+extern short D_L06_00162174;
+extern short D_L06_00162178;
+extern void func_001F62C8(int, int, int, int, int);
+extern float func_001FA888(int);
+extern float func_001F9FA8(float);
+extern int func_001FA8A8(int, int, float);
+extern int func_001F9850(int);
+extern int func_002140B0(int);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern int func_001F6FD8(int a, int b, int c, int d, int e);
+
+#define W(x) (*(int *)&(x))
+
+/* Draws the level timer as "H:MM:SS.t" text with a pulsing colour. */
+void func_L06_00303630(char *moby) {
+    char buf[8];
+    char *data = *(char **)(moby + 0x78);
+    float v;
+    int col;
+
+    DrawUIFrame(W(D_L06_00162168) + W(D_L06_0016215C), W(D_L06_0016216C) + W(D_L06_0016215C),
+                  W(D_L06_00162170) + W(D_L06_00162158), W(D_L06_00162174) + W(D_L06_00162158), W(D_L06_00162178));
+    v = FastSin(func_001FA888(D_L06_0015F6B0 % 60) / 60.0f * 6.28318f) * 3.0f + 0.5f;
+    if (v > 1.0f) {
+        v = 1.0f;
+    } else if (v < 0.0f) {
+        v = 0.0f;
+    }
+    col = FastTweenColor(W(D_L06_00162160), W(D_L06_00162164), v);
+    buf[0] = 0x30;
+    buf[1] = *(int *)(data + 0xB4) / scale_ticks(0xE10) + 0x30;
+    buf[2] = 0x3A;
+    buf[3] = *(int *)(data + 0xB4) % scale_ticks(0xE10) / scale_ticks(0x258) + 0x30;
+    buf[4] = *(int *)(data + 0xB4) % scale_ticks(0x258) / scale_ticks(0x3C) + 0x30;
+    buf[5] = 0x3A;
+    buf[6] = *(int *)(data + 0xB4) % scale_ticks(0x3C) / scale_ticks(6) + 0x30;
+    buf[7] = func_001FA898_r((float)random_integer_below(10)) + 0x30;
+    FontPrintCenterLarge(W(D_L06_00162158), W(D_L06_0016215C), col, (int)buf, 8);
+}
 INCLUDE_ASM("asm/overlays", func_L06_00304590);
 INCLUDE_ASM("asm/overlays", func_L06_003089B8);
 INCLUDE_ASM("asm/overlays", func_L06_00309088);

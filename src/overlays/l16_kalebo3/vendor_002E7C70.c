@@ -15,12 +15,106 @@ INCLUDE_ASM("asm/overlays", func_L16_002E9960);
 INCLUDE_ASM("asm/overlays", func_L16_002E9D48);
 INCLUDE_ASM("asm/overlays", func_L16_002E9DE8);
 INCLUDE_ASM("asm/overlays", func_L16_002E9F80);
-INCLUDE_ASM("asm/overlays", func_L16_002EA010);
-INCLUDE_ASM("asm/overlays", func_L16_002EA1B8);
+typedef struct {
+    float x, y, z;
+} Vec3f;
+extern char D_L16_00167240[];
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern float func_001F9C78(void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern float func_001F9CB8(void *);
+
+/* For each of n point pairs, reflects a direction and writes its 2D map coordinates. */
+void func_L16_002EA010(int n, Vec3f *p1, Vec3f *p2, int unused, float *out) {
+    int i;
+    float a[4];
+    float v[4];
+    float t[4];
+    float w[4];
+
+    for (i = 0; i < n; i++) {
+        float d;
+        float len;
+
+        v[3] = 1.0f;
+        v[0] = p2[i].x;
+        v[1] = p2[i].y;
+        v[2] = p2[i].z;
+        FastVecSub(a, v, D_L16_00167240);
+        func_L00_001FF4B0(a, a, 1.0f);
+        w[3] = 1.0f;
+        w[0] = p1[i].x;
+        w[1] = p1[i].y;
+        w[2] = p1[i].z;
+        func_L00_001FF4B0(w, w, 1.0f);
+        d = FastVecDot(w, a);
+        FastVecScale(t, w, d + d);
+        FastVecSub(t, a, t);
+        func_L00_001FF4B0(t, t, 1.0f);
+        t[2] = t[2] + 1.0f;
+        len = FastVecLength(t);
+        len = len + len;
+        out[i * 2] = (t[0] / len + 0.5f) * 2.0f;
+        out[i * 2 + 1] = (t[1] / len + 0.5f) * 2.0f;
+    }
+}
+extern short D_L16_00161FB0;
+extern short D_L16_00161FC0;
+extern short D_L16_00161FD0;
+extern short D_L16_00161FE0;
+extern short D_L16_00161FF0;
+extern char D_L16_001DC8D0[][16];
+extern char D_L16_001DC900[];
+extern int func_001F4868(int);
+extern void func_00234C98(int, long);
+extern void func_001F7868(void);
+extern int func_L00_00200290(char *, float);
+extern void func_L00_001FDE48(int, int, int, char *, int);
+
+/* Sets up the draw state, then draws the three entries of the level's table. */
+void func_L16_002EA1B8(void) {
+    int *a = (int *)&D_L16_00161FB0;
+    int *b = (int *)&D_L16_00161FC0;
+    int *c = (int *)&D_L16_00161FD0;
+    int *d = (int *)&D_L16_00161FE0;
+    int *e = (int *)&D_L16_00161FF0;
+    int i;
+
+    VU1_addGSregister(6, GetEffectTex(0x29));
+    VU1_addGSregister(0x42, 0x4000000064);
+    VU1_addGSregister(8, 0);
+    VU1_addGSregister(0x14, 0xFF9000000260);
+    func_001F7868();
+    for (i = 0; i < 3; i++) {
+        if (FastBSphereCheck(D_L16_001DC8D0[i], 512.0f) != -1) {
+            func_L16_002EA010(a[i], d[i], b[i], c[i], D_L16_001DC900);
+            func_L00_001FDE48(a[i], b[i], e[i], D_L16_001DC900, 1);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L16_002EA2F8);
 INCLUDE_ASM("asm/overlays", func_L16_002EA6E8);
 INCLUDE_ASM("asm/overlays", func_L16_002EA828);
 INCLUDE_ASM("asm/overlays", func_L16_002EAC18);
 INCLUDE_ASM("asm/overlays", func_L16_002EAD58);
-INCLUDE_ASM("asm/overlays", func_L16_002EB158);
+extern short D_L16_00162078[1];
+extern short D_L16_00162088[1];
+extern short D_L16_00162098[1];
+extern short D_L16_001620A8[1];
+extern short D_L16_001620B8[1];
+extern char D_L16_001E2BA0[];
+/* Sets up the draw state then runs both per-slot calls over three entries. */
+void func_L16_002EB158(void) {
+    int i;
+    VU1_addGSregister(6, GetEffectTex(0x29));
+    VU1_addGSregister(0x42, 0x4000000064L);
+    VU1_addGSregister(8, 0);
+    VU1_addGSregister(0x14, 0xFF9000000260L);
+    func_001F7868();
+    for (i = 0; i < 3; i++) {
+        func_L16_002EA010(((int *)D_L16_00162078)[i], ((int *)D_L16_001620A8)[i], ((int *)D_L16_00162088)[i], ((int *)D_L16_00162098)[i], D_L16_001E2BA0);
+        func_L00_001FDE48(((int *)D_L16_00162078)[i], ((int *)D_L16_00162088)[i], ((int *)D_L16_001620B8)[i], D_L16_001E2BA0, 1);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L16_002EB5A0);

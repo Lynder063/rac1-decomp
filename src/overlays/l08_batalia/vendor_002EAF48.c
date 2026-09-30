@@ -5,7 +5,43 @@
 INCLUDE_ASM("asm/overlays", func_L08_002EAF48);
 INCLUDE_ASM("asm/overlays", func_L08_002EB770);
 INCLUDE_ASM("asm/overlays", func_L08_002EB980);
-INCLUDE_ASM("asm/overlays", func_L08_002F2288);
+extern void func_00234C98(int, long);
+extern void func_001F7868(void);
+extern int func_001F4868(int);
+extern void func_L08_002F2000(int);
+extern void func_L08_002F20D8(int);
+extern void func_L08_002F21B0(int);
+extern short D_L08_00161E60;
+extern short D_L08_00161E80;
+extern short D_L08_00161E90;
+extern int D_L08_00161E64 MACRO_ADDR;
+extern int D_L08_00161E68 MACRO_ADDR;
+extern int D_L08_00161E84 MACRO_ADDR;
+extern int D_L08_00161E98 MACRO_ADDR;
+/* Draws three rows of HUD elements with their colours. */
+void func_L08_002F2288(void) {
+    VU1_addGSregister(0x42, 0x8000000044L);
+    VU1_addGSregister(8, 0);
+    VU1_addGSregister(0x14, 0xFF9000000260L);
+    VU1_addGSregister(0x47, 0x513F1);
+    func_001F7868();
+    VU1_addGSregister(6, GetEffectTex(0x3A));
+    VU1_addGSregister(0x42, (long)*(int *)&D_L08_00161E60 << 32 | 0x44);
+    func_L08_002F2000(0);
+    VU1_addGSregister(6, GetEffectTex(0x3B));
+    VU1_addGSregister(0x42, (long)((D_L08_00161E64 * *(unsigned char *)&D_L08_00161E98) >> 8) << 32 | 0x62);
+    func_L08_002F2000(1);
+    VU1_addGSregister(0x42, (long)((D_L08_00161E68 * *(unsigned char *)&D_L08_00161E98) >> 8) << 32 | 0x68);
+    func_L08_002F2000(2);
+    VU1_addGSregister(6, GetEffectTex(0x3C));
+    VU1_addGSregister(0x42, (long)*(int *)&D_L08_00161E80 << 32 | 0x48);
+    func_L08_002F20D8(0);
+    VU1_addGSregister(0x42, (long)D_L08_00161E84 << 32 | 0x48);
+    func_L08_002F20D8(1);
+    VU1_addGSregister(6, GetEffectTex(0x3D));
+    VU1_addGSregister(0x42, (long)*(int *)&D_L08_00161E90 << 32 | 0x48);
+    func_L08_002F21B0(0);
+}
 INCLUDE_ASM("asm/overlays", func_L08_002F2A08);
 INCLUDE_ASM("asm/overlays", func_L08_002F5980);
 INCLUDE_ASM("asm/overlays", func_L08_002F7258);
@@ -22,7 +58,29 @@ INCLUDE_ASM("asm/overlays", func_L08_00309998);
 INCLUDE_ASM("asm/overlays", func_L08_0030A150);
 INCLUDE_ASM("asm/overlays", func_L08_0030A278);
 INCLUDE_ASM("asm/overlays", func_L08_0030A350);
-INCLUDE_ASM("asm/overlays", func_L08_0030A428);
+typedef struct { int a, b; } Pair;
+extern char D_L08_001F8820[];
+extern Pair D_L08_00162498[] MACRO_ADDR;
+extern short D_L08_00162458;
+extern short D_L08_00162460;
+extern short D_L08_00162468;
+extern short D_L08_00162478;
+extern void func_L08_00259040(void *, int, int, void *);
+extern void func_L00_001FDE48(int, int, int, void *, int);
+
+/* Runs the two-entry setup loop for slot `x`: one call fills from the tables, the second applies them. */
+void func_L08_0030A428(int x) {
+    int i;
+    int *a = (int *)&D_L08_00162458;
+    int *b = (int *)&D_L08_00162468;
+    int *c = (int *)&D_L08_00162460;
+    int *e = (int *)&D_L08_00162478;
+
+    for (i = 0; i < 2; i++) {
+        func_L08_00259040(D_L08_001F8820, b[i], a[i], &D_L08_00162498[x]);
+        func_L00_001FDE48(a[i], c[i], e[i], D_L08_001F8820, 1);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L08_0030A4F0);
 INCLUDE_ASM("asm/overlays", func_L08_0030AC70);
 INCLUDE_ASM("asm/overlays", func_L08_0030D0C0);

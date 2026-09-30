@@ -25,7 +25,40 @@ INCLUDE_ASM("asm/overlays", func_L08_002E6208);
 INCLUDE_ASM("asm/overlays", func_L08_002E6500);
 INCLUDE_ASM("asm/overlays", func_L08_002E9B60);
 INCLUDE_ASM("asm/overlays", func_L08_002E9CB0);
-INCLUDE_ASM("asm/overlays", func_L08_002E9F78);
+extern void func_L00_00250800(void *, int, void *);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9BD8(void *, void *, void *);
+extern float func_001FA748(float, float);
+extern void func_L00_00251E30(void *);
+extern float D_0015EE6C MACRO_ADDR;
+extern short D_L08_00161DB8;
+
+/* Re-aims the twelve child mobys of a parent, adjusts the parent's spin, then runs the children's follow-up. */
+void func_L08_002E9F78(char *a) {
+    char *data = *(char **)(a + 0x78);
+    float v0[4], v10[4], v20[4];
+    char *base = data + 0x60;
+    int i;
+    for (i = 0; i < 12; i++) {
+        int *e = (int *)(base + 0x1C + i * 16);
+        char *m = (char *)e[-3];
+        if (m != 0) {
+            *(float *)(m + 0x48) = *(float *)(a + 0x48);
+            func_L00_00250800(m, e[-1], v0);
+            func_L00_00250800((void *)e[-2], e[0], v10);
+            FastVecSub(v20, v10, v0);
+            FastVecAdd(m + 0x10, m + 0x10, v20);
+        }
+    }
+    if (*(int *)(data + 0x90) != 0) {
+        char *r = *(char **)(data + 0x90);
+        *(float *)(*(char **)(data + 0x90) + 0x40) = FastAddRots(*(float *)(r + 0x40), *(float *)&D_L08_00161DB8 * 0.01745329238474369049072265625f * D_0015EE6C);
+    }
+    for (i = 0; i < 12; i++) {
+        char *m = *(char **)(base + 0x10 + i * 16);
+        if (m != 0) func_L00_00251E30(m);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L08_002EA0A8);
 INCLUDE_ASM("asm/overlays", func_L08_002EA930);
 INCLUDE_ASM("asm/overlays", func_L08_002EAB30);
