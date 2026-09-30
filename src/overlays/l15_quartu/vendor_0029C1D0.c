@@ -17,7 +17,29 @@ INCLUDE_ASM("asm/overlays", func_L15_002D0798);
 INCLUDE_ASM("asm/overlays", func_L15_002D2398);
 INCLUDE_ASM("asm/overlays", func_L15_002E5AA0);
 INCLUDE_ASM("asm/overlays", func_L15_002E87B0);
-INCLUDE_ASM("asm/overlays", func_L15_002E92C8);
+extern char *func_0020D348(int);
+extern void func_001F9BC0(void *);
+extern void func_L00_00251E30(void *, void *);
+
+char *func_L15_002E92C8(void *unused, void *vector) {
+    char *moby = CreateMoby(0x4E9);
+    if (moby != 0) {
+        char *data = *(char **)(moby + 0x78);
+        char *field;
+        ((unsigned char *)moby)[0x30] = 0xFF;
+        *(short *)(moby + 0x32) = 0x7F;
+        moby[0x31] = 1;
+        moby[0x20] = 0;
+        moby[0xBC] = 0;
+        *(int *)(data + 0x10) = 0;
+        func_001F9BC0(data);
+        qcopy(moby + 0x10, vector);
+        field = *(char **)(moby + 0x24);
+        *(int *)(moby + 0x94) = *(int *)(field + 0x10);
+        func_L00_00251E30(moby, field);
+    }
+    return moby;
+}
 INCLUDE_ASM("asm/overlays", func_L15_002E9358);
 INCLUDE_ASM("asm/overlays", func_L15_002EBB38);
 INCLUDE_ASM("asm/overlays", func_L15_002EBFC8);

@@ -19,7 +19,7 @@ void func_L00_001FE9C8(void) {
     P *p = D_L00_0016EB40;
     for (i = 15; i >= 0; i--, p++) {
         if (p->life > 0) {
-            p->f = FastSubRots(p->f, D_0015EE6C * 5.2359877f);
+            p->f = func_001FA790(p->f, D_0015EE6C * 5.2359877f);
             if (p->life > 12) {
                 p->ang = p->ang + 5;
             } else {
@@ -27,7 +27,7 @@ void func_L00_001FE9C8(void) {
             }
             p->life = p->life - 1;
             if (p->life <= 0) {
-                FastMemSet(p, 0, 0x20);
+                func_001F99B0(p, 0, 0x20);
             }
         }
     }

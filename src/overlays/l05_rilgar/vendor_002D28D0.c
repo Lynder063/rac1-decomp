@@ -14,7 +14,23 @@ INCLUDE_ASM("asm/overlays", func_L05_002DBF10);
 INCLUDE_ASM("asm/overlays", func_L05_002DC1E8);
 INCLUDE_ASM("asm/overlays", func_L05_002DC2A8);
 INCLUDE_ASM("asm/overlays", func_L05_002DC4C8);
-INCLUDE_ASM("asm/overlays", func_L05_002F9B10);
+extern char *func_0020D348(int);
+extern void func_L00_00251E30(void *);
+
+char *func_L05_002F9B10(char *owner) {
+    char *moby = CreateMoby(0x1B7);
+    if (moby != 0) {
+        ((unsigned char *)moby)[0x30] = 0xFF;
+        *(short *)(moby + 0x32) = 0xFF;
+        moby[0x31] = 1;
+        moby[0x20] = 2;
+        qcopy(moby + 0x10, owner + 0x10);
+        qcopy(moby + 0x40, owner + 0x40);
+        *(unsigned long *)(moby + 0x38) = *(unsigned long *)(owner + 0x38);
+        func_L00_00251E30(moby);
+    }
+    return moby;
+}
 INCLUDE_ASM("asm/overlays", func_L05_003033A0);
 INCLUDE_ASM("asm/overlays", func_L05_003047E8);
 INCLUDE_ASM("asm/overlays", func_L05_00304F60);
@@ -27,7 +43,9 @@ INCLUDE_ASM("asm/overlays", func_L05_00306CF0);
 INCLUDE_ASM("asm/overlays", func_L05_00308188);
 INCLUDE_ASM("asm/overlays", func_L05_00308268);
 INCLUDE_ASM("asm/overlays", func_L05_003087B0);
-INCLUDE_ASM("asm/overlays", func_L05_003088C8);
+int func_L05_003088C8(int arg) {
+    return arg == 5 ? 6 : arg;
+}
 INCLUDE_ASM("asm/overlays", func_L05_003088D8);
 INCLUDE_ASM("asm/overlays", func_L05_003089C8);
 INCLUDE_ASM("asm/overlays", func_L05_00308D68);

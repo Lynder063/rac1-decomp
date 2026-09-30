@@ -31,7 +31,7 @@ void func_L00_0028BBF8(void) {
     if (*(short *)(D_L00_001605DC + 8) == 0) func_L00_0028A198(0x78, 8);
     func_L00_0028A3E0();
     SkySpriteProc();
-    VU1_addGSregister(0x42, 0x8000000044L);
+    func_00234C98(0x42, 0x8000000044L);
     SkyDrawShell(2);
 }
 INCLUDE_ASM("asm/overlays", func_L00_0028BC70);

@@ -22,7 +22,26 @@ INCLUDE_ASM("asm/overlays", func_L14_002EFD38);
 INCLUDE_ASM("asm/overlays", func_L14_002F03E8);
 INCLUDE_ASM("asm/overlays", func_L14_002F05D8);
 INCLUDE_ASM("asm/overlays", func_L14_002F0868);
-INCLUDE_ASM("asm/overlays", func_L14_002F0A00);
+typedef struct {
+    char pad0[0xAC];
+    float value;
+    char padB0[0x74];
+    short field124;
+} Level14VendorData;
+
+typedef struct {
+    char pad0[0x78];
+    Level14VendorData *data;
+    char pad7C[0x40];
+    unsigned char state;
+} Level14VendorMoby;
+
+/* Select the vendor moby's state from its value and mark it initialized. */
+void func_L14_002F0A00(Level14VendorMoby *moby) {
+    Level14VendorData *data = moby->data;
+    moby->state = data->value < 0.0f ? 2 : 1;
+    data->field124 = 1;
+}
 INCLUDE_ASM("asm/overlays", func_L14_002F0A30);
 INCLUDE_ASM("asm/overlays", func_L14_002F0AB8);
 INCLUDE_ASM("asm/overlays", func_L14_002F0B78);

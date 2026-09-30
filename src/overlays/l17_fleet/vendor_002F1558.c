@@ -4,7 +4,23 @@
 
 INCLUDE_ASM("asm/overlays", func_L17_002F1558);
 INCLUDE_ASM("asm/overlays", func_L17_002F1858);
-INCLUDE_ASM("asm/overlays", func_L17_002F19B8);
+extern int func_L00_002DCDA8(void *);
+extern int func_001F9850(int);
+extern void func_00213DE0(void *, int, int, int);
+
+int func_L17_002F19B8(unsigned char *moby) {
+    int result = func_L00_002DCDA8(moby);
+    if (result) {
+        moby[0x20] = 12;
+    } else if (moby[0x20] == 12) {
+        moby[0x20] = 6;
+        if (moby[0x53] != 7) {
+            int value = scale_ticks(10);
+            func_00213DE0(moby, 7, 0, value);
+        }
+    }
+    return result;
+}
 INCLUDE_ASM("asm/overlays", func_L17_002F1BB0);
 INCLUDE_ASM("asm/overlays", func_L17_002F1D20);
 INCLUDE_ASM("asm/overlays", func_L17_002F1FE0);

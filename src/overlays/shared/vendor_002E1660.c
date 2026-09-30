@@ -55,10 +55,10 @@ extern float func_001F9C78(void *, void *);
 void func_L00_002E5D50(void *out, float f) {
     Vq t0, t1;
     char *b = (char *)&D_L00_00166F00 + 0x10;
-    FastVecScale(&t0, b + 0x20, f);
+    func_001F9C30(&t0, b + 0x20, f);
     func_L00_002E5618(D_L00_00166F00, &t1);
-    FastVecAdd(&t0, &t0, &t1);
-    FastVecScale(out, b + 0x30, FastVecDot(b + 0x30, &t0));
+    func_001F9BD8(&t0, &t0, &t1);
+    func_001F9C30(out, b + 0x30, func_001F9C78(b + 0x30, &t0));
 }
 INCLUDE_ASM("asm/overlays", func_L00_002E5DE0);
 INCLUDE_ASM("asm/overlays", func_L00_002E6498);
@@ -97,8 +97,8 @@ int func_L00_002E8E78(void *arg0, int arg1, float *arg2) {
 
     if (arg1 == 1) {
         ptr2 = *(char **)((char *)arg0 + 0x70) + 0x130;
-        FastVecSub(diff, D_L00_00173F60, arg2);
-        if (FastVecDot(diff, ptr2) < 0.0f) {
+        func_001F9BF0(diff, D_L00_00173F60, arg2);
+        if (func_001F9C78(diff, ptr2) < 0.0f) {
             return 1;
         }
     }
@@ -203,9 +203,9 @@ void func_L00_002EA3F0(int m) {
         float v[4];
         float f;
         float lim;
-        FastVecSub(v, (float *)p, (float *)(p + 0x90));
+        func_001F9BF0(v, (float *)p, (float *)(p + 0x90));
         func_001F9C08(D_L00_0015F040, q, q, v);
-        f = FastVecLength(q);
+        f = func_001F9CB8(q);
         lim = *(float *)(q + 0x2C);
         if (lim < f) {
             f = lim;

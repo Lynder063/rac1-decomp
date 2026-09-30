@@ -388,7 +388,12 @@ def header_rows(rows=None):
     an identifier in src/ or include/ (it would be silently renamed)."""
     rows = rows if rows is not None else read_table()
     game = game_symbols()
-    in_use = identifiers_in_use()
+    # A name names.h already maps to the same symbol is in src/ because
+    # `apply` put it there; only new names can clash with an identifier.
+    current = dict(re.findall(r"(?m)^#define (\w+)\s+(\w+)$",
+                              HEADER.read_text() if HEADER.exists() else ""))
+    in_use = identifiers_in_use() - {n for n, s in current.items()
+                                     if any(r["name"] == n and r["symbol"] == s for r in rows)}
     keep, clash = [], []
     for r in rows:
         if r["tier"] == "candidate":

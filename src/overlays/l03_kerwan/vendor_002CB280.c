@@ -5,10 +5,29 @@
 INCLUDE_ASM("asm/overlays", func_L03_002CB280);
 INCLUDE_ASM("asm/overlays", func_L03_002CBBD0);
 INCLUDE_ASM("asm/overlays", func_L03_002CD270);
-INCLUDE_ASM("asm/overlays", func_L03_002CDBF0);
+extern char *func_L00_0025B478(void *, int, int);
+
+void func_L03_002CDBF0(unsigned char *arg) {
+    char *item = func_L00_0025B478(arg, 0x130000, 0);
+    if (item != 0) {
+        char *other = *(char **)(item + 0x20);
+        if (other != 0 && *(short *)(other + 0xA6) != *(short *)(arg + 0xA6)) {
+            arg[0x20] = 4;
+        }
+    }
+    arg[0xA4] = 0xFF;
+}
 INCLUDE_ASM("asm/overlays", func_L03_002CDC50);
 INCLUDE_ASM("asm/overlays", func_L03_002D44A0);
-INCLUDE_ASM("asm/overlays", func_L03_002D44C8);
+extern void func_00215F80(int, int);
+
+void func_L03_002D44C8(void *arg, int mode) {
+    if (mode == 1) {
+        func_00215F80(8, 0xBC9);
+    } else {
+        func_00215F80(8, 0xBC9);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L03_002D4560);
 INCLUDE_ASM("asm/overlays", func_L03_002D4CE0);
 INCLUDE_ASM("asm/overlays", func_L03_002D5008);
@@ -25,7 +44,12 @@ INCLUDE_ASM("asm/overlays", func_L03_002DD158);
 INCLUDE_ASM("asm/overlays", func_L03_002DDE38);
 INCLUDE_ASM("asm/overlays", func_L03_002DDE9C);
 INCLUDE_ASM("asm/overlays", func_L03_002DDEF8);
-INCLUDE_ASM("asm/overlays", func_L03_002DDF10);
+int func_L03_002DDF10(unsigned char *moby, char *data) {
+    if (moby[0x20] && *(int *)(data + 0x7C) == 1) {
+        return 1;
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L03_002DDF90);
 INCLUDE_ASM("asm/overlays", func_L03_002DE088);
 INCLUDE_ASM("asm/overlays", func_L03_002E08E8);
@@ -35,5 +59,13 @@ INCLUDE_ASM("asm/overlays", func_L03_002ECD40);
 INCLUDE_ASM("asm/overlays", func_L03_002ECEC8);
 INCLUDE_ASM("asm/overlays", func_L03_002ED020);
 INCLUDE_ASM("asm/overlays", func_L03_002ED138);
-INCLUDE_ASM("asm/overlays", func_L03_002ED178);
+extern void func_L03_002ECEC8(void *);
+extern void func_001E9768(void *);
+extern void func_L03_002ED020(void *);
+
+void func_L03_002ED178(void *arg) {
+    func_L03_002ECEC8(arg);
+    func_001E9768(arg);
+    func_L03_002ED020(arg);
+}
 INCLUDE_ASM("asm/overlays", func_L03_002ED1B0);

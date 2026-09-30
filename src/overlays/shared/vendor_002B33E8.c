@@ -46,7 +46,7 @@ void func_L00_002B6E10(int a, int *b) {
     func_L00_00222B80(0, 1);
     func_L00_002B6AE0(a, 1);
     func_L00_00204190();
-    DeleteMoby(a);
+    func_0020D678(a);
     D_L00_00167114 = 0;
 }
 INCLUDE_ASM("asm/overlays", func_L00_002B6E90);

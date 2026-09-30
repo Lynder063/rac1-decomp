@@ -40,16 +40,16 @@ extern float func_001FA748(float, float);
 extern float func_001F9B88(float);
 
 float func_L00_002004C0(float a, float b, float c) {
-    float r = FastSubRots(b, a);
+    float r = func_001FA790(b, a);
     if (!(r > 0.0f)) {
         c = -c;
     }
-    if (c > FastAbsF(r)) {
-        c = FastAbsF(r);
-    } else if (c < -FastAbsF(r)) {
-        c = -FastAbsF(r);
+    if (c > func_001F9B88(r)) {
+        c = func_001F9B88(r);
+    } else if (c < -func_001F9B88(r)) {
+        c = -func_001F9B88(r);
     }
-    return FastAddRots(a, c);
+    return func_001FA748(a, c);
 }
 INCLUDE_ASM("asm/overlays", func_L00_00200598);
 INCLUDE_ASM("asm/overlays", func_L00_002007A0);

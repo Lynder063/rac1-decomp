@@ -8,7 +8,13 @@ INCLUDE_ASM("asm/overlays", func_L07_00314250);
 INCLUDE_ASM("asm/overlays", func_L07_00314590);
 INCLUDE_ASM("asm/overlays", func_L07_00314730);
 INCLUDE_ASM("asm/overlays", func_L07_00314800);
-INCLUDE_ASM("asm/overlays", func_L07_00314D00);
+extern float func_002140F8(float, float);
+
+void func_L07_00314D00(float *out, float value) {
+    float neg = -value;
+    out[0] += func_002140F8(neg, value);
+    out[1] += func_002140F8(neg, value);
+}
 INCLUDE_ASM("asm/overlays", func_L07_00314D68);
 INCLUDE_ASM("asm/overlays", func_L07_00314ED0);
 INCLUDE_ASM("asm/overlays", func_L07_00315108);
@@ -21,7 +27,16 @@ INCLUDE_ASM("asm/overlays", func_L07_00319080);
 INCLUDE_ASM("asm/overlays", func_L07_00319230);
 INCLUDE_ASM("asm/overlays", func_L07_0031A268);
 INCLUDE_ASM("asm/overlays", func_L07_0031A410);
-INCLUDE_ASM("asm/overlays", func_L07_0031AA68);
+extern int func_001F9850(int);
+extern void func_0020D678(void *);
+
+void func_L07_0031AA68(char *arg, char *other) {
+    char *dst = *(char **)(arg + 0x78);
+    if (other != 0) {
+        *(int *)(dst + 0x98) = scale_ticks(*(int *)(other + 0x84));
+    }
+    func_0020D678(arg);
+}
 INCLUDE_ASM("asm/overlays", func_L07_0031AAB0);
 INCLUDE_ASM("asm/overlays", func_L07_0031B318);
 INCLUDE_ASM("asm/overlays", func_L07_0031B620);

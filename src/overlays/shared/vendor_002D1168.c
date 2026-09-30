@@ -54,7 +54,7 @@ char *func_L00_002D9340(Vy *src, float f) {
         *(short *)(m + 0x32) = 0x40;
         *(float *)(m + 0x2C) *= f;
         qcopy(m + 0x10, src);
-        *(float *)(m + 0x48) = random_angle_radians();
+        *(float *)(m + 0x48) = func_00214158();
         func_L00_00251E30(m);
     }
     return m;
@@ -63,5 +63,5 @@ extern void func_0020D678(void);
 void func_L00_002D93E8(char *a) {
     *(float *)(a + 0x2C) = *(float *)(a + 0x2C) * 1.025f;
     a[0x23] = a[0x23] - 3;
-    if ((unsigned char)a[0x23] < 4) DeleteMoby();
+    if ((unsigned char)a[0x23] < 4) func_0020D678();
 }

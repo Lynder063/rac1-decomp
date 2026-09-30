@@ -28,10 +28,10 @@ void func_L00_00236208(void) {
     int i;
 
     for (i = 0; i < 13; i++) {
-        queue_animation_update(i, 0xFFFF, 0, 0, 0, 0, 1);
+        func_001FFB38(i, 0xFFFF, 0, 0, 0, 0, 1);
         D_L00_0017DD50[i].unk7C = 0;
         D_L00_0017DD50[i].unk6C = -6;
-        apply_pending_animation(&D_L00_0017DD50[i]);
+        func_001FFC48(&D_L00_0017DD50[i]);
     }
 }
 typedef struct {
@@ -113,13 +113,13 @@ void func_L00_00236468(HudElem *e, int *x, int *y, int t, int d) {
         s = D_L00_0017E500[t];
     }
     if (e->flags & 1) {
-        dy = -truncate_float_to_s32(s * (func_001FA888(e->h) + 52.0f) + 0.5f);
+        dy = -func_001FA898(s * (func_001FA888(e->h) + 52.0f) + 0.5f);
     } else if (e->flags & 2) {
-        dy = truncate_float_to_s32(s * (func_001FA888(e->h) + 52.0f) + 0.5f);
+        dy = func_001FA898(s * (func_001FA888(e->h) + 52.0f) + 0.5f);
     } else if (e->flags & 4) {
-        dx = -truncate_float_to_s32(s * (func_001FA888(e->w) + 20.0f) + 0.5f);
+        dx = -func_001FA898(s * (func_001FA888(e->w) + 20.0f) + 0.5f);
     } else if (e->flags & 8) {
-        dx = truncate_float_to_s32(s * (func_001FA888(e->w) + 20.0f) + 0.5f);
+        dx = func_001FA898(s * (func_001FA888(e->w) + 20.0f) + 0.5f);
     }
     *x += dx;
     *y += dy;
@@ -310,7 +310,7 @@ void func_L00_0023A690(HudElem *e) {
     short *tick = e->unk80;
     int v;
 
-    v = gBolts;
+    v = D_0015EE98;
     *tick = (*tick + 1) % 60;
     if (e->unk74 != v) {
         e->unk74 = v;
@@ -399,9 +399,9 @@ int func_L00_0023AFD8(HudElem *e) {
     func_L00_00236400(e, &x, &y);
     func_L00_00236468(e, &x, &y, e->unk6C, 0);
     len = e->unk74 * 0xDD / e->unk08 + 0x1B;
-    func_L00_0023C058(GetIconFrame(0x7558, 1), x, y, len, 0x40, 0x80);
-    HudSprite(GetIconFrame(0x7558, 0), x, y, 0x100, 0x40, 0x80);
-    HudSprite(GetIconFrame(0x7558, 2), x, y, 0x20, 0x20, D_00140A86 != 0 ? 0x80 : 0);
+    func_L00_0023C058(func_00200198(0x7558, 1), x, y, len, 0x40, 0x80);
+    func_00200468(func_00200198(0x7558, 0), x, y, 0x100, 0x40, 0x80);
+    func_00200468(func_00200198(0x7558, 2), x, y, 0x20, 0x20, D_00140A86 != 0 ? 0x80 : 0);
     return e->w;
 }
 /* func_L00_00236750 without the offsets: a 32 x 32 element with a timer
@@ -458,7 +458,7 @@ void func_L00_0023C058(int tex, int x, int y, int w, int h, int alpha) {
     p = (long *)D_L00_00161280;
     p[0] = 0x7400000000008001L;
     p[1] = 0x5353106;
-    p[2] = GetFrameTex(tex);
+    p[2] = func_00200248(tex);
     arena = D_L00_0017E5D8;
     p[3] = 0x156;
     p[4] = ((long)alpha << 24) | 0x7F7F7F;
@@ -509,26 +509,26 @@ extern void func_L00_00261848(int);
    func_L00_00261848 with D_0015EE84 when that is set, and advances
    D_0015EF24 by 180. */
 void func_L00_0023D9C0(void) {
-    register_audio_stream_callback();
+    func_00216270();
     func_002348B8();
     InitMemSlots();
     D_0015EF74 = D_0015EF8C;
     D_0015EF78 = D_0015EF8C;
-    FastMemSet(D_L00_00173FC0, 0x87654321, 0x10);
-    FastMemSet(D_L00_00197F40, -1, 0x800);
-    FastMemSet(D_L00_0019AD00, -1, 0xE00);
-    FastMemSet(D_L00_0019A600, 0, 0xE0);
-    FastMemSet(D_L00_001C5E00, -1, 0xC00);
-    FastMemSet(D_L00_001C7A00, -1, 0x800);
-    FastMemSet(D_L00_001C7200, 0, 0x80);
-    FastMemSet(D_L00_001BC540, -1, 0x400);
-    FastMemSet(D_L00_001BD740, -1, 0x400);
-    FastMemSet(D_L00_001BD140, 0, 0x40);
-    InitViewContext();
-    UpdateViewContext();
-    VU1_initChain();
+    func_001F99B0(D_L00_00173FC0, 0x87654321, 0x10);
+    func_001F99B0(D_L00_00197F40, -1, 0x800);
+    func_001F99B0(D_L00_0019AD00, -1, 0xE00);
+    func_001F99B0(D_L00_0019A600, 0, 0xE0);
+    func_001F99B0(D_L00_001C5E00, -1, 0xC00);
+    func_001F99B0(D_L00_001C7A00, -1, 0x800);
+    func_001F99B0(D_L00_001C7200, 0, 0x80);
+    func_001F99B0(D_L00_001BC540, -1, 0x400);
+    func_001F99B0(D_L00_001BD740, -1, 0x400);
+    func_001F99B0(D_L00_001BD140, 0, 0x40);
+    func_001F3008();
+    func_001F3140();
+    func_002348E8();
     func_L00_002697A0();
-    DMAC_VIF1_Enable();
+    func_00235018();
     func_L00_0023DB30();
     if (D_0015EE84 != 0) {
         func_L00_00261848(D_0015EE84);

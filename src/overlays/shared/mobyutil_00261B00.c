@@ -23,7 +23,7 @@ void func_L00_002634F8(char *a, float x, float y, float z) {
     in[2] = z;
     func_001FA218(t, in);
     func_001FA218(u, a + 0x40);
-    sce_vu0_mul_matrix(u, u, t);
+    func_001FA540(u, u, t);
     func_002153E8(u, a + 0x40);
 }
 void func_L00_00263578(int a, char *b) {
@@ -45,7 +45,7 @@ void func_L00_002638B8(char *o) {
         for (i = 0; i < *(int *)(o + 0x138); i++) {
             int *p = (int *)(o + 0x120) + i;
             if (*p != 0) {
-                DeleteMoby(*p);
+                func_0020D678(*p);
                 *p = 0;
             }
         }
@@ -58,19 +58,19 @@ extern float func_001FA748(float, float);
 extern float func_001F9FA8(float);
 void func_L00_00263B78(float x, float y, char *a, float *p, float *q) {
     float t;
-    *p = FastAddRots(*p, y);
+    *p = func_001FA748(*p, y);
     *(float *)(a + 0x18) -= *q;
-    t = FastSin(*p) * x;
+    t = func_001F9FA8(*p) * x;
     *q = t;
     *(float *)(a + 0x18) += t;
 }
 extern float func_001F9F90(float);
 
 void func_L00_00263BF8(float *o, float *a, float *b, float r, float l1, float l2) {
-    o[0x10] = r * FastSin(*a) * FastSin(*b);
-    o[0x11] = r * FastSin(*a) * FastCos(*b);
-    *a = FastAddRots(*a, l1);
-    *b = FastAddRots(*b, l2);
+    o[0x10] = r * func_001F9FA8(*a) * func_001F9FA8(*b);
+    o[0x11] = r * func_001F9FA8(*a) * func_001F9F90(*b);
+    *a = func_001FA748(*a, l1);
+    *b = func_001FA748(*b, l2);
 }
 extern void func_00215C00(void *);
 extern void func_001F9BD8(void *, void *, void *);
@@ -78,7 +78,7 @@ void func_L00_00263D68(void *a, void *b) {
     typedef float W[4] __attribute__((aligned(16)));
     W v;
     func_00215C00(v);
-    FastVecAdd(a, v, b);
+    func_001F9BD8(a, v, b);
 }
 INCLUDE_ASM("asm/overlays", func_L00_00263DB0);
 INCLUDE_ASM("asm/overlays", func_L00_00264130);
@@ -113,27 +113,21 @@ void func_L00_00264DB8(int arg0, int arg1) {
     if (arg1 == -1) {
         arg1 = scale_ticks(0xB4);
     }
-    func_001166FC(D_L00_00179218, msg_string(arg0));
+    func_001166FC(D_L00_00179218, func_001FE540(arg0));
     D_L00_0015F720 = arg1;
 }
 extern char D_L00_00179218[] NOT_SDA;
 extern void func_00116248(void *, int, int);
 void func_L00_00264E28(int a, int b, int c) {
     if (c == -1) c = scale_ticks(0xB4);
-    func_00116248(D_L00_00179218, msg_string(a), b);
+    func_00116248(D_L00_00179218, func_001FE540(a), b);
     D_L00_0015F720 = c;
 }
 INCLUDE_ASM("asm/overlays", func_L00_00264EA8);
 INCLUDE_ASM("asm/overlays", func_L00_00265050);
 extern int D_L00_0015F670 MACRO_ADDR;
 extern int D_L00_0015F674 MACRO_ADDR;
-/* Retail reaches D_L00_00161F04 through $gp here but through lui in
- * func_L00_00265558 below. A short declared under the plain name would
- * emit `.extern D_L00_00161F04, 2` for the whole file and turn that
- * function's lui/lw into $gp too (88 bytes, not 96), so the small-data
- * view goes through its own alias, as tools/check_macro_slots.py does. */
-extern short D_L00_00161F04_g __asm__("D_L00_00161F04__gp");
-__asm__("D_L00_00161F04__gp = D_L00_00161F04");
+extern short D_L00_00161F04_g __asm__("D_L00_00161F04");
 extern short D_L00_00161F08_g __asm__("D_L00_00161F08");
 extern int func_001FFB38(int, int, void *, void *, void *, int, int);
 extern void func_L00_002377E0(void);
@@ -150,25 +144,8 @@ void func_L00_002653A0(void) {
     if (D_L00_0015F674 == 0 || (*(int *)&D_L00_00161F08_g) == 0) {
         (*(int *)&D_L00_00161F04_g) = -1;
     } else if ((*(int *)&D_L00_00161F04_g) == -1) {
-        (*(int *)&D_L00_00161F04_g) = queue_animation_update(0xC, 0, (void *)((char *)func_L00_002377E0 + 0x340), DefaultVtbl_DeleteMoby, func_L00_00237B90, 0, 0);
+        (*(int *)&D_L00_00161F04_g) = func_001FFB38(0xC, 0, (void *)((char *)func_L00_002377E0 + 0x340), DefaultVtbl_DeleteMoby, func_L00_00237B90, 0, 0);
     } else {
         func_L00_002367A8((*(int *)&D_L00_00161F04_g), 0xA);
     }
 }
-extern int D_L00_0015F674 MACRO_ADDR;
-extern int D_L00_0015F670 MACRO_ADDR;
-extern int D_L00_00161F04 MACRO_ADDR;
-extern int func_001FFCB0(int);
-int func_L00_00265558(int a) {
-    if (D_L00_0015F674 == a) {
-        if (D_L00_00161F04 != -1) {
-            D_L00_0015F670 = 0;
-            D_L00_0015F674 = 0;
-            func_001FFCB0(D_L00_00161F04);
-            D_L00_00161F04 = -1;
-            return 1;
-        }
-    }
-    return 0;
-}
-INCLUDE_ASM("asm/overlays", func_L00_002657B8);

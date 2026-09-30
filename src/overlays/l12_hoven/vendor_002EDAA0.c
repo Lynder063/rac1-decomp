@@ -14,7 +14,28 @@ INCLUDE_ASM("asm/overlays", func_L12_003046C8);
 INCLUDE_ASM("asm/overlays", func_L12_00304750);
 INCLUDE_ASM("asm/overlays", func_L12_00304920);
 INCLUDE_ASM("asm/overlays", func_L12_003055F8);
-INCLUDE_ASM("asm/overlays", func_L12_00306178);
+typedef struct {
+    char pad0[0xAC];
+    short value;
+} Level12VendorCounterData;
+
+typedef struct {
+    char pad0[0x78];
+    Level12VendorCounterData *data;
+} Level12VendorCounterMoby;
+
+extern int func_001F9850(int);
+extern void func_001F55C0(int, int, int, int);
+
+/* Scale and play the vendor cue while its counter is below the limit. */
+void func_L12_00306178(Level12VendorCounterMoby *moby) {
+    Level12VendorCounterData *data = moby->data;
+    int count = scale_ticks(0x50);
+    int value = data->value;
+    if (value < count) {
+        func_001F55C0(0xAA, 0, 0, (count - value) * 0x50 / count);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L12_003061E0);
 INCLUDE_ASM("asm/overlays", func_L12_00306890);
 INCLUDE_ASM("asm/overlays", func_L12_00307730);

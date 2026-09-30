@@ -2,4 +2,25 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L15_0022E478);
+typedef struct {
+    char pad0[0x30];
+    int state;
+    char pad34[0x10];
+    short count;
+    char pad46[0x132];
+    void *mobys[1];
+} Level15State;
+
+extern int D_0015EE84 MACRO_ADDR;
+extern Level15State D_L15_0016CEE0;
+extern void func_L00_0025805C(void *);
+
+/* Update each moby while the level event is in phase three or four. */
+void func_L15_0022E478(void) {
+    int i;
+    if (D_0015EE84 == 15 && (unsigned)(D_L15_0016CEE0.state - 3) < 2) {
+        for (i = 0; i < D_L15_0016CEE0.count; i++) {
+            func_L00_0025805C(D_L15_0016CEE0.mobys[i]);
+        }
+    }
+}

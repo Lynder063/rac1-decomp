@@ -7,7 +7,22 @@ INCLUDE_ASM("asm/overlays", func_L02_002E2D88);
 INCLUDE_ASM("asm/overlays", func_L02_002E33F0);
 INCLUDE_ASM("asm/overlays", func_L02_002E3660);
 INCLUDE_ASM("asm/overlays", func_L02_002EB480);
-INCLUDE_ASM("asm/overlays", func_L02_002EB5D0);
+extern void func_L02_002A59D8(float);
+extern void func_L02_002EB480(void);
+extern void func_001F49B0(void (*)(void), void *);
+
+void func_L02_002EB5D0(unsigned char *moby) {
+    switch (moby[0x20]) {
+    case 0:
+        func_L02_002A59D8(0.16666667f);
+        moby[0x20] = 1;
+        moby[0x30] = 0xFF;
+        break;
+    case 1:
+        AddDrawCallback(func_L02_002EB480, moby);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L02_002ED358);
 INCLUDE_ASM("asm/overlays", func_L02_002ED660);
 INCLUDE_ASM("asm/overlays", func_L02_002EFCC8);

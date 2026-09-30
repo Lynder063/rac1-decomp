@@ -505,16 +505,16 @@ float func_L00_00233B50(void) {
     float zero;
 
     zero = 0.0f;
-    dir[0] = FastCos(zero);
-    dir[1] = FastSin(zero);
+    dir[0] = func_001F9F90(zero);
+    dir[1] = func_001F9FA8(zero);
     dir[2] = zero;
     func_001FA218(m, D_0013F450 + 0x90);
     base = D_0013F450;
     func_001F9EE8(dir, dir, m);
     if (*(float *)(base + 0x270) != zero || *(float *)(base + 0x274) != zero) {
         up = *(QVec *)(base + 0x270);
-        clear_u64_value(rz);
-        clear_u64_value(ry);
+        func_001F9BC0(rz);
+        func_001F9BC0(ry);
         rz[2] = -func_L00_001FF860(*(float *)(base + 0x270), *(float *)(base + 0x274));
         func_001FA218(m, rz);
         func_001F9EE8(dir, dir, m);
@@ -565,7 +565,7 @@ void func_L00_00233D50(float *dst, float *src, float h) {
         break;
     case 1:
         func_L00_001FF4B0(d, base + 0x270, -h);
-        FastVecAdd(dst, src, d);
+        func_001F9BD8(dst, src, d);
         break;
     case 2:
         if (*(int *)(base + 0x2084) == 0x3E && *(short *)(base + 0x30E) == 0) {
@@ -573,7 +573,7 @@ void func_L00_00233D50(float *dst, float *src, float h) {
         } else {
             func_L00_001FF4B0(d, D_0013F450 + 0x290, h);
         }
-        FastVecAdd(dst, src, d);
+        func_001F9BD8(dst, src, d);
         break;
     }
 }
@@ -588,12 +588,12 @@ extern void func_001F9EE8(void *, void *, void *);
 void func_L00_00233E48(float *out, float r, float angle, float z) {
     char *base;
 
-    out[0] = FastCos(angle) * r;
-    out[1] = FastSin(angle) * r;
+    out[0] = func_001F9F90(angle) * r;
+    out[1] = func_001F9FA8(angle) * r;
     base = D_0013F450;
     out[2] = z;
     func_001F9EE8(out, out, base);
-    FastVecAdd(out, out, base + 0x80);
+    func_001F9BD8(out, out, base + 0x80);
 }
 extern void func_001F9BC0(void *);
 extern void func_001F9BD8(void *, void *, void *);
@@ -605,13 +605,13 @@ extern void func_001F9EE8(void *, void *, void *);
 void func_L00_00233EE0(float *out, float x, float y, float z) {
     char *base;
 
-    clear_u64_value(out);
+    func_001F9BC0(out);
     base = D_0013F450;
     out[0] = x;
     out[1] = y;
     out[2] = z;
     func_001F9EE8(out, out, base);
-    FastVecAdd(out, out, base + 0x80);
+    func_001F9BD8(out, out, base + 0x80);
 }
 INCLUDE_ASM("asm/overlays", func_L00_00233F68);
 extern void func_001FA218(void *, void *);
@@ -630,18 +630,18 @@ void func_L00_00233F88(float *dst, float *src, float r) {
     switch (*(unsigned char *)(base + 0x20B3)) {
     case 0:
         qcopy(dst, src);
-        dst[0] += FastCos(*(float *)(*(char **)(base + 0x2080) + 0x48)) * r;
-        dst[1] += FastSin(*(float *)(*(char **)(base + 0x2080) + 0x48)) * r;
+        dst[0] += func_001F9F90(*(float *)(*(char **)(base + 0x2080) + 0x48)) * r;
+        dst[1] += func_001F9FA8(*(float *)(*(char **)(base + 0x2080) + 0x48)) * r;
         break;
     case 1:
     case 2:
         angle = 0.0f;
-        off[0] = FastCos(angle) * r;
-        off[1] = FastSin(angle) * r;
+        off[0] = func_001F9F90(angle) * r;
+        off[1] = func_001F9FA8(angle) * r;
         off[2] = angle;
         func_001FA218(m, *(char **)(base + 0x2080) + 0x40);
         func_001F9EE8(off, off, m);
-        FastVecAdd(dst, src, off);
+        func_001F9BD8(dst, src, off);
         break;
     }
 }
@@ -664,11 +664,11 @@ void func_L00_00234090(float *dst, float *src, float dz) {
         break;
     case 1:
     case 2:
-        clear_u64_value(off);
+        func_001F9BC0(off);
         off[2] = dz;
         func_001FA218(m, *(char **)(base + 0x2080) + 0x40);
         func_001F9EE8(off, off, m);
-        FastVecAdd(dst, src, off);
+        func_001F9BD8(dst, src, off);
         break;
     }
 }
@@ -692,12 +692,12 @@ void func_L00_00234150(float *dst, float *src) {
         break;
     case 1:
         func_L00_001FF4B0(n, base + 0x270, 1.0f);
-        FastVecScale(n, n, FastVecDot(n, src));
-        FastVecSub(dst, src, n);
+        func_001F9C30(n, n, func_001F9C78(n, src));
+        func_001F9BF0(dst, src, n);
         break;
     case 2:
-        FastVecScale(n, base + 0x290, FastVecDot(base + 0x290, src));
-        FastVecSub(dst, src, n);
+        func_001F9C30(n, base + 0x290, func_001F9C78(base + 0x290, src));
+        func_001F9BF0(dst, src, n);
         break;
     }
 }
@@ -744,11 +744,11 @@ float func_L00_002342F8(float *v) {
         return v[2];
     case 1:
     case 2:
-        clear_u64_value(axis);
+        func_001F9BC0(axis);
         axis[2] = 1.0f;
         func_001FA218(m, *(char **)(base + 0x2080) + 0x40);
         func_001F9EE8(axis, axis, m);
-        return FastVecDot(axis, v);
+        return func_001F9C78(axis, v);
     }
     return 0.0f;
 }
@@ -815,7 +815,7 @@ float func_L00_002344B0(float *pos, float *vel, int *steps, float step) {
 
     switch (*(unsigned char *)(D_0013F450 + 0x20B3)) {
     case 0:
-        n = truncate_float_to_s32(vel[2] / step);
+        n = func_001FA898(vel[2] / step);
         a = func_001FA888(n);
         r = pos[2] + vel[2] * a - func_001FA888((n * n + n) >> 1) * step;
         if (steps != 0) {
@@ -824,7 +824,7 @@ float func_L00_002344B0(float *pos, float *vel, int *steps, float step) {
         return r;
     case 1:
     case 2:
-        k = truncate_float_to_s32(func_L00_002342F8(vel) / step);
+        k = func_001FA898(func_L00_002342F8(vel) / step);
         if (steps != 0) {
             *steps = k;
         }
@@ -940,12 +940,12 @@ void func_L00_002356D0(void) {
     float v[4] __attribute__((aligned(16)));
     float h;
 
-    FastVecScale(v, base, -0.75f);
-    FastVecAdd(v, v, base + 0x80);
+    func_001F9C30(v, base, -0.75f);
+    func_001F9BD8(v, v, base + 0x80);
     v[2] += 0.5f;
     h = func_00214358(v, 0, 0.5f);
     v[2] = h;
-    if (FastAbsF(*(float *)(base + 0x88) - h) > 0.3f) {
+    if (func_001F9B88(*(float *)(base + 0x88) - h) > 0.3f) {
         return;
     }
     func_L00_00234768((float *)(base + 0x80), 1, *(float *)(base + 0x98));

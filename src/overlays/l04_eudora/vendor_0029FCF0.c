@@ -5,7 +5,17 @@
 INCLUDE_ASM("asm/overlays", func_L04_0029FCF0);
 INCLUDE_ASM("asm/overlays", func_L04_0029FEC8);
 INCLUDE_ASM("asm/overlays", func_L04_002A6C20);
-INCLUDE_ASM("asm/overlays", func_L04_002BB670);
+extern void func_00213DE0(void *, void *, void *, void *);
+
+void func_L04_002BB670(char *arg, void *a, void *b, void *c) {
+    char *data = *(char **)(arg + 0x78);
+    void *other;
+    func_00213DE0(arg, a, b, c);
+    other = *(void **)(data + 0x424);
+    if (other != 0) {
+        func_00213DE0(other, a, b, c);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L04_002BB6D8);
 INCLUDE_ASM("asm/overlays", func_L04_002BB700);
 INCLUDE_ASM("asm/overlays", func_L04_002BB7B0);
@@ -15,7 +25,18 @@ INCLUDE_ASM("asm/overlays", func_L04_002C3218);
 INCLUDE_ASM("asm/overlays", func_L04_002C3338);
 INCLUDE_ASM("asm/overlays", func_L04_002C35F0);
 INCLUDE_ASM("asm/overlays", func_L04_002C5560);
-INCLUDE_ASM("asm/overlays", func_L04_002C5B88);
+extern void func_0020D678(void *);
+extern void func_L04_002C5A50(void *);
+
+void func_L04_002C5B88(char *arg) {
+    char *data = *(char **)(arg + 0x78);
+    void *other = *(void **)(data + 0xF8);
+    if (other != 0) {
+        func_0020D678(other);
+    }
+    func_L04_002C5A50(arg);
+    func_0020D678(arg);
+}
 INCLUDE_ASM("asm/overlays", func_L04_002C5BD0);
 INCLUDE_ASM("asm/overlays", func_L04_002C7BD8);
 INCLUDE_ASM("asm/overlays", func_L04_002C7F38);

@@ -134,8 +134,8 @@ void func_L00_00205C18(void) {
             int a, b;
             *(int *)(g + 0xFF0) = 1;
             a = scale_ticks(20);
-            b = random_integer_below(*(int *)(g + 0xFF8));
-            *(int *)(g + 0xFF4) = D_L00_0015F6B0 + a + b + random_integer_below(*(int *)(g + 0xFF8));
+            b = func_002140B0(*(int *)(g + 0xFF8));
+            *(int *)(g + 0xFF4) = D_L00_0015F6B0 + a + b + func_002140B0(*(int *)(g + 0xFF8));
         }
     }
 }
@@ -150,7 +150,7 @@ extern int func_001FFB38(int, int, int, int, int, int, int);
 
 void func_L00_002064C0(void) {
     char *g;
-    if (gHaveMorphORay[6] == 0) {
+    if (D_0013D5DD[6] == 0) {
         *(int *)(D_0013E633 + 0x2E65) = 0;
         return;
     }
@@ -166,7 +166,7 @@ void func_L00_002064C0(void) {
         *(float *)(g2 + 0x2044) = 100000.0f;
         *(int *)(g2 + 0x2040) = 0;
         if (*(int *)(g2 + 0x2048) != 0) {
-            queue_animation_update(7, 0x753A, (int)func_L00_00236750, (int)func_L00_0023ABB0, (int)func_L00_0023AC68, (int)(g2 + 0x2048), 1);
+            func_001FFB38(7, 0x753A, (int)func_L00_00236750, (int)func_L00_0023ABB0, (int)func_L00_0023AC68, (int)(g2 + 0x2048), 1);
         }
     }
 }
@@ -313,7 +313,7 @@ extern float func_L00_002001D8(void *, float);
 float func_L00_00209690(float *a, int n) {
     char buf[16] __attribute__((aligned(16)));
     char *d = (char *)D_0013E633 + 0xE1D;
-    int i = truncate_float_to_s32(*(float *)(d + 0xAA8));
+    int i = func_001FA898(*(float *)(d + 0xAA8));
     int m = n - 1;
     int p = (i + m) % n;
     float w;
@@ -334,7 +334,7 @@ extern void func_L00_00209748(float *, float, float, float);
 void func_L00_00209850(float x, float y, float z) {
     V buf;
 
-    clear_u64_value(buf);
+    func_001F9BC0(buf);
     buf[2] = 0.6f;
     func_L00_00209748(buf, x, y, z);
 }

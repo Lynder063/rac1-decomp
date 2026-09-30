@@ -37,7 +37,16 @@ INCLUDE_ASM("asm/overlays", func_L06_002FBDF0);
 INCLUDE_ASM("asm/overlays", func_L06_002FC4C0);
 INCLUDE_ASM("asm/overlays", func_L06_002FC578);
 INCLUDE_ASM("asm/overlays", func_L06_002FC6D8);
-INCLUDE_ASM("asm/overlays", func_L06_002FC8E0);
+extern void func_L06_00235E08(int, int);
+extern void func_L00_002EC0C8(int);
+extern int *D_L06_001B0FB0[];
+
+void func_L06_002FC8E0(char *arg) {
+    char *data = *(char **)(arg + 0x78);
+    func_L06_00235E08(0, 0);
+    *D_L06_001B0FB0[*(int *)(data + 0xEC)] = *(int *)(data + 0x114);
+    func_L00_002EC0C8(2);
+}
 INCLUDE_ASM("asm/overlays", func_L06_002FCA98);
 INCLUDE_ASM("asm/overlays", func_L06_002FD0B8);
 INCLUDE_ASM("asm/overlays", func_L06_002FD3E0);
