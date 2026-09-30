@@ -335,6 +335,18 @@ def start_from(name: str) -> list[tuple[str, str]]:
         entry = findex.get(other)
         if entry and any(n == other and is_c for n, is_c in entry[1]):
             return extract_definition(entry[0], other)
+        if not OVERLAY_NAME.match(other):          # a relative in the executable
+            start = re.compile(rf"^(?!extern\b)[A-Za-z_][^;]*\b{other}\s*\([^;]*$")
+            for path in sorted((ROOT / "src/game").glob("*.c")):
+                lines = path.read_text(errors="replace").splitlines()
+                for i, line in enumerate(lines):
+                    if other in line and start.match(line):
+                        depth, seen = 0, False
+                        for j in range(i, len(lines)):
+                            depth += lines[j].count("{") - lines[j].count("}")
+                            seen = seen or "{" in lines[j]
+                            if seen and depth == 0:
+                                return "\n".join(lines[i:j + 1]) + "\n"
         return None
     wanted = []
     for path, a, b, label in ((ROOT / "config/overlays/variants.tsv", 0, 1, "differs only in a number"),
@@ -342,7 +354,7 @@ def start_from(name: str) -> list[tuple[str, str]]:
         for row in (l.split("\t") for l in path.read_text().splitlines() if path.exists() and not l.startswith("#")):
             if row[a] == name:
                 wanted.append((row[b], label))
-            elif row[b] == name and "variants" in path.name:
+            elif row[b] == name:
                 wanted.append((row[a], label))
     entry = findex.get(name)
     if entry:

@@ -29,7 +29,8 @@ Run everything from the repository root.
    When you stop, append two or three lines to `build-sn/try/<func>/NOTES.md`:
    what the function does, where the difference is, what would unblock it.
    Stopping is a normal outcome. Write no RESULT.md: the runs are logged.
-5. Claim again until N functions are handled or the queue is empty.
+5. Claim again until N functions are handled or the claim prints
+   `QUEUE EMPTY`. Do not stop earlier: finishing one claim is not the end.
 6. Your final message is one line and nothing else:
    `{"id": "<ID>", "exact": ["func_..."], "stopped": ["func_..."], "idiom": "<25 words at most, or empty>"}`
 
@@ -41,7 +42,9 @@ Run everything from the repository root.
 - Compile only through try_func. No compiler runs or harnesses of your own.
 - Plain C: no register pins, no inline assembly in a function, no barriers
   (`__asm__("" : ...)`, `do { } while (0)`), no `volatile` added only to
-  pin an order. A match that needs one is not a match: stop instead.
+  pin an order, no read of a local that was never assigned. A match that
+  needs one is not a match: stop instead. A function that reads a register
+  it never sets, or branches outside itself, is a fragment: stop at once.
 - Never write a level address as a number. Use the symbol the assembly
   names (`D_L05_001B24D4`), declared in the candidate.
 

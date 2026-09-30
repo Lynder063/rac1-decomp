@@ -3,6 +3,29 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L01_0027F6C8);
-INCLUDE_ASM("asm/overlays", func_L01_002888C8);
+extern char *D_L01_001B28E0;
+extern unsigned char *func_00218928(int);
+extern int func_002140B0(int);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+
+/* Spawns a particle at a, with a random tint, offset b and scale f. */
+unsigned char *func_L01_002888C8(void *a, void *b, float f) {
+    unsigned char *r = func_00218928(0x38);
+    int c, m;
+    if (r != 0) {
+        qcopy(r + 0x10, a);
+        c = func_002140B0(0x10) * 2 + 0x60;
+        m = (c << 8) | 0x40000000;
+        *(int *)(r + 4) = (c << 16) | m | c;
+        r[9] = func_001FA898_r(4.0f) + 0x20;
+        r[3] = 0x48;
+        r[1] = 0;
+        r[2] = *(unsigned char *)D_L01_001B28E0;
+        *(float *)(r + 0xC) = f;
+        qcopy(r + 0x20, b);
+        r[8] = func_002140B0(0x100);
+    }
+    return r;
+}
 INCLUDE_ASM("asm/overlays", func_L01_00288A48);
 INCLUDE_ASM("asm/overlays", func_L01_0028C548);

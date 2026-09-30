@@ -226,7 +226,7 @@ def clone(only: list[str]) -> None:
         vtext = have[name][0].read_text()
         back = {n: o for o, n in rename.items()}
         externs = []
-        for sym in dict.fromkeys(SYMBOL.findall(body)):
+        for sym in dict.fromkeys(re.findall(r"\b(?:func_|D_|jtbl_)\w+", body)):
             if sym == name or re.search(rf"^(?!INCLUDE_ASM)(?:extern\b[^;\n]*|[A-Za-z_][^;\n]*)\b{sym}\b", vtext, flags=re.M):
                 continue
             old_sym = back.get(sym, sym)

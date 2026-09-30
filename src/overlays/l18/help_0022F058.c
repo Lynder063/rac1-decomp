@@ -3,4 +3,21 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L18_0022F058);
-INCLUDE_ASM("asm/overlays", func_L18_00241168);
+extern void func_0022C7E0(void);
+extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
+extern void func_L00_0028C358(void);
+extern void func_L00_0028A5A8(void);
+extern void func_0022C870(void);
+extern void func_00234C98(int, long);
+extern int D_0015EF88 MACRO_ADDR;
+void func_L18_00241168(void) {
+    func_0022C7E0();
+    if (D_0015EE84_m == 18) {
+        func_L00_0028C358();
+    } else {
+        func_L00_0028A5A8();
+    }
+    func_0022C870();
+    func_00234C98(0x47, 0x5360B);
+    func_00234C98(0x4E, 0x1000000 | (D_0015EF88 >> 13));
+}

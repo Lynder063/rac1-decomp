@@ -35,7 +35,16 @@ void func_L00_0028BBF8(void) {
     func_0022C9A8(2);
 }
 INCLUDE_ASM("asm/overlays", func_L00_0028BC70);
-INCLUDE_ASM("asm/overlays", func_L00_0028BD70);
+/* Shrub proc init variant: set up, conditional call, finish. */
+void func_L00_0028BD70(void) {
+    func_001FA190(D_L00_001BDB70);
+    func_0022C9A8(0);
+    if (*(short *)(D_L00_001605DC + 8) == 0) func_L00_0028A198(0x78, 8);
+    func_L00_0028A3E0();
+    func_0022CEB8();
+    func_00234C98(0x42, 0x8000000044L);
+    func_0022C9A8(1);
+}
 INCLUDE_ASM("asm/overlays", func_L00_0028BF60);
 INCLUDE_ASM("asm/overlays", func_L00_0028C358);
 INCLUDE_ASM("asm/overlays", func_L00_0028C478);

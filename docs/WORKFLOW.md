@@ -235,6 +235,7 @@ Trials of 2026-09-30 (input tokens include cache reads, as
 | q2: common code, 97-300 bytes | Sonnet | 12 | 3 (336 bytes) | 1.61M |
 | q1: 8-92 bytes | Sonnet | 17 | 4 (124 bytes) | 214K |
 | q1: 8-92 bytes | Haiku | 15 | 4 (100 bytes) | 1.02M |
+| q3: `--family`, 64-500 bytes | Sonnet | 12 | 9 landed (1,236 bytes), 1 rejected | 157K |
 
 - **A queue worker is cheap per function.** The harness counted about 81K
   tokens for each q2 worker, six functions each, where a one-function
@@ -251,6 +252,14 @@ Trials of 2026-09-30 (input tokens include cache reads, as
   workers to stop on them.
 - What is left of the common code under 300 bytes matched at 25%: the
   earlier waves and the variants took the easy part.
+- **Family order pays best.** With `--family`, nine of q3's twelve
+  functions came with a matched relative's C in their packet, and half of
+  the matches took one run. One match was rejected at review (it read an
+  unassigned local). Matching func_L01_00252E80 brought 17 variants with
+  it through `overlay_variants.py clone`, with no model. Plan waves this
+  way by default, and run `clone` after landing.
+- Workers sometimes stop after one claim; the lead refills the queue with
+  a new worker (a new ID) until `status` shows nothing pending.
 
 ### Picking a wave
 

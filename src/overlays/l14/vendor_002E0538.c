@@ -49,7 +49,36 @@ INCLUDE_ASM("asm/overlays", func_L14_002F19C0);
 INCLUDE_ASM("asm/overlays", func_L14_002F24C8);
 INCLUDE_ASM("asm/overlays", func_L14_002F25C8);
 INCLUDE_ASM("asm/overlays", func_L14_002F2778);
-INCLUDE_ASM("asm/overlays", func_L14_002F2880);
+extern void func_00215F80(int, int);
+
+/* Vendor text: pick the message from the vendor data state. */
+void func_L14_002F2880(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    int v = *(short *)(data + 0xB4);
+    if (*(unsigned char *)(moby + 0x20) == 5) {
+        v = *(short *)(data + 0xB6);
+    }
+    switch (v) {
+    case 0:
+        func_00215F80(4, 0x53F2);
+        break;
+    case 1:
+        func_00215F80(4, 0x53F3);
+        break;
+    case 2:
+        func_00215F80(4, 0x53F3);
+        break;
+    case 3:
+        func_00215F80(4, 0x53F3);
+        break;
+    case 4:
+        func_00215F80(4, 0x1399);
+        break;
+    default:
+        func_00215F80(4, 0x139B);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L14_002FCEA8);
 INCLUDE_ASM("asm/overlays", func_L14_002FD578);
 INCLUDE_ASM("asm/overlays", func_L14_002FD870);

@@ -9,7 +9,24 @@ INCLUDE_ASM("asm/overlays", func_L14_002FFF08);
 INCLUDE_ASM("asm/overlays", func_L14_00300468);
 INCLUDE_ASM("asm/overlays", func_L14_00302288);
 INCLUDE_ASM("asm/overlays", func_L14_00302968);
-INCLUDE_ASM("asm/overlays", func_L14_003047F8);
+extern char D_L14_001E9FA0[];
+extern void func_00216270(void);
+extern void func_L02_002A5238(char *, float, int);
+extern void func_001F49B0(void (*)(void), void *);
+
+/* Moby update: init once, then draw each frame. */
+void func_L14_003047F8(unsigned char *moby) {
+    switch (moby[0x20]) {
+    case 0:
+        func_L02_002A5238(D_L14_001E9FA0, 0.6666667f, 0x40);
+        moby[0x20] = 1;
+        moby[0x30] = 0xFF;
+        break;
+    case 1:
+        func_001F49B0(func_00216270, moby);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L14_00306890);
 INCLUDE_ASM("asm/overlays", func_L14_00306A88);
 INCLUDE_ASM("asm/overlays", func_L14_00306B08);

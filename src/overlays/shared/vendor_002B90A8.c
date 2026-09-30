@@ -59,7 +59,26 @@ int func_L01_002F3050(char *a) {
     }
     return r;
 }
-INCLUDE_ASM("asm/overlays", func_L01_002F30F0);
+extern char *func_L00_002DCD40(char *);
+extern int func_L00_002DD0E0(char *, int, int, float);
+extern void func_0022ED80(int, int, char *);
+
+/* runs the moby update and sets its state byte */
+int func_L01_002F30F0(char *m, int a, int b, float f) {
+    char *h = func_L00_002DCD40(m);
+    int r = func_L00_002DD0E0(m, a, b, f);
+    if (r != 0) {
+        m[0x20] = 7;
+    } else if ((unsigned char)m[0x20] == 7) {
+        m[0x20] = 1;
+    }
+    if (h != 0) {
+        if (*(short *)(h + 0x68) == 6) {
+            func_0022ED80(2, 0, m);
+        }
+    }
+    return r;
+}
 int func_L01_002F31A0(char *a) {
     int r = func_L00_002DD2D0(a);
     a[0x20] = 7;
