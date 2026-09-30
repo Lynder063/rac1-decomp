@@ -3,4 +3,6 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L00_001EB430);
+INCLUDE_ASM("asm/overlays", func_L00_001EB438);
+INCLUDE_ASM("asm/overlays", func_L00_001EB440);
 INCLUDE_ASM("asm/overlays", func_L00_001EB448);

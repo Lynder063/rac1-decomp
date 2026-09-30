@@ -58,6 +58,7 @@ void func_L00_00204130(void) {
 INCLUDE_ASM("asm/overlays", func_L00_00204190);
 INCLUDE_ASM("asm/overlays", func_L00_00205110);
 INCLUDE_ASM("asm/overlays", func_L00_00205158);
+INCLUDE_ASM("asm/overlays", func_L00_0020516C);
 INCLUDE_ASM("asm/overlays", func_L00_00205278);
 extern unsigned char D_0013F450[] NOT_SDA;
 extern unsigned char D_0014171B[] NOT_SDA;

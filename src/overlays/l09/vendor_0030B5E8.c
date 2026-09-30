@@ -11,3 +11,4 @@ void func_L09_0030B5E8(float *dst, float a, float b, float scale) {
     *dst = func_001FA748(v, a);
 }
 INCLUDE_ASM("asm/overlays", func_L09_0030B648);
+INCLUDE_ASM("asm/overlays", func_L09_0030BA28);

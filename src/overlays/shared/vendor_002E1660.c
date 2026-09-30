@@ -139,6 +139,7 @@ void func_L00_002E9968(float x, float y) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_002E99A0);
 INCLUDE_ASM("asm/overlays", func_L00_002E99E4);
+INCLUDE_ASM("asm/overlays", func_L00_002E99F0);
 INCLUDE_ASM("asm/overlays", func_L00_002E9A18);
 void func_L00_002E9A40(float a, float b) {
     char *p = D_L00_00166F00;

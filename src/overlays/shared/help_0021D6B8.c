@@ -9,3 +9,4 @@ INCLUDE_ASM("asm/overlays", func_L06_00229868);
 INCLUDE_ASM("asm/overlays", func_L06_0022A868);
 INCLUDE_ASM("asm/overlays", func_L06_00235038);
 INCLUDE_ASM("asm/overlays", func_L06_00239CD0);
+INCLUDE_ASM("asm/overlays", func_L06_002431A0);

@@ -46,6 +46,7 @@ ISO = ROOT / "baserom/SCES_509.16.iso"
 ELF = ROOT / "baserom/SCES_509.16"
 DUMP = ROOT / "baserom/overlays"
 CATALOGUE = ROOT / "config/overlays/functions.tsv"
+VARIANTS = ROOT / "config/overlays/variants.tsv"
 EXE_DELTA = 0xFF080          # vram - file offset for the executable's main segment
 RECORD_NAMES = ("lit", "bss", "data", "vtbl", "camvtbl", "sndvtbl", "text")
 
@@ -78,8 +79,59 @@ def trim(b: bytes) -> bytes:
     return b
 
 
-def fingerprint(b: bytes) -> str:
+def coarse_fingerprint(b: bytes) -> str:
     return hashlib.sha1(trim(masked(b))).hexdigest()[:16]
+
+
+def identity(b: bytes) -> bytes:
+    """One function's words with only its address fields masked: what two
+    copies must share to be the same function. mask() above also hides
+    constants (`li $a0, 180`), float halves (`lui $at, 0x42BE`) and struct
+    offsets, which is right for finding a function's copies in another
+    level's text but merges functions that differ in a number.
+
+    A register is address-derived when a `lui` loads it with the top half
+    of a RAM address, or when it is copied or computed from one that is;
+    immediates on those (and on $gp) are %lo halves and stay masked. An
+    immediate on $zero, a small offset on any other register and an `ori`
+    are the code's own and are compared. Large offsets on other registers
+    stay masked: an address half can reach one through a spill."""
+    w = words(trim(b))
+    tainted, grew = set(), True
+    while grew:
+        grew = False
+        for x in w:
+            op, rs, rt, rd = x >> 26, (x >> 21) & 31, (x >> 16) & 31, (x >> 11) & 31
+            new = None
+            if op == 0x0F and 0x10 <= x & 0xFFFF < 0x200:
+                new = rt
+            elif op in (0x09, 0x19) and rs in tainted:
+                new = rt
+            elif op == 0 and x & 0x3F in (0x21, 0x2D, 0x25) and (rs in tainted or rt in tainted):
+                new = rd
+            if new and new not in tainted:
+                tainted.add(new)
+                grew = True
+    out = []
+    for x in w:
+        op, rs, imm = x >> 26, (x >> 21) & 31, x & 0xFFFF
+        if op in (2, 3):
+            x &= 0xFC000000
+        elif op == 0x0F:
+            if 0x10 <= imm < 0x200:
+                x &= 0xFFFF0000
+        elif rs == 28 and op >= 8:
+            x &= 0xFFFF0000
+        elif (op in MEM or op in (0x09, 0x0D, 0x19)) and rs != 29:
+            small = imm < 0x1000 or imm >= 0xF000
+            if rs in tainted or (rs != 0 and op != 0x0D and not small):
+                x &= 0xFFFF0000
+        out.append(x)
+    return struct.pack(f"<{len(out)}I", *out)
+
+
+def fingerprint(b: bytes) -> str:
+    return hashlib.sha1(identity(b)).hexdigest()[:16]
 
 
 def ends_in_jump(w: int) -> bool:
@@ -194,7 +246,8 @@ def catalogue() -> None:
             if not trim(body):
                 continue
             fp = fingerprint(body)
-            entry = found.setdefault(fp, {"size": code_size(body), "places": []})
+            entry = found.setdefault(fp, {"size": code_size(body), "places": [],
+                                          "shape": coarse_fingerprint(body)})
             entry["places"].append((lid, base + off))
     rows = []
     for fp, e in found.items():
@@ -207,6 +260,20 @@ def catalogue() -> None:
             kind = "level" if len({p[0] for p in places}) == 1 else "shared"
         rows.append((name, kind, e["size"], fp, places))
     rows.sort(key=lambda r: (r[4][0][0], r[4][0][1]))
+    # Variants: functions with the same instructions as another one except
+    # for a constant or an offset. The parent is the executable's function
+    # of that shape, or else the first of them in the catalogue.
+    exe_shape = {}
+    for name, _, _, b in exe:
+        exe_shape.setdefault(coarse_fingerprint(b), name)
+    shape_parent, variants = {}, []
+    for name, kind, size, fp, places in rows:
+        shape = found[fp]["shape"]
+        parent = exe_shape.get(shape) or shape_parent.setdefault(shape, name)
+        if parent != name:
+            variants.append((name, parent, kind, size))
+    VARIANTS.write_text("# name\tvariant of\tkind\tsize\n" +
+                        "".join(f"{n}\t{p}\t{k}\t{s}\n" for n, p, k, s in variants))
     CATALOGUE.parent.mkdir(parents=True, exist_ok=True)
     lines = ["# name\tkind\tsize\tfingerprint\tlevels\tplaces (level:address)"]
     for name, kind, size, fp, places in rows:
@@ -219,6 +286,8 @@ def catalogue() -> None:
     print(f"{len(rows)} distinct functions: " +
           ", ".join(f"{count[k]} {k} ({size[k]} bytes)" for k in count) +
           f". Written to {CATALOGUE.relative_to(ROOT)}.")
+    print(f"{len(variants)} of them ({sum(v[3] for v in variants)} bytes) are variants of another "
+          f"function. Written to {VARIANTS.relative_to(ROOT)}.")
 
 
 FAMILIES = ROOT / "config/overlays/families.tsv"

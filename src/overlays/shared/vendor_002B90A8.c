@@ -33,8 +33,39 @@ INCLUDE_ASM("asm/overlays", func_L01_002F0850);
 INCLUDE_ASM("asm/overlays", func_L01_002F0938);
 INCLUDE_ASM("asm/overlays", func_L01_002F0B48);
 INCLUDE_ASM("asm/overlays", func_L01_002F0E60);
+extern int func_L00_002DCFD0(void *);
+int func_L01_002F0ED0(char *a) {
+    int r = func_L00_002DCFD0(a);
+    if (r == 0) {
+        if (*(unsigned char *)(a + 0x20) == 14) a[0x20] = 1;
+    } else {
+        a[0x20] = 14;
+    }
+    return r;
+}
+int func_L01_002F0F70(char *a) {
+    int r = func_L00_002DD2D0(a);
+    a[0x20] = 14;
+    return r;
+}
+INCLUDE_ASM("asm/overlays", func_L01_002F0FA0);
 INCLUDE_ASM("asm/overlays", func_L01_002F0FD0);
+int func_L01_002F3050(char *a) {
+    int r = func_L00_002DCDA8(a);
+    if (r == 0) {
+        if (*(unsigned char *)(a + 0x20) == 7) a[0x20] = 1;
+    } else {
+        a[0x20] = 7;
+    }
+    return r;
+}
 INCLUDE_ASM("asm/overlays", func_L01_002F30F0);
+int func_L01_002F31A0(char *a) {
+    int r = func_L00_002DD2D0(a);
+    a[0x20] = 7;
+    return r;
+}
+INCLUDE_ASM("asm/overlays", func_L01_002F31D0);
 INCLUDE_ASM("asm/overlays", func_L01_002F3F40);
 INCLUDE_ASM("asm/overlays", func_L01_002F4290);
 INCLUDE_ASM("asm/overlays", func_L01_002F6418);

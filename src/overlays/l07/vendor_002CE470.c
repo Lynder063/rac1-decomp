@@ -20,6 +20,7 @@ INCLUDE_ASM("asm/overlays", func_L07_0030CA88);
 INCLUDE_ASM("asm/overlays", func_L07_0030CE70);
 INCLUDE_ASM("asm/overlays", func_L07_0030CFA8);
 INCLUDE_ASM("asm/overlays", func_L07_0030D8E8);
+INCLUDE_ASM("asm/overlays", func_L07_0030E100);
 INCLUDE_ASM("asm/overlays", func_L07_0030E128);
 INCLUDE_ASM("asm/overlays", func_L07_0030E370);
 extern char D_L07_00208820[];

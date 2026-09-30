@@ -52,4 +52,5 @@ float func_L00_002004C0(float a, float b, float c) {
     return func_001FA748(a, c);
 }
 INCLUDE_ASM("asm/overlays", func_L00_00200598);
+INCLUDE_ASM("asm/overlays", func_L00_0020079C);
 INCLUDE_ASM("asm/overlays", func_L00_002007A0);

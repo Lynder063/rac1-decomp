@@ -53,6 +53,7 @@ void func_L16_002D0D98(Level16VendorVectorMoby *moby, int index, void *out) {
     qcopy(out, moby->data->vectors + index * 16 + 16);
 }
 INCLUDE_ASM("asm/overlays", func_L16_002D0DC0);
+INCLUDE_ASM("asm/overlays", func_L16_002D0FC8);
 INCLUDE_ASM("asm/overlays", func_L16_002D1310);
 INCLUDE_ASM("asm/overlays", func_L16_002D1420);
 INCLUDE_ASM("asm/overlays", func_L16_002D1868);
@@ -86,6 +87,11 @@ INCLUDE_ASM("asm/overlays", func_L16_002E5408);
 INCLUDE_ASM("asm/overlays", func_L16_002E5848);
 INCLUDE_ASM("asm/overlays", func_L16_002E5D68);
 INCLUDE_ASM("asm/overlays", func_L16_002E5EC0);
+INCLUDE_ASM("asm/overlays", func_L16_002E5FC0);
+INCLUDE_ASM("asm/overlays", func_L16_002E60A8);
+INCLUDE_ASM("asm/overlays", func_L16_002E6140);
+INCLUDE_ASM("asm/overlays", func_L16_002E61F0);
+INCLUDE_ASM("asm/overlays", func_L16_002E6398);
 INCLUDE_ASM("asm/overlays", func_L16_002E6478);
 INCLUDE_ASM("asm/overlays", func_L16_002E66C0);
 INCLUDE_ASM("asm/overlays", func_L16_002E6908);

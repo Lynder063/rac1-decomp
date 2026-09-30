@@ -9,7 +9,7 @@ void func_L02_002A59D8(void) {
     func_L02_002A52B0(scratch);
 }
 extern void func_L02_002A52D0(void *);
-extern void func_001F9AF0(void *, int, int);
+extern void func_L02_002100E8(void *, int, int);
 extern char D_L02_001CB680[];
 
 void func_L02_002A59F8(int a, int b, int c, int d, float x, float y, float z, float w, int e, int f, int g) {
@@ -27,7 +27,7 @@ void func_L02_002A59F8(int a, int b, int c, int d, float x, float y, float z, fl
     ((unsigned char *)scratch)[0x3F] = 0x80;
     *(int *)(scratch + 0x1C) = g;
     func_L02_002A52D0(scratch);
-    func_001F9AF0(D_L02_001CB680, 0x70002800, 0xF8);
+    func_L02_002100E8(D_L02_001CB680, 0x70002800, 0xF8);
 }
 INCLUDE_ASM("asm/overlays", func_L02_002D4E50);
 INCLUDE_ASM("asm/overlays", func_L02_002D5098);

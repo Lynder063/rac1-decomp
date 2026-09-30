@@ -100,4 +100,5 @@ char *func_L11_0031C210(void *position, void *vector, void *owner, float scale) 
 }
 INCLUDE_ASM("asm/overlays", func_L11_0031C2D8);
 INCLUDE_ASM("asm/overlays", func_L11_0031C508);
+INCLUDE_ASM("asm/overlays", func_L11_0031EC48);
 INCLUDE_ASM("asm/overlays", func_L11_0031ED48);

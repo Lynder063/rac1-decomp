@@ -69,6 +69,13 @@ int func_L00_002DB690(char *a) {
     }
     return 1;
 }
+int func_L00_002DB6C8(char *a) {
+    int (*fn)(char *) = *(int (**)(char *))(*(char **)(*(char **)(a + 0x24) + 0x2C) + 0x4);
+    if (fn != 0) {
+        return fn(a);
+    }
+    return 1;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002DB700);
 INCLUDE_ASM("asm/overlays", func_L00_002DB810);
 INCLUDE_ASM("asm/overlays", func_L00_002DBB10);

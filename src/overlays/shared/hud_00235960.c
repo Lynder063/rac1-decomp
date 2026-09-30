@@ -201,6 +201,14 @@ INCLUDE_ASM("asm/overlays", func_L00_00236BF8);
 INCLUDE_ASM("asm/overlays", func_L00_00236DE8);
 INCLUDE_ASM("asm/overlays", func_L00_00236F38);
 INCLUDE_ASM("asm/overlays", func_L00_002377E0);
+void func_L00_00237B20(HudElem *e) {
+    e->unk7C = func_001F9850(0xA) + 0x1E;
+    e->unk48 = 0;
+    e->unk4A = 0;
+    e->w = 0x20;
+    e->h = 0x20;
+    func_L00_00236610(e);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00237B70);
 INCLUDE_ASM("asm/overlays", func_L00_00237B90);
 extern char D_0013F450[];

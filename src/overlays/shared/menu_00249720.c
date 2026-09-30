@@ -14,7 +14,10 @@ INCLUDE_ASM("asm/overlays", func_L00_0024A140);
 int func_L00_0024A170(float a, float b, float x) { return x < 29.0f; }
 INCLUDE_ASM("asm/overlays", func_L00_0024A198);
 INCLUDE_ASM("asm/overlays", func_L00_0024A1E4);
+INCLUDE_ASM("asm/overlays", func_L00_0024A210);
+INCLUDE_ASM("asm/overlays", func_L00_0024A25C);
 INCLUDE_ASM("asm/overlays", func_L00_0024A320);
+int func_L00_0024A338(float a, float b, float x) { return x >= 58.5f; }
 INCLUDE_ASM("asm/overlays", func_L00_0024A3B0);
 int func_L00_0024A404(float a, float b, float x) { return x <= 180.0f; }
 INCLUDE_ASM("asm/overlays", func_L00_0024A430);
@@ -45,6 +48,7 @@ INCLUDE_ASM("asm/overlays", func_L00_0024B920);
 INCLUDE_ASM("asm/overlays", func_L00_0024B940);
 INCLUDE_ASM("asm/overlays", func_L00_0024B960);
 INCLUDE_ASM("asm/overlays", func_L00_0024B980);
+INCLUDE_ASM("asm/overlays", func_L00_0024B9A8);
 INCLUDE_ASM("asm/overlays", func_L00_0024B9B4);
 INCLUDE_ASM("asm/overlays", func_L00_0024BA10);
 INCLUDE_ASM("asm/overlays", func_L00_0024BA60);
@@ -54,7 +58,10 @@ INCLUDE_ASM("asm/overlays", func_L00_0024BAE8);
 INCLUDE_ASM("asm/overlays", func_L00_0024BB5C);
 INCLUDE_ASM("asm/overlays", func_L00_0024BB90);
 INCLUDE_ASM("asm/overlays", func_L00_0024BB98);
+INCLUDE_ASM("asm/overlays", func_L00_0024BBCC);
 INCLUDE_ASM("asm/overlays", func_L00_0024BBE8);
+INCLUDE_ASM("asm/overlays", func_L00_0024BC04);
+INCLUDE_ASM("asm/overlays", func_L00_0024BC2C);
 INCLUDE_ASM("asm/overlays", func_L00_0024BC38);
 INCLUDE_ASM("asm/overlays", func_L00_0024BCA0);
 INCLUDE_ASM("asm/overlays", func_L00_0024BCF0);
@@ -63,3 +70,4 @@ INCLUDE_ASM("asm/overlays", func_L00_0024BD84);
 INCLUDE_ASM("asm/overlays", func_L00_0024BDB8);
 INCLUDE_ASM("asm/overlays", func_L00_0024BF30);
 INCLUDE_ASM("asm/overlays", func_L00_0024BFB8);
+INCLUDE_ASM("asm/overlays", func_L00_0024BFFC);

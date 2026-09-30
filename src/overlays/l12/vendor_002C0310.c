@@ -3,6 +3,7 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L12_002C0310);
+INCLUDE_ASM("asm/overlays", func_L12_002C0918);
 INCLUDE_ASM("asm/overlays", func_L12_002C0940);
 extern int func_L00_002DCDA8(void *);
 extern void func_L01_0026F040(int, int);
@@ -18,6 +19,16 @@ int func_L12_002E29C8(unsigned char *moby) {
         moby[0x20] = 1;
     }
     return active;
+}
+extern int func_L00_002DCFD0(void *);
+int func_L12_002E2A68(char *a) {
+    int r = func_L00_002DCFD0(a);
+    if (r == 0) {
+        if (*(unsigned char *)(a + 0x20) == 8) a[0x20] = 1;
+    } else {
+        a[0x20] = 8;
+    }
+    return r;
 }
 typedef struct {
     char pad0[0x20];

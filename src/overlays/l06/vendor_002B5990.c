@@ -50,5 +50,6 @@ void func_L06_002FC8E0(char *arg) {
 INCLUDE_ASM("asm/overlays", func_L06_002FCA98);
 INCLUDE_ASM("asm/overlays", func_L06_002FD0B8);
 INCLUDE_ASM("asm/overlays", func_L06_002FD3E0);
+INCLUDE_ASM("asm/overlays", func_L06_002FDA60);
 INCLUDE_ASM("asm/overlays", func_L06_002FDA70);
 INCLUDE_ASM("asm/overlays", func_L06_002FE4B8);

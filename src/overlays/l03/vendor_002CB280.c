@@ -52,8 +52,10 @@ int func_L03_002DDF10(unsigned char *moby, char *data) {
 }
 INCLUDE_ASM("asm/overlays", func_L03_002DDF90);
 INCLUDE_ASM("asm/overlays", func_L03_002DE088);
+INCLUDE_ASM("asm/overlays", func_L03_002DE4B8);
 INCLUDE_ASM("asm/overlays", func_L03_002E08E8);
 INCLUDE_ASM("asm/overlays", func_L03_002E1598);
+INCLUDE_ASM("asm/overlays", func_L03_002E3D10);
 INCLUDE_ASM("asm/overlays", func_L03_002ECBA8);
 INCLUDE_ASM("asm/overlays", func_L03_002ECD40);
 INCLUDE_ASM("asm/overlays", func_L03_002ECEC8);

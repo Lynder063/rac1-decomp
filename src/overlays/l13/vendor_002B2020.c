@@ -28,6 +28,7 @@ void func_L13_002B6168(Level13VendorMoby *moby) {
 }
 INCLUDE_ASM("asm/overlays", func_L13_002B61A0);
 INCLUDE_ASM("asm/overlays", func_L13_002B6288);
+INCLUDE_ASM("asm/overlays", func_L13_002B9590);
 INCLUDE_ASM("asm/overlays", func_L13_002B9800);
 INCLUDE_ASM("asm/overlays", func_L13_002B9C68);
 INCLUDE_ASM("asm/overlays", func_L13_002B9E50);

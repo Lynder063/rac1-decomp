@@ -321,6 +321,7 @@ void func_L00_0025D308(void *a, void *b, void *c, float s) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_0025D390);
 INCLUDE_ASM("asm/overlays", func_L00_0025D3A0);
+INCLUDE_ASM("asm/overlays", func_L00_0025D3D0);
 INCLUDE_ASM("asm/overlays", func_L00_0025D3F0);
 INCLUDE_ASM("asm/overlays", func_L00_0025D5B0);
 INCLUDE_ASM("asm/overlays", func_L00_0025D6F0);

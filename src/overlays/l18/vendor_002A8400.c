@@ -90,6 +90,7 @@ void func_L18_002D9358(unsigned char *arg, int value) {
 INCLUDE_ASM("asm/overlays", func_L18_002D93C0);
 INCLUDE_ASM("asm/overlays", func_L18_002D9440);
 INCLUDE_ASM("asm/overlays", func_L18_002D9460);
+INCLUDE_ASM("asm/overlays", func_L18_002D9488);
 INCLUDE_ASM("asm/overlays", func_L18_002D96B0);
 INCLUDE_ASM("asm/overlays", func_L18_002D9B00);
 typedef struct {
@@ -166,6 +167,7 @@ char *func_L18_002E36B0(void *vector) {
     return moby;
 }
 INCLUDE_ASM("asm/overlays", func_L18_002EAB58);
+INCLUDE_ASM("asm/overlays", func_L18_002EB240);
 INCLUDE_ASM("asm/overlays", func_L18_002EB260);
 char *func_L18_002EB4E0(void *owner, void *vector, int value) {
     char *moby = func_0020D348(0x3D7);

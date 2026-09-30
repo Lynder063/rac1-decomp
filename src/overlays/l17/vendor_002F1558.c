@@ -21,8 +21,14 @@ int func_L17_002F19B8(unsigned char *moby) {
     }
     return result;
 }
+int func_L17_002F1B50(char *a) {
+    int r = func_L00_002DD2D0(a);
+    a[0x20] = 12;
+    return r;
+}
 INCLUDE_ASM("asm/overlays", func_L17_002F1BB0);
 INCLUDE_ASM("asm/overlays", func_L17_002F1D20);
+INCLUDE_ASM("asm/overlays", func_L17_002F1F58);
 INCLUDE_ASM("asm/overlays", func_L17_002F1FE0);
 INCLUDE_ASM("asm/overlays", func_L17_002F2458);
 INCLUDE_ASM("asm/overlays", func_L17_002F2BD8);
