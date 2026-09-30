@@ -12,7 +12,12 @@ INCLUDE_ASM("asm/overlays", func_L06_003016B8);
 INCLUDE_ASM("asm/overlays", func_L06_00301848);
 INCLUDE_ASM("asm/overlays", func_L06_00301B78);
 INCLUDE_ASM("asm/overlays", func_L06_00302248);
-INCLUDE_ASM("asm/overlays", func_L06_003023C8);
+void func_L06_003023C8(char *arg, void *a, void *b) {
+    char *dst = *(char **)(arg + 0x78);
+    arg[0x20] = 2;
+    qcopy(dst, a);
+    qcopy(dst + 0x10, b);
+}
 INCLUDE_ASM("asm/overlays", func_L06_003024C8);
 INCLUDE_ASM("asm/overlays", func_L06_00302FE8);
 INCLUDE_ASM("asm/overlays", func_L06_00303858);
@@ -23,7 +28,14 @@ INCLUDE_ASM("asm/overlays", func_L06_00304B88);
 INCLUDE_ASM("asm/overlays", func_L06_00304FA8);
 INCLUDE_ASM("asm/overlays", func_L06_00305468);
 INCLUDE_ASM("asm/overlays", func_L06_003054D8);
-INCLUDE_ASM("asm/overlays", func_L06_00305BF8);
+extern void func_0022ED80(int, int, void *);
+
+void func_L06_00305BF8(char *arg) {
+    if ((unsigned char)arg[0x20] == 1) {
+        arg[0x20] = 2;
+        func_0022ED80(0, 0, arg);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L06_00305C38);
 INCLUDE_ASM("asm/overlays", func_L06_00305C58);
 INCLUDE_ASM("asm/overlays", func_L06_00305E38);
