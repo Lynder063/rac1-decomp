@@ -99,10 +99,26 @@ differently:
 
 RC1 splits some of our units finer (`menu` into several objects), so a
 flag applies to a range of functions, not necessarily our whole file.
-Not tried here yet: our near-misses in `menu.c`, `pause.c`,
-`transition.c`, `vuchain.c` and the movie code are the first candidates
-(`TRY_CFLAGS`, below). Its notes (`decomp_state/notes/`) record what each
-matched function needed.
+Its notes (`decomp_state/notes/`) record what each matched function
+needed.
+
+**Measured here (2026-09-30): the flags do not carry over.** They are
+relative to RC1's compiler setup (EE-GCC 2.95.2, `-G8 -ffast-math`), not
+to retail's objects as our SN 2.95.3 build sees them:
+
+- Six exact `menu.c` functions inside RC1's `menu` object (func_00207200,
+  002072C0, 00207340, 00207648, 00207780, 00207930) under RC1's
+  `-fno-schedule-insns`: three stay exact, 00207200 goes to 14/188
+  bytes off, 00207340 to 2/104, and 00207930 changes size.
+- The one near-miss in that range, func_00227A70 (pause.c, inside RC1's
+  `pause_post2`, built there with `-G0`): 57/144 bytes off with default
+  flags, `-G0`, `-fno-schedule-insns` and both; 62/144 with
+  `-fno-schedule-insns2`; a size change with `-mno-split-addresses`. Its
+  residual is source shape: retail keeps `%hi(D_001D5F70)` in `$t2`
+  across the loop and forms the index with other registers.
+
+So treat an RC1 flag as a hint to test per function, never as a file
+setting.
 
 ## ReRAC: the same game as a native PC port
 
