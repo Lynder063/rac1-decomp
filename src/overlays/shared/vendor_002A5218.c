@@ -269,7 +269,38 @@ void func_L02_002EDE68(char *m, void *arg1) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L02_002EE0A0);
-INCLUDE_ASM("asm/overlays", func_L02_002EE188);
+extern int D_L02_0015F6B0;
+extern void func_L02_002EE0A0(void);
+
+/* refreshes a moby's six attach points and color, re-registers its draw callback */
+void func_L02_002EE188(char *m) {
+    int i;
+    char *data;
+    char *p;
+    int *q;
+    int col;
+    int v;
+    if (*(unsigned char *)(m + 0x21) != 0xFF) {
+        data = *(char **)(m + 0x78);
+        p = data + 0x80;
+        for (i = 0; i < 6; i++, p += 0x10) {
+            func_L00_00250800(m, i + 2, p);
+        }
+        v = D_L02_0015F6B0;
+        col = *(unsigned char *)(m + 0x92) << 16;
+        col |= 0x30000000;
+        col |= *(unsigned char *)(m + 0x91) << 8;
+        col |= *(unsigned char *)(m + 0x90);
+        *(int *)(data + 0xE0) = col;
+        if (v != 0) {
+            q = *(int **)(data + 0xE4);
+            if (v != *q) {
+                *q = v;
+                func_001F49B0(func_L02_002EE0A0, m);
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L02_002EE250);
 extern short D_L02_00162068;
 extern short D_L02_0016206C;

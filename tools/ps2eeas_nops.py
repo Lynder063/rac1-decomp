@@ -204,9 +204,29 @@ def branch_as_word(line):
     return f"{m.group(1)}.word\t{word:#010x} | ((({label} - . - 4) >> 2) & 0xFFFF)\n"
 
 
+EXTERN = re.compile(r"^\s*\.extern\s+(\w+)\s*,\s*(\d+)")
+SMALL = 2           # -G2: an object this size or smaller is $gp-relative, one instruction
+
+
+def macro_access(lines, operands: str) -> bool:
+    """A load or store to a bare symbol the assembler expands to `lui $at`
+    plus the access (a global bigger than SMALL, or undeclared): the lui
+    then sits between the mtc1 and the read, so there is no hazard. A
+    $gp-relative one (an `__gp` alias, a small object) stays adjacent."""
+    target = operands.split(",")[-1].strip()
+    if "(" in target or not re.match(r"^[A-Za-z_][\w.]*(\s*[+-]\s*\w+)?$", target):
+        return False
+    sym = re.split(r"\s*[+-]", target)[0]
+    if sym.endswith("__gp"):
+        return False
+    sizes = {m.group(1): int(m.group(2)) for l in lines if (m := EXTERN.match(l))}
+    return sizes.get(sym, SMALL + 1) > SMALL
+
+
 def move_sites(lines, start, end):
     """Source lines that read the FP register a reorder-mode `mtc1`/`li.s`
-    on the previous instruction line wrote; the nop goes before them."""
+    on the previous instruction line wrote; the nop goes before them. A
+    macro access to a large global is not one (macro_access())."""
     sites, reorder, pending = [], True, None
     for j in range(start, end):
         stripped = lines[j].strip()
@@ -225,7 +245,7 @@ def move_sites(lines, start, end):
             pending = None
             continue
         mnemonic, operands = m.group(1), m.group(2)
-        if pending and reads_fpr(mnemonic, operands, pending):
+        if pending and reads_fpr(mnemonic, operands, pending) and not macro_access(lines, operands):
             sites.append(j)
         pending = None
         if reorder and mnemonic in ("mtc1", "li.s"):

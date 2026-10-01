@@ -129,7 +129,32 @@ float func_L16_002D5280(char *moby, float *target) {
     return d;
 }
 INCLUDE_ASM("asm/overlays", func_L16_002D5340);
-INCLUDE_ASM("asm/overlays", func_L16_002D5438);
+extern char *D_L16_001B0C30[];
+extern float func_L00_001FF860(float, float);
+extern float func_001FA790(float, float);
+extern int func_001F9850(int);
+extern void func_00213DE0(void *, int, int, int);
+void func_L16_002D5438(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    char *target = D_L16_001B0C30[*(int *)(data + 0x120)] + (*(short *)(data + 0x300) << 4);
+    float angle = func_L00_001FF860(*(float *)(target + 0x10) - *(float *)(moby + 0x10), *(float *)(target + 0x14) - *(float *)(moby + 0x14));
+    float delta = func_001FA790(angle, *(float *)(moby + 0x48));
+    if (delta < 0.78539819f && -0.78539819f < delta) {
+        if ((unsigned char)moby[0x53] != 1) {
+            func_00213DE0(moby, 1, 0, func_001F9850(0x14));
+        }
+    } else if (delta < 0.0f) {
+        if (*(unsigned short *)(moby + 0x34) & 0x8000) {
+            if ((unsigned char)moby[0x53] != 4) func_00213DE0(moby, 4, 0, func_001F9850(0x14));
+        } else {
+            if ((unsigned char)moby[0x53] != 5) func_00213DE0(moby, 5, 0, func_001F9850(0x14));
+        }
+    } else if (*(unsigned short *)(moby + 0x34) & 0x8000) {
+        if ((unsigned char)moby[0x53] != 5) func_00213DE0(moby, 5, 0, func_001F9850(0x14));
+    } else {
+        if ((unsigned char)moby[0x53] != 4) func_00213DE0(moby, 4, 0, func_001F9850(0x14));
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L16_002D55C0);
 INCLUDE_ASM("asm/overlays", func_L16_002D5958);
 INCLUDE_ASM("asm/overlays", func_L16_002D5CD0);
@@ -149,7 +174,57 @@ void func_L16_002E44B8(char *moby)
     *(float *)(data + 0x144) = *(float *)(data + 0x17C);
     func_L00_00263950(moby, data + 0xE0, 2, a, b);
 }
-INCLUDE_ASM("asm/overlays", func_L16_002E6B70);
+extern short D_L16_00161EC0;
+extern short D_L16_00161EC4;
+extern short D_L16_00161EC8;
+extern float func_001FA748(float, float);
+extern int func_L00_0028EB98(void *, int);
+extern int func_0022ED80_6B70(int, int, void *) __asm__("func_0022ED80");
+extern void func_001F49B0(void (*)(void), void *);
+extern void func_L16_002E6D40(void);
+extern int func_L16_002E7138(int);
+extern void func_L16_002E7198(int);
+
+/* Updates a moby effect and advances it when its linked object is ready. */
+void func_L16_002E6B70(unsigned char *m) {
+    char *d = *(char **)(m + 0x78);
+    float cycle;
+    int i;
+    float *p;
+    switch (m[0x20]) {
+    case 0:
+        m[0x20] = 1;
+        m[0x30] = 0xFF;
+        break;
+    case 1:
+        cycle = *(float *)(d + 0xC) + *(float *)&D_L16_00161EC4 * D_0015EE6C;
+        *(float *)(d + 0xC) = cycle;
+        if (cycle > 1.0f) *(float *)(d + 0xC) = cycle - 1.0f;
+        if (func_L00_0028EB98(m, *(int *)(d + 0x24)) == 0) {
+            *(int *)(d + 0x24) = func_0022ED80_6B70(0, 4, m);
+        }
+        *(float *)(d + 8) = func_001FA748(*(float *)(d + 8),
+                            *(float *)&D_L16_00161EC0 * 0.017453292f * D_0015EE6C);
+        p = (float *)(d + 0x10);
+        for (i = 0; i < 4; i++) {
+            p[i] = func_001FA748(p[i],
+                   ((float *)&D_L16_00161EC8)[i] * 0.017453292f * D_0015EE6C);
+        }
+        if (m[0x31]) func_001F49B0(func_L16_002E6D40, m);
+        if (*(int *)(d + 0x20) != -1 && func_L16_002E7138(*(int *)(d + 0x20))) {
+            *(int *)(m + 0x94) = 0;
+            m[0x20] = 2;
+            func_L16_002E7198(*(int *)(d + 0x20));
+        }
+        break;
+    case 2:
+        if (!func_L16_002E7138(*(int *)(d + 0x20))) {
+            m[0x20] = 1;
+            *(int *)(m + 0x94) = *(int *)(*(char **)(m + 0x24) + 0x10);
+        }
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L16_002E6D40);
 INCLUDE_ASM("asm/overlays", func_L16_002E7138);
 INCLUDE_ASM("asm/overlays", func_L16_002E7160);
@@ -180,4 +255,15 @@ void func_L16_002E7198(int idx) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002EB268);
+extern void func_001F49B0(void (*)(void), void *);
+extern void func_L16_002EB158(void);
+void func_L16_002EB268(unsigned char *moby) {
+    switch (moby[0x20]) {
+    case 0:
+        moby[0x20] = 1;
+        break;
+    case 1:
+        func_001F49B0(func_L16_002EB158, moby);
+        break;
+    }
+}

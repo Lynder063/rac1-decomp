@@ -38,4 +38,49 @@ unsigned char *func_L17_00270A28(char *parent, void *pos, float *vec) {
     }
     return p;
 }
-INCLUDE_ASM("asm/overlays", func_L17_00270C98);
+extern float func_001FA888(int);
+extern int func_001FA8A8(int, int, float);
+
+// Spawns a class 0x50 fading particle at a position, with colours depending on a mode and a fade step.
+unsigned char *func_L17_00270C98(char *pos, int mode, int step) {
+    unsigned char *p;
+    int n;
+    if (mode)
+        n = 5 - step;
+    else
+        n = 0xF - step;
+    if (n >= 0) {
+        p = func_00218928(0x50);
+        if (p != 0) {
+            qcopy(p + 0x10, pos);
+            p[9] = func_001FA898_r(1.0f) + 0x70;
+            *(int *)(p + 0x20) = mode;
+            if (mode == 0) {
+                int d = 0xF - step;
+                *(int *)(p + 4) = 0x60FF3020;
+                p[3] = 0x48;
+                *(float *)(p + 0xC) = 630000.0f;
+                *(short *)(p + 0xA) = d;
+                if (step != 0) {
+                    float a = func_001FA888((short)d - 1);
+                    *(int *)(p + 4) = func_001FA8A8(0x603F1008, *(int *)(p + 4), a / func_001FA888(*(short *)(p + 0xA)));
+                }
+            } else {
+                int d = 5 - step;
+                *(int *)(p + 4) = 0x80D0A080;
+                p[3] = 0x44;
+                *(float *)(p + 0xC) = 420000.0f;
+                *(short *)(p + 0xA) = d;
+                if (step != 0) {
+                    float a = func_001FA888((short)d - 1);
+                    *(int *)(p + 4) = func_001FA8A8(0x30FFFFFF, *(int *)(p + 4), a / func_001FA888(*(short *)(p + 0xA)));
+                }
+            }
+            p[1] = 0;
+            p[8] = func_002140B0(0xFF);
+            p[2] = *D_L17_001B2D54;
+        }
+        return p;
+    }
+    return 0;
+}
