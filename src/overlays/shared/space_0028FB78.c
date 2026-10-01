@@ -67,6 +67,60 @@ void func_L00_0028FFB0(void) {
     func_L00_0028FCA0(0);
     *(short *)(D_0013E15A + 2) = 0;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00290030);
+extern char D_0013DE6E[];
+extern int D_L00_0015F6B8[] MACRO_ADDR;
+extern int D_L00_0015F6A8 MACRO_ADDR;
+extern float D_L00_0015F4FC MACRO_ADDR;
+extern int D_L00_0015F500 MACRO_ADDR;
+extern int D_L00_00161288[] MACRO_ADDR;
+extern short D_L00_0016128C;
+extern char D_L00_00173F00[];
+extern char D_L00_0016C960[];
+extern int D_0015EE80 MACRO_ADDR;
+extern int D_L00_0015F6A4 MACRO_ADDR;
+extern short D_L00_00160630;
+extern void func_002348B8(void);
+extern int func_001F9850(int);
+extern void func_00205220(int);
+extern int func_0020BFC8(int, int);
+
+/* start a ship-travel transition to the given destination, setting up the flight path and timing Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay_space_0028e8a0.c, FUN_L00_0028ed58. */
+void func_L00_00290030(int dest) {
+    char *g = D_0013DE6E + 0x2C2;
+    char *h;
+    int base;
+    int *q;
+    D_L00_0015F6B8[1] = 1;
+    D_L00_0015F6A8 = 6;
+    D_L00_0015F4FC = 1.0f;
+    D_L00_0015F500 = 0;
+    *(int *)(g + 0x20) = 0;
+    *(short *)(g + 0x24) = -1;
+    func_002348B8();
+    base = D_L00_00161288[1] - 0x60000;
+    q = (int *)D_L00_00173F00;
+    h = D_L00_0016C960;
+    *(int *)(h + 0x58) = q[1] + base;
+    *(int *)(h + 0x5C) = q[2] + base;
+    *(int *)&D_L00_0016128C = base;
+    if (D_0015EE84_m == dest) {
+        int d = 0x60;
+        int v;
+        int t;
+        func_L00_0028FCA0(8);
+        if (D_0015EE80) d = 0x50;
+        v = func_001F9850(((int *)&D_L00_00160630)[*(short *)(g + 0x26)]);
+        *(int *)(h + 0x34) = v;
+        t = v / d;
+        *(int *)(h + 0x3C) = t;
+        func_00205220(t);
+        *(int *)(h + 0x38) = *(int *)(h + 0x34) % d;
+    } else {
+        func_0020BFC8(0, dest);
+        D_L00_0015F6A4 = dest;
+        *(int *)(g + 0x20) = 3;
+        *(short *)(g + 0x24) = -1;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002901A8);
 INCLUDE_ASM("asm/overlays", func_L00_002902A0);

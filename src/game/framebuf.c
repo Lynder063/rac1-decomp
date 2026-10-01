@@ -215,7 +215,60 @@ void func_001FB8A8(void) {
     D_00161000 += 4;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FB908);
+extern void func_00234C98_l(int, long) __asm__("func_00234C98");
+
+/* Clears the screen through a GIF packet appended to D_00161000: a fixed header then n = w / 32 pairs of sprite corner registers stepping 0x200 per column across a w x h area centred on 0x8000. Adapted from Lombyte (MIT) for PAL: src/rendering/fun_001fb740.c, FUN_001fb740. */
+void func_001FB908(int w, int h) {
+    int *tag;
+    long *q;
+    long *c;
+    int n;
+    int i;
+    int zero;
+    int step;
+    int x;
+    int y;
+    long lo;
+    long hi;
+
+    n = w / 32;
+    func_00234C98_l(0x42, 0x800000004AL);
+    D_00161000[0] = (n + 5) | 0x10000000;
+    D_00161000[1] = 0;
+    D_00161000[2] = 0;
+    D_00161000[3] = (n + 5) | 0x50000000;
+    tag = D_00161000;
+    q = (long *)(tag + 4);
+    D_00161000 = tag + 4;
+    zero = 0;
+    q[zero] = 0x1000000000000001L;
+    q[1] = 0xE;
+    q[2] = 0x32003;
+    q[3] = 0x47;
+    q[4] = 0x2400000000000001L;
+    q[5] = 0x10;
+    q[6] = 0x146;
+    q[7] = 0x80008080L;
+    q[8] = (long)(n | 0x8000) | 0x2400000000000000L;
+    q[9] = 0x44;
+    i = zero;
+    if (n > zero) {
+        lo = (long)(0x8000 - h * 8) << 16;
+        x = 0x8000 + -(w * 8);
+        c = (long *)((char *)tag + 0x60);
+        y = 0x8200 + -(w * 8);
+        hi = (long)(h * 8 + 0x7FF0) << 16;
+        do {
+            step = 0x200;
+            *c++ = x | lo;
+            *c++ = y | hi;
+            y += step;
+            x += step;
+            i++;
+        } while (i < n);
+    }
+    D_00161000 = D_00161000 + (n * 4 + 20);
+}
 
 extern void func_00234C50(int);
 extern void func_00234C98(int, long);

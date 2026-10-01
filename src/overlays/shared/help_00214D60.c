@@ -32,7 +32,90 @@ void func_L00_00215628(float a, float b, float c) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_00215738);
 INCLUDE_ASM("asm/overlays", func_L00_00215A90);
-INCLUDE_ASM("asm/overlays", func_L00_002162B8);
+extern float func_001F9B88(float);
+extern char D_L00_0017A780[];
+extern float D_0015EE6C MACRO_ADDR;
+#define PF(o) (*(float *)(g + (o)))
+#define PI(o) (*(int *)(g + (o)))
+#define XF(o) (*(float *)(x + (o)))
+#define X2B(o) (*(float *)(x2b + (o)))
+#define X2C(o) (*(float *)(x2c + (o)))
+#define X2D(o) (*(float *)(x2d + (o)))
+#define X2(o) (*(float *)(x2 + (o)))
+#define X3(o) (*(float *)(x3 + (o)))
+
+/* Sets the camera lean/offset terms from the pad input for the glide, spin and hover states. Adapted from Lombyte (MIT) for PAL: overlays/shared/ui_help_00214658.c, FUN_L00_00215b68. */
+void func_L00_002162B8(void) {
+    char *g = D_0013E633 + 0xE1D;
+    char *x;
+    char *x2;
+    char *x2b;
+    char *x2c;
+    char *x2d;
+    char *x3;
+    char *h;
+    float t, r, n, c, u, a, b, d;
+    int st;
+
+    if (PI(0x2084) == 0x44) {
+        t = PF(0x188) * 0.5f;
+        if (0.7f < t) t = 0.7f;
+        else if (t < -0.7f) t = -0.7f;
+        t = t * func_001F9B88(t) * 1.25f;
+        h = D_0013E633 + 0xE1D;
+        r = *(float *)(h + 0x164) / (D_0015EE6C * 3.0f);
+        x = D_L00_0017A780;
+        n = -t;
+        XF(0x1240) = n * 0.3f;
+        if (1.0f < r) r = 1.0f;
+        if (r < 0.0f) r = 0.0f;
+        XF(0x10E8) = t;
+        XF(0x1240) = XF(0x1240) * r;
+        XF(0x10E0) = n * 0.35f;
+        XF(0x1198) = t * 1.35f;
+        XF(0x1194) = func_001F9B88(t) * 0.25f;
+        return;
+    }
+    if (PI(0x2084) == 0x4F) {
+        t = PF(0x188) * 1.6f;
+        if (1.25f < t) t = 1.25f;
+        else if (t < -1.25f) t = -1.25f;
+        x2 = D_L00_0017A780;
+        a = -t * 0.52f;
+        X2(0x1240) = a;
+        if (0.28f < a) X2(0x1240) = 0.28f;
+        else if (a < -0.28f) X2(0x1240) = -0.28f;
+        x2b = D_L00_0017A780;
+        b = t * 1.7f;
+        X2B(0x1198) = b;
+        X2B(0x10E8) = t * 0.58f;
+        if (0.7f < b) X2B(0x1198) = 0.7f;
+        else if (b < -0.7f) X2B(0x1198) = -0.7f;
+        d = func_001F9B88(t) * 0.2f;
+        x2c = D_L00_0017A780;
+        X2C(0x1194) = d;
+        c = 0.2f;
+        if (c < d) goto st94;
+        c = -0.2f;
+        if (d < c) {
+st94:
+            X2C(0x1194) = c;
+        }
+        d = func_001F9B88(t) * 0.16f;
+        x2d = D_L00_0017A780;
+        X2D(0x1190) = d;
+        return;
+    }
+    st = PI(0x208C);
+    if (st == 2 || st == 4) {
+        u = PF(0x188);
+        if (1.4f < u) u = 1.4f;
+        else if (u < -1.4f) u = -1.4f;
+        x3 = D_L00_0017A780;
+        X3(0x10E8) = u * 0.29f;
+        X3(0x1198) = u * 0.87f;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00216648);
 typedef struct { float x, y, z, w; } Vx __attribute__((aligned(16)));
 typedef struct { int a[16]; } Mx __attribute__((aligned(16)));
@@ -55,7 +138,78 @@ void func_L00_002167C8(Vx *in, float *out) {
     out[0] = func_L00_001FF860(func_001F9B50(v0.x * v0.x + v0.z * v0.z), v0.y);
     out[1] = -func_L00_001FF860(v0.z, v0.x);
 }
-INCLUDE_ASM("asm/overlays", func_L00_00216880);
+extern float func_001F9C78(void *a, void *b);
+extern void func_001F9CA0(void *, void *, void *);
+extern void func_L00_001FFA40(void *, void *);
+extern void func_001FA540(void *, void *, void *);
+extern float func_L00_0025CCF0(char *, char *, int, float, float, float, float);
+extern void func_002153E8(void *, void *);
+
+typedef struct { float f[4]; } __attribute__((aligned(16))) V_c;
+typedef struct { V_c r[4]; } M_c;
+typedef int Q_c __attribute__((mode(TI)));
+typedef struct { Q_c q[4]; } QM_c;
+
+/* builds the camera rotation matrix m that looks along v, with pitch smoothing. Adapted from Lombyte (MIT) for PAL: src/overlays/shared/ui_help_00214658.c, FUN_L00_00216130. */
+void func_L00_00216880(V_c *v, M_c *m, void *p, float a, float b, float c) {
+    M_c m0;
+    M_c m1;
+    V_c r;
+    V_c x;
+    float t;
+    float d, pitch, yaw, roll;
+    t = 0.0f;
+    {
+        QM_c *d = (QM_c *)m, *s = (QM_c *)(D_0013E633 + 0xE1D);
+        d->q[0] = s->q[0];
+        d->q[1] = s->q[1];
+        d->q[2] = s->q[2];
+        d->q[3] = s->q[3];
+    }
+    d = func_001F9C78(v, &m->r[2]);
+    pitch = func_L00_001FF860(d, func_001F9B50(1.0f - d * d));
+    func_001F9CA0(&x, v, &m->r[2]);
+    if (x.f[2] < 0.99f) {
+        roll = func_L00_001FF860(x.f[0], x.f[1]);
+        r.f[0] = 0.0f;
+        r.f[1] = 0.0f;
+        r.f[2] = -roll;
+        func_L00_001FFA40(&m1, &r);
+        func_001FA540(m, &m1, m);
+        func_001F9EE8(&x, &x, &m1);
+        yaw = func_L00_001FF860(x.f[2], x.f[0]);
+        r.f[0] = 0.0f;
+        r.f[2] = 0.0f;
+        r.f[1] = -yaw;
+        func_L00_001FFA40(&m0, &r);
+        func_001FA540(m, &m0, m);
+        func_001F9EE8(&x, &x, &m0);
+    } else {
+        roll = 0.0f;
+        yaw = roll;
+    }
+    if (p) {
+        r.f[2] = pitch;
+        r.f[0] = 0.0f;
+    } else {
+        func_L00_0025CCF0((char *)&t, D_0013E633 + 0xEC1, 0, pitch, a, b, c);
+        r.f[0] = 0.0f;
+        r.f[2] = t;
+    }
+    r.f[1] = 0.0f;
+    func_L00_001FFA40(&m1, &r);
+    func_001FA540(m, &m1, m);
+    r.f[1] = yaw;
+    r.f[2] = 0.0f;
+    func_L00_001FFA40(&m0, &r);
+    func_001FA540(m, &m0, m);
+    r.f[2] = roll;
+    r.f[1] = 0.0f;
+    func_L00_001FFA40(&m1, &r);
+    func_001FA540(m, &m1, m);
+    if (p) func_002153E8(m, p);
+    else func_002153E8(m, D_0013E633 + 0xEAD);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00216B40);
 extern float func_L00_0025CCF0(char *, char *, int, float, float, float, float);
 extern void func_L00_00216B40(void);

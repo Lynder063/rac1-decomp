@@ -49,7 +49,60 @@ void func_L00_002E17F0(char *a) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_002E1850);
-INCLUDE_ASM("asm/overlays", func_L00_002E1C38);
+extern float D_L00_00166EC0[];
+extern void func_001F9BF0(float *, float *, float *);
+extern void func_001F9BD8(void *, void *, void *);
+extern float func_001FA888(int);
+extern float func_001F9B88(float);
+extern int func_001FA8A8(int, int, float);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern unsigned char *func_L00_00273E08(float f, void *pos, int a1, unsigned char a2, int idx, int flag, int s, int mode);
+
+typedef struct {
+    char pad[0x10];
+    float a[4];
+    float b[4];
+    int t[4];
+    float c[4];
+} FxData;
+
+/* Scrolls the four hue values of a moby's effect and spawns a coloured streak for each. Adapted from Lombyte (MIT) for PAL: src/overlays/shared/gameplay_vendor_002df730.c, FUN_L00_002e0788. */
+void func_L00_002E1C38(char *p) {
+    float v[8];
+    FxData *m = *(FxData **)(p + 0x78);
+    float *a;
+    int *t;
+    int i, j, c, k;
+    float f, g;
+    j = 0;
+    p += 0x10;
+    func_001F9BF0(v, D_L00_00166EC0, (float *)p);
+    t = m->t;
+    a = m->a;
+    func_L00_001FF4B0(v, v, -0.3f);
+    func_L00_001FF4B0(&v[4], v, 0.1f);
+    func_001F9BD8(v, v, p);
+    for (i = 3; i >= 0; i--) {
+        f = *a + m->b[j];
+        *a = f;
+        if (f >= 255.0f) {
+            *a = f - 255.0f;
+        } else if (f <= 0.0f) {
+            *a = f + 255.0f;
+        }
+        if (func_001F9908_r(t)) {
+            m->t[j] = func_001F9850(255);
+        }
+        t++;
+        g = func_001FA888(func_001F9850(255) - m->t[j]);
+        g = g / (float)func_001F9850(255);
+        c = func_001FA8A8(0x4040FFFF, 0x1040FFFF, func_001F9B88(0.5f - g));
+        k = func_001FA898_r(*a++);
+        func_L00_00273E08(m->c[j], v, c, k, 0x35, 1, 2, 0);
+        j++;
+        func_001F9BD8(v, v, &v[4]);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E33D8);
 INCLUDE_ASM("asm/overlays", func_L00_002E34F0);
 INCLUDE_ASM("asm/overlays", func_L00_002E35A8);
@@ -58,7 +111,54 @@ INCLUDE_ASM("asm/overlays", func_L00_002E3700);
 INCLUDE_ASM("asm/overlays", func_L00_002E3FA0);
 INCLUDE_ASM("asm/overlays", func_L00_002E4138);
 INCLUDE_ASM("asm/overlays", func_L00_002E4838);
-INCLUDE_ASM("asm/overlays", func_L00_002E4F38);
+typedef struct { char pad0[0x60]; int path; float f64; float f68; float f6C; int i70; float f74; } D_2e;
+extern int *D_L00_001B0830[];
+extern short D_L00_00161D68;
+extern short D_L00_00161D6C;
+extern void func_0020D678(void *);
+extern float func_001F9D10(void *, void *);
+extern void func_00215CA8(int *, float, int, void *, float *, int);
+extern int func_002140B0(int);
+extern void func_00213DE0(void *, int, int, int);
+
+/* Path-following moby update: start a run along its path in state 0, then step along the path each frame and pick an animation when the flag is set. Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay_vendor_002df730.c, FUN_L00_002e3a88. */
+void func_L00_002E4F38(unsigned char *m) {
+    D_2e *d = *(D_2e **)(m + 0x78);
+    int *p = D_L00_001B0830[d->path];
+    float y;
+    switch (m[0x20]) {
+    case 0:
+        if (d->path == -1) {
+            func_0020D678(m);
+            return;
+        }
+        {
+            float a = func_001F9D10(p + 4, p + 8);
+            float b = func_001F9D10(p + 4, p + *p * 4);
+            d->f74 = *(float *)&D_L00_00161D68 * D_0015EE6C / a;
+            d->i70 = func_001F9B88(a - b) < 0.1f;
+        }
+        d->f6C = d->f68 * (float)*p;
+        m[0x20] = 1;
+        *(float *)(m + 0x2C) *= *(float *)&D_L00_00161D6C;
+        m[0x30] = 0xFF;
+    case 1:
+        y = *(float *)(m + 0x18);
+        func_00215CA8(p, d->f6C, d->i70, m + 0x10, (float *)(m + 0x40), 0);
+        *(float *)(m + 0x44) *= 0.5f;
+        *(float *)(m + 0x18) += d->f64;
+        d->f6C += d->f74;
+        if ((float)*p < d->f6C) d->f6C -= (float)*p;
+        if (m[0x70] & 2) {
+            if (y < *(float *)(m + 0x18) || func_002140B0(3) != 0) {
+                if (m[0x53]) func_00213DE0(m, 0, 0, 10);
+            } else {
+                if (m[0x53] != 1) func_00213DE0(m, 1, 0, 10);
+            }
+        }
+        break;
+    }
+}
 extern float func_001F9D10(void *, void *);
 extern float func_001F9CB8(void *);
 extern void func_00213DE0(void *, int, int, int);
@@ -84,7 +184,40 @@ extern char D_0013E633[];
 void func_L00_002E5618(char *a, void *out) {
     qcopy(out, D_0013E633 + 0xE9D);
 }
-INCLUDE_ASM("asm/overlays", func_L00_002E5630);
+typedef struct { float f[4]; } __attribute__((aligned(16))) VQ;
+extern int func_L00_001EE530_q(VQ *) __asm__("func_L00_001EE530");
+extern void func_001F9BF0(float *, float *, float *);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern int D_L00_001601B4 MACRO_ADDR;
+extern char D_L00_00173F70[];
+
+/* Computes two adjusted points from a moby's lookup entry and its direction vector; returns 1 on success. Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay_vendor_002df730.c, FUN_L00_002e4180. */
+int func_L00_002E5630(VQ *p, float r) {
+    VQ a;
+    VQ d;
+    char *e;
+    char *c;
+    char *v;
+    float l, inv;
+    int *q;
+    a = *p;
+    q = (int *)func_L00_001EE530_q(&a);
+    if (q != 0) {
+    e = (char *)D_L00_001601B4 + (q[5] << 7);
+    c = e + 0x30;
+    func_001F9BF0(d.f, p->f, (float *)c);
+    l = func_001F9CB8(e);
+    inv = 1.0f / func_001F9CB8(&d);
+    v = D_L00_00173F70;
+    func_001F9C30(v, &d, (l + r) * inv);
+    func_001F9C30(v - 0x10, &d, l * inv);
+    func_001F9BD8(v, v, c);
+    func_001F9BD8(v - 0x10, v - 0x10, c);
+    return 1;
+    }
+    return 0;
+}
 typedef struct { float f[4]; } __attribute__((aligned(16))) VS;
 extern int func_L00_001EE530(VS *, float);
 int func_L00_002E5740(VS *a) {
@@ -733,7 +866,88 @@ void func_L00_002E9E20(int a, float x, float y) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_002E9E60);
-INCLUDE_ASM("asm/overlays", func_L00_002EA068);
+extern void func_002156E0(void *dst, void *vec, void *axis, float angle);
+extern float func_L00_001FF860(float, float);
+extern float func_001FA748(float, float);
+extern short D_L00_00161D7C;
+extern short D_L00_00161D80;
+extern short D_L00_00161D90;
+extern short D_L00_00161D8C;
+extern short D_L00_00161D94;
+
+/* steers the hero heading and pitch towards a stick input. Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay_vendor_002df730.c, FUN_L00_002e8bb8. */
+void func_L00_002EA068(int mi, float a, float b) {
+    char *m = (char *)mi;
+    char *d = *(char **)(m + 0x70);
+    char *g = D_L00_00166F10;
+    char *va = d + 0x130;
+    char *wa = d + 0x1A8;
+    float sp[4];
+    float zero, v, e, lim, x, y;
+    char *p;
+    *(float *)(d + 0x1A8) = func_001EC120(d + 0x1AC, *(float *)(d + 0x1A8), a, *(float *)&D_L00_00161D7C, *(float *)&D_L00_00161D80, 0.0f);
+    *(float *)(va + 0x34) = *(float *)(wa + 0x14) * *(float *)(d + 0x1A8);
+    if (b < -0.3f) {
+        b = (b + 0.3f) * 1.4285715f;
+    } else if (0.3f < b) {
+        b = (b - 0.3f) * 1.4285715f;
+    } else {
+        b = 0.0f;
+    }
+    zero = 0.0f;
+    if (b == zero) {
+        v = *(float *)&D_L00_00161D90;
+    } else if (!(func_001F9B88(b) < func_001F9B88(*(float *)(wa + 0x8)))) {
+        v = *(float *)&D_L00_00161D8C;
+    } else if (zero < b && zero < *(float *)(wa + 0x8)) {
+        v = *(float *)&D_L00_00161D90;
+    } else if (b < zero && *(float *)(wa + 0x8) < zero) {
+        v = *(float *)&D_L00_00161D90;
+    } else {
+        v = *(float *)&D_L00_00161D8C;
+    }
+    *(float *)(wa + 0x8) = func_001EC120(wa + 0xC, *(float *)(wa + 0x8), b, *(float *)&D_L00_00161D7C, *(float *)&D_L00_00161D80, v);
+    y = *(float *)(wa + 0x8) * 0.69813168f;
+    if (a == 0.0f) {
+        func_002156E0(va, va, g + 0x20, *(float *)(wa + 0x20));
+        p = g + 0x20;
+    } else {
+        p = g + 0x20;
+        func_002156E0(va, va, p, *(float *)(va + 0x34));
+    }
+    b = func_001F9C78(va, p);
+    e = func_001F9CB8(va);
+    func_001F9CA0(sp, p, va);
+    func_L00_001FF4B0(sp, sp, 1.0f);
+    b = func_L00_001FF860(e, b);
+    lim = func_001F9B88(b);
+    if (lim < func_001F9B88(y) && v == *(float *)&D_L00_00161D90) {
+        *(float *)(wa + 0x8) = b / 0.69813168f;
+    }
+    if (b < y) {
+        if (y < func_001FA748(b, *(float *)&D_L00_00161D94)) {
+            *(float *)(va + 0x38) = func_001FA790(y, b);
+        } else {
+            *(float *)(va + 0x38) = *(float *)&D_L00_00161D94;
+        }
+    } else if (y < b) {
+        if (*(short *)(*(char **)(m + 0x70) + 0x208) < 0) {
+            *(int *)(va + 0x38) = 0;
+        } else {
+            if (func_001FA748(b, -*(float *)&D_L00_00161D94) < y) {
+                *(float *)(va + 0x38) = func_001FA790(y, b);
+            } else {
+                *(float *)(va + 0x38) = -*(float *)&D_L00_00161D94;
+            }
+        }
+    } else {
+        *(int *)(va + 0x38) = 0;
+    }
+    if (y < 0.0f) {
+        *(short *)(*(char **)(m + 0x70) + 0x22) = 1;
+    }
+    func_002156E0(va, va, sp, *(float *)(va + 0x38));
+}
 extern float D_L00_0015F040 MACRO_ADDR;
 extern void func_001F9C08(float, void *, void *, void *);
 extern float func_001F9CB8(void *);

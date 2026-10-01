@@ -307,7 +307,65 @@ void func_L00_00238148(HudElem *e) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_002381D0);
-INCLUDE_ASM("asm/overlays", func_L00_00238478);
+typedef struct {
+    char pad_00[0x48];
+    short x48;
+    short x4a;
+    char pad_4C[0x58 - 0x4C];
+    int x58;
+    int x5c;
+    char pad_60[0x70 - 0x60];
+    int x70;
+    int x74;
+    int x78;
+} Obj238478;
+typedef struct {
+    int x0;
+    char pad_04[0x18 - 0x04];
+    int x18;
+} DestElem;
+typedef struct {
+    char pad_00[0x38];
+    unsigned short x38;
+    char pad_3A[0x4C - 0x3A];
+} SrcElem;
+
+extern int D_L00_0015FB48 MACRO_ADDR;
+extern void *D_L00_0015FB78 MACRO_ADDR;
+extern DestElem D_L00_0017DBC0[8];
+extern SrcElem D_L00_00179BC0[];
+extern short D_L00_0015F7F8;
+extern short D_L00_0015F7FC;
+extern short D_L00_0015F80C;
+extern int D_0014171B_i[] __asm__("D_0014171B");
+
+// initializes a quick-select object and fills its 8-entry table from the info table
+// Adapted from Lombyte (MIT) for PAL: overlays/shared/ui_text_002377b8.c, FUN_L00_00237ae8.
+void func_L00_00238478(Obj238478 *o) {
+    int i, a, b;
+    DestElem *d;
+    int *s;
+    SrcElem *tab;
+    D_L00_0015FB48 = 8;
+    D_L00_0015FB78 = &D_L00_0015F80C + 6;
+    a = *(int *)&D_L00_0015F7F8;
+    b = *(int *)&D_L00_0015F7FC;
+    o->x48 = 0;
+    o->x4a = 0;
+    o->x5c = b; o->x58 = a; o->x74 = -2;
+    o->x78 = func_001F9850(0x1E);
+    o->x70 = 0;
+    *(int *)&D_L00_0015F80C = 0;
+    d = D_L00_0017DBC0;
+    tab = D_L00_00179BC0;
+    s = (int *)((char *)D_0014171B_i + 0x885);
+    for (i = 7; i >= 0; i--) {
+        d->x18 = *s;
+        d->x0 = tab[*s].x38;
+        s++;
+        d++;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00238530);
 INCLUDE_ASM("asm/overlays", func_L00_00238C30);
 extern int D_L00_0015FB48 MACRO_ADDR;
@@ -670,7 +728,59 @@ int func_L00_0023B440(char *p) {
     return r;
 }
 INCLUDE_ASM("asm/overlays", func_L00_0023B610);
-INCLUDE_ASM("asm/overlays", func_L00_0023B750);
+typedef struct {
+    char pad0[8];
+    unsigned short unk8;
+    char padA[4];
+    unsigned short unkE;
+    char pad10[8];
+} WeaponRec;
+
+extern WeaponRec D_L00_001C43B0[];
+extern char D_0013E633[];
+extern char D_0013D50F[];
+extern short D_L00_0015FA40;
+extern int D_hud_pair[2] __asm__("D_L00_0015FA44") MACRO_ADDR;
+extern void func_001FFDA0(int, int);
+extern void func_L00_0023D750(void);
+extern int func_L00_0023B140(char *);
+
+/* Shows or hides the weapon HUD element depending on the current weapon. Adapted from Lombyte (MIT) for PAL: overlays/shared/ui_text_002377b8.c, FUN_L00_0023adb8. */
+void func_L00_0023B750(void) {
+    char *base;
+    int w;
+    int mode;
+
+    if (*(int *)&D_L00_0015FA40 == 0) {
+        base = D_0013E633 + 0xE1D;
+        w = *(int *)(base + 0x10B8);
+        mode = *(unsigned char *)(base + 0x20A4);
+        if (((WeaponRec *)((char *)D_L00_001C43B0 + w * 24))->unk8 == 0) {
+            w = 0;
+        }
+        if (mode != 0) {
+            w = 0;
+        }
+        if (w != 0) {
+            D_hud_pair[0] = w;
+            D_hud_pair[1] = func_001FFB38(0x10, w + 60000, (int)func_L00_0023B0F8, (int)func_L00_0023D750,
+                                           (int)func_L00_0023B140, (int)(D_0013D50F + 0x21 + w * 4),
+                                           D_L00_001C43B0[w].unkE);
+        } else if (mode == 2) {
+            if (D_hud_pair[1] != -1) {
+                func_001FFDA0(D_hud_pair[1], 0);
+                D_hud_pair[1] = -1;
+            }
+            *(short *)(base + 0x1634) = func_001FFB38(0x10, 0xFFFF, (int)func_L00_00236710, (int)func_L00_00236830,
+                                                      (int)func_L00_0023AFD8, (int)(base + 0x1630), 200);
+        } else {
+            if (D_hud_pair[1] != -1) {
+                func_001FFDA0(D_hud_pair[1], 0);
+                D_hud_pair[1] = -1;
+            }
+        }
+    }
+}
 /* Reached through $gp: under -G2 that takes a declaration of at most two
    bytes, though the variable is a word. */
 extern short D_L00_0015FA40;

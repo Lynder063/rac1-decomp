@@ -164,7 +164,53 @@ INCLUDE_ASM("asm/overlays", func_L00_002C4748);
 INCLUDE_ASM("asm/overlays", func_L00_002C48C8);
 INCLUDE_ASM("asm/overlays", func_L00_002C4B90);
 INCLUDE_ASM("asm/overlays", func_L00_002C4E00);
-INCLUDE_ASM("asm/overlays", func_L00_002C53A8);
+extern float func_001F9B88(float);
+extern float func_001F9CE8(void *);
+extern float func_L00_0025C918(float *, float, float *, float, float, float);
+extern float func_00214358(void *, int, float);
+extern float func_001F9CB8(void *);
+extern void func_L00_00259868(void *, void *, float, float, float, int);
+extern float D_0015EE64 MACRO_ADDR;
+extern short D_0015EE70_s __asm__("D_0015EE70");
+
+/* Steers a moby toward the player's follow distance, easing its height. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002bffa8.c, FUN_L00_002c40a0. */
+void func_L00_002C53A8(char *m) {
+    char *d = *(char **)(m + 0x78);
+    char *g = D_0013E633 + 0xE1D;
+    float v[4];
+    float w;
+    float len, y;
+    int flag = *(short *)(g + 0x1E2);
+    if (*(int *)(d + 0x68) == 0) {
+        if (flag == 0) return;
+        if (!(func_001F9D48(g + 0x80, m + 0x10) < 1.0f)) return;
+        if (!(func_001F9B88(*(float *)(g + 0x88) - *(float *)(m + 0x18)) < 1.3f)) return;
+        *(int *)(d + 0x68) = 1;
+    }
+    func_001F9BF0(v, m + 0x10, g + 0x80);
+    v[2] = 0.0f;
+    w = func_001F9CE8(v) - 1.4f;
+    if (w > 0.0f) w = 0.0f;
+    if (flag == 0) w = 0.0f;
+    func_L00_0025C918(&w, 0.0f, (float *)(d + 0x60), D_0015EE64 * 0.02f, D_0015EE64 * 0.3f, D_0015EE6C * 4.0f);
+    if (w == 0.0f && *(float *)(d + 0x60) == 0.0f) {
+        if (func_001F9B88(*(float *)(m + 0x18) - func_00214358(m + 0x10, 0, 0.5f)) < 0.02f)
+            *(int *)(d + 0x68) = 0;
+    }
+    len = func_001F9CB8(v);
+    if (len < *(float *)(d + 0x60)) *(float *)(d + 0x60) = len;
+    if (*(float *)(d + 0x60) < len) func_L00_001FF4B0(v, v, *(float *)(d + 0x60));
+    func_L00_00259868(m, v, 0.5f, 0.4f, 0.0f, 0);
+    y = func_00214358(m + 0x10, 0, 0.5f);
+    if (*(float *)(m + 0x18) < y) {
+        *(float *)(m + 0x18) = y;
+        *(float *)(d + 0x64) = 0.0f;
+    } else {
+        *(float *)(d + 0x64) = *(float *)(d + 0x64) - *(float *)&D_0015EE70_s * 24.0f;
+        *(float *)(m + 0x18) = *(float *)(m + 0x18) + *(float *)(d + 0x64);
+        if (*(float *)(m + 0x18) < y) *(float *)(m + 0x18) = y;
+    }
+}
 extern int func_L00_001F3958(void);
 extern void func_L00_002C4748(void *);
 
@@ -183,11 +229,114 @@ void func_L00_002C5630(void *m) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_002C5688);
-INCLUDE_ASM("asm/overlays", func_L00_002C6608);
+typedef struct Rec { char pad[0x3A]; short cnt; char pad2[0x4C - 0x3C]; } Rec;
+typedef struct Rec2 { int a, b, c; unsigned short d; short e; int f, g; } Rec2;
+extern Rec D_L00_00179BC0[] NOT_SDA;
+extern Rec2 D_L00_001C43B0[];
+extern char *func_0020D348(int);
+extern void func_L00_00251E30(void *);
+extern void func_L00_0025E210(void *);
+
+/* spawns a moby of a class and initialises its data block. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002bffa8.c, FUN_L00_002c52a8. */
+char *func_L00_002C6608(void *pos, int idx, int a2, int a3) {
+    char *m = 0;
+    int *d;
+    {
+        Rec *e = (Rec *)(idx * 0x4C + (char *)D_L00_00179BC0);
+        if (e->cnt > 0) m = func_0020D348(e->cnt);
+    }
+    if (m != 0) {
+        *(unsigned char *)(m + 0x30) = 0xFF;
+        *(short *)(m + 0x32) = 0xFF;
+        d = *(int **)(m + 0x78);
+        m[0x31] = 1;
+        m[0x20] = 1;
+        m[0xBC] = 0;
+        qcopy(m + 0x10, pos);
+        if (a2 == -1) {
+            d[0] = D_L00_001C43B0[idx].d;
+        } else {
+            d[0] = a2;
+        }
+        d[2] = idx;
+        *(float *)(d + 3) = (float)a3;
+        d[8] = func_001F9850(0x10);
+        *(float *)(d + 10) = *(float *)(m + 0x18);
+        func_L00_00251E30(m);
+        func_L00_0025E210(m);
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002C6720);
 INCLUDE_ASM("asm/overlays", func_L00_002C6F40);
 INCLUDE_ASM("asm/overlays", func_L00_002C6F48);
-INCLUDE_ASM("asm/overlays", func_L00_002C7128);
+typedef float V4q[4] __attribute__((aligned(16)));
+extern void func_L00_00250800(void *, int, void *);
+extern void func_001F9CA0(void *, void *, void *);
+extern char D_L00_00166EC0[];
+
+// Draws a streak of quads along the vector from the moby's joint to its target, swelling in the middle. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002bffa8.c, FUN_L00_002c5dc8.
+void func_L00_002C7128(char *m) {
+        char *d;
+    Quad quad;
+    V4q pos, cur, ja, diff, side, up2, up, t100, t110;
+    float len, prog, f25;
+    float eps = 0.05f;
+    if (m == 0) return;
+    d = *(char **)(m + 0x78);
+    if (d == 0) return;
+    quad.q1 = func_001F4868(0xF);
+    quad.c[3] = 0x80808080; quad.c[2] = 0x80808080; quad.c[1] = 0x80808080; quad.c[0] = 0x80808080;
+    quad.q2 = 0xFF9000000260L;
+    quad.q0 = 5;
+    quad.q3 = 0xFF00000044L;
+    quad.t[0] = 0; quad.t[1] = 0; quad.t[2] = 1.0f; quad.t[3] = 0;
+    quad.t[4] = 0; quad.t[5] = 1.0f; quad.t[6] = 1.0f; quad.t[7] = 1.0f;
+    func_L00_00250800(m, 0, ja);
+    qcopy(pos, *(char **)(d + 0x14) + 0x10);
+    qcopy(cur, pos);
+    func_001F9BF0(diff, ja, pos);
+    prog = 0.0f;
+    len = func_001F9CB8(diff);
+    qcopy(up, diff);
+    up[2] = up[2] - 0.1f;
+    func_001F9CA0(side, diff, up);
+    func_001F9CA0(up2, diff, side);
+    qcopy(&quad.a[0], pos);
+    qcopy(&quad.a[8], pos);
+    quad.a[2] = quad.a[2] - eps;
+    quad.a[10] = quad.a[10] + eps;
+    f25 = func_001F9F90(func_001FA7D8(*(float *)(d + 0x18)));
+    while (prog < len) {
+        float step = 0.2f;
+        float rem = len - prog;
+        float x, t, a, b;
+        if (rem < step) step = rem;
+        prog += step;
+        x = prog * 3.14159274f;
+        a = func_001F9FA8(x / len);
+        b = func_001F9FA8(func_001FA7D8(x / *(float *)(d + 0x1C)));
+        t = b * a;
+        t = t * f25;
+        t = t * *(float *)(d + 0x20);
+        func_L00_001FF4B0(diff, diff, step);
+        func_001F9BD8(cur, cur, diff);
+        qcopy(&quad.a[4], cur);
+        qcopy(&quad.a[12], cur);
+        func_001F9BF0(t100, D_L00_00166EC0, cur);
+        func_001F9CA0(t110, t100, diff);
+        func_L00_001FF4B0(t110, t110, 0.05f);
+        func_001F9BD8(&quad.a[4], &quad.a[4], t110);
+        func_001F9BF0(&quad.a[12], &quad.a[12], t110);
+        func_L00_001FF4B0(up, side, t);
+        func_001F9BD8(&quad.a[4], &quad.a[4], up);
+        func_001F9BD8(&quad.a[12], &quad.a[12], up);
+        func_L00_001FD1D8(&quad, 0, 1);
+        qcopy(pos, cur);
+        qcopy(&quad.a[0], &quad.a[4]);
+        qcopy(&quad.a[8], &quad.a[12]);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002C74B8);
 INCLUDE_ASM("asm/overlays", func_L00_002C82E8);
 extern unsigned char D_001414F5[] NOT_SDA;
@@ -271,7 +420,51 @@ void func_L00_002C83D0(unsigned char *m) {
     }
     func_0020EEE8(m);
 }
-INCLUDE_ASM("asm/overlays", func_L00_002C8680);
+typedef struct { float x, y, z, w; } Vq __attribute__((aligned(16)));
+
+/* Aims a point near p toward q (at most range away), then fills out with a heading vector of length 8.5 * D_0015EE6C and a clamped height.
+   Adapted from Lombyte (MIT) for PAL: src/overlays/shared/unclassified_002bffa8.c, FUN_L00_002c7320. */
+void func_L00_002C8680(float *pos, float *tgt, float *out, float speed, float unused, float range) {
+    Vq t;
+    Vq u;
+    float ang;
+    float s;
+    float k;
+    float v;
+    char *P;
+    if (range < func_001F9D10(pos, tgt)) {
+        func_001F9BF0(&t, tgt, pos);
+        func_L00_001FF4B0(&t, &t, range - 0.01f);
+        func_001F9BD8(&t, &t, pos);
+    } else {
+        qcopy(&t, tgt);
+    }
+    ang = func_L00_001FF860(t.x - pos[0], t.y - pos[1]);
+    P = (char *)D_0013E633 + 0xE1D;
+    if (func_001FA850(*(float *)(P + 0x98), ang) > 0.87266463f || func_001F9D48(pos, &t) < 1.5f) {
+        ang = *(float *)(P + 0x98);
+        u.x = func_001F9F90(ang) * 1.5f;
+        u.y = func_001F9FA8(*(float *)(P + 0x98)) * 1.5f;
+        *(int *)&u.z = 0;
+        func_001F9BD8(&u, &u, pos);
+        t.x = u.x;
+        t.y = u.y;
+    }
+    s = D_0015EE6C * 8.5f;
+    out[0] = func_001F9F90(ang) * s;
+    out[1] = func_001F9FA8(ang) * s;
+    *(int *)&out[2] = 0;
+    out[2] = func_L00_0025BC48(pos, (float *)&t, s, -speed, 0);
+    if (*(int *)(D_0013A5E0 + 0x2600) & 5) {
+        k = 3.5f / s;
+    } else {
+        k = 2.5f / s;
+    }
+    v = speed * k * 0.5f;
+    if (v < out[2]) {
+        out[2] = v;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002C88A8);
 INCLUDE_ASM("asm/overlays", func_L00_002C8DB8);
 typedef struct { float x, y, z, w; } Vec4 __attribute__((aligned(16)));

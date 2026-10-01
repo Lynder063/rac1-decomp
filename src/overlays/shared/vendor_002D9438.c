@@ -2,7 +2,44 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L00_002D9438);
+typedef struct { char p0[0x10]; char v10[16]; float f14; char p18[0x8]; float f2C; char p30[0x10]; char q40[16]; } S_002d7f88;
+typedef struct { char p0[0xA6]; short hA6; } O_hdr;
+typedef struct { char *o; float f4; char v8[4]; float fC; } D_002d7f88;
+extern float D_L00_001617AC_m __asm__("D_L00_001617AC") MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+extern int func_001F9908_r(void *) __asm__("func_001F9908");
+extern void func_0020D678(void *);
+extern void func_001F9BC0(void *);
+extern void func_001F9EC0(void *, void *, void *);
+extern void func_001F9BD8(void *, void *, void *);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+
+/* Update a trailing moby: advance its timer, delete it when done or its owner died, else follow the owner. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002d7f88.c, FUN_L00_002d7f88. */
+void func_L00_002D9438(char *self) {
+    D_002d7f88 *d = *(D_002d7f88 **)(self + 0x78);
+    char *o;
+    void *m;
+    float t;
+    d->f4 += (D_L00_001617AC_m + D_L00_001617AC_m) * D_0015EE6C;
+    if (func_001F9908_r(d->v8) != 0 || D_L00_001617AC_m * 1.1f <= d->f4) goto kill;
+    o = d->o;
+    if (o == 0 || *(short *)(o + 0xA6) != 0xB9 || *(unsigned char *)(o + 0x20) == 0xFE || *(unsigned char *)(o + 0x20) == 0xFD) {
+kill:
+        func_0020D678(self);
+        return;
+    }
+    m = *(void **)(o + 0x78);
+    func_001F9BC0(self + 0x10);
+    *(float *)(self + 0x14) = -d->f4;
+    func_001F9EC0(self + 0x10, self + 0x10, (char *)d->o + 0xC0);
+    func_001F9BD8(self + 0x10, self + 0x10, m);
+    qcopy(self + 0x40, (char *)d->o + 0x40);
+    if (d->f4 > D_L00_001617AC_m) {
+        self[0x23] = func_001FA898_r((1.0f - (d->f4 - D_L00_001617AC_m) * 10.0f) * 127.0f);
+    }
+    t = d->fC;
+    *(float *)(self + 0x2C) = t * 0.1f + t * d->f4 / D_L00_001617AC_m;
+}
 // True when the moby's state byte is 1.
 int func_L00_002D95D8(unsigned char *m) {
     return m[0x20] == 1;
@@ -272,7 +309,37 @@ INCLUDE_ASM("asm/overlays", func_L00_002DBB10);
 INCLUDE_ASM("asm/overlays", func_L00_002DBC40);
 INCLUDE_ASM("asm/overlays", func_L00_002DCD40);
 INCLUDE_ASM("asm/overlays", func_L00_002DCDA8);
-INCLUDE_ASM("asm/overlays", func_L00_002DCFD0);
+extern short D_L00_00161BF0;
+extern char *func_L00_002DCD40(char *);
+extern int func_0022ED80(int, int, int);
+extern void func_L00_002584A8(void *, int, int);
+extern int func_001F9850(int);
+extern void func_00213DE0(void *, int, int, int);
+
+/* Place a moby at the given position under its owner, reset its owner's state to 4 and start the matching animation. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002d7f88.c, FUN_L00_002dbb20. */
+int func_L00_002DCFD0(unsigned char *m, void *v) {
+    unsigned char *o = (unsigned char *)func_L00_002DCD40((char *)m);
+    int g;
+    if (o == 0) return 0;
+    if (m != 0 && m[0x20] != 0xFE && m[0x20] != 0xFD && *(short *)(o + 0x68) != 8) {
+        qcopy(m + 0x10, v);
+        func_L00_002DB480(*(char **)(o + 0x60), (char *)m, &D_L00_00161BF0);
+        func_0020EEE8(m);
+        g = *(int *)(D_0013E633 + 0x1EAD);
+        if (g != 0 && *(short *)(g + 0xA6) == 0x351) {
+            func_0022ED80(5, 0, g);
+        }
+        func_L00_002584A8(m, 0, -1);
+        *(short *)(o + 0x68) = 4;
+        if (m[0x53] != *(unsigned char *)(*(unsigned char **)(o + 0x70) + 4)) {
+            unsigned char c = *(unsigned char *)(*(unsigned char **)(o + 0x70) + 4);
+            func_00213DE0(m, c, 0, func_001F9850(10));
+        }
+        *(int *)(m + 0x2C) = 0;
+        return 1;
+    }
+    return 0;
+}
 extern char *func_L00_002DCD40(char *);
 extern int func_001F9850(int);
 extern void func_00213DE0(void *, int, int, int);
@@ -325,7 +392,48 @@ int func_L00_002DD0E0(char *m, float *pos, char *other, float f) {
     }
     return 0;
 }
-INCLUDE_ASM("asm/overlays", func_L00_002DD2D0);
+/* Frees a moby's state slot and returns 1 when it is in state 4. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002d7f88.c, FUN_L00_002dbe20. */
+int func_L00_002DD2D0(char *m) {
+    char *s = func_L00_002DCD40(m);
+    int st;
+    if (s == 0) return 0;
+    if (m == 0) return 0;
+    if ((unsigned char)m[0x20] == 0xFE) return 0;
+    if ((unsigned char)m[0x20] == 0xFD) return 0;
+    st = *(short *)(s + 0x68);
+    if (st == 8) return 0;
+    switch (st) {
+    case 3: {
+        int k = *(short *)(s + 0x6A);
+        if (k != -1) {
+            char *g = D_0013E633 + 0xE1D;
+            *(int *)(g + 0x2050 - (-(k * 4))) = 0;
+            if (*(int *)(g + 0x207C) > 0) {
+                *(int *)(g + 0x207C) = *(int *)(g + 0x207C) - 1;
+            }
+        }
+    }
+    case 1:
+    case 2: {
+        if (*(unsigned char *)(m + 0x53) != *(unsigned char *)(*(char **)(s + 0x70) + 7)) {
+            unsigned char c = *(unsigned char *)(*(char **)(s + 0x70) + 7);
+            func_00213DE0(m, c, 0, func_001F9850(10));
+        }
+        *(short *)(s + 0x68) = 7;
+        return 0;
+    }
+    case 4:
+        return 1;
+    case 0:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    default:
+        return 0;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002DD3D8);
 INCLUDE_ASM("asm/overlays", func_L00_002DDDE8);
 INCLUDE_ASM("asm/overlays", func_L00_002DDEA0);

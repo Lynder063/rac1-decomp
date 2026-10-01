@@ -465,7 +465,72 @@ void func_00239A00(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00239CF8);
+struct VM239 {
+    char pad0[0x20];
+    int f20;
+    char pad24[0x1C];
+    int f40;
+    char pad44[0x14];
+    int idx;
+    char pad5C[0x74];
+    struct { int id; int kind; int pad[3]; } slots[1];
+};
+struct T239 { int text; char pad[0x48]; };
+struct P239 { int a; int b; unsigned short c; unsigned short d; int pad[3]; };
+
+extern void func_001F6968_c(int, int, long, void *, int) __asm__("func_001F6968");
+extern void func_002399A0(void *arg0, int arg1);
+extern void func_001F6D88_c(int, int, long, void *, int) __asm__("func_001F6D88");
+extern struct VM239 D_001E66C0_m __asm__("D_001E66C0");
+extern struct T239 D_001864D0_t[] __asm__("D_001864D0");
+extern struct P239 D_001E02B0_p[] __asm__("D_001E02B0");
+extern unsigned char D_0013D5C8_b[] __asm__("D_0013D5C8") NOT_SDA;
+
+/* Vendor item panel: draws the selected item's name and description, and for the ammo/alt slots a pulsing price shadow. Adapted from Lombyte (MIT) for PAL: src/ui/menus/fun_002389e0.c, fun_002389e0. */
+void func_00239CF8(void) {
+    char buf[0x100];
+    int w;
+
+    func_001FBAB8(0, 0, 0x200, 0x80, 0x200, 0x80, 0);
+    func_0020E180(D_001E66C0_m.f20 + 0x100, 1);
+    func_0020E180(D_001E66C0_m.f20, 1);
+    if (D_001E66C0_m.slots[D_001E66C0_m.idx].kind == 1) {
+        func_001F6968_c(6, 8, 0x80F0F0F0L, func_001FE540_id(D_001864D0_t[D_001E66C0_m.slots[D_001E66C0_m.idx].id].text), -1);
+        func_001F6968_c(0x18, 0x18, 0x80F0F0F0L, func_001FE540_id(0x4F5D), -1);
+        func_002399A0(buf, D_001E02B0_p[D_001E66C0_m.slots[D_001E66C0_m.idx].id].c);
+        func_001F6D88_c(0x76, 0x65, 0x80F0F0F0L, buf, -1);
+        if (D_001E66C0_m.f40 != 0) {
+            w = func_001F6600((unsigned char *)buf, -1);
+            func_00201640(0x75 - w, 0x6D, 0x7B, 0x70, 0x20959544L, 0);
+            func_00201640(0x76 - w, 0x6D, 0x7A, 0x70, 0x30959544L, 0);
+            func_00201640(0x77 - w, 0x6D, 0x79, 0x70, 0x40959544L, 0);
+            func_00201640(0x78 - w, 0x6D, 0x78, 0x70, 0x50959544L, 0);
+            func_00201640(0x79 - w, 0x6D, 0x77, 0x70, 0x60959544L, 0);
+            func_00201640(0x7A - w, 0x6D, 0x76, 0x70, 0x70959544L, 0);
+            func_00201640(0x7B - w, 0x6D, 0x75, 0x70, 0x80959544L, 0);
+            func_002399A0(buf, D_001E66C0_m.f40 ? D_001E02B0_p[D_001E66C0_m.slots[D_001E66C0_m.idx].id].d
+                                                 : D_001E02B0_p[D_001E66C0_m.slots[D_001E66C0_m.idx].id].c);
+            func_001F6D88_c(0x76, 0x55, 0x80F0F0F0L, buf, -1);
+        }
+    } else {
+        func_001F6968_c(6, 8, 0x80F0F0F0L, func_001FE540_id(D_001864D0_t[D_001E66C0_m.slots[D_001E66C0_m.idx].id].text), -1);
+        func_002399A0(buf, D_001E02B0_p[D_001E66C0_m.slots[D_001E66C0_m.idx].id].a);
+        func_001F6D88_c(0x76, 0x65, D_0013D5C8_b[0x23] ? 0x80808080L : 0x80F0F0F0L, buf, -1);
+        if (D_0013D5C8_b[0x23] != 0) {
+            w = func_001F6600((unsigned char *)buf, -1);
+            func_00201640(0x75 - w, 0x6D, 0x7B, 0x70, 0x20959544L, 0);
+            func_00201640(0x76 - w, 0x6D, 0x7A, 0x70, 0x30959544L, 0);
+            func_00201640(0x77 - w, 0x6D, 0x79, 0x70, 0x40959544L, 0);
+            func_00201640(0x78 - w, 0x6D, 0x78, 0x70, 0x50959544L, 0);
+            func_00201640(0x79 - w, 0x6D, 0x77, 0x70, 0x60959544L, 0);
+            func_00201640(0x7A - w, 0x6D, 0x76, 0x70, 0x70959544L, 0);
+            func_00201640(0x7B - w, 0x6D, 0x75, 0x70, 0x80959544L, 0);
+            func_002399A0(buf, D_0013D5C8_b[0x23] ? D_001E02B0_p[D_001E66C0_m.slots[D_001E66C0_m.idx].id].b
+                                                 : D_001E02B0_p[D_001E66C0_m.slots[D_001E66C0_m.idx].id].a);
+            func_001F6D88_c(0x76, 0x55, 0x80F0F0F0L, buf, -1);
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023A220);
 

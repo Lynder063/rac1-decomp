@@ -88,7 +88,50 @@ char *func_L00_002D4CE8(char *a, char *b, int c, char *d) {
 INCLUDE_ASM("asm/overlays", func_L00_002D4EC0);
 INCLUDE_ASM("asm/overlays", func_L00_002D5AC0);
 INCLUDE_ASM("asm/overlays", func_L00_002D6610);
-INCLUDE_ASM("asm/overlays", func_L00_002D6978);
+extern float func_L00_001FF860(float, float);
+extern float func_001F9D10(void *, void *);
+extern float func_001FA748(float, float);
+extern float func_L00_0025CE58(float *p, float *v, float a, float b, float c, float d);
+extern float func_00214D88(float *, float, float, float, float, float *);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_L00_00259868(int, int, float, float, float, int);
+extern float D_0015EE70 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+
+/* Walks a moby toward a target point: turn to face it, ease its speed, step it along its heading; returns the distance (or 37.0 when a flag is set). Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002cfcb8.c, FUN_L00_002d54c8. */
+float func_L00_002D6978(unsigned char *m, float *t, float vel) {
+    float vec[4] __attribute__((aligned(16)));
+    unsigned char *v;
+    float ang, d, z, a, lim, w;
+    v = *(unsigned char **)(m + 0x78);
+    ang = func_L00_001FF860(t[0] - *(float *)(m + 0x10), t[1] - *(float *)(m + 0x14));
+    z = *(float *)(m + 0x18);
+    d = func_001F9D10(m + 0x10, t);
+    if (2.0f < d)
+        ang = func_001FA748(ang, *(float *)(v + 0x1FC));
+    if (m[0x52] != m[0x53])
+        return d;
+    func_L00_0025CE58((float *)(m + 0x48), (float *)(v + 0x1F4), ang, D_0015EE70 * 12.566371f, D_0015EE70 * 12.566371f, D_0015EE6C * 12.566371f);
+    func_00214D88(&vel, d, D_0015EE70 * 8.0f, D_0015EE70 * 12.0f, D_0015EE6C * 4.0f, (float *)(v + 0x1F8));
+    if (*(float *)(v + 0x1F8) < 0.0f)
+        *(float *)(v + 0x1F8) = 0.0f;
+    a = *(float *)(m + 0x48);
+    *(float *)(v + 0x278) = a;
+    vec[0] = func_001F9F90(a) * *(float *)(v + 0x1F8);
+    vec[1] = func_001F9FA8(*(float *)(v + 0x278)) * *(float *)(v + 0x1F8);
+    vec[2] = 0.0f;
+    vec[2] = *(float *)(v + 0x270) - D_0015EE70 * 10.0f;
+    func_L00_00259868((int)m, (int)vec, 0.5f, 0.5f, 0.0f, 0x10);
+    w = *(float *)(m + 0x18) - z;
+    lim = D_0015EE6C * 4.0f;
+    *(float *)(v + 0x270) = w;
+    if (lim < w)
+        *(float *)(v + 0x270) = lim;
+    if (m[0x70] & 2)
+        return d;
+    return 37.0f;
+}
 int func_L00_002D6B90(char *a) {
     int r = func_L00_002DCDA8(a);
     if (r == 0) {
@@ -135,7 +178,67 @@ void func_L00_002D80A0(char *a) {
     *(float *)(d + 0x4C) = 2.5f;
     *(float *)(d + 0x48) = 3.0f;
 }
-INCLUDE_ASM("asm/overlays", func_L00_002D8180);
+typedef int ti_p __attribute__((mode(TI)));
+typedef struct {
+    char p0[0x10];
+    float a[4];
+    float b[4];
+    int c[4];
+    float d[4];
+} P_p;
+extern char D_L00_00166EC0[];
+extern int D_L00_0015F6A8 MACRO_ADDR;
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern int func_001F9908(int *);
+extern float func_001FA888(int);
+extern float func_001F9B88(float);
+extern int func_001FA8A8(int, int, float);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern unsigned char *func_L00_00273E08(void *pos, int a1, unsigned char a2, int idx, int flag, int s, int mode, float f);
+
+/* Draws four drifting, colour-cycling sprites around a moby, stepping each one's phase and fade timer. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002cfcb8.c, FUN_L00_002d6cd0. */
+void func_L00_002D8180(char *o) {
+    P_p *p = *(P_p **)(o + 0x78);
+    union { ti_p q; float f[4]; } v;
+    float d[4] __attribute__((aligned(16)));
+    float e[4] __attribute__((aligned(16)));
+    int i, col;
+    float f;
+
+    if (*(unsigned short *)(o + 0x34) & 1) {
+        return;
+    }
+    v.q = *(ti_p *)(o + 0x10);
+    v.f[2] += 0.333000004f;
+    func_001F9BF0(d, D_L00_00166EC0, o + 0x10);
+    func_L00_001FF4B0(d, d, -0.3f);
+    func_L00_001FF4B0(e, d, 0.1f);
+    func_001F9BD8(d, d, o + 0x10);
+    v.f[2] -= 0.333000004f;
+    for (i = 0; i < 4; i++) {
+        {
+            float h = p->a[i] + p->b[i];
+            p->a[i] = h;
+            if (255.0f <= h) {
+                p->a[i] = h - 255.0f;
+            } else if (h <= 0.0f) {
+                p->a[i] = h + 255.0f;
+            }
+        }
+        if (func_001F9908(&p->c[i])) {
+            p->c[i] = func_001F9850(0xFF);
+        }
+        f = func_001FA888(func_001F9850(0xFF) - p->c[i]);
+        f = f / (float)func_001F9850(0xFF);
+        col = func_001FA8A8(0x4040FFFF, 0x1040FFFF, func_001F9B88(0.5f - f));
+        if (D_L00_0015F6A8 != 2) {
+            func_L00_00273E08(d, col, func_001FA898_r(p->a[i]) & 0xFF, 0x35, 1, 2, 0, p->d[i]);
+        }
+        func_001F9BD8(d, d, e);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002D83D8);
 INCLUDE_ASM("asm/overlays", func_L00_002D8898);
 INCLUDE_ASM("asm/overlays", func_L00_002D90A0);

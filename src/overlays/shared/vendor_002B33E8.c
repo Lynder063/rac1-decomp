@@ -179,7 +179,93 @@ char *func_L00_002B5428(int a) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_002B5488);
 INCLUDE_ASM("asm/overlays", func_L00_002B5990);
-INCLUDE_ASM("asm/overlays", func_L00_002B5998);
+typedef int u128_2b46a8 __attribute__((mode(TI)));
+typedef union { u128_2b46a8 q; float f[4]; } V_2b46a8;
+extern char D_L00_00166EC0[];
+extern char *D_L00_001600A4 MACRO_ADDR;
+extern float func_001F9D48(void *, void *);
+extern float func_001FA850(float, float);
+extern float func_001F9D10(void *, void *);
+extern float func_001F9FC0(float);
+extern float func_001FA888(int);
+extern int func_L00_001EFFF0(void *, void *, int, int, int);
+extern unsigned char *func_L00_0025D390(void *);
+
+// Finds the best-aimed target moby in the global list for a given yaw and pitch, refining them. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002b2100.c, FUN_L00_002b46a8.
+unsigned char *func_L00_002B5998(int ign, V_2b46a8 *from, float *yaw, float *pitch) {
+    V_2b46a8 src;
+    V_2b46a8 tp;
+    V_2b46a8 w;
+    unsigned char *m;
+    unsigned char *r;
+    unsigned char *best;
+    float bestd;
+    float a;
+    float b;
+    float dy;
+    float d;
+    float e;
+    float s;
+    float t;
+    unsigned char *g;
+
+    best = 0;
+    src.q = from->q;
+    from = &src;
+    bestd = 20.0f;
+    for (m = (unsigned char *)D_L00_001600A4; m != 0; m = *(unsigned char **)(m + 0x28)) {
+        if ((signed char)m[0x20] < 0) {
+            continue;
+        }
+        qcopy(&tp, m + 0x10);
+        r = func_L00_0025D390(m);
+        if (r != 0) {
+            tp.f[2] += *(float *)(r + 0x10);
+        } else {
+            tp.f[2] += 0.5f;
+        }
+        if (!(*(unsigned short *)(m + 0x34) & 0x1000)) {
+            continue;
+        }
+        a = func_L00_001FF860(tp.f[0] - from->f[0], tp.f[1] - from->f[1]);
+        b = func_L00_001FF860(func_001F9D48(from, &tp), tp.f[2] - from->f[2]);
+        dy = func_001FA850(*yaw, a);
+        d = func_001F9D10(from, &tp);
+        if (bestd < d) {
+            continue;
+        }
+        g = D_0013E633 + 0xE1D;
+        func_00215C00(&w, d, *yaw, *pitch + *(float *)(g + 0x2E4) * 0.5f);
+        func_001F9BD8(&w, &w, from);
+        e = func_001F9FC0(func_001F9D10(&w, &tp) / (d + d));
+        e = e + e;
+        if (0.15707964f < e) {
+            r = func_L00_0025D390(m);
+            if (r != 0) {
+                s = func_001FA888(r[0xA]) * 0.125f;
+                t = func_001F9FC0(s / d);
+                if (s < d) {
+                    e -= t;
+                    if (e < 0.0f) {
+                        e = 0.0f;
+                    }
+                }
+            }
+        }
+        if (e < 0.15707964f) {
+            if (func_L00_001EFFF0(D_L00_00166EC0, &tp, 6, ign, 0) || func_L00_001EFFF0(from, &tp, 6, ign, 0)) {
+                return best;
+            }
+            *pitch = -b;
+            bestd = d;
+            if (dy < 0.17453292f) {
+                *yaw = a;
+            }
+            best = m;
+        }
+    }
+    return best;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002B5C98);
 INCLUDE_ASM("asm/overlays", func_L00_002B69C0);
 extern void func_001FB448(int, int, int);
@@ -250,7 +336,42 @@ void func_L00_002B6E10(int a, int *b) {
     DeleteMoby(a);
     D_L00_00167114 = 0;
 }
-INCLUDE_ASM("asm/overlays", func_L00_002B6E90);
+extern void func_001FA218(void *, void *);
+extern void func_001FA460(void *, void *);
+extern void func_001FA540(void *, void *, void *);
+extern void func_001FA480(void *, void *);
+extern void func_001F9EE8(void *, void *, void *);
+extern void func_0020EEE8(void *);
+extern float D_0015EE60 MACRO_ADDR;
+
+typedef unsigned int u128_t __attribute__((mode(TI), aligned(16)));
+typedef union { u128_t q; float f[4]; } V_t;
+typedef struct { u128_t r[4]; } M_t;
+
+// Steers the held object's pose: eases a field toward 0.45, spins it, and rebuilds its matrix and position from the parent. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002b2100.c, FUN_L00_002b5ba0.
+void func_L00_002B6E90(unsigned char *m, unsigned char *o) {
+    M_t a, b, c;
+    V_t k, r;
+    unsigned char *e = *(unsigned char **)(o + 0x20);
+    unsigned char *t;
+    if (e == 0) return;
+    k.q = 0;
+    k.f[1] = 0.11f;
+    t = *(unsigned char **)(e + 0x78);
+    if (0.45f < *(float *)(t + 0xC)) {
+        *(float *)(t + 0xC) = *(float *)(t + 0xC) - D_0015EE60 * 0.05f;
+    } else if (*(float *)(t + 0xC) < 0.45f) {
+        *(float *)(t + 0xC) = *(float *)(t + 0xC) + D_0015EE60 * 0.05f;
+    }
+    *(float *)(*(unsigned char **)(o + 0x20) + 0x48) = D_0015EE60 * -1.5707964f;
+    func_001FA218(&b, *(unsigned char **)(o + 0x20) + 0x40);
+    func_001FA460(&c, m + 0xC0);
+    func_001FA540(&a, &c, &b);
+    func_001FA480(*(unsigned char **)(o + 0x20) + 0xC0, &a);
+    func_001F9EE8(&r, &k, &a);
+    func_001F9BD8(*(unsigned char **)(o + 0x20) + 0x10, &r, m + 0x10);
+    func_0020EEE8(*(unsigned char **)(o + 0x20));
+}
 extern unsigned char *func_L00_0026C630(void *pos, int spin, int col, float range, float f1, float f2, float f3, float scale);
 extern void func_001F9BF0(void *, void *, void *);
 extern void func_001F9BC0(void *);

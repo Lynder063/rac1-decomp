@@ -48,7 +48,80 @@ void func_L00_002BBC78(char *m) {
     func_L00_002BC3B8(m);
 }
 INCLUDE_ASM("asm/overlays", func_L00_002BBDE8);
-INCLUDE_ASM("asm/overlays", func_L00_002BC3B8);
+typedef struct { float f[4]; } __attribute__((aligned(16))) V_2bb0b0;
+typedef struct { float u, v; } UV_2bb0b0;
+typedef struct {
+    V_2bb0b0 corner[4];
+    unsigned int color[4];
+    UV_2bb0b0 uv[4];
+    long unk70, tex, unk80, unk88;
+} Q_2bb0b0;
+extern int func_001F4868(int);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_001F9CA0(void *, void *, void *);
+extern float func_L00_00258C80(float lo, float hi);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9EE8(void *, void *, void *);
+extern void func_L00_001FD1D8(void *, void *, int);
+extern float D_L00_00166EC0[];
+extern V_2bb0b0 D_L00_001DB860[];
+extern UV_2bb0b0 D_L00_001DB8A0[];
+extern short D_L00_00161710;
+extern short D_L00_00161718;
+extern short D_L00_001616C8;
+extern short D_L00_0016171C;
+extern char D_0013E633[];
+
+// Builds and draws two layered glow quads around a moby. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002b94d0.c, FUN_L00_002bb0b0.
+void func_L00_002BC3B8(void *mv) {
+    Q_2bb0b0 quad;
+    V_2bb0b0 mat[4];
+    V_2bb0b0 *pos = *(V_2bb0b0 **)((char *)mv + 0x78);
+    unsigned int c;
+    float s;
+    int i;
+    quad.tex = func_001F4868(0xB);
+    quad.unk88 = 0x8000000048L;
+    quad.unk80 = 0xFF9000000260L;
+    quad.unk70 = 0;
+    func_001F9BF0(&mat[3], D_L00_00166EC0, pos);
+    func_L00_001FF4B0(&mat[3], &mat[3], 0.3f);
+    func_001F9BD8(&mat[3], &mat[3], pos);
+    mat[3].f[3] = 1.0f;
+    func_001F9BF0(&mat[0], D_L00_00166EC0, &mat[3]);
+    func_L00_001FF4B0(&mat[0], &mat[0], 1.0f);
+    func_001F9CA0(&mat[1], &mat[0], D_0013E633 + 0x10AD);
+    func_L00_001FF4B0(&mat[1], &mat[1], -1.0f);
+    func_001F9CA0(&mat[2], &mat[1], &mat[0]);
+    c = *(int *)&D_L00_00161710;
+    quad.color[3] = c;
+    quad.color[2] = c;
+    quad.color[1] = c;
+    quad.color[0] = c;
+    s = *(float *)&D_L00_00161718 + func_L00_00258C80(0.0f, 0.025f);
+    for (i = 0; i < 4; i++) {
+        func_001F9C30(&quad.corner[i], &D_L00_001DB860[i], s);
+        func_001F9EE8(&quad.corner[i], &quad.corner[i], &mat[0]);
+        quad.uv[i].u = D_L00_001DB8A0[i].u;
+        quad.uv[i].v = D_L00_001DB8A0[i].v;
+    }
+    func_L00_001FD1D8(&quad, 0, 0);
+    c = *(int *)&D_L00_001616C8;
+    quad.color[3] = c;
+    quad.color[2] = c;
+    quad.color[1] = c;
+    quad.color[0] = c;
+    s = *(float *)&D_L00_0016171C + func_L00_00258C80(0.0f, 0.05f);
+    for (i = 0; i < 4; i++) {
+        func_001F9C30(&quad.corner[i], &D_L00_001DB860[i], s);
+        func_001F9EE8(&quad.corner[i], &quad.corner[i], &mat[0]);
+        quad.uv[i].u = D_L00_001DB8A0[i].u;
+        quad.uv[i].v = D_L00_001DB8A0[i].v;
+    }
+    func_L00_001FD1D8(&quad, 0, 0);
+}
 typedef struct { int a[4]; } Vu __attribute__((aligned(16)));
 extern char *func_0020D348(int);
 extern void func_001F9BC0(void *);
@@ -348,7 +421,72 @@ INCLUDE_ASM("asm/overlays", func_L00_002BE3A8);
 INCLUDE_ASM("asm/overlays", func_L00_002BEF58);
 INCLUDE_ASM("asm/overlays", func_L00_002BF380);
 INCLUDE_ASM("asm/overlays", func_L00_002BF958);
-INCLUDE_ASM("asm/overlays", func_L00_002BFB98);
+extern short D_L00_00161888;
+extern short D_L00_00161884;
+extern short D_L00_0016187C;
+extern short D_L00_00161880;
+
+typedef struct { float f[4]; } __attribute__((aligned(16))) V_t;
+typedef struct {
+    V_t corner[4];
+    int color[4];
+    int unk50, unk54, unk58;
+    float unk5C, unk60;
+    int unk64;
+    float unk68, unk6C;
+    long unk70, tex, unk80, unk88;
+} Q_t;
+extern V_t D_L00_001DC260;
+extern V_t D_L00_001DC220[];
+
+// Draws a textured quad twice (first tinted, then white) from a moby's orientation. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002b94d0.c, FUN_L00_002be890.
+void func_L00_002BFB98(void *mv) {
+    char *m = mv;
+    Q_t quad;
+    V_t mat[4];
+    V_t t;
+    V_t e;
+    int c;
+    int i, j;
+    quad.tex = func_001F4868(11);
+    c = *(int *)&D_L00_00161888;
+    quad.unk88 = 0x8000000048L;
+    quad.unk80 = 0xFF9000000260L;
+    quad.unk70 = 0;
+    quad.unk50 = 0;
+    quad.unk54 = 0;
+    quad.color[3] = c;
+    quad.color[2] = c;
+    quad.color[1] = c;
+    quad.color[0] = c;
+    quad.unk58 = 0;
+    quad.unk5C = 1.0f;
+    quad.unk60 = 1.0f;
+    quad.unk64 = 0;
+    quad.unk68 = 1.0f;
+    quad.unk6C = 1.0f;
+    func_L00_001FF4B0(&e, m + 0xD0, *(float *)&D_L00_00161884);
+    func_001F9BD8(&mat[3], &D_L00_001DC260, &e);
+    func_001F9BF0(&e, D_L00_00166EC0, &mat[3]);
+    func_L00_001FF4B0(&mat[0], &e, 1.0f);
+    func_001F9CA0(&mat[1], &mat[0], D_0013E633 + 0x10AD);
+    func_L00_001FF4B0(&mat[1], &mat[1], -1.0f);
+    func_001F9CA0(&mat[2], &mat[1], &mat[0]);
+    for (i = 3; i >= 0; i--) {
+        func_001F9C30(&t, &D_L00_001DC220[3 - i], *(float *)&D_L00_0016187C);
+        func_001F9EE8(&quad.corner[3 - i], &t, &mat[0]);
+    }
+    func_L00_001FD1D8(&quad, 0, 0);
+    quad.color[3] = -1;
+    quad.color[2] = -1;
+    quad.color[1] = -1;
+    quad.color[0] = -1;
+    for (j = 3; j >= 0; j--) {
+        func_001F9C30(&t, &D_L00_001DC220[3 - j], *(float *)&D_L00_00161880);
+        func_001F9EE8(&quad.corner[3 - j], &t, &mat[0]);
+    }
+    func_L00_001FD1D8(&quad, 0, 0);
+}
 typedef struct { float x, y, z, w; } Vx __attribute__((aligned(16)));
 extern char D_0013E633[] NOT_SDA;
 extern int func_L00_001F10E0(float, void *, int, void *);
@@ -409,7 +547,43 @@ void func_L00_002BFF50(char *a) {
     *(char *)(a + 0x68) = *(char *)(g + 0x1F3F);
     *(float *)(a + 0x44) = *(float *)(g + 0x1F40);
 }
-INCLUDE_ASM("asm/overlays", func_L00_002BFF88);
+typedef struct { char pad[0x46]; short f46; } SubS;
+typedef struct { char pad[0x24]; SubS *sub; } TopS;
+typedef struct { char pad[0x18]; TopS *o18; char pad2[0xC]; float f28; } S173F40;
+extern S173F40 D_L00_00173F40_s __asm__("D_L00_00173F40") NOT_SDA;
+
+/* Probe below a point and return the ground height offset, or zero when nothing is hit. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002b94d0.c, FUN_L00_002bec80. */
+float func_L00_002BFF88(Vx *a, void *b) {
+    Vx v1;
+    Vx v2;
+    float z;
+    float t;
+    qcopy(&v1, a);
+    qcopy(&v2, a);
+    t = v1.z - 5.0f;
+    if (t < 0.1f) z = 0.1f;
+    else z = t;
+    v1.z = z;
+    v2.z = z + 6.0f;
+    if (func_L00_001EFFF0(&v2, &v1, 6, b, 0) != 0) {
+        TopS *p = D_L00_00173F40_s.o18;
+        if (p != 0 && p->sub != 0 && p->sub->f46 == 5) {
+            return D_L00_00173F40_s.f28;
+        }
+        switch (func_L00_001F3958()) {
+        case 0:
+        case 1:
+        case 3:
+        case 8:
+        case 11:
+        case 12:
+        case 13:
+            return 0.0f;
+        }
+        return D_L00_00173F40_s.f28;
+    }
+    return 0.0f;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002C0098);
 INCLUDE_ASM("asm/overlays", func_L00_002C0358);
 extern void func_001F9BF0(void *, void *, void *);
@@ -429,7 +603,32 @@ void func_L00_002C0B18(char *a, char *b, int n) {
         FastVecAdd(t, t, d);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002C0BB8);
+extern float func_001F9D48(void *, void *);
+extern float func_001F9B88(float);
+extern float func_L00_001FF860(float, float);
+extern float func_L00_0025BC48(void *, void *, int, float, float);
+extern float D_0015EE6C MACRO_ADDR;
+
+/* Updates a homing state block o from target m: turn rate, heading, and a speed clamped to seven times a global.
+   Adapted from Lombyte (MIT) for PAL: src/overlays/shared/unclassified_002b94d0.c, FUN_L00_002bf8b0. */
+void func_L00_002C0BB8(unsigned char *m, unsigned char *o, void *src) {
+    float s, t, r, lim;
+#define F2BF(p, x) (*(float *)((p) + (x)))
+    *(int *)(o + 0x30) = 0;
+    qcopy(o, src);
+    s = func_001F9D48(m + 0x10, o);
+    s = s * s;
+    t = F2BF(o, 0x1C) * 35.0f * F2BF(o, 0x20) / (func_001F9B88(F2BF(o, 8) - F2BF(m, 0x18)) + 1.0f) * (s + 0.25f);
+    F2BF(o, 0x14) = t;
+    if (F2BF(o, 0x20) < t) F2BF(o, 0x14) = F2BF(o, 0x20);
+    F2BF(o, 0x18) = func_L00_001FF860(F2BF(o, 0) - F2BF(m, 0x10), F2BF(o, 4) - F2BF(m, 0x14));
+    r = func_L00_0025BC48(m + 0x10, o, 0, F2BF(o, 0x14), -F2BF(o, 0x1C));
+    lim = D_0015EE6C * 7.0f;
+    F2BF(o, 0x10) = r;
+    if (lim < r) F2BF(o, 0x10) = lim;
+    o[0x2F] = 0;
+    F2BF(o, 0x14) = F2BF(o, 0x14) * (r / F2BF(o, 0x10));
+}
 INCLUDE_ASM("asm/overlays", func_L00_002C0CF8);
 extern void func_L00_0025E210(void *);
 

@@ -765,7 +765,111 @@ int func_0021D420(void *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021D4C0);
+struct Menu;
+struct Owner {
+    char pad0[0x38];
+    int unk38;
+    char pad3C[4];
+    struct Menu *owner;
+};
+struct Menu {
+    char pad0[0x14];
+    int unk14;
+    char pad18[0x18];
+    int choice[19];
+    int count;
+};
+typedef struct {
+    char pad0[4];
+    struct Owner *cur;
+    int unk8;
+    char padC[0x118];
+    int unk124;
+} PauseG;
+typedef struct {
+    char pad0[0x1C4];
+    unsigned int pressed;
+} PadG;
+typedef struct {
+    char pad0[0x224];
+    int level;
+} LevelG;
+extern PauseG D_001D5F70_g __asm__("D_001D5F70") NOT_SDA;
+extern PadG D_0013CA40_g __asm__("D_0013CA40");
+extern LevelG D_001A01F0_lv __asm__("D_001A01F0");
+extern unsigned char D_0013DE48[];
+
+/* Pause slot-select tick. Adapted from Lombyte (MIT) for PAL: src/ui/menus/fun_0021c4c0.c, FUN_0021c4c0. */
+int func_0021D4C0(struct Menu *m) {
+    int old;
+    int i;
+    int prev;
+    unsigned int pad;
+    int *p;
+    int *ch;
+
+    {
+        struct Menu *owner = D_001D5F70_g.cur->owner;
+        old = D_001A01F0_lv.level;
+        if (owner != m) {
+            if (old < 20) {
+                m->choice[old] = -1;
+            }
+            return 0;
+        }
+    }
+    if ((D_0013CA40_g.pressed & 0xD00) && D_001D5F70_g.unk124 == 0) {
+        return 1;
+    }
+    if (D_0013CA40_g.pressed & 8) {
+        for (i = D_001A01F0_lv.level + 1; i < 20; i++) {
+            if (D_0013DE48[i] != 0 || D_0015EE84 == i) {
+                D_001A01F0_lv.level = i;
+                break;
+            }
+        }
+    }
+    if (D_0013CA40_g.pressed & 4) {
+        for (i = D_001A01F0_lv.level - 1; i >= 0; i--) {
+            if (D_0013DE48[i] != 0 || D_0015EE84 == i) {
+                D_001A01F0_lv.level = i;
+                break;
+            }
+        }
+    }
+    if (D_001A01F0_lv.level != old) {
+        func_0022ED80(1, 0x11, m->unk14);
+        func_0020C7A0_i();
+    }
+    if (m->count != 0) {
+        pad = D_0013CA40_g.pressed;
+        ch = m->choice;
+        prev = m->choice[D_001A01F0_lv.level];
+        if (pad & 0x1000) {
+            m->choice[D_001A01F0_lv.level] = (prev + m->count - 1) % m->count;
+        }
+        if (pad & 0x4000) {
+            m->choice[D_001A01F0_lv.level] = (m->choice[D_001A01F0_lv.level] + 1) % m->count;
+        }
+        if (m->choice[D_001A01F0_lv.level] != prev) {
+            func_0022ED80(1, 0x11, m->unk14);
+        }
+        if ((pad & 0x5000) || D_001A01F0_lv.level != old) {
+            m->count = func_0020CA50((void *)0x70000000, (void *)0, (void *)0x70000100, 1);
+            p = &ch[D_001A01F0_lv.level];
+            D_001CFBF4 = ((unsigned int *)0x70000000)[*p];
+            D_001CFAD8 = ((unsigned int *)0x70000100)[*p];
+        }
+    }
+    if (D_0013CA40_g.pressed & 0x10) {
+        if (D_001D5F70_g.cur->unk38 != 0) {
+            D_001D5F70_g.unk8 = D_001D5F70_g.cur->unk38;
+        } else if (D_001D5F70_g.unk124 == 0) {
+            return -1;
+        }
+    }
+    return 0;
+}
 
 extern char *D_001D5F74 NOT_SDA;
 extern int D_0015EFA4 MACRO_ADDR;
@@ -1067,7 +1171,153 @@ int func_0021E340(char *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021E4B0);
+extern void func_001F7070_a(void *, long, char *, int, int, unsigned char *) __asm__("func_001F7070");
+extern void func_00234C98_l(int, long) __asm__("func_00234C98");
+extern void *func_001FE540_id(int) __asm__("func_001FE540");
+extern void func_001153FC(void *, int, int); /* memset */
+extern void func_001F65A8(void);
+extern void func_001F6598(void);
+extern void func_002208F8(int x, int y, int flag);
+
+typedef struct {
+    short text;
+    short enabled;
+    int id;
+    short subtext;
+    short pad0A;
+} MenuItem;
+
+typedef struct {
+    char pad00[0x20];
+    int width;
+    int height;
+    char pad28[8];
+    int flags;
+    MenuItem *items;
+    char pad38[8];
+    int sel;
+    int scroll;
+} Menu;
+
+typedef struct {
+    short s[12];
+} MenuBox;
+
+/* Draws a pause-menu list (rows of text with optional subtext, cursor highlight, scrolling). Adapted from Lombyte (MIT) for PAL: ui/menus/fun_0021d4a8.c, FUN_0021d4a8. */
+int func_0021E4B0(Menu *menu) {
+    int size;
+    int kind;
+    int focused;
+    unsigned char *font;
+    int n;
+    MenuItem *p;
+    int rowh;
+    int glyphs;
+    int i;
+    int sel;
+    int en;
+    int color;
+    char *text;
+    int end;
+    int y;
+
+    size = 12;
+    kind = 1;
+    font = D_001DF3D0;
+    focused = *(Menu **)(D_001D5F74 + 0x40) == menu;
+    if (menu->flags & 4) {
+        size = 14;
+        kind = 3;
+        font = D_001DFB10;
+    }
+    if (menu->flags & 8) {
+        size = 10;
+        kind = 2;
+        font = D_001DF770;
+    }
+    func_00234C98_l(0x42, 0x44);
+    func_00234C98_l(0x47, 0x2004B);
+    func_001F4630(0);
+
+    n = 0;
+    p = menu->items;
+    while (p->text != 0) {
+        p++;
+        n++;
+    }
+    if (menu->flags & 0x10) {
+        rowh = size + 3;
+    } else {
+        rowh = menu->height / (n + 1);
+    }
+    y = rowh - size / 2;
+    {
+        MenuBox box = { { 4, menu->height - 4, 0, menu->width - 2, 0,
+                          y - menu->scroll, 0, 0, size + 2 } };
+
+        glyphs = func_001F4868(kind);
+        for (i = 0; menu->items[i].text != 0; i++) {
+            sel = 0;
+            if (focused && menu->sel == i) {
+                sel = 1;
+            }
+            en = menu->items[i].enabled != 0;
+            if (menu->flags & 2) {
+                color = 0x80FFA888;
+            } else if (sel) {
+                color = en ? 0x8020FFFF : 0x80006060;
+            } else {
+                color = en ? 0x80FFA888 : 0x80303030;
+            }
+            if (!(menu->flags & 0x10000) && sel && box.s[5] < 4) {
+                menu->scroll -= 4;
+            }
+            text = func_001FE540_id(menu->items[i].text);
+            box.s[4] = (menu->flags & 0xA00) ? 0x20 : 4;
+            if (menu->flags & 0x400) {
+                box.s[9] = 1;
+                box.s[4] = menu->width >> 1;
+            }
+            if (sel) {
+                func_001F65A8();
+            }
+            func_001F7070_a(&box, color, text, -1, glyphs, font);
+            if (sel) {
+                func_001F6598();
+            }
+            if (menu->flags & 0x200) {
+                func_002208F8(0xF, box.s[5] + 9, D_0013D510[i] != 0);
+            }
+            if (menu->flags & 0x800) {
+                func_002208F8(0xF, box.s[5] + 9, D_0015EE88 == menu->items[i].id);
+            }
+            box.s[5] += box.s[7];
+            if (menu->items[i].subtext != 0) {
+                text = func_001FE540_id(menu->items[i].subtext);
+                box.s[4] = 0x14;
+                func_001F7070_a(&box, color, text, -1, glyphs, font);
+                box.s[5] += rowh;
+            }
+            box.s[5] += 8;
+            if (!(menu->flags & 0x10000) && sel) {
+                end = box.s[5] + box.s[7];
+                if (box.s[1] < end) {
+                    if (menu->flags & 0x8000) {
+                        menu->scroll += end - box.s[1];
+                    } else {
+                        menu->scroll += 4;
+                    }
+                }
+            }
+        }
+    }
+    func_001F4748();
+    if (menu->flags & 0x8000) {
+        menu->flags ^= 0x8000;
+        return 1;
+    }
+    return 2;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021E950);
 
@@ -2117,7 +2367,42 @@ int func_002222F8(char *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002224A8);
+struct OptItem { int text; unsigned char *value; int names[4]; };
+struct OptMenu { unsigned char pad0[0x20]; int x; int height; unsigned char pad28[0xC]; struct OptItem *items; int selected; };
+
+/* Draws an options menu: each item's label at left, its current value's name at right, selected one highlighted. Adapted from Lombyte (MIT) for PAL: src/ui/menus/fun_00221460.c, FUN_00221460. */
+int func_002224A8(struct OptMenu *m) {
+    struct OptItem *p;
+    struct OptItem *it;
+    int n;
+    int i;
+    int step;
+    int y;
+    int color;
+
+    func_00234C98_l(0x47, 0x2004B);
+    func_001F4630(0);
+    n = 0;
+    for (p = m->items; p->text != 0; p++) {
+        n++;
+    }
+    step = m->height / (n + 1);
+    p = m->items;
+    y = step - 8;
+    for (i = 0; m->items[i].text != 0; i++) {
+        it = &m->items[i];
+        if (i == m->selected) {
+            color = 0x8020FFFF;
+        } else {
+            color = 0x80FFA888;
+        }
+        func_001F68E8_c(0xC, y, color, func_001FE540_id(it->text), -1);
+        func_001F6CF8_c(m->x - 0xC, y, 0x80FFA888, func_001FE540_id(it->names[*it->value]), -1);
+        y += step;
+    }
+    func_001F4748();
+    return 2;
+}
 
 typedef struct {
     unsigned short a;   /* +0 */

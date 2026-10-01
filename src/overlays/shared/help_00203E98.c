@@ -789,11 +789,153 @@ int func_L00_00209BB8(char *a, int b) {
         *cnt = random_integer_below((int)a);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00209CB0);
-INCLUDE_ASM("asm/overlays", func_L00_00209EC0);
+extern float func_001FA748(float, float);
+extern float func_001FA790(float, float);
+extern void func_L00_00272770(void *, void *, void *, float, float);
+
+typedef struct {
+    unsigned char pad0[0x80];
+    float f80;
+    float f84;
+    unsigned char pad88[0x98 - 0x88];
+    float f98;
+    unsigned char pad9C[0x2F0 - 0x9C];
+    float f2F0;
+    unsigned char pad2F4[0x908 - 0x2F4];
+    short s908;
+} P_t;
+
+// Emits a pair of sparks from the player's position each time the counter passes its limit. Adapted from Lombyte (MIT) for PAL: overlays/shared/ui_help_00203b18.c, FUN_L00_00209638.
+void func_L00_00209CB0(int seed, int limit) {
+    float v[4];
+    float pos[4];
+    float ang;
+    int i;
+    P_t *p;
+
+    if (limit < ++((P_t *)(D_0013E633 + 0xE1D))->s908) {
+        for (i = 0; i < 2; i++) {
+            if (i == 0) {
+                ang = func_001FA748(((P_t *)(D_0013E633 + 0xE1D))->f98, 0.785398f);
+            } else {
+                ang = func_001FA790(((P_t *)(D_0013E633 + 0xE1D))->f98, 0.785398f);
+            }
+            p = (P_t *)(D_0013E633 + 0xE1D);
+            v[0] = func_001F9F90(ang) * (D_0015EE6C * 0.6f);
+            v[1] = func_001F9FA8(ang) * (D_0015EE6C * 0.6f);
+            v[2] = 0.0f;
+            pos[0] = p->f80 + v[0] * 18.0f;
+            pos[1] = p->f84 + v[1] * 18.0f;
+            pos[2] = p->f2F0;
+            v[0] -= func_001F9F90(p->f98) * (D_0015EE6C * 1.5f);
+            v[1] -= func_001F9FA8(p->f98) * (D_0015EE6C * 1.5f);
+            {
+                float r = func_002140F8(0.4f, 0.5f);
+                float d = -2.0f;
+                if (i == 0) d = 2.0f;
+                func_L00_00272770(pos, v, &p->f2F0, r, d);
+            }
+            if (seed) {
+                p->s908 = func_002140B0(seed);
+            } else {
+                p->s908 = 0;
+            }
+        }
+    }
+}
+typedef struct { float x, y, z, w; } V09 __attribute__((aligned(16)));
+typedef struct { char p0[0x80]; float f80, f84; char p1[0x100 - 0x88]; float f100, f104; char p2[0x2F0 - 0x108]; float f2F0; char p3[0x906 - 0x2F4]; short h906; char p4[0x22A4 - 0x908]; float f22A4; } P09;
+extern float func_00214158(void);
+extern int func_L00_00258BC8(int, int);
+extern void func_L00_002703E8(void *, void *, int, int);
+
+/* Every lim calls of the counter, sprays a dust particle at the player's position with a random velocity and resets the counter. Adapted from Lombyte (MIT) for PAL: overlays/shared/ui_help_00203b18.c, FUN_L00_00209848. */
+void func_L00_00209EC0(int n, int lim) {
+    P09 *P = (P09 *)(D_0013E633 + 0xE1D);
+    if (lim < ++P->h906) {
+        V09 t, v;
+        float a, r;
+        int k;
+        t.x = P->f80 + func_002140F8(-0.15f, 0.15f) + P->f100 * 8.0f;
+        {
+            float y = P->f84 + func_002140F8(-0.15f, 0.15f) + P->f104 * 8.0f;
+            t.z = P->f2F0 + 0.1f;
+            t.y = y;
+        }
+        a = func_00214158();
+        r = func_002140F8(D_0015EE6C * 0.0f, D_0015EE6C * 3.0f);
+        v.x = func_001F9F90(a) * r + P->f100 * 0.75f;
+        v.y = func_001F9FA8(a) * r + P->f104 * 0.75f;
+        v.z = func_002140F8(D_0015EE6C * 3.0f, D_0015EE6C * 6.5f);
+        k = func_L00_00258BC8(0x5A, 0x78);
+        if (P->f22A4 < 0.25f) func_L00_002703E8(&t, &v, 3, k);
+        else func_L00_002703E8(&t, &v, 1, k);
+        {
+            short h = func_002140B0(n);
+            P09 *Q = (P09 *)(D_0013E633 + 0xE1D);
+            Q->h906 = h;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_0020A0B8);
 INCLUDE_ASM("asm/overlays", func_L00_0020A320);
-INCLUDE_ASM("asm/overlays", func_L00_0020A540);
+typedef struct { float f[4]; } __attribute__((aligned(16))) V4;
+extern int func_001F9938(void *);
+extern float func_L00_00258C80(float lo, float hi);
+extern void func_L00_0026E438(char *pos, char *vel, int flag);
+extern void func_00215C00(void *, float, float, float);
+extern void func_L00_0026A7F8(void *, void *, int, int, int, int, int, int);
+extern float D_0015EE70 MACRO_ADDR;
+
+/* Per-frame spark effect: emits a burst of particles around a saved position while a global timer runs down. Adapted from Lombyte (MIT) for PAL: overlays/shared/ui_help_00203b18.c, FUN_L00_00209ec8. */
+void func_L00_0020A540(void) {
+    V4 v;
+    V4 w;
+    char *g;
+    char *base;
+    float a, r, r0, f, a1, a2;
+    int t, c, col, life, n1, n2, k;
+    V4 *pt;
+    g = (char *)D_0013E633 + 0x12BB;
+    if (func_001F9938(g)) {
+        qcopy(&v, g - 0x41E);
+        base = g - 0x49E;
+        a = func_001FA748(*(float *)(base + 0x98), 1.5707963705062866f);
+        r0 = func_L00_00258C80(D_0015EE6C * 0.2f, D_0015EE6C * 0.7f);
+        w.f[0] = func_001F9F90(a) * r0;
+        w.f[1] = func_001F9FA8(a) * r0;
+        ((int *)&w)[2] = 0;
+        w.f[3] = D_0015EE70 * -8.0f;
+        func_L00_0026E438((char *)&v, (char *)&w, 0);
+        *(short *)(base + 0x49E) = func_L00_00258BC8(2, 3);
+    }
+    if (!func_001F9938(g - 2)) return;
+    t = func_001F9850(0x28);
+    f = (float)(t - *(int *)(g - 0x306)) / (float)func_001F9850(0x28);
+    if (1.0f < f) f = 1.0f;
+    if (f < 0.0f) f = 0.0f;
+    c = func_001FA898(f * 240.0f);
+    c = c < 0xA1 ? c : 0xA0;
+    c = 0x1F < c ? c : 0x20;
+    col = (c << 24) | 0xC0F0;
+    life = func_001F9850(0x28);
+    pt = &w;
+    for (k = 0x38; k >= 0; k--) {
+        n1 = func_001FA898(func_002140F8(4200.0f, 7350.0f) / 1000.0f);
+        n2 = func_001FA898(func_002140F8(21000.0f, 31500.001953125f) / 1000.0f);
+        r = func_002140F8(D_0015EE6C * 0.15f, D_0015EE6C * 0.57f);
+        qcopy(&v, g - 0x41E);
+        a1 = func_00214158();
+        a2 = func_00214158();
+        func_00215C00(pt, r, a1, a2);
+        func_L00_0026A7F8(&v, pt, col, 0x70F0, life, n1, n2, 1);
+    }
+    t = func_L00_00258BC8(func_001F9850(3), func_001F9850(7));
+    {
+        char *b2 = (char *)D_0013E633 + 0xE1D;
+        *(short *)(b2 + 0x49C) = t;
+    }
+}
 extern char D_L00_0017A780[];
 // stores two floats into a global block
 void func_L00_0020A858(float a, float b) {

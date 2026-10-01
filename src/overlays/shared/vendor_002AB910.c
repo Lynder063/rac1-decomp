@@ -4,7 +4,51 @@
 
 INCLUDE_ASM("asm/overlays", func_L00_002AB910);
 INCLUDE_ASM("asm/overlays", func_L00_002ADBB0);
-INCLUDE_ASM("asm/overlays", func_L00_002ADD78);
+extern float func_001FA888(int);
+extern float func_001FA748(float, float);
+extern int func_001F9938(void *);
+extern void func_0020D678(void *);
+extern float D_0015EE6C MACRO_ADDR;
+
+typedef struct V_d {
+    char pad0[0x14];
+    int n;
+    float f18;
+    short h1c;
+    short h1e;
+} V_d;
+
+typedef struct M_d {
+    char pad0[0x23];
+    unsigned char b23;
+    char pad1[0x8];
+    float f2c;
+    char pad2[0x10];
+    float r[3];
+    char pad3[0x2C];
+    V_d *v;
+} M_d;
+
+/* updates a decaying moby: spins down its position fields and fades it out. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002aa670.c, FUN_L00_002acad8. */
+void func_L00_002ADD78(M_d *m) {
+    V_d *v = m->v;
+    float a, b;
+    int n;
+    a = func_001FA888(v->n - v->h1c);
+    b = func_001FA888(v->n);
+    m->f2c = a * v->f18 / b;
+    m->r[0] = func_001FA748(m->r[0], D_0015EE6C * 3.1415927f);
+    m->r[1] = func_001FA748(m->r[1], D_0015EE6C * 3.1415927f);
+    m->r[2] = func_001FA748(m->r[2], D_0015EE6C * 3.1415927f);
+    if (func_001F9938(&v->h1c)) {
+        func_0020D678(m);
+        return;
+    }
+    n = v->n / 2;
+    if (v->h1c < n) {
+        m->b23 = v->h1c * v->h1e / n;
+    }
+}
 typedef struct {
     float v[4][4];
     int rgba[4];
@@ -83,7 +127,55 @@ void func_L00_002ADE90(char *moby) {
         func_L00_001FD1D8(&q, M, 1);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002AE110);
+extern char D_0013E633[];
+extern char *spawn_79(int) __asm__("func_0020D348");
+extern float func_002140F8(float, float);
+extern void func_001F9BC0(float *);
+extern void func_L00_00251E30(void *);
+
+typedef int u128 __attribute__((mode(TI)));
+typedef union {
+    u128 q;
+    float f[4];
+} V2AE110 __attribute__((aligned(16)));
+
+/* Spawns a type-0x79 moby with random spin axes and speeds, owned by the given object, at pos. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002aa670.c, FUN_L00_002ace70. */
+char *func_L00_002AE110(int owner, void *pos) {
+    char *m = spawn_79(0x79);
+    if (m) {
+        V2AE110 u, t;
+        char *v = *(char **)(m + 0x78);
+        char *g;
+        float a;
+        t.q = 0;
+        t.f[0] = func_002140F8(-3.1415927f, 3.1415927f);
+        t.f[1] = func_002140F8(-3.1415927f, 3.1415927f);
+        t.f[2] = func_002140F8(-3.1415927f, 3.1415927f);
+        u.q = t.q;
+        *(unsigned char *)(m + 0x30) = 0xFF;
+        *(short *)(m + 0x32) = 0xFF;
+        m[0x31] = 1;
+        m[0x20] = 0;
+        *(int *)(v + 0x50) = owner;
+        *(short *)(v + 0x56) = 0;
+        *(short *)(v + 0x6A) = 0;
+        *(int *)(v + 0x60) = 0;
+        g = D_0013E633 + 0xE1D;
+        *(float *)(v + 0x6C) = func_L00_001FF860(*(float *)(g + 0x670), *(float *)(g + 0x674));
+        *(int *)(v + 0x64) = 0;
+        qcopy(m + 0x10, pos);
+        func_001F9BC0((float *)v);
+        qcopy(m + 0x40, &u);
+        a = func_002140F8(D_0015EE6C * 1.0471976f, D_0015EE6C * 3.1415927f);
+        {
+            float d = D_0015EE6C;
+            *(float *)(v + 0x58) = a;
+            *(float *)(v + 0x5C) = func_002140F8(d * 1.0471976f, d * 3.1415927f);
+        }
+        func_L00_00251E30(m);
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002AE278);
 INCLUDE_ASM("asm/overlays", func_L00_002AE6B0);
 INCLUDE_ASM("asm/overlays", func_L00_002AEDD0);
@@ -120,8 +212,107 @@ char *func_L00_002B0738(char *pos, char *vel, int a, int b, int c) {
     }
     return m;
 }
-INCLUDE_ASM("asm/overlays", func_L00_002B08A0);
-INCLUDE_ASM("asm/overlays", func_L00_002B0B98);
+typedef struct { float f[4]; } __attribute__((aligned(16))) V_2af5b8;
+typedef int Q_2af5b8 __attribute__((mode(TI)));
+typedef struct { int c[4]; } C_2af5b8;
+typedef struct { float x0, x4, x8, xc; float x10, x14; short x18, x1a; float x1c; } W_2af5b8;
+extern C_2af5b8 D_L00_00161508;
+extern float D_0015EE70 MACRO_ADDR;
+extern void func_L00_001FF4B0(void *, void *, float);
+extern int func_002140B0(int);
+extern unsigned func_L00_0025D140(unsigned c, int mask);
+extern void func_L00_0026A7F8(void *, void *, int, int, int, int, int, int);
+extern void func_001F9BD8(void *, void *, void *);
+
+// Per-frame update of a falling spark moby: emits a burst particle, moves, fades and dies when out of bounds. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002aa670.c, FUN_L00_002af5b8.
+void func_L00_002B08A0(unsigned char *m) {
+    W_2af5b8 *w = *(W_2af5b8 **)(m + 0x78);
+    C_2af5b8 c;
+    V_2af5b8 v;
+    V_2af5b8 t;
+    int i;
+    float f;
+    if (m[0xBC] & 1) {
+        for (i = 0; i < 1; i++) {
+            c = D_L00_00161508;
+            *(Q_2af5b8 *)&t = 0;
+            t.f[0] = func_002140F8(-1.0f, 1.0f);
+            t.f[1] = func_002140F8(-1.0f, 1.0f);
+            t.f[2] = func_002140F8(-1.0f, 1.0f);
+            *(Q_2af5b8 *)&v = *(Q_2af5b8 *)&t;
+            func_L00_001FF4B0(&v, &v, D_0015EE6C);
+            if (m[0xBC] & 0xFE) {
+                int a = func_L00_0025D140(c.c[func_002140B0(4)], m[0xBC] >> 1);
+                int b = func_L00_0025D140(0x4FFF, m[0xBC] >> 1);
+                func_L00_0026A7F8(m + 0x10, &v, a, b, func_001F9850(0x2D), 0x32, 0x78, 1);
+            } else {
+                func_L00_0026A7F8(m + 0x10, &v, c.c[func_002140B0(4)], 0x4FFF, func_001F9850(0x2D), 0x32, 0x78, 1);
+            }
+        }
+    }
+    *(float *)(m + 0x40) = func_001FA748(*(float *)(m + 0x40), w->x10);
+    *(float *)(m + 0x44) = func_001FA748(*(float *)(m + 0x44), w->x14);
+    func_001F9BD8(m + 0x10, m + 0x10, w);
+    w->x8 -= D_0015EE70 * 14.6f;
+    if (*(float *)(m + 0x10) < 0.0f || *(float *)(m + 0x14) < 0.0f || *(float *)(m + 0x18) < 0.0f) {
+        func_0020D678(m);
+        return;
+    }
+    if (w->x18 < w->x1a / 4) {
+        f = func_001FA888(w->x18);
+        *(float *)(m + 0x2C) = w->x1c * f / func_001FA888(w->x1a / 4);
+    }
+    if (func_001F9938(&w->x18)) func_0020D678(m);
+}
+extern short D_L00_00161518;
+extern short D_L00_0016151C;
+extern char *func_0020D348(int);
+extern float func_00214158(void);
+extern float func_L00_00258C80(float, float);
+
+typedef struct { unsigned char *o; float f4; float f8; short hc; short he; float p10[4]; int i20; float f24; float f28; } V;
+
+/* Spawns a particle moby of the given type owned by owner, with random spin and size.
+   Adapted from Lombyte (MIT) for PAL: src/overlays/shared/unclassified_002aa670.c, FUN_L00_002af8b0. */
+unsigned char *func_L00_002B0B98(unsigned char *owner, void *vel, void *pos, void *rot, int type, int n, float lo, float hi) {
+    unsigned char *m = (unsigned char *)func_0020D348(type);
+    if (m) {
+        V *v = *(V **)(m + 0x78);
+        float a;
+        v->o = owner;
+        m[0x30] = 0xFF;
+        *(short *)(m + 0x32) = 0x7E;
+        m[0x31] = 1;
+        *(long *)(m + 0x38) = *(long *)(owner + 0x38);
+        m[0x20] = 0;
+        *(float *)(m + 0x40) = func_00214158();
+        *(float *)(m + 0x44) = func_00214158();
+        *(float *)(m + 0x48) = func_00214158();
+        qcopy(m + 0x10, pos);
+        qcopy(m + 0x40, rot);
+        qcopy(v->p10, vel);
+        v->f4 = *(float *)(m + 0x18);
+        {
+            short t = func_001F9850(0x14);
+            float l1 = *(float *)&D_L00_00161518;
+            float l2 = *(float *)&D_L00_0016151C;
+            float r;
+            v->i20 = 0;
+            v->he = t;
+            r = func_L00_00258C80(l1, l2) * 0.017453292f * D_0015EE6C;
+            l1 = *(float *)&D_L00_00161518;
+            l2 = *(float *)&D_L00_0016151C;
+            v->f24 = r;
+            v->f28 = func_L00_00258C80(l1, l2) * 0.017453292f * D_0015EE6C;
+        }
+        a = func_002140F8(lo, hi);
+        *(float *)(m + 0x2C) *= a;
+        v->hc = n;
+        v->f8 = a * 0.25f;
+        func_L00_00251E30(m);
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002B0D30);
 INCLUDE_ASM("asm/overlays", func_L00_002B0F58);
 extern float D_0015EE6C MACRO_ADDR;

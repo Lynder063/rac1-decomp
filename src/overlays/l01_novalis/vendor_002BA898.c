@@ -5,7 +5,67 @@
 INCLUDE_ASM("asm/overlays", func_L01_002BA898);
 INCLUDE_ASM("asm/overlays", func_L01_002BABE8);
 INCLUDE_ASM("asm/overlays", func_L01_002BE2C8);
-INCLUDE_ASM("asm/overlays", func_L01_002E78F0);
+typedef unsigned int u128 __attribute__((mode(TI), aligned(16)));
+typedef union {
+    u128 q;
+    float f[4];
+} SplashVec;
+typedef struct {
+    unsigned int c[6];
+} SplashColors;
+typedef struct {
+    char pad0[0x10];
+    u128 pos;
+    char pad20[0xA0];
+    char mtx[0x40];
+} SplashMoby;
+extern SplashColors D_L01_0020B240;
+extern SplashColors D_L01_0020B258;
+extern float D_0015EE6C MACRO_ADDR;
+extern float func_002140F8(float, float);
+extern int func_002140B0(int);
+extern void func_L00_00250800(void *, int, void *);
+extern void func_001F9EC0(void *, void *, void *);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9BD8(void *, void *, void *);
+extern int func_L00_00258BC8(int, int);
+extern int func_001F9850(int);
+extern void func_L00_0026DD70(void *, void *, unsigned int, unsigned int, float, int);
+
+/* Spawns three bursts of sparks around a moby with random velocity, colours and size. Adapted from Lombyte (MIT) for PAL: overlays/l01/unclassified_002b96e0.c, FUN_L01_002e6518. */
+void func_L01_002E78F0(SplashMoby *m, u128 *origin) {
+    SplashVec base;
+    SplashVec vel;
+    SplashVec tmp;
+    SplashVec rel;
+    SplashColors inner;
+    SplashColors outer;
+    SplashVec *bp;
+    unsigned int *c1;
+    unsigned int *c2;
+    float size;
+    int i;
+
+    base.q = *origin;
+    bp = &base;
+    for (i = 2; i >= 0; i--) {
+        tmp.q = 0;
+        tmp.f[0] = func_002140F8(1.0f, -1.0f) * (D_0015EE6C * 0.2f);
+        tmp.f[1] = func_002140F8(1.0f, -1.0f) * (D_0015EE6C * 0.2f);
+        tmp.f[2] = func_002140F8(0.8f, 1.2f) * (D_0015EE6C * -7.0f);
+        vel.q = tmp.q;
+        inner = D_L01_0020B240;
+        outer = D_L01_0020B258;
+        func_L00_00250800(m, 1, &tmp);
+        func_001F9EC0(&vel, &vel, m->mtx);
+        func_001F9BF0(&rel, &m->pos, bp);
+        func_001F9BD8(&vel, &vel, &rel);
+        c1 = &inner.c[func_002140B0(6)];
+        c2 = &outer.c[func_002140B0(6)];
+        size = func_002140F8(105000.0f, 157500.0f);
+        func_L00_0026DD70(&tmp, &vel, *c1, *c2, size, func_001F9850(func_L00_00258BC8(5, 0xF)));
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_002E7B68);
 INCLUDE_ASM("asm/overlays", func_L01_002E7FC8);
 INCLUDE_ASM("asm/overlays", func_L01_002F1038);
@@ -52,7 +112,81 @@ void func_L01_002F7528(void) {
     func_L01_002BA898(2, D_L01_001E3660);
 }
 INCLUDE_ASM("asm/overlays", func_L01_002F7558);
-INCLUDE_ASM("asm/overlays", func_L01_002F7C78);
+typedef unsigned int u128_t __attribute__((mode(TI), aligned(16)));
+typedef struct { u128_t q; } Vec4;
+typedef struct {
+    char pad0[0x10];
+    float pos[4];
+    char pad1[0xC];
+    float scale;
+    unsigned char b30;
+    unsigned char b31;
+    short h32;
+    char pad2[0xC];
+    int w40;
+    float rot_x;
+    float rot_z;
+    char pad3[0x2C];
+    char *vars;
+} BeamMoby;
+typedef struct {
+    Vec4 dir;
+    Vec4 color;
+    char pad[0x10];
+    void *owner;
+    int kind;
+    float len;
+} BeamVars;
+
+extern BeamMoby *func_0020D348_b(int) __asm__("func_0020D348");
+extern float func_001F9CE8(void *);
+extern float func_L00_001FF860(float, float);
+extern float func_001F9CB8(void *);
+extern int func_001F9850(int);
+extern char *func_L00_0026E940(char *, int, int, int, float);
+extern void func_0022ED80(int, int, int);
+extern void func_L00_00251E30(void *);
+
+/* Spawns a beam moby from an owner, position, direction and colour vectors. Adapted from Lombyte (MIT) for PAL: overlays/l01/unclassified_002b96e0.c, FUN_L01_002f68a0. */
+BeamMoby *func_L01_002F7C78(void *owner, u128_t *pos, u128_t *dir, u128_t *color, int kind) {
+    Vec4 p;
+    Vec4 d;
+    Vec4 c;
+    BeamMoby *m;
+    BeamVars *v;
+    Vec4 *pp;
+    Vec4 *pd;
+    Vec4 *pc;
+
+    pp = &p;
+    pd = &d;
+    pc = &c;
+    p.q = *pos;
+    d.q = *dir;
+    c.q = *color;
+    m = func_0020D348_b(0x2AE);
+    if (m != 0) {
+        v = (BeamVars *)m->vars;
+        v->owner = owner;
+        m->w40 = 0;
+        m->b30 = 0xFF;
+        m->h32 = 0xFF;
+        m->b31 = 1;
+        m->scale = m->scale * 0.25f;
+        m->rot_x = -func_L00_001FF860(func_001F9CE8(pd), ((float *)pd)[2]);
+        m->rot_z = func_L00_001FF860(((float *)&d)[0], ((float *)pd)[1]);
+        qcopy(&m->pos, pp);
+        qcopy(&v->dir, pd);
+        qcopy(&v->color, pc);
+        v->kind = kind;
+        v->len = func_001F9CB8(pd);
+        func_L00_0026E940((char *)m, 0x2F4F7F7F, func_001F9850(0x78), -1, 420000.0f);
+        func_L00_0026E940((char *)m, 0x4F6F7F7F, func_001F9850(0x78), -1, 210000.0f);
+        func_0022ED80(0, 0, (int)m);
+        func_L00_00251E30(m);
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L01_002F8B00);
 extern float D_0015EE60 MACRO_ADDR;
 extern float func_001F9B88(float);
@@ -71,7 +205,104 @@ float func_L01_002F95A0(float target, float k, float a, float b, float *cur, flo
     return FastAbsF(target - *cur);
 }
 INCLUDE_ASM("asm/overlays", func_L01_002F9640);
-INCLUDE_ASM("asm/overlays", func_L01_002FA030);
+typedef int u128_p __attribute__((mode(TI)));
+typedef union {
+    u128_p q;
+    float f[4];
+} SteamVec;
+typedef struct {
+    unsigned int c[3];
+} SteamColors;
+typedef struct {
+    int active;
+    short puff_timer;
+    short burst_timer;
+    int x8;
+    float height;
+} SteamVars;
+typedef struct {
+    unsigned char pad0[0x10];
+    SteamVec pos;
+    unsigned char pad20[0x58];
+    SteamVars *pvars;
+} SteamMoby;
+typedef struct {
+    unsigned char pad0[0x2C];
+    float floor_z;
+} SteamParticle;
+extern SteamColors D_L01_00161C98;
+extern SteamColors D_L01_00161CA8;
+extern int func_001F9938(void *);
+extern int func_001F9908(void *);
+extern float func_00214158(void);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_L01_002F9908(void *, void *, unsigned int, int, float, float, float, float, int);
+extern char *func_L00_0026CD70(float f, char *a, char *b, int c, int d, int e, int g);
+
+// Emitter update: ticks timers, occasionally bursts a smoke puff and spawns two drifting smoke particles per frame. Adapted from Lombyte (MIT) for PAL: overlays/l01/unclassified_002b96e0.c, FUN_L01_002f8c58.
+void func_L01_002FA030(SteamMoby *m) {
+    SteamVars *v;
+    SteamColors colors;
+    SteamVec vel;
+    SteamVec pos;
+    SteamVec puff;
+    SteamParticle *p;
+    float r;
+    float ang;
+    float size;
+    int life;
+    int i;
+
+    v = m->pvars;
+    func_001F9938(&v->puff_timer);
+    func_001F9938(&v->burst_timer);
+    if (v->active == 0) {
+        return;
+    }
+    if (func_001F9908(v)) {
+        v->puff_timer = func_001F9850(0x78);
+    }
+    if (v->burst_timer == 0 && func_002140B0(100) < 5) {
+        colors = D_L01_00161C98;
+        pos.q = 0;
+        pos.f[0] = func_002140F8(D_0015EE6C * -0.5f, D_0015EE6C * 0.5f);
+        pos.f[1] = func_002140F8(D_0015EE6C * -0.5f, D_0015EE6C * 0.5f);
+        vel.q = pos.q;
+        r = func_002140F8(0.0f, 0.25f);
+        ang = func_00214158();
+        pos.f[0] = func_001F9F90(ang) * r;
+        pos.f[1] = func_001F9FA8(ang) * r;
+        pos.f[2] = 0.0f;
+        func_001F9BD8(&pos, &pos, &m->pos);
+        pos.f[2] += v->height;
+        func_L01_002F9908(&pos, &vel, colors.c[func_002140B0(3)], func_L00_00258BC8(0xB4, 0x12C), 0.05f, 1.0f, 1.0f, 0.75f, 0);
+    }
+    for (i = 0; i < 2; i++) {
+        colors = D_L01_00161CA8;
+        puff.q = 0;
+        puff.f[0] = func_002140F8(D_0015EE6C * -0.5f, D_0015EE6C * 0.5f);
+        puff.f[1] = func_002140F8(D_0015EE6C * -0.5f, D_0015EE6C * 0.5f);
+        puff.f[2] = func_002140F8(D_0015EE6C * 0.0f, D_0015EE6C * 3.0f);
+        vel.q = puff.q;
+        r = func_002140F8(0.0f, 0.25f);
+        ang = func_00214158();
+        puff.f[0] = func_001F9F90(ang) * r;
+        puff.f[1] = func_001F9FA8(ang) * r;
+        puff.f[2] = 0.0f;
+        func_001F9BD8(&puff, &puff, &m->pos);
+        r *= D_0015EE6C;
+        r *= 8.0f;
+        puff.f[2] += v->height;
+        vel.f[2] += r;
+        size = func_002140F8(70000.0f, 140000.0f);
+        life = func_001F9850(0xB4);
+        p = (SteamParticle *)func_L00_0026CD70(size, (char *)&puff, (char *)&vel, 0x0F081020, 0x00081020, life, colors.c[func_002140B0(3)]);
+        if (p != 0) {
+            p->floor_z = m->pos.f[2] - 0.5f;
+        }
+    }
+}
 extern char *D_L01_0016016C MACRO_ADDR;
 extern short D_L01_00161CB8;
 extern short D_L01_00161CBC;
@@ -95,4 +326,101 @@ void func_L01_002FA3D8(char *moby) {
     func_L00_002E99A0(0, *(float *)&D_L01_00161CC4, *(float *)&D_L01_00161CC8);
 }
 INCLUDE_ASM("asm/overlays", func_L01_002FA458);
-INCLUDE_ASM("asm/overlays", func_L01_002FA998);
+typedef struct {
+    u8 pad0[0x20];
+    s32 x20;
+    s16 x24;
+    u8 pad26[2];
+    u8 x28;
+    u8 pad29[0x15];
+    s16 x3e;
+    u8 pad40[0x20];
+    u8 x60[0x40];
+    f32 home_z;
+    u8 home_mode;
+    u8 padA5;
+    s16 timer;
+    f32 travel;
+    f32 speed;
+    f32 period;
+    s32 xb4;
+} LiftVars;
+typedef struct {
+    u8 pad0[0x10];
+    f32 pos[4];
+    u8 state;
+    u8 pad21[0xF];
+    u8 b30;
+    u8 pad31;
+    s16 h32;
+    u8 pad34[0xC];
+    u8 x40[0x38];
+    LiftVars *pvars;
+    u8 pad7c[0x40];
+    u8 mode;
+} LiftMoby;
+extern int func_001F9938(void *);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern float func_001FA888(int);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_002617B0(char *, void *, void *, void *);
+
+/* Elevator update: waits, then moves the lift between its two stops and carries whatever rides it. Adapted from Lombyte (MIT) for PAL: overlays/l01/unclassified_002b96e0.c, FUN_L01_002f95c0. */
+void func_L01_002FA998(LiftMoby *m) {
+    LiftVars *v;
+    float old[4] __attribute__((aligned(16)));
+    float delta[4] __attribute__((aligned(16)));
+    float *dp;
+
+    v = m->pvars;
+    qcopy(old, m->pos);
+    func_001F9938(&v->timer);
+    if (m->state == 0) {
+        v->x28 = 4;
+        v->x3e = 0xD;
+        v->x20 = 0;
+        v->x24 = 0;
+        v->home_z = m->pos[2];
+        m->mode = v->home_mode;
+        v->timer = func_001F9850(0x78);
+        m->state = 1;
+        m->b30 = 0xFF;
+        m->h32 = 0xFF;
+        v->xb4 = -1;
+    }
+    switch (m->mode) {
+    case 0:
+        if (v->timer == 0) {
+            m->mode = 2;
+            v->speed = v->travel / func_001FA888(func_001F9850(func_001FA898_r(v->period * 60.0f)));
+            v->timer = func_001F9850(func_001FA898_r(v->period * 60.0f));
+            func_0022ED80(0, 0, (int)m);
+        }
+        break;
+    case 1:
+        if (v->timer == 0) {
+            m->mode = 2;
+            v->speed = -(v->travel / func_001FA888(func_001F9850(func_001FA898_r(v->period * 60.0f))));
+            v->timer = func_001F9850(func_001FA898_r(v->period * 60.0f));
+            func_0022ED80(1, 0, (int)m);
+        }
+        break;
+    case 2:
+        m->pos[2] -= v->speed;
+        if (v->timer == 0) {
+            if (v->speed < 0.0f) {
+                m->mode = 0;
+            } else {
+                m->mode = 1;
+            }
+            if (m->mode == v->home_mode) {
+                m->pos[2] = v->home_z;
+            }
+            v->timer = func_001F9850(0x78);
+        }
+        break;
+    }
+    dp = delta;
+    func_001F9BF0(dp, m->pos, old);
+    func_L00_002617B0(v->x60, dp, m->x40, m->x40);
+}

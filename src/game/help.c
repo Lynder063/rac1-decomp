@@ -212,7 +212,243 @@ void func_001FE588(void) {
 /* Retail carries 4 bytes of inter-function padding after this endlabel. */
 __asm__(".section .text\n\tnop\n");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001FE6C0); /* Help_Update */
+extern int func_001F98C0(int);
+extern int func_001F9908_r(int *arg0) __asm__("func_001F9908");
+extern int func_00216028(int arg0, int arg1);
+extern int func_00216960(void);
+extern int D_0013CBE0;
+extern int D_0013CBE4;
+extern int D_0015F6E8 MACRO_ADDR;
+extern int D_0015EFA4 MACRO_ADDR;
+extern int D_0015EE84 MACRO_ADDR;
+
+typedef struct {
+    int state;     /* 0x00 */
+    int timer;     /* 0x04 */
+    int pad08[6];  /* 0x08 */
+    int msg;       /* 0x20 */
+    int pending;   /* 0x24 */
+    int entry;     /* 0x28 */
+    int count;     /* 0x2C */
+    int started;   /* 0x30 */
+    int delay;     /* 0x34 */
+    short queued;  /* 0x38 */
+    short shown;   /* 0x3A */
+    int wait[1];   /* 0x3C */
+} HelpSt;
+
+typedef struct {
+    unsigned short count;
+    unsigned short best;
+    unsigned int flags;
+} HelpRecord;
+
+typedef struct {
+    unsigned char pad00[0x1C];
+    int unk1C;
+    unsigned char pad20[0x30];
+    int unk50;
+    short unk54;
+    unsigned char pad56[0x4];
+    short unk5A;
+} PlayerHud;
+
+extern HelpRecord D_00141A68[];
+extern PlayerHud D_001517D0;
+
+#define HS (*(HelpSt *)D_001997D0)
+#define PLAY_TIME (func_001F98C0(D_0015EFA4) / 600)
+
+#define RECORD_COUNT()                                   \
+    if (D_00141A68[HS.entry].count < 0xFFFF) {           \
+        D_00141A68[HS.entry].count++;                    \
+    }
+
+#define RECORD_BEST()                                    \
+    if (PLAY_TIME > D_00141A68[HS.entry].best) {         \
+        D_00141A68[HS.entry].best = PLAY_TIME;           \
+    }
+
+#define RECORD_FLAGS() \
+    D_00141A68[HS.entry].flags = D_00141A68[HS.entry].flags | (1 << D_0015EE84) | 0x80000000
+
+/* Advances the help popup's state machine: delay, open, hold, close, record stats. Adapted from Lombyte (MIT) for PAL: ui/help/update_help_state.c, update_help_state. */
+void func_001FE6C0(void) {
+    if (HS.started == 0) {
+        if (HS.delay == 0 && (D_0013CBE0 & 0xF000)) {
+            HS.delay = 1;
+        }
+        if (HS.delay != 0) {
+            if (++HS.delay >= func_001F98C0(0x78)) {
+                HS.started = 1;
+            }
+        }
+    }
+
+    if (D_0015F6E8 != 0 || HS.started == 0) {
+        HS.pending = -1;
+        HS.state = 0;
+        HS.timer = 0;
+        return;
+    }
+
+    HS.timer++;
+    switch (HS.state) {
+    case 8:
+        if (HS.queued != 0) {
+            break;
+        }
+        if (HS.msg >= 0) {
+            if (HS.shown == 0) {
+                if (func_001F9908_r(HS.wait) != 0) {
+                    func_001FE588();
+                    HS.shown++;
+                }
+                break;
+            }
+            RECORD_COUNT();
+        }
+        RECORD_BEST();
+        RECORD_FLAGS();
+        HS.msg = -1;
+        HS.state = 0;
+        HS.shown = 0;
+        break;
+
+    case 0:
+        if (HS.pending >= 0) {
+            HS.msg = func_001FE4D0(HS.pending);
+            HS.pending = -1;
+            if (HS.msg >= 0) {
+                func_001FE588();
+            }
+        }
+        break;
+
+    case 1: {
+        int id;
+
+        func_00216028(5, 0);
+        id = D_0015F780[HS.msg].unk_08;
+        if (id >= 0 && D_001517D0.unk50 == 0 && D_001517D0.unk1C == -1) {
+            D_001517D0.unk1C = id + 0x7530;
+        }
+        if (D_0013CBE4 & 0x10) {
+            RECORD_COUNT();
+            RECORD_BEST();
+            RECORD_FLAGS();
+            HS.timer = 8 - HS.timer;
+            HS.state = 7;
+        } else if (HS.timer >= 6) {
+            HS.timer = 0;
+            HS.state = 2;
+        }
+        break;
+    }
+
+    case 2: {
+        int id;
+
+        func_00216028(5, 0);
+        if (D_0013CBE4 & 0x10) {
+            RECORD_COUNT();
+            RECORD_BEST();
+            HS.state = 7;
+            HS.timer = 0;
+            RECORD_FLAGS();
+        } else if (HS.timer >= func_001F98C0(0x18)) {
+            if (D_001517D0.unk5A == 3
+                || (id = D_0015F780[HS.msg].unk_08) == -1
+                || id != D_001517D0.unk54 - 0x7530) {
+                HS.state = 3;
+                HS.timer = 0;
+            }
+        }
+        break;
+    }
+
+    case 3:
+        func_00216028(5, 0);
+        if (D_0013CBE4 & 0x10) {
+            RECORD_COUNT();
+            RECORD_BEST();
+            HS.state = 7;
+            HS.timer = 0;
+            RECORD_FLAGS();
+        } else if (HS.timer >= 8) {
+            HS.timer = 0;
+            HS.state = 4;
+        }
+        break;
+
+    case 4: {
+        int id;
+
+        func_00216028(5, 0);
+        if (D_0013CBE4 & 0x10) {
+            RECORD_COUNT();
+            RECORD_BEST();
+            HS.state = 6;
+            RECORD_FLAGS();
+            HS.timer = 4 - HS.timer;
+        } else if (HS.timer >= 4) {
+            id = D_0015F780[HS.msg].unk_08;
+            if (id != -1 && id == D_001517D0.unk54 - 0x7530 && D_001517D0.unk5A == 3) {
+                func_00216960();
+            }
+            HS.state = 5;
+            HS.timer = 0;
+        }
+        break;
+    }
+
+    case 5: {
+        int id;
+
+        func_00216028(5, 0);
+        if ((HS.timer >= func_001F98C0(0x1A4)
+             && ((id = D_0015F780[HS.msg].unk_08) == -1
+                 || id != D_001517D0.unk54 - 0x7530
+                 || (D_001517D0.unk50 == 0 && D_001517D0.unk1C == -1)))
+            || (D_0013CBE4 & 0x10)) {
+            RECORD_COUNT();
+            RECORD_BEST();
+            HS.state = 6;
+            HS.timer = 0;
+            RECORD_FLAGS();
+        }
+        break;
+    }
+
+    case 6:
+        if (D_0015EF1D_b == 0 || HS.timer >= 4 || (D_0013CBE4 & 0x10)) {
+            HS.state = 7;
+            HS.timer = 0;
+        }
+        break;
+
+    case 7: {
+        int id;
+
+        func_00216028(5, 0);
+        id = D_0015F780[HS.msg].unk_08;
+        if (id != -1 && id == D_001517D0.unk54 - 0x7530
+            && (unsigned short)D_001517D0.unk5A - 6U >= 2) {
+            D_001517D0.unk5A = 5;
+        }
+        if (HS.timer >= 8) {
+            if (HS.queued != 0) {
+                HS.state = 8;
+            } else {
+                HS.state = 0;
+                HS.msg = -1;
+            }
+            HS.timer = 0;
+        }
+        break;
+    }
+    }
+}
 
 extern void func_001F62C8(int, int, int, int, int);
 extern void func_001F5800(int, int, int, int, int, int, int, int, long, long);

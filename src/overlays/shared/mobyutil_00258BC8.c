@@ -156,7 +156,109 @@ int func_L00_00259428(Vs *p, int x, int y, float f, float g) {
     }
     return r;
 }
-INCLUDE_ASM("asm/overlays", func_L00_002594C8);
+typedef int u128_94C8 __attribute__((mode(TI)));
+typedef union { u128_94C8 q; float f[4]; } V_94C8;
+extern unsigned char D_94C8_40[] __asm__("D_L00_00173F40");
+extern V_94C8 D_94C8_60 __asm__("D_L00_00173F60");
+extern V_94C8 D_L00_00173F70;
+extern float func_L00_0025A748_f(void *) __asm__("func_L00_0025A748");
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern int func_L00_001EFFF0_p(void *, void *, int, void *, int) __asm__("func_L00_001EFFF0");
+extern float func_001F9CE8(void *);
+extern float func_L00_001FF860(float, float);
+extern void func_001252C0(void *, void *);
+extern int func_L00_001F10E0_l(void *, float, int, void *) __asm__("func_L00_001F10E0");
+extern float func_001F9D48_f(void *, void *) __asm__("func_001F9D48");
+
+/* Moves pos toward to while keeping it over the ground and out of walls; returns 0 if it was snapped back. Adapted from Lombyte (MIT) for PAL: overlays/shared/math_interpolation_00257ef0.c, FUN_L00_00258490. */
+int func_L00_002594C8(void *ign, V_94C8 *to, V_94C8 *pos, int flags, float h, float r, float lim, float slope) {
+    V_94C8 d;
+    V_94C8 n;
+    V_94C8 a;
+    V_94C8 b;
+    V_94C8 up;
+    V_94C8 t;
+    int ok;
+    int i;
+    int m2;
+    float gz;
+    float zz;
+    float ang;
+    unsigned char *c;
+    float *nrm;
+    unsigned char *q60;
+    unsigned char *q40;
+
+    ok = 1;
+    m2 = flags & 2;
+    pos->f[2] += h;
+    gz = func_L00_0025A748_f(pos);
+    pos->f[2] -= h;
+    if (lim < func_001F9B88(gz - to->f[2])) {
+        if ((((flags ^ 1) & 1) && gz < to->f[2]) || to->f[2] < gz) {
+            qcopy(pos, to);
+            ok = 0;
+        }
+    }
+    func_001F9BF0(&d, pos, to);
+    func_L00_001FF4B0(&n, &d, r * 1.2f);
+    up.q = 0;
+    up.f[2] = h;
+    func_001F9BD8(&a, to, &up);
+    func_001F9BD8(&b, &a, &n);
+    if (ok && func_L00_001EFFF0_p(&a, &b, m2 | 0x24, ign, 0)) {
+        c = D_94C8_40;
+        if (*(int *)(c + 0x1C) > 0) {
+            nrm = (float *)(c + 0x40);
+            if (slope <= func_L00_001FF860(*(float *)(c + 0x48), func_001F9CE8(nrm))) {
+                *(int *)(c + 0x48) = 0;
+                func_001252C0(nrm, nrm);
+                {
+                    float k = -d.f[0] * *(float *)(c + 0x40) - d.f[1] * *(float *)(c + 0x44);
+                    if (0.0f < k) {
+                        func_001F9C30(nrm, nrm, k);
+                        ok = 0;
+                        func_001F9BD8(&d, &d, nrm);
+                    }
+                }
+            }
+            func_001F9BD8(pos, to, &d);
+        }
+    }
+    if (!(flags & 2)) {
+        zz = h + r;
+        q60 = (unsigned char *)&D_94C8_60;
+        q40 = q60 - 0x20;
+        i = 0;
+        do {
+            qcopy(&t, pos);
+            t.f[2] += zz;
+            if (!func_L00_001F10E0_l(&t, r, 0x24, ign)) {
+                break;
+            }
+            ang = func_L00_001FF860(func_001F9D48_f(pos, q60), *(float *)(q40 + 0x28) - pos->f[2]);
+            if (*(int *)(q40 + 0x18) != 0 || slope < ang) {
+                qcopy(pos, &D_L00_00173F70);
+                ok = 0;
+                pos->f[2] -= zz;
+            }
+            i++;
+        } while (i < 6);
+    }
+    pos->f[2] += h;
+    gz = func_L00_0025A748_f(pos);
+    pos->f[2] -= h;
+    if (lim < func_001F9B88(gz - to->f[2])) {
+        if ((((flags ^ 1) & 1) && gz < to->f[2]) || to->f[2] < gz) {
+            qcopy(pos, to);
+            ok = 0;
+        }
+    }
+    to->f[0] = pos->f[0];
+    to->f[1] = pos->f[1];
+    return ok;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00259868);
 extern float func_001FA888(int);
 extern void func_L00_00259868(int, int, float, float, float, int);
@@ -298,7 +400,40 @@ void func_L00_0025A8C0(char *arg, int a, int b, void *src, float scale) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_0025A8E8);
 INCLUDE_ASM("asm/overlays", func_L00_0025AA20);
-INCLUDE_ASM("asm/overlays", func_L00_0025AAC0);
+typedef unsigned int u128_t __attribute__((mode(TI), aligned(16)));
+typedef struct { u128_t v; int x, y; unsigned char b0, b1; unsigned short s; float f; int flag; int pad[3]; } L_t;
+typedef struct { u128_t a; u128_t b; int x, y; unsigned char b0, b1; unsigned short s; float f; int flag; void *owner; int z; int pad2; } T_t;
+
+extern T_t D_T_00178200[] __asm__("D_L00_00178200");
+
+/* Records a timed effect entry for a moby unless a fresher one of its own is still live. Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay_entities_00259710.c, FUN_L00_00259a88. */
+void func_L00_0025AAC0(unsigned char *m, L_t *src) {
+    L_t l;
+    int i = D_L00_00173F40[5];
+    T_t *e;
+    ((u128_t *)&l)[0] = ((u128_t *)src)[0];
+    ((u128_t *)&l)[1] = ((u128_t *)src)[1];
+    ((u128_t *)&l)[2] = ((u128_t *)src)[2];
+    src = &l;
+    if (m[0xA4] != 0xFF) {
+        T_t *c = &D_T_00178200[m[0xA4]];
+        if (c->owner == m && l.f < c->f) return;
+    }
+    e = &D_T_00178200[i];
+    func_001F9BC0(e);
+    qcopy(&D_T_00178200[i].b, &src->v);
+    e->x = src->x;
+    e->y = src->y;
+    e->b0 = src->b0;
+    e->b1 = src->b1;
+    e->s = src->s;
+    e->f = src->f;
+    e->flag = src->flag;
+    e->owner = m;
+    e->z = 0;
+    m[0xA4] = i;
+    D_L00_00173F40[5] = (i + 1) & 0x3F;
+}
 typedef struct { char pos[16]; char vel[16]; int a; int b; int c; float t; int on; char *owner; int z; int pad; } E;
 extern E D_L00_00178200[];
 extern float func_001F9CB8(void *);
@@ -369,7 +504,37 @@ void func_L00_0025AFA8(void *a, float *v) {
     func_001FA588(a, &t2, &t1);
     func_001FA588(a, a, &t0);
 }
-INCLUDE_ASM("asm/overlays", func_L00_0025B040);
+extern float func_00214358f(void *, int, float) __asm__("func_00214358");
+extern int func_L00_001F3958(void);
+extern int D_L00_0015F534 MACRO_ADDR;
+struct Ent { float a[4]; float b[4]; };
+extern struct Ent D_L00_0016E180[];
+extern float D_L00_00173F80[];
+
+/* Records a shadow-like entry for the moby at its ground height, scaled by arg. Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay_entities_00259710.c, FUN_L00_00259fe8. */
+void func_L00_0025B040(unsigned char *m, float s) {
+    float h;
+    float v;
+    int n;
+    struct Ent *e;
+    if (m[0x31] && D_L00_0015F534 < 32) {
+        n = D_L00_0015F534;
+        qcopy(&D_L00_0016E180[n], m + 0x10);
+        h = func_00214358f(m + 0x10, 0, 0.5f);
+        if (func_L00_001F3958()) {
+            n = D_L00_0015F534;
+            e = &D_L00_0016E180[n];
+            e->a[2] = h + 0.025f;
+            qcopy(D_L00_0016E180[n].b, D_L00_00173F80);
+            v = (8.0f - func_001F9B88(*(float *)(m + 0x18) - h)) * 0.125f;
+            if (v < 0.25f) {
+                v = 0.25f;
+            }
+            { int off = D_L00_0015F534 * 32; float *q = (float *)((char *)D_L00_0016E180 + off); q[3] = s * v; }
+            D_L00_0015F534++;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025B168);
 void func_L00_0025B178(char *o) {
     float a[4];
@@ -394,7 +559,48 @@ void func_L00_0025B178(char *o) {
 INCLUDE_ASM("asm/overlays", func_L00_0025B478);
 INCLUDE_ASM("asm/overlays", func_L00_0025B4AC);
 INCLUDE_ASM("asm/overlays", func_L00_0025B4D0);
-INCLUDE_ASM("asm/overlays", func_L00_0025BA50);
+typedef struct {
+    float v[4];
+} __attribute__((aligned(16))) Q4;
+
+typedef struct {
+    float x, y, z, w;
+    char *self;
+    int i24;
+    char b28, b29;
+    unsigned short h2A;
+    float f2C;
+    int i30;
+} Msg25BA50;
+
+/* Sends a message to every moby in a list except one, each carrying the angle from pos to it and a velocity along that angle. Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay_entities_00259710.c, FUN_L00_0025a9f8. */
+void func_L00_0025BA50(char *self, Q4 *pos, char **list, int n, char *skip, int k, int c0, int c1, float f, float spd, float z) {
+    struct {
+        Q4 p;
+        Msg25BA50 m;
+    } l;
+    float *pp = (float *)&l.p;
+    int i;
+    l.p = *pos;
+    for (i = 0; i < n; i++) {
+        char *e = list[i];
+        float a;
+        if (e == skip) continue;
+        l.m.self = self;
+        l.m.h2A = *(unsigned short *)(self + 0xA6);
+        l.m.i24 = k;
+        l.m.f2C = f;
+        l.m.i30 = k;
+        l.m.b28 = c0;
+        l.m.b29 = c1;
+        a = func_L00_001FF860(*(float *)(e + 0x10) - pp[0], *(float *)(e + 0x14) - pp[1]);
+        l.m.x = func_001F9F90(a) * spd;
+        l.m.y = func_001F9FA8(a) * spd;
+        l.m.z = z;
+        l.m.w = 5627.925f;
+        func_L00_0025AAC0(list[i], &l.m);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025BBA0);
 typedef struct { float x, y, z, w; } Vc0 __attribute__((aligned(16)));
 extern void func_001F9BF0(void *, void *, void *);
@@ -542,7 +748,30 @@ float func_L00_0025CC58(float *p, int n, float x, float y) {
     *p = FastAddRots(*p, r);
     return cb90_alt(x, n, *p);
 }
-INCLUDE_ASM("asm/overlays", func_L00_0025CCF0);
+/* Spring a wrapped angle *P (rate *V) toward target X; returns the remaining angle difference. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_0025bb38.c, FUN_L00_0025bc98. */
+float func_L00_0025CCF0(float *p, float *v, int n, float x, float b, float c, float d) {
+    float r;
+    if (n == 2) {
+        if ((0.0f < x && *p < 0.0f) || (x < 0.0f && 0.0f < *p)) {
+            if (x < 0.0f) {
+                n = -1;
+            } else {
+                n = 1;
+            }
+        } else {
+            n = 0;
+        }
+    }
+    func_L00_0025C7F0(v, cb90_alt(x, n, *p), b, c, d);
+    *p = func_001FA748(*p, *v);
+    r = cb90_alt(x, n, *p);
+    if (func_001F9B88(r) < d * 0.01f) {
+        *p = x;
+        *(int *)v = 0;
+        return *v;
+    }
+    return r;
+}
 extern float func_00214D28(float *p, float target, float maxstep);
 extern float func_L00_0025CC58(float *p, int n, float x, float y);
 
@@ -833,7 +1062,62 @@ void func_L00_0025EB58(float *out, float *v, float *a, float *b) {
     }
     func_001F9D48(v, out);
 }
-INCLUDE_ASM("asm/overlays", func_L00_0025ED30);
+typedef int u128_ED30 __attribute__((mode(TI)));
+extern float func_L00_0025EB58_f(void *, void *, void *, void *) __asm__("func_L00_0025EB58");
+extern float func_001F9D48_f(void *, void *) __asm__("func_001F9D48");
+extern void func_L00_0025C710(void *, void *, void *, float);
+extern float func_L00_0025EAC8_f(void *, void *, float) __asm__("func_L00_0025EAC8");
+
+/* Nearest point on the segment a-b to p (clamped), returned with the distance result. Adapted from Lombyte (MIT) for PAL: overlays/shared/math_rotations_0025d238.c, FUN_L00_0025dcd8. */
+float func_L00_0025ED30(u128_ED30 *out, u128_ED30 *p, u128_ED30 *a, u128_ED30 *b, float r) {
+    u128_ED30 d[2];
+    u128_ED30 c[1];
+    u128_ED30 e[1];
+    u128_ED30 g[1];
+    float *o, *fa, *fb;
+    float res, t, u;
+    int i;
+    if (r > 0.0f && func_001F9B88(((float *)p)[2] - ((float *)a)[2]) < r
+        && func_001F9B88(((float *)p)[2] - ((float *)b)[2]) < r) {
+        res = func_L00_0025EB58_f(out, p, a, b);
+        r = func_001F9D48_f(a, out);
+        u = func_001F9D48_f(a, b);
+        d[0] = *a;
+        d[1] = *b;
+        func_L00_0025C710(out, &d[0], &d[1], r / u);
+        return res;
+    }
+    func_001F9BF0(d, b, a);
+    d[1] = *a;
+    func_L00_001FF4B0(d, d, 1.0f);
+    qcopy(c, d);
+    t = -func_001F9C78(p, d);
+    u = func_001F9C78(&d[1], c);
+    func_001F9C30(out, d, -(t + u) / func_001F9C78(d, c));
+    func_001F9BD8(out, out, &d[1]);
+    i = 0;
+    fb = (float *)b;
+    fa = (float *)a;
+    o = (float *)out;
+    do {
+        if (*o > *fa && *fb < *o) break;
+        if (*o < *fa && *o < *fb) break;
+        i++;
+        fb++;
+        fa++;
+        o++;
+    } while (i < 3);
+    if (i < 3) {
+        if (func_001F9D10_f(out, a) < func_001F9D10_f(out, b)) {
+            qcopy(out, a);
+        } else {
+            qcopy(out, b);
+        }
+    }
+    e[0] = *p;
+    g[0] = *out;
+    return func_L00_0025EAC8_f(e, g, 0.0f);
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025EFC0);
 INCLUDE_ASM("asm/overlays", func_L00_0025F360);
 INCLUDE_ASM("asm/overlays", func_L00_0025F368);

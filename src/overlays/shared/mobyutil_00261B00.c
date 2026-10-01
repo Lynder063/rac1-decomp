@@ -59,7 +59,76 @@ void func_L00_002635A0(char *o, int a, int b) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00263680);
+typedef int q_263680 __attribute__((mode(TI)));
+typedef struct {
+    q_263680 a[8];
+    q_263680 b[8];
+    unsigned char pad[0x10];
+    int w[8];
+    short head;
+    short count;
+    unsigned char *src;
+    int n;
+    int active;
+} S_263680;
+extern void func_L00_002638B8(char *o);
+extern void func_0020D6D0_a(void *) __asm__("func_0020D6D0");
+extern void func_L00_00251E30(void *);
+
+/* Pushes the source object's transforms into an 8-entry ring and replays them into the trailing objects, ending them when all faded.
+   Adapted from Lombyte (MIT) for PAL: src/overlays/shared/gameplay_state_00261968.c, FUN_L00_00262608. */
+void func_L00_00263680(S_263680 *s, int dec) {
+    unsigned char *src;
+    unsigned char *o;
+    int h, i, k, done;
+    if (!s->active)
+        return;
+    src = s->src;
+    if (!src || src[0x20] == 0xFE || src[0x20] == 0xFD) {
+        func_L00_002638B8((char *)s);
+        return;
+    }
+    h = s->head;
+    qcopy(&s->a[h], src + 0x10);
+    qcopy(&s->b[h], src + 0x40);
+    s->head = (h + 1) % 8;
+    if (++s->count > 8)
+        s->count = 8;
+    for (i = 0; i < s->n; i++) {
+        int t;
+        if (s->count >= (t = s->w[i])) {
+            o = (unsigned char *)*(int *)((char *)&s->w[i] + 0x10);
+            k = (s->head - t + 8) % 8;
+            o[0x52] = s->src[0x52];
+            o[0x53] = s->src[0x53];
+            o[0x50] = s->src[0x50];
+            o[0x51] = s->src[0x51];
+            *(float *)(o + 0x54) = *(float *)(s->src + 0x54);
+            func_0020D6D0_a(o);
+            qcopy(o + 0x10, &s->a[k]);
+            qcopy(o + 0x40, &s->b[k]);
+            func_L00_00251E30(o);
+        }
+    }
+    if (dec) {
+        done = 1;
+        for (i = 0; i < s->n; i++) {
+            unsigned char *q = (unsigned char *)*(int *)((char *)&s->w[i] + 0x10);
+            if (q) {
+                int v = q[0x23];
+                int a = v;
+                if (dec < v)
+                    v = dec;
+                a -= v;
+                q[0x23] = a;
+                if ((unsigned char)a)
+                    done = 0;
+            }
+        }
+        if (done)
+            func_L00_002638B8((char *)s);
+    }
+}
 extern void func_0020D678(int);
 
 void func_L00_002638B8(char *o) {
@@ -76,7 +145,48 @@ void func_L00_002638B8(char *o) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_00263938);
-INCLUDE_ASM("asm/overlays", func_L00_00263950);
+extern void func_0020D9D8(int, void *);
+extern void func_0020D960(int, int, void *);
+extern float func_001F9B88(float);
+extern float func_L00_0025CCF0(char *, char *, float, float, float, float, int);
+extern void func_L00_0025AFA8(void *a, float *v);
+extern void func_001F9BC0(void *);
+
+/* Eases a moby's per-axis offsets toward zero and applies them and its scale to the held object, resetting when settled.
+   Adapted from Lombyte (MIT) for PAL: src/overlays/shared/gameplay_state_00261968.c, FUN_L00_002628d8. */
+void func_L00_00263950(int m, unsigned char *p, int c, float fa, float fb) {
+    unsigned char *o = *(unsigned char **)(p + 0x78);
+    float f;
+    if (!o) {
+        *(int *)(p + 0x78) = m;
+    } else if ((int)o != m) {
+        if (p[1] && o[0x20] < 0x7F)
+            func_0020D9D8((int)o, p);
+        p[1] = 0;
+        *(int *)(p + 0x78) = m;
+    }
+    if (*(float *)(p + 0x60) == 0.0f && *(float *)(p + 0x64) == 0.0f && *(float *)(p + 0x68) == 0.0f
+        && *(float *)(p + 0x70) == 1.0f
+        && func_001F9B88(*(float *)(p + 0x40)) < 0.005f
+        && func_001F9B88(*(float *)(p + 0x44)) < 0.005f
+        && func_001F9B88(*(float *)(p + 0x48)) < 0.005f) {
+        if (p[1])
+            func_0020D9D8(m, p);
+        return;
+    }
+    func_L00_0025CCF0(p + 0x40, p + 0x50, *(float *)(p + 0x60), fa, fb, 0.0f, 0);
+    func_L00_0025CCF0(p + 0x44, p + 0x54, *(float *)(p + 0x64), fa, fb, 0.0f, 0);
+    func_L00_0025CCF0(p + 0x48, p + 0x58, *(float *)(p + 0x68), fa, fb, 0.0f, 0);
+    if (!p[1])
+        func_0020D960(m, c, p);
+    func_L00_0025AFA8(p + 0x10, (float *)(p + 0x40));
+    f = *(float *)(p + 0x70);
+    *(float *)(p + 0x20) = f;
+    *(float *)(p + 0x24) = f;
+    *(float *)(p + 0x28) = f;
+    func_001F9BC0(p + 0x60);
+    *(float *)(p + 0x70) = 1.0f;
+}
 extern float func_001FA748(float, float);
 extern float func_001F9FA8(float);
 void func_L00_00263B78(float x, float y, char *a, float *p, float *q) {
@@ -128,7 +238,33 @@ float func_L00_002644E0(V *p) {
     float t = (float)(D_L00_0015FD68 + D_L00_0015FD58 * y)[x] / 255.0f;
     return (D_L00_0015FD64 - D_L00_0015FD60) * (1.0f - t) + D_L00_0015FD60;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00264570);
+typedef struct { char pad[0x140]; V pos; } S166D;
+extern S166D D_L00_00166D80;
+extern V D_L00_00173F60;
+extern int func_L00_001EFFF0(void *, void *, int, int, int);
+extern void func_001F9BF0(void *, void *, void *);
+extern float func_001F9CE8(void *);
+extern void func_L00_00269DB0(char *, int);
+
+/* spawns impact sparks at a point on the ground near the camera. Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay_entities_002630b8.c, FUN_L00_002634f8. */
+void func_L00_00264570(V *v) {
+    V t, u, d;
+    float k, f;
+    S166D *b;
+    k = (D_L00_0015FD64 - D_L00_0015FD60) * 0.00390625f;
+    t = *v;
+    f = func_L00_002644E0(&t) + k;
+    b = &D_L00_00166D80;
+    t.f[2] = f;
+    if (f < b->pos.f[2] + 5.0f) {
+        u = t;
+        u.f[2] = u.f[2] - (k + k);
+        if (func_L00_001EFFF0(&t, &u, 0x12, 0, 0)) {
+            func_001F9BF0(&d, &D_L00_00173F60, &b->pos);
+            func_L00_00269DB0((char *)&D_L00_00173F60, (unsigned char)(int)(func_001F9CE8(&d) / 60.0f * 191.0f + 64.0f));
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00264690);
 INCLUDE_ASM("asm/overlays", func_L00_00264860);
 INCLUDE_ASM("asm/overlays", func_L00_00264870);
@@ -155,7 +291,58 @@ void func_L00_00264BC8(char *arg) {
     *(float *)(arg + 0x70) = 1.0f;
 }
 INCLUDE_ASM("asm/overlays", func_L00_00264BD8);
-INCLUDE_ASM("asm/overlays", func_L00_00264BE8);
+typedef struct {
+    char pad0[4];
+    int w4;
+    char pad1[2];
+    unsigned char bA;
+    unsigned char bB;
+} PartTail;
+typedef struct {
+    char pad0[8];
+    unsigned char b8;
+    unsigned char b9;
+    short hA;
+    char pad1[0x14];
+    PartTail tail;
+} Part;
+
+extern int func_002140B0(int);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern void *func_L00_0026DEA0_c(void *, int, void *, float, float, float, float, int) __asm__("func_L00_0026DEA0");
+
+/* Bursts two rings of sparks (and then three more) from two points with the given velocity. Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay_entities_002630b8.c, FUN_L00_00263b70. */
+void func_L00_00264BE8(void *p0, void *p1, void *vel, float a, float b) {
+    Part *part;
+    PartTail *tail;
+    int i, j, m;
+    for (i = 0; i < 2; i++) {
+        int n = func_002140B0(0x10);
+        part = func_L00_0026DEA0_c(p0, func_002140B0(2) == 0 ? n : -n, vel, 0.1f, 1.0f, 0.9f, a, 0x7F204080);
+        if (part) {
+            tail = &part->tail;
+            part->hA = func_001F9850(0x1E);
+            part->b9 = func_001FA898_r(4.0f) + 0x40;
+            tail->w4 = 2;
+            tail->bA = 0x7F;
+            tail->bB = part->hA;
+        }
+    }
+    m = 0x10;
+    for (j = 0; j < 3; j++) {
+        part = func_L00_0026DEA0_c(p1, m, vel, 0.05f, 1.0f, 0.97f, b, 0x7FFFFFFF);
+        m = -m;
+        if (part) {
+            tail = &part->tail;
+            part->b9 = func_001FA898_r(4.0f) + 0x40;
+            part->hA = func_001F9850(6);
+            part->b8 = func_002140B0(0xFF);
+            tail->w4 = 2;
+            tail->bA = 0x7F;
+            tail->bB = part->hA;
+        }
+    }
+}
 extern int D_L00_0015F720 MACRO_ADDR;
 extern char D_L00_00179218[];
 extern int func_001F9850(int);

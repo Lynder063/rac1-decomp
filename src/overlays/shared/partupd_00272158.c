@@ -2,8 +2,98 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L00_00272158);
-INCLUDE_ASM("asm/overlays", func_L00_002722F0);
+extern unsigned char *func_00218928(int);
+extern int func_001FA898(float);
+extern int func_002140B0(int);
+extern float D_0015EE60 MACRO_ADDR;
+extern unsigned char *D_L00_001B24B0;
+
+/* Spawns a type 0x2C particle with position, velocity, colour and scale parameters.
+   Adapted from Lombyte (MIT) for PAL: src/overlays/shared/rendering_002712b8.c, FUN_L00_002712b8. */
+unsigned char *func_L00_00272158(void *pos, float *vec, int s, int a, int col, int n, float x, float y, float z, float w, float pw) {
+    unsigned char *m = func_00218928(0x2C);
+    if (m) {
+        unsigned char *q;
+        float d;
+        float t;
+        qcopy(m + 0x10, pos);
+        *(int *)(m + 4) = (a << 24) | col;
+        *(float *)(m + 0x1C) = pw;
+        q = m + 0x20;
+        m[9] = func_001FA898(4.0f) + 0x40;
+        *(float *)(m + 0xC) = x;
+        m[1] = 0;
+        m[3] = 0x48;
+        m[8] = func_002140B0(0xFF);
+        m[2] = *D_L00_001B24B0;
+        *(short *)(m + 0xA) = s;
+        t = (float)n * D_0015EE60;
+        *(float *)(q + 0) = vec[0];
+        *(float *)(q + 4) = vec[1];
+        *(float *)(q + 8) = vec[2];
+        q[0x10] = func_001FA898(t);
+        d = D_0015EE60;
+        *(float *)(q + 0xC) = w;
+        q[0x12] = col >> 8;
+        *(float *)(q + 0x14) = y * d;
+        q[0x11] = col;
+        q[0x13] = col >> 16;
+        *(short *)(q + 0x1C) = s;
+        *(short *)(q + 0x1E) = a;
+        *(float *)(q + 0x18) = (z - 1.0f) * d + 1.0f;
+    }
+    return m;
+}
+typedef struct { float f[4]; } Q __attribute__((aligned(16)));
+extern int func_001F9938(void *);
+extern void func_L00_002688A8(void *);
+extern float func_001FA888(int);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_L00_001FF2C8(void *, void *, float);
+extern void func_L00_001FF240(void *, void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern unsigned char D_0013E633[] NOT_SDA;
+
+/* Per-frame update of a type 0x2C particle: fade colour, move and rotate its velocity.
+   Adapted from Lombyte (MIT) for PAL: src/overlays/shared/rendering_002712b8.c, FUN_L00_00271450. */
+void func_L00_002722F0(unsigned char *p) {
+    float v[4];
+    Q t[1];
+    Q m[1];
+    unsigned char *q;
+    unsigned char *r;
+    float a;
+    int w;
+
+    if (func_001F9938(p + 0xA)) {
+        func_L00_002688A8(p);
+    } else {
+        q = p + 0x20;
+        r = p + 0x10;
+        a = func_001FA888(*(short *)(q + 0x1E));
+        w = func_001FA898(a * ((float)*(short *)(p + 0xA) / func_001FA888(*(short *)(q + 0x1C))));
+        w = (w << 24) | (q[0x13] << 16);
+        w |= q[0x12] << 8;
+        w |= q[0x11];
+        *(int *)(p + 4) = w;
+        v[0] = *(float *)(p + 0x20);
+        v[1] = *(float *)(q + 4);
+        v[2] = *(float *)(q + 8);
+        *(int *)&v[3] = 0;
+        func_001F9BD8(r, r, v);
+        t[0] = *(Q *)(D_0013E633 + 0xF5D);
+        func_L00_001FF2C8(m, t, *(float *)(p + 0x1C));
+        func_L00_001FF240(m, r, t);
+        func_001F9C30(m, D_0013E633 + 0xF5D + 0x150, *(float *)(q + 0xC));
+        func_001F9BD8(v, v, m);
+        func_001F9C30(v, v, *(float *)(q + 0x18));
+        *(float *)(p + 0x20) = v[0];
+        *(float *)(q + 4) = v[1];
+        *(float *)(q + 8) = v[2];
+        p[8] += q[0x10];
+        *(float *)(p + 0xC) += *(float *)(q + 0x14);
+    }
+}
 extern unsigned char *D_L00_001B24B4;
 extern unsigned char *func_00218928(int);
 extern int func_002140B0(int);
@@ -271,7 +361,38 @@ unsigned char *func_L00_00272F00(float *pos, int a, int col, int mode, int b, fl
     return r;
 }
 INCLUDE_ASM("asm/overlays", func_L00_00273090);
-INCLUDE_ASM("asm/overlays", func_L00_002732D8);
+typedef struct { int a[4]; } V54 __attribute__((aligned(16)));
+typedef struct { int i0; float f4; float f8; float fc; void *p10; void *p14; } Q54;
+extern void func_L00_002633D8(int, float *, float *, void *, float, float);
+extern int func_001F9850(int);
+extern int func_L00_0025D038(float, float, float, float);
+extern int func_L00_001F2BE8(float, void *, int, void *, int);
+extern void func_L00_0025BA50(void *, void *, void *, int, int, int, int, int, float, float, float);
+extern int *D_L00_00178000[];
+
+/* Part type 54 update: advances a particle, fades its color near the end of life and spawns a light effect at its position. Adapted from Lombyte (MIT) for PAL: overlays/shared/rendering_002712b8.c, FUN_L00_00272438. */
+void func_L00_002732D8(unsigned char *m) {
+    V54 *pos = (V54 *)(m + 0x10);
+    Q54 *q = (Q54 *)(m + 0x20);
+    V54 old;
+    V54 t;
+    float x, y;
+    int r;
+    old = *pos;
+    q->f4 += q->f8;
+    func_L00_002633D8(q->i0, &x, &y, pos, q->f4, q->fc);
+    if (func_001F9938(m + 0xA)) {
+        func_L00_002688A8(m);
+        return;
+    }
+    if ((float)*(short *)(m + 0xA) < (float)func_001F9850(0x1E) * 0.25f) {
+        float a = func_001FA888(*(short *)(m + 0xA));
+        *(int *)(m + 4) = func_L00_0025D038(0.7f, 0.7f, 0.7f, a * 0.08f / ((float)func_001F9850(0x1E) * 0.25f));
+    }
+    r = func_L00_001F2BE8(0.15f, pos, 0x10, q->p14, 0);
+    t = *pos;
+    func_L00_0025BA50(q->p14, (void *)&t, D_L00_00178000, r, 0, 0x810001, 2, 1, 2.0f, 1.0f, 1.0f);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00273478);
 INCLUDE_ASM("asm/overlays", func_L00_00273578);
 /* Updates a fading particle: damps velocity, moves, dims colour, kills at zero. */
@@ -358,7 +479,91 @@ unsigned char *func_L00_00273868(float *pos, unsigned char a1, unsigned char a2,
     }
     return r;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00273A60);
+extern void func_L00_00260958(float *v, float s);
+extern float func_001F9D48(void *, void *);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_L00_0025AC00(int, int, int, void *, void *, float);
+typedef float V_272bc0[4] __attribute__((aligned(16)));
+typedef struct { char p0[0x88]; float f88; char p1[0x2080 - 0x8C]; int i2080; } P_272bc0;
+extern unsigned char *D_L00_0016022C MACRO_ADDR;
+
+/* part type 58 update: fade in, hold spawning sparks, then fall and fade out. Adapted from Lombyte (MIT) for PAL: overlays/shared/rendering_002712b8.c, FUN_L00_00272bc0. */
+void func_L00_00273A60(unsigned char *p) {
+    V_272bc0 t;
+    unsigned char *q;
+    unsigned char *c;
+    P_272bc0 *g;
+    int i;
+    float a;
+    float k;
+
+    q = p + 0x20;
+    switch (q[0x14]) {
+    case 0:
+        {
+            float n = func_001FA888(q[0x11]);
+            *(int *)(p + 4) = func_001FA8A8(0xFF4080FF, 0, (n - func_001FA888(*(short *)(p + 0xA))) / n);
+        }
+        if (func_001F9938(p + 0xA)) {
+            if (q[0x10] == 1) {
+                func_L00_002688A8(p);
+            } else {
+                q[0x14] = 1;
+                *(short *)(p + 0xA) = q[0x12];
+            }
+        }
+        break;
+    case 1:
+        {
+        float m;
+        for (i = 0; i < q[0x13]; i++) {
+            qcopy(t, p + 0x10);
+            m = 1.0f;
+            func_L00_00260958(t, 0.05f);
+            if (*(short *)(p + 0xA) < func_001F9850(10)) {
+                m = func_001FA888(*(short *)(p + 0xA)) / (float)func_001F9850(10);
+            }
+            func_L00_00273868(t, 2, q[0x11], q[0x12], q[0x13], q[0x15], *(int *)(q + 0x18), *(float *)(q + 0x1C), m);
+        }
+        }
+        if (func_001F9938(p + 0xA)) {
+            func_L00_002688A8(p);
+        }
+        c = D_0013E633 + 0xE9D;
+        if (func_001F9D48(p + 0x10, c) < 0.3f) {
+            g = (P_272bc0 *)(c - 0x80);
+            if (g->f88 < *(float *)(p + 0x18) + 1.2f) {
+                func_001F9BF0(t, c, p + 0x10);
+                func_L00_001FF4B0(t, t, 1.0f);
+                t[2] = 1.0f;
+                func_L00_0025AC00(g->i2080, *(int *)(q + 0x18), 1, p + 0x10, t, *(float *)(q + 0x1C));
+            }
+        }
+        break;
+    case 2:
+        func_001F9BD8(p + 0x10, p + 0x10, q);
+        a = func_001FA888(q[0x15]);
+        k = a - func_001FA888(*(short *)(p + 0xA));
+        k = k / a;
+        *(int *)(p + 4) = func_001FA8A8((q[0x16] << 24) | 0x4060, 0x8FAFFF, k);
+        if (k < 0.6f) {
+            *(float *)(p + 0xC) += D_0015EE60 * 0.043f * 210000.0f;
+        } else {
+            *(float *)(p + 0xC) -= D_0015EE60 * 0.08f * 210000.0f;
+        }
+        p[2] = D_L00_001B24E8[func_001160D8() & 7];
+        if (((p - D_L00_0016022C) >> 6) & 1) {
+            p[8]++;
+        } else {
+            p[8]--;
+        }
+        if (func_001F9938(p + 0xA)) {
+            func_L00_002688A8(p);
+        }
+        break;
+    }
+}
 extern void func_001F9BF0(void *, void *, void *);
 extern char D_0013F4D0[];
 extern unsigned char *D_L00_001B2400[];
@@ -400,7 +605,40 @@ void func_L00_00273F28(char *m) {
         KillPart(m);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00273F80);
+typedef struct { char p0[0x80]; float x, y, z; } G_2730e0;
+extern unsigned char *D_L00_001B24D4_p __asm__("D_L00_001B24D4") NOT_SDA;
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+
+/* Spawns an effect record at a position inside the level bounds; Adapted from Lombyte (MIT) for PAL: overlays/shared/rendering_002712b8.c, FUN_L00_002730e0. */
+unsigned char *func_L00_00273F80(float *pos, char *vel, int color, unsigned char life, unsigned char b, int mode, float scale)
+{
+    unsigned char *m;
+    float *v;
+    if (pos[0] < 2.0f || 1021.0f < pos[0] || pos[1] < 2.0f || 1021.0f < pos[1] || pos[2] < 2.0f || 1021.0f < pos[2])
+        return 0;
+    m = func_00218928(0x3C);
+    if (m) {
+        v = (float *)(m + 0x20);
+        qcopy(m + 0x10, pos);
+        qcopy(v, vel);
+        *(int *)(v + 7) = mode;
+        if (mode == 1) {
+            G_2730e0 *g = (G_2730e0 *)(D_0013E633 + 0xE1D);
+            v[4] = *(float *)(m + 0x10) - g->x;
+            v[5] = *(float *)(m + 0x14) - g->y;
+            v[6] = *(float *)(m + 0x18) - g->z;
+        }
+        *(int *)(m + 4) = color;
+        m[9] = func_001FA898_r(1.0f) + 0x20;
+        m[3] = 0x48;
+        m[8] = b;
+        m[1] = 0;
+        *(float *)(m + 0xC) = scale * 210000.0f;
+        m[2] = *D_L00_001B24D4_p;
+        *(short *)(m + 0xA) = life;
+    }
+    return m;
+}
 /* Particle update: move with the camera offset when flagged, kill it when off the map or its timer ends, else fade its colour. */
 void func_L00_00274138(char *m) {
     char *v = m + 0x20;
@@ -429,7 +667,93 @@ void func_L00_00274138(char *m) {
     a = func_001FA888(*(short *)(m + 0xA) - 1);
     *(int *)(m + 4) = FastTweenColor(col, *(int *)(m + 4), a / func_001FA888(*(short *)(m + 0xA)));
 }
-INCLUDE_ASM("asm/overlays", func_L00_002742E8);
+extern void func_L00_00250800(void *, int, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern unsigned char *D_L00_001B24F4;
+extern float D_L00_00166EC0[];
+
+typedef struct {
+    unsigned char pad0[0x20];
+    signed char b20;
+} T_m;
+typedef struct {
+    T_m *m;
+    float f4;
+    float f8;
+    short hC;
+    short hE;
+    float f10;
+    float f14;
+} E_p;
+typedef struct {
+    unsigned char b0, b1, b2, b3;
+    unsigned int w4;
+    unsigned char b8, b9;
+    short hA;
+    float fC;
+    float pos[4] __attribute__((aligned(16)));
+    E_p e;
+} P_p;
+
+/* Updates a fading, pulsing particle: animates its phase, colour and scale, then orients it. Adapted from Lombyte (MIT) for PAL: src/overlays/shared/rendering_002712b8.c, FUN_L00_00273448. */
+void func_L00_002742E8(P_p *p) {
+    E_p *e;
+    float lim;
+    float a[4] __attribute__((aligned(16)));
+    float v[4] __attribute__((aligned(16)));
+    if (p == 0) {
+        return;
+    }
+    e = &p->e;
+    if (func_001F9938(&p->hA) || e->m == 0 || e->m->b20 < 0) {
+        goto kill;
+    }
+    e->hC = (e->hC + 1) & 0xF;
+    if (p->fC < 159600.0f) {
+        p->fC += D_0015EE60 * 3989.99976f;
+        if (159600.0f < p->fC) {
+            p->fC = 159600.0f;
+        }
+    } else if (159600.0f < p->fC) {
+        p->fC -= D_0015EE60 * 15959.999f;
+        if (p->fC < 159600.0f) {
+            p->fC = 159600.0f;
+        }
+    }
+    e->f8 += D_0015EE60 * 0.001f;
+    p->b8 = func_001FA898(e->f8 * 255.0f);
+    p->b2 = D_L00_001B24F4[e->hC];
+    if (p->fC <= 159600.0f || 0.0f < e->f10) {
+        float *q = &e->f4;
+        *q += q[3];
+    }
+    {
+        float x;
+        if (p->fC <= 159600.0f) {
+            x = e->f4;
+            lim = 0.3f;
+        } else {
+            x = e->f4;
+            lim = 0.15f;
+        }
+        if (!(lim < x)) {
+            if (x < 0.0f) {
+            kill:
+                func_L00_002688A8(p);
+                return;
+            }
+        } else {
+            e->f10 = -e->f10;
+            e->f4 = x + e->f10;
+        }
+    }
+    p->w4 = (p->w4 & 0xFFFFFF) + (func_001FA898(e->f4 * 256.0f) << 24);
+    e->f14 += (1.0f - e->f14) * (D_0015EE60 * 0.175f);
+    func_L00_00250800(e->m, e->hE, a);
+    func_001F9BF0(v, D_L00_00166EC0, a);
+    func_L00_001FF4B0(v, v, e->f14);
+    func_001F9BD8(p->pos, a, v);
+}
 extern unsigned char *D_L00_001B24F8;
 
 // Spawns a type-62 particle at a position with a lifetime and a colour index.
@@ -475,7 +799,55 @@ void func_L00_002746A0(char *a) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_00274788);
 INCLUDE_ASM("asm/overlays", func_L00_00274908);
-INCLUDE_ASM("asm/overlays", func_L00_00274D80);
+typedef struct { int a[4]; } V __attribute__((aligned(16)));
+extern float D_0015EE64 MACRO_ADDR;
+extern V D_L00_00173F60;
+extern int func_L00_001EFFF0(void *, void *, int, void *, int);
+extern void func_001F9BC0(void *);
+
+/* Particle type 65 update: fall under gravity, bounce off the world, fade the colour and die when spent. Adapted from Lombyte (MIT) for PAL: overlays/shared/rendering_002712b8.c, FUN_L00_00273ee0. */
+void func_L00_00274D80(unsigned char *o) {
+    V out;
+    float *c;
+    unsigned char *b;
+    float d;
+    if (!o) return;
+    c = (float *)(o + 0x20);
+    b = o + 0x10;
+    d = D_0015EE60;
+    c[7] += d * 0.0f;
+    *(float *)(o + 0xC) += d * -100.0f;
+    func_001F9BD8(&out, b, c);
+    if (*(float *)(o + 0x20) != 0.0f || c[1] != 0.0f || c[2] != 0.0f) {
+        if (func_L00_001EFFF0(o + 0x10, &out, 2, o, 0)) {
+            *(V *)(o + 0x10) = D_L00_00173F60;
+            func_001F9BC0(c);
+            *(float *)(o + 0xC) += *(float *)(o + 0xC);
+        } else {
+            *(V *)(o + 0x10) = out;
+            if (c[3] != 0.0f) {
+                c[2] += c[3];
+            } else {
+                c[2] += D_0015EE64 * -0.006300000008195639f;
+            }
+        }
+    }
+    if (c[7] <= 0.0f || func_001F9938(o + 0xA) || *(float *)(o + 0xC) < 0.0f ||
+        ((float *)&out)[0] < 0.01f || ((float *)&out)[1] < 0.01f || ((float *)&out)[2] < 0.01f) {
+        func_L00_002688A8(o);
+        return;
+    }
+    c[4] += D_0015EE60 * -0.01f;
+    if (c[4] < 0.0f) c[4] = 0.0f;
+    c[5] += D_0015EE60 * -0.030009999871253967f;
+    if (c[5] < 0.0f) c[5] = 0.0f;
+    c[6] += D_0015EE60 * -0.05f;
+    if (c[6] < 0.0f) c[6] = 0.0f;
+    c[7] += D_0015EE60 * 0.0f;
+    if (c[7] < 0.0f) c[7] = 0.0f;
+    *(int *)(o + 4) = func_L00_0025D038(c[4], c[5], c[6], c[7]);
+    o[8]--;
+}
 extern unsigned char *D_L00_001B2508;
 
 /* spawns a type-0x42 particle moving in a random direction */
@@ -913,7 +1285,48 @@ void func_L00_00276700(char *m) {
         KillPart(m);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002767B0);
+extern unsigned char *func_L00_0025D390(int);
+extern unsigned char *D_L00_001B2538;
+
+/* Spawns a type 78 particle: position, colour, lifetime and mode, with a trailing record of speeds, id and target. Adapted from Lombyte (MIT) for PAL: overlays/shared/rendering_002712b8.c, FUN_L00_00275910. */
+unsigned char *func_L00_002767B0(void *pos, int s, int col, int mode, int b, float *vec, int h, float x, float y) {
+    unsigned char *m = func_00218928(0x4E);
+    if (m) {
+        float *v;
+        unsigned char *q = m + 0x20;
+        qcopy(m + 0x10, pos);
+        *(int *)(m + 4) = col;
+        m[3] = 0x48;
+        m[9] = func_001FA898(4.0f) + 0x20;
+        m[1] = 0;
+        m[2] = *D_L00_001B2538;
+        *(short *)(m + 0xA) = s;
+        *(float *)(m + 0xC) = x * 210000.0f;
+        if (mode == 0) {
+            m[8] = 0;
+        } else if (mode == 1) {
+            m[8] = 0x20;
+        } else {
+            m[8] = func_002140B0(0xFF);
+        }
+        *(float *)(q + 0) = *(float *)(m + 0xC);
+        *(float *)(q + 4) = y * 210000.0f;
+        *(short *)(q + 8) = s;
+        q[0xA] = b;
+        q[0xB] = col >> 24;
+        *(int *)(q + 0x18) = h;
+        *(float *)(q + 0x1C) = 0;
+        if (h) {
+            unsigned char *r = func_L00_0025D390(h);
+            if (r) *(float *)(q + 0x1C) = *(float *)(r + 0x10);
+        }
+        v = (float *)(q + 0xC);
+        v[0] = vec[0];
+        v[1] = vec[1];
+        v[2] = vec[2];
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00276940);
 // Particle update: move by velocity, fade color over remaining lifetime.
 void func_L00_00276C08(char *m) {
@@ -965,4 +1378,26 @@ void func_L00_00276D50(char *m) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_00276EB0);
-INCLUDE_ASM("asm/overlays", func_L00_00276F18);
+typedef struct { int a; int n; } Ent;
+typedef struct { char pad[0xF8]; Ent e[20]; } Tab;
+typedef struct { char pad[0x158]; int o[20]; } Out;
+extern Tab D_00137C80;
+extern Out D_L00_001BA070;
+extern int D_L00_00160390;
+extern int D_L00_00173F08;
+extern int func_002176C8(int, int, int);
+extern int func_00234158(int arg0, int arg1, int arg2, int arg3);
+
+// loads the 20 table entries from the resident table into the level's slots
+// Adapted from Lombyte (MIT) for PAL: overlays/shared/rendering_002712b8.c, FUN_L00_00276078.
+void func_L00_00276F18(void) {
+    int h = D_L00_00173F08;
+    int i;
+    for (i = 0; i < 20; i++) {
+        int sz = D_00137C80.e[i].n << 7;
+        if (sz) {
+            func_002176C8(h, D_00137C80.e[i].a, D_00137C80.e[i].n);
+            D_L00_001BA070.o[i] = func_00234158(h, sz, sz, (int)&D_L00_00160390);
+        }
+    }
+}

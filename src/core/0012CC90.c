@@ -294,7 +294,54 @@ void func_0012D000(unsigned int chcr) {
     func_0011D9A8();
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D068);
+typedef unsigned int u128 __attribute__((mode(TI), aligned(16)));
+
+extern void func_0012D000(unsigned int chcr);
+extern volatile u128 D_00133150[];
+extern u128 D_001331A0[];
+
+#define IPU_CMD ((volatile unsigned int *)0x10002000)
+#define IPU_CTRL ((volatile int *)0x10002010)
+#define IPU_IN_FIFO ((volatile u128 *)0x10007010)
+
+/* sceIpuInit: reset the IPU, load its two fixed FIFO command tables, reset again. Adapted from Lombyte (MIT) for PAL: src/sdk/dma/sce_ipu_init.c, sceIpuInit. */
+void func_0012D068(void) {
+    func_0012D000(1);
+    *IPU_CTRL = 0x40000000;
+    while (*IPU_CTRL < 0) {
+    }
+    *IPU_CMD = 0;
+    while (*IPU_CTRL < 0) {
+    }
+    *IPU_IN_FIFO = D_00133150[0];
+    *IPU_IN_FIFO = D_00133150[1];
+    *IPU_IN_FIFO = D_00133150[2];
+    *IPU_IN_FIFO = D_00133150[3];
+    *IPU_IN_FIFO = D_00133150[4];
+    *IPU_IN_FIFO = D_00133150[4];
+    *IPU_IN_FIFO = D_00133150[4];
+    *IPU_IN_FIFO = D_00133150[4];
+    *IPU_CMD = 0x50000000;
+    while (*IPU_CTRL < 0) {
+    }
+    *IPU_CMD = 0x58000000;
+    while (*IPU_CTRL < 0) {
+    }
+    *IPU_IN_FIFO = D_001331A0[0];
+    *IPU_IN_FIFO = D_001331A0[1];
+    *IPU_CMD = 0x60000000;
+    while (*IPU_CTRL < 0) {
+    }
+    *IPU_CMD = 0x90000000;
+    while (*IPU_CTRL < 0) {
+    }
+    *IPU_CTRL = 0x40000000;
+    while (*IPU_CTRL < 0) {
+    }
+    *IPU_CMD = 0;
+    while (*IPU_CTRL < 0) {
+    }
+}
 
 /*
  * Fill the 14-byte rom0:ROMVER record at D_001331D8 once (open

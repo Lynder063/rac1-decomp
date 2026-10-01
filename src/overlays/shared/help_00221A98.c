@@ -91,7 +91,71 @@ int func_L00_00222580(void) {
     }
     return r;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00222668);
+extern char *D_L00_001600A4 MACRO_ADDR;
+extern float func_001F9D10(void *, void *);
+extern float func_L00_0020DD48(void *, int *, float, float, float, float);
+extern int func_00215570(void *, int);
+extern int func_L00_001EFFF0(void *, void *, int, int, int);
+
+// picks the nearest eligible moby of class 0x323 near the player and stores it as the target Adapted from Lombyte (MIT) for PAL: overlays/shared/ui_help_00221310.c, FUN_L00_00221ee0.
+void func_L00_00222668(void) {
+    char *g, *gb, *g0, *g2;
+    char *m;
+    char *best;
+    char *q;
+    float bestd, d, a13, a14, a15, t, x;
+    int k;
+    int out;
+    float v[4];
+    float w[4];
+
+    best = 0;
+    g0 = (char *)D_0013E633 + 0xE1D;
+    *(short *)(g0 + 0x99E) = 0;
+    bestd = 1e8f;
+    for (m = D_L00_001600A4; m != 0; m = *(char **)(m + 0x28)) {
+        if (*(short *)(m + 0xA6) != 0x323) continue;
+        q = *(char **)(m + 0x78);
+        if (*(int *)q == 0) continue;
+        if (*(unsigned short *)(m + 0x34) & 1) continue;
+        g = (char *)D_0013E633 + 0xE1D;
+        if (3.0f < *(float *)(g + 0x88) - *(float *)(m + 0x18)) continue;
+        if (*(float *)(q + 0x20) != 0.0f && *(float *)(q + 0x20) < func_001F9D10(g + 0x80, m + 0x10)) continue;
+        k = *(int *)(g + 0x2084);
+        a14 = 0.7853982f;
+        if (k == 0x2D) a14 = 1.2217305f;
+        a15 = 0.7853982f;
+        if (k == 0x2D) a15 = 1.134464f;
+        if (k == 1 || k == 0x1E) {
+            a15 = 0.08726646f;
+            a14 = a15;
+        }
+        t = *(float *)(q + 0x20);
+        a13 = 16.0f;
+        gb = (char *)D_0013E633 + 0xE1D;
+        x = *(float *)(gb + 0x98);
+        if (t != 0.0f) a13 = t;
+        d = func_L00_0020DD48(m, &out, x, a13, a14, a15);
+        if (out != 0) continue;
+        if (*(unsigned char *)(m + 0x31) == 0) d += 10.0f;
+        if (*(int *)(q + 0x1C) >= 0 && func_00215570(gb + 0x80, *(int *)(q + 0x1C)) != 0) continue;
+        if (d < bestd) {
+            bestd = d;
+            best = m;
+        }
+    }
+    g2 = (char *)D_0013E633 + 0xE1D;
+    *(char **)(g2 + 0x990) = best;
+    if (best != 0) {
+        qcopy(v, g2 + 0x80);
+        v[2] += 0.5f;
+        qcopy(w, best + 0x10);
+        if (func_L00_001EFFF0(v, w, 2, 0, 0) == 0) {
+            *(float *)(g2 + 0x998) = bestd;
+            *(short *)(g2 + 0x99E) = 1;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002228E0);
 INCLUDE_ASM("asm/overlays", func_L00_00222B80);
 extern unsigned char D_0013E633[] NOT_SDA;

@@ -31,7 +31,66 @@ void func_L00_0029B6A0(void) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_0029B770);
 INCLUDE_ASM("asm/overlays", func_L00_0029BA20);
-INCLUDE_ASM("asm/overlays", func_L00_0029BED8);
+extern void func_001FFDA0(int, int);
+extern void func_001FFFA0(void);
+extern int func_L00_00222B80(int, int);
+extern void func_L00_00233950(void);
+extern void func_001F9EC0(void *, void *, void *);
+extern void func_001F9BD8(void *, void *, void *);
+extern float func_001FA748(float, float);
+extern void func_L00_00217718(void *, void *, int, int);
+extern void func_L00_002EC0C8(int);
+extern void func_0020D678(void *);
+extern void func_0012E558(int);
+extern void func_00216F28(void);
+extern int func_0012DDC0(void);
+typedef struct { float x, y, z, w; } Vec4 __attribute__((aligned(16)));
+extern int D_L00_0015F6BC MACRO_ADDR;
+extern short D_L00_0015F6A8;
+extern unsigned char D_001414F5[] NOT_SDA;
+extern unsigned char D_0014171B[] NOT_SDA;
+extern char D_L00_00161130;
+
+/* Leaves the vendor screen: releases two handles, resets state, repositions the hero and restores the game state.
+   Adapted from Lombyte (MIT) for PAL: src/overlays/shared/unclassified_00295100.c, FUN_L00_0029ab70. */
+void func_L00_0029BED8(int a) {
+    Vec4 v;
+    Vec4 r;
+    char *g = (char *)D_L00_001CA7C0;
+    if (*(int *)(g + 0x54) != -1) func_001FFDA0(*(int *)(g + 0x54), 0);
+    if (*(int *)(g + 0x50) != -1) func_001FFDA0(*(int *)(g + 0x50), 0);
+    *(int *)(g + 0x54) = -1;
+    *(int *)(g + 0x50) = -1;
+    func_001FFFA0();
+    D_L00_0015F6BC = 1;
+    *(int *)&D_L00_0015F6A8 = 0;
+    func_L00_00222B80(0, 1);
+    D_001414F5[0] = 0;
+    func_L00_00233950();
+    if (*(int *)(g + 0x40) == 0) {
+        func_001F9EC0(&v, &D_L00_00161130, *(char **)(g + 0x1C) + 0xC0);
+        func_001F9BD8(&v, &v, *(char **)(g + 0x1C) + 0x10);
+        r.x = 0.0f;
+        r.y = 0.0f;
+        r.z = func_001FA748(*(float *)(*(char **)(g + 0x1C) + 0x48), 3.1415927f);
+        if (a == 0) {
+            func_L00_00217718(&v, &r, 0, 0);
+            func_L00_002EC0C8(2);
+        } else {
+            func_L00_00217718(&v, &r, 0, 1);
+        }
+    }
+    {
+        char *h = (char *)D_L00_001CA7C0;
+        char *q = (char *)D_0014171B + 0x100B5;
+        *(*(char **)(h + 0x1C) + 0x20) = 1;
+        if ((unsigned short)(*(unsigned short *)(q + 0x5A) - 6) >= 2) *(short *)(q + 0x5A) = 5;
+        if (*(int *)(h + 0x40)) func_0020D678(*(void **)(h + 0x1C));
+    }
+    func_0012E558(0x1D);
+    func_00216F28();
+    func_0012DDC0();
+}
 INCLUDE_ASM("asm/overlays", func_L00_0029C070);
 extern int func_L00_00222B80(int, int);
 extern void func_L00_00233950(void);

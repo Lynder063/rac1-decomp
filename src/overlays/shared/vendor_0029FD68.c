@@ -82,6 +82,62 @@ void func_L00_002A0C20(char *m) {
         func_L00_001FD1D8(&q, 0, 1);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002A0F60);
+typedef int q2A __attribute__((mode(TI)));
+typedef struct { int a, b, c; } I3_2A;
+extern I3_2A D_L00_00161238 __attribute__((section(".data")));
+extern void func_00238D90(void *, void *, int *, int *, int *, int *);
+extern void func_0023A948(int, int, float);
+extern void func_001FB908(int, int);
+extern void func_L00_0029FD68(void *, int, int);
+extern void func_0023A5E0(int, float, float);
+extern void func_001F7B40(void);
+extern void func_0020E180(int, int);
+extern void func_001F5800(int, int, int, int, int, int, int, int, long, long);
+extern long D_0015EFD0 MACRO_ADDR;
+
+/* Draws a screen-space rectangle from five joints of a moby: builds a box from its joint vectors, projects it and draws the rectangle. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_0029f990.c, FUN_L00_0029fcd0. */
+void func_L00_002A0F60(void *m) {
+    q2A d1[1];
+    q2A d2[1];
+    q2A base[1];
+    q2A out[3];
+    I3_2A ids;
+    q2A tmp[1];
+    q2A c[4];
+    q2A pad[5];
+    q2A a, b;
+    int x, y, w, h;
+    float len;
+    ids = D_L00_00161238;
+    func_0020DB98(m, 3, &ids, out);
+    qcopy(base, out);
+    func_001F9BF0(d1, &out[1], out);
+    func_001F9BF0(d2, &out[2], out);
+    len = func_001F9CB8(d1);
+    func_L00_001FF4B0(tmp, d1, 0.03f);
+    func_001F9BD8(base, base, tmp);
+    func_L00_001FF4B0(d1, d1, len - 0.06f);
+    len = func_001F9CB8(d2);
+    func_L00_001FF4B0(tmp, d2, 0.04f);
+    func_001F9BD8(base, base, tmp);
+    func_L00_001FF4B0(d2, d2, len - 0.04f);
+    qcopy(&c[0], base);
+    func_001F9BD8(&c[1], base, d1);
+    func_001F9BD8(&c[2], base, d2);
+    func_001F9BD8(&c[3], &c[2], d1);
+    a = c[0];
+    b = c[3];
+    func_00238D90(&a, &b, &x, &y, &w, &h);
+    func_0023A948(9, 7, 1.0f);
+    func_001FB908(0x200, 0x200);
+    func_00234C98(0x42, 0x8000000064L);
+    func_L00_0029FD68(m, x, y);
+    func_0023A5E0(6, (float)x, (float)y);
+    func_001F7B40();
+    func_001FB908(0x200, 0x200);
+    func_00234C98(0x42, 0x8000000064L);
+    func_0020E180((int)m, 1);
+    func_001F5800(w, h, x, y, 0, 0, x, y, 0x80808080L, D_0015EFD0);
+}
 INCLUDE_ASM("asm/overlays", func_L00_002A11E8);
 INCLUDE_ASM("asm/overlays", func_L00_002A1540);

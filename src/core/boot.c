@@ -165,7 +165,50 @@ extern int func_0012D4E0(int);
 extern int func_0012D4B0(int);
 extern void func_0011DDA0(int);
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012DA38); /* ParseBin(void) */
+extern int *D_0015EF4C MACRO_ADDR;
+
+typedef void (*BinFn)(void);
+
+struct Chunk {
+    unsigned char *dst;
+    int size;
+    int pad8;
+    BinFn id;
+};
+
+/* ParseBin: copy each boot-binary chunk to its destination while chunk ids agree; return the id. Adapted from Lombyte (MIT) for PAL: gameplay/state/parse_bin.c, parse_bin. */
+BinFn func_0012DA38(void) {
+    unsigned char *p;
+    struct Chunk *c;
+    unsigned char *dst;
+    unsigned char *src;
+    BinFn id;
+
+    id = 0;
+    p = (unsigned char *)(D_0015EF4C[0] + (int)D_0015EF4C);
+    while (c = (struct Chunk *)p, p = (unsigned char *)(c + 1), dst = c->dst, src = p,
+           (id == 0) ? (id = c->id, 1) : (id == c->id)) {
+        if (((c->size & 7) == 0) && (((unsigned int)p & 7) == 0) && (((unsigned int)dst & 7) == 0)) {
+            unsigned char *d = dst;
+            unsigned char *s = p;
+            unsigned char *e = dst + c->size;
+            while (d != e) {
+                *(long *)d = *(long *)s;
+                d += 8;
+                s += 8;
+            }
+        } else {
+            unsigned char *e = dst + c->size;
+            while (dst != e) {
+                *(int *)dst = *(int *)src;
+                dst += 4;
+                src += 4;
+            }
+        }
+        p += c->size;
+    }
+    return id;
+}
 
 extern long func_00116F68(int arg0, int arg1, int arg2);
 extern int D_0015ED10;

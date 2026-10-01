@@ -200,7 +200,89 @@ void func_001F2568(void) {
 /* Retail carries 4 bytes of inter-function padding after this endlabel. */
 __asm__(".section .text\n\tnop\n");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F2608);
+extern void func_00125358(float *);
+extern void func_001254A0(float *, float *, float);
+extern void func_00125548(float *, float *, float);
+extern void func_001253F8(float *, float *, float);
+extern void func_001F9C48(void *, void *, float);
+extern int D_0018C42C;
+extern char D_00187390[];
+extern char D_0018CEC0[];
+extern char D_0018D080[];
+
+typedef struct {
+    float f[0x50];
+} SceneG;
+extern SceneG D_00187040_g __asm__("D_00187040");
+
+/* Builds the view matrices in the camera block from the rotation set up in D_00187390 or the three rotation angles, then copies the result to D_0018D080. Adapted from Lombyte (MIT) for PAL: src/rendering/view/fun_001f2260.c, FUN_001f2260. */
+void func_001F2608(void) {
+    float m[4][4];
+    SceneG *g;
+    char *x;
+    float *xf;
+    float a;
+    float b;
+    float c;
+
+    if (D_0018C42C == 0) {
+        qcopy(m[0], D_00187390);
+        qcopy(m[1], D_00187390 + 0x10);
+        qcopy(m[2], D_00187390 + 0x20);
+    } else {
+        func_00125358(m[0]);
+        func_001254A0(m[0], m[0], D_00187040_g.f[0x150 / 4]);
+        func_00125548(m[0], m[0], D_00187040_g.f[0x154 / 4]);
+        func_001253F8(m[0], m[0], D_00187040_g.f[0x158 / 4]);
+    }
+    g = &D_00187040_g;
+    x = D_0018CEC0;
+    xf = (float *)(x - 0xC0);
+    g->f[0] = -m[1][0];
+    g->f[0x3C / 4] = 1.0f;
+    *(int *)&g->f[0x30 / 4] = 0;
+    g->f[0x10 / 4] = -m[1][1];
+    g->f[0x20 / 4] = -m[1][2];
+    g->f[4 / 4] = -m[2][0];
+    g->f[0x14 / 4] = -m[2][1];
+    g->f[0x24 / 4] = -m[2][2];
+    g->f[8 / 4] = m[0][0];
+    g->f[0x18 / 4] = m[0][1];
+    g->f[0x28 / 4] = m[0][2];
+    *(int *)&g->f[0x34 / 4] = 0;
+    *(int *)&g->f[0x38 / 4] = 0;
+    *(int *)&g->f[0xC / 4] = 0;
+    *(int *)&g->f[0x1C / 4] = 0;
+    *(int *)&g->f[0x2C / 4] = 0;
+    func_001FA540(&g->f[0x40 / 4], x, g);
+    func_001FA540(&g->f[0x80 / 4], x + 0x40, g);
+    a = xf[0x1A0 / 4];
+    b = xf[0x1A4 / 4];
+    c = xf[0x1A8 / 4];
+    g->f[0x80 / 4] += g->f[0x8C / 4] * a;
+    g->f[0x84 / 4] += g->f[0x8C / 4] * b;
+    g->f[0x88 / 4] += g->f[0x8C / 4] * c;
+    g->f[0x90 / 4] += g->f[0x9C / 4] * a;
+    g->f[0x94 / 4] += g->f[0x9C / 4] * b;
+    g->f[0x98 / 4] += g->f[0x9C / 4] * c;
+    g->f[0xA0 / 4] += g->f[0xAC / 4] * a;
+    g->f[0xA4 / 4] += g->f[0xAC / 4] * b;
+    g->f[0xA8 / 4] += g->f[0xAC / 4] * c;
+    g->f[0xB0 / 4] += g->f[0xBC / 4] * a;
+    g->f[0xB4 / 4] += g->f[0xBC / 4] * b;
+    g->f[0xB8 / 4] += g->f[0xBC / 4] * c;
+    func_001FA540(&g->f[0xC0 / 4], x + 0x80, g);
+    func_001F9C48(&g->f[0x100 / 4], x + 0x80, xf[0x1C0 / 4]);
+    func_001F9C48(&g->f[0x110 / 4], x + 0x90, xf[0x1C0 / 4]);
+    qcopy(&g->f[0x120 / 4], x + 0xA0);
+    qcopy(&g->f[0x130 / 4], x + 0xB0);
+    func_001FA540(&g->f[0x100 / 4], &g->f[0x100 / 4], g);
+    qcopy(D_0018D080, g);
+    qcopy(D_0018D080 + 0x10, &g->f[0x10 / 4]);
+    qcopy(D_0018D080 + 0x20, &g->f[0x20 / 4]);
+    func_001F9C30(D_0018D080 + 0x30, &g->f[0x140 / 4], 1024.0f);
+    *(float *)(D_0018D080 + 0x3C) = 1024.0f;
+}
 
 /* A fog preset: an RGB byte triple and four floats. */
 typedef struct {
@@ -312,7 +394,95 @@ int func_001F2B10(int a0, int a1, int a2, int a3, int a4, int a5, float t) {
     return ParseOcclGrid(b0, b1, b2);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F2BC8); /* BuildOcclVisibility(void) */
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern float func_001FA888(int);
+extern int func_001F2B10(int, int, int, int, int, int, float);
+extern void func_001F99D8(void *, int);
+extern void func_001F9AC0(void *, void *, void *, int);
+extern void func_001F99B0();
+extern char D_001940C0[];
+extern char D_00194140[];
+extern int D_0015F72C MACRO_ADDR;
+extern int D_0015F728 MACRO_ADDR;
+extern char *D_0015F730 MACRO_ADDR;
+extern float *D_0015F724 MACRO_ADDR;
+
+/* Build the occlusion visibility bitmap for the camera's grid cell.
+   Adapted from Lombyte (MIT) for PAL: src/rendering/build_occlusion_visibility.c, build_occlusion_visibility. */
+void func_001F2BC8(void) {
+    float scale = 0.25f;
+    int x, y, z;
+    char *vis;
+    char *gx, *gy, *gz;
+    float *p;
+    int bx, by, bz;
+
+    x = func_001FA898_r(D_00187040_cam.focus[0] * scale);
+    y = func_001FA898_r(D_00187040_cam.focus[1] * scale);
+    z = func_001FA898_r(D_00187040_cam.focus[2] * scale);
+    vis = (char *)func_001F2A38(x, y, z);
+    if (vis != 0) {
+        D_0015F72C = 0;
+        func_001F9A98(D_001940C0, vis, 0x80);
+        D_0015F730 = vis;
+    } else {
+        D_0015F72C = 1;
+        if (D_0015F728 == 0) {
+            gx = (char *)func_001F2B10(x - 1, y, z, x + 1, y, z,
+                                       D_00187040_cam.focus[0] * scale - func_001FA888(x));
+            gy = (char *)func_001F2B10(x, y - 1, z, x, y + 1, z,
+                                       D_00187040_cam.focus[1] * scale - func_001FA888(y));
+            gz = (char *)func_001F2B10(x, y, z - 1, x, y, z + 1,
+                                       D_00187040_cam.focus[2] * scale - func_001FA888(z));
+            if (gx != 0 || gy != 0 || gz != 0) {
+                func_001F99D8(D_00194140, 0x80);
+                if (gx != 0) {
+                    func_001F9AC0(D_00194140, D_00194140, gx, 0x80);
+                }
+                if (gy != 0) {
+                    func_001F9AC0(D_00194140, D_00194140, gy, 0x80);
+                }
+                if (gz != 0) {
+                    func_001F9AC0(D_00194140, D_00194140, gz, 0x80);
+                }
+                vis = D_00194140;
+                D_0015F730 = vis;
+                func_001F9A98(D_001940C0, vis, 0x80);
+            }
+        }
+        if (vis == 0) {
+            switch (D_0015F728) {
+            case 0:
+                if (D_0018C42C == 0 && D_0015F730 != 0) {
+                    func_001F9A98(D_001940C0, D_0015F730, 0x80);
+                } else {
+                    func_001F99B0(D_001940C0, -1, 0x80);
+                }
+                break;
+            case 1:
+                func_001F99B0(D_001940C0, -1, 0x80);
+                break;
+            case 2:
+                p = D_0015F724;
+                if (p != 0) {
+                    bx = 0.0f < D_00187040_cam.focus[0] - p[0];
+                    by = 0.0f < D_00187040_cam.focus[1] - p[1];
+                    bz = 0.0f < D_00187040_cam.focus[2] - p[2];
+                    func_001F9A98(D_001940C0, (char *)p + ((bz + by * 2 + bx * 4) * 0x80 + 0x10), 0x80);
+                } else if (D_0018C42C == 0 && D_0015F730 != 0) {
+                    func_001F9A98(D_001940C0, D_0015F730, 0x80);
+                } else {
+                    func_001F99B0(D_001940C0, -1, 0x80);
+                }
+                break;
+            }
+        }
+    }
+    {
+        unsigned char *vb = (unsigned char *)D_001940C0;
+        vb[0x7F] |= 0x80;
+    }
+}
 
 /* Unprototyped deliberately: two call sites need incompatible arg1
    types (-1 and a pointer) and both callers are byte-exact, so

@@ -263,7 +263,177 @@ int func_0012B250(void *arg0) {
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012B2C0);
+extern void func_0012ABF8(void *arg0, int n);
+extern char D_00153AC8[];
+extern char D_00153AD8[];
+
+struct PES_BS {
+    unsigned char pad_0[0x18];
+    long stamp;
+};
+
+struct PES_HDR {
+    long unk0;
+    int unk8;
+    int unkC;
+    long unk10;
+    long unk18;
+    int unk20;
+    int unk24;
+    int unk28;
+};
+
+struct PES_TBL {
+    unsigned char v[16];
+} __attribute__((packed));
+
+/* Parse one MPEG-2 PES packet header from the bit stream into hdr (libmpeg _PES_packet).
+   Adapted from Lombyte (MIT) for PAL: src/sdk/library/_PES_packet.c, _PES_packet. */
+int func_0012B2C0(int arg0, struct PES_BS *bs, struct PES_HDR *hdr) {
+    struct PES_TBL tbl;
+    int ctx;
+    int flag1;
+    int len;         /* PES_header_data_length */
+    int base;        /* (int)bs->stamp, captured before the header fields */
+    long now;         /* the same stamp, re-read at the sync point */
+    int v7;          /* PTS_DTS_flags */
+    int v8;          /* 4-bit length, indexes tbl */
+    int v5;          /* PES_extension_flag */
+
+    ctx = arg0;
+    hdr->unk28 = (int)bs->stamp;
+    tbl = *(struct PES_TBL *)D_00153AC8;
+    func_0012AB60(bs, 0x18);
+    hdr->unk0 = (long)func_0012AB60(bs, 8) << 0x20;
+    hdr->unk8 = func_0012AB60(bs, 0x10);
+    hdr->unk18 = -1;
+    hdr->unk10 = -1;
+    if (hdr->unk0 != ((unsigned long)0xBC00 << 0x18) &&
+        hdr->unk0 != ((unsigned long)0xBE00 << 0x18) &&
+        hdr->unk0 != ((unsigned long)0xBF00 << 0x18) &&
+        hdr->unk0 != ((unsigned long)0xF000 << 0x18) &&
+        hdr->unk0 != ((unsigned long)0xF100 << 0x18) &&
+        hdr->unk0 != ((unsigned long)0xFF00 << 0x18) &&
+        hdr->unk0 != ((unsigned long)0xF200 << 0x18) &&
+        hdr->unk0 != ((unsigned long)0xF800 << 0x18)) {
+        func_0012AB60(bs, 2);
+        hdr->unkC = func_0012AB60(bs, 2);
+        func_0012AB60(bs, 4);
+        v7 = func_0012AB60(bs, 2);
+        flag1 = func_0012AB60(bs, 1);
+        v8 = func_0012AB60(bs, 4);
+        v5 = func_0012AB60(bs, 1);
+        len = func_0012AB60(bs, 8);
+        base = bs->stamp;
+        if (v7 & 2) {
+            unsigned int a, b, c;
+            func_0012AB60(bs, 4);
+            a = func_0012AB60(bs, 3);
+            func_0012ABB0(bs);
+            b = func_0012AB60(bs, 0xF);
+            func_0012ABB0(bs);
+            c = func_0012AB60(bs, 0xF);
+            func_0012ABB0(bs);
+            hdr->unk10 = ((long)((a >> 2) & 1) << 0x20) | (long)(unsigned int)(a << 30 | b << 15 | c);
+        }
+        if (v7 == 3) {
+            unsigned int a, b, c;
+            func_0012AB60(bs, 4);
+            a = func_0012AB60(bs, 3);
+            func_0012ABB0(bs);
+            b = func_0012AB60(bs, 0xF);
+            func_0012ABB0(bs);
+            c = func_0012AB60(bs, 0xF);
+            func_0012ABB0(bs);
+            hdr->unk18 = ((long)((a >> 2) & 1) << 0x20) | (long)(unsigned int)(a << 30 | b << 15 | c);
+        }
+        if (flag1 == 1) {
+            func_0012AB60(bs, 0x30);
+        }
+        if (v8 != 0) {
+            func_0012AB60(bs, tbl.v[v8]);
+        }
+        if (v5 == 1) {
+            int a1;
+            int a2;
+            int a3;
+            int a4;
+            int a5;
+            a1 = func_0012AB60(bs, 1);
+            a2 = func_0012AB60(bs, 1);
+            a3 = func_0012AB60(bs, 1);
+            a4 = func_0012AB60(bs, 1);
+            func_0012AB60(bs, 3);
+            a5 = func_0012AB60(bs, 1);
+            if (a1 == v5) {
+                func_0012AB60(bs, 0x30);
+                func_0012AB60(bs, 0x30);
+                func_0012AB60(bs, 0x20);
+            }
+            if (a2 == v5) {
+                func_0012C468_a(ctx, D_00153AD8);
+                return 0;
+            }
+            if (a3 == v5) {
+                func_0012AB60(bs, 0x10);
+            }
+            if (a4 == v5) {
+                func_0012AB60(bs, 0x10);
+            }
+            if (a5 == v5) {
+                unsigned int i;
+                unsigned int n;
+                func_0012ABB0(bs);
+                n = func_0012AB60(bs, 7);
+                for (i = 0; i < n; i++) {
+                    func_0012AB60(bs, 8);
+                }
+            }
+        }
+        now = bs->stamp;
+        {
+        int delta = len - (int)((now - base) >> 3);
+        if (delta != 0) {
+            func_0012ABF8(bs, delta);
+        }
+        }
+        {
+        int n = hdr->unk8 - len;
+        int m;
+        hdr->unk24 = n - 3;
+        hdr->unk20 = (int)bs->stamp;
+        if (hdr->unk0 == ((unsigned long)0xBD00 << 0x18)) {
+            hdr->unk0 |= (unsigned long)(unsigned int)func_0012AB60(bs, 0x20);
+            m = n - 7;
+        } else {
+            m = n - 3;
+        }
+        if (m != 0) {
+            func_0012ABF8(bs, m);
+        }
+        }
+    } else if (hdr->unk0 == ((unsigned long)0xBC00 << 0x18) ||
+               hdr->unk0 == ((unsigned long)0xBF00 << 0x18) ||
+               hdr->unk0 == ((unsigned long)0xF000 << 0x18) ||
+               hdr->unk0 == ((unsigned long)0xF100 << 0x18) ||
+               hdr->unk0 == ((unsigned long)0xFF00 << 0x18) ||
+               hdr->unk0 == ((unsigned long)0xF200 << 0x18) ||
+               hdr->unk0 == ((unsigned long)0xF800 << 0x18)) {
+        int n = hdr->unk8;
+        if (hdr->unk0 == ((unsigned long)0xBF00 << 0x18)) {
+            n -= 4;
+            hdr->unk0 |= (unsigned long)(unsigned int)func_0012AB60(bs, 0x20);
+        }
+        if (n != 0) {
+            func_0012ABF8(bs, n);
+        }
+    } else if (hdr->unk0 == ((unsigned long)0xBE00 << 0x18)) {
+        if (hdr->unk8 != 0) {
+            func_0012ABF8(bs, hdr->unk8);
+        }
+    }
+    return 1;
+}
 
 extern void func_0012D068(void);
 

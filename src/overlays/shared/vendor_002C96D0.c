@@ -2,7 +2,52 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L00_002C96D0);
+extern char D_0013E633[];
+extern char D_L00_00173F60[];
+extern float D_0015EE70 MACRO_ADDR;
+extern int func_L00_0025D390(char *);
+extern void func_001F9BD8(void *, void *, void *);
+extern int func_L00_001EFFF0(void *, void *, int, int, int);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_L00_001FF610(void *, void *, void *);
+extern void func_001F9C30(void *, void *, float);
+
+typedef struct {
+    float v[4];
+} __attribute__((aligned(16))) Q4;
+
+/* Places a moby at a spot: copies the vector in, transforms it, and if the move is blocked pushes it back out along the stored normal. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002bffa8.c, FUN_L00_002c82f0. */
+void func_L00_002C96D0(Q4 *a, char *m, Q4 *c) {
+    char *q = *(char **)(m + 0x78);
+    char *P;
+    char *pos, *w;
+    Q4 t, u;
+    qcopy(q, c);
+    P = D_0013E633 + 0xE1D;
+    if (*(int *)(P + 0x2FC) && func_L00_0025D390(*(char **)(P + 0x2FC))) {
+        func_001F9BD8(q, q, P + 0x100);
+    }
+    pos = m + 0x10;
+    qcopy(pos, a);
+    {
+        char *P2 = D_0013E633 + 0xE1D;
+        w = *(char **)(P2 + 0x2080);
+    }
+    t = *(Q4 *)(w + 0x10);
+    t.v[2] = a->v[2];
+    if (func_L00_001EFFF0(&t, a, 0, (int)w, 0)) {
+        char *g = D_L00_00173F60;
+        float x;
+        qcopy(pos, g);
+        x = D_0015EE70;
+        g += 0x20;
+        func_L00_001FF4B0(&u, g, x * 9.0f - x * 0.1f);
+        func_001F9BD8(pos, pos, &u);
+        func_L00_001FF610(q, q, g);
+        func_001F9C30(q, q, 0.6f);
+    }
+    m[0x20] = 2;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002C9820);
 INCLUDE_ASM("asm/overlays", func_L00_002C9DC8);
 // resets the fields of a record (if non-null) to their defaults
@@ -102,7 +147,89 @@ void func_L00_002CD660(char *m) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_002CD7B0);
 INCLUDE_ASM("asm/overlays", func_L00_002CDAB8);
-INCLUDE_ASM("asm/overlays", func_L00_002CE390);
+typedef int u128 __attribute__((mode(TI)));
+typedef struct { float f[4]; } __attribute__((aligned(16))) V4;
+extern unsigned char *func_0020D348(int);
+extern float func_002140F8(float, float);
+extern void func_L00_00251E30(void *);
+extern void func_00215C00(void *, float, float, float);
+extern void func_L00_0025F4A8_alt(void *, void *, void *, float, float, int, int, int, float, float, float, float, int, float, int, int, int, int) __asm__("func_L00_0025F4A8");
+extern float D_0015EE60 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+
+/* Spawns a type-0x1C9 projectile moby at a position, aimed at an optional target; returns it, or 0 if it was launched at once. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002c8440.c, FUN_L00_002ccee0. */
+unsigned char *func_L00_002CE390(int a, V4 *pos, unsigned char *tgt, float f12, float f13, float f14) {
+    V4 w;
+    V4 s;
+    V4 dir;
+    V4 z;
+    unsigned char *m;
+    unsigned char *v;
+    unsigned char *r;
+    unsigned char *p;
+    float t;
+    float f;
+
+    m = func_0020D348(0x1C9);
+    if (m != 0) {
+        v = *(unsigned char **)(m + 0x78);
+        m[0x30] = 0xFF;
+        *(short *)(m + 0x32) = 0xFF;
+        m[0x31] = 1;
+        *(float *)(m + 0x48) = f13;
+        *(float *)(m + 0x44) = f14;
+        m[0x20] = 0;
+        *(int *)(v + 0x20) = a;
+        qcopy(m + 0x10, pos);
+        qcopy(v + 0x10, pos);
+        *(int *)(v + 0x34) = 0;
+        *(int *)(v + 0x38) = 0;
+        *(int *)(v + 0x30) = 0;
+        *(unsigned char **)(v + 0x28) = tgt;
+        *(float *)(m + 0x2C) = *(float *)(*(unsigned char **)(m + 0x24) + 0x24) * 0.25f;
+        if (tgt != 0) {
+            *(int *)(v + 0x58) = *(short *)(tgt + 0xA6);
+            r = (unsigned char *)func_L00_0025D390(tgt);
+            if (r != 0) {
+                *(unsigned short *)(r + 0x1E) |= 0x80;
+            }
+            qcopy(v, tgt + 0x10);
+            *(float *)(v + 0x2C) = f12;
+            *(float *)(v + 8) += f12;
+        }
+        *(int *)(v + 0x24) = func_001F9850(0xFA);
+        *(int *)(v + 0x44) = 0;
+        *(float *)(v + 0x48) = func_002140F8(-3.1415927f, 3.1415927f);
+        f = func_002140F8(-3.1415927f, 3.1415927f);
+        t = D_0015EE60;
+        t *= 0.00967f;
+        *(float *)(v + 0x4C) = f;
+        f = func_002140F8(-t, t);
+        t = D_0015EE60;
+        t *= 0.02406f;
+        *(float *)(v + 0x50) = f;
+        *(float *)(v + 0x54) = func_002140F8(-t, t);
+        func_L00_00251E30(m);
+        func_0022ED80(1, 0, (char *)m);
+        *(u128 *)&z = 0;
+        z.f[2] = D_0015EE6C * 8.0f;
+        p = *(unsigned char **)(D_0013E633 + 0x2E9D);
+        *(u128 *)&dir = *(u128 *)&z;
+        *(u128 *)&s = *(u128 *)(p + 0x10);
+        s.f[2] = pos->f[2];
+        if (func_L00_001EFFF0(&s, pos, 0, (int)p, 0)) {
+            m[0xBC] = 2;
+            qcopy(m + 0x10, D_L00_00173F60);
+            func_00215C00(&w, *(float *)(v + 0x30), *(float *)(m + 0x48), -*(float *)(m + 0x44));
+            func_L00_001FF610(&dir, &w, D_L00_00173F60 + 0x20);
+            func_L00_001FF4B0(&dir, &dir, D_0015EE6C + D_0015EE6C);
+            func_L00_0025F4A8_alt(m, &dir, 0, 0.0f, 0.0f, 10, 3, 9, 4.0f, 2.0f, 9.0f, 1.0f, 0, 15.0f, 1, 1, -1, 0);
+            func_0020D678(m);
+            return 0;
+        }
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002CE6A0);
 INCLUDE_ASM("asm/overlays", func_L00_002CF170);
 extern int func_L00_00273478(void *, int, float, float, unsigned, unsigned);

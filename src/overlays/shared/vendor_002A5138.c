@@ -563,5 +563,85 @@ void func_L00_002AAE80(void) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_002AAEF0);
 INCLUDE_ASM("asm/overlays", func_L00_002AB170);
-INCLUDE_ASM("asm/overlays", func_L00_002AB2A8);
+extern int func_L00_001EFFF0(void *, void *, int, int, int);
+extern void func_L00_001FF610(void *, void *, void *);
+extern float D_0015EE70 MACRO_ADDR;
+
+typedef int ti_t __attribute__((mode(TI)));
+typedef union { ti_t q; float f[4]; } V2;
+typedef struct { unsigned char pad[0x5C]; int i5C; } D5C;
+typedef struct { unsigned char pad[0x34]; short h34; } MV;
+typedef struct N2 {
+    unsigned char pad[0x10];
+    V2 v10;
+    unsigned char b20;
+    unsigned char pad2[0x28 - 0x21];
+    struct N2 *p28;
+    float f2C;
+    unsigned char pad3[0x78 - 0x30];
+    void *p78;
+    unsigned char pad4[0xA6 - 0x7C];
+    short hA6;
+} N2;
+typedef struct { unsigned char pad[0x10]; V2 v10; } Q2;
+typedef struct {
+    unsigned char pad[0x100];
+    unsigned char v100[0x2FC - 0x100];
+    void *p2FC;
+    unsigned char pad2[0x2080 - 0x300];
+    Q2 *p2080;
+} P2;
+
+/* Initialises a spawned moby: random spin vector, nearby-count cull of the oldest same-class moby, then a bounce off the floor probe. Adapted from Lombyte (MIT) for PAL: src/overlays/shared/unclassified_002a4830.c, FUN_L00_002aa008. */
+void func_L00_002AB2A8(V2 *pos, N2 *self, void *arg) {
+    V2 d;
+    V2 t;
+    V2 e;
+    MV *m;
+    P2 *P;
+    N2 *n;
+    int count;
+    N2 *best;
+    int bestv;
+    V2 *k;
+    t.q = 0;
+    m = self->p78;
+    t.f[0] = func_002140F8(-1.0f, 1.0f);
+    t.f[1] = func_002140F8(-1.0f, 1.0f);
+    t.f[2] = func_002140F8(-1.0f, 1.0f);
+    self->b20 = 1;
+    self->f2C = self->f2C / 0.65f;
+    d.q = t.q;
+    func_L00_001FF4B0(d.f, d.f, func_002140F8(D_0015EE6C * 0.01f, D_0015EE6C * 0.1f));
+    func_001F9BD8(m, &d, arg);
+    P = (P2 *)(D_0013E633 + 0xE1D);
+    if (P->p2FC && func_L00_0025D390(P->p2FC)) {
+        func_001F9BD8(m, m, P->v100);
+    }
+    m->h34 = func_001F9850(0x78);
+    count = 0;
+    best = 0;
+    bestv = 0;
+    for (n = (N2 *)D_L00_001600A4; n; n = n->p28) {
+        if (n->b20 != 0xFE) if (n->b20 != 0xFD) if (n->hA6 == self->hA6) if (n != self) {
+            if (best == 0 || ((D5C *)n->p78)->i5C < bestv) {
+                bestv = ((D5C *)n->p78)->i5C;
+                best = n;
+            }
+            count++;
+        }
+    }
+    if (count >= 8) ((D5C *)best->p78)->i5C = -1;
+    qcopy(&self->v10, pos);
+    t.q = ((P2 *)(D_0013E633 + 0xE1D))->p2080->v10.q;
+    t.f[2] = pos->f[2];
+    if (func_L00_001EFFF0(&t, pos, 0, (int)((P2 *)(D_0013E633 + 0xE1D))->p2080, 0)) {
+        k = (V2 *)D_L00_00173F60;
+        qcopy(&self->v10, &k[0]);
+        func_L00_001FF4B0(e.f, k[2].f, D_0015EE70 * 9.7f);
+        func_001F9BD8(&self->v10, &self->v10, &e);
+        func_L00_001FF610(m, m, &k[2]);
+        func_001F9C30(m, m, 0.6f);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002AB548);

@@ -4,7 +4,79 @@
 
 INCLUDE_ASM("asm/overlays", func_L00_002297E0);
 INCLUDE_ASM("asm/overlays", func_L00_00229B78);
-INCLUDE_ASM("asm/overlays", func_L00_00229E30);
+extern char D_0013E633[];
+extern unsigned char D_0013A5E0[] NOT_SDA;
+extern unsigned char D_0013D5CA NOT_SDA;
+extern float D_0015EE6C MACRO_ADDR;
+extern int func_L00_00222520(void);
+extern int func_001F9850(int);
+extern int func_L00_00267C48(int, int, int, int);
+extern int func_L00_00222B80(int, int);
+extern int func_L00_00222B80_b(int, int) __asm__("func_L00_00222B80");
+extern int func_L00_00267BA8(int, int, int);
+extern int func_L00_0020DB30(int);
+
+// Tries the crouch-jump style moves in priority order and starts the first whose conditions hold. Adapted from Lombyte (MIT) for PAL: overlays/shared/ui_help_00229010.c, FUN_L00_00229660.
+int func_L00_00229E30(void) {
+    char *g = (char *)D_0013E633 + 0xE1D;
+    int n, t, k;
+    int m;
+    char *p;
+    if (*(int *)(g + 0x2084) == 0xE) {
+        return 0;
+    }
+    n = func_L00_00222520();
+    t = func_001F9850(5);
+    if ((*(int *)(D_0013A5E0 + 0x2600) & 0xA) != 0 && n > 0 && func_L00_00267C48(0x40, 0x1F000, t + n, n) != 0) {
+        m = 0xB;
+found:
+        func_L00_00222B80(m, 1);
+        return 1;
+    }
+    k = func_001F9850(9);
+    p = (char *)D_0013E633 + 0xE1D;
+    if (func_001F9850(6) < *(int *)(p + 0x198)) {
+        if (func_L00_00267BA8(0x40, k, 0) == 0) {
+            return 0;
+        }
+        if (func_L00_0020DB30(3) == 2 && D_0013D5CA != 0 && *(short *)(p + 0x22D8) == 0 &&
+            (2.5f < *(float *)(p + 0x248) || *(float *)(p + 0x250) < 0.785398185f) &&
+            0.7f < *(float *)(p + 0x229C) && D_0015EE6C * 0.9f < *(float *)(p + 0x168)) {
+            m = 0xA;
+            goto found;
+        }
+        if (func_L00_0020DB30(3) == 3) {
+            char *q = (char *)D_0013E633 + 0xE1D;
+            if (*(short *)(q + 0x22D8) == 0 &&
+                0.7f < *(float *)(q + 0x229C) &&
+                (2.5f < *(float *)(q + 0x248) || *(unsigned char *)(q + 0x254) != 0) &&
+                D_0015EE6C * 0.9f < *(float *)(q + 0x168)) {
+                if (*(int *)(q + 0x1B8) != 0) {
+                    return 1;
+                }
+                m = 0x10;
+                goto found;
+            }
+        }
+        if (func_L00_0020DB30(3) == 3) {
+            char *r = (char *)D_0013E633 + 0xE1D;
+            if (*(short *)(r + 0x22D8) == 0) {
+                m = 0xD;
+                goto found;
+            }
+        }
+        if (func_L00_0020DB30(3) == 2) {
+            char *s = (char *)D_0013E633 + 0xE1D;
+            if (*(short *)(s + 0x22D8) == 0 && D_0013D5CA != 0) {
+                m = 0xF;
+                goto found;
+            }
+        }
+        func_L00_00222B80_b(7, 1);
+        return 1;
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0022A0E0);
 typedef struct { char pad[0x24]; int v; char pad2[0x24]; } Rec;
 extern Rec D_L00_00179BC0[] __attribute__((section(".data")));

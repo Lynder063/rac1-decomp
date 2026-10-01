@@ -150,7 +150,35 @@ kill:
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_0026A7F8);
+extern void *func_00218928(int);
+extern int func_001160D8(void);
+extern unsigned char *D_L00_001B2410;
+
+// Spawn a particle of type 4 with position, velocity, color, lifetime and flag. Adapted from Lombyte (MIT) for PAL: overlays/shared/rendering_00269290.c, FUN_L00_00269958.
+void func_L00_0026A7F8(void *a, void *b, int c, int d, int n, int s1, int s2, int flag) {
+    unsigned char *m = func_00218928(4);
+    if (m) {
+        int *e;
+        unsigned char *p;
+        qcopy(m + 0x10, a); p = m + 0x10;
+        *(int *)(m + 4) = c;
+        m[9] = func_001FA898_r(4.0f) - 0x60;
+        m[3] = flag ? 0x48 : 0x44;
+        m[1] = 0;
+        m[2] = *D_L00_001B2410;
+        m[8] = func_001160D8();
+        e = (int *)(m + 0x20);
+        *(int *)(m + 0xc) = 0;
+        qcopy(p, a);
+        qcopy(e, b);
+        *(short *)(m + 0xa) = n;
+        e[7] = n;
+        e[4] = c;
+        e[5] = d;
+        *(short *)((char *)e + 0x18) = s2;
+        *(short *)((char *)e + 0x1a) = s1;
+    }
+}
 extern float func_001FA888(int);
 extern void func_001F9C30(void *, void *, float);
 extern void func_001F9BD8(void *, void *, void *);
@@ -549,7 +577,34 @@ char *func_L00_0026CD70(float f, char *a, char *b, int c, int d, int e, int g) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_0026CF28);
 INCLUDE_ASM("asm/overlays", func_L00_0026D270);
-INCLUDE_ASM("asm/overlays", func_L00_0026D3F8);
+extern float D_0015EE60_far __asm__("D_0015EE60") MACRO_ADDR;
+extern short D_L00_0015EE60;
+
+/* particle type 18 update: bounces its alpha ramp and fades, killing when spent. Adapted from Lombyte (MIT) for PAL: overlays/shared/rendering_00269290.c, FUN_L00_0026c558. */
+void func_L00_0026D3F8(char *m) {
+    float *p;
+    float t, d;
+    int a;
+    p = (float *)(m + 0x20);
+    p[1] += D_0015EE60_far * 0.013f * p[3];
+    if (p[1] <= 0.0f || func_001F9938(m + 0xA)) {
+        func_L00_002688A8(m);
+        return;
+    }
+    if (p[1] >= 0.22f) {
+        t = -p[3];
+        p[1] += *(float *)&D_L00_0015EE60 * 0.013f * t;
+        p[3] = t;
+    }
+    *(float *)(m + 0xC) += D_0015EE60_far * 8190.0f;
+    a = func_001FA898_r(p[1] * 255.0f) << 24;
+    d = D_0015EE60_far * 0.012f;
+    *(int *)(m + 4) = (*(int *)(m + 4) & 0xFFFFFF) | a;
+    p[2] += d;
+    if (p[2] > 1.0f) p[2] -= 1.0f;
+    m[8] = (int)(p[2] * 255.0f);
+    *(float *)(m + 0x18) -= 0.02f;
+}
 extern int func_002140B0(int);
 extern unsigned char *D_L00_001B244C;
 
@@ -616,7 +671,44 @@ char *func_L00_0026DA50(void *pos, void *dir, int c, int d, int n, int k, float 
     }
     return p;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0026DB50);
+typedef struct { float x, y, z, w; } __attribute__((aligned(16))) V4;
+extern float D_0015EE64 MACRO_ADDR;
+extern float func_001F9CB8(void *);
+extern char *func_L00_0026DA50(void *pos, void *dir, int c, int d, int n, int k, float f);
+
+/* Per-frame update of a particle that drifts by its velocity and fades; sparks off a child particle at random. Adapted from Lombyte (MIT) for PAL: overlays/shared/rendering_00269290.c, FUN_L00_0026ccb0. */
+void func_L00_0026DB50(char *m) {
+    char *s = m + 0x20;
+    char *p;
+    V4 a, b;
+    V4 *q;
+    float f;
+    if (func_001F9938(m + 0xA)) {
+        func_L00_002688A8(m);
+    } else {
+        p = m + 0x10;
+        *(float *)(m + 0xC) = func_001FA888(*(short *)(m + 0xA)) * *(float *)(s + 0x1C) / func_001FA888(*(short *)(s + 0x18));
+        *(int *)(m + 4) = func_L00_00237B70(*(int *)(s + 0x14), *(int *)(s + 0x10), func_001FA888(*(short *)(m + 0xA)) / func_001FA888(*(short *)(s + 0x18)));
+        func_001F9BD8(p, p, s);
+        *(float *)(s + 8) -= D_0015EE64 * 0.001f;
+        qcopy(&a, p);
+        if (*(short *)(s + 0x1A) != 0 && (D_L00_0015F6B0 & 1)) {
+            V4 r = {0};
+            r.x = func_002140F8(-1.0f, 1.0f);
+            r.y = func_002140F8(-1.0f, 1.0f);
+            r.z = func_002140F8(-1.0f, 1.0f);
+            b = r;
+            f = func_001F9CB8(s);
+            q = &b;
+            func_L00_001FF4B0(q, q, f * func_002140F8(0.21f, 0.25f));
+            func_001F9BD8(q, q, s);
+            func_001F9C30(q, q, func_002140F8(0.75f, 0.95f));
+            func_L00_0026DA50(p, q, *(int *)(m + 4), *(int *)(s + 0x14), func_001F9850(func_L00_00258BC8(15, 20)), 0, *(float *)(m + 0xC));
+        } else {
+            func_001F9C30(s, s, 0.96f);
+        }
+    }
+}
 extern char *D_L00_001B2458;
 extern float D_0015EE70 MACRO_ADDR;
 
@@ -792,7 +884,79 @@ void func_L00_0026E438(char *pos, char *vel, int flag) {
         qcopy(u, vel);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_0026E5A0);
+typedef struct { float f[4]; } __attribute__((aligned(16))) PartVec;
+typedef int PartQ __attribute__((mode(TI)));
+typedef struct { float x0, x4, x8, xc, r, g, b, a; } PartS;
+typedef struct { char pad0[4]; int x4; unsigned char x8; char pad9; short xa; float xc; PartQ pos; PartS s; } PartP;
+extern char D_0013E633[] NOT_SDA;
+extern PartQ D_L00_00173F60_q __asm__("D_L00_00173F60") NOT_SDA;
+extern void func_001F9BC0(void *);
+
+/* Per-frame update of a fading, bouncing spark particle: moves it, bounces off geometry, dims its colour and kills it when spent. Adapted from Lombyte (MIT) for PAL: overlays/shared/rendering_00269290.c, FUN_L00_0026d700. */
+void func_L00_0026E5A0(PartP *p) {
+    PartVec t;
+    PartS *s;
+    float r, g, b, dt;
+    int neg;
+    if (p == 0) return;
+    s = &p->s;
+    r = s->r;
+    neg = 0;
+    g = s->g;
+    b = s->b;
+    if (r < 0.0f || g < 0.0f || b < 0.0f) {
+        r = -r;
+        neg = 1;
+        g = -g;
+        b = -b;
+    }
+    s->a += D_0015EE60 * 0.0f;
+    p->xc += D_0015EE60 * -100.0f;
+    func_001F9BD8(&t, &p->pos, s);
+    if (s->x0 != 0.0f || s->x4 != 0.0f || s->x8 != 0.0f) {
+        if (func_L00_001EFFF0(&p->pos, &t, 2, *(int *)(D_0013E633 + 0x2E9D), 0)) {
+            p->pos = D_L00_00173F60_q;
+            func_001F9BC0(s);
+            p->xc += p->xc;
+        } else {
+            p->pos = *(PartQ *)&t;
+            if (s->xc != 0.0f) s->x8 += s->xc;
+            else s->x8 += D_0015EE64 * -0.0063f;
+        }
+    }
+    if (s->a <= 0.0f || func_001F9938(&p->xa) || p->xc < 0.0f || t.f[0] < 0.01f || t.f[1] < 0.01f || t.f[2] < 0.01f) {
+        func_L00_002688A8(p);
+        return;
+    }
+    if (!neg) {
+        r += D_0015EE60 * -0.01f;
+        dt = D_0015EE60;
+        if (r < 0.0f) r = 0.0f;
+        g += dt * -0.03001f;
+        if (g < 0.0f) g = 0.0f;
+    } else {
+        g += D_0015EE60 * -0.01f;
+        dt = D_0015EE60;
+        if (g < 0.0f) g = 0.0f;
+        r += dt * -0.03001f;
+        if (r < 0.0f) r = 0.0f;
+    }
+    b += dt * -0.05f;
+    if (b < 0.0f) b = 0.0f;
+    s->a += dt * 0.0f;
+    if (s->a < 0.0f) s->a = 0.0f;
+    p->x4 = func_L00_0025D038(r, g, b, s->a);
+    if (neg > 0) {
+        s->r = -r;
+        s->g = -g;
+        s->b = -b;
+    } else {
+        s->r = r;
+        s->g = g;
+        s->b = b;
+    }
+    p->x8--;
+}
 extern void func_L00_00250800(void *, int, void *);
 extern char *D_L00_001B2468;
 
@@ -888,7 +1052,33 @@ INCLUDE_ASM("asm/overlays", func_L00_0026ED30);
 INCLUDE_ASM("asm/overlays", func_L00_0026EFF0);
 INCLUDE_ASM("asm/overlays", func_L00_0026F248);
 INCLUDE_ASM("asm/overlays", func_L00_0026F510);
-INCLUDE_ASM("asm/overlays", func_L00_0026FA28);
+typedef struct { int a[4]; } V31 __attribute__((aligned(16)));
+extern short D_L00_001602B4;
+extern short D_L00_001602B8;
+
+/* Part type 31 update: eases two trailing points toward its parent's position and dies when they converge. Adapted from Lombyte (MIT) for PAL: overlays/shared/rendering_00269290.c, FUN_L00_0026eb88. */
+void func_L00_0026FA28(unsigned char *p) {
+    V31 b[1];
+    V31 a;
+    unsigned char *m = *(unsigned char **)(p + 0x30);
+    if (m == 0 || m[0x20] == 0xFE || m[0x20] == 0xFD || func_001F9938(p + 0xA)) {
+        func_L00_002688A8(p);
+        return;
+    }
+    func_001F9BF0(&a, *(unsigned char **)(p + 0x30) + 0x10, p + 0x10);
+    b[0] = a;
+    func_001F9C30(b, b, (*(float *)&D_L00_001602B4 - 1.0f) * D_0015EE60 + 1.0f);
+    func_001F9BD8(&a, b, *(unsigned char **)(p + 0x30) + 0x10);
+    *(V31 *)(p + 0x10) = a;
+    func_001F9BF0(&a, *(unsigned char **)(p + 0x30) + 0x10, p + 0x20);
+    b[0] = a;
+    func_001F9C30(b, b, (*(float *)&D_L00_001602B8 - 1.0f) * D_0015EE60 + 1.0f);
+    func_001F9BD8(&a, b, *(unsigned char **)(p + 0x30) + 0x10);
+    *(V31 *)(p + 0x20) = a;
+    if (func_001F9D10(p + 0x10, p + 0x20) < 0.1f || func_001F9D10(p + 0x10, *(unsigned char **)(p + 0x30) + 0x10) < 1.0f) {
+        func_L00_002688A8(p);
+    }
+}
 extern void *func_00218928(int);
 extern float func_002140F8(float, float);
 extern int func_L00_0025D038(float, float, float, float);
@@ -1296,4 +1486,45 @@ void *func_L00_002715F8(char *a, char *b, unsigned char c, int d) {
     return p;
 }
 INCLUDE_ASM("asm/overlays", func_L00_002717E8);
-INCLUDE_ASM("asm/overlays", func_L00_00271F40);
+extern float D_0015EE64 MACRO_ADDR;
+
+// Updates a fading colour particle: interpolates its packed colour and alpha over its life and drifts it upward. Adapted from Lombyte (MIT) for PAL: overlays/shared/rendering_00269290.c, FUN_L00_002710a0.
+void func_L00_00271F40(unsigned char *p) {
+    unsigned char *q = p + 0x20;
+    short t;
+    float f, x;
+    unsigned char r, g, b, a;
+    t = ++*(short *)(p + 0xA);
+    if (*(short *)(q + 0x18) < t) {
+        func_L00_002688A8(p);
+        return;
+    }
+    f = func_001FA888(t);
+    f = f / func_001FA888(*(short *)(q + 0x18));
+    f = 1.0f - f;
+    r = func_001FA898_r(func_001FA888(q[0x14]) + f * -0.001f);
+    g = func_001FA898_r(func_001FA888(q[0x15]) + f * -0.0011f);
+    b = func_001FA898_r(func_001FA888(q[0x16]) + f * -0.00111f);
+    if (*(short *)(p + 0xA) < func_001F9850(0x1E)) {
+        f = func_001FA888(*(short *)(p + 0xA));
+        f = f / func_001FA888(func_001F9850(0x1E));
+        x = func_001FA888(q[0x17]);
+        a = func_001FA898_r(x * f);
+    } else {
+        f = func_001FA888(*(short *)(p + 0xA) - func_001F9850(0x1E));
+        f = f / func_001FA888(*(short *)(q + 0x18) - func_001F9850(0x1E));
+        x = func_001FA888(q[0x17]);
+        f = 1.0f - f;
+        a = func_001FA898_r(x * f);
+    }
+    {
+        unsigned int c = a << 24;
+        c |= b << 16;
+        c |= g << 8;
+        c |= r;
+        *(unsigned int *)(p + 4) = c;
+    }
+    p[8]++;
+    func_001F9BD8(p + 0x10, p + 0x10, q);
+    *(float *)(q + 8) += D_0015EE64 * 0.0005f;
+}

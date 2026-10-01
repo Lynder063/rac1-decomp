@@ -108,5 +108,60 @@ int func_L00_001ED9B0(float *a) {
     a[2] = FastVecLength(v);
     return 0;
 }
-INCLUDE_ASM("asm/overlays", func_L00_001EDA28);
+typedef struct { char pad[0x140]; W q; char pad2[0x30]; char *o; } CamC;
+extern CamC D_cam_c __asm__("D_L00_00166D80");
+extern void func_001F9BF0_3(float *, float *, float *) __asm__("func_001F9BF0");
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern float func_001FA888(int);
+extern void func_L00_001FF328(float *, float *, float);
+extern int func_L00_001F10E0_f(void *, int, void *, float) __asm__("func_L00_001F10E0");
+extern int D_L00_0016C16C;
+extern W D_L00_00173F70;
+extern int D_L00_0016C158[];
+extern W D_L00_00166EC0;
+extern short D_L00_0015F05C;
+
+/* moves the camera position a toward a target in steps, stopping each step on collision. Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay_camera_001eb188.c, FUN_L00_001ed6a8. */
+void func_L00_001EDA28(float *pos, float r) {
+    W d;
+    W v;
+    char *o = D_cam_c.o;
+    float *src = (float *)(o + 0x64);
+    int n, i, j;
+    char *base;
+    float *q;
+
+    v[0] = src[0];
+    v[1] = src[1];
+    v[2] = src[2];
+    ((int *)v)[3] = 0;
+    if (*(short *)(o + 0x8A) != 0) {
+        if (D_L00_0016C16C == 0) {
+            qcopy(&D_cam_c.q, pos);
+        }
+        *(short *)(o + 0x8A) = 0;
+        return;
+    }
+    func_001F9BF0_3(d, pos, v);
+    n = func_001FA898_r(func_001F9CB8(d) / (r * 0.9f)) + 1;
+    func_L00_001FF328(d, d, func_001FA888(n));
+    qcopy(pos, v);
+    for (i = 0; i < n; i++) {
+        q = D_L00_00173F70;
+        func_001F9BD8(pos, pos, d);
+        base = D_0013E633 + 0xE1D;
+        for (j = 0; j < 6 && func_L00_001F10E0_f(pos, *(int *)&D_L00_0015F05C, *(void **)(base + 0x2080), r); j++) {
+            qcopy(pos, q);
+            {
+                char *t = D_cam_c.o;
+                if (*(unsigned char *)(t + 0x89) == 0) {
+                    *(unsigned char *)(t + 0x89) = 1;
+                }
+            }
+        }
+    }
+    if (D_L00_0016C158[5] == 0) {
+        qcopy(&D_L00_00166EC0, pos);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_001EDBF8);

@@ -614,7 +614,162 @@ int func_00127C80(void *a0, int *a1, int *a2, int *a3, int *a4) {
     return ret;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00127D40);
+extern char D_00153998[];
+extern int func_00128A58(void *, int);
+extern void func_00128410(void *, int *, int *, int, int, int, int, int);
+extern void func_00128270_x(void *, int *, int *, int *, int, int, int, int, int, int, int) __asm__("func_00128270");
+extern void func_0012A268(void *, int);
+extern void func_00128560(char *, unsigned int);
+
+typedef struct {
+    char pad000[0x11C];
+    int unk11C;
+    char pad120[0x30];
+    int unk150;
+    int unk154;
+    int unk158;
+    int unk15C;
+    int unk160;
+    int unk164;
+    int unk168;
+    int unk16C;
+    int unk170;
+    int unk174;
+    char pad178[4];
+    int unk17C;
+    int unk180;
+    char pad184[0x2C];
+    int unk1B0;
+    int unk1B4;
+    char pad1B8[0x810 - 0x1B8];
+    int unk810;
+    char pad814[0x848 - 0x814];
+    int unk848;
+} MbDec;
+
+/* Decodes one macroblock's modes and motion vectors through the IPU VLC engine (libmpeg _decMB0). Adapted from Lombyte (MIT) for PAL: sdk/library/_decMB0.c, _decMB0. */
+int func_00127D40(void *arg0, int *arg1, int *arg2, int *arg3, void *arg4, void *arg5, void *arg6) {
+    MbDec *d = arg0;
+    int *mb = arg4;
+    int *sp20;
+    int *sp24;
+    int v;
+    int var19;
+    int var20;
+    int var23;
+    int motion_flag;
+    int t7;
+    int t7b;
+    int t4;
+    int var103;
+    int new_var;
+    unsigned int g1;
+    unsigned int g2;
+
+    *IPU_CTRL = (*IPU_CTRL & 0xF8FFFFFF) | (d->unk150 << 24);
+    sp20 = arg3;
+    sp24 = arg5;
+    v = func_001286E8((int)d, 1);
+    *arg1 = v;
+    if (v == 0) {
+        func_0012C468(d, D_00153998);
+        d->unk11C = 1;
+        return 0;
+    }
+    if (v & 0xC) {
+        if (d->unk174 == 3 && d->unk17C != 0) {
+            *arg2 = 2;
+        } else {
+            *arg2 = func_00128A58(d, 2);
+        }
+    } else if ((v & 1) && d->unk180 != 0) {
+        *arg2 = ((d->unk174 ^ 3) == 0) ? 2 : 1;
+    }
+    if (d->unk174 == 3) {
+        var19 = ((*arg2 ^ 1) == 0) ? 2 : 1;
+        var20 = *arg2 == 2;
+    } else {
+        new_var = 2;
+        var20 = 0;
+        var19 = ((*arg2 ^ new_var) == 0) ? 2 : 1;
+    }
+    var23 = 0;
+    motion_flag = *arg2 == 3;
+    if (var20 == 0) {
+        var23 = d->unk174 == 3;
+    }
+    var103 = 0;
+    if (d->unk174 == 3 && d->unk17C == 0 && (*arg1 & 3) != 0) {
+        var103 = func_00128A58(d, 1);
+    } else {
+        var103 = 0;
+    }
+    *sp20 = var103;
+    if (*arg1 & 0x10) {
+        d->unk1B4 = func_00128A58(d, 5);
+    }
+    if ((*arg1 & 8) || ((*arg1 & 1) && d->unk180 != 0)) {
+        if (d->unk848 != 0) {
+            func_00128270_x(d, mb, arg6, sp24, 0, var19, var20, d->unk164 - 1, d->unk168 - 1, motion_flag, var23);
+        } else {
+            t7 = d->unk158 - 1;
+            func_00128410(d, mb, arg6, t7, t7, 0, 0, d->unk154);
+        }
+    }
+    if (d->unk11C != 0) {
+        return 0;
+    }
+    if (*arg1 & 4) {
+        if (d->unk848 != 0) {
+            func_00128270_x(d, mb, arg6, sp24, 1, var19, var20, d->unk16C - 1, d->unk170 - 1, 0, var23);
+        } else {
+            t7b = d->unk160 - 1;
+            func_00128410(d, mb + 2, arg6, t7b, t7b, 0, 0, d->unk15C);
+        }
+    }
+    if (d->unk11C != 0) {
+        return 0;
+    }
+    if ((*arg1 & 1) && d->unk180 != 0) {
+        func_00128968(d, 1);
+    }
+    if ((*arg1 & 3) != 0) {
+        func_0012A268(*(void **)((char *)d + d->unk810 * 0x140 + 0x594), 0x300);
+        func_00128590(d);
+        g1 = ((*arg1 & 1) << 27) | (d->unk1B4 << 16);
+        g2 = (d->unk1B0 << 26) | 0x20000000;
+        func_00128560((char *)d, (g1 | g2) | (*sp20 << 25));
+    } else {
+        *(int *)((char *)d + d->unk810 * 0x140 + 0x6CC) = 1;
+    }
+    d->unk1B0 = 0;
+    if (d->unk11C != 0) {
+        return 0;
+    }
+    if (((*arg1 & 1) || (d->unk1B0 = 1, (*arg1 & 1) != 0)) && d->unk180 == 0) {
+        mb[5] = 0;
+        mb[4] = 0;
+        mb[1] = 0;
+        mb[0] = 0;
+        mb[7] = 0;
+        mb[6] = 0;
+        mb[3] = 0;
+        mb[2] = 0;
+    }
+    t4 = d->unk150;
+    if (t4 == 2) {
+        if (!(*arg1 & 9)) {
+            mb[0] = (mb[1] = (mb[4] = (mb[5] = 0)));
+            if (d->unk174 == 3) {
+                *arg2 = t4;
+            } else {
+                *arg2 = 1;
+                *sp24 = d->unk174 == 2;
+            }
+        }
+    }
+    return 1;
+}
 
 /* decode_motion_vector (libmpeg.a:mpc.o): ISO/IEC 13818-2 motion_vector()
  * component reconstruction, matching mpeg2decode reference source
