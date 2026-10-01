@@ -129,8 +129,55 @@ void func_L18_002D6440(char *moby) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L18_002D6738);
-INCLUDE_ASM("asm/overlays", func_L18_002D6878);
-INCLUDE_ASM("asm/overlays", func_L18_002D6A00);
+extern unsigned char *D_L18_001B2DDC;
+extern void func_L00_00258DB0(float *, float, float);
+extern float func_002140F8(float, float);
+extern unsigned char *func_L00_00272158(void *pos, float *vec, int s, int a, int col, int n, float x, float y, float z, float w, float pw);
+extern char *func_L00_0026DA50(void *pos, void *dir, int c, int d, int n, int k, float f);
+
+void func_L18_002D6878(void *mobyp, void *vec) {
+    char *moby = mobyp;
+    float a0[4];
+    float v10[4];
+    float a20[4];
+    unsigned char *p;
+    func_L00_00258DB0(a0, D_0015EE6C * 0.1f, D_0015EE6C * 0.2f);
+    func_001F9C30(v10, vec, func_002140F8(0.0f, 1.0f));
+    func_001F9BD8(v10, v10, moby + 0x10);
+    p = func_L00_00272158(v10, a0, func_001F9850(0x14), 0x7F, 0x606060, 3, 40000.0f, 1000.0f, 1.0f, -0.0002f, 0.0f);
+    if (p != 0) {
+        p[2] = *D_L18_001B2DDC;
+        p[3] = 0x44;
+    }
+    *(long long *)a20 = 0;
+    a20[2] = 0.02f;
+    func_001F9EC0(a20, a20, moby + 0xC0);
+    func_L00_0026DA50(v10, a20, 0x4F007FFF, 0x1FFFFFFF, func_001F9850(0x14), 1, 20000.0f);
+}
+typedef struct { float v[4]; } __attribute__((aligned(16))) QVec;
+extern short D_L18_001619FC;
+extern void func_L00_0025A8E8(int, float, void *, int, float, float, int, int, int);
+extern void func_L00_0025F4A8_x(void *, void *, void *, float, float, int, int, int, int, int, float, float, float, float, float, int, int, int) __asm__("func_L00_0025F4A8");
+
+void func_L18_002D6A00(void *m, void *src) {
+    char *moby = m;
+    float q[4];
+    float *qp = q;
+    int flags;
+    float a, b, c, d, e;
+    *(QVec *)qp = *(QVec *)src;
+    flags = *(int *)(*(char **)(moby + 0x78) + 0x38);
+    c = (flags & 1) ? 2.0f : 0.75f;
+    a = (flags & 1) ? 4.0f : 2.0f;
+    b = (flags & 1) ? 2.0f : 1.0f;
+    d = (flags & 4) ? 0.0f : 1.5f;
+    func_L00_0025F4A8_x(moby, qp, moby + 0x10, d, 1.0f, 0x14, 6, 0x20, 1, 0, a, b, 9.0f, c, 5.0f, 0, -1, 0);
+    if (d != 0.0f) {
+        if ((unsigned char)D_0013E633[0x2EC1] == 2) {
+            func_L00_0025A8E8((int)moby, 2.0f, moby + 0x10, 2, *(float *)&D_L18_001619FC, 1.0f, 0, 1, 0);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L18_002D6B58);
 INCLUDE_ASM("asm/overlays", func_L18_002D6D08);
 extern int *D_L18_001AC540[];

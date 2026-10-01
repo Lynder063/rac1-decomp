@@ -199,7 +199,40 @@ void func_L18_002FC188(M2 *m) {
 }
 INCLUDE_ASM("asm/overlays", func_L18_002FD058);
 INCLUDE_ASM("asm/overlays", func_L18_002FD5C0);
-INCLUDE_ASM("asm/overlays", func_L18_002FD9A0);
+typedef struct { float v[4]; } __attribute__((aligned(16))) QVec;
+extern float func_L00_001FF860(float, float);
+extern float func_L00_0025CE58(float *, float *, float, float, float, float);
+extern float func_001F9D48(float *, float *);
+extern float func_00214D88(float *, float *, float, float, float, float);
+extern float func_001F9F90(float);
+extern void func_L00_00259868(int, int, float, float, float, int);
+extern void func_L00_00262DF0(float, void *, void *, void *);
+extern float D_0015EE70 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+
+float func_L18_002FD9A0(char *self, float *src) {
+    QVec a;
+    float v[4];
+    float b[4];
+    float z = 0.0f;
+    float h = 0.5f;
+    char *o = *(char **)(self + 0x78);
+    float dist;
+    *(QVec *)&a = *(QVec *)src;
+    {
+        float d = func_001FA748(func_L00_001FF860(a.v[0] - *(float *)(self + 0x10), a.v[1] - *(float *)(self + 0x14)), *(float *)(o + 0x1EC));
+        func_L00_0025CE58((float *)(self + 0x48), (float *)(o + 0x1E8), d, D_0015EE70 * 6.2831855f, D_0015EE70 * 6.2831855f, D_0015EE6C * 6.2831855f);
+    }
+    b[0] = z;
+    dist = func_001F9D48((float *)(self + 0x10), a.v);
+    func_00214D88(b, (float *)(o + 0x1F0), dist, D_0015EE70 * 6.0f, D_0015EE70 * 6.0f, D_0015EE6C * 5.0f);
+    v[0] = func_001F9F90(*(float *)(self + 0x48)) * *(float *)(o + 0x1F0);
+    v[1] = func_001F9FA8(*(float *)(self + 0x48)) * *(float *)(o + 0x1F0);
+    v[2] = -(D_0015EE6C + D_0015EE6C);
+    func_L00_00259868((int)self, (int)v, h, h, z, 0);
+    func_L00_00262DF0(h, *(void **)(o + 0x1E0), self + 0x10, self + 0x10);
+    return dist;
+}
 INCLUDE_ASM("asm/overlays", func_L18_002FDB28);
 INCLUDE_ASM("asm/overlays", func_L18_002FDCA0);
 INCLUDE_ASM("asm/overlays", func_L18_002FDCC4);
