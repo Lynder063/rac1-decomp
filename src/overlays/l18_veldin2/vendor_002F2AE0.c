@@ -227,7 +227,26 @@ void func_L18_002F3710(unsigned char *m)
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L18_002F39F8);
+extern short *D_L18_001AC540[];
+typedef struct { int pad[7]; int idx; } Lx;
+typedef struct { char pad[0x18]; float f; char pad1[0x78 - 0x1C]; Lx *l; char pad2[0xA6 - 0x7C]; short kind; char pad3[0x100 - 0xA8]; } Mx;
+typedef struct { int pad[2]; float f; char pad2[0x1190 - 12]; } E;
+extern E D_L18_001DB7C0[];
+typedef struct { char pad[0x18]; float f; char pad2[0x5]; unsigned char idx; } S;
+
+void func_L18_002F39F8(void *a)
+{
+    unsigned char *s = a;
+    short *p = D_L18_001AC540[s[0x21]];
+    E *e = D_L18_001DB7C0;
+    do {
+        Mx *m = (Mx *)(((*(unsigned short *)p & 0x7FFF) << 8) + (int)D_L18_00160058);
+        m->f = *(float *)(s + 0x18);
+        if (m->kind == 0x57A) {
+            e[m->l->idx].f = *(float *)(s + 0x18);
+        }
+    } while (*p++ >= 0);
+}
 typedef float FVec4[4] __attribute__((aligned(16)));
 typedef struct {
     FVec4 v;

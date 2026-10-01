@@ -399,7 +399,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L18_002F1780`](l18_veldin2/func_L18_002F1780.c) | l18_veldin2 | 816 | SIZE ours 820 / retail 816, checked 2026-10-01. | - |
 | [`func_L18_002F1AB0`](l18_veldin2/func_L18_002F1AB0.c) | l18_veldin2 | 388 | SIZE ours 384 / retail 388, checked 2026-10-01. | - |
 | [`func_L18_002F33D8`](l18_veldin2/func_L18_002F33D8.c) | l18_veldin2 | 824 | SIZE ours 816 / retail 824, checked 2026-10-01. | - |
-| [`func_L18_002F39F8`](l18_veldin2/func_L18_002F39F8.c) | l18_veldin2 | 132 | SIZE ours 124 / retail 132, checked 2026-10-01. | - |
 | [`func_L18_002F72E0`](l18_veldin2/func_L18_002F72E0.c) | l18_veldin2 | 2548 | SIZE ours 2544 / retail 2548, checked 2026-10-01. | - |
 | [`func_L18_002F7F00`](l18_veldin2/func_L18_002F7F00.c) | l18_veldin2 | 876 | SIZE ours 868 / retail 876, checked 2026-10-01. | - |
 | [`func_L18_002F8F38`](l18_veldin2/func_L18_002F8F38.c) | l18_veldin2 | 356 | SIZE ours 360 / retail 356, checked 2026-10-01. | - |

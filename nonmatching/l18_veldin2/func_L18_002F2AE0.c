@@ -97,7 +97,7 @@ void func_L18_002F2AE0(unsigned char *moby) {
             if (t == 0) return;
             while (j < 16) {
                 int idx = (unsigned short)*t & 0x7FFF;
-                if (*(short *)((idx << 8) + (0xA6 + D_L18_00160058_b)) == 0x630) {
+                if (*(short *)((idx << 8) + (int)D_L18_00160058_b + 0xA6) == 0x630) {
                     d->ent[j].idx = idx;
                     j++;
                 }
