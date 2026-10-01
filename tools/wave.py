@@ -28,6 +28,11 @@ Plans, tracks and integrates waves of worker agents (docs/WORKER.md).
       progress report and commit that function alone. A failure restores the
       source file and moves on. Needs src/ and progress/ clean.
 
+  python3 tools/wave.py long NAME func_X ... [--arm opus] [--budget 20]
+      Sets up long-function workers (docs/LONG_FUNCTIONS.md): each
+      function's dossier, m2c sketch and PACKET.md, and a BUDGET in its
+      build-sn/try/<func>/<arm>/ folder; prints one prompt per function.
+      Refuses a function rank_candidates blocks.
   python3 tools/wave.py salvage [--ports] [--reject func_X ...]
       Lands every overlay stub that already has an EXACT run logged in
       build-sn/try (a wave stopped before landing, a file that clashed
@@ -357,7 +362,7 @@ def family_order(rows: list, findex: dict) -> list:
     return ports + [by_name[n] for n in firsts] + [r for r in rows if r[2] not in picked]
 
 
-def plan(args) -> None:
+def plan(args, quiet: bool = False) -> None:
     names = choose(args)
     if not names:
         sys.exit("nothing to plan")
@@ -394,6 +399,8 @@ def plan(args) -> None:
               "started": time.time(), "functions": names, "pool": "overlay" if overlay else "exe",
               "queue": args.queue, "near": near}
     (WAVES / f"{args.name}.json").write_text(json.dumps(record, indent=2) + "\n")
+    if quiet:
+        return
     if args.queue:
         print(f"\nwave {args.name}: a queue of {len(names)} functions, budget {args.budget} runs each. "
               f"One prompt per worker (ID unique, N functions each, COUNT claimed at a time):\n\n"
@@ -856,6 +863,32 @@ def land_overlay(args, wave: dict) -> None:
     print(f"{len(landed)} landed, {len(skipped)} skipped; {len(freed)} unmatched claims released")
 
 
+def long_setup(args) -> None:
+    """Long-function workers: see the module docstring."""
+    catalogue = dossier.load_overlay_catalogue()
+    for name in args.funcs:
+        asm = ROOT / "asm/overlays" / f"{name}.s"
+        if not OVERLAY_NAME.match(name) or not asm.exists():
+            sys.exit(f"{name}: not a level function with assembly")
+        verdict, why, _ = rank_candidates.classify(name, asm.read_text(errors="replace"), "text",
+                                                   catalogue[name][1])
+        if verdict == "blocked":
+            sys.exit(f"{name}: blocked ({why}); pick another")
+    for name in args.funcs:
+        (TRY / name).mkdir(parents=True, exist_ok=True)
+    loop = "; ".join(f"python tools/m2c.py {n} > build-sn/try/{n}/m2c.c 2>&1" for n in args.funcs)
+    docker("sh", "-c", loop)
+    plan(argparse.Namespace(name=args.name, funcs=args.funcs, role="match", count=len(args.funcs),
+                            budget=args.budget, near=False, fresh=False, overlay=True, queue=True,
+                            family=False, min_size=0, max_size=10 ** 9, near_max=NEAR_MAX), quiet=True)
+    for name in args.funcs:
+        work = TRY / name
+        (work / "PACKET.md").write_text(packet(name, args.budget))
+        (work / args.arm).mkdir(exist_ok=True)
+        (work / args.arm / "BUDGET").write_text(f"{args.budget}\n")
+        print(f"Read docs/LONG_FUNCTIONS.md and follow it exactly. FUNC={name} ARM={args.arm}.")
+
+
 def salvage(args) -> None:
     """Batch-lands every overlay stub with an EXACT run logged (see the
     module docstring); ports crediting Lombyte only with --ports."""
@@ -1087,12 +1120,17 @@ def main() -> None:
     l.add_argument("name")
     l.add_argument("--batch", action="store_true")
     l.add_argument("--reject", nargs="*", default=[])
+    g = commands.add_parser("long")
+    g.add_argument("name")
+    g.add_argument("funcs", nargs="+")
+    g.add_argument("--arm", default="opus")
+    g.add_argument("--budget", type=int, default=20)
     s = commands.add_parser("salvage")
     s.add_argument("--ports", action="store_true")
     s.add_argument("--reject", nargs="*", default=[])
     args = parser.parse_args()
     {"plan": plan, "status": status, "integrate": integrate, "land": land,
-     "claim": claim, "tokens": tokens, "salvage": salvage}[args.command](args)
+     "claim": claim, "tokens": tokens, "salvage": salvage, "long": long_setup}[args.command](args)
 
 
 if __name__ == "__main__":
