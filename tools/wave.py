@@ -596,8 +596,11 @@ def land_exe(args, wave: dict) -> None:
                         source.write_text(saved)
                     skipped.append((name, "not exact on re-check"))
                     continue
+                if re.search(rf"INCLUDE_ASM\([^)]*\b{name}\)", source.read_text()):
+                    skipped.append((name, "exact, but not applied (a definition under an alias?)"))
+                    continue
             finally:
-                shared.unlock()
+                shared.unlock(owner)
             landed.append(name)
             print(f"landed {name}", flush=True)
             continue
@@ -702,6 +705,7 @@ def land_overlay(args, wave: dict) -> None:
         sys.exit("land needs src/ and progress/ clean:\n" + dirty)
     findex = dossier.overlay_file_index()
     landed, skipped = [], []
+    batch = []      # --batch: (name, candidate, source), landed together below
     for name, verdict, candidate, _ in results(wave):
         if not verdict.startswith("EXACT") or not candidate or name in args.reject:
             continue
@@ -716,6 +720,9 @@ def land_overlay(args, wave: dict) -> None:
         if reason:
             skipped.append((name, f"refused: {reason}"))
             continue
+        if args.batch:
+            batch.append((name, candidate, source))
+            continue
         owner = f"land:{args.name}"
         shared.lock(owner)                  # other agents write src/ too (tools/claims.py)
         try:
@@ -728,12 +735,75 @@ def land_overlay(args, wave: dict) -> None:
             continue
         landed.append(name)
         print(f"landed {name}", flush=True)
+    if batch:
+        done, failed = land_batch(args, batch)
+        landed += done
+        skipped += failed
     freed = [n for n, v, _, _ in results(wave)
              if not v.startswith("EXACT") and (claims(wave) / n).exists()
              and shared.release(f"{args.name}:{(claims(wave) / n).read_text().strip()}", n)]
     for name, why in skipped:
         print(f"skipped {name}: {why}")
     print(f"{len(landed)} landed, {len(skipped)} skipped; {len(freed)} unmatched claims released")
+
+
+def land_batch(args, batch: list) -> tuple[list[str], list[tuple[str, str]]]:
+    """Lands BATCH (name, candidate, source) together: every candidate
+    applied in one integrate run under the landing lock, then every touched
+    file rebuilt and every C function in it checked strictly in one
+    parallel tools/overlay_file_check.py run. A file with any problem is put
+    back (if nobody wrote it meanwhile) and its candidates land one by one
+    through land_one(), which also handles prototype clashes."""
+    owner = f"land:{args.name}"
+    files = sorted({source for _, _, source in batch})
+    manifest = WAVES / f"{args.name}.batch.MANIFEST"
+    manifest.write_text("".join(f"{name} {cand}\n" for name, cand, _ in batch))
+    shared.lock(owner)
+    try:
+        saved = {f: f.read_text() for f in files}
+        applied = docker("python", "tools/integrate.py", str(manifest.relative_to(ROOT)), "--apply", "--trust",
+                         "--lock-owner", owner)
+        (WAVES / f"{args.name}.batch.apply.log").write_text(applied.stdout + applied.stderr)
+        written = {f: f.read_text() for f in files}
+    finally:
+        shared.unlock(owner)
+    check = docker("python", "tools/overlay_file_check.py", *(str(f.relative_to(ROOT)) for f in files))
+    (WAVES / f"{args.name}.batch.check.log").write_text(check.stdout + check.stderr)
+    bad = {f for f in files if re.search(rf"(BUILD FAIL|NOT EXACT) {re.escape(str(f.relative_to(ROOT)))}:", check.stdout)}
+    landed, skipped = [], []
+    for name, cand, source in batch:
+        if source in bad:
+            continue
+        if overlay_is_stub(source, name):
+            skipped.append((name, "not applied (see the batch apply log)"))
+        else:
+            landed.append(name)
+            print(f"landed {name}", flush=True)
+    for f in sorted(bad):
+        shared.lock(owner)
+        try:
+            if f.read_text() == written[f]:
+                f.write_text(saved[f])
+            else:
+                skipped += [(n, f"{f.name} changed meanwhile; left as it is, check it")
+                            for n, _, s in batch if s == f]
+                continue
+        finally:
+            shared.unlock(owner)
+        for name, cand, source in batch:
+            if source != f:
+                continue
+            shared.lock(owner)
+            try:
+                outcome = land_one(args, name, cand, source, owner)
+            finally:
+                shared.unlock(owner)
+            if outcome == "landed":
+                landed.append(name)
+                print(f"landed {name} (one by one)", flush=True)
+            else:
+                skipped.append((name, outcome))
+    return landed, skipped
 
 
 def land_one(args, name: str, candidate: str, source: Path, owner: str) -> str:

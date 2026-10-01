@@ -258,6 +258,9 @@ The cheapest match is the one no worker makes.
 | The strict check mis-paired `%hi`/`%lo` when retail interleaves the loads of two function pointers | pair in relocation-table order; an orphan `%lo` falls back to address order |
 | A hand-landed match was 20 bytes long in its file: a callee it uses was declared only further down, so it was implicitly `int` | re-check every landing in its file, not only the candidate on its own |
 | A landed function stopped matching when a neighbour landed later declared the same symbol through a `MACRO_ADDR` alias (the assembler keeps one form per symbol per file) | `land` builds the whole file after each landing (`tools/overlay_file_check.py`) and undoes the landing if any C function in it broke |
+| Landing ports one at a time under one lock took a minute each | `land --batch` applies a whole wave at once, re-checks every touched file in one parallel run, and lands only the files with a problem one by one |
+| A candidate kept a test `#define` that renamed a declaration its neighbour links against, and the executable failed to link | `integrate.py` refuses a candidate with a `#define`; such a candidate is landed by hand after review |
+| A candidate defined under an `__asm__` alias was reported landed though its stub stayed | `land` checks the stub is gone before counting a function as landed |
 | A tool-testing agent deleted match history in `build-sn/try/` | workers write only files they create; nothing under `build-sn/try/` or `build-sn/waves/` is scratch |
 
 ## Several agents at once

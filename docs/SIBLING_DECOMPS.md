@@ -47,7 +47,8 @@ them are the movie code upstream reverted to assembly (commit
 `85ecd8b`, "Sources" in CONTRIBUTING.md): those are redone from the
 assembly alone, never ported. The rest go out as queue waves
 (QUEUE.md, "Lombyte ports"): a function's packet carries Lombyte's C
-when Lombyte matched it.
+when Lombyte matched it. The first two such waves (lb1, lb2) ported
+105 functions (63,424 bytes), each listed in THIRD_PARTY_NOTICES.md.
 
 ### Porting a function
 
