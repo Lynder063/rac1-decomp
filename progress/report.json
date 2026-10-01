@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 18.1065804544774,
+  "fuzzy_match_percent": 18.161513258732427,
   "total_code": "3713628",
-  "matched_code": "604888",
-  "matched_code_percent": 16.288330441282756,
+  "matched_code": "606928",
+  "matched_code_percent": 16.343263245537788,
   "total_functions": 5111,
-  "matched_functions": 2562,
-  "matched_functions_percent": 50.127176677753866,
+  "matched_functions": 2566,
+  "matched_functions_percent": 50.20543924867932,
   "complete_code": "89752",
   "complete_code_percent": 2.4168279644595527,
   "total_units": 278,
@@ -39690,13 +39690,13 @@
   {
    "name": "Level 00: Veldin",
    "measures": {
-    "fuzzy_match_percent": 21.075794621026894,
+    "fuzzy_match_percent": 46.01466992665037,
     "total_code": "8180",
-    "matched_code": "1724",
-    "matched_code_percent": 21.075794621026894,
+    "matched_code": "3764",
+    "matched_code_percent": 46.01466992665037,
     "total_functions": 11,
-    "matched_functions": 3,
-    "matched_functions_percent": 27.272727272727273,
+    "matched_functions": 7,
+    "matched_functions_percent": 63.63636363636363,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -39706,7 +39706,7 @@
     {
      "name": "func_L00_0023E300",
      "size": "452",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "0",
      "metadata": {
       "virtual_address": "2351872"
@@ -39733,7 +39733,7 @@
     {
      "name": "func_L00_002DB278",
      "size": "432",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "642936",
      "metadata": {
       "virtual_address": "2994808"
@@ -39742,7 +39742,7 @@
     {
      "name": "func_L00_002E1E38",
      "size": "508",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "670520",
      "metadata": {
       "virtual_address": "3022392"
@@ -39796,7 +39796,7 @@
     {
      "name": "func_L00_002E4CB0",
      "size": "648",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "682416",
      "metadata": {
       "virtual_address": "3034288"
@@ -53281,13 +53281,13 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 12.381956792145647,
+    "fuzzy_match_percent": 12.444766066242856,
     "total_code": "3247928",
-    "matched_code": "335264",
-    "matched_code_percent": 10.322396309277792,
+    "matched_code": "337304",
+    "matched_code_percent": 10.385205583375,
     "total_functions": 3431,
-    "matched_functions": 1261,
-    "matched_functions_percent": 36.75313319731857,
+    "matched_functions": 1265,
+    "matched_functions_percent": 36.86971728359079,
     "complete_code": "2048",
     "complete_code_percent": 0.06305558497602164
    }
@@ -53341,13 +53341,13 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 7.729503130952961,
+    "fuzzy_match_percent": 7.82914656376691,
     "total_code": "2047300",
-    "matched_code": "124732",
-    "matched_code_percent": 6.092512089092952,
+    "matched_code": "126772",
+    "matched_code_percent": 6.192155521906902,
     "total_functions": 1451,
-    "matched_functions": 457,
-    "matched_functions_percent": 31.49552033080634,
+    "matched_functions": 461,
+    "matched_functions_percent": 31.77119228118539,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53356,13 +53356,13 @@
    "id": "level_00",
    "name": "Level 00: Veldin",
    "measures": {
-    "fuzzy_match_percent": 21.075794621026894,
+    "fuzzy_match_percent": 46.01466992665037,
     "total_code": "8180",
-    "matched_code": "1724",
-    "matched_code_percent": 21.075794621026894,
+    "matched_code": "3764",
+    "matched_code_percent": 46.01466992665037,
     "total_functions": 11,
-    "matched_functions": 3,
-    "matched_functions_percent": 27.272727272727273,
+    "matched_functions": 7,
+    "matched_functions_percent": 63.63636363636363,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
