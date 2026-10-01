@@ -269,7 +269,54 @@ char *func_L00_002C6608(void *pos, int idx, int a2, int a3) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_002C6720);
 INCLUDE_ASM("asm/overlays", func_L00_002C6F40);
-INCLUDE_ASM("asm/overlays", func_L00_002C6F48);
+extern int func_L00_002346C0(int, int);
+extern void func_L00_00264E28(int a, int b, int c);
+extern void func_001F9BC0(void *);
+extern int func_001F9B70(int);
+extern int func_L00_0028EF68(int i, int a1, int v, int k);
+typedef struct { char pad[0x34]; short a; short b; char pad2[0x14]; } Rec_2C6F48;
+extern char D_0013D50F[];
+extern char D_0013DE6E[];
+extern Rec_2C6F48 D_L00_00179BC0_2C6F48[] __asm__("D_L00_00179BC0");
+extern float D_0015EE60 MACRO_ADDR;
+extern int D_L00_00161908 MACRO_ADDR;
+
+/* per-frame step of a counter moby: advances, plays sound and finishes */
+/* Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002bffa8.c, FUN_L00_002c5be8. */
+int func_L00_002C6F48(char *m) {
+    char *p = *(char **)(m + 0x78);
+    int a, b, r, d;
+    float f;
+    if (*(unsigned char *)(m + 0x20) == 2) {
+    fail:
+        return 0;
+    }
+    a = *(int *)(D_0013D50F + 0x21 + *(int *)(p + 8) * 4);
+    f = func_L00_002346C0(*(int *)(p + 8), *(int *)p);
+    b = *(int *)(D_0013D50F + 0x21 + *(int *)(p + 8) * 4);
+    if (a >= b) goto fail;
+    if (b - a == 1)
+        r = ((Rec_2C6F48 *)((char *)D_L00_00179BC0_2C6F48 + *(int *)(p + 8) * 0x4C))->b;
+    else
+        r = ((Rec_2C6F48 *)((char *)D_L00_00179BC0_2C6F48 + *(int *)(p + 8) * 0x4C))->a;
+    func_L00_00264E28(r, b - a, -1);
+    if (f < (float)*(int *)p) {
+        *(int *)(D_0013DE6E + 0xA2 + *(int *)(p + 8) * 4) += *(int *)(D_0013D50F + 0x21 + *(int *)(p + 8) * 4) - a;
+        m[0x20] = 2;
+        *(float *)(m + 0x2C) *= D_0015EE60 * 0.20000005f + 1.0f;
+        func_001F9BC0(p + 0x10);
+        d = D_L00_0015F6B0 - D_L00_00161908;
+        *(float *)(p + 0x24) = D_0015EE6C * 8.0f;
+        {
+            int r = func_001F9B70(d);
+            if (func_001F9850(10) < r) {
+                func_L00_0028EF68(0, 0, (int)m, 0xD5);
+                D_L00_00161908 = D_L00_0015F6B0;
+            }
+        }
+    }
+    return 1;
+}
 typedef float V4q[4] __attribute__((aligned(16)));
 extern void func_L00_00250800(void *, int, void *);
 extern void func_001F9CA0(void *, void *, void *);

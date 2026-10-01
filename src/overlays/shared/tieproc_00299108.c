@@ -144,7 +144,25 @@ void func_L00_0029A868(int i) {
     }
     func_L00_0029A940(b, a, 0);
 }
-INCLUDE_ASM("asm/overlays", func_L00_0029A8D0);
+typedef struct { int b; int a; } LL7_29A8D0;
+typedef struct {
+    char pad0[0x1938];
+    LL7_29A8D0 x[12];
+    LL7_29A8D0 y[19];
+} G7_29A8D0;
+extern G7_29A8D0 D_00137C80_q_29A8D0 __asm__("D_00137C80");
+
+/* Plays the movie of table entry i (set chosen by a flag). Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_00295100.c, FUN_L00_00299560. */
+void func_L00_0029A8D0(int i) {
+    int a, b;
+    if (i < 0) return;
+    if (D_0015EE80) {
+        b = D_00137C80_q_29A8D0.y[i].b; a = D_00137C80_q_29A8D0.y[i].a;
+    } else {
+        b = D_00137C80_q_29A8D0.x[i].b; a = D_00137C80_q_29A8D0.x[i].a;
+    }
+    func_L00_0029A940(b, a, D_0015EE88);
+}
 INCLUDE_ASM("asm/overlays", func_L00_0029A940);
 INCLUDE_ASM("asm/overlays", func_L00_0029AB38);
 extern char D_0013D390[];

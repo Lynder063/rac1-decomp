@@ -143,6 +143,13 @@ The following functions adapt source from
 - `src/overlays/shared/partupd_00272158.c`: `func_L00_00273A60` (part type 58 update: fade in, hold spawning sparks, then fall and fade out)
 - `src/overlays/l01_novalis/vendor_002BA898.c`: `func_L01_002FA030` (emitter update: ticks timers, occasionally bursts a smoke puff and spawns two drifting smoke particles per frame)
 - `src/overlays/shared/shrubproc_0028A198.c`: `func_L00_0028A878` (initialises and animates the star field of the sky)
+- `src/overlays/l00_veldin1/vendor_002DB278.c`: `func_L00_002E2F58` (spawns a spark: steps the moby's position and emits one fast particle and three slow tails)
+- `src/overlays/l01_novalis/vendor_002BA898.c`: `func_L01_002FA458` (collapsing platform: sparkles while idle, then drops when the player stands near, and records it as collected)
+- `src/overlays/l01_novalis/vendor_002FABE8.c`: `func_L01_002FB898` (per-frame update of a falling drop: integrates its velocity, tests it against the world and spawns its impact effect)
+- `src/overlays/shared/help_002297E0.c`: `func_L00_00229B78` (menu/hint update: picks an action for the player from the game block's timers and flags)
+- `src/overlays/shared/tieproc_00299108.c`: `func_L00_0029A8D0` (looks up table entry i, from one of two sets chosen by a flag, and passes it on)
+- `src/overlays/shared/vendor_002C12B0.c`: `func_L00_002C6F48` (per-frame step of a counter moby: advances, plays sound and finishes)
+- `src/overlays/shared/vendor_002C96D0.c`: `func_L00_002CD3B8` (spawns a debris moby with randomized spin and velocity)
 
 MIT License
 

@@ -325,7 +325,161 @@ void func_L01_002FA3D8(char *moby) {
     func_L00_002E9968(*(float *)&D_L01_00161CC0, *(float *)&D_L01_00161CC8);
     func_L00_002E99A0(0, *(float *)&D_L01_00161CC4, *(float *)&D_L01_00161CC8);
 }
-INCLUDE_ASM("asm/overlays", func_L01_002FA458);
+typedef int u128_2FA458 __attribute__((mode(TI)));
+typedef union { u128_2FA458 q; float f[4]; } CapVec;
+typedef struct {
+    unsigned char pad0[0x20];
+    int w20;
+    short h24;
+    unsigned char pad26[2];
+    unsigned char b28;
+    unsigned char pad29[0x15];
+    short h3E;
+    unsigned char pad40[0x20];
+    CapVec rot;
+    CapVec home;
+    int cam;
+    short wait;
+    short hold;
+    short rise_len;
+    short rise;
+    int music;
+} CapVars;
+typedef struct {
+    unsigned char pad0[0x10];
+    CapVec pos;
+    unsigned char state;
+    unsigned char pad21[0x57];
+    CapVars *pvars;
+    unsigned char pad7c[0x36];
+    unsigned short id;
+} CapMoby;
+typedef struct {
+    unsigned char pad0[0x80];
+    unsigned char pos[8];
+    float z;
+    unsigned char pad8c[0x2000];
+    unsigned int mode;
+} CapPlayer;
+typedef struct { unsigned int c[3]; } CapColors;
+typedef struct { float x, y, z; } CapVec3;
+
+extern char D_0013E633[];
+extern unsigned char D_0014171B[] NOT_SDA;
+extern CapColors D_L01_00161CD0;
+typedef struct { char pad0[0x454]; unsigned char collected[1]; } CapLevelState;
+extern CapLevelState D_L01_001BB9C0;
+extern int D_L01_001BAC60[];
+extern int D_L01_0015F504 MACRO_ADDR;
+typedef struct { char pad0[0x160]; float shake; char pad164[4]; int shake_time; } CapCamera;
+extern CapCamera D_L01_00167180;
+extern float D_0015EE70 MACRO_ADDR;
+extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
+
+extern void func_001F9BC0(void *);
+extern float func_001F9D48(void *, void *);
+extern int func_0022ED80_2FA458(int, int, void *) __asm__("func_0022ED80");
+extern void func_L00_002EC0C8(int);
+extern void func_L01_0023D688(int, int);
+
+/* Collapsing platform: sparkles while idle, then drops when the player stands near, and records it as collected.
+   Adapted from Lombyte (MIT) for PAL: overlays/l01/unclassified_002b96e0.c, FUN_L01_002f9080. */
+void func_L01_002FA458(CapMoby *m) {
+    CapVars *v;
+    unsigned char *e;
+
+    v = m->pvars;
+    if (m->state != 1 && !func_001F9938(&v->wait) && func_002140B0(100) < 5) {
+        CapColors colors;
+        CapVec vel;
+        CapVec pos;
+        float r;
+        float ang;
+
+        colors = D_L01_00161CD0;
+        pos.q = 0;
+        pos.f[0] = func_002140F8(D_0015EE6C * -0.5f, D_0015EE6C * 0.5f);
+        pos.f[1] = func_002140F8(D_0015EE6C * -0.5f, D_0015EE6C * 0.5f);
+        vel.q = pos.q;
+        r = func_002140F8(2.0f, 3.0f);
+        ang = func_00214158();
+        pos.f[0] = func_001F9F90(ang) * r;
+        pos.f[1] = func_001F9FA8(ang) * r;
+        pos.f[2] = 0.0f;
+        func_001F9BD8(&pos, &pos, &v->home);
+        func_L01_002F9908(&pos, &vel, colors.c[func_002140B0(3)], func_L00_00258BC8(0xB4, 0x12C), 0.05f, 1.0f, 1.0f, 0.75f, 0);
+    }
+    switch (m->state) {
+    case 0:
+        v->w20 = 0;
+        v->h24 = 0;
+        v->b28 = 4;
+        v->h3E = 5;
+        qcopy(&v->home, &m->pos);
+        m->state = 1;
+        if (D_L01_001BB9C0.collected[(short)m->id] != 0
+            || (*(int *)(D_0014171B + 0xAB75 + (((short)m->id >> 5) * 4 + (D_0015EE84_m << 8))) >> (m->id & 0x1F)) & 1) {
+            func_001F9BC0(&v->rot);
+            m->state = 4;
+            m->pos.f[2] = v->home.f[2] - 20.0f;
+            v->music = -1;
+        }
+        break;
+    case 1:
+        if (v->cam != -1) {
+            CapPlayer *p = (CapPlayer *)(D_0013E633 + 0xE1D);
+            e = (unsigned char *)(v->cam * 128 + (int)D_L01_0016016C);
+            if (p->z >= *(float *)(e + 0x38)
+                && func_001F9D48(p->pos, e + 0x30) < 10.0f
+                && (p->mode < 2 || p->mode == 9)) {
+                v->wait = func_L00_00258BC8(func_001F9850(300), func_001F9850(600));
+                v->rise = func_001F9850(v->rise_len);
+                m->state = 2;
+                D_L01_00167180.shake = 0.4f;
+                D_L01_00167180.shake_time = func_001F9850(30);
+                func_0022ED80_2FA458(1, 0, m);
+            }
+        }
+        break;
+    case 2:
+        func_L01_002FA3D8((char *)m);
+        if (func_001F9938(&v->rise)) {
+            func_001F9BC0(&v->rot);
+            v->hold = func_001F9850(0x2D);
+            m->state = 3;
+        }
+        break;
+    case 3: {
+        CapVec3 old;
+
+        func_L01_002FA3D8((char *)m);
+        m->pos.f[2] -= 0.0f;
+        qcopy(&old, &m->pos);
+        v->rot.f[2] -= D_0015EE70 * 30.0f;
+        func_001F9BD8(&m->pos, &m->pos, &v->rot);
+        if (func_001F9938(&v->hold) && 20.0f < v->home.f[2] - m->pos.f[2]) {
+            D_L01_00167180.shake = 0.1f;
+            D_L01_00167180.shake_time = func_001F9850(20);
+            func_001F9BC0(&v->rot);
+            m->state = 4;
+            func_0022ED80_2FA458(0, 0, m);
+            m->pos.f[2] = v->home.f[2] - 20.0f;
+            *(int *)(D_0014171B + 0xAB75 + (((short)m->id >> 5) * 4 + (D_0015EE84_m << 8))) |= 1 << (m->id & 0x1F);
+            D_L01_001BAC60[(short)m->id >> 5] |= 1 << (m->id & 0x1F);
+        }
+        m->pos.f[2] += 0.0f;
+        break;
+    }
+    case 4:
+        if (v->wait == 0 && v->music != -1) {
+            func_L00_002EC0C8(0);
+            func_L01_0023D688(0, 1);
+            D_L01_0015F504 = 0;
+            v->music = -1;
+        }
+        break;
+    }
+}
 typedef struct {
     u8 pad0[0x20];
     s32 x20;

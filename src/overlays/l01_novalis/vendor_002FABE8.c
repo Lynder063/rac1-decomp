@@ -110,7 +110,100 @@ char *func_L01_002FB440(int owner, void *pos, void *target, int color) {
     return m;
 }
 INCLUDE_ASM("asm/overlays", func_L01_002FB588);
-INCLUDE_ASM("asm/overlays", func_L01_002FB898);
+typedef struct { float f[4]; } Vec4 __attribute__((aligned(16)));
+typedef struct {
+    Vec4 vel;
+    void *coll;
+    int sound[1];
+} DropVars;
+typedef struct {
+    char pad0[0x10];
+    Vec4 pos;
+    char pad20[0x58];
+    DropVars *vars;
+    char pad7C[0x2A];
+    unsigned short hA6;
+} DropMoby;
+typedef struct {
+    Vec4 dir;
+    DropMoby *owner;
+    int flags;
+    unsigned char b28;
+    unsigned char b29;
+    unsigned short id;
+    float scale;
+    int count;
+} DropProbe;
+
+extern char D_L01_001672C0[];
+extern char D_L01_00174360[];
+extern float func_001F9878(float);
+extern void func_001F9BD8(void *, void *, void *);
+extern float func_001F9D48(void *, void *);
+extern int func_001F9908(int *arg0);
+extern int func_L00_001EFFF0(void *, void *, int, void *, void *);
+extern void func_0020D678(void *);
+extern void func_L01_002FB588(void *, void *, int, float, float);
+extern int func_L00_001F2BE8_2FB898(float, void *, int, void *, void *) __asm__("func_L00_001F2BE8");
+
+/* Per-frame update of a falling drop: integrates its velocity, tests it against the world and spawns its impact effect. Adapted from Lombyte (MIT) for PAL: overlays/l01/unclassified_002f9810.c, FUN_L01_002fa4c0. */
+void func_L01_002FB898(DropMoby *m) {
+    DropVars *v;
+    Vec4 *pos;
+    Vec4 prev;
+    DropProbe probe;
+    Vec4 tmp;
+    float a;
+    float b;
+    float zero;
+    float one;
+    float ten;
+    float half;
+
+    v = m->vars;
+    pos = &m->pos;
+    qcopy(&prev, pos);
+    zero = 0.0f;
+    one = 1.0f;
+    ten = 10.0f;
+    a = func_001F9878(ten);
+    b = func_001F9878(ten);
+    b = b * func_001F9878(ten);
+    v->vel.f[2] -= (a * zero + one) * 2.0f / b;
+    func_001F9BD8(pos, pos, &v->vel);
+    if (m->pos.f[0] < zero || m->pos.f[1] < zero || m->pos.f[2] < zero
+        || func_001F9D48(pos, D_L01_001672C0) > 64.0f) {
+        func_0020D678(m);
+        return;
+    }
+    probe.owner = m;
+    probe.flags = 0x10001;
+    probe.scale = one;
+    probe.count = 1;
+    qcopy(&probe.dir, &v->vel);
+    probe.dir.f[2] = one;
+    probe.dir.f[3] = 5627.9248f;
+    probe.b28 = 1;
+    probe.b29 = 1;
+    probe.id = m->hA6;
+    if (func_001F9908(v->sound) != 0) {
+        tmp = m->pos;
+        func_L01_002FB588(m, &tmp, 0, 0.5f, zero);
+        func_0020D678(m);
+    } else if (func_L00_001EFFF0(&prev, pos, 0, v->coll, &probe) != 0) {
+        qcopy(pos, D_L01_00174360);
+        tmp = m->pos;
+        func_L01_002FB588(m, &tmp, 0, 0.5f, zero);
+        func_0020D678(m);
+    } else {
+        half = 0.5f;
+        if (func_L00_001F2BE8_2FB898(half, pos, 0x10, v->coll, &probe) != 0) {
+            tmp = m->pos;
+            func_L01_002FB588(m, &tmp, 0, half, zero);
+            func_0020D678(m);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_002FBBD8);
 typedef struct {
     char pad0[0x44];

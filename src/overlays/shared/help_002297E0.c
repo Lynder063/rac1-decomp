@@ -3,7 +3,70 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L00_002297E0);
-INCLUDE_ASM("asm/overlays", func_L00_00229B78);
+extern char D_0013E633[];
+extern char D_0013A5E0_229B78[] __asm__("D_0013A5E0");
+extern int func_L00_00222B80(int, int);
+extern int func_001F9850(int);
+extern void func_L00_00232C10(int, int, float);
+extern void func_L00_00211F80(int, float);
+extern void func_L00_002607A8(void *a, float x);
+extern int func_L00_00205618(int);
+extern void func_L00_00232E60(int bank, int seq);
+extern short D_0015EE6C_229B78 __asm__("D_0015EE6C");
+extern float D_0015EE64 MACRO_ADDR;
+extern int D_L00_0015F7BC MACRO_ADDR;
+
+/* Menu/hint update: picks an action for the player from the game block's timers and flags. Adapted from Lombyte (MIT) for PAL: overlays/shared/ui_help_00229010.c, FUN_L00_002293a8. */
+void func_L00_00229B78(void) {
+    char *b, *c, *d;
+    int n;
+    b = D_0013E633 + 0xE1D;
+    *(int *)(b + 0x2284) = 0;
+    if (*(unsigned char *)(b + 0x12E2) != 0 && *(float *)&D_0015EE6C_229B78 * 0.5f < *(float *)(b + 0x164)) {
+        func_L00_00222B80(0x2F, 1);
+        return;
+    }
+    func_L00_00211F80(0, 1.0f);
+    if (*(int *)(D_0013A5E0_229B78 + 0x2600) & 0xA) {
+        func_L00_00222B80(4, 0);
+        func_L00_00232C10(0xD, 2, -2.0f);
+        func_L00_00232E60(3, 0x12);
+        return;
+    }
+    c = D_0013E633 + 0xE1D;
+    if (0.3f < *(float *)(c + 0x229C) && *(int *)(c + 0x1C4) == 0) {
+        if (*(unsigned char *)(c + 0x12E2) != 0 || *(unsigned char *)(c + 0x20A9) != 0) {
+            func_L00_00222B80(2, 1);
+            return;
+        }
+        if (func_L00_00222B80(2, 0)) {
+            *(int *)(c + 0x2088) = 1;
+            n = func_001F9850(8);
+            if (func_001F9850(5) < *(int *)(c + 0x418)) n = func_001F9850(14);
+            func_L00_00232C10(4, D_L00_0015F7BC, (float)n);
+            *(short *)(c + 0x3BC) = 1;
+        }
+        return;
+    }
+    d = D_0013E633 + 0xE1D;
+    if ((*(float *)&D_0015EE6C_229B78 * 3.0f < *(float *)(d + 0x168) && func_001F9850(3) < *(int *)(d + 0x418)) || *(int *)(d + 0x2084) == 0x10) {
+        if (func_L00_00222B80(3, 0)) {
+            func_L00_00232C10(5, 0, -1.0f);
+            func_L00_002607A8(D_0013E633 + 0xF6D, *(float *)((char *)&D_0015EE64 + 8) * 5.0f);
+        }
+        return;
+    }
+    if (func_001F9850(12) < *(int *)(d + 0x418) || (*(int *)(d + 0xA98) & 2)) {
+        if (func_L00_00222B80(0, 0)) {
+            if (func_L00_00205618(0) == 0x54) {
+                n = func_L00_00205618(0);
+                func_L00_00232C10(n, 0, (float)func_001F9850(15));
+            } else if (*(int *)(d + 0xA98) & 2) {
+                func_L00_00232C10(func_L00_00205618(0), 0, -2.0f);
+            }
+        }
+    }
+}
 extern char D_0013E633[];
 extern unsigned char D_0013A5E0[] NOT_SDA;
 extern unsigned char D_0013D5CA NOT_SDA;

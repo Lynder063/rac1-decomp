@@ -48,7 +48,9 @@ them are the movie code upstream reverted to assembly (commit
 assembly alone, never ported. The rest go out as queue waves
 (QUEUE.md, "Lombyte ports"): a function's packet carries Lombyte's C
 when Lombyte matched it. The first two such waves (lb1, lb2) ported
-105 functions (63,424 bytes), each listed in THIRD_PARTY_NOTICES.md.
+105 functions (63,424 bytes); `wave.py salvage --ports` later landed 7
+more whose files had clashed (4,372 bytes). Each is listed in
+THIRD_PARTY_NOTICES.md.
 
 ### Porting a function
 

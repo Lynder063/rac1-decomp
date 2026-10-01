@@ -107,7 +107,75 @@ INCLUDE_ASM("asm/overlays", func_L00_002CC390);
 INCLUDE_ASM("asm/overlays", func_L00_002CC3C0);
 INCLUDE_ASM("asm/overlays", func_L00_002CC868);
 INCLUDE_ASM("asm/overlays", func_L00_002CD110);
-INCLUDE_ASM("asm/overlays", func_L00_002CD3B8);
+extern char *func_0020D348_2CD3B8(int) __asm__("func_0020D348");
+extern float func_002140F8(float, float);
+extern float func_L00_00258C80(float, float);
+extern int func_001160D8(void);
+extern float func_00214158(void);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern int func_L00_00258BC8(int, int);
+extern int func_001F9850(int);
+extern void func_L00_00251E30(void *);
+extern void func_L00_0025E210(void *);
+extern float D_0015EE6C MACRO_ADDR;
+extern short D_L00_00161974;
+extern short D_L00_00161970;
+extern unsigned char D_0013E633_2CD3B8[] __asm__("D_0013E633");
+
+typedef struct { float pad[4]; float v10; float v14; int pad2; int r1c; float f20; int i24; float f28; float f2c; } DD;
+
+/* Spawns a debris moby with randomized spin and velocity. Adapted from Lombyte (MIT) for PAL: src/overlays/shared/unclassified_002c8440.c, FUN_L00_002cbf68. */
+char *func_L00_002CD3B8(int unused, float *pos, float *vel) {
+    char *m = func_0020D348_2CD3B8(0x1AC);
+    if (m) {
+        DD *d;
+        int lo, hi;
+        float sc;
+        m[0x30] = 0x40;
+        *(unsigned short *)(m + 0x34) |= 0x1000;
+        *(short *)(m + 0x32) = 0x20;
+        m[0x31] = 1;
+        d = *(DD **)(m + 0x78);
+        m[0x20] = 0;
+        m[0xBC] = 0;
+        qcopy(m + 0x10, pos);
+        *(float *)(m + 0x18) += func_002140F8(0.2f, 0.7f);
+        *(float *)(m + 0x10) += vel[0] * 3.0f;
+        *(float *)(m + 0x14) += vel[1] * 3.0f;
+        qcopy(d, vel);
+        *(float *)(m + 0x44) = func_L00_00258C80(0.17453292f, 0.5235988f);
+        *(float *)(m + 0x40) = func_002140F8(0.17453292f, 0.7853982f);
+        {
+            float t = func_002140F8(200.0f, 370.0f) * 0.017453292f * D_0015EE6C;
+            d->i24 = -1;
+            d->f2c = t;
+        }
+        if (func_001160D8() & 1) {
+            d->i24 = 1;
+            *(float *)(m + 0x44) = -*(float *)(m + 0x44);
+        }
+        *(float *)(m + 0x48) = func_00214158();
+        d->f28 = -(func_002140F8(200.0f, 550.0f) * 0.017453292f * D_0015EE6C);
+        d->v10 = func_00214158();
+        {
+            float r = func_00214158();
+            float n = (float)*(int *)&D_L00_00161974;
+            d->v14 = r;
+            lo = func_001FA898_r(n * 0.7f);
+        }
+        hi = func_001FA898_r((float)*(int *)&D_L00_00161974 * 1.2f);
+        d->r1c = func_001F9850(func_L00_00258BC8(lo, hi));
+        sc = *(float *)&D_L00_00161970;
+        *(float *)(m + 0x2C) = *(float *)(m + 0x2C) * sc;
+        if (D_0013E633_2CD3B8[2]) {
+            *(float *)(m + 0x2C) += *(float *)(m + 0x2C);
+        }
+        d->f20 = func_002140F8(-1.2f, -0.4f) * D_0015EE6C;
+        func_L00_00251E30(m);
+        func_L00_0025E210(m);
+    }
+    return m;
+}
 extern void func_001F9BD8(void *, void *, void *);
 extern float func_001FA748(float, float);
 extern float func_001F9B88(float);

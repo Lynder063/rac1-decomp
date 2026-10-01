@@ -6,7 +6,55 @@ INCLUDE_ASM("asm/overlays", func_L00_002DB278);
 INCLUDE_ASM("asm/overlays", func_L00_002E1E38);
 INCLUDE_ASM("asm/overlays", func_L00_002E2038);
 INCLUDE_ASM("asm/overlays", func_L00_002E2B28);
-INCLUDE_ASM("asm/overlays", func_L00_002E2F58);
+extern void func_L00_00250800(void *, int, void *);
+extern void func_002141A8(void *, float, float);
+extern char *func_L00_002757E8(void *, void *, int, void *);
+extern float func_002140F8(float, float);
+extern int func_002140B0(int);
+extern int func_001F9850(int);
+extern float func_001FA888(int);
+extern void func_001F49B0(void (*)(void), void *);
+extern void func_L00_002E3128_2E2F58(void) __asm__("func_L00_002E3128");
+extern float D_L00_0015F660[] MACRO_ADDR;
+
+// spawns a spark: steps the moby's position and emits one fast particle and three slow tails
+// Adapted from Lombyte (MIT) for PAL: overlays/l00/gameplay_vendor_002e0988.c, FUN_L00_002e1aa8.
+void func_L00_002E2F58(char *m) {
+    char *vars;
+    char *p;
+    char *t;
+    float *pos;
+    float vel[4];
+    int i;
+    int life;
+
+    vars = *(char **)(m + 0x78);
+    pos = (float *)(vars + 0x1C0);
+    func_L00_00250800(m, 1, pos);
+    ((float *)(vars + 0x1C0))[2] -= 0.333f;
+    func_002141A8(vel, 0.005f, 0.03f);
+    p = func_L00_002757E8(pos, vel, 0x7F, m);
+    if (p != 0) {
+        *(float *)(p + 0xC) = func_002140F8(6000.0f, 32000.0f);
+    }
+    for (i = 0; i < 3; i++) {
+        p = func_L00_002757E8((float *)(vars + 0x1C0), D_L00_0015F660, 0x7F, m);
+        if (p != 0) {
+            t = p + 0x20;
+            if (i == 2 && func_002140B0(8) == 0) {
+                *(float *)(p + 0xC) = 180000.0f;
+            } else {
+                *(float *)(p + 0xC) = func_002140F8(80000.0f, 120000.0f);
+            }
+            life = func_001F9850(2);
+            *(short *)(p + 0xA) = life;
+            *(float *)(t + 0x10) = 1.0f / func_001FA888((short)life);
+            *(int *)(t + 0x18) = 0x7F7F7F;
+            *(short *)(t + 0x16) = 3;
+        }
+    }
+    func_001F49B0(func_L00_002E3128_2E2F58, m);
+}
 extern char D_0013E633[];
 extern float D_L00_00166EC0[];
 extern float D_L00_001E6FF0[][4];
