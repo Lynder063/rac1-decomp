@@ -26,7 +26,37 @@ void func_L01_002B90E8(char *base, int n) {
         *(int *)&D_L01_00161298 = b;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L01_002B9198);
+extern void func_L01_002B90E8_2B9198(void) __asm__("func_L01_002B90E8");
+extern void func_L01_00262D28(char *, char *, char *, float);
+extern float D_L01_001CAF80[];
+extern short D_L01_001612A0;
+extern short D_L01_001612A4;
+
+// Advance the ripple simulation clock, stepping each active entry's ripple buffers.
+void func_L01_002B9198(char *p, int n) {
+    if (1.0f - D_L01_001CAF80[8] <= *(float *)&D_L01_001612A4) {
+        *(float *)&D_L01_001612A4 = D_L01_001CAF80[8];
+        func_L01_002B90E8_2B9198();
+        *(int *)&D_L01_001612A0 = *(int *)&D_L01_0016129C;
+    } else {
+        *(int *)&D_L01_001612A0 = 2;
+        if (n > 0) {
+            char *q = p;
+            int k = n;
+            do {
+                if (*(unsigned short *)(q + 0x1E) != 0) {
+                    func_L01_00262D28(q + (*(int *)&D_L01_001612A0 * 0x5C0 + 0x50),
+                                      q + (*(int *)&D_L01_0016129C * 0x5C0 + 0x50),
+                                      q + (*(int *)&D_L01_00161298 * 0x5C0 + 0x50),
+                                      *(float *)&D_L01_001612A4);
+                }
+                k--;
+                q += 0x1190;
+            } while (k != 0);
+        }
+    }
+    *(float *)&D_L01_001612A4 = *(float *)&D_L01_001612A4 + D_L01_001CAF80[8];
+}
 INCLUDE_ASM("asm/overlays", func_L01_002B9288);
 INCLUDE_ASM("asm/overlays", func_L01_002B9440);
 extern float D_L01_001CAF80[];

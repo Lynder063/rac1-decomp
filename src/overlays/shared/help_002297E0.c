@@ -77,7 +77,38 @@ found:
     }
     return 0;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0022A0E0);
+typedef struct { float x, y, z, w; } Vec4 __attribute__((aligned(16)));
+extern float func_L00_001FF860(float, float);
+extern float func_001FA850(float, float);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern int func_L00_001EFFF0(void *, void *, int, int, int);
+extern float D_L00_00173F68;
+
+/* Test whether the player can reach the point in front of him. */
+int func_L00_0022A0E0(void) {
+    char *g = (char *)D_0013E633 + 0xE1D;
+    Vec4 a, b;
+    float t, d;
+    if (*(float *)(g + 0x164) < *(float *)(g + 0x234) / (float)func_001F9850(0x14))
+        return 0;
+    t = func_001FA850(func_L00_001FF860(*(float *)(g + 0x100), *(float *)(g + 0x104)), *(float *)(g + 0x98));
+    if (0.5235988f < t)
+        return 0;
+    qcopy(&a, g + 0x80);
+    a.x += func_001F9F90(*(float *)(g + 0x98)) * *(float *)(g + 0x234) * 0.75f;
+    a.y += func_001F9FA8(*(float *)(g + 0x98)) * *(float *)(g + 0x234) * 0.75f;
+    qcopy(&b, &a);
+    a.z += 0.47f;
+    b.z -= 1.0f;
+    if (func_L00_001EFFF0(&a, &b, 2, *(int *)(g + 0x2080), 0)) {
+        d = D_L00_00173F68 - *(float *)(g + 0x88);
+        if (d < 0.37f && -1.0f < d)
+            return 1;
+        return 0;
+    }
+    return 0;
+}
 typedef struct { char pad[0x24]; int v; char pad2[0x24]; } Rec;
 extern Rec D_L00_00179BC0[] __attribute__((section(".data")));
 extern char D_0013E633[];

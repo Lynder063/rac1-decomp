@@ -632,7 +632,62 @@ void func_L00_00208650(void *vec, int a, float f0, float f1) {
     d->n++;
 }
 INCLUDE_ASM("asm/overlays", func_L00_002086C8);
-INCLUDE_ASM("asm/overlays", func_L00_00208E98);
+typedef struct { int a[4]; } Vq4 __attribute__((aligned(16)));
+extern unsigned char D_0015EEB4_m[4] __asm__("D_0015EEB4") MACRO_ADDR;
+extern void func_L00_00233868(void);
+extern void func_L00_00233950(void);
+extern void func_L00_00207EC0(void);
+extern void func_L00_00208000(void);
+extern void func_L00_001FF040(int, void *, unsigned short);
+extern void func_L00_00233F68(float *dst, float *src, float h);
+extern void func_L00_0024FF10_208E98(void *, int, float, float, void *) __asm__("func_L00_0024FF10");
+extern int func_L00_0020DC00(void);
+// Syncs the hero moby with the hero state: pose, position, and the blend of its animation
+void func_L00_00208E98(void) {
+    char *g0 = (char *)D_0013E633 + 0xE1D;
+    char *g;
+    char *g3;
+    char *m;
+    float f20, f13;
+    Vq4 v;
+    *(unsigned char *)(*(char **)(g0 + 0x2080) + 0xA4) = 0xFF;
+    if (*(unsigned char *)(g0 + 0x20A5) != 0) {
+        func_L00_00233868();
+    } else {
+        func_L00_00233950();
+    }
+    g = (char *)D_0013E633 + 0xE1D;
+    qcopy(*(char **)(g + 0x2080) + 0x10, g + 0x80);
+    func_L00_00207EC0();
+    qcopy(*(char **)(g + 0x2080) + 0x40, g + 0x90);
+    func_L00_00208000();
+    func_L00_001FF040((int)(*(char **)(g + 0x2080) + 0xC0), g, 0x30);
+    func_L00_00251E30(*(void **)(g + 0x2080));
+    if (*(int *)(g + 0x1CC) == 0 && *(int *)(*(char **)(g + 0x2080) + 0x94) != 0) {
+        qcopy(&v, g + 0x80);
+        func_L00_00233F68((float *)&v, (float *)&v, *(float *)(g + 0x224));
+        f13 = *(float *)(g + 0x220) - *(float *)(g + 0x224);
+        if (f13 < 0.05f) f13 = 0.05f;
+        func_L00_0024FF10_208E98(*(void **)(g + 0x2080), 0, *(float *)(g + 0x234), f13, &v);
+        f20 = *(float *)(g + 0x234) + 0.05f;
+        if (*(int *)(g + 0x208C) == 4) f20 += 0.15f;
+        if (func_L00_0020DC00() != 0) f20 = *(float *)(g + 0x224);
+        qcopy(&v, g + 0x80);
+        func_L00_00233F68((float *)&v, (float *)&v, f20);
+        f13 = *(float *)(g + 0x220) - f20;
+        if (f13 < 0.05f) f13 = 0.05f;
+        func_L00_0024FF10_208E98(*(void **)(g + 0x2080), 1, *(float *)(g + 0x234), f13, &v);
+    }
+    g3 = (char *)D_0013E633 + 0xE1D;
+    m = *(char **)(g3 + 0x2080);
+    if (*(short *)(m + 0xA6) == 0) {
+        if (D_0015EEB4_m[1] != 0) {
+            *(unsigned short *)(m + 0x34) |= 0x8000;
+        } else {
+            *(unsigned short *)(m + 0x34) &= 0x7FFF;
+        }
+    }
+}
 extern void func_L00_00233A90(void);
 extern void func_L00_00233AC8(void);
 extern void func_L00_00233868(void);

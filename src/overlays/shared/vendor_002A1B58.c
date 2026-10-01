@@ -77,7 +77,12 @@ char *func_L16_002A1F78(char *owner, char *vec, void *pos, void *vel, int c, flo
 }
 INCLUDE_ASM("asm/overlays", func_L16_002D40B8);
 INCLUDE_ASM("asm/overlays", func_L16_002D4C78);
-INCLUDE_ASM("asm/overlays", func_L16_002D5188);
+void func_L16_002D5188(char *moby, void *owner, void *position, char *vector) {
+    char *data = *(char **)(moby + 0x78);
+    *(void **)(data + 0x2D0) = owner;
+    qcopy(data + 0x2C0, position);
+    *(float *)(data + 0x2CC) = *(float *)(vector + 8);
+}
 extern int func_001F9850(int);
 extern void func_00213DE0(void *, int, int, int);
 extern float D_0015EE6C MACRO_ADDR;
@@ -148,5 +153,31 @@ INCLUDE_ASM("asm/overlays", func_L16_002E6B70);
 INCLUDE_ASM("asm/overlays", func_L16_002E6D40);
 INCLUDE_ASM("asm/overlays", func_L16_002E7138);
 INCLUDE_ASM("asm/overlays", func_L16_002E7160);
-INCLUDE_ASM("asm/overlays", func_L16_002E7198);
+extern char D_0013E633[];
+extern short *D_L16_001ABFC0[];
+extern char *D_L16_00160098 MACRO_ADDR;
+extern float func_001F9D10_2E7198(void *, void *) __asm__("func_001F9D10");
+extern void func_0022ED80(int, int, int);
+
+/* picks the nearest moby in a list (skipping class 0x5A3) and acts on it */
+void func_L16_002E7198(int idx) {
+    short *p = D_L16_001ABFC0[idx];
+    char *best = 0;
+    float bestd = 50000.0f;
+    if (p != 0) {
+        do {
+            char *m = D_L16_00160098 + ((*(unsigned short *)p & 0x7FFF) << 8);
+            if (*(short *)(m + 0xA6) != 0x5A3) {
+                float d = func_001F9D10_2E7198(D_0013E633 + 0xE9D, m + 0x10);
+                if (d < bestd) {
+                    bestd = d;
+                    best = m;
+                }
+            }
+        } while (*p++ >= 0);
+        if (best != 0) {
+            func_0022ED80(0, 0, (int)best);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L16_002EB268);

@@ -141,4 +141,20 @@ void func_L10_002E14F8(unsigned char *m) {
 }
 INCLUDE_ASM("asm/overlays", func_L10_002E1568);
 INCLUDE_ASM("asm/overlays", func_L10_002E2B80);
-INCLUDE_ASM("asm/overlays", func_L10_002E3070);
+typedef struct { char p0[0x10]; float x; float y; char p1[8]; unsigned char state; char p2[0xDF]; } Ent_2E3070;
+extern Ent_2E3070 *D_L10_00160058_2E3070 __asm__("D_L10_00160058") MACRO_ADDR;
+extern short D_L10_00161E80;
+
+/* Stores a value into each table entry listed for this moby's index. */
+void func_L10_002E3070(unsigned char *moby) {
+    short *p;
+    if (moby[0x21] != 0xFF) {
+        p = D_L10_001ABFC0[moby[0x21]];
+        if (p != 0) {
+            do {
+                int idx = *(unsigned short *)p & 0x7FFF;
+                ((char *)D_L10_00160058_2E3070)[(idx << 8) + 0xBC] = func_001F9850(*(int *)&D_L10_00161E80);
+            } while (*p++ >= 0);
+        }
+    }
+}

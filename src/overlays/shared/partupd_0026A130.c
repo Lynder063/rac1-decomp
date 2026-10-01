@@ -1392,9 +1392,55 @@ void func_L00_00270738(char *m) {
         *(int *)(m + 4) = 0;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002708A0);
+extern int func_L00_00237B70_2708A0(float, int, int) __asm__("func_L00_00237B70");
+extern float D_L00_00166EC0_2708A0[] __asm__("D_L00_00166EC0");
+
+/* updates a type-37 particle, homing toward its target */
+void func_L00_002708A0(char *m) {
+    float v[4];
+    char *t = m + 0x20;
+    int n;
+    int d;
+    if (func_001F9938(m + 0xA)) {
+        func_L00_002688A8(m);
+        return;
+    }
+    func_001F9BF0(v, D_L00_00166EC0_2708A0, t);
+    if (func_001F9CB8(v) > 5.0f) {
+        func_L00_001FF4B0(v, v, 1.25f);
+    } else {
+        func_001F9C30(v, v, 0.25f);
+    }
+    func_001F9BD8(m + 0x10, t, v);
+    n = *(int *)(t + 0x14);
+    d = *(short *)(m + 0xA) - n;
+    d = d < 0 ? -d : d;
+    *(int *)(m + 4) = func_L00_00237B70_2708A0((float)(n - d) / (float)n, 0, *(int *)(t + 0x10));
+}
 INCLUDE_ASM("asm/overlays", func_L00_002709A0);
-INCLUDE_ASM("asm/overlays", func_L00_00270AD8);
+extern short D_L00_001602C0;
+extern short D_L00_001602C4;
+extern short D_L00_001602C8;
+extern char D_L00_001602CC;
+extern unsigned char *D_L00_001B249C;
+
+/* Steers a particle to follow its target's offset and cycles through a colour table. */
+void func_L00_00270AD8(char *m) {
+    float v[4];
+    char *q = m + 0x20;
+    float f0 = *(float *)&D_L00_001602C0;
+    int w = *(int *)&D_L00_001602C4;
+    *(float *)(m + 0xC) = f0;
+    *(int *)(m + 4) = w;
+    m[8] += *(unsigned char *)&D_L00_001602CC;
+    func_001F9BF0(v, *(char **)(q + 4) + 0x10, D_L00_00166EC0);
+    func_L00_001FF4B0(v, v, *(float *)&D_L00_001602C8);
+    func_001F9BD8(m + 0x10, *(char **)(q + 4) + 0x10, v);
+    m[2] = D_L00_001B249C[func_001FA898_r((float)(*(int *)(q + 8) / 2))];
+    *(int *)(q + 8) += 1;
+    if (*(int *)(q + 8) >= 0x1F) *(int *)(q + 8) = 0;
+    if (*(short *)(m + 0xA) == 0) func_L00_002688A8(m);
+}
 extern float func_00214158(void);
 extern int func_001160D8(void);
 extern unsigned char *D_L00_001B2430;

@@ -78,7 +78,37 @@ int func_L03_002BFF68(int idx, float *out) {
 }
 INCLUDE_ASM("asm/overlays", func_L03_002C0028);
 INCLUDE_ASM("asm/overlays", func_L03_002C0330);
-INCLUDE_ASM("asm/overlays", func_L03_002C59A0);
+extern char *func_0020D348_m_2C59A0(int) __asm__("func_0020D348");
+extern int func_001F9850(int);
+extern void func_L00_00251E30(void *);
+
+// Spawns the class 0x221 moby for an owner at pos with dir, random angles and a size, copying the owner's colour.
+char *func_L03_002C59A0(char *owner, float *pos, float *dir, short ang, int arg)
+{
+    char *m;
+    char *d;
+    m = func_0020D348_m_2C59A0(0x221);
+    if (m != 0) {
+        d = *(char **)(m + 0x78);
+        *(char **)(d + 0x10) = owner;
+        qcopy(m + 0x10, pos);
+        qcopy(d, dir);
+        *(float *)(m + 0x40) = func_002140F8(-3.1415927f, 3.1415927f);
+        *(float *)(m + 0x44) = func_002140F8(-3.1415927f, 3.1415927f);
+        *(int *)(d + 0x18) = 0;
+        *(short *)(d + 0x14) = func_001F9850(500);
+        *(short *)(d + 0x16) = ang;
+        *(unsigned char *)(m + 0x30) = (*(unsigned char **)(d + 0x10))[0x30];
+        *(unsigned short *)(m + 0x32) = *(unsigned short *)(*(char **)(d + 0x10) + 0x32);
+        m[0x31] = 1;
+        m[0x20] = 0;
+        *(float *)(m + 0x2C) = *(float *)(*(char **)(m + 0x24) + 0x24) * 0.001f;
+        *(int *)(d + 0x1C) = arg;
+        *(int *)(d + 0x20) = 0;
+        func_L00_00251E30(m);
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L03_002C5AE0);
 INCLUDE_ASM("asm/overlays", func_L03_002C8028);
 INCLUDE_ASM("asm/overlays", func_L03_002C8058);

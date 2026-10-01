@@ -29,7 +29,50 @@ INCLUDE_ASM("asm/overlays", func_L06_003010E0);
 INCLUDE_ASM("asm/overlays", func_L06_003016B8);
 INCLUDE_ASM("asm/overlays", func_L06_00301848);
 INCLUDE_ASM("asm/overlays", func_L06_00301B78);
-INCLUDE_ASM("asm/overlays", func_L06_00302248);
+extern void func_0020D678(void *);
+extern float func_001FA888(int);
+extern float func_001F9FA8(float);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern int D_L06_0015F6B0 MACRO_ADDR;
+extern char D_0013E633[] NOT_SDA;
+extern short D_L06_00162120;
+
+// Update for a bobbing moby: waits, then follows a sine offset, then drifts and deletes itself.
+void func_L06_00302248(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    int state;
+    if (data == 0) {
+        func_0020D678(moby);
+        return;
+    }
+    state = (unsigned char)moby[0x20];
+    switch (state) {
+    case 0:
+        *(short *)(moby + 0x32) = 0x200;
+        ((unsigned char *)moby)[0x30] = 0xFF;
+        *(float *)(data + 0xC) = *(float *)(moby + 0x18);
+        moby[0x20] = 1;
+        break;
+    case 1:
+        if (*(int *)(D_0013E633 + 0x2EA1) == 0x72) {
+            *(float *)(moby + 0x18) = *(float *)(data + 0xC);
+        } else {
+            float f = func_001FA888(D_L06_0015F6B0 % 600) / 600.0f;
+            float g = func_001F9FA8(f * 6.28318f);
+            *(float *)(moby + 0x18) = *(float *)(data + 0xC) + *(float *)&D_L06_00162120 * g;
+        }
+        break;
+    case 2:
+        if (*(float *)(data + 0xC) > 1.0f)
+            func_001F9C30(data, data, 0.985f);
+        func_001F9BD8(moby + 0x10, moby + 0x10, data);
+        func_001F9BD8(moby + 0x40, moby + 0x40, data + 0x10);
+        if (*(int *)(D_0013E633 + 0x2EA1) != 0x72)
+            func_0020D678(moby);
+        break;
+    }
+}
 void func_L06_003023C8(char *arg, void *a, void *b) {
     char *dst = *(char **)(arg + 0x78);
     arg[0x20] = 2;
@@ -40,7 +83,61 @@ INCLUDE_ASM("asm/overlays", func_L06_003024C8);
 INCLUDE_ASM("asm/overlays", func_L06_00302FE8);
 INCLUDE_ASM("asm/overlays", func_L06_00303858);
 INCLUDE_ASM("asm/overlays", func_L06_003039B8);
-INCLUDE_ASM("asm/overlays", func_L06_00304418);
+extern unsigned short D_00141D00 NOT_SDA;
+extern unsigned char D_0014C150[];
+extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
+extern int D_0015EF1D_i __asm__("D_0015EF1D") MACRO_ADDR;
+extern int D_0015EF1C_i __asm__("D_0015EF1C") MACRO_ADDR;
+extern int func_L00_00203F20(int a, int b);
+extern void func_00215F80(int, int);
+
+/* Picks the next selection state from the menu mode, then queues the matching sound. */
+void func_L06_00304418(char *m) {
+    char *d = *(char **)(m + 0x78);
+    switch (*(int *)(d + 0xBC)) {
+    case 0: {
+        int idx = D_0015EE84_m << 4;
+        int a = *(unsigned char *)(*(int *)(d + 0xF8) + idx + (int)D_0014C150);
+        if (a != 0xFF) {
+            *(int *)(d + 0x9C) = 0;
+        } else {
+            int b = *(unsigned char *)(*(int *)(d + 0xFC) + idx + (int)D_0014C150);
+            if (b == a) {
+                *(int *)(d + 0x9C) = 3;
+            } else {
+                *(int *)(d + 0x9C) = -1;
+            }
+        }
+        break;
+    }
+    case 1:
+        *(int *)(d + 0x9C) = 1;
+        break;
+    case 2:
+        *(int *)(d + 0x9C) = 4;
+        break;
+    }
+    if (D_00141D00 == 0 && *(int *)(d + 0x9C) == 0 && (*(unsigned char *)&D_0015EF1D_i != 0 || *(unsigned char *)&D_0015EF1C_i != 0)) {
+        func_L00_00203F20(0x177A, 0x53);
+        *(int *)(d + 0x9C) = -1;
+        return;
+    }
+    switch (*(int *)(d + 0x9C)) {
+    case 0:
+        func_00215F80(10, 0x1782);
+        break;
+    case 1:
+    case 4:
+        func_00215F80(10, 0x1785);
+        break;
+    case 2:
+        func_00215F80(10, 0x1786);
+        break;
+    case 3:
+        func_00215F80(10, 0x1784);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L06_003045A0);
 INCLUDE_ASM("asm/overlays", func_L06_00304B88);
 INCLUDE_ASM("asm/overlays", func_L06_00304FA8);
@@ -72,7 +169,42 @@ void func_L06_00305BF8(char *arg) {
 INCLUDE_ASM("asm/overlays", func_L06_00305C38);
 INCLUDE_ASM("asm/overlays", func_L06_00305C58);
 INCLUDE_ASM("asm/overlays", func_L06_00305E38);
-INCLUDE_ASM("asm/overlays", func_L06_00306440);
+extern void func_L00_0025A890(char *a, int b, int c, float d);
+extern void func_001F9EC0(void *, void *, void *);
+extern int func_L00_001EFFF0(void *, void *, int, int, int);
+extern short D_L06_00162278;
+extern short D_L06_0016227C;
+extern short D_L06_00162280;
+
+// builds two rotated corner points of a box around the moby and runs a line test between them
+void func_L06_00306440(char *m) {
+    float P[4];
+    float Q[4];
+    float A[12];
+    func_L00_0025A890((char *)A, (int)m, 0x10000, 6.0f);
+    P[0] = *(float *)&D_L06_00162278;
+    P[1] = *(float *)&D_L06_0016227C;
+    P[2] = *(float *)&D_L06_00162280;
+    Q[0] = -*(float *)&D_L06_00162278;
+    Q[1] = *(float *)&D_L06_0016227C;
+    Q[2] = *(float *)&D_L06_00162280;
+    func_001F9EC0(P, P, m + 0xC0);
+    func_001F9BD8(P, P, m + 0x10);
+    func_001F9EC0(Q, Q, m + 0xC0);
+    func_001F9BD8(Q, Q, m + 0x10);
+    func_L00_001EFFF0(P, Q, 0, (int)m, (int)A);
+    P[0] = *(float *)&D_L06_00162278;
+    P[1] = -*(float *)&D_L06_0016227C;
+    P[2] = *(float *)&D_L06_00162280;
+    Q[0] = -*(float *)&D_L06_00162278;
+    Q[1] = -*(float *)&D_L06_0016227C;
+    Q[2] = *(float *)&D_L06_00162280;
+    func_001F9EC0(P, P, m + 0xC0);
+    func_001F9BD8(P, P, m + 0x10);
+    func_001F9EC0(Q, Q, m + 0xC0);
+    func_001F9BD8(Q, Q, m + 0x10);
+    func_L00_001EFFF0(P, Q, 0, (int)m, (int)A);
+}
 INCLUDE_ASM("asm/overlays", func_L06_003065B0);
 INCLUDE_ASM("asm/overlays", func_L06_003097F0);
 INCLUDE_ASM("asm/overlays", func_L06_0030A0A8);

@@ -3,7 +3,16 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L00_00249720);
-INCLUDE_ASM("asm/overlays", func_L00_00249750);
+/* Menu hit test: x in [58, 86] and a flag clear. */
+int func_L00_00249750(float a, float b, float x) {
+    int flag;
+    if (x >= 58.0f && x <= 86.0f) {
+        if (flag == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002497A0);
 int func_L00_002497E0(float a, float b, float x) { return x >= 95.0f; }
 INCLUDE_ASM("asm/overlays", func_L00_00249EE0);

@@ -133,8 +133,39 @@ void func_L08_0030A150(char *moby) {
         func_L08_00280BC8(a, c, *(int *)(data + 0x10), *(float *)(data + 0xC));
     }
 }
-INCLUDE_ASM("asm/overlays", func_L08_0030A278);
-INCLUDE_ASM("asm/overlays", func_L08_0030A350);
+extern void func_L08_00259040(void *, int, int, void *);
+extern void func_L00_001FDE48(int, int, int, void *, int);
+extern int D_L08_001F8820_30A278[] __asm__("D_L08_001F8820");
+extern int D_L08_001F87A8[];
+extern int D_L08_001F4F20_30A278[] __asm__("D_L08_001F4F20");
+extern int D_L08_001F8808_30A278[] __asm__("D_L08_001F8808");
+extern int D_L08_001F8788[];
+extern int D_L08_001F87E8_30A278[] __asm__("D_L08_001F87E8");
+
+// Runs eight setup calls over parallel tables, offset by the argument.
+void func_L08_0030A278(int arg) {
+    int i;
+    for (i = 7; i >= 0; i--) {
+        func_L08_00259040(D_L08_001F8820_30A278, D_L08_001F87A8[7 - i], D_L08_001F4F20_30A278[7 - i], (char *)D_L08_001F8808_30A278 + arg * 8);
+        func_L00_001FDE48(D_L08_001F4F20_30A278[7 - i], D_L08_001F8788[7 - i], D_L08_001F87E8_30A278[7 - i], D_L08_001F8820_30A278, 1);
+    }
+}
+extern char D_L08_001F8820[];
+extern int D_L08_001F4ED8[];
+extern int D_L08_001F0488_30A350[] __asm__("D_L08_001F0488");
+extern int D_L08_001F4EC0[];
+extern int D_L08_001F4F08_30A350[] __asm__("D_L08_001F4F08");
+extern long D_L08_00162488_30A350[] __asm__("D_L08_00162488") MACRO_ADDR;
+
+/* Draws six quads from parallel tables, offset by the given index. */
+void func_L08_0030A350(int x) {
+    int i;
+
+    for (i = 0; i < 6; i++) {
+        func_L08_00259040(D_L08_001F8820, D_L08_001F4ED8[i], D_L08_001F0488_30A350[i], &D_L08_00162488_30A350[x]);
+        func_L00_001FDE48(D_L08_001F0488_30A350[i], D_L08_001F4EC0[i], D_L08_001F4F08_30A350[i], D_L08_001F8820, 1);
+    }
+}
 typedef struct { int a, b; } Pair;
 extern char D_L08_001F8820[];
 extern Pair D_L08_00162498[] MACRO_ADDR;

@@ -103,7 +103,22 @@ void func_L16_002CA930(char *moby) {
 INCLUDE_ASM("asm/overlays", func_L16_002CAA18);
 INCLUDE_ASM("asm/overlays", func_L16_002CAC40);
 INCLUDE_ASM("asm/overlays", func_L16_002CAE18);
-INCLUDE_ASM("asm/overlays", func_L16_002CB000);
+extern short *D_L16_001ABFC0_2CB000[] __asm__("D_L16_001ABFC0");
+extern char *D_L16_00160098 MACRO_ADDR;
+extern void func_L00_002617B0(char *a, void *b, void *c, void *d);
+
+// For each moby in a list with type 0x1D7, calls a helper with its data and position.
+void func_L16_002CB000(int index, void *arg) {
+    short *p = D_L16_001ABFC0_2CB000[index];
+    if (p) {
+        do {
+            char *moby = D_L16_00160098 + ((*(unsigned short *)p & 0x7FFF) << 8);
+            if (*(short *)(moby + 0xA6) == 0x1D7) {
+                func_L00_002617B0(*(char **)(moby + 0x78) + 0x20, arg, moby + 0x40, moby + 0x40);
+            }
+        } while (*p++ >= 0);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L16_002CB098);
 INCLUDE_ASM("asm/overlays", func_L16_002CF180);
 INCLUDE_ASM("asm/overlays", func_L16_002CFDB8);
@@ -134,7 +149,49 @@ INCLUDE_ASM("asm/overlays", func_L16_002D00E8);
 INCLUDE_ASM("asm/overlays", func_L16_002D0238);
 INCLUDE_ASM("asm/overlays", func_L16_002D0328);
 INCLUDE_ASM("asm/overlays", func_L16_002D0560);
-INCLUDE_ASM("asm/overlays", func_L16_002D0870);
+extern void func_L16_002D0990_2D0870(void *) __asm__("func_L16_002D0990");
+extern int func_L16_002D0B00(void *);
+extern void func_L16_002D0B70(void);
+extern void func_001F49B0(void (*)(void), void *);
+extern int func_L00_0028EB98(void *, int);
+extern int func_0022ED80_i(int, int, void *) __asm__("func_0022ED80");
+extern void func_L00_0028EBF0(int);
+extern char D_0013E633[];
+
+/* Updates a moby: waits for trigger, registers a draw callback and a sound handle. */
+void func_L16_002D0870(char *moby) {
+    int *data = *(int **)(moby + 0x78);
+    if ((*(unsigned short *)(moby + 0x34) & 2) == 0) {
+        unsigned char state = moby[0x20];
+        switch (state) {
+        case 0:
+            if (data[0] == 0) {
+                func_L16_002D0990_2D0870(moby);
+                moby[0x20] = 1;
+            }
+            break;
+        case 1:
+            if (func_L16_002D0B00(moby) != 0) {
+                data[2] = state;
+                func_001F49B0(func_L16_002D0B70, moby);
+                if (func_L00_0028EB98(moby, data[3]) == 0) {
+                    data[3] = func_0022ED80_i(0, 4, moby);
+                }
+            } else if (data[2] != 0) {
+                int h = data[3];
+                data[2] = 0;
+                if (h != -1) {
+                    char *e = D_0013E633 + 0x1D + h * 0x70;
+                    if (*(char **)(e + 0x88) == moby && *(unsigned char *)(e + 0x74) != 0) {
+                        func_L00_0028EBF0(h);
+                    }
+                }
+                data[3] = -1;
+            }
+            break;
+        }
+    }
+}
 extern int func_L16_002D0A40(char *);
 
 // Walks the moby's list of linked mobys and refreshes their data word.

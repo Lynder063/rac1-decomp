@@ -78,7 +78,55 @@ void func_L00_002EBC50(void) {
     func_L00_002EB3A0();
     if (h->p != 0) func_0022ED80(0, 0, h->p);
 }
-INCLUDE_ASM("asm/overlays", func_L00_002EBCC0);
+typedef struct { float x, y, z, w; } Vec4 __attribute__((aligned(16)));
+extern unsigned char D_0013E633_2EBCC0[] __asm__("D_0013E633");
+extern float func_001F9C78(void *, void *);
+extern void func_001F9BF0(void *, void *, void *);
+extern float func_001F9CB8(void *);
+extern float func_001F9FC0(float);
+
+/* Exit-camera update: reset the camera state, or drop to state 4 when the view lines up within 80 degrees. */
+void func_L00_002EBCC0(char *m) {
+    char *p = (char *)D_0013E633_2EBCC0 + 0xE1D;
+    S *g;
+    S *h;
+    Vec4 a, b, c;
+    char *v;
+    float len, t;
+    int st = *(int *)(p + 0x2284);
+    if (st == 0x51 || st == 4)
+        return;
+    g = &D_L00_00166D80;
+    if (g->s == 0) {
+        g->c = 0;
+        *(short *)(m + 0x7E) = 2;
+        g->f1 = 0.018f;
+        g->f0 = 0.018f;
+        return;
+    }
+    v = (char *)g + 0x1C0;
+    func_001F9C30(&a, v, func_001F9C78(v, m));
+    func_001F9BF0(&b, m, &a);
+    func_001F9C30(&a, v, func_001F9C78(v, *(char **)(p + 0x2080) + 0xC0));
+    func_001F9BF0(&c, *(char **)(p + 0x2080) + 0xC0, &a);
+    len = func_001F9CB8(&c);
+    if (len != 0.0f) {
+        len *= func_001F9CB8(&b);
+        if (len != 0.0f) {
+            t = 1.5707964f - func_001F9FC0(func_001F9C78(&c, &b) / len);
+            if (1.3962634f <= t) {
+                g->s = 0;
+                *(short *)(m + 0x7E) = 4;
+                return;
+            }
+        }
+    }
+    h = &D_L00_00166D80;
+    h->c = 0;
+    *(short *)(m + 0x7E) = 2;
+    h->f1 = 0.018f;
+    h->f0 = 0.018f;
+}
 extern char *D_L00_00166F00;
 extern char *func_L00_001EB578(int);
 

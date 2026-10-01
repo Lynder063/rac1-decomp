@@ -61,9 +61,52 @@ INCLUDE_ASM("asm/overlays", func_L14_002AEF88);
 INCLUDE_ASM("asm/overlays", func_L14_002AF2E8);
 INCLUDE_ASM("asm/overlays", func_L14_002AF4A0);
 INCLUDE_ASM("asm/overlays", func_L14_002AF688);
-INCLUDE_ASM("asm/overlays", func_L14_002AF918);
+extern float func_L00_0025C918(float *p, float *v, float t, float u1, float u2, float eps);
+extern int func_L00_0025E860_2AF918(int *tab, float *out, int *a, float *b, int c, float d) __asm__("func_L00_0025E860");
+extern int *D_L14_001B0F30[];
+extern short D_L14_00161468;
+extern short D_L14_0016146C;
+
+// Run the lookup for the moby's track, ease three axes, and on a wrap-around reset and flip the direction.
+void func_L14_002AF918(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    float v[4];
+    float save = *(float *)(data + 0x1CC);
+    int save2 = *(int *)(data + 0x84);
+    int r = func_L00_0025E860_2AF918(D_L14_001B0F30[*(int *)(data + 0x78)], v, (int *)(data + 0x84),
+                              (float *)(data + 0x1CC), *(short *)(data + 0x8A), *(float *)(data + 0x168));
+    func_L00_0025C918((float *)(data + 0x170), (float *)(data + 0x180), v[0], *(float *)&D_L14_00161468, *(float *)&D_L14_0016146C, 0.0f);
+    func_L00_0025C918((float *)(data + 0x174), (float *)(data + 0x184), v[1], *(float *)&D_L14_00161468, *(float *)&D_L14_0016146C, 0.0f);
+    func_L00_0025C918((float *)(data + 0x178), (float *)(data + 0x188), v[2], *(float *)&D_L14_00161468, *(float *)&D_L14_0016146C, 0.0f);
+    if (*(short *)(data + 0x8A) == 0) {
+        if (r != 0) {
+            *(float *)(data + 0x1CC) = save;
+            *(int *)(data + 0x84) = save2;
+            *(float *)(data + 0x168) = -*(float *)(data + 0x168);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L14_002AFA18);
-INCLUDE_ASM("asm/overlays", func_L14_002AFB40);
+extern int func_L00_0025E860_2AFB40(void *, void *, void *, void *, int, float) __asm__("func_L00_0025E860");
+extern float D_0015EE6C MACRO_ADDR;
+extern short D_L14_001614C4;
+
+/* Picks a target point from a list or searches for one, then eases the moby's position toward it per axis. */
+void func_L14_002AFB40(char *moby, float a, float b, float c) {
+    char *data = *(char **)(moby + 0x78);
+    int *list = D_L14_001B0F30[*(int *)(data + 0x204)];
+    float tmp[4];
+    if (*(short *)(data + 0x208) != 0) {
+        qcopy(tmp, (char *)list + list[0] * 16);
+    } else {
+        if (func_L00_0025E860_2AFB40(list, tmp, data + 0x80, data + 0x8C, 0, b * D_0015EE6C * c) != 0) {
+            *(short *)(data + 0x208) = 1;
+        }
+    }
+    func_L00_0025C918((float *)(moby + 0x10), (float *)(data + 0x194), tmp[0], a, *(float *)&D_L14_001614C4, 0.0f);
+    func_L00_0025C918((float *)(moby + 0x14), (float *)(data + 0x198), tmp[1], a, *(float *)&D_L14_001614C4, 0.0f);
+    func_L00_0025C918((float *)(moby + 0x18), (float *)(data + 0x19C), tmp[2], a, *(float *)&D_L14_001614C4, 0.0f);
+}
 extern void func_L00_00263B78(float, float, char *, float *, float *);
 extern void func_L00_00263BF8(void *, char *, char *, float, float, float);
 extern int func_001F9938(void *);

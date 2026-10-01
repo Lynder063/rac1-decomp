@@ -161,5 +161,9 @@ void func_L08_00309050(int arg) {
 }
 INCLUDE_ASM("asm/overlays", func_L08_003091B0);
 INCLUDE_ASM("asm/overlays", func_L08_00309AB0);
-INCLUDE_ASM("asm/overlays", func_L08_00315068);
+extern char *D_L08_00167680;
+
+void func_L08_00315068(void) {
+    D_L08_00167680[0x88] = 1;
+}
 INCLUDE_ASM("asm/overlays", func_L08_00318468);

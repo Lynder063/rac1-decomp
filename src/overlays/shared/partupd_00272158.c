@@ -933,7 +933,75 @@ unsigned char *func_L00_00275248(float f0, float f1, int a0, void *pos, int time
     }
     return r;
 }
-INCLUDE_ASM("asm/overlays", func_L00_002753B8);
+extern int func_L00_0025A468_q(void *, int) __asm__("func_L00_0025A468");
+extern char *func_L00_00275248_2753B8(float, void *, void *, float, int, int, int, void *) __asm__("func_L00_00275248");
+extern void func_001FA218(void *, void *);
+extern void func_001F9EE8(void *, void *, void *);
+extern void func_001F9EC0(void *, void *, void *);
+extern float func_001FA748(float, float);
+
+// Update for an attached particle: follows its owner moby, spawns a child and orients itself.
+void func_L00_002753B8(char *m) {
+    char *s = m + 0x20;
+    float vv[28];
+    char *q;
+    char *o;
+    float z;
+    float t, u, e;
+    if (*(short *)(s + 0x1C) == 0) {
+        if (func_L00_0025A468_q(m + 4, *(short *)(s + 0x1A))) {
+            func_L00_002688A8(m);
+            return;
+        }
+        if (*(int *)(s + 0xC) == 0) return;
+        vv[0] = *(float *)(m + 0x20);
+        vv[1] = *(float *)(s + 4);
+        vv[2] = *(float *)(s + 8);
+        func_001F9C30(vv, vv, func_001FA888(*(short *)(s + 0x18)));
+        func_001F9BD8(m + 0x10, *(char **)(s + 0xC) + 0x10, vv);
+        return;
+    }
+    if (func_001F9938(m + 0xA) ||
+        (*(short *)(m + 0xA) < func_001F9850(10) && func_L00_0025A468_q(m + 4, 0x10))) {
+        func_L00_002688A8(m);
+        return;
+    }
+    if (*(short *)(s + 0x1C) == 1) {
+        z = 0.0f;
+        func_L00_00275248_2753B8(z, 0, m + 0x10, z, func_001F9850(10), 0, *(signed char *)(m + 7), 0);
+        q = m + 0x10;
+    } else {
+        vv[0] = *(float *)(s + 0);
+        vv[1] = *(float *)(s + 4);
+        vv[2] = *(float *)(s + 8);
+        z = 0.0f;
+        o = func_L00_00275248_2753B8(z, *(void **)(s + 0xC), m + 0x10, z, func_001F9850(10), 0, *(signed char *)(m + 7), vv);
+        q = m + 0x10;
+        if (o != 0) *(short *)(o + 0x38) = *(unsigned short *)(s + 0x18);
+    }
+    if (*(short *)(s + 0x1C) != 1) return;
+    qcopy(q, *(char **)(s + 0xC) + 0x10);
+    vv[0] = func_001F9F90(*(float *)(s + 0x10)) * 2.25f;
+    vv[1] = func_001F9FA8(*(float *)(s + 0x10)) * 2.25f;
+    vv[2] = vv[0];
+    *(int *)&vv[0] = 0;
+    vv[4] = func_001F9F90(*(float *)(s + 0x14)) * 0.28f;
+    vv[5] = func_001F9FA8(*(float *)(s + 0x14)) * 0.28f;
+    vv[6] = vv[4];
+    *(int *)&vv[4] = 0;
+    func_001F9BC0((vv + 8));
+    vv[9] = *(float *)(s + 0x10);
+    func_001FA218((vv + 12), (vv + 8));
+    func_001F9EE8((vv + 4), (vv + 4), (vv + 12));
+    func_001F9BD8(vv, vv, (vv + 4));
+    func_001F9EC0(vv, vv, *(char **)(s + 0xC) + 0xC0);
+    func_001F9BD8(q, q, vv);
+    t = func_001FA748(*(float *)(s + 0x10), D_0015EE6C * 0.9599311f);
+    u = D_0015EE6C * 4.3633232f;
+    e = *(float *)(s + 0x14);
+    *(float *)(s + 0x10) = t;
+    *(float *)(s + 0x14) = func_001FA748(e, u);
+}
 extern float func_002140F8(float, float);
 extern void func_L00_00250800(void *, int, void *);
 extern void func_0020DAF8(void *, int, void *);

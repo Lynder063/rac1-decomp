@@ -72,7 +72,31 @@ void func_L05_00317538(char *moby) {
     }
     if (none) func_L03_00292AC0(D_L05_00211E60);
 }
-INCLUDE_ASM("asm/overlays", func_L05_003175D8);
+extern void func_L02_002A52B0(void *, float);
+extern void func_001F49B0(void *, void *);
+extern void func_L05_00317538_3175D8(void) __asm__("func_L05_00317538");
+extern char D_0013E633[];
+extern float D_L05_00211E60_3175D8[] __asm__("D_L05_00211E60");
+extern short D_L05_0015F6B0;
+
+/* updates the pulsing marker: spawns it, then each frame animates its scale and queues the draw */
+void func_L05_003175D8(char *moby) {
+    switch ((unsigned char)moby[0x20]) {
+    case 0:
+        func_L02_002A52B0(D_L05_00211E60_3175D8, 1.0f);
+        moby[0x20] = 1;
+        ((unsigned char *)moby)[0x30] = 0xFF;
+        break;
+    case 1:
+        if (*(int *)(D_0013E633 + 0x2EA9) == 0x16) {
+            D_L05_00211E60_3175D8[2] = func_001F9FA8((float)(*(int *)&D_L05_0015F6B0 % 360) * 0.017444444f - 3.14f) * 0.25f + 61.5f;
+        } else {
+            D_L05_00211E60_3175D8[2] = func_001F9FA8((float)(*(int *)&D_L05_0015F6B0 % 360) * 0.017444444f - 3.14f) * 0.25f + 59.5f;
+        }
+        func_001F49B0(func_L05_00317538_3175D8, moby);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L05_00317720);
 INCLUDE_ASM("asm/overlays", func_L05_00317B68);
 INCLUDE_ASM("asm/overlays", func_L05_00317CD8);
