@@ -910,20 +910,17 @@ typedef struct {
     int timer;
 } MobyData;
 
-/* Moves the moby to POS (qcopy), advances its timer (data +0x08) by 2, stores F at
-   data +0x00, and caps the timer at func_001F9850(D_L18_00161D2C). The $gp word is
-   read into a local before the timer update, which decomp-permuter found gives
-   retail's load order. */
-void func_L18_002DD848(char *moby, float *pos, float f) {
-    MobyData *d = *(MobyData **)(moby + 0x78);
-    int n;
-
+// Resets a moby's position and advances its counter, wrapping at a limit.
+void func_L18_002DD848(char *moby, void *pos, float f)
+{
+    int *d = *(int **)(moby + 0x78);
+    int lim;
     qcopy(moby + 0x10, pos);
-    n = *(int *)&D_L18_00161D2C;
-    d->timer += 2;
-    d->f0 = f;
-    if (func_001F9850(n) < d->timer) {
-        d->timer = func_001F9850(*(int *)&D_L18_00161D2C);
+    lim = *(int *)&D_L18_00161D2C;
+    d[2] += 2;
+    *(float *)d = f;
+    if (func_001F9850(lim) < d[2]) {
+        d[2] = func_001F9850(*(int *)&D_L18_00161D2C);
     }
 }
 INCLUDE_ASM("asm/overlays", func_L18_002DD8A8);
