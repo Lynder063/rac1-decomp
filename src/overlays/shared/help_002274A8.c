@@ -392,7 +392,17 @@ int func_L01_00233F58(int a0) {
 }
 INCLUDE_ASM("asm/overlays", func_L01_00234970);
 INCLUDE_ASM("asm/overlays", func_L01_0023CE00);
-INCLUDE_ASM("asm/overlays", func_L01_00240CE8);
+void func_L01_00240CE8(void)
+{
+    switch ((unsigned char)D_0013E633[0x2EC1]) {
+    case 0:
+        func_L01_0023D688(0, 1);
+        break;
+    case 3:
+        func_L01_0023D688(0x53, 1);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_002428E0);
 // Load global pointer and OR a field with 1
 void func_L01_002490E0(void) {

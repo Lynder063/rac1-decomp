@@ -121,7 +121,23 @@ INCLUDE_ASM("asm/overlays", func_L14_002B4BF0);
 INCLUDE_ASM("asm/overlays", func_L14_002B4C2C);
 INCLUDE_ASM("asm/overlays", func_L14_002B4C70);
 INCLUDE_ASM("asm/overlays", func_L14_002DAA70);
-INCLUDE_ASM("asm/overlays", func_L14_002DAC00);
+extern void func_00213D28(void *, int, int);
+
+// Starts a moby in state 5 if idle, then stores a random value and returns whether it was in state 6.
+int func_L14_002DAC00(int i)
+{
+    unsigned char *moby = (unsigned char *)(D_L14_00160098 + i * 256);
+    int *data = *(int **)(moby + 0x78);
+    int r = 0;
+    if (moby[0x20] == 0) {
+        moby[0x20] = 5;
+        func_00213D28(moby, 1, 0);
+    } else {
+        r = moby[0x20] == 6;
+    }
+    data[2] = func_001F9850(0x3C);
+    return r;
+}
 INCLUDE_ASM("asm/overlays", func_L14_002DFA70);
 INCLUDE_ASM("asm/overlays", func_L14_002DFE98);
 INCLUDE_ASM("asm/overlays", func_L14_002E1110);
