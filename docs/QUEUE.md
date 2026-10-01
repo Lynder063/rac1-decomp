@@ -98,6 +98,28 @@ over ([SIBLING_DECOMPS.md](SIBLING_DECOMPS.md), "Porting a function"):
   usual and say in NOTES.md how far it got: Lombyte builds some files
   with a patched EE-GCC that ours cannot reproduce.
 
+## Near misses
+
+When the packet shows "Best earlier attempt", an earlier worker came close
+and stopped. The packet gives that candidate (`best.c`) and every
+instruction that still differs. Your first attempt is `best.c` with one
+change aimed at the first difference; never start over.
+
+- Same instructions, registers swapped: change the order locals are first
+  assigned, or swap the operands of a `+`, `*`, `&`, `|` or `==`.
+- Same instructions in another order: reorder the independent statements
+  that produce them (see "Codegen": the source's last store tends to come
+  out first).
+- One extra or missing move: a local the compiler keeps or folds. Inline
+  it, or give the value its own local.
+- `lui` + `lw` against `$gp`, or the reverse: the symbol's declared size
+  (`extern short` for `$gp`, `MACRO_ADDR` for `lui`).
+- A difference only in a branch-likely (`beql`/`bnel`) or a delay slot:
+  try the other form of the condition (`if (!x) ... else ...`).
+
+Three changes that leave the same differences mean the tie won't move:
+stop and say in NOTES.md which instructions are left.
+
 ## Reading the assembly
 
 - Arguments `$a0`-`$a3`, `$t0`-`$t3`; floats `$f12`, `$f13`, `$f14`...;

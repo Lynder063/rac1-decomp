@@ -525,6 +525,39 @@ def symbol_offsets(name: str, address: int) -> dict[int, str]:
     return out
 
 
+def show_size_diff(elf, placer, level: int, address: int, csize: int, limit: int = 80) -> None:
+    """For a SIZE verdict with --diff: our instructions aligned against
+    retail's by mnemonic (difflib), printing only the stretches that
+    differ, so a long function shows where it has instructions too many or
+    too few. Relocations are not applied: operands of calls and %hi/%lo
+    halves may read as zero on our side."""
+    import difflib
+    manifest = level_manifest(level)
+    raw = (DUMP / f"level_{level:02d}/text.bin").read_bytes()
+    base = text_record(manifest)["address"]
+    retail = raw[address - base: address - base + csize]
+    ours = elf.get_section_by_name(".text").data()[placer.off:placer.off + placer.size]
+
+    def listing(data):
+        return [rz.Instruction(int.from_bytes(data[i:i + 4], "little"), vram=address + i,
+                               category=rz.InstrCategory.R5900).disassemble() for i in range(0, len(data) - 3, 4)]
+    a, b = listing(ours), listing(retail)
+    printed = 0
+    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, [x.split()[0] for x in a],
+                                                       [x.split()[0] for x in b], autojunk=False).get_opcodes():
+        if tag == "equal":
+            continue
+        print(f"  {tag}: ours +{i1 * 4:x}..+{i2 * 4:x}  retail +{j1 * 4:x}..+{j2 * 4:x}")
+        for k in range(max(i2 - i1, j2 - j1)):
+            if printed >= limit:
+                print("  ... (more differences)")
+                return
+            oa = a[i1 + k] if i1 + k < i2 else "-"
+            ob = b[j1 + k] if j1 + k < j2 else "-"
+            print(f"      ours {oa:40s} retail {ob}")
+            printed += 1
+
+
 def check(obj_path, name: str, show: bool = False) -> str:
     m = OVERLAY_NAME.match(name)
     if not m:
@@ -544,6 +577,8 @@ def check(obj_path, name: str, show: bool = False) -> str:
         return f"LINK {e.what}"
 
     if placer.size != csize:
+        if show:
+            show_size_diff(elf, placer, level, address, csize)
         return f"SIZE ours {placer.size} / retail {csize}"
 
     manifest = level_manifest(level)

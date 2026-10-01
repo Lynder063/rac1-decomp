@@ -44,6 +44,8 @@ the level-code catalogue the waves draw from.
 | `tools/try_func.py` | compiles one candidate in a scratch copy of its file and compares it with retail |
 | `tools/wave.py status NAME`, `tokens NAME` | verdicts from the run logs; tokens per worker and per match |
 | `tools/wave.py land NAME --batch` | applies every exact candidate and re-checks it in its file |
+| `tools/wave.py salvage [--ports]` | lands every stub that already has an EXACT run logged; Lombyte ports only with `--ports` |
+| `tools/wave.py plan NAME --queue --overlay --near` | a near wave: earlier attempts within 10% of retail, each packet with its best candidate and what still differs (`tools/near_diffs.py`) |
 | `tools/overlay_variants.py clone` | matches variants of matched functions with no model |
 | `.claude/agents/match-worker.md` | the sub-agent type: Read, Write, Edit, Grep, Glob, Bash; Sonnet by default |
 | `docs/QUEUE.md` | the workers' whole instruction set, under 2K tokens |
@@ -60,11 +62,13 @@ says counts; only what `try_func` logged.
 
    ```
    bash tools/docker/run.sh python tools/overlay_variants.py clone
-   python3 tools/wave.py plan q6 --queue --overlay --family --count 64 --min-size 32 --max-size 600 --budget 10
+   python3 tools/wave.py plan q6 --queue --overlay --family --count 64 --min-size 32 --max-size 600 --budget 6
    ```
 
    `clone` first, so variants of already matched functions never reach a
-   worker. `plan` skips functions that are matched, were tried by an
+   worker. Then `python3 tools/wave.py salvage` (and `salvage --ports`,
+   committed apart): a wave stopped before landing, or a file that
+   clashed, leaves EXACT runs behind as stubs. `plan` skips functions that are matched, were tried by an
    earlier wave, are fragments, or hit a known wall
    (`tools/rank_candidates.py`).
 2. **Launch** up to 8 workers with the Agent tool (`subagent_type:
@@ -146,8 +150,12 @@ Why it is shaped this way:
   reads of the dossier and the assembly.
 - **No RESULT.md.** `try_func` logs every run; `status`, `tokens` and
   `land` read that log.
-- **A run budget**, enforced by `try_func`: matches come early, and a miss
-  otherwise spends tokens to the end.
+- **A run budget of 6**, enforced by `try_func`: matches come early, and a
+  miss otherwise spends tokens to the end. In waves q6-q26 a run matched
+  about 12% of the time for runs 1-5, 8% for runs 6-10 and 3-4% after, so a
+  run on a fresh function is worth about two late ones. What a function
+  has left after 6 runs goes to a near wave (`plan --overlay --near`), whose
+  worker starts from the best attempt and its remaining differences.
 
 ## Picking functions: family order
 
