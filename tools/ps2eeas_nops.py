@@ -204,7 +204,7 @@ def branch_as_word(line):
     return f"{m.group(1)}.word\t{word:#010x} | ((({label} - . - 4) >> 2) & 0xFFFF)\n"
 
 
-def move_sites(lines, start, end):
+def move_sites(lines, start, end, skip_macro_stores=False):
     """Source lines that read the FP register a reorder-mode `mtc1`/`li.s`
     on the previous instruction line wrote; the nop goes before them."""
     sites, reorder, pending = [], True, None
@@ -225,7 +225,14 @@ def move_sites(lines, start, end):
             pending = None
             continue
         mnemonic, operands = m.group(1), m.group(2)
-        if pending and reads_fpr(mnemonic, operands, pending):
+        # A store to a bare symbol (`s.s $f0,D_X`) is an assembler macro:
+        # outside small data it becomes `lui $at` then `swc1`, so the FPR
+        # read is no longer on the instruction right after the mtc1 and no
+        # nop is wanted there. Inside small data it is one `swc1 sym($gp)`
+        # and does count, so this is only a fallback (see main()).
+        macro_store = (skip_macro_stores and mnemonic in ("s.s", "swc1", "s.d", "sdc1")
+                       and "(" not in operands)
+        if pending and not macro_store and reads_fpr(mnemonic, operands, pending):
             sites.append(j)
         pending = None
         if reorder and mnemonic in ("mtc1", "li.s"):
@@ -273,6 +280,10 @@ def main() -> None:
         start, size = funcs[name]
         obj_back, obj_fp, obj_moves = scan(start, size, text)
         src_moves = move_sites(lines, i, end)
+        if len(src_moves) != len(obj_moves):
+            alt = move_sites(lines, i, end, skip_macro_stores=True)
+            if len(alt) == len(obj_moves):
+                src_moves = alt
         vram = int(name[5:], 16) if re.fullmatch(r"func_[0-9A-Fa-f]{8}", name) else None
         if vram is not None and any(a <= vram < b for a, b in hand_written):
             obj_moves, src_moves = [], []
