@@ -13,6 +13,10 @@ they all apply. Its loop does not; follow the one below.
 - `build-sn/try/<FUNC>/m2c.c`: a machine sketch of the whole function. It
   never matches as written, and its types are guesses (`?`, `s32`), but
   its control flow and expressions are a fast start.
+- `nonmatching/<dir>/<FUNC>.c`, if there is one: the closest attempt so
+  far, with what the last workers found in its header
+  ([NONMATCHING.md](NONMATCHING.md)). Start from it rather than from
+  `m2c.c`; never edit it.
 - Write only in `build-sn/try/<FUNC>/<ARM>/`, only files you create. Do
   not read the other folders under `build-sn/try/<FUNC>/`.
 

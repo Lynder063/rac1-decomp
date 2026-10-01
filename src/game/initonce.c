@@ -190,7 +190,7 @@ void func_00201E88(void) {
     func_00118D80(0);
 
     region = buf[0x33] != 0x4E;
-    D_0015EE80 = D_0015EF90 = region;
+    D_0015EF90 = D_0015EE80 = region;
     func_00209A60(buf);
 
     func_00121B78(0, 1, (D_0015EE80 != 0) ? 3 : 2, 0);

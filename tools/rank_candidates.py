@@ -144,11 +144,14 @@ def instructions(body: str) -> list[str]:
 
 
 # A quadword move of something other than a saved register ($sp-relative
-# saves and restores are ordinary). Only retail's inline-asm vector copy,
-# `lq $2,0(a)` then `sq $2,0(b)`, is expressible: qcopy() in
-# include/common.h. A zero store (`sq $0`) is not: `*(long long *)p = 0`
-# materialises the zero with `por` first (src/game/fastfunc.c).
+# saves and restores are ordinary). retail's `lq $2,0(a)` then
+# `sq $2,0(b)` is qcopy() in include/common.h; any other register, offset
+# or a store in a delay slot is a plain 128-bit copy through
+# `typedef int u128 __attribute__((mode(TI)))` (checked 2026-10-01: SN gcc
+# emits `lq $2,16($5)` / `sq $2,48($4)` for it). Only a zero store
+# (`sq $0`) has no C form: the zero is materialised with `por` first.
 BARE_QUAD = re.compile(r"\b(sq|lq)\s+\$(?!29\b|1[6-9]\b|2[0-3]\b|3[01]\b)")
+ZERO_QUAD = re.compile(r"\bsq\s+\$0,")
 QCOPY_LQ = re.compile(r"^lq\s+\$2,\s*0x0\(\$\d+\)$")
 QCOPY_SQ = re.compile(r"^sq\s+\$2,\s*0x0\(\$\d+\)$")
 
@@ -271,11 +274,12 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
             run = 1
     if len(ins) > 4 and best >= 4:
         return "blocked", "varargs definition", "needs stdarg.h"
-    qcopy = False
+    qcopy = u128 = False
+    if ZERO_QUAD.search(text):
+        return "blocked", "bare quadword", "sq $0: a 128-bit zero store has no C form"
     if BARE_QUAD.search(text):
-        if not only_qcopies(ins):
-            return "blocked", "bare quadword", ""
         qcopy = True
+        u128 = not only_qcopies(ins)
 
     # --- the $at macro store form (retail builds an address in $1 and
     # stores through it) was blocked here for many rounds. UNBLOCKED:
@@ -401,7 +405,8 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
         else:
             detail = (detail + "; " if detail else "") + "MACRO_ADDR ($gp in slot)"
     if qcopy:
-        detail = (detail + "; " if detail else "") + "qcopy() for 16-byte copies"
+        detail = (detail + "; " if detail else "") + (
+            "128-bit copies: typedef int u128 __attribute__((mode(TI)))" if u128 else "qcopy() for 16-byte copies")
     return "candidate", "candidate", detail
 
 

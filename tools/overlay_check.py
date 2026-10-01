@@ -320,9 +320,21 @@ class Placer:
                 hi["used"] = True
                 lo_imm = self.word_at(orig, rel["r_offset"]) & 0xFFFF
                 out.append((hi["rel"], rel, hi["imm"], lo_imm))
+        los = sorted((r for r in rels if r["r_info_type"] == R_MIPS_LO16), key=lambda r: r["r_offset"])
         for h in his:
             if not h["used"]:
-                out.append((h["rel"], None, h["imm"], 0))
+                # A %hi whose %lo another %hi took (two paths joining on one
+                # shared %lo): REL keeps the addend's low half only in a
+                # LO16, so take it from the shared one -- the next LO16 of
+                # the same symbol in address order, else the last before.
+                # Without it a relocation against this object's .text loses
+                # the function's low 16 bits and resolves to another one
+                # (func_L17_002EDE50 +0xC00, func_L15_002CCFC0).
+                same = [r for r in los if self.sym_of(r).name == h["sym"]]
+                after = [r for r in same if r["r_offset"] > h["rel"]["r_offset"]]
+                shared = after[0] if after else (same[-1] if same else None)
+                lo_imm = self.word_at(orig, shared["r_offset"]) & 0xFFFF if shared is not None else 0
+                out.append((h["rel"], None, h["imm"], lo_imm))
         return out
 
     def local_rodata_offset(self, sym) -> int | None:

@@ -16,15 +16,20 @@ the level-code catalogue the waves draw from.
 | Role | Model | Does |
 |---|---|---|
 | Lead | Opus 5.5 | plans, launches, refills, reviews, lands, commits; matches nothing itself |
-| Worker | Sonnet 5.5 (`model: sonnet`) | takes 8 functions from the wave's queue, 2 at a time, up to 10 runs each |
+| Queue worker | Sonnet 5.5 (`model: sonnet`), 8 to 10 at once | functions up to about 600 bytes, and near waves: 8 functions from the queue, 2 at a time, 6 runs each |
+| Long-function worker | Opus 5.5 (`model: opus`), 2 to 4 at once | one function of 1 KB or more per agent, 20 runs ([LONG_FUNCTIONS.md](LONG_FUNCTIONS.md)) |
 | (none) | Haiku 4.5 | no tier: see [Why Sonnet only](#why-sonnet-only) |
-| Clone tool | no model | copies matched C onto variants of the same function |
+| Clone and salvage | no model | variants of matched functions; EXACT runs that never landed |
 
-- Up to 20 workers at once, Claude Code's default cap on concurrent
-  sub-agents (2 or 3 on a small plan: the loop is the same, it takes
-  longer). The claims and the landing lock
-  ([Several agents at once](#several-agents-at-once)) are what make more
-  than a handful safe.
+- The standing fleet is 8 to 10 Sonnet queue workers and 2 to 4 Opus
+  long-function workers, about 12 agents: most bytes per token without
+  burning through the plan. Sonnet matches small and medium functions
+  cheapest; Opus reaches the big ones Sonnet can't, and 80% of the level
+  code still unmatched is in functions over 1 KB
+  ([Long functions](#long-functions-opus)).
+- The claims and the landing lock
+  ([Several agents at once](#several-agents-at-once)) are what make a
+  dozen agents in one checkout safe.
 - A worker's whole prompt is one line:
 
   ```
@@ -35,6 +40,38 @@ the level-code catalogue the waves draw from.
   wave), `N` how many functions it handles, `COUNT` how many it claims at
   a time.
 
+## Long functions (Opus)
+
+Picking a function for an Opus worker:
+
+1. Over 1 KB, untried, and not blocked by `tools/rank_candidates.py`
+   (`classify` must not say `blocked`: a `sq $zero` 128-bit zero store is a
+   real wall, our gcc writes `por` then `sq`). Two trial picks skipped this
+   and their agents stopped at once.
+2. Most of its callees already matched, so their prototypes, struct
+   offsets and globals are settled: rank by the share of matched callees.
+3. Not in a file another worker holds a function of.
+
+`python3 tools/wave.py long NAME func_X ...` sets each one up (dossier,
+m2c sketch, `PACKET.md`, a 20-run budget in `build-sn/try/func_X/opus/`),
+refuses a blocked one, and prints each worker's one-line prompt:
+`Read docs/LONG_FUNCTIONS.md and follow it exactly. FUNC=func_X ARM=opus.`
+Its runs land through `wave.py salvage`, and a near miss goes to the next
+near wave; both read the arm's run log.
+
+Trial (2026-09-30, both models with LONG_FUNCTIONS.md, 20 runs each):
+
+| Function | Opus 5.5 | Sonnet 5.5 |
+|---|---|---|
+| func_L00_00210558, 2.2 KB | EXACT in 16 runs, 221K tokens | never the right size, 19 runs, 322K |
+| func_L02_002D8B80, 3.7 KB | 8 bytes off in 14 runs, 213K | 8 bytes off in 20 runs, 276K (the same two instructions) |
+| func_L18_002F86E8, 1 KB | 47 bytes off in 20 runs, 195K | 4 bytes too big in 13 runs |
+
+Opus closes in run after run (176, then 150, then 13 bytes off, then
+EXACT); Sonnet stalls at the size. Neither moves a scheduler tie: the last
+few bytes of a near miss are the compiler's choice, not a reasoning
+problem.
+
 ## The pieces
 
 | Piece | What it is |
@@ -44,7 +81,9 @@ the level-code catalogue the waves draw from.
 | `tools/try_func.py` | compiles one candidate in a scratch copy of its file and compares it with retail |
 | `tools/wave.py status NAME`, `tokens NAME` | verdicts from the run logs; tokens per worker and per match |
 | `tools/wave.py land NAME --batch` | applies every exact candidate and re-checks it in its file |
-| `tools/wave.py salvage [--ports]` | lands every stub that already has an EXACT run logged; Lombyte ports only with `--ports` |
+| `tools/wave.py salvage [--ports] [--level NN]` | lands every stub that already has an EXACT run logged; Lombyte ports only with `--ports` |
+| `tools/wave.py stage [--level NN]` | shares near misses: each function's closest attempt (within 15%) goes to `nonmatching/` ([NONMATCHING.md](NONMATCHING.md)) |
+| `tools/wave.py long NAME func_X ...` | sets up Opus long-function workers: dossier, m2c sketch, packet, per-arm budget |
 | `tools/wave.py plan NAME --queue --overlay --near` | a near wave: earlier attempts within 10% of retail, each packet with its best candidate and what still differs (`tools/near_diffs.py`) |
 | `tools/overlay_variants.py clone` | matches variants of matched functions with no model |
 | `.claude/agents/match-worker.md` | the sub-agent type: Read, Write, Edit, Grep, Glob, Bash; Sonnet by default |
@@ -71,22 +110,31 @@ says counts; only what `try_func` logged.
    clashed, leaves EXACT runs behind as stubs. `plan` skips functions that are matched, were tried by an
    earlier wave, are fragments, or hit a known wall
    (`tools/rank_candidates.py`).
-2. **Launch** up to 8 workers with the Agent tool (`subagent_type:
-   match-worker`, `model: sonnet`, in the background), all in one message,
-   each with its own `ID`.
+2. **Launch** the fleet with the Agent tool (`subagent_type:
+   match-worker`, in the background), all in one message:
+   - 8 to 10 Sonnet queue workers (`model: sonnet`), each with its own `ID`;
+   - 2 to 4 Opus long-function workers (`model: opus`), one function each
+     ([Long functions](#long-functions-opus)).
 3. **Refill.** A notification arrives when a worker ends. If
    `wave.py status` still shows unclaimed functions, start another worker
    with a new `ID`. Workers sometimes stop after one claim, whatever the
    protocol says; the prompt's last sentence and the refill cover it.
-4. **Land** when no worker is running:
+4. **Land** a wave once its own workers are done; the rest of the fleet
+   keeps running:
 
    ```
    python3 tools/wave.py land q6 --batch [--reject func_X ...]
    ```
 
    It refuses candidates with banned constructs, applies each exact one,
-   and re-checks it in its real file. Landing needs `src/` and `progress/`
-   clean.
+   and re-checks it in its real file.
+
+   **To build before the first mixed round:** landing must skip a file
+   while a running worker holds a claim on one of its unmatched functions,
+   and land it on a later pass. try_func builds a scratch copy of the whole
+   file, so a landing mid-edit breaks that worker's builds: in the trial a
+   salvage landing cost a Sonnet worker most of its runs. Only claims on
+   functions still `INCLUDE_ASM` count: claims stay in place after a match.
 5. **Review** the diff before committing. Reject, and revert to the stub:
    - a read of a local that was never assigned (it reproduces a register
      left by earlier code: the entry is a fragment);
@@ -106,14 +154,19 @@ says counts; only what `try_func` logged.
    ```
 
    Every new match can bring its variants; `names.py apply` writes the
-   readable names into the new bodies ([NAMES.md](NAMES.md)).
+   readable names into the new bodies ([NAMES.md](NAMES.md)). Then
+   `python3 tools/wave.py stage`: every near miss the batch left goes to
+   `nonmatching/` ([NONMATCHING.md](NONMATCHING.md)), so nobody redoes
+   it and anyone can pick it up. Landing a function removes its file.
 7. **Report and commit.** `bash tools/docker/run.sh python
    tools/gen_progress_report.py --no-build` regenerates the report (about
    2 minutes: it rebuilds and re-checks every file with C, one file per
    CPU), then `python3 tools/gen_progress_report.py --check`. Before it,
    `tools/overlay_file_check.py` (in the container) lists every changed
    file that fails to build or holds a C function that is no longer
-   EXACT. One commit per batch of waves; code ported from another
+   EXACT. The report also scores every staged near miss as
+   `fuzzy_match_percent` (never as matched). One commit per batch of
+   waves, with `nonmatching/` and the report; code ported from another
    project goes in a commit of its own that credits it. Commit only; the maintainer
    pushes.
 8. **Feed back.** Add an idiom to QUEUE.md only when a landed function

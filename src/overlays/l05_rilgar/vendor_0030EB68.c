@@ -141,7 +141,38 @@ INCLUDE_ASM("asm/overlays", func_L05_00317F80);
 INCLUDE_ASM("asm/overlays", func_L05_00318980);
 INCLUDE_ASM("asm/overlays", func_L05_003195B0);
 INCLUDE_ASM("asm/overlays", func_L05_00319F78);
-INCLUDE_ASM("asm/overlays", func_L05_0031A0A8);
+extern float func_00214158(void);
+extern int D_L05_0015F6A8;
+extern float D_0015EE6C MACRO_ADDR;
+extern short D_L05_00161FC8;
+
+// Per-frame update: spin a value in the data block and bob the moby's Y with it.
+void func_L05_0031A0A8(unsigned char *moby) {
+    float v;
+    char *data = *(char **)(moby + 0x78);
+    int g;
+    *(float *)(moby + 0x2C) = *(float *)(*(char **)(moby + 0x24) + 0x24) * *(float *)&D_L05_00161FC8;
+    switch (moby[0x20]) {
+    case 0:
+        moby[0x20] = 1;
+        *(float *)data = func_00214158();
+        *(float *)(data + 4) = *(float *)(moby + 0x18);
+        break;
+    case 1:
+        g = D_L05_0015F6A8;
+        if (g == 2) {
+            moby[0x31] = 0;
+            *(unsigned short *)(moby + 0x34) |= 1;
+        } else {
+            moby[0x31] = 1;
+            *(unsigned short *)(moby + 0x34) &= 0xFFFE;
+        }
+        v = func_001FA748(*(float *)data, D_0015EE6C * 0.87266463f);
+        *(float *)data = v;
+        *(float *)(moby + 0x18) = *(float *)(data + 4) + func_001F9FA8(v);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L05_0031A188);
 INCLUDE_ASM("asm/overlays", func_L05_0031A718);
 INCLUDE_ASM("asm/overlays", func_L05_0031A8B8);

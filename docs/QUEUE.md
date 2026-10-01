@@ -16,7 +16,7 @@ fails on `wave.py`).
    packet per function: what it calls and uses, its assembly, and matched
    C to start from. `QUEUE EMPTY`: stop.
 2. An attempt is ONE message with two tool calls, in this order:
-   - Write `build-sn/try/<func>/pK.c` (K = 0, 1, ...; a new file each time);
+   - Write `build-sn/try/<func>/pK.c` (K from the number the packet header gives, then up by one: a new file each time, never one an earlier round wrote);
    - Bash `bash tools/docker/run.sh python tools/try_func.py <func> build-sn/try/<func>/pK.c --diff`
 
    With several claimed functions, put their attempts in the same message.
@@ -89,8 +89,7 @@ over ([SIBLING_DECOMPS.md](SIBLING_DECOMPS.md), "Porting a function"):
   assembly (the n-th `%hi`/`%lo` or `$gp` access matches the n-th in
   theirs). Offsets inside a struct are the same in both builds.
 - `s8`..`s64`, `u8`..`u64`, `f32`, `f64` exist in `include/common.h`;
-  `u128` does not: check how our matched code in the same file does
-  128-bit copies (`qcopy()`).
+  `u128` does not: declare it as under "Codegen" (128-bit copies).
 - The comment above the function must end with
   `Adapted from Lombyte (MIT) for PAL: <its file under src/>, <its name>.`
   The lead lists every port in THIRD_PARTY_NOTICES.md.
@@ -104,6 +103,12 @@ When the packet shows "Best earlier attempt", an earlier worker came close
 and stopped. The packet gives that candidate (`best.c`) and every
 instruction that still differs. Your first attempt is `best.c` with one
 change aimed at the first difference; never start over.
+
+The repository keeps each function's closest attempt in
+`nonmatching/<dir>/<func>.c` ([NONMATCHING.md](NONMATCHING.md)); `best.c`
+already is the closer of that file and the run logs. Never edit
+`nonmatching/`: your runs are logged, and the lead re-stages what got
+closer.
 
 - Same instructions, registers swapped: change the order locals are first
   assigned, or swap the operands of a `+`, `*`, `&`, `|` or `==`.
@@ -140,6 +145,10 @@ stop and say in NOTES.md which instructions are left.
 ## Codegen (verified on matched functions)
 
 - `lq $2, 0(a)` then `sq $2, 0(b)`: `qcopy(b, a);` from `common.h`.
+- Any other `lq`/`sq` pair (another register, an offset, the `sq` in a
+  delay slot) is a plain 128-bit copy:
+  `typedef int u128 __attribute__((mode(TI)));` above the function, then
+  `*(u128 *)(a + 0x30) = *(u128 *)(b + 0x10);`. Only `sq $zero` has no C form.
 - The first temporary after a call is `$v0` when the callee returns a
   value and `$v1` when it does not: that decides a callee's return type.
   `sltiu` is an unsigned compare, `slti` a signed one. `lbu`/`lb`,
@@ -165,6 +174,11 @@ stop and say in NOTES.md which instructions are left.
 - A global read as `lui` + `lw` in one register: declare it `MACRO_ADDR`
   (from `common.h`), under an alias if the file already declares the name:
   `extern int D_x_m __asm__("D_x") MACRO_ADDR;` (func_L01_00252E80).
+- One global reached through `lui` in the body and through `$gp` in a
+  branch delay slot (an indented `lw $x, -0x6CA8($28)`): not a wall.
+  Declare it only `MACRO_ADDR`; the build turns a macro access the
+  compiler puts in a delay slot into the `$gp` form
+  (`tools/check_macro_slots.py`).
 - A variant of matched C ("differs only in a number" in the packet): copy
   it and change the constant, offset or callee the assembly shows.
 

@@ -90,8 +90,86 @@ INCLUDE_ASM("asm/overlays", func_L16_002E9018);
 INCLUDE_ASM("asm/overlays", func_L16_002E9278);
 INCLUDE_ASM("asm/overlays", func_L16_002E93F8);
 INCLUDE_ASM("asm/overlays", func_L16_002E9960);
-INCLUDE_ASM("asm/overlays", func_L16_002E9D48);
-INCLUDE_ASM("asm/overlays", func_L16_002E9DE8);
+extern float D_0015EE6C MACRO_ADDR;
+extern float func_001FA748(float, float);
+
+void func_L16_002E9D48(unsigned char *moby)
+{
+    switch (moby[0x20]) {
+    case 0:
+        {
+            float size = *(float *)(moby + 0x2C) * 4.0f;
+            int ff = 0xFF;
+            int twohundred = 0x200;
+            moby[0x20] = 1;
+            moby[0x30] = ff;
+            *(short *)(moby + 0x32) = twohundred;
+            *(float *)(moby + 0x18) = 160.0f;
+            *(float *)(moby + 0x2C) = size;
+        }
+        break;
+    case 1:
+        *(float *)(moby + 0x48) = func_001FA748(*(float *)(moby + 0x48), D_0015EE6C * -0.2617993950843811f);
+        break;
+    }
+}
+extern char *D_L16_00160098 MACRO_ADDR;
+extern int func_00215570(void *, int);
+extern float func_001F9D48(void *, void *);
+extern char *func_L16_002E9F80(int);
+extern int func_001F9908(void *);
+extern void func_L16_002E2248(void *);
+extern int func_L00_00258BC8(int, int);
+extern int func_001F9850(int);
+extern int func_L16_002E2290(void *);
+extern float func_00214358(void *, int, float);
+extern void func_L16_002C57E8(void *, void *);
+void func_L16_002E9DE8(char *moby) {
+    char *g = D_0013E633 + 0xE9D;
+    char *data = *(char **)(moby + 0x78);
+    char *target;
+    int n;
+    float pos[4];
+    if (!func_00215570(g, *(int *)(data + 8))) return;
+    target = D_L16_00160098 + (*(int *)(data + 4) << 8);
+    switch ((unsigned char)moby[0x20]) {
+    case 0:
+        moby[0x20] = 1;
+        *(int *)(data + 0xC) = func_001F9850(func_L00_00258BC8(0xB4, 0x168));
+        break;
+    case 1:
+        if (func_001F9D48(g, target + 0x10) > 3.0f) {
+            if (func_L16_002E9F80(*(int *)data) != 0) {
+                if (func_001F9908(data + 0xC)) {
+                    moby[0x20] = 2;
+                    func_L16_002E2248(target);
+                    *(int *)(data + 0xC) = func_001F9850(func_L00_00258BC8(0xB4, 0x168));
+                }
+            }
+        }
+        break;
+    case 2:
+        n = func_L16_002E2290(target);
+        switch (n) {
+        case 0:
+            moby[0x20] = 1;
+            break;
+        case 2:
+            moby[0x20] = 1;
+        {
+            char *other = func_L16_002E9F80(*(int *)data);
+            if (other != 0) {
+                qcopy(pos, target + 0x10);
+                pos[2] += 1.0f;
+                pos[2] = func_00214358(pos, 0, 0.5f);
+                func_L16_002C57E8(other, pos);
+            }
+        }
+            break;
+        }
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L16_002E9F80);
 typedef struct {
     float x, y, z;

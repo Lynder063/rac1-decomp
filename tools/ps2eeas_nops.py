@@ -204,9 +204,29 @@ def branch_as_word(line):
     return f"{m.group(1)}.word\t{word:#010x} | ((({label} - . - 4) >> 2) & 0xFFFF)\n"
 
 
-def move_sites(lines, start, end, skip_macro_stores=False):
+EXTERN = re.compile(r"^\s*\.extern\s+(\w+)\s*,\s*(\d+)")
+SMALL = 2           # -G2: an object this size or smaller is $gp-relative, one instruction
+
+
+def macro_access(lines, operands: str) -> bool:
+    """A load or store to a bare symbol the assembler expands to `lui $at`
+    plus the access (a global bigger than SMALL, or undeclared): the lui
+    then sits between the mtc1 and the read, so there is no hazard. A
+    $gp-relative one (an `__gp` alias, a small object) stays adjacent."""
+    target = operands.split(",")[-1].strip()
+    if "(" in target or not re.match(r"^[A-Za-z_][\w.]*(\s*[+-]\s*\w+)?$", target):
+        return False
+    sym = re.split(r"\s*[+-]", target)[0]
+    if sym.endswith("__gp"):
+        return False
+    sizes = {m.group(1): int(m.group(2)) for l in lines if (m := EXTERN.match(l))}
+    return sizes.get(sym, SMALL + 1) > SMALL
+
+
+def move_sites(lines, start, end):
     """Source lines that read the FP register a reorder-mode `mtc1`/`li.s`
-    on the previous instruction line wrote; the nop goes before them."""
+    on the previous instruction line wrote; the nop goes before them. A
+    macro access to a large global is not one (macro_access())."""
     sites, reorder, pending = [], True, None
     for j in range(start, end):
         stripped = lines[j].strip()
@@ -225,14 +245,7 @@ def move_sites(lines, start, end, skip_macro_stores=False):
             pending = None
             continue
         mnemonic, operands = m.group(1), m.group(2)
-        # A store to a bare symbol (`s.s $f0,D_X`) is an assembler macro:
-        # outside small data it becomes `lui $at` then `swc1`, so the FPR
-        # read is no longer on the instruction right after the mtc1 and no
-        # nop is wanted there. Inside small data it is one `swc1 sym($gp)`
-        # and does count, so this is only a fallback (see main()).
-        macro_store = (skip_macro_stores and mnemonic in ("s.s", "swc1", "s.d", "sdc1")
-                       and "(" not in operands)
-        if pending and not macro_store and reads_fpr(mnemonic, operands, pending):
+        if pending and reads_fpr(mnemonic, operands, pending) and not macro_access(lines, operands):
             sites.append(j)
         pending = None
         if reorder and mnemonic in ("mtc1", "li.s"):
@@ -280,10 +293,6 @@ def main() -> None:
         start, size = funcs[name]
         obj_back, obj_fp, obj_moves = scan(start, size, text)
         src_moves = move_sites(lines, i, end)
-        if len(src_moves) != len(obj_moves):
-            alt = move_sites(lines, i, end, skip_macro_stores=True)
-            if len(alt) == len(obj_moves):
-                src_moves = alt
         vram = int(name[5:], 16) if re.fullmatch(r"func_[0-9A-Fa-f]{8}", name) else None
         if vram is not None and any(a <= vram < b for a, b in hand_written):
             obj_moves, src_moves = [], []
