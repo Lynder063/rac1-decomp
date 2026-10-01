@@ -5,7 +5,31 @@
 extern char *func_0020D348(int);
 
 INCLUDE_ASM("asm/overlays", func_L18_002A8400);
-INCLUDE_ASM("asm/overlays", func_L18_002A87D0);
+extern int func_001F9850(int);
+extern float func_L00_001FF860(float, float);
+extern float func_001F9CE8(void *);
+
+char *func_L18_002A87D0(char *owner, float *pos, float *vec, int arg3) {
+    char *moby = func_0020D348(0x29);
+    if (moby != 0) {
+        char *data;
+        ((unsigned char *)moby)[0x30] = 0xFF;
+        *(short *)(moby + 0x32) = 0xFF;
+        moby[0x31] = 1;
+        moby[0x20] = 0;
+        *(long *)(moby + 0x38) = *(long *)(owner + 0x38);
+        *(float *)(moby + 0x2C) = *(float *)(moby + 0x2C) * 3.0f;
+        qcopy(moby + 0x10, pos);
+        data = *(char **)(moby + 0x78);
+        qcopy(data, vec);
+        *(short *)(data + 0x10) = func_001F9850(0xF0);
+        *(short *)(data + 0x12) = arg3;
+        *(char **)(data + 0x14) = owner;
+        *(float *)(moby + 0x48) = func_L00_001FF860(vec[0], vec[1]);
+        *(float *)(moby + 0x44) = -func_L00_001FF860(func_001F9CE8(vec), vec[2]);
+    }
+    return moby;
+}
 INCLUDE_ASM("asm/overlays", func_L18_002D6440);
 INCLUDE_ASM("asm/overlays", func_L18_002D6738);
 INCLUDE_ASM("asm/overlays", func_L18_002D6878);
@@ -105,7 +129,24 @@ void func_L18_002D9358(unsigned char *arg, int value) {
         *(int *)(data + 0x70) = func_0022EEB8(0x12, 0, arg);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L18_002D93C0);
+extern char D_0013E650[];
+extern void func_L00_0028EBF0(int);
+
+void func_L18_002D93C0(unsigned char *arg) {
+    int *data = *(int **)(arg + 0x78);
+    if (arg[0x20] == 2) {
+        int idx;
+        arg[0x20] = 3;
+        idx = data[0x70 / 4];
+        if (idx != -1) {
+            unsigned char *e = (unsigned char *)D_0013E650 + idx * 0x70;
+            if (*(unsigned char **)(e + 0x88) == arg && e[0x74]) {
+                func_L00_0028EBF0(idx);
+            }
+        }
+        data[0x70 / 4] = -1;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L18_002D9440);
 INCLUDE_ASM("asm/overlays", func_L18_002D9460);
 extern int D_L18_0015F6B0 MACRO_ADDR;
@@ -205,10 +246,103 @@ INCLUDE_ASM("asm/overlays", func_L18_002D9C78);
 INCLUDE_ASM("asm/overlays", func_L18_002D9C90);
 INCLUDE_ASM("asm/overlays", func_L18_002D9CA8);
 INCLUDE_ASM("asm/overlays", func_L18_002DC850);
-INCLUDE_ASM("asm/overlays", func_L18_002DCD28);
+extern float func_L00_001FF860(float, float);
+extern short D_L18_00161C88;
+extern short D_L18_00161C8C;
+
+typedef struct {
+    char v[16]; char padv[16];
+    float f20;
+    char pad24[4];
+    float f28;
+    char pad2C[4];
+    int f30;
+    int f34;
+} Child;
+
+typedef struct {
+    char pad0[0x10];
+    char pos[0x10];
+    unsigned char b20;
+    char pad21[0xB];
+    float f2C;
+    unsigned char b30;
+    unsigned char b31;
+    short s32;
+    unsigned short h34;
+    char pad36[0x12];
+    float f48;
+    char pad4C[0x2C];
+    Child *child;
+    char pad7C[0x14];
+    int f90;
+} Obj;
+
+/* Allocate an object, init its fields and child record. */
+void func_L18_002DCD28(char *pos, float *vec, int arg, float fa, float fb) {
+    Obj *o = (Obj *)func_0020D348(0x270);
+    if (o != 0) {
+        Child *c;
+        int g;
+        o->b30 = 0xFF;
+        o->b31 = 1;
+        o->b20 = 0;
+        g = *(int *)&D_L18_00161C8C;
+        o->f2C = o->f2C * *(float *)&D_L18_00161C88;
+        o->s32 = 0xFF;
+        o->h34 |= 0x10;
+        o->f90 = g;
+        c = o->child;
+        qcopy(o->pos, pos);
+        o->f48 = func_L00_001FF860(vec[0], vec[1]);
+        qcopy(c->v, vec);
+        c->f34 = arg;
+        c->f28 = fa;
+        c->f20 = fb;
+        c->f30 = 0;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L18_002DCE10);
 INCLUDE_ASM("asm/overlays", func_L18_002DD270);
-INCLUDE_ASM("asm/overlays", func_L18_002DD4B8);
+extern void func_001F9C08(void *, void *, void *, float);
+extern float func_001F9D10(void *, void *);
+extern int func_L00_00200290(char *, float);
+extern float func_002140F8(float, float);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_L00_00273F80(void *, void *, int, int, int, int, float);
+extern short D_L18_00161C84;
+extern short D_L18_00161D28;
+extern short D_L18_00161D14;
+extern short D_L18_00161D10;
+extern short D_L18_00161D1C;
+extern short D_L18_00161D18;
+extern short D_L18_00161D20;
+
+void func_L18_002DD4B8(char *moby, void *a1, void *a2) {
+    float buf[4];
+    float v[4];
+    float w[4];
+    char *d = *(char **)(moby + 0x78);
+    int col;
+
+    func_001F9C08(buf, a1, a2, 0.5f);
+    buf[3] = func_001F9D10(a1, a2) * 0.5f;
+    if (func_L00_00200290((char *)buf, *(float *)&D_L18_00161C84) == -1) {
+        return;
+    }
+    if (func_002140F8(0.0f, 1.0f) < *(float *)&D_L18_00161D28) {
+        func_001F9C08(v, a1, a2, func_002140F8(0.0f, 1.0f));
+        func_001F9BF0(w, v, moby + 0x10);
+        func_L00_001FF4B0(w, w, *(float *)(d + 0x20));
+        col = func_001FA8A8(*(int *)&D_L18_00161D10, *(int *)&D_L18_00161D14, func_002140F8(0.0f, 1.0f));
+        func_L00_00273F80(v, w, col, func_001F9850(*(int *)&D_L18_00161D1C) & 0xFF,
+                          func_002140B0(0xFF) & 0xFF, 0, *(float *)&D_L18_00161D18);
+        w[2] = 0.0f;
+        func_L00_00273F80(v, w, col, func_001F9850(*(int *)&D_L18_00161D20) & 0xFF,
+                          func_002140B0(0xFF) & 0xFF, 0, *(float *)&D_L18_00161D18);
+    }
+}
 extern int func_001F9908(int *);
 extern void func_0020D678(void *);
 extern float func_001F9D48(void *, void *);
@@ -264,7 +398,30 @@ char *func_L18_002DD7D0(void *owner, void *vector, float value) {
     }
     return moby;
 }
-INCLUDE_ASM("asm/overlays", func_L18_002DD848);
+extern short D_L18_00161D2C;
+
+typedef struct {
+    float f0;
+    int unk4;
+    int timer;
+} MobyData;
+
+/* Moves the moby to POS (qcopy), advances its timer (data +0x08) by 2, stores F at
+   data +0x00, and caps the timer at func_001F9850(D_L18_00161D2C). The $gp word is
+   read into a local before the timer update, which decomp-permuter found gives
+   retail's load order. */
+void func_L18_002DD848(char *moby, float *pos, float f) {
+    MobyData *d = *(MobyData **)(moby + 0x78);
+    int n;
+
+    qcopy(moby + 0x10, pos);
+    n = *(int *)&D_L18_00161D2C;
+    d->timer += 2;
+    d->f0 = f;
+    if (func_001F9850(n) < d->timer) {
+        d->timer = func_001F9850(*(int *)&D_L18_00161D2C);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L18_002DD8A8);
 INCLUDE_ASM("asm/overlays", func_L18_002E09F8);
 extern float D_0015EE70 MACRO_ADDR;

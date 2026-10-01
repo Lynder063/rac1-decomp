@@ -49,8 +49,82 @@ void func_L18_002F30C8(Level18VendorMoby *moby) {
     }
     func_L12_0027C368(moby, data->update_data, data->field338);
 }
-INCLUDE_ASM("asm/overlays", func_L18_002F3108);
-INCLUDE_ASM("asm/overlays", func_L18_002F3268);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9EC0(void *, void *, void *);
+extern float func_001F9B88(float);
+extern char *D_L18_0016016C MACRO_ADDR;
+extern unsigned char D_L18_001C6780[];
+extern char *D_L18_001C6480[];
+
+typedef struct { int pad[3]; int w0c; int pad2; float w14; int pad3[2]; } Ent;
+typedef struct { char pad[0x26]; short n; Ent *e; } Blk;
+
+/* For each entry of block D_L18_001C6480[D_L18_001C6780[A]]: runs func_001F9BF0 /
+   func_001F9EC0 against the records at D_L18_0016016C + B * 0x80 (+0x30, +0x40)
+   for the entry's vector and, when both of the result's first two components are
+   within 1.0, clears the entry's +0x0C and sets its +0x14 to 1.0. The index is
+   copied (k = i) for the two stores and the loop tests `n > i`, as decomp-permuter
+   found for retail's register use. */
+void func_L18_002F3108(int a, int b) {
+    int i = 0;
+    int k;
+    if (((Blk *)D_L18_001C6480[D_L18_001C6780[a]])->n > i) do {
+        float v[4];
+        func_001F9BF0(v, ((Blk *)D_L18_001C6480[D_L18_001C6780[a]])->e + i, D_L18_0016016C + (b << 7) + 0x30);
+        func_001F9EC0(v, v, D_L18_0016016C + (b << 7) + 0x40);
+        k = i;
+        if (func_001F9B88(v[0]) < 1.0f && func_001F9B88(v[1]) < 1.0f) {
+            ((Blk *)D_L18_001C6480[D_L18_001C6780[a]])->e[k].w0c = 0;
+            ((Blk *)D_L18_001C6480[D_L18_001C6780[a]])->e[k].w14 = 1.0f;
+        }
+    } while (++i < ((Blk *)D_L18_001C6480[D_L18_001C6780[a]])->n);
+}
+extern char D_0013E633[];
+extern unsigned char *D_L18_00160058 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+extern void func_L18_002F33D8(void);
+extern void func_001F49B0(void (*)(void), void *);
+extern int func_L00_0028EB98(void *, int);
+extern int func_0022ED80(int, int, int);
+extern void func_L00_0028EBF0(int);
+extern float func_00214D28(float *p, float target, float maxstep);
+
+void func_L18_002F3268(unsigned char *m)
+{
+    int *d = *(int **)(m + 0x78);
+    switch (m[0x20]) {
+    case 0:
+        m[0x20] = 1;
+        ((float *)d)[3] = 1.0f;
+        break;
+    case 1:
+        func_001F49B0(func_L18_002F33D8, m);
+        if (func_L00_0028EB98(m, d[1]) == 0) {
+            d[1] = func_0022ED80(0, 4, (int)m);
+        }
+        if (d[0] != -1) {
+            unsigned char *o = D_L18_00160058 + (d[0] << 8);
+            if (*(short *)(o + 0xA6) == 0x267 && o[0x20] >= 3) {
+                *(int *)(m + 0x94) = 0;
+                m[0x20] = 2;
+                if (func_L00_0028EB98(m, d[1]) != 0) {
+                    int i = d[1];
+                    if (i != -1) {
+                        char *e = D_0013E633 + 0x1D + i * 0x70;
+                        if (*(unsigned char **)(e + 0x88) == m && *(unsigned char *)(e + 0x74) != 0) {
+                            func_L00_0028EBF0(i);
+                        }
+                    }
+                    d[1] = -1;
+                }
+            }
+        }
+        break;
+    case 2:
+        func_00214D28((float *)(d + 3), 0.0f, D_0015EE6C + D_0015EE6C);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L18_002F33D8);
 INCLUDE_ASM("asm/overlays", func_L18_002F3710);
 INCLUDE_ASM("asm/overlays", func_L18_002F39F8);
@@ -410,7 +484,72 @@ void func_L18_002F8F10(Level18VendorMobyShort *moby) {
         moby->substate = 0;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L18_002F8F38);
+typedef struct {
+    char pad0[0x18];
+    float f18;
+    char pad1C[4];
+    unsigned char state;
+    char pad21[0x0F];
+    unsigned short flags2;
+    char pad32[2];
+    unsigned short flags;
+    char pad36[0x0A];
+    float f40;
+    char pad44[0x20];
+} L18M;
+typedef struct {
+    char pad0[0x20];
+    unsigned char state;
+    char pad21[0x10];
+    unsigned char substate;
+    char pad32[2];
+    unsigned short flags;
+    char pad36[0x0A];
+    float f40;
+} L18M2;
+extern int D_L18_0016D310;
+extern int D_L18_00162430 MACRO_ADDR;
+extern int D_L18_0015F6B0 MACRO_ADDR;
+extern float func_001FA748(float, float);
+typedef struct {
+    char pad0[0x18];
+    float f18;
+    char pad1C[4];
+    unsigned char state;
+    char pad21[0x10];
+    unsigned char substate;
+    char pad32[2];
+    unsigned short flags;
+    char pad36[0x0A];
+    float f40;
+} M;
+
+void func_L18_002F8F38(M *moby) {
+    switch (moby->state) {
+    case 0:
+        moby->state = 1;
+    case 1:
+        if ((D_L18_0015F6A8 == 2 && D_L18_0016D310 == 3) ||
+            (D_L18_0015F6B0 < 5 && D_L18_00162430 != 0 && moby->f40 == 0.0f)) {
+            moby->state = 2;
+            moby->flags |= 1;
+            moby->substate = 0;
+        }
+        break;
+    case 2:
+        if (D_L18_00162430 != 0 && moby->f40 == 0.0f) {
+            float d = 101.6f - moby->f18;
+            moby->f40 = func_001FA748(moby->f40, 3.14159274f);
+            moby->f18 += d + d;
+        }
+        if (D_L18_0015F6A8 != 2) {
+            moby->substate = 1;
+            moby->state = 1;
+            moby->flags &= 0xFFFE;
+        }
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L18_002F90A0);
 INCLUDE_ASM("asm/overlays", func_L18_002F94B0);
 INCLUDE_ASM("asm/overlays", func_L18_002F9AB8);

@@ -4,7 +4,46 @@
 
 INCLUDE_ASM("asm/overlays", func_L18_002F9D48);
 INCLUDE_ASM("asm/overlays", func_L18_002FABE0);
-INCLUDE_ASM("asm/overlays", func_L18_002FAEF8);
+extern int func_001F9850(int);
+extern float func_001FA888(int);
+extern float func_001F9FA8(float);
+extern int func_001FA8A8(int, int, float);
+extern void func_0020DAF8(void *, int, void *);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_00264690(void *, int, float, float);
+extern int D_L18_0015F6B0;
+extern int D_L18_001624F0;
+extern int D_L18_001624E8;
+extern int D_L18_001624EC;
+extern float D_L18_001624E4;
+extern float D_L18_001624E0;
+extern float D_L18_001624E4_b __asm__("D_L18_001624E4");
+extern float D_L18_001624E0_b __asm__("D_L18_001624E0");
+extern short D_L18_00162590;
+
+void func_L18_002FAEF8(void *moby) {
+    char a[16];
+    char b[32];
+    char c[16];
+    char d[16];
+    char e[16];
+    int n = func_001F9850(D_L18_001624F0);
+    float f = func_001FA888(D_L18_0015F6B0 % n);
+    int h;
+    f = f / func_001FA888(n);
+    f = f * 6.18318f;
+    f = func_001F9FA8(f - 3.14159f);
+    h = func_001FA8A8(D_L18_001624E8, D_L18_001624EC, f * 0.5f + 0.5f);
+    func_0020DAF8(moby, 1, b);
+    func_001F9C30(e, c, *(float*)&D_L18_00162590);
+    func_001F9BF0(a, d, e);
+    func_L00_00264690(a, h, D_L18_001624E0, D_L18_001624E4);
+    func_0020DAF8(moby, 2, b);
+    func_001F9C30(e, c, *(float*)&D_L18_00162590);
+    func_001F9BF0(a, d, e);
+    func_L00_00264690(a, h, D_L18_001624E0_b, D_L18_001624E4_b);
+}
 INCLUDE_ASM("asm/overlays", func_L18_002FB080);
 INCLUDE_ASM("asm/overlays", func_L18_002FB318);
 INCLUDE_ASM("asm/overlays", func_L18_002FB6B0);
@@ -115,7 +154,49 @@ void func_L18_002FBD40(Level18VendorMoby *moby) {
         DeleteMoby(moby);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L18_002FC188);
+extern void func_L00_00250800(void *, int, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_L00_00264BE8(void *, void *, void *, float, float);
+extern short D_L18_00162608;
+extern short D_L18_0016260C;
+extern short D_L18_00162610;
+typedef struct {
+    char pad[0x30];
+    unsigned int n;
+    char pad2[0x178 - 0x34];
+    char *arr[5];
+} ML;
+extern ML D_L18_0016D2E0;
+typedef struct { char pad[0x20]; unsigned char state; char pad2[0xF]; unsigned char v; } M2;
+
+void func_L18_002FC188(M2 *m) {
+    char buf[16];
+    char buf2[16];
+    char buf3[16];
+    int idx;
+    char *p;
+    switch (m->state) {
+    case 0:
+        m->v = 0xFF;
+        m->state = 1;
+        break;
+    case 1:
+        if (D_L18_0015F6A8 == 2) {
+            if (D_L18_0016D2E0.n < 4) {
+                idx = 0;
+                if (D_L18_0016D2E0.n == 0 || D_L18_0016D2E0.n == D_L18_0015F6A8 || D_L18_0016D2E0.n == 3) idx = 3;
+                if (D_L18_0016D2E0.n == 1) idx = 4;
+                p = D_L18_0016D2E0.arr[idx];
+                func_L00_00250800(p, 8, buf);
+                func_L00_00250800(p, 9, buf2);
+                func_001F9BF0(buf3, buf, buf2);
+                func_L00_001FF4B0(buf3, buf3, *(float *)&D_L18_00162608);
+                func_L00_00264BE8(buf, buf, buf3, *(float *)&D_L18_0016260C, *(float *)&D_L18_00162610);
+            }
+        }
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L18_002FD058);
 INCLUDE_ASM("asm/overlays", func_L18_002FD5C0);
 INCLUDE_ASM("asm/overlays", func_L18_002FD9A0);
