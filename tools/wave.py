@@ -874,6 +874,8 @@ def long_setup(args) -> None:
                                                    catalogue[name][1])
         if verdict == "blocked":
             sys.exit(f"{name}: blocked ({why}); pick another")
+        if not shared.claim(f"{args.name}:{args.arm}", name):
+            sys.exit(f"{name}: taken by {shared.holder(name)}")
     for name in args.funcs:
         (TRY / name).mkdir(parents=True, exist_ok=True)
     loop = "; ".join(f"python tools/m2c.py {n} > build-sn/try/{n}/m2c.c 2>&1" for n in args.funcs)
@@ -915,6 +917,27 @@ def salvage(args) -> None:
     print(f"{len(landed)} landed, {len(skipped) + len(failed)} skipped")
 
 
+BUSY_HOURS = 12     # a claim younger than this, on a function still in assembly, is a worker at work
+
+
+def busy(source: Path, own: str) -> str | None:
+    """Why SOURCE must not be written now, or None: a function still
+    INCLUDE_ASM in it is claimed by a running worker that isn't OWN's
+    (an owner prefix such as "q7:"). try_func builds a scratch copy of the
+    whole file, so a landing mid-edit breaks that worker's builds."""
+    for line in source.read_text(errors="replace").splitlines():
+        m = re.search(r"INCLUDE_ASM\([^)]*\b(func_L\d{2}_[0-9A-Fa-f]{8})\)", line)
+        if not m:
+            continue
+        owner = shared.holder(m.group(1))
+        if not owner or (own and owner.startswith(own)):
+            continue
+        claim_file = shared.path(m.group(1))
+        if time.time() - claim_file.stat().st_mtime < BUSY_HOURS * 3600:
+            return f"{source.name} is busy: {owner} holds {m.group(1)}"
+    return None
+
+
 def land_batch(args, batch: list) -> tuple[list[str], list[tuple[str, str]]]:
     """Lands BATCH (name, candidate, source) together: every candidate
     applied in one integrate run under the landing lock, then every touched
@@ -923,6 +946,14 @@ def land_batch(args, batch: list) -> tuple[list[str], list[tuple[str, str]]]:
     back (if nobody wrote it meanwhile) and its candidates land one by one
     through land_one(), which also handles prototype clashes."""
     owner = f"land:{args.name}"
+    held = {}
+    for _, _, source in batch:
+        if source not in held:
+            held[source] = busy(source, f"{args.name}:")
+    skipped_busy = [(n, held[s]) for n, _, s in batch if held[s]]
+    batch = [b for b in batch if not held[b[2]]]
+    if not batch:
+        return [], skipped_busy
     files = sorted({source for _, _, source in batch})
     manifest = WAVES / f"{args.name}.batch.MANIFEST"
     manifest.write_text("".join(f"{name} {cand}\n" for name, cand, _ in batch))
@@ -971,7 +1002,7 @@ def land_batch(args, batch: list) -> tuple[list[str], list[tuple[str, str]]]:
                 print(f"landed {name} (one by one)", flush=True)
             else:
                 skipped.append((name, outcome))
-    return landed, skipped
+    return landed, skipped + skipped_busy
 
 
 def keep_own_types(text: str, names: set, suffix: str) -> str:
@@ -1029,7 +1060,7 @@ def land_one(args, name: str, candidate: str, source: Path, owner: str) -> str:
     seen = set()
     for attempt in range(1, 4):
         log = TRY / name / "log.txt"
-        clash = set(re.findall(r"conflicting types for `(\w+)'", log.read_text(errors="replace"))) \
+        clash = set(re.findall(r"(?:conflicting types for|redefinition of) `(\w+)'", log.read_text(errors="replace"))) \
             if "1/1 exact" not in applied.stdout and log.exists() else set()
         if not clash:
             break
@@ -1054,7 +1085,7 @@ def land_one(args, name: str, candidate: str, source: Path, owner: str) -> str:
             (ROOT / candidate).write_text(text)
             applied = apply(candidate)
             log = TRY / name / "log.txt"
-            clash = set(re.findall(r"conflicting types for `(\w+)'", log.read_text(errors="replace"))) \
+            clash = set(re.findall(r"(?:conflicting types for|redefinition of) `(\w+)'", log.read_text(errors="replace"))) \
                 if "1/1 exact" not in applied.stdout and log.exists() else set()
             if not clash - seen - {name}:
                 break
