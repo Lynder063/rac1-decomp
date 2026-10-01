@@ -33,12 +33,13 @@ Plans, tracks and integrates waves of worker agents (docs/WORKER.md).
       function's dossier, m2c sketch and PACKET.md, and a BUDGET in its
       build-sn/try/<func>/<arm>/ folder; prints one prompt per function.
       Refuses a function rank_candidates blocks.
-  python3 tools/wave.py salvage [--ports] [--reject func_X ...]
+  python3 tools/wave.py salvage [--ports] [--level NN] [--reject func_X ...]
       Lands every overlay stub that already has an EXACT run logged in
       build-sn/try (a wave stopped before landing, a file that clashed
       then): batch-landed like `land --batch`. Candidates crediting Lombyte
       are left out unless --ports, which lands only those, so the two go in
-      separate commits.
+      separate commits. --level NN keeps to func_LNN_ functions: another
+      agent may own another level's work.
 
 --near picks earlier attempts that came close (BYTES within 40, a size
 within 8 bytes, or a near-miss in src/); --fresh, the default, picks
@@ -90,6 +91,7 @@ WAVES = ROOT / "build-sn/waves"
 TRY = ROOT / "build-sn/try"
 SECTION = {"match": "Matching", "compile": "First compile"}
 CLOSE_BYTES, CLOSE_SIZE = 40, 8
+FAR = 0.15          # a best attempt further off than this is a starting point, not a near miss
 NEAR_MAX = 0.10     # --overlay --near: the furthest a best attempt may be, as a fraction of the bytes
 CREDIT = "Adapted from Lombyte"
 ALL_LEVELS = 19  # docs/OVERLAYS.md: how many levels there are in total
@@ -140,14 +142,16 @@ def logged_runs(name: str) -> list[tuple[str, str]]:
 
 def miss(verdict: str) -> float | None:
     """How far a verdict is from EXACT: the fraction of bytes that differ,
-    or 1 plus the size difference for a size within CLOSE_SIZE; None if it
-    is not close or not a comparison at all."""
+    or 0.05 plus the size difference's share for a size within CLOSE_SIZE
+    or 3% of the function; None if it is not close or not a comparison."""
     m = re.match(r"BYTES (\d+)/(\d+)", verdict)
     if m:
         return int(m.group(1)) / int(m.group(2))
     m = re.match(r"SIZE ours (\d+) / retail (\d+)", verdict)
-    if m and abs(int(m.group(1)) - int(m.group(2))) <= CLOSE_SIZE:
-        return 1 + abs(int(m.group(1)) - int(m.group(2)))
+    if m:
+        off, size = abs(int(m.group(1)) - int(m.group(2))), int(m.group(2))
+        if off <= max(CLOSE_SIZE, size * 0.03):
+            return 0.05 + off / size        # one instruction too many in 2 KB beats half the bytes wrong
     return None
 
 
@@ -158,6 +162,7 @@ def overlay_stubs(findex) -> list[tuple[str, Path]]:
 def logged_exact(name: str) -> str | None:
     """The candidate of NAME's latest logged EXACT run, if its file is still there."""
     hits = [c for c, v in logged_runs(name) if v.startswith("EXACT") and (TRY / name / c).exists()]
+    hits = [c for c in hits if c.startswith("lead/")] or hits      # a lead's cleaned-up version wins
     return str((TRY / name / hits[-1]).relative_to(ROOT)) if hits else None
 
 
@@ -186,7 +191,7 @@ def choose_overlay_near(args) -> list[str]:
         if not close:
             continue
         d, _ = min(close)
-        if d <= args.near_max or d >= 1:
+        if d <= args.near_max:
             rows.append((d, name))
     rows.sort()
     return [name for _, name in rows][:args.count]
@@ -195,9 +200,10 @@ def choose_overlay_near(args) -> list[str]:
 def keep_best(name: str) -> None:
     """Saves NAME's closest earlier candidate as best.c before a new round
     starts writing p0.c, p1.c ... over the old ones."""
-    close = [(d, c, v) for c, v in logged_runs(name) if (d := miss(v)) is not None and (TRY / name / c).exists()]
+    close = [(d, -k, c, v) for k, (c, v) in enumerate(logged_runs(name))
+             if (d := miss(v)) is not None and (TRY / name / c).exists()]
     if close:
-        _, c, v = min(close)
+        _, _, c, v = min(close)         # of equally close attempts, the latest
         (TRY / name / "best.c").write_text((TRY / name / c).read_text(errors="replace"))
         (TRY / name / "BEST.md").write_text(f"{v}\nbuild-sn/try/{name}/{c} when it was logged\n")
 
@@ -371,6 +377,9 @@ def plan(args, quiet: bool = False) -> None:
         sys.exit("no m2c sketch exists for overlay functions yet, so there is nothing for a "
                   "compile worker to start from (docs/OVERLAYS.md); use --role match")
     near = overlay and args.near
+    held = [f"{n} ({shared.holder(n)})" for n in names if shared.holder(n)]
+    if held:            # a claimed function never reaches this wave's workers: claim() skips it
+        print("still claimed, release before launching (claims.py release OWNER func):\n  " + "\n  ".join(held))
     stamp = time.strftime("%Y%m%d-%H%M%S")
     for name in names:
         work = TRY / name
@@ -501,14 +510,22 @@ def packet(name: str, budget: int, near: bool = False) -> str:
                                  *ROOT.glob(f"asm/nonmatchings/*/{name}.s")) if p.exists()), None)
     asm = [re.sub(r"^\s*/\*[^*]*\*/\s*", "    ", l) for l in asm_path.read_text().splitlines()
            if l.strip() and not l.startswith((".section", "/* Handwritten", "nonmatching"))] if asm_path else []
-    out = [f"===== {name}: budget {budget} runs, work in build-sn/try/{name}/ =====", *keep,
+    used = [int(m.group(1)) for c in work.glob("p*.c") if (m := re.fullmatch(r"p(\d+)\.c", c.name))]
+    first = max(used) + 1 if used else 0     # never overwrite an earlier round's candidates: the run logs name them
+    out = [f"===== {name}: budget {budget} runs, work in build-sn/try/{name}/, "
+           f"your first candidate is p{first}.c =====", *keep,
            "", "## Assembly", *asm]
     best, diff = work / "best.c", work / "BEST_DIFF.txt"
     if near and best.exists():
         shown = diff.read_text(errors="replace").splitlines() if diff.exists() else ["(no diff written)"]
+        far = (d := miss(shown[0])) is None or d > FAR
+        how = ("An earlier attempt, still far off: start from it, keep what already matches (declarations, "
+               "control flow, the blocks the diff below doesn't list) and rework the rest freely."
+               if far else "A near miss (QUEUE.md, \"Near misses\"): start from this candidate and change as "
+               "little as you can.")
         out += ["", f"## Best earlier attempt: {shown[0]} (build-sn/try/{name}/best.c)",
-                "A near miss (QUEUE.md, \"Near misses\"): start from this candidate and change as little "
-                "as you can.", best.read_text(errors="replace"),
+                f"{how} Your {budget} runs are a fresh budget: a \"budget spent\" in NOTES.md is the "
+                f"earlier round's.", best.read_text(errors="replace"),
                 "", "## What still differs (offset, ours, retail)", *(shown[1:] or ["- nothing listed"])]
     port = lombyte_port(name)
     if port:
@@ -897,6 +914,8 @@ def salvage(args) -> None:
     findex = dossier.overlay_file_index()
     batch, skipped = [], []
     for name, source in overlay_stubs(findex):
+        if args.level is not None and not name.startswith(f"func_L{args.level:02d}_"):
+            continue
         candidate = logged_exact(name) if name not in args.reject else None
         if candidate is None:
             continue
@@ -1158,6 +1177,7 @@ def main() -> None:
     g.add_argument("--budget", type=int, default=20)
     s = commands.add_parser("salvage")
     s.add_argument("--ports", action="store_true")
+    s.add_argument("--level", type=int)
     s.add_argument("--reject", nargs="*", default=[])
     args = parser.parse_args()
     {"plan": plan, "status": status, "integrate": integrate, "land": land,

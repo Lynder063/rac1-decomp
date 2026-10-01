@@ -16,7 +16,7 @@ fails on `wave.py`).
    packet per function: what it calls and uses, its assembly, and matched
    C to start from. `QUEUE EMPTY`: stop.
 2. An attempt is ONE message with two tool calls, in this order:
-   - Write `build-sn/try/<func>/pK.c` (K = 0, 1, ...; a new file each time);
+   - Write `build-sn/try/<func>/pK.c` (K from the number the packet header gives, then up by one: a new file each time, never one an earlier round wrote);
    - Bash `bash tools/docker/run.sh python tools/try_func.py <func> build-sn/try/<func>/pK.c --diff`
 
    With several claimed functions, put their attempts in the same message.
@@ -168,6 +168,11 @@ stop and say in NOTES.md which instructions are left.
 - A global read as `lui` + `lw` in one register: declare it `MACRO_ADDR`
   (from `common.h`), under an alias if the file already declares the name:
   `extern int D_x_m __asm__("D_x") MACRO_ADDR;` (func_L01_00252E80).
+- One global reached through `lui` in the body and through `$gp` in a
+  branch delay slot (an indented `lw $x, -0x6CA8($28)`): not a wall.
+  Declare it only `MACRO_ADDR`; the build turns a macro access the
+  compiler puts in a delay slot into the `$gp` form
+  (`tools/check_macro_slots.py`).
 - A variant of matched C ("differs only in a number" in the packet): copy
   it and change the constant, offset or callee the assembly shows.
 
