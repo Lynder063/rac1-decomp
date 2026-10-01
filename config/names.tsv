@@ -1027,3 +1027,15 @@ D_0015EEE8	gStereo	descriptive	RaC1 PAL memory map	sheet row "Stereo/Mono settin
 D_0015EF1C	gHelpDeskVoice	descriptive	RaC1 PAL memory map	sheet row "HelpDesk voice setting"	
 D_0015EF1D	gHelpDeskText	descriptive	RaC1 PAL memory map	sheet row "HelpDesk text setting"	
 D_0015EF40	gSubtitles	descriptive	RaC1 PAL memory map	sheet row "Subtitles setting"	
+func_00121DC8	sceGsDefDispEnv	recovered	retail debug strings	sceGsDefDispEnv:Not support displaymode for 0x%x!!	
+func_001224B0	sceGsPutDrawEnv	recovered	retail debug strings	sceGsPutDrawEnv: DMA Ch.2 does not terminate	
+func_00122630	sceGsSetDefLoadImage	recovered	retail debug strings	sceGsSetDefLoadImage: too big size	
+func_00122958	sceGsExecLoadImage	recovered	retail debug strings	sceGsExecLoadImage: DMA Ch.2 does not terminate	
+func_001247E8	sceDbcSetWorkAddr	recovered	retail debug strings	sceDbcSetWorkAddr: rpc error	
+func_00124858	sceDbcCreateSocket	recovered	retail debug strings	sceDbcCreateSocket: rpc error	
+func_00124920	sceDbcGetDepNumber	recovered	retail debug strings	sceDbcGetDepNumber: rpc error	
+func_00124A70	sceDbcReceiveData	recovered	retail debug strings	sceDbcReceiveData: rpc error	
+func_00127960	_sliceA0	recovered	retail debug strings	_sliceA0(): error happens	
+func_0012E060	snd_BankLoadByLoc	recovered	retail debug strings	989snd.c: RPC call has failed inside snd_BankLoadByLoc	
+func_0012E1C8	snd_BankLoadFromEE_CB	recovered	retail debug strings	snd_BankLoadFromEE_CB: Load already in progress!	
+func_0023E298	sceMpegGetPicture	recovered	retail debug strings	sceMpegGetPicture() decode error	

@@ -275,6 +275,7 @@
 #define voBufIsEmpty                     func_0023E698
 #define voBufGetTag                      func_0023E6A8
 #define voBufDecCount                    func_0023E710
+#define sceMpegGetPicture                func_0023E298
 
 /* descriptive */
 #define showDebugFont                    func_001E9808
