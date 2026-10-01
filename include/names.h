@@ -275,6 +275,7 @@
 #define voBufIsEmpty                     func_0023E698
 #define voBufGetTag                      func_0023E6A8
 #define voBufDecCount                    func_0023E710
+#define sceMpegGetPicture                func_0023E298
 
 /* descriptive */
 #define showDebugFont                    func_001E9808
@@ -413,5 +414,8 @@
 #define gHelpDeskVoice                   D_0015EF1C
 #define gHelpDeskText                    D_0015EF1D
 #define gSubtitles                       D_0015EF40
+#define gCardStateNames                  D_001A04D0
+#define gGameSaveData                    D_001A05C0
+#define gLevelSaveData                   D_001A08C0
 
 #endif /* NAMES_H */
