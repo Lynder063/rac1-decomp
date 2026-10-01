@@ -3,16 +3,15 @@
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
- *   UpdateMoby_1799: state 0 -> state 1; state 1, when D_L18_0015F6A8==2 and the selector word at D_L18_0016D2E0+0
- *   Closest is p3.c (276 vs 288 bytes): if-chain matches, stores and lbu match. Difference: retail uses two separa
- *   Would need a source form that keeps the selector re-read through a non-folded base; a switch with explicit ran
+ *   # Round 1
+ *   UpdateMoby_1799: state 0 sets v=0xFF, state=1; state 1 (level flag==2, list count<4) picks a moby from D_L18_0
+ *   Mattered: float globals declared `extern short` and read as `*(float*)&X` for $gp access; store order v before
  */
 extern void func_L00_00250800(void *, int, void *);
 extern void func_001F9BF0(void *, void *, void *);
 extern void func_L00_001FF4B0(void *, void *, float);
 extern void func_L00_00264BE8(void *, void *, void *, float, float);
 extern int D_L18_0015F6A8;
-extern char D_L18_0016D2E0[];
 extern short D_L18_00162608;
 extern short D_L18_0016260C;
 extern short D_L18_00162610;
@@ -28,7 +27,7 @@ void func_L18_002FC188(char *m) {
         m[0x20] = 1;
     } else if (st == 1) {
         if (D_L18_0015F6A8 == 2) {
-            char *d = D_L18_0016D2E0;
+            char *d = (char *)&D_L18_0016D2E0;
             int x = 0;
             char *o;
             if (*(unsigned int *)(d + 0x30) >= 4) return;

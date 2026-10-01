@@ -380,7 +380,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L17_002F1D20`](l17_fleet/func_L17_002F1D20.c) | l17_fleet | 564 | SIZE ours 556 / retail 564, checked 2026-10-01. | - |
 | [`func_L17_002F1FE0`](l17_fleet/func_L17_002F1FE0.c) | l17_fleet | 1040 | SIZE ours 1048 / retail 1040, checked 2026-10-01. | - |
 | [`func_L17_002F2BD8`](l17_fleet/func_L17_002F2BD8.c) | l17_fleet | 848 | SIZE ours 856 / retail 848, checked 2026-10-01. | - |
-| [`func_L18_00214138`](l18_veldin2/func_L18_00214138.c) | l18_veldin2 | 1080 | SIZE ours 1076 / retail 1080, checked 2026-10-01. | - |
 | [`func_L18_002190C8`](l18_veldin2/func_L18_002190C8.c) | l18_veldin2 | 1328 | SIZE ours 1332 / retail 1328, checked 2026-10-01. | - |
 | [`func_L18_002D6D08`](l18_veldin2/func_L18_002D6D08.c) | l18_veldin2 | 992 | SIZE ours 996 / retail 992, checked 2026-10-01. | - |
 | [`func_L18_002D7310`](l18_veldin2/func_L18_002D7310.c) | l18_veldin2 | 484 | SIZE ours 488 / retail 484, checked 2026-10-01. | - |
@@ -389,7 +388,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L18_002D93C0`](l18_veldin2/func_L18_002D93C0.c) | l18_veldin2 | 128 | SIZE ours 140 / retail 128, checked 2026-10-01. | - |
 | [`func_L18_002D96B0`](l18_veldin2/func_L18_002D96B0.c) | l18_veldin2 | 1104 | SIZE ours 1108 / retail 1104, checked 2026-10-01. | - |
 | [`func_L18_002DCE10`](l18_veldin2/func_L18_002DCE10.c) | l18_veldin2 | 1116 | SIZE ours 1124 / retail 1116, checked 2026-10-01. | - |
-| [`func_L18_002DD848`](l18_veldin2/func_L18_002DD848.c) | l18_veldin2 | 96 | SIZE ours 100 / retail 96, checked 2026-10-01. | - |
 | [`func_L18_002DD8A8`](l18_veldin2/func_L18_002DD8A8.c) | l18_veldin2 | 1116 | SIZE ours 1108 / retail 1116, checked 2026-10-01. | - |
 | [`func_L18_002EAB58`](l18_veldin2/func_L18_002EAB58.c) | l18_veldin2 | 1764 | SIZE ours 1768 / retail 1764, checked 2026-10-01. | - |
 | [`func_L18_002EB5E8`](l18_veldin2/func_L18_002EB5E8.c) | l18_veldin2 | 924 | SIZE ours 916 / retail 924, checked 2026-10-01. | - |
