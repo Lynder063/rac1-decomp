@@ -1039,3 +1039,6 @@ func_00127960	_sliceA0	recovered	retail debug strings	_sliceA0(): error happens
 func_0012E060	snd_BankLoadByLoc	recovered	retail debug strings	989snd.c: RPC call has failed inside snd_BankLoadByLoc	
 func_0012E1C8	snd_BankLoadFromEE_CB	recovered	retail debug strings	snd_BankLoadFromEE_CB: Load already in progress!	
 func_0023E298	sceMpegGetPicture	recovered	retail debug strings	sceMpegGetPicture() decode error	
+D_001A04D0	gCardStateNames	descriptive	retail pointer table	string table for CardState enum at 0x001A04D0	
+D_001A05C0	gGameSaveData	descriptive	memcard.c data layout	global game progression save data blob	
+D_001A08C0	gLevelSaveData	descriptive	memcard.c data layout	array of 20 level save data records	
