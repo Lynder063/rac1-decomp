@@ -15,8 +15,59 @@ INCLUDE_ASM("asm/overlays", func_L15_002C7C20);
 INCLUDE_ASM("asm/overlays", func_L15_002D0500);
 INCLUDE_ASM("asm/overlays", func_L15_002D0798);
 INCLUDE_ASM("asm/overlays", func_L15_002D2398);
-INCLUDE_ASM("asm/overlays", func_L15_002E5AA0);
-INCLUDE_ASM("asm/overlays", func_L15_002E87B0);
+extern float func_001FA748(float, float);
+extern float D_0015EE6C MACRO_ADDR;
+extern short D_L15_00160058;
+extern short D_L15_00161F40;
+
+/* Nudge a moby's field 0x48 toward a signed step depending on a linked moby's state. */
+void func_L15_002E5AA0(char *moby) {
+    int idx = **(int **)(moby + 0x78);
+    if (idx != -1) {
+        char *other = (char *)(idx * 256 + *(int *)&D_L15_00160058);
+        char *d = *(char **)(other + 0x78);
+        int st = (unsigned char)other[0x20];
+        float step;
+        if (st == 2) {
+            step = *(float *)&D_L15_00161F40 * 0.017453292f * D_0015EE6C;
+            if (*(int *)(d + 0x10) != 0) step = -step;
+        } else if (st == 4) {
+            step = *(float *)&D_L15_00161F40 * 0.017453292f * D_0015EE6C;
+            if (*(int *)(d + 0x10) == 0) step = -step;
+        } else {
+            return;
+        }
+        *(float *)(moby + 0x48) = FastAddRots(*(float *)(moby + 0x48), step);
+    }
+}
+extern void func_001F9BC0(void *);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_L00_002617B0(char *a, void *b, void *c, void *d);
+
+/* Updates a moby: initialises its vector, then applies an angle-based offset. */
+void func_L15_002E87B0(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    if (data != 0) {
+        unsigned char state = moby[0x20];
+        switch (state) {
+        case 0: {
+            char *vec = data + 0x40;
+            clear_u64_value(vec);
+            *(int *)(data + 0x9C) |= 4;
+            moby[0x20] = 3;
+            break;
+        }
+        case 3:
+            *(float *)(moby + 0x58) = 1.3888889f;
+            *(float *)(data + 0x40) = FastCos(FastAddRots(*(float *)(moby + 0x48), 1.5707964f)) * (D_0015EE6C * 2.5f);
+            *(float *)(data + 0x44) = FastSin(FastAddRots(*(float *)(moby + 0x48), 1.5707964f)) * (D_0015EE6C * 2.5f);
+            *(int *)(data + 0x48) = 0;
+            break;
+        }
+        func_L00_002617B0(data + 0x60, data + 0x40, moby + 0x40, moby + 0x40);
+    }
+}
 extern char *func_0020D348(int);
 extern void func_001F9BC0(void *);
 extern void func_L00_00251E30(void *, void *);
@@ -42,12 +93,52 @@ char *func_L15_002E92C8(void *unused, void *vector) {
 }
 INCLUDE_ASM("asm/overlays", func_L15_002E9358);
 INCLUDE_ASM("asm/overlays", func_L15_002EBB38);
-INCLUDE_ASM("asm/overlays", func_L15_002EBFC8);
+extern short D_L15_001620FC;
+extern float func_001F9878(float);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern int func_001F9908(int *);
+extern char *func_L15_002E92C8(void *, void *);
+
+/* Per-frame update: picks a random value on spawn, then re-rolls and spawns a child when triggered. */
+void func_L15_002EBFC8(char *moby) {
+    int *data = *(int **)(moby + 0x78);
+    switch (*(unsigned char *)(moby + 0x20)) {
+    case 0:
+        data[0] = func_001FA898_r(func_001F9878(*(float *)(data + 1) * 60.0f));
+        moby[0x20] = 1;
+        ((unsigned char *)moby)[0x30] = 0xFF;
+        break;
+    case 1:
+        if (func_001F9908(data)) {
+            data[0] = func_001FA898_r(func_001F9878(*(float *)&D_L15_001620FC * 60.0f));
+            func_L15_002E92C8(moby, moby + 0x10);
+        }
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L15_002EC080);
 INCLUDE_ASM("asm/overlays", func_L15_002EC4F8);
 INCLUDE_ASM("asm/overlays", func_L15_002EC8B0);
 INCLUDE_ASM("asm/overlays", func_L15_002ECAA8);
-INCLUDE_ASM("asm/overlays", func_L15_002ECD18);
+extern int func_002140B0(int);
+extern float func_002140F8(float, float);
+extern void func_L00_0026FF20(float, float, char *, float *);
+extern float D_0015EE6C MACRO_ADDR;
+extern short D_L15_0016221C;
+extern short D_L15_00162218;
+
+/* Per-frame update: when the counter check is zero, builds a vector and calls the movement helper. */
+void func_L15_002ECD18(char *moby)
+{
+    float vec[4];
+    float *data = *(float **)(moby + 0x78);
+    if (random_integer_below(*(int *)&D_L15_0016221C - 1) == 0) {
+        char *pos = moby + 0x10;
+        clear_u64_value(vec);
+        vec[2] = random_float_between(0.75f, 1.5f) * *(float *)&D_L15_00162218 * D_0015EE6C;
+        func_L00_0026FF20(random_float_between(0.06f, 0.12f) * 210000.0f, *data, pos, vec);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L15_002ECDD0);
 INCLUDE_ASM("asm/overlays", func_L15_002ED318);
 INCLUDE_ASM("asm/overlays", func_L15_002ED3A0);

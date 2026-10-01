@@ -6,7 +6,22 @@ INCLUDE_ASM("asm/overlays", func_L08_002D3DF8);
 INCLUDE_ASM("asm/overlays", func_L08_002D49E8);
 INCLUDE_ASM("asm/overlays", func_L08_002D4B80);
 INCLUDE_ASM("asm/overlays", func_L08_002D5080);
-INCLUDE_ASM("asm/overlays", func_L08_002D5358);
+extern void *func_L00_002DD2D0(void *);
+extern void func_00213DE0(void *, int, int, int);
+
+void *func_L08_002D5358(char *arg)
+{
+    void *result = func_L00_002DD2D0(arg);
+    char *obj = *(char **)(arg + 0x78);
+    arg[0x20] = 3;
+    *(float *)(obj + 0x200) = 4.0f;
+    *(float *)(obj + 0x208) = 0.5f;
+    if ((unsigned char)arg[0x53] != 2) {
+        func_00213DE0(arg, 2, 0, 3);
+    }
+    *(short *)(obj + 0xC8) = 0;
+    return result;
+}
 INCLUDE_ASM("asm/overlays", func_L08_002D5410);
 INCLUDE_ASM("asm/overlays", func_L08_002E9288);
 INCLUDE_ASM("asm/overlays", func_L08_002E95E8);
@@ -44,15 +59,106 @@ void func_L08_002F21B0(int a) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L08_002F2428);
-INCLUDE_ASM("asm/overlays", func_L08_002F2618);
-INCLUDE_ASM("asm/overlays", func_L08_002F2760);
+extern float func_001F9FA8(float);
+extern float D_0015EE7C MACRO_ADDR;
+
+/* advance a 2-D wrapped phase by a and b and write scaled sines */
+void func_L08_002F2618(float *out, float *ph, float a, float b, float scale) {
+    ph[0] += a * D_0015EE7C;
+    if (ph[0] > 1.0f) {
+        ph[0] -= 2.0f;
+    }
+    if (ph[0] < -1.0f) {
+        ph[0] += 2.0f;
+    }
+    ph[1] += b * D_0015EE7C;
+    if (ph[1] > 1.0f) {
+        ph[1] -= 2.0f;
+    }
+    if (ph[1] < -1.0f) {
+        ph[1] += 2.0f;
+    }
+    out[0] = FastSin(ph[0] * 3.1415927f) * scale;
+    out[1] = FastSin(ph[1] * 3.1415927f) * scale;
+}
+extern float D_0015EE7C MACRO_ADDR;
+typedef struct { float x, y; } V2;
+extern V2 D_L08_001DB7C0[];
+
+/* advances two wrapped scroll offsets by per-entry speeds */
+void func_L08_002F2760(int a) {
+    *(float *)&D_L08_001E8608[a].a = *(float *)&D_L08_001E8608[a].a + D_L08_001DB7C0[a].x * D_0015EE7C;
+    if (*(float *)&D_L08_001E8608[a].a > 1.0f) *(float *)&D_L08_001E8608[a].a = *(float *)&D_L08_001E8608[a].a - 1.0f;
+    if (*(float *)&D_L08_001E8608[a].a < -1.0f) *(float *)&D_L08_001E8608[a].a = *(float *)&D_L08_001E8608[a].a + 1.0f;
+    *(float *)&D_L08_001E8608[a].b = *(float *)&D_L08_001E8608[a].b + D_L08_001DB7C0[a].y * D_0015EE7C;
+    if (*(float *)&D_L08_001E8608[a].b > 1.0f) *(float *)&D_L08_001E8608[a].b = *(float *)&D_L08_001E8608[a].b - 1.0f;
+    if (*(float *)&D_L08_001E8608[a].b < -1.0f) *(float *)&D_L08_001E8608[a].b = *(float *)&D_L08_001E8608[a].b + 1.0f;
+}
 INCLUDE_ASM("asm/overlays", func_L08_002F2838);
 INCLUDE_ASM("asm/overlays", func_L08_002F6CF0);
 INCLUDE_ASM("asm/overlays", func_L08_00302618);
 INCLUDE_ASM("asm/overlays", func_L08_00303998);
-INCLUDE_ASM("asm/overlays", func_L08_00308650);
+extern char *func_0020D348(int);
+extern int func_001F9850(int);
+extern float func_L00_001FF860(float, float);
+extern float func_001F9CE8(void *);
+extern void func_L00_00251E30(void *);
+
+// Create a moby (class 0x50C) at pos with an orientation vector, and two ints and an angle arg stored in its data.
+char *func_L08_00308650(char *pos, char *dir, int a2, int a3, int a4, int a5) {
+    char *m = CreateMoby(0x50C);
+    if (m != 0) {
+        char *d;
+        *(unsigned char *)(m + 0x30) = 0xFF;
+        *(short *)(m + 0x32) = 0x7E;
+        d = *(char **)(m + 0x78);
+        m[0x31] = 1;
+        m[0x20] = 1;
+        qcopy(m + 0x10, dir);
+        qcopy(d, pos);
+        *(int *)(d + 0x18) = scale_ticks(a4);
+        *(int *)(d + 0x10) = a2;
+        *(int *)(d + 0x14) = a3;
+        *(int *)(d + 0x2C) = a5;
+        *(int *)(d + 0x28) = 0;
+        *(float *)(m + 0x48) = func_L00_001FF860(*(float *)d, *(float *)(d + 4));
+        *(float *)(m + 0x44) = -func_L00_001FF860(func_001F9CE8(d), *(float *)(d + 8));
+        func_L00_00251E30(m);
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L08_00308758);
-INCLUDE_ASM("asm/overlays", func_L08_00309050);
+extern float func_002140F8(float, float);
+extern float func_001F9878(float);
+extern float func_001F9CB8(void *);
+extern float D_0015EE6C MACRO_ADDR;
+extern float D_L08_001623F0[2] MACRO_ADDR;
+extern float D_L08_00162400 MACRO_ADDR;
+extern int D_L08_00162404 MACRO_ADDR;
+extern short D_L08_001623DC;
+extern short D_L08_001623E0;
+
+// sets up the level's scroll/tilt parameters
+void func_L08_00309050(int arg) {
+    float a, b, c, d;
+    float v[2];
+    float t;
+    if (arg == 0) {
+        a = 5.0f; b = 2.0f; c = 8.0f; d = 4.0f;
+    } else {
+        a = 2.5f; b = 20.0f; c = 3.0f; d = 2.0f;
+    }
+    if (*(float *)&D_L08_001623DC >= 0.0f) d = *(float *)&D_L08_001623DC;
+    if (*(float *)&D_L08_001623E0 >= 0.0f) c = *(float *)&D_L08_001623E0;
+    D_L08_001623F0[0] = random_float_between(-(a * D_0015EE6C), a * D_0015EE6C);
+    D_L08_001623F0[1] = random_float_between(-(a * D_0015EE6C), a * D_0015EE6C);
+    b = func_001F9878(b);
+    D_L08_00162400 = random_float_between(b, func_001F9878(10.0f));
+    v[0] = a * D_0015EE6C;
+    v[1] = v[0];
+    t = func_001F9CE8(D_L08_001623F0) / FastVecLength(v);
+    D_L08_00162404 = (int)(t * (c - d) + d);
+}
 INCLUDE_ASM("asm/overlays", func_L08_003091B0);
 INCLUDE_ASM("asm/overlays", func_L08_00309AB0);
 INCLUDE_ASM("asm/overlays", func_L08_00315068);

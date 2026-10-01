@@ -2,7 +2,35 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L00_002E1660);
+extern char D_0013E633[];
+extern float D_0015EE6C MACRO_ADDR;
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_L00_00250800(void *, int, void *);
+extern float func_002140F8(float, float);
+extern int func_L00_00258BC8(int, int);
+extern int func_001F9850(int);
+extern int func_001F9908_r(int *) __asm__("func_001F9908");
+extern void func_L00_002703E8(void *, void *, int, int);
+
+/* while the countdown value is ready, scatter a spawn by the camera's offset and reroll the delay */
+void func_L00_002E1660(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float a[4];
+    float b[4];
+    char *pad;
+    float f;
+    if (func_001F9908_r((int *)(d + 4))) {
+        func_L00_00250800(m, 0, a);
+        f = random_float_between(D_0015EE6C, D_0015EE6C * 3.0f);
+        func_L00_001FF4B0(b, m + 0xD0, -f);
+        pad = D_0013E633 + 0xE1D;
+        b[0] += *(float *)(pad + 0x100) * 0.8f;
+        b[1] += *(float *)(pad + 0x104) * 0.8f;
+        b[2] += *(float *)(pad + 0x108) + random_float_between(D_0015EE6C * -0.5f, D_0015EE6C + D_0015EE6C);
+        func_L00_002703E8(a, b, 2, rand_range(0x5A, 0x78));
+        *(int *)(d + 4) = rand_range(scale_ticks(5), scale_ticks(0xF));
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E1790);
 INCLUDE_ASM("asm/overlays", func_L00_002E17D4);
 extern char D_0013F450[];
@@ -31,9 +59,31 @@ INCLUDE_ASM("asm/overlays", func_L00_002E3FA0);
 INCLUDE_ASM("asm/overlays", func_L00_002E4138);
 INCLUDE_ASM("asm/overlays", func_L00_002E4838);
 INCLUDE_ASM("asm/overlays", func_L00_002E4F38);
-INCLUDE_ASM("asm/overlays", func_L00_002E5158);
+extern float func_001F9D10(void *, void *);
+extern float func_001F9CB8(void *);
+extern void func_00213DE0(void *, int, int, int);
+
+// Grass moby update: plays an animation when the player is near and leaves.
+void func_L00_002E5158(char *m) {
+    if (FastVecDist(D_0013E633 + 0xE9D, m + 0x10) < 1.0f) {
+        if (FastVecLength(D_0013E633 + 0xE9D + 0x80) > D_0015EE6C + D_0015EE6C) {
+            if (*(unsigned char *)(m + 0x53) != 1) {
+                func_00213DE0(m, 1, 0, scale_ticks(6));
+            }
+        }
+    }
+    if (*(unsigned char *)(m + 0x70) & 2) {
+        if (*(unsigned char *)(m + 0x53) == 1) {
+            func_00213DE0(m, 0, 0, scale_ticks(6));
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E5238);
-INCLUDE_ASM("asm/overlays", func_L00_002E5618);
+extern char D_0013E633[];
+// copies a vector out of the game block into the second argument
+void func_L00_002E5618(char *a, void *out) {
+    qcopy(out, D_0013E633 + 0xE9D);
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E5630);
 typedef struct { float f[4]; } __attribute__((aligned(16))) VS;
 extern int func_L00_001EE530(VS *, float);
@@ -43,9 +93,123 @@ int func_L00_002E5740(VS *a) {
     return func_L00_001EE530(&v, 0.0f) != 0;
 }
 INCLUDE_ASM("asm/overlays", func_L00_002E5770);
-INCLUDE_ASM("asm/overlays", func_L00_002E58E0);
-INCLUDE_ASM("asm/overlays", func_L00_002E5A30);
-INCLUDE_ASM("asm/overlays", func_L00_002E5B68);
+extern void func_L00_002E5770(void *, int);
+extern float func_001F9C78(void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BF0(float *, float *, float *);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_001F9BC0(void *);
+extern char D_L00_00166F10[];
+
+/* initialises a moby's matrix block from the global camera frame */
+void func_L00_002E58E0(char *m) {
+    float a[4];
+    float b[4];
+    float c[4];
+    char *g = D_L00_00166F10;
+    char *g3 = g + 0x30;
+    char *p = *(char **)(m + 0x70);
+    char *q;
+    char *r;
+    float f;
+    func_L00_002E5770(a, 0);
+    q = p + 0x40;
+    f = FastVecDot(a, g3);
+    r = p + 0x130;
+    FastVecScale(b, g3, f);
+    FastVecSub((float *)q, a, b);
+    qcopy(p + 0x50, b);
+    FastVecAdd(q, q, p + 0x50);
+    g += 0x20;
+    FastVecScale(c, g, *(float *)(q + 0xB0));
+    FastVecAdd(p + 0x80, c, q);
+    FastVecAdd(p + 0xD0, c, q);
+    clear_u64_value(p + 0xE0);
+    q[0xC4] = 0;
+    *(float *)(q + 0xC8) = 1.0f;
+    q[0xC5] = 0;
+    *(short *)(q + 0xC6) = 0;
+    qcopy(p + 0xA0, q);
+    clear_u64_value(p + 0xB0);
+    clear_u64_value(p + 0xC0);
+    FastVecScale(c, g, *(float *)(r + 0x30));
+    FastVecAdd(p + 0x90, c, q);
+}
+extern void func_L00_002E5618(char *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_001F9BF0(float *, float *, float *);
+extern float func_001F9C78(void *, void *);
+extern float func_001F9CB8(void *);
+extern float func_001F9FC0(float);
+extern char D_L00_00166F10[];
+
+/* angle between a direction and an axis, signed */
+float func_L00_002E5A30(char *a, float f) {
+    float v0[4], v1[4], v2[4], v3[4];
+    float r, len;
+    char *g = D_L00_00166F10;
+    func_L00_002E5618(a, v0);
+    FastVecScale(v1, g + 0x20, f);
+    FastVecAdd(v1, v1, v0);
+    FastVecSub(v2, v1, (float *)(a + 0x30));
+    len = FastVecDot(v2, a + 0x10);
+    FastVecScale(v3, a + 0x10, len);
+    FastVecSub(v2, v2, v3);
+    r = FastVecDot(v2, a);
+    len = FastVecLength(v2);
+    if (len == 0.0f) {
+        return 0.0f;
+    }
+    r = 1.5707964f - FastArcSin(r / len);
+    if (FastVecDot(v2, a + 0x20) < 0.0f) {
+        r = -r;
+    }
+    return r;
+}
+typedef struct { int a[4]; } Vq4 __attribute__((aligned(16)));
+extern char D_L00_00166F10[] NOT_SDA;
+// adds the fixed offset vector into a moby's matrix rows and updates its camera-follow fields
+void func_L00_002E5B68(char *a) {
+    Vq4 t;
+    Vq4 v1, v2;
+    char *b = D_L00_00166F10;
+    char *m = *(char **)(a + 0x70);
+    char *m40 = m + 0x40;
+    char *g, *g3;
+    qcopy(&t, D_0013E633 + 0xF5D);
+    FastVecAdd(a + 0x30, &t, a + 0x30);
+    FastVecAdd(m + 0xA0, &t, m + 0xA0);
+    FastVecAdd(m40, &t, m40);
+    FastVecAdd(m + 0xD0, &t, m + 0xD0);
+    FastVecAdd(m, &t, m);
+    g = D_0013E633 + 0xE1D;
+    if (*(short *)(g + 0x308) == 0) {
+        char *p = *(char **)(g + 0x2FC);
+        char *q;
+        if (p == 0 || *(short *)(p + 0xA6) != 0x22D || ((q = b - 0x190), scale_ticks(0x1E)) < *(int *)(q + 0x398)) {
+            char *g2 = D_0013E633 + 0xE1D;
+            *(float *)(*(char **)(a + 0x70) + 0x1C8) = *(float *)(g2 + 0x14C);
+        }
+    }
+    g3 = D_0013E633 + 0xE1D;
+    if ((unsigned)(*(int *)(g3 + 0x2084) - 0xB) < 2) {
+        char *m2 = *(char **)(a + 0x70);
+        char *s = b + 0x30;
+        float f;
+        *(short *)(m2 + 0x10) = 0;
+        FastVecScale(&v1, b + 0x80, *(float *)(b + 0xA4));
+        f = FastVecDot(s, &t);
+        FastVecScale(&v2, s, f);
+        FastVecSub((float *)&v2, (float *)&t, (float *)&v2);
+        FastVecSub((float *)&v1, (float *)&v1, (float *)&v2);
+        FastVecAdd(a + 0x30, &v1, a + 0x30);
+        FastVecAdd(m40 + 0x60, &v1, m40 + 0x60);
+        FastVecAdd(m40, &v1, m40);
+        FastVecAdd(m40 + 0x90, &v1, m40 + 0x90);
+        FastVecAdd(m2, &v1, m2);
+    }
+}
 typedef struct { int a[4]; } Vq __attribute__((aligned(16)));
 extern char *D_L00_00166F00;
 extern void func_001F9C30(void *, void *, float);
@@ -61,7 +225,157 @@ void func_L00_002E5D50(void *out, float f) {
     FastVecScale(out, b + 0x30, FastVecDot(b + 0x30, &t0));
 }
 INCLUDE_ASM("asm/overlays", func_L00_002E5DE0);
-INCLUDE_ASM("asm/overlays", func_L00_002E6498);
+extern short D_L00_00161DF4;
+extern short D_L00_00161DE0;
+extern short D_L00_00161DDC;
+extern short D_L00_00161E0C;
+extern short D_L00_00161E3C;
+extern short D_L00_00161E10;
+extern short D_L00_00161E24;
+extern short D_L00_00161E50;
+extern void func_001F9C08(float, void *, void *, void *);
+extern float func_001F9B88(float);
+extern float func_001FA888(int);
+extern int func_L00_001F10E0(float, void *, int, void *);
+extern int func_001F9938(void *);
+extern int func_L00_002E5770_r(void *, int) __asm__("func_L00_002E5770");
+
+/* per-frame state machine that eases a moby's attach pose toward the camera block's vector */
+void func_L00_002E6498(char *m, float *v2) {
+    float cam[4];
+    float tmp[4];
+    char *d;
+    char *e;
+    char *g;
+    char *pad;
+    char *padb;
+    char *padc;
+    char *q;
+    float x, y;
+    int flag;
+    g = D_L00_00166F10;
+    d = *(char **)(m + 0x70);
+    func_L00_002E5618(m, cam);
+    pad = D_0013E633 + 0xE1D;
+    e = d + 0x40;
+    if (*(int *)(pad + 0x2084) == 0x77) {
+        x = FastVecDot(e, g + 0x30);
+        FastVecScale(v2, g + 0x30, x);
+        FastVecSub(e, e, v2);
+        y = FastVecDot(g + 0x30, d + 0xA0);
+        FastVecScale(v2, g + 0x30, y);
+        qcopy(d + 0x50, v2);
+        if (*(unsigned char *)(e + 0xC4) != 0xB) {
+            *(unsigned char *)(e + 0xC4) = 0xB;
+            qcopy(m + 0x40, m);
+            q = *(char **)(m + 0x70);
+            *(short *)(q + 0x20) = scale_ticks(*(int *)&D_L00_00161DF4);
+        }
+        return;
+    }
+    switch (*(unsigned char *)(e + 0xC4)) {
+    case 2:
+        padb = D_0013E633 + 0xE1D;
+        if (*(int *)(padb + 0x2084) == 0x11 ||
+            (*(short *)(padb + 0x41E) != 0 && *(float *)(padb + 0x2DC) > 0.2f &&
+             ((y = func_L00_002E5A30(m, *(float *)(e + 0xB0))) < *(float *)&D_L00_00161DE0 ||
+              *(float *)&D_L00_00161DDC < y))) {
+            int v;
+            *(unsigned char *)(e + 0xC4) = 1;
+            v = *(unsigned short *)&D_L00_00161E0C;
+            *(short *)(e + 0xC6) = v;
+            *(float *)(e + 0xC8) = 1.0f / func_001FA888((short)v);
+        }
+        padc = D_0013E633 + 0xE1D;
+        flag = 0;
+        if (*(short *)(padc + 0x30C) != 0 && *(float *)(g + 0xDC) == 0.0f &&
+            (*(short *)(padc + 0x41E) == 0 || *(int *)(padc + 0x44C) >= 0x10)) {
+            flag = 1;
+        } else {
+            if (func_L00_002E5770_r(tmp, 1) == 1) {
+                x = FastVecDot(tmp, g + 0x30);
+                if (x < FastVecLength(e + 0x10)) flag = 1;
+            } else {
+                flag = 1;
+            }
+        }
+        if (flag != 0) {
+            if (FastAbsF(*(float *)(g + 0x30) - *(float *)(g + 0x40)) > 0.001f ||
+                FastAbsF(*(float *)(g + 0x34) - *(float *)(g + 0x44)) > 0.001f ||
+                FastAbsF(*(float *)(g + 0x38) - *(float *)(g + 0x48)) > 0.001f) {
+                x = FastVecDot(cam, g + 0x30);
+                FastVecScale(v2, g + 0x30, x);
+                FastVecSub(e, cam, v2);
+            } else {
+                qcopy(v2, e + 0x10);
+                x = FastVecDot(cam, g + 0x30);
+                FastVecScale(tmp, g + 0x30, x);
+                FastVecSub(e, cam, tmp);
+            }
+        } else {
+            func_L00_002E5770(tmp, 1);
+            x = FastVecDot(tmp, g + 0x30);
+            FastVecScale(v2, g + 0x30, x);
+            FastVecSub(e, tmp, v2);
+        }
+        break;
+    case 3:
+    case 5:
+    case 6:
+    case 7:
+        func_001F9C08((float)*(short *)(e + 0xD4) * *(float *)(e + 0xCC), e + 0x10, e + 0x30, e + 0x20);
+        if (*(unsigned char *)(e + 0xD7) == 0) {
+            if (coll_sphere(0.2f, m + 0x30, 0x12, 0)) {
+                qcopy(e + 0x30, e + 0x10);
+                *(unsigned char *)(e + 0xD7) = 1;
+            }
+        }
+        qcopy(v2, e + 0x10);
+        x = FastVecDot(cam, g + 0x30);
+        FastVecScale(tmp, g + 0x30, x);
+        FastVecSub(e, cam, tmp);
+        if (FastDecTimer(e + 0xD4)) {
+            if (*(unsigned char *)(e + 0xC4) == 9) {
+                *(unsigned char *)(e + 0xC4) = 0xA;
+                *(short *)(e + 0xD4) = scale_ticks(*(int *)&D_L00_00161E3C);
+                qcopy(e + 0x20, e + 0x10);
+                FastVecScale(tmp, g + 0x30, *(float *)(e + 0xD0));
+                FastVecSub(e + 0x30, e + 0x20, tmp);
+            } else if (*(unsigned char *)(e + 0xC4) == 6) {
+                *(unsigned char *)(e + 0xC4) = 7;
+                *(short *)(e + 0xD4) = scale_ticks(*(int *)&D_L00_00161E10);
+                qcopy(e + 0x30, e + 0x20);
+                qcopy(e + 0x20, e + 0x10);
+            } else {
+                int v;
+                *(unsigned char *)(e + 0xC4) = 4;
+                v = *(unsigned short *)&D_L00_00161E24;
+                *(short *)(e + 0xC6) = v;
+                *(float *)(e + 0xC8) = 1.0f / func_001FA888((short)v);
+            }
+        }
+        break;
+    case 8:
+        qcopy(v2, e + 0x10);
+        x = FastVecDot(cam, g + 0x30);
+        FastVecScale(tmp, g + 0x30, x);
+        FastVecSub(e, cam, tmp);
+        break;
+    case 9:
+    case 10:
+        x = FastVecDot(cam, g + 0x30);
+        FastVecScale(v2, g + 0x30, x);
+        FastVecSub(e, cam, v2);
+        func_001F9C08(*(float *)&D_L00_00161E50, v2, v2, e + 0x20);
+        break;
+    case 4:
+    default:
+        x = FastVecDot(cam, g + 0x30);
+        FastVecScale(v2, g + 0x30, x);
+        FastVecSub(e, cam, v2);
+        break;
+    }
+}
 extern float func_001EC120(void *, float, float, float, float, float);
 
 void func_L00_002E6A68(char *m, float *out, float *in, float a, float b, float c) {
@@ -70,8 +384,73 @@ void func_L00_002E6A68(char *m, float *out, float *in, float a, float b, float c
     out[1] = Cam_InterpValues(p + 0xE4, out[1], in[1], a, b, c);
     out[2] = Cam_InterpValues(p + 0xE8, out[2], in[2], a, b, c);
 }
-INCLUDE_ASM("asm/overlays", func_L00_002E6B28);
-INCLUDE_ASM("asm/overlays", func_L00_002E6BE0);
+// Combines two vectors by mode: mode 1 adds a copied base vector, others add the moby's +0x40 vector; returns 0 for modes 3-7.
+int func_L00_002E6B28(char *m, void *a, void *b, int k) {
+    int r = 1;
+    char *p = *(char **)(m + 0x70) + 0x40;
+    float buf[4];
+    switch (k) {
+    case 3:
+        r = 0;
+        FastVecAdd(b, a, p);
+        break;
+    case 4:
+        r = 0;
+        FastVecAdd(b, a, p);
+        break;
+    case 5:
+        r = 0;
+        FastVecAdd(b, a, p);
+        break;
+    case 6:
+        r = 0;
+        FastVecAdd(b, a, p);
+        break;
+    case 7:
+        r = 0;
+        FastVecAdd(b, a, p);
+        break;
+    case 1:
+        func_L00_002E5618(m, buf);
+        FastVecAdd(b, a, buf);
+        break;
+    case 2:
+    default:
+        FastVecAdd(b, a, p);
+        break;
+    }
+    return r;
+}
+extern int func_001F9938(void *);
+extern void func_L00_002E6A68(char *m, float *out, float *in, float a, float b, float c);
+extern short D_L00_00161DF8;
+extern short D_L00_00161DFC;
+extern short D_L00_00161E00;
+extern short D_L00_00161E04;
+
+// Camera blend: compute interpolated camera vector from current mode.
+void func_L00_002E6BE0(char *m, float *in) {
+    char *p = *(char **)(m + 0x70);
+    char *q = p + 0x40;
+    float v[4];
+    float s;
+    float x, y;
+    int t;
+    if (FastDecTimer(p + 0x106)) {
+        q[0xC5] = q[0xC4];
+    }
+    s = (float)*(short *)(q + 0xC6) * *(float *)(q + 0xC8);
+    func_L00_002E6B28(m, in, v, *(unsigned char *)(q + 0xC4));
+    t = *(unsigned char *)(q + 0xC4);
+    if (t == 3 || t == 5 || t == 6 || t == 7 || t == 1) {
+        x = *(float *)&D_L00_00161E00 + (*(float *)&D_L00_00161DF8 - *(float *)&D_L00_00161E00) * s;
+        y = *(float *)&D_L00_00161E04 + (*(float *)&D_L00_00161DFC - *(float *)&D_L00_00161E04) * s;
+    } else {
+        x = *(float *)&D_L00_00161DF8;
+        y = *(float *)&D_L00_00161DFC;
+    }
+    func_L00_002E6A68(m, (float *)(q + 0x90), v, x, y, 0.0f);
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E6CE0);
 INCLUDE_ASM("asm/overlays", func_L00_002E72E8);
 INCLUDE_ASM("asm/overlays", func_L00_002E74B0);
@@ -80,8 +459,30 @@ INCLUDE_ASM("asm/overlays", func_L00_002E80A8);
 INCLUDE_ASM("asm/overlays", func_L00_002E8210);
 INCLUDE_ASM("asm/overlays", func_L00_002E85E8);
 INCLUDE_ASM("asm/overlays", func_L00_002E87C8);
-INCLUDE_ASM("asm/overlays", func_L00_002E89D0);
-INCLUDE_ASM("asm/overlays", func_L00_002E89E0);
+// returns zero, with a 0x50 byte frame
+long func_L00_002E89D0(void) {
+    char buf[0x50];
+    return 0;
+}
+extern void func_001F9BF0(float *, float *, float *);
+extern void func_L00_001FF4B0(void *, void *, float);
+
+// combines vectors through the moby's data
+void func_L00_002E89E0(char *m, float *out, float *b, float *c, float *d, float s0, float s1) {
+    float v0[4];
+    float v1[4];
+    float v2[4];
+    float v3[4];
+    char *p = *(char **)(m + 0x70);
+    FastVecSub(v0, b, c);
+    p += 0x90;
+    func_L00_001FF4B0(v1, v0, s0);
+    FastVecAdd(b, b, v1);
+    FastVecSub(v2, b, (float *)p);
+    func_L00_001FF4B0(v2, v2, s1);
+    FastVecAdd(v3, p, v2);
+    FastVecSub(out, v3, d);
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E8AC8);
 typedef float V[4] __attribute__((aligned(16)));
 
@@ -104,7 +505,78 @@ int func_L00_002E8E78(void *arg0, int arg1, float *arg2) {
     }
     return 0;
 }
-INCLUDE_ASM("asm/overlays", func_L00_002E8EE0);
+typedef float V4[4] __attribute__((aligned(16)));
+extern int func_L00_001F10E0_b(void *, int, void *, float) __asm__("func_L00_001F10E0");
+extern int func_L00_002E8E78_f(void *, int, float *, float) __asm__("func_L00_002E8E78");
+extern int func_L00_002E8AC8(void *, void *, int, float, float);
+extern float func_001F9B88(float);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern int D_L00_0015F05C MACRO_ADDR;
+extern V4 D_L00_00173F60;
+extern float D_L00_00166F40[];
+extern float D_0015EE60 MACRO_ADDR;
+extern short D_L00_00161DA8;
+extern short D_L00_00161D88;
+extern short D_L00_00161D98;
+extern unsigned char D_0013A5E0[];
+
+// Camera sweep: steps a vector along the path, testing each step against the edge and the wall.
+int func_L00_002E8EE0(char *m) {
+    V4 v0, v1, x, t, u, w;
+    char *pa;
+    int ret;
+    int i;
+    float f20, f22;
+    char *p, *s21, *s18;
+    ret = 0;
+    p = *(char **)(m + 0x70);
+    pa = p + 0x40;
+    s21 = p + 0x130;
+    s18 = p + 0x1D0;
+    qcopy(v0, s21);
+    f22 = 0.0f;
+    qcopy(v1, p + 0x90);
+    f20 = *(float *)&D_L00_00161DA8;
+    func_L00_001FF4B0(x, v0, 1.0f);
+    i = 0;
+    while (i < func_001FA898_r(*(float *)(s18 + 0x40) - 1.0f)) {
+        if (i > 0 && func_L00_002E5740((VS *)v1) == 0) {
+            char *base = D_0013E633 + 0xE1D;
+            if (func_L00_001F10E0_b(v1, D_L00_0015F05C, *(void **)(base + 0x2080), f20) != 0 &&
+                func_L00_002E8E78_f(m, i, v1, f20) == 0) {
+                qcopy(t, D_L00_00173F60);
+                qcopy(u, v1);
+                if (func_L00_002E8AC8(m, v1, i, f22, f20) != 0) {
+                    ret = 1;
+                    if (*(unsigned char *)(base + 0x20A4) != 2) {
+                        if (FastAbsF(*(float *)(D_0013A5E0 + 0x2560)) > 0.05f) {
+                            FastVecSub(w, t, u);
+                            func_L00_001FF4B0(w, w, 1.0f);
+                            if (FastAbsF(FastVecDot(D_L00_00166F40, w)) < 0.75f) {
+                                int snd = scale_ticks(0x884);
+                                float lim = *(float *)&D_L00_00161D98;
+                                *(float *)(s18 + 0x30) += *(float *)&D_L00_00161D88 * D_0015EE60;
+                                *(short *)(s18 + 0x34) = snd;
+                                if (*(float *)(s21 + 0x2C) - *(float *)(s18 + 0x30) < lim) {
+                                    *(float *)(s18 + 0x30) = *(float *)(s21 + 0x2C) - lim;
+                                }
+                            }
+                        }
+                    }
+                    FastVecSub(w, v1, (float *)(pa + 0x50));
+                    func_L00_001FF4B0(s21, w, *(float *)(s21 + 0x2C) - *(float *)(s18 + 0x30));
+                    func_L00_001FF4B0(x, s21, 1.0f);
+                }
+            }
+        }
+        f20 += *(float *)(s18 + 0x44) * *(float *)(s18 + 0x3C);
+        f22 += f20;
+        FastVecScale(t, x, f20 * ((*(float *)(s21 + 0x2C) - *(float *)(s18 + 0x30)) / *(float *)(s21 + 0x2C)));
+        i++;
+        FastVecAdd(v1, v1, t);
+    }
+    return ret;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E91D0);
 INCLUDE_ASM("asm/overlays", func_L00_002E9828);
 INCLUDE_ASM("asm/overlays", func_L00_002E9838);
@@ -186,9 +658,63 @@ void func_L00_002E9B30(void) {
         *(int *)(q + 0x10) |= 3;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002E9B60);
+extern float func_001F9FC0(float x);
+extern void func_001F9CA0(void *, void *, void *);
+extern float func_001FA790(float, float);
+extern float func_L00_00258E58(float a, float b, float c, float d, float t);
+extern float func_001F9B88(float);
+
+/* Measures the signed angle between two offsets of an object's data relative to an axis, and (within the limit) stores a scaled blend in the object's data. */
+float func_L00_002E9B60(char *a0, float *a1, float lim) {
+    float b0[4];
+    float b1[4];
+    float b2[4];
+    float b3[4];
+    char *base = D_L00_00166F10;
+    char *axis = base + 0x20;
+    char *d = *(char **)(a0 + 0x70);
+    char *q = d + 0x1A8;
+    char *p = d + 0x130;
+    float dot;
+    float len;
+    float ang;
+    float sign;
+    float r = 0.0f;
+    float z2;
+    float t;
+
+    FastVecScale(b0, axis, FastVecDot(a1, axis));
+    FastVecSub(b1, a1, b0);
+    FastVecScale(b0, axis, FastVecDot(p, axis));
+    FastVecSub(b2, (float *)p, b0);
+    dot = FastVecDot(b1, b2);
+    len = FastVecLength(b1);
+    if (len == r) {
+        return r;
+    }
+    z2 = 0.0f;
+    len = len * FastVecLength(b2);
+    if (len == r) {
+        return r;
+    }
+    ang = 1.5707964f - FastArcSin(dot / len);
+    sign = -1.0f;
+    FastVecCross(b3, b1, axis);
+    if (FastVecDot(b3, b2) >= 0.0f) {
+        sign = 1.0f;
+    }
+    r = FastSubRots(3.1415927f, ang);
+    if (lim != z2 && lim < FastAbsF(r)) {
+        return r;
+    }
+    t = r / 1.5707964f;
+    if (t > 1.0f) {
+        t = 1.0f;
+    }
+    *(float *)(q + 0x1C) = func_L00_00258E58(-1.0f, 0.0f, 1.0f, 0.0f, t) * sign;
+    return r;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E9D78);
-extern void func_L00_002E9B60(void *, void *, float);
 void func_L00_002E9DC8(void *a, float x, float y) {
     char *p = D_L00_00166F00;
     if (*(short *)(p + 0x86) == 0) {
@@ -240,9 +766,147 @@ void func_L00_002EA3F0(int m) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_002EA4C0);
-INCLUDE_ASM("asm/overlays", func_L00_002EA9C8);
-INCLUDE_ASM("asm/overlays", func_L00_002EABD0);
-INCLUDE_ASM("asm/overlays", func_L00_002EAF50);
+extern float func_001F9B88(float);
+extern void func_L00_002E9900(float, float, int);
+extern char D_0013E633[] NOT_SDA;
+extern short D_L00_00161DBC;
+extern short D_L00_00161DC0;
+extern short D_L00_00161DE4;
+extern short D_L00_00161DE8;
+/* blends two output floats toward the level's targets while the slot is active */
+void func_L00_002EA9C8(char *m, float *o1, float *o2) {
+    char *g = D_L00_00166F10;
+    char *p = *(char **)(m + 0x70);
+    char *h = p + 0x220;
+    char *q = p + 0x130;
+    float k;
+    float v;
+    float x;
+    float y;
+    float t;
+    if (*(short *)(h + 6) == 0
+        && ((*(short *)(h + 4) != 0 && *(float *)(g + 0xA4) == 0.0f
+             && FastVecDot(*(char **)(D_0013E633 + 0x2E9D) + 0xC0, m) <= -0.3f)
+            || (FastAbsF(*(float *)(g + 0xA4)) > 0.0001f
+                && FastVecDot(g + 0x80, m) <= -0.3f))) {
+        *(short *)(h + 4) = scale_ticks(0x78);
+        k = *(float *)(g + 0xA4) * 14.2857f;
+        if (k > 1.0f) k = 1.0f;
+        v = (*(unsigned char *)(D_0013E633 + 0x2EC1) == 1) ? 4.0f : *(float *)(h + 0xC);
+        x = *(float *)(q + 0x58);
+        t = *(float *)(h + 8);
+        y = x + (v - x) * k;
+        if (t < y) *(float *)(h + 8) = y;
+        func_L00_002E9900(*(float *)(h + 8), 0.003f, 0);
+        *o1 = *(float *)&D_L00_00161DBC + (*(float *)&D_L00_00161DE4 - *(float *)&D_L00_00161DBC) * k;
+        *o2 = *(float *)&D_L00_00161DC0 + (*(float *)&D_L00_00161DE8 - *(float *)&D_L00_00161DC0) * k;
+    } else {
+        if (*(short *)(h + 4) != 0) {
+            *(short *)(h + 4) = 0;
+            *(float *)(h + 8) = *(float *)(q + 0x58);
+        }
+        *o1 = *(float *)&D_L00_00161DBC;
+        *o2 = *(float *)&D_L00_00161DC0;
+    }
+}
+extern short D_L00_00161DCC;
+extern short D_L00_00161DD0;
+extern short D_L00_00161DC4;
+extern short D_L00_00161DC8;
+extern void func_L00_002EA9C8(char *, float *, float *);
+extern float func_L00_001EB6A8(void *, float, float, float, float, float);
+extern void func_002156E0(void *, void *, void *, float);
+
+/* Aims a camera rig at its target: updates yaw/pitch smoothing and clamps roll. */
+void func_L00_002EABD0(int arg) {
+    char *m = (char *)arg;
+    char *d = *(char **)(m + 0x70);
+    float t0[4];
+    float t1[4];
+    float t2[4];
+    float t3[4];
+    float t4[4];
+    float t5[4];
+    float t6[4];
+    float t7[4];
+    float t8[4];
+    float tb[4];
+    float x, bc, e, e1, y, h, r, i, s, len;
+    char *base = D_L00_00166F10;
+    char *up = base + 0x20;
+    char *base2;
+    char *fw;
+    char *p130 = d + 0x130;
+    char *p140 = d + 0x140;
+    char *p1d0 = d + 0x1D0;
+    FastVecAdd(d, d + 0x90, p130);
+    x = *(float *)(p130 + 0x2C);
+    x -= *(float *)(p1d0 + 0x30);
+    bc = FastVecLength(p140);
+    func_L00_002EA9C8(m, &tb[0], &tb[1]);
+    bc = Cam_InterpValues(d + 0x158, bc, x, tb[0], tb[1], 0.0f);
+    e1 = FastVecDot(p130, up);
+    y = FastArcSin(e1 / x);
+    h = FastVecDot(p140, up);
+    r = FastArcSin(h / bc);
+    i = func_L00_001EB6A8(d + 0x154, r, y, *(float *)&D_L00_00161DCC, *(float *)&D_L00_00161DD0, 0.0f);
+    FastVecScale(t0, up, e1);
+    FastVecSub(t1, p130, t0);
+    FastVecScale(t2, up, h);
+    FastVecSub(t3, p140, t2);
+    e = FastVecDot(t1, t3);
+    x = FastVecLength(t1);
+    x = x * FastVecLength(t3);
+    r = 1.5707964f - FastArcSin(e / x);
+    x = func_L00_001EB6A8(d + 0x150, 0.0f, r, *(float *)&D_L00_00161DC4, *(float *)&D_L00_00161DC8, 0.0f);
+    FastVecCross(t4, t3, up);
+    s = (FastVecDot(t4, t1) >= 0.0f) ? 1.0f : -1.0f;
+    base2 = D_L00_00166F10;
+    fw = base2 + 0x30;
+    build_look_at_matrix(t5, t3, up, x * s);
+    FastVecCross(t4, up, t5);
+    build_look_at_matrix(t5, t5, t4, i);
+    func_L00_001FF4B0(p140, t5, bc);
+    FastVecScale(t6, up, *(float *)(p130 + 0x30));
+    FastVecAdd(t7, t6, d + 0xA0);
+    e = FastVecDot(p140, fw);
+    len = FastVecLength(p140);
+    if (len != 0.0f) {
+        x = 1.5707964f - FastArcSin(e / len);
+        if (FastAbsF(x) < 0.2617994f) {
+            FastVecCross(t8, p140, fw);
+            build_look_at_matrix(p140, p140, t8, FastSubRots(0.2617994f, FastAbsF(x)));
+            *(float *)(p130 + 0x28) = 0.0f;
+            *(float *)(p130 + 0x20) = 0.0f;
+            *(float *)(p130 + 0x24) = 0.0f;
+        }
+    }
+    FastVecAdd(m + 0x30, t7, p130 + 0x10);
+}
+extern void func_001E9768(void *, float);
+extern char *D_L00_0015F080 MACRO_ADDR;
+extern int D_L00_001601B4 MACRO_ADDR;
+
+// Walk the 64x64 grid of entries and call the update for each type-5 element.
+void func_L00_002EAF50(int a) {
+    int i, j, k;
+    for (i = 0; i < 0x40; i++) {
+        for (j = 0; j < 0x40; j++) {
+            int idx = i * 0x40 + j;
+            char *tbl = D_L00_0015F080;
+            char *e = *(char **)(idx * 4 + tbl);
+            if (e == 0) continue;
+            e += (int)tbl;
+            for (k = 0; k < *(int *)e; k++) {
+                char *it = e + 0x10 + k * 0x30;
+                if (*(int *)(it + 0x10) == 5) {
+                    char *b = (char *)D_L00_001601B4 + (*(int *)(it + 0x14) << 7);
+                    func_001E9768(b + 0x30, FastVecLength(b));
+                }
+            }
+        }
+    }
+}
 extern void func_L00_002EAF50(int);
 extern void func_L00_002EA3F0(int);
 extern void func_L00_002E9E60(int, float *, float *);

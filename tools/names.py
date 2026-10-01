@@ -126,7 +126,7 @@ def exe_functions() -> list[tuple[int, int, str]]:
     """Our executable functions (address, size, func_X), from the report."""
     rows = []
     for unit in json.loads(REPORT.read_text())["units"]:
-        if unit["name"].startswith("overlays/"):
+        if "level_code" in (unit.get("metadata") or {}).get("progress_categories", []):
             continue
         for f in unit.get("functions", []):
             if re.fullmatch(r"func_[0-9A-F]{8}", f["name"]):

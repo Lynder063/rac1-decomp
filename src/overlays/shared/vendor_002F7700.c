@@ -6,7 +6,37 @@ INCLUDE_ASM("asm/overlays", func_L01_002F7700);
 INCLUDE_ASM("asm/overlays", func_L01_002F7E08);
 INCLUDE_ASM("asm/overlays", func_L01_002F9908);
 INCLUDE_ASM("asm/overlays", func_L01_002F9AF0);
-INCLUDE_ASM("asm/overlays", func_L01_002FC890);
+typedef struct {
+    char pad0[0x44];
+    short n;
+    char pad1[0x132];
+    char *m[1];
+} G;
+extern int D_L01_0015F6A8 MACRO_ADDR;
+extern unsigned char D_0015EEB0[] MACRO_ADDR;
+extern G D_L01_0016CD60;
+extern unsigned char D_L01_0017C940[];
+extern void func_0020D960(char *, int, void *);
+
+/* Arms the marker record once for mobys of class 0x398 or 0x1BF, while the level flag is 2. */
+void func_L01_002FC890(void) {
+    if (D_L01_0015F6A8 == 2 && gCheats[0] != 0) {
+        int i;
+        for (i = 0; i < D_L01_0016CD60.n; i++) {
+            char *moby = D_L01_0016CD60.m[i];
+            short c = *(short *)(moby + 0xA6);
+            if (c == 0x398 || c == 0x1BF) {
+                unsigned char *q = D_L01_0017C940;
+                if (q[1] == 0) {
+                    AttachManipulator(moby, 0, q);
+                    *(float *)(q + 0x20) = 2.1f;
+                    *(float *)(q + 0x24) = 2.1f;
+                    *(float *)(q + 0x28) = 2.1f;
+                }
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_002FC988);
 extern char D_L01_001E3780[];
 extern void func_L01_002BA380(char *, int);
@@ -15,13 +45,66 @@ extern void func_L01_002BA380(char *, int);
 void func_L01_002FE498(void) {
     func_L01_002BA380(D_L01_001E3780, 0x15);
 }
-INCLUDE_ASM("asm/overlays", func_L01_00300400);
+extern short D_L01_00161DC0;
+
+/* Resets the marker record's scale once, for mobys of the caller's class or class 0x32B. */
+void func_L01_00300400(char *a) {
+    if (D_L01_0015F6A8 == 2 && gCheats[0] != 0) {
+        int i;
+        for (i = 0; i < D_L01_0016CD60.n; i++) {
+            char *moby = D_L01_0016CD60.m[i];
+            short c = *(short *)(moby + 0xA6);
+            if (c == *(short *)(a + 0xA6) || c == 0x32B) {
+                unsigned char *q = D_L01_0017C940;
+                if (q[1] == 0) {
+                    AttachManipulator(moby, 0, q);
+                    *(float *)(q + 0x20) = *(float *)&D_L01_00161DC0;
+                    *(float *)(q + 0x24) = *(float *)&D_L01_00161DC0;
+                    *(float *)(q + 0x28) = *(float *)&D_L01_00161DC0;
+                }
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_003004F0);
 INCLUDE_ASM("asm/overlays", func_L01_003015F8);
 INCLUDE_ASM("asm/overlays", func_L01_00303810);
 INCLUDE_ASM("asm/overlays", func_L01_00303A20);
 INCLUDE_ASM("asm/overlays", func_L01_00309078);
-INCLUDE_ASM("asm/overlays", func_L01_00309758);
+extern float func_001F9FA8(float);
+extern float func_001FA748(float, float);
+extern void func_L01_00309928(char *);
+extern int func_002140B0(int);
+extern void func_L01_00309DC8(char *);
+extern float D_0015EE6C MACRO_ADDR;
+extern short D_L01_00161FA0;
+extern short D_L01_00161FA4;
+extern short D_L01_00161FA8;
+extern short D_L01_00161FBC;
+extern short D_L01_00161FE0;
+
+// Per-frame update of a moby: scale, orbit position and angle easing.
+void func_L01_00309758(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    float r;
+    float s;
+    float k;
+    *(float *)(moby + 0x2C) = *(float *)(*(char **)(moby + 0x24) + 0x24) * *(float *)&D_L01_00161FA0;
+    if (((unsigned char *)moby)[0x20] == 1) {
+        s = FastSin(*(float *)(moby + 0x4C));
+        *(float *)(moby + 0x18) = *(float *)(data + 0x18) + *(float *)&D_L01_00161FA4 + *(float *)&D_L01_00161FA8 * s;
+        *(float *)(moby + 0x40) = FastAddRots(*(float *)(moby + 0x40), *(float *)(data + 0x68));
+        *(float *)(moby + 0x44) = FastAddRots(*(float *)(moby + 0x44), *(float *)(data + 0x64));
+        r = FastAddRots(*(float *)(moby + 0x48), *(float *)(data + 0x60));
+        k = *(float *)&D_L01_00161FBC * 0.017453292f * D_0015EE6C;
+        *(float *)(moby + 0x48) = r;
+        *(float *)(moby + 0x4C) = FastAddRots(*(float *)(moby + 0x4C), k);
+    }
+    func_L01_00309928(moby);
+    if (random_integer_below(*(int *)&D_L01_00161FE0) == 0) {
+        func_L01_00309DC8(moby);
+    }
+}
 extern int func_002140B0(int);
 extern int func_001F9850(int);
 
@@ -52,11 +135,127 @@ void func_L01_00309848(char *moby) {
 }
 INCLUDE_ASM("asm/overlays", func_L01_00309928);
 INCLUDE_ASM("asm/overlays", func_L01_00309BB8);
-INCLUDE_ASM("asm/overlays", func_L01_00309DC8);
-INCLUDE_ASM("asm/overlays", func_L01_00309F00);
+extern short D_L01_00161FE4;
+extern short D_L01_00161FE8;
+extern short D_L01_00161FF4;
+extern short D_L01_00161FF8;
+extern short D_L01_00162000;
+extern short D_L01_00161FEC;
+extern short D_L01_00161FF0;
+extern short D_L01_00161FFC;
+extern short D_L01_00162004;
+extern void func_001F9C30(void *, void *, float);
+extern void func_L00_00250800(void *, int, void *);
+extern void func_L00_00258DB0(float *, float, float);
+extern void func_L00_00273F80(void *, void *, int, int, int, int, float);
+extern void func_001F9BD8(void *, void *, void *);
+
+/* builds three jittered offsets and fires the same effect at each accumulated point */
+void func_L01_00309DC8(char *m) {
+    float v[4];
+    float w[4];
+    float u[4];
+    float t;
+    int i;
+    int c;
+    int c2;
+    if (*(unsigned char *)(m + 0x20) == 1) {
+        FastVecScale(v, m, 0.0009765625f);
+    } else {
+        func_L00_00250800(m, 0, v);
+    }
+    t = D_0015EE6C;
+    rand_vec(w, *(float *)&D_L01_00161FE4 * t, *(float *)&D_L01_00161FE8 * t);
+    c = *(unsigned char *)&D_L01_00161FF4;
+    func_L00_00273F80(v, w, *(int *)&D_L01_00161FF8, c, random_integer_below(0xFF) & 0xFF, 0, *(float *)&D_L01_00162000);
+    for (i = 2; i >= 0; i--) {
+        t = D_0015EE6C;
+        rand_vec(u, *(float *)&D_L01_00161FEC * t, *(float *)&D_L01_00161FF0 * t);
+        FastVecAdd(w, w, u);
+        c2 = *(unsigned char *)&D_L01_00161FF4;
+        func_L00_00273F80(v, w, *(int *)&D_L01_00161FFC, c2, random_integer_below(0xFF) & 0xFF, 0, *(float *)&D_L01_00162004);
+    }
+}
+extern void func_L01_0026F090(char *arg, int val);
+extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
+extern unsigned char D_0014171B[] NOT_SDA;
+extern int D_L01_001BAC60[];
+
+// marks the moby's flag bit in two bitsets and starts its state change
+void func_L01_00309F00(char *moby) {
+    int d = D_0015EE84_m << 8;
+    unsigned char t;
+    *(int *)(D_0014171B + 0xAB75 + (((short)*(unsigned short *)(moby + 0xB2) >> 5) * 4 + d)) |= 1 << (*(unsigned short *)(moby + 0xB2) & 0x1F);
+    D_L01_001BAC60[(short)*(unsigned short *)(moby + 0xB2) >> 5] |= 1 << (*(unsigned short *)(moby + 0xB2) & 0x1F);
+    t = *(unsigned char *)(moby + 0x21);
+    if (t != 0xFF) func_L01_0026F090((char *)t, 1);
+    else moby[0x20] = 1;
+}
 INCLUDE_ASM("asm/overlays", func_L01_00309FB0);
-INCLUDE_ASM("asm/overlays", func_L01_0030A6A8);
-INCLUDE_ASM("asm/overlays", func_L01_0030A808);
+extern void func_001FA1F8(void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_L00_00251E30(void *);
+extern short D_L01_00162008;
+extern short D_L01_00162010;
+
+/* Places the three child mobys at this moby's position and orients each from its data. */
+void func_L01_0030A6A8(char *m) {
+    char *d = *(char **)(m + 0x78);
+    char **p = (char **)(d + 0x14);
+    float v[4];
+    int i;
+    for (i = 2; i >= 0; i--) {
+        float t;
+        float u;
+        char *o = *p;
+        qcopy(o + 0x10, m + 0x10);
+        u = *(float *)&D_L01_00162010 * 0.017453292f;
+        *(float *)(o + 0x18) += *(float *)&D_L01_00162008;
+        *(float *)(*p + 0x44) = u;
+        t = *(float *)(d + 0x20) * 2.4f - 1.2f;
+        func_001FA1F8(*p + 0xC0, *p + 0x40);
+        func_L00_001FF4B0(v, *p + 0xC0, t);
+        FastVecAdd(*p + 0x10, *p + 0x10, v);
+        *(float *)(*p + 0x44) = *(float *)(d + 0x24) * -1.0471976f - 0.34906584f;
+        func_001FA1F8(*p + 0xC0, *p + 0x40);
+        func_L00_00251E30(*p);
+        p++;
+    }
+}
+extern int D_L01_002018D8[];
+extern int D_L01_002018C0[];
+extern short D_L01_00162028;
+extern short D_L01_00162030;
+extern short D_L01_00162038;
+extern short D_L01_00162040;
+extern void func_00215F80(int, int);
+
+/* Picks a per-stage table by the current stage number and passes the entry for the moby's index on. */
+void func_L01_0030A808(char *moby) {
+    int *data = *(int **)(moby + 0x78);
+    switch (D_0015EE84_m) {
+    case 12:
+        try_set_help_message(4, ((int *)&D_L01_00162030)[data[4]]);
+        break;
+    case 17:
+        try_set_help_message(4, D_L01_002018D8[data[4]]);
+        break;
+    case 1:
+    case 7:
+    case 13:
+        try_set_help_message(4, D_L01_002018C0[data[4]]);
+        break;
+    case 8:
+        try_set_help_message(4, ((int *)&D_L01_00162028)[data[4]]);
+        break;
+    case 16:
+        try_set_help_message(4, ((int *)&D_L01_00162038)[data[4]]);
+        break;
+    case 18:
+        try_set_help_message(4, ((int *)&D_L01_00162040)[data[4]]);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_0030A8C8);
 typedef struct L01Moby L01Moby;
 typedef struct {
@@ -94,7 +293,21 @@ INCLUDE_ASM("asm/overlays", func_L01_0030C9F0);
 INCLUDE_ASM("asm/overlays", func_L01_0030D380);
 INCLUDE_ASM("asm/overlays", func_L01_0030DC70);
 INCLUDE_ASM("asm/overlays", func_L01_0030DD80);
-INCLUDE_ASM("asm/overlays", func_L01_0030E638);
+extern char D_0013E633[];
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+
+/* offset a position by two camera-relative vectors, then raise z by 1 */
+void func_L01_0030E638(void *unused, float *p) {
+    float a[4];
+    float b[4];
+    char *g = D_0013E633 + 0xE1D;
+    func_L00_001FF4B0(a, *(char **)(g + 0x2080) + 0xD0, 1.1f);
+    func_L00_001FF4B0(b, *(char **)(g + 0x2080) + 0xE0, 1.0f);
+    FastVecAdd(p, a, b);
+    FastVecAdd(p, p, g + 0x80);
+    p[2] = p[2] + 1.0f;
+}
 INCLUDE_ASM("asm/overlays", func_L01_0030E6E0);
 INCLUDE_ASM("asm/overlays", func_L01_0030E9C8);
 INCLUDE_ASM("asm/overlays", func_L01_0030EC58);
@@ -130,4 +343,17 @@ INCLUDE_ASM("asm/overlays", func_L01_00316270);
 INCLUDE_ASM("asm/overlays", func_L01_00316730);
 INCLUDE_ASM("asm/overlays", func_L01_003171B8);
 INCLUDE_ASM("asm/overlays", func_L01_00317408);
-INCLUDE_ASM("asm/overlays", func_L01_00318260);
+extern char *func_L00_001EB578(int);
+extern char *D_L01_00167300;
+
+// Stores two floats into the record at 0xE0 of the data of the moby a global points at, or of moby 5.
+void func_L01_00318260(float a, float b) {
+    char *m = D_L01_00167300;
+    char *t;
+    char *d;
+    if (*(short *)(m + 0x86) != 5) t = func_L00_001EB578(5);
+    else t = m;
+    d = *(char **)(t + 0x70) + 0xE0;
+    *(float *)(d + 0x44) = a;
+    *(float *)(d + 0x48) = b;
+}

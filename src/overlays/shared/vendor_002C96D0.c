@@ -63,7 +63,43 @@ INCLUDE_ASM("asm/overlays", func_L00_002CC3C0);
 INCLUDE_ASM("asm/overlays", func_L00_002CC868);
 INCLUDE_ASM("asm/overlays", func_L00_002CD110);
 INCLUDE_ASM("asm/overlays", func_L00_002CD3B8);
-INCLUDE_ASM("asm/overlays", func_L00_002CD660);
+extern void func_001F9BD8(void *, void *, void *);
+extern float func_001FA748(float, float);
+extern float func_001F9B88(float);
+extern int func_001F9908(int *);
+extern void func_0020D678(void *);
+extern int func_001F9850(int);
+extern int func_L00_001FEF78(void *);
+extern float D_0015EE70 MACRO_ADDR;
+extern short D_L00_00161978;
+
+// UpdateMoby_428: apply gravity and drag to the moby's velocity, then test for despawn.
+void func_L00_002CD660(char *m) {
+    float *d = *(float **)(m + 0x78);
+    float z;
+    float k;
+    FastVecAdd(m + 0x10, m + 0x10, d);
+    k = *(float *)&D_L00_00161978;
+    z = d[2] - D_0015EE70 * 15.0f;
+    d[0] *= k;
+    d[1] *= k;
+    d[2] = z;
+    if (z < d[8]) d[2] = d[8];
+    *(float *)(m + 0x48) = FastAddRots(*(float *)(m + 0x48), d[10]);
+    *(float *)(m + 0x40) = FastAddRots(*(float *)(m + 0x40), d[11] * (float)*(int *)&d[9]);
+    if (FastAbsF(*(float *)(m + 0x40)) > 0.7853982f) {
+        *(int *)&d[9] = -*(int *)&d[9];
+    }
+    if (func_001F9908((int *)&d[7]) || *(unsigned char *)(m + 0x31) == 0) {
+        DeleteMoby(m);
+        return;
+    }
+    if (*(int *)&d[7] < scale_ticks(0x1E)) {
+        if (func_L00_001FEF78(m + 0x23)) {
+            DeleteMoby(m);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002CD7B0);
 INCLUDE_ASM("asm/overlays", func_L00_002CDAB8);
 INCLUDE_ASM("asm/overlays", func_L00_002CE390);

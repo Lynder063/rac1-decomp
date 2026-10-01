@@ -107,8 +107,66 @@ void func_L03_002E3D10(char *m) {
 }
 INCLUDE_ASM("asm/overlays", func_L03_002ECBA8);
 INCLUDE_ASM("asm/overlays", func_L03_002ECD40);
-INCLUDE_ASM("asm/overlays", func_L03_002ECEC8);
-INCLUDE_ASM("asm/overlays", func_L03_002ED020);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern float func_001EC120(void *, float, float, float, float, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern char D_0013E633[];
+
+// Smooths a camera-like moby's position toward the player's and sets its orientation vector.
+void func_L03_002ECEC8(void *arg) {
+    char *m = arg;
+    char *d = *(char **)(m + 0x70);
+    char *a = d + 0xD0;
+    char *b = d + 0xF0;
+    char *g = D_0013E633 + 0xE1D;
+    float v3[4];
+    float v1[4];
+    float v2[4];
+    char *h;
+    if (*(int *)(g + 0x2284) != 0x50 || *(int *)(g + 0x2084) == 0x11) {
+        *(float *)(b + 0x34) = *(float *)(g + 0x88);
+    }
+    func_L00_001FF4B0(v1, D_0013E633 + 0x10AD, -*(float *)(a + 0x10));
+    func_L00_001FF4B0(v3, b, -*(float *)a);
+    h = D_0013E633 + 0xE1D;
+    *(float *)d = Cam_InterpValues(d + 0x10, *(float *)d, *(float *)(h + 0x80), *(float *)(d + 0x20), *(float *)(d + 0x24), *(float *)(d + 0x28));
+    *(float *)(d + 4) = Cam_InterpValues(d + 0x14, *(float *)(d + 4), *(float *)(h + 0x84), *(float *)(d + 0x20), *(float *)(d + 0x24), *(float *)(d + 0x28));
+    *(float *)(d + 8) = Cam_InterpValues(d + 0x18, *(float *)(d + 8), *(float *)(b + 0x34), *(float *)(d + 0x20), *(float *)(d + 0x24), *(float *)(d + 0x28));
+    FastVecAdd(v2, d, v1);
+    FastVecAdd(v2, v2, v3);
+    *(float *)(m + 0x30) = v2[0];
+    *(float *)(m + 0x34) = v2[1];
+    *(float *)(m + 0x38) = v2[2];
+}
+extern char D_0013E633[];
+extern float func_001EC120(void *, float, float, float, float, float);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9CA0(void *, void *, void *);
+extern short D_L03_00161EF0;
+extern short D_L03_00161EF4;
+extern char D_L03_00166FC0[];
+
+/* smooths the moby's data floats and rebuilds its orientation axes */
+void func_L03_002ED020(void *arg) {
+    char *m = arg;
+    char *d = *(char **)(m + 0x70);
+    float *p = (float *)(d + 0xB0);
+    float a[4];
+    float b[4];
+    float c[4];
+    qcopy(b, d);
+    p[2] = Cam_InterpValues(d + 0xBC, p[2], *(float *)(D_0013E633 + 0xEA5), *(float *)&D_L03_00161EF0, *(float *)&D_L03_00161EF4, 0.0f);
+    func_L00_001FF4B0(c, D_L03_00166FC0, p[5]);
+    FastVecAdd(b, c, b);
+    FastVecSub(a, b, m + 0x30);
+    func_L00_001FF4B0(m, a, 1.0f);
+    qcopy(m + 0x40, m);
+    FastVecCross(m + 0x10, m, D_L03_00166FC0 - 0x10);
+    func_L00_001FF4B0(m + 0x10, m + 0x10, 1.0f);
+    FastVecCross(m + 0x20, m + 0x10, m);
+}
 INCLUDE_ASM("asm/overlays", func_L03_002ED138);
 extern void func_L03_002ECEC8(void *);
 extern void func_001E9768(void *);
@@ -119,4 +177,16 @@ void func_L03_002ED178(void *arg) {
     func_001E9768(arg);
     func_L03_002ED020(arg);
 }
-INCLUDE_ASM("asm/overlays", func_L03_002ED1B0);
+extern int D_L03_0015F050 MACRO_ADDR;
+extern char D_0013E633[];
+extern int func_00215570(void *, int);
+
+void func_L03_002ED1B0(char *moby)
+{
+    char *entry = (char *)((*(short *)(moby + 0x84) << 5) + D_L03_0015F050);
+    char *sub = *(char **)(entry + 0x1C);
+    int value = *(int *)(sub + 0xC);
+    if (value >= 0 && is_point_inside_clip_volume(D_0013E633 + 0xE9D, value) == 0) {
+        *(short *)(moby + 0x7E) = 3;
+    }
+}

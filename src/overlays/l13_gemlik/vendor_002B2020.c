@@ -4,9 +4,74 @@
 
 INCLUDE_ASM("asm/overlays", func_L13_002B2020);
 INCLUDE_ASM("asm/overlays", func_L13_002B4B90);
-INCLUDE_ASM("asm/overlays", func_L13_002B5210);
+extern float func_001FA790(float, float);
+extern float func_001FA748(float, float);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_001F9BC0(void *);
+extern float func_L00_001FF860(float, float);
+extern unsigned char D_0013E633[];
+
+// Places the point v at a radius around the moby for the facing angle and sets w to the direction toward the target.
+void func_L13_002B5210(unsigned char *moby, float *v, float *w)
+{
+    float ang = *(float *)(moby + 0x48);
+    float r = 2.5f;
+    float z = 1.5f;
+    unsigned char *x;
+    if ((moby[0xBC] >= 2 && (moby[0xBC] & 1)) || (moby[0x20] >= 2 && (moby[0x20] & 1))) {
+        ang = FastSubRots(ang, 1.5707964f);
+    } else {
+        ang = FastAddRots(ang, 1.5707964f);
+    }
+    if (*(short *)(moby + 0xA6) == 0x15) {
+        r = 2.0f;
+        z = 1.2f;
+    }
+    v[0] = FastCos(ang) * r;
+    v[1] = FastSin(ang) * r;
+    v[2] = z;
+    FastVecAdd(v, v, moby + 0x10);
+    clear_u64_value(w);
+    x = D_0013E633 + 0xE1D;
+    w[2] = func_L00_001FF860(*(float *)(x + 0xD0) - v[0], *(float *)(x + 0xD4) - v[1]);
+    *(int *)(w + 1) = 0;
+}
 INCLUDE_ASM("asm/overlays", func_L13_002B5368);
-INCLUDE_ASM("asm/overlays", func_L13_002B5950);
+extern void func_L00_00250800(void *, int, void *);
+extern float func_001F9D48(void *, void *);
+extern float func_002140F8(float, float);
+extern float func_001FA748(float, float);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_001F9BD8(void *, void *, void *);
+extern char *func_L13_00307660(float, float *, float *, void *);
+extern int D_L13_0015F6B0 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+extern short D_L13_00161414;
+extern short D_L13_00161410;
+
+// Every few ticks spawns a projectile moby aimed from the moby's position using its target.
+void func_L13_002B5950(char *moby)
+{
+    float v[4];
+    float v2[4];
+    char *data;
+    float d, x, ang;
+    data = *(char **)(moby + 0x78);
+    if (D_L13_0015F6B0 % *(int *)&D_L13_00161414 == 0) {
+        func_L00_00250800(moby, 0, v);
+        d = func_001F9D48(moby + 0x10, *(char **)(data + 0x40) + 0x10);
+        x = (20.0f - d) / 20.0f * 5.0f + 2.5f;
+        ang = FastAddRots(random_float_between(-x, x) * 0.017453292f, *(float *)(moby + 0x48));
+        v2[0] = FastCos(ang) * (*(float *)&D_L13_00161410 * D_0015EE6C);
+        v2[1] = FastSin(ang) * (*(float *)&D_L13_00161410 * D_0015EE6C);
+        v2[2] = 0;
+        FastVecAdd(v, v, v2);
+        func_L13_00307660(*(float *)(data + 0x68), v, v2, moby);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L13_002B5A88);
 INCLUDE_ASM("asm/overlays", func_L13_002B5B08);
 INCLUDE_ASM("asm/overlays", func_L13_002B5C08);
@@ -123,7 +188,63 @@ skip:
     }
 }
 INCLUDE_ASM("asm/overlays", func_L13_002BAA68);
-INCLUDE_ASM("asm/overlays", func_L13_002BB068);
-INCLUDE_ASM("asm/overlays", func_L13_002BB1C8);
+extern float D_0015EE6C MACRO_ADDR;
+extern void func_00215C00(void *, float, float, float);
+extern int func_0022ED80(int, int, int);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_L00_00250800(void *, int, void *);
+extern int func_L11_00309C18(void *, void *, void *, float, float);
+extern void func_L11_003126D8(void *, void *, void *, int);
+extern int func_001F9908_i(void *) __asm__("func_001F9908");
+
+/* Builds a rotated offset vector from the moby, flips a facing flag on a pad press, and updates the aim. */
+void func_L13_002BB068(char *moby, char *obj, float p2, float p3) {
+    char a[16];
+    char b[16];
+    char c[16];
+    char d[16];
+    func_00215C00(a, D_0015EE6C * 400.0f, p2, p3);
+    FastVecAdd(a, a, obj);
+    if (func_001F9908_i(obj + 0x80) && (*(int *)(D_0013A5E0 + 0x2610) & 0x84)) {
+        func_0022ED80(3, 0, (int)moby);
+        func_L00_001FF4B0(c, a, 2.2f);
+        func_L00_00250800(moby, 3 + (obj[0x61] & 1), b);
+        FastVecAdd(b, b, c);
+        func_L11_00309C18(moby, a, b, 200.0f, -1.0f);
+        *(int *)(obj + 0x80) = scale_ticks(4);
+        obj[0x61] ^= 1;
+    }
+    func_L00_001FF4B0(a, a, 23.0f);
+    FastVecAdd(d, a, moby + 0x10);
+    func_L11_003126D8(d, obj + 0xE0, obj + 0xE4, 0);
+}
+extern void func_001F9BD8(void *, void *, void *);
+extern int func_L13_002E7E90(void *, void *, float, int, void *, int);
+
+/* Fires a timed burst from a moby while a pad button is held and ammo remains. */
+void func_L13_002BB1C8(char *moby, char *obj) {
+    if (func_001F9908_i(obj + 0x84) && (*(int *)(D_0013A5E0 + 0x2610) & 0x28)) {
+        unsigned char *u = D_0013E633 + 0xE1D;
+        if (u[0x15F6] != 0) {
+            char a[16];
+            char b[16];
+            float s;
+            int h;
+            char *pos = moby + 0x40;
+            short t = (*(unsigned short *)(obj + 0x6A) + 1) & 3;
+            *(short *)(obj + 0x6A) = t;
+            func_L00_00250800(moby, t + 7, a);
+            func_L00_001FF4B0(b, obj, 0.3f);
+            FastVecAdd(a, a, b);
+            s = D_0015EE6C * 100.0f;
+            h = scale_ticks(300);
+            if (func_L13_002E7E90(moby, a, s, *(int *)(obj + 0xEC), pos, h) != 0) {
+                func_0022ED80(2, 0, (int)moby);
+                u[0x15F6]--;
+                *(int *)(obj + 0x84) = scale_ticks(30);
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L13_002BB3E8);
 INCLUDE_ASM("asm/overlays", func_L13_002BC2D8);

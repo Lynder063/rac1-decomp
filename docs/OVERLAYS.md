@@ -133,9 +133,13 @@ resident and is shared by every level.
    the result with the level's bytes. `EXACT` there means every
    relocation reaches the right place.
 3. **Audit and progress**: the same check over every C function in
-   `src/overlays/`. `progress/report.json` gets a unit per file, in the
-   categories `shared` and `levels` (plus `level_NN` per level), so each
-   distinct function counts once. The executable's units and categories
+   `src/overlays/`. In `progress/report.json` each shared file is a unit
+   ("Shared level code/<file>", category `common`) and each level is one
+   unit named after it ("Level 04: Eudora", categories `levels` and
+   `level_NN`), so each distinct function counts once. decomp.dev lays
+   its treemap out in report order with no border around a group: one
+   unit per level makes each level one box, and the shared files sit
+   side by side. The executable's units and categories
    stay as they are; the report's totals cover everything, so its
    percentage is that of the whole game's code.
 4. **Per-level rebuild** (later): link each level's program from the same

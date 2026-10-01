@@ -12,6 +12,33 @@ void func_L02_0025D750(char *moby) {
 INCLUDE_ASM("asm/overlays", func_L02_0025D778);
 INCLUDE_ASM("asm/overlays", func_L02_002612C0);
 INCLUDE_ASM("asm/overlays", func_L02_00264950);
-INCLUDE_ASM("asm/overlays", func_L02_00265E58);
+// Clears seven words at moby+0x00..0x18 (walking down) and a halfword at 0x1C.
+void func_L02_00265E58(char *moby) {
+    int *p = (int *)(moby + 0x18);
+    int i;
+    for (i = 6; i >= 0; i--, p--) {
+        *p = 0;
+    }
+    *(short *)(moby + 0x1C) = 0;
+}
 INCLUDE_ASM("asm/overlays", func_L02_00265E88);
-INCLUDE_ASM("asm/overlays", func_L02_002661E8);
+extern int func_L00_001F2BE8(float, void *, int, int, int);
+
+// Retires up to seven slot entries whose effect finished, spawning a burst for live ones.
+void func_L02_002661E8(char **slots, int a, int b) {
+    int i;
+    for (i = 6; i >= 0; i--, slots++) {
+        char *m = *slots;
+        if (m == 0) continue;
+        if ((unsigned char)m[0] != 12) {
+            *slots = 0;
+            continue;
+        }
+        if (m[1] < 0) {
+            *slots = 0;
+        } else {
+            coll_sphere_mobys(*(float *)(m + 0xC) / 210000.0f * 0.25f, m + 0x10, 0, a, b);
+            if (*(short *)(m + 0xA) < 5) *slots = 0;
+        }
+    }
+}

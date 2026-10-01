@@ -10,7 +10,31 @@ INCLUDE_ASM("asm/overlays", func_L01_002E7B68);
 INCLUDE_ASM("asm/overlays", func_L01_002E7FC8);
 INCLUDE_ASM("asm/overlays", func_L01_002F1038);
 INCLUDE_ASM("asm/overlays", func_L01_002F44F8);
-INCLUDE_ASM("asm/overlays", func_L01_002F5720);
+extern float func_001FA748(float, float);
+extern float func_001FA7D8(float x);
+extern short D_L01_00160058;
+
+// Crank rotator update: state 0 initialises, state 1 drives the linked moby.
+void func_L01_002F5720(char *m) {
+    char *d = *(char **)(m + 0x78);
+    switch (*(unsigned char *)(m + 0x20)) {
+    case 0:
+        *(float *)(d + 4) = *(float *)(m + 0x40);
+        *(float *)(d + 8) = *(float *)(d + 8) * 0.0174532925f;
+        *(unsigned char *)(m + 0x20) = 1;
+        break;
+    case 1:
+        if (*(int *)d != -1) {
+            char *o = (char *)(*(int *)&D_L01_00160058 + (*(int *)d << 8));
+            if (*(short *)(o + 0xA6) == 0x118) {
+                char *e = *(char **)(o + 0x78);
+                *(unsigned char *)(o + 0x30) = 0xFF;
+                *(float *)(m + 0x40) = FastAddRots(*(float *)(d + 4), FastNormalizeAngle(FastAddRots(*(float *)(d + 8), -*(float *)(d + 4)) * *(float *)e));
+            }
+        }
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_002F5800);
 INCLUDE_ASM("asm/overlays", func_L01_002F5AE8);
 INCLUDE_ASM("asm/overlays", func_L01_002F5D38);
@@ -30,9 +54,45 @@ void func_L01_002F7528(void) {
 INCLUDE_ASM("asm/overlays", func_L01_002F7558);
 INCLUDE_ASM("asm/overlays", func_L01_002F7C78);
 INCLUDE_ASM("asm/overlays", func_L01_002F8B00);
-INCLUDE_ASM("asm/overlays", func_L01_002F95A0);
+extern float D_0015EE60 MACRO_ADDR;
+extern float func_001F9B88(float);
+
+// Moves a value toward a target with a clamped, scaled step and returns a wrapped angle difference.
+float func_L01_002F95A0(float target, float k, float a, float b, float *cur, float *vel) {
+    float d;
+    b = b * b;
+    *vel = *vel * ((1.0f - a - 1.0f) * D_0015EE60 + 1.0f);
+    d = (*cur - target) * (*cur - target);
+    if (b < d) d = b;
+    d = d * k / b;
+    if (target < *cur) *vel = *vel - d;
+    else *vel = *vel + d;
+    *cur = *cur + *vel;
+    return FastAbsF(target - *cur);
+}
 INCLUDE_ASM("asm/overlays", func_L01_002F9640);
 INCLUDE_ASM("asm/overlays", func_L01_002FA030);
-INCLUDE_ASM("asm/overlays", func_L01_002FA3D8);
+extern char *D_L01_0016016C MACRO_ADDR;
+extern short D_L01_00161CB8;
+extern short D_L01_00161CBC;
+extern short D_L01_00161CC0;
+extern short D_L01_00161CC4;
+extern short D_L01_00161CC8;
+extern void func_002156E0(void *dst, void *vec, void *axis, float angle);
+extern void func_L00_002E9DC8(void *a, float x, float y);
+extern void func_L00_002E9900(float x, float y, int flag);
+extern void func_L00_002E9968(float x, float y);
+extern void func_L00_002E99A0(int, float, float);
+
+/* sets up a rotated vector and the level's fog/light parameters */
+void func_L01_002FA3D8(char *moby) {
+    float tmp[4];
+    char *p = D_L01_0016016C + (*(int *)(*(char **)(moby + 0x78) + 0x80) << 7);
+    build_look_at_matrix(tmp, p, p + 0x20, *(float *)&D_L01_00161CB8);
+    func_L00_002E9DC8(tmp, 0.13962633907794952f, 0.0f);
+    func_L00_002E9900(*(float *)&D_L01_00161CBC, *(float *)&D_L01_00161CC8, 0);
+    func_L00_002E9968(*(float *)&D_L01_00161CC0, *(float *)&D_L01_00161CC8);
+    func_L00_002E99A0(0, *(float *)&D_L01_00161CC4, *(float *)&D_L01_00161CC8);
+}
 INCLUDE_ASM("asm/overlays", func_L01_002FA458);
 INCLUDE_ASM("asm/overlays", func_L01_002FA998);

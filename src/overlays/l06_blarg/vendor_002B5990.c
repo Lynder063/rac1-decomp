@@ -4,8 +4,37 @@
 
 INCLUDE_ASM("asm/overlays", func_L06_002B5990);
 INCLUDE_ASM("asm/overlays", func_L06_002DB0E0);
-INCLUDE_ASM("asm/overlays", func_L06_002DB1D8);
-INCLUDE_ASM("asm/overlays", func_L06_002DB248);
+extern short *D_L06_001AC340[];
+extern char *D_L06_00160058 MACRO_ADDR;
+
+// Walks a moby index list and, for each moby of one type, sets its state to 2 and a float to 1.0.
+void func_L06_002DB1D8(int index)
+{
+    short *p = D_L06_001AC340[index];
+    if (p != 0) {
+        do {
+            char *moby = (char *)(((*(unsigned short *)p & 0x7FFF) << 8) + (int)D_L06_00160058);
+            if (*(short *)(moby + 0xA6) == 0x16F) {
+                moby[0x20] = 2;
+                *(float *)(*(char **)(moby + 0x78) + 0x28) = 1.0f;
+            }
+        } while (*p++ >= 0);
+    }
+}
+void func_L06_002DB248(int idx)
+{
+    short *p = D_L06_001AC340[idx];
+    if (p != 0) {
+        do {
+            char *moby = (char *)(((*p & 0x7FFF) << 8) + (int)D_L06_00160058);
+            if (*(short *)(moby + 0xA6) == 0x16F) {
+                char *data = *(char **)(moby + 0x78);
+                moby[0x20] = 2;
+                *(int *)(data + 0x28) = 0;
+            }
+        } while (*p++ >= 0);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L06_002EB140);
 INCLUDE_ASM("asm/overlays", func_L06_002EB258);
 extern short *D_L06_001AC340[];
@@ -33,10 +62,71 @@ INCLUDE_ASM("asm/overlays", func_L06_002F4F08);
 INCLUDE_ASM("asm/overlays", func_L06_002F51A0);
 INCLUDE_ASM("asm/overlays", func_L06_002F5560);
 INCLUDE_ASM("asm/overlays", func_L06_002F57C0);
-INCLUDE_ASM("asm/overlays", func_L06_002F59D0);
-INCLUDE_ASM("asm/overlays", func_L06_002F5A20);
-INCLUDE_ASM("asm/overlays", func_L06_002F6790);
-INCLUDE_ASM("asm/overlays", func_L06_002F6818);
+/* Clears state 4 from every moby in the selected table. */
+void func_L06_002F59D0(int idx)
+{
+    short *p = D_L06_001AC340[idx];
+    do {
+        char *moby = (char *)(((*p & 0x7FFF) << 8) + (int)D_L06_00160058);
+        if ((unsigned char)moby[0x20] == 4) {
+            moby[0x20] = 0;
+        }
+    } while (*p++ >= 0);
+}
+/* Sets each moby in the selected table to state 4 until its terminal entry. */
+void func_L06_002F5A20(int idx)
+{
+    short *p = D_L06_001AC340[idx];
+    do {
+        char *moby = (char *)(((*p & 0x7FFF) << 8) + (int)D_L06_00160058);
+        moby[0x20] = 4;
+    } while (*p++ >= 0);
+}
+extern void func_0022ED80(int, int, int);
+
+// Marks a moby as done when in state 2: sets state 4, clears two fields and puts its 7 children into state 5.
+void func_L06_002F6790(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    char **p;
+    int i;
+    moby[0xBC] = 1;
+    if ((unsigned char)moby[0x20] == 2) {
+        func_0022ED80(0, 0, (int)moby);
+        moby[0x20] = 4;
+        p = (char **)(data + 0x24);
+        *(int *)(data + 0x14) = 0;
+        *(int *)(data + 0x18) = 0;
+        for (i = 6; i >= 0; i--) {
+            (*p++)[0x20] = 5;
+        }
+    }
+}
+/* Switches a moby from state 6 to 8 and sets its ten children to state 9. */
+void func_L06_002F6818(char *moby)
+{
+    char *data = *(char **)(moby + 0x78);
+    int i;
+    char **p;
+    moby[0xBC] = 1;
+    if ((unsigned char)moby[0x20] == 6) {
+        unsigned short fl;
+        func_0022ED80(0, 0, (int)moby);
+        fl = *(unsigned short *)(moby + 0x34);
+        moby[0x31] = 1;
+        fl &= 0xFFFE;
+        moby[0x20] = 8;
+        *(unsigned short *)(moby + 0x34) = fl;
+        *(int *)(data + 0x18) = 0;
+        p = (char **)(data + 0x24);
+        for (i = 6; i >= 0; i--) {
+            char *c = *p;
+            c[0x20] = 9;
+            *(unsigned short *)(*p + 0x34) &= 0xFFFE;
+            (*p)[0x31] = 1;
+            p++;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L06_002F68D0);
 INCLUDE_ASM("asm/overlays", func_L06_002F69D0);
 INCLUDE_ASM("asm/overlays", func_L06_002F71A8);
@@ -45,7 +135,19 @@ INCLUDE_ASM("asm/overlays", func_L06_002F8200);
 INCLUDE_ASM("asm/overlays", func_L06_002F8430);
 INCLUDE_ASM("asm/overlays", func_L06_002F91A8);
 INCLUDE_ASM("asm/overlays", func_L06_002FA618);
-INCLUDE_ASM("asm/overlays", func_L06_002FAAC8);
+void func_L06_002FAAC8(char *arg)
+{
+    short *table = D_L06_001AC340[(unsigned char)arg[0x21]];
+    if (table != 0) {
+        short *p = table;
+        do {
+            char *moby = (char *)(((*p & 0x7FFF) << 8) + (int)D_L06_00160058);
+            if ((unsigned char)moby[0x20] == 1) {
+                moby[0x20] = 2;
+            }
+        } while (*p++ >= 0);
+    }
+}
 extern float func_L00_001FF860(float, float);
 extern float func_001F9D10(void *, void *);
 extern float func_001F9F90(float);
@@ -94,12 +196,89 @@ float func_L06_002FAB28(char *self) {
     } while (*p++ >= 0);
     return FastAddRots(FastAddRots(lo, FastDiffRots(hi, lo) * 0.5f), ang);
 }
-INCLUDE_ASM("asm/overlays", func_L06_002FAD78);
-INCLUDE_ASM("asm/overlays", func_L06_002FADE0);
+void func_L06_002FAD78(int idx)
+{
+    short *p = D_L06_001AC340[idx];
+    if (p != 0) {
+        do {
+            char *moby = D_L06_00160058 + ((*p & 0x7FFF) << 8);
+            unsigned short flags = *(unsigned short *)(moby + 0x34);
+            moby[0x20] = 0x12;
+            flags |= 1;
+            *(int *)(moby + 0x94) = 0;
+            flags &= 0xEFFF;
+            *(unsigned short *)(moby + 0x34) = flags;
+        } while (*p++ >= 0);
+    }
+}
+// Resets every moby of a list that is in state 0x12.
+void func_L06_002FADE0(int index)
+{
+    short *p = D_L06_001AC340[index];
+    if (p != 0) {
+        do {
+            char *moby = (char *)((*(unsigned short *)p & 0x7FFF) << 8) + (int)D_L06_00160058;
+            if ((unsigned char)moby[0x20] == 0x12) {
+                unsigned short flags = *(unsigned short *)(moby + 0x34);
+                moby[0x20] = 0;
+                flags &= 0xFFFE;
+                flags |= 0x1000;
+                *(int *)(moby + 0x94) = *(int *)(*(char **)(moby + 0x24) + 0x10);
+                *(unsigned short *)(moby + 0x34) = flags;
+            }
+        } while (*p++ >= 0);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L06_002FAE58);
 INCLUDE_ASM("asm/overlays", func_L06_002FBDF0);
-INCLUDE_ASM("asm/overlays", func_L06_002FC4C0);
-INCLUDE_ASM("asm/overlays", func_L06_002FC578);
+extern float func_002140F8(float, float);
+extern int func_L06_002EB140(void *, void *);
+
+/* raise each listed moby's position z by a fixed amount and notify it */
+void func_L06_002FC4C0(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    short *q = D_L06_001AC340[*(int *)(data + 0xF0)];
+    short *p;
+    if (q != 0) {
+        p = q;
+        do {
+            int off = (*(unsigned short *)p & 0x7FFF) << 8;
+            float v[4];
+            qcopy(v, (char *)(off + (int)D_L06_00160058) + 0x10);
+            v[2] = v[2] + random_float_between(15.0f, 20.0f);
+            func_L06_002EB140((char *)((int)D_L06_00160058 + off), v);
+        } while (*p++ >= 0);
+    }
+}
+extern void func_L00_00217718(void *, void *, int, int);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BC0(void *);
+extern float func_001F9D48(void *, void *);
+extern void func_L00_002EBF50(void *, void *, int, int, int);
+extern void func_L00_002EBE88(void *);
+extern void func_L00_002EBEE0(void *);
+extern char *D_L06_0016016C MACRO_ADDR;
+extern int *D_L06_001B0FB0[];
+
+// sets up a camera-like aim from a moby toward its orbit point and releases the slot
+void func_L06_002FC578(char *moby) {
+    float v0[4], m[4], v1[4];
+    char *data = *(char **)(moby + 0x78);
+    char *base = D_L06_0016016C + (*(int *)(data + 0xF8) << 7);
+    *(int *)(data + 0x118) = 0;
+    func_L00_00217718(base + 0x30, base + 0x70, 0x72, 0);
+    qcopy(v0, moby + 0x10);
+    v0[2] = *(float *)(D_0013E633 + 0xEA5) + 2.0f;
+    func_L00_001FF4B0(v1, moby + 0xC0, 8.0f);
+    FastVecAdd(v0, v0, v1);
+    clear_u64_value(m);
+    m[2] = func_L00_001FF860(*(float *)(moby + 0x10) - v0[0], *(float *)(moby + 0x14) - v0[1]);
+    m[1] = -func_L00_001FF860(func_001F9D48(v0, moby + 0x10), *(float *)(moby + 0x18) - v0[2]) - 0.5235988f;
+    func_L00_002EBF50(v0, m, 1, 0, 0);
+    func_L00_002EBE88(v0);
+    func_L00_002EBEE0(m);
+    *D_L06_001B0FB0[*(int *)(data + 0xEC)] = 0;
+}
 extern void func_001F9BC0(void *);
 extern float func_00214D88(float *, float *, float, float, float, float);
 extern void func_L00_001FF4B0(void *, void *, float);
@@ -191,6 +370,37 @@ int func_L06_002FCA98(char *moby) {
 }
 INCLUDE_ASM("asm/overlays", func_L06_002FD0B8);
 INCLUDE_ASM("asm/overlays", func_L06_002FD3E0);
-INCLUDE_ASM("asm/overlays", func_L06_002FDA60);
+// Store byte to structure field
+void func_L06_002FDA60(unsigned char *moby) {
+    moby[0x20] = 3;
+}
 INCLUDE_ASM("asm/overlays", func_L06_002FDA70);
-INCLUDE_ASM("asm/overlays", func_L06_002FE4B8);
+extern void func_001F49B0(void *, void *);
+extern int func_00215570(void *, int);
+extern void func_L06_002FE5D0(void);
+extern void func_L06_002FE890(void);
+extern void func_L06_002FEB78(void);
+
+/* Registers the moby's draw callbacks, choosing by its four slot ids. */
+void func_L06_002FE4B8(char *moby) {
+    int *data = *(int **)(moby + 0x78);
+    int *p;
+    int i;
+    AddDrawCallback((void *)func_L06_002FE890, moby);
+    p = data;
+    for (i = 0; i < 4; p++, i++) {
+        if (*p < 0) continue;
+        if (is_point_inside_clip_volume(D_L06_00167640, *p)) {
+            AddDrawCallback((void *)func_L06_002FE5D0, moby);
+            break;
+        }
+    }
+    p = data + 0x10;
+    for (i = 0; i < 4; p++, i++) {
+        char *g = (char *)D_0013E633 + 0xE1D;
+        if (*(int *)(g + 0x208C) == 15 || (*p >= 0 && is_point_inside_clip_volume(D_L06_00167640, *p))) {
+            AddDrawCallback((void *)func_L06_002FEB78, moby);
+            return;
+        }
+    }
+}

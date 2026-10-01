@@ -14,14 +14,105 @@ INCLUDE_ASM("asm/overlays", func_L05_00310A90);
 INCLUDE_ASM("asm/overlays", func_L05_00316378);
 INCLUDE_ASM("asm/overlays", func_L05_003165B8);
 INCLUDE_ASM("asm/overlays", func_L05_00316B98);
-INCLUDE_ASM("asm/overlays", func_L05_003173A8);
-INCLUDE_ASM("asm/overlays", func_L05_00317438);
-INCLUDE_ASM("asm/overlays", func_L05_00317538);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_001F9BC0(void *);
+extern short D_L05_00161F88;
+extern short D_L05_00161F80;
+extern short D_L05_00161F84;
+
+// Positions the camera-relative point and fills the output angles.
+void func_L05_003173A8(char *a, char *b, char *c) {
+    float t;
+    func_L00_001FF4B0(b, a + 0xC0, *(float *)&D_L05_00161F88);
+    FastVecAdd(b, b, a + 0x10);
+    *(float *)(b + 8) = *(float *)(b + 8) + *(float *)&D_L05_00161F80;
+    clear_u64_value(c);
+    t = *(float *)&D_L05_00161F84;
+    *(float *)(c + 8) = *(float *)(a + 0x48);
+    *(float *)(c + 4) = t * 0.017453292f;
+}
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern float func_001FA748(float, float);
+extern char *D_L05_001B0CB0[];
+
+// Fill a ring of points (radius 3.5) around the moby from an angle step, rotating each by the moby's matrix.
+void func_L05_00317438(char *moby) {
+    int i = 0;
+    char *data = *(char **)(moby + 0x78);
+    char *tab = D_L05_001B0CB0[*(int *)(data + 0x68)];
+    float ang = 0.0f;
+    float step = 6.28318f / (float)(*(int *)tab - 1);
+    for (; i < *(int *)tab; i++) {
+        char *v = tab + 0x10 + i * 16;
+        *(float *)v = FastCos(ang) * 3.5f;
+        *(float *)(v + 4) = FastSin(ang) * 3.5f;
+        *(int *)(v + 8) = 0;
+        FastVecAdd(v, v, moby + 0x10);
+        ang = FastAddRots(ang, step);
+    }
+}
+extern char D_L05_001672C0[];
+extern char D_L05_00211E60[];
+extern int func_00215570(void *, int);
+extern void func_L03_00292AC0(char *);
+
+// Scans 8 data slots; if none of the set ones passes a check, calls a helper.
+void func_L05_00317538(char *moby) {
+    int *p = *(int **)(moby + 0x78);
+    int i;
+    int none = 1;
+    for (i = 0; i < 8; p++, i++) {
+        if (*p == -1) continue;
+        if (is_point_inside_clip_volume(D_L05_001672C0, *p) != 0) {
+            none = 0;
+            break;
+        }
+    }
+    if (none) func_L03_00292AC0(D_L05_00211E60);
+}
 INCLUDE_ASM("asm/overlays", func_L05_003175D8);
 INCLUDE_ASM("asm/overlays", func_L05_00317720);
 INCLUDE_ASM("asm/overlays", func_L05_00317B68);
 INCLUDE_ASM("asm/overlays", func_L05_00317CD8);
-INCLUDE_ASM("asm/overlays", func_L05_00317E58);
+typedef struct {
+    char pad0[0x44];
+    short n;
+    char pad1[0x132];
+    char *m[1];
+} G;
+extern int D_L05_0015F6A8 MACRO_ADDR;
+extern unsigned char D_0015EEB0[] MACRO_ADDR;
+extern G D_L05_0016CD60;
+extern unsigned char D_L05_0017C9A0[];
+extern short D_L05_00161F90;
+extern void func_0020D960(char *, int, void *);
+extern void func_L05_00317CD8(char *, int);
+
+/* For every moby sharing this one's class: arms the marker record, and notifies it while the level flag is set. */
+void func_L05_00317E58(char *arg) {
+    if (D_L05_0015F6A8 == 2 && (gCheats[0] != 0 || *(int *)&D_L05_00161F90 != 0)) {
+        int i;
+        for (i = 0; i < D_L05_0016CD60.n; i++) {
+            char *moby = D_L05_0016CD60.m[i];
+            if (*(short *)(moby + 0xA6) == *(short *)(arg + 0xA6)) {
+                if (gCheats[0] != 0) {
+                    unsigned char *q = D_L05_0017C9A0;
+                    if (q[1] == 0) {
+                        AttachManipulator(moby, 0, q);
+                        *(float *)(q + 0x20) = 2.75f;
+                        *(float *)(q + 0x24) = 2.75f;
+                        *(float *)(q + 0x28) = 2.75f;
+                    }
+                }
+                if (*(int *)&D_L05_00161F90 != 0) {
+                    func_L05_00317CD8(moby, *(int *)(arg + 0x78));
+                }
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L05_00317F80);
 INCLUDE_ASM("asm/overlays", func_L05_00318980);
 INCLUDE_ASM("asm/overlays", func_L05_003195B0);

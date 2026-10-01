@@ -5,17 +5,139 @@
 INCLUDE_ASM("asm/overlays", func_L00_002AB910);
 INCLUDE_ASM("asm/overlays", func_L00_002ADBB0);
 INCLUDE_ASM("asm/overlays", func_L00_002ADD78);
-INCLUDE_ASM("asm/overlays", func_L00_002ADE90);
+typedef struct {
+    float v[4][4];
+    int rgba[4];
+    float uv[4][2];
+    long gs[4];
+} QuadPkt;
+
+extern int D_L00_0015F6A8 MACRO_ADDR;
+extern int D_L00_0015F6B0 MACRO_ADDR;
+extern float func_001F9B50(float);
+extern float func_L00_001FF860(float, float);
+extern float func_001FA748(float, float);
+extern int func_001F9850(int);
+extern float func_001FA888(int);
+extern float func_001F9878(float);
+extern float func_001FA7D8(float x);
+extern void func_001FA218(void *, void *);
+extern void func_001FA540(void *, void *, void *);
+extern int func_001F4868(int);
+extern void func_L00_001FD1D8(void *, void *, int);
+
+/* Draws two spinning textured quads around the moby, oriented by its velocity. */
+void func_L00_002ADE90(char *moby) {
+    QuadPkt q;
+    float M[4][4];
+    float E[4][4];
+    float rot1[4];
+    float rot2[4];
+    char *d = *(char **)(moby + 0x78);
+    int i;
+
+    if (D_L00_0015F6A8 == 2) return;
+    for (i = 0; i < 2; i++) {
+        int odd = i & 1;
+        float ang;
+        float den;
+        float r;
+        int kind;
+        float x = *(float *)(d + 0x20);
+        float z = *(float *)(d + 0x28);
+        rot1[0] = FastAddRots(-func_L00_001FF860(func_001F9B50(x * x + z * z), *(float *)(d + 0x24)), 1.5707964f);
+        rot1[1] = func_L00_001FF860(*(float *)(d + 0x28), *(float *)(d + 0x20));
+        rot1[2] = 0;
+        rot1[3] = 0;
+        rot2[0] = 0;
+        ang = func_001FA888(D_L00_0015F6B0 % scale_ticks(180));
+        den = func_001F9878(180.0f);
+        ang *= 6.2831855f;
+        r = FastNormalizeAngle(ang / den);
+        if (odd) r = -r;
+        rot2[1] = r;
+        rot2[2] = 0;
+        rot2[3] = 0;
+        func_001FA218(E, rot2);
+        func_001FA218(M, rot1);
+        sce_vu0_mul_matrix(M, M, E);
+        qcopy(M[3], d + 0x10);
+        kind = 0x11;
+        if (odd) kind = 0x12;
+        q.rgba[0] = 0x80808080;
+        q.rgba[1] = 0x80808080;
+        q.rgba[2] = 0x80808080;
+        q.rgba[3] = 0x80808080;
+        q.gs[1] = GetEffectTex(kind);
+        q.gs[2] = 0xFF9000000260;
+        q.gs[3] = 0x8000000048;
+        q.gs[0] = 0;
+        q.v[0][0] = -1.0f; q.v[0][1] = 0; q.v[0][2] = 1.0f; q.v[0][3] = 1.0f;
+        q.v[1][0] = 1.0f; q.v[1][1] = 0; q.v[1][2] = 1.0f; q.v[1][3] = 1.0f;
+        q.v[2][0] = -1.0f; q.v[2][1] = 0; q.v[2][2] = -1.0f; q.v[2][3] = 1.0f;
+        q.v[3][0] = 1.0f; q.v[3][1] = 0; q.v[3][2] = -1.0f; q.v[3][3] = 1.0f;
+        q.uv[0][0] = 0; q.uv[0][1] = 1.0f;
+        q.uv[1][0] = 1.0f; q.uv[1][1] = 1.0f;
+        q.uv[2][0] = 0; q.uv[2][1] = 0;
+        q.uv[3][0] = 1.0f; q.uv[3][1] = 0;
+        func_L00_001FD1D8(&q, M, 1);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002AE110);
 INCLUDE_ASM("asm/overlays", func_L00_002AE278);
 INCLUDE_ASM("asm/overlays", func_L00_002AE6B0);
 INCLUDE_ASM("asm/overlays", func_L00_002AEDD0);
-INCLUDE_ASM("asm/overlays", func_L00_002B0738);
+struct Dd { char pad[0x10]; float x; float y; short s0; short s1; float z; };
+extern struct Moby *func_0020D348_m(int) __asm__("func_0020D348");
+extern void func_L00_00251328(void *, int, int, int);
+extern float func_002140F8(float, float);
+extern void func_L00_00251E30(void *);
+extern float D_0015EE6C MACRO_ADDR;
+
+/* spawns a type-0x7A moby with randomised velocity */
+char *func_L00_002B0738(char *pos, char *vel, int a, int b, int c) {
+    char *m = (char *)func_0020D348_m(0x7A);
+    struct Dd *d;
+    if (m) {
+        *(unsigned char *)(m + 0x30) = 0xFF;
+        *(short *)(m + 0x32) = 0xFF;
+        m[0x31] = 1;
+        *(unsigned char *)(m + 0x23) = 0x80;
+        d = *(struct Dd **)(m + 0x78);
+        func_L00_00251328(m, 0x7F, 0x7F, 0x7F);
+        qcopy(m + 0x10, pos);
+        qcopy((char *)d, vel);
+        d->x = random_float_between(D_0015EE6C * 6.2831855f, D_0015EE6C * 12.566371f);
+        d->y = random_float_between(D_0015EE6C * 6.2831855f, D_0015EE6C * 12.566371f);
+        d->s0 = a;
+        d->s1 = a;
+        if (b == 0) {
+            *(float *)(m + 0x2C) = *(float *)(m + 0x2C) * random_float_between(0.5f, 0.75f);
+        }
+        d->z = *(float *)(m + 0x2C);
+        m[0xBC] = b | (c << 1);
+        func_L00_00251E30(m);
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002B08A0);
 INCLUDE_ASM("asm/overlays", func_L00_002B0B98);
 INCLUDE_ASM("asm/overlays", func_L00_002B0D30);
 INCLUDE_ASM("asm/overlays", func_L00_002B0F58);
-INCLUDE_ASM("asm/overlays", func_L00_002B1238);
+extern float D_0015EE6C MACRO_ADDR;
+extern float D_0015EE64 MACRO_ADDR;
+
+// Runs n steps of a critically-damped chase toward a target and sums the positions.
+float func_L00_002B1238(int n) {
+    float sum = 0.0f;
+    float pos = 0.0f;
+    int i;
+    for (i = 0; i < n; i++) {
+        pos = pos + (D_0015EE6C * 20.0f - pos) / 10.0f * D_0015EE64;
+        sum = sum + pos;
+    }
+    return sum;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002B1290);
 INCLUDE_ASM("asm/overlays", func_L00_002B1688);
 INCLUDE_ASM("asm/overlays", func_L00_002B2DD8);

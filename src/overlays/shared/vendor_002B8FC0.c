@@ -3,8 +3,57 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L13_002B8FC0);
-INCLUDE_ASM("asm/overlays", func_L13_002BB2F8);
-INCLUDE_ASM("asm/overlays", func_L13_002E2F98);
+extern float func_001FA790(float, float);
+extern float func_001FA748(float, float);
+
+/* Blends from b to c by the eased fraction of x between lo and hi; flag selects the call path. */
+float func_L13_002BB2F8(int flag, int n, float x, float b, float c, float lo, float hi)
+{
+    float t;
+    float u;
+    float r = 0.0f;
+    int i;
+    if (x > lo) {
+        t = (x - lo) / (hi - lo);
+        if (t < 0.0f) {
+            t = 0.0f;
+        }
+        if (t > 1.0f) {
+            t = 1.0f;
+        }
+        for (i = 1; i < n; i++) {
+            t = t * t;
+        }
+        u = 1.0f - t;
+        if (flag != 0) {
+            r = FastAddRots(b, FastSubRots(c, b) * t);
+        } else {
+            r = b * u + c * t;
+        }
+    } else {
+        r = b;
+    }
+    return r;
+}
+extern unsigned char *func_0020D348(int);
+extern void func_L00_00251E30(void *);
+extern void func_L00_0025E210(void *);
+
+unsigned char *func_L13_002E2F98(char *position, int moby_class)
+{
+    unsigned char *moby = CreateMoby(moby_class);
+    if (moby != 0) {
+        moby[0x30] = 0xFF;
+        *(short *)(moby + 0x32) = 0xFF;
+        moby[0x31] = 1;
+        moby[0x20] = 0;
+        moby[0xBC] = 0;
+        qcopy(moby + 0x10, position);
+        func_L00_00251E30(moby);
+        func_L00_0025E210(moby);
+    }
+    return moby;
+}
 INCLUDE_ASM("asm/overlays", func_L13_002E3010);
 INCLUDE_ASM("asm/overlays", func_L13_002E7E90);
 INCLUDE_ASM("asm/overlays", func_L13_002E8040);

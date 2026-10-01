@@ -4,7 +4,30 @@
 
 INCLUDE_ASM("asm/overlays", func_L04_0029FCF0);
 INCLUDE_ASM("asm/overlays", func_L04_0029FEC8);
-INCLUDE_ASM("asm/overlays", func_L04_002A6C20);
+extern int func_001F9850(int);
+extern void func_00213DE0(void *, void *, void *, void *);
+extern int func_001160D8(void);
+extern void func_0020EEE8(void *);
+
+// Per-frame update: counts down a timer, firing a effect call at start and end.
+void func_L04_002A6C20(char *m) {
+    int *d;
+    if (m != 0) {
+        *(int *)(m + 0x94) = 0;
+        d = *(int **)(m + 0x78);
+        if (*d == 0) {
+            if (*(unsigned char *)(m + 0x53) != 1) {
+                func_00213DE0(m, (void *)1, 0, (void *)scale_ticks(3));
+            }
+            *d = scale_ticks((func_001160D8() + 0x1E) & 0xFF);
+        }
+        if ((*(unsigned char *)(m + 0x70) & 2) && *(unsigned char *)(m + 0x53) != 0) {
+            func_00213DE0(m, 0, 0, (void *)scale_ticks(3));
+        }
+        *d = *d - 1;
+        func_0020EEE8(m);
+    }
+}
 extern void func_00213DE0(void *, void *, void *, void *);
 
 void func_L04_002BB670(char *arg, void *a, void *b, void *c) {
@@ -17,11 +40,87 @@ void func_L04_002BB670(char *arg, void *a, void *b, void *c) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L04_002BB6D8);
-INCLUDE_ASM("asm/overlays", func_L04_002BB700);
+extern void func_001F9BC0(float *);
+extern void func_L00_00250800(void *, int, void *);
+extern void func_L00_0025F4A8(void *, void *, void *, float, float, int, int, int, float, float, float, int, float, float, int, int, int, int);
+
+/* Spawns an effect on the moby at its marker vector. */
+void func_L04_002BB700(char *moby) {
+    float w[4];
+    float v[4];
+    clear_u64_value(v);
+    func_L00_00250800(moby, 6, w);
+    func_L00_0025F4A8(moby, v, w, 0.0f, 0.0f, 10, 3, 4, 2.0f, 1.0f, 100000.0f, -1, 1.5f, 15.0f, 1, 1, -1, 0);
+}
 INCLUDE_ASM("asm/overlays", func_L04_002BB7B0);
 INCLUDE_ASM("asm/overlays", func_L04_002C2F00);
-INCLUDE_ASM("asm/overlays", func_L04_002C30F0);
-INCLUDE_ASM("asm/overlays", func_L04_002C3218);
+extern void func_L00_0028EBF0(int);
+extern void func_L00_002584A8(void *, int, int);
+extern void func_L00_0025F4A8_alt(void *, void *, void *, float, float, int, int, int,
+                                  float, float, float, float, int, float, int, int, int, int)
+    __asm__("func_L00_0025F4A8");
+extern void func_0022ED80(int, int, char *);
+extern unsigned char D_0013E633[];
+
+// release the moby's claimed slot, then spawn an effect at it
+void func_L04_002C30F0(char *moby)
+{
+    float pos[4];
+    float vec[4];
+    char *data = *(char **)(moby + 0x78);
+    int idx;
+    int r;
+
+    clear_u64_value(vec);
+    idx = *(int *)(data + 0x238);
+    if (idx != -1) {
+        char *e = (char *)D_0013E633 + 0x1D + idx * 0x70;
+        if (*(char **)(e + 0x88) == moby) {
+            if (*(unsigned char *)(e + 0x74) != 0)
+                func_L00_0028EBF0(idx);
+        }
+    }
+    r = -1;
+    *(int *)(data + 0x238) = r;
+    func_L00_002584A8(moby, 0, -1);
+    func_L00_00250800(moby, 5, pos);
+    func_L00_0025F4A8_alt(moby, vec, pos, 0.0f, 0.0f, 10, 3, 4,
+                          2.0f, 1.0f, 100000.0f, 1.0f, -1, 15.0f, 1, 1, r, 0);
+    func_0022ED80(1, 0, moby);
+}
+extern void func_L00_00260D30(char *, float *, float);
+extern float func_001F9D48(float *, float *);
+extern char *D_L04_00160064 MACRO_ADDR;
+
+/* Check that a moby's spot is clear of the other mobys of class 0x154. */
+int func_L04_002C3218(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    float vec[20];
+    float d0;
+    float s;
+    char *o;
+    int flag = 0;
+    if (*(int *)(data + 0x38) != 0 || *(short *)(data + 0x136) != 0) {
+        flag = 1;
+    }
+    if (flag) {
+        float x = *(float *)(data + 0x140);
+        s = x + x;
+    } else {
+        s = *(float *)(data + 0x140);
+    }
+    func_L00_00260D30(moby, vec, s);
+    d0 = func_001F9D48((float *)(moby + 0x10), vec);
+    for (o = D_L04_00160064; o != 0; o = *(char **)(o + 0x28)) {
+        if (o != moby && *(short *)(o + 0xA6) == 0x154) {
+            float *q = (float *)(o + 0x10);
+            if (func_001F9D48((float *)(moby + 0x10), q) < 3.0f || func_001F9D48(q, vec) < d0) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
 INCLUDE_ASM("asm/overlays", func_L04_002C3338);
 INCLUDE_ASM("asm/overlays", func_L04_002C35F0);
 extern char *func_L00_002DCD40(char *);

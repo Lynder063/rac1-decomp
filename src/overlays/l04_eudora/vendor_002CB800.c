@@ -6,15 +6,54 @@ INCLUDE_ASM("asm/overlays", func_L04_002CB800);
 INCLUDE_ASM("asm/overlays", func_L04_002CF180);
 INCLUDE_ASM("asm/overlays", func_L04_002CF440);
 INCLUDE_ASM("asm/overlays", func_L04_002D27F8);
-INCLUDE_ASM("asm/overlays", func_L04_002D29E8);
+extern void func_001F9BC0(void *);
+extern void func_L00_00250800(void *, int, void *);
+extern void func_L00_0025F4A8_alt(void *, void *, void *, float, float, int, int, int,
+                                  float, float, float, float, int, float, int, int, int, int)
+    __asm__("func_L00_0025F4A8");
+
+// Clears a vector and spawns an effect on the moby.
+void func_L04_002D29E8(void *m) {
+    char pos[16];
+    char vec[16];
+    clear_u64_value(vec);
+    func_L00_00250800(m, 12, pos);
+    func_L00_0025F4A8_alt(m, vec, pos, 0.0f, 0.0f, 10, 3, 4,
+                          2.0f, 1.0f, 100000.0f, 1.0f, -1, 15.0f, 1, 1, -1, 0);
+}
 INCLUDE_ASM("asm/overlays", func_L04_002D2A98);
 INCLUDE_ASM("asm/overlays", func_L04_002D48B8);
-INCLUDE_ASM("asm/overlays", func_L04_002D4960);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_002617B0(char *, void *, void *, void *);
+extern void func_L00_0025E210(void *);
+
+/* UpdateMoby_584 */
+void func_L04_002D4960(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float v[4];
+    FastVecSub(v, m + 0x10, d + 0xA0);
+    func_L00_002617B0(d + 0x60, v, m + 0x40, m + 0x40);
+    qcopy(d + 0xA0, m + 0x10);
+    if (*(unsigned char *)(m + 0x20) == 0) {
+        *(int *)(d + 0x20) = 0;
+        *(short *)(d + 0x24) = 0;
+        d[0x28] = 4;
+        *(short *)(d + 0x3E) = 0xD;
+        func_L00_0025E210(m);
+        m[0x20] = 1;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L04_002D8348);
 INCLUDE_ASM("asm/overlays", func_L04_002D9270);
 INCLUDE_ASM("asm/overlays", func_L04_002E2B48);
-INCLUDE_ASM("asm/overlays", func_L04_002E2B90);
-INCLUDE_ASM("asm/overlays", func_L04_002E2BA4);
+// Return float constant
+float func_L04_002E2B90(void) {
+    return -2.55f;
+}
+// Return float constant
+float func_L04_002E2BA4(void) {
+    return -2.05f;
+}
 INCLUDE_ASM("asm/overlays", func_L04_002E2BB8);
 INCLUDE_ASM("asm/overlays", func_L04_002E2DF0);
 INCLUDE_ASM("asm/overlays", func_L04_002E30E0);

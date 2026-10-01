@@ -8,9 +8,89 @@ INCLUDE_ASM("asm/overlays", func_L18_002FAEF8);
 INCLUDE_ASM("asm/overlays", func_L18_002FB080);
 INCLUDE_ASM("asm/overlays", func_L18_002FB318);
 INCLUDE_ASM("asm/overlays", func_L18_002FB6B0);
-INCLUDE_ASM("asm/overlays", func_L18_002FBAA0);
-INCLUDE_ASM("asm/overlays", func_L18_002FBB88);
-INCLUDE_ASM("asm/overlays", func_L18_002FBCE8);
+extern int D_L18_0015F6A8 MACRO_ADDR;
+extern int D_L18_0016D310;
+extern float func_001FA748(float, float);
+
+/* State machine: waits for level flags, then turns the moby around and back. */
+void func_L18_002FBAA0(char *moby) {
+    switch (*(unsigned char *)(moby + 0x20)) {
+    case 0:
+        moby[0x20] = 1;
+        break;
+    case 1:
+        if (D_L18_0015F6A8 == 2 && D_L18_0016D310 == 3) {
+            *(unsigned short *)(moby + 0x34) |= 1;
+            moby[0x31] = 0;
+            *(float *)(moby + 0x40) = FastAddRots(*(float *)(moby + 0x40), 3.1415927f);
+            moby[0x20] = 2;
+        }
+        break;
+    case 2:
+        if (D_L18_0015F6A8 != 2) {
+            unsigned short fl = *(unsigned short *)(moby + 0x34);
+            moby[0x20] = 3;
+            fl &= 0xFFFE;
+            moby[0x31] = 1;
+            *(unsigned short *)(moby + 0x34) = fl;
+        }
+        break;
+    }
+}
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_002617B0(char *a, void *b, void *c, void *d);
+extern char *func_0020D348_m(int) __asm__("func_0020D348");
+extern void func_L00_00251E30(void *);
+
+/* updates a moby that drags a child moby along with it */
+void func_L18_002FBB88(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    char tmp[16];
+    char *child;
+    switch (*(unsigned char *)(moby + 0x20)) {
+    case 0:
+        moby[0x20] = 1;
+        break;
+    case 1:
+        FastVecSub(tmp, moby + 0x10, data + 0x60);
+        func_L00_002617B0(data + 0x20, tmp, data + 0x70, moby + 0x40);
+        break;
+    }
+    if (*(unsigned char *)(moby + 0xBC) != 0 && *(int *)(data + 0x80) != 0 && *(int *)(data + 0x84) == 0) {
+        char *c = func_0020D348_m(0x764);
+        *(char **)(data + 0x84) = c;
+        if (c != 0) {
+            *(unsigned short *)(c + 0x32) = *(unsigned short *)(moby + 0x32);
+            (*(char **)(data + 0x84))[0x31] = 1;
+            *(long *)(*(char **)(data + 0x84) + 0x38) = *(long *)(moby + 0x38);
+            *(float *)(*(char **)(data + 0x84) + 0x2C) *= *(float *)(moby + 0x2C) / *(float *)(*(char **)(moby + 0x24) + 0x24);
+        }
+    }
+    qcopy(data + 0x60, moby + 0x10);
+    qcopy(data + 0x70, moby + 0x40);
+    child = *(char **)(data + 0x84);
+    if (child != 0) {
+        qcopy(child + 0x10, moby + 0x10);
+        qcopy(child + 0x40, moby + 0x40);
+        func_L00_00251E30(child);
+    }
+}
+extern unsigned short *D_L18_001AC540[];
+extern unsigned char *D_L18_00160058_m __asm__("D_L18_00160058") MACRO_ADDR;
+
+void func_L18_002FBCE8(int idx, int value)
+{
+    unsigned short *table = D_L18_001AC540[idx];
+    if (table != 0) {
+        unsigned short *p = table;
+        do {
+            unsigned char *moby = (unsigned char *)(((p[0] & 0x7FFF) << 8) + (int)D_L18_00160058_m);
+            if (*(short *)(moby + 0xA6) == 0x630) {
+                moby[0xBC] = value;
+            }
+        } while ((short)*p++ >= 0);
+    }
+}
 typedef struct {
     char pad0[0x84];
     void *child;
@@ -43,7 +123,33 @@ INCLUDE_ASM("asm/overlays", func_L18_002FDB28);
 INCLUDE_ASM("asm/overlays", func_L18_002FDCA0);
 INCLUDE_ASM("asm/overlays", func_L18_002FDCC4);
 INCLUDE_ASM("asm/overlays", func_L18_002FDD20);
-INCLUDE_ASM("asm/overlays", func_L18_002FDF58);
+extern unsigned short *D_L18_001AC540[];
+extern unsigned char *D_L18_00160058_m __asm__("D_L18_00160058") MACRO_ADDR;
+extern short D_L18_001626E4;
+extern void func_L00_00250800(void *, int, void *);
+extern void func_L00_00264690(void *, int, float, float);
+
+/* For each listed moby of matching type, spawns effects at five points. */
+void func_L18_002FDF58(unsigned char *moby) {
+    unsigned short *p = D_L18_001AC540[moby[0x21]];
+    if (p != 0) {
+        while (1) {
+            unsigned char *obj = D_L18_00160058_m + ((p[0] & 0x7FFF) << 8);
+            unsigned short *next = p + 1;
+            if (*(short *)(obj + 0xA6) == 0x772 && obj[0x20] != 0 && obj[0x20] < 6) {
+                int i;
+                int col = (*(int *)(obj + 0x90) & 0xFFFFFF) + (*(int *)&D_L18_001626E4 << 24);
+                float v[4];
+                for (i = 2; i < 5; i++) {
+                    func_L00_00250800(obj, i, v);
+                    func_L00_00264690(v, col, 0.175f, 0.08f);
+                }
+            }
+            if (*(short *)p < 0) break;
+            p = next;
+        }
+    }
+}
 int func_L18_002FE070(char *a) {
     int r = func_L00_002DCDA8(a);
     if (r == 0) {

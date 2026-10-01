@@ -7,6 +7,64 @@ INCLUDE_ASM("asm/overlays", func_L00_002E1E38);
 INCLUDE_ASM("asm/overlays", func_L00_002E2038);
 INCLUDE_ASM("asm/overlays", func_L00_002E2B28);
 INCLUDE_ASM("asm/overlays", func_L00_002E2F58);
-INCLUDE_ASM("asm/overlays", func_L00_002E3128);
+extern char D_0013E633[];
+extern float D_L00_00166EC0[];
+extern float D_L00_001E6FF0[][4];
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9CA0(void *, void *, void *);
+extern int func_001F4868(int);
+extern void func_001F9C30(void *, void *, float);
+extern void func_L00_001FD1D8(void *, void *, int);
+typedef float W[4] __attribute__((aligned(16)));
+typedef struct {
+    int c[4];
+    int z0, z1, z2;
+    float f0, f1;
+    int z3;
+    float f2, f3;
+    long z4, q0, q1, q2;
+} T;
+
+/* Builds a four-vertex quad facing the camera from the moby's data point and runs the draw packet. */
+void func_L00_002E3128(char *m) {
+    W q[4];
+    T t;
+    W c, d, e, bb;
+    float (*p)[4];
+    float *qq;
+    int i;
+    qcopy(bb, *(char **)(m + 0x78) + 0x1C0);
+    bb[3] = 1.0f;
+    FastVecSub(c, D_L00_00166EC0, bb);
+    func_L00_001FF4B0(c, c, 1.0f);
+    FastVecCross(d, c, D_0013E633 + 0x10AD);
+    func_L00_001FF4B0(d, d, -1.0f);
+    FastVecCross(e, d, c);
+    t.q0 = GetEffectTex(11);
+    t.q2 = 0x8000000048L;
+    t.q1 = 0xFF9000000260L;
+    t.z4 = 5;
+    t.c[3] = 0x80FFFFFF;
+    t.c[2] = 0x80FFFFFF;
+    t.c[1] = 0x80FFFFFF;
+    t.c[0] = 0x80FFFFFF;
+    t.z0 = 0;
+    t.z1 = 0;
+    t.z2 = 0;
+    t.f0 = 1.0f;
+    t.f1 = 1.0f;
+    t.z3 = 0;
+    t.f2 = 1.0f;
+    t.f3 = 1.0f;
+    p = D_L00_001E6FF0;
+    qq = q[0];
+    for (i = 3; i >= 0; i--) {
+        FastVecScale(qq, p, 0.2f);
+        p++;
+        qq += 4;
+    }
+    func_L00_001FD1D8(q, c, 0);
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E32A0);
 INCLUDE_ASM("asm/overlays", func_L00_002E4CB0);

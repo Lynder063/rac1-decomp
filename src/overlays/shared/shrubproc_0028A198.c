@@ -4,7 +4,19 @@
 
 INCLUDE_ASM("asm/overlays", func_L00_0028A198);
 INCLUDE_ASM("asm/overlays", func_L00_0028A3E0);
-INCLUDE_ASM("asm/overlays", func_L00_0028A5A8);
+extern char D_L00_001BDB70[] NOT_SDA;
+extern char *D_L00_001605DC MACRO_ADDR;
+extern void func_001FA190(void *);
+extern void func_0022C9A8(int);
+
+/* Draws each static sky shell in turn. */
+void func_L00_0028A5A8(void) {
+    int i;
+    func_001FA190(D_L00_001BDB70);
+    for (i = 0; i < *(short *)(D_L00_001605DC + 6); i++) {
+        SkyDrawShell(i);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_0028A6F8);
 INCLUDE_ASM("asm/overlays", func_L00_0028A878);
 INCLUDE_ASM("asm/overlays", func_L00_0028AC80);
@@ -13,7 +25,27 @@ INCLUDE_ASM("asm/overlays", func_L00_0028AEB0);
 INCLUDE_ASM("asm/overlays", func_L00_0028AF90);
 INCLUDE_ASM("asm/overlays", func_L00_0028B4E0);
 INCLUDE_ASM("asm/overlays", func_L00_0028B5C8);
-INCLUDE_ASM("asm/overlays", func_L00_0028B680);
+extern int D_L00_0015F6B0 MACRO_ADDR;
+extern void func_L00_001FFA40(void *, void *);
+
+/* Draws the sky shells with one extra shell placed at a pseudo-random angle. */
+void func_L00_0028B680(void) {
+    float v[3];
+    int r;
+    *(short *)(D_L00_001605DC + 4) = 0;
+    func_001FA190(D_L00_001BDB70);
+    SkyDrawShell(0);
+    SkyDrawShell(1);
+    SkyDrawShell(2);
+    v[0] = 0;
+    v[1] = 0.3f;
+    r = D_L00_0015F6B0 % 25000;
+    v[2] = r * 0.00025132742f - 3.1415927f;
+    func_L00_001FFA40(D_L00_001BDB70, v);
+    SkyDrawShell(3);
+    func_001FA190(D_L00_001BDB70);
+    SkyDrawShell(4);
+}
 INCLUDE_ASM("asm/overlays", func_L00_0028B758);
 INCLUDE_ASM("asm/overlays", func_L00_0028B8F8);
 extern char D_L00_001BDB70[] NOT_SDA;

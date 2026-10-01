@@ -35,7 +35,30 @@ void func_L00_00263578(int a, char *b) {
         *(short *)(b + 0x130) = 0;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002635A0);
+extern struct Moby *func_0020D348_m(int) __asm__("func_0020D348");
+
+/* adds a spawned copy of an object to the owner's list (up to 4) */
+void func_L00_002635A0(char *o, int a, int b) {
+    if (*(int *)(o + 0x138) != 4) {
+        if (b < 9) {
+            char *m = (char *)func_0020D348_m(*(short *)(*(char **)(o + 0x134) + 0xA6));
+            if (m != 0) {
+                *(short *)(m + 0x32) = *(unsigned short *)(*(char **)(o + 0x134) + 0x32);
+                *(long *)(m + 0x38) = *(long *)(*(char **)(o + 0x134) + 0x38);
+                m[0x31] = 1;
+                *(short *)(m + 0x34) = 0x80A;
+                m[0x30] = 0;
+                *(int *)(m + 0x94) = 0;
+                if (*(short *)(m + 0xA6) == 0) m[0x72] = 0;
+                m[0x23] = a;
+                *(int *)(o + (*(int *)(o + 0x138) << 2) + 0x110) = b;
+                *(int *)(o + (*(int *)(o + 0x138) << 2) + 0x100) = a;
+                *(char **)(o + (*(int *)(o + 0x138) << 2) + 0x120) = m;
+                *(int *)(o + 0x138) = *(int *)(o + 0x138) + 1;
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00263680);
 extern void func_0020D678(int);
 
@@ -80,7 +103,18 @@ void func_L00_00263D68(void *a, void *b) {
     func_00215C00(v);
     FastVecAdd(a, v, b);
 }
-INCLUDE_ASM("asm/overlays", func_L00_00263DB0);
+extern int func_001F9850(int);
+extern void func_L00_00264DB8(int arg0, int arg1);
+extern char D_L00_001E93E0[];
+typedef struct { int v[19]; } Tbl;
+
+// Shows the banner message for planet index a (clamped to the table), copying the table locally.
+void func_L00_00263DB0(int a) {
+    Tbl t = *(Tbl *)D_L00_001E93E0;
+    if (a < 0) a = 0;
+    if (a > 18) a = 18;
+    ShowBanner(t.v[a], scale_ticks(0x49C));
+}
 INCLUDE_ASM("asm/overlays", func_L00_00264130);
 INCLUDE_ASM("asm/overlays", func_L00_00264140);
 typedef struct { float f[4]; } V __attribute__((aligned(16)));
@@ -116,7 +150,10 @@ void func_L00_00264B40(float x, int a, int b, unsigned char *m) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_00264BB0);
-INCLUDE_ASM("asm/overlays", func_L00_00264BC8);
+// Store 1.0 to offset 0x70
+void func_L00_00264BC8(char *arg) {
+    *(float *)(arg + 0x70) = 1.0f;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00264BD8);
 INCLUDE_ASM("asm/overlays", func_L00_00264BE8);
 extern int D_L00_0015F720 MACRO_ADDR;
@@ -140,7 +177,79 @@ void func_L00_00264E28(int a, int b, int c) {
     D_L00_0015F720 = c;
 }
 INCLUDE_ASM("asm/overlays", func_L00_00264EA8);
-INCLUDE_ASM("asm/overlays", func_L00_00265050);
+extern void func_001FA1F8(void *, void *);
+extern float func_002140F8(float, float);
+extern float func_001F9878(float);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern float func_001F9CB8(void *a);
+extern float func_00214158(void);
+extern void func_L00_00258DB0(float *, float, float);
+extern void func_001F9C30(void *, void *, float);
+extern void func_L00_00251E30(void *);
+extern float D_0015EE70 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+
+/* Spawns a break-effect fragment moby of class cls from src, and initialises its motion data. */
+void *func_L00_00265050(char *src, int cls, float *pos, void *mat, int a8, int a9, float *v10, float *v11, float scale, float *v12) {
+    char *m = (char *)func_0020D348_m(cls);
+    char *d;
+    float t[4];
+    float r, f21, k, k2;
+
+    if (m != 0) {
+        r = *(float *)(src + 0x2C) / *(float *)(*(char **)(src + 0x24) + 0x24);
+        *(float *)(m + 0x2C) = *(float *)(*(char **)(m + 0x24) + 0x24) * r;
+        m[0x31] = 1;
+        *(unsigned short *)(m + 0x34) |= 0x100;
+        d = *(char **)(m + 0x78);
+        *(long *)(m + 0x38) = *(long *)(src + 0x38);
+        m[0x20] = 1;
+        qcopy(m + 0x10, pos);
+        func_001FA1F8(m + 0xC0, mat);
+        *(unsigned char *)(m + 0x30) = 0xFF;
+        *(short *)(m + 0x32) = 0x80;
+        *(int *)(m + 0x94) = 0;
+        if (a8 == 0)
+            *(int *)(d + 0x30) = func_001FA898_r(func_001F9878(random_float_between(60.0f, 120.0f)));
+        else
+            *(int *)(d + 0x30) = a8;
+        *(int *)(d + 0x34) = a9;
+        if (*(float *)(d + 0x38) == 0.0f)
+            *(float *)(d + 0x38) = random_float_between(10.0f, 15.0f) * D_0015EE70;
+        else
+            *(float *)(d + 0x38) = scale;
+        if (FastVecLength(v10) == 0.0f) {
+            f21 = random_angle_radians();
+            k = random_float_between(2.0f, 4.0f) * D_0015EE6C;
+            t[0] = FastCos(f21) * k;
+            t[1] = FastSin(f21) * k;
+            t[2] = 0.0f;
+            t[2] = random_float_between(5.0f, 8.0f) * D_0015EE6C;
+            qcopy(d, t);
+        } else {
+            qcopy(d, v10);
+        }
+        if (FastVecLength(v11) == 0.0f) {
+            float g = D_0015EE6C;
+            rand_vec(t, g * 3.1415927f, g * 6.2831855f);
+            qcopy(d + 0x10, t);
+        } else {
+            qcopy(d + 0x10, v11);
+        }
+        if (FastVecLength(v12) == 0.0f && v12[3] == 0.0f) {
+            qcopy(t, *(char **)(m + 0x24) + 0x30);
+            k2 = *(float *)(m + 0x2C);
+            k2 = k2 * 0.0009765625f;
+            FastVecScale(t, t, k2);
+            t[3] = t[3] * k2;
+            qcopy(d + 0x20, t);
+        } else {
+            qcopy(d + 0x20, v12);
+        }
+        func_L00_00251E30(m);
+    }
+    return m;
+}
 extern int D_L00_0015F670 MACRO_ADDR;
 extern int D_L00_0015F674 MACRO_ADDR;
 extern short D_L00_00161F04_g __asm__("D_L00_00161F04");

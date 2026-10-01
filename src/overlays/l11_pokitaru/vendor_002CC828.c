@@ -2,7 +2,42 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L11_002CC828);
+extern void func_0020D678(void *);
+extern float func_001FA748(float, float);
+extern float func_001F9D48(void *, void *);
+extern int func_0020BFC8(int, int);
+extern int func_L00_00203F20(int, int);
+extern float D_0015EE6C MACRO_ADDR;
+extern unsigned char D_0013D5CA[];
+extern unsigned char D_0013D5EB[];
+extern char D_0013E633[];
+
+/* Per-frame update of a pickup moby: waits for the player to come near, then grants the item. */
+void func_L11_002CC828(char *moby) {
+    switch ((unsigned char)moby[0x20]) {
+    case 0:
+        if (gHaveHeliPack[4] != 0) {
+            DeleteMoby(moby);
+        } else {
+            *(float *)(moby + 0x18) += 0.75f;
+            *(unsigned short *)(moby + 0x34) |= 1;
+            moby[0x20] = 1;
+        }
+        break;
+    case 1:
+        break;
+    case 2:
+        FastAddRots(*(float *)(moby + 0x48), D_0015EE6C * 4.7123890f);
+        if (func_001F9D48(moby + 0x10, D_0013E633 + 0xE9D) < 2.0f) {
+            gHaveHeliPack[4] = 1;
+            gHavePersuader[0xB] = 1;
+            memcard_Save(0, -1);
+            Help_Request(0x2AF8, 0x3A);
+            DeleteMoby(moby);
+        }
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L11_002CC9D0);
 extern struct { unsigned char value; char pad[3]; } D_0013D4EA;
 
@@ -38,10 +73,78 @@ void func_L11_002D2168(unsigned char *moby) {
     func_L11_002D3970(moby);
 }
 INCLUDE_ASM("asm/overlays", func_L11_002D21F0);
-INCLUDE_ASM("asm/overlays", func_L11_002D2500);
+extern void func_L00_00259868(int, int, float, float, float, int);
+extern void func_L00_00262DF0(float, void *, void *, void *);
+extern void func_001F9BF0(void *, void *, void *);
+
+/* moves the parts' positions and stores the moby's displacement since last frame */
+void func_L11_002D2500(void *mp) {
+    unsigned char *moby = mp;
+    char *d = *(char **)(moby + 0x78);
+    float A[4];
+    float B[4];
+    qcopy(A, moby + 0x10);
+    qcopy(B, d + 0x130);
+    func_L00_00259868((int)moby, (int)B, 0.5f, 0.3f, 0.0f, 0x10);
+    if ((moby[0x20] >= 4 && moby[0x20] <= 6) || (moby[0x20] == 7 && *(int *)(d + 0x15C) == 3)) {
+        func_L00_00262DF0(0.3f, *(void **)(d + 0x60 - -(*(int *)(d + 0x158) * 4)), moby + 0x10, moby + 0x10);
+        switch (*(int *)(d + 0x158)) {
+        case 2:
+            func_L00_00262DF0(0.3f, *(void **)(d + 0x80), moby + 0x10, moby + 0x10);
+            func_L00_00262DF0(0.3f, *(void **)(d + 0x84), moby + 0x10, moby + 0x10);
+            func_L00_00262DF0(0.3f, *(void **)(d + 0x88), moby + 0x10, moby + 0x10);
+            break;
+        case 3:
+            func_L00_00262DF0(0.3f, *(void **)(d + 0x80), moby + 0x10, moby + 0x10);
+            func_L00_00262DF0(0.3f, *(void **)(d + 0x84), moby + 0x10, moby + 0x10);
+            break;
+        }
+    }
+    FastVecSub(d + 0x140, moby + 0x10, A);
+}
 INCLUDE_ASM("asm/overlays", func_L11_002D2670);
 INCLUDE_ASM("asm/overlays", func_L11_002D3248);
-INCLUDE_ASM("asm/overlays", func_L11_002D3500);
+extern int func_L00_0025A778(void *, void *, int);
+extern int func_L01_00277FD8(int *, int, int, void *, void *, void *, float);
+extern int *D_L11_001B11B0[];
+
+struct TgtData {
+    char pad0[0x60];
+    int a[4];
+    int b[4];
+    int c[4];
+    char pad1[0x90];
+    char e[0x38];
+    int idx;
+};
+
+// Checks a target against the current entry and runs the follow-up test.
+int func_L11_002D3500(char *moby, char *other) {
+    struct TgtData *d = *(struct TgtData **)(moby + 0x78);
+    int *p = d->a;
+    int *ent = D_L11_001B11B0[*(int *)((char *)p - (-(d->idx * 4)))];
+    int buf[8];
+    int n;
+    if (func_L00_0025A778(other, ent + 4, *ent) == 0) return 0;
+    buf[0] = *(int *)((char *)p - (-(d->idx * 4)));
+    n = 1;
+    switch (d->idx) {
+    case 2:
+        n = 4;
+        buf[1] = d->c[0];
+        buf[2] = d->c[1];
+        buf[3] = d->c[2];
+        break;
+    case 3:
+        n = 3;
+        buf[1] = d->c[0];
+        buf[2] = d->c[1];
+        break;
+    default:
+        break;
+    }
+    return func_L01_00277FD8(buf, n, d->b[d->idx], moby + 0x10, other, d->e, 0.2f) != 0;
+}
 INCLUDE_ASM("asm/overlays", func_L11_002D3620);
 INCLUDE_ASM("asm/overlays", func_L11_002D37A8);
 INCLUDE_ASM("asm/overlays", func_L11_002D3970);
@@ -144,7 +247,26 @@ int func_L11_0030BC00(unsigned char *arg) {
 void func_L11_0030BC10(unsigned char *arg) {
     *(int *)(*(int *)(arg + 0x78) + 0xB8) = 1;
 }
-INCLUDE_ASM("asm/overlays", func_L11_0030BC20);
+extern short *D_L11_001AC540[];
+extern int D_L11_00160058_m __asm__("D_L11_00160058") MACRO_ADDR;
+extern short D_L11_00160074;
+extern int func_L11_00317598(char *);
+
+// Returns 1 unless a listed moby in the group with state >= 0 and id 0x4DE fails the check.
+int func_L11_0030BC20(char *m) {
+    int idx = *(short *)(*(char **)(m + 0x78) + 0xB4);
+    short *p;
+    if (idx < 0 || *(int *)&D_L11_00160074 < idx) return 1;
+    p = D_L11_001AC540[idx];
+    if (p == 0) return 1;
+    do {
+        char *o = (char *)(((*p & 0x7FFF) << 8) + D_L11_00160058_m);
+        if (o[0x20] >= 0 && *(short *)(o + 0xA6) == 0x4DE) {
+            if (func_L11_00317598(o) == 0) return 0;
+        }
+    } while (*p++ >= 0);
+    return 1;
+}
 INCLUDE_ASM("asm/overlays", func_L11_0030DBF8);
 INCLUDE_ASM("asm/overlays", func_L11_0030E620);
 INCLUDE_ASM("asm/overlays", func_L11_0030EC70);
@@ -190,6 +312,51 @@ INCLUDE_ASM("asm/overlays", func_L11_00310B28);
 INCLUDE_ASM("asm/overlays", func_L11_00310BF0);
 INCLUDE_ASM("asm/overlays", func_L11_00311260);
 INCLUDE_ASM("asm/overlays", func_L11_00311318);
-INCLUDE_ASM("asm/overlays", func_L11_003114F0);
+extern void func_L11_00311318(void *, void *, void *);
+extern float func_0020D830(void *);
+
+// Per-tick update of moby class 1219: state machine over states 0 to 4.
+void func_L11_003114F0(unsigned char *moby)
+{
+    char *data = *(char **)(moby + 0x78);
+    char *u = data + 0x20;
+    unsigned char *t = *(unsigned char **)(data + 0x70);
+    if (t == 0 || t[0x20] == 0xFE || t[0x20] == 0xFD) {
+        if (moby[0x20] < 3) {
+            moby[0x20] = 4;
+        }
+    }
+    switch (moby[0x20]) {
+    case 0:
+        if (moby[0x53] != 1) {
+            func_00213DE0(moby, 1, 0, 0xF);
+        }
+        moby[0x20] = 1;
+        break;
+    case 1:
+        if (moby[0x70] & 2) {
+            moby[0xA4] = 0xFF;
+            moby[0x20] = 2;
+        }
+        break;
+    case 2:
+        func_L11_00311318(moby, data, u);
+        if ((moby[0x70] & 2) && moby[0x53] != 1) {
+            func_00213DE0(moby, 1, 0, 0xA);
+        }
+        break;
+    case 3:
+        if (moby[0x23] != 0) {
+            moby[0x23]--;
+        }
+        if (func_0020D830(moby) > 13.5f) {
+            moby[0x20] = 4;
+        }
+        break;
+    case 4:
+        DeleteMoby(moby);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L11_00311648);
 INCLUDE_ASM("asm/overlays", func_L11_00311B60);

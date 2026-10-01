@@ -3,7 +3,34 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L17_002F1558);
-INCLUDE_ASM("asm/overlays", func_L17_002F1858);
+extern float func_L00_001FF860(float, float);
+extern float func_L00_0025CE58(float *p, float *v, float a, float b, float c, float d);
+extern float func_00214D28(float *p, float target, float maxstep);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_L00_00259868(int, int, float, float, float, int);
+extern float func_001F9D48(void *, void *);
+extern float D_0015EE70 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+
+/* Steers the moby toward a target point; returns nonzero when it is within 0.2 of it. */
+int func_L17_002F1858(char *moby, float *target, float speed) {
+    char *data;
+    float *yaw = (float *)(moby + 0x48);
+    float ang;
+    float turn;
+    float tmp[3];
+    data = *(char **)(moby + 0x78);
+    ang = func_L00_001FF860(target[0] - *(float *)(moby + 0x10), target[1] - *(float *)(moby + 0x14));
+    turn = D_0015EE70 * 12.566371f;
+    func_L00_0025CE58(yaw, (float *)(data + 0x1DC), ang, turn, turn, D_0015EE6C * 7.3303828f);
+    func_00214D28((float *)(data + 0x1D8), speed, D_0015EE70 * 13.0f);
+    tmp[0] = FastCos(*(float *)(moby + 0x48)) * *(float *)(data + 0x1D8);
+    tmp[1] = FastSin(*(float *)(moby + 0x48)) * *(float *)(data + 0x1D8);
+    tmp[2] = -(D_0015EE6C * 0.5f);
+    func_L00_00259868((int)moby, (int)tmp, 0.5f, 0.5f, 0.0f, 0);
+    return func_001F9D48(moby + 0x10, target) < 0.2f;
+}
 extern int func_L00_002DCDA8(void *);
 extern int func_001F9850(int);
 extern void func_00213DE0(void *, int, int, int);
@@ -51,8 +78,92 @@ INCLUDE_ASM("asm/overlays", func_L17_002F4E30);
 INCLUDE_ASM("asm/overlays", func_L17_002F5388);
 INCLUDE_ASM("asm/overlays", func_L17_002F5C18);
 INCLUDE_ASM("asm/overlays", func_L17_002F6AF0);
-INCLUDE_ASM("asm/overlays", func_L17_002F6AF8);
-INCLUDE_ASM("asm/overlays", func_L17_002F6DA0);
+extern short *D_L17_001AC440[];
+extern char D_L17_00167750[];
+extern char D_L17_00167740[];
+extern char *D_L17_00160058 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+extern char D_0013E633[];
+extern int func_002140B0(int);
+extern void func_001FA1F8(void *, void *);
+extern float func_001FA748(float, float);
+extern float func_001F9FA8(float);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern float func_001F9F90(float);
+
+/* Finds the listed moby of type 0x733 in state 4 and launches it along a rotated vector. */
+char *func_L17_002F6AF8(int list) {
+    short *s = D_L17_001AC440[list];
+    float A[4], B[4], C[4], D[4], E[4], F[4];
+    char *m;
+    char *d;
+    int idx;
+    do {
+        idx = (*s & 0x7FFF) << 8;
+        if (*(short *)(0xA6 + idx + D_L17_00160058) != 0x733) continue;
+        if (*(unsigned char *)(0x20 + idx + D_L17_00160058) != 4) continue;
+        if (random_integer_below(10)) continue;
+        m = D_L17_00160058 + idx;
+        d = *(char **)(m + 0x78);
+        qcopy(C, D_L17_00167750);
+        C[0] = 0;
+        if (C[1] > 0.17453292f) C[1] = 0.17453292f;
+        else if (C[1] < -0.17453292f) C[1] = -0.17453292f;
+        func_001FA1F8(D, C);
+        {
+            float f = FastAddRots(0.7853982f, (float)*(int *)(d + 0x88) * 1.5707964f);
+            func_L00_001FF4B0(A, E, FastSin(f) * 12.0f);
+            FastVecAdd(B, D_L17_00167740, A);
+            func_L00_001FF4B0(A, F, FastCos(f) * 12.0f);
+        }
+        FastVecAdd(B, B, A);
+        func_L00_001FF4B0(A, D, 6.0f);
+        FastVecAdd(B, B, A);
+        qcopy(d + 0xB0, D_0013E633 + 0xE9D);
+        qcopy(m + 0x10, B);
+        m[0x20] = 5;
+        m[0xBC] = 1;
+        *(float *)(d + 0x6C) = D_0015EE6C * 20.0f;
+        *(float *)(d + 0x94) = 5.0f;
+        if (*(unsigned char *)(m + 0x53)) func_00213DE0(m, 0, 0, scale_ticks(10));
+        *(unsigned short *)(m + 0x34) &= 0xFFFE;
+        *(int *)(m + 0x94) = *(int *)(*(char **)(m + 0x24) + 0x10);
+        return m;
+    } while (*s++ >= 0);
+    return 0;
+}
+extern char *func_L00_0025B478(void *, int, int);
+extern int func_0022ED80(int, int, int);
+extern void func_L00_002584A8(void *, int, int);
+extern void func_L01_00279790(void *);
+extern void func_L00_00264EA8(void *, int, int, int, int, int, int);
+extern void func_L01_00279E10(void *, int);
+extern void func_0020D678(void *);
+
+/* UpdateMoby 1873: wait for a target, then play two effects and delete itself. */
+void func_L17_002F6DA0(unsigned char *m) {
+    int flag = 0;
+    char *p = func_L00_0025B478(m, 0x10000, 0);
+    switch (m[0x20]) {
+    case 0:
+        m[0x20] = 1;
+        break;
+    case 1:
+        if (p && *(float *)(p + 0x2C) > 0.0f) flag = 1;
+        if (flag) m[0x20] = 2;
+        break;
+    case 2:
+        func_0022ED80(0, 0, (int)m);
+        func_L00_002584A8(m, 0, -1);
+        func_L01_00279790(m);
+        func_L00_00264EA8(m, 0x753, 1, 0x753, 1, 11, 2);
+        func_L00_00264EA8(m, 0x756, 1, 0x756, 1, 1, 2);
+        func_L01_00279E10(m, 0x752);
+        DeleteMoby(m);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L17_002F6ED0);
 extern char D_L17_00167740[];
 extern void func_001F9BF0(void *, void *, void *);
@@ -122,7 +233,28 @@ void func_L17_002F71D0(void) {
         func_L00_001FDE48(((int *)&D_L17_00162470)[i], ((int *)&D_L17_00162478)[i], ((int *)&D_L17_00162490)[i], p, 1);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L17_002F74E8);
+extern char D_L17_001DF970[];
+extern short D_L17_001624A0;
+extern short D_L17_001624C0;
+extern short D_L17_001624C8;
+extern short D_L17_001624D0;
+extern short D_L17_001624D8;
+
+// Sets up draw state, then draws one entry from five parallel int tables.
+void func_L17_002F74E8(void) {
+    int i;
+    float *p;
+    VU1_addGSregister(6, GetEffectTex(0x30));
+    VU1_addGSregister(0x42, 0x2000000064L);
+    VU1_addGSregister(8, 0);
+    VU1_addGSregister(0x14, 0xFF9000000260L);
+    func_001F7868();
+    p = (float *)D_L17_001DF970;
+    for (i = 0; i < 1; i++) {
+        func_L17_002F7018(((int *)&D_L17_001624A0)[i], (V3 *)((int *)&D_L17_001624D0)[i], (V3 *)((int *)&D_L17_001624C0)[i], ((int *)&D_L17_001624C8)[i], p);
+        func_L00_001FDE48(((int *)&D_L17_001624A0)[i], ((int *)&D_L17_001624C0)[i], ((int *)&D_L17_001624D8)[i], p, 1);
+    }
+}
 /* Computes a per-vertex 2D sphere-map texture coordinate from position and normal arrays. */
 void func_L17_002F7C78(int n, char *nrm, char *pos, int unused, float *out) {
     float a[4];

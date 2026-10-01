@@ -2,7 +2,46 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L11_0031EFC0);
+extern void func_00234C98(int, long);
+extern void func_001F7868(void);
+extern int func_001F4868(int);
+extern void func_L08_002F20D8(int);
+extern void func_L08_002F21B0(int);
+extern void func_L11_0031ED48(int);
+extern short D_L11_00162588;
+extern short D_L11_001625A8;
+extern short D_L11_001625B8;
+extern int D_L11_0016258C MACRO_ADDR;
+extern int D_L11_001625AC MACRO_ADDR;
+extern int D_L11_00162620 MACRO_ADDR;
+
+// Draws the pokitaru HUD elements with their colours.
+void func_L11_0031EFC0(void) {
+    VU1_addGSregister(0x42, 0x8000000044L);
+    VU1_addGSregister(8, 0);
+    VU1_addGSregister(0x14, 0xFF9000000260L);
+    VU1_addGSregister(0x47, 0x513F1);
+    func_001F7868();
+    VU1_addGSregister(6, GetEffectTex(0x2C));
+    VU1_addGSregister(0x42, (long)*(int *)&D_L11_00162588 << 32 | 0x44);
+    func_L11_0031ED48(0);
+    if (*(unsigned char *)&D_L11_00162620 != 0) {
+        VU1_addGSregister(6, GetEffectTex(0x29));
+        VU1_addGSregister(0x42, (long)((D_L11_0016258C * *(unsigned char *)&D_L11_00162620) >> 8) << 32 | 0x68);
+        func_L11_0031ED48(1);
+        VU1_addGSregister(0x42, (long)((D_L11_0016258C * *(unsigned char *)&D_L11_00162620) >> 8) << 32 | 0x62);
+        func_L11_0031ED48(2);
+    }
+    VU1_addGSregister(6, GetEffectTex(0x2A));
+    VU1_addGSregister(0x42, (long)*(int *)&D_L11_001625A8 << 32 | 0x48);
+    func_L08_002F21B0(0);
+    VU1_addGSregister(0x42, (long)D_L11_001625AC << 32 | 0x48);
+    func_L08_002F21B0(1);
+    VU1_addGSregister(6, GetEffectTex(0x2B));
+    VU1_addGSregister(0x42, (long)*(int *)&D_L11_001625B8 << 32 | 0x48);
+    func_L08_002F20D8(0);
+    VU1_addGSregister(0x47, 0x5360B);
+}
 INCLUDE_ASM("asm/overlays", func_L11_0031F760);
 extern void func_L08_00259040(void *, int, int, void *);
 extern void func_L00_001FDE48(int, int, int, void *, int);

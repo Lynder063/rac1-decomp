@@ -5,4 +5,15 @@
 INCLUDE_ASM("asm/overlays", func_L02_0022BE40);
 INCLUDE_ASM("asm/overlays", func_L02_002310F0);
 INCLUDE_ASM("asm/overlays", func_L02_002368E8);
-INCLUDE_ASM("asm/overlays", func_L02_00237C98);
+extern float D_0015EE6C MACRO_ADDR;
+extern char D_0013E633[];
+extern void func_L02_0022BE40(int, int);
+
+void func_L02_00237C98(void)
+{
+    if (*(float *)(D_0013E633 + 0xF7D) < D_0015EE6C * 2.7f) {
+        func_L02_0022BE40(0, 1);
+    } else {
+        func_L02_0022BE40(3, 1);
+    }
+}

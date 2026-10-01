@@ -6,7 +6,25 @@ INCLUDE_ASM("asm/overlays", func_L06_002FE5D0);
 INCLUDE_ASM("asm/overlays", func_L06_002FE890);
 INCLUDE_ASM("asm/overlays", func_L06_002FEB78);
 INCLUDE_ASM("asm/overlays", func_L06_002FEE60);
-INCLUDE_ASM("asm/overlays", func_L06_00301068);
+extern short *D_L06_001AC340[];
+extern char *D_L06_00160058 MACRO_ADDR;
+void func_L06_00301068(int idx)
+{
+    short *p = D_L06_001AC340[idx];
+    if (p != 0) {
+        do {
+            char *moby = D_L06_00160058 + ((*p & 0x7FFF) << 8);
+            if ((unsigned char)moby[0x20] < 0x7F) {
+                unsigned short flags = *(unsigned short *)(moby + 0x34);
+                moby[0x20] = 0x11;
+                flags |= 1;
+                *(int *)(moby + 0x94) = 0;
+                flags &= 0xEFFF;
+                *(unsigned short *)(moby + 0x34) = flags;
+            }
+        } while (*p++ >= 0);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L06_003010E0);
 INCLUDE_ASM("asm/overlays", func_L06_003016B8);
 INCLUDE_ASM("asm/overlays", func_L06_00301848);
@@ -26,8 +44,22 @@ INCLUDE_ASM("asm/overlays", func_L06_00304418);
 INCLUDE_ASM("asm/overlays", func_L06_003045A0);
 INCLUDE_ASM("asm/overlays", func_L06_00304B88);
 INCLUDE_ASM("asm/overlays", func_L06_00304FA8);
-INCLUDE_ASM("asm/overlays", func_L06_00305468);
-INCLUDE_ASM("asm/overlays", func_L06_003054C8);
+extern short *D_L06_001AC340[];
+extern char *D_L06_00160058 MACRO_ADDR;
+extern void func_0020D678(void *);
+
+void func_L06_00305468(char *moby)
+{
+    char *data = *(char **)(moby + 0x78);
+    short *p = D_L06_001AC340[*(int *)(data + 0xCC)];
+    do {
+        DeleteMoby(D_L06_00160058 + ((*p & 0x7FFF) << 8));
+    } while (*p++ >= 0);
+}
+// Sets offset 0x20 to 5
+void func_L06_003054C8(char *arg) {
+    arg[0x20] = 5;
+}
 INCLUDE_ASM("asm/overlays", func_L06_003054D8);
 extern void func_0022ED80(int, int, void *);
 
@@ -44,7 +76,58 @@ INCLUDE_ASM("asm/overlays", func_L06_00306440);
 INCLUDE_ASM("asm/overlays", func_L06_003065B0);
 INCLUDE_ASM("asm/overlays", func_L06_003097F0);
 INCLUDE_ASM("asm/overlays", func_L06_0030A0A8);
-INCLUDE_ASM("asm/overlays", func_L06_0030A680);
-INCLUDE_ASM("asm/overlays", func_L06_0030A788);
+extern int func_L00_00200290(char *, float);
+extern float func_002140F8(float, float);
+extern float func_001F9878(float);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern short *D_L06_001AC340[];
+extern char *D_L06_00160058 MACRO_ADDR;
+/* finds the mobys of type 0x5E8 in state 1 in a level list and starts those within range */
+void func_L06_0030A680(int idx) {
+    short *p;
+    char *m;
+    char *data;
+    float v[4];
+    if (D_L06_001AC340[idx] != 0) {
+        p = D_L06_001AC340[idx];
+        do {
+            m = D_L06_00160058 + ((*(unsigned short *)p & 0x7FFF) << 8);
+            if (*(short *)(m + 0xA6) == 0x5E8 && (unsigned char)m[0x20] == 1) {
+                qcopy(v, m + 0x10);
+                v[3] = 0.25f;
+                if (FastBSphereCheck((char *)v, 64.0f) >= 0) {
+                    data = *(char **)(m + 0x78);
+                    m[0x20] = 2;
+                    *(int *)(data + 0x28) = func_001FA898_r(func_001F9878(random_float_between(30.0f, 60.0f)));
+                }
+            }
+        } while (*p++ >= 0);
+    }
+}
+extern int func_001F9850(int);
+extern void func_L00_00264870(int);
+extern int D_L06_0015F6A8 MACRO_ADDR;
+extern char D_L06_0016D0E0[];
+
+// Moby update: arms on first frame, then triggers a random event while the level is in phase 2.
+void func_L06_0030A788(unsigned char *moby)
+{
+    switch (moby[0x20]) {
+    case 0:
+        moby[0x30] = 0xFF;
+        moby[0x20] = 1;
+        break;
+    case 1:
+        if (D_L06_0015F6A8 == 2) {
+            char *p = D_L06_0016D0E0;
+            if (*(int *)(p + 0x30) == 5) {
+                if (scale_ticks(0x7F) >= *(int *)(p + 0x34)) {
+                    func_L00_00264870(*(int *)(p + 0x180));
+                }
+            }
+        }
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L06_0030B248);
 INCLUDE_ASM("asm/overlays", func_L06_0030B3E8);

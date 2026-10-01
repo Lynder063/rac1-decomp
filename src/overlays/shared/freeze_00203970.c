@@ -3,4 +3,9 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L00_00203970);
-INCLUDE_ASM("asm/overlays", func_L00_002039C4);
+// clears two out-parameters and returns -1
+int func_L00_002039C4(int a, int b, int *c, int d, int *e) {
+    *e = 0;
+    *c = 0;
+    return -1;
+}

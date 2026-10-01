@@ -27,5 +27,30 @@ unsigned char *func_L01_002888C8(void *a, void *b, float f) {
     }
     return r;
 }
-INCLUDE_ASM("asm/overlays", func_L01_00288A48);
+extern char *D_L01_001B28E4;
+extern float func_002140F8(float, float);
+
+// Spawns a particle at a with offset b, a random tint and scale f, with extra parameter g at +0x34.
+unsigned char *func_L01_00288A48(void *a, void *b, float f, float g) {
+    unsigned char *r = func_00218928(0x39);
+    char *q;
+    int c;
+    if (r != 0) {
+        qcopy(r + 0x10, a);
+        q = (char *)r + 0x20;
+        c = random_integer_below(0x10);
+        *(int *)(r + 4) = (c << 25) | 0x808080;
+        r[9] = func_001FA898_r(12.0f) + 0x20;
+        r[3] = 0x48;
+        r[1] = 1;
+        r[2] = *(unsigned char *)D_L01_001B28E4;
+        *(short *)(r + 0xA) = 0x80;
+        *(float *)(r + 0xC) = f * 210000.0f;
+        qcopy(q, b);
+        *(float *)(q + 0x10) = random_float_between(0.0f, 256.0f);
+        r[8] = func_001FA898_r(*(float *)(q + 0x10));
+        *(float *)(q + 0x14) = g;
+    }
+    return r;
+}
 INCLUDE_ASM("asm/overlays", func_L01_0028C548);

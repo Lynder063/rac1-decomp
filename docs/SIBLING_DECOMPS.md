@@ -29,7 +29,7 @@ matched code.
 builds' function sizes:
 
 ```sh
-python3 tools/lombyte.py map            # rebuild the pairing (856 pairs)
+python3 tools/lombyte.py map            # rebuild the pairing, executable and levels
 python3 tools/lombyte.py func_001123A8  # -> _calloc_r, matched, its C file
 python3 tools/lombyte.py _malloc_r      # a Lombyte name -> func_00114920
 python3 tools/lombyte.py todo           # matched there, not here
@@ -38,6 +38,16 @@ python3 tools/lombyte.py todo           # matched there, not here
 On 2026-09-27, 66 functions (31,576 bytes, 6.8% of our code) were
 matched there and not here, the newlib allocator family and `_dtoa_r`
 among them.
+
+Lombyte decompiles level code too now, laid out as ours is
+(`src/overlays/lNN/`, shared code named after level 00), so `map` also
+pairs level functions, level by level. On 2026-09-30 it paired 3,409
+functions; 291 (136,196 bytes) were matched there and not here. 73 of
+them are the movie code upstream reverted to assembly (commit
+`85ecd8b`, "Sources" in CONTRIBUTING.md): those are redone from the
+assembly alone, never ported. The rest go out as queue waves
+(QUEUE.md, "Lombyte ports"): a function's packet carries Lombyte's C
+when Lombyte matched it.
 
 ### Porting a function
 

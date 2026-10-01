@@ -11,7 +11,44 @@ void func_L02_002A52B0(char *arg) {
     func_L02_002A5238(arg, 0x80);
 }
 INCLUDE_ASM("asm/overlays", func_L02_002A52D0);
-INCLUDE_ASM("asm/overlays", func_L02_002A58C0);
+extern void func_00234C50(int);
+extern void func_001F3140(void);
+extern void func_001F2608(void);
+extern void func_001FB848(void);
+extern float D_L02_00161378 MACRO_ADDR;
+extern float D_L02_0016137C MACRO_ADDR;
+extern float D_L02_00161380 MACRO_ADDR;
+extern float D_L02_00161384 MACRO_ADDR;
+extern char D_L02_0016D0C0[];
+extern int *D_L02_00161240 MACRO_ADDR;
+
+// Copy four level floats into the draw state, then queue a two-register GS packet from it.
+void func_L02_002A58C0(void) {
+    char *b;
+    long *g;
+    int *q;
+    func_00234C50(0x13000000);
+    b = D_L02_0016D0C0;
+    *(float *)(b + 0x218) = D_L02_00161378;
+    *(float *)(b + 0x21C) = D_L02_0016137C;
+    *(float *)(b + 0x228) = D_L02_00161380;
+    *(float *)(b + 0x22C) = D_L02_00161384;
+    UpdateViewContext();
+    func_001F2608();
+    D_L02_00161240[0] = 0x10000002;
+    D_L02_00161240[1] = 0;
+    D_L02_00161240[2] = 0x11000000;
+    D_L02_00161240[3] = 0x50000002;
+    q = D_L02_00161240;
+    D_L02_00161240 = q + 4;
+    g = (long *)(q + 4);
+    g[0] = 0x1000000000008001L;
+    g[1] = 0xE;
+    g[2] = (long)*(int *)(b + 0x230) | ((long)*(int *)(b + 0x234) << 8) | ((long)*(int *)(b + 0x238) << 16);
+    g[3] = 0x3D;
+    D_L02_00161240 = q + 12;
+    AA_BlurPass();
+}
 INCLUDE_ASM("asm/overlays", func_L02_002CCD18);
 int func_L02_002D75F8(char *a) {
     int r = func_L00_002DCDA8(a);
@@ -24,7 +61,35 @@ int func_L02_002D75F8(char *a) {
 }
 INCLUDE_ASM("asm/overlays", func_L02_002D9D48);
 INCLUDE_ASM("asm/overlays", func_L02_002D9F08);
-INCLUDE_ASM("asm/overlays", func_L02_002DA728);
+extern void func_L00_002607A8(void *a, float x);
+extern float func_001FA748(float, float);
+extern float func_001FA790(float, float);
+extern char D_0013E633[];
+extern float D_0015EE6C MACRO_ADDR;
+
+// Steer the camera yaw toward a target angle, clamped to a per-frame limit.
+void func_L02_002DA728(char *moby) {
+    float v[4];
+    char *g;
+    float f;
+    float lim;
+    char *p;
+    func_L00_00250800(moby, 0, v);
+    g = D_0013E633 + 0xE9D;
+    FastVecSub(v, v, g);
+    func_L00_002607A8(v, D_0015EE6C * 4.0f);
+    FastVecAdd(g, g, v);
+    f = FastAddRots(*(float *)(moby + 0x48), 3.14159f);
+    f = FastSubRots(f, *(float *)(g + 0x18));
+    lim = D_0015EE6C * 6.2831855f;
+    if (lim < f) {
+        f = lim;
+    } else if (f < -lim) {
+        f = -lim;
+    }
+    p = D_0013E633 + 0xE1D;
+    *(float *)(p + 0x98) = FastAddRots(f, *(float *)(p + 0x98));
+}
 INCLUDE_ASM("asm/overlays", func_L02_002DA820);
 INCLUDE_ASM("asm/overlays", func_L02_002DB810);
 INCLUDE_ASM("asm/overlays", func_L02_002DBAF8);
@@ -206,8 +271,83 @@ void func_L02_002EDE68(char *m, void *arg1) {
 INCLUDE_ASM("asm/overlays", func_L02_002EE0A0);
 INCLUDE_ASM("asm/overlays", func_L02_002EE188);
 INCLUDE_ASM("asm/overlays", func_L02_002EE250);
-INCLUDE_ASM("asm/overlays", func_L02_002EE858);
-INCLUDE_ASM("asm/overlays", func_L02_002EEA90);
+extern short D_L02_00162068;
+extern short D_L02_0016206C;
+extern short D_L02_00162070;
+extern short D_L02_00162074;
+extern short D_L02_00162078;
+extern short D_L02_0016207C;
+extern short D_L02_00162080;
+extern short D_L02_00162084;
+extern short D_L02_00162088;
+extern short D_L02_0016208C;
+extern short D_L02_00162090;
+extern short D_L02_00162094;
+extern short D_L02_00162098;
+extern short D_L02_0016209C;
+extern short D_L02_001620A0;
+// Spawns two particles at a moby, scattered away from a point.
+void func_L02_002EE858(char *m, void *arg1) {
+    float v10[4], v20[4], v30[4], v40[4], v50[4];
+    int i;
+    FastVecSub(v30, m + 0x10, arg1);
+    for (i = 0; i < 2; i++) {
+        int a, b, c, d, e;
+        char *p;
+        func_L00_00250800(m, i, v50);
+        FastVecScale(v10, v30, *(float *)&D_L02_00162068);
+        FastVecScale(v20, v30, *(float *)&D_L02_0016206C);
+        rand_vec(v40, 0.0f, *(float *)&D_L02_00162070 * D_0015EE6C);
+        FastVecAdd(v20, v20, v40);
+        v10[3] = random_float_between(*(float *)&D_L02_00162084, *(float *)&D_L02_00162088);
+        v20[3] = random_float_between(*(float *)&D_L02_0016208C, *(float *)&D_L02_00162090);
+        a = FastTweenColor(*(int *)&D_L02_00162094, *(int *)&D_L02_00162098, random_float_between(0.0f, 1.0f));
+        b = FastTweenColor(*(int *)&D_L02_0016209C, *(int *)&D_L02_001620A0, random_float_between(0.0f, 1.0f));
+        c = func_001FA898_r(func_001F9878((float)*(int *)&D_L02_00162074 * random_float_between(0.0f, 1.0f) + 1.0f));
+        d = func_001FA898_r(func_001F9878((float)*(int *)&D_L02_00162078 * (random_float_between(-*(float *)&D_L02_00162080, *(float *)&D_L02_00162080) + 1.0f)));
+        e = func_001FA898_r(func_001F9878((float)*(int *)&D_L02_0016207C * (random_float_between(-*(float *)&D_L02_00162080, *(float *)&D_L02_00162080) + 1.0f)));
+        p = func_00219780(v50, v10, v20, a, b, c, d, e, -1);
+        if (p != 0) p[9] = func_001FA898_r(8.0f) + 0x60;
+    }
+}
+extern short D_L02_001620A4;
+extern short D_L02_001620A8;
+extern short D_L02_001620AC;
+extern short D_L02_001620B0;
+extern short D_L02_001620B4;
+extern short D_L02_001620B8;
+extern short D_L02_001620BC;
+
+/* spawns two particles around a moby with randomized parameters */
+void func_L02_002EEA90(char *moby, void *arg) {
+    float v0[4];
+    float v1[4];
+    float mat[4];
+    float v2[4];
+    float m[4];
+    int i;
+    FastVecSub(mat, moby + 0x10, arg);
+    for (i = 0; i < 2; i++) {
+        int a, b, c, d, e;
+        char *p;
+        func_L00_00250800(moby, i, m);
+        FastVecScale(v0, mat, *(float *)&D_L02_001620A4);
+        FastVecScale(v1, mat, *(float *)&D_L02_001620A8);
+        rand_vec(v2, 0.0f, *(float *)&D_L02_001620AC * D_0015EE6C);
+        FastVecAdd(v1, v1, v2);
+        v0[3] = random_float_between(*(float *)&D_L02_00162084, *(float *)&D_L02_00162088) / 1.5f;
+        v1[3] = random_float_between(*(float *)&D_L02_0016208C, *(float *)&D_L02_00162090) / 1.5f;
+        a = FastTweenColor(*(int *)&D_L02_001620B0, *(int *)&D_L02_001620B4, random_float_between(0.0f, 1.0f));
+        b = FastTweenColor(*(int *)&D_L02_001620B8, *(int *)&D_L02_001620BC, random_float_between(0.0f, 1.0f));
+        c = func_001FA898_r(func_001F9878((float)*(int *)&D_L02_00162074 * random_float_between(0.0f, 1.0f) + 1.0f));
+        d = func_001FA898_r(func_001F9878((float)*(int *)&D_L02_00162078 * (random_float_between(-*(float *)&D_L02_00162080, *(float *)&D_L02_00162080) + 1.0f)));
+        e = func_001FA898_r(func_001F9878((float)*(int *)&D_L02_0016207C * (random_float_between(-*(float *)&D_L02_00162080, *(float *)&D_L02_00162080) + 1.0f)));
+        p = func_00219780(m, v0, v1, a, b, c, d, e, -1);
+        if (p != 0) {
+            p[9] = func_001FA898_r(8.0f) + 0x60;
+        }
+    }
+}
 extern char *func_L00_0025B478(void *, int, int);
 extern void func_0022ED80(int, int, int);
 extern void func_L01_00279790(void *);
@@ -276,7 +416,29 @@ void func_L02_002FBB48(void) {
         func_L02_001FC308(func_L02_002FBBA8);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L02_002FBBA8);
+typedef struct {
+    int a;
+    int b;
+    float c;
+    float d;
+} S;
+extern S D_L02_00167680;
+extern short D_L02_0016241C;
+// Resets a timer block: sets a large value and decays a countdown toward zero.
+void func_L02_002FBBA8(void) {
+    S *s = &D_L02_00167680;
+    s->c = 10000.0f;
+    if (s->b == 0) {
+        float v = s->d - *(float *)&D_L02_0016241C;
+        s->d = v;
+        if (v < 0.0f) {
+            s->d = 0.0f;
+        }
+    } else {
+        s->b = 0;
+    }
+    s->a = 0;
+}
 INCLUDE_ASM("asm/overlays", func_L02_002FBC00);
 INCLUDE_ASM("asm/overlays", func_L02_002FCA80);
 extern char *D_L02_0015F050 MACRO_ADDR;
@@ -345,4 +507,12 @@ int func_L02_002FCBC0(char *moby, float a, float b) {
     return 0;
 }
 INCLUDE_ASM("asm/overlays", func_L02_002FCE00);
-INCLUDE_ASM("asm/overlays", func_L02_002FD6D0);
+extern int func_L02_002FCE00(char *);
+
+// Camera init: runs the setup when the flag is clear and the camera record is not negative, then clears a field and returns 0.
+int func_L02_002FD6D0(char *moby) {
+    char *cam = *(char **)(D_L02_0015F050 + *(short *)(moby + 0x84) * 32 + 0x1C);
+    if (*(short *)(D_L02_00167480 + 0x86) == 0 && *(short *)(cam + 0x20) >= 0) func_L02_002FCE00(moby);
+    *(int *)(cam + 0x50) = 0;
+    return 0;
+}

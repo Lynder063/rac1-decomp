@@ -2,14 +2,125 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L01_00280428);
-INCLUDE_ASM("asm/overlays", func_L01_00281738);
+extern unsigned char *func_00218928(int);
+extern int func_L00_0025D038(float, float, float, float);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern float func_002140F8(float, float);
+extern int func_001F9850(int);
+extern unsigned char *D_L01_001B280C;
+
+/* Spawns a type-10 particle at a position and sets its colour, size, life and velocity. */
+void func_L01_00280428(char *pos, char *vel) {
+    unsigned char *p = func_00218928(10);
+    if (p != 0) {
+        char *q = (char *)p + 0x20;
+        qcopy(p + 0x10, pos);
+        *(int *)(p + 4) = func_L00_0025D038(0.425f, 0.425f, 0.225f, 1.0f);
+        p[9] = func_001FA898_r(8.0f) - 0x60;
+        p[1] = 0;
+        p[3] = 0x48;
+        *(float *)(p + 0xC) = random_float_between(60900.0f, 90300.0f);
+        p[8] = 0;
+        p[2] = *D_L01_001B280C;
+        *(float *)(q + 0x10) = 0.425f;
+        *(float *)(q + 0x14) = 0.425f;
+        *(float *)(q + 0x18) = 0.225f;
+        *(float *)(q + 0x1C) = 1.0f;
+        *(short *)(p + 0xA) = scale_ticks(0x57);
+        qcopy(q, vel);
+    }
+}
+extern float func_L00_00258C80(float, float);
+extern int func_002140B0(int);
+extern unsigned char *D_L01_001B2838;
+
+/* spawns a type 14 particle at the given position with jitter */
+char *func_L01_00281738(int a, char *b) {
+    char *p = func_00218928(0xE);
+    int r;
+    int *q;
+    if (p) {
+        qcopy(p + 0x10, b + 0x10);
+        *(float *)(p + 0x10) += randf_sym(0.0f, 0.03f);
+        *(float *)(p + 0x14) += randf_sym(0.0f, 0.03f);
+        *(float *)(p + 0x18) += randf_sym(0.0f, 0.03f);
+        *(int *)(p + 4) = -1;
+        r = func_001FA898_r(4.0f);
+        p[9] = r - 0x60;
+        p[1] = 0;
+        p[3] = 0x48;
+        *(float *)(p + 0xC) = 29400.0f;
+        p[8] = random_integer_below(0xFF);
+        p[2] = *D_L01_001B2838;
+        *(short *)(p + 0xA) = scale_ticks(6);
+        q = (int *)(p + 0x20);
+        q[2] = (int)b;
+        q[1] = 1;
+        if (a == 0) {
+            q[0] = 0;
+        } else if (random_integer_below(2)) {
+            q[0] = a;
+        } else {
+            q[0] = -a;
+        }
+    }
+    return p;
+}
 INCLUDE_ASM("asm/overlays", func_L01_00286530);
-INCLUDE_ASM("asm/overlays", func_L01_00287F20);
+extern int func_001FA898(float);
+extern int func_002140B0(int);
+extern float func_001FA888(int);
+extern unsigned char *D_L01_001B28D0;
+
+/* spawns a type-0x34 particle at a with colour b, links c, lifetime d, scale f and drag g */
+unsigned char *func_L01_00287F20(void *a, int b, int c, int d, float f, float g) {
+    unsigned char *r = func_00218928(0x34);
+    if (r != 0) {
+        char *v = (char *)r + 0x20;
+        qcopy(r + 0x10, a);
+        *(float *)(r + 0x18) += 0.05f;
+        *(int *)(r + 4) = b;
+        r[3] = 0x44;
+        r[9] = truncate_float_to_s32(4.0f) + 0x20;
+        r[1] = 1;
+        r[2] = *D_L01_001B28D0;
+        *(short *)(r + 0xA) = d;
+        *(float *)(r + 0xC) = f * 210000.0f;
+        r[8] = random_integer_below(0xFF);
+        *(int *)(v + 8) = b;
+        *(int *)(v + 0xC) = c;
+        *(float *)v = f;
+        *(float *)(v + 4) = g;
+        *(float *)(v + 0x10) = 1.0f / func_001FA888(d);
+    }
+    return r;
+}
 INCLUDE_ASM("asm/overlays", func_L01_0028B570);
 INCLUDE_ASM("asm/overlays", func_L01_0028C1D0);
 INCLUDE_ASM("asm/overlays", func_L01_0028C1D8);
-INCLUDE_ASM("asm/overlays", func_L01_0028C2D8);
+typedef struct {
+    int count;
+    int pad[3];
+    float e[1][4];
+} List;
+
+extern float func_001F9D10(void *, void *);
+extern float func_001F9B88(float);
+
+/* Returns the index of the entry whose distance to arg0 is closest to a target value. */
+int func_L01_0028C2D8(void *arg0, List *arg1, float target) {
+    int best = 0;
+    int i;
+    float bestDiff = 1e11f;
+    for (i = 0; i < arg1->count; i++) {
+        float d = FastVecDist(arg1->e[i], arg0);
+        if (FastAbsF(d - target) < bestDiff) {
+            bestDiff = d;
+            best = i;
+        }
+    }
+    return best;
+}
 INCLUDE_ASM("asm/overlays", func_L01_0028C3A8);
 INCLUDE_ASM("asm/overlays", func_L01_0028C578);
 INCLUDE_ASM("asm/overlays", func_L01_0028C5B8);
@@ -17,7 +128,38 @@ INCLUDE_ASM("asm/overlays", func_L01_0028C5D0);
 INCLUDE_ASM("asm/overlays", func_L01_0028C5F0);
 INCLUDE_ASM("asm/overlays", func_L01_0028C618);
 INCLUDE_ASM("asm/overlays", func_L01_0028C628);
-INCLUDE_ASM("asm/overlays", func_L01_0028C640);
+int func_L01_0028C640(char *p)
+{
+    int max = 0;
+    int next;
+    if (p[4] >= 0) {
+        max = **(int **)(p + 0x10) - 1;
+    }
+    next = *(int *)p + 1;
+    if (max < next) {
+        next %= max + 1;
+    }
+    *(int *)p = next;
+    return next;
+}
 INCLUDE_ASM("asm/overlays", func_L01_0028C690);
-INCLUDE_ASM("asm/overlays", func_L01_0028C848);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+
+// Cubic Hermite blend of four vectors at parameter t, written to out.
+void func_L01_0028C848(float t, void *out, void *p1, void *p2, void *p3, void *p4) {
+    char tmp[16];
+    float t2 = t * t;
+    float t3 = t2 * t;
+    float b = t2 * 3.0f;
+    float a = t3 + t3;
+    float c = t2 + t2;
+    FastVecScale(out, p1, a - b + 1.0f);
+    FastVecScale(tmp, p3, t3 - c + t);
+    FastVecAdd(out, out, tmp);
+    FastVecScale(tmp, p4, t3 - t2);
+    FastVecAdd(out, out, tmp);
+    FastVecScale(tmp, p2, b - a);
+    FastVecAdd(out, out, tmp);
+}
 INCLUDE_ASM("asm/overlays", func_L01_0028C958);

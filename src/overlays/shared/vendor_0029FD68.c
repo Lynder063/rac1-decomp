@@ -3,7 +3,85 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L00_0029FD68);
-INCLUDE_ASM("asm/overlays", func_L00_002A0C20);
+typedef struct {
+    float v[4][4];
+    int rgba[4];
+    float uv[4][2];
+    long gs[4];
+} QuadPkt;
+
+extern float D_L00_001CA618[][4];
+extern void func_0020DB98(char *arg0, int arg1, void *arg2, char *arg3);
+extern void func_001F9BF0(void *, void *, void *);
+extern float func_001F9CB8(void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_00238F98(void *, void *, float *, float *, float *, float *);
+extern int func_001F4868(int);
+extern void func_00234C98(int, long);
+extern void func_L00_001FD1D8(void *, void *, int);
+
+// draws five glass quads around a moby's joints
+void func_L00_002A0C20(char *m) {
+    float A[4];
+    float B[4];
+    float C[4];
+    float P[3][4];
+    int idx[3];
+    float E[4];
+    QuadPkt q;
+    float g[4];
+    float f;
+    int i;
+    float one = 1.0f;
+    float uvv = 0.984375f;
+    for (i = 1; i < 6; i++) {
+        idx[0] = i * 4;
+        idx[1] = i * 4 + 1;
+        idx[2] = i * 4 + 2;
+        func_0020DB98(m, 3, idx, (char *)P);
+        qcopy(C, P[0]);
+        FastVecSub(A, P[1], P[0]);
+        FastVecSub(B, P[2], P[0]);
+        f = FastVecLength(A);
+        func_L00_001FF4B0(E, A, D_L00_001CA618[i][0]);
+        FastVecAdd(C, C, E);
+        func_L00_001FF4B0(A, A, f - D_L00_001CA618[i][2] * 2.0f);
+        f = FastVecLength(B);
+        func_L00_001FF4B0(E, B, D_L00_001CA618[i][1]);
+        FastVecAdd(C, C, E);
+        func_L00_001FF4B0(B, B, f - D_L00_001CA618[i][3] * 2.0f);
+        FastVecAdd(E, C, A);
+        FastVecAdd(E, E, B);
+        func_00238F98(C, E, &g[0], &g[1], &g[2], &g[3]);
+        qcopy(q.v[0], C);
+        FastVecAdd(q.v[1], C, A);
+        FastVecAdd(q.v[2], C, B);
+        FastVecAdd(q.v[3], q.v[2], A);
+        q.gs[0] = 5;
+        q.gs[2] = 1;
+        q.gs[3] = 0x8000000044L;
+        q.rgba[0] = 0x80808080;
+        q.rgba[1] = 0x80808080;
+        q.rgba[2] = 0x80808080;
+        q.rgba[3] = 0x80808080;
+        q.gs[1] = GetEffectTex(0x19);
+        q.v[0][3] = one;
+        q.v[1][3] = one;
+        q.v[2][3] = one;
+        q.v[3][3] = one;
+        q.uv[0][0] = 0;
+        q.uv[0][1] = 0;
+        q.uv[1][0] = uvv;
+        q.uv[1][1] = 0;
+        q.uv[2][0] = 0;
+        q.uv[2][1] = uvv;
+        q.uv[3][0] = uvv;
+        q.uv[3][1] = uvv;
+        VU1_addGSregister(0x47, 0x32003);
+        func_L00_001FD1D8(&q, 0, 1);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002A0F60);
 INCLUDE_ASM("asm/overlays", func_L00_002A11E8);
 INCLUDE_ASM("asm/overlays", func_L00_002A1540);

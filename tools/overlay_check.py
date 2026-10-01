@@ -285,7 +285,16 @@ class Placer:
         0-offset access, or another HI16 for the same symbol takes the
         actual LO16) is still its own valid %hi: it comes back here paired
         with lo_rel=None, lo_imm=0 (the standalone-%hi convention)."""
-        rels = sorted(self.relocations(), key=lambda r: r["r_offset"])
+        # Relocation-table order, not address order: GNU as moves each
+        # R_MIPS_HI16 right before the R_MIPS_LO16 it pairs with, which is
+        # what tells apart two %hi's of one symbol (two function pointers
+        # into this file's .text, both relocated against the section)
+        # when retail interleaves their loads.
+        rels = list(self.relocations())
+        all_his = sorted(({"rel": r, "sym": self.sym_of(r).name,
+                           "imm": self.word_at(orig, r["r_offset"]) & 0xFFFF, "used": False}
+                          for r in rels if r["r_info_type"] == R_MIPS_HI16),
+                         key=lambda h: h["rel"]["r_offset"])
         his = []   # [{"rel", "sym", "imm", "used"}], in the order seen
         out = []
         for rel in rels:
@@ -297,8 +306,14 @@ class Placer:
             elif rtype == R_MIPS_LO16:
                 sym = self.sym_of(rel)
                 hi = next((h for h in reversed(his) if h["sym"] == sym.name), None)
-                if hi is None and his:
-                    hi = his[-1]
+                if hi is None:
+                    # No %hi of this symbol earlier in the table (a pass such
+                    # as fix_orphan_hi.py can turn one into a constant): the
+                    # previous address-order pairing, the nearest HI16 before
+                    # this LO16, of the same symbol if there is one.
+                    before = [h for h in all_his if h["rel"]["r_offset"] < rel["r_offset"]]
+                    hi = next((h for h in reversed(before) if h["sym"] == sym.name), None) \
+                        or (before[-1] if before else (his[-1] if his else None))
                 if hi is None:
                     self.note_unresolved(f"unmatched R_MIPS_LO16 at +0x{rel['r_offset'] - self.off:x}")
                     continue

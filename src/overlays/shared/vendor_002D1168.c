@@ -24,7 +24,67 @@ void func_L00_002D4C80(char *a) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002D4CE8);
+extern char *func_0020D348(int);
+extern void func_L00_00251E30(void *);
+extern void func_L00_0025E210(void *);
+
+/* spawn a moby of type 0x27F and copy a spawn record into its data */
+char *func_L00_002D4CE8(char *a, char *b, int c, char *d) {
+    char *m = CreateMoby(0x27F);
+    if (m != 0) {
+        char *p;
+        *(unsigned char *)(m + 0x30) = 0xFF;
+        m[0x31] = 1;
+        *(unsigned short *)(m + 0x34) |= 1;
+        p = *(char **)(m + 0x78);
+        m[0x20] = 0;
+        m[0xBC] = 0;
+        qcopy(m + 0x10, b);
+        if (d != 0) {
+            qcopy(p, d);
+        } else {
+            qcopy(p, a);
+        }
+        *(int *)(p + 0x20) = c;
+        *(short *)(m + 0x32) = *(unsigned char *)(a + 0x3C);
+        p[0x24] = a[0x10];
+        p[0x25] = a[0x11];
+        p[0x26] = a[0x12];
+        p[0x27] = a[0x13];
+        p[0x28] = a[0x14];
+        p[0x29] = a[0x15];
+        p[0x68] = a[0x3D];
+        *(short *)(p + 0x6C) = *(unsigned short *)(a + 0x40);
+        p[0x2A] = a[0x16];
+        p[0x2B] = a[0x17];
+        p[0x2C] = a[0x18];
+        p[0x2D] = a[0x19];
+        p[0x2E] = a[0x1A];
+        p[0x69] = a[0x3E];
+        *(short *)(p + 0x6E) = *(unsigned short *)(a + 0x42);
+        p[0x2F] = a[0x1B];
+        p[0x30] = a[0x1C];
+        p[0x31] = a[0x1D];
+        p[0x32] = a[0x1E];
+        p[0x33] = a[0x1F];
+        p[0x6A] = a[0x3F];
+        *(short *)(p + 0x70) = *(unsigned short *)(a + 0x44);
+        *(float *)(p + 0x34) = *(float *)(a + 0x20);
+        *(float *)(p + 0x38) = *(float *)(a + 0x24);
+        *(float *)(p + 0x3C) = *(float *)(a + 0x28);
+        *(float *)(p + 0x40) = *(float *)(a + 0x2C);
+        *(float *)(p + 0x44) = *(float *)(a + 0x30);
+        p[0x6B] = a[0x48];
+        *(short *)(p + 0x72) = *(unsigned short *)(a + 0x46);
+        *(int *)(p + 0x48) = *(int *)(a + 0x34);
+        *(int *)(p + 0x4C) = *(int *)(a + 0x38);
+        p[0x1C] = a[0x49];
+        *(int *)(p + 0x64) = -1;
+        func_L00_00251E30(m);
+        func_L00_0025E210(m);
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002D4EC0);
 INCLUDE_ASM("asm/overlays", func_L00_002D5AC0);
 INCLUDE_ASM("asm/overlays", func_L00_002D6610);
@@ -79,7 +139,33 @@ INCLUDE_ASM("asm/overlays", func_L00_002D8180);
 INCLUDE_ASM("asm/overlays", func_L00_002D83D8);
 INCLUDE_ASM("asm/overlays", func_L00_002D8898);
 INCLUDE_ASM("asm/overlays", func_L00_002D90A0);
-INCLUDE_ASM("asm/overlays", func_L00_002D9208);
+extern float func_L00_00258C80(float, float);
+extern float func_002140F8(float, float);
+extern float D_L00_001CBAE0[][4];
+extern float D_L00_001D05E0[];
+extern float D_L00_001D18A0[];
+extern float D_L00_001D34C0[];
+extern float D_L00_001D4780[];
+extern char D_L00_001D3010[];
+
+/* initialises the random wobble parameters of slot idx */
+void func_L00_002D9208(char *m, int idx) {
+    char *data = *(char **)(m + 0x78);
+    float a, b, r;
+    float *w;
+    r = randf_sym(0.0f, 1.0f);
+    w = D_L00_001CBAE0[idx];
+    w[0] = r;
+    w[1] = randf_sym(0.0f, 1.0f);
+    w[2] = randf_sym(0.0f, 1.0f);
+    a = *(float *)(data + 0x44);
+    b = *(float *)(data + 0x4C);
+    D_L00_001D05E0[idx] = random_float_between(a, a + 2.0f);
+    D_L00_001D18A0[idx] = random_float_between(b, b + 4.0f);
+    D_L00_001D34C0[idx] = 0.0f;
+    D_L00_001D4780[idx] = random_float_between(0.003f, 0.005f);
+    D_L00_001D3010[idx] = 1;
+}
 typedef struct { int a[4]; } Vy __attribute__((aligned(16)));
 extern char *func_0020D348(int);
 extern void func_L00_0025E210(void *);

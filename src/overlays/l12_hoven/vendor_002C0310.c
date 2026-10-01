@@ -51,7 +51,24 @@ int func_L12_002E2B08(Level12VendorStateMoby *moby) {
     return result;
 }
 INCLUDE_ASM("asm/overlays", func_L12_002E2B88);
-INCLUDE_ASM("asm/overlays", func_L12_002E2BF8);
+extern int func_002140B0(int);
+extern int func_001F9850(int);
+extern void func_00213DE0(void *, int, int, int);
+
+// Picks an animation for the moby from a query result unless it is already playing.
+void func_L12_002E2BF8(unsigned char *moby) {
+    switch (random_integer_below(2)) {
+    case 0:
+        if (moby[0x53] != 3) func_00213DE0(moby, 3, 0, scale_ticks(8));
+        break;
+    case 1:
+        if (moby[0x53] != 0xF) func_00213DE0(moby, 0xF, 0, scale_ticks(8));
+        break;
+    default:
+        if (moby[0x53] != 0x10) func_00213DE0(moby, 0x10, 0, scale_ticks(8));
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L12_002E2CB8);
 INCLUDE_ASM("asm/overlays", func_L12_002E2EF0);
 INCLUDE_ASM("asm/overlays", func_L12_002E41C8);
@@ -59,7 +76,34 @@ INCLUDE_ASM("asm/overlays", func_L12_002E43A8);
 INCLUDE_ASM("asm/overlays", func_L12_002E4838);
 INCLUDE_ASM("asm/overlays", func_L12_002E4C58);
 INCLUDE_ASM("asm/overlays", func_L12_002E4F18);
-INCLUDE_ASM("asm/overlays", func_L12_002E5138);
+extern char D_0013E633[];
+extern short D_L12_00161994;
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9BC0(void *);
+extern void func_001FA218(void *, void *);
+extern void func_001F9EE8(void *, void *, void *);
+
+/* Projects a moby's offset from a reference point into a 2D pair, or zeroes it. */
+void func_L12_002E5138(char *moby, float *out, int on) {
+    float m[4];
+    float a[4];
+    float b[4];
+    float pad[12];
+    float g;
+    if (on) {
+        FastVecSub(a, D_0013E633 + 0xE9D, moby + 0x10);
+        clear_u64_value(m);
+        m[2] = -*(float *)(moby + 0x48);
+        func_001FA218(b, m);
+        func_001F9EE8(a, a, b);
+        g = *(float *)&D_L12_00161994;
+        out[1] = a[0] / g;
+        out[0] = -a[1] / g;
+    } else {
+        out[0] = 0;
+        out[1] = 0;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L12_002E51E8);
 INCLUDE_ASM("asm/overlays", func_L12_002E7FC8);
 extern char D_L12_001672C0[];
@@ -92,7 +136,22 @@ void func_L12_002E8610(void *a, void *b) {
 }
 INCLUDE_ASM("asm/overlays", func_L12_002E8640);
 INCLUDE_ASM("asm/overlays", func_L12_002E9560);
-INCLUDE_ASM("asm/overlays", func_L12_002E9988);
+extern float func_L00_001FF860(float, float);
+extern float func_001FA790(float, float);
+
+// Steers a moby's two turn-rate fields from the clamped heading error to a point.
+void func_L12_002E9988(char *moby, float *pos) {
+    char *data = *(char **)(moby + 0x78);
+    float a = func_L00_001FF860(pos[0] - *(float *)(moby + 0x10), pos[1] - *(float *)(moby + 0x14));
+    float d = FastSubRots(a, *(float *)(moby + 0x48));
+    if (d > 1.2217305f) {
+        d = 1.2217305f;
+    } else if (d < -1.2217305f) {
+        d = -1.2217305f;
+    }
+    *(float *)(data + 0x188) = d * 0.35f;
+    *(float *)(data + 0x208) = d * 0.8f;
+}
 typedef struct {
     char pad0[0x248];
     void *child;
@@ -150,7 +209,28 @@ void func_L12_002E9B30(char *moby) {
 }
 INCLUDE_ASM("asm/overlays", func_L12_002E9B88);
 INCLUDE_ASM("asm/overlays", func_L12_002EB2E8);
-INCLUDE_ASM("asm/overlays", func_L12_002EC180);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern float func_L00_00259148(float *vel, float cur, float target, float k, float d, float max);
+extern float D_0015EE6C MACRO_ADDR;
+
+/* Springs the moby's two rotation angles toward a heading taken from its data's direction vector. */
+void func_L12_002EC180(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    float ang = FastSubRots(func_L00_001FF860(*(float *)(data + 0x70), *(float *)(data + 0x74)), *(float *)(moby + 0x48));
+    float a = *(float *)(data + 0x94) * 0.2268928f * FastCos(ang) / (D_0015EE6C * 10.0f);
+    float b = *(float *)(data + 0x94) * -0.2268928f * FastSin(ang) / (D_0015EE6C * 10.0f);
+    float r0, k0, d0, m0, k1, d1, m1;
+    k0 = D_0015EE70 * 0.5235988f;
+    d0 = D_0015EE70 * 1.0471976f;
+    m0 = D_0015EE6C * 0.7853982f;
+    r0 = func_L00_00259148((float *)(data + 0x9C), *(float *)(moby + 0x44), a, k0, d0, m0);
+    k1 = D_0015EE70 * 1.0471976f;
+    d1 = D_0015EE70 * 2.0943952f;
+    m1 = D_0015EE6C * 1.2217305f;
+    *(float *)(moby + 0x44) = r0;
+    *(float *)(moby + 0x40) = func_L00_00259148((float *)(data + 0x98), *(float *)(moby + 0x40), b, k1, d1, m1);
+}
 INCLUDE_ASM("asm/overlays", func_L12_002EC2E8);
 INCLUDE_ASM("asm/overlays", func_L12_002EC5A0);
 INCLUDE_ASM("asm/overlays", func_L12_002EC8F0);

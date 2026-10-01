@@ -2,13 +2,124 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L05_00237B00);
+extern float func_00214D28(float *p, float target, float maxstep);
+extern unsigned char D_0013E633[] NOT_SDA;
+
+/* Steps two floats of arg toward a target and clamps them to [-1, 1]. */
+void func_L05_00237B00(float *out, float *p, float step) {
+    char *g = (char *)D_0013E633 + 0xE1D;
+    float v[2];
+    v[0] = -*(float *)(g + 0x1D20);
+    v[1] = *(float *)(g + 0x1D24);
+    func_00214D28(p + 2, v[0], step);
+    if (p[2] > 1.0f) p[2] = 1.0f;
+    if (p[2] < -1.0f) p[2] = -1.0f;
+    out[0] = p[2];
+    func_00214D28(p + 1, v[1], step);
+    if (p[1] > 1.0f) p[1] = 1.0f;
+    if (p[1] < -1.0f) p[1] = -1.0f;
+    out[1] = p[1];
+}
 INCLUDE_ASM("asm/overlays", func_L05_0023BA18);
 INCLUDE_ASM("asm/overlays", func_L05_0023BA64);
 INCLUDE_ASM("asm/overlays", func_L05_0023BAA0);
 INCLUDE_ASM("asm/overlays", func_L05_0023E348);
 INCLUDE_ASM("asm/overlays", func_L05_0024C558);
-INCLUDE_ASM("asm/overlays", func_L05_00251DB0);
+extern unsigned char D_0013E633[] NOT_SDA;
+extern short D_L05_0015F6B0;
+extern float D_L05_00174368;
+extern float func_001F9B88(float);
+extern void func_L00_00212D70(void *, void *, int, float, float);
+extern int func_L00_001EFFF0(void *, void *, int, int, int);
+extern int func_L00_001F3958(void);
+extern void func_L05_0024D680(int, int);
+extern int func_L00_00217570(int, int);
+
+/* Decides whether the hero's current motion warrants the swing effect, running a probe when the conditions line up. */
+int func_L05_00251DB0(void) {
+    char *g = (char *)D_0013E633 + 0xE1D;
+    int ret;
+    int k = *(int *)(g + 0x208C);
+    int s;
+    float a[4];
+    float b[4];
+    if ((unsigned)(k - 0x15) < 2) return 0;
+    s = *(int *)(g + 0x2084);
+    if (s == 0x6F || s == 0x6D || s == 0x6E || s == 0x6A) return 0;
+    ret = 0;
+    if (*(unsigned char *)(g + 0x12E4) != 0) {
+        if (k == 0x11) {
+            if (*(int *)(g + 0x2088) != 1) {
+                if (0.0f < *(float *)(g + 0x108)) {
+                    if (*(float *)(g + 0x2F0) - 0.4f < *(float *)(g + 0x88))
+                        ret = 1;
+                }
+            }
+        } else if (k != 0x12 && k != 3) {
+            float lim = 0.2f;
+            float r;
+            if (lim < FastAbsF(*(float *)(g + 0xE8)) + 0.07f)
+                lim = FastAbsF(*(float *)(g + 0xE8)) + 0.07f;
+            r = FastAbsF(*(float *)(g + 0x2F0) - (*(float *)(g + 0x88) + 0.45f));
+            if (r < lim) {
+                int k2 = *(int *)(g + 0x208C);
+                if (!(k2 == 4 && *(short *)(g + 0x41E) == 0)) {
+                    if (0.8f < *(float *)(g + 0x22A4)) {
+                        if (*(float *)(g + 0x108) < 0.0f)
+                            ret = 1;
+                    }
+                }
+            }
+            {
+                char *q = (char *)D_0013E633 + 0xE1D;
+                if (*(float *)(q + 0x88) < *(float *)(q + 0x2F0) - 0.8f) {
+                    if (*(int *)(q + 0x208C) != 4 || *(short *)(q + 0x41E) != 0)
+                        ret = 1;
+                }
+            }
+        }
+    }
+    {
+        char *h = (char *)D_0013E633 + 0xE1D;
+        float lim2 = 0.27f;
+        if (lim2 < FastAbsF(*(float *)(h + 0xE8)) + 0.07f)
+            lim2 = FastAbsF(*(float *)(h + 0xE8)) + 0.07f;
+        if (*(int *)(h + 0x2084) == 0x12) {
+            if (*(short *)(h + 0x41E) != 0) {
+                if (*(float *)(h + 0x88) < *(float *)(h + 0x2F0) - 0.7f)
+                    ret = 1;
+            }
+        }
+    }
+    {
+        char *p = (char *)D_0013E633 + 0xE1D;
+        int kk = *(int *)(p + 0x208C);
+        int t;
+        float f12v;
+        int s2;
+        if ((unsigned)(kk - 0x11) < 2 || kk == 7 || kk == 0x14 || *(int *)(p + 0x2084) == 0x12)
+            goto done;
+        t = *(int *)&D_L05_0015F6B0;
+        if (t & 0xF) goto done;
+        f12v = 4.0f;
+        if ((t & 0x3F) == 0) f12v = 16.0f;
+        func_L00_00212D70(a, b, 0, f12v, 1.3f);
+        if (func_L00_001EFFF0(a, b, 2, *(int *)(p + 0x2080), 0) == 0) goto done;
+        s2 = CollType();
+        *(short *)(p + 0x12E0) = s2;
+        if ((s2 << 16) != 0) goto done;
+        a[2] = D_L05_00174368 - 0.01f;
+        if (func_L00_001EFFF0(a, b, 2, *(int *)(p + 0x2080), 0) != 0) goto done;
+        func_L05_0024D680(0x34, 1);
+        return 1;
+    }
+done:
+    if (ret) {
+        func_L05_0024D680(0x37, 1);
+        func_L00_00217570(3, 0);
+    }
+    return ret;
+}
 INCLUDE_ASM("asm/overlays", func_L05_002523C8);
 INCLUDE_ASM("asm/overlays", func_L05_00254030);
 INCLUDE_ASM("asm/overlays", func_L05_00254328);

@@ -51,15 +51,22 @@ from libgcc_units import (MODULES, FUNCTIONS as LIBGCC_FUNCTIONS, SEGMENT_SOURCE
                           object_of)
 from organize_asm import LISTS, entries
 from toolchain import TC, make_sn, sn, start_wineserver
-from levels import NUM_LEVELS, dirname as level_dirname, title as level_title
+from levels import NUM_LEVELS, dirname as level_dirname, level_of_dir, title as level_title
+
+SHARED_TITLE = "Shared level code"
+
+
+def is_level_unit(unit: dict) -> bool:
+    """A level-code unit (src/overlays/), by category, whatever its name."""
+    return "level_code" in (unit.get("metadata") or {}).get("progress_categories", [])
 
 REPORT = Path("progress/report.json")
 BASEROM = "baserom/SCES_509.16"
 LINKED_ELF = "build-sn/rac1.elf"
 
-# Level code overlays (docs/OVERLAYS.md, "Plan" step 3): src/overlays/shared/
-# and src/overlays/lNN_<planet>/ get one unit per file, alongside the
-# executable's own units. The level directories and their labels come from
+# Level code overlays (docs/OVERLAYS.md, "Plan" step 3): each file of
+# src/overlays/shared/ is a unit, and each src/overlays/lNN_<planet>/ is one
+# unit named after its level, alongside the executable's own units. The level directories and their labels come from
 # tools/levels.py.
 OVERLAYS_SRC = Path("src/overlays")
 OVERLAYS_CATALOGUE = Path("config/overlays/functions.tsv")
@@ -230,46 +237,62 @@ def overlay_file_map() -> dict[Path, list[tuple[str, bool]]]:
             for path in sorted(directory.glob("*.c"))}
 
 
+def _build_and_check(path: Path, c_names: list[str]) -> tuple[Path, dict[str, float] | str]:
+    """One file of overlay_match_results(): {name: 100.0/0.0}, or the build
+    log's tail when it fails. Top-level so a process pool can run it."""
+    import try_func
+    import overlay_check
+    lines = path.read_text(errors="replace").splitlines()
+    candidate = "\n".join(lines) + "\n"
+    work = WORK_ROOT / path.parent.name / path.stem    # several levels have a variants.c
+    # Build the whole file exactly once, as it stands (splicing the
+    # file's own text back over itself), through try_func's "text"
+    # pipeline -- the same recipe a single-function candidate goes
+    # through, just covering every line instead of one stub's range.
+    obj = try_func.build(c_names[0], "text", path, 0, len(lines) - 1, candidate, work)
+    if obj is None:
+        return path, (work / "log.txt").read_text(errors="replace")[-3000:]
+    return path, {n: 100.0 if overlay_check.check(obj, n) == "EXACT" else 0.0 for n in c_names}
+
+
 def overlay_match_results(file_map: dict) -> dict[str, float]:
     """name -> 100.0 or 0.0 for every overlay function in FILE_MAP
     (docs/OVERLAYS.md, "Plan" step 3): only a C-defined function can score
     100, and only when tools/overlay_check.py says EXACT for it, built
     exactly the way tools/try_func.py builds an overlay function (its
     build() for the "text" segment pipeline). Needs the toolchain, so this
-    is only ever called from generate(), never from check()."""
-    import try_func
-    import overlay_check
+    is only ever called from generate(), never from check(). Files build
+    in parallel, one per CPU: each has its own work directory."""
+    from concurrent.futures import ProcessPoolExecutor
 
     out = {}
+    jobs = []
     for path, fns in file_map.items():
-        c_names = [n for n, is_c in fns if is_c]
         for n, is_c in fns:
             if not is_c:
                 out[n] = 0.0
-        if not c_names:
-            continue
-        lines = path.read_text(errors="replace").splitlines()
-        candidate = "\n".join(lines) + "\n"
-        work = WORK_ROOT / path.stem
-        # Build the whole file exactly once, as it stands (splicing the
-        # file's own text back over itself), through try_func's "text"
-        # pipeline -- the same recipe a single-function candidate goes
-        # through, just covering every line instead of one stub's range.
-        obj = try_func.build(c_names[0], "text", path, 0, len(lines) - 1, candidate, work)
-        if obj is None:
-            log = (work / "log.txt").read_text(errors="replace")
-            sys.exit(f"*** {path}: failed to build for the progress report -- "
-                     f"NOT writing a report:\n{log[-3000:]}")
-        for n in c_names:
-            out[n] = 100.0 if overlay_check.check(obj, n) == "EXACT" else 0.0
+        c_names = [n for n, is_c in fns if is_c]
+        if c_names:
+            jobs.append((path, c_names))
+    start_wineserver()      # one server for the pool, or Wine processes race to start one
+    with ProcessPoolExecutor(max_workers=os.cpu_count() or 4) as pool:
+        results = list(pool.map(_build_and_check, *zip(*jobs))) if jobs else []
+    failed = [(path, r) for path, r in results if isinstance(r, str)]
+    if failed:
+        for path, log in failed:
+            print(f"*** {path}: failed to build for the progress report:\n{log}", file=sys.stderr)
+        sys.exit(f"*** {len(failed)} file(s) failed to build -- NOT writing a report")
+    for _path, r in results:
+        out.update(r)
     return out
 
 
 def overlay_units(file_map: dict, fuzzy: dict) -> tuple[list[dict], list, dict, dict, int, int]:
     """(out_units, all_items, cat_items, cat_complete, complete_units,
-    complete_code) for src/overlays/shared/ and src/overlays/lNN_<planet>/: one unit
-    per file, its functions the file's INCLUDE_ASM'd or defined
-    func_LNN_XXXXXXXX names in file order (docs/OVERLAYS.md, "Plan" step 3).
+    complete_code) for src/overlays/shared/ (one unit per file, "Shared level
+    code/<file>") and src/overlays/lNN_<planet>/ (one unit per level, named
+    after it): a unit's functions are its files' INCLUDE_ASM'd or defined
+    func_LNN_XXXXXXXX names in address order (docs/OVERLAYS.md, "Plan" step 3).
     cat_items/cat_complete cover "level_code", "common", "levels" and "level_NN" -- a
     level file's items count under both "levels" and its own "level_NN"."""
     catalogue = overlay_catalogue()
@@ -283,7 +306,12 @@ def overlay_units(file_map: dict, fuzzy: dict) -> tuple[list[dict], list, dict, 
     complete_units = 0
     complete_code = 0
 
+    # decomp.dev lays its treemap out in report order and draws no border
+    # around a group, so a level is one unit (one box, its functions inside)
+    # and the shared code stays one unit per file, all side by side.
     for directory, cats in overlay_dirs():
+        shared = directory.name == "shared"
+        groups = []     # [(unit name, source path, rows)]
         for path in sorted(directory.glob("*.c")):
             fns = file_map[path]
             if not fns:
@@ -295,6 +323,14 @@ def overlay_units(file_map: dict, fuzzy: dict) -> tuple[list[dict], list, dict, 
                 _kind, size = catalogue[name]
                 m = OVERLAY_NAME.match(name)
                 rows.append((name, int(m.group(2), 16), size, is_c))
+            if shared:
+                groups.append((f"{SHARED_TITLE}/{path.stem}", path.as_posix(), rows))
+            elif groups:
+                groups[0][2].extend(rows)
+            else:
+                groups.append((level_title(level_of_dir(directory.name)), directory.as_posix(), rows))
+        for uname, source, rows in groups:
+            rows.sort(key=lambda r: r[1])
             start = rows[0][1]
             items = [(size, fuzzy.get(name, 0.0), fuzzy.get(name, 0.0) == 100.0)
                      for name, _addr, size, _is_c in rows]
@@ -308,7 +344,6 @@ def overlay_units(file_map: dict, fuzzy: dict) -> tuple[list[dict], list, dict, 
                 cat_items[cat] += items
                 if complete:
                     cat_complete[cat] += code
-            uname = "overlays/" + path.relative_to(OVERLAYS_SRC).with_suffix("").as_posix()
             out_units.append({
                 "name": uname,
                 "measures": measures(items, 1, int(complete), code if complete else 0),
@@ -322,7 +357,7 @@ def overlay_units(file_map: dict, fuzzy: dict) -> tuple[list[dict], list, dict, 
                 } for name, addr, size, is_c in rows],
                 "metadata": {
                     "complete": complete,
-                    "source_path": path.as_posix(),
+                    "source_path": source,
                     "progress_categories": cats,
                 },
             })
@@ -520,7 +555,7 @@ def generate() -> dict:
          "measures": measures(cat_items["game"], complete_code=cat_complete["game"])},
         {"id": "libgcc", "name": "libgcc",
          "measures": measures(cat_items["libgcc"], complete_code=cat_complete["libgcc"])},
-        {"id": "common", "name": "Common level code",
+        {"id": "common", "name": SHARED_TITLE,
          "measures": measures(overlay_cat_items["common"], complete_code=overlay_cat_complete["common"])},
         {"id": "levels", "name": "Level-specific code",
          "measures": measures(overlay_cat_items["levels"], complete_code=overlay_cat_complete["levels"])},
@@ -550,7 +585,7 @@ def check() -> None:
     # restricted to the executable's units so a level-code function that
     # becomes EXACT (checked separately below) can't look like a retail
     # function whose source disappeared.
-    in_report = {f["name"] for u in report["units"] if not u["name"].startswith("overlays/")
+    in_report = {f["name"] for u in report["units"] if not is_level_unit(u)
                  for f in u["functions"] if f.get("fuzzy_match_percent", 0) > 0}
     original_asm = classified_asm()
     have = with_source() | original_asm.keys()
@@ -577,7 +612,7 @@ def check() -> None:
     # gone stale about which functions have C.
     _overlay_map, have_c = overlay_c_functions()
     reported_c = {f["name"] for u in report["units"] for f in u["functions"]
-                  if u["name"].startswith("overlays/")
+                  if is_level_unit(u)
                   and f.get("fuzzy_match_percent", 0) == 100.0}
     stale_new_c = sorted(have_c - reported_c)
     stale_gone_c = sorted(reported_c - have_c)

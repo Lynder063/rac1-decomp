@@ -4,7 +4,59 @@
 
 INCLUDE_ASM("asm/overlays", func_L00_00221A98);
 INCLUDE_ASM("asm/overlays", func_L00_00221D50);
-INCLUDE_ASM("asm/overlays", func_L00_002222F0);
+extern unsigned char D_0013E633[] NOT_SDA;
+extern float D_0015EE6C MACRO_ADDR;
+extern float D_0015EE64 MACRO_ADDR;
+extern float func_001F9CB8(void *);
+extern int func_001F9850(int);
+extern float func_001F9D48(void *, void *);
+extern float func_L00_001FF860(float, float);
+extern float func_L00_0025C918(float *p, float *v, float t, float u1, float u2, float eps);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+
+// Steers the player's slide: starts it when a dash ends near a wall, then aims its velocity.
+void func_L00_002222F0(void) {
+    char *q = (char *)D_0013E633 + 0xE1D;
+    char *p;
+    char *r;
+    float t0;
+    float d;
+    float lim;
+    float ang;
+    int s;
+
+    if (*(unsigned char *)(q + 0x257) != 0
+        && *(float *)(q + 0x2DC) > 0.0f
+        && *(float *)(q + 0x160) < D_0015EE6C * 3.0f
+        && FastVecLength(q + 0xE0) < D_0015EE6C * 3.0f
+        && *(float *)(q + 0x229C) < 0.2f) {
+        s = *(int *)(q + 0x208C);
+        if (s == 0 || s == 2 || s == 4 || s == 10 || s == 1) {
+            s = scale_ticks(5);
+            r = (char *)D_0013E633 + 0xE1D;
+            *(short *)(r + 0x1EA) = s;
+        }
+    }
+    p = (char *)D_0013E633 + 0xE1D;
+    if (*(short *)(p + 0x1EA) != 0) {
+        d = func_001F9D48(p + 0x80, p + 0x210);
+        lim = *(float *)(p + 0x234) * 0.9f;
+        if (d < lim) {
+            ang = func_L00_001FF860(*(float *)(p + 0x80) - *(float *)(p + 0x210), *(float *)(p + 0x84) - *(float *)(p + 0x214));
+            if (d < *(float *)(p + 0x234) * 0.05f) {
+                ang = *(float *)(p + 0x98);
+            }
+            t0 = d - lim;
+            func_L00_0025C918(&t0, (float *)(p + 0x244), 0.0f, D_0015EE64 * 0.03f, D_0015EE64 * 0.3f, D_0015EE6C * 2.8f);
+            *(float *)(p + 0xF0) = FastCos(ang) * *(float *)(p + 0x244);
+            *(float *)(p + 0xF4) = FastSin(ang) * *(float *)(p + 0x244);
+            *(float *)(p + 0xF8) = 0.0f;
+        }
+    } else {
+        *(int *)(p + 0x244) = 0;
+    }
+}
 extern int func_001F9850(int);
 extern int func_L00_00222580(void);
 int func_L00_00222520(void) {
@@ -17,7 +69,28 @@ int func_L00_00222520(void) {
     }
     return r;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00222580);
+extern unsigned char D_0013E633[] NOT_SDA;
+extern void func_L00_00211F80(int, float);
+extern float func_001FA790(float, float);
+extern float func_001FA850(float, float);
+
+// Classifies the stick direction into one of four quadrants (2, 3, 1 or 0).
+int func_L00_00222580(void) {
+    char *p;
+    float a;
+    int r = 2;
+    func_L00_00211F80(0, 1.0f);
+    p = (char *)D_0013E633 + 0xE1D;
+    a = FastSubRots(*(float *)(p + 0x180), *(float *)(p + 0x98));
+    if (FastDiffRots(a, 3.14159274f) < 0.785398185f) {
+        r = 3;
+    } else if (FastDiffRots(a, -1.57079637f) < 0.785398185f) {
+        r = 1;
+    } else if (FastDiffRots(a, 1.57079637f) < 0.785398185f) {
+        r = 0;
+    }
+    return r;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00222668);
 INCLUDE_ASM("asm/overlays", func_L00_002228E0);
 INCLUDE_ASM("asm/overlays", func_L00_00222B80);
@@ -53,8 +126,149 @@ int func_L00_00227E90(void) {
     return 0;
 }
 INCLUDE_ASM("asm/overlays", func_L00_00227F48);
-INCLUDE_ASM("asm/overlays", func_L00_00228180);
-INCLUDE_ASM("asm/overlays", func_L00_00228510);
+extern float func_001F9B88(float);
+extern void func_L00_00212D70(void *, void *, int, float, float);
+extern int func_L00_001EFFF0(void *, void *, int, int, int);
+extern int func_L00_001F3958(void);
+extern int func_L00_00217570(int a, int b);
+extern float D_L00_00173F68;
+extern int D_L00_0015F6B0 MACRO_ADDR;
+
+#define F(o) (*(float *)(p + (o)))
+#define I(o) (*(int *)(p + (o)))
+
+// Checks whether the player can grab a ledge or surface here; returns 1 when it does.
+int func_L00_00228180(void) {
+    char *p = (char *)D_0013E633 + 0xE1D;
+    char *q;
+    char *u;
+    int r;
+    float v1[4];
+    float v2[4];
+    float t;
+    float scale;
+    if (I(0x2084) == 0x6A) {
+        return 0;
+    }
+    r = 0;
+    if (*(unsigned char *)(p + 0x12E4) != 0) {
+        if (I(0x208C) == 0x11) {
+            if (I(0x2088) != 1) {
+                if (0.0f < F(0x108)) {
+                    if (F(0x2F0) - 0.4f < F(0x88)) {
+                        r = 1;
+                    }
+                }
+            }
+        } else if (I(0x208C) != 0x12 && I(0x208C) != 3) {
+            t = 0.2f;
+            if (t < FastAbsF(F(0xE8)) + 0.07f) {
+                t = FastAbsF(F(0xE8)) + 0.07f;
+            }
+            if (FastAbsF(F(0x2F0) - (F(0x88) + 0.45f)) < t) {
+                if (I(0x208C) != 4 || *(short *)(p + 0x41E) != 0) {
+                    if (0.8f < F(0x22A4) && F(0x108) < 0.0f) {
+                        r = 1;
+                    }
+                }
+            }
+            q = (char *)D_0013E633 + 0xE1D;
+            if (*(float *)(q + 0x88) < *(float *)(q + 0x2F0) - 0.8f) {
+                if (*(int *)(q + 0x208C) != 4 || *(short *)(q + 0x41E) != 0) {
+                    r = 1;
+                }
+            }
+        }
+    }
+    p = (char *)D_0013E633 + 0xE1D;
+    t = 0.27f;
+    if (t < FastAbsF(F(0xE8)) + 0.07f) {
+        t = FastAbsF(F(0xE8));
+    }
+    if (I(0x2084) == 0x12) {
+        if (*(short *)(p + 0x41E) != 0) {
+            if (F(0x88) < F(0x2F0) - 0.7f) {
+                r = 1;
+            }
+        }
+    }
+    u = (char *)D_0013E633 + 0xE1D;
+    if (*(int *)(u + 0x208C) - 0x11 >= 2u && *(int *)(u + 0x208C) != 7 && *(int *)(u + 0x208C) != 0x14 && *(int *)(u + 0x2084) != 0x12
+        && (D_L00_0015F6B0 & 0xF) == 0) {
+        scale = 4.0f;
+        if ((D_L00_0015F6B0 & 0x3F) == 0) {
+            scale = 16.0f;
+        }
+        func_L00_00212D70(v1, v2, 0, scale, 1.3f);
+        if (func_L00_001EFFF0(v1, v2, 2, *(int *)(u + 0x2080), 0) != 0) {
+            int s = CollType();
+            *(short *)(u + 0x12E0) = s;
+            if ((short)s == 0) {
+                v1[2] = D_L00_00173F68 - 0.01f;
+                if (func_L00_001EFFF0(v1, v2, 2, *(int *)(u + 0x2080), 0) == 0) {
+                    func_L00_00222B80(0x34, 1);
+                    return 1;
+                }
+            }
+        }
+    }
+    if (r != 0) {
+        func_L00_00222B80(0x37, 1);
+        func_L00_00217570(3, 0);
+    }
+    return r;
+}
+extern float func_001F9B88(float);
+extern float func_00214D28(float *p, float target, float maxstep);
+extern float D_0015EE60 MACRO_ADDR;
+
+// Integrates and damps the player's camera-offset spring values and stores the resulting height.
+void func_L00_00228510(void) {
+    char *p = (char *)D_0013E633 + 0xE1D;
+    if (scale_ticks(10) < *(int *)(p + 0x198) || *(float *)(p + 0x690) < 0.0f ||
+        *(int *)(p + 0x2094) == 0x11 || *(int *)(p + 0x20A0) == 0x11) {
+        char *u = (char *)D_0013E633 + 0xE1D;
+        if (*(int *)(u + 0x2084) == 0x36) {
+            func_L00_0025C918((float *)(u + 0x690), (float *)(u + 0x8FC), 0.0f,
+                              D_0015EE64 * 0.03f, D_0015EE64 * 0.3f,
+                              D_0015EE6C * 1.5f);
+            *(float *)(u + 0x694) = 0.0f;
+        } else {
+            *(float *)(u + 0x694) = *(float *)(u + 0x694) -
+                (D_0015EE64 * 0.005f * *(float *)(u + 0x690) +
+                 D_0015EE60 * 0.045f * *(float *)(u + 0x694));
+            if (FastAbsF(*(float *)(u + 0x690)) < 0.001f && *(float *)(u + 0x694) < 0.0001f) {
+                *(float *)(u + 0x694) = 0.0f;
+            }
+        }
+    }
+    {
+        char *q = (char *)D_0013E633 + 0xE1D;
+    *(float *)(q + 0x690) = *(float *)(q + 0x690) + *(float *)(q + 0x694);
+    if (*(int *)(q + 0x2084) == 0x36) {
+        if (0.0f < *(float *)(q + 0x690)) {
+            if (0.0f < *(float *)(q + 0x694)) {
+                *(float *)(q + 0x694) = 0.0f;
+            }
+            func_00214D28((float *)(q + 0x690), 0.0f, D_0015EE6C * 0.7f);
+        }
+    }
+    }
+    {
+        char *r = (char *)D_0013E633 + 0xE1D;
+    if (*(int *)(r + 0x2084) != 0x7F) {
+        float a = *(float *)(r + 0x2F0);
+        if (*(int *)(r + 0x208C) == 0x16) {
+            a = *(float *)(r + 0x8A0);
+        }
+        func_L00_0025C918((float *)(r + 0x69C), (float *)(r + 0x6A0), a,
+                          D_0015EE64 * 0.027f, D_0015EE64 * 0.3f, 0.0f);
+    }
+    }
+    {
+        char *t = (char *)D_0013E633 + 0xE1D;
+    *(float *)(t + 0x88) = *(float *)(t + 0x69C) + -0.12f + *(float *)(t + 0x690);    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00228770);
 extern int D_0013A5E0[];
 

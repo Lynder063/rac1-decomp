@@ -3,7 +3,31 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L08_002E0258);
-INCLUDE_ASM("asm/overlays", func_L08_002E15A0);
+extern char D_L08_00167640[];
+extern void func_00215C00(void *, float, float, float);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern float func_001F9C78(void *, void *);
+extern float func_001F9F90(float);
+
+/* finds the first of eight linked entries whose direction lines up with the moby */
+int func_L08_002E15A0(char *m) {
+    float a[4];
+    float b[4];
+    int *p = (int *)(*(char **)(m + 0x78) + 0x60);
+    int i;
+    for (i = 0; i < 8; i++) {
+        if (p[i] != 0) {
+            float d;
+            func_00215C00(a, 1.0f, *(float *)(m + 0x48), -*(float *)(m + 0x44));
+            FastVecSub(b, (char *)p[i] + 0x10, D_L08_00167640);
+            func_L00_001FF4B0(b, b, 1.0f);
+            d = FastVecDot(b, a);
+            if (FastCos(0.06981317f) < d) return p[i];
+        }
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L08_002E16A0);
 extern void func_L08_00231228(int, int);
 
@@ -12,7 +36,30 @@ void func_L08_002E2A10(char *arg) {
     func_L08_00231228(0x32, 1);
 }
 INCLUDE_ASM("asm/overlays", func_L08_002E2A38);
-INCLUDE_ASM("asm/overlays", func_L08_002E3010);
+extern void *func_0020D348(int);
+extern void func_L00_00250800(void *, int, void *);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_00251E30(void *);
+extern char D_0013E633[];
+
+// Spawns a moby of a class, copies the parent's position, and aims it at the parent's attach point.
+void *func_L08_002E3010(char *parent, int oClass, int joint, int pjoint) {
+    unsigned char *m = CreateMoby(oClass);
+    float v0[4], v10[4];
+    if (m != 0) {
+        m[0x30] = 0xFF;
+        *(short *)(m + 0x32) = 0xFF;
+        m[0x31] = 1;
+        *(unsigned short *)(m + 0x34) |= 0x4000;
+        *(long *)(m + 0x38) = *(long *)(*(char **)(D_0013E633 + 0x2E9D) + 0x38);
+        qcopy(m + 0x40, parent + 0x40);
+        func_L00_00250800(m, joint, v0);
+        func_L00_00250800(parent, pjoint, v10);
+        FastVecSub(m + 0x10, v10, v0);
+        func_L00_00251E30(m);
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L08_002E30E8);
 INCLUDE_ASM("asm/overlays", func_L08_002E33F0);
 INCLUDE_ASM("asm/overlays", func_L08_002E35C8);
@@ -20,10 +67,77 @@ INCLUDE_ASM("asm/overlays", func_L08_002E3860);
 INCLUDE_ASM("asm/overlays", func_L08_002E4118);
 INCLUDE_ASM("asm/overlays", func_L08_002E4168);
 INCLUDE_ASM("asm/overlays", func_L08_002E4BE8);
-INCLUDE_ASM("asm/overlays", func_L08_002E6130);
+extern void func_001F9CA0(void *, void *, void *);
+extern void func_001F9BC0(void *);
+extern void func_002153E8(void *, void *);
+extern void func_001FA218(float *, float *);
+
+/* builds a basis from a direction vector and writes the orientation into the moby */
+void func_L08_002E6130(char *a, float *v) {
+    float m[16];
+    float n[16];
+    float r[4];
+    float s[4];
+    char *d = *(char **)(a + 0x78);
+    r[1] = v[2];
+    r[2] = v[0];
+    r[0] = -v[1];
+    FastVecCross(r, v, r);
+    FastVecCross(s, r, v);
+    qcopy(m, r);
+    qcopy(m + 4, s);
+    qcopy(m + 8, v);
+    clear_u64_value(m + 12);
+    d += 0x10;
+    m[15] = 1.0f;
+    func_002153E8(m, d);
+    func_001FA218(n, (float *)d);
+    n[15] = 42.0f;
+}
 INCLUDE_ASM("asm/overlays", func_L08_002E6208);
 INCLUDE_ASM("asm/overlays", func_L08_002E6500);
-INCLUDE_ASM("asm/overlays", func_L08_002E9B60);
+/* spawns the child mobys this object owns and fills its part table */
+void func_L08_002E9B60(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    char *e = data + 0xBC;
+    int i = 0;
+    char *c;
+    char *c2;
+    char *c3;
+    *(char **)(data + 0x60) = moby;
+    *(int *)(data + 0x64) = 0;
+    *(int *)(data + 0x68) = 0;
+    *(int *)(data + 0x6C) = 0;
+    *(char **)(data + 0x90) = func_L08_002E3010(moby, 0x1C0, 1, 0);
+    *(char **)(data + 0x94) = moby;
+    *(int *)(data + 0x98) = 1;
+    *(int *)(data + 0x9C) = 0;
+    c = func_L08_002E3010(moby, 0x1BD, 0, 2);
+    *(char **)(data + 0x70) = c;
+    *(int *)(data + 0x7C) = 2;
+    *(char **)(data + 0x74) = moby;
+    *(int *)(data + 0x78) = 0;
+    *(float *)(c + 0x2C) = *(float *)(*(char **)(c + 0x24) + 0x24) * 0.75f;
+    c2 = func_L08_002E3010(moby, 0x1BA, 1, 1);
+    *(char **)(data + 0x80) = c2;
+    *(char **)(data + 0x84) = moby;
+    *(int *)(data + 0x88) = 1;
+    *(int *)(data + 0x8C) = 1;
+    c3 = func_L08_002E3010(c2, 0x1B9, 0, 0);
+    *(char **)(data + 0xA0) = c3;
+    *(char **)(data + 0xA4) = *(char **)(data + 0x80);
+    *(int *)(data + 0xA8) = 0;
+    *(int *)(data + 0xAC) = 0;
+    do {
+        int j = i + 2;
+        i++;
+        *(char **)(e - 0xC) = func_L08_002E3010(*(char **)(data + 0x90), 0x1BB, 0, j);
+        *(char **)(e - 8) = *(char **)(data + 0x90);
+        *(int *)(e - 4) = 0;
+        *(int *)e = j;
+        e += 0x10;
+    } while (i < 8);
+}
 INCLUDE_ASM("asm/overlays", func_L08_002E9CB0);
 extern void func_L00_00250800(void *, int, void *);
 extern void func_001F9BF0(void *, void *, void *);

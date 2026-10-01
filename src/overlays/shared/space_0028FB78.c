@@ -2,7 +2,38 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L00_0028FB78);
+extern void func_L00_0028FC68(void);
+extern short D_L00_00160600;
+extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
+extern char D_0013E130_a[] __asm__("D_0013E130") NOT_SDA;
+extern void func_L00_0028F458(void);
+extern void func_00213D28(void *, int, int);
+
+/* Start the moby's camera-follow state: stash it in the global record, point its update at func_L00_0028F458. */
+void func_L00_0028FB78(char *m) {
+    char *g;
+    int *src;
+    *(int *)&D_L00_00160600 = 1;
+    func_L00_0028FC68();
+    if (D_0015EE84_m == 0xD) {
+        char *q = D_0013E130_a;
+        *(float *)(q + 0x60) = 464.66f;
+        *(float *)(q + 0x64) = 580.68f;
+        *(float *)(q + 0x68) = 316.72f;
+        *(float *)(q + 0x78) = 2.77f;
+    }
+    g = D_0013E130_a;
+    *(short *)(g + 0x26) = *(unsigned short *)(m + 0xA6) - 0x213;
+    *(char **)g = m;
+    *(void **)(m + 0x74) = func_L00_0028F458;
+    *(unsigned short *)(m + 0x34) &= 0xFFFC;
+    *(int *)(m + 0x94) = *(int *)(*(int *)(m + 0x24) + 0x10);
+    func_00213D28(m, 1, 0);
+    src = *(int **)(m + 0x78);
+    *(int *)(g + 0x30) = src[0];
+    *(int *)(g + 0x34) = src[1];
+    *(int *)(g + 0x38) = src[2];
+}
 extern char *D_0013E130;
 void func_L00_0028FC68(void) {
     char *m = D_0013E130;

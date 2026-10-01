@@ -75,7 +75,34 @@ INCLUDE_ASM("asm/overlays", func_L01_00300F00);
 INCLUDE_ASM("asm/overlays", func_L01_003010A8);
 INCLUDE_ASM("asm/overlays", func_L01_00301198);
 INCLUDE_ASM("asm/overlays", func_L01_00303590);
-INCLUDE_ASM("asm/overlays", func_L01_00303700);
+extern int func_L00_0025A208(int *, int, int, int);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+
+/* creates a moby from the owner's template and initialises its data */
+char *func_L01_00303700(char *owner) {
+    char *moby = 0;
+    char *data;
+    func_L00_0025A208((int *)&moby, **(int **)(owner + 0x78), 0, 0);
+    data = *(char **)(moby + 0x78);
+    ((unsigned char *)moby)[0x30] = 0x80;
+    *(short *)(moby + 0x32) = 0x80;
+    *(unsigned long *)(moby + 0x38) = *(unsigned long *)(owner + 0x38);
+    moby[0x31] = 1;
+    *(int *)(moby + 0x94) = *(int *)(*(char **)(moby + 0x24) + 0x10);
+    *(unsigned short *)(moby + 0x34) |= 0x1020;
+    *(float *)(moby + 0x2C) = *(float *)(*(char **)(moby + 0x24) + 0x24);
+    {
+        char *m = moby;
+        qcopy(m + 0x10, owner + 0x10);
+        qcopy(m + 0x40, owner + 0x40);
+    }
+    *(float *)(data + 0x20) = 3.0f;
+    *(float *)(data + 0x250) = 1.0f;
+    *(int *)(data + 0x170) = func_001FA898_r(819.2f);
+    *(float *)(data + 0x224) = 30.0f;
+    ((void (*)(void *))func_L00_00251E30)(moby);
+    return moby;
+}
 extern char *func_L00_0025B478(void *, int, int);
 extern void func_0020D678(void *);
 
@@ -85,7 +112,27 @@ void func_L01_00309020(void *arg) {
         DeleteMoby(arg);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L01_0030AFD0);
+extern char D_L01_00203040[];
+extern int D_L01_0015F6B0 MACRO_ADDR;
+extern void func_L00_00237B70(void);
+extern void func_L01_002BA898(int, void *);
+extern float func_001FA888(int);
+extern float func_001F9FA8(float);
+
+/* draw callback: pulses three colour entries from a sine of the frame counter */
+void func_L01_0030AFD0(void) {
+    float *p;
+    float v;
+    int i;
+    DefaultVtbl_DeleteMoby();
+    func_L01_002BA898(3, D_L01_00203040);
+    v = FastSin((func_001FA888(D_L01_0015F6B0 & 0x3F) - 32.0f) * 0.09817477f) * 0.5f + 0.5f;
+    p = (float *)(D_L01_00203040 + 0x11C);
+    for (i = 2; i >= 0; i--) {
+        *p = v;
+        p -= 24;
+    }
+}
 extern void func_L01_0030AFD0(void);
 extern void func_001F49B0(void *, void *);
 
@@ -138,5 +185,29 @@ void func_L01_003102F0(int n, char *pts, char *nrm, int unused, float *out) {
         out[i * 2 + 1] = (v2[1] / len + 0.5f) * 2.0f + D_L01_001621A4;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L01_003104B8);
+extern int func_001F4868(int);
+extern void func_00234C98(int, long);
+extern void func_001F7868(void);
+extern void func_L01_003102F0(int n, char *pts, char *nrm, int unused, float *out);
+extern void func_L00_001FDE48(int, int, int, void *, int);
+extern int D_L01_00203160[];
+extern char *D_L01_002083F8[];
+extern char *D_L01_002083C8[];
+extern int D_L01_002083E0[];
+extern float D_L01_00208430[];
+extern int D_L01_00208410[];
+
+/* Draw callback: sets up draw state, then draws five shapes from parallel tables. */
+void func_L01_003104B8(void) {
+    int i;
+    VU1_addGSregister(6, GetEffectTex(0x28));
+    VU1_addGSregister(0x42, 0x2000000064L);
+    VU1_addGSregister(8, 0);
+    VU1_addGSregister(0x14, 0xFF9000000260L);
+    func_001F7868();
+    for (i = 4; i >= 0; i--) {
+        func_L01_003102F0(D_L01_00203160[4 - i], D_L01_002083F8[4 - i], D_L01_002083C8[4 - i], D_L01_002083E0[4 - i], D_L01_00208430);
+        func_L00_001FDE48(D_L01_00203160[4 - i], (int)D_L01_002083C8[4 - i], D_L01_00208410[4 - i], D_L01_00208430, 1);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_003105E0);

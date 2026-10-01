@@ -2,5 +2,40 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L17_00270A28);
+extern int func_002140B0(int);
+extern int func_001F9850(int);
+extern unsigned char *func_00218928(int);
+extern void func_001F9BF0(void *, void *, void *);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern unsigned char *D_L17_001B2D54;
+
+// Spawns a class 0x4F particle at a position with a direction, optionally relative to a parent.
+unsigned char *func_L17_00270A28(char *parent, void *pos, float *vec) {
+    int r = random_integer_below(5);
+    unsigned char a = scale_ticks(r + 2);
+    unsigned char b = random_integer_below(0xFF);
+    unsigned char *p = func_00218928(0x4F);
+    if (p != 0) {
+        char *d = (char *)p + 0x20;
+        qcopy(p + 0x10, pos);
+        *(float *)(d + 0x10) = vec[0];
+        *(float *)(d + 0x14) = vec[1];
+        *(float *)(d + 0x18) = vec[2];
+        if (parent != 0) {
+            FastVecSub(d, p + 0x10, parent + 0x10);
+            *(short *)(p + 0xA) = a;
+        } else {
+            *(short *)(p + 0xA) = a << 2;
+        }
+        *(char **)(d + 0x1C) = parent;
+        *(int *)(p + 4) = 0x604040FF;
+        p[9] = func_001FA898_r(1.0f) + 0x20;
+        p[3] = 0x48;
+        *(float *)(p + 0xC) = 42000.0f;
+        p[8] = b;
+        p[1] = 0;
+        p[2] = *D_L17_001B2D54;
+    }
+    return p;
+}
 INCLUDE_ASM("asm/overlays", func_L17_00270C98);

@@ -28,8 +28,57 @@ INCLUDE_ASM("asm/overlays", func_L00_001ED3D4);
 INCLUDE_ASM("asm/overlays", func_L00_001ED428);
 INCLUDE_ASM("asm/overlays", func_L00_001ED460);
 INCLUDE_ASM("asm/overlays", func_L00_001ED464);
-INCLUDE_ASM("asm/overlays", func_L00_001ED5B0);
-INCLUDE_ASM("asm/overlays", func_L00_001ED600);
+typedef struct {
+    int key;
+    int pad[4];
+} E;
+extern E D_L00_001EAC00[];
+
+/* Returns the index of the entry with the given key, or of the -1 terminator. */
+int func_L00_001ED5B0(int key) {
+    int i = 0;
+    while (D_L00_001EAC00[i].key != -1 && D_L00_001EAC00[i].key != key) {
+        i++;
+    }
+    return i;
+}
+extern char *func_L00_001EB578(int);
+extern void func_001ED818(void);
+extern void func_001EC270(void *);
+extern void func_001EC038(void);
+extern char D_L00_00169210[];
+extern char D_0013E633[];
+
+/* resets the camera behind the hero */
+void func_L00_001ED600(void) {
+    char *g = (char *)&D_L00_00166D80;
+    float *s, *d, *t, *u;
+    char *a;
+    if (*(char **)(g + 0x180) != 0) {
+        *(short *)(*(char **)(g + 0x180) + 0x8E) = 0;
+        *(*(char **)(g + 0x180) + 0x7D) = 0;
+        *(short *)(*(char **)(g + 0x180) + 0x7E) = 0;
+    }
+    *(char **)(g + 0x180) = func_L00_001EB578(0);
+    *(short *)(*(char **)(g + 0x180) + 0x8E) = 1;
+    *(char **)(*(char **)(g + 0x180) + 0x70) = D_L00_00169210;
+    *(short *)(g + 0x270) = 0;
+    func_001ED818();
+    Camera_runSetupToNewCam(*(char **)(g + 0x180));
+    BackupCurrentCam();
+    a = *(char **)(g + 0x180);
+    s = (float *)(g + 0x140);
+    qcopy(s, a + 0x30);
+    d = (float *)(a + 0x64);
+    d[0] = s[0];
+    d[1] = s[1];
+    d[2] = s[2];
+    t = (float *)(D_0013E633 + 0xE9D);
+    u = (float *)(g + 0x190);
+    u[0] = t[0];
+    u[1] = t[1];
+    u[2] = t[2];
+}
 INCLUDE_ASM("asm/overlays", func_L00_001ED6D8);
 extern float func_001F9F90(float);
 extern float func_001F9FA8(float);

@@ -6,4 +6,31 @@ INCLUDE_ASM("asm/overlays", func_L00_002297E0);
 INCLUDE_ASM("asm/overlays", func_L00_00229B78);
 INCLUDE_ASM("asm/overlays", func_L00_00229E30);
 INCLUDE_ASM("asm/overlays", func_L00_0022A0E0);
-INCLUDE_ASM("asm/overlays", func_L00_0022A268);
+typedef struct { char pad[0x24]; int v; char pad2[0x24]; } Rec;
+extern Rec D_L00_00179BC0[] __attribute__((section(".data")));
+extern char D_0013E633[];
+extern int func_L00_0020DB30(int);
+extern void func_L00_0020ED30(void);
+extern int func_L00_00222B80(int, int);
+extern int func_001F9850(int);
+extern void func_L00_00232C10(int, int, float);
+
+/* starts the pending global action if conditions hold; returns 1 on success */
+int func_L00_0022A268(void) {
+    char *p = D_0013E633 + 0xE1D;
+    if (*(unsigned char *)(p + 0x20A8) != 0 && *(unsigned char *)(p + 0x20AA) != 0 && *(short *)(p + 0x22C8) == 0) {
+        int i = func_L00_0020DB30(0);
+        int v;
+        if (i != *(int *)(p + 0x2298)) {
+            func_L00_0020ED30();
+            return 0;
+        }
+        v = D_L00_00179BC0[i].v;
+        if (func_L00_00222B80(0, 0) == 0) return 0;
+        func_L00_00232C10(v, 0, (float)scale_ticks(11));
+        if (*(int *)(p + 0xD08) != 0) *(int *)(p + 0xD14) = 1;
+        *(int *)(p + 0x2294) = v;
+        return 1;
+    }
+    return 0;
+}

@@ -4,5 +4,8 @@
 
 INCLUDE_ASM("asm/overlays", func_L00_001EB430);
 INCLUDE_ASM("asm/overlays", func_L00_001EB438);
-INCLUDE_ASM("asm/overlays", func_L00_001EB440);
+// Clears the word at offset 0xC of its argument.
+void func_L00_001EB440(int *a) {
+    a[3] = 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_001EB448);

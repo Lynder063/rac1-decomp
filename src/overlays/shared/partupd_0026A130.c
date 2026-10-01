@@ -2,10 +2,176 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L00_0026A130);
-INCLUDE_ASM("asm/overlays", func_L00_0026A398);
+extern void func_00215A10(float *arg0, int *arg1);
+extern void func_001F9BD8(void *, void *, void *);
+extern float func_001FA888(int);
+extern int func_001FA8A8(int, int, float);
+extern int func_001F9938(void *);
+extern void func_001F9C08(void *, void *, void *, float);
+extern void func_L00_002688A8(void *);
+extern int D_L00_0015F6B0 MACRO_ADDR;
+
+// Per-frame update of a particle that blends between keyframes (position, colour, size and timer).
+void func_L00_0026A130(char *m) {
+    char *q = m + 0x20;
+    float v[4];
+    float a[4];
+    float b[4];
+    float t;
+    if (D_L00_0015F6B0 & 1) {
+        m[8]++;
+    }
+    if (*(short *)(q + 0x10) != 0) {
+        *(volatile int *)0x10000000 = 0;
+        load_display_text_resource_entry(v, (int *)q);
+        FastVecAdd(m + 0x10, m + 0x10, v);
+        t = func_001FA888(*(short *)(m + 0xA));
+        t = t / func_001FA888(*(short *)(q + 0x10));
+        *(int *)(m + 4) = FastTweenColor(*(int *)(q + 8) & 0xFFFFFF, *(int *)(q + 8), 1.0f - t);
+        *(float *)(m + 0xC) = *(short *)(q + 0x16) * 1000;
+        if (FastDecTimer(m + 0xA)) {
+            *(short *)(q + 0x10) = 0;
+            *(unsigned short *)(m + 0xA) = *(unsigned short *)(q + 0x12);
+        }
+    } else if (*(short *)(q + 0x12) != 0) {
+        load_display_text_resource_entry(a, (int *)q);
+        load_display_text_resource_entry(b, (int *)(m + 0x24));
+        t = func_001FA888(*(short *)(m + 0xA));
+        t = t / func_001FA888(*(short *)(q + 0x12));
+        func_001F9C08(v, b, a, t);
+        FastVecAdd(m + 0x10, m + 0x10, v);
+        *(float *)(m + 0xC) = ((float)(*(short *)(q + 0x16) - *(short *)(q + 0x18)) * t +
+                               (float)*(short *)(q + 0x18)) * 1000.0f;
+        *(int *)(m + 4) = FastTweenColor(*(int *)(q + 0xC), *(int *)(q + 8), t);
+        if (FastDecTimer(m + 0xA)) {
+            *(short *)(q + 0x12) = 0;
+            *(unsigned short *)(m + 0xA) = *(unsigned short *)(q + 0x14);
+        }
+    } else {
+        int c;
+        load_display_text_resource_entry(v, (int *)(m + 0x24));
+        FastVecAdd(m + 0x10, m + 0x10, v);
+        c = *(int *)(q + 0xC) & 0xFFFFFF;
+        t = func_001FA888(*(short *)(m + 0xA));
+        t = t / func_001FA888(*(short *)(q + 0x14));
+        *(int *)(m + 4) = FastTweenColor(c, *(int *)(q + 0xC), t);
+        *(float *)(m + 0xC) = *(short *)(q + 0x18) * 1000;
+        if (FastDecTimer(m + 0xA)) {
+            KillPart(m);
+        }
+    }
+}
+extern int func_001F9850(int);
+extern int func_L00_001F10E0(float, void *, int, void *);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern float func_001F9D10(void *, void *);
+extern float func_L00_001FF860(float, float);
+extern float func_001FA790(float, float);
+extern float func_001F9B88(float);
+extern float func_001FA748(float, float);
+extern int func_L00_001EFFF0(void *, void *, int, int, int);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern int func_L00_00258BC8(int, int);
+extern float D_L00_001CBAC0[];
+extern char D_L00_00166EC0[];
+
+/* part type 3 update: spawn, drift toward a target, fade, and expire */
+void func_L00_0026A398(char *m) {
+    char *p = m + 0x20;
+    float v[4];
+    float d, a;
+    int t, s, k;
+    float *g;
+    char *q;
+    char *B;
+    t = *(int *)(p + 0x1C);
+    if (t >= 3) {
+        s = *(short *)(m + 0xA);
+        if (s > scale_ticks(0x78) && coll_sphere(7.99f, m + 0x10, 0x12, 0)) {
+            *(int *)(p + 0x14) = 1;
+            *(short *)(m + 0xA) = scale_ticks(0x78);
+            *(int *)(p + 0x1C) = -1;
+        } else {
+            *(int *)(p + 0x1C) = 0;
+        }
+    } else {
+        if (t < 0) goto after;
+        *(int *)(p + 0x1C) = t + 1;
+    }
+    if (*(int *)(p + 0x1C) >= 0) {
+        g = D_L00_001CBAC0;
+        *(float *)p = FastCos(g[1]) * g[5] / 2.5f;
+        *(float *)(p + 4) = FastSin(g[1]) * g[5] / 2.5f;
+        *(int *)(p + 8) = 0;
+        FastVecAdd(m + 0x10, m + 0x10, p);
+    }
+after:
+    q = D_L00_00166EC0;
+    B = q - 0x140;
+    d = FastVecDist(m + 0x10, q);
+    a = FastSubRots(func_L00_001FF860(*(float *)(m + 0x10) - *(float *)(B + 0x140), *(float *)(m + 0x14) - *(float *)(B + 0x144)), *(float *)(B + 0x158));
+    if (FastAbsF(a) > 1.0471976f) {
+        if ((*(int *)(p + 0x18))++ >= 6) goto kill;
+        v[0] = FastCos(FastAddRots(*(float *)(B + 0x158), a > 0.0f ? -1.0471976f : 1.0471976f)) * d;
+        v[1] = FastSin(FastAddRots(*(float *)(B + 0x158), a > 0.0f ? -1.0471976f : 1.0471976f)) * d;
+        v[2] = *(float *)(m + 0x18) - *(float *)(B + 0x148);
+        FastVecAdd(m + 0x10, v, q);
+        qcopy(v, m + 0x10);
+        v[2] = v[2] + 32.0f;
+        if (func_L00_001EFFF0(m + 0x10, v, 0x12, 0, 0)) goto kill;
+    }
+    if ((D_L00_0015F6B0 & 3) == 0) m[8]++;
+    s = *(short *)(m + 0xA);
+    if (scale_ticks(0x78) >= s) {
+        if (*(int *)(p + 0x14)) {
+            k = *(short *)(m + 0xA) * 0x14 / scale_ticks(0x78);
+        } else {
+            k = (scale_ticks(0x78) - *(short *)(m + 0xA)) * 0x14 / scale_ticks(0x78);
+        }
+    } else {
+        k = 0x14;
+    }
+    if (d < 8.0f || d > 96.0f) goto kill;
+    if (d < 16.0f) {
+        k = func_001FA898_r(func_001FA888(k) * (d - 8.0f) * 0.125f);
+    } else if (d > 80.0f) {
+        k = func_001FA898_r(func_001FA888(k) * (96.0f - d) * 0.0625f);
+    }
+    *(int *)(m + 4) = (k << 24) | (*(int *)(m + 4) & 0xFFFFFF);
+    if (FastDecTimer(m + 0xA)) {
+        if (*(int *)(p + 0x14)) {
+kill:
+            **(char **)(p + 0x10) = 0;
+            KillPart(m);
+        } else {
+            *(int *)(p + 0x14) = 1;
+            *(short *)(m + 0xA) = rand_range(scale_ticks(0x78) * 3, scale_ticks(0x78) * 9);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_0026A7F8);
-INCLUDE_ASM("asm/overlays", func_L00_0026A910);
+extern float func_001FA888(int);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern int func_L00_00237B70(int, int, float);
+extern int func_001F9938(void *);
+extern void func_L00_002688A8(void *);
+extern float D_0015EE60 MACRO_ADDR;
+
+// updates a type 4 particle
+void func_L00_0026A910(char *m) {
+    char *p = m + 0x20;
+    int t = *(int *)(p + 0x1C);
+    float f = func_001FA888(*(short *)(p + 0x18) * (t - *(short *)(m + 0xA)) / t + *(short *)(p + 0x1A));
+    float g = D_0015EE60 * -0.019999981f + 1.0f;
+    *(float *)(m + 0xC) = f * 1000.0f;
+    FastVecScale(p, p, g);
+    FastVecAdd(m + 0x10, m + 0x10, p);
+    m[8]++;
+    *(int *)(m + 4) = DefaultVtbl_DeleteMoby(*(int *)(p + 0x14), *(int *)(p + 0x10), (float)*(short *)(m + 0xA) / func_001FA888(*(int *)(p + 0x1C)));
+    if (FastDecTimer(m + 0xA)) KillPart(m);
+}
 INCLUDE_ASM("asm/overlays", func_L00_0026AA10);
 extern int func_001F9908(void *);
 extern int func_001F9850(int);
@@ -25,24 +191,388 @@ void func_L00_0026AB10(char *m) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_0026ABC0);
-INCLUDE_ASM("asm/overlays", func_L00_0026B368);
-INCLUDE_ASM("asm/overlays", func_L00_0026B458);
-INCLUDE_ASM("asm/overlays", func_L00_0026B590);
-INCLUDE_ASM("asm/overlays", func_L00_0026B720);
+extern void *func_00218928(int);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern float func_001FA888(int);
+extern unsigned char *D_L00_001B2420;
+
+/* Spawns a type 8 particle at pos with direction vel, colour, tag and lifetime, scaled by size. */
+void func_L00_0026B368(void *pos, void *vel, int color, int tag, int life, float size) {
+    if (life != 0) {
+        char *p = func_00218928(8);
+        if (p != 0) {
+            char *q;
+            qcopy(p + 0x10, pos);
+            q = p + 0x20;
+            *(int *)(p + 4) = color;
+            p[9] = func_001FA898_r(4.0f) - 0x60;
+            p[3] = 0x48;
+            p[1] = 0;
+            *(int *)(p + 0xC) = 0;
+            p[8] = 0;
+            p[2] = *D_L00_001B2420;
+            qcopy(q, vel);
+            *(short *)(p + 0xA) = life;
+            *(int *)(q + 0x18) = life;
+            *(float *)(q + 0x1C) = size / func_001FA888(life);
+            *(int *)(q + 0x10) = color;
+            *(int *)(q + 0x14) = tag;
+        }
+    }
+}
+extern int func_001FA8A8(int, int, float);
+
+/* Moves a particle, expires it, then fades its alpha and picks a color index. */
+void func_L00_0026B458(char *m) {
+    char *p = m + 0x20;
+    FastVecAdd(m + 0x10, m + 0x10, p);
+    if (FastDecTimer(m + 0xA)) {
+        KillPart(m);
+        return;
+    }
+    *(float *)(m + 0xC) += *(float *)(p + 0x1C);
+    *(int *)(m + 4) = FastTweenColor(*(int *)(p + 0x14), *(int *)(p + 0x10), (float)*(short *)(m + 0xA) / func_001FA888(*(int *)(p + 0x18)));
+    if (*(short *)(m + 0xA) < scale_ticks(6)) {
+        int a = *(unsigned char *)(m + 7);
+        *(int *)(m + 4) = (*(int *)(m + 4) & 0xFFFFFF) | ((*(short *)(m + 0xA) * a / scale_ticks(6)) << 24);
+    }
+    m[2] = D_L00_001B2420[(*(int *)(p + 0x18) - *(short *)(m + 0xA)) * 10 / *(int *)(p + 0x18)];
+}
+extern float func_001FA748(float, float);
+extern short D_L00_00160264;
+
+/* updates a particle: kills it when expired, else spins and fades by lifetime */
+void func_L00_0026B590(char *m) {
+    float *p = (float *)(m + 0x20);
+    int v;
+    if (func_001F9908(p)) {
+        KillPart(m);
+        return;
+    }
+    p[3] = FastAddRots(p[3], p[2]);
+    m[8] = func_001FA898_r(p[3] * 128.0f / 3.1415927f) - 0x80;
+    if (scale_ticks(*(int *)&D_L00_00160264) * 3 / 4 < *(int *)(m + 0x20)) {
+        int a = scale_ticks(*(int *)&D_L00_00160264);
+        v = *(int *)(p + 4) * (a - *(int *)(m + 0x20)) / (scale_ticks(*(int *)&D_L00_00160264) / 4);
+    } else if (*(int *)(m + 0x20) < scale_ticks(*(int *)&D_L00_00160264) / 4) {
+        v = *(int *)(p + 4) * *(int *)(m + 0x20) / (scale_ticks(*(int *)&D_L00_00160264) / 4);
+    } else {
+        v = *(int *)(p + 4);
+    }
+    *(int *)(m + 4) = (v << 24) + (*(unsigned char *)(m + 3) == 0x48 ? 0x4F4F4F : 0x7F7F7F);
+}
+extern short D_0015EE60_g __asm__("D_0015EE60");
+
+/* particle type 10 update: fade and drift, kill when it runs out */
+void func_L00_0026B720(char *m) {
+    char *p = m + 0x20;
+    int r;
+    float s;
+    *(float *)(p + 0x1C) += D_0015EE60 * -0.04f;
+    if (*(float *)(p + 0x1C) <= 0.0f || FastDecTimer(m + 0xA) != 0) {
+        KillPart(m);
+        return;
+    }
+    s = D_0015EE60;
+    *(float *)(m + 0xC) += s * 12000.0f;
+    if (*(float *)(p + 0x18) < 0.225f) {
+        *(float *)(p + 0x18) += s * 0.0484f;
+    }
+    r = func_001FA898_r(*(float *)(p + 0x18) * 255.0f) & 0xFF;
+    *(int *)(m + 4) = *(unsigned short *)(m + 4) | (r << 16) | (func_001FA898_r(*(float *)(p + 0x1C) * 255.0f) << 24);
+    FastVecAdd(m + 0x10, m + 0x10, p);
+    FastVecScale(p, p, D_0015EE60 * -0.10000002384185791f + 1.0f);
+    m[8]--;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0026B890);
-INCLUDE_ASM("asm/overlays", func_L00_0026BB18);
+extern float func_002140F8(float, float);
+extern void func_L00_0026B890(void *, void *, int, int, int, int, int, float, int, float);
+extern float func_001F9B50(float);
+extern int func_L00_001FEF78(void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern float D_0015EE70 MACRO_ADDR;
+extern float D_L00_0015F6B4 MACRO_ADDR;
+
+/* Per-tick update of a particle type 11: moves, drags, fades and kills it. */
+void func_L00_0026BB18(char *m) {
+    char *p = m + 0x20;
+    m[8]++;
+    if ((p[0x19] ^ 1) & 1) {
+        int i;
+        FastVecAdd(m + 0x10, m + 0x10, p);
+        if (p[0x19] & 4) {
+            *(float *)(p + 8) += D_0015EE70 * 9.8f;
+        }
+        {
+            float s = 0.8f;
+            if (p[0x19] & 2) s = 0.6f;
+            FastVecScale(p, p, s);
+        }
+        if (*(short *)(m + 0xA) == func_001FA898_r((float)(unsigned char)p[0x1B] * 0.85f)
+            && (unsigned char)p[0x1A] < 2 && !(p[0x19] & 4)) {
+            for (i = 4; i >= 0; i--) {
+                int a = func_001FA898_r((float)(unsigned char)p[0x1B] * random_float_between(0.9f, 1.1f));
+                int k = (unsigned char)p[0x18];
+                float g = random_float_between(0.85f, 1.0f);
+                func_L00_0026B890(m + 0x10, p, *(int *)(p + 0x10), *(int *)(p + 0x14), a,
+                                  k, (unsigned char)p[0x1A] + 1,
+                                  *(float *)(p + 0x1C), (unsigned char)p[0x19], *(float *)(p + 0xC) * g);
+            }
+        }
+        if (!(p[0x19] & 4)) {
+            float x = *(float *)(p + 0x1C);
+            float A = func_001FA888((unsigned char)p[0x1B]);
+            float B = (A * 8.0f - A * 3.0f * x) / (x * 8.0f * x + x * 8.0f);
+            float C = (A * 3.0f + B * 8.0f * x) / (x * -8.0f);
+            float F = func_001FA888(*(short *)(m + 0xA));
+            float s = func_001F9B50(B * B - C * 4.0f * (A - F));
+            float r2 = (-B + s) / (C + C);
+            float r1 = (-B - s) / (C + C);
+            float d;
+            if (r1 < r2) *(float *)(m + 0xC) = r2;
+            else *(float *)(m + 0xC) = r1;
+            d = FastVecDist(m + 0x10, D_L00_00166EC0);
+            if (d < 10.0f) {
+                *(float *)(m + 0xC) *= d * 0.075f + 0.25f;
+            }
+        }
+        if (p[0x19] & 2) {
+            *(int *)(m + 4) = FastTweenColor(*(int *)(p + 0x10), 0xFFFFFFF,
+                                            (float)*(short *)(m + 0xA) / (float)(unsigned char)p[0x1B]);
+        } else {
+            *(int *)(m + 4) = FastTweenColor(*(int *)(p + 0x14), *(int *)(p + 0x10),
+                                            (float)*(short *)(m + 0xA) / (float)(unsigned char)p[0x1B]);
+        }
+        func_L00_001FEF78(m + 0x38);
+        if (FastDecTimer(m + 0xA)) {
+            if (p[0x19] & 2) {
+                int t = (unsigned char)p[0x1B] * 3;
+                *(short *)(m + 0xA) = t;
+                p[0x1B] = t;
+                p[0x19] = (p[0x19] & 0xFD) | 4;
+                func_L00_001FF4B0(p, p, *(float *)(p + 0xC) * random_float_between(1.6f, 2.0f));
+            } else {
+                int r;
+                *(int *)(p + 0x10) = *(int *)(p + 0x14);
+                *(int *)(p + 0x14) = ((unsigned char)m[3] == 0x48) ? 0 : 0xF2F3F3F;
+                p[0x19] |= 1;
+                r = rand_range((unsigned char)p[0x1B] * 2, (unsigned char)p[0x1B] * 3);
+                if (p[0x19] & 8) r *= 5;
+                p[0x1B] = r;
+                *(short *)(m + 0xA) = (unsigned char)r;
+            }
+        }
+    } else {
+        int n1 = func_001FA898_r((float)(unsigned char)p[0x1B] * 0.75f) + 1;
+        int n2 = func_001FA898_r((float)(unsigned char)p[0x1B] * 0.25f) + 1;
+        int life;
+        *(float *)(p + 8) += D_0015EE70 * 3.0f;
+        FastVecAdd(m + 0x10, m + 0x10, p);
+        FastVecScale(p, p, 0.98f);
+        life = *(short *)(m + 0xA);
+        if (n1 < life) {
+            *(int *)(m + 4) = FastTweenColor(*(int *)(p + 0x14), *(int *)(p + 0x10), (float)(life - n1) / (float)n2);
+        } else if ((unsigned char)m[3] == 0x48) {
+            *(short *)(m + 0xA) = 0;
+        } else {
+            *(int *)(m + 4) = (*(int *)(m + 4) & 0xFFFFFF) | ((life * 15 / n1) << 24);
+        }
+        if (D_L00_0015F6B4 > 1.0f) FastDecTimer(m + 0xA);
+        if (FastDecTimer(m + 0xA)) KillPart(m);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_0026C0D0);
 INCLUDE_ASM("asm/overlays", func_L00_0026C3A0);
-INCLUDE_ASM("asm/overlays", func_L00_0026C630);
-INCLUDE_ASM("asm/overlays", func_L00_0026C7B0);
-INCLUDE_ASM("asm/overlays", func_L00_0026C908);
-INCLUDE_ASM("asm/overlays", func_L00_0026CA10);
+extern float func_L00_00258C80(float lo, float hi);
+extern int func_002140B0(int);
+extern float func_002140F8(float, float);
+extern unsigned char *D_L00_001B2434;
+
+/* Spawns a type-13 particle at pos with randomised offset, sign-flipped spin and a packed colour. */
+unsigned char *func_L00_0026C630(void *pos, int spin, int col, float range, float f1, float f2, float f3, float scale) {
+    unsigned char *r = func_00218928(0xD);
+    unsigned char *u;
+    if (r != 0) {
+        qcopy(r + 0x10, pos);
+        u = r + 0x20;
+        *(int *)(r + 4) = col;
+        r[9] = func_001FA898_r(4.0f) + 0x40;
+        r[3] = 0x48;
+        *(float *)(r + 0xC) = scale;
+        r[1] = 0;
+        r[8] = 0;
+        r[2] = *D_L00_001B2434;
+        *(float *)(r + 0x10) += randf_sym(0.0f, range);
+        *(float *)(r + 0x14) += randf_sym(0.0f, range);
+        *(float *)(r + 0x18) += randf_sym(0.0f, range);
+        *(short *)(r + 0xA) = scale_ticks(10);
+        *(int *)(u + 4) = 0;
+        if (random_integer_below(2)) {
+            *(int *)(u + 8) = spin;
+        } else {
+            *(int *)(u + 8) = -spin;
+        }
+        *(int *)(u + 0x14) = col & 0xFFFFFF;
+        *(float *)(u + 0xC) = random_float_between(f1, f2);
+        *(float *)(u + 0x10) = f3;
+    }
+    return r;
+}
+/* particle update: fade in over a random delay, then fade out with a sine-shaped alpha */
+void func_L00_0026C7B0(char *m) {
+    char *p = m + 0x20;
+    *(unsigned char *)(m + 8) += *(unsigned char *)(p + 8);
+    *(float *)(m + 0x18) += *(float *)(p + 0x10);
+    *(float *)(m + 0xC) *= *(float *)(p + 0xC);
+    if (*(int *)(p + 4) == 0) {
+        if (FastDecTimer(m + 0xA)) {
+            *(int *)(p + 4) = 1;
+            *(short *)(m + 0xA) = scale_ticks(30);
+            *(int *)(m + 4) = *(int *)(p + 0x14) | 0x7F000000;
+        } else {
+            int a = scale_ticks(10);
+            int b = scale_ticks(10);
+            int r = func_001FA898_r((float)(a - *(short *)(m + 0xA)) * (96.0f / (float)b));
+            *(int *)(m + 4) = ((r + 0x20) << 24) | *(int *)(p + 0x14);
+        }
+    } else {
+        if (FastDecTimer(m + 0xA)) {
+            KillPart(m);
+        } else {
+            int r = scale_ticks(30);
+            r = func_001FA898_r((float)*(short *)(m + 0xA) * (127.0f / (float)r));
+            *(int *)(m + 4) = (r << 24) | *(int *)(p + 0x14);
+        }
+    }
+}
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern char D_L00_00166EC0[];
+
+/* part type 14 update: steer toward a target, or fade out and kill */
+void func_L00_0026C908(char *m) {
+    float v[4];
+    char *p = m + 0x20;
+    char *q;
+    m[8] = m[8] + m[0x20];
+    if (*(int *)(p + 4) == 0) {
+        q = m + 0x10;
+        qcopy(q, *(char **)(p + 8) + 0x10);
+        FastVecSub(v, D_L00_00166EC0, q);
+        func_L00_001FF4B0(v, v, 0.01f);
+        FastVecAdd(q, q, v);
+    } else if (FastDecTimer(m + 0xA)) {
+        KillPart(m);
+    } else {
+        float r = 127.0f / (float)scale_ticks(6);
+        int x = func_001FA898_r((float)*(short *)(m + 0xA) * r);
+        *(int *)(m + 4) = (x << 24) | 0xFFFFFF;
+    }
+}
+extern int func_001160D8(void);
+extern unsigned char *D_L00_001B243C;
+
+/* spawns a type-15 particle with given position, velocity and color */
+void *func_L00_0026CA10(void *pos, void *vel, int a2, int a3, int cnt, int s, int c, int col, float f) {
+    char *p;
+    char *q;
+    if (cnt == 0) return 0;
+    p = func_00218928(0xF);
+    if (p != 0) {
+        qcopy(p + 0x10, pos);
+        *(int *)(p + 4) = a2;
+        *(unsigned char *)(p + 9) = func_001FA898_r(4.0f) - 0x60;
+        if (col != -1) {
+            *(unsigned char *)(p + 3) = col;
+        } else {
+            *(unsigned char *)(p + 3) = 0x48;
+        }
+        *(unsigned char *)(p + 1) = 0;
+        *(float *)(p + 0xC) = f;
+        *(unsigned char *)(p + 8) = func_001160D8();
+        if (c == -1) {
+            *(unsigned char *)(p + 2) = *D_L00_001B243C;
+        } else {
+            *(unsigned char *)(p + 2) = c;
+        }
+        q = p + 0x20;
+        *(short *)(p + 0xA) = cnt;
+        *(short *)(q + 0x18) = cnt;
+        *(float *)(q + 0x1C) = f;
+        *(int *)(q + 0x10) = a2;
+        *(int *)(q + 0x14) = a3;
+        *(short *)(q + 0x1A) = s;
+        qcopy(q, vel);
+    }
+    return p;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0026CB48);
-INCLUDE_ASM("asm/overlays", func_L00_0026CD70);
+extern float D_L00_0015F6B4 MACRO_ADDR;
+extern unsigned char *D_L00_001B2440;
+
+/* spawns a type-16 particle at a position, unless the particle budget is over threshold */
+char *func_L00_0026CD70(float f, char *a, char *b, int c, int d, int e, int g) {
+    char *p;
+    char *q;
+    int r;
+    unsigned char *t;
+    unsigned char *s;
+    if (e == 0) return 0;
+    if (D_L00_0015F6B4 > 0.9f && random_integer_below(3) == 0) return 0;
+    if (D_L00_0015F6B4 > 0.95f && random_integer_below(2) == 0) return 0;
+    if (D_L00_0015F6B4 > 1.0f && random_integer_below(1) == 0) return 0;
+    p = func_00218928(0x10);
+    if (p != 0) {
+        qcopy(p + 0x10, a);
+        *(int *)(p + 4) = c;
+        r = func_001FA898_r(4.0f);
+        p[1] = 0;
+        *(float *)(p + 0xC) = f;
+        p[3] = 0x44;
+        p[9] = r + 0x40;
+        p[8] = func_001160D8();
+        q = p + 0x20;
+        t = D_L00_001B2440;
+        s = t + g;
+        if (g == 3) s = t;
+        p[2] = *s;
+        *(short *)(p + 0xA) = e;
+        *(short *)(q + 0x18) = e;
+        *(float *)(q + 0x1C) = f;
+        *(int *)(q + 0x10) = c;
+        *(int *)(q + 0x14) = d;
+        *(short *)(q + 0x1A) = g;
+        qcopy(q, b);
+        *(float *)(q + 0xC) = *(float *)(a + 8) - 0.5f;
+    }
+    return p;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0026CF28);
 INCLUDE_ASM("asm/overlays", func_L00_0026D270);
 INCLUDE_ASM("asm/overlays", func_L00_0026D3F8);
-INCLUDE_ASM("asm/overlays", func_L00_0026D588);
+extern int func_002140B0(int);
+extern unsigned char *D_L00_001B244C;
+
+/* spawn particle type 19 at a position with a velocity */
+void func_L00_0026D588(char *pos, char *vel) {
+    char *p = func_00218928(0x13);
+    int t;
+    if (p) {
+        t = (random_integer_below(6) * 6 + 0x40) | 0x78404000;
+        *(int *)(p + 4) = t;
+        *(int *)(p + 0xC) = t;
+        p[9] = func_001FA898_r(2.0f) + 0x20;
+        p[3] = 0x48;
+        p[1] = 3;
+        p[2] = *D_L00_001B244C;
+        qcopy(p + 0x10, pos);
+        qcopy(p + 0x30, vel);
+        FastVecSub(p + 0x20, pos, p + 0x30);
+        FastVecSub(p + 0x20, p + 0x20, p + 0x30);
+        *(float *)(p + 0x1C) = 0.09f;
+        *(float *)(p + 0x2C) = 0.5f;
+    }
+}
 extern void func_001F9BD8(void *, void *, void *);
 extern void func_L00_002688A8(void *);
 void func_L00_0026D690(char *a) {
@@ -55,17 +585,298 @@ void func_L00_0026D690(char *a) {
     if (t < 0) KillPart(a);
 }
 INCLUDE_ASM("asm/overlays", func_L00_0026D700);
-INCLUDE_ASM("asm/overlays", func_L00_0026DA50);
+extern int func_001160D8(void);
+extern unsigned char *D_L00_001B2454;
+
+// Spawn a particle of type 0x15 with position, color, and lifetime data.
+char *func_L00_0026DA50(void *pos, void *dir, int c, int d, int n, int k, float f) {
+    char *p;
+    char *q;
+    int v;
+    if (n == 0) return 0;
+    p = func_00218928(0x15);
+    if (p) {
+        qcopy(p + 0x10, pos);
+        *(int *)(p + 4) = c;
+        v = func_001FA898_r(4.0f) - 0x60;
+        p[1] = 0;
+        *(float *)(p + 0xC) = f;
+        p[3] = 0x48;
+        p[9] = v;
+        p[8] = func_001160D8();
+        q = p + 0x20;
+        p[2] = *D_L00_001B2454;
+        *(short *)(p + 0xA) = n;
+        *(short *)(q + 0x18) = n;
+        *(float *)(q + 0x1C) = f;
+        *(int *)(q + 0x10) = c;
+        *(int *)(q + 0x14) = d;
+        *(short *)(q + 0x1A) = k;
+        qcopy(q, dir);
+    }
+    return p;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0026DB50);
-INCLUDE_ASM("asm/overlays", func_L00_0026DD70);
-INCLUDE_ASM("asm/overlays", func_L00_0026DEA0);
-INCLUDE_ASM("asm/overlays", func_L00_0026E050);
-INCLUDE_ASM("asm/overlays", func_L00_0026E310);
-INCLUDE_ASM("asm/overlays", func_L00_0026E438);
+extern char *D_L00_001B2458;
+extern float D_0015EE70 MACRO_ADDR;
+
+/* spawns a type 22 particle with the given position, velocity, colour and lifetime */
+void func_L00_0026DD70(void *pos, void *vel, int c, int d, int e, float x) {
+    char *m = func_00218928(0x16);
+    char *p;
+    int r;
+    if (m != 0) {
+        p = m + 0x20;
+        *(int *)(m + 4) = c;
+        r = func_001FA898_r(4.0f) + 0x70;
+        m[1] = 0;
+        m[3] = 0x44;
+        m[9] = r;
+        *(float *)(m + 0xC) = x * 0.2f;
+        m[8] = func_001160D8();
+        m[2] = *D_L00_001B2458;
+        *(short *)(m + 0xA) = e;
+        *(short *)(p + 0x18) = e;
+        *(float *)(p + 0x1C) = (x - *(float *)(m + 0xC)) / func_001FA888(e);
+        *(int *)(p + 0x10) = c;
+        *(int *)(p + 0x14) = d;
+        qcopy(p, vel);
+        qcopy(m + 0x10, pos);
+        *(float *)(p + 0xC) = D_0015EE70 * 1.24f;
+    }
+}
+extern unsigned char *D_L00_001B245C;
+extern float func_L00_00258C80(float, float);
+
+/* spawn a type-0x17 particle with a random jitter and a randomly signed speed */
+void *func_L00_0026DEA0(void *pos, int spd, void *pos2, int col, float a, float b, float c, float d) {
+    char *p = func_00218928(0x17);
+    if (p != 0) {
+        char *v;
+        qcopy(p + 0x10, pos);
+        *(int *)(p + 4) = col | 0x20000000;
+        v = p + 0x20;
+        p[9] = func_001FA898_r(4.0f) + 0x70;
+        p[3] = 0x48;
+        *(float *)(p + 0xC) = d;
+        p[1] = 0;
+        p[8] = 0;
+        p[2] = *D_L00_001B245C;
+        *(float *)(p + 0x10) += randf_sym(0.0f, a);
+        *(float *)(p + 0x14) += randf_sym(0.0f, a);
+        *(float *)(p + 0x18) += randf_sym(0.0f, a);
+        *(short *)(p + 0xA) = scale_ticks(10);
+        *(int *)(v + 4) = 0;
+        *(int *)(p + 0x20) = col;
+        if (random_integer_below(2) != 0) {
+            *(short *)(v + 8) = func_001FA898_r(D_0015EE60 * (float)spd);
+        } else {
+            *(short *)(v + 8) = func_001FA898_r((float)-spd * D_0015EE60);
+        }
+        *(float *)(v + 0xC) = random_float_between(b, c);
+        qcopy(v + 0x10, pos2);
+    }
+    return p;
+}
+// updates a type 23 particle
+void func_L00_0026E050(char *m) {
+    unsigned char *p = (unsigned char *)m + 0x20;
+    int t;
+    float s;
+    int x;
+
+    m[8] += p[8];
+    FastVecAdd(m + 0x10, m + 0x10, m + 0x30);
+    *(float *)(m + 0xC) *= (*(float *)(p + 0xC) - 1.0f) * D_0015EE60 + 1.0f;
+    t = *(int *)(p + 4);
+    if (t == 0) {
+        if (FastDecTimer(m + 0xA)) {
+            *(int *)(p + 4) = 1;
+            *(short *)(m + 0xA) = scale_ticks(0x14);
+            *(int *)(m + 4) = *(int *)p | 0x7F000000;
+        } else {
+            int a = scale_ticks(0xA);
+            float r = 96.0f / (float)scale_ticks(0xA);
+            x = func_001FA898_r((float)(a - *(short *)(m + 0xA)) * r);
+            *(int *)(m + 4) = ((x + 0x20) << 24) | *(int *)p;
+        }
+    } else if (t == 2) {
+        if (FastDecTimer(m + 0xA)) {
+            KillPart(m);
+            return;
+        }
+        s = func_001FA888(p[0xB]);
+        x = func_001FA898_r((float)p[0xA] * ((float)*(short *)(m + 0xA) / s) + 0.0f);
+        *(int *)(m + 4) = (x << 24) | (*(int *)p & 0xFFFFFF);
+    } else if (t == 3) {
+        float f;
+        FastDecTimer(m + 0xA);
+        f = func_001FA888(p[0xB] - *(short *)(m + 0xA));
+        f = f / func_001FA888(scale_ticks(0x1E));
+        if (f > 1.0f) {
+            f = 1.0f;
+        }
+        x = func_001FA898_r((float)p[0xA] * f + 0.0f);
+        *(int *)(m + 4) = (x << 24) | (*(int *)p & 0xFFFFFF);
+        if (p[0xB] - *(short *)(m + 0xA) >= scale_ticks(0x1E)) {
+            p[0xB] -= scale_ticks(0x1E);
+            *(int *)(p + 4) = 2;
+        }
+    } else if (FastDecTimer(m + 0xA)) {
+        KillPart(m);
+    } else {
+        float r = 127.0f / (float)scale_ticks(0x14);
+        x = func_001FA898_r((float)*(short *)(m + 0xA) * r);
+        *(int *)(m + 4) = (x << 24) | *(int *)p;
+    }
+}
+/* Particle update: follow a parent, fade by a clamped ramp. */
+void func_L00_0026E310(char *m) {
+    unsigned char *p;
+    float *v;
+    float t, f;
+    int c;
+    if (m == 0) return;
+    v = (float *)(m + 0x20);
+    p = *(unsigned char **)(m + 0x20);
+    if (p == 0 || (p[1] & 0x80)) {
+        KillPart(m);
+        return;
+    }
+    qcopy(m + 0x10, p + 0x10);
+    m[8] = p[8];
+    *(float *)(m + 0xC) = *(float *)(p + 0xC) * v[1] + v[2];
+    t = v[3] + v[5];
+    v[3] = t;
+    if (t < 0.0f) {
+        v[3] = 0.0f;
+        return;
+    }
+    if (1.0f < t) v[3] = 1.0f;
+    c = *(int *)(m + 4) & 0xFFFFFF;
+    f = func_001FA888((*(unsigned unsigned char **)(m + 0x20))[7]);
+    *(int *)(m + 4) = c | (func_001FA898_r((f * (v[4] * 0.00390625f) + v[3]) * 256.0f) << 24);
+}
+extern int func_L00_0025D038(float, float, float, float);
+extern float func_002140F8(float, float);
+extern unsigned char *D_L00_001B2464;
+
+/* spawns a type-25 particle at a position with a velocity */
+void func_L00_0026E438(char *pos, char *vel, int flag) {
+    char *p = func_00218928(0x19);
+    float *u;
+    float one;
+    if (p) {
+        u = (float *)(p + 0x20);
+        qcopy(p + 0x10, pos);
+        if (flag == 0) {
+            one = 1.0f;
+            *(int *)(p + 4) = func_L00_0025D038(one, one, one, 0.6f);
+            u[4] = one;
+            u[5] = one;
+            u[6] = one;
+        } else {
+            *(int *)(p + 4) = func_L00_0025D038(1.0f, 1.0f, 1.0f, 0.6f);
+            u[4] = -1.0f;
+            u[5] = -1.0f;
+            u[6] = -1.0f;
+        }
+        p[9] = func_001FA898_r(4.0f) + 0x40;
+        p[1] = 0;
+        p[3] = 0x48;
+        *(float *)(p + 0xC) = random_float_between(5000.0f, 30000.0f);
+        p[8] = 0;
+        p[2] = *D_L00_001B2464;
+        u[7] = 0.6f;
+        *(short *)(p + 0xA) = scale_ticks(0x50);
+        qcopy(u, vel);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_0026E5A0);
-INCLUDE_ASM("asm/overlays", func_L00_0026E940);
-INCLUDE_ASM("asm/overlays", func_L00_0026EA80);
-INCLUDE_ASM("asm/overlays", func_L00_0026EBC0);
+extern void func_L00_00250800(void *, int, void *);
+extern char *D_L00_001B2468;
+
+/* spawns a type 26 particle attached to a moby, with colour, lifetime and size */
+char *func_L00_0026E940(char *src, int col, int w, int v, float x) {
+    char *m = func_00218928(0x1A);
+    char *p;
+    if (m != 0) {
+        float a[4];
+        float b[4];
+        p = m + 0x20;
+        *(char **)(m + 0x20) = src;
+        *(int *)(p + 8) = w;
+        *(short *)(p + 4) = w;
+        *(int *)(p + 0xC) = col >> 24;
+        *(short *)(p + 6) = v;
+        if ((short)v == -1) {
+            qcopy(m + 0x10, src + 0x10);
+        } else {
+            func_L00_00250800(*(void **)(m + 0x20), (short)v, a);
+            FastVecSub(b, D_L00_00166EC0, a);
+            func_L00_001FF4B0(b, b, 0.4f);
+            FastVecAdd(m + 0x10, a, b);
+        }
+        m[8] = func_001160D8();
+        *(int *)(m + 4) = col;
+        m[9] = func_001FA898_r(4.0f) + 0x70;
+        m[3] = 0x48;
+        *(float *)(m + 0xC) = x;
+        m[1] = 0;
+        m[2] = *D_L00_001B2468;
+    }
+    return m;
+}
+extern void func_L00_00250800(void *, int, void *);
+
+/* part type 26 update: follow a target moby, fading in the alpha */
+void func_L00_0026EA80(char *m) {
+    float a[4];
+    float b[4];
+    char *p;
+    if (m == 0) return;
+    p = m + 0x20;
+    if (FastDecTimer(m + 0x24) || *(char **)p == 0 || (*(char **)p)[0x20] < 0) {
+        KillPart(m);
+        return;
+    }
+    if (*(short *)(p + 4) < *(int *)(p + 8) / 5) {
+        *(int *)(m + 4) = (*(int *)(m + 4) & 0xFFFFFF) + (((*(int *)(p + 0xC) * *(short *)(p + 4)) / (*(int *)(p + 8) / 3)) << 24);
+    }
+    if (*(short *)(p + 6) == -1) {
+        qcopy(m + 0x10, *(char **)p + 0x10);
+        return;
+    }
+    func_L00_00250800(*(char **)p, *(short *)(p + 6), a);
+    FastVecSub(b, D_L00_00166EC0, a);
+    func_L00_001FF4B0(b, b, 0.4f);
+    FastVecAdd(m + 0x10, a, b);
+}
+extern void *func_00218928(int);
+extern int func_001160D8(void);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern unsigned char *D_L00_001B246C;
+
+/* spawns a type-0x1B particle with the given position, velocity and timers */
+char *func_L00_0026EBC0(char *pos, char *vel, int c, int d, float f) {
+    char *p = func_00218928(0x1B);
+    if (p != 0) {
+        char *q = p + 0x20;
+        qcopy(p + 0x10, pos);
+        p[8] = func_001160D8();
+        *(int *)(p + 4) = c;
+        p[9] = func_001FA898_r(4.0f) + 0x40;
+        p[3] = 0x48;
+        *(float *)(p + 0xC) = f;
+        p[1] = 0;
+        p[2] = *D_L00_001B246C;
+        *(int *)(q + 0x18) = p[7];
+        qcopy(q, vel);
+        *(int *)(q + 0x10) = d;
+        *(int *)(q + 0x14) = d;
+    }
+    return p;
+}
 extern int func_001F9908(void *);
 void func_L00_0026ECA0(char *a) {
     char *b = a + 0x20;
@@ -112,7 +923,53 @@ void *func_L00_0026FBC8(void *arg0) {
 
     return p;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0026FCE8);
+// Updates a particle that follows its parent: bounces a phase, fades three channels, refreshes colour and size.
+void func_L00_0026FCE8(char *m) {
+    float *p;
+    char *par;
+    int col;
+    float t;
+
+    if (m != 0) {
+        p = (float *)(m + 0x20);
+        par = *(char **)(m + 0x20);
+        if (par == 0 || (*(unsigned char *)(par + 0x20) & 0xF0) == 0xF0) {
+            KillPart(m);
+            return;
+        }
+        qcopy(m + 0x10, par + 0x10);
+        p[1] = p[1] + p[2];
+        if (p[1] < 0.0f) {
+            KillPart(m);
+            return;
+        }
+        if (p[1] > 0.6f) {
+            p[2] = -p[2];
+            p[1] = p[1] + p[2];
+        }
+        p[4] = p[4] + D_0015EE60 * -0.0174f;
+        if (p[4] < 0.0f) {
+            p[4] = 0.0f;
+        }
+        p[5] = p[5] + D_0015EE60 * -0.01446f;
+        if (p[5] < 0.0f) {
+            p[5] = 0.0f;
+        }
+        p[6] = p[6] + D_0015EE60 * -0.0015f;
+        if (p[6] < 0.0f) {
+            p[6] = 0.0f;
+        }
+        col = func_L00_0025D038(p[4], p[5], p[6], p[1]);
+        t = D_0015EE60 * 0.0011f;
+        *(int *)(m + 4) = col;
+        p[3] = p[3] + t;
+        if (p[3] > 1.0f) {
+            p[3] = p[3] - 1.0f;
+        }
+        m[8] = func_001FA898_r(p[3] * 255.0f);
+        *(float *)(m + 0xC) = *(float *)(*(char **)(m + 0x20) + 0x2C) * 100000.0f * 30.0f + 50000.0f;
+    }
+}
 extern int func_001F9938(void *);
 extern void func_L00_002688A8(void *);
 void func_L00_0026FEE8(char *a) {
@@ -120,11 +977,231 @@ void func_L00_0026FEE8(char *a) {
         KillPart(a);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_0026FF20);
-INCLUDE_ASM("asm/overlays", func_L00_00270120);
-INCLUDE_ASM("asm/overlays", func_L00_002703E8);
-INCLUDE_ASM("asm/overlays", func_L00_00270500);
-INCLUDE_ASM("asm/overlays", func_L00_00270738);
+extern int func_L00_00258BC8(int, int);
+extern float func_00214158(void);
+extern char *D_L00_001B2488;
+extern float D_0015EE6C MACRO_ADDR;
+extern char D_0013E633[];
+
+/* spawns a type-34 particle at a position with random colour, size and velocity */
+char *func_L00_0026FF20(char *vec, float *pos, float sc, float vy) {
+    char *p = func_00218928(0x22);
+    char *q;
+    int r, a, b;
+    float lo, hi, t;
+    if (p) {
+        q = p + 0x20;
+        *(int *)(p + 4) = 0x88A0A0A0;
+        r = func_001FA898_r(4.0f);
+        p[1] = 0;
+        p[3] = 0x44;
+        p[9] = r + 0x40;
+        *(float *)(q + 0xC) = random_float_between(0.75f, 1.25f) * sc;
+        *(float *)(p + 0xC) = 5250.0f;
+        r = rand_range(-10, 10);
+        p[8] = r - 0x80;
+        p[2] = *D_L00_001B2488;
+        a = scale_ticks(0x46);
+        b = scale_ticks(0x8C);
+        *(short *)(p + 0xA) = rand_range(a, b);
+        if (vy == -1.0f) {
+            char *x = D_0013E633 + 0xE1D;
+            if (*(int *)(x + 0x2084) == 0x31) {
+                *(float *)(q + 0x10) = *(float *)(x + 0x88) + 0.4f;
+            } else {
+                *(float *)(q + 0x10) = *(float *)(x + 0x2F0);
+            }
+        } else {
+            *(float *)(q + 0x10) = vy;
+        }
+        t = random_angle_radians();
+        lo = D_0015EE6C * 1.7453293f;
+        hi = D_0015EE6C * 6.981317f;
+        *(float *)(q + 0x14) = t;
+        t = random_float_between(lo, hi);
+        lo = D_0015EE6C * 0.5f;
+        hi = D_0015EE6C * 1.4f;
+        *(float *)(q + 0x18) = t;
+        *(float *)(q + 0x1C) = random_float_between(lo, hi);
+        *(float *)(q + 0) = pos[0];
+        *(float *)(q + 4) = pos[1];
+        *(float *)(q + 8) = pos[2];
+        qcopy(p + 0x10, vec);
+    }
+    return p;
+}
+extern float func_001F9CE8(void *);
+extern void func_L00_001FF500(void *, void *, float);
+extern void func_00214D28(void *, float, float);
+extern float func_001F9FA8(float);
+extern float func_001F9F90(float);
+extern float D_L00_00166ED8;
+
+/* Updates a particle that swirls on a circle: fades with age, spins, and moves along its orbit. */
+void func_L00_00270120(char *m) {
+    char *p = m + 0x20;
+    float v[3];
+    char *q;
+    float a, k;
+    if (FastDecTimer(m + 0xA)) {
+        KillPart(m);
+        return;
+    }
+    if (*(float *)(m + 0x18) > *(float *)(p + 0x10)) {
+        int s;
+        *(int *)(p + 8) = 0;
+        s = *(short *)(m + 0xA);
+        if (scale_ticks(0xE) - 2 < s) *(short *)(m + 0xA) = scale_ticks(0xE) - 2;
+    }
+    if (*(float *)(p + 0x10) < *(float *)(m + 0x18) + D_0015EE6C * 1.3f * 40.0f) {
+        if (random_integer_below(0x14) == 0) {
+            int s = *(short *)(m + 0xA);
+            if (scale_ticks(0xE) - 2 < s) *(short *)(m + 0xA) = scale_ticks(0xE) - 2;
+        }
+    }
+    if (*(short *)(m + 0xA) < scale_ticks(0xE)) {
+        int r = *(unsigned char *)(m + 7);
+        *(int *)(m + 4) = ((r * *(short *)(m + 0xA) / scale_ticks(0xE)) << 24) | (*(int *)(m + 4) & 0xFFFFFF);
+    }
+    *(float *)(m + 0xC) += D_0015EE60 * 840.00006f;
+    if (*(float *)(p + 0xC) < *(float *)(m + 0xC)) *(float *)(m + 0xC) = *(float *)(p + 0xC);
+    v[0] = *(float *)(p + 0);
+    v[1] = *(float *)(p + 4);
+    v[2] = *(float *)(p + 8);
+    {
+        float len = func_001F9CE8(v);
+        func_L00_001FF500(v, v, D_0015EE60 * -0.029999971f * len + len);
+    }
+    FastVecAdd(m + 0x10, m + 0x10, v);
+    func_00214D28(v + 2, D_0015EE6C * 1.3f, D_0015EE70 * 5.0f);
+    *(float *)(p + 4) = v[1];
+    *(float *)(p + 0) = v[0];
+    *(float *)(p + 8) = v[2];
+    *(float *)(p + 0x14) = FastAddRots(*(float *)(p + 0x14), *(float *)(p + 0x18));
+    a = FastAddRots(D_L00_00166ED8, 1.5707964f);
+    k = FastSin(*(float *)(p + 0x14)) * *(float *)(p + 0x1C);
+    v[0] = FastCos(a) * k;
+    v[1] = FastSin(a) * k;
+    v[2] = 0;
+    FastVecAdd(m + 0x10, m + 0x10, v);
+}
+extern float D_0015EE70 MACRO_ADDR;
+extern unsigned char *D_L00_001B248C;
+
+/* spawns a type 35 particle at a position with a velocity vector */
+void func_L00_002703E8(void *pos, void *vel, int mode, int life) {
+    char *p = func_00218928(0x23);
+
+    if (p != 0) {
+        char *q;
+
+        qcopy(p + 0x10, pos);
+        *(int *)(p + 4) = 0x80808080;
+        q = p + 0x20;
+        p[9] = (char)(func_001FA898_r(2.0f) + 0x10);
+        p[1] = 0;
+        p[3] = 0x44;
+        *(float *)(p + 0xC) = random_float_between(10500.0f, 16800.0f);
+        p[2] = *D_L00_001B248C;
+        qcopy(q, vel);
+        *(int *)(q + 0x14) = life;
+        *(int *)(q + 0x10) = mode;
+        *(float *)(q + 0x18) = *(float *)(p + 0x18);
+        if (mode == 2) *(int *)(q + 0x18) = 0;
+        *(float *)(q + 0x1C) = random_float_between(D_0015EE70 * 10.5f, D_0015EE70 * 18.0f);
+    }
+}
+typedef struct { int a[4]; } V __attribute__((aligned(16)));
+extern V D_L00_00173F60;
+extern int D_L00_00173F40[];
+extern char D_0013E633[] NOT_SDA;
+extern int func_L00_001EFFF0(void *, void *, int, int, int);
+extern int func_L00_001F3958(void);
+extern void func_L00_00272488(void *, int, int, float, float);
+extern void func_L00_00275040(void *, int, float, float);
+
+/* Moves a particle by its velocity according to its mode, bouncing or killing it on contact. */
+void func_L00_00270500(char *m) {
+    char *b = m + 0x20;
+    int mode = *(int *)(b + 0x10);
+    V tmp;
+    char *q;
+
+    if (mode == 0) {
+        FastVecAdd(m + 0x10, m + 0x10, b);
+    } else if (mode == 1) {
+        q = m + 0x10;
+        FastVecAdd(&tmp, q, b);
+        if (func_L00_001EFFF0(q, &tmp, 2, 0, 0)) {
+            if (CollType() == 0) {
+                func_L00_00272488(&D_L00_00173F60, 0, -1, 0.2f, 5250.0f);
+            }
+            KillPart(m);
+            return;
+        }
+        qcopy(q, &tmp);
+    } else if (mode == 3) {
+        float lim;
+        q = m + 0x10;
+        FastVecAdd(q, q, b);
+        lim = *(float *)(D_0013E633 + 0x110D);
+        if (*(float *)(m + 0x18) < lim) {
+            *(float *)(m + 0x18) = lim;
+            func_L00_00272488(q, 0, -1, 0.2f, 5250.0f);
+            KillPart(m);
+            return;
+        }
+    } else {
+        q = m + 0x10;
+        FastVecAdd(&tmp, q, b);
+        if (func_L00_001EFFF0(q, &tmp, 2, 0, 0)) {
+            if (CollType() != 0) {
+                int *d = D_L00_00173F40;
+                *(float *)((char *)d + 0x28) += 0.05f;
+                func_L00_00275040(d + 8, -1, 0.25f, 3150.0f);
+            }
+            KillPart(m);
+            return;
+        }
+        qcopy(q, &tmp);
+    }
+    *(float *)(b + 8) -= *(float *)(b + 0x1C);
+    *(unsigned char *)(m + 8) += 2;
+    *(int *)(b + 0x14) -= 1;
+    if (*(int *)(b + 0x14) <= 0 || *(float *)(m + 0x18) < *(float *)(b + 0x18)) {
+        *(int *)(m + 4) += 0xF0000000;
+        if (*(int *)(m + 4) < 0) {
+            KillPart(m);
+        }
+    }
+}
+extern float func_001F9CB8(void *);
+extern float func_001FA748(float, float);
+extern float func_001F9FA8(float);
+
+/* particle type 36 update */
+void func_L00_00270738(char *m) {
+    float v[4];
+    char *p;
+    float f;
+    p = m + 0x20;
+    FastVecSub(v, D_L00_00166EC0, m + 0x30);
+    if (FastVecLength(v) > 1.0f) func_L00_001FF4B0(v, v, 0.25f);
+    else FastVecScale(v, v, 0.25f);
+    FastVecAdd(m + 0x10, p + 0x10, v);
+    *(float *)(p + 4) = FastAddRots(*(float *)(p + 4), *(float *)(p + 0x1C));
+    f = FastSin(*(float *)(p + 4));
+    if (FastDecTimer(m + 0xA) && (f < *(float *)(p + 8) || f < -0.9f) || **(int **)p == 0) {
+        **(int **)p = 0;
+        KillPart(m);
+        return;
+    }
+    if (f > *(float *)(p + 8)) {
+        *(int *)(m + 4) = ((int (*)(float, int, int))DefaultVtbl_DeleteMoby)((f - *(float *)(p + 8)) / (1.0f - *(float *)(p + 8)), 0, *(int *)(p + 0xC));
+    } else {
+        *(int *)(m + 4) = 0;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002708A0);
 INCLUDE_ASM("asm/overlays", func_L00_002709A0);
 INCLUDE_ASM("asm/overlays", func_L00_00270AD8);

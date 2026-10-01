@@ -294,7 +294,84 @@ void func_L00_00232B78(void) {
     obj->id[0] = obj->model->banks[obj->bank[0]]->ids[obj->seq[0]];
     obj->id[1] = obj->model->banks[obj->bank[1]]->ids[obj->seq[1]];
 }
-INCLUDE_ASM("asm/overlays", func_L00_00232C10);
+extern char D_0013E633[];
+extern unsigned char D_0015EEB4_m[4] __asm__("D_0015EEB4") MACRO_ADDR;
+extern char D_L00_00197080[];
+extern short D_L00_0015F7C0;
+extern int func_L00_002506D0(void *);
+extern void func_L00_00252D20(void *, int);
+extern void func_00118D80(int);
+extern void func_0020D6D0(void *);
+extern int func_001FA898(float);
+extern void func_L00_00232EA8(void);
+extern void func_L00_002326D0(int, int, float);
+extern void func_L00_00211F68(void);
+extern void func_L00_00232A78(int, int, float);
+
+/* Starts animation sequence A0 (slot byte A1) over time T on the object at +0x2080 of the game block. */
+void func_L00_00232C10(int a0, int a1, float t) {
+    char *g2;
+    char *g3;
+    char *g1 = D_0013E633 + 0xE1D;
+    char *obj = *(char **)(g1 + 0x2080);
+    int slot;
+    int o;
+    char *e;
+
+    if (*(int *)(g1 + 0xA98) & 2) {
+        *(int *)(obj + 0x54) = 0;
+    }
+    if (D_0015EEB4_m[1] != 0) {
+        if (a0 == 0x31) {
+            a0 = 0x32;
+        } else if (a0 == 0x32) {
+            a0 = 0x31;
+        }
+    }
+    slot = func_L00_002506D0(obj);
+    if (slot >= 0) {
+        func_L00_00252D20(obj, slot | 0x300);
+        func_00118D80(0);
+        e = D_L00_00197080 + slot * 16;
+        qcopy(e, obj);
+        if (*(unsigned char *)(obj + 0x52) != 0xFF) {
+            *(unsigned char *)(obj + 0xA5) = *(unsigned char *)(obj + 0x52);
+        }
+        qcopy(e, obj + 0xF0);
+        *(unsigned char *)(obj + 0x52) = 0xFF;
+        *(unsigned char *)(obj + 0x50) = slot;
+    }
+    *(unsigned char *)(obj + 0x51) = a1;
+    *(unsigned char *)(obj + 0x53) = a0;
+    update_moby_animation_state(obj);
+    g2 = D_0013E633 + 0xE1D;
+    *(float *)(g2 + 0xA90) = 1.0f;
+    if (t > 0.0f) {
+        *(float *)(g2 + 0xA94) = 1.0f / t;
+        *(float *)(obj + 0x54) = 0.0f;
+        *(int *)(g2 + 0xAA0) = -1;
+    } else {
+        *(float *)(g2 + 0xA94) = 1.0f;
+        *(int *)(g2 + 0xAA0) = truncate_float_to_s32(-t) - 1;
+        *(int *)(g2 + 0xAA4) = 0;
+        *(float *)(obj + 0x54) = 0.0f;
+    }
+    func_L00_00232EA8();
+    g3 = D_0013E633 + 0xE1D;
+    o = a0 * 4;
+    *(unsigned char *)(obj + 0x7C) = *(unsigned char *)(*(int *)(*(int *)(obj + 0x24) + o + 0x48) + 0x11);
+    *(int *)(g3 + 0xA9C) = 1;
+    if (t < 0.0f) {
+        t = *(int *)((char *)&D_L00_0015F7C0 + *(int *)(g3 + 0xAA0) * 4);
+    }
+    if (*(unsigned char *)(g3 + 0x20A4) == 0) {
+        func_L00_002326D0(a0, a1, t);
+    }
+    func_L00_00211F68();
+    if (*(int *)(g3 + 0x2278) != 0) {
+        func_L00_00232A78(a0, a1, t);
+    }
+}
 extern void func_0020D6D0(void *);
 
 /* Starts sequence SEQ of bank BANK on the animation at D_0013F450 +
@@ -330,7 +407,13 @@ void func_L00_00232E60(int bank, int seq) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00232EA8);
+extern char D_0013E633[];
+// resets two fields in the global game block
+void func_L00_00232EA8(void) {
+    char *b = D_0013E633 + 0xE1D;
+    *(int *)(b + 0xAB0) = -1;
+    *(int *)(b + 0xAB8) = 0;
+}
 /* Stores ID at D_0013F450 + 0xAB8, or func_001F9850(5) when ID is -1. */
 void func_L00_00232EC0(int id) {
     if (id == -1) {
@@ -476,7 +559,16 @@ void func_L00_00233AC8(void) {
         *(unsigned short *)(obj + 0x34) &= ~1;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00233B08);
+/* Stores two floats, an index and a byte, and sets the bits of a byte mask in a flag halfword. */
+void func_L00_00233B08(float a, float b, short c, unsigned char d, unsigned char e, unsigned char f) {
+    char *base = D_0013E633 + 0xE1D;
+
+    *(int *)(base + 0x12A8) = c;
+    *(short *)(base + 0x12AC) = d;
+    *(unsigned short *)(base + 0x12AE) = (*(unsigned short *)(base + 0x12AE) & ~f) | e;
+    *(float *)(base + 0x12A0) = a;
+    *(float *)(base + 0x12A4) = b;
+}
 extern float func_L00_001FF860(float, float);
 extern void func_001F9BC0(void *);
 extern void func_001FA218(void *, void *);
@@ -613,7 +705,12 @@ void func_L00_00233EE0(float *out, float x, float y, float z) {
     func_001F9EE8(out, out, base);
     FastVecAdd(out, out, base + 0x80);
 }
-INCLUDE_ASM("asm/overlays", func_L00_00233F68);
+// Wrapper that negates float argument
+void func_L00_00233D50(float *dst, float *src, float h);
+
+void func_L00_00233F68(float *dst, float *src, float h) {
+    func_L00_00233D50(dst, src, -h);
+}
 extern void func_001FA218(void *, void *);
 
 /* Moves SRC by R into DST along the current animation's heading (+0x48
@@ -880,7 +977,10 @@ void func_L00_00234768(float *pos, int arg, float t) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_002347B8);
-INCLUDE_ASM("asm/overlays", func_L00_002347F0);
+// Returns the constant 2.
+int func_L00_002347F0(void) {
+    return 2;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00234800);
 extern int func_L00_002630A8(int, void *, void *, float);
 
@@ -895,7 +995,44 @@ void func_L00_00235040(void) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_00235088);
-INCLUDE_ASM("asm/overlays", func_L00_002352D0);
+extern char D_L00_0016C960[];
+extern void func_L00_002098B8(int);
+extern void func_L00_0020FC18(void);
+extern void func_L00_00235088(void);
+
+/* in state 2 or 6: flag the matching mobys, update, then clear bit 0 of three mobys */
+void func_L00_002352D0(int a0) {
+    char *d;
+    char *base;
+    char *o;
+    char *t;
+    int i;
+    if (D_L00_0015F6A8 == 2 || D_L00_0015F6A8 == 6) {
+        d = D_L00_0016C960;
+        for (i = 0; i < *(short *)(d + 0x44); i++) {
+            o = *(char **)(d + 0x178 + i * 4);
+            if ((unsigned short)(*(unsigned short *)(o + 0xA6) - 0x509) < 2) {
+                *(unsigned short *)(o + 0x34) |= 0x800;
+            }
+        }
+        func_L00_002098B8(a0);
+        func_L00_0020FC18();
+        func_L00_00235088();
+        base = D_0013F450;
+        t = *(char **)(base + 0x11D0);
+        if (t != 0) {
+            *(unsigned short *)(t + 0x34) &= 0xFFFE;
+        }
+        t = *(char **)(base + 0x11D4);
+        if (t != 0) {
+            *(unsigned short *)(t + 0x34) &= 0xFFFE;
+        }
+        t = *(char **)(base + 0x1220);
+        if (t != 0) {
+            *(unsigned short *)(t + 0x34) &= 0xFFFE;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002353B8);
 extern void func_0020DAF8(int, int, void *);
 extern void func_001FA480(void *, void *);

@@ -147,8 +147,76 @@ void func_L00_00236750(HudElem *e) {
     func_L00_00236610(e);
 }
 INCLUDE_ASM("asm/overlays", func_L00_002367A8);
-INCLUDE_ASM("asm/overlays", func_L00_00236830);
-extern void func_L00_0023B440(void *);
+extern float func_001F9B50(float);
+
+/* Eases a counter's shown value toward its target and animates its two drifting digits. */
+void func_L00_00236830(HudElem *e) {
+    unsigned char *c = e->cnt;
+    int v;
+    int cap;
+    int d;
+    int n;
+    int x;
+    unsigned char t;
+
+    if (e->unk0C != 0) {
+        v = *e->unk0C;
+        cap = e->unk08;
+        if (v < 0) {
+            v = 0;
+        }
+        e->unk78 = v;
+        if (cap < v) {
+            e->unk78 = cap;
+        }
+    }
+    if (e->unk74 != e->unk78) {
+        e->unk7C = scale_ticks(0xB4);
+        if (e->unk6C >= 0x18) {
+            x = e->unk74 - e->unk78;
+            d = x;
+            d = d < 0 ? -d : d;
+            if (d != 0) {
+                n = truncate_float_to_s32(func_001F9B50(func_001FA888(d) / 25.0f) * 5.0f);
+                n = n < d * scale_ticks(2) / scale_ticks(10) ? d * scale_ticks(2) / scale_ticks(10) : n;
+                if (n >= 0x7A) {
+                    n = 0x79;
+                } else if (n <= 0) {
+                    n = 1;
+                }
+                c[3] += n;
+                t = c[3];
+                if (scale_ticks(2) < t) {
+                    n = c[3] / scale_ticks(2);
+                    if (e->unk78 < e->unk74) {
+                        e->unk74 = e->unk74 - n;
+                    } else {
+                        e->unk74 = e->unk74 + n;
+                    }
+                    c[3] -= n * scale_ticks(2);
+                }
+            }
+        }
+    }
+    if (e->unk7C >= scale_ticks(5)) {
+        if (c[0] < scale_ticks(8)) {
+            c[0]++;
+        } else if (c[1] < scale_ticks(8)) {
+            c[1]++;
+        }
+    } else {
+        if (c[1] != 0 || c[0] != 0) {
+            e->unk6C = 1;
+        }
+        if (c[1] != 0) {
+            c[1]--;
+        } else if (c[0] != 0) {
+            c[0]--;
+        }
+    }
+    func_L00_0023B440((char *)e + 0x40);
+}
+extern int func_L00_0023B440(char *);
 
 /* A counter whose digits (+0x70, +0x71) drift at random: the target +0x78
    is *(+0x0C) clamped to [0, +0x08]; when it differs from the shown value
@@ -209,7 +277,10 @@ void func_L00_00237B20(HudElem *e) {
     e->h = 0x20;
     func_L00_00236610(e);
 }
-INCLUDE_ASM("asm/overlays", func_L00_00237B70);
+// Wrapper function (declaration provided by includes)
+void func_L00_00237B70(void *e) {
+    func_L00_00236830(e);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00237B90);
 extern char D_0013F450[];
 extern unsigned char D_0013E629 NOT_SDA;
@@ -287,7 +358,69 @@ void func_L00_00239F40(HudElem *e) {
     D_L00_0015FB68.unk4 = 0;
     D_L00_0015FB68.unk6 = 1;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00239FC0);
+extern short D_L00_0015F8D0;
+
+/* Updates the health HUD element: advances the wobble counters in its HudCounter (+0x80), clamps the target (+0x78) to +0x08, and steps the two digits (+0x70, +0x71) up or down. */
+void func_L00_00239FC0(HudElem *e) {
+    unsigned char *c = e->cnt;
+    HudCounter *h;
+    int t;
+    int max;
+
+    if (e->unk0C != 0) {
+        t = *e->unk0C;
+        e->unk78 = t > -1 ? t : 0;
+        h = e->unk80;
+        h->unk0 = (h->unk0 + 1) % 60;
+        h->unk2 += h->unk4;
+        h->unk4 += h->unk6;
+        if (h->unk4 > 60) {
+            h->unk4 = 60;
+        } else if (h->unk4 < -60) {
+            h->unk4 = -60;
+        }
+        if (h->unk2 >= 0x800) {
+            if (h->unk4 > 0) {
+                h->unk6 = -1;
+            }
+        }
+        if (h->unk2 >= 0x1000) {
+            h->unk2 = 0xFFF;
+        }
+        if (h->unk2 < 0x7FF) {
+            if (h->unk4 < 0) {
+                h->unk6 = 1;
+            }
+        }
+        if (h->unk2 < 0) {
+            h->unk2 = 0;
+        }
+        if (e->unk78 > e->unk08) {
+            e->unk78 = e->unk08;
+        }
+    }
+    if (e->unk74 != e->unk78 || e->unk74 == 1) {
+        e->unk7C = scale_ticks(0x78);
+        e->unk74 = e->unk78;
+    }
+    if (e->unk7C >= scale_ticks(5)) {
+        if (*(int *)&D_L00_0015F8D0 > c[0]) {
+            c[0]++;
+        } else if (c[1] < *(int *)&D_L00_0015F8D0) {
+            c[1]++;
+        }
+    } else {
+        e->unk6C = 1;
+        if (c[1] != 0) {
+            c[1]--;
+        } else if (c[0] != 0) {
+            c[0]--;
+        } else {
+            e->unk6C = -6;
+        }
+    }
+    func_L00_0023B440((char *)e + 0x40);
+}
 INCLUDE_ASM("asm/overlays", func_L00_0023A1A0);
 extern HudCounter D_L00_0015FB70 MACRO_ADDR;
 extern void func_L00_0023B0F8(HudElem *);
@@ -420,9 +553,122 @@ void func_L00_0023B0F8(HudElem *e) {
     e->h = 0x20;
     func_L00_00236610(e);
 }
-INCLUDE_ASM("asm/overlays", func_L00_0023B140);
+extern int D_0015EE80 MACRO_ADDR;
+extern short D_L00_0015F9F4;
+extern short D_L00_0015F9F8;
+extern short D_L00_0015F9FC;
+extern short D_L00_0015FA00;
+extern short D_L00_0015FA04;
+extern short D_L00_0015FA08;
+extern short D_L00_0015FA0C;
+extern short D_L00_0015FA10;
+extern short D_L00_0015FA14;
+extern short D_L00_0015FA18;
+extern char D_L00_0015F8A8[];
+extern void func_00200650(int, int, int, int, int, int);
+extern void func_L00_0023BAB8(char *, int, int, int, int, int);
+extern int func_00116248(char *, const char *, ...);
+extern int func_001FA8A8(int, int, float);
+extern void func_001F6CF8(int, int, int, char *, int);
+
+/* Draws the weapon HUD tile: three-part frame, weapon icon and ammo text with shadow, faded by the slide-in timers. */
+int func_L00_0023B140(char *m) {
+    char buf[16];
+    char *q = m + 0x70;
+    int x4;
+    int y = 0x12;
+    int x, a, alpha, w, s16, tex, c1, wd, v74;
+    float f21, f20;
+    if (D_0015EE80) y = 0xA;
+    x = *(int *)(m + 0x50);
+    if (*(unsigned char *)(m + 0x70) == 0) return *(int *)(m + 0x58);
+    {
+        f20 = func_001FA888(*(unsigned char *)(m + 0x70));
+        f21 = f20 / func_001FA888(*(int *)&D_L00_0015F9F4);
+        if (f21 > 1.0f) f21 = 1.0f;
+        else if (f21 < 0.0f) f21 = 0.0f;
+        f20 = func_001FA888(*(unsigned char *)(q + 1));
+        f20 = f20 / func_001FA888(*(int *)&D_L00_0015F9F8);
+        if (f20 > 1.0f) f20 = 1.0f;
+        else if (f20 < 0.0f) f20 = 0.0f;
+        alpha = truncate_float_to_s32(f21 * 128.0f);
+        a = truncate_float_to_s32((float)alpha * 0.7f);
+        if (*(int *)(m + 8) < 100) w = *(int *)&D_L00_0015F9FC;
+        else w = *(int *)&D_L00_0015FA00;
+        x4 = x + 4;
+        wd = x + truncate_float_to_s32((float)w * f21);
+        HudSprite(GetIconFrame(0x7580, 1), x - 0x1C, y, 0x20, 0x20, a);
+        HudSprite(GetIconFrame(0x7580, 0), x4, y, wd, 0x20, a);
+        func_00200650(GetIconFrame(0x7580, 1), x4 + wd, y, 0x20, 0x20, a);
+        tex = GetIconFrame(*(int *)m, 3);
+        *(int *)(m + 0x44) = tex;
+        HudFrame(m, tex, x, y, 0, alpha);
+        v74 = *(int *)(m + 0x74);
+        func_00116248(buf, D_L00_0015F8A8, v74, *(int *)(m + 8));
+        if (v74 != 0)
+            s16 = FastTweenColor(*(int *)&D_L00_0015FA04, *(int *)&D_L00_0015FA08, f20);
+        else
+            s16 = FastTweenColor(*(int *)&D_L00_0015FA0C, *(int *)&D_L00_0015FA10, f20);
+        c1 = FastTweenColor(0, 0x80000000, f20);
+        font_print_right(x + *(int *)&D_L00_0015FA14 + w + 1, y + *(int *)&D_L00_0015FA18 + 1, c1, buf, -1);
+        font_print_right(x + *(int *)&D_L00_0015FA14 + w, y + *(int *)&D_L00_0015FA18, s16, buf, -1);
+    }
+    return *(int *)(m + 0x58);
+}
 INCLUDE_ASM("asm/overlays", func_L00_0023B430);
-INCLUDE_ASM("asm/overlays", func_L00_0023B440);
+extern int func_002140B0(int);
+extern char *D_L00_0017E5F4;
+extern int D_L00_0015F6B0 MACRO_ADDR;
+
+/* Evaluates an animated counter: picks a frame index from a table entry by mode (hold, loop, ping-pong, random pause) and stores it at +4. */
+int func_L00_0023B440(char *p) {
+    char *e = D_L00_0017E5F4 + *(short *)p * 8;
+    int r = 0;
+
+    if (*(unsigned short *)e != 0xFFFF) {
+        switch (*(unsigned char *)(p + 2)) {
+        case 0:
+            r = *(unsigned short *)(e + 4);
+            break;
+        case 1:
+            r = *(unsigned short *)(e + 4) +
+                (D_L00_0015F6B0 - *(int *)(p + 12)) / *(unsigned char *)(e + 7) % *(unsigned short *)(e + 2);
+            break;
+        case 2:
+            r = (D_L00_0015F6B0 - *(int *)(p + 12)) / *(unsigned char *)(e + 7) % (*(unsigned short *)(e + 2) * 2 - 2);
+            if (r >= *(unsigned short *)(e + 2)) {
+                int t = r + 2;
+                r = *(unsigned short *)(e + 2) * 2 - t;
+            }
+            r += *(unsigned short *)(e + 4);
+            break;
+        case 3: {
+            int t = *(int *)(p + 12);
+            if (t < D_L00_0015F6B0) {
+                r = (D_L00_0015F6B0 - t) / *(unsigned char *)(e + 7);
+                if (r < *(unsigned short *)(e + 2) * 2 - 2) {
+                    if (r >= *(unsigned short *)(e + 2)) {
+                        int t = r + 2;
+                        r = *(unsigned short *)(e + 2) * 2 - t;
+                    }
+                    r += *(unsigned short *)(e + 4);
+                } else {
+                    int a, b;
+                    r = *(unsigned short *)(e + 4);
+                    a = scale_ticks(10);
+                    b = random_integer_below(scale_ticks(30));
+                    *(int *)(p + 12) = *(unsigned short *)(e + 2) * 2 + a + b;
+                }
+            } else {
+                r = *(int *)(p + 4);
+            }
+            break;
+        }
+        }
+    }
+    *(int *)(p + 4) = r;
+    return r;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0023B610);
 INCLUDE_ASM("asm/overlays", func_L00_0023B750);
 /* Reached through $gp: under -G2 that takes a declaration of at most two
@@ -440,7 +686,42 @@ void func_L00_0023B890(void) {
     D_L00_0015FA48 = -1;
     D_L00_0015FA44 = 0;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0023BAB8);
+extern char D_L00_0017E5D8[];
+
+// Places a HUD element: looks up its size, offsets x/y by the anchor flags and draws it.
+void func_L00_0023BAB8(char *e, int id, int x, int y, int flags, int alpha) {
+    if (id >= 0) {
+        char *g = D_L00_0017E5D8;
+        char *a = *(char **)(g + 0x20);
+        char *b = *(char **)(g + 0x24);
+        unsigned char *t;
+        int w0, h0, w, h;
+        t = (unsigned char *)b + *(short *)(a + id * 4 + 2) * 8;
+        x += *(short *)(e + 0x48);
+        y += *(short *)(e + 0x4A);
+        w0 = 1 << t[6];
+        h0 = 1 << t[7];
+        w = w0;
+        h = h0;
+        if (flags & 1) {
+            x -= w >> 1;
+            y -= h >> 1;
+        }
+        if (flags & 2) {
+            x += w >> 2;
+            y += h >> 2;
+            w >>= 1;
+            h >>= 1;
+        }
+        if (flags & 4) {
+            x -= w0 >> 1;
+            y -= h0 >> 1;
+            w <<= 1;
+            h <<= 1;
+        }
+        HudSprite(id, x, y, w, h, alpha);
+    }
+}
 extern char D_L00_0017E5D8[];
 extern int *D_L00_00161280 MACRO_ADDR;
 extern int D_0013E600[];
@@ -481,7 +762,52 @@ void func_L00_0023C058(int tex, int x, int y, int w, int h, int alpha) {
     p[9] = 0;
     D_L00_00161280 = (int *)((char *)D_L00_00161280 + 0x50);
 }
-INCLUDE_ASM("asm/overlays", func_L00_0023C458);
+extern int *D_L00_00161280 __attribute__((section(".sdata")));
+
+/* Draws texture TEX as a four-vertex strip, turned a quarter, through the packet pointer. */
+void func_L00_0023C458(int tex, int x, int y, int w, int h, int alpha) {
+    char *arena = D_L00_0017E5D8;
+    unsigned char *e = (unsigned char *)(*(char **)(arena + 0x24)
+        + *(short *)(*(char **)(arena + 0x20) + tex * 4 + 2) * 8);
+    int th;
+    int tw;
+    int *base;
+    long *p;
+
+    tw = 1 << e[6];
+    th = 1 << e[7];
+    D_L00_00161280[0] = 0x10000007;
+    D_L00_00161280[1] = 0;
+    D_L00_00161280[2] = 0;
+    D_L00_00161280[3] = 0x50000007;
+
+    base = D_L00_00161280;
+    D_L00_00161280 = base + 4;
+    p = (long *)D_L00_00161280;
+    p[0] = 0xB400000000008001L;
+    p[1] = 0x53535353106L;
+    p[2] = GetFrameTex(tex);
+    p[3] = 0x154;
+    p[4] = ((long)alpha << 24) | 0x7F7F7F;
+    p[5] = tw * 16;
+    p[6] = (x * 16 + D_0013E600[4] - 8)
+         | ((long)(y * 16 + D_0013E600[5] - 8) << 16)
+         | ((long)*(int *)(arena + 0xC) << 32);
+    p[7] = (th << 20) + tw * 16;
+    p[8] = ((x + w) * 16 + D_0013E600[4] - 8)
+         | ((long)(y * 16 + D_0013E600[5] - 8) << 16)
+         | ((long)*(int *)(arena + 0xC) << 32);
+    p[9] = 0;
+    p[10] = (x * 16 + D_0013E600[4] - 8)
+          | ((long)((y + h) * 16 + D_0013E600[5] - 8) << 16)
+          | ((long)*(int *)(arena + 0xC) << 32);
+    p[11] = th << 20;
+    p[12] = ((x + w) * 16 + D_0013E600[4] - 8)
+          | ((long)((y + h) * 16 + D_0013E600[5] - 8) << 16)
+          | ((long)*(int *)(arena + 0xC) << 32);
+    p[13] = 0;
+    D_L00_00161280 = (int *)((char *)D_L00_00161280 + 0x70);
+}
 INCLUDE_ASM("asm/overlays", func_L00_0023D750);
 INCLUDE_ASM("asm/overlays", func_L00_0023D838);
 extern int D_0015EF8C MACRO_ADDR;
