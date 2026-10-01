@@ -104,6 +104,12 @@ and stopped. The packet gives that candidate (`best.c`) and every
 instruction that still differs. Your first attempt is `best.c` with one
 change aimed at the first difference; never start over.
 
+The repository keeps each function's closest attempt in
+`nonmatching/<dir>/<func>.c` ([NONMATCHING.md](NONMATCHING.md)); `best.c`
+already is the closer of that file and the run logs. Never edit
+`nonmatching/`: your runs are logged, and the lead re-stages what got
+closer.
+
 - Same instructions, registers swapped: change the order locals are first
   assigned, or swap the operands of a `+`, `*`, `&`, `|` or `==`.
 - Same instructions in another order: reorder the independent statements

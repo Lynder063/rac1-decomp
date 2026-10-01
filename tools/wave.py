@@ -33,6 +33,12 @@ Plans, tracks and integrates waves of worker agents (docs/WORKER.md).
       function's dossier, m2c sketch and PACKET.md, and a BUDGET in its
       build-sn/try/<func>/<arm>/ folder; prints one prompt per function.
       Refuses a function rank_candidates blocks.
+  python3 tools/wave.py stage [--level NN] [--max F] [func_X ...]
+      Shares near misses (docs/NONMATCHING.md): each overlay stub's closest
+      attempt within --max (a fraction of the bytes; default 0.15) goes to
+      nonmatching/<dir>/<func>.c through tools/nonmatching.py, unless the
+      staged one is already as close. Packets start from it; landing the
+      function removes it.
   python3 tools/wave.py salvage [--ports] [--level NN] [--reject func_X ...]
       Lands every overlay stub that already has an EXACT run logged in
       build-sn/try (a wave stopped before landing, a file that clashed
@@ -197,15 +203,31 @@ def choose_overlay_near(args) -> list[str]:
     return [name for _, name in rows][:args.count]
 
 
+def best_logged(name: str) -> tuple[float, str, str] | None:
+    """(closeness, verdict, candidate path) of NAME's closest attempt: its
+    run logs, or its staged near miss (nonmatching/) if that is as close."""
+    import nonmatching
+    close = [(d, -k, str(TRY / name / c), v) for k, (c, v) in enumerate(logged_runs(name))
+             if (d := miss(v)) is not None and (TRY / name / c).exists()]
+    best = min(close) if close else None            # of equally close attempts, the latest
+    path = nonmatching.staged().get(name)
+    if path is not None:
+        v = nonmatching.verdict_of(path)
+        d = miss(v)
+        if d is not None and (best is None or d <= best[0]):
+            return d, v, str(path)
+    return (best[0], best[3], best[2]) if best else None
+
+
 def keep_best(name: str) -> None:
     """Saves NAME's closest earlier candidate as best.c before a new round
-    starts writing p0.c, p1.c ... over the old ones."""
-    close = [(d, -k, c, v) for k, (c, v) in enumerate(logged_runs(name))
-             if (d := miss(v)) is not None and (TRY / name / c).exists()]
-    if close:
-        _, _, c, v = min(close)         # of equally close attempts, the latest
-        (TRY / name / "best.c").write_text((TRY / name / c).read_text(errors="replace"))
-        (TRY / name / "BEST.md").write_text(f"{v}\nbuild-sn/try/{name}/{c} when it was logged\n")
+    starts writing new candidates."""
+    import nonmatching
+    found = best_logged(name)
+    if found:
+        _, v, path = found
+        (TRY / name / "best.c").write_text(nonmatching.body(Path(path).read_text(errors="replace")))
+        (TRY / name / "BEST.md").write_text(f"{v}\n{Path(path).relative_to(ROOT)} when it was logged\n")
 
 
 def choose(args) -> list[str]:
@@ -872,6 +894,7 @@ def land_overlay(args, wave: dict) -> None:
         done, failed = land_batch(args, batch)
         landed += done
         skipped += failed
+    unstage(landed)
     freed = [n for n, v, _, _ in results(wave)
              if not v.startswith("EXACT") and (claims(wave) / n).exists()
              and shared.release(f"{args.name}:{(claims(wave) / n).read_text().strip()}", n)]
@@ -908,6 +931,37 @@ def long_setup(args) -> None:
         print(f"Read docs/LONG_FUNCTIONS.md and follow it exactly. FUNC={name} ARM={args.arm}.")
 
 
+def stage(args) -> None:
+    """Shares near misses: see the module docstring."""
+    import nonmatching
+    findex = dossier.overlay_file_index()
+    names = args.funcs or [n for n, _ in overlay_stubs(findex)
+                           if args.level is None or n.startswith(f"func_L{args.level:02d}_")]
+    jobs = []
+    for name in names:
+        if not (TRY / name).is_dir() and name not in nonmatching.staged():
+            continue
+        found = best_logged(name)
+        if found is None or found[0] > args.max or "nonmatching/" in found[2]:
+            continue                    # nothing close enough, or the staged one is already the closest
+        jobs.append(f"{name}={Path(found[2]).relative_to(ROOT)}")
+    if not jobs:
+        sys.exit("nothing new to stage")
+    out = docker("python", "tools/nonmatching.py", "stage", *jobs)
+    print(out.stdout + out.stderr)
+
+
+def unstage(names) -> None:
+    """Landed functions' near misses are done: remove their staged files."""
+    import nonmatching
+    files = nonmatching.staged()
+    gone = [files[n] for n in names if n in files]
+    for path in gone:
+        path.unlink()
+    if gone:
+        nonmatching.index()
+
+
 def salvage(args) -> None:
     """Batch-lands every overlay stub with an EXACT run logged (see the
     module docstring); ports crediting Lombyte only with --ports."""
@@ -931,6 +985,7 @@ def salvage(args) -> None:
     print(f"salvaging {len(batch)}: {' '.join(n for n, _, _ in batch)}", flush=True)
     args.name, args.batch = "salvage-ports" if args.ports else "salvage", True
     landed, failed = land_batch(args, batch)
+    unstage(landed)
     for name, why in skipped + failed:
         print(f"skipped {name}: {why}")
     print(f"{len(landed)} landed, {len(skipped) + len(failed)} skipped")
@@ -1175,13 +1230,18 @@ def main() -> None:
     g.add_argument("funcs", nargs="+")
     g.add_argument("--arm", default="opus")
     g.add_argument("--budget", type=int, default=20)
+    st = commands.add_parser("stage")
+    st.add_argument("funcs", nargs="*")
+    st.add_argument("--level", type=int)
+    st.add_argument("--max", type=float, default=FAR)
     s = commands.add_parser("salvage")
     s.add_argument("--ports", action="store_true")
     s.add_argument("--level", type=int)
     s.add_argument("--reject", nargs="*", default=[])
     args = parser.parse_args()
     {"plan": plan, "status": status, "integrate": integrate, "land": land,
-     "claim": claim, "tokens": tokens, "salvage": salvage, "long": long_setup}[args.command](args)
+     "claim": claim, "tokens": tokens, "salvage": salvage, "long": long_setup,
+     "stage": stage}[args.command](args)
 
 
 if __name__ == "__main__":

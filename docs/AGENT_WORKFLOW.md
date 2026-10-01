@@ -81,7 +81,8 @@ problem.
 | `tools/try_func.py` | compiles one candidate in a scratch copy of its file and compares it with retail |
 | `tools/wave.py status NAME`, `tokens NAME` | verdicts from the run logs; tokens per worker and per match |
 | `tools/wave.py land NAME --batch` | applies every exact candidate and re-checks it in its file |
-| `tools/wave.py salvage [--ports]` | lands every stub that already has an EXACT run logged; Lombyte ports only with `--ports` |
+| `tools/wave.py salvage [--ports] [--level NN]` | lands every stub that already has an EXACT run logged; Lombyte ports only with `--ports` |
+| `tools/wave.py stage [--level NN]` | shares near misses: each function's closest attempt (within 15%) goes to `nonmatching/` ([NONMATCHING.md](NONMATCHING.md)) |
 | `tools/wave.py long NAME func_X ...` | sets up Opus long-function workers: dossier, m2c sketch, packet, per-arm budget |
 | `tools/wave.py plan NAME --queue --overlay --near` | a near wave: earlier attempts within 10% of retail, each packet with its best candidate and what still differs (`tools/near_diffs.py`) |
 | `tools/overlay_variants.py clone` | matches variants of matched functions with no model |
@@ -153,14 +154,19 @@ says counts; only what `try_func` logged.
    ```
 
    Every new match can bring its variants; `names.py apply` writes the
-   readable names into the new bodies ([NAMES.md](NAMES.md)).
+   readable names into the new bodies ([NAMES.md](NAMES.md)). Then
+   `python3 tools/wave.py stage`: every near miss the batch left goes to
+   `nonmatching/` ([NONMATCHING.md](NONMATCHING.md)), so nobody redoes
+   it and anyone can pick it up. Landing a function removes its file.
 7. **Report and commit.** `bash tools/docker/run.sh python
    tools/gen_progress_report.py --no-build` regenerates the report (about
    2 minutes: it rebuilds and re-checks every file with C, one file per
    CPU), then `python3 tools/gen_progress_report.py --check`. Before it,
    `tools/overlay_file_check.py` (in the container) lists every changed
    file that fails to build or holds a C function that is no longer
-   EXACT. One commit per batch of waves; code ported from another
+   EXACT. The report also scores every staged near miss as
+   `fuzzy_match_percent` (never as matched). One commit per batch of
+   waves, with `nonmatching/` and the report; code ported from another
    project goes in a commit of its own that credits it. Commit only; the maintainer
    pushes.
 8. **Feed back.** Add an idiom to QUEUE.md only when a landed function

@@ -255,6 +255,13 @@ def _build_and_check(path: Path, c_names: list[str]) -> tuple[Path, dict[str, fl
     return path, {n: 100.0 if overlay_check.check(obj, n) == "EXACT" else 0.0 for n in c_names}
 
 
+def _score_staged(name: str, path: str) -> tuple[str, float]:
+    """A staged near miss's fuzzy_match_percent (tools/nonmatching.py).
+    Top-level so a process pool can run it."""
+    import nonmatching
+    return name, nonmatching.score(name, Path(path))
+
+
 def overlay_match_results(file_map: dict) -> dict[str, float]:
     """name -> 100.0 or 0.0 for every overlay function in FILE_MAP
     (docs/OVERLAYS.md, "Plan" step 3): only a C-defined function can score
@@ -284,6 +291,15 @@ def overlay_match_results(file_map: dict) -> dict[str, float]:
         sys.exit(f"*** {len(failed)} file(s) failed to build -- NOT writing a report")
     for _path, r in results:
         out.update(r)
+    # Near misses staged in nonmatching/ (docs/NONMATCHING.md): their share
+    # of matching bytes as fuzzy_match_percent. They are never finished:
+    # only an EXACT C definition in src/overlays/ counts as matched code.
+    import nonmatching
+    staged = [(n, str(p)) for n, p in nonmatching.staged().items() if out.get(n, 100.0) == 0.0]
+    if staged:
+        with ProcessPoolExecutor(max_workers=os.cpu_count() or 4) as pool:
+            for n, pct in pool.map(_score_staged, *zip(*staged)):
+                out[n] = min(pct, 99.99)
     return out
 
 
