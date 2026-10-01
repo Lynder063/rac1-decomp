@@ -33,7 +33,11 @@ relocation, which is loud. An `la`/`dla` in a slot is still rejected:
 retail's form for that has not been established.
 
 Symbols the assembler already treats as small (.extern size <= -G) are
-one gp-relative instruction anyway and are left alone.
+one gp-relative instruction anyway and are left alone. A symbol declared
+more than once with different sizes (a candidate's `extern short` alias
+beside the file's own 4-byte declaration, say) counts as small only if
+EVERY declaration is small: the assembler goes by the largest, so the
+access really is a two-instruction macro and does need the rewrite.
 
 Usage: python tools/check_macro_slots.py file.s   (rewrites in place)
 """
@@ -59,11 +63,13 @@ def main(path: str) -> int:
     nomacro = False
     with open(path) as f:
         lines = f.readlines()
-    small = set()
+    sizes = {}
     for line in lines:
         m = re.match(r"^\s*\.extern\s+([\w.$]+)\s*,\s*(\d+)", line)
-        if m and 0 < int(m.group(2)) <= G:
-            small.add(m.group(1))
+        if m:
+            sizes.setdefault(m.group(1), []).append(int(m.group(2)))
+    small = {sym for sym, seen in sizes.items()
+             if seen and all(0 < n <= G for n in seen)}
     for n, line in enumerate(lines):
         s = line.strip()
         if s.startswith(".set"):
