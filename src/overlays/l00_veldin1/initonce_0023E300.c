@@ -3,4 +3,103 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L00_0023E300);
-INCLUDE_ASM("asm/overlays", func_L00_0023EC00);
+typedef struct {
+    u8 pad0[0x34];
+    u16 flags;
+    u8 pad36[0x70];
+    s16 oClass;
+} VeldinMoby;
+
+typedef struct {
+    u8 pad0[0x30];
+    s32 state;
+    s32 timer;
+    u8 pad38[0xC];
+    s16 count;
+    u8 pad46[0x132];
+    VeldinMoby *mobys[1];
+    VeldinMoby *unk17C;
+    u8 pad180[4];
+    VeldinMoby *unk184;
+    VeldinMoby *unk188;
+} VeldinLevelState;
+
+extern void func_001F49B0(void *, void *);
+extern int func_001F9850(int);
+extern void func_001F9BC0(void *);
+extern void func_L00_00250800(void *, int, void *);
+extern float func_00214158(void);
+extern float func_002140F8(float, float);
+extern void func_00215C00(void *, float, float, float);
+extern int func_L00_00258BC8(int, int);
+extern void func_L00_0026DD70(void *, void *, int, int, int, float);
+extern void func_L00_0023E9A0(void *);
+extern void func_L00_0025805C(void *);
+extern void func_00233AB8();
+extern void func_L00_0023E4C8();
+extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+extern VeldinLevelState D_L00_0016C960;
+
+/* per-frame Veldin hook: queues callbacks and spawns particles by game state. Adapted from Lombyte (MIT) for PAL: overlays/l00/unclassified_0023d968.c, FUN_L00_0023e268. */
+void func_L00_0023EC00(void) {
+    VeldinMoby *m;
+    VeldinMoby *mb;
+    VeldinMoby *src;
+    s32 i;
+    s32 j;
+    s32 k;
+    s32 n;
+    f32 a;
+    f32 b;
+    s32 r;
+    f32 buf[4];
+    f32 v[4];
+
+    if (D_0015EE84_m == 0) {
+        for (i = 0; i < D_L00_0016C960.count; i++) {
+            if (D_L00_0016C960.mobys[i]->oClass == 0x212) {
+                func_001F49B0((void *)func_00233AB8, (void *)D_L00_0016C960.mobys[i]);
+            }
+        }
+    }
+    if (D_0015EE84_m == 2) {
+        for (j = 0; j < D_L00_0016C960.count; j++) {
+            mb = D_L00_0016C960.mobys[j];
+            if (mb->oClass == 0x1B1) {
+                mb->flags |= 0x800;
+            }
+        }
+    }
+    if (D_0015EE84_m == 3 && D_L00_0016C960.state == 5 && func_001F9850(900) < D_L00_0016C960.timer
+        && D_L00_0016C960.timer < func_001F9850(1100)) {
+        src = D_L00_0016C960.unk184;
+        if (src != 0) {
+            for (n = 0; n < 4; n++) {
+                func_001F9BC0(v);
+                func_L00_00250800(src, n % 2, buf);
+                a = func_00214158();
+                b = func_00214158();
+                func_00215C00(v, func_002140F8(D_0015EE6C * 0.7f, D_0015EE6C * 2.2f), a, b);
+                r = func_001F9850(0xC);
+                func_L00_0026DD70(buf, v, 0x80808080, 0x808080, func_L00_00258BC8(r, func_001F9850(0x23)), 147000.0f);
+            }
+        }
+    }
+    if (D_0015EE84_m == 7 && D_L00_0016C960.state == 4 && D_L00_0016C960.unk188 != 0
+        && D_L00_0016C960.unk188->oClass == 0x214) {
+        func_001F49B0((void *)func_00233AB8, (void *)D_L00_0016C960.unk188);
+    }
+    if (D_0015EE84_m == 14 && D_L00_0016C960.state == 0) {
+        m = D_L00_0016C960.unk17C;
+        if (m != 0 && (u32)(D_L00_0016C960.timer - 0x1C) < 6) {
+            func_L00_0023E9A0(m);
+            func_001F49B0((void *)func_L00_0023E4C8, (void *)m);
+        }
+    }
+    if (D_0015EE84_m == 15 && (u32)(D_L00_0016C960.state - 3) < 2) {
+        for (k = 0; k < D_L00_0016C960.count; k++) {
+            func_L00_0025805C(D_L00_0016C960.mobys[k]);
+        }
+    }
+}

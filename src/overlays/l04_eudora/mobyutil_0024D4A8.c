@@ -5,4 +5,28 @@
 INCLUDE_ASM("asm/overlays", func_L04_0024D4A8);
 INCLUDE_ASM("asm/overlays", func_L04_0024D534);
 INCLUDE_ASM("asm/overlays", func_L04_0024D618);
-INCLUDE_ASM("asm/overlays", func_L04_0024D790);
+extern int func_L04_0024D4A8(float *, float *, int);
+extern void func_L04_0024D618(float *, float *, float *, float *);
+extern void func_001F9BF0(void *, void *, void *);
+extern float func_001F9CB8(void *);
+
+/* finds the closest point on a polygon's edges to a point, returns whether the first test hit */
+int func_L04_0024D790(float *out, float *p, float *poly, int n) {
+    float tmp[4];
+    float diff[4];
+    float best;
+    int i;
+    int r = func_L04_0024D4A8(p, poly, n) != 0;
+    best = 0;
+    for (i = 0; i < n; i++) {
+        float d;
+        func_L04_0024D618(tmp, poly + i * 4, poly + ((i + 1) % n) * 4, p);
+        FastVecSub(diff, p, tmp);
+        d = FastVecLength(diff);
+        if (i == 0 || d < best) {
+            best = d;
+            qcopy(out, tmp);
+        }
+    }
+    return r;
+}

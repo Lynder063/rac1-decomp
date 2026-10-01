@@ -218,8 +218,10 @@ def move_sites(lines, start, end):
             continue
         if not stripped or stripped.startswith("#"):
             continue
+        if stripped.endswith(":") and not stripped.startswith("."):
+            continue        # a label reached by fallthrough: the read after it still counts, as in scan()
         m = INSN_LINE.match(stripped)
-        if not m or stripped.startswith(".") or stripped.endswith(":"):
+        if not m or stripped.startswith("."):
             pending = None
             continue
         mnemonic, operands = m.group(1), m.group(2)

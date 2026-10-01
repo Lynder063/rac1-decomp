@@ -9,7 +9,41 @@ INCLUDE_ASM("asm/overlays", func_L15_002EF030);
 INCLUDE_ASM("asm/overlays", func_L15_002EF410);
 INCLUDE_ASM("asm/overlays", func_L15_002F8D30);
 INCLUDE_ASM("asm/overlays", func_L15_002F8D9C);
-INCLUDE_ASM("asm/overlays", func_L15_002F99F8);
+extern int func_L00_00260AB0(void *p, int i);
+extern int func_00215570(void *arg0, int arg1);
+extern int func_L00_00260B68(float *p, int idx);
+extern int func_L00_0025A778(float *p, float *v, int n);
+extern char D_0013E633[];
+extern char *D_L15_0015F050 MACRO_ADDR;
+extern int *D_L15_001B0DB0[];
+/* tests several indexed conditions of a moby's entry in the table */
+int func_L15_002F99F8(char *moby) {
+    int *e = *(int **)(D_L15_0015F050 + *(short *)(moby + 0x84) * 32 + 0x1C);
+    int r;
+    int i;
+    if (e[10] >= 0 && func_L00_00260AB0(D_0013E633 + 0xE9D, e[10])) {
+        return 0;
+    }
+    if (e[3] >= 0) {
+        if (is_point_inside_clip_volume(D_0013E633 + 0xE9D, e[3])) {
+            return 1;
+        }
+    } else if (e[4] >= 0) {
+        if (func_L00_00260AB0(D_0013E633 + 0xE9D, e[4])) {
+            return 1;
+        }
+    } else if (e[2] >= 0) {
+        if (func_L00_00260B68((float *)(D_0013E633 + 0xE9D), e[2])) {
+            return 1;
+        }
+    } else if (e[5] >= 0) {
+        i = e[5];
+        if (func_L00_0025A778((float *)(D_0013E633 + 0xE9D), (float *)(D_L15_001B0DB0[i] + 4), D_L15_001B0DB0[i][0])) {
+            return 1;
+        }
+    }
+    return 0;
+}
 extern void func_001F9BF0(void *dst, void *a, void *b);
 extern float func_001F9C78(void *a, void *b);
 extern void func_001F9C30(void *, void *, float);

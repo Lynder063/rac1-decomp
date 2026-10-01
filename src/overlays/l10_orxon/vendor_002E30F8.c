@@ -67,9 +67,89 @@ INCLUDE_ASM("asm/overlays", func_L10_002EB5B0);
 INCLUDE_ASM("asm/overlays", func_L10_002EB8A8);
 INCLUDE_ASM("asm/overlays", func_L10_002EBB70);
 INCLUDE_ASM("asm/overlays", func_L10_002EBDC8);
-INCLUDE_ASM("asm/overlays", func_L10_002EC098);
-INCLUDE_ASM("asm/overlays", func_L10_002ECAB0);
-INCLUDE_ASM("asm/overlays", func_L10_002ECBA0);
+struct L10Data {
+    char pad0[0x30];
+    int mode;
+    char pad1[0x178 - 0x34];
+    int slot[4];
+};
+extern int D_L10_0015F6A8 MACRO_ADDR;
+extern struct L10Data D_L10_0016CD60;
+extern void func_L00_00264870(int);
+
+/* update: wait for state 1, then act on the level's current mode */
+void func_L10_002EC098(char *m) {
+    switch (*(unsigned char *)(m + 0x20)) {
+    case 0:
+        ((unsigned char *)m)[0x30] = 0xFF;
+        m[0x20] = 1;
+        break;
+    case 1:
+        if (D_L10_0015F6A8 == 2) {
+            if (D_L10_0016CD60.mode == 3 || D_L10_0016CD60.mode == 5 ||
+                D_L10_0016CD60.mode == 6 || D_L10_0016CD60.mode == 7) {
+                int v = D_L10_0016CD60.mode;
+                int i;
+                i = 0;
+                if (v == 3) i = 1;
+                else if (v == 5 || v == 6) i = 2;
+                else if (v == 7) i = 3;
+                func_L00_00264870(D_L10_0016CD60.slot[i]);
+            }
+        }
+        break;
+    }
+}
+extern char *func_L00_0025B478(void *, int, int);
+extern int func_0022ED80(int, int, int);
+extern void func_L01_00279790(void *);
+extern void func_L00_00264EA8(void *, int, int, int, int, int, int);
+extern void func_0020D678(void *);
+
+/* Update for moby class 1855: waits, arms, then fires an effect and deletes itself. */
+void func_L10_002ECAB0(char *m) {
+    int hit = 0;
+    char *r = func_L00_0025B478(m, 0x10000, 0);
+    switch (*(unsigned char *)(m + 0x20)) {
+    case 0:
+        m[0x20] = 1;
+        break;
+    case 1:
+        if (r != 0 && *(float *)(r + 0x2C) > 0.0f) hit = 1;
+        if (hit) m[0x20] = 2;
+        break;
+    case 2:
+        func_0022ED80(0, 0, (int)m);
+        func_L01_00279790(m);
+        func_L00_00264EA8(m, 0x742, 1, 0x742, 1, 11, 2);
+        DeleteMoby(m);
+        break;
+    }
+}
+extern void func_L01_00279E10(void *, int);
+
+/* per-frame update: wait for a condition, then run, then clean up */
+void func_L10_002ECBA0(char *moby) {
+    int ok = 0;
+    char *p = func_L00_0025B478(moby, 0x10000, 0);
+    switch (*(unsigned char *)(moby + 0x20)) {
+    case 0:
+        moby[0x20] = 1;
+        break;
+    case 1:
+        if (p != 0) {
+            if (0.0f < *(float *)(p + 0x2C)) ok = 1;
+        }
+        if (ok != 0) moby[0x20] = 2;
+        break;
+    case 2:
+        func_0022ED80(0, 0, (int)moby);
+        func_L01_00279790(moby);
+        func_L01_00279E10(moby, 0x741);
+        DeleteMoby(moby);
+        break;
+    }
+}
 char *func_L10_002ECC80(char *owner) {
     char *moby = CreateMoby(0x781);
     if (moby != 0) {

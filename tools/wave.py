@@ -28,10 +28,28 @@ Plans, tracks and integrates waves of worker agents (docs/WORKER.md).
       progress report and commit that function alone. A failure restores the
       source file and moves on. Needs src/ and progress/ clean.
 
+  python3 tools/wave.py salvage [--ports] [--reject func_X ...]
+      Lands every overlay stub that already has an EXACT run logged in
+      build-sn/try (a wave stopped before landing, a file that clashed
+      then): batch-landed like `land --batch`. Candidates crediting Lombyte
+      are left out unless --ports, which lands only those, so the two go in
+      separate commits.
+
 --near picks earlier attempts that came close (BYTES within 40, a size
 within 8 bytes, or a near-miss in src/); --fresh, the default, picks
 functions nobody has tried, smallest first. Waves are recorded in
 build-sn/waves/NAME.json.
+
+--overlay --near is a near wave (docs/QUEUE.md, "Near misses"): overlay
+stubs whose best attempt came within --near-max of retail (a fraction of
+the bytes; default 0.10) or within 8 bytes of its size, closest first.
+Each one's best candidate is kept as build-sn/try/<func>/best.c, and
+tools/near_diffs.py writes what still differs to BEST_DIFF.txt; both go in
+the packet.
+
+A run's chance of an EXACT falls with every run spent on the same function
+(waves q6-q26: about 12% for runs 1-5, 8% for 6-10, 3-4% after), so the
+default budget is 6: what's left of a function is a near wave's job.
 
 Overlay functions (func_LNN_XXXXXXXX, docs/OVERLAYS.md) are a separate
 pool: named explicitly (func_L00_... on the command line, same as any
@@ -45,6 +63,7 @@ overlay wave differently (see land_overlay()): no full build (the
 executable does not link src/overlays/), and progress/report.json does
 not count overlay functions yet -- see the TODO where it's called.
 """
+from __future__ import annotations
 import argparse
 import json
 import re
@@ -56,6 +75,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
 
+import claims as shared  # noqa: E402
 import dossier  # noqa: E402
 import integrate as checker  # noqa: E402
 import rank_candidates  # noqa: E402
@@ -65,6 +85,8 @@ WAVES = ROOT / "build-sn/waves"
 TRY = ROOT / "build-sn/try"
 SECTION = {"match": "Matching", "compile": "First compile"}
 CLOSE_BYTES, CLOSE_SIZE = 40, 8
+NEAR_MAX = 0.10     # --overlay --near: the furthest a best attempt may be, as a fraction of the bytes
+CREDIT = "Adapted from Lombyte"
 ALL_LEVELS = 19  # docs/OVERLAYS.md: how many levels there are in total
 
 OVERLAY_NAME = re.compile(r"^func_L\d{2}_[0-9A-Fa-f]{8}$")
@@ -101,9 +123,85 @@ def closeness(row: dict) -> int | None:
     return None
 
 
+def logged_runs(name: str) -> list[tuple[str, str]]:
+    """(candidate file, verdict) of every run ever logged for NAME, oldest
+    log first (runs.<stamp>.log, then runs.log), then each trial arm's
+    (try_func --arm, docs/LONG_FUNCTIONS.md) with its folder in the path."""
+    work = TRY / name
+    logs = sorted(work.glob("runs.*.log")) + [work / "runs.log"] + sorted(work.glob("*/runs.log"))
+    return [(str(log.parent.relative_to(work) / c), v.strip()) for log in logs if log.exists()
+            for c, v in (l.split(None, 1) for l in log.read_text(errors="replace").splitlines() if " " in l)]
+
+
+def miss(verdict: str) -> float | None:
+    """How far a verdict is from EXACT: the fraction of bytes that differ,
+    or 1 plus the size difference for a size within CLOSE_SIZE; None if it
+    is not close or not a comparison at all."""
+    m = re.match(r"BYTES (\d+)/(\d+)", verdict)
+    if m:
+        return int(m.group(1)) / int(m.group(2))
+    m = re.match(r"SIZE ours (\d+) / retail (\d+)", verdict)
+    if m and abs(int(m.group(1)) - int(m.group(2))) <= CLOSE_SIZE:
+        return 1 + abs(int(m.group(1)) - int(m.group(2)))
+    return None
+
+
+def overlay_stubs(findex) -> list[tuple[str, Path]]:
+    return [(n, path) for path, fns in {e[0]: e[1] for e in findex.values()}.items() for n, is_c in fns if not is_c]
+
+
+def logged_exact(name: str) -> str | None:
+    """The candidate of NAME's latest logged EXACT run, if its file is still there."""
+    hits = [c for c, v in logged_runs(name) if v.startswith("EXACT") and (TRY / name / c).exists()]
+    return str((TRY / name / hits[-1]).relative_to(ROOT)) if hits else None
+
+
+def choose_overlay_near(args) -> list[str]:
+    """Overlay stubs whose best attempt came close (see miss()), closest
+    first, skipping any that have an EXACT run (that's salvage's), that
+    another agent holds, or that an earlier near wave queued."""
+    findex = dossier.overlay_file_index()
+    held = shared.claimed_by_others("")
+    queued = set()
+    for other in WAVES.glob("*.json"):
+        try:
+            record = json.loads(other.read_text())
+        except ValueError:
+            continue
+        if record.get("near"):
+            queued.update(record.get("functions", []))
+    rows = []
+    for name, _path in overlay_stubs(findex):
+        if name in held or name in queued or not (TRY / name).is_dir():
+            continue
+        runs = logged_runs(name)
+        if any(v.startswith("EXACT") for _, v in runs):
+            continue
+        close = [(d, c) for c, v in runs if (d := miss(v)) is not None and (TRY / name / c).exists()]
+        if not close:
+            continue
+        d, _ = min(close)
+        if d <= args.near_max or d >= 1:
+            rows.append((d, name))
+    rows.sort()
+    return [name for _, name in rows][:args.count]
+
+
+def keep_best(name: str) -> None:
+    """Saves NAME's closest earlier candidate as best.c before a new round
+    starts writing p0.c, p1.c ... over the old ones."""
+    close = [(d, c, v) for c, v in logged_runs(name) if (d := miss(v)) is not None and (TRY / name / c).exists()]
+    if close:
+        _, c, v = min(close)
+        (TRY / name / "best.c").write_text((TRY / name / c).read_text(errors="replace"))
+        (TRY / name / "BEST.md").write_text(f"{v}\nbuild-sn/try/{name}/{c} when it was logged\n")
+
+
 def choose(args) -> list[str]:
     if args.funcs:
         return args.funcs
+    if getattr(args, "overlay", False) and getattr(args, "near", False):
+        return choose_overlay_near(args)
     if getattr(args, "overlay", False):
         return choose_overlay(args)
     rows = [r for r in triage.triage() if r["route"] != "blocked"]
@@ -126,8 +224,15 @@ def choose_overlay(args) -> list[str]:
     findex = dossier.overlay_file_index()
     rows = []
     pieces = fragments()
+    held = shared.claimed_by_others("")        # any agent's claim (tools/claims.py)
+    queued = set()                              # an earlier wave's queue, even where no one claimed it yet
+    for other in WAVES.glob("*.json"):
+        try:
+            queued.update(json.loads(other.read_text()).get("functions", []))
+        except (ValueError, AttributeError):
+            pass
     for name, (kind, size, levels_count, _places) in catalogue.items():
-        if kind == "exe" or name in pieces:
+        if kind == "exe" or name in pieces or name in held or name in queued:
             continue
         entry = findex.get(name)
         if entry is None:
@@ -139,8 +244,8 @@ def choose_overlay(args) -> list[str]:
         asm = ROOT / "asm/overlays" / f"{name}.s"
         if not asm.exists():
             continue
-        if any((TRY / name).glob("runs*.log")):     # an earlier wave tried it: a retry, not fresh
-            continue
+        if any((TRY / name).glob("runs*.log")) or (TRY / name / "NOTES.md").exists():
+            continue                                # an earlier wave tried it or stopped on it at once
         verdict, _cat, _detail = rank_candidates.classify(name, asm.read_text(errors="replace"), "text", size)
         if verdict == "blocked":
             continue
@@ -154,7 +259,41 @@ def choose_overlay(args) -> list[str]:
     return [name for _, _, name in rows][:args.count]
 
 
-BRANCH_OUT = re.compile(r"\b(b[a-z0-9]*)\s+(?:[^,\n]+,\s*)*(func_L\d\d_[0-9A-F]{8}|\.L[0-9A-F]{8})")
+BRANCH_OUT = re.compile(r"\b(b[a-z0-9]*)\s+(?:[^,\n]+,\s*)*(func_(?:L\d\d_)?[0-9A-F]{8}|\.L[0-9A-F]{8})")
+
+
+TEMP_REGS = {1, 2, 3, 12, 13, 14, 15, 24, 25}      # $at, $v0-$v1, $t4-$t7, $t8-$t9
+STORE_OP = re.compile(r"^(sb|sh|sw|sd|sq|swl|swr|sdl|sdr|swc1|sdc1|sqc2)$")
+READS_ALL_OP = re.compile(r"^(b[a-z]*|jr|j|mtc1|dmtc1|ctc1|mthi|mtlo|teq|tne|mult1?|multu1?|div1?|divu1?"
+                          r"|madd|maddu|c\.[a-z.]+)$")
+ASM_INS = re.compile(r"^\s*/\*[^*]*\*/\s+([a-z0-9.]+)\s*(.*)$")
+
+
+def reads_unset_register(text: str) -> bool:
+    """True when, in address order, the function reads a temporary register
+    before anything in it writes one: the tail of a larger function, whose
+    head set it. A call counts as writing $v0/$v1. Measured on the landed
+    matches: none of them trips it."""
+    written = set()
+    for line in text.splitlines():
+        m = ASM_INS.match(line)
+        if not m or m.group(1) == ".word":
+            continue
+        op, args = m.group(1), m.group(2)
+        if op in ("jal", "jalr"):
+            written |= {2, 3}
+            continue
+        regs = [(int(r), i) for i, r in enumerate(re.findall(r"\$(\d+)\b", args))]
+        if not regs:
+            continue
+        if STORE_OP.match(op) or READS_ALL_OP.match(op):
+            reads, writes = [r for r, _ in regs], []
+        else:
+            reads, writes = [r for r, i in regs if i > 0], [regs[0][0]]
+        if any(r in TEMP_REGS and r not in written for r in reads):
+            return True
+        written.update(writes)
+    return False
 
 
 def fragments() -> set[str]:
@@ -172,6 +311,8 @@ def fragments() -> set[str]:
             target = m.group(2)
             if target.startswith("func_") or target not in labels:
                 out.add(path.stem)
+        if reads_unset_register(text):
+            out.add(path.stem)
     return out
 
 
@@ -224,15 +365,21 @@ def plan(args) -> None:
     if overlay and args.role == "compile":
         sys.exit("no m2c sketch exists for overlay functions yet, so there is nothing for a "
                   "compile worker to start from (docs/OVERLAYS.md); use --role match")
+    near = overlay and args.near
     stamp = time.strftime("%Y%m%d-%H%M%S")
     for name in names:
         work = TRY / name
         work.mkdir(parents=True, exist_ok=True)
+        if near:
+            keep_best(name)
         if (work / "runs.log").exists():  # A fresh budget for this round.
             (work / "runs.log").rename(work / f"runs.{stamp}.log")
         (work / "BUDGET").write_text(f"{args.budget}\n")
     if overlay:
         dossier.overlay_write(names)
+        if near:
+            diffs = docker("python", "tools/near_diffs.py", *names)
+            (WAVES / f"{args.name}.diffs.log").write_text(diffs.stdout + diffs.stderr)
     else:
         needs_sketch = [n for n in names if not (TRY / n / "m2c.c").exists()]
         broken = [n for n in names if n not in needs_sketch
@@ -245,7 +392,7 @@ def plan(args) -> None:
     WAVES.mkdir(parents=True, exist_ok=True)
     record = {"name": args.name, "role": args.role, "budget": args.budget, "created": stamp,
               "started": time.time(), "functions": names, "pool": "overlay" if overlay else "exe",
-              "queue": args.queue}
+              "queue": args.queue, "near": near}
     (WAVES / f"{args.name}.json").write_text(json.dumps(record, indent=2) + "\n")
     if args.queue:
         print(f"\nwave {args.name}: a queue of {len(names)} functions, budget {args.budget} runs each. "
@@ -302,13 +449,13 @@ def logged(work: Path, default: str, wave: dict | None = None) -> tuple[str, str
     runs = [l.split(None, 1) for l in log.read_text().splitlines() if " " in l] if log.exists() else []
     if not runs:
         return default, ""
-    def rank(run):
-        verdict = run[1]
+    def rank(i_run):
+        i, (_, verdict) = i_run
         if verdict.startswith("EXACT"):
-            return (0, 0)
+            return (0, -i)          # the latest EXACT: a lead's cleaned-up version wins
         m = re.match(r"BYTES (\d+)/", verdict)
         return (1, int(m.group(1))) if m else (2, 0)
-    candidate, verdict = min(runs, key=rank)
+    candidate, verdict = min(enumerate(runs), key=rank)[1]
     path = work / candidate
     return verdict.strip(), str(path.relative_to(ROOT)) if path.exists() else ""
 
@@ -327,20 +474,18 @@ def claim(args) -> None:
     for name in wave["functions"]:
         if len(got) == args.count:
             break
-        try:
-            with open(claims(wave) / name, "x") as f:
-                f.write(args.id + "\n")
-        except FileExistsError:
-            continue
+        if (claims(wave) / name).exists() or not shared.claim(f"{args.name}:{args.id}", name):
+            continue                        # this wave's, or another agent's (tools/claims.py)
+        (claims(wave) / name).write_text(args.id + "\n")
         got.append(name)
     if not got:
         print("QUEUE EMPTY")
         return
     for name in got:
-        print(packet(name, wave["budget"]))
+        print(packet(name, wave["budget"], wave.get("near", False)))
 
 
-def packet(name: str, budget: int) -> str:
+def packet(name: str, budget: int, near: bool = False) -> str:
     work = TRY / name
     context = (work / "CONTEXT.md").read_text(errors="replace").splitlines() if (work / "CONTEXT.md").exists() else []
     keep = [l for l in context[1:] if not l.startswith(("  - `func_", "- No m2c", "- The executable does not",
@@ -351,9 +496,36 @@ def packet(name: str, budget: int) -> str:
            if l.strip() and not l.startswith((".section", "/* Handwritten", "nonmatching"))] if asm_path else []
     out = [f"===== {name}: budget {budget} runs, work in build-sn/try/{name}/ =====", *keep,
            "", "## Assembly", *asm]
+    best, diff = work / "best.c", work / "BEST_DIFF.txt"
+    if near and best.exists():
+        shown = diff.read_text(errors="replace").splitlines() if diff.exists() else ["(no diff written)"]
+        out += ["", f"## Best earlier attempt: {shown[0]} (build-sn/try/{name}/best.c)",
+                "A near miss (QUEUE.md, \"Near misses\"): start from this candidate and change as little "
+                "as you can.", best.read_text(errors="replace"),
+                "", "## What still differs (offset, ours, retail)", *(shown[1:] or ["- nothing listed"])]
+    port = lombyte_port(name)
+    if port:
+        path, ntsc, text = port
+        out += ["", f"## Lombyte's matched C for this function: {ntsc} in {path}",
+                "Port it (QUEUE.md, \"Lombyte ports\"): it matched the US build, so start from it and keep its "
+                "control flow; your candidate's comment must credit it.", text]
     for label, other in start_from(name):
         out += ["", f"## Matched C to start from: {label}", other]
     return "\n".join(out) + "\n"
+
+
+def lombyte_port(name: str) -> tuple[str, str, str] | None:
+    """(Lombyte file, its name, its C) when Lombyte matched NAME's US
+    counterpart (tools/lombyte.py; docs/SIBLING_DECOMPS.md)."""
+    import lombyte
+    if not lombyte.MAP.exists() or not lombyte.LOMBYTE.is_dir():
+        return None
+    pair = next((p for p in lombyte.load_map() if p["pal"] == name and p["ntsc_exact"]), None)
+    found = pair and lombyte.definition(pair["ntsc"])
+    if not found:
+        return None
+    path, text = found
+    return path, pair["ntsc"], text
 
 
 def start_from(name: str) -> list[tuple[str, str]]:
@@ -480,10 +652,11 @@ def docker(*command: str) -> subprocess.CompletedProcess:
                           capture_output=True, text=True)
 
 
-def exact_in_report() -> set[str]:
+def exact_in_report(exe_only: bool = False) -> set[str]:
     report = json.loads((ROOT / "progress/report.json").read_text())
     return {f["name"] for u in report["units"] for f in u.get("functions", [])
-            if (f.get("fuzzy_match_percent") or 0) == 100}
+            if (f.get("fuzzy_match_percent") or 0) == 100
+            and not (exe_only and "level_code" in (u.get("metadata") or {}).get("progress_categories", []))}
 
 
 def land(args) -> None:
@@ -498,10 +671,11 @@ def land_exe(args, wave: dict) -> None:
     # Only src/ and the report are committed, so only they must be clean.
     dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no", "--", "src", "progress"],
                            cwd=ROOT, capture_output=True, text=True).stdout.strip()
-    if dirty:
+    if dirty and not args.batch:        # --batch: the landing lock guards writes; the lead commits
         sys.exit("land needs src/ and progress/ clean:\n" + dirty)
     rows = {r["name"]: r for r in triage.triage()}
     landed, skipped = [], []
+    before = len(exact_in_report(exe_only=True)) if args.batch else 0
     for name, verdict, candidate, _ in results(wave):
         if not verdict.startswith("EXACT") or not candidate:
             continue
@@ -517,6 +691,28 @@ def land_exe(args, wave: dict) -> None:
         saved = source.read_text()
         manifest = WAVES / f"{args.name}-{name}.MANIFEST"
         manifest.write_text(f"{name} {candidate}\n")
+        if args.batch:
+            owner = f"land:{args.name}"
+            if not shared.lock(owner):
+                skipped.append((name, "landing lock busy"))
+                continue
+            try:
+                saved = source.read_text()
+                applied = docker("python", "tools/integrate.py", str(manifest.relative_to(ROOT)), "--apply",
+                                 "--lock-owner", owner)
+                if "1/1 exact" not in applied.stdout:
+                    if source.read_text() != saved:
+                        source.write_text(saved)
+                    skipped.append((name, "not exact on re-check"))
+                    continue
+                if re.search(rf"INCLUDE_ASM\([^)]*\b{name}\)", source.read_text()):
+                    skipped.append((name, "exact, but not applied (a definition under an alias?)"))
+                    continue
+            finally:
+                shared.unlock(owner)
+            landed.append(name)
+            print(f"landed {name}", flush=True)
+            continue
         applied = docker("python", "tools/integrate.py", str(manifest.relative_to(ROOT)), "--apply")
         if "1/1 exact" not in applied.stdout:
             source.write_text(saved)
@@ -542,6 +738,18 @@ def land_exe(args, wave: dict) -> None:
         print(f"landed {name}: {len(exact) + 1} exact", flush=True)
     for name, why in skipped:
         print(f"skipped {name}: {why}")
+    if args.batch and landed:
+        # One full build confirms the whole batch: every landed function
+        # exact in the linked executable, nothing else moved.
+        build = docker("bash", "tools/build_sn.sh")
+        (WAVES / f"{args.name}.build.log").write_text(build.stdout + build.stderr)
+        count = re.search(r"exact \(size AND bytes\):\s*(\d+)", build.stdout)
+        mismatch = re.search(r"size mismatch:\s*(\d+)", build.stdout)
+        ok = not build.returncode and count and int(count.group(1)) == before + len(landed) \
+            and mismatch and not int(mismatch.group(1))
+        print(f"full build: {count.group(1) if count else '?'} exact (expected {before + len(landed)}), "
+              f"{mismatch.group(1) if mismatch else '?'} size mismatches: "
+              + ("confirmed" if ok else f"NOT confirmed, see {args.name}.build.log"))
     print(f"{len(landed)} landed, {len(skipped)} skipped")
 
 
@@ -602,10 +810,11 @@ def land_overlay(args, wave: dict) -> None:
     """
     dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no", "--", "src", "progress"],
                            cwd=ROOT, capture_output=True, text=True).stdout.strip()
-    if dirty:
+    if dirty and not args.batch:        # --batch: the landing lock guards writes; other agents may be mid-work
         sys.exit("land needs src/ and progress/ clean:\n" + dirty)
     findex = dossier.overlay_file_index()
     landed, skipped = [], []
+    batch = []      # --batch: (name, candidate, source), landed together below
     for name, verdict, candidate, _ in results(wave):
         if not verdict.startswith("EXACT") or not candidate or name in args.reject:
             continue
@@ -620,75 +829,233 @@ def land_overlay(args, wave: dict) -> None:
         if reason:
             skipped.append((name, f"refused: {reason}"))
             continue
-        saved = source.read_text()
-        known = overlay_known_name(saved, name)
-        manifest = WAVES / f"{args.name}-{name}.MANIFEST"
-        manifest.write_text(f"{name} {candidate}\n")
-        applied = docker("python", "tools/integrate.py", str(manifest.relative_to(ROOT)), "--apply")
-        # A candidate written before its neighbours landed can redeclare a
-        # function the file now defines or declares, with the type its
-        # author guessed. Drop those externs (the file's declaration wins)
-        # and try again; the strict check still decides.
-        for attempt in range(1, 4):
+        if args.batch:
+            batch.append((name, candidate, source))
+            continue
+        owner = f"land:{args.name}"
+        shared.lock(owner)                  # other agents write src/ too (tools/claims.py)
+        try:
+            outcome = land_one(args, name, candidate, source, owner)
+        finally:
+            shared.unlock(owner)
+            time.sleep(3)       # let a waiting agent take the lock before the next function
+        if outcome != "landed":
+            skipped.append((name, outcome))
+            continue
+        landed.append(name)
+        print(f"landed {name}", flush=True)
+    if batch:
+        done, failed = land_batch(args, batch)
+        landed += done
+        skipped += failed
+    freed = [n for n, v, _, _ in results(wave)
+             if not v.startswith("EXACT") and (claims(wave) / n).exists()
+             and shared.release(f"{args.name}:{(claims(wave) / n).read_text().strip()}", n)]
+    for name, why in skipped:
+        print(f"skipped {name}: {why}")
+    print(f"{len(landed)} landed, {len(skipped)} skipped; {len(freed)} unmatched claims released")
+
+
+def salvage(args) -> None:
+    """Batch-lands every overlay stub with an EXACT run logged (see the
+    module docstring); ports crediting Lombyte only with --ports."""
+    findex = dossier.overlay_file_index()
+    batch, skipped = [], []
+    for name, source in overlay_stubs(findex):
+        candidate = logged_exact(name) if name not in args.reject else None
+        if candidate is None:
+            continue
+        if (CREDIT in (ROOT / candidate).read_text(errors="replace")) != args.ports:
+            continue
+        reason = checker.banned(str(ROOT / candidate))
+        if reason:
+            skipped.append((name, f"refused: {reason}"))
+            continue
+        batch.append((name, candidate, source))
+    if not batch:
+        sys.exit("nothing to salvage")
+    print(f"salvaging {len(batch)}: {' '.join(n for n, _, _ in batch)}", flush=True)
+    args.name, args.batch = "salvage-ports" if args.ports else "salvage", True
+    landed, failed = land_batch(args, batch)
+    for name, why in skipped + failed:
+        print(f"skipped {name}: {why}")
+    print(f"{len(landed)} landed, {len(skipped) + len(failed)} skipped")
+
+
+def land_batch(args, batch: list) -> tuple[list[str], list[tuple[str, str]]]:
+    """Lands BATCH (name, candidate, source) together: every candidate
+    applied in one integrate run under the landing lock, then every touched
+    file rebuilt and every C function in it checked strictly in one
+    parallel tools/overlay_file_check.py run. A file with any problem is put
+    back (if nobody wrote it meanwhile) and its candidates land one by one
+    through land_one(), which also handles prototype clashes."""
+    owner = f"land:{args.name}"
+    files = sorted({source for _, _, source in batch})
+    manifest = WAVES / f"{args.name}.batch.MANIFEST"
+    manifest.write_text("".join(f"{name} {cand}\n" for name, cand, _ in batch))
+    shared.lock(owner)
+    try:
+        saved = {f: f.read_text() for f in files}
+        applied = docker("python", "tools/integrate.py", str(manifest.relative_to(ROOT)), "--apply", "--trust",
+                         "--lock-owner", owner)
+        (WAVES / f"{args.name}.batch.apply.log").write_text(applied.stdout + applied.stderr)
+        written = {f: f.read_text() for f in files}
+    finally:
+        shared.unlock(owner)
+    check = docker("python", "tools/overlay_file_check.py", *(str(f.relative_to(ROOT)) for f in files))
+    (WAVES / f"{args.name}.batch.check.log").write_text(check.stdout + check.stderr)
+    bad = {f for f in files if re.search(rf"(BUILD FAIL|NOT EXACT) {re.escape(str(f.relative_to(ROOT)))}:", check.stdout)}
+    landed, skipped = [], []
+    for name, cand, source in batch:
+        if source in bad:
+            continue
+        if overlay_is_stub(source, name):
+            skipped.append((name, "not applied (see the batch apply log)"))
+        else:
+            landed.append(name)
+            print(f"landed {name}", flush=True)
+    for f in sorted(bad):
+        shared.lock(owner)
+        try:
+            if f.read_text() == written[f]:
+                f.write_text(saved[f])
+            else:
+                skipped += [(n, f"{f.name} changed meanwhile; left as it is, check it")
+                            for n, _, s in batch if s == f]
+                continue
+        finally:
+            shared.unlock(owner)
+        for name, cand, source in batch:
+            if source != f:
+                continue
+            shared.lock(owner)
+            try:
+                outcome = land_one(args, name, cand, source, owner)
+            finally:
+                shared.unlock(owner)
+            if outcome == "landed":
+                landed.append(name)
+                print(f"landed {name} (one by one)", flush=True)
+            else:
+                skipped.append((name, outcome))
+    return landed, skipped
+
+
+def keep_own_types(text: str, names: set, suffix: str) -> str:
+    """TEXT with each of NAMES renamed NAME_SUFFIX: a typedef or struct tag
+    simply renamed, an extern also given __asm__("NAME") so it still means
+    the same symbol (one that already has an alias keeps its own)."""
+    for sym in sorted(names, key=len, reverse=True):
+        new = f"{sym}_{suffix}"
+        if re.search(rf"\b{new}\b", text):
+            continue
+        lines = []
+        for line in text.splitlines(keepends=True):
+            if line.lstrip().startswith("extern") and re.search(rf"\b{sym}\b", line) and "__asm__" not in line:
+                line = re.sub(rf"\b{sym}\b", new, line, count=1)
+                head, sep, tail = line.rpartition(";")
+                attrs = re.search(r"\s(MACRO_ADDR|__attribute__\(\(.*\)\))\s*$", head)
+                if attrs:
+                    head = head[:attrs.start()] + f' __asm__("{sym}")' + head[attrs.start():]
+                else:
+                    head += f' __asm__("{sym}")'
+                line = head + sep + tail
+            else:
+                line = re.sub(rf"\b{sym}\b", new, line)
+            lines.append(line)
+        text = "".join(lines)
+    return text
+
+
+def land_one(args, name: str, candidate: str, source: Path, owner: str) -> str:
+    """Applies one overlay candidate and re-checks it in its file; the
+    caller holds the landing lock. Returns "landed" or why not."""
+    saved = source.read_text()
+    known = overlay_known_name(saved, name)
+    manifest = WAVES / f"{args.name}-{name}.MANIFEST"
+
+    def apply(cand: str):
+        manifest.write_text(f"{name} {cand}\n")
+        return docker("python", "tools/integrate.py", str(manifest.relative_to(ROOT)), "--apply",
+                      "--lock-owner", owner)
+
+    def undo(why: str) -> str:
+        # Put the file back only if what is there is still our own write:
+        # an agent that edits without the lock must not lose its work.
+        if source.read_text() in (saved, written):
+            source.write_text(saved)
+            return why
+        return why + f"; {source.name} changed meanwhile, left as it is: check it"
+
+    original = candidate
+    applied = apply(candidate)
+    # A candidate written before its neighbours landed can redeclare a
+    # function the file now defines or declares, with the type its author
+    # guessed. Drop those externs (the file's declaration wins) and try
+    # again; the strict check still decides.
+    seen = set()
+    for attempt in range(1, 4):
+        log = TRY / name / "log.txt"
+        clash = set(re.findall(r"conflicting types for `(\w+)'", log.read_text(errors="replace"))) \
+            if "1/1 exact" not in applied.stdout and log.exists() else set()
+        if not clash:
+            break
+        seen |= clash
+        text = (ROOT / candidate).read_text()
+        kept = [l for l in text.splitlines(keepends=True)
+                if not (l.startswith("extern") and any(re.search(rf"\b{c}\b", l) for c in clash))]
+        if len(kept) == len(text.splitlines()):
+            break
+        candidate = str((TRY / name / f"lead{attempt}.c").relative_to(ROOT))
+        (ROOT / candidate).write_text("".join(kept))
+        applied = apply(candidate)
+    # The file's declaration can have other types than the ones the
+    # candidate matched with. Then keep the candidate's own: rename its
+    # typedefs and declare each clashing symbol under an alias naming that
+    # one symbol (QUEUE.md, "Rules"), until nothing clashes.
+    if "1/1 exact" not in applied.stdout and seen - {name}:
+        text = (ROOT / original).read_text()
+        for attempt in range(1, 5):
+            text = keep_own_types(text, seen - {name}, name[-6:])
+            candidate = str((TRY / name / f"alias{attempt}.c").relative_to(ROOT))
+            (ROOT / candidate).write_text(text)
+            applied = apply(candidate)
             log = TRY / name / "log.txt"
             clash = set(re.findall(r"conflicting types for `(\w+)'", log.read_text(errors="replace"))) \
                 if "1/1 exact" not in applied.stdout and log.exists() else set()
-            if not clash:
+            if not clash - seen - {name}:
                 break
-            text = (ROOT / candidate).read_text()
-            kept = [l for l in text.splitlines(keepends=True)
-                    if not (l.startswith("extern") and any(re.search(rf"\b{c}\b", l) for c in clash))]
-            if len(kept) == len(text.splitlines()):
-                break
-            candidate = str((TRY / name / f"lead{attempt}.c").relative_to(ROOT))
-            (ROOT / candidate).write_text("".join(kept))
-            manifest.write_text(f"{name} {candidate}\n")
-            applied = docker("python", "tools/integrate.py", str(manifest.relative_to(ROOT)), "--apply")
-        if "1/1 exact" not in applied.stdout:
-            source.write_text(saved)
-            skipped.append((name, "not exact on re-check"))
-            continue
-        recheck = WAVES / f"{args.name}-{name}.landed.c"
+            seen |= clash
+    written = source.read_text()
+    if "1/1 exact" not in applied.stdout:
+        return undo("not exact on re-check")
+    recheck = WAVES / f"{args.name}-{name}.landed.c"
+    try:
         recheck.write_text(extract_definition(source, name))
-        verify = docker("python", "tools/try_func.py", name, str(recheck.relative_to(ROOT)), "--no-budget")
-        (WAVES / f"{args.name}-{name}.verify.log").write_text(verify.stdout + verify.stderr)
-        if "EXACT" not in verify.stdout:
-            source.write_text(saved)
-            skipped.append((name, "not exact re-checked against the landed file"))
-            continue
-        if args.batch:      # the lead regenerates the report and commits the batch
-            landed.append(name)
-            print(f"landed {name}", flush=True)
-            continue
-        # TODO(overlays): progress/report.json does not count overlay units
-        # yet (tools/gen_progress_report.py is being extended for them). It
-        # is still called here, the way land_exe() calls it, so that landing
-        # picks it up automatically once it can -- but only when a build
-        # already exists, since overlay landing does not need or produce
-        # one (the executable does not build src/overlays/).
-        elf = ROOT / "build-sn/rac1.elf"
-        report_note = ""
-        if elf.exists():
-            docker("python", "tools/gen_progress_report.py", "--no-build")
-        else:
-            report_note = (" (progress/report.json not refreshed: no build-sn/rac1.elf yet, "
-                            "and it doesn't count overlay functions yet regardless)")
-        title = f"{known} ({name})" if known else name
-        message = (f"feat(overlays): {title} exact match\n\n"
-                   f"Matched by a Sonnet worker in wave {args.name}; checked strictly against "
-                   f"{name}'s real address in its level with tools/overlay_check.py "
-                   f"(docs/OVERLAYS.md). No executable build: src/overlays/ isn't linked into "
-                   f"it.{report_note}\n\n{TRAILER}")
-        add = [str(source.relative_to(ROOT))]
-        if elf.exists():
-            add.append("progress/report.json")
-        subprocess.run(["git", "add", *add], cwd=ROOT, check=True)
-        subprocess.run(["git", "commit", "-q", "-m", message], cwd=ROOT, check=True)
-        landed.append(name)
-        print(f"landed {name}", flush=True)
-    for name, why in skipped:
-        print(f"skipped {name}: {why}")
-    print(f"{len(landed)} landed, {len(skipped)} skipped")
+    except SystemExit:
+        return undo("no C definition found in the file after applying (a definition split across lines?)")
+    verify = docker("python", "tools/try_func.py", name, str(recheck.relative_to(ROOT)), "--no-budget")
+    (WAVES / f"{args.name}-{name}.verify.log").write_text(verify.stdout + verify.stderr)
+    if "EXACT" not in verify.stdout:
+        return undo("not exact re-checked against the landed file")
+    neighbours = docker("python", "tools/overlay_file_check.py", str(source.relative_to(ROOT)))
+    (WAVES / f"{args.name}-{name}.file.log").write_text(neighbours.stdout + neighbours.stderr)
+    if neighbours.returncode:
+        return undo("the file's other C functions no longer all build EXACT with it")
+    if args.batch:      # the lead regenerates the report and commits the batch
+        return "landed"
+    elf = ROOT / "build-sn/rac1.elf"
+    if elf.exists():
+        docker("python", "tools/gen_progress_report.py", "--no-build")
+    title = f"{known} ({name})" if known else name
+    message = (f"feat(overlays): {title} exact match\n\n"
+               f"Matched by a Sonnet worker in wave {args.name}; checked strictly against "
+               f"{name}'s real address in its level with tools/overlay_check.py "
+               f"(docs/OVERLAYS.md).\n\n{TRAILER}")
+    add = [str(source.relative_to(ROOT))] + (["progress/report.json"] if elf.exists() else [])
+    subprocess.run(["git", "add", *add], cwd=ROOT, check=True)
+    subprocess.run(["git", "commit", "-q", "-m", message], cwd=ROOT, check=True)
+    return "landed"
 
 
 def main() -> None:
@@ -699,11 +1066,12 @@ def main() -> None:
     p.add_argument("funcs", nargs="*")
     p.add_argument("--role", choices=SECTION, default="match")
     p.add_argument("--count", type=int, default=10)
-    p.add_argument("--budget", type=int, default=15)
+    p.add_argument("--budget", type=int, default=6)
     pick = p.add_mutually_exclusive_group()
     pick.add_argument("--near", action="store_true")
     pick.add_argument("--fresh", action="store_true")
-    pick.add_argument("--overlay", action="store_true")
+    p.add_argument("--overlay", action="store_true")
+    p.add_argument("--near-max", type=float, default=NEAR_MAX)
     p.add_argument("--queue", action="store_true")
     p.add_argument("--family", action="store_true")
     p.add_argument("--min-size", type=int, default=0)
@@ -719,9 +1087,12 @@ def main() -> None:
     l.add_argument("name")
     l.add_argument("--batch", action="store_true")
     l.add_argument("--reject", nargs="*", default=[])
+    s = commands.add_parser("salvage")
+    s.add_argument("--ports", action="store_true")
+    s.add_argument("--reject", nargs="*", default=[])
     args = parser.parse_args()
     {"plan": plan, "status": status, "integrate": integrate, "land": land,
-     "claim": claim, "tokens": tokens}[args.command](args)
+     "claim": claim, "tokens": tokens, "salvage": salvage}[args.command](args)
 
 
 if __name__ == "__main__":

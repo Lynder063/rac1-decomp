@@ -3,7 +3,24 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L12_00272D90);
-INCLUDE_ASM("asm/overlays", func_L12_0027C8D8);
+extern float func_001F9B88(float);
+extern float func_001F9D10(void *, void *);
+extern float func_L00_001FF860(float, float);
+extern float func_001FA850(float, float);
+
+/* tests whether a point lies within height, distance and heading limits of a moby */
+int func_L12_0027C8D8(char *a, float *b, float x, float y, float z) {
+    float d = FastAbsF(b[2] - *(float *)(a + 0x18));
+    if (d > y) return 0;
+    if (FastVecDist(b, a + 0x10) > x) return 0;
+    if (!(0.0f < z)) return 1;
+    {
+        float r = func_L00_001FF860(b[0] - *(float *)(a + 0x10), b[1] - *(float *)(a + 0x14));
+        r = FastDiffRots(*(float *)(a + 0x48), r);
+        if (r > z) return 0;
+    }
+    return 1;
+}
 extern void func_0020DAF8(void *, int, void *);
 extern void func_L00_002514B8(void *);
 extern void func_L00_00251E30(void *);

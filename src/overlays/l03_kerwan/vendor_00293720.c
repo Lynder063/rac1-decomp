@@ -9,10 +9,76 @@ INCLUDE_ASM("asm/overlays", func_L03_00294040);
 INCLUDE_ASM("asm/overlays", func_L03_00295DB0);
 INCLUDE_ASM("asm/overlays", func_L03_002965A0);
 INCLUDE_ASM("asm/overlays", func_L03_0029DA60);
-INCLUDE_ASM("asm/overlays", func_L03_0029DB88);
+extern int D_L03_0015F6B0_m __asm__("D_L03_0015F6B0") MACRO_ADDR;
+extern int func_L00_0028EB98(void *, int);
+extern int func_0022ED80(int, int, int);
+
+// Per-frame state update for a moby: picks a value from its model id and stores it in its data.
+void func_L03_0029DB88(unsigned char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    if (moby[0x20] == 0) {
+        *(int *)(data + 0x150) = -1;
+        return;
+    }
+    if ((D_L03_0015F6B0_m & 7) != (((int)moby >> 8) & 7)) return;
+    if (*(short *)(data + 0x14A) != 0) return;
+    if (*(int *)(data + 0x150) >= 0) {
+        if (func_L00_0028EB98(moby, *(int *)(data + 0x150)) != 0) return;
+    }
+    switch (*(short *)(moby + 0xA6)) {
+    case 0x75:
+    case 0x78:
+        *(int *)(data + 0x150) = func_0022ED80(0, 4, (int)moby);
+        break;
+    case 0x4B:
+    case 0x73:
+    case 0x74:
+    case 0x76:
+    case 0x77:
+        *(int *)(data + 0x150) = func_0022ED80(1, 4, (int)moby);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L03_0029DC60);
 INCLUDE_ASM("asm/overlays", func_L03_0029E1A8);
-INCLUDE_ASM("asm/overlays", func_L03_0029E370);
+extern int func_001F9938(void *);
+extern float func_001F9D10(void *, void *);
+extern int func_001F9850(int);
+extern int func_L00_00258BC8(int, int);
+extern char D_L03_00166F40[];
+
+// Picks the next animation frame value for a moby in one of several states, storing it at data+0x148.
+void func_L03_0029E370(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    int r;
+    float f;
+    switch (*(short *)(moby + 0xA6)) {
+    case 0x33:
+    case 0x40:
+    case 0x4B:
+    case 0x73:
+    case 0x74:
+    case 0x76:
+    case 0x77:
+        if (*(short *)(data + 0x148) == -1) {
+            int lo = *(short *)(data + 0x14C);
+            *(short *)(data + 0x148) = scale_ticks(rand_range(lo, lo + *(short *)(data + 0x14E)));
+        } else {
+            int x, y;
+            if (!FastDecTimer(data + 0x148)) {
+                break;
+            }
+            f = FastVecDist(moby + 0x10, D_L03_00166F40);
+            if (f > 15.0f && f < 90.0f) {
+                func_0022ED80(0, 0, (int)moby);
+            }
+            x = scale_ticks(0x898);
+            y = scale_ticks(0x898);
+            *(short *)(data + 0x148) = scale_ticks(rand_range(x, y + scale_ticks(0x3E8)));
+        }
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L03_0029E498);
 INCLUDE_ASM("asm/overlays", func_L03_0029ED60);
 INCLUDE_ASM("asm/overlays", func_L03_002BC038);

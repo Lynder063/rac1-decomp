@@ -9,7 +9,18 @@ INCLUDE_ASM("asm/overlays", func_L00_00267188);
 INCLUDE_ASM("asm/overlays", func_L00_00267290);
 INCLUDE_ASM("asm/overlays", func_L00_00267618);
 INCLUDE_ASM("asm/overlays", func_L00_0026763C);
-INCLUDE_ASM("asm/overlays", func_L00_002676A0);
+typedef struct { int a, b, c, d; } E00266858;
+extern char D_0013D605[];
+extern int func_L00_00267618(int, int);
+
+/* stores b in the d field of the slot func_L00_00267618 finds, if any. Adapted from Lombyte (MIT) for PAL: overlays/shared/audio_streaming_00266298.c, FUN_L00_00266858. */
+void func_L00_002676A0(int a, int b) {
+    int i = func_L00_00267618(a, b);
+    if (i != -1) {
+        E00266858 *s = (E00266858 *)(D_0013D605 + 0xB3);
+        ((E00266858 *)((char *)s - (-(i * 16))))->d = b;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002676E8);
 INCLUDE_ASM("asm/overlays", func_L00_00267BA8);
 INCLUDE_ASM("asm/overlays", func_L00_00267C34);

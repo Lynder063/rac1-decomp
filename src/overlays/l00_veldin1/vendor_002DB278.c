@@ -6,7 +6,113 @@ INCLUDE_ASM("asm/overlays", func_L00_002DB278);
 INCLUDE_ASM("asm/overlays", func_L00_002E1E38);
 INCLUDE_ASM("asm/overlays", func_L00_002E2038);
 INCLUDE_ASM("asm/overlays", func_L00_002E2B28);
-INCLUDE_ASM("asm/overlays", func_L00_002E2F58);
-INCLUDE_ASM("asm/overlays", func_L00_002E3128);
+extern void func_L00_00250800(void *, int, void *);
+extern void func_002141A8(void *, float, float);
+extern char *func_L00_002757E8(void *, void *, int, void *);
+extern float func_002140F8(float, float);
+extern int func_002140B0(int);
+extern int func_001F9850(int);
+extern float func_001FA888(int);
+extern void func_001F49B0(void (*)(void), void *);
+extern void func_L00_002E3128_2E2F58(void) __asm__("func_L00_002E3128");
+extern float D_L00_0015F660[] MACRO_ADDR;
+
+// spawns a spark: steps the moby's position and emits one fast particle and three slow tails
+// Adapted from Lombyte (MIT) for PAL: overlays/l00/gameplay_vendor_002e0988.c, FUN_L00_002e1aa8.
+void func_L00_002E2F58(char *m) {
+    char *vars;
+    char *p;
+    char *t;
+    float *pos;
+    float vel[4];
+    int i;
+    int life;
+
+    vars = *(char **)(m + 0x78);
+    pos = (float *)(vars + 0x1C0);
+    func_L00_00250800(m, 1, pos);
+    ((float *)(vars + 0x1C0))[2] -= 0.333f;
+    func_002141A8(vel, 0.005f, 0.03f);
+    p = func_L00_002757E8(pos, vel, 0x7F, m);
+    if (p != 0) {
+        *(float *)(p + 0xC) = func_002140F8(6000.0f, 32000.0f);
+    }
+    for (i = 0; i < 3; i++) {
+        p = func_L00_002757E8((float *)(vars + 0x1C0), D_L00_0015F660, 0x7F, m);
+        if (p != 0) {
+            t = p + 0x20;
+            if (i == 2 && func_002140B0(8) == 0) {
+                *(float *)(p + 0xC) = 180000.0f;
+            } else {
+                *(float *)(p + 0xC) = func_002140F8(80000.0f, 120000.0f);
+            }
+            life = func_001F9850(2);
+            *(short *)(p + 0xA) = life;
+            *(float *)(t + 0x10) = 1.0f / func_001FA888((short)life);
+            *(int *)(t + 0x18) = 0x7F7F7F;
+            *(short *)(t + 0x16) = 3;
+        }
+    }
+    func_001F49B0(func_L00_002E3128_2E2F58, m);
+}
+extern char D_0013E633[];
+extern float D_L00_00166EC0[];
+extern float D_L00_001E6FF0[][4];
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9CA0(void *, void *, void *);
+extern int func_001F4868(int);
+extern void func_001F9C30(void *, void *, float);
+extern void func_L00_001FD1D8(void *, void *, int);
+typedef float W[4] __attribute__((aligned(16)));
+typedef struct {
+    int c[4];
+    int z0, z1, z2;
+    float f0, f1;
+    int z3;
+    float f2, f3;
+    long z4, q0, q1, q2;
+} T;
+
+/* Builds a four-vertex quad facing the camera from the moby's data point and runs the draw packet. */
+void func_L00_002E3128(char *m) {
+    W q[4];
+    T t;
+    W c, d, e, bb;
+    float (*p)[4];
+    float *qq;
+    int i;
+    qcopy(bb, *(char **)(m + 0x78) + 0x1C0);
+    bb[3] = 1.0f;
+    FastVecSub(c, D_L00_00166EC0, bb);
+    func_L00_001FF4B0(c, c, 1.0f);
+    FastVecCross(d, c, D_0013E633 + 0x10AD);
+    func_L00_001FF4B0(d, d, -1.0f);
+    FastVecCross(e, d, c);
+    t.q0 = GetEffectTex(11);
+    t.q2 = 0x8000000048L;
+    t.q1 = 0xFF9000000260L;
+    t.z4 = 5;
+    t.c[3] = 0x80FFFFFF;
+    t.c[2] = 0x80FFFFFF;
+    t.c[1] = 0x80FFFFFF;
+    t.c[0] = 0x80FFFFFF;
+    t.z0 = 0;
+    t.z1 = 0;
+    t.z2 = 0;
+    t.f0 = 1.0f;
+    t.f1 = 1.0f;
+    t.z3 = 0;
+    t.f2 = 1.0f;
+    t.f3 = 1.0f;
+    p = D_L00_001E6FF0;
+    qq = q[0];
+    for (i = 3; i >= 0; i--) {
+        FastVecScale(qq, p, 0.2f);
+        p++;
+        qq += 4;
+    }
+    func_L00_001FD1D8(q, c, 0);
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E32A0);
 INCLUDE_ASM("asm/overlays", func_L00_002E4CB0);

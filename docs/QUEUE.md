@@ -8,7 +8,9 @@ the tree beyond what a packet names.
 
 ## Loop: claim COUNT functions at a time until N are handled
 
-Run everything from the repository root.
+Run everything from the repository root, with Python 3.10 or newer: on
+the Mac that is `/opt/homebrew/bin/python3` (plain `python3` is 3.9 and
+fails on `wave.py`).
 
 1. `python3 tools/wave.py claim <WAVE> <ID> --count <COUNT>` prints a
    packet per function: what it calls and uses, its assembly, and matched
@@ -55,6 +57,12 @@ Run everything from the repository root.
 - Matched C in a packet may call functions by readable names
   (`include/names.h` macros for the address names). Define and declare
   with the address name (`func_...`, `D_...`); in a body either works.
+- A hardware register (0x10000000 and up, 0x70000000 scratchpad) is
+  `*(volatile int *)0x10000000`. Never an `__asm__` alias whose name is
+  a number.
+- An `__asm__` alias names exactly one existing symbol:
+  `__asm__("D_0013E633")`, never an expression such as
+  `__asm__("D_0013E633 + 0xF1D")`. `land` refuses those.
 - Never write a level address as a number. Use the symbol the assembly
   names (`D_L05_001B24D4`), declared in the candidate.
 
@@ -66,6 +74,52 @@ lists as "not declared anywhere yet"; copy exactly the declarations it
 gives for the rest (a second declaration with another type fails to
 compile). No string literals: `extern char D_xxx[];`.
 
+## Lombyte ports
+
+When the packet shows "Lombyte's matched C", Lombyte (the US build's
+decompilation, MIT) has matched this function. Port it rather than start
+over ([SIBLING_DECOMPS.md](SIBLING_DECOMPS.md), "Porting a function"):
+
+- Keep its control flow, statement order and types; they are what
+  matched. Its file (the path in the packet) has the structs and
+  typedefs it uses: copy the ones you need into the candidate.
+- Rename its symbols to ours. A function: `python3 tools/lombyte.py NAME`
+  prints our name. A global (`D_xxxxxxxx`, `D_LNN_xxxxxxxx`, a named
+  one) is a US address: take the symbol at the same place in our
+  assembly (the n-th `%hi`/`%lo` or `$gp` access matches the n-th in
+  theirs). Offsets inside a struct are the same in both builds.
+- `s8`..`s64`, `u8`..`u64`, `f32`, `f64` exist in `include/common.h`;
+  `u128` does not: check how our matched code in the same file does
+  128-bit copies (`qcopy()`).
+- The comment above the function must end with
+  `Adapted from Lombyte (MIT) for PAL: <its file under src/>, <its name>.`
+  The lead lists every port in THIRD_PARTY_NOTICES.md.
+- If it doesn't match with our compiler within the budget, stop as
+  usual and say in NOTES.md how far it got: Lombyte builds some files
+  with a patched EE-GCC that ours cannot reproduce.
+
+## Near misses
+
+When the packet shows "Best earlier attempt", an earlier worker came close
+and stopped. The packet gives that candidate (`best.c`) and every
+instruction that still differs. Your first attempt is `best.c` with one
+change aimed at the first difference; never start over.
+
+- Same instructions, registers swapped: change the order locals are first
+  assigned, or swap the operands of a `+`, `*`, `&`, `|` or `==`.
+- Same instructions in another order: reorder the independent statements
+  that produce them (see "Codegen": the source's last store tends to come
+  out first).
+- One extra or missing move: a local the compiler keeps or folds. Inline
+  it, or give the value its own local.
+- `lui` + `lw` against `$gp`, or the reverse: the symbol's declared size
+  (`extern short` for `$gp`, `MACRO_ADDR` for `lui`).
+- A difference only in a branch-likely (`beql`/`bnel`) or a delay slot:
+  try the other form of the condition (`if (!x) ... else ...`).
+
+Three changes that leave the same differences mean the tie won't move:
+stop and say in NOTES.md which instructions are left.
+
 ## Reading the assembly
 
 - Arguments `$a0`-`$a3`, `$t0`-`$t3`; floats `$f12`, `$f13`, `$f14`...;
@@ -76,7 +130,9 @@ compile). No string literals: `extern char D_xxx[];`.
   objects of two bytes or less go through `$gp`, so declare it
   `extern short D_x;` (or `char`) and read a word as `*(int *)&D_x`, a
   float as `*(float *)&D_x`. This is the project's convention
-  (`include/common.h`).
+  (`include/common.h`). A bare `$gp` offset (`addiu $2, $28, -0x7580`)
+  is the address 0x166D00 + offset: at 0x15F000 or above it is level
+  data, `D_LNN_<address>` (`D_L00_0015F780`), never `D_<address>`.
 - A moby (game object) is a `char *`/struct pointer with fields at fixed
   offsets: state byte at 0x20, position vector at 0x10, its own data
   pointer at 0x78. Matched code in the packet shows the usual spellings.

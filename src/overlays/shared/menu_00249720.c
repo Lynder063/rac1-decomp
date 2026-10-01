@@ -3,7 +3,16 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L00_00249720);
-INCLUDE_ASM("asm/overlays", func_L00_00249750);
+/* Menu hit test: x in [58, 86] and a flag clear. */
+int func_L00_00249750(float a, float b, float x) {
+    int flag;
+    if (x >= 58.0f && x <= 86.0f) {
+        if (flag == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002497A0);
 int func_L00_002497E0(float a, float b, float x) { return x >= 95.0f; }
 INCLUDE_ASM("asm/overlays", func_L00_00249EE0);
@@ -35,7 +44,18 @@ int func_L00_0024A570(float a, float b, float x) {
 INCLUDE_ASM("asm/overlays", func_L00_0024A5C0);
 INCLUDE_ASM("asm/overlays", func_L00_0024A60C);
 INCLUDE_ASM("asm/overlays", func_L00_0024A798);
-INCLUDE_ASM("asm/overlays", func_L00_0024B1B0);
+extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
+extern int D_L00_001C47B8[];
+extern int D_L00_001792B8[];
+
+/* stores a value into a table slot chosen by the current index */
+void func_L00_0024B1B0(int a, int b) {
+    int i = D_0015EE84_m;
+    if (i < 19) {
+        b += D_L00_001C47B8[i];
+        D_L00_001792B8[b] = a;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_0024B200);
 INCLUDE_ASM("asm/overlays", func_L00_0024B2A4);
 INCLUDE_ASM("asm/overlays", func_L00_0024B750);
@@ -48,7 +68,12 @@ INCLUDE_ASM("asm/overlays", func_L00_0024B920);
 INCLUDE_ASM("asm/overlays", func_L00_0024B940);
 INCLUDE_ASM("asm/overlays", func_L00_0024B960);
 INCLUDE_ASM("asm/overlays", func_L00_0024B980);
-INCLUDE_ASM("asm/overlays", func_L00_0024B9A8);
+extern int D_0015EFB0 MACRO_ADDR;
+
+// Stores constant to gp-relative address
+void func_L00_0024B9A8(void) {
+    *(int *)&D_0015EFB0 = 5;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0024B9B4);
 INCLUDE_ASM("asm/overlays", func_L00_0024BA10);
 INCLUDE_ASM("asm/overlays", func_L00_0024BA60);
@@ -61,7 +86,10 @@ INCLUDE_ASM("asm/overlays", func_L00_0024BB98);
 INCLUDE_ASM("asm/overlays", func_L00_0024BBCC);
 INCLUDE_ASM("asm/overlays", func_L00_0024BBE8);
 INCLUDE_ASM("asm/overlays", func_L00_0024BC04);
-INCLUDE_ASM("asm/overlays", func_L00_0024BC2C);
+// Stores 12 into the word global D_0015EFB0.
+void func_L00_0024BC2C(void) {
+    *(int *)&D_0015EFB0 = 12;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0024BC38);
 INCLUDE_ASM("asm/overlays", func_L00_0024BCA0);
 INCLUDE_ASM("asm/overlays", func_L00_0024BCF0);

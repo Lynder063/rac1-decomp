@@ -24,11 +24,114 @@ void func_L00_002D4C80(char *a) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002D4CE8);
+extern char *func_0020D348(int);
+extern void func_L00_00251E30(void *);
+extern void func_L00_0025E210(void *);
+
+/* spawn a moby of type 0x27F and copy a spawn record into its data */
+char *func_L00_002D4CE8(char *a, char *b, int c, char *d) {
+    char *m = CreateMoby(0x27F);
+    if (m != 0) {
+        char *p;
+        *(unsigned char *)(m + 0x30) = 0xFF;
+        m[0x31] = 1;
+        *(unsigned short *)(m + 0x34) |= 1;
+        p = *(char **)(m + 0x78);
+        m[0x20] = 0;
+        m[0xBC] = 0;
+        qcopy(m + 0x10, b);
+        if (d != 0) {
+            qcopy(p, d);
+        } else {
+            qcopy(p, a);
+        }
+        *(int *)(p + 0x20) = c;
+        *(short *)(m + 0x32) = *(unsigned char *)(a + 0x3C);
+        p[0x24] = a[0x10];
+        p[0x25] = a[0x11];
+        p[0x26] = a[0x12];
+        p[0x27] = a[0x13];
+        p[0x28] = a[0x14];
+        p[0x29] = a[0x15];
+        p[0x68] = a[0x3D];
+        *(short *)(p + 0x6C) = *(unsigned short *)(a + 0x40);
+        p[0x2A] = a[0x16];
+        p[0x2B] = a[0x17];
+        p[0x2C] = a[0x18];
+        p[0x2D] = a[0x19];
+        p[0x2E] = a[0x1A];
+        p[0x69] = a[0x3E];
+        *(short *)(p + 0x6E) = *(unsigned short *)(a + 0x42);
+        p[0x2F] = a[0x1B];
+        p[0x30] = a[0x1C];
+        p[0x31] = a[0x1D];
+        p[0x32] = a[0x1E];
+        p[0x33] = a[0x1F];
+        p[0x6A] = a[0x3F];
+        *(short *)(p + 0x70) = *(unsigned short *)(a + 0x44);
+        *(float *)(p + 0x34) = *(float *)(a + 0x20);
+        *(float *)(p + 0x38) = *(float *)(a + 0x24);
+        *(float *)(p + 0x3C) = *(float *)(a + 0x28);
+        *(float *)(p + 0x40) = *(float *)(a + 0x2C);
+        *(float *)(p + 0x44) = *(float *)(a + 0x30);
+        p[0x6B] = a[0x48];
+        *(short *)(p + 0x72) = *(unsigned short *)(a + 0x46);
+        *(int *)(p + 0x48) = *(int *)(a + 0x34);
+        *(int *)(p + 0x4C) = *(int *)(a + 0x38);
+        p[0x1C] = a[0x49];
+        *(int *)(p + 0x64) = -1;
+        func_L00_00251E30(m);
+        func_L00_0025E210(m);
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002D4EC0);
 INCLUDE_ASM("asm/overlays", func_L00_002D5AC0);
 INCLUDE_ASM("asm/overlays", func_L00_002D6610);
-INCLUDE_ASM("asm/overlays", func_L00_002D6978);
+extern float func_L00_001FF860(float, float);
+extern float func_001F9D10(void *, void *);
+extern float func_001FA748(float, float);
+extern float func_L00_0025CE58(float *p, float *v, float a, float b, float c, float d);
+extern float func_00214D88(float *, float, float, float, float, float *);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_L00_00259868(int, int, float, float, float, int);
+extern float D_0015EE70 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+
+/* Walks a moby toward a target point: turn to face it, ease its speed, step it along its heading; returns the distance (or 37.0 when a flag is set). Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002cfcb8.c, FUN_L00_002d54c8. */
+float func_L00_002D6978(unsigned char *m, float *t, float vel) {
+    float vec[4] __attribute__((aligned(16)));
+    unsigned char *v;
+    float ang, d, z, a, lim, w;
+    v = *(unsigned char **)(m + 0x78);
+    ang = func_L00_001FF860(t[0] - *(float *)(m + 0x10), t[1] - *(float *)(m + 0x14));
+    z = *(float *)(m + 0x18);
+    d = func_001F9D10(m + 0x10, t);
+    if (2.0f < d)
+        ang = func_001FA748(ang, *(float *)(v + 0x1FC));
+    if (m[0x52] != m[0x53])
+        return d;
+    func_L00_0025CE58((float *)(m + 0x48), (float *)(v + 0x1F4), ang, D_0015EE70 * 12.566371f, D_0015EE70 * 12.566371f, D_0015EE6C * 12.566371f);
+    func_00214D88(&vel, d, D_0015EE70 * 8.0f, D_0015EE70 * 12.0f, D_0015EE6C * 4.0f, (float *)(v + 0x1F8));
+    if (*(float *)(v + 0x1F8) < 0.0f)
+        *(float *)(v + 0x1F8) = 0.0f;
+    a = *(float *)(m + 0x48);
+    *(float *)(v + 0x278) = a;
+    vec[0] = func_001F9F90(a) * *(float *)(v + 0x1F8);
+    vec[1] = func_001F9FA8(*(float *)(v + 0x278)) * *(float *)(v + 0x1F8);
+    vec[2] = 0.0f;
+    vec[2] = *(float *)(v + 0x270) - D_0015EE70 * 10.0f;
+    func_L00_00259868((int)m, (int)vec, 0.5f, 0.5f, 0.0f, 0x10);
+    w = *(float *)(m + 0x18) - z;
+    lim = D_0015EE6C * 4.0f;
+    *(float *)(v + 0x270) = w;
+    if (lim < w)
+        *(float *)(v + 0x270) = lim;
+    if (m[0x70] & 2)
+        return d;
+    return 37.0f;
+}
 int func_L00_002D6B90(char *a) {
     int r = func_L00_002DCDA8(a);
     if (r == 0) {
@@ -75,11 +178,97 @@ void func_L00_002D80A0(char *a) {
     *(float *)(d + 0x4C) = 2.5f;
     *(float *)(d + 0x48) = 3.0f;
 }
-INCLUDE_ASM("asm/overlays", func_L00_002D8180);
+typedef int ti_p __attribute__((mode(TI)));
+typedef struct {
+    char p0[0x10];
+    float a[4];
+    float b[4];
+    int c[4];
+    float d[4];
+} P_p;
+extern char D_L00_00166EC0[];
+extern int D_L00_0015F6A8 MACRO_ADDR;
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern int func_001F9908(int *);
+extern float func_001FA888(int);
+extern float func_001F9B88(float);
+extern int func_001FA8A8(int, int, float);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern unsigned char *func_L00_00273E08(void *pos, int a1, unsigned char a2, int idx, int flag, int s, int mode, float f);
+
+/* Draws four drifting, colour-cycling sprites around a moby, stepping each one's phase and fade timer. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002cfcb8.c, FUN_L00_002d6cd0. */
+void func_L00_002D8180(char *o) {
+    P_p *p = *(P_p **)(o + 0x78);
+    union { ti_p q; float f[4]; } v;
+    float d[4] __attribute__((aligned(16)));
+    float e[4] __attribute__((aligned(16)));
+    int i, col;
+    float f;
+
+    if (*(unsigned short *)(o + 0x34) & 1) {
+        return;
+    }
+    v.q = *(ti_p *)(o + 0x10);
+    v.f[2] += 0.333000004f;
+    func_001F9BF0(d, D_L00_00166EC0, o + 0x10);
+    func_L00_001FF4B0(d, d, -0.3f);
+    func_L00_001FF4B0(e, d, 0.1f);
+    func_001F9BD8(d, d, o + 0x10);
+    v.f[2] -= 0.333000004f;
+    for (i = 0; i < 4; i++) {
+        {
+            float h = p->a[i] + p->b[i];
+            p->a[i] = h;
+            if (255.0f <= h) {
+                p->a[i] = h - 255.0f;
+            } else if (h <= 0.0f) {
+                p->a[i] = h + 255.0f;
+            }
+        }
+        if (func_001F9908(&p->c[i])) {
+            p->c[i] = func_001F9850(0xFF);
+        }
+        f = func_001FA888(func_001F9850(0xFF) - p->c[i]);
+        f = f / (float)func_001F9850(0xFF);
+        col = func_001FA8A8(0x4040FFFF, 0x1040FFFF, func_001F9B88(0.5f - f));
+        if (D_L00_0015F6A8 != 2) {
+            func_L00_00273E08(d, col, func_001FA898_r(p->a[i]) & 0xFF, 0x35, 1, 2, 0, p->d[i]);
+        }
+        func_001F9BD8(d, d, e);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002D83D8);
 INCLUDE_ASM("asm/overlays", func_L00_002D8898);
 INCLUDE_ASM("asm/overlays", func_L00_002D90A0);
-INCLUDE_ASM("asm/overlays", func_L00_002D9208);
+extern float func_L00_00258C80(float, float);
+extern float func_002140F8(float, float);
+extern float D_L00_001CBAE0[][4];
+extern float D_L00_001D05E0[];
+extern float D_L00_001D18A0[];
+extern float D_L00_001D34C0[];
+extern float D_L00_001D4780[];
+extern char D_L00_001D3010[];
+
+/* initialises the random wobble parameters of slot idx */
+void func_L00_002D9208(char *m, int idx) {
+    char *data = *(char **)(m + 0x78);
+    float a, b, r;
+    float *w;
+    r = randf_sym(0.0f, 1.0f);
+    w = D_L00_001CBAE0[idx];
+    w[0] = r;
+    w[1] = randf_sym(0.0f, 1.0f);
+    w[2] = randf_sym(0.0f, 1.0f);
+    a = *(float *)(data + 0x44);
+    b = *(float *)(data + 0x4C);
+    D_L00_001D05E0[idx] = random_float_between(a, a + 2.0f);
+    D_L00_001D18A0[idx] = random_float_between(b, b + 4.0f);
+    D_L00_001D34C0[idx] = 0.0f;
+    D_L00_001D4780[idx] = random_float_between(0.003f, 0.005f);
+    D_L00_001D3010[idx] = 1;
+}
 typedef struct { int a[4]; } Vy __attribute__((aligned(16)));
 extern char *func_0020D348(int);
 extern void func_L00_0025E210(void *);

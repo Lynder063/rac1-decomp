@@ -388,7 +388,61 @@ int func_00123C30(int fd, void *buf, int nbyte) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_00123D48);
+struct McClient {
+    unsigned char reserved_00[0x24];
+    int is_initialized;
+};
+struct McWriteReq {
+    int file_descriptor;
+    int port;
+    int slot;
+    int size;
+    int offset;
+    unsigned int origin;
+    int buffer;
+    int reserved_1c;
+    unsigned char data[0x10];
+};
+extern struct McClient D_00159B00_c __asm__("D_00159B00");
+extern struct McWriteReq D_00159B80_r __asm__("D_00159B80");
+
+/* sceMcWrite: copies the unaligned lead of the buffer into the request, sends RPC 6. Adapted from Lombyte (MIT) for PAL: src/sdk/storage/memory_card/sce_mc_write.c, sceMcWrite. */
+int func_00123D48(int fd, unsigned char *buffer, int size) {
+    int rpc_result;
+    unsigned int i;
+    int root_off;
+    int base;
+
+    if (D_00159B00_c.is_initialized == 0) {
+        return -0x64;
+    }
+    if (func_00118CC0(D_00132EAC) < 0) {
+        return -0xC8;
+    }
+    D_00159B80_r.file_descriptor = fd;
+    if (size < 0x11) {
+        D_00159B80_r.origin = size;
+        D_00159B80_r.size = 0;
+        D_00159B80_r.buffer = 0;
+    } else {
+        base = (int)buffer - 0x10;
+        root_off = ((int)(buffer - 1) & 0xFFFFFFF0) - base;
+        D_00159B80_r.size = size - root_off;
+        D_00159B80_r.origin = root_off;
+        D_00159B80_r.buffer = (int)(buffer + root_off);
+    }
+    for (i = 0; i < D_00159B80_r.origin; i++) {
+        D_00159B80_r.data[i] = buffer[i];
+    }
+    func_00118D80(0);
+    rpc_result = func_0011B4C8(&D_00159B00_c, 6, 1, &D_00159B80_r, 0x30, D_0015B0C0, 4, 0, 0);
+    if (rpc_result == 0) {
+        D_00132EA8 = 6;
+    } else {
+        func_00118C90(D_00132EAC);
+    }
+    return rpc_result;
+}
 
 ASM_FUNC("asm/handwritten/core_text", func_00123EC0);
 

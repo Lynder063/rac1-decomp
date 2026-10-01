@@ -584,7 +584,140 @@ int func_001ECEA0(void *arg0, void *arg1) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001ED080);
+extern void func_001F9CA0(void *, void *, void *);
+extern void func_001EC8D8(float *out, void *p0, void *p1, void *dir0, void *dir1, void *axis);
+extern void func_001F9DC0(void *dst, void *src, float len);
+extern float func_001FA790(float, float);
+extern float func_001FA748(float, float);
+extern void func_002156E0(void *dst, void *vec, void *axis, float angle);
+extern void func_001FA648(void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BF0(void *dst, void *a, void *b);
+extern float func_001F9C78(void *a, void *b);
+extern float func_001F9CB8(void *a);
+extern float func_001F9FC0(float x);
+extern void func_00215380(void *arg0, void *axis, float angle);
+extern void func_00215650(void *arg0, void *arg1, void *arg2);
+extern void func_001F9908(int *arg0);
+extern unsigned char D_001872B2 NOT_SDA;
+extern int D_0018C42C;
+extern char D_0013F6E0[];
+
+typedef struct {
+    float v[4];
+} Vec;
+
+/* Camera update toward a target orientation: blends yaw/pitch/distance and rebuilds the camera basis.
+   Adapted from Lombyte (MIT) for PAL: src/gameplay/camera/fun_001eccd8.c, FUN_001eccd8. */
+int func_001ED080(void *arg0, void *arg1) {
+    char *cam = arg0;
+    float *b = arg1;
+    Vec ang;
+    Vec fwd;
+    Vec side;
+    Vec up;
+    Vec target;
+    Vec pos;
+    Vec diff;
+    Vec proj;
+    Vec m[3];
+    Vec r0;
+    Vec r1;
+    Vec r2;
+    Vec q;
+    float step;
+    float dyaw;
+    float dpitch;
+    float yaw;
+    float turn;
+    float sign;
+    float s2;
+    float d;
+    char *g;
+
+    if (*(int *)(b + 3) <= 0) {
+        return 1;
+    }
+    step = 1.0f / func_00214220(1.0f, (float)*(int *)(b + 5), (float)*(int *)(b + 3) * b[4]);
+    if (D_001872B2 == 2) {
+        qcopy(&target, D_0013F4D0);
+        qcopy(&fwd, b + 8);
+        qcopy(&up, b + 12);
+        func_001F9CA0(&side, &fwd, &up);
+        func_001EC8D8(ang.v, cam + 0x30, &target, &fwd, &side, &up);
+    } else {
+        qcopy(&target, cam + 0x30);
+        g = D_0013F450;
+        func_001F9DC0(&fwd, *(char **)(g + 0x2080) + 0xC0, 1.0f);
+        func_001F9DC0(&up, *(char **)(g + 0x2080) + 0xE0, 1.0f);
+        ang.v[2] = 0.0f;
+        ang.v[1] = 0.0f;
+        ang.v[0] = 3.1415927f;
+    }
+    dyaw = func_001FA790(ang.v[0], b[0]);
+    b[0] = func_001FA748(b[0], dyaw * step);
+    dpitch = func_001FA790(ang.v[1], b[1]);
+    b[1] = func_001FA748(b[1], dpitch * step);
+    b[2] = b[2] + (ang.v[2] - b[2]) * step;
+    func_001F9DC0(&pos, &fwd, b[2]);
+    func_002156E0(&pos, &pos, &up, b[0]);
+    func_001F9CA0(&side, &pos, &up);
+    func_001F9DC0(&side, &side, 1.0f);
+    func_002156E0(&pos, &pos, &side, b[1]);
+    func_001F9BD8(b + 20, &target, &pos);
+    if (D_0018C42C == 0) {
+        qcopy(D_00187180, b + 20);
+    }
+    func_001FA648(b + 16, m);
+    d = func_001F9C78(&m[2], cam);
+    func_001F9C30(&proj, &m[2], d);
+    func_001F9BF0(&diff, cam, &proj);
+    yaw = 1.5707964f - func_001F9FC0(func_001F9C78(&m[0], &diff) / func_001F9CB8(&diff));
+    sign = -1.0f;
+    if (func_001F9C78(&diff, &m[1]) >= 0.0f) {
+        sign = 1.0f;
+    }
+    yaw = yaw * sign;
+    if (func_001F9B88(dyaw) > 1.5707964f
+        && ((dyaw >= 0.0f && sign < 0.0f) || (dyaw < 0.0f && sign >= 0.0f))) {
+        if (yaw < 0.0f) {
+            yaw += 6.2831855f;
+        } else {
+            yaw -= 6.2831855f;
+        }
+    }
+    turn = yaw * step;
+    if (func_001F9B88(turn) < 1e-5f) {
+        qcopy(&r0, &m[0]);
+        qcopy(&r1, &m[1]);
+    } else {
+        func_00215380(&r2, &m[2], turn);
+        func_00215650(&r0, &m[0], &r2);
+        func_00215650(&r1, &m[1], &r2);
+    }
+    if (func_001F9B88(yaw) < 1e-5f) {
+        qcopy(&r2, &m[0]);
+    } else {
+        func_00215380(&q, &m[2], yaw);
+        func_00215650(&r2, &m[0], &q);
+    }
+    yaw = 1.5707964f - func_001F9FC0(func_001F9C78(&r2, cam));
+    d = func_001F9C78(&r2, cam + 0x20);
+    s2 = -1.0f;
+    if (d >= 0.0f) {
+        s2 = 1.0f;
+    }
+    yaw *= s2;
+    func_002156E0(&r0, &r0, &r1, yaw * step);
+    func_001F9DC0(D_00187390, &r0, 1.0f);
+    func_001F9CA0(D_00187390 + 0x10, D_00187390, D_0013F6E0);
+    func_001F9DC0(D_00187390 + 0x10, D_00187390 + 0x10, -1.0f);
+    func_001F9CA0(D_00187390 + 0x20, D_00187390 + 0x10, D_00187390);
+    func_00215328(b + 24, D_00187390);
+    func_00215328(b + 16, D_00187390);
+    func_001F9908((int *)(b + 3));
+    return 0;
+}
 
 extern int D_0018C42C;
 extern char D_00187390[];

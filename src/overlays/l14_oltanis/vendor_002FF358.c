@@ -55,13 +55,56 @@ void func_L14_00306EC0(char *moby) {
 }
 INCLUDE_ASM("asm/overlays", func_L14_00306FA0);
 INCLUDE_ASM("asm/overlays", func_L14_003071B0);
-INCLUDE_ASM("asm/overlays", func_L14_003075E0);
+extern char *func_0020D348(int);
+extern void func_L00_00251E30(void *);
+
+char *func_L14_003075E0(char *owner)
+{
+    char *moby = CreateMoby(0x574);
+    if (moby != 0) {
+        qcopy(moby + 0x10, owner + 0x10);
+        qcopy(moby + 0x40, owner + 0x40);
+        moby[0x30] = 0x40;
+        moby[0x20] = 0;
+        *(short *)(moby + 0x32) = 0x40;
+        moby[0x31] = 1;
+        func_L00_00251E30(moby);
+    }
+    return moby;
+}
 INCLUDE_ASM("asm/overlays", func_L14_00307660);
-INCLUDE_ASM("asm/overlays", func_L14_00307680);
+// Resets the moby's data block fields and sets its state to 1.
+void func_L14_00307680(int unused, char *moby) {
+    char *d = *(char **)(moby + 0x78);
+    d[0x28] = 4;
+    *(int *)(d + 0x20) = 0;
+    *(short *)(d + 0x24) = 0;
+    *(short *)(d + 0x3E) = 0;
+    moby[0x20] = 1;
+}
 INCLUDE_ASM("asm/overlays", func_L14_003076A4);
 INCLUDE_ASM("asm/overlays", func_L14_00308000);
 INCLUDE_ASM("asm/overlays", func_L14_00308368);
-INCLUDE_ASM("asm/overlays", func_L14_00308998);
+extern float func_001F9D10(void *, void *);
+extern float func_L00_001FF860(float, float);
+extern char *D_L14_001B0F30[];
+
+/* Precomputes per-point segment values of a path and snaps the moby to its first point. */
+void func_L14_00308998(char *moby) {
+    char *d = *(char **)(moby + 0x78);
+    char *p = D_L14_001B0F30[*(int *)(d + 0x78)];
+    int i;
+    for (i = 0; i < *(int *)p; i++) {
+        int o = i * 16;
+        float f = FastVecDist(p + (o + 0x10), p + (((i + 1) % *(int *)p) * 16 + 0x10));
+        *(float *)(p + o + 0x1C) = f;
+    }
+    *(int *)(d + 0x70) = 0;
+    *(int *)(d + 0x74) = 0;
+    qcopy(moby + 0x10, p + 0x10);
+    *(float *)(moby + 0x48) = func_L00_001FF860(*(float *)(p + 0x20) - *(float *)(p + 0x10), *(float *)(p + 0x24) - *(float *)(p + 0x14));
+    *(float *)(d + 0x90) = *(float *)(d + 0x94) = *(float *)(d + 0x98) = *(float *)(d + 0x80) = *(float *)(d + 0x84) = *(float *)(d + 0x88) = 0.0f;
+}
 INCLUDE_ASM("asm/overlays", func_L14_00308AA8);
 extern void func_L12_002BD3D0(void *, int, int, int);
 extern char D_L14_001F62C0[];
@@ -69,15 +112,112 @@ extern int func_001F4868(int);
 void func_L14_00308EB0(void) {
     func_L12_002BD3D0(D_L14_001F62C0, 0x13, GetEffectTex(0x2E), GetEffectTex(0x2F));
 }
-INCLUDE_ASM("asm/overlays", func_L14_00308F08);
-INCLUDE_ASM("asm/overlays", func_L14_00309C48);
-INCLUDE_ASM("asm/overlays", func_L14_00314A40);
+extern void func_001F49B0(void (*)(void), void *);
+extern void func_L14_00308EB0(void);
+
+void func_L14_00308F08(unsigned char *moby)
+{
+    switch (moby[0x20]) {
+    case 0:
+        moby[0x20] = 1;
+        moby[0x30] = 0xFF;
+        break;
+    case 1:
+        AddDrawCallback(func_L14_00308EB0, moby);
+        break;
+    }
+}
+typedef struct {
+    char pad0[0x30];
+    int state;
+    char pad34[0x144];
+    int v178[2];
+} Level14State;
+extern int func_L01_0026EFB8(int, int);
+extern int func_0022EE28(int, int, int);
+extern void func_L00_00264DB8(int arg0, int arg1);
+extern void func_L00_00264870(int);
+extern int D_L14_0015F6A8 MACRO_ADDR;
+extern Level14State D_L14_0016D060;
+extern unsigned char D_0013D510[];
+
+/* Play the level sound once on first update, then handle the two-state moby. */
+void func_L14_00309C48(unsigned char *moby) {
+    int *d = *(int **)(moby + 0x78);
+    unsigned v;
+    int i;
+    if (d[0] != -1) {
+        if (func_L01_0026EFB8(d[0], -1) == 0) {
+            if (gSkillPoints[0x17] == 0) {
+                gSkillPoints[0x17] = 1;
+                func_0022EE28(1, 0, 0);
+                ShowBanner(0x53DB, -1);
+            }
+        }
+    }
+    switch (moby[0x20]) {
+    case 0:
+        moby[0x30] = 0xFF;
+        moby[0x20] = 1;
+        break;
+    case 1:
+        if (D_L14_0015F6A8 == 2) {
+            v = D_L14_0016D060.state - 3;
+            if (v < 3) {
+                i = 0;
+                if (v <= D_L14_0015F6A8) i = moby[0x20];
+                func_L00_00264870(D_L14_0016D060.v178[i]);
+            }
+        }
+        break;
+    }
+}
+extern char *D_L14_00167600;
+
+void func_L14_00314A40(int value)
+{
+    char *moby = D_L14_00167600;
+    if (*(short *)(moby + 0x86) == 7) {
+        char *data = *(char **)(moby + 0x70) + 0x40;
+        char *again;
+        *(int *)(data + 0x40) = 1;
+        *(int *)(data + 0x44) = value;
+        *(float *)(data + 0x4C) = 2.0f;
+        again = *(char **)(moby + 0x70);
+        *(float *)(again + 0xA0) = 7.0f;
+        *(float *)(again + 0xB0) = 2.0f;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L14_003162A0);
 INCLUDE_ASM("asm/overlays", func_L14_00316388);
 INCLUDE_ASM("asm/overlays", func_L14_00316718);
-INCLUDE_ASM("asm/overlays", func_L14_00316DA8);
+extern int func_L10_002F6E38(void *);
+extern char *D_L14_0015F050 MACRO_ADDR;
+extern char D_0013E633[];
+
+/* Returns 1 when the record selected by the moby's index matches the current targets, -1 when that record is disabled. */
+int func_L14_00316DA8(char *a, char *b) {
+    char *rec = *(char **)(D_L14_0015F050 + *(short *)(a + 0x84) * 32 + 0x1C);
+    int t, u;
+    if (*(unsigned char *)(rec + 0x38) != 0) return -1;
+    if (b != 0 && *(short *)(b + 0x7E) == 0) {
+        if (*(int *)(D_0013E633 + 0x2EA9) != 15) return 0;
+    }
+    if (func_L10_002F6E38(a) == 0) return 0;
+    t = *(int *)(rec + 0x48);
+    if (t >= 0 && *(int *)(D_0013E633 + 0x2EA9) != t) return 0;
+    u = *(int *)(rec + 0x44);
+    if (u >= 0 && *(int *)(D_0013E633 + 0x2EA1) != u) return 0;
+    return 1;
+}
 INCLUDE_ASM("asm/overlays", func_L14_00316E60);
 INCLUDE_ASM("asm/overlays", func_L14_003171D0);
 INCLUDE_ASM("asm/overlays", func_L14_00317BD0);
 INCLUDE_ASM("asm/overlays", func_L14_00317C4C);
-INCLUDE_ASM("asm/overlays", func_L14_00317C68);
+extern char D_0013E633[];
+// Sets the exit camera's state field to 3 unless the global is 0xF.
+void func_L14_00317C68(char *moby) {
+    if (*(int *)(D_0013E633 + 0x2EA9) != 0xF) {
+        *(short *)(moby + 0x7E) = 3;
+    }
+}

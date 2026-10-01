@@ -2,8 +2,52 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L00_002A21A8);
-INCLUDE_ASM("asm/overlays", func_L00_002A2258);
+extern void func_00122818(void *, int, int, int, int, int, int, int);
+extern void func_00118D80(int);
+extern void func_00122AD8(void *, int);
+extern void func_00120858(int, int);
+
+// Copies the frame buffer out in 0x4000-sized strips.
+void func_L00_002A21A8(int a, int b, int n) {
+    char buf[0x70];
+    int i;
+    n = (n + 0x3FFF) & -0x4000;
+    for (i = 0; n > 0; n -= 0x4000) {
+        int t = b + i;
+        t <<= 8;
+        t >>= 16;
+        func_00122818(buf, t, 1, 0, 0, 0, 0x40, 0x40);
+        func_00118D80(0);
+        func_00122AD8(buf, a + i);
+        i += 0x4000;
+        func_00120858(0, 0);
+    }
+}
+extern int func_00122630(void *, short, short, short, short, short, short, short);
+extern int *D_L00_00161280 MACRO_ADDR;
+
+/* Uploads a 64-wide image strip in 0x4000-sized chunks: each chunk is a DMA tag pair around a GS load image. */
+void func_L00_002A2258(int a, int b, int n) {
+    int i;
+    int k = (n + 0x3FFF) & -0x4000;
+    for (i = 0; k > 0; ) {
+        int *p;
+        D_L00_00161280[0] = 0x10000006;
+        D_L00_00161280[1] = 0;
+        D_L00_00161280[2] = 0;
+        D_L00_00161280[3] = 0x50000006;
+        k -= 0x4000;
+        func_00122630(D_L00_00161280 = D_L00_00161280 + 4, (b + i) >> 8, 1, 0, 0, 0, 0x40, 0x40);
+        p = D_L00_00161280;
+        D_L00_00161280 = p + 0x18;
+        p[0x18] = 0x30000400;
+        D_L00_00161280[1] = a + i;
+        i += 0x4000;
+        D_L00_00161280[2] = 0;
+        D_L00_00161280[3] = 0x50000400;
+        D_L00_00161280 = D_L00_00161280 + 4;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002A2668);
 INCLUDE_ASM("asm/overlays", func_L00_002A2680);
 extern void func_L00_001FFED8(void *, int, float);
@@ -17,6 +61,27 @@ void func_L00_002A27C8(char *a) {
         *(int *)(p + 0xFC) = 0;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002A2858);
+extern float func_001F9B50(float);
+
+// Solves the quadratic for a time of flight; returns 100000.0 when there is no real root.
+float func_L00_002A2858(char *a, char *b) {
+    float s = *(float *)(b + 0xDC);
+    float gap = *(float *)(a + 0x18) - *(float *)(b + 0x68);
+    float c = *(float *)(b + 0xD8) + s * 0.5f;
+    float d = c * c + (s + s) * gap;
+    float res;
+    if (d > 0.0f) {
+        d = func_001F9B50(d);
+        if (d <= c) {
+            res = c - d;
+        } else {
+            res = c + d;
+        }
+        res = res / *(float *)(b + 0xDC);
+    } else {
+        res = 100000.0f;
+    }
+    return res;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002A2900);
 INCLUDE_ASM("asm/overlays", func_L00_002A4F50);

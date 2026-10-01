@@ -12,9 +12,13 @@ starting point there is: same source, same compiler family.
 
 The map pairs functions by aligning both builds' function-size sequences
 (runs of three or more equal sizes), so a paired function has the same
-size in both. It lives in build-sn/lombyte_ntsc_pal_map.json. Lombyte is
-looked for in $LOMBYTE, else ~/Projects/Lombyte.
+size in both. Level code is aligned level by level: Lombyte's
+FUN_LNN_xxxxxxxx against every function config/overlays/functions.tsv
+places in level NN (its shared code is named after level 00, as ours
+is). It lives in build-sn/lombyte_ntsc_pal_map.json. Lombyte is looked
+for in $LOMBYTE, else ~/Projects/Lombyte.
 """
+from __future__ import annotations
 import difflib
 import json
 import os
@@ -33,11 +37,61 @@ def functions(report: Path, key) -> list[tuple[int, int, str, bool]]:
         # Both reports also hold level overlay code (Lombyte's level_NN/...
         # and shared/..., our overlays/...): those addresses are in the
         # levels' own address space, and would corrupt the alignment.
-        if unit["name"].split("/")[0] in ("shared", "overlays") or unit["name"].startswith("level_"):
+        cats = (unit.get("metadata") or {}).get("progress_categories", [])
+        if "level_code" in cats or "overlays" in cats or unit["name"].split("/")[0] in ("shared", "overlays") \
+                or unit["name"].startswith("level_"):
             continue
         for f in unit.get("functions", []):
             rows.append((key(f), int(f["size"]), f["name"], (f.get("fuzzy_match_percent") or 0) == 100))
     return sorted(r for r in rows if r[0] is not None)
+
+
+def overlay_pairs() -> list[dict]:
+    """Level-code pairs, level by level (see the module docstring)."""
+    sys.path.insert(0, str(ROOT / "tools"))
+    import dossier
+    ours_exact = {f["name"]: (f.get("fuzzy_match_percent") or 0) == 100
+                  for u in json.loads((ROOT / "progress/report.json").read_text())["units"]
+                  for f in u.get("functions", [])}
+    theirs: dict[int, list] = {}
+    for unit in json.loads((LOMBYTE / "progress/report.json").read_text())["units"]:
+        for f in unit.get("functions", []):
+            m = re.fullmatch(r"FUN_L(\d\d)_([0-9a-fA-F]{8})", f["name"])
+            if m:
+                theirs.setdefault(int(m.group(1)), []).append(
+                    (int(m.group(2), 16), int(f["size"]), f["name"], (f.get("fuzzy_match_percent") or 0) == 100))
+    ours: dict[int, list] = {}
+    for name, (_kind, size, _n, places) in dossier.load_overlay_catalogue().items():
+        for level, addr in places:
+            ours.setdefault(level, []).append((addr, size, name))
+    pairs = {}
+    for level in sorted(theirs):
+        t, o = sorted(theirs[level]), sorted(ours.get(level, []))
+        match = difflib.SequenceMatcher(None, [x[1] for x in t], [x[1] for x in o], autojunk=False)
+        for a, b, n in match.get_matching_blocks():
+            if n < 3:
+                continue
+            for k in range(n):
+                tt, oo = t[a + k], o[b + k]
+                pairs.setdefault(oo[2], {"pal": oo[2], "size": oo[1], "ntsc": tt[2], "ntsc_exact": tt[3],
+                                         "pal_exact": ours_exact.get(oo[2], False), "overlay": True})
+    return list(pairs.values())
+
+
+def definition(ntsc: str) -> tuple[str, str] | None:
+    """(file, C text) of Lombyte's definition of NTSC: from its first line
+    to the closing brace at column 0, with the comment right above it."""
+    for path in source_of(ntsc):
+        lines = Path(path).read_text(errors="replace").splitlines()
+        for i, line in enumerate(lines):
+            if re.match(rf"(?!extern\b)[A-Za-z_][^;]*\b{re.escape(ntsc)}\b\s*\(", line) and not line.rstrip().endswith(";"):
+                start = i
+                while start > 0 and lines[start - 1].strip().startswith(("/*", "*", "//")):
+                    start -= 1
+                end = next((j for j in range(i, len(lines)) if lines[j].startswith("}")), None)
+                if end is not None:
+                    return path, "\n".join(lines[start:end + 1]) + "\n"
+    return None
 
 
 def build_map() -> list[dict]:
@@ -54,6 +108,7 @@ def build_map() -> list[dict]:
         for k in range(n):
             t, o = theirs[a + k], ours[b + k]
             pairs.append({"pal": o[2], "size": o[1], "ntsc": t[2], "ntsc_exact": t[3], "pal_exact": o[3]})
+    pairs += overlay_pairs()
     MAP.parent.mkdir(parents=True, exist_ok=True)
     MAP.write_text(json.dumps(pairs, indent=1) + "\n")
     return pairs

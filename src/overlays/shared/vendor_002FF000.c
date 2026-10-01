@@ -7,8 +7,77 @@ INCLUDE_ASM("asm/overlays", func_L06_002FFF70);
 INCLUDE_ASM("asm/overlays", func_L06_00300530);
 INCLUDE_ASM("asm/overlays", func_L06_003006F8);
 INCLUDE_ASM("asm/overlays", func_L06_00300AB0);
-INCLUDE_ASM("asm/overlays", func_L06_00300DA8);
-INCLUDE_ASM("asm/overlays", func_L06_00301FE8);
+extern float func_002140F8(float, float);
+extern float func_00214158(void);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern float func_001F9878(float);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9C08(void *, void *, void *, float);
+extern char *func_00219780(void *, void *, void *, int, int, int, int, int, int);
+extern short D_L06_00162094, D_L06_00162098, D_L06_0016209C, D_L06_001620A0, D_L06_001620A4, D_L06_001620A8;
+extern short D_L06_001620AC, D_L06_001620B0, D_L06_001620B4, D_L06_001620B8, D_L06_001620BC, D_L06_001620C0;
+extern short D_L06_001620C4, D_L06_001620C8, D_L06_001620CC, D_L06_001620D0;
+
+/* Spawns a burst of effects for each pair of ready entries in the moby's table. */
+void func_L06_00300DA8(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    int i, n;
+    for (i = 0; i < 15; i = n) {
+        float f21, f22;
+        int s18, s19, s17;
+        int s10[4];
+        float v[4], w[4];
+        char *p;
+        int off = i * 16;
+        n = i + 1;
+        if (*(float *)(data + off + 0x23C) < 0.99f && *(float *)(data - (-(n * 16)) + 0x23C) < 0.99f) { continue; }
+        if (*(float *)&D_L06_001620CC < random_float_between(0.0f, 1.0f)) { continue; }
+        f21 = random_angle_radians();
+        f22 = random_angle_radians();
+        v[0] = FastCos(f21) * random_float_between(*(float *)&D_L06_001620BC, *(float *)&D_L06_001620C0);
+        v[1] = FastSin(f21) * random_float_between(*(float *)&D_L06_001620BC, *(float *)&D_L06_001620C0);
+        v[2] = 0;
+        w[0] = FastCos(f22) * random_float_between(*(float *)&D_L06_001620BC, *(float *)&D_L06_001620C0);
+        w[1] = FastSin(f22) * random_float_between(*(float *)&D_L06_001620BC, *(float *)&D_L06_001620C0);
+        w[2] = 0;
+        v[2] = random_float_between(*(float *)&D_L06_001620C4, *(float *)&D_L06_001620C8);
+        w[2] = random_float_between(*(float *)&D_L06_001620C4, *(float *)&D_L06_001620C8);
+        s18 = func_001FA898_r(func_001F9878(random_float_between(*(float *)&D_L06_001620A4, *(float *)&D_L06_001620A8)));
+        s19 = func_001FA898_r(func_001F9878(random_float_between(*(float *)&D_L06_001620AC, *(float *)&D_L06_001620B0)));
+        s17 = func_001FA898_r(func_001F9878(random_float_between(*(float *)&D_L06_001620B4, *(float *)&D_L06_001620B8)));
+        FastVecScale(v, v, 1.0f / (float)s18);
+        v[3] = *(float *)&D_L06_0016209C;
+        FastVecScale(w, w, 1.0f / (float)s17);
+        w[3] = *(float *)&D_L06_001620A0;
+        p = data + (off + 0x230);
+        func_001F9C08(s10, p, p, random_float_between(0.0f, 1.0f));
+        func_00219780(s10, v, w, *(int *)&D_L06_00162094, *(int *)&D_L06_00162098, s18, s19, s17, *(int *)&D_L06_001620D0);
+    }
+}
+extern void func_001F9BD8(float *, float *, float *);
+extern float func_001FA748(float, float);
+extern void func_0020D678(void *);
+extern float D_0015EE70 MACRO_ADDR;
+extern short D_L06_00162110;
+
+// Per-frame update: drift a moby and its rotation toward the data vectors, delete when timer ends.
+void func_L06_00301FE8(char *moby) {
+    char *data;
+    float t = D_0015EE70 * 15.0f;
+    *(float *)(moby + 0x2C) = *(float *)(*(char **)(moby + 0x24) + 0x24) * *(float *)&D_L06_00162110;
+    data = *(char **)(moby + 0x78);
+    *(float *)(data + 8) -= t;
+    FastVecAdd((float *)(moby + 0x10), (float *)(moby + 0x10), (float *)data);
+    FastVecAdd((float *)(moby + 0x40), (float *)(moby + 0x40), (float *)(data + 0x10));
+    *(float *)(moby + 0x40) = FastAddRots(*(float *)(moby + 0x40), *(float *)(data + 0x10));
+    *(float *)(moby + 0x44) = FastAddRots(*(float *)(moby + 0x44), *(float *)(data + 0x14));
+    *(float *)(moby + 0x48) = FastAddRots(*(float *)(moby + 0x48), *(float *)(data + 0x18));
+    if (--*(unsigned char *)(moby + 0xBC) == 0) {
+        DeleteMoby(moby);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L06_003020B8);
 extern int D_L06_0015F6B0 MACRO_ADDR;
 extern short D_L06_00162158;
@@ -57,12 +126,65 @@ void func_L06_00303630(char *moby) {
     buf[7] = func_001FA898_r((float)random_integer_below(10)) + 0x30;
     FontPrintCenterLarge(W(D_L06_00162158), W(D_L06_0016215C), col, (int)buf, 8);
 }
-INCLUDE_ASM("asm/overlays", func_L06_00304590);
+// Sets offset 0x20 to 2
+void func_L06_00304590(char *arg) {
+    arg[0x20] = 2;
+}
 INCLUDE_ASM("asm/overlays", func_L06_003089B8);
-INCLUDE_ASM("asm/overlays", func_L06_00309088);
+extern void func_0022ED80(int, int, int);
+extern int func_L00_0028EF68(int i, int a1, int v, int k);
+extern void func_L00_002512D8(int idx);
+
+/* state transitions of a moby depending on its id at 0xA6 */
+void func_L06_00309088(unsigned char *a, unsigned char *m) {
+    switch (*(short *)(m + 0xA6)) {
+    case 0x3F7:
+    case 0x502:
+        if (m[0x20] == 2) {
+            m[0x20] = 3;
+            func_0022ED80(0, 0, (int)m);
+        }
+        break;
+    case 0x404:
+        if (m[0x20] == 1) m[0x20] = 2;
+        break;
+    case 0x542:
+        m[0x20] = 2;
+        func_L00_0028EF68(0, 0, (int)m, 0x434);
+        m[0x30] = 0xFF;
+        func_L00_002512D8(a[0xB0]);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L06_00309170);
 INCLUDE_ASM("asm/overlays", func_L06_0030ACA0);
-INCLUDE_ASM("asm/overlays", func_L06_0030D2A0);
+extern void func_0020D678(void *);
+extern void func_001F49B0(void *, void *);
+extern void func_L06_0030D3E8(void);
+
+/* UpdateMoby: state 0 deletes, state 1 draws and times out */
+void func_L06_0030D2A0(char *m) {
+    float *d = *(float **)(m + 0x78);
+    switch ((unsigned char)m[0x20]) {
+    case 0:
+        DeleteMoby(m);
+        break;
+    case 1:
+        AddDrawCallback(func_L06_0030D3E8, m);
+        d[0] = d[0] + d[1];
+        if (2.0f < d[0]) {
+            DeleteMoby(m);
+        }
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L06_0030D338);
 INCLUDE_ASM("asm/overlays", func_L06_0030D3E8);
-INCLUDE_ASM("asm/overlays", func_L06_00317770);
+extern char *D_L06_0015F050 MACRO_ADDR;
+
+// If the moby's kind is 0x12, set a flag in the table entry it indexes.
+void func_L06_00317770(char *moby) {
+    if (*(short *)(moby + 0x86) == 0x12) {
+        *(int *)(*(char **)(D_L06_0015F050 + *(short *)(moby + 0x84) * 32 + 0x1C) + 0x50) = 1;
+    }
+}

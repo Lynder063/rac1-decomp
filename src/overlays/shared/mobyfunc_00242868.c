@@ -2,5 +2,25 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L04_00242868);
-INCLUDE_ASM("asm/overlays", func_L04_002428C8);
+extern char *D_L04_00197780[];
+extern float func_001FA888(int);
+
+float func_L04_00242868(int a, unsigned int b)
+{
+    char *entry;
+    char *nested;
+    if (b >= 0xFF) return 0.0f;
+    entry = D_L04_00197780[a] + b * 4;
+    nested = *(char **)(entry + 0x48);
+    return func_001FA888(*(short *)(*(char **)(nested + 0x1C) + 4)) * 0.0625f;
+}
+float func_L04_002428C8(int a, unsigned int b)
+{
+    char *entry;
+    char *nested;
+    if (b >= 0xFF) return 0.0f;
+    entry = D_L04_00197780[a] + b * 4;
+    nested = *(char **)(entry + 0x48);
+    nested += ((unsigned char)nested[0x10] - 1) * 4;
+    return func_001FA888(*(short *)(*(char **)(nested + 0x1C) + 4)) * 0.0625f;
+}

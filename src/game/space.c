@@ -482,7 +482,37 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0022FDC0);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002305A0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002308C8);
+extern float D_001D9EF0[][6][4];
+extern float D_0015EE6C MACRO_ADDR;
+extern int func_002140B0(int);
+extern char *func_00219780(void *, void *, void *, int, int, int, int, int, int);
+
+/* Spawns six particles around a moby: random velocity and a position taken from the flare corner table, transformed by the moby's matrices. Adapted from Lombyte (MIT) for PAL: src/rendering/effects/fun_0022f5b0.c, FUN_0022f5b0. */
+void func_002308C8(char *m, float z) {
+    float vel[4];
+    float vel2[4];
+    float pos[4];
+    int i;
+    int a;
+    int b;
+    int c;
+
+    for (i = 0; i < 6; i++) {
+        vel[0] = func_002140F8(-D_0015EE6C, D_0015EE6C);
+        vel[1] = func_002140F8(-D_0015EE6C, D_0015EE6C);
+        vel[2] = z + func_002140F8(D_0015EE6C * -0.25f, D_0015EE6C * 0.25f);
+        vel[3] = 0.4f;
+        qcopy(vel2, vel);
+        vel2[3] = 0.6f;
+        qcopy(pos, D_001D9EF0[D_0013E130.set][i]);
+        func_001F9EC0(pos, pos, m + 0xC0);
+        func_001F9BD8(pos, pos, m + 0x10);
+        a = func_001F98C0(4);
+        b = func_001F98C0(4);
+        c = func_001F98C0(4);
+        func_00219780(pos, vel, vel2, 0x24C0C0C0, 0x14C0C0C0, a, b, c + func_002140B0(func_001F98C0(4)), -1);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00230A90);
 
@@ -618,6 +648,234 @@ INCLUDE_ASM("asm/nonmatchings/text", func_00232B90);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00232EF0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00233308); /* DoSpaceTransition */
+typedef struct {
+    int pad0[4];
+    unsigned int f10;
+} Blk4200;
+extern Blk4200 D_00194200_b __asm__("D_00194200");
+typedef struct {
+    unsigned char pad0[8];
+    unsigned char f8;
+    unsigned char pad9[5];
+    unsigned char fE;
+    unsigned char fF;
+} Blk3E48;
+extern Blk3E48 D_0013DE48_b __asm__("D_0013DE48");
+extern unsigned char D_0013DE60[];
+typedef struct {
+    char pad0[0xB];
+    char fB;
+} Blk17D0;
+extern Blk17D0 D_001517D0_b __asm__("D_001517D0");
+typedef struct {
+    char pad0[0x218];
+    int f218;
+    float f21C;
+    char pad220[8];
+    float f228;
+    float f22C;
+    int f230;
+    int f234;
+    int f238;
+} Blk8CE00;
+extern Blk8CE00 D_0018CE00_b __asm__("D_0018CE00");
+typedef struct {
+    char pad0[0xDC];
+    int fDC;
+    char padE0[4];
+    int fE4;
+} Blk3D390;
+extern Blk3D390 D_0013D390_b __asm__("D_0013D390");
+
+extern char *D_0015F714 MACRO_ADDR;
+extern int D_0015F538 MACRO_ADDR;
+extern int D_0015EE5C_m __asm__("D_0015EE5C") MACRO_ADDR;
+extern short D_0015EF48_m __asm__("D_0015EF48");
+extern int D_0015EF4A_i __asm__("D_0015EF4A") MACRO_ADDR;
+extern char D_001E8CB8[];
+extern int func_00122598_i(int) __asm__("func_00122598");
+extern int func_0012EF48_i(int) __asm__("func_0012EF48");
+extern int func_00120F30_i(int) __asm__("func_00120F30");
+
+extern void func_0012F0A8(int, int, int, int, int);
+extern void func_0022EFE8(void);
+extern void func_00216D88(void);
+extern void func_0012E318(int);
+extern void func_001FB448(int, int, int);
+extern void func_00209E68(void);
+extern void func_00209070(void);
+extern int func_00204BE8(void);
+extern void func_002350A8(void);
+extern void func_00232EF0(int, int, int, int, int);
+extern void func_00232278(void);
+extern int func_0012F4A8(int);
+extern void func_002349B8(void);
+extern void func_00234948(void);
+extern void func_001FB598(void);
+extern void func_001FB8A8(void);
+extern void func_00218908(void);
+extern void func_00230A90(void);
+extern void func_00228110(void);
+extern int func_00204C60(void);
+extern void func_00234AC8(int);
+
+/* DoSpaceTransition: plays the level-to-level transition (dialogue screens, loading loop) and waits for the load. Adapted from Lombyte (MIT) for PAL: src/gameplay/state/do_space_transition.c, do_space_transition. */
+void func_00233308(void) {
+    int lvl;
+    int ok;
+    int done;
+
+    lvl = D_0015EE88 - 1;
+    if (lvl < 0) {
+        lvl = 0;
+    }
+    D_00194200_b.f10 |= 0x80000000;
+    D_0015F6E8 = 6;
+    D_0013E130.set = 0;
+    if (D_0013DE48_b.f8 != 0 || D_0015F6E4 >= 8) {
+        D_0013E130.set = 1;
+    }
+    if (D_0013DE48_b.fE != 0 || D_0015F6E4 >= 14) {
+        D_0013E130.set = 2;
+    }
+    func_00118D80(0);
+    func_0012F0A8(2, 0, 0, 0, 0);
+    func_0012EC40();
+    func_0012DDC0();
+    func_0022EFE8();
+    func_00216D88();
+    D_001517D0_b.fB = 1;
+    if (D_0015F714 != 0) {
+        func_0012E318(*(int *)(D_0015F714 + 0x1C));
+        func_0012E2E8();
+        func_001E9730(D_001E8CB8, *(int *)(D_0015F714 + 0x1C));
+    }
+    D_0015EE5C_m = 0;
+    func_0012F068(0);
+    func_0012EF48_i(0);
+    D_0018CE00_b.f238 = 16;
+    D_0018CE00_b.f21C = 524288.0f;
+    D_0018CE00_b.f228 = 255.0f;
+    D_0018CE00_b.f230 = 0;
+    D_0018CE00_b.f234 = 0;
+    D_0018CE00_b.f218 = 0;
+    D_0018CE00_b.f22C = 128.0f;
+    func_001FB448(0, 0, 0);
+    if (D_0015F6E4 < 0) {
+        while (D_0013D390_b.fDC >= 3 || D_0013D390_b.fE4 >= 0) {
+            func_00209E68();
+            func_00209070();
+        }
+        func_001F4E08(func_001F98C0(6));
+        D_0015EE84_m = D_0015F6E4;
+        func_00204BE8();
+        func_00120F30_i(0);
+        D_001517D0_b.fB = 0;
+        func_002350A8();
+        return;
+    }
+    if (D_0015F6E4 == 0 && D_0013DE60[0] == 0) {
+        func_001F4E08(func_001F98C0(6));
+        func_00232EF0(lvl, 0, 1, func_001F98C0(240), 0);
+        func_00232920(0);
+        func_00232EF0(lvl, 2, 2, func_001F98C0(180), 0);
+        func_00232920(1);
+        D_0015EE84_m = D_0015F6E4;
+        func_00232EF0(lvl, 3, 4, func_001F98C0(240), 1);
+        func_00232920(2);
+    } else if (D_0015EE84_m == 0 && D_0015F6E4 == 1 && D_0013DE60[1] == 0) {
+        func_001F4E08(func_001F98C0(6));
+        func_00232EF0(lvl, 5, 6, func_001F98C0(240), 0);
+        func_00232920(3);
+        func_00232920(4);
+        func_00232EF0(lvl, 7, 7, func_001F98C0(180), 0);
+        func_00232920(5);
+        D_0013DE60[D_0015EE84_m] = 2;
+        D_0015EE84_m = D_0015F6E4;
+        func_00232EF0(lvl, 8, 8, func_001F98C0(240), 1);
+    } else {
+        if (D_0015F6E4 == 4 && D_0013DE60[4] == 0) {
+            func_001F4E08(func_001F98C0(12));
+            func_00232EF0(lvl, 9, 10, func_001F98C0(240), 0);
+            func_00232920(6);
+        }
+        if (D_0015EE84_m == 7 && D_0013DE60[7] != 2 && D_0013DE48_b.f8 != 0) {
+            func_001F4E08(func_001F98C0(12));
+            func_00232EF0(lvl, 11, 11, func_001F98C0(240), 0);
+            func_00232920(7);
+        }
+        if (D_0015F6E4 == 13 && D_0013DE60[13] == 0) {
+            func_001F4E08(func_001F98C0(12));
+            func_00232EF0(lvl, 12, 13, func_001F98C0(240), 0);
+            func_00232920(8);
+        }
+        if (D_0015EE84_m == 14 && D_0013DE60[14] != 2 && D_0013DE48_b.fF != 0) {
+            func_001F4E08(func_001F98C0(12));
+            func_00232EF0(lvl, 14, 14, func_001F98C0(240), 0);
+            func_00232920(9);
+        }
+        if (D_0015F6E4 == 16 && D_0013DE60[16] == 0) {
+            func_001F4E08(func_001F98C0(12));
+            func_00232EF0(lvl, 15, 16, func_001F98C0(240), 0);
+            func_00232920(10);
+        }
+        if ((unsigned int)D_0015EE84_m < 19) {
+            ok = 1;
+            if (D_0015EE84_m == 7 && D_0013DE48_b.f8 == 0) {
+                ok = 0;
+            }
+            if (D_0015EE84_m == 14 && D_0013DE48_b.fF == 0) {
+                ok = 0;
+            }
+            if (ok) {
+                D_0013DE60[D_0015EE84_m] = 2;
+            }
+        }
+        *(short *)&D_0015EF4A_i = 1;
+        done = 0;
+        D_0015EE84_m = D_0015F6E4;
+        D_0015EF48_m = 0;
+        func_00232278();
+        func_0012F4A8(D_0015EE84_m);
+        while (D_0015F6FC_m == 0) {
+            func_002349B8();
+            func_00234948();
+            func_001FB598();
+            func_001FB8A8();
+            func_001FB498();
+            func_00218908();
+            func_00230A90();
+            func_00232200();
+            func_00209E68();
+            func_00209070();
+            func_00234AC8(1);
+            func_00122598_i(0);
+            D_0015F538++;
+            func_00228110();
+            if (!done) {
+                done = func_00204C60();
+            }
+        }
+        if (!done) {
+            do {
+                func_00118D80(0);
+                func_00122598_i(0);
+                func_00209E68();
+                func_00209070();
+                func_00228110();
+            } while (func_00204C60() == 0);
+        }
+        while (D_0013D390_b.fDC != 2 || D_0013D390_b.fE4 >= 0) {
+            func_00118D80(0);
+            func_00122598_i(0);
+            func_00209E68();
+            func_00209070();
+            func_00228110();
+        }
+    }
+    func_00120F30_i(0);
+    D_001517D0_b.fB = 0;
+    func_002350A8();
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00233AB8);

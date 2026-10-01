@@ -5,14 +5,87 @@
 INCLUDE_ASM("asm/overlays", func_L17_002AA068);
 INCLUDE_ASM("asm/overlays", func_L17_002AA880);
 INCLUDE_ASM("asm/overlays", func_L17_002CC788);
-INCLUDE_ASM("asm/overlays", func_L17_002CD088);
+extern char *func_L00_0025B478(void *, int, int);
+extern int func_L00_0025B4D0(void *, void *, void *, int, void *, void *, int, int);
+extern void func_L00_0025E4B0(void *m, short *p);
+extern void func_L00_0025E590(void *, void *);
+
+/* Steps a moby's countdown from a helper's output and retires it when it runs out. */
+void func_L17_002CD088(char *m) {
+    char *d;
+    char *e;
+    char *r;
+    int st;
+    float fv;
+    int s;
+    d = *(char **)(m + 0x78);
+    if (*(unsigned char *)(m + 0x20) != 0) {
+        fv = 0.0f;
+        r = func_L00_0025B478(m, 0x330000, 0);
+        if (r != 0) {
+            if (*(int *)(r + 0x20) != 0) {
+                int h = *(short *)(*(char **)(r + 0x20) + 0xA6);
+                if (h != 0x3F1) {
+                    if (h != 0x127) r = 0;
+                }
+            }
+        }
+        e = d + 0x60;
+        func_L00_0025B4D0(m, r, d + 0x20, 0, &st, &fv, 0, 4);
+        if (st != 1 && *(unsigned char *)(m + 0x20) != 4) {
+            float t = *(float *)(d + 0x20) - fv;
+            *(float *)(d + 0x20) = t;
+            s = 0xB;
+            if (t <= 0.0f) s = 1;
+            if (s == 1) {
+                *(unsigned char *)(m + 0x20) = 4;
+                *(short *)(m + 0x34) &= 0xEFFF;
+            }
+            *(unsigned char *)(d + 0x67) = 0xF0;
+            func_L00_0025E4B0(m, (short *)e);
+        }
+        *(unsigned char *)(m + 0xA4) = 0xFF;
+        func_L00_0025E590(m, e);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L17_002CD1B0);
 INCLUDE_ASM("asm/overlays", func_L17_002D8CC8);
 INCLUDE_ASM("asm/overlays", func_L17_002D91C8);
 INCLUDE_ASM("asm/overlays", func_L17_002DD8D0);
 INCLUDE_ASM("asm/overlays", func_L17_002EA2C8);
 INCLUDE_ASM("asm/overlays", func_L17_002EA8F8);
-INCLUDE_ASM("asm/overlays", func_L17_002EAFC8);
+extern char *func_0020D348(int);
+extern int func_001F9850(int);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern float func_L00_001FF860(float, float);
+extern float func_001F9D48(void *, void *);
+
+/* spawns the class-0x558 object from src at pos, sets its state block and aims it along the vector v */
+char *func_L17_002EAFC8(char *src, char *pos, float *v, float f) {
+    char *r = CreateMoby(0x558);
+    if (r != 0) {
+        char *d;
+        char *p = r + 0x10;
+        float tmp[4];
+        *(unsigned char *)(r + 0x30) = 0xFF;
+        *(short *)(r + 0x32) = 0xFF;
+        r[0x31] = 1;
+        r[0x20] = 0;
+        *(long *)(r + 0x38) = *(long *)(src + 0x38);
+        qcopy(p, pos);
+        d = *(char **)(r + 0x78);
+        *(float *)(d + 0x40) = f;
+        qcopy(d + 0x10, v);
+        *(int *)(d + 0x38) = scale_ticks(0x258);
+        *(char **)(d + 0x3C) = src;
+        FastVecSub(tmp, d + 0x10, p);
+        func_L00_001FF4B0(d, tmp, *(float *)(d + 0x40));
+        *(float *)(r + 0x48) = func_L00_001FF860(v[0] - *(float *)(r + 0x10), v[1] - *(float *)(r + 0x14));
+        *(float *)(r + 0x44) = -func_L00_001FF860(func_001F9D48(p, v), v[2] - *(float *)(r + 0x18));
+    }
+    return r;
+}
 extern int func_001F4868(int);
 extern void func_L11_003121C0(float, float, float, float, float, int, int, int, int, int, int, int, int);
 extern float func_001FA748(float, float);
@@ -140,7 +213,36 @@ void func_L17_002EDAF0(char *moby, char *obj, float p2, float p3) {
     FastVecAdd(d, a, moby + 0x10);
     func_L11_003126D8(d, obj + 0xE0, obj + 0xE4, 0);
 }
-INCLUDE_ASM("asm/overlays", func_L17_002EDC40);
+extern void func_001F9BD8(void *, void *, void *);
+extern int func_L13_002E7E90(void *, void *, int, void *, float, int);
+extern short D_L17_001620F4;
+extern short D_L17_001620F8;
+
+/* Fires a projectile from the moby when the trigger is ready and the player presses a button. */
+void func_L17_002EDC40(char *moby, char *obj) {
+    char a[16];
+    char b[16];
+    if (func_001F9908(obj + 0x84) && (*(int *)(D_0013A5E0 + 0x2610) & 0x28)) {
+        char *g = (char *)D_0013E633 + 0xE1D;
+        if (*(unsigned char *)(g + 0x15F6) != 0) {
+            char *pos = moby + 0x40;
+            float s;
+            int n;
+            unsigned short t = (*(unsigned short *)(obj + 0x6A) + 1) & 3;
+            *(unsigned short *)(obj + 0x6A) = t;
+            func_L00_00250800(moby, t + 7, a);
+            func_L00_001FF4B0(b, obj, 0.3f);
+            FastVecAdd(a, a, b);
+            s = *(float *)&D_L17_001620F4 * *(float *)&D_L17_00162120;
+            n = scale_ticks(300);
+            if (func_L13_002E7E90(moby, a, *(int *)(obj + 0xEC), pos, s, n)) {
+                func_0022ED80(2, 0, (int)moby);
+                *(unsigned char *)(g + 0x15F6) -= 1;
+                *(int *)(obj + 0x84) = *(int *)&D_L17_001620F8;
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L17_002EDE50);
 INCLUDE_ASM("asm/overlays", func_L17_002EEB08);
 INCLUDE_ASM("asm/overlays", func_L17_002EFA20);

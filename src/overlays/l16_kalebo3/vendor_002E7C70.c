@@ -3,9 +3,87 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L16_002E7C70);
-INCLUDE_ASM("asm/overlays", func_L16_002E8538);
-INCLUDE_ASM("asm/overlays", func_L16_002E85E0);
-INCLUDE_ASM("asm/overlays", func_L16_002E8680);
+extern void func_L13_00266060(int, int, int, int);
+extern void func_L16_002DF780(float f);
+extern void func_L00_002664B0(int, int);
+extern short D_L16_0015F718;
+
+// Sets up the flags of two rows of sub-objects, then a global and a call.
+void func_L16_002E8538(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    int *p = (int *)(data + 0x60);
+    int i;
+    for (i = 15; i >= 0; i--) {
+        func_L13_00266060(*p, 1, 1, 1);
+        p++;
+    }
+    p = (int *)(data + 0xA0);
+    for (i = 7; i >= 0; i--) {
+        func_L13_00266060(*p, 0, 0, 0);
+        p++;
+    }
+    *(float *)&D_L16_0015F718 = 74.0f;
+    func_L16_002DF780(76.0f);
+    func_L00_002664B0(2, 6);
+}
+extern void func_L13_00266060(int, int, int, int);
+extern void func_L16_002DF780(float);
+extern void func_L00_002664B0(int, int);
+
+// Resets the moby's two arrays of handles, then starts the follow-up effect.
+void func_L16_002E85E0(char *moby)
+{
+    char *data = *(char **)(moby + 0x78);
+    int *p;
+    int i;
+    p = (int *)(data + 0x60);
+    for (i = 15; i >= 0; i--) {
+        func_L13_00266060(p[0], 0, 0, 0);
+        p++;
+    }
+    p = (int *)(data + 0xA0);
+    for (i = 7; i >= 0; i--) {
+        func_L13_00266060(p[0], 1, 1, 0);
+        p++;
+    }
+    func_L16_002DF780(100.0f);
+    func_L00_002664B0(0, 8);
+}
+extern char D_0013E633[];
+extern char D_0013D50F[];
+extern int func_00215570(void *, int);
+extern int func_0022EE28(int, int, int);
+extern void func_L00_00264DB8(int, int);
+
+/* update: a two-state trigger on the player's state */
+void func_L16_002E8680(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    switch (*(int *)(data + 8)) {
+    case 0: {
+        char *g = D_0013E633 + 0xE9D;
+        if (is_point_inside_clip_volume(g, *(int *)data) != 0) {
+            if (*(int *)(g + 0x200C) == 0xF) {
+                *(int *)(data + 8) = 1;
+            }
+        }
+        break;
+    }
+    case 1: {
+        char *h = D_0013E633 + 0xE1D;
+        if (*(int *)(h + 0x2084) == 0x42) {
+            *(int *)(data + 8) = 0;
+        } else if (is_point_inside_clip_volume(h + 0x80, *(int *)(data + 4)) != 0) {
+            unsigned char *f = (unsigned char *)D_0013D50F + 0x1;
+            if (f[0x19] == 0) {
+                f[0x19] = 1;
+                func_0022EE28(1, 0, 0);
+                ShowBanner(0x53DB, -1);
+            }
+        }
+        break;
+    }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L16_002E8B30);
 INCLUDE_ASM("asm/overlays", func_L16_002E8EA8);
 INCLUDE_ASM("asm/overlays", func_L16_002E9018);

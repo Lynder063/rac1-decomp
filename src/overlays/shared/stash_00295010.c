@@ -2,6 +2,26 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L00_00295010);
+typedef struct { char *base; int limit; int unk8; int unkC; } StashSlot;
+extern StashSlot D_L00_001C1668[];
+extern int func_00118E20(void *buf, int flag);
+// Starts a DMA transfer of size*16 bytes at offset*16 into a slot; -3 bad slot, -1 out of range.
+int func_L00_00295010(int arg, unsigned int slot, int off, int size) {
+    int req[4];
+    int lim;
+    if (slot >= 0x40) return -3;
+    lim = D_L00_001C1668[slot].limit;
+    if (lim == 0) return -3;
+    if (lim < off + size) return -1;
+    req[0] = arg;
+    req[1] = (int)(D_L00_001C1668[slot].base + off * 16);
+    req[2] = size * 16;
+    req[3] = 0;
+    func_00118E20(req, 1);
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002951A8);
-INCLUDE_ASM("asm/overlays", func_L00_002951C8);
+// Returns the constant -3.
+int func_L00_002951C8(void) {
+    return -3;
+}

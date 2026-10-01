@@ -17,12 +17,78 @@ INCLUDE_ASM("asm/overlays", func_L10_002CB030);
 INCLUDE_ASM("asm/overlays", func_L10_002CF310);
 INCLUDE_ASM("asm/overlays", func_L10_002D8ED8);
 INCLUDE_ASM("asm/overlays", func_L10_002D8F08);
-INCLUDE_ASM("asm/overlays", func_L10_002D8F34);
+// stores a float into field 0x18
+void func_L10_002D8F34(char *a, float f) {
+    *(float *)(a + 0x18) = f;
+}
 INCLUDE_ASM("asm/overlays", func_L10_002D8F40);
-INCLUDE_ASM("asm/overlays", func_L10_002D9418);
+extern char *func_0020D348(int);
+extern float func_002140F8(float, float);
+extern int func_001F9850(int);
+extern void func_L00_00251E30(void *);
+extern float D_0015EE6C MACRO_ADDR;
+extern short D_L10_00161C6C;
+
+struct Swirl { char pad[0x18]; float a; float b; };
+
+// Spawns a moby with a swirl/particle data block.
+char *func_L10_002D9418(int owner, char *pos, char *vec) {
+    char *moby = CreateMoby(0x3AA);
+    if (moby != 0) {
+        char *data = *(char **)(moby + 0x78);
+        ((unsigned char *)moby)[0x30] = 0xFF;
+        *(short *)(moby + 0x32) = 0x7F;
+        moby[0x31] = 1;
+        moby[0x20] = 0;
+        *(int *)(data + 0x10) = owner;
+        *(short *)(data + 0x16) = 0;
+        qcopy(moby + 0x10, pos);
+        *(float *)(moby + 0x18) = *(float *)(moby + 0x18) + *(float *)&D_L10_00161C6C;
+        qcopy(data, vec);
+        ((struct Swirl *)data)->a = random_float_between(D_0015EE6C * 1.0471976f, D_0015EE6C * 3.1415927f);
+        ((struct Swirl *)data)->b = random_float_between(D_0015EE6C * 1.0471976f, D_0015EE6C * 3.1415927f);
+        *(short *)(data + 0x14) = scale_ticks(0x3C);
+        func_L00_00251E30(moby);
+    }
+    return moby;
+}
 INCLUDE_ASM("asm/overlays", func_L10_002D9530);
 INCLUDE_ASM("asm/overlays", func_L10_002D9988);
-INCLUDE_ASM("asm/overlays", func_L10_002D9FC0);
+extern int func_L00_00258BC8(int, int);
+extern int func_001F9908(int *arg0);
+extern float func_001FA748(float, float);
+extern void func_00215C00(void *, float, float, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern int func_0022ED80(int, int, int);
+extern short D_L10_00161C70;
+extern short D_L10_00161C74;
+extern short D_L10_00161C78;
+extern short D_L10_00161C7C;
+extern short D_L10_00161C80;
+extern short D_L10_00161C84;
+extern short D_L10_00161C88;
+
+/* update: on a timer, fire a projectile from the moby's angle, then rearm the timer */
+void func_L10_002D9FC0(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    float a[4];
+    float b[4];
+    if (((unsigned char *)moby)[0x20] == 0) {
+        *(int *)data = scale_ticks(rand_range(*(int *)&D_L10_00161C70, *(int *)&D_L10_00161C74));
+        moby[0x20] = 1;
+    }
+    if (func_001F9908((int *)data)) {
+        float x = *(float *)&D_L10_00161C78;
+        float p = random_float_between(-x, x) * 0.017453292f;
+        float q = FastAddRots(*(float *)(moby + 0x48), p);
+        float r = random_float_between(*(float *)&D_L10_00161C7C, *(float *)&D_L10_00161C80) * 0.017453292f;
+        func_00215C00(a, random_float_between(*(float *)&D_L10_00161C84, *(float *)&D_L10_00161C88) * D_0015EE6C, q, r);
+        FastVecAdd(b, moby + 0x10, a);
+        func_L10_002D9418(moby, b, a);
+        func_0022ED80(0, 0, (int)moby);
+        *(int *)data = scale_ticks(rand_range(*(int *)&D_L10_00161C70, *(int *)&D_L10_00161C74));
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L10_002DA0F0);
 INCLUDE_ASM("asm/overlays", func_L10_002DA3C0);
 INCLUDE_ASM("asm/overlays", func_L10_002DA468);
@@ -55,7 +121,40 @@ char *func_L10_002DEC08(char *owner) {
 }
 INCLUDE_ASM("asm/overlays", func_L10_002E0630);
 INCLUDE_ASM("asm/overlays", func_L10_002E0FF8);
-INCLUDE_ASM("asm/overlays", func_L10_002E14F8);
+extern short *D_L10_001ABFC0[];
+typedef struct { char p0[0x10]; float x; float y; char p1[8]; unsigned char state; char p2[0xDF]; } Ent;
+extern Ent *D_L10_00160058 MACRO_ADDR;
+
+/* Sets every listed entity in state 1 to state 2. */
+void func_L10_002E14F8(unsigned char *m) {
+    short *p;
+    if (m[0x21] != 0xFF) {
+        p = D_L10_001ABFC0[m[0x21]];
+        if (p != 0) {
+            do {
+                Ent *base = D_L10_00160058;
+                Ent *e = (Ent *)((*(unsigned short *)p & 0x7FFF) * 256 + (int)base);
+                if (e->state == 1) e->state = 2;
+            } while (*p++ >= 0);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L10_002E1568);
 INCLUDE_ASM("asm/overlays", func_L10_002E2B80);
-INCLUDE_ASM("asm/overlays", func_L10_002E3070);
+typedef struct { char p0[0x10]; float x; float y; char p1[8]; unsigned char state; char p2[0xDF]; } Ent_2E3070;
+extern Ent_2E3070 *D_L10_00160058_2E3070 __asm__("D_L10_00160058") MACRO_ADDR;
+extern short D_L10_00161E80;
+
+/* Stores a value into each table entry listed for this moby's index. */
+void func_L10_002E3070(unsigned char *moby) {
+    short *p;
+    if (moby[0x21] != 0xFF) {
+        p = D_L10_001ABFC0[moby[0x21]];
+        if (p != 0) {
+            do {
+                int idx = *(unsigned short *)p & 0x7FFF;
+                ((char *)D_L10_00160058_2E3070)[(idx << 8) + 0xBC] = func_001F9850(*(int *)&D_L10_00161E80);
+            } while (*p++ >= 0);
+        }
+    }
+}

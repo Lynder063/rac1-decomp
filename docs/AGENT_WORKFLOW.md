@@ -20,8 +20,11 @@ the level-code catalogue the waves draw from.
 | (none) | Haiku 4.5 | no tier: see [Why Sonnet only](#why-sonnet-only) |
 | Clone tool | no model | copies matched C onto variants of the same function |
 
-- At most 8 workers at once (2 or 3 on a small plan: the loop is the same,
-  it takes longer).
+- Up to 20 workers at once, Claude Code's default cap on concurrent
+  sub-agents (2 or 3 on a small plan: the loop is the same, it takes
+  longer). The claims and the landing lock
+  ([Several agents at once](#several-agents-at-once)) are what make more
+  than a handful safe.
 - A worker's whole prompt is one line:
 
   ```
@@ -41,9 +44,12 @@ the level-code catalogue the waves draw from.
 | `tools/try_func.py` | compiles one candidate in a scratch copy of its file and compares it with retail |
 | `tools/wave.py status NAME`, `tokens NAME` | verdicts from the run logs; tokens per worker and per match |
 | `tools/wave.py land NAME --batch` | applies every exact candidate and re-checks it in its file |
+| `tools/wave.py salvage [--ports]` | lands every stub that already has an EXACT run logged; Lombyte ports only with `--ports` |
+| `tools/wave.py plan NAME --queue --overlay --near` | a near wave: earlier attempts within 10% of retail, each packet with its best candidate and what still differs (`tools/near_diffs.py`) |
 | `tools/overlay_variants.py clone` | matches variants of matched functions with no model |
 | `.claude/agents/match-worker.md` | the sub-agent type: Read, Write, Edit, Grep, Glob, Bash; Sonnet by default |
 | `docs/QUEUE.md` | the workers' whole instruction set, under 2K tokens |
+| `tools/claims.py` | shared claims and the landing lock, for several agents in one checkout |
 
 The gate is `try_func`. For level code its `EXACT` is strict: the
 candidate is linked at the function's address in its level and every byte
@@ -56,11 +62,13 @@ says counts; only what `try_func` logged.
 
    ```
    bash tools/docker/run.sh python tools/overlay_variants.py clone
-   python3 tools/wave.py plan q6 --queue --overlay --family --count 64 --min-size 32 --max-size 600 --budget 10
+   python3 tools/wave.py plan q6 --queue --overlay --family --count 64 --min-size 32 --max-size 600 --budget 6
    ```
 
    `clone` first, so variants of already matched functions never reach a
-   worker. `plan` skips functions that are matched, were tried by an
+   worker. Then `python3 tools/wave.py salvage` (and `salvage --ports`,
+   committed apart): a wave stopped before landing, or a file that
+   clashed, leaves EXACT runs behind as stubs. `plan` skips functions that are matched, were tried by an
    earlier wave, are fragments, or hit a known wall
    (`tools/rank_candidates.py`).
 2. **Launch** up to 8 workers with the Agent tool (`subagent_type:
@@ -101,9 +109,12 @@ says counts; only what `try_func` logged.
    readable names into the new bodies ([NAMES.md](NAMES.md)).
 7. **Report and commit.** `bash tools/docker/run.sh python
    tools/gen_progress_report.py --no-build` regenerates the report (about
-   20 minutes: it rebuilds and re-checks every file with C), then
-   `python3 tools/gen_progress_report.py --check`. One commit per wave:
-   `feat(overlays): N matches from wave q6`. Commit only; the maintainer
+   2 minutes: it rebuilds and re-checks every file with C, one file per
+   CPU), then `python3 tools/gen_progress_report.py --check`. Before it,
+   `tools/overlay_file_check.py` (in the container) lists every changed
+   file that fails to build or holds a C function that is no longer
+   EXACT. One commit per batch of waves; code ported from another
+   project goes in a commit of its own that credits it. Commit only; the maintainer
    pushes.
 8. **Feed back.** Add an idiom to QUEUE.md only when a landed function
    shows it. Fix what the wave tripped over (see
@@ -139,8 +150,12 @@ Why it is shaped this way:
   reads of the dossier and the assembly.
 - **No RESULT.md.** `try_func` logs every run; `status`, `tokens` and
   `land` read that log.
-- **A run budget**, enforced by `try_func`: matches come early, and a miss
-  otherwise spends tokens to the end.
+- **A run budget of 6**, enforced by `try_func`: matches come early, and a
+  miss otherwise spends tokens to the end. In waves q6-q26 a run matched
+  about 12% of the time for runs 1-5, 8% for runs 6-10 and 3-4% after, so a
+  run on a fresh function is worth about two late ones. What a function
+  has left after 6 runs goes to a near wave (`plan --overlay --near`), whose
+  worker starts from the best attempt and its remaining differences.
 
 ## Picking functions: family order
 
@@ -177,26 +192,38 @@ model.
 
 ## Why Sonnet only
 
-Haiku against Sonnet on one queue of 32 functions of 8 to 92 bytes,
-claims interleaved so both saw the same mix (wave q1):
+Two trials, each one queue with Haiku and Sonnet workers claiming from it
+at the same time, so both saw the same mix of functions.
 
-| Model | Handled | Exact | Input tokens per match |
-|---|---|---|---|
-| Haiku 4.5 | 15 | 4 | 1.02M |
-| Sonnet 5.5 | 17 | 4 | 214K |
+**q6, the fair one** (2026-09-30): all 85 functions of 8 to 31 bytes left
+after the fragment filter, Thief3's tier-1 band, the same budget of 5
+runs for both, two workers per model.
 
-- Haiku used almost five times Sonnet's tokens per match, more than its
-  price makes up for.
-- About half of that queue was unmatchable fragments. Sonnet recognised
-  one and stopped without a run; Haiku spent its runs on it.
+| Model | Handled | Exact | First try | Runs per function | Input tokens | Per match |
+|---|---|---|---|---|---|---|
+| Haiku 4.5 | 39 | 15 (38%) | 11 | 2.6 | 13.3M | 887K |
+| Sonnet 5.5 | 46 | 18 (39%) | 11 | 0.9 | 2.3M | 129K |
+
+- Both models match the same share. Haiku needs almost three times the
+  runs to get there and about seven times the input tokens per match, far
+  more than its lower price per token makes up for. It was also slower:
+  its workers took 21 to 23 minutes against Sonnet's 7 to 9.
+- Half of the band is still not whole functions. Sonnet stopped on 23 of
+  its 46 without a run, recognising tails of larger functions (they read
+  registers nothing in them sets); Haiku tried 33 of its 39. The fragment
+  filter catches entries that branch out of themselves, not these tails.
 - Thief3's Haiku tier works because its small functions are whole
-  functions of a few shapes. Here the small entries were mostly fragments,
-  and what is left to match is large: 686 level functions over 1 KB hold
-  three quarters of the remaining level code.
+  functions of a few shapes, which Haiku matches on the first try
+  (97%). Here the same band is half fragments, and what is left to match
+  is large: 686 level functions over 1 KB hold three quarters of the
+  remaining level code.
 
-Measure again if the pool changes (the fragment filter below removes most
-of what Haiku wasted runs on), with the same method: one queue, half the
-workers on each model, `wave.py tokens`.
+**q1, the first** (8 to 92 bytes, before the fragment filter): Haiku 4 of
+15 at 1.02M input tokens per match, Sonnet 4 of 17 at 214K.
+
+Measure again only if the pool changes in Haiku's favour, for example
+once tails are merged back into their functions, with the same method:
+one queue, half the workers on each model, `wave.py tokens`.
 
 ## Matches without a model
 
@@ -226,14 +253,55 @@ The cheapest match is the one no worker makes.
 | Problem | Fix |
 |---|---|
 | Workers stopped after one claim | the prompt's last sentence; the lead refills with a new `ID` |
-| Small catalogue entries were fragments of larger functions | `plan` skips entries that branch outside themselves (245); merging them back in the catalogue is still open |
+| Small catalogue entries were fragments of larger functions | `plan` skips entries that branch outside themselves (245); tails that read registers they never set still get through (about half of the 8-31 byte band), and merging fragments back in the catalogue is still open |
 | A match read an unassigned local to reproduce a leftover register | rejected at review; QUEUE.md forbids it |
 | A stub branched into a function in another file, so nothing in its file assembled and four functions were lost | `overlay_asm.py --fix-branches` writes such branches as words |
 | The catalogue merged functions that differ in a constant, so matched C called the wrong copy | the catalogue compares constants now (`identity()` in `tools/overlays.py`) |
 | Matches failed to land: a candidate redeclared a function its file now defines, with the prototype its author guessed | `land` drops the clashing `extern` and re-checks; the file's declaration wins |
 | Workers matched variants the clone tool would have matched for free | run `clone` before `plan`, and after every landing |
+| 16 functions (7.2 KB) end on a jump whose delay slot the catalogue gave to a 4-byte "function" copied from the executable, so they cannot reach retail's size | open: the catalogue's split must not cut inside a delay slot (then regenerate asm/overlays) |
 | A later wave's match was counted for an earlier worker | `wave.py` reads each wave's own run log |
+| Two waves queued the same functions: `plan` skipped only claimed ones, so a function another wave had queued but nobody had taken yet went into both | `plan` skips every function already in any wave's queue |
+| Waiting agents starved on the landing lock: `land` released it and took it straight back | `land` pauses after each release; waiters poll every 0.2 s for up to 30 minutes |
+| The strict check mis-paired `%hi`/`%lo` when retail interleaves the loads of two function pointers | pair in relocation-table order; an orphan `%lo` falls back to address order |
+| A hand-landed match was 20 bytes long in its file: a callee it uses was declared only further down, so it was implicitly `int` | re-check every landing in its file, not only the candidate on its own |
+| A landed function stopped matching when a neighbour landed later declared the same symbol through a `MACRO_ADDR` alias (the assembler keeps one form per symbol per file) | `land` builds the whole file after each landing (`tools/overlay_file_check.py`) and undoes the landing if any C function in it broke |
+| Landing ports one at a time under one lock took a minute each | `land --batch` applies a whole wave at once, re-checks every touched file in one parallel run, and lands only the files with a problem one by one |
+| A candidate kept a test `#define` that renamed a declaration its neighbour links against, and the executable failed to link | `integrate.py` refuses a candidate with a `#define`; such a candidate is landed by hand after review |
+| A candidate defined under an `__asm__` alias was reported landed though its stub stayed | `land` checks the stub is gone before counting a function as landed |
 | A tool-testing agent deleted match history in `build-sn/try/` | workers write only files they create; nothing under `build-sn/try/` or `build-sn/waves/` is scratch |
+
+## Several agents at once
+
+Several agents can work in one checkout (Claude waves, a GPT agent, a
+person) through `tools/claims.py`:
+
+```
+python3 tools/claims.py claim gpt func_L05_002559DC     # "claimed", or "taken by <owner>" (exit 1)
+python3 tools/claims.py release gpt func_L05_002559DC   # giving up on it
+python3 tools/claims.py who func_L05_002559DC
+python3 tools/claims.py list [OWNER]
+python3 tools/claims.py lock gpt      # before writing any file in src/
+python3 tools/claims.py unlock gpt    # right after
+```
+
+- **Claim before working on a function.** A claim is the file
+  `build-sn/claims/<func>`; creating it is atomic, so only one agent gets
+  a function. Release it when you give up on it; leave it once matched.
+  `wave.py claim` and `plan` use the same claims: waves never take
+  another agent's function, and `land` frees a wave's unmatched ones.
+- **Take the landing lock around every write to `src/`.**
+  `tools/integrate.py --apply` and `wave.py land` take it themselves; an
+  agent that edits source files by hand runs `lock` and `unlock` around
+  the edit. A lock older than 15 minutes counts as abandoned.
+- **Never restore a file wholesale.** `land` puts a file back after a
+  failed re-check only if nobody else changed it meanwhile.
+- **One owner for the report and the commits.** Only the lead
+  regenerates `progress/report.json`, once, when every agent has finished;
+  the user decides what is committed. Agents leave their matches
+  uncommitted in the tree.
+- Matching itself never collides: `try_func` works in a scratch copy in
+  `build-sn/try/<func>/`.
 
 ## Rules every brief carries
 

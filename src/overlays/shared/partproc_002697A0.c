@@ -4,7 +4,28 @@
 
 INCLUDE_ASM("asm/overlays", func_L00_002697A0);
 INCLUDE_ASM("asm/overlays", func_L00_00269BE8);
-INCLUDE_ASM("asm/overlays", func_L00_00269DB0);
+extern void *func_00218928(int);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern int func_001F9850(int);
+extern unsigned char *D_L00_001B2404;
+
+/* spawns a type-1 particle at a position, fading with alpha a1 */
+void func_L00_00269DB0(char *pos, int a1) {
+    unsigned char *p = func_00218928(1);
+    if (p != 0) {
+        *(float *)(pos + 8) = *(float *)(pos + 8) + 0.1f;
+        qcopy(p + 0x10, pos);
+        *(int *)(p + 4) = (a1 << 24) | 0x907070;
+        p[9] = func_001FA898_r(2.0f) + 0x40;
+        p[3] = 0x48;
+        p[1] = 0;
+        p[2] = D_L00_001B2404[0];
+        *(float *)(p + 0xC) = 31500.002f;
+        p[8] = 0xA0;
+        *(short *)(p + 0xA) = scale_ticks(0x1B);
+        *(int *)(p + 0x20) = a1;
+    }
+}
 extern int func_001F9850(int);
 extern int func_001F9938(void *);
 extern void func_L00_002688A8(void *);

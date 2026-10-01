@@ -5,7 +5,19 @@
 INCLUDE_ASM("asm/overlays", func_L05_00263490);
 INCLUDE_ASM("asm/overlays", func_L05_00263500);
 INCLUDE_ASM("asm/overlays", func_L05_002638F8);
-INCLUDE_ASM("asm/overlays", func_L05_00264C88);
+extern void func_001FFDA0(int arg0, int arg1);
+extern int D_L05_0015FA58 MACRO_ADDR;
+extern int D_L05_0015FA54 MACRO_ADDR;
+extern short D_L05_0015FA50;
+// Releases the held hud element if any, clears a flag and bumps a counter.
+void func_L05_00264C88(void) {
+    if (D_L05_0015FA58 != -1) {
+        func_001FFDA0(D_L05_0015FA58, 0);
+        D_L05_0015FA58 = -1;
+    }
+    D_L05_0015FA54 = 0;
+    *(int *)&D_L05_0015FA50 = *(int *)&D_L05_0015FA50 + 1;
+}
 extern int func_001F9850(int);
 
 typedef struct {
@@ -27,6 +39,17 @@ void func_L05_00266B90(HudElem *e) {
     e->h = 0x80;
     e->unk4A = 0;
 }
-INCLUDE_ASM("asm/overlays", func_L05_00266BD8);
+extern char D_0013E633[];
+extern int func_001F9850(int);
+
+void func_L05_00266BD8(char *moby)
+{
+    if (*(int *)(D_0013E633 + 0x2EA9) == 0x16) {
+        *(int *)(moby + 0x7C) = scale_ticks(0x1E);
+        *(int *)(moby + 0x6C) = 5;
+    } else {
+        *(int *)(moby + 0x6C) = -6;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L05_00266D10);
 INCLUDE_ASM("asm/overlays", func_L05_002670A0);

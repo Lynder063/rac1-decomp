@@ -113,7 +113,143 @@ void func_00202260(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002023E0); /* CreatePointLight */
+typedef struct {
+    float v[4];
+} __attribute__((aligned(16))) LtVec;
+
+typedef struct {
+    short n0;
+    short c0;
+    short n2;
+    short c2;
+    short n1;
+    short c1;
+    short *buf;
+    unsigned char pad[0x20];
+} LtSlot;
+
+typedef struct {
+    unsigned char pad0[0x10];
+    LtVec sphere;
+} LtDef;
+
+typedef struct {
+    unsigned char pad[0x1E];
+    unsigned short lights;
+} LtObj20;
+
+typedef struct {
+    unsigned char pad[0x36];
+    unsigned short lights;
+    unsigned char pad38[8];
+} LtObj40;
+
+extern LtObj20 *D_00161050_o __asm__("D_00161050") MACRO_ADDR;
+extern LtObj20 *D_00161054_o __asm__("D_00161054") MACRO_ADDR;
+extern LtObj40 *D_00160F8C_o __asm__("D_00160F8C") MACRO_ADDR;
+extern int D_00160F90 MACRO_ADDR;
+extern LtObj20 *D_001604D4_o __asm__("D_001604D4") MACRO_ADDR;
+extern LtObj20 *D_001604D8_o __asm__("D_001604D8") MACRO_ADDR;
+extern int func_001F9D78(void *, void *);
+extern void func_001F9C48(void *, void *, float);
+
+/* CreatePointLight: lists which objects of the three lists the light's sphere touches and records the light's index in their packed nibble field. Adapted from Lombyte (MIT) for PAL: src/rendering/create_point_light.c, create_point_light. */
+void func_002023E0(int i) {
+    LtSlot *slot;
+    LtDef *def;
+    short *p;
+    short *end;
+    LtVec sphere;
+    LtObj20 *o;
+    LtObj40 *m;
+    int n;
+    int n2;
+    int n3;
+    unsigned int v;
+
+    slot = &((LtSlot *)D_0019C4C0)[i];
+    p = slot->buf;
+    end = p + 0x200;
+    def = &((LtDef *)D_0019C2C0)[i];
+    qcopy(&sphere, &def->sphere);
+    sphere.v[3] += 8.0f;
+    if (p < end) {
+        slot->n0 = 0;
+        n = 0;
+        for (o = D_00161050_o; o != D_00161054_o; o++, n++) {
+            if (func_001F9D78(&sphere, o)) {
+                *p++ = n;
+                v = o->lights;
+                if (v == 0xFFFF) {
+                    o->lights = i | 0xFFF0;
+                } else if ((v & 0xFFF0) == 0xFFF0) {
+                    o->lights = (v & 0xFF0F) | (i << 4);
+                } else if ((v & 0xFF00) == 0xFF00) {
+                    o->lights = (v & 0xF0FF) | (i << 8);
+                } else if ((v & 0xF000) == 0xF000) {
+                    o->lights = (v & 0x0FFF) | (i << 12);
+                } else {
+                    p--;
+                }
+                if (p >= end) {
+                    break;
+                }
+            }
+        }
+        slot->c0 = p - slot->buf;
+        if (p < end) {
+            slot->n1 = slot->c0;
+            func_001F9C48(&sphere, &sphere, 1024.0f);
+            m = D_00160F8C_o;
+            for (n2 = 0; n2 < D_00160F90; n2++, m++) {
+                if (func_001F9D78(&sphere, m)) {
+                    *p++ = n2;
+                    v = m->lights;
+                    if (v == 0xFFFF) {
+                        m->lights = i | 0xFFF0;
+                    } else if ((v & 0xFFF0) == 0xFFF0) {
+                        m->lights = (v & 0xFF0F) | (i << 4);
+                    } else if ((v & 0xFF00) == 0xFF00) {
+                        m->lights = (v & 0xF0FF) | (i << 8);
+                    } else if ((v & 0xF000) == 0xF000) {
+                        m->lights = (v & 0x0FFF) | (i << 12);
+                    } else {
+                        p--;
+                    }
+                    if (p >= end) {
+                        break;
+                    }
+                }
+            }
+            slot->c1 = (p - slot->buf) - slot->n1;
+            if (p < end) {
+                slot->n2 = p - slot->buf;
+                n3 = 0;
+                for (o = D_001604D4_o; o != D_001604D8_o; o++, n3++) {
+                    if (func_001F9D78(&sphere, o)) {
+                        *p++ = n3;
+                        v = o->lights;
+                        if (v == 0xFFFF) {
+                            o->lights = i | 0xFFF0;
+                        } else if ((v & 0xFFF0) == 0xFFF0) {
+                            o->lights = (v & 0xFF0F) | (i << 4);
+                        } else if ((v & 0xFF00) == 0xFF00) {
+                            o->lights = (v & 0xF0FF) | (i << 8);
+                        } else if ((v & 0xF000) == 0xF000) {
+                            o->lights = (v & 0x0FFF) | (i << 12);
+                        } else {
+                            p--;
+                        }
+                        if (p >= end) {
+                            break;
+                        }
+                    }
+                }
+                slot->c2 = (p - slot->buf) - slot->n2;
+            }
+        }
+    }
+}
 
 extern void func_002023E0(int);
 extern void func_002027C0(int);

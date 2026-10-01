@@ -2,7 +2,27 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L08_002B9438);
+extern float func_002140F8(float, float);
+extern void func_L00_0025E210(void *);
+extern int func_L08_0027ACC8(char *);
+extern short D_L08_001614F8;
+extern short D_L08_001614FC;
+
+// Initialize the moby's rotation and data block, then fetch its handle.
+void func_L08_002B9438(char *moby) {
+    float a = *(float *)&D_L08_001614F8;
+    float b = *(float *)&D_L08_001614FC;
+    char *d;
+    *(float *)(moby + 0x40) = 0.0f;
+    *(float *)(moby + 0x44) = 0.5235988f;
+    *(float *)(moby + 0x48) = 0.0f;
+    d = *(char **)(moby + 0x78);
+    *(float *)(d + 0xC) = random_float_between(a, b);
+    *(int *)(d + 0x28) = 0;
+    *(float *)(d + 8) = *(float *)(moby + 0x18);
+    func_L00_0025E210(moby);
+    *(int *)(d + 0x24) = func_L08_0027ACC8(moby);
+}
 INCLUDE_ASM("asm/overlays", func_L08_002B94B0);
 extern char *func_0020D348(int);
 extern int func_001F9850(int);

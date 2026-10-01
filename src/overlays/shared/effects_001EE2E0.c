@@ -2,7 +2,44 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L00_001EE2E0);
+extern int D_L00_0015F6A8 MACRO_ADDR;
+extern int D_L00_00169140[];
+
+/* append a 0x30-byte entry to the 3-slot queue */
+void func_L00_001EE2E0(int a0, int a1, float f12, float f13, int *a2, int a3, int t0, float f14) {
+    int *e;
+    int n;
+    if (D_L00_0015F6A8 == 2) return;
+    n = D_L00_00169140[0xC0 / 4];
+    if (n >= 3) return;
+    e = D_L00_00169140 + n * 12;
+    e[8] = a0;
+    e[5] = a1;
+    *(float *)&e[4] = f12;
+    *(float *)&e[7] = f13;
+    e[6] = a3;
+    if (a2) {
+        qcopy(e, a2);
+        *(short *)&e[9] = 1;
+    } else {
+        *(short *)&e[9] = 0;
+    }
+    if (t0 == -1) {
+        switch (a3) {
+        case 13:
+        case 31 ... 39:
+            e[11] = 2;
+            *(float *)&e[10] = 1.5707964f;
+            *((short *)e + 19) = 0;
+            break;
+        }
+    } else {
+        *((short *)e + 19) = 4;
+        *(float *)&e[10] = f14;
+        e[11] = t0;
+    }
+    D_L00_00169140[0xC0 / 4]++;
+}
 INCLUDE_ASM("asm/overlays", func_L00_001EE530);
 INCLUDE_ASM("asm/overlays", func_L00_001EE698);
 INCLUDE_ASM("asm/overlays", func_L00_001EEBD8);

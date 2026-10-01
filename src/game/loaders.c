@@ -227,7 +227,139 @@ void func_00203118(SkyDefL *s) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002032D0); /* LoadHudBanks(void) */
+typedef struct {
+    int off;
+    int size;
+} BankSrc;
+
+typedef struct {
+    char pad00[0x20];
+    BankSrc bank[6];
+} SrcHdr;
+
+typedef struct {
+    int pad00;
+    int unk04;
+    int unk08;
+    int unk0C;
+    int unk10;
+    char pad14[0x40];
+    int unk54;
+    int unk58;
+    int unk5C;
+    int unk60;
+    int unk64;
+    char pad68[0x2C];
+    int unk94;
+    int pad98;
+    int unk9C;
+    int unkA0;
+    int unkA4;
+} HudHdr;
+
+typedef struct {
+    char pad00[0x18];
+    HudHdr *header;
+    void *unk1C;
+    void *unk20;
+    void *unk24;
+    void *unk28;
+} HudArena;
+
+extern SrcHdr *D_0015EF4C_src __asm__("D_0015EF4C") MACRO_ADDR;
+extern HudArena D_0019A4E8_arena __asm__("D_0019A4E8");
+
+extern char *func_001FFAB8_d(int, int, char *, int) __asm__("func_001FFAB8");
+extern void func_00203548(int idx, int size);
+extern int func_00234158(int arg0, int arg1, int arg2, int arg3);
+extern void func_001FF958(int, void *, int);
+extern void func_00118D80(int);
+extern void func_001FF7F0(int bank, int addr);
+
+extern int D_001941C0[];
+extern int D_0019A520[];
+extern char D_0015FC70[];
+extern char D_0015FC80[];
+extern char D_0015FC90[];
+extern char D_0015FCA0[];
+extern char D_0015FCB0[];
+
+#define ALIGN64(x) (((x) + 0x3F) & 0xFFFFFFC0)
+
+/* Builds the runtime HUD-bank arena from the compressed HUD image. Adapted from Lombyte (MIT) for PAL: ui/hud/load_hud_banks.c, load_hud_banks. */
+void func_002032D0(void) {
+    SrcHdr *base;
+    int *out;
+    int *p;
+    int n;
+    int v;
+    int size24;
+    HudHdr *header;
+    int bank2;
+    unsigned int shift54;
+    int size58;
+    char *bank58;
+    unsigned int shift5C;
+    unsigned int shift60;
+    unsigned int shift64;
+    char *fname;
+    int *d941c0;
+
+    base = D_0015EF4C_src;
+    out = D_0019A520;
+    p = &base->bank[1].size;
+    for (n = 0; n < 5; n++) {
+        *out++ = ALIGN64(*p);
+        p += 2;
+    }
+
+    fname = D_0015FC70;
+    d941c0 = D_001941C0;
+    size24 = ALIGN64(base->bank[0].size);
+    header = (HudHdr *) func_001FFAB8_d(size24, 0, fname, 0x23B);
+    func_001F9A98(header, (void *) (base->bank[0].off + (int) base), size24);
+
+    D_0019A4E8_arena.header = header;
+    D_0019A4E8_arena.unk1C = (char *) header + header->unk04;
+    bank2 = d941c0[2] + 0x60000;
+    D_0019A4E8_arena.unk20 = (char *) header + header->unk08;
+    D_0019A4E8_arena.unk28 = (char *) header + header->unk0C;
+    D_0019A4E8_arena.unk24 = (char *) header + header->unk10;
+
+    if (header->unk54 != 0) {
+        shift54 = (unsigned int) ALIGN64(base->bank[1].size) >> 4;
+        func_00203548(0, bank2);
+        D_0019A4E8_arena.header->unk94 = func_00234158(
+            base->bank[1].off + (int) base, shift54, shift54, (int) D_0015FC80);
+        func_001FF958(0, (void *) bank2, 1);
+    }
+
+    size58 = D_0019A4E8_arena.header->unk58;
+    if (size58 != 0) {
+        bank58 = func_001FFAB8_d(size58, 0, fname, 0x262);
+        func_00203548(1, (int) bank58);
+        func_00118D80(0);
+        func_001FF7F0(1, (int) bank58);
+    }
+
+    if (D_0019A4E8_arena.header->unk5C != 0) {
+        shift5C = (unsigned int) ALIGN64(base->bank[3].size) >> 4;
+        D_0019A4E8_arena.header->unk9C = func_00234158(
+            base->bank[3].off + (int) base, shift5C, shift5C, (int) D_0015FC90);
+    }
+
+    if (D_0019A4E8_arena.header->unk60 != 0) {
+        shift60 = (unsigned int) ALIGN64(base->bank[4].size) >> 4;
+        D_0019A4E8_arena.header->unkA0 = func_00234158(
+            base->bank[4].off + (int) base, shift60, shift60, (int) D_0015FCA0);
+    }
+
+    if (D_0019A4E8_arena.header->unk64 != 0) {
+        shift64 = (unsigned int) ALIGN64(base->bank[5].size) >> 4;
+        D_0019A4E8_arena.header->unkA4 = func_00234158(
+            base->bank[5].off + (int) base, shift64, shift64, (int) D_0015FCB0);
+    }
+}
 
 /*
  * The heap cursor. Retail reaches it with the one-register macro form

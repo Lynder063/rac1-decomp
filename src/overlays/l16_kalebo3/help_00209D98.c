@@ -3,7 +3,23 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L16_00209D98);
-INCLUDE_ASM("asm/overlays", func_L16_0020FEC8);
+extern char D_0013E633[];
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_L00_002607A8(void *a, float x);
+
+// Builds a vector from two global blocks, transforms it, and passes it on with a summed float.
+void func_L16_0020FEC8(void) {
+    char tmp[16];
+    char *p = D_0013E633 + 0x158D;
+    char *q;
+    qcopy(p, p - 0x670);
+    q = p - 0x770;
+    func_L00_001FF4B0(tmp, q, *(float *)(q + 0x194));
+    FastVecAdd(p, p, tmp);
+    qcopy(p - 0x690, p);
+    func_L00_002607A8(p - 0x690, *(float *)(q + 0x85C) + *(float *)(q + 0x868));
+}
 INCLUDE_ASM("asm/overlays", func_L16_002105C8);
 INCLUDE_ASM("asm/overlays", func_L16_00211178);
 INCLUDE_ASM("asm/overlays", func_L16_002116B0);

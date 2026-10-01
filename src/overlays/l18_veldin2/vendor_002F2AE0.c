@@ -107,7 +107,44 @@ void func_L18_002F3A80(char *moby) {
         func_L00_001FD1D8(m, mat, 0);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L18_002F3C28);
+extern float D_L18_001DB140[][2];
+extern FRow D_L18_001DAB90[];
+extern short D_L18_001DAEE0[][4][2];
+
+/* Draws 38 textured quads from the L18 tables, in the moby's frame. */
+void func_L18_002F3C28(char *moby) {
+    FRow m[4];
+    int colors[4];
+    float uv[4][2];
+    unsigned long pkt[4];
+    float mat[4][4];
+    char *data = *(char **)(moby + 0x78);
+    int i;
+    int j;
+
+    pkt[1] = GetEffectTex((*(int *)&D_L18_001623B4));
+    pkt[3] = (*(int *)&D_L18_001623A0) | (long)(*(int *)&D_L18_001623A4) << 2 | (long)(*(int *)&D_L18_001623A8) << 4 |
+             (long)(*(int *)&D_L18_001623AC) << 6 | (long)(*(int *)&D_L18_001623B0) << 32;
+    pkt[2] = 0xFF9000000260;
+    pkt[0] = 0;
+    func_001FA190(mat);
+    mat[3][2] = *(float *)(moby + 0x18) - *(float *)data;
+    colors[3] = (*(int *)&D_L18_001623B8);
+    colors[2] = (*(int *)&D_L18_001623B8);
+    colors[1] = (*(int *)&D_L18_001623B8);
+    colors[0] = (*(int *)&D_L18_001623B8);
+    for (i = 0; i < 38; i++) {
+        float ofs = *(float *)&D_L18_00162398;
+        for (j = 0; j < 4; j++) {
+            int a = D_L18_001DAEE0[i][j][0];
+            int b = D_L18_001DAEE0[i][j][1];
+            qcopy(&m[j], &D_L18_001DAB90[a]);
+            uv[j][0] = D_L18_001DB140[b][0] + ofs;
+            uv[j][1] = D_L18_001DB140[b][1];
+        }
+        func_L00_001FD1D8(m, mat, 0);
+    }
+}
 extern float D_L18_001DB660[][2];
 extern FRow D_L18_001DB2F0[];
 extern short D_L18_001DB500[][4][2];
@@ -146,17 +183,203 @@ void func_L18_002F3DD0(char *moby) {
         func_L00_001FD1D8(m, mat, 0);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L18_002F3F78);
+typedef struct {
+    char pad0[0x44];
+    short count;
+    char pad46[0x132];
+    char *mobs[1];
+} MobyList;
+extern int D_L18_0015F6A8 MACRO_ADDR;
+extern unsigned char D_0015EEB0[] MACRO_ADDR;
+extern MobyList D_L18_0016D2E0;
+extern char D_L18_0017CEC0[];
+extern short D_L18_00162434;
+extern void func_0020D960(char *, int, void *);
+
+/* Re-initialize the class 0x4E1 effect block for each listed moby that has no active effect. */
+void func_L18_002F3F78(void) {
+    if (D_L18_0015F6A8 == 2 && gCheats[0] != 0) {
+        int i;
+        for (i = 0; i < D_L18_0016D2E0.count; i++) {
+            char *m = D_L18_0016D2E0.mobs[i];
+            if (*(short *)(m + 0xA6) == 0x4E1) {
+                unsigned char *e = (unsigned char *)D_L18_0017CEC0;
+                if (e[1] == 0) {
+                    float f;
+                    AttachManipulator(m, 0, e);
+                    f = *(float *)&D_L18_00162434;
+                    *(float *)(e + 0x20) = f;
+                    *(float *)(e + 0x24) = f;
+                    *(float *)(e + 0x28) = f;
+                }
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L18_002F4050);
-INCLUDE_ASM("asm/overlays", func_L18_002F7278);
+extern char D_0013E633[];
+extern short D_L18_00162438;
+
+/* Latches the target from the global block once, and counts a class 0x24B hit. */
+void func_L18_002F7278(char *moby) {
+    char *d = *(char **)(moby + 0x78);
+    if (*(int *)(d + 0x3E4) == 0) {
+        char *a = D_0013E633 + 0xE1D;
+        if (*(int *)(a + 0x300) != 0) {
+            *(int *)(d + 0x3E8) = *(int *)(a + 0x2FC);
+        }
+        if (*(int *)(a + 0x2084) == 0x77) {
+            char *t = *(char **)(d + 0x3E8);
+            *(int *)(d + 0x3E4) = 1;
+            if (t != 0) {
+                if (*(short *)(t + 0xA6) == 0x24B) {
+                    *(int *)&D_L18_00162438 = *(int *)&D_L18_00162438 + 1;
+                }
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L18_002F72E0);
-INCLUDE_ASM("asm/overlays", func_L18_002F7CD8);
-INCLUDE_ASM("asm/overlays", func_L18_002F7DC0);
+extern void func_001F9BF0(void *, void *, void *);
+extern float func_001F9CB8(void *);
+extern float func_00214D88(float, float, float, float, float *, float *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern float D_0015EE70 MACRO_ADDR;
+
+/* steps a moby's offset vector toward a target, returns whether both settled */
+int func_L18_002F7CD8(char *moby, float arg, void *x) {
+    char *data = *(char **)(moby + 0x78);
+    char *p = data + 0x3C0;
+    float a[4];
+    float b[4];
+    float v = 0.0f;
+    float len;
+    float s;
+    b[0] = v;
+    FastVecSub(a, x, p);
+    a[2] = v;
+    len = FastVecLength(a);
+    s = D_0015EE70 * 10.0f;
+    func_00214D88(len, s, s, arg, b, (float *)(data + 0x374));
+    func_L00_001FF4B0(a, a, *(float *)(data + 0x374));
+    FastVecAdd(p, p, a);
+    if (len < 0.1f) {
+        if (*(float *)(data + 0x374) < 0.1f) {
+            return 1;
+        }
+        return 0;
+    }
+    return 0;
+}
+extern void func_L00_002607A8(void *a, float x);
+extern float func_001F9D48(void *, void *);
+extern char *D_L18_0016016C MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+extern short D_L18_0016240C;
+extern short D_L18_00162408;
+extern short D_L18_001623DC;
+
+/* Moves a moby's follow distance toward a target, clamped to a range, then applies it. */
+void func_L18_002F7DC0(char *m) {
+    float v[4];
+    char *d = *(char **)(m + 0x78);
+    char *b = D_0013E633 + 0xE9D;
+    float t;
+    float lo, hi;
+    FastVecSub(v, b, D_L18_0016016C + (*(int *)(d + 0x344) << 7) + 0x30);
+    v[2] = 0.0f;
+    if (*(int *)(b + 0x200C) == 0xF) {
+        func_L00_002607A8(v, *(float *)&D_L18_0016240C);
+    } else {
+        func_L00_002607A8(v, *(float *)&D_L18_00162408);
+    }
+    FastVecAdd(v, v, D_L18_0016016C + (*(int *)(d + 0x344) << 7) + 0x30);
+    t = *(float *)(D_0013E633 + 0xF7D);
+    t += (func_001F9D48(m + 0x10, v) - *(float *)&D_L18_001623DC) / *(float *)&D_L18_001623DC * (D_0015EE6C * 4.75f);
+    hi = D_0015EE6C * 20.0f;
+    lo = D_0015EE6C * 4.75f;
+    if (t > hi) {
+        t = hi;
+    } else if (t < lo) {
+        t = lo;
+    }
+    func_L18_002F7CD8(m, t, v);
+}
 INCLUDE_ASM("asm/overlays", func_L18_002F7F00);
 INCLUDE_ASM("asm/overlays", func_L18_002F8270);
-INCLUDE_ASM("asm/overlays", func_L18_002F8408);
-INCLUDE_ASM("asm/overlays", func_L18_002F8488);
-INCLUDE_ASM("asm/overlays", func_L18_002F8518);
+extern short *D_L18_001AC540[];
+extern unsigned char *D_L18_00160058 MACRO_ADDR;
+
+void func_L18_002F8408(int unused, int idx)
+{
+    short *p = D_L18_001AC540[idx];
+    if (p != 0) {
+        do {
+            unsigned char *m = D_L18_00160058 + ((*(unsigned short *)p & 0x7FFF) << 8);
+            if (m != 0 && m[0x20] != 0xFE && m[0x20] != 0xFD) {
+                unsigned short flags = *(unsigned short *)(m + 0x34);
+                *(int *)(m + 0x94) = 0;
+                flags |= 1;
+                m[0x31] = 0;
+                *(unsigned short *)(m + 0x34) = flags;
+            }
+        } while (*p++ >= 0);
+    }
+}
+
+// Walks a list of moby indices and resets the flags of each live moby.
+void func_L18_002F8488(int a0, int idx) {
+    short *p = D_L18_001AC540[idx];
+    if (p != 0) {
+        do {
+            unsigned char *m = D_L18_00160058 + ((*(unsigned short *)p & 0x7FFF) << 8);
+            if (m != 0 && m[0x20] != 0xFE && m[0x20] != 0xFD) {
+                m[0x31] = 1;
+                *(unsigned short *)(m + 0x34) &= 0xFFFE;
+                *(int *)(m + 0x94) = *(int *)(*(char **)(m + 0x24) + 0x10);
+            }
+        } while (*p++ >= 0);
+    }
+}
+extern int func_002140B0(int);
+extern short D_L18_001DFE00[];
+
+/* Picks a new state for the moby at random among the allowed transitions, retrying up to 100 times until one is accepted. */
+int func_L18_002F8518(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    int state = *(int *)(data + 0x350);
+    int tries = 0;
+    int r;
+    int ok;
+    do {
+        r = random_integer_below(6);
+        switch (r) {
+        case 0: state = 0xD; break;
+        case 1: state = 0xE; break;
+        case 2: state = 0xF; break;
+        case 3: state = 0x10; break;
+        case 4: state = 0x11; break;
+        case 5: state = 0x13; break;
+        }
+        ok = *(short *)((char *)D_L18_001DFE00 + r * 2 + *(int *)(data + 0x34C) * 12);
+        if (state == *(int *)(data + 0x350)) ok = 0;
+        if (state == 0x13) {
+            if (*(int *)(data + 0x364) != 0) {
+                ok = 0;
+            } else {
+                float d = func_001F9D48(D_0013E633 + 0xE9D, D_L18_0016016C + *(int *)(data + 0x25C) * 128 + 0x30);
+                if (*(float *)&D_L18_00162408 + 2.0f < d) ok = 0;
+            }
+        }
+        if (state == 0x11) {
+            if (*(int *)(data + 0x350) == 0xE) ok = 0;
+        }
+        if (ok != 0) break;
+        tries++;
+    } while (tries < 100);
+    return state;
+}
 typedef union { long long quad; float f[4]; } L18Vector;
 extern float func_L00_001FF860(float, float);
 extern float func_001FA790(float, float);

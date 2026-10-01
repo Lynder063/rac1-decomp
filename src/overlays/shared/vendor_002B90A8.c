@@ -3,23 +3,171 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L01_002B90A8);
-INCLUDE_ASM("asm/overlays", func_L01_002B90E8);
-INCLUDE_ASM("asm/overlays", func_L01_002B9198);
+extern short D_L01_00161298;
+extern short D_L01_0016129C;
+extern void func_L01_00262BC0(char *a, char *b);
+extern void func_L01_00262FE8(char *a, int i, int c, char *base);
+
+// steps the ripple simulation for each active entry, then swaps the two buffer indices
+void func_L01_002B90E8(char *base, int n) {
+    int i;
+    for (i = 0; i < n; i++) {
+        char *p = base + i * 0x1190;
+        if (*(unsigned short *)(p + 0x1E) != 0) {
+            int off = *(int *)&D_L01_00161298 * 0x5C0 + 0x50;
+            func_L01_00262BC0((char *)0x70000000, p + off);
+            func_L01_00262FE8((char *)0x70000000, i, *(int *)&D_L01_0016129C, base);
+        }
+    }
+    {
+        int a = *(int *)&D_L01_00161298;
+        int b = *(int *)&D_L01_0016129C;
+        *(int *)&D_L01_0016129C = a;
+        *(int *)&D_L01_00161298 = b;
+    }
+}
+extern void func_L01_002B90E8_2B9198(void) __asm__("func_L01_002B90E8");
+extern void func_L01_00262D28(char *, char *, char *, float);
+extern float D_L01_001CAF80[];
+extern short D_L01_001612A0;
+extern short D_L01_001612A4;
+
+// Advance the ripple simulation clock, stepping each active entry's ripple buffers.
+void func_L01_002B9198(char *p, int n) {
+    if (1.0f - D_L01_001CAF80[8] <= *(float *)&D_L01_001612A4) {
+        *(float *)&D_L01_001612A4 = D_L01_001CAF80[8];
+        func_L01_002B90E8_2B9198();
+        *(int *)&D_L01_001612A0 = *(int *)&D_L01_0016129C;
+    } else {
+        *(int *)&D_L01_001612A0 = 2;
+        if (n > 0) {
+            char *q = p;
+            int k = n;
+            do {
+                if (*(unsigned short *)(q + 0x1E) != 0) {
+                    func_L01_00262D28(q + (*(int *)&D_L01_001612A0 * 0x5C0 + 0x50),
+                                      q + (*(int *)&D_L01_0016129C * 0x5C0 + 0x50),
+                                      q + (*(int *)&D_L01_00161298 * 0x5C0 + 0x50),
+                                      *(float *)&D_L01_001612A4);
+                }
+                k--;
+                q += 0x1190;
+            } while (k != 0);
+        }
+    }
+    *(float *)&D_L01_001612A4 = *(float *)&D_L01_001612A4 + D_L01_001CAF80[8];
+}
 INCLUDE_ASM("asm/overlays", func_L01_002B9288);
 INCLUDE_ASM("asm/overlays", func_L01_002B9440);
-INCLUDE_ASM("asm/overlays", func_L01_002B9DC0);
+extern float D_L01_001CAF80[];
+
+/* Fills the ripple grid vertices in scratchpad from a base position. */
+void func_L01_002B9DC0(float *pos) {
+    float *dst = (float *)0x70002000;
+    float y = pos[1] + D_L01_001CAF80[3];
+    int i, j;
+    for (i = 0; i < 17; i++) {
+        float x = pos[0] + D_L01_001CAF80[2];
+        float *row = (float *)0x70000010 + (i + 1) * 24;
+        for (j = 0; j < 17; j++) {
+            *dst++ = x;
+            *dst++ = y;
+            *dst++ = row[j] + pos[2];
+            x += D_L01_001CAF80[4];
+        }
+        y += D_L01_001CAF80[5];
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_002B9E68);
 INCLUDE_ASM("asm/overlays", func_L01_002BA150);
 INCLUDE_ASM("asm/overlays", func_L01_002BA380);
 INCLUDE_ASM("asm/overlays", func_L01_002BB068);
 INCLUDE_ASM("asm/overlays", func_L01_002C05B8);
-INCLUDE_ASM("asm/overlays", func_L01_002C84D8);
+extern void func_001F9BF0(void *, void *, void *);
+extern float func_001F9CE8(void *);
+extern float func_L00_001FF860(float, float);
+extern float func_L00_00258C80(float, float);
+extern float func_001FA748(float, float);
+extern void func_00215C00(void *, float, float, float);
+extern float func_002140F8(float, float);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_L00_0026D588(char *, char *);
+extern int func_001F9850(int);
+extern int func_L00_00258BC8(int, int);
+extern char *func_L00_0026DA50(void *, void *, int, int, int, int, float);
+extern char D_L01_00174360[];
+extern char D_L01_001672C0[];
+extern float D_L01_00174340[];
+
+/* spawns two bursts of particles around a point */
+void func_L01_002C84D8(void) {
+    float v[4];
+    float p[4];
+    float a, b;
+    int i;
+    FastVecSub(v, D_L01_001672C0, D_L01_00174360);
+    a = -func_L00_001FF860(func_001F9CE8(v), v[2]);
+    func_L00_001FF860(v[0], v[1]);
+    for (i = 19; i >= 0; i--) {
+        float x, y;
+        x = FastAddRots(randf_sym(0.0f, 3.1415927f), a);
+        y = FastAddRots(randf_sym(0.0f, 3.1415927f), a);
+        func_00215C00(v, 0.2f, y, x);
+        FastVecScale(p, v, random_float_between(1.0f, 3.0f));
+        FastVecAdd(p, p, D_L01_00174360);
+        func_L00_0026D588((char *)p, (char *)v);
+    }
+    for (i = 9; i >= 0; i--) {
+        float x, y;
+        p[0] = D_L01_00174340[8] + randf_sym(0.0f, 0.1f);
+        p[1] = D_L01_00174340[9] + randf_sym(0.0f, 0.1f);
+        p[2] = D_L01_00174340[10] + randf_sym(0.0f, 0.1f);
+        x = FastAddRots(randf_sym(0.0f, 3.1415927f), a);
+        y = FastAddRots(randf_sym(0.0f, 3.1415927f), a);
+        func_00215C00(v, 0.05f, y, x);
+        func_L00_0026DA50(p, v, 0x4F007FFF, 0x1FFFFFFF, rand_range(scale_ticks(10), scale_ticks(20)), 1, 20000.0f);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_002C8740);
 INCLUDE_ASM("asm/overlays", func_L01_002E1F50);
 INCLUDE_ASM("asm/overlays", func_L01_002E1FE0);
 INCLUDE_ASM("asm/overlays", func_L01_002E2E38);
-INCLUDE_ASM("asm/overlays", func_L01_002E4430);
-INCLUDE_ASM("asm/overlays", func_L01_002E4488);
+extern char D_0013E633[];
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+
+void func_L01_002E4430(int unused, void *out)
+{
+    char scratch[16];
+    char *base = D_0013E633 + 0xE1D;
+    func_L00_001FF4B0(scratch, *(char **)(base + 0x2080) + 0xD0, 1.0f);
+    FastVecAdd(out, scratch, base + 0x80);
+}
+extern void func_L00_001FF4B0(void *, void *, float);
+typedef struct { float a[4]; } Vs __attribute__((aligned(16)));
+extern int func_L00_00259428(Vs *p, int x, int y, float f, float g);
+extern float D_L01_00174368;
+extern char D_0013F450[];
+extern float D_L01_001DEE10;
+
+/* Builds a camera-relative transform for a moby and steps its height. */
+void func_L01_002E4488(char *a, char *m) {
+    Vs t0;
+    Vs t1;
+    char *g = D_0013F450;
+    func_L00_001FF4B0(&t0, *(char **)(g + 0x2080) + 0xD0, 1.1f);
+    func_L00_001FF4B0(&t1, *(char **)(g + 0x2080) + 0xE0, 1.0f);
+    FastVecAdd(m, &t0, &t1);
+    FastVecAdd(m, m, g + 0x80);
+    if (*(int *)(m + 0x68) == 0) {
+        if (func_L00_00259428((Vs *)m, (int)a, 0, D_L01_001DEE10, 2.0f)) {
+            *(float *)(m + 8) = D_L01_00174368;
+        }
+    } else {
+        *(float *)(m + 8) = *(float *)(m + 8) + 1.0f;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_002E4580);
 INCLUDE_ASM("asm/overlays", func_L01_002E4620);
 INCLUDE_ASM("asm/overlays", func_L01_002E4920);

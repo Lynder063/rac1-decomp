@@ -26,5 +26,32 @@ void func_L04_002C5938(char *a, int i, int j, int k) {
     FastVecAdd(v10, v10, a + 0x10);
     func_L04_002C5560(a, v0, v10, k, *(float *)(pi + 0xC) * *(float *)&D_L04_00161940, *(float *)(pj + 0xC) * *(float *)&D_L04_00161940);
 }
-INCLUDE_ASM("asm/overlays", func_L04_002C5A50);
+extern short D_L04_00161950;
+extern short D_L04_00161954;
+extern short D_L04_00161958;
+extern short D_L04_0016195C;
+extern short D_L04_00161960;
+extern short D_L04_00161964;
+extern short D_L04_00161968;
+extern short D_L04_0016196C;
+extern void func_L04_002C5938(char *a, int i, int j, int k);
+
+// Calls the pair helper for each edge index pair with a per-pair global value.
+void func_L04_002C5A50(char *a)
+{
+    func_L04_002C5938(a, 0, 1, *(int *)&D_L04_00161950);
+    func_L04_002C5938(a, 2, 3, *(int *)&D_L04_00161954);
+    func_L04_002C5938(a, 4, 5, *(int *)&D_L04_00161958);
+    func_L04_002C5938(a, 5, 6, *(int *)&D_L04_0016195C);
+    func_L04_002C5938(a, 6, 7, *(int *)&D_L04_00161960);
+    func_L04_002C5938(a, 8, 9, *(int *)&D_L04_00161958);
+    func_L04_002C5938(a, 9, 10, *(int *)&D_L04_0016195C);
+    func_L04_002C5938(a, 10, 11, *(int *)&D_L04_00161960);
+    func_L04_002C5938(a, 12, 13, *(int *)&D_L04_00161964);
+    func_L04_002C5938(a, 14, 15, *(int *)&D_L04_00161964);
+    func_L04_002C5938(a, 16, 17, *(int *)&D_L04_00161968);
+    func_L04_002C5938(a, 20, 21, *(int *)&D_L04_00161968);
+    func_L04_002C5938(a, 18, 19, *(int *)&D_L04_0016196C);
+    func_L04_002C5938(a, 22, 23, *(int *)&D_L04_0016196C);
+}
 INCLUDE_ASM("asm/overlays", func_L04_002CF460);

@@ -57,10 +57,45 @@ void func_L02_002D5098(char *moby, int a, int b, int d) {
     FastVecAdd(vb, vb, moby + 0x10);
     func_L02_002D4E50(moby, va, vb, d, pa[3] * *(float *)&D_L02_00161A60, pb[3] * *(float *)&D_L02_00161A60);
 }
-INCLUDE_ASM("asm/overlays", func_L02_002D51D0);
+extern short D_L02_00161A80;
+extern short D_L02_00161A7C;
+extern short D_L02_00161A84;
+extern short D_L02_00161A88;
+extern void func_L02_002D5098(char *moby, int a, int b, int d);
+
+// Draws five pairs of lines on the moby using level constants.
+void func_L02_002D51D0(void *moby) {
+    func_L02_002D5098(moby, 0, 1, *(int *)&D_L02_00161A80);
+    func_L02_002D5098(moby, 2, 3, *(int *)&D_L02_00161A7C);
+    func_L02_002D5098(moby, 4, 5, *(int *)&D_L02_00161A84);
+    func_L02_002D5098(moby, 6, 7, *(int *)&D_L02_00161A84);
+    func_L02_002D5098(moby, 8, 9, *(int *)&D_L02_00161A88);
+}
 INCLUDE_ASM("asm/overlays", func_L02_002D5250);
 INCLUDE_ASM("asm/overlays", func_L02_002D6A90);
-INCLUDE_ASM("asm/overlays", func_L02_002D6B60);
+extern int D_L02_001AC140[];
+extern int D_L02_00160058_m __asm__("D_L02_00160058") MACRO_ADDR;
+extern float func_002140F8(float, float);
+extern float func_001F9878(float);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+
+// For each matching moby in the level list, updates a short field from a random value.
+void func_L02_002D6B60(char *arg) {
+    short *p;
+    if (((unsigned char *)arg)[0x21] != 0xFF) {
+        p = (short *)D_L02_001AC140[((unsigned char *)arg)[0x21]];
+        do {
+            char *o = (char *)D_L02_00160058_m + ((*(unsigned short *)p & 0x7FFF) << 8);
+            if (*(short *)(o + 0xA6) == 0x244) {
+                char *d = *(char **)(o + 0x78);
+                float f = func_001F9878(random_float_between(240.0f, 300.0f));
+                if ((float)*(short *)(d + 0x25E) < f) {
+                    *(short *)(d + 0x25E) = func_001FA898_r(f);
+                }
+            }
+        } while (*p++ >= 0);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L02_002D6C30);
 INCLUDE_ASM("asm/overlays", func_L02_002D6EA0);
 INCLUDE_ASM("asm/overlays", func_L02_002D70C0);
@@ -119,17 +154,94 @@ INCLUDE_ASM("asm/overlays", func_L02_002D8B80);
 INCLUDE_ASM("asm/overlays", func_L02_002D99F0);
 INCLUDE_ASM("asm/overlays", func_L02_002DD170);
 INCLUDE_ASM("asm/overlays", func_L02_002DD700);
-INCLUDE_ASM("asm/overlays", func_L02_002DDE48);
+extern int func_L00_001FEF78(void *);
+
+/* UpdateMoby_656: steps the moby's animation state from 0/2 (when flagged) and 1/3 (when the timer runs out) */
+void func_L02_002DDE48(unsigned char *moby) {
+    switch (moby[0x53]) {
+    case 0:
+        if (moby[0x70] & 2) {
+            func_00213DE0(moby, 1, 0, 0);
+            moby[0xBC] = func_001FA898_r(func_001F9878(random_float_between(180.0f, 240.0f)));
+        }
+        break;
+    case 2:
+        if (moby[0x70] & 2) {
+            func_00213DE0(moby, 3, 0, 0);
+            moby[0xBC] = func_001FA898_r(func_001F9878(random_float_between(180.0f, 240.0f)));
+        }
+        break;
+    case 1:
+        if (func_L00_001FEF78(moby + 0xBC) != 0 && moby[0x53] != 2) {
+            func_00213DE0(moby, 2, 0, 0);
+        }
+        break;
+    case 3:
+        if (func_L00_001FEF78(moby + 0xBC) != 0 && moby[0x53] != 0) {
+            func_00213DE0(moby, 0, 0, 0);
+        }
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L02_002DDF70);
 INCLUDE_ASM("asm/overlays", func_L02_002DE418);
 INCLUDE_ASM("asm/overlays", func_L02_002DE6E0);
 INCLUDE_ASM("asm/overlays", func_L02_002DE6FC);
 INCLUDE_ASM("asm/overlays", func_L02_002DE798);
-INCLUDE_ASM("asm/overlays", func_L02_002DE7A8);
+/* four-state update: waits for a flag, plays a transition, and rolls a random heading on entering state 2 or 7 */
+void func_L02_002DE7A8(char *moby) {
+    switch (((unsigned char *)moby)[0x53]) {
+    case 0:
+        if (((unsigned char *)moby)[0x70] & 2) {
+            func_00213DE0(moby, 2, 0, scale_ticks(5));
+            moby[0xBC] = func_001FA898_r(func_001F9878(random_float_between(60.0f, 180.0f)));
+        }
+        break;
+    case 2:
+        if (func_L00_001FEF78(moby + 0xBC)) {
+            if (((unsigned char *)moby)[0x53] != 3) func_00213DE0(moby, 3, 0, scale_ticks(5));
+        }
+        break;
+    case 3:
+        if (((unsigned char *)moby)[0x70] & 2) {
+            func_00213DE0(moby, 7, 0, scale_ticks(5));
+            moby[0xBC] = func_001FA898_r(func_001F9878(random_float_between(60.0f, 180.0f)));
+        }
+        break;
+    case 7:
+        if (func_L00_001FEF78(moby + 0xBC)) {
+            if (((unsigned char *)moby)[0x53] != 0) func_00213DE0(moby, 0, 0, scale_ticks(5));
+        }
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L02_002DF038);
 INCLUDE_ASM("asm/overlays", func_L02_002DF0C0);
 INCLUDE_ASM("asm/overlays", func_L02_002E03B8);
-INCLUDE_ASM("asm/overlays", func_L02_002E04E8);
+extern float func_001FA748(float, float);
+extern short D_L02_00161CCC;
+
+// Copies the moby position into two linked objects and eases their heights toward it.
+void func_L02_002E04E8(char *moby)
+{
+    char *d = *(char **)(moby + 0x78);
+    char *a = *(char **)(d + 0x84);
+    float k, k2;
+    float r;
+    qcopy(a + 0x10, moby + 0x10);
+    qcopy(*(char **)(d + 0x88) + 0x10, moby + 0x10);
+    k = *(float *)&D_L02_00161CCC;
+    *(float *)(a + 0x18) = *(float *)(moby + 0x18) + *(float *)(d + 0x94);
+    *(int *)(d + 0x8C) = 0;
+    *(float *)(*(char **)(d + 0x88) + 0x18) = *(float *)(moby + 0x18) + *(float *)(d + 0x98);
+    *(int *)(d + 0x90) = 0;
+    r = FastAddRots(*(float *)(moby + 0x48), (*(float *)(*(char **)(d + 0x84) + 0x18) - *(float *)(moby + 0x18)) * k * 0.017453292f);
+    k2 = *(float *)&D_L02_00161CCC;
+    *(float *)(*(char **)(d + 0x84) + 0x48) = r;
+    *(float *)(*(char **)(d + 0x88) + 0x48) = FastAddRots(*(float *)(moby + 0x48), (*(float *)(*(char **)(d + 0x88) + 0x18) - *(float *)(moby + 0x18)) * k2 * 0.017453292f);
+    func_L00_00251E30(*(char **)(d + 0x84));
+    func_L00_00251E30(*(char **)(d + 0x88));
+}
 INCLUDE_ASM("asm/overlays", func_L02_002E05E0);
 INCLUDE_ASM("asm/overlays", func_L02_002E0810);
 INCLUDE_ASM("asm/overlays", func_L02_002E0B68);

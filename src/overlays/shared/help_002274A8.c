@@ -2,8 +2,40 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L01_002274A8);
-INCLUDE_ASM("asm/overlays", func_L01_002283E0);
+extern unsigned char D_0013E633[];
+extern char D_L01_00179FC0[];
+extern int func_L00_0020DB30(int);
+
+/* Looks up the value of the current help record, or 0/0x54 in the special cases. */
+int func_L01_002274A8(int a) {
+    char *g = (char *)D_0013E633 + 0xE1D;
+    char *r;
+    int n;
+    if (*(unsigned char *)(g + 0x20A4) == 3) return 0;
+    if (*(int *)(g + 0x22A8) == 1) return 0x54;
+    if (a == 0) return 0;
+    if (*(unsigned char *)(g + 0x20A8) == 0) return 0;
+    if (*(unsigned char *)(g + 0x20AA) == 0) return 0;
+    if (*(short *)(g + 0x22C8) != 0) return 0;
+    n = func_L00_0020DB30(0);
+    r = D_L01_00179FC0 - (-(n * 0x4C));
+    return *(int *)(r + 0x24);
+}
+extern unsigned char D_0013E633[];
+extern int func_L00_0028F140(int a0, int a1, int a2, int a3, int a4);
+
+// Plays the hero footstep sound, flagging whether the hero's current moby has type 0xAD.
+void func_L01_002283E0(int a0, int a1, int a2) {
+    if (a2 != 0) {
+        char *g = (char *)D_0013E633 + 0xE1D;
+        char *m = *(char **)(g + 0x10E0);
+        int flag = 0;
+        if (m != 0) {
+            flag = *(short *)(m + 0xA6) == 0xAD;
+        }
+        func_L00_0028F140(a0, a1, flag, 0, *(int *)(g + 0x2080));
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_00228598);
 extern unsigned char D_0013E633[];
 extern int func_001F9850(int);
@@ -99,17 +131,271 @@ INCLUDE_ASM("asm/overlays", func_L01_002293D0);
 INCLUDE_ASM("asm/overlays", func_L01_0022D340);
 INCLUDE_ASM("asm/overlays", func_L01_0022D688);
 INCLUDE_ASM("asm/overlays", func_L01_0022DE30);
-INCLUDE_ASM("asm/overlays", func_L01_00231960);
-INCLUDE_ASM("asm/overlays", func_L01_00231A68);
+extern unsigned char D_0013E633[] NOT_SDA;
+extern void func_L00_0020ED30(void);
+extern void func_L00_00210E00();
+extern void func_L00_002638B8(char *o);
+extern void func_L00_00233868(void);
+extern void func_L00_00207220(void);
+extern void func_L00_00205B50(void);
+extern void func_L01_002320F8(void);
+extern void func_L00_00232EA8(void);
+extern void func_L01_0023D688(int, int);
+
+/* Starts a level scene: resets the player state, takes the new moby and sets up its flags. */
+void func_L01_00231960(int a, int b, int c) {
+    char *g;
+    func_L00_0020ED30();
+    g = (char *)D_0013E633 + 0xE1D;
+    *(char *)(g + 0x20A6) = 1;
+    func_L00_00210E00();
+    *(int *)(g + 0x2080) = *(int *)(g + 0xA88);
+    func_L00_002638B8(g + 0x1670);
+    *(int *)(*(char **)(g + 0x2080) + 0x98) = -1;
+    func_L00_00233868();
+    func_L00_00207220();
+    func_L00_00205B50();
+    *(char *)(g + 0x20A4) = a;
+    *(int *)(g + 0xA84) = c;
+    *(int *)(g + 0x2080) = c;
+    func_L01_002320F8();
+    *(float *)(g + 0x220) = *(float *)(g + 0x228);
+    *(float *)(g + 0x224) = *(float *)(g + 0x22C);
+    *(unsigned short *)(*(char **)(g + 0x2080) + 0x34) |= 6;
+    *(float *)(g + 0xA90) = 1.0f;
+    *(float *)(g + 0xA94) = 1.0f;
+    func_L00_00232EA8();
+    func_L00_0025805C(*(void **)(g + 0x2080));
+    func_L00_00208070();
+    *(short *)(g + 0x22CC) = b;
+    if (a == 1) {
+        *(unsigned short *)(g + 0x22B0) = *(unsigned short *)(g + 0x22A8);
+        *(int *)(g + 0x22A8) = *(int *)(g + 0x22AC);
+    }
+    func_L01_0023D688(b, 1);
+}
+extern void func_L00_00205B50(void);
+extern void func_0020D678(void *);
+extern void func_L00_00207220(void);
+extern void func_L00_00232EA8(void);
+extern void func_L01_0023D688(int, int);
+extern int D_L01_0015F6A8 MACRO_ADDR;
+
+/* resets the hero state and default camera fields */
+void func_L01_00231A68(void) {
+    char *g;
+    char *p;
+    char *m;
+    char *a;
+    func_L00_00205B50();
+    g = (char *)D_0013E633 + 0xE1D;
+    p = *(char **)(g + 0xA84);
+    g[0x20A4] = 0;
+    if (p != 0) {
+        *(unsigned short *)(p + 0x34) &= 0xFFF9;
+    }
+    *(int *)(g + 0xA84) = 0;
+    m = *(char **)(g + 0xA8C);
+    if (m != 0) {
+        DeleteMoby(m);
+        *(int *)(g + 0xA8C) = 0;
+    }
+    func_L00_00207220();
+    a = *(char **)(g + 0xA88);
+    *(char **)(g + 0x2080) = a;
+    qcopy(a + 0x10, g + 0x80);
+    *(int *)(a + 0x98) = 0;
+    *(float *)(g + 0xA94) = 1.0f;
+    func_L00_00232EA8();
+    if (*(int *)(g + 0x2084) == 0x64) {
+        if (D_L01_0015F6A8 == 2) return;
+        if (D_L01_0015F6A8 == 6) return;
+    }
+    func_L01_0023D688(0, 1);
+}
 INCLUDE_ASM("asm/overlays", func_L01_00231B98);
 INCLUDE_ASM("asm/overlays", func_L01_002320F8);
 INCLUDE_ASM("asm/overlays", func_L01_002328A8);
-INCLUDE_ASM("asm/overlays", func_L01_00232F90);
+extern float func_L00_00234250(float *v);
+extern float func_001F9CE8(void *);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern int func_L00_001EFFF0(void *, void *, int, int, int);
+extern int func_L00_001F3958(void);
+extern float func_L00_001FF860(float, float);
+extern void func_001252C0(void *, void *);
+extern float D_0015EE6C MACRO_ADDR;
+extern int D_L01_0017435C;
+extern char D_L01_00174340[];
+
+/* Checks the hero's movement against walls ahead and slides the direction along the wall. */
+void func_L01_00232F90(int flag) {
+    float s[4];
+    float p[4];
+    float t[4];
+    float q[4];
+    char *g = (char *)D_0013E633 + 0xE1D;
+    float f2, f21, f20;
+    int k, x;
+    char *h1, *h2, *h3, *w, *w3;
+    float *u;
+
+    if (*(short *)(g + 0x308) != 0) {
+        return;
+    }
+    if (func_L00_00234250((float *)(g + 0xE0)) < D_0015EE6C * 0.1f) {
+        return;
+    }
+    f2 = 0.37f;
+    f21 = 0.5f;
+    x = *(int *)(g + 0x208C);
+    if (x >= 0x11 && x <= 0x12) {
+        f2 = 0.0f;
+        f21 = 0.7f;
+    }
+    qcopy(s, g + 0x80);
+    s[2] += f2;
+    qcopy(t, g + 0x80);
+    t[2] += f2 * 0.3f;
+    if (flag != 0 || func_001F9CE8(g + 0xE0) < 0.01f) {
+        p[0] = FastCos(*(float *)(g + 0x98)) * f21;
+        p[1] = FastSin(*(float *)(g + 0x98)) * f21;
+        p[2] = 0.0f;
+        q[0] = FastCos(*(float *)(g + 0x98)) * f21 * 1.4f;
+        q[1] = FastSin(*(float *)(g + 0x98)) * f21 * 1.4f;
+        q[2] = 0.0f;
+    } else {
+        qcopy(p, g + 0xE0);
+        p[2] = 0.0f;
+        FastVecScale(p, p, f21 / func_001F9CE8(p));
+        qcopy(q, p);
+        FastVecScale(q, q, 1.4f);
+    }
+    FastVecAdd(p, p, s);
+    k = -1;
+    FastVecAdd(q, q, t);
+    h1 = (char *)D_0013E633 + 0xE1D;
+    if (func_L00_001EFFF0(t, q, 4, *(int *)(h1 + 0x2080), 0) != 0) {
+        if (D_L01_0017435C > 0) {
+            k = CollType();
+        }
+    }
+    f20 = 0.0f;
+    h2 = (char *)D_0013E633 + 0xE1D;
+    if (func_L00_001EFFF0(s, p, 4, *(int *)(h2 + 0x2080), 0) != 0) {
+        w = D_L01_00174340;
+        if (*(int *)(w + 0x1C) > 0) {
+            f20 = func_L00_001FF860(*(float *)(w + 0x48), func_001F9CE8(w + 0x40));
+        }
+    }
+    if (f20 >= 0.87266463f || k == 8 || k == 12) {
+        h3 = (char *)D_0013E633 + 0xE1D;
+        w3 = D_L01_00174340;
+        u = (float *)(w3 + 0x40);
+        *(int *)(w3 + 0x48) = 0;
+        *(int *)(h3 + 0x240) = *(int *)(w3 + 0x18);
+        func_001252C0(u, u);
+        {
+            float c = -*(float *)(h3 + 0xE0) * *(float *)(w3 + 0x40) - *(float *)(h3 + 0xE4) * *(float *)(w3 + 0x44);
+            if (c > 0.0f) {
+                FastVecScale(u, u, c);
+                FastVecAdd(h3 + 0xE0, h3 + 0xE0, u);
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_002333D8);
-INCLUDE_ASM("asm/overlays", func_L01_00233F58);
+extern char D_L01_00174370[];
+extern short D_0015EE60;
+extern void func_001F9BC0(float *);
+extern void func_L00_00235040(void);
+extern void func_L00_00234090(float *dst, float *src, float dz);
+extern void func_L00_00233D50(float *dst, float *src, float h);
+extern int func_L00_001F10E0(float, void *, int, void *);
+extern int func_L00_001F1D20(float, float, void *, int, void *);
+extern int func_L00_001F34F0(float, void *);
+extern void func_001F9BF0(void *, void *, void *);
+extern float func_001F9CB8(void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+
+/* Checks that the hero capsule passes: sweeps the capsule toward the target, and clamps the remaining offset. */
+int func_L01_00233F58(int a0) {
+    char *g = (char *)D_0013E633 + 0xE1D;
+    float A[4], B[4], C[4];
+    int i, r;
+    float len;
+    char *p, *h;
+    if (*(int *)(g + 0x1CC) != 0) return 1;
+    qcopy(A, g + 0x80);
+    clear_u64_value(B);
+    if (*(short *)(g + 0x22DA) != 0) {
+        func_L00_00235040();
+        *(short *)(g + 0x22DA) = 0;
+    }
+    if (*(int *)(g + 0x208C) != 0x11) {
+        unsigned char t = *(unsigned char *)(g + 0x20B3);
+        if (t != 0 || *(short *)(g + 0x1F8) != 0) {
+            if (t == 1 || *(short *)(g + 0x1F8) != 0) {
+                func_L00_00234090(B, B, 0.6f);
+            } else {
+                func_L00_00233D50(B, B, -*(float *)(g + 0x224));
+            }
+        } else {
+            B[2] = *(float *)(g + 0x224);
+        }
+    }
+    FastVecAdd((char *)D_0013E633 + 0xE9D, (char *)D_0013E633 + 0xE9D, B);
+    r = 0x24;
+    if (*(int *)((char *)D_0013E633 + 0xE9D + 0x2004) == 0x7F) r = 0xD24;
+    for (i = 0; i < 8; i++) {
+        g = (char *)D_0013E633 + 0xE1D;
+        if (*(unsigned char *)(g + 0x20B3) != 0) {
+            if (!coll_sphere(*(float *)&D_0015EE60 * 0.4f, g + 0x80, r, *(void **)(g + 0x2080))) break;
+        } else if (*(int *)(g + 0x208C) == 0x11) {
+            if (!coll_sphere(0.6f, g + 0x80, r, *(void **)(g + 0x2080))) break;
+        } else {
+            float d = *(float *)(g + 0x220) - *(float *)(g + 0x224);
+            int n;
+            if (d < 0.05f) d = 0.05f;
+            n = coll_capsule(*(float *)(g + 0x234), d, g + 0x80, r, *(void **)(g + 0x2080));
+            n |= coll_sphere_hero_groups(*(float *)(g + 0x234), g + 0x80);
+            if (n == 0) break;
+        }
+        p = D_L01_00174370;
+        qcopy((char *)D_0013E633 + 0xE9D, p);
+        qcopy((char *)D_0013E633 + 0xE9D + 0x180, p + 0x10);
+        qcopy((char *)D_0013E633 + 0xE9D + 0x190, p - 0x10);
+        h = (char *)D_0013E633 + 0xE1D;
+        *(char *)(h + 0x257) = 1;
+        *(int *)(h + 0x23C) = *(int *)(p - 0x18);
+    }
+    FastVecSub((char *)D_0013E633 + 0xE9D, (char *)D_0013E633 + 0xE9D, B);
+    FastVecSub(C, (char *)D_0013E633 + 0xE9D, A);
+    len = FastVecLength(C);
+    if (*(float *)((char *)D_0013E633 + 0xE9D + 0x1B4) * 1.5f < len) {
+        if (a0 == 0xF) {
+        if (C[0] > 512.0f) C[0] = 512.0f;
+        else if (C[0] < -512.0f) C[0] = -512.0f;
+        if (C[1] > 512.0f) C[1] = 512.0f;
+        else if (C[1] < -512.0f) C[1] = -512.0f;
+        if (C[2] > 512.0f) C[2] = 512.0f;
+        else if (C[2] < -512.0f) C[2] = -512.0f;
+        g = (char *)D_0013E633 + 0xE1D;
+        func_L00_001FF4B0(C, C, *(float *)(g + 0x234));
+        FastVecAdd(g + 0x80, A, C);
+        }
+        return -1;
+    }
+    return 1;
+}
 INCLUDE_ASM("asm/overlays", func_L01_00234970);
 INCLUDE_ASM("asm/overlays", func_L01_0023CE00);
 INCLUDE_ASM("asm/overlays", func_L01_00240CE8);
 INCLUDE_ASM("asm/overlays", func_L01_002428E0);
-INCLUDE_ASM("asm/overlays", func_L01_002490E0);
+// Load global pointer and OR a field with 1
+void func_L01_002490E0(void) {
+    *(unsigned short *)((char *)(*(char **)(D_0013E633 + 0x2E9D)) + 0x34) |= 1;
+}
 INCLUDE_ASM("asm/overlays", func_L01_002490F8);

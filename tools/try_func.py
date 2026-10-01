@@ -25,6 +25,9 @@ SIZE ours/retail (a size mismatch: never keep one), COMPILE (see log.txt).
 Every run is logged to build-sn/try/<func>/runs.log. If that folder holds a
 BUDGET file (a number, written by tools/wave.py), runs stop once that many
 have been logged. --no-budget skips both, for tools that re-check results.
+--arm=NAME works in build-sn/try/<func>/NAME/ instead, with its own
+runs.log and BUDGET: two agents trying the same function side by side (a
+model comparison) each build in their own folder.
 """
 import os
 import re
@@ -249,7 +252,8 @@ def main():
         sys.exit(__doc__)
     name, cands = args[0], args[1:]
     counted = "--no-budget" not in sys.argv
-    work = Path("build-sn/try") / name
+    arm = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--arm=")), "")
+    work = Path("build-sn/try") / name / arm if arm else Path("build-sn/try") / name
     used, limit = budget_check(work, len(cands)) if counted else (0, None)
     seg, src, first, last = find_stub(name)
     is_overlay = bool(OVERLAY_NAME.match(name))
@@ -270,7 +274,7 @@ def main():
                 runs.write(f"{Path(cand).name} {verdict}\n")
         tally = f"   [run {used} of {limit}]" if limit else ""
         if obj is None:
-            log = (Path("build-sn/try") / name / "log.txt").read_text(errors="replace")
+            log = (work / "log.txt").read_text(errors="replace")
             errs = [l for l in log.splitlines() if "error" in l.lower() or "undeclared" in l or "parse" in l]
             print(f"{label}{name}: COMPILE failed ({src}){tally}")
             for l in errs[:8]:

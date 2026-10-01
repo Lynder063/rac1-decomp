@@ -19,7 +19,52 @@ void func_L15_00200D20(void) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L15_00200D70);
-INCLUDE_ASM("asm/overlays", func_L15_002092E0);
+extern int D_L15_0015F6A8 MACRO_ADDR;
+extern void func_001FFDA0(int arg0, int arg1);
+extern void func_L00_00205B50(void);
+extern void func_0020D678(void *);
+extern void func_L00_00207220(void);
+extern void func_L00_00232EA8(void);
+extern void func_L15_00217348(int, int);
+
+/* Reset the help prompt state and show the default message unless the level is in a special phase. */
+void func_L15_002092E0(void) {
+    unsigned char *base = D_0013E633 + 0xE1D;
+    unsigned char *b;
+    int p;
+    void *q;
+    char *m;
+    if (base[0x20A4] == 2) {
+        int v = *(short *)(base + 0x1634);
+        if (v != -1) {
+            func_001FFDA0(v, 0);
+            *(short *)(base + 0x1634) = -1;
+        }
+    }
+    func_L00_00205B50();
+    b = D_0013E633 + 0xE1D;
+    p = *(int *)(b + 0xA84);
+    b[0x20A4] = 0;
+    if (p != 0) {
+        *(unsigned short *)(p + 0x34) &= 0xFFF9;
+    }
+    q = *(void **)(b + 0xA8C);
+    *(int *)(b + 0xA84) = 0;
+    if (q != 0) {
+        DeleteMoby(q);
+        *(int *)(b + 0xA8C) = 0;
+    }
+    func_L00_00207220();
+    m = *(char **)(b + 0xA88);
+    *(char **)(b + 0x2080) = m;
+    qcopy(m + 0x10, b + 0x80);
+    *(int *)(m + 0x98) = 0;
+    *(float *)(b + 0xA94) = 1.0f;
+    func_L00_00232EA8();
+    if (*(int *)(b + 0x2084) != 100 || (D_L15_0015F6A8 != 2 && D_L15_0015F6A8 != 6)) {
+        func_L15_00217348(0, 1);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L15_00209A88);
 INCLUDE_ASM("asm/overlays", func_L15_0020A960);
 INCLUDE_ASM("asm/overlays", func_L15_0020ADD8);

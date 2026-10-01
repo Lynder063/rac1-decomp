@@ -2,7 +2,29 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L02_0023D600);
+extern int func_001F9850(int);
+
+// Ticks two small counters up or down depending on a random roll; copies a value.
+void func_L02_0023D600(char *m) {
+    unsigned char *p = (unsigned char *)(m + 0x70);
+    if (*(int *)(m + 0x7C) >= scale_ticks(5)) {
+        if (p[0] < scale_ticks(8)) {
+            p[0] = p[0] + 1;
+        } else if (p[1] < scale_ticks(8)) {
+            p[1] = p[1] + 1;
+        }
+    } else {
+        if (p[1] != 0 || p[0] != 0) {
+            *(int *)(m + 0x6C) = 1;
+        }
+        if (p[1] != 0) {
+            p[1] = p[1] - 1;
+        } else if (p[0] != 0) {
+            p[0] = p[0] - 1;
+        }
+    }
+    *(int *)(m + 0x74) = **(int **)(m + 0xC);
+}
 INCLUDE_ASM("asm/overlays", func_L02_0023D6E0);
 extern void func_0022C7E0(void);
 extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;

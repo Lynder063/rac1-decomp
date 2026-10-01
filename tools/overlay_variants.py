@@ -21,6 +21,7 @@ tools/try_func.py (the strict overlay check); an EXACT one replaces the
 stub. Variants whose parent isn't matched, or whose difference has no
 literal in the C (a struct field), are left for a worker.
 """
+from __future__ import annotations
 import itertools
 import json
 import re
@@ -31,6 +32,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
+import claims  # noqa: E402
 import levels  # noqa: E402
 
 SRC = ROOT / "src/overlays"
@@ -117,7 +119,12 @@ def stubs() -> None:
         else:
             lines = path.read_text().splitlines()
             lines.insert(at, line)
-        path.write_text("\n".join(lines) + "\n")
+        took = claims.lock("stubs")
+        try:
+            path.write_text("\n".join(lines) + "\n")
+        finally:
+            if took:
+                claims.unlock("stubs")
         have = index()
         added += 1
     print(f"{added} stubs added")
@@ -217,6 +224,8 @@ def clone(only: list[str]) -> None:
             continue
         if name not in have or have[name][3] or par not in have or not have[par][3]:
             continue
+        if not claims.claim("clone", name):         # another agent is on it (tools/claims.py)
+            continue
         ppath, first, last, _ = have[par]
         text = ppath.read_text()
         body = "\n".join(text.splitlines()[first:last + 1])
@@ -224,6 +233,7 @@ def clone(only: list[str]) -> None:
         old_syms, new_syms = asm_symbols(par), asm_symbols(name)
         if changes is None or len(old_syms) != len(new_syms):
             print(f"{name}: differs from {par} in more than numbers; skipped")
+            claims.release("clone", name)
             continue
         rename = {o: n for o, n in zip(old_syms, new_syms) if o != n}
         rename[par] = name
@@ -254,13 +264,21 @@ def clone(only: list[str]) -> None:
             tried += 1
             verdict = (run.stdout.strip().splitlines() or ["?"])[-1].split(":", 1)[-1].strip()
             if verdict.startswith("EXACT"):
-                vpath, vfirst, vlast, _ = have[name]
-                lines = vpath.read_text().splitlines()
-                lines[vfirst:vlast + 1] = source.rstrip("\n").splitlines()
-                vpath.write_text("\n".join(lines) + "\n")
+                took = claims.lock("clone")
+                try:
+                    have = index()
+                    vpath, vfirst, vlast, _ = have[name]
+                    lines = vpath.read_text().splitlines()
+                    lines[vfirst:vlast + 1] = source.rstrip("\n").splitlines()
+                    vpath.write_text("\n".join(lines) + "\n")
+                finally:
+                    if took:
+                        claims.unlock("clone")
                 have = index()
                 exact.append(name)
                 break
+        else:
+            claims.release("clone", name)
         print(f"{name} (from {par}): {verdict}")
     print(f"{len(exact)} cloned exactly, {tried} try_func runs")
 
