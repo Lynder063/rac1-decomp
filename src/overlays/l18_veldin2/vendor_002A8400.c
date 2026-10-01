@@ -178,7 +178,70 @@ void func_L18_002D6A00(void *m, void *src) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L18_002D6B58);
+extern float func_001FA7D8(float x);
+extern float func_001F9FA8(float);
+extern int func_001FA8A8(int, int, float);
+extern int func_001F4868(int);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_L00_001FD1D8(void *, void *, int);
+extern short D_L18_00161A00;
+extern short D_L18_00161A04;
+extern short D_L18_00161A08;
+extern short D_L18_00161A0C;
+extern short D_L18_00161A10;
+extern short D_L18_00161A14;
+extern float D_L18_001D3900[];
+extern float D_L18_001D3940[];
+
+/* Builds a 4-vertex textured quad packet from a moby's angle and draws it. */
+void impl_2D6B58(char *moby) __asm__("func_L18_002D6B58");
+void impl_2D6B58(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    float v[16];
+    int col[4];
+    float uv[8];
+    long pk[4];
+    float *tex;
+    float *src;
+    float c;
+    int i, a;
+    float *vp;
+    int *cp;
+    float *up;
+    float *vq;
+    long q;
+
+    c = func_001F9FA8(func_001FA7D8((float)(*(int *)(data + 0x2C) & 0xF) * (1.0f / 16) * 6.28318f));
+    a = func_001FA8A8((*(int *)&(D_L18_00161A10)), (*(int *)&(D_L18_00161A14)), (c + 1.0f) * 0.5f);
+    q = func_001F4868(13);
+    pk[1] = q;
+    pk[2] = 0xFF90L << 32 | 0x260;
+    pk[3] = ((*(int *)&(D_L18_00161A00)) | ((long)(*(int *)&(D_L18_00161A04)) << 2) | ((long)(*(int *)&(D_L18_00161A08)) << 4) | ((long)(*(int *)&(D_L18_00161A0C)) << 6)) | (0x8000L << 24);
+    pk[0] = 0;
+    {
+        float *oa = D_L18_001D3900;
+        float *ob = D_L18_001D3940;
+        tex = ob;
+        src = oa;
+    }
+    vq = uv + 1;
+    up = uv;
+    cp = col;
+    vp = v;
+    for (i = 3; i >= 0; i--) {
+        func_001F9BD8(vp, src, data + 0x10);
+        src += 4;
+        vp[3] = 1.0f;
+        vp += 4;
+        *cp++ = a;
+        *up = tex[0];
+        *vq = tex[1];
+        tex += 2;
+        up += 2;
+        vq += 2;
+    }
+    func_L00_001FD1D8(v, 0, 0);
+}
 INCLUDE_ASM("asm/overlays", func_L18_002D6D08);
 extern int *D_L18_001AC540[];
 extern short D_L18_00160058;
