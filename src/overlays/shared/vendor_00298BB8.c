@@ -177,7 +177,46 @@ void func_L15_002CCF30(unsigned char *moby) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L15_002CCFC0);
+extern void func_00214D28(void *, float, float);
+extern int func_L00_0028EB98(void *, int);
+extern int func_0022ED80(int, int, int);
+extern void func_001F49B0(void (*)(void), void *);
+extern void func_L00_0028EBF0(int);
+extern void func_L15_002CD118(void);
+extern short D_0015EE84;
+extern short D_L15_00161B40;
+extern short D_L15_00161B48;
+extern short D_L15_00161B4C;
+extern short D_L15_00161B50;
+
+/* per-frame update of the level's looping effect: ramp the gauge, then start, run or stop the draw callback */
+void func_L15_002CCFC0(void *arg) {
+    char *base = D_0013E633 + 0xE1D;
+    if (*(int *)(base + 0x2084) == 0x65) {
+        func_00214D28(&D_L15_00161B44, 0.0f, D_0015EE6C * 2);
+        func_L15_002CCE50(arg, 0);
+    } else if (*(int *)&D_L15_00161B40 != 0
+               && (*(int *)&D_0015EE84 != 0xF || 240.0f < *(float *)(base + 0x84))) {
+        func_00214D28(&D_L15_00161B44, 1.0f, D_0015EE6C * 2);
+    } else {
+        func_00214D28(&D_L15_00161B44, 0.0f, D_0015EE6C * 2);
+    }
+    if (*(float *)&D_L15_00161B44 != 0.0f) {
+        *(int *)&D_L15_00161B48 = 1;
+        if (func_L00_0028EB98(*(void **)&D_L15_00161B50, *(int *)&D_L15_00161B4C) == 0) {
+            *(int *)&D_L15_00161B4C = func_0022ED80(5, 0x11, (int)arg);
+            *(void **)&D_L15_00161B50 = arg;
+        }
+        func_001F49B0(func_L15_002CD118, arg);
+    } else {
+        if (func_L00_0028EB98(*(void **)&D_L15_00161B50, *(int *)&D_L15_00161B4C) != 0) {
+            func_L00_0028EBF0(*(int *)&D_L15_00161B4C);
+            *(int *)&D_L15_00161B50 = 0;
+            *(int *)&D_L15_00161B4C = -1;
+        }
+        *(int *)&D_L15_00161B48 = 0;
+    }
+}
 extern float func_001FA888(int);
 extern float func_001F9FA8(float);
 extern int func_001FA898_r(float) __asm__("func_001FA898");
