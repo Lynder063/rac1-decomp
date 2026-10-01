@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L18_002F2AE0 -- src/overlays/l18_veldin2/vendor_002F2AE0.c
- * Best so far: BYTES 10/1368 (99.3% of the bytes match), checked 2026-10-01.
+ * Best so far: BYTES 9/1368 (99.3% of the bytes match), checked 2026-10-01.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -97,7 +97,7 @@ void func_L18_002F2AE0(unsigned char *moby) {
             if (t == 0) return;
             while (j < 16) {
                 int idx = (unsigned short)*t & 0x7FFF;
-                if (*(short *)(D_L18_00160058_b + (idx << 8) + 0xA6) == 0x630) {
+                if (*(short *)((idx << 8) + (0xA6 + D_L18_00160058_b)) == 0x630) {
                     d->ent[j].idx = idx;
                     j++;
                 }

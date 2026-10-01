@@ -46,7 +46,51 @@ void func_L18_002FAEF8(void *moby) {
 }
 INCLUDE_ASM("asm/overlays", func_L18_002FB080);
 INCLUDE_ASM("asm/overlays", func_L18_002FB318);
-INCLUDE_ASM("asm/overlays", func_L18_002FB6B0);
+extern int func_002140B0(int);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern char *func_L00_0026DEA0_c(void *, int, void *, float, float, float, float, int) __asm__("func_L00_0026DEA0");
+
+void func_L18_002FB6B0(void *a, void *b, void *c, float f0, float f1) {
+    char v0[16];
+    char v1[16];
+    int i;
+    char *m;
+    char *p;
+    int x;
+    int k2, k7f;
+    qcopy(v0, a);
+    qcopy(v1, b);
+    for (i = 1; i >= 0; i--) {
+        m = (char *)func_002140B0(16);
+        m = func_L00_0026DEA0_c(v0, func_002140B0(2) ? -(int)m : (int)m, c, 0.0f, 1.0f, 0.9f, f0, 0x7F204080);
+        p = m + 0x20;
+        if (m) {
+            *(short *)(m + 0xA) = func_001F9850(15);
+            m[9] = func_001FA898_r(4.0f) + 0x40;
+            *(int *)(p + 4) = 2;
+            p[0xA] = 0x7F;
+            p[0xB] = m[0xA];
+        }
+    }
+    x = 16;
+    k2 = 2;
+    k7f = 0x7F;
+    i = 2;
+    do {
+        int y = x;
+        x = -x;
+        m = func_L00_0026DEA0_c(v1, y, c, 0.0f, 1.0f, 0.97f, f1, 0x7FFFFFFF);
+        p = m + 0x20;
+        if (m) {
+            m[9] = func_001FA898_r(4.0f) + 0x40;
+            *(short *)(m + 0xA) = func_001F9850(4);
+            m[8] = func_002140B0(0xFF);
+            *(int *)(p + 4) = k2;
+            p[0xA] = k7f;
+            p[0xB] = m[0xA];
+        }
+    } while (--i >= 0);
+}
 extern int D_L18_0015F6A8 MACRO_ADDR;
 extern int D_L18_0016D310;
 extern float func_001FA748(float, float);
