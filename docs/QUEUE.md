@@ -89,8 +89,7 @@ over ([SIBLING_DECOMPS.md](SIBLING_DECOMPS.md), "Porting a function"):
   assembly (the n-th `%hi`/`%lo` or `$gp` access matches the n-th in
   theirs). Offsets inside a struct are the same in both builds.
 - `s8`..`s64`, `u8`..`u64`, `f32`, `f64` exist in `include/common.h`;
-  `u128` does not: check how our matched code in the same file does
-  128-bit copies (`qcopy()`).
+  `u128` does not: declare it as under "Codegen" (128-bit copies).
 - The comment above the function must end with
   `Adapted from Lombyte (MIT) for PAL: <its file under src/>, <its name>.`
   The lead lists every port in THIRD_PARTY_NOTICES.md.
@@ -140,6 +139,10 @@ stop and say in NOTES.md which instructions are left.
 ## Codegen (verified on matched functions)
 
 - `lq $2, 0(a)` then `sq $2, 0(b)`: `qcopy(b, a);` from `common.h`.
+- Any other `lq`/`sq` pair (another register, an offset, the `sq` in a
+  delay slot) is a plain 128-bit copy:
+  `typedef int u128 __attribute__((mode(TI)));` above the function, then
+  `*(u128 *)(a + 0x30) = *(u128 *)(b + 0x10);`. Only `sq $zero` has no C form.
 - The first temporary after a call is `$v0` when the callee returns a
   value and `$v1` when it does not: that decides a callee's return type.
   `sltiu` is an unsigned compare, `slti` a signed one. `lbu`/`lb`,
