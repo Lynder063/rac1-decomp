@@ -233,9 +233,40 @@ typedef struct Wrapper {
  * readings cannot both be siblings in one struct, and two functions is
  * not enough to say which is wrong -- 0xB0 may not be the true array
  * base, or the index may be bounded in a way neither function shows.
- *
  * Forcing a layout here would bake in a guess, so this stays raw until
  * a third user of D_0013D390 is decompiled and settles it.
  */
+
+/*
+ * Memory card state machine enum (CardState).
+ * Recovered from retail string table at 0x0015FE78 and pointer table at 0x001A04D0.
+ */
+typedef enum CardState {
+    CS_INIT = 0,
+    CS_GOOD_SAVE = 1,
+    CS_WARNING = 2,
+    CS_NOCARD = 3,
+    CS_WAIT_FOR_CARD = 4,
+    CS_UNFORMATTED = 5,
+    CS_PROMPT_FORMAT = 6,
+    CS_FORMAT_PENDING = 7,
+    CS_FORMATTING = 8,
+    CS_FORMATTED = 9,
+    CS_CHECK_SAVE = 10,
+    CS_CHECKING_SAVE = 11,
+    CS_NOSAVE = 12,
+    CS_PROMPT_CREATE_SAVE = 13,
+    CS_CREATE_SAVE_PENDING = 14,
+    CS_CREATING_SAVE = 15,
+    CS_NEWCARD = 16,
+    CS_FORMAT_FAILED = 17,
+    CS_CREATE_FAILED = 18,
+    CS_NO_ROOM = 19,
+    CS_LOAD_FAILED = 20,
+    CS_SAVE_FAILED = 21,
+    CS_SAVING = 22,
+    CS_PROMPT_BEGIN_UNFORMATTED = 23,
+    CS_PROMPT_BEGIN_NOSAVE = 24
+} CardState;
 
 #endif /* STRUCTS_H */

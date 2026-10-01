@@ -192,6 +192,7 @@ def write(names: list[str]) -> None:
     rows = {r["name"]: r for r in triage.triage()}
     roles = load_overlay_roles()
     known = load_names()
+    strings_by_addr, strings_by_func = load_strings()
     index = declaration_index()
     for name in names:
         row = rows.get(name)
@@ -224,6 +225,7 @@ def write(names: list[str]) -> None:
         out += ["", "## Earlier attempts", *attempts(name)]
         out += ["", "## Calls", *(describe(c, source, index) for c in calls)] if calls else ["", "## Calls", "- None."]
         out += ["", "## Globals", *(describe(d, source, index) for d in data)] if data else ["", "## Globals", "- None."]
+        out += string_lines(name, data, strings_by_addr, strings_by_func)
         found = callers(name)
         out += ["", "## Called from", f"- {', '.join(found) if found else 'no direct calls in asm'}"]
         prototypes = [e for e in index.get(name, []) if e[3] == "declared"]
@@ -310,6 +312,49 @@ def role_lines(roles: list[str]) -> list[str]:
             "takes the moby in $a0 (a partial `Moby` struct is in src/game/mobyfunc.c)."]
 
 
+def load_strings() -> tuple[dict, dict]:
+    """Returns (strings_by_address, strings_by_function) from config/strings.json."""
+    path = ROOT / "config/strings.json"
+    if not path.exists():
+        return {}, {}
+    try:
+        data = json.loads(path.read_text(errors="replace"))
+        return data.get("strings_by_address", {}), data.get("strings_by_function", {})
+    except Exception:
+        return {}, {}
+
+
+def string_lines(name: str, data: list[str], strings_by_addr: dict, strings_by_func: dict) -> list[str]:
+    seen = set()
+    items = []
+    for item in strings_by_func.get(name, []):
+        sym = item.get("symbol", "")
+        addr = item.get("string_address", "")
+        val = item.get("value", "")
+        key = (sym, addr, val)
+        if key not in seen:
+            seen.add(key)
+            items.append((sym, addr, val))
+
+    for d in data:
+        m = re.search(r"([0-9A-Fa-f]{8})$", d)
+        if m:
+            hex_addr = m.group(1).upper()
+            if hex_addr in strings_by_addr:
+                s = strings_by_addr[hex_addr]
+                sym = s.get("symbol", d)
+                addr = s.get("address", f"0x{hex_addr}")
+                val = s.get("value", "")
+                key = (sym, addr, val)
+                if key not in seen:
+                    seen.add(key)
+                    items.append((sym, addr, val))
+
+    if not items:
+        return []
+    return ["", "## Referenced Strings", *(f"- `{sym}` ({addr}): {repr(val)}" for sym, addr, val in items)]
+
+
 def overlay_functions_in(path: Path) -> list[tuple[str, bool]]:
     """[(name, already matched C)] for every overlay function PATH defines
     or stubs, in file order -- "the functions next to it" for the worker."""
@@ -345,6 +390,7 @@ def overlay_write(names: list[str]) -> None:
     families = load_overlay_families()
     roles = load_overlay_roles()
     known = load_names()
+    strings_by_addr, strings_by_func = load_strings()
     findex = overlay_file_index()
     index = declaration_index()
     for name in names:
@@ -383,6 +429,7 @@ def overlay_write(names: list[str]) -> None:
         calls, data = references(name)
         out += ["", "## Calls", *(describe(c, source, index) for c in calls)] if calls else ["", "## Calls", "- None."]
         out += ["", "## Globals", *(describe(d, source, index) for d in data)] if data else ["", "## Globals", "- None."]
+        out += string_lines(name, data, strings_by_addr, strings_by_func)
 
         found = callers(name)
         out += ["", "## Called from", f"- {', '.join(found) if found else 'no direct calls found in asm'}"]

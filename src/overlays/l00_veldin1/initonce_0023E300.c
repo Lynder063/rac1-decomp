@@ -2,7 +2,103 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L00_0023E300);
+extern void func_0022C7E0(void);
+extern void func_0022C870(void);
+extern void func_00234C98(int, long);
+extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
+extern int D_0015EF88 MACRO_ADDR;
+extern void func_L00_0028A5A8(void);
+extern void func_L00_0028A608(void);
+extern void func_L00_0028A6F8(void);
+extern void func_L00_0028A878(void);
+extern void func_L00_0028AC80(void);
+extern void func_L00_0028AD68(void);
+extern void func_L00_0028AEB0(void);
+extern void func_L00_0028AF90(void);
+extern void func_L00_0028B4E0(void);
+extern void func_L00_0028B5C8(void);
+extern void func_L00_0028B680(void);
+extern void func_L00_0028B758(void);
+extern void func_L00_0028B8F8(void);
+extern void func_L00_0028BBF8(void);
+extern void func_L00_0028BC70(void);
+extern void func_L00_0028BD70(void);
+extern void func_L00_0028BF60(void);
+extern void func_L00_0028C358(void);
+extern void func_L00_0028C478(void);
+extern void b8f8_a(void) __asm__("func_L00_0028B8F8");
+extern void b8f8_b(void) __asm__("func_L00_0028B8F8");
+void func_L00_0023E300(void) {
+    func_0022C7E0();
+    switch (D_0015EE84_m) {
+    case 0:
+        func_L00_0028A608();
+        break;
+    case 1:
+        func_L00_0028A6F8();
+        break;
+    case 2:
+        func_L00_0028A878();
+        break;
+    case 3:
+        func_L00_0028AC80();
+        break;
+    case 4:
+        func_L00_0028AD68();
+        break;
+    case 5:
+        func_L00_0028AEB0();
+        break;
+    case 6:
+        func_L00_0028AF90();
+        break;
+    case 7:
+        func_L00_0028B4E0();
+        break;
+    case 8:
+        func_L00_0028B5C8();
+        break;
+    case 9:
+        func_L00_0028B680();
+        break;
+    case 10:
+        func_L00_0028B758();
+        break;
+    case 11:
+        func_L00_0028B8F8();
+        break;
+    case 12:
+        b8f8_a();
+        break;
+    case 13:
+        func_L00_0028BBF8();
+        break;
+    case 14:
+        func_L00_0028BC70();
+        break;
+    case 15:
+        func_L00_0028BD70();
+        break;
+    case 16:
+        b8f8_b();
+        break;
+    case 17:
+        func_L00_0028BF60();
+        break;
+    case 18:
+        func_L00_0028C358();
+        break;
+    case 19:
+        func_L00_0028C478();
+        break;
+    default:
+        func_L00_0028A5A8();
+        break;
+    }
+    func_0022C870();
+    func_00234C98(0x47, 0x5360B);
+    func_00234C98(0x4E, 0x1000000 | (D_0015EF88 >> 13));
+}
 typedef struct {
     u8 pad0[0x34];
     u16 flags;

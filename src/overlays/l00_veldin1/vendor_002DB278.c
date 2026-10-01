@@ -2,8 +2,152 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L00_002DB278);
-INCLUDE_ASM("asm/overlays", func_L00_002E1E38);
+extern int D_L00_0015F6A8 MACRO_ADDR;
+extern char D_0014171B[];
+extern unsigned char D_0013D355[];
+extern int func_L00_002676E8(void *, void *);
+extern int func_L00_00267290(void *, void *);
+extern int func_00215570(void *arg0, int arg1);
+extern void func_0022F4A0(int arg0);
+extern char D_0013E633[];
+
+typedef struct {
+    char pad0[0x20];
+    unsigned char state;
+    char pad21[0xF];
+    unsigned char c30;
+    char c31;
+    char pad32[2];
+    unsigned short flags;
+    char pad36[0x42];
+    char *ext;
+} M;
+typedef struct {
+    char pad0[0x20];
+    char pad20[4];
+    short s24;
+    char pad26[6];
+    float f2c;
+    char pad30[0x26];
+    short s56;
+    char pad58[8];
+    int i60;
+} E;
+
+void func_L00_002DB278(M *m) {
+    unsigned char *g, *h;
+    E *e = (E *)m->ext;
+    if (D_L00_0015F6A8 == 2) {
+        m->c31 = 0;
+        m->flags |= 1;
+    } else {
+        m->c31 = 1;
+        m->flags &= 0xFFFE;
+    }
+    switch (m->state) {
+    case 0:
+        *(short *)(D_0014171B + 0xD) = 1;
+        func_L00_002676E8(m, (char *)e + 0x20);
+        
+        g = D_0013D355 + 0x13B;
+        if (g[8]) {
+            e->s56 = 1;
+            e->f2c = 3.0f;
+            e->s24 = 0;
+        } else {
+            e->f2c = 255.0f;
+        }
+        h = D_0013D355 + 0x13B;
+        h[8] = 1;
+        m->c30 = 0xFF;
+        m->state = 1;
+        break;
+    case 1:
+        if (e->s56) {
+            if (func_00215570(D_0013E633 + 0xE9D, e->i60))
+                e->f2c = 16.0f;
+            else
+                e->f2c = 3.0f;
+        }
+        if (func_L00_00267290(m, (char *)e + 0x20)) {
+            m->state = 2;
+            e->f2c = 3.0f;
+        }
+        if (e->s24 >= 4 && D_L00_0015F6A8 != 6)
+            func_0022F4A0(1);
+        break;
+    case 2:
+        if (D_L00_0015F6A8 == 2)
+            ;
+        else
+            m->state = 1;
+        break;
+    }
+}
+extern unsigned char D_0014171B_q[] __asm__("D_0014171B") NOT_SDA;
+extern char *D_L00_00160098 MACRO_ADDR;
+extern int func_L00_00203F20(int a, int b);
+extern int func_00215570(void *, int);
+typedef unsigned short Ent[4];
+/* UpdateMoby_1413: first-update init of the moby state, then each trigger entry in the
+ * hero-state table (Ent = 4 ushorts, indexed by the func_L00_00203F20 slot) is tested and
+ * the matching slot requested when the hero is at the position named by the moby's
+ * params; with slots 1 and 2 clear, guard mobys in params[5..8] are checked for being gone. */
+void func_L00_002E1E38(unsigned char *moby) {
+    int *s = *(int **)(moby + 0x78);
+    Ent *t;
+    int *p;
+    int i;
+    unsigned char *g3;
+    if (moby[0x20] == 0) {
+        moby[0x20] = 1;
+        moby[0x30] = 0xFF;
+    }
+    t = ((Ent *)(D_0014171B + 0x34D));
+    if (t[3][0] == 0) func_L00_00203F20(3, 3);
+    if (t[0x74][0] == 0) {
+        if (func_00215570(((void *)(D_0013E633 + 0xE9D)), s[4])) func_L00_00203F20(0x4E2A, 0x74);
+    }
+    {
+    Ent *t2 = ((Ent *)(D_0014171B + 0x34D));
+    if (t2[9][0] == 0) {
+        if (func_00215570(((void *)(D_0013E633 + 0xE9D)), s[0])) {
+            if (*(unsigned short *)(D_0014171B_q + 0x235) == 0) func_L00_00203F20(5, 9);
+        }
+    }
+    }
+    {
+    Ent *t3 = ((Ent *)(D_0014171B + 0x34D));
+    if (t3[8][0] == 0 && *(unsigned short *)(D_0014171B_q + 0x22D) == 0) {
+        if (func_00215570(((void *)(D_0013E633 + 0xE9D)), s[1])) func_L00_00203F20(4, 8);
+    }
+    }
+    if (((Ent *)(D_0014171B + 0x34D))[0][0] == 0) {
+        if (func_00215570(((void *)(D_0013E633 + 0xE9D)), s[2])) func_L00_00203F20(0, 0);
+    }
+    {
+    Ent *t4 = ((Ent *)(D_0014171B + 0x34D));
+    if (t4[1][0] != 0) return;
+    if (t4[2][0] != 0) return;
+    }
+    g3 = D_0013E633 + 0xE1D;
+    p = s + 5;
+    {
+    int k = -1, e = 0xFE, d = 0xFD;
+    i = 3;
+    do {
+        int id = *p;
+        if (id != k) {
+            unsigned char *m = (unsigned char *)D_L00_00160098 + (id << 8);
+            if (m == 0 || m[0x20] == e || m[0x20] == d) {
+                if (*(int *)(g3 + 0x22A8) < 4) func_L00_00203F20(1, 1);
+                else func_L00_00203F20(2, 2);
+            }
+        }
+        p++;
+    } while (--i >= 0);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E2038);
 INCLUDE_ASM("asm/overlays", func_L00_002E2B28);
 extern void func_L00_00250800(void *, int, void *);
@@ -115,4 +259,64 @@ void func_L00_002E3128(char *m) {
     func_L00_001FD1D8(q, c, 0);
 }
 INCLUDE_ASM("asm/overlays", func_L00_002E32A0);
-INCLUDE_ASM("asm/overlays", func_L00_002E4CB0);
+extern void func_L00_00264870(int);
+extern void func_L00_00264BE8(void *, void *, void *, float, float);
+extern int func_L00_00258BC8(int, int);
+extern char *func_L00_0026DEA0(void *, int, void *, int, float, float, float, float);
+extern float D_L00_0015F660_b[] __asm__("D_L00_0015F660") MACRO_ADDR;
+typedef struct {
+    char pad[0x30];
+    int a;
+    int b;
+    char pad2[0x178 - 0x38];
+    int arr[4];
+} G;
+extern G D_L00_0016C960;
+
+typedef struct { char pad[0x20]; unsigned char state; char pad2[0xF]; unsigned char v; } M2;
+
+void func_L00_002E4CB0(M2 *m) {
+    char buf[16];
+    int idx;
+    int i, col, h;
+    char *p, *q, *r;
+    
+    switch (m->state) {
+    case 0:
+        m->v = 0xFF;
+        m->state = 1;
+        break;
+    case 1:
+        if (D_L00_0015F6A8 == 2) {
+            if ((D_L00_0016C960.a == 2 && D_L00_0016C960.b >= func_001F9850(0x618)) || (D_L00_0015F6A8 == 2 && D_L00_0016C960.a == 3)) {
+                idx = -1; if (D_L00_0016C960.a == 2) idx = 3; else if (D_L00_0016C960.a == 3) idx = 2;
+                func_L00_00264870(D_L00_0016C960.arr[idx]);
+            }
+            if (D_L00_0015F6A8 == 2) {
+                if (D_L00_0016C960.a == 4) {
+                    p = (char *)D_L00_0016C960.arr[3];
+                    if (p == 0) return;
+                    if (D_L00_0016C960.b < func_001F9850(0x96)) return;
+                    if (func_001F9850(0xDC) < D_L00_0016C960.b) return;
+                    func_L00_00250800(p, 0, buf);
+                    func_L00_00264BE8(buf, buf, D_L00_0015F660, 120000.0f, 50000.0f);
+                    for (i = 0; i < 10; i++) {
+                        col = (func_L00_00258BC8(0x40, 0x80) << 24) | 0x787878;
+                        h = func_L00_00258BC8(0, 4);
+                        if (func_002140B0(2)) h = -h;
+                        q = func_L00_0026DEA0(buf, h, D_L00_0015F660_b, col, 0.75f, 1.0f, 1.03f, 120000.0f);
+                        if (q) {
+                            q[3] = 0x44;
+                            r = q + 0x20;
+                            q[8] = func_L00_00258BC8(0, 0xFF);
+                            *(short *)(q + 0xA) = func_001F9850(0x3C);
+                            *(int *)(r + 4) = 2;
+                            r[0xA] = col >> 24;
+                            r[0xB] = q[0xA];
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
