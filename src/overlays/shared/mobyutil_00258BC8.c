@@ -606,7 +606,21 @@ void func_L00_0025BA50(char *self, Q4 *pos, char **list, int n, char *skip, int 
         func_L00_0025AAC0(list[i], &l.m);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_0025BBA0);
+/* From Lombyte (MIT), FUN_L00_0025ab48 (PR #66), adapted to PAL. */
+typedef struct { float f[4]; } __attribute__((aligned(16))) Q25BBA0;
+
+void func_L00_0025BBA0(Q25BBA0 *v, float *ang, float *s1, float *s2) {
+    Q25BBA0 t;
+    t = *v;
+    if (t.f[3] != 5627.9248046875f) {
+        *ang = func_L00_001FF860(t.f[0], t.f[1]);
+        return;
+    }
+    *ang = func_L00_001FF860(t.f[0], t.f[1]);
+    *s1 *= func_001F9CE8(&t);
+    t.f[3] = 0;
+    *s2 *= t.f[2];
+}
 typedef struct { float x, y, z, w; } Vc0 __attribute__((aligned(16)));
 extern void func_001F9BF0(void *, void *, void *);
 extern float func_001F9CE8(void *);
