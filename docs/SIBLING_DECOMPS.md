@@ -244,3 +244,48 @@ div.s   %0,%1,%2
   here.
 
 Not explained yet: UYA functions that mix two, one and no `nop`s.
+
+## rac2-decomp: Going Commando & Deadlocked Cross-Game Intelligence
+
+[rac2-decomp](https://github.com/llesieur99/rac2-decomp) targets the US
+executable of *Ratchet & Clank: Going Commando* (`SCUS_972.68`). Because
+Insomniac Games developed the PS2 games under intense yearly release cycles
+(2002 to 2005) on the same core engine architecture, extensive code, algorithms,
+and structures were reused across games:
+
+### 1. Byte-Identical Engine Functions (24+ functions shared)
+`rac2-decomp` verified that at least **24 reviewed C functions** are
+byte-identical between RAC1 and RAC2:
+- `FUN_0028B740` (HUD alignment / bounding box calculation, matching `FUN_L00_00235a70` in `gameplay_animation_00235878.c`)
+- `FUN_002A7AA8` (cubic spline / Hermite interpolation, matching `FUN_L00_00257e20` in `gameplay_entities_00257d78.c`)
+- `FUN_002A8860` (integer pack/unpack manipulation, matching `FUN_L00_00259430` in `math_interpolation_00257ef0.c`)
+- `FUN_002A8AF0` (2D point-in-polygon ray-casting test, matching `FUN_L00_00259740` in `gameplay_entities_00259710.c`)
+- `FUN_002AA140` (`lerp(a, b, t)`: `a + (b - a) * t`, matching `FUN_L00_0025b6a8` in `gameplay_entities_00259710.c`)
+- `FUN_002AAF40` (3-way element swap/permute by bitmask, matching `FUN_L00_0025c088` in `unclassified_0025bb38.c`)
+- `FUN_002CC6A0` (clearing state flag at `+0x44`, matching `FUN_L00_00277f60`)
+- `FUN_00312B58` (vendor moby state check `moby->state == 6`, matching `FUN_L16_002c4710`)
+- `FUN_00312E10` (byte flag check at `+0x20`, matching `FUN_L00_002d8128`)
+- `FUN_003505E0` (Ring buffer FIFO consumption at `base + 0x50000`, matching `FUN_L00_002ef300` in `runtime_buffers_002ef300.c`)
+
+### 2. Authentic STABS Types (Deadlocked Prototype Leak)
+While `rac2-decomp`'s repository does not contain raw symbol files, the community
+research archive (`#rac-ps2-reverse-engineering`) mined the **Ratchet: Deadlocked
+(Sep 13, 2005 prototype)**, which retained an unstripped `.mdebug` section with
+full STABS types (`rac4_symbols.txt` via `ccc`):
+- **`MobyInstance` (256 bytes / 0x100)**: Proves the demangled symbol
+  `InitMobyInstance(MobyInstance *, int)`. Defines exact fields: `bSphere` (0x00),
+  `pos` (0x10), `state` (0x20), `group` (0x21), `mClass` (0x22), `alpha` (0x23),
+  `pClass` (0x24), `pChain` (0x28), `occlIndex` (0x2E), `modeBits` (0x34),
+  `lights` (0x38), `animSeq` (0x40), `pUpdate` (0xA8), `pVar` (0xAC), `UID` (0xB2),
+  `oClass` (0xBC), `rMtx` (0xC0), `rot` (0xF0).
+- **`Hero` Class**: Confirms player character physics, jump transitions,
+  weapon equipping, and animation blending architecture (`UpdateArmBlender`,
+  `UpdateHeadBlender`, `ComputeTargetScore`, `GetAutoTargetMoby`).
+- **Math Library**: `vec4` (128-bit vector), `BSphere`, `mtx4`, `mtx3`, `quat`.
+
+### 3. Shared Enums & Systems
+- **RaC1 Gadget Enum**: 29 gadgets (`GADGET_BOMB_GLOVE` = 0 through `GADGET_PERSUADER` = 28)
+  reused directly by RaC2's save-import system.
+- **Memory Card FSM (`CardState`)**: Identical 25-state machine (`CS_INIT` to `CS_PROMPT_BEGIN_NOSAVE`).
+- **Geometry Pillars**: `tfrag`, `tie`, `shrub`, `moby` collision pill sweep
+  `MB_CheckCollPill` and camera collision `Camera_CollPrimTest`.

@@ -306,5 +306,134 @@ typedef struct StashInfo {
     /* 0x34 */ int   block;    /* allocated block count (max 0x40) */
 } StashInfo;
 
+/*
+ * Geometry and Math structures from Insomniac STABS (.mdebug).
+ */
+typedef struct BSphere {
+    float x;
+    float y;
+    float z;
+    float rad;
+} BSphere;
+
+typedef struct vec4 {
+    float x;
+    float y;
+    float z;
+    float w;
+} vec4;
+
+/*
+ * Authentic Insomniac MobyInstance structure (256 bytes / 0x100).
+ * Demangled signature: InitMobyInstance(MobyInstance *, int)
+ */
+typedef struct MobyInstance {
+    /* 0x00 */ BSphere       bSphere;              /* bounding sphere in world space */
+    /* 0x10 */ vec4          pos;                  /* world position (x, y, z, w) */
+    /* 0x20 */ unsigned char state;                /* current moby state (0xFE=free, 0xFF=tail) */
+    /* 0x21 */ unsigned char group;                /* collision / grouping index */
+    /* 0x22 */ unsigned char mClass;               /* class sub-type / moby class byte */
+    /* 0x23 */ unsigned char alpha;                /* opacity / blend alpha (default 0x80) */
+    /* 0x24 */ void         *pClass;               /* pointer to class definition */
+    /* 0x28 */ struct MobyInstance *pChain;        /* next moby in chain / update list */
+    /* 0x2C */ unsigned char collDamage;           /* collision damage value */
+    /* 0x2D */ unsigned char deathCnt;             /* death counter */
+    /* 0x2E */ unsigned short occlIndex;           /* occlusion index */
+    /* 0x30 */ unsigned char updateDist;           /* update distance */
+    /* 0x31 */ unsigned char drawn;                /* drawn flag */
+    /* 0x32 */ unsigned short drawDist;            /* draw distance threshold */
+    /* 0x34 */ unsigned short modeBits;            /* mode flags (0x40 = no pre-update) */
+    /* 0x36 */ unsigned short modeBits2;           /* secondary mode flags */
+    /* 0x38 */ unsigned long lights;               /* light bitmask / color */
+    /* 0x40 */ void         *animSeq;              /* animation sequence pointer */
+    /* 0x44 */ float         animSeqT;             /* animation time parameter */
+    /* 0x48 */ float         animSpeed;            /* animation playback speed */
+    /* 0x4C */ short         animIScale;           /* animation interpolation scale */
+    /* 0x4E */ short         poseCacheEntryIndex;  /* pose cache index */
+    /* 0x50 */ void         *animLayers;           /* animation layer list */
+    /* 0x54 */ unsigned char animSeqId;            /* active sequence ID */
+    /* 0x55 */ unsigned char animFlags;            /* animation flags */
+    /* 0x56 */ unsigned char lSeq;                 /* loop / layer sequence */
+    /* 0x57 */ unsigned char jointCnt;             /* joint count */
+    /* 0x58 */ void         *jointCache;           /* joint matrix cache */
+    /* 0x5C */ void         *pManipulator;         /* IK / joint manipulator */
+    /* 0x60 */ unsigned int  glow_rgba;            /* glow color (RGBA) */
+    /* 0x64 */ unsigned char lod_trans;            /* LOD transition */
+    /* 0x65 */ unsigned char lod_trans2;           /* secondary LOD transition */
+    /* 0x66 */ unsigned char metal;                /* metal surface flag */
+    /* 0x67 */ unsigned char subState;             /* sub-state */
+    /* 0x68 */ unsigned char prevState;            /* previous state */
+    /* 0x69 */ unsigned char stateType;            /* state type enum */
+    /* 0x6A */ unsigned short stateTimer;          /* frames in current state */
+    /* 0x6C */ unsigned char soundTrigger;         /* sound trigger */
+    /* 0x6D */ unsigned char soundDesired;         /* sound desired */
+    /* 0x6E */ unsigned short soundChannel;        /* audio channel index */
+    /* 0x70 */ float         scale;                /* actor scale */
+    /* 0x74 */ unsigned short bangles;             /* bangles / attachment bits */
+    /* 0x76 */ unsigned char shadow;               /* shadow flag */
+    /* 0x77 */ unsigned char shadow_index;         /* shadow texture index */
+    /* 0x78 */ float         shadow_plane;         /* shadow ground plane Y */
+    /* 0x7C */ float         shadow_range;         /* shadow max distance */
+    /* 0x80 */ BSphere       lSphere;              /* local bounding sphere */
+    /* 0x90 */ void         *netObject;            /* network / multiplayer object */
+    /* 0x94 */ unsigned short updateID;            /* update tick ID */
+    /* 0x96 */ unsigned short spad0;               /* scratchpad scratch var */
+    /* 0x98 */ void         *collData;             /* collision mesh / pill data */
+    /* 0x9C */ unsigned int  collActive;           /* active collision bitmask */
+    /* 0xA0 */ int           collCnt;              /* collision check count */
+    /* 0xA4 */ unsigned char grid_min_x;           /* PVS grid bounds min X */
+    /* 0xA5 */ unsigned char grid_min_y;           /* PVS grid bounds min Y */
+    /* 0xA6 */ unsigned char grid_max_x;           /* PVS grid bounds max X */
+    /* 0xA7 */ unsigned char grid_max_y;           /* PVS grid bounds max Y */
+    /* 0xA8 */ void        (*pUpdate)(struct MobyInstance *); /* per-tick update function */
+    /* 0xAC */ void         *pVar;                 /* private moby state (0x80 bytes per moby) */
+    /* 0xB0 */ unsigned char mission;              /* mission ID */
+    /* 0xB1 */ unsigned char pad;
+    /* 0xB2 */ short         UID;                  /* unique instance ID in level */
+    /* 0xB4 */ short         bolts;                /* bolt drop reward */
+    /* 0xB6 */ unsigned short xp;                  /* experience / nanotech reward */
+    /* 0xB8 */ struct MobyInstance *pParent;       /* parent moby pointer */
+    /* 0xBC */ short         oClass;               /* Object Class ID */
+    /* 0xBE */ unsigned char triggers;             /* trigger flags */
+    /* 0xBF */ unsigned char standarddeathcalled;  /* death handler invoked flag */
+    /* 0xC0 */ float         rMtx[3][4];           /* 3x4 orientation/rotation matrix */
+    /* 0xF0 */ vec4          rot;                  /* Euler rotation (pitch, yaw, roll) */
+} MobyInstance;
+
+/*
+ * RaC1 Gadget and Weapon Enum (reused across the franchise and save-import).
+ */
+typedef enum RaC1GadgetId {
+    GADGET_BOMB_GLOVE       = 0,
+    GADGET_PYROCITOR        = 1,
+    GADGET_BLASTER          = 2,
+    GADGET_GLOVE_OF_DOOM    = 3,
+    GADGET_SUCK_CANNON      = 4,
+    GADGET_SWINGSHOT        = 5,
+    GADGET_HYDRODISPLACER   = 6,
+    GADGET_SONIC_SUMMONER   = 7,
+    GADGET_RYNO             = 8,
+    GADGET_WALLOPER         = 9,
+    GADGET_VISIBOMB         = 10,
+    GADGET_DECOY_GLOVE      = 11,
+    GADGET_TESLA_CLAW       = 12,
+    GADGET_TAUNTER          = 13,
+    GADGET_TRESPASSER       = 14,
+    GADGET_METAL_DETECTOR   = 15,
+    GADGET_MAGNEBOOTS       = 16,
+    GADGET_GRIND_BOOTS      = 17,
+    GADGET_HOVERBOARD       = 18,
+    GADGET_HELI_PACK        = 19,
+    GADGET_THRUSTER_PACK    = 20,
+    GADGET_HYDRO_PACK       = 21,
+    GADGET_O2_MASK          = 22,
+    GADGET_PILOTS_HELMET    = 23,
+    GADGET_MORPH_O_RAY      = 24,
+    GADGET_CODEBOT          = 25,
+    GADGET_HOLOGUISE        = 26,
+    GADGET_PDA              = 27,
+    GADGET_PERSUADER        = 28
+} RaC1GadgetId;
+
 #endif /* STRUCTS_H */
 
