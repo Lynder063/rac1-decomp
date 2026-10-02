@@ -1,16 +1,16 @@
 /* NON_MATCHING func_L18_002FD5C0 -- src/overlays/l18_veldin2/vendor_002F9D48.c
- * Best so far: SIZE ours 984 / retail 988, checked 2026-10-01.
+ * Best so far: BYTES 36/988 (96.4% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
- *   ours folds it to addiu $a1,$s1,0x180 each time. Local `r = p + 0x180` (before/after the call) did not survive.
- *   - retail's `bnel` (likely branch) at the 1C4==2 test vs our bne; follows from the s2 difference.
- *   What mattered: gp globals need `extern short D_X;` plus `*(float*)&D_X` uses (not an int/float alias: alias ty
- *   and reads lh); D_L18_0015F6B0 via `__asm__` alias with MACRO_ADDR (file already declares it int) gives the del
- *   D_0013E633+0xE1D must be a block-scoped `char *g = D_0013E633 + 0xE1D;` per use (3 uses) to get hi in $s5 with
- *   `float ang` as a separate local (not v.v[2]) fixes the stack slot (sp+0x18); func_L18_002FDF58 passed via alia
- *   `func_DF58_v(void) __asm__("func_L18_002FDF58")` since the file defines it later with another type.
- *   Also: constants (0.0174533 = 0x3C8EFA35), 0.5 store placed after the 0x90 store brought the float order near.
+ *   `$a2 = p + 0x88` and `$a3 = p + 0x8C` before the call, and the callee's own
+ *   prologue copies `$6` and `$7` into saved registers. (`asm/overlays/
+ *   func_L00_0025BBA0.s` shows `daddu $18,$7,$0` / `daddu $17,$6,$0`.)
+ *   - The four floats at p+0x80..0x8C are stored **off p with an offset each**, not
+ *   through a `float *u = (float *)(p + 0x80)` pointer: the pointer costs the
+ *   `addiu $v0,$s1,0x80` that made us a word too long.
+ *   Remaining 36 bytes: register picks in the tail (retail keeps the list base in
+ *   $a0/$v1 where we use $a1/$v0) and one `bne` where retail has `bnel`.
  */
 typedef struct { float v[4]; } __attribute__((aligned(16))) QV;
 extern short D_EE70_s __asm__("D_0015EE70");
@@ -23,7 +23,7 @@ extern void func_00213DE0(void *, int, int, int);
 extern char *func_L00_0025B478(void *, int, int);
 extern int func_L00_0025B4D0(void *, void *, void *, int, void *, void *, int, int);
 extern int func_002140B0(int);
-extern void func_L00_0025BBA0(void *, void *);
+extern void func_L00_0025BBA0(void *, void *, void *, void *);
 extern void func_L00_0025D5B0(float ang, char *o, float *s, int a, int b, int c);
 extern void func_L00_0025E4B0(void *m, short *p);
 extern void func_L00_0025E590(void *, void *);
@@ -90,7 +90,6 @@ void func_L18_002FD5C0(unsigned char *m) {
                     if (func_002140B0(2)) {
                         m[0x20] = 6;
                     } else {
-                        float *u = (float *)(p + 0x80);
                         float k = *(float *)&D_EE70_s;
                         float a = (*(float *)&D_L18_001626AC) * k;
                         float b = (*(float *)&D_L18_001626B0) * k;
@@ -98,16 +97,16 @@ void func_L18_002FD5C0(unsigned char *m) {
                         float d = (*(float *)&D_L18_001626B8) * D_0015EE6C;
                         p[0xAD] = 0;
                         *(float *)(p + 0xBC) = D_0015EE6C + D_0015EE6C;
-                        u[3] = d;
-                        u[0] = a;
-                        u[1] = b;
-                        u[2] = c;
+                        *(float *)(p + 0x8C) = d;
+                        *(float *)(p + 0x80) = a;
+                        *(float *)(p + 0x84) = b;
+                        *(float *)(p + 0x88) = c;
                         *(int *)(p + 0x94) = 0x29;
                         *(int *)(p + 0x90) = 0x200;
                         *(float *)(p + 0x98) = 0.5f;
                         *(unsigned short *)(m + 0x34) &= 0xEFFF;
                         *(QV *)&v = *(QV *)(q + 0x10);
-                        func_L00_0025BBA0(&v, &ang);
+                        func_L00_0025BBA0(&v, &ang, p + 0x88, p + 0x8C);
                         func_L00_0025D5B0(ang, (char *)m, (float *)(p + 0x70), 3, 1, 0);
                         *(float *)(p + 0xC0) = 7.5f;
                         *(float *)(p + 0xC4) = 15.0f;
