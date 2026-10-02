@@ -11,7 +11,6 @@
 extern float func_001F9C78(void *, void *);
 extern float func_001F9CB8(void *);
 extern void func_L00_001FF4B0(void *, void *, float);
-extern void func_001F9BF0(void *, void *, void *);
 extern void func_001F9BD8(void *, void *, void *);
 extern float func_001F9D48(void *, void *);
 extern float func_L00_0025C918(float *p, float *v, float t, float u1, float u2, float eps);

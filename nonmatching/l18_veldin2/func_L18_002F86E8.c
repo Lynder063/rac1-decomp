@@ -2,6 +2,7 @@
  * Best so far: BYTES 20/1048 (98.1% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-02): match its declarations to the file's first.
  * What the last attempts found:
  *   run6-7 (after lead fixed file) p4: SIZE 1052/1048; loop shape ok (ptr p++ works, s7 ok). p5: swap tbl add oper
  *   run8 p5: no change (SIZE 1052). p6: do-while with p++ / ++i<0x30
@@ -12,7 +13,6 @@
  *   run13 p10: identical to p5. Stopped: p7, p8, p10 changed nothing.
  *   Best: p5.c (SIZE 1052/1048; all control flow, regs and loop shape right). Left: (1) li 0x12 hoisted out of the
  */
-extern void func_001F9908(int *arg0);
 extern float func_001F9D48(void *, void *);
 extern void func_L06_00317770(char *moby);
 extern void func_001FFDA0(int arg0, int arg1);
@@ -32,7 +32,6 @@ extern char D_L18_00167BD0[];
 extern char D_L18_00167700[];
 extern float D_0015EE70 MACRO_ADDR;
 extern float D_0015EE6C MACRO_ADDR;
-extern short D_L18_00162430;
 extern short D_L18_00162440;
 extern short D_L18_00162444;
 extern short D_L18_00162448;

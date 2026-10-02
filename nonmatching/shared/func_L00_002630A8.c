@@ -15,7 +15,6 @@ extern float func_001F9B88(float);
 extern float func_001F9CB8(void *);
 extern void func_001F9BD8(void *, void *, void *);
 extern char D_L00_001B0830[];
-extern unsigned char D_0013E633[];
 
 /* clamps a point to a polyline's segments and writes the pushed-out point */
 int func_L00_002630A8(int idx, void *pos, void *out, float thr) {

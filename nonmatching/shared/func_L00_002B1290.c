@@ -8,7 +8,6 @@
  *   Wall: the dead load has no plain-C form I found; would need knowing what the original did with D_L00_00173F40[
  */
 extern float func_001F9D10(void *, void *);
-extern int func_L00_0025D390(char *);
 extern float func_L00_001FF860(float, float);
 extern float func_001F9D48(void *, void *);
 extern float func_001FA850(float, float);

@@ -9,7 +9,6 @@
  */
 extern float func_001F9D10(void *, void *);
 extern char *D_L05_001B0CB0[];
-extern unsigned char D_0014171B[] NOT_SDA;
 extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
 extern float D_0015EE6C MACRO_ADDR;
 extern float D_0015EE70 MACRO_ADDR;

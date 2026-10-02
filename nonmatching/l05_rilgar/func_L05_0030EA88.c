@@ -9,7 +9,6 @@
  */
 extern char D_L05_001D6BC0[];
 extern short *D_L05_001AC040[];
-extern char *D_L05_00160098;
 
 // copies the moby's x position onto each linked moby of type 0x33F, following the parent's offset
 void func_L05_0030EA88(char *moby) {

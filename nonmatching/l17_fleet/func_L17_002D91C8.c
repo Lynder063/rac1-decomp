@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 784 / retail 792, checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-02): match its declarations to the file's first.
  * What the last attempts found:
  *   Draws two passes of 3 rings of 4 vertices around a moby: builds a 4-point 2D table (D_L17_001D4240 + s*e[o]), 
  *   Best is p4.c (size 792 matches; structure, loops, compound-literal rot, struct copies, MACRO_ADDR for D_L17_00

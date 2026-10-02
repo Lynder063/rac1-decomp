@@ -14,7 +14,6 @@ extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
 extern int func_L00_0020DB30(int);
 extern int func_001F9850(int);
 extern int func_L00_00217570(int, int);
-extern void func_001F9BF0(void *, void *, void *);
 extern float func_L00_002342F8(float *);
 extern float func_00214D28(float *, float, float);
 extern void func_L00_002343A0(float *dst, float *src, float z);
