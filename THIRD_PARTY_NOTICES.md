@@ -152,6 +152,7 @@ The following functions adapt source from
 - `src/overlays/shared/vendor_002C96D0.c`: `func_L00_002CD3B8` (spawns a debris moby with randomized spin and velocity)
 - `src/overlays/shared/vendor_002EB0D8.c`: `func_L00_002EB3A0` (clears a moby's work block and re-runs its setup)
 - `src/overlays/shared/mobyutil_00258BC8.c`: `func_L00_0025A868` (tests whether a moby's linked object has a non-zero field at +8)
+- `src/overlays/shared/vendor_002E1660.c`: `func_L00_002E99E4` (stores a float into a moby field at +0xB4)
 
 MIT License
 

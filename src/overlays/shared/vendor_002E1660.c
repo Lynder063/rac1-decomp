@@ -748,7 +748,8 @@ void func_L00_002E9968(float x, float y) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_002E99A0);
-INCLUDE_ASM("asm/overlays", func_L00_002E99E4);
+/* From Lombyte (MIT), FUN_L00_002e8534 (PR #66), adapted to PAL. */
+void func_L00_002E99E4(void *u, char *p, float a) { *(volatile float *)(p + 0xB4) = a; }
 void func_L00_002E99F0(float value) {
     char *moby = D_L00_00166F00;
     if (*(short *)(moby + 0x86) == 0) {
