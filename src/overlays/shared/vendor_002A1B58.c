@@ -35,7 +35,62 @@ char *func_L16_002A1B58(char *owner, float *pos, char *vec) {
     }
     return moby;
 }
-INCLUDE_ASM("asm/overlays", func_L16_002A1C50);
+extern float func_001F9D10_2E7198(void*,void*) __asm__("func_001F9D10");
+extern int func_L00_0028EF68(int,int,int,int);
+extern void func_L15_0029BFF8(char*);
+extern void func_001F9BF0(void*,void*,void*);
+extern float func_L00_001FF860(float,float);
+extern float func_001F9CE8(void*);
+extern float func_001FA748(float,float);
+extern void func_00215C00(void*,float,float,float);
+extern int func_001F9908(int*);
+extern float func_001FA888(int);
+extern void func_001F9C08(void*,void*,void*,float);
+extern void func_001F9BD8(void*,void*,void*);
+extern int func_L00_001EFFF0(void*,void*,int,void*,void*);
+extern float func_001F9CB8(void*);
+extern void func_L00_0025A8E8(int,float,void*,int,float,float,int,int,int);
+extern void func_L00_0025F4A8(void*,void*,void*,float,float,int,int,int,float,float,float,int,float,float,int,int,int,int);
+extern void func_0020D678(void*);
+extern char D_L16_00167240[],D_0013E633[];
+/* Steer a projectile toward its target and emit its impact effects. */
+void func_L16_002A1C50(char *m) {
+    float desired[4],next[4],delta[4],blend[4];
+    char *d=*(char**)(m+0x78);
+    void *remaining;
+    float yaw,pitch;
+    if(*(int*)(d+0x34)==0 && func_001F9D10_2E7198(m+0x10,D_L16_00167240)<15.0f) {
+        *(int*)(d+0x34)=1;func_L00_0028EF68(5,0,(int)m,0x54C);
+    }
+    if(*(unsigned char*)(m+0x20)!=0) return;
+    func_L15_0029BFF8(m);
+    func_001F9BF0(delta,d+0x10,m+0x10);
+    yaw=func_L00_001FF860(delta[0],delta[1]);
+    pitch=func_L00_001FF860(func_001F9CE8(delta),delta[2]);
+    yaw=func_001FA748(yaw,*(float *)(d+0x28));
+    pitch=func_001FA748(pitch,*(float *)(d+0x2C));
+    if(pitch>1.2217305f) pitch=1.2217305f;
+    else if(pitch<-1.2217305f) pitch=-1.2217305f;
+    func_00215C00(desired,*(float *)(d+0x24),yaw,pitch);
+    if(func_001F9908((int*)(d+0x20))==0) {
+        float a=func_001FA888(*(int*)(d+0x20));
+        float b=func_001FA888(*(int*)(d+0x30));
+        func_001F9C08(blend,desired,d,a/b);
+        func_001F9BD8(next,m+0x10,blend);
+        *(float *)(m+0x48)=func_L00_001FF860(blend[0],blend[1]);
+        *(float *)(m+0x44)=-func_L00_001FF860(func_001F9CE8(blend),blend[2]);
+    } else {
+        func_001F9BD8(next,m+0x10,desired);
+        *(float *)(m+0x48)=yaw;*(float *)(m+0x44)=pitch;
+    }
+    remaining=delta;
+    if(func_L00_001EFFF0((m+0x10),next,0,m,0)!=0 || func_001F9CB8(remaining)<*(float *)(d+0x24)) {
+        if(*(unsigned char*)(D_0013E633+0x2EC1)==2) func_L00_0025A8E8((int)m,2.0f,(m+0x10),3,2.0f,1.0f,0,1,0);
+        func_L00_0028EF68(4,0,(int)m,0x54C);
+        func_L00_0025F4A8(m,d,(m+0x10),4.0f,4.0f,10,3,16,4.0f,2.0f,9.0f,-1,1.0f,15.0f,1,1,-1,0);
+        func_0020D678(m);
+    } else qcopy((m+0x10),next);
+}
 extern struct Moby *func_0020D348_m(int) __asm__("func_0020D348");
 extern float func_001F9CB8(void *);
 extern float func_002140F8(float, float);
@@ -76,7 +131,215 @@ char *func_L16_002A1F78(char *owner, char *vec, void *pos, void *vel, int c, flo
     return m;
 }
 INCLUDE_ASM("asm/overlays", func_L16_002D40B8);
-INCLUDE_ASM("asm/overlays", func_L16_002D4C78);
+extern char *func_L00_0025B478(void *, int, int);
+extern int func_L00_0025B4D0(void *, void *, void *, int, int *, float *, int, int);
+extern void func_L16_002D5340(void *, int, int);
+extern int func_001FA898(float);
+extern void func_L00_0025BBA0(void *, float *, void *, void *);
+extern void func_L00_0025D5B0(float, void *, void *, int, int, int);
+extern int func_0022EE28(int, int, int);
+extern void func_L00_00264DB8(int, int);
+extern void func_L00_002584A8(void *, int, int);
+extern void func_L00_0025E4B0(void *, void *);
+extern void func_L00_0025E590(void *, void *);
+extern int func_001F9908(int *);
+extern float func_001F9878(float);
+extern int func_L00_00260FB0(float, char *, void *, int, int, void *, int);
+extern int func_L00_00260D30(float, char *, void *);
+extern float func_001F9D48(void *, void *);
+extern float D_0015EE70 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+extern int D_0015EE84 MACRO_ADDR;
+extern short D_0015EF10;
+extern char D_0013E633[];
+extern char D_0013D50F[];
+extern char *D_L16_001B0C30[];
+
+typedef struct {
+    char pad00[0x20];
+    float health;
+    char pad24[0x14];
+    int reset_timer;
+    char pad3C[0x24];
+    short damage[3];
+    unsigned char pad66;
+    unsigned char animation;
+    char pad68[8];
+    float knockback[4];
+    float impulse_time;
+    float vertical_impulse;
+    float forward_impulse;
+    float lateral_impulse;
+    int sound_timer;
+    int active;
+    float damping;
+    char pad9C[0x11];
+    unsigned char pending;
+    char padAE[0x12];
+    float blend_start;
+    float blend_end;
+    char padC8[8];
+    float target[4];
+    char padE0[0x30];
+    int owner;
+    int pursuit_mode;
+    char pad118[0xC];
+    float pursuit_range;
+    char pad128[4];
+    int path_index;
+    char pad130[0x1B0];
+    int pursuit_timer;
+    char pad2E4[0x24];
+    int reward_hits;
+} L16DamageData;
+typedef struct {
+    unsigned long long vector;
+    int status;
+    float amount;
+    float angle;
+    float fatal_angle;
+} L16DamageScratch;
+typedef struct {
+    char pad00[0x2080];
+    int owner;
+    char pad2084[8];
+    int mode;
+    char pad2090[0x14];
+    unsigned char difficulty;
+} L16DamageResident;
+typedef struct { unsigned char pad00[0x1D]; unsigned char awarded; } L16DamageReward;
+extern L16DamageResident D_L16DamageState __asm__("D_0013E633");
+/* Handle damage and knockback, then update the pursuit target and timer. */
+void func_L16_002D4C78(char *m) {
+    L16DamageScratch scratch;
+    L16DamageData *d = *(L16DamageData **)(m + 0x78);
+    char *hit;
+    unsigned int response;
+    float range;
+    float time_scale;
+    *(float *)(m + 0x2C) = *(float *)(*(char **)(m + 0x24) + 0x24);
+    scratch.amount = 0.0f;
+    hit = func_L00_0025B478(m, 0x330000, 0);
+    if (hit) {
+        if (*(char **)(hit + 0x20)) {
+            char *source = *(char **)(hit + 0x20);
+            hit = *(short *)(source + 0xA6) != 0x31 ? hit : 0;
+        }
+    }
+    response = func_L00_0025B4D0(m, hit, &d->health, 0, &scratch.status, &scratch.amount, 0, 4);
+    if (scratch.status != 1 && ((unsigned char *)m)[0x20] != 9) {
+        func_L16_002D5340(m, 0x12C, 0x168);
+        if (hit && *(char **)(hit + 0x20) &&
+            *(short *)(*(char **)(hit + 0x20) + 0xA6) != 0x47) {
+            d->reward_hits = 0;
+        }
+        d->health -= scratch.amount;
+        if (d->health <= 0.0f) response = 1;
+        d->sound_timer = func_001FA898(512.0f);
+        d->impulse_time = D_0015EE70 * 20.0f;
+        d->damping = 0.5f;
+        d->vertical_impulse = 0.0f;
+        d->active = 1;
+        d->pending = 0;
+        switch (response) {
+        case 9:
+        case 10:
+            d->animation = 0xFA;
+            break;
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8: {
+            float impulse = D_0015EE6C * 6.0f;
+            char *source;
+            d->blend_start = -1.0f;
+            d->blend_end = -1.0f;
+            d->forward_impulse = impulse;
+            d->lateral_impulse = impulse;
+            source = *(char **)(hit + 0x20);
+            {
+                float heading = func_L00_001FF860(*(float *)(m + 0x10) - *(float *)(source + 0x10),
+                *(float *)(m + 0x14) - *(float *)(source + 0x14));
+                scratch.vector = *(unsigned long long *)(hit + 0x10);
+                scratch.angle = heading;
+            }
+            func_L00_0025BBA0(&scratch.vector, &scratch.angle, &d->forward_impulse, &d->lateral_impulse);
+            func_L00_0025D5B0(scratch.angle, m, d->knockback, 6, 1, 0);
+            m[0x20] = 8;
+            d->animation = 0x78;
+            break;
+        }
+        case 1:
+        case 2: {
+            char *source;
+            if (D_0015EE84 == 18 && d->reward_hits) {
+                ++*(int *)&D_0015EF10;
+                if (*(int *)&D_0015EF10 >= 10) {
+                    if (((L16DamageReward *)(D_0013D50F + 1))->awarded == 0) {
+                        ((L16DamageReward *)(D_0013D50F + 1))->awarded = 1;
+                        func_0022EE28(1, 0, 0);
+                        func_L00_00264DB8(0x53DB, -1);
+                    }
+                }
+            }
+            time_scale = D_0015EE70 * 20.0f;
+            *(unsigned short *)(m + 0x34) &= 0xEFFF;
+            d->impulse_time = time_scale;
+            if (((L16DamageResident *)((char *)&D_L16DamageState + 0xE1D))->difficulty == 2) {
+                float impulse = D_0015EE6C;
+                *(float *)(m + 0x58) = 0.5f;
+                d->forward_impulse = impulse * 24.0f;
+                d->lateral_impulse = impulse * 8.0f;
+            } else {
+                float impulse = D_0015EE6C * 8.0f;
+                d->forward_impulse = impulse;
+                d->lateral_impulse = impulse;
+            }
+            d->blend_start = -1.0f;
+            d->blend_end = -1.0f;
+            source = *(char **)(hit + 0x20);
+            {
+                float heading = func_L00_001FF860(*(float *)(m + 0x10) - *(float *)(source + 0x10),
+                *(float *)(m + 0x14) - *(float *)(source + 0x14));
+                scratch.vector = *(unsigned long long *)(hit + 0x10);
+                scratch.fatal_angle = heading;
+            }
+            func_L00_0025BBA0(&scratch.vector, &scratch.fatal_angle, &d->forward_impulse, &d->lateral_impulse);
+            func_L00_0025D5B0(scratch.fatal_angle, m, d->knockback, 7, 1, 0);
+            m[0x20] = 9;
+            d->animation = 0xF0;
+            func_L00_002584A8(m, 0, -1);
+            break;
+        }
+        case 0:
+        case 11:
+        default:
+            break;
+        }
+        func_L00_0025E4B0(m, d->damage);
+    }
+    ((unsigned char *)m)[0xA4] = 0xFF;
+    func_L00_0025E590(m, d->damage);
+    func_001F9908(&d->pursuit_timer);
+    if (d->reset_timer) {
+        d->pursuit_timer = func_001FA898(func_001F9878(func_002140F8(180.0f, 240.0f)));
+    }
+    d->reset_timer = 0;
+    range = 255.0f;
+    if (d->pursuit_timer == 0) range = d->pursuit_range;
+    if (((L16DamageResident *)((char *)&D_L16DamageState + 0xE1D))->mode == 22) {
+        d->pursuit_mode = 2;
+    } else if (d->path_index >= 0 && d->pursuit_timer == 0) {
+        char *path = D_L16_001B0C30[d->path_index];
+        func_L00_00260FB0(24.0f, m, d->target, 0, 0, path + 0x10, *(int *)path);
+    } else {
+        func_L00_00260D30(24.0f, m, d->target);
+    }
+    if (range < func_001F9D48(m + 0x10, d->target)) d->pursuit_mode = 2;
+    if (d->owner == 0) d->owner = ((L16DamageResident *)((char *)&D_L16DamageState + 0xE1D))->owner;
+}
 void func_L16_002D5188(char *moby, void *owner, void *position, char *vector) {
     char *data = *(char **)(moby + 0x78);
     *(void **)(data + 0x2D0) = owner;
@@ -155,9 +418,152 @@ void func_L16_002D5438(char *moby) {
         if ((unsigned char)moby[0x53] != 4) func_00213DE0(moby, 4, 0, func_001F9850(0x14));
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002D55C0);
-INCLUDE_ASM("asm/overlays", func_L16_002D5958);
-INCLUDE_ASM("asm/overlays", func_L16_002D5CD0);
+extern void func_L00_00250800(void *,int,void *);
+extern void func_001F9BC0(void *);
+extern int func_002140B0(int);
+extern int func_L00_00258BC8(int,int);
+extern void func_L00_0026B890(void *,void *,int,int,int,int,int,int,float,float);
+extern void func_L00_002ADBB0(void *,void *,void *,float,int,int,int,int,int);
+extern char D_L16_00167240[];
+extern short D_L16_0015F6B4;
+typedef struct {int values[6];} L16ParticleChoices;
+extern L16ParticleChoices D_L16_001E8600,D_L16_001E8618;
+/* Spawn randomized hit particles at joint two, with extra bursts for distant hits. */
+void func_L16_002D55C0(void *m) {
+    float delta[4],velocity[4],position[4];
+    L16ParticleChoices first,second;
+    float distance,range,delay;
+    int count;
+    void *origin;
+    float *joint=position;
+    void *movement;
+    func_L00_00250800(m,2,joint);
+    func_001F9BF0(delta,D_L16_00167240,joint);
+    func_001F9BC0(velocity);
+    distance=func_001F9CB8(delta);
+    if(distance<8.0f) count=func_001FA898(distance)+2;
+    else count=10;
+    range=0.0f;
+    if(distance<7.0f) range=7.0f-distance;
+    origin=position;
+    movement=velocity;
+    if(count>0) {
+    int remaining=count;
+    do {
+        float sample;
+        int *a,*b,duration1,duration2;
+        remaining--;
+        sample=func_002140F8(8.0f,10.0f);
+        first=D_L16_001E8600;
+        second=D_L16_001E8618;
+        delay=sample*D_0015EE6C-range*D_0015EE6C;
+        a=&first.values[func_002140B0(6)];
+        b=&second.values[func_002140B0(6)];
+        {int lo=func_001F9850(15),hi=func_001F9850(20);
+        duration1=func_L00_00258BC8(lo,hi);
+        }
+        {int lo=func_001F9850(25),hi=func_001F9850(30);
+        duration2=func_L00_00258BC8(lo,hi);
+        }
+        func_L00_0026B890(origin,movement,*a,*b,duration1,duration2,0,0,400000.0f,delay);
+    } while(remaining!=0);
+    }
+    if(*(float *)&D_L16_0015F6B4<0.95f && distance>9.0f) {
+        func_L00_002ADBB0(m,origin,movement,4.0f,func_001F9850(15),127,127,127,32);
+        func_L00_002ADBB0(m,origin,movement,4.0f,func_001F9850(24),127,32,0,32);
+    }
+    func_L00_002ADBB0(m,origin,movement,4.0f,func_001F9850(20),127,64,0,48);
+    func_L00_002ADBB0(m,origin,movement,3.5f,func_001F9850(27),96,16,0,64);
+    func_L00_002ADBB0(m,origin,movement,3.0f,func_001F9850(29),32,0,0,32);
+}
+extern void func_001FA4A0(void*,void*);
+extern void func_001F9BF0(void*,void*,void*);
+extern void func_001F9EC0(void*,void*,void*);
+extern float func_L00_001FF860(float,float);
+extern float func_001F9CE8(void*);
+extern void func_L00_001FF4B0(void*,void*,float);
+extern void func_001F9BD8(void*,void*,void*);
+extern void func_L00_00263950(char*,char*,int,float,float);
+extern float D_0015EE64 MACRO_ADDR;
+/* Aim paired joints toward the owner or player, then smooth their rotations. */
+void func_L16_002D5958(char *m) {
+    float position[4],target[4],matrix[16],delta[4],aim[4],aimDelta[4],velocity[4];
+    char *d=*(char**)(m+0x78);
+    if(*(int*)(d+0x114)!=2) {
+        float *savedTarget,*savedMatrix;
+        float yaw,pitch;
+        qcopy(position,m+0x10);position[2]+=2.0f;
+        if(*(short*)(*(char**)(d+0x110)+0xA6)==0) qcopy(target,D_0013E633+0xEED);
+        else qcopy(target,d+0xD0);
+        savedTarget=target;
+        func_001FA4A0(matrix,m+0xC0);
+        func_001F9BF0(delta,savedTarget,position);
+        func_001F9EC0(delta,delta,matrix);
+        yaw=func_L00_001FF860(delta[0],delta[1]);
+        pitch=-func_L00_001FF860(func_001F9CE8(delta),delta[2]);
+        if(yaw>0.7853982f) yaw=0.7853982f;
+        else if(yaw<-0.7853982f) yaw=-0.7853982f;
+        if(pitch>0.7853982f) pitch=0.7853982f;
+        else if(pitch<-0.7853982f) pitch=-0.7853982f;
+        {float halfYaw=yaw*0.5f,halfPitch=pitch*0.5f;
+        *(float *)(d+0x198)=halfYaw;*(float *)(d+0x194)=halfPitch;*(float *)(d+0x218)=halfYaw;*(float *)(d+0x214)=halfPitch;}
+        if((unsigned int)(*(unsigned char*)(m+0x20)-4)<2) {
+            float yaw2,pitch2,bound;
+            func_L00_001FF4B0(aim,m+0xC0,1.0f);
+            func_L00_001FF4B0(velocity,m+0xD0,0.5f);
+            func_001F9BD8(aim,aim,position);
+            func_001F9BD8(aim,aim,velocity);
+            func_001F9BF0(aimDelta,savedTarget,aim);
+            savedMatrix=matrix;
+            func_001F9EC0(aimDelta,aimDelta,savedMatrix);
+            pitch2=-func_L00_001FF860(func_001F9CE8(aimDelta),aimDelta[2]);
+            yaw2=-func_L00_001FF860(aimDelta[0],aimDelta[1]);
+            bound=0.7853982f;
+            if(pitch2>bound || pitch2<(bound=-0.7853982f)) pitch2=bound;
+            if(yaw2>0.34906584f) yaw2=0.34906584f;
+            else if(yaw2<-0.34906584f) yaw2=-0.34906584f;
+            *(float *)(d+0x294)=pitch2;*(float *)(d+0x298)=yaw2;
+        }
+    }
+    func_L00_00263950(m,d+0x130,1,D_0015EE64*0.03f,D_0015EE64*0.3f);
+    func_L00_00263950(m,d+0x1B0,2,D_0015EE64*0.03f,D_0015EE64*0.3f);
+    func_L00_00263950(m,d+0x230,3,D_0015EE64*0.03f,D_0015EE64*0.3f);
+}
+extern float func_002140F8(float,float);
+extern void func_0020DAF8(void*,int,void*);
+extern void func_001F9BC0(void*);
+extern void func_L00_00258DB0(float*,float,float);
+extern int func_001FA8A8(int,int,float);
+extern char *func_00219780(void*,void*,void*,int,int,int,int,int,int);
+/* Emit randomized joint particles while the moby is active. */
+void func_L16_002D5CD0(char *m) {
+    float matrix[16],velocity[4],acceleration[4],scatter[4];
+    int i;
+    if(*(unsigned char*)(m+0x31)==0 || *(unsigned char*)(m+0x20)==10) return;
+    for(i=0;i<2;i++) {
+        float speed,z;
+        int color1,color2,time1,time2,time3;
+        if(func_002140F8(0.0f,1.0f)>0.75f) continue;
+        func_0020DAF8(m,i+4,matrix);
+        speed=(func_002140F8(-0.2f,0.2f)+1.0f)*-3.0f*D_0015EE6C;
+        func_L00_001FF4B0(velocity,matrix+8,speed);
+        {float component=(func_002140F8(-0.2f,0.2f)+1.0f)*-2.0f;
+        z=component*D_0015EE6C;}
+        func_001F9BC0(acceleration);
+        acceleration[2]=z;
+        z=func_002140F8(-1.5f,1.5f)*D_0015EE6C;
+        func_L00_00258DB0(scatter,z,z);
+        func_001F9BD8(acceleration,acceleration,scatter);
+        velocity[3]=func_002140F8(0.2f,0.2f);
+        acceleration[3]=func_002140F8(0.4f,0.4f);
+        color1=func_001FA8A8(0x801010FF,0x801080FF,func_002140F8(0.0f,1.0f));
+        color2=func_001FA8A8(0x400000C0,0x4030FFFF,func_002140F8(0.0f,1.0f));
+        time1=func_001FA898(func_001F9878((func_002140F8(-0.1f,0.1f)+1.0f)*5.0f));
+        time2=func_001FA898(func_001F9878((func_002140F8(-0.1f,0.1f)+1.0f)*20.0f));
+        time3=func_001FA898(func_001F9878((func_002140F8(-0.1f,0.1f)+1.0f)*20.0f));
+        func_00219780(matrix+12,velocity,acceleration,color1,color2,time1,time2,time3,-1);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L16_002E3740);
 INCLUDE_ASM("asm/overlays", func_L16_002E3FC8);
 INCLUDE_ASM("asm/overlays", func_L16_002E42F0);
