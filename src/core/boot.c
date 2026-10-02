@@ -4,7 +4,7 @@
 /*
  * boot.cpp (0x12DA38-0x12DB68): ParseBin and main. crt0 calls func_0012DB18
  * as main. From 0x12DB18 on the compiler spills s-registers with sq (see
- * tools/fix_core_spills.py). Name from bordplate's NTSC RC1 split.
+ * tools/fix_core_spills.py). Name from the NTSC split.
  */
 
 /* Declarations in scope here before the split. */

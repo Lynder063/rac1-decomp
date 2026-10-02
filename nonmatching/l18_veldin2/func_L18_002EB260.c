@@ -1,16 +1,20 @@
 /* NON_MATCHING func_L18_002EB260 -- src/overlays/l18_veldin2/vendor_002A8400.c
- * Best so far: BYTES 15/640 (97.7% of the bytes match), checked 2026-10-01.
+ * Best so far: BYTES 11/640 (98.3% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
- *   # Round 1
- *   UpdateMoby_983 (level 18): eases two angle fields (data+0x2C/+0x30) toward gp-float targets via func_001FA748;
- *   Best p7.c: BYTES 17/640 (size matches). Mattered: switch for case tree, unsigned char state, qcopy for the 16-
- *   Remaining: float const regs: retail keeps 2.0 in $f22 and 5.0 in $f21 (ours swapped, so $f12/$f13 arg movs and
+ *   Three of the 15 bytes were a **wrong symbol**: the candidate took the address of
+ *   `func_L18_002D9B00` (level 18's own function at 0x2D9B00) where retail takes the
+ *   address of the shared `func_L15_002D9B00`, which in level 18 lives at 0x2ECDE8 --
+ *   same hex digits, different function. config/overlays/functions.tsv has both, so
+ *   nothing flagged it. BYTES 15 -> 11.
+ *   Remaining: 2.0f and 5.0f are in the other saved FP registers ($f21/$f22 swapped).
+ *   Giving either one a local lets gcc hoist it out of both func_L00_0025A8E8 calls
+ *   and loses 8 bytes (r2, r3: SIZE 632/640), so that is not the way.
  */
 #include "common.h"
 extern void func_001F49B0(void (*)(void), void *);
-extern void func_L18_002D9B00(char *);
+extern void func_L15_002D9B00(char *);
 extern float func_001FA748(float, float);
 extern float D_0015EE6C MACRO_ADDR;
 extern short D_L18_00161F60;
@@ -60,7 +64,7 @@ void func_L18_002EB260(char *moby) {
         func_001F9BD8(q, q, p);
         func_L18_002EC0C8(moby);
         func_L18_002EC290(moby);
-        func_001F49B0((void (*)(void))func_L18_002D9B00, moby);
+        func_001F49B0((void (*)(void))func_L15_002D9B00, moby);
         if (len < lim) {
             func_L18_002EBBF0(moby);
             func_0020D678(moby);

@@ -4,7 +4,7 @@
 /*
  * 989snd.c (0x12DB68-0x12F308): 989 Studios' sound library. The
  * "/usr/local/989snd/ee/989snd.c" path string is used from 0x12DBE0 on.
- * Name and extent from bordplate's NTSC RC1 split, shifted +0x140.
+ * Name and extent from the NTSC split, shifted +0x140.
  */
 
 /* Declarations in scope here before the split. */

@@ -3,8 +3,7 @@
 
 /*
  * partproc.cpp in the original source; text 0x218928-0x219780.
- * Name and boundary from the NTSC split in bordplate's RC1 project
- * (codeberg.org/bordplate/RC1), mapped to PAL by matching function
+ * Name and boundary from the NTSC split of this game, mapped to PAL by matching function
  * sizes -- see docs/DECOMP_PROGRESS.md. Compiled as C for now.
  */
 

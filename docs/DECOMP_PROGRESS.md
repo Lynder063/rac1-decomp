@@ -1182,8 +1182,8 @@ function is at its retail address.
 0x12DB18 is 989snd.c. That was wrong. crt0 calls `func_0012DB18` as
 **main**, so 0x12DB18 is boot.cpp's `main`, and splat had merged the start
 of 989snd into it. The ELF entry point (0x12D868 = `_start`) gives the
-NTSC-to-PAL shift for this stretch (+0x140). With it, bordplate's NTSC
-split maps onto code boundaries PAL confirms:
+NTSC-to-PAL shift for this stretch (+0x140). With it, the NTSC
+RC1 split maps onto code boundaries PAL confirms:
 
 | object | PAL | evidence |
 |---|---|---|
@@ -1199,7 +1199,7 @@ boundary. `fix_core_spills.py` keys on the address, so the build is
 unaffected. Rebuilt byte-identical, still 364 exact.
 
 **`text` is split too (58 files, named after the originals).** Evidence and method:
-- bordplate's NTSC project RC1 (codeberg.org/bordplate/RC1) splits NTSC
+- The NTSC project RC1 splits NTSC
   `text` into the original source files (`hud.cpp`, `camera.cpp`,
   `mobyfunc.cpp`, `movie/*.cpp`, plus handwritten asm modules such as
   `mobyproc`), and lists each file's functions in order.
@@ -1334,7 +1334,7 @@ in `src/game/pause.c`, ready if that ever changes.
 
 ## Real function names (259), from RC1
 
-`config/symbol_names.txt` maps 259 of the 393 names in bordplate's NTSC
+`config/symbol_names.txt` maps 259 of the 393 names in RC1's NTSC
 `symbols.txt` onto this PAL build. Each comes with its evidence, and only
 confident mappings are included:
 - **text:** the NTSC function sits on a function-size-aligned match (the

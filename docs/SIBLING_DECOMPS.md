@@ -7,7 +7,6 @@ mapped retail's flags for a later game. None is part of this build.
 Clone them next to this repository:
 
 ```sh
-git clone https://codeberg.org/bordplate/RC1 ~/Projects/RC1
 git clone https://github.com/re-rac/rerac ~/Projects/rerac
 git clone https://github.com/mateuszklysz/Lombyte ~/Projects/Lombyte
 git clone https://github.com/vetusmagnus/ratchet-uya-decomp ~/Projects/ratchet-uya-decomp
@@ -19,7 +18,7 @@ git clone https://github.com/vetusmagnus/ratchet-uya-decomp ~/Projects/ratchet-u
 executable, `SCUS_971.99`. Its code is ours, compiled for another
 region, so a function it has matched is the best starting point we
 have. It keeps one C file per function under `src/`, with names
-recovered from bordplate's [RC1](https://codeberg.org/bordplate/RC1).
+recovered from RC1.
 
 Its percentage leaves out SIMD, VU0 and COP2 helpers ("intentional
 asm"), so it reads higher than ours for about the same amount of
@@ -84,9 +83,9 @@ whose body is `do { ... } while (0)`. That is the original source, not
 an artificial barrier, but `tools/integrate.py` refuses any `while (0)`,
 so such a candidate is landed by hand after review.
 
-## bordplate/RC1: the same game, NTSC, with per-file flags
+## RC1: the same game, NTSC, with per-file flags
 
-[RC1](https://codeberg.org/bordplate/RC1) matches the US boot ELF with
+RC1 matches the US boot ELF with
 EE-GCC 2.95.2 (`-G8 -O2 -ffast-math -fno-exceptions`, SN's assembler
 optional). Its hand-named `config/symbols.txt` is where
 `config/symbol_names.txt` came from. Since 2026-09 an automated loop
@@ -267,23 +266,7 @@ byte-identical between RAC1 and RAC2:
 - `FUN_00312E10` (byte flag check at `+0x20`, matching `FUN_L00_002d8128`)
 - `FUN_003505E0` (Ring buffer FIFO consumption at `base + 0x50000`, matching `FUN_L00_002ef300` in `runtime_buffers_002ef300.c`)
 
-### 2. Authentic STABS Types (Deadlocked Prototype Leak)
-While `rac2-decomp`'s repository does not contain raw symbol files, the community
-research archive (`#rac-ps2-reverse-engineering`) mined the **Ratchet: Deadlocked
-(Sep 13, 2005 prototype)**, which retained an unstripped `.mdebug` section with
-full STABS types (`rac4_symbols.txt` via `ccc`):
-- **`MobyInstance` (256 bytes / 0x100)**: Proves the demangled symbol
-  `InitMobyInstance(MobyInstance *, int)`. Defines exact fields: `bSphere` (0x00),
-  `pos` (0x10), `state` (0x20), `group` (0x21), `mClass` (0x22), `alpha` (0x23),
-  `pClass` (0x24), `pChain` (0x28), `occlIndex` (0x2E), `modeBits` (0x34),
-  `lights` (0x38), `animSeq` (0x40), `pUpdate` (0xA8), `pVar` (0xAC), `UID` (0xB2),
-  `oClass` (0xBC), `rMtx` (0xC0), `rot` (0xF0).
-- **`Hero` Class**: Confirms player character physics, jump transitions,
-  weapon equipping, and animation blending architecture (`UpdateArmBlender`,
-  `UpdateHeadBlender`, `ComputeTargetScore`, `GetAutoTargetMoby`).
-- **Math Library**: `vec4` (128-bit vector), `BSphere`, `mtx4`, `mtx3`, `quat`.
-
-### 3. Shared Enums & Systems
+### 2. Shared Enums & Systems
 - **RaC1 Gadget Enum**: 29 gadgets (`GADGET_BOMB_GLOVE` = 0 through `GADGET_PERSUADER` = 28)
   reused directly by RaC2's save-import system.
 - **Memory Card FSM (`CardState`)**: Identical 25-state machine (`CS_INIT` to `CS_PROMPT_BEGIN_NOSAVE`).

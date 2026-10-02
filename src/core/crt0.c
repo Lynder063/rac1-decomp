@@ -4,7 +4,7 @@
 /*
  * crt0 (0x12D868-0x12DA38): the program entry point. The ELF's e_entry is
  * 0x12D868, and _exit ends right before boot.cpp. Name and extent from
- * bordplate's NTSC RC1 split, shifted by the entry point (+0x140).
+ * the NTSC split, shifted by the entry point (+0x140).
  */
 
 /* Declarations in scope here before the split. */

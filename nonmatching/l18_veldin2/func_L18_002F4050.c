@@ -1,16 +1,16 @@
 /* NON_MATCHING func_L18_002F4050 -- src/overlays/l18_veldin2/vendor_002F2AE0.c
- * Best so far: BYTES 10457/12840 (18.6% of the bytes match), checked 2026-10-02.
+ * Best so far: BYTES 9006/12840 (29.9% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
- *   `code_r0x002f6410` are `moby[0x20] = 0xC` (with `*(int *)(d + 0x350) = n`).
- *   Written out in each case, gcc's crossjump produces retail's shared tail.
- *   - Three callees have to be reached through an `__asm__` alias, because the
- *   file's own prototype for them uses a typedef declared further down the file
- *   (`func_L18_002F8680`) or the name is declared with a different type than this
- *   call needs (`func_L18_002F8CE0` as a callback, `D_L18_00162408`).
- *   - Nothing is landed until the whole function is EXACT, so this candidate is of no
- *   use to the report yet; it is a work in progress kept here on purpose.
+ *   - Case 0x13 reads everything off the one VG base, as retail does: D_0013F9B0 is
+ *   **VG + 0x560** and the player position **VG + 0x80** (c49, 105 hunks but 4
+ *   bytes over; folded into c52).
+ *   - Tried and a wash: flipping the two FP clamp comparisons to `120.0f < e` /
+ *   `60.0f > e` to get retail's `c.lt.s`/`bc1f` instead of `c.le.s`/`bc1t` (c51,
+ *   105 hunks) -- it fixes some sites and breaks others, so it has to be done per
+ *   site, not globally.
+ *   - Tried and worse: a local for the D_L18_0016D2E0 base in case 7 (c50, 108).
  */
 /* func_L18_002F4050 -- UpdateMoby_1422 (level 18), 12840 bytes.
  * From build-sn/ghidra/l18/out/func_L18_002F4050.c, globals mapped back to
@@ -129,7 +129,6 @@ extern float func_00214D88(float, float, float, float, float *, float *);
 extern int func_001FA8A8(int, int, float);
 extern void func_001F49B0(void (*)(void), void *);
 extern float D_0015EE64 MACRO_ADDR;
-extern short D_L18_0016D32A;
 /* 18 arguments; the file's shared sibling spells it the same way. The two call
    sites' lists were read off the retail assembly, because Ghidra prints only
    the eight integer arguments that go in registers. */
@@ -561,7 +560,8 @@ void func_L18_002F4050(unsigned char *moby) {
         }
         break;
     case 5:
-        b = (char *)D_L18_00160058 + *(int *)(d + 0x21C) * 0x100 + 0x10;
+        b = (char *)((*(int *)(d + 0x21C) << 8) + (int)D_L18_00160058);
+        b += 0x10;
         D_L18_00162420 = 0;
         v0[0] = func_001F9F90(0.0f) * 6.0f;
         v0[1] = func_001F9FA8(0.0f) * 6.0f;
@@ -579,12 +579,12 @@ void func_L18_002F4050(unsigned char *moby) {
         v2[1] = 0.17453292f;
         v3[1] = 0.5236f;
         v3[2] = 3.9269907f;
-        b = D_L18_0016016C + *(int *)(d + 0x298) * 0x80;
+        b = (char *)((*(int *)(d + 0x298) << 7) + (int)D_L18_0016016C);
         qcopy((char *)v4, b + 0x30);
         v4[2] = *(float *)(b + 0x38);
         v4[3] = *(float *)(b + 0x78);
         func_L18_002E0E90(*(char **)(d + 0x334), v0, v1, v2, v3, v4,
-                          D_L18_00162424, D_L18_00162428, 0);
+                          D_L18_00162424, D_L18_00162428, 1);
         *(int *)(D_0013E633_u + 0x2EE1) = 3;
         moby[0x20] = 8;
         func_L18_002D9358((unsigned char *)D_L18_00160058 +
@@ -688,8 +688,8 @@ void func_L18_002F4050(unsigned char *moby) {
                 t = (int *)(d + 0x280);
                 for (i = 2; i >= 0; i--) {
                     float w;
-                    b = D_L18_0016016C + *t * 0x80;
-                    qcopy((char *)v0, b + 0x30);
+                    char *bb = (char *)((*t << 7) + (int)D_L18_0016016C);
+                    qcopy((char *)v0, bb + 0x30);
                     w = func_001FA850(
                         func_L00_001FF860(*(float *)(d + 0x3C0) - *(float *)(g + 0x80),
                                           *(float *)(d + 0x3C4) - *(float *)(g + 0x84)),
@@ -787,10 +787,11 @@ void func_L18_002F4050(unsigned char *moby) {
             if (func_002140B0(5) != 0 || *(int *)(d + 0xB4) == 2) {
                 float a;
                 float r;
-                if (*(int *)(d + 0xB4) == 2) {
-                    qcopy((char *)v1, (char *)(float *)(D_0013E633_u + 0xE9D));
-                } else {
-                    qcopy((char *)v1, d + 0x70);
+                {
+                    char *src = *(int *)(d + 0xB4) == 2
+                                    ? (char *)(D_0013E633_u + 0xE9D)
+                                    : d + 0x70;
+                    qcopy((char *)v1, src);
                 }
                 a = func_00214158();
                 r = func_002140F8(1.0f, 10.0f);
@@ -998,13 +999,14 @@ void func_L18_002F4050(unsigned char *moby) {
                 fire = 0;
             }
         }
-        if (*(int *)(g13 + 0x208C) == 0xF &&
-            func_001F9D48((float *)(D_0013E633_u + 0xE9D),
-                          *(char **)(D_0013E633_u + 0x137D) + **(int **)(D_0013E633_u + 0x137D) * 16) < 3.0f) {
-            fire = 1;
+        if (*(int *)(g13 + 0x208C) == 0xF) {
+            char *list = *(char **)(g13 + 0x560);
+            if (func_001F9D48(g13 + 0x80, list + *(int *)list * 16) < 3.0f) {
+                fire = 1;
+            }
         }
         if (*(int *)(g13 + 0x2084) == 0x16 &&
-            func_001F9D48((char *)moby + 0x10, (float *)(D_0013E633_u + 0xE9D)) < 12.0f) {
+            func_001F9D48((char *)moby + 0x10, g13 + 0x80) < 12.0f) {
             fire = 1;
         }
         if (func_001F9D48((float *)(D_0013E633_u + 0xE9D),
@@ -1139,7 +1141,7 @@ void func_L18_002F4050(unsigned char *moby) {
         if (k < 7) {
             func_L00_00299B68(3);
             *(int *)(d + 0x34C) = 7;
-            D_L18_0016D32A = 1;
+            ((char *)D_L18_0016D2E0_s)[0x4A] = 1;
             b = D_L18_0016016C + *(int *)(d + 0x294) * 0x80;
             qcopy((char *)D_L18_0016D2F0, b + 0x30);
             qcopy((char *)D_L18_0016D300, b + 0x70);
@@ -1247,8 +1249,9 @@ void func_L18_002F4050(unsigned char *moby) {
         int c = func_001FA8A8(0x30C8C8C8, 0x1C393939,
                               func_001F9FA8(*(float *)(d + 0x3B4)) * 0.5f + 0.5f);
         *(int *)((char *)moby + 0x90) = c;
-        *(int *)(d + 0x3B8) = (c & 0xFF000000) | ((c >> 0x10) & 0xFF) / 3 << 0x10 |
-                              (c & 0xFF00) | (c & 0xFF) / 3;
+        *(int *)(d + 0x3B8) = (int)((unsigned int)c >> 24 << 24) |
+                              ((c >> 0x10) & 0xFF) / 3 << 0x10 | (c & 0xFF00) |
+                              (c & 0xFF) / 3;
     }
     if (moby[0x31] != 0) {
         {

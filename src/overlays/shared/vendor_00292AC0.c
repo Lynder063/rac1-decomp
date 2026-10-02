@@ -110,7 +110,14 @@ char *func_L03_002C59A0(char *owner, float *pos, float *dir, short ang, int arg)
     return m;
 }
 INCLUDE_ASM("asm/overlays", func_L03_002C5AE0);
-INCLUDE_ASM("asm/overlays", func_L03_002C8028);
+/* moby state predicate: true when field 0xA6 is 0x23E and the state byte is 0xE */
+int func_L03_002C8028(char *moby) {
+    if (*(short *)(moby + 0xA6) == 0x23E &&
+        ((unsigned char *)moby)[0x20] == 0xE) {
+        return 1;
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L03_002C8058);
 INCLUDE_ASM("asm/overlays", func_L03_002CDDC8);
 INCLUDE_ASM("asm/overlays", func_L03_002CF600);
@@ -141,7 +148,24 @@ char *func_L03_002D65D0(char *a, char *pos, int c, int d, float f)
 INCLUDE_ASM("asm/overlays", func_L03_002DC848);
 INCLUDE_ASM("asm/overlays", func_L03_002DD6D8);
 INCLUDE_ASM("asm/overlays", func_L03_002DD840);
-INCLUDE_ASM("asm/overlays", func_L03_002DDD78);
+extern void func_L02_002A5238(char *, float, int);
+extern void func_001F49B0(void (*)(void), void *);
+extern void func_00216270(void);
+extern char D_L03_001DC460[];
+
+/* moby update: state 0 plays a sound and arms state 1, state 1 registers a draw callback */
+void func_L03_002DDD78(unsigned char *moby) {
+    switch (moby[0x20]) {
+    case 0:
+        func_L02_002A5238(D_L03_001DC460, 0.6666667f, 0x20);
+        moby[0x20] = 1;
+        moby[0x30] = 0xFF;
+        break;
+    case 1:
+        func_001F49B0(func_00216270, moby);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L03_002DDDF8);
 INCLUDE_ASM("asm/overlays", func_L03_002DDE28);
 INCLUDE_ASM("asm/overlays", func_L03_002DDED8);

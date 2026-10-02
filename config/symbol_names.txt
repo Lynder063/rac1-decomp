@@ -1,5 +1,5 @@
-# Real function names for this PAL build, from bordplate's NTSC project RC1
-# (codeberg.org/bordplate/RC1, config/symbols.txt), mapped to PAL addresses.
+# Real function names for this PAL build, from the NTSC project RC1
+# (config/symbols.txt), mapped to PAL addresses.
 # Only confident mappings are listed; see docs/DECOMP_PROGRESS.md.
 #
 # The build and tools keep using func_<ADDR> (the address IS the name there);

@@ -2,7 +2,7 @@
 #include "structs.h"
 
 /*
- * permcb.cpp (0x12F308-0x12F348). Name from bordplate's NTSC RC1 split.
+ * permcb.cpp (0x12F308-0x12F348). Name from the NTSC split.
  */
 
 /* Declarations in scope here before the split. */

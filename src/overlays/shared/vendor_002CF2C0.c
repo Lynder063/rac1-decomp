@@ -197,7 +197,36 @@ void func_L05_0030D500(unsigned char *m) {
 }
 INCLUDE_ASM("asm/overlays", func_L05_0030D678);
 INCLUDE_ASM("asm/overlays", func_L05_0030DA08);
-INCLUDE_ASM("asm/overlays", func_L05_003188A8);
+typedef struct {
+    char pad0[0x44];
+    short n;
+    char pad1[0x132];
+    char *m[1];
+} G;
+extern int D_L05_0015F6A8 MACRO_ADDR;
+extern unsigned char D_0015EEB0[] MACRO_ADDR;
+extern G D_L05_0016CD60;
+extern unsigned char D_L05_0017C9A0[];
+extern short D_L05_00161FA8;
+
+/* Resets the marker record's scale once for every moby sharing this one's class, while the level flag is 2. */
+void func_L05_003188A8(char *a) {
+    if (D_L05_0015F6A8 == 2 && D_0015EEB0[0] != 0) {
+        int i;
+        for (i = 0; i < D_L05_0016CD60.n; i++) {
+            char *moby = D_L05_0016CD60.m[i];
+            if (*(short *)(moby + 0xA6) == *(short *)(a + 0xA6)) {
+                unsigned char *q = D_L05_0017C9A0;
+                if (q[1] == 0) {
+                    func_0020D960(moby, 0, q);
+                    *(float *)(q + 0x20) = *(float *)&D_L05_00161FA8;
+                    *(float *)(q + 0x24) = *(float *)&D_L05_00161FA8;
+                    *(float *)(q + 0x28) = *(float *)&D_L05_00161FA8;
+                }
+            }
+        }
+    }
+}
 extern float func_002140F8(float, float);
 extern float D_0015EE6C MACRO_ADDR;
 
