@@ -266,23 +266,7 @@ byte-identical between RAC1 and RAC2:
 - `FUN_00312E10` (byte flag check at `+0x20`, matching `FUN_L00_002d8128`)
 - `FUN_003505E0` (Ring buffer FIFO consumption at `base + 0x50000`, matching `FUN_L00_002ef300` in `runtime_buffers_002ef300.c`)
 
-### 2. Authentic STABS Types (Deadlocked Prototype Leak)
-While `rac2-decomp`'s repository does not contain raw symbol files, the community
-research archive (`#rac-ps2-reverse-engineering`) mined the **Ratchet: Deadlocked
-(Sep 13, 2005 prototype)**, which retained an unstripped `.mdebug` section with
-full STABS types (`rac4_symbols.txt` via `ccc`):
-- **`MobyInstance` (256 bytes / 0x100)**: Proves the demangled symbol
-  `InitMobyInstance(MobyInstance *, int)`. Defines exact fields: `bSphere` (0x00),
-  `pos` (0x10), `state` (0x20), `group` (0x21), `mClass` (0x22), `alpha` (0x23),
-  `pClass` (0x24), `pChain` (0x28), `occlIndex` (0x2E), `modeBits` (0x34),
-  `lights` (0x38), `animSeq` (0x40), `pUpdate` (0xA8), `pVar` (0xAC), `UID` (0xB2),
-  `oClass` (0xBC), `rMtx` (0xC0), `rot` (0xF0).
-- **`Hero` Class**: Confirms player character physics, jump transitions,
-  weapon equipping, and animation blending architecture (`UpdateArmBlender`,
-  `UpdateHeadBlender`, `ComputeTargetScore`, `GetAutoTargetMoby`).
-- **Math Library**: `vec4` (128-bit vector), `BSphere`, `mtx4`, `mtx3`, `quat`.
-
-### 3. Shared Enums & Systems
+### 2. Shared Enums & Systems
 - **RaC1 Gadget Enum**: 29 gadgets (`GADGET_BOMB_GLOVE` = 0 through `GADGET_PERSUADER` = 28)
   reused directly by RaC2's save-import system.
 - **Memory Card FSM (`CardState`)**: Identical 25-state machine (`CS_INIT` to `CS_PROMPT_BEGIN_NOSAVE`).
