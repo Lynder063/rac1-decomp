@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L18_002F4050 -- src/overlays/l18_veldin2/vendor_002F2AE0.c
- * Best so far: BYTES 9052/12840 (29.5% of the bytes match), checked 2026-10-02.
+ * Best so far: BYTES 9051/12840 (29.5% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -560,7 +560,8 @@ void func_L18_002F4050(unsigned char *moby) {
         }
         break;
     case 5:
-        b = (char *)D_L18_00160058 + *(int *)(d + 0x21C) * 0x100 + 0x10;
+        b = (char *)((*(int *)(d + 0x21C) << 8) + (int)D_L18_00160058);
+        b += 0x10;
         D_L18_00162420 = 0;
         v0[0] = func_001F9F90(0.0f) * 6.0f;
         v0[1] = func_001F9FA8(0.0f) * 6.0f;
@@ -578,7 +579,7 @@ void func_L18_002F4050(unsigned char *moby) {
         v2[1] = 0.17453292f;
         v3[1] = 0.5236f;
         v3[2] = 3.9269907f;
-        b = D_L18_0016016C + *(int *)(d + 0x298) * 0x80;
+        b = (char *)((*(int *)(d + 0x298) << 7) + (int)D_L18_0016016C);
         qcopy((char *)v4, b + 0x30);
         v4[2] = *(float *)(b + 0x38);
         v4[3] = *(float *)(b + 0x78);
