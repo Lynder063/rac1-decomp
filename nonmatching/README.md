@@ -32,7 +32,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_002136A8`](shared/func_L00_002136A8.c) | shared | 708 | BYTES 6/708 | 99.2% |
 | [`func_L00_0028C478`](shared/func_L00_0028C478.c) | shared | 660 | BYTES 6/660 | 99.1% |
 | [`func_L08_002DD440`](l08_batalia/func_L08_002DD440.c) | l08_batalia | 184 | BYTES 2/184 | 98.9% |
-| [`func_L18_002D70E8`](l18_veldin2/func_L18_002D70E8.c) | l18_veldin2 | 552 | BYTES 6/552 | 98.9% |
 | [`func_L01_002F9640`](l01_novalis/func_L01_002F9640.c) | l01_novalis | 708 | BYTES 8/708 | 98.9% |
 | [`func_L00_0020BFD8`](shared/func_L00_0020BFD8.c) | shared | 1424 | BYTES 17/1424 | 98.8% |
 | [`func_L03_002DDF90`](l03_kerwan/func_L03_002DDF90.c) | l03_kerwan | 248 | BYTES 3/248 | 98.8% |
