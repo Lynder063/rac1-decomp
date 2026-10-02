@@ -1,16 +1,16 @@
 /* NON_MATCHING func_L18_002F4050 -- src/overlays/l18_veldin2/vendor_002F2AE0.c
- * Best so far: BYTES 9047/12840 (29.5% of the bytes match), checked 2026-10-02.
+ * Best so far: BYTES 9006/12840 (29.9% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
- *   `code_r0x002f6410` are `moby[0x20] = 0xC` (with `*(int *)(d + 0x350) = n`).
- *   Written out in each case, gcc's crossjump produces retail's shared tail.
- *   - Three callees have to be reached through an `__asm__` alias, because the
- *   file's own prototype for them uses a typedef declared further down the file
- *   (`func_L18_002F8680`) or the name is declared with a different type than this
- *   call needs (`func_L18_002F8CE0` as a callback, `D_L18_00162408`).
- *   - Nothing is landed until the whole function is EXACT, so this candidate is of no
- *   use to the report yet; it is a work in progress kept here on purpose.
+ *   - Case 0x13 reads everything off the one VG base, as retail does: D_0013F9B0 is
+ *   **VG + 0x560** and the player position **VG + 0x80** (c49, 105 hunks but 4
+ *   bytes over; folded into c52).
+ *   - Tried and a wash: flipping the two FP clamp comparisons to `120.0f < e` /
+ *   `60.0f > e` to get retail's `c.lt.s`/`bc1f` instead of `c.le.s`/`bc1t` (c51,
+ *   105 hunks) -- it fixes some sites and breaks others, so it has to be done per
+ *   site, not globally.
+ *   - Tried and worse: a local for the D_L18_0016D2E0 base in case 7 (c50, 108).
  */
 /* func_L18_002F4050 -- UpdateMoby_1422 (level 18), 12840 bytes.
  * From build-sn/ghidra/l18/out/func_L18_002F4050.c, globals mapped back to
@@ -787,10 +787,11 @@ void func_L18_002F4050(unsigned char *moby) {
             if (func_002140B0(5) != 0 || *(int *)(d + 0xB4) == 2) {
                 float a;
                 float r;
-                if (*(int *)(d + 0xB4) == 2) {
-                    qcopy((char *)v1, (char *)(float *)(D_0013E633_u + 0xE9D));
-                } else {
-                    qcopy((char *)v1, d + 0x70);
+                {
+                    char *src = *(int *)(d + 0xB4) == 2
+                                    ? (char *)(D_0013E633_u + 0xE9D)
+                                    : d + 0x70;
+                    qcopy((char *)v1, src);
                 }
                 a = func_00214158();
                 r = func_002140F8(1.0f, 10.0f);
@@ -998,13 +999,14 @@ void func_L18_002F4050(unsigned char *moby) {
                 fire = 0;
             }
         }
-        if (*(int *)(g13 + 0x208C) == 0xF &&
-            func_001F9D48((float *)(D_0013E633_u + 0xE9D),
-                          *(char **)(D_0013E633_u + 0x137D) + **(int **)(D_0013E633_u + 0x137D) * 16) < 3.0f) {
-            fire = 1;
+        if (*(int *)(g13 + 0x208C) == 0xF) {
+            char *list = *(char **)(g13 + 0x560);
+            if (func_001F9D48(g13 + 0x80, list + *(int *)list * 16) < 3.0f) {
+                fire = 1;
+            }
         }
         if (*(int *)(g13 + 0x2084) == 0x16 &&
-            func_001F9D48((char *)moby + 0x10, (float *)(D_0013E633_u + 0xE9D)) < 12.0f) {
+            func_001F9D48((char *)moby + 0x10, g13 + 0x80) < 12.0f) {
             fire = 1;
         }
         if (func_001F9D48((float *)(D_0013E633_u + 0xE9D),
