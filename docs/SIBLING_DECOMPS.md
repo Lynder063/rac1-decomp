@@ -7,7 +7,6 @@ mapped retail's flags for a later game. None is part of this build.
 Clone them next to this repository:
 
 ```sh
-git clone https://codeberg.org/bordplate/RC1 ~/Projects/RC1
 git clone https://github.com/re-rac/rerac ~/Projects/rerac
 git clone https://github.com/mateuszklysz/Lombyte ~/Projects/Lombyte
 git clone https://github.com/vetusmagnus/ratchet-uya-decomp ~/Projects/ratchet-uya-decomp
@@ -19,7 +18,7 @@ git clone https://github.com/vetusmagnus/ratchet-uya-decomp ~/Projects/ratchet-u
 executable, `SCUS_971.99`. Its code is ours, compiled for another
 region, so a function it has matched is the best starting point we
 have. It keeps one C file per function under `src/`, with names
-recovered from bordplate's [RC1](https://codeberg.org/bordplate/RC1).
+recovered from RC1.
 
 Its percentage leaves out SIMD, VU0 and COP2 helpers ("intentional
 asm"), so it reads higher than ours for about the same amount of
@@ -84,9 +83,9 @@ whose body is `do { ... } while (0)`. That is the original source, not
 an artificial barrier, but `tools/integrate.py` refuses any `while (0)`,
 so such a candidate is landed by hand after review.
 
-## bordplate/RC1: the same game, NTSC, with per-file flags
+## RC1: the same game, NTSC, with per-file flags
 
-[RC1](https://codeberg.org/bordplate/RC1) matches the US boot ELF with
+RC1 matches the US boot ELF with
 EE-GCC 2.95.2 (`-G8 -O2 -ffast-math -fno-exceptions`, SN's assembler
 optional). Its hand-named `config/symbols.txt` is where
 `config/symbol_names.txt` came from. Since 2026-09 an automated loop

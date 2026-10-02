@@ -3,8 +3,7 @@
 
 /*
  * movie/vibuf.cpp in the original source; text 0x23CEC8-0x23DE98.
- * Name and boundary from the NTSC split in bordplate's RC1 project
- * (codeberg.org/bordplate/RC1), mapped to PAL by matching function
+ * Name and boundary from the NTSC split of this game, mapped to PAL by matching function
  * sizes -- see docs/DECOMP_PROGRESS.md. Compiled as C for now.
  */
 

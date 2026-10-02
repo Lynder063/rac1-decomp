@@ -3,8 +3,7 @@
 # Makefile.sn, rac1.ld.sh and the tools all read this file.
 #
 # text has no linker fill between objects. The file names and boundaries
-# come from the NTSC split in bordplate's RC1 project
-# (codeberg.org/bordplate/RC1), mapped to this PAL build by matching
+# come from the NTSC split of this game, mapped to this PAL build by matching
 # function sizes, and each checked against the PAL code (a return right
 # before, a function start right at it); see docs/DECOMP_PROGRESS.md.
 

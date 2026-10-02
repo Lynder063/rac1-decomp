@@ -29,7 +29,7 @@ own, and a macro for them would shadow the real library spelling.
 
 | Tier | In names.h | Meaning |
 |---|---|---|
-| recovered | yes | the original identifier: `config/symbol_names.txt`; bordplate's RC1 `symbols.txt` as it stood before its 2026-09 automated naming loop; a symbol Lombyte recovered |
+| recovered | yes | the original identifier: `config/symbol_names.txt`; RC1's `symbols.txt` as it stood before its 2026-09 automated naming loop; a symbol Lombyte recovered |
 | descriptive | yes | a later name with evidence: RC1's 2026-09 names, a Lombyte proposal of high confidence, a ReRAC name marked verified, the PAL memory map (globals) |
 | candidate | no | weaker: Lombyte medium confidence, ReRAC suggested or inferred, or a name another symbol already took. Shown in dossiers for workers |
 
@@ -39,7 +39,7 @@ one symbol only.
 
 ## Sources (all RaC1)
 
-- **bordplate/RC1** (codeberg.org/bordplate/RC1): matching NTSC
+- **RC1**: matching NTSC
   decompilation; `config/symbols.txt`, mangled GCC 2.x names demangled to
   the base name (`Class_method` for members).
 - **Lombyte** (github.com/mateuszklysz/Lombyte, MIT): matching US

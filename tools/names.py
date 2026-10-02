@@ -14,7 +14,7 @@ config/names.tsv is the committed table; `build` regenerates it and needs
 the other RaC1 projects checked out (paths from the environment, defaults
 in parentheses):
 
-  RC1       bordplate's NTSC decompilation (~/Projects/RC1)
+  RC1       the NTSC decompilation (~/Projects/RC1)
   LOMBYTE   Lombyte, the US decompilation (~/Projects/Lombyte)
   RERAC     ReRAC, the PC port, for its Ghidra name tables (~/Projects/rerac)
 
@@ -25,7 +25,7 @@ Every row is one symbol of ours with one chosen name, its tier, where the
 name came from and the evidence that placed it on this PAL address:
 
   recovered    the original identifier: from config/symbol_names.txt,
-               bordplate's symbols.txt as it stood before its 2026-09
+               RC1's symbols.txt as it stood before its 2026-09
                automated naming loop, or a symbol Lombyte recovered
   descriptive  a later, evidence-backed name: RC1's 2026-09 names, a
                Lombyte proposal of high confidence, a ReRAC name it marks
@@ -65,7 +65,7 @@ LOMBYTE = Path(os.environ.get("LOMBYTE", HOME / "Lombyte"))
 RERAC = Path(os.environ.get("RERAC", HOME / "rerac"))
 
 TIERS = ("recovered", "descriptive", "candidate")
-# bordplate's automated naming loop started in 2026-09; symbols.txt as of
+# RC1's automated naming loop started in 2026-09; symbols.txt as of
 # the last commit before it holds only the hand-made names.
 RC1_LOOP_START = "2026-09-01"
 MINRUN = 4
@@ -230,7 +230,7 @@ def build() -> None:
     def add(sym, name, tier, prio, source, evidence):
         cands[sym].append((TIERS.index(tier), prio, name, source, evidence))
 
-    # 1. config/symbol_names.txt (bordplate's names already placed on PAL).
+    # 1. config/symbol_names.txt (RC1's names already placed on PAL).
     for line in SYMBOL_NAMES.read_text().splitlines():
         if not line.strip() or line.startswith("#"):
             continue

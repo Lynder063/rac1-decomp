@@ -212,8 +212,8 @@ Whether you're interested in matching functions, analyzing PS2 disassembly, rese
   [asm-differ](https://github.com/simonlindholm/asm-differ),
   [objdiff](https://github.com/encounter/objdiff)
 - [AngheloAlf's PS2 toolchain mirrors](https://github.com/AngheloAlf)
-- [bordplate/RC1](https://codeberg.org/bordplate/RC1): NTSC decomp setup; the
-  source file names and boundaries of the `text` segment come from its split
+- RC1: an NTSC decomp setup of this game; the source file names and
+  boundaries of the `text` segment come from its split
 - [Lombyte](https://github.com/mateuszklysz/Lombyte) (MIT): matching
   decompilation of the same game's NTSC build; some real names and struct
   layouts in `src/` comments (e.g. `src/game/draw.c`, `src/game/vuchain.c`)
