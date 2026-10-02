@@ -212,8 +212,6 @@ Whether you're interested in matching functions, analyzing PS2 disassembly, rese
   [asm-differ](https://github.com/simonlindholm/asm-differ),
   [objdiff](https://github.com/encounter/objdiff)
 - [AngheloAlf's PS2 toolchain mirrors](https://github.com/AngheloAlf)
-- RC1: an NTSC decomp setup of this game; the source file names and
-  boundaries of the `text` segment come from its split
 - [Lombyte](https://github.com/mateuszklysz/Lombyte) (MIT): matching
   decompilation of the same game's NTSC build; some real names and struct
   layouts in `src/` comments (e.g. `src/game/draw.c`, `src/game/vuchain.c`)
@@ -223,7 +221,6 @@ Whether you're interested in matching functions, analyzing PS2 disassembly, rese
   matching decompilation of R&C 3 with the same SN compiler; its compiler
   and flag research (per-file `-mno-split-addresses`) is summarised in
   `docs/SIBLING_DECOMPS.md`
-- [RatchetModding/rac-modding-resources](https://github.com/RatchetModding/rac-modding-resources)
 - [Wrench](https://github.com/chaoticgd/wrench): Ratchet & Clank PS2 modding
   tools. Most of the level extractor's format knowledge comes from its
   source; `tools/extract/README.md` credits it and the other projects the
