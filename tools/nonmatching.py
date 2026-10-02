@@ -107,7 +107,7 @@ def banned(text: str) -> str:
 
 
 def header(name: str, source: Path, verdict: str, notes: list[str], refused: str = "",
-           checked: str = "") -> str:
+           checked: str = "", broken: str = "") -> str:
     share = f" ({closeness(verdict):.1f}% of the bytes match)" if verdict.startswith("BYTES") else ""
     rel = source.relative_to(ROOT) if source.is_absolute() else source
     out = [f"/* NON_MATCHING {name} -- {rel}",
@@ -117,6 +117,8 @@ def header(name: str, source: Path, verdict: str, notes: list[str], refused: str
            ]
     if refused:
         out.append(f" * Cannot land as written ({refused}): rewrite that in plain C first.")
+    if broken:
+        out.append(f" * {broken}")
     if notes:
         out.append(" * What the last attempts found:")
         out += [f" *   {n.replace('*/', '* /')}" for n in notes]
@@ -155,7 +157,18 @@ def _check_one(path: Path) -> str:
     except SystemExit:
         return f"{name}: no stub left (landed?), remove {path.relative_to(ROOT)}"
     verdict, cand = build(name, body(text))
-    old_notes = [l[5:] for l in text.split(HEADER_END, 1)[0].splitlines() if l.startswith(" *   ")]
+    head = text.split(HEADER_END, 1)[0]
+    old_notes = [l[5:] for l in head.splitlines() if l.startswith(" *   ")]
+    old = verdict_of(path)
+    if verdict.startswith(("COMPILE", "LINK", "RODATA")) and old.startswith(("BYTES", "SIZE")):
+        # The file changed under the candidate (a neighbour landed with
+        # other declarations): keep what it measured, say it needs fixing.
+        when = re.search(r"checked (\d{4}-\d\d-\d\d)", head)
+        broken = (f"No longer builds in its file ({verdict}, {time.strftime('%Y-%m-%d')}): "
+                  "match its declarations to the file's first.")
+        path.write_text(header(name, src, old, old_notes, banned(cand),
+                               when.group(1) if when else "", broken) + cand)
+        return f"{name}: {verdict}, kept {old}"
     path.write_text(header(name, src, verdict, old_notes, banned(cand)) + cand)
     return f"{name}: {verdict}"
 
@@ -168,8 +181,9 @@ def annotate(path: Path) -> None:
     m = re.match(r"/\* NON_MATCHING (\S+) -- (\S+)", head)
     notes = [l[5:] for l in head.splitlines() if l.startswith(" *   ")]
     when = re.search(r"checked (\d{4}-\d\d-\d\d)", head)
+    broken = re.search(r"^ \* (No longer builds in its file .*)$", head, re.M)
     path.write_text(header(m.group(1), Path(m.group(2)), verdict_of(path), notes, banned(cand),
-                           when.group(1) if when else "") + cand)
+                           when.group(1) if when else "", broken.group(1) if broken else "") + cand)
 
 
 def score(name: str, path: Path) -> float:
