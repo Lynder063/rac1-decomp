@@ -43,4 +43,16 @@ void func_L12_0027C9B8(unsigned char *parent, unsigned char *child, int mode) {
         *(unsigned short *)(child + 0x34) &= 0xFFBE;
     *(unsigned short *)(child + 0x34) |= 6;
 }
-INCLUDE_ASM("asm/overlays", func_L12_0027CA68);
+extern char *D_L12_001B0C30[];
+
+// Fills in the per-segment lengths of path record number idx.
+void func_L12_0027CA68(int idx) {
+    char *p;
+    int i;
+    if (idx == -1) return;
+    p = D_L12_001B0C30[idx];
+    for (i = 0; i < *(int *)p - 1; i++) {
+        int o = i * 16;
+        *(float *)(p + o + 0x1C) = func_001F9D10(p + (o + 0x10), p + (((i + 1) % *(int *)p) * 16 + 0x10));
+    }
+}

@@ -153,4 +153,23 @@ INCLUDE_ASM("asm/overlays", func_L11_0031A738);
 INCLUDE_ASM("asm/overlays", func_L11_0031AAE0);
 INCLUDE_ASM("asm/overlays", func_L11_0031B630);
 INCLUDE_ASM("asm/overlays", func_L11_0031B8A8);
-INCLUDE_ASM("asm/overlays", func_L11_0031FCC8);
+typedef struct { int a, b; } Pair8;
+
+extern void func_L08_00259040(void *, int, int, void *);
+extern void func_L00_001FDE48(int, int, int, void *, int);
+
+extern char D_L11_00217A30[];
+extern int D_L11_002179D0[];
+extern int D_L11_00215528[];
+extern int D_L11_002179B8[];
+extern int D_L11_00217A00[];
+extern Pair8 D_L11_001626B8[] MACRO_ADDR;
+
+// Fills 5 rows of a three-column table and hands each row to two builders.
+void func_L11_0031FCC8(int a) {
+    int i;
+    for (i = 0; i < 5; i++) {
+        func_L08_00259040(D_L11_00217A30, D_L11_002179D0[i], D_L11_00215528[i], &D_L11_001626B8[a]);
+        func_L00_001FDE48(D_L11_00215528[i], D_L11_002179B8[i], D_L11_00217A00[i], D_L11_00217A30, 1);
+    }
+}

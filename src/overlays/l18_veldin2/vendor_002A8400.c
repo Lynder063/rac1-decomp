@@ -533,11 +533,14 @@ typedef struct {
     unsigned char saved_state;
 } Level18VendorMoby;
 
-extern int func_L00_002DCFD0(Level18VendorMoby *);
+/* src/overlays/shared/vendor_002D9438.c defines this with two parameters, and
+   retail sets only $a0 at this call site, so the second one is ours, passed
+   straight through. */
+extern int func_L00_002DCFD0(Level18VendorMoby *, void *);
 
 /* Switch to state four while active, then restore the saved state. */
-int func_L18_002D7580(Level18VendorMoby *moby) {
-    int active = func_L00_002DCFD0(moby);
+int func_L18_002D7580(Level18VendorMoby *moby, void *arg) {
+    int active = func_L00_002DCFD0(moby, arg);
     if (active != 0) {
         moby->state = 4;
     } else if (moby->state == 4) {
