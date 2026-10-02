@@ -28,7 +28,7 @@ Plans, tracks and integrates waves of worker agents (docs/WORKER.md).
       progress report and commit that function alone. A failure restores the
       source file and moves on. Needs src/ and progress/ clean.
 
-  python3 tools/wave.py long NAME func_X ... [--arm opus] [--budget 20]
+  python3 tools/wave.py long NAME func_X ... [--arm opus] [--budget 30]
       Sets up long-function workers (docs/LONG_FUNCTIONS.md): each
       function's dossier, m2c sketch and PACKET.md, and a BUDGET in its
       build-sn/try/<func>/<arm>/ folder; prints one prompt per function.
@@ -1229,7 +1229,7 @@ def main() -> None:
     g.add_argument("name")
     g.add_argument("funcs", nargs="+")
     g.add_argument("--arm", default="opus")
-    g.add_argument("--budget", type=int, default=20)
+    g.add_argument("--budget", type=int, default=30)
     st = commands.add_parser("stage")
     st.add_argument("funcs", nargs="*")
     st.add_argument("--level", type=int)
