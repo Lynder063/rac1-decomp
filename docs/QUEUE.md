@@ -179,6 +179,21 @@ stop and say in NOTES.md which instructions are left.
   Declare it only `MACRO_ADDR`; the build turns a macro access the
   compiler puts in a delay slot into the `$gp` form
   (`tools/check_macro_slots.py`).
+- Registers swapped inside one block while the rest matches: give that
+  block its own block-scoped locals (its own base, offset, loop counter)
+  instead of function-scope ones shared with other blocks, and declare
+  them in the order that gives retail's registers (func_L17_002F3450,
+  func_L17_002D8CC8, func_L08_002DD440).
+- The level zero vector (`D_LNN_0015F660`, passed by address, often three
+  times to func_L00_00265050) is `extern float D_LNN_0015F660[] MACRO_ADDR;`,
+  passed as `D_LNN_0015F660`: as a plain `float` taken with `&` the call
+  setup comes out in another order (func_L17_002F0678, func_L17_002F6ED0).
+- A 128-bit copy between stack arrays is a plain `u128` assignment
+  (`lq $v0,0x20($sp)`, the store free to move); through pointers it is
+  `qcopy()` (func_L17_002F5388).
+- A byte store of 0x80 and up (`0xFF`, `0xFA`) through a `char *` comes out
+  as a negative constant: write it through `unsigned char *`
+  (func_L13_002C4A68).
 - A variant of matched C ("differs only in a number" in the packet): copy
   it and change the constant, offset or callee the assembly shows.
 
