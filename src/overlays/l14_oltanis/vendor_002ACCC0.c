@@ -235,7 +235,38 @@ void func_L14_002AFF90(char *moby) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L14_002B0068);
-INCLUDE_ASM("asm/overlays", func_L14_002B0168);
+extern float func_001F9D48(void *, void *);
+extern short *D_L14_001AC2C0_2B0168[] __asm__("D_L14_001AC2C0");
+extern int D_L14_001D8980[];
+extern char D_L14_001675C0[];
+extern char *D_L14_00160098_2B0168 __asm__("D_L14_00160098") MACRO_ADDR;
+
+/* Returns the farthest moby in a list that is not in the excluded-id table, by distance from a point. */
+char *func_L14_002B0168(int index) {
+    short *p = D_L14_001AC2C0_2B0168[index];
+    char *best = 0;
+    float bestd = 0.0f;
+    if (p == 0) return 0;
+    do {
+        char *moby = D_L14_00160098_2B0168 + ((*(unsigned short *)p & 0x7FFF) << 8);
+        int found = 0;
+        int i;
+        for (i = 0; i < 20; i++) {
+            if (*(short *)(moby + 0xB2) == D_L14_001D8980[i]) {
+                found = 1;
+                break;
+            }
+        }
+        if (!found) {
+            float d = func_001F9D48(D_L14_001675C0, moby + 0x10);
+            if (bestd < d) {
+                bestd = d;
+                best = moby;
+            }
+        }
+    } while (*p++ >= 0);
+    return best;
+}
 INCLUDE_ASM("asm/overlays", func_L14_002B0288);
 INCLUDE_ASM("asm/overlays", func_L14_002B02B0);
 INCLUDE_ASM("asm/overlays", func_L14_002B4E40);

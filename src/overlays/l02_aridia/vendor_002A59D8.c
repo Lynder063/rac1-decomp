@@ -115,7 +115,25 @@ void func_L02_002D7550(unsigned char *moby, void *position, float *direction) {
     *(float *)(moby + 0x48) = func_L00_001FF860(direction[0], direction[1]);
     func_L00_00251E30(moby);
 }
-INCLUDE_ASM("asm/overlays", func_L02_002D7648);
+extern void *func_L00_002DCFD0(void *);
+extern char D_L02_00160058;
+
+// Checks a moby's associated object; sets state 9 and decrements a counter, or restores state 1.
+void *func_L02_002D7648(char *moby) {
+    void *r = func_L00_002DCFD0(moby);
+    if (r) {
+        int idx;
+        moby[0x20] = 9;
+        idx = *(int *)(*(char **)(moby + 0x78) + 0x288);
+        if (idx >= 0) {
+            char *o = *(char **)(*(int *)&D_L02_00160058 + idx * 256 + 0x78);
+            (*(int *)(o + 0x14C))--;
+        }
+    } else if (((unsigned char *)moby)[0x20] == 9) {
+        moby[0x20] = 1;
+    }
+    return r;
+}
 extern int func_L02_002D6A90(void *);
 extern void func_L02_002D51D0(void *);
 extern void func_0020D678(void *);
@@ -314,7 +332,78 @@ void func_L02_002E05E0(unsigned char *moby) {
 INCLUDE_ASM("asm/overlays", func_L02_002E0810);
 INCLUDE_ASM("asm/overlays", func_L02_002E0B68);
 INCLUDE_ASM("asm/overlays", func_L02_002E0D80);
-INCLUDE_ASM("asm/overlays", func_L02_002E1400);
-INCLUDE_ASM("asm/overlays", func_L02_002E1570);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_L00_002607A8(void *a, float x);
+extern float func_001F9CB8(void *);
+extern float D_0015EE6C MACRO_ADDR;
+
+// Moby update: copy position, then wait for a partner moby and slide toward it.
+void func_L02_002E1400(unsigned char *moby) {
+    char *d = *(char **)(moby + 0x78);
+    float a[4];
+    float b[4];
+    switch (moby[0x20]) {
+    case 0:
+        qcopy(d, moby + 0x10);
+        moby[0x20] = 1;
+        break;
+    case 1:
+        if (*(int *)(d + 0x10) >= 0) {
+            unsigned char *o = (unsigned char *)((*(int *)(d + 0x10) << 8) + *(int *)&D_L02_00160058);
+            short c = *(short *)(o + 0xA6);
+            if (c == 0x267 || c == 0x23F) {
+                if (o[0x20] == 4) {
+                    moby[0x20] = 2;
+                    func_0022ED80(0, 0, (int)moby);
+                }
+            }
+        }
+        break;
+    case 2:
+        func_L00_001FF4B0(a, moby + 0xD0, 2.0f);
+        func_001F9BD8(a, d, a);
+        func_001F9BF0(b, a, moby + 0x10);
+        func_L00_002607A8(b, D_0015EE6C + D_0015EE6C);
+        func_001F9BD8(moby + 0x10, moby + 0x10, b);
+        if (func_001F9CB8(b) == 0.0f) {
+            func_0022ED80(1, 0, (int)moby);
+            moby[0x20] = 3;
+        }
+        break;
+    }
+}
+/* moves a moby through three states: latch position, wait for a peer to reach state 4, then slide toward it */
+void func_L02_002E1570(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    switch (((unsigned char *)moby)[0x20]) {
+    case 0:
+        qcopy(data, moby + 0x10);
+        moby[0x20] = 1;
+        break;
+    case 1: {
+        int id = *(int *)(data + 0x10);
+        if (id >= 0) {
+            char *m = (char *)((id << 8) + *(int *)&D_L02_00160058);
+            int t = *(short *)(m + 0xA6);
+            if (t == 0x267 || t == 0x23F) {
+                if (((unsigned char *)m)[0x20] == 4) moby[0x20] = 2;
+            }
+        }
+        break;
+    }
+    case 2: {
+        float a[4];
+        float b[4];
+        char *pos = moby + 0x10;
+        func_L00_001FF4B0(a, moby + 0xD0, -2.0f);
+        func_001F9BD8(a, data, a);
+        func_001F9BF0(b, a, pos);
+        func_L00_002607A8(b, D_0015EE6C + D_0015EE6C);
+        func_001F9BD8(pos, pos, b);
+        if (func_001F9CB8(b) == 0.0f) moby[0x20] = 3;
+        break;
+    }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L02_002E16B8);
 INCLUDE_ASM("asm/overlays", func_L02_002E1B58);
