@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L05_00319F78 -- src/overlays/l05_rilgar/vendor_0030EB68.c
- * Best so far: SIZE ours 292 / retail 300, checked 2026-10-01.
+ * Best so far: SIZE ours 296 / retail 300, checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -12,6 +12,7 @@ extern int func_00215570(void *, int);
 extern float func_001F9FA8(float);
 extern int D_L05_0016139C MACRO_ADDR;
 extern char D_L05_001613A0[];
+extern int D_L05_0015F6B0 MACRO_ADDR;
 extern float D_L05_001613AC MACRO_ADDR;
 extern float D_L05_001613A8 MACRO_ADDR;
 

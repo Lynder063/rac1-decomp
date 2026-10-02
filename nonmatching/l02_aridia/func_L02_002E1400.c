@@ -1,9 +1,8 @@
 /* NON_MATCHING func_L02_002E1400 -- src/overlays/l02_aridia/vendor_002A59D8.c
- * Best so far: SIZE ours 372 / retail 368, checked 2026-10-01.
+ * Best so far: SIZE ours 372 / retail 368, checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  */
-extern void func_0022ED80(int, int, int);
 extern void func_L00_001FF4B0(void *, void *, float);
 extern void func_001F9BD8(void *, void *, void *);
 extern void func_001F9BF0(void *, void *, void *);

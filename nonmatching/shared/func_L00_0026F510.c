@@ -1,11 +1,12 @@
 /* NON_MATCHING func_L00_0026F510 -- src/overlays/shared/partupd_0026A130.c
- * Best so far: SIZE ours 1296 / retail 1292, checked 2026-10-01.
+ * Best so far: BYTES 38/1292 (97.1% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
  *   Particle update (follows a parent chain with a 64-bit flag test, steers toward a target, fades alpha). Budget 
  *   Structure, loop (do/while with hoisted constants, `ksq = k*k` taken before the BF0 call), stack layout and tai
  *   Also a wall: retail reads D_0015EE64 via $gp in one arm and lui/%lo in the other; one symbol cannot do both (a
+ *   fz6/x01: p10.c is the best (BYTES 38/1292, same size as retail): two MACRO_ADDR aliases of D_0015EE64 (one pla
  */
 extern void func_001F9BC0(void *);
 extern void func_001F9BF0(void *, void *, void *);
@@ -20,7 +21,8 @@ extern float func_L00_001FF860(float, float);
 extern int func_001FA898_r(float) __asm__("func_001FA898");
 extern void func_L00_001FF610(void *, void *, void *);
 extern void func_L00_002688A8(void *);
-extern short D_0015EE64_s __asm__("D_0015EE64");
+extern float D_0015EE64 MACRO_ADDR;
+extern float D_0015EE64_b __asm__("D_0015EE64") MACRO_ADDR;
 extern char D_L00_00173F70[];
 extern char D_L00_00173F80[];
 extern char D_L00_00166EC0[];
@@ -65,12 +67,12 @@ void func_L00_0026F510(char *m) {
         }
         if (*(int *)(p + 0x14)) {
             func_001F9C30(p, p, f);
-            d = *(float *)&D_0015EE64_s;
+            d = D_0015EE64;
         } else {
             func_001F9C30(p, p, 0.97f);
-            d = *(float *)0x15EE64;
+            d = D_0015EE64_b;
         }
-        *(float *)(p + 8) -= d * 0.02f;
+        *(float *)(p + 8) -= 0.02f * d;
         func_001F9BD8(v0, mp, p);
     } else {
         qcopy(v0, m + 0x10);

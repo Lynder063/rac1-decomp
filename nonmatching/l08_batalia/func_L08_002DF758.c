@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L08_002DF758 -- src/overlays/l08_batalia/vendor_002B9438.c
- * Best so far: SIZE ours 320 / retail 324, checked 2026-10-01.
+ * Best so far: SIZE ours 320 / retail 324, checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

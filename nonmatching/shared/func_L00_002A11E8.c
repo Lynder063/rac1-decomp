@@ -1,11 +1,12 @@
 /* NON_MATCHING func_L00_002A11E8 -- src/overlays/shared/vendor_0029FD68.c
- * Best so far: BYTES 46/852 (94.6% of the bytes match), checked 2026-10-01.
+ * Best so far: BYTES 45/852 (94.7% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
  *   VendorDrawHologramCone: scrolls a texture offset (D_L00_00161244 += 0.01, wrap at 1.0), then for 4 quads build
  *   Best candidate p5.c: 46 of 852 bytes differ, all in the prologue: retail emits the four `out[k] = &v[k]` store
  *   Unblock: a wording of the out[] pointer-array setup that the prepass scheduler keeps in pair order (initialize
+ *   Round fz6/x02: p7 (out[0..3] order) 46 bytes, p8 (out stores before hdr) 104, p9 (1,0,3,2) 45. Still only the 
  */
 #include "common.h"
 extern int func_001F4868(int);
@@ -38,10 +39,10 @@ void func_L00_002A11E8(void) {
     s.hdr[3] = 0x4000000044L;
     s.hdr[0] = 0;
     s.hdr[1] = func_001F4868(0x18);
-    out[3] = v[3];
-    out[2] = v[2];
     out[1] = v[1];
     out[0] = v[0];
+    out[3] = v[3];
+    out[2] = v[2];
     for (i = 0; i < 4; i++) {
         func_001F9EC0(out[0], D_L00_001CA680[D_L00_001CA780[i].a], (char *)D_L00_001CA7C0[7] + 0xC0);
         func_001F9EC0(out[1], D_L00_001CA680[*(int *)((char *)D_L00_001CA780 + i * 16 + 4)], (char *)D_L00_001CA7C0[7] + 0xC0);

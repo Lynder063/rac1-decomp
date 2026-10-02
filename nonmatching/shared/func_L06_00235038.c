@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L06_00235038 -- src/overlays/shared/help_0021D6B8.c
- * Best so far: SIZE ours 1332 / retail 1340, checked 2026-10-01.
+ * Best so far: SIZE ours 1332 / retail 1340, checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * Cannot land as written (#define in a candidate): rewrite that in plain C first.

@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L13_002B60D8 -- src/overlays/l13_gemlik/vendor_002B2020.c
- * Best so far: BYTES 8/140 (94.3% of the bytes match), checked 2026-10-01.
+ * Best so far: BYTES 8/140 (94.3% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  */

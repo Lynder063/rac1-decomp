@@ -1,11 +1,13 @@
 /* NON_MATCHING func_L00_002E1850 -- src/overlays/shared/vendor_002E1660.c
- * Best so far: BYTES 32/776 (95.9% of the bytes match), checked 2026-10-01.
+ * Best so far: BYTES 30/776 (96.1% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
  *   func_L00_002E1850 (UpdateMoby_1290): 4-state machine (spawn/wait near player/run effects/delete). Best is p4.c
  *   Remaining difference (state 2): retail loads `lh idx` before `lbu val`, then `addu base,idx` base-first for D_
  *   Would unblock: the exact source form of the two +0x454 byte-table stores (p5/p7 pointer-local variants cost re
+ *   # fz5 y04
+ *   Best new: p9.c BYTES 30/776 (best.c was 32): writing `(char *)(s[1] * 256 + (int)base)` (offset first) fixes t
  */
 extern float D_0015EE6C MACRO_ADDR;
 extern unsigned char D_0013D5CA[] NOT_SDA;
@@ -79,15 +81,15 @@ void func_L00_002E1850(char *m) {
             if (*(unsigned short *)(D_0014171B + 0x4ED) == 0) func_L00_00203F20(0x2328, 0x34);
             if (s[1] != -1) {
                 char *base = (char *)*(int *)&D_L00_00160098;
-                char *o = base + s[1] * 256;
+                char *o = (char *)(s[1] * 256 + (int)base);
                 char *o2;
                 int u;
-                D_L00_001BA960[*(short *)(o + 0xB2) + 0x454] = *(unsigned char *)(o + 0xB0) + 2;
-                o2 = base + s[1] * 256;
+                D_L00_001BA960[0x454 + *(short *)(o + 0xB2)] = *(unsigned char *)(o + 0xB0) + 2;
+                o2 = (char *)(s[1] * 256 + (int)base);
                 u = *(unsigned char *)(o2 + 0xB0);
                 if (u == 0xFF || (D_L00_0015FD48[u & 0xFF] != 0xFF
                     && (D_0014171B + 0xAA35)[(u & 0xFF) + (*(int *)&D_0015EE84 << 4)] == 0xFF)) {
-                    D_L00_001BB5C0[*(short *)(o2 + 0xB2) + 0x454] = u + 2;
+                    D_L00_001BB5C0[0x454 + *(short *)(o2 + 0xB2)] = u + 2;
                 }
             } else {
                 func_001E9730(D_L00_001EA580, *(short *)(m + 0xB2));

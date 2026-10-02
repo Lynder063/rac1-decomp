@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L18_002F86E8 -- src/overlays/l18_veldin2/vendor_002F2AE0.c
- * Best so far: BYTES 47/1048 (95.5% of the bytes match), checked 2026-10-01.
+ * Best so far: BYTES 20/1048 (98.1% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -106,12 +106,9 @@ x = *(float *)&D_L18_00162460;
         char *q;
         p0 = (float *)(t + 0x34);
             p1 = (float *)(t + 0x38);
-            p2 = (float *)(d + 0x378);
-            p3 = (float *)(d + 0x37C);
         g = D_0013E633 + 0xE1D;
-        for (i = 0; i < 0x30; i++) {
+        for (i = 0, p2 = (float *)(d + 0x378), p3 = (float *)(d + 0x37C); i < 0x30; i++) {
             char *m = D_L18_00167BD0 + i * 0xA0;
-            q = D_L18_00167700;
             if (*(int *)(d + 0x3EC) == 0) {
                 char *pl = *(char **)(g + 0x2FC);
                 if (pl != 0 && *(short *)(pl + 0xA6) == 0x24B) {
@@ -126,7 +123,10 @@ x = *(float *)&D_L18_00162460;
                 }
                 if (moby[0x20] >= 2) {
                     if (*(int *)(d + 0x3EC) != 0 || *(int *)&D_L18_00162430 != 0) {
-                        if (*(char **)(q + 0x180) != 0 && *(short *)(*(char **)(q + 0x180) + 0x86) == 0) {
+                        char *w;
+                        q = D_L18_00167700;
+                        w = *(char **)(q + 0x180);
+                        if (w != 0 && *(short *)(w + 0x86) == 0) {
                             func_L00_002E9900(*(float *)&D_L18_00162470, 0.003f, 0);
                             func_L00_002E9968(*(float *)&D_L18_00162474, 0.003f);
                         }

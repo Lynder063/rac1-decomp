@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L01_0031B2F0 -- src/overlays/shared/vendor_0031AD00.c
- * Best so far: SIZE ours 344 / retail 348, checked 2026-10-01.
+ * Best so far: SIZE ours 344 / retail 348, checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
