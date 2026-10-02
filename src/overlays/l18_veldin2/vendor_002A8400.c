@@ -434,7 +434,10 @@ void func_L18_002D6D08(unsigned char *moby) {
     }
 }
 extern int *D_L18_001AC540[];
-extern short D_L18_00160058;
+/* The moby table base. Spelled as a 4-byte alias so the assembler keeps the
+   symbol out of the small-data window: the size the assembler goes by is the
+   one declared at the first use in this file. */
+extern char *D_L18_00160058_m __asm__("D_L18_00160058") MACRO_ADDR;
 extern short D_L18_00161A24;
 extern float D_0015EE70 MACRO_ADDR;
 extern void func_00213DE0(void *, int, int, int);
@@ -659,7 +662,7 @@ void *func_L18_002D7F48(float *a, float *b, int idx) {
             float d = func_001FA850(ang, func_L00_001FF860(a[0] - m->x, a[1] - m->y));
             if (bestd < d) {
                 bestd = d;
-                best = *(char **)&D_L18_00160058 + off;
+                best = D_L18_00160058_m + off;
             }
         }
         if (*p++ < 0) return best;
@@ -672,7 +675,7 @@ extern int *D_L18_001AC540[];
 void func_L18_002D8140(int idx) {
     short *p = (short *)D_L18_001AC540[idx];
     if (p != 0) {
-        char *base = *(char **)&D_L18_00160058;
+        char *base = D_L18_00160058_m;
         do {
             int off = (*p & 0x7FFF) << 8;
             char *moby = (char *)off + (int)base;
@@ -1518,7 +1521,57 @@ void func_L18_002F16D8(char *moby, void *out) {
     *(int *)(data + 0x160) = scale_ticks(180);
 }
 INCLUDE_ASM("asm/overlays", func_L18_002F1780);
-INCLUDE_ASM("asm/overlays", func_L18_002F1AB0);
+extern int *D_L18_001AC540[];
+extern float func_001F9FA8(float);
+extern int func_001FA8A8(int, int, float);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_L00_00264690(void *, int, float, float);
+extern float func_001FA748(float, float);
+extern float D_0015EE6C MACRO_ADDR;
+extern short D_L18_001622C8;
+extern short D_L18_001622E8;
+extern short D_L18_001622EC;
+extern short D_L18_001622F0;
+extern short D_L18_001622F4;
+extern short D_L18_001622F8;
+extern short D_L18_001622FC;
+
+void impl_2F1AB0(char *moby) __asm__("func_L18_002F1AB0");
+void impl_2F1AB0(char *moby) {
+    short *p;
+    float a, b;
+    if (*(int *)&D_L18_001622C8 != 0) {
+        return;
+    }
+    p = (short *)D_L18_001AC540[((unsigned char *)moby)[0x21]];
+    a = *(float *)&D_L18_001622E8 * 0.017453292f * D_0015EE6C;
+    b = *(float *)&D_L18_001622EC * 0.017453292f * D_0015EE6C;
+    do {
+        char *o = D_L18_00160058_m + (*(unsigned short *)p & 0x7FFF) * 256;
+        if (*(short *)(o + 0xA6) == 0x54B) {
+            char *data = *(char **)(o + 0x78);
+            int t = func_001FA8A8(*(int *)&D_L18_001622F0, *(int *)&D_L18_001622F4,
+                                  func_001F9FA8(*(float *)(data + 0x168)) * 0.5f + 0.5f);
+            float v[4];
+            int st;
+            func_L00_001FF4B0(v, o + 0xC0, *(float *)&D_L18_001622FC);
+            func_001F9BD8(v, v, o + 0x10);
+            st = ((unsigned char *)o)[0x20];
+            switch (st) {
+            case 2:
+            case 3:
+                func_L00_00264690(v, t, *(float *)&D_L18_001622F8, 0.0f);
+                *(float *)(data + 0x168) = func_001FA748(*(float *)(data + 0x168), a);
+                break;
+            case 4:
+                func_L00_00264690(v, t, *(float *)&D_L18_001622F8, 0.0f);
+                *(float *)(data + 0x168) = func_001FA748(*(float *)(data + 0x168), b);
+                break;
+            }
+        }
+    } while (*(p++) >= 0);
+}
 extern short D_L18_001622C0;
 extern void func_001F49B0(void (*)(void), void *);
 extern void func_L18_002F1780(void);
