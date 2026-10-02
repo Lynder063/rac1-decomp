@@ -158,6 +158,7 @@ The following functions adapt source from
 - `src/overlays/shared/mobyutil_00258BC8.c`: `func_L00_00261848` (marks a planet as discovered and appends it to the galaxy list)
 - `src/overlays/shared/mobyutil_00258BC8.c`: `func_L00_0025BBA0` (splits a vector into an angle and two scales)
 - `src/overlays/shared/vendor_002EB0D8.c`: `func_L00_002EC860` (sets a moby's damping and scale constants, then re-runs its setup)
+- `src/overlays/shared/help_00203E98.c`: `func_L00_0020A8B8` (tests a segment against the world and returns the hit distance)
 
 MIT License
 
