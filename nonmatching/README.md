@@ -403,5 +403,5 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L18_002FB318`](l18_veldin2/func_L18_002FB318.c) | l18_veldin2 | 920 | SIZE ours 904 / retail 920, checked 2026-10-01. | - |
 | [`func_L18_002FC188`](l18_veldin2/func_L18_002FC188.c) | l18_veldin2 | 288 | SIZE ours 280 / retail 288, checked 2026-10-01. | - |
 | [`func_L18_002FD5C0`](l18_veldin2/func_L18_002FD5C0.c) | l18_veldin2 | 988 | SIZE ours 984 / retail 988, checked 2026-10-01. | - |
-| [`func_L18_002FDB28`](l18_veldin2/func_L18_002FDB28.c) | l18_veldin2 | 372 | SIZE ours 368 / retail 372, checked 2026-10-01. | - |
+| [`func_L18_002FDB28`](l18_veldin2/func_L18_002FDB28.c) | l18_veldin2 | 372 | SIZE ours 368 / retail 372, checked 2026-10-02. | - |
 | [`func_L18_002FDCC4`](l18_veldin2/func_L18_002FDCC4.c) | l18_veldin2 | 92 | SIZE ours 88 / retail 92, checked 2026-10-01. | - |
