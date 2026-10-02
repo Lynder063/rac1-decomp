@@ -45,7 +45,10 @@ Plans, tracks and integrates waves of worker agents (docs/WORKER.md).
       then): batch-landed like `land --batch`. Candidates crediting Lombyte
       are left out unless --ports, which lands only those, so the two go in
       separate commits. --level NN keeps to func_LNN_ functions: another
-      agent may own another level's work.
+      agent may own another level's work. Salvages of different levels
+      (and --ports beside a plain one) run at once: each has its own
+      manifests and lock owner, writes take the landing lock only while
+      writing, and files that land one by one do so four at a time.
 
 --near picks earlier attempts that came close (BYTES within 40, a size
 within 8 bytes, or a near-miss in src/); --fresh, the default, picks
@@ -82,6 +85,7 @@ import re
 import subprocess
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -983,7 +987,10 @@ def salvage(args) -> None:
     if not batch:
         sys.exit("nothing to salvage")
     print(f"salvaging {len(batch)}: {' '.join(n for n, _, _ in batch)}", flush=True)
-    args.name, args.batch = "salvage-ports" if args.ports else "salvage", True
+    # A name of its own per level, so salvages of several levels run at once
+    # (their own manifests, logs and lock owner).
+    level = f"-L{args.level:02d}" if args.level is not None else ""
+    args.name, args.batch = ("salvage-ports" if args.ports else "salvage") + level, True
     landed, failed = land_batch(args, batch)
     unstage(landed)
     for name, why in skipped + failed:
@@ -992,6 +999,7 @@ def salvage(args) -> None:
 
 
 BUSY_HOURS = 12     # a claim younger than this, on a function still in assembly, is a worker at work
+PARALLEL = 4        # files landed one by one at once (each build is a Docker run)
 
 
 def busy(source: Path, own: str) -> str | None:
@@ -1052,30 +1060,35 @@ def land_batch(args, batch: list) -> tuple[list[str], list[tuple[str, str]]]:
         else:
             landed.append(name)
             print(f"landed {name}", flush=True)
-    for f in sorted(bad):
-        shared.lock(owner)
+    def one_by_one(f: Path) -> tuple[list[str], list[tuple[str, str]]]:
+        # Each file on its own thread with its own lock owner: land_one
+        # takes the lock only to write, so the files' builds and checks run
+        # side by side, while one file's candidates still go in one at a time.
+        mine = f"{owner}:{f.stem}"
+        done, refused = [], []
+        shared.lock(mine)
         try:
-            if f.read_text() == written[f]:
-                f.write_text(saved[f])
-            else:
-                skipped += [(n, f"{f.name} changed meanwhile; left as it is, check it")
+            if f.read_text() != written[f]:
+                return [], [(n, f"{f.name} changed meanwhile; left as it is, check it")
                             for n, _, s in batch if s == f]
-                continue
+            f.write_text(saved[f])
         finally:
-            shared.unlock(owner)
+            shared.unlock(mine)
         for name, cand, source in batch:
             if source != f:
                 continue
-            shared.lock(owner)
-            try:
-                outcome = land_one(args, name, cand, source, owner)
-            finally:
-                shared.unlock(owner)
+            outcome = land_one(args, name, cand, source, mine)
             if outcome == "landed":
-                landed.append(name)
+                done.append(name)
                 print(f"landed {name} (one by one)", flush=True)
             else:
-                skipped.append((name, outcome))
+                refused.append((name, outcome))
+        return done, refused
+
+    with ThreadPoolExecutor(max_workers=PARALLEL) as pool:
+        for done, refused in pool.map(one_by_one, sorted(bad)):
+            landed += done
+            skipped += refused
     return landed, skipped + skipped_busy
 
 
@@ -1106,8 +1119,9 @@ def keep_own_types(text: str, names: set, suffix: str) -> str:
 
 
 def land_one(args, name: str, candidate: str, source: Path, owner: str) -> str:
-    """Applies one overlay candidate and re-checks it in its file; the
-    caller holds the landing lock. Returns "landed" or why not."""
+    """Applies one overlay candidate and re-checks it in its file. Writes
+    take the landing lock as OWNER (already held if the caller holds it),
+    the builds and checks run without it. Returns "landed" or why not."""
     saved = source.read_text()
     known = overlay_known_name(saved, name)
     manifest = WAVES / f"{args.name}-{name}.MANIFEST"
@@ -1120,9 +1134,14 @@ def land_one(args, name: str, candidate: str, source: Path, owner: str) -> str:
     def undo(why: str) -> str:
         # Put the file back only if what is there is still our own write:
         # an agent that edits without the lock must not lose its work.
-        if source.read_text() in (saved, written):
-            source.write_text(saved)
-            return why
+        took = shared.lock(owner)
+        try:
+            if source.read_text() in (saved, written):
+                source.write_text(saved)
+                return why
+        finally:
+            if took:
+                shared.unlock(owner)
         return why + f"; {source.name} changed meanwhile, left as it is: check it"
 
     original = candidate
