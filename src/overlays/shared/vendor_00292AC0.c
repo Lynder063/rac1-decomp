@@ -113,7 +113,61 @@ INCLUDE_ASM("asm/overlays", func_L03_002C5AE0);
 INCLUDE_ASM("asm/overlays", func_L03_002C8028);
 INCLUDE_ASM("asm/overlays", func_L03_002C8058);
 INCLUDE_ASM("asm/overlays", func_L03_002CDDC8);
-INCLUDE_ASM("asm/overlays", func_L03_002CF600);
+extern char *func_L00_0025B478(void *, int, int);
+extern int func_L00_0025B4D0(void *, void *, void *, int, int *, float *, int, int);
+extern void func_L00_0025E4B0(void *m, short *p);
+extern float func_L00_001FF860(float, float);
+extern float func_001FA790(float, float);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern float func_001F9B88(float);
+extern int func_0022ED80(int, int, int);
+extern void func_L00_0025E590(void *, void *);
+
+/* Moby update: advance a timer from a collision query, switch state, aim head angles. */
+void func_L03_002CF600(char *m) {
+    int st;
+    float fv;
+    int res;
+    char *d;
+    char *r;
+    float a, b, p, q;
+    d = *(char **)(m + 0x78);
+    fv = 0.0f;
+    r = func_L00_0025B478(m, 0x330000, 0);
+    res = func_L00_0025B4D0(m, r, d + 0x20, 0, &st, &fv, 0, 4);
+    if (st != 1 && *(unsigned char *)(m + 0x20) != 5) {
+        float t = *(float *)(d + 0x20) - fv;
+        *(float *)(d + 0x20) = t;
+        if (res == 1 || t <= 0.0f) {
+            *(unsigned char *)(m + 0x20) = 5;
+        } else if (res != 0xB) {
+            *(unsigned char *)(d + 0x67) = 0xB4;
+            func_L00_0025E4B0(m, (short *)(d + 0x60));
+            if (*(float *)(r + 0x1C) == 5627.925f && *(unsigned char *)(m + 0x20) != 4) {
+                a = func_L00_001FF860(*(float *)(m + 0x10) - *(float *)(r + 0), *(float *)(m + 0x14) - *(float *)(r + 4));
+                b = func_001FA790(a, *(float *)(m + 0x48));
+                p = func_001F9F90(b) * 0.08726646f;
+                q = func_001F9FA8(b) * -0.34906584f;
+                if (func_001F9B88(*(float *)(m + 0x40)) < func_001F9B88(q)) {
+                    *(float *)(m + 0x40) = q;
+                    *(float *)(d + 0x218) = 0.0f;
+                }
+                if (func_001F9B88(*(float *)(m + 0x44)) < func_001F9B88(p)) {
+                    *(float *)(m + 0x44) = p;
+                    *(float *)(d + 0x21C) = 0.0f;
+                }
+                *(float *)(d + 0x214) = D_0015EE6C * 4.0f;
+                *(short *)(d + 0x206) = func_001F9850(0x3C);
+                *(unsigned char *)(m + 0xBC) = *(unsigned char *)(m + 0x20);
+                *(unsigned char *)(m + 0x20) = 4;
+                func_0022ED80(1, 0, (int)m);
+            }
+        }
+    }
+    *(unsigned char *)(m + 0xA4) = 0xFF;
+    func_L00_0025E590(m, d + 0x60);
+}
 INCLUDE_ASM("asm/overlays", func_L03_002D50A0);
 INCLUDE_ASM("asm/overlays", func_L03_002D5B88);
 extern struct Moby *func_0020D348_m(int) __asm__("func_0020D348");

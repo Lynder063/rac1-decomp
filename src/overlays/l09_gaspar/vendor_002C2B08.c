@@ -3,10 +3,95 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L09_002C2B08);
-INCLUDE_ASM("asm/overlays", func_L09_002C3690);
+typedef int uq __attribute__((mode(TI)));
+extern char *func_0020D348(int);
+extern void func_L00_00251E30(void *);
+extern void func_L00_00250800(void *, int, void *);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9EC0(void *, void *, void *);
+extern void func_001F9BD8(void *, void *, void *);
+
+// Spawns a moby of class cls at pos, copying orientation and matrices from src.
+char *func_L09_002C3690(char *src, char *pos, int cls) {
+    char *m = func_0020D348(cls);
+    if (m) {
+        uq v0;
+        uq v1;
+        char *p = m + 0x10;
+        char *d;
+        ((unsigned char *)m)[0x30] = 0xFF;
+        *(short *)(m + 0x32) = 0xFF;
+        d = *(char **)(m + 0x78);
+        m[0x31] = 1;
+        m[0x20] = 1;
+        qcopy(p, pos);
+        qcopy(d + 0x10, pos);
+        *(char **)(d + 0x2C) = src;
+        func_L00_00251E30(m);
+        func_L00_00250800(m, 0, &v0);
+        func_001F9BF0(&v1, pos, &v0);
+        func_001F9EC0(&v1, &v1, src + 0xC0);
+        func_001F9BD8(p, pos, &v1);
+        qcopy(m + 0x40, src + 0x40);
+        *(uq *)(m + 0xC0) = *(uq *)(src + 0xC0);
+        *(uq *)(m + 0xD0) = *(uq *)(src + 0xD0);
+        *(uq *)(m + 0xE0) = *(uq *)(src + 0xE0);
+        func_L00_00251E30(m);
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L09_002C37A0);
 INCLUDE_ASM("asm/overlays", func_L09_002C3858);
-INCLUDE_ASM("asm/overlays", func_L09_002EB808);
+extern float D_0015EE6C MACRO_ADDR;
+extern float D_0015EE60 MACRO_ADDR;
+extern float D_L09_00166FC0[];
+extern int func_002140B0(int);
+extern float func_002140F8(float, float);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9C30(void *, void *, float);
+extern float func_001F9CB8(void *);
+
+/* spawns a debris moby with randomized velocity toward a point */
+char *func_L09_002EB808(char *owner, float *vec) {
+    char *moby = func_0020D348(func_002140B0(4) + 0x107);
+    if (moby != 0) {
+        char *d = *(char **)(moby + 0x78);
+        char *o = *(char **)(owner + 0x78);
+        char *dv;
+        float len;
+        *(float *)d = func_002140F8(-2.0f, 2.0f);
+        *(float *)(d + 4) = func_002140F8(-2.0f, 2.0f);
+        *(float *)(d + 8) = func_002140F8(-2.0f, 2.0f);
+        dv = d + 0x20;
+        func_001F9BD8(dv, d, o);
+        func_L00_001FF4B0(d, d, D_0015EE6C * 50.0f);
+        func_001F9BD8(d, d, vec);
+        func_001F9C30(d, d, D_0015EE60 * -0.7f + 1.0f);
+        ((unsigned char *)moby)[0x30] = 0xFF;
+        *(short *)(moby + 0x32) = 0xFF;
+        moby[0x31] = 1;
+        *(int *)(d + 0x4C) = 2;
+        moby[0x23] = 0x7F;
+        {
+            float v = *(float *)(owner + 0x2C) * func_002140F8(0.125f, 0.25f);
+            *(float *)(moby + 0x2C) = v;
+            *(float *)(d + 0x50) = v;
+        }
+        *(float *)(d + 0x40) = func_002140F8(-0.05235988f, 0.05235988f);
+        *(float *)(d + 0x44) = func_002140F8(-0.05235988f, 0.05235988f);
+        func_001F9BF0(moby + 0x10, dv, D_L09_00166FC0);
+        len = func_001F9CB8(moby + 0x10);
+        if (100.0f < len) {
+            func_L00_001FF4B0(moby + 0x10, moby + 0x10, 100.0f);
+            func_001F9BD8(moby + 0x10, moby + 0x10, D_L09_00166FC0);
+            *(float *)(moby + 0x2C) = *(float *)(d + 0x50) * (100.0f / len);
+        } else {
+            qcopy(moby + 0x10, dv);
+            *(float *)(moby + 0x2C) = *(float *)(d + 0x50);
+        }
+    }
+    return moby;
+}
 INCLUDE_ASM("asm/overlays", func_L09_002EBA58);
 INCLUDE_ASM("asm/overlays", func_L09_002EBD30);
 extern void func_0020D678(void *); /* DeleteMoby */
@@ -194,7 +279,41 @@ INCLUDE_ASM("asm/overlays", func_L09_00304750);
 INCLUDE_ASM("asm/overlays", func_L09_00304EE0);
 INCLUDE_ASM("asm/overlays", func_L09_003050C0);
 INCLUDE_ASM("asm/overlays", func_L09_00305378);
-INCLUDE_ASM("asm/overlays", func_L09_00305580);
+typedef int u128 __attribute__((mode(TI)));
+extern char *D_L09_00160064 MACRO_ADDR;
+extern float func_001F9D10(void *, void *);
+// Finds the nearest eligible moby to a position, returning it only when close enough.
+char *func_L09_00305580(char *self, char *pos, int bone) {
+    char *best = 0;
+    float bestd = 1000000000.0f;
+    char tmp[16];
+    char vec[16];
+    char *m;
+    char *tp = tmp;
+    *(u128 *)tmp = *(u128 *)pos;
+    for (m = D_L09_00160064; m != 0; m = *(char **)(m + 0x28)) {
+        if (m == self) continue;
+        if (m != 0 && *(unsigned char *)(m + 0x20) != 0xFE && *(unsigned char *)(m + 0x20) != 0xFD) {
+            if (*(short *)(m + 0xA6) == 0x49D || *(short *)(m + 0xA6) == 0x494 || *(short *)(m + 0xA6) == 0x4A0) {
+                float d;
+                if (bone != -1) {
+                    func_L00_00250800(m, bone, vec);
+                    d = func_001F9D10(tp, vec);
+                } else {
+                    d = func_001F9D10(tp, m + 0x10);
+                }
+                if (d < bestd) {
+                    bestd = d;
+                    best = m;
+                }
+            }
+        }
+    }
+    if (best == 0) return 0;
+    if (bestd < 0.5f) return best;
+    if (*(short *)(best + 0xA6) == 0x4A0 && bestd < 10.0f) return best;
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L09_00305710);
 INCLUDE_ASM("asm/overlays", func_L09_00306030);
 INCLUDE_ASM("asm/overlays", func_L09_00306DD8);

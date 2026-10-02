@@ -11,7 +11,61 @@ INCLUDE_ASM("asm/overlays", func_L15_002C3BD8);
 INCLUDE_ASM("asm/overlays", func_L15_002C62A8);
 INCLUDE_ASM("asm/overlays", func_L15_002C65D8);
 INCLUDE_ASM("asm/overlays", func_L15_002C6950);
-INCLUDE_ASM("asm/overlays", func_L15_002C7C20);
+extern float D_0015EE6C MACRO_ADDR;
+extern char *func_L00_0025B478(void *, int, int);
+extern int func_L00_0025B4D0(void *, void *, void *, int, void *, void *, int, int);
+extern void func_L00_0025E4B0(void *m, short *p);
+extern float func_L00_001FF860(float, float);
+extern float func_001FA790(float, float);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern float func_001F9B88(float);
+extern int func_001F9850(int);
+extern void func_L00_0025E590(void *, void *);
+
+/* Steps a moby's countdown from a helper's output, then aims it at its target. */
+void func_L15_002C7C20(char *m) {
+    int st;
+    float fv;
+    int res;
+    char *d;
+    char *r;
+    float a, b, p, q;
+    d = *(char **)(m + 0x78);
+    fv = 0.0f;
+    r = func_L00_0025B478(m, 0x330000, 0);
+    res = func_L00_0025B4D0(m, r, d + 0x20, 0, &st, &fv, 0, 4);
+    if (st != 1 && *(unsigned char *)(m + 0x20) != 7 && *(unsigned char *)(m + 0x20) != 0x40) {
+        float t = *(float *)(d + 0x20) - fv;
+        *(float *)(d + 0x20) = t;
+        if (res == 1 || t <= 0.0f) {
+            *(unsigned char *)(m + 0x20) = 7;
+        } else if (res != 0xB) {
+            *(unsigned char *)(d + 0x67) = 0xB4;
+            func_L00_0025E4B0(m, (short *)(d + 0x60));
+            if (*(float *)(r + 0x1C) == 5627.925f && *(unsigned char *)(m + 0x20) != 6) {
+                a = func_L00_001FF860(*(float *)(m + 0x10) - *(float *)(r + 0), *(float *)(m + 0x14) - *(float *)(r + 4));
+                b = func_001FA790(a, *(float *)(m + 0x48));
+                p = func_001F9F90(b) * 0.08726646f;
+                q = func_001F9FA8(b) * -0.34906584f;
+                if (func_001F9B88(*(float *)(m + 0x40)) < func_001F9B88(q)) {
+                    *(float *)(m + 0x40) = q;
+                    *(float *)(d + 0x174) = 0.0f;
+                }
+                if (func_001F9B88(*(float *)(m + 0x44)) < func_001F9B88(p)) {
+                    *(float *)(m + 0x44) = p;
+                    *(float *)(d + 0x178) = 0.0f;
+                }
+                *(float *)(d + 0x170) = D_0015EE6C * 4.0f;
+                *(short *)(d + 0x16A) = func_001F9850(0x3C);
+                *(unsigned char *)(m + 0xBC) = *(unsigned char *)(m + 0x20);
+                *(unsigned char *)(m + 0x20) = 6;
+            }
+        }
+    }
+    *(unsigned char *)(m + 0xA4) = 0xFF;
+    func_L00_0025E590(m, d + 0x60);
+}
 INCLUDE_ASM("asm/overlays", func_L15_002D0500);
 INCLUDE_ASM("asm/overlays", func_L15_002D0798);
 INCLUDE_ASM("asm/overlays", func_L15_002D2398);
@@ -119,7 +173,69 @@ void func_L15_002EBFC8(char *moby) {
 INCLUDE_ASM("asm/overlays", func_L15_002EC080);
 INCLUDE_ASM("asm/overlays", func_L15_002EC4F8);
 INCLUDE_ASM("asm/overlays", func_L15_002EC8B0);
-INCLUDE_ASM("asm/overlays", func_L15_002ECAA8);
+extern char D_L15_0016CEE0[];
+extern char D_L15_00162210[];
+extern short D_L15_00162200;
+extern short D_L15_00162204;
+extern short D_L15_00162208;
+extern short D_L15_0016220C;
+extern int func_001FE540(int);
+extern int func_00116248(char *str, const char *fmt, ...);
+extern int func_00116810(char *);
+extern void func_L00_001FB7F8(void *a, void *b, void *c, void *d, void *e);
+
+// Draws the score/progress readout for the current stage's step ranges, clamped to the current value.
+void func_L15_002ECAA8(void) {
+    char buf[0x50];
+    int flag = 0;
+    int val = 0;
+    char *s = D_L15_0016CEE0;
+    int n;
+    char *s2;
+    char *s3;
+    if (*(int *)(s + 0x30) == 3) {
+        if (func_001F9850(0xB5) < *(int *)(s + 0x34)) {
+            if (*(int *)(s + 0x34) < func_001F9850(0x104)) {
+                flag = 1;
+                func_00116248(buf, D_L15_00162210, func_001FE540(0x526F));
+                val = (*(int *)(s + 0x34) - func_001F9850(0xB5)) >> 2;
+            }
+        }
+        s2 = D_L15_0016CEE0;
+        if (func_001F9850(0x1C2) < *(int *)(s2 + 0x34)) {
+            if (*(int *)(s2 + 0x34) < func_001F9850(0x280)) {
+                flag = 1;
+                func_00116248(buf, D_L15_00162210, func_001FE540(0x5270));
+                val = (*(int *)(s2 + 0x34) - func_001F9850(0x1C2)) >> 2;
+            }
+        }
+        s3 = D_L15_0016CEE0;
+        if (func_001F9850(0x2EE) < *(int *)(s3 + 0x34)) {
+            if (*(int *)(s3 + 0x34) < func_001F9850(0x3A2)) {
+                flag = 1;
+                func_00116248(buf, D_L15_00162210, func_001FE540(0x5271));
+                val = (*(int *)(s3 + 0x34) - func_001F9850(0x2EE)) >> 2;
+            }
+        }
+    } else if (*(int *)(s + 0x30) == 4) {
+        if (func_001F9850(0x8FC) < *(int *)(s + 0x34)) {
+            if (*(int *)(s + 0x34) < func_001F9850(0x960)) {
+                flag = 1;
+                func_00116248(buf, D_L15_00162210, func_001FE540(0x5273));
+                val = (*(int *)(s + 0x34) - func_001F9850(0x8FC)) >> 2;
+            }
+        }
+    }
+    if (flag == 0) return;
+    n = func_00116810(buf);
+    if (val < n) {
+        n = val;
+    } else if (n < val) {
+        if ((n - val) & 4) n = n - 1;
+    }
+    func_L00_001FB7F8((void *)(*(int *)&D_L15_00162200 + 1), (void *)(*(int *)&D_L15_00162204 + 1), (void *)*(int *)&D_L15_0016220C, buf, (void *)n);
+    func_L00_001FB7F8((void *)*(int *)&D_L15_00162200, (void *)*(int *)&D_L15_00162204, (void *)*(int *)&D_L15_00162208, buf, (void *)n);
+}
 extern int func_002140B0(int);
 extern float func_002140F8(float, float);
 extern void func_L00_0026FF20(float, float, char *, float *);

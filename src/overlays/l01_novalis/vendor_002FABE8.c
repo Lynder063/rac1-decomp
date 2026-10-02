@@ -325,7 +325,54 @@ void func_L01_00300140(HoverMoby *m) {
     m->pos.f[0] = v->home.f[0] + off.f[0];
     m->pos.f[1] = v->home.f[1] + off.f[1];
 }
-INCLUDE_ASM("asm/overlays", func_L01_00300C38);
+extern char *func_L00_0025B478(void *, int, int);
+extern int func_002140B0(int);
+extern int func_0022ED80(int, int, int);
+extern int func_L00_00258BC8(int, int);
+extern void func_L00_0026DD70(void *, void *, int, int, float, int);
+extern char *func_L01_00300E68(char *owner);
+typedef int u128b __attribute__((mode(TI)));
+
+// Breakable prop update: when hit, spawns a burst of debris sparks then replaces itself.
+void func_L01_00300C38(char *m) {
+    char *d = *(char **)(m + 0x78);
+    char *t = func_L00_0025B478(m, 0x10000, 0);
+    *(unsigned char *)(m + 0xA4) = 0xFF;
+    if (t != 0 && 0.0f < *(float *)(t + 0x2C)) {
+        float v[4];
+        float w[4];
+        int n = func_002140B0(*(int *)(d + 4) - *(int *)d + 1) + *(int *)d;
+        int k;
+        if (n > 0) {
+            do {
+                n--;
+            } while (n != 0);
+        }
+        func_0022ED80(0, 0, (int)m);
+        for (k = 0x95; k >= 0; ) {
+            float a, b;
+            *(u128b *)v = 0;
+            v[0] = -0.2f;
+            v[2] = 1.2f;
+            k--;
+            func_001F9BD8(v, v, m + 0x10);
+            a = func_001F9F90(func_00214158());
+            b = func_002140F8(1.5f, 3.0f);
+            a = a * (b * D_0015EE6C);
+            w[0] = a;
+            a = func_001F9FA8(func_00214158());
+            b = func_002140F8(1.5f, 3.0f);
+            a = a * (b * D_0015EE6C);
+            w[1] = a;
+            w[2] = 0;
+            w[2] = func_002140F8(w[2], 3.0f) * D_0015EE6C;
+            a = func_002140F8(125000.0f, 175000.0f);
+            func_L00_0026DD70(v, w, 0x207F7F7F, 0x272727, a, func_001F9850(func_L00_00258BC8(0x2D, 0x3C)));
+        }
+        func_L01_00300E68(m);
+        func_0020D678(m);
+    }
+}
 extern char *func_0020D348(int);
 extern void func_L00_00251E30(void *, int);
 

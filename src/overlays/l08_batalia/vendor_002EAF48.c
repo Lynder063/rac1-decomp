@@ -99,7 +99,39 @@ void func_L08_003065F8(char *moby) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L08_00306730);
-INCLUDE_ASM("asm/overlays", func_L08_003078B0);
+extern short D_L08_00162390;
+
+/* triggers objects matching the moby's class, with per-segment settings */
+void func_L08_003078B0(char *moby) {
+    int i;
+    if (D_L08_0015F6A8 == 2 && D_0015EEB0[0]) {
+        if (D_L08_0016D0E0.a == 6 && D_L08_0016D0E0.b >= 0x26C && D_L08_0016D0E0.b < 0x2CC) {
+            D_L08_0015F67C = 1.0f;
+            D_L08_0015F680 = -0.2f;
+        }
+        if (D_L08_0016D0E0.a == 6 && D_L08_0016D0E0.b >= 0x47E && D_L08_0016D0E0.b < 0x5F1) {
+            D_L08_0015F67C = 1.0f;
+            D_L08_0015F680 = 0.5f;
+        }
+        if (D_L08_0016D0E0.a == 6 && D_L08_0016D0E0.b >= 0x5FA && D_L08_0016D0E0.b < 0x6AE) {
+            D_L08_0015F67C = 1.0f;
+            D_L08_0015F680 = -0.1f;
+        }
+        for (i = 0; i < D_L08_0016D0E0.n; i++) {
+            char *o = D_L08_0016D0E0.objs[i];
+            if (*(short *)(o + 0xA6) == *(short *)(moby + 0xA6) || *(short *)(o + 0xA6) == 0x306) {
+                if (D_L08_0017CCC0[1] == 0) {
+                    float f;
+                    func_0020D960(o, 0, D_L08_0017CCC0);
+                    f = *(float *)&D_L08_00162390;
+                    *(float *)(D_L08_0017CCC0 + 0x20) = f;
+                    *(float *)(D_L08_0017CCC0 + 0x24) = f;
+                    *(float *)(D_L08_0017CCC0 + 0x28) = f;
+                }
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L08_00307A98);
 INCLUDE_ASM("asm/overlays", func_L08_00307FF0);
 INCLUDE_ASM("asm/overlays", func_L08_00308A00);

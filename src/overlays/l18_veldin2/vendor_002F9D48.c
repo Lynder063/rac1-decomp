@@ -118,7 +118,41 @@ void func_L18_002FBD40(Level18VendorMoby *moby) {
 INCLUDE_ASM("asm/overlays", func_L18_002FC188);
 INCLUDE_ASM("asm/overlays", func_L18_002FD058);
 INCLUDE_ASM("asm/overlays", func_L18_002FD5C0);
-INCLUDE_ASM("asm/overlays", func_L18_002FD9A0);
+typedef int uq __attribute__((mode(TI)));
+extern float D_0015EE70 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+extern float func_L00_001FF860(float, float);
+extern float func_L00_0025CE58(float *p, float *v, float a, float b, float c, float d);
+extern float func_001F9D48(void *, void *);
+extern float func_00214D88(float *, float *, float, float, float, float);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_L00_00259868(int, int, float, float, float, int);
+extern void func_L00_00262DF0(float, void *, void *, void *);
+
+// Turns the moby towards a target position and returns the distance to it.
+float func_L18_002FD9A0(char *m, char *target) {
+    float t[4];
+    float v[4];
+    float w[4];
+    char *d;
+    float dist;
+    float zero = 0.0f;
+    char *p = m + 0x10;
+    *(uq *)t = *(uq *)target;
+    d = *(char **)(m + 0x78);
+    dist = func_001FA748(func_L00_001FF860(t[0] - *(float *)(m + 0x10), t[1] - *(float *)(m + 0x14)), *(float *)(d + 0x1EC));
+    func_L00_0025CE58((float *)(m + 0x48), (float *)(d + 0x1E8), dist, D_0015EE70 * 6.2831855f, D_0015EE70 * 6.2831855f, D_0015EE6C * 6.2831855f);
+    w[0] = zero;
+    dist = func_001F9D48(p, t);
+    func_00214D88(w, (float *)(d + 0x1F0), dist, D_0015EE70 * 6.0f, D_0015EE70 * 6.0f, D_0015EE6C * 5.0f);
+    v[0] = func_001F9F90(*(float *)(m + 0x48)) * *(float *)(d + 0x1F0);
+    v[1] = func_001F9FA8(*(float *)(m + 0x48)) * *(float *)(d + 0x1F0);
+    v[2] = -(D_0015EE6C + D_0015EE6C);
+    func_L00_00259868((int)m, (int)v, 0.5f, 0.5f, zero, 0);
+    func_L00_00262DF0(0.5f, *(void **)(d + 0x1E0), p, p);
+    return dist;
+}
 INCLUDE_ASM("asm/overlays", func_L18_002FDB28);
 INCLUDE_ASM("asm/overlays", func_L18_002FDCA0);
 INCLUDE_ASM("asm/overlays", func_L18_002FDCC4);

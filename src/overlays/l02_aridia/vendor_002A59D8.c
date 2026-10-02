@@ -242,7 +242,75 @@ void func_L02_002E04E8(char *moby)
     func_L00_00251E30(*(char **)(d + 0x84));
     func_L00_00251E30(*(char **)(d + 0x88));
 }
-INCLUDE_ASM("asm/overlays", func_L02_002E05E0);
+extern char D_0013E633[];
+extern short D_L02_00161CF8;
+extern void func_L00_0028EBF0(int);
+extern int func_0022ED80(int, int, int);
+extern int func_002140B0(int);
+
+/* State machine for a moby that picks a new animation each time the previous one finishes. */
+void func_L02_002E05E0(unsigned char *moby) {
+    int *d = *(int **)(moby + 0x78);
+    *(float *)(moby + 0x58) = *(float *)&D_L02_00161CF8;
+    switch (moby[0x53]) {
+    case 1:
+    case 3:
+    case 5:
+    case 7:
+        if (moby[0x70] & 2) {
+            int idx;
+            *(int *)(moby + 0x54) = 0;
+            if (moby[0x53] != moby[0xBC]) {
+                func_00213DE0(moby, moby[0xBC], 0, 0);
+            }
+            idx = d[0];
+            if (idx != -1) {
+                char *e = D_0013E633 + 0x1D + idx * 0x70;
+                if (*(unsigned char **)(e + 0x88) == moby && ((unsigned char *)e)[0x74] != 0) {
+                    func_L00_0028EBF0(idx);
+                }
+            }
+            d[0] = -1;
+            func_0022ED80(1, 0, (int)moby);
+            moby[0xBC] = func_001FA898_r(func_001F9878(func_002140F8(180.0f, 240.0f)));
+        }
+        break;
+    case 0:
+        if (func_L00_001FEF78(moby + 0xBC)) {
+            if (moby[0x53] != 1) {
+                func_00213DE0(moby, 1, 0, func_001F9850(10));
+            }
+            moby[0xBC] = 2;
+            d[0] = func_0022ED80(0, 4, (int)moby);
+        }
+        break;
+    case 2:
+        if (func_L00_001FEF78(moby + 0xBC)) {
+            if (func_002140B0(0xFF) & 1) {
+                if (moby[0x53] != 3) {
+                    func_00213DE0(moby, 3, 0, func_001F9850(10));
+                }
+                moby[0xBC] = 4;
+            } else {
+                if (moby[0x53] != 7) {
+                    func_00213DE0(moby, 7, 0, func_001F9850(10));
+                }
+                moby[0xBC] = 0;
+            }
+            d[0] = func_0022ED80(0, 4, (int)moby);
+        }
+        break;
+    case 4:
+        if (func_L00_001FEF78(moby + 0xBC)) {
+            if (moby[0x53] != 5) {
+                func_00213DE0(moby, 5, 0, func_001F9850(10));
+            }
+            moby[0xBC] = 2;
+            d[0] = func_0022ED80(0, 4, (int)moby);
+        }
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L02_002E0810);
 INCLUDE_ASM("asm/overlays", func_L02_002E0B68);
 INCLUDE_ASM("asm/overlays", func_L02_002E0D80);

@@ -142,7 +142,47 @@ int func_L01_0028C640(char *p)
     *(int *)p = next;
     return next;
 }
-INCLUDE_ASM("asm/overlays", func_L01_0028C690);
+extern void *func_001153FC_c(void *, int, unsigned int) __asm__("func_001153FC");
+extern void *func_L01_0028C578(void *, int);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern float func_001F9CB8(void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+typedef int u128 __attribute__((mode(TI)));
+
+// Blends three neighbouring list entries by (a, b) weights and clamps the result's length.
+void func_L01_0028C690(void *out, int *l, int idx, float a, float b) {
+    void *p[3];
+    float v1[4];
+    float v2[4];
+    float v3[4];
+    float d1, d2, m, len;
+    float wa, wb;
+    func_001153FC_c(p, 0, 12);
+    p[0] = func_L01_0028C578(l, *l + idx - 1);
+    p[1] = func_L01_0028C578(l, *l + idx);
+    p[2] = func_L01_0028C578(l, *l + idx + 1);
+    {
+        wb = (1.0f - a) * (b + 1.0f) * 0.5f;
+        wa = (1.0f - a) * (1.0f - b) * 0.5f;
+    }
+    d1 = func_001F9D10(p[0], p[1]);
+    d2 = func_001F9D10(p[1], p[2]);
+    if (d1 < d2) m = d1; else m = d2;
+    func_001F9BF0(v1, p[1], p[0]);
+    func_001F9C30(v1, v1, wb);
+    func_001F9BF0(v2, p[2], p[1]);
+    func_001F9C30(v2, v2, wa);
+    func_001F9BD8(v3, v1, v2);
+    m = m * 1.1f;
+    len = func_001F9CB8(v3);
+    if (m < len) {
+        func_L00_001FF4B0(out, v3, m);
+    } else {
+        *(u128 *)out = *(u128 *)v3;
+    }
+}
 extern void func_001F9C30(void *, void *, float);
 extern void func_001F9BD8(void *, void *, void *);
 

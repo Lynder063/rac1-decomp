@@ -1451,7 +1451,95 @@ float func_L00_00213A08(QVec *v) {
     dir[2] = 0.0f;
     return FastVecDot(&p, dir);
 }
-INCLUDE_ASM("asm/overlays", func_L00_00213A60);
+extern void func_L00_00235040(void);
+extern void func_L00_00234090(float *dst, float *src, float dz);
+extern void func_L00_00233D50(float *dst, float *src, float h);
+extern int func_L00_001F10E0(float, void *, int, void *);
+extern int func_L00_001F1D20(float, float, void *, int, int);
+extern int func_L00_001F34F0(float, void *);
+extern void func_001F9BF0(float *, float *, float *);
+
+extern char D_L00_00173F70[];
+
+/* Moves the help camera and tests the result; returns 1 when settled, -1 when it is too far. */
+int func_L00_00213A60(int arg) {
+    float v0[4];
+    float v1[4];
+    float v2[4];
+    char *p;
+    char *q;
+    int r;
+    int i;
+    char *g = (char *)D_0013E633 + 0xE1D;
+    float len;
+    char *g2;
+
+    if (*(int *)(g + 0x1CC) != 0) return 1;
+    qcopy(v0, g + 0x80);
+    func_001F9BC0(v1);
+    if (*(short *)(g + 0x22DA) != 0) {
+        func_L00_00235040();
+        *(short *)(g + 0x22DA) = 0;
+    }
+    if (*(int *)(g + 0x208C) != 0x11) {
+        unsigned char c = *(unsigned char *)(g + 0x20B3);
+        if (c != 0 || *(short *)(g + 0x1F8) != 0) {
+            if (c == 1 || *(short *)(g + 0x1F8) != 0) {
+                func_L00_00234090(v1, v1, 0.6f);
+            } else {
+                func_L00_00233D50(v1, v1, -*(float *)(g + 0x224));
+            }
+        } else {
+            v1[2] = *(float *)(g + 0x224);
+        }
+    }
+    g2 = (char *)D_0013E633 + 0xE9D;
+    func_001F9BD8(g2, g2, v1);
+    r = 0x24;
+    if (*(int *)(g2 + 0x2004) == 0x7F) r = 0xD24;
+    for (i = 0; i < 8; i++) {
+        g = (char *)D_0013E633 + 0xE1D;
+        if (*(unsigned char *)(g + 0x20B3) != 0) {
+            if (func_L00_001F10E0(D_0015EE60 * 0.4f, g + 0x80, r, *(void **)(g + 0x2080)) == 0) break;
+        } else {
+            if (*(int *)(g + 0x208C) == 0x11) {
+                if (func_L00_001F10E0(0.6f, g + 0x80, r, *(void **)(g + 0x2080)) == 0) break;
+            } else if (*(int *)(g + 0x208C) == 0xF) {
+                if (func_L00_001F10E0(D_0015EE60 * 0.45f, g + 0x80, r, *(void **)(g + 0x2080)) == 0) break;
+            } else {
+                float t = *(float *)(g + 0x220) - *(float *)(g + 0x224);
+                if (t < 0.05f) t = 0.05f;
+                if ((func_L00_001F1D20(*(float *)(g + 0x234), t, g + 0x80, r, *(int *)(g + 0x2080)) | func_L00_001F34F0(*(float *)(g + 0x234), g + 0x80)) == 0) break;
+            }
+        }
+        p = (char *)D_0013E633 + 0xE9D;
+        qcopy(p, D_L00_00173F70);
+        qcopy(p + 0x180, D_L00_00173F70 + 0x10);
+        qcopy(p + 0x190, D_L00_00173F70 - 0x10);
+        q = p - 0x80;
+        *(unsigned char *)(q + 0x257) = 1;
+        *(int *)(q + 0x23C) = *(int *)(D_L00_00173F70 - 0x18);
+    }
+    g = (char *)D_0013E633 + 0xE9D;
+    func_001F9BF0((float *)g, (float *)g, v1);
+    func_001F9BF0(v2, (float *)g, v0);
+    len = func_001F9CB8(v2);
+    if (*(float *)(g + 0x1B4) * 1.5f < len) {
+        if (arg == 0xF) {
+        if (v2[0] > 512.0f) v2[0] = 512.0f;
+        else if (v2[0] < -512.0f) v2[0] = -512.0f;
+        if (v2[1] > 512.0f) v2[1] = 512.0f;
+        else if (v2[1] < -512.0f) v2[1] = -512.0f;
+        if (v2[2] > 512.0f) v2[2] = 512.0f;
+        else if (v2[2] < -512.0f) v2[2] = -512.0f;
+        g = (char *)D_0013E633 + 0xE1D;
+        func_L00_001FF4B0(v2, v2, *(float *)(g + 0x234));
+        func_001F9BD8(g + 0x80, v0, v2);
+        }
+        return -1;
+    }
+    return 1;
+}
 /*
  * Advances a 16-item spawn queue: for each slot, ask
  * func_L00_00213A60(i) to process it; stop early once it reports done

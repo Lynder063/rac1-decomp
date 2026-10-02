@@ -9,7 +9,34 @@ INCLUDE_ASM("asm/overlays", func_L18_002A87D0);
 INCLUDE_ASM("asm/overlays", func_L18_002D6440);
 INCLUDE_ASM("asm/overlays", func_L18_002D6738);
 INCLUDE_ASM("asm/overlays", func_L18_002D6878);
-INCLUDE_ASM("asm/overlays", func_L18_002D6A00);
+extern void func_L00_0025F4A8(void *, void *, void *, float, float, int, int, int, float, float, float, int, float, float, int, int, int, int);
+extern void func_L00_0025A8E8(int, float, void *, int, float, float, int, int, int);
+extern unsigned char D_001414F4 NOT_SDA;
+extern short D_L18_001619FC;
+
+typedef int u128 __attribute__((mode(TI)));
+
+// Spawns a particle effect on a moby with strengths from its flags, and a follow-up when a mode is set.
+void func_L18_002D6A00(char *m, char *vec) {
+    u128 v = *(u128 *)vec;
+    int flags = *(int *)(*(char **)(m + 0x78) + 0x38);
+    float one;
+    void *p = &v;
+    float a = (flags & 1) ? 2.0f : 0.75f;
+    float b = (flags & 1) ? 4.0f : 2.0f;
+    float c = (flags & 1) ? 2.0f : 1.0f;
+    float s = 1.5f;
+    if (flags & 4) {
+        s = 0.0f;
+    }
+    one = 1.0f;
+    func_L00_0025F4A8(m, p, m + 0x10, s, one, 0x14, 6, 0x20, b, c, 9.0f, 1, a, 5.0f, 0, 0, -1, 0);
+    if (s != 0.0f) {
+        if (D_001414F4 == 2) {
+            func_L00_0025A8E8((int)m, 2.0f, m + 0x10, 2, *(float *)&D_L18_001619FC, one, 0, 1, 0);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L18_002D6B58);
 INCLUDE_ASM("asm/overlays", func_L18_002D6D08);
 INCLUDE_ASM("asm/overlays", func_L18_002D70E8);
@@ -207,7 +234,53 @@ INCLUDE_ASM("asm/overlays", func_L18_002D9CA8);
 INCLUDE_ASM("asm/overlays", func_L18_002DC850);
 INCLUDE_ASM("asm/overlays", func_L18_002DCD28);
 INCLUDE_ASM("asm/overlays", func_L18_002DCE10);
-INCLUDE_ASM("asm/overlays", func_L18_002DD270);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_L00_0025A8C0(char *arg, int a, int b, void *src, float scale);
+extern float func_001F9F90(float);
+extern void func_001F9BD8(void *, void *, void *);
+extern int func_L00_001EFFF0(void *, void *, int, void *, void *);
+extern void func_L18_002DD4B8(void *, void *, void *);
+extern char D_0013E633[];
+
+// Emits a ring of 64 sparks around the moby using two rotating directions.
+void func_L18_002DD270(char *m) {
+    char out[0x30];
+    float v[4];
+    float a[4];
+    float b[4];
+    char *d = *(char **)(m + 0x78);
+    float p, q, step;
+    int k;
+    func_001F9BF0(v, D_0013E633 + 0xE9D, m + 0x10);
+    v[2] = 0;
+    func_L00_001FF4B0(v, v, D_0015EE6C * 4.0f);
+    v[2] = D_0015EE6C * 4.0f;
+    func_L00_0025A8C0(out, (int)m, 0x10001, v, 3.0f);
+    step = (1.0f / func_001FA888(0x40)) * 6.2831802f;
+    p = -3.1415901f;
+    q = func_001FA748(p, step);
+    k = 0x3F;
+    do {
+        k--;
+        a[0] = func_001F9F90(p) * *(float *)(d + 0x24);
+        a[1] = func_001F9FA8(p) * *(float *)(d + 0x24);
+        a[2] = 0;
+        b[0] = func_001F9F90(q) * *(float *)(d + 0x24);
+        b[1] = func_001F9FA8(q) * *(float *)(d + 0x24);
+        b[2] = 0;
+        func_001F9BD8(a, a, m + 0x10);
+        a[2] = a[2] + 0.5f;
+        func_001F9BD8(b, b, m + 0x10);
+        b[2] = b[2] + 0.5f;
+        func_L00_001EFFF0(a, b, 1, *(void **)(d + 0x34), out);
+        if (*(float *)(d + 0x24) < 3.0f) {
+            func_L18_002DD4B8(m, a, b);
+        }
+        p = func_001FA748(p, step);
+        q = func_001FA748(q, step);
+    } while (k >= 0);
+}
 INCLUDE_ASM("asm/overlays", func_L18_002DD4B8);
 extern int func_001F9908(int *);
 extern void func_0020D678(void *);
@@ -353,7 +426,61 @@ void func_L18_002EB558(unsigned char *arg, void *src, void *position, int active
     }
 }
 INCLUDE_ASM("asm/overlays", func_L18_002EB5E8);
-INCLUDE_ASM("asm/overlays", func_L18_002EB988);
+typedef int u128_2EB988 __attribute__((mode(TI)));
+extern void func_L00_00258DB0(float *, float, float);
+extern void func_001F9C30(void *, void *, float);
+extern float func_002140F8(float, float);
+extern float func_001F9878(float);
+extern char *func_00219780(void *, void *, void *, int, int, int, int, int, int);
+extern short D_L18_00161FE4;
+extern short D_L18_00161FE8;
+extern short D_L18_00161FF0;
+extern short D_L18_00161FF4;
+extern short D_L18_00161FEC;
+extern short D_L18_00161FD0;
+extern short D_L18_00161FCC;
+extern short D_L18_00161FD8;
+extern short D_L18_00161FD4;
+extern short D_L18_00161FE0;
+extern short D_L18_00161FDC;
+extern short D_L18_00161FBC;
+extern short D_L18_00161FC0;
+extern short D_L18_00161FC4;
+extern short D_L18_00161FC8;
+extern short D_L18_00161FAC;
+extern short D_L18_00161FB0;
+extern short D_L18_00161FB4;
+extern short D_L18_00161FB8;
+extern short D_L18_00161FF8;
+
+typedef struct { u128_2EB988 a, b, c, v; } L2EB988;
+
+// Spawns three particles around a moby using randomised ranges.
+void func_L18_002EB988(char *m) {
+    L2EB988 L;
+    float f22, f23, f24, f25;
+    int i, r16, r17, r18, r19;
+    func_001F9BF0(&L.v, *(char **)(m + 0x78), m + 0x10);
+    func_L00_001FF4B0(&L.v, &L.v, D_0015EE6C * 60.0f);
+    f25 = *(float *)&D_L18_00161FE4 * D_0015EE6C;
+    f24 = *(float *)&D_L18_00161FE8 * D_0015EE6C;
+    f23 = *(float *)&D_L18_00161FF0 * D_0015EE6C;
+    f22 = *(float *)&D_L18_00161FF4 * D_0015EE6C;
+    for (i = 2; i >= 0; i--) {
+        func_L00_00258DB0((float *)&L.b, f25, f24);
+        func_001F9C30(&L.c, &L.b, *(float *)&D_L18_00161FEC);
+        ((float *)&L.c)[2] = ((float *)&L.c)[2] - func_002140F8(f23, f22);
+        r19 = func_001FA898_r(func_001F9878(func_002140F8(*(float *)&D_L18_00161FCC, *(float *)&D_L18_00161FD0)));
+        r18 = func_001FA898_r(func_001F9878(func_002140F8(*(float *)&D_L18_00161FD4, *(float *)&D_L18_00161FD8)));
+        r17 = func_001FA898_r(func_001F9878(func_002140F8(*(float *)&D_L18_00161FDC, *(float *)&D_L18_00161FE0)));
+        ((float *)&L.b)[3] = func_002140F8(*(float *)&D_L18_00161FBC, *(float *)&D_L18_00161FC0);
+        ((float *)&L.c)[3] = func_002140F8(*(float *)&D_L18_00161FC4, *(float *)&D_L18_00161FC8);
+        func_001F9C30(&L.a, &L.v, func_002140F8(0.0f, 1.0f));
+        func_001F9BD8(&L.a, &L.a, m + 0x10);
+        r16 = func_001FA8A8(*(int *)&D_L18_00161FAC, *(int *)&D_L18_00161FB0, func_002140F8(0.0f, 1.0f));
+        func_00219780(&L.a, &L.b, &L.c, r16, func_001FA8A8(*(int *)&D_L18_00161FB4, *(int *)&D_L18_00161FB8, func_002140F8(0.0f, 1.0f)), r19, r18, r17, *(int *)&D_L18_00161FF8);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L18_002EBBF0);
 INCLUDE_ASM("asm/overlays", func_L18_002EC0C8);
 INCLUDE_ASM("asm/overlays", func_L18_002EC290);
@@ -361,7 +488,48 @@ INCLUDE_ASM("asm/overlays", func_L18_002ED520);
 INCLUDE_ASM("asm/overlays", func_L18_002F0F78);
 INCLUDE_ASM("asm/overlays", func_L18_002F1420);
 INCLUDE_ASM("asm/overlays", func_L18_002F1444);
-INCLUDE_ASM("asm/overlays", func_L18_002F1510);
+typedef int uq __attribute__((mode(TI)));
+extern short D_L18_001622A4;
+extern short D_L18_001622BC;
+extern float func_L00_001FF860(float, float);
+extern float func_L00_0025CE58(float *p, float *v, float a, float b, float c, float d);
+extern float func_00214D88(float *, float *, float, float, float, float);
+extern float func_001F9CB8(void *);
+extern float func_001F9CE8(void *);
+extern void func_L00_001FF500(void *, void *, float);
+
+// Moves the moby towards its target; returns nonzero when it has arrived.
+int func_L18_002F1510(char *m, char *tgt) {
+    float v[4];
+    float wa[4];
+    char *p = m + 0x10;
+    float a;
+    char *d = *(char **)(m + 0x78);
+    func_001F9BF0(v, tgt, p);
+    a = func_001FA748(func_L00_001FF860(v[0], v[1]), *(float *)(d + 0x148));
+    func_L00_0025CE58((float *)(m + 0x48), (float *)(d + 0x140), a, *(float *)(d + 0x150), *(float *)(d + 0x150), *(float *)(d + 0x154));
+    *(float *)(m + 0x10) = *(float *)(m + 0x10) + func_001F9F90(*(float *)(m + 0x48)) * (*(float *)&D_L18_001622A4 * D_0015EE6C);
+    *(float *)(m + 0x14) = *(float *)(m + 0x14) + func_001F9FA8(*(float *)(m + 0x48)) * (*(float *)&D_L18_001622A4 * D_0015EE6C);
+    func_00214D88((float *)(m + 0x18), (float *)(d + 0x144), *(float *)(tgt + 8), *(float *)(d + 0x158), *(float *)(d + 0x158), *(float *)(d + 0x15C));
+    *(float *)(m + 0x44) = *(float *)&D_L18_001622BC * *(float *)(d + 0x144);
+    if (func_001F9CB8(v) < 2.0f) {
+        return 1;
+    }
+    if (func_001F9908((int *)(d + 0x160)) != 0) {
+        return 1;
+    }
+    if (*(int *)(d + 0x16C) != 0) {
+        m = (char *)wa;
+        func_001F9BF0(m, p, (char *)*(int *)(d + 0x16C) + 0x10);
+        if (func_001F9CE8(m) < 4.5f) {
+            func_L00_001FF500(m, m, func_002140F8(15.0f, 20.0f));
+            func_001F9BD8(m, m, (char *)*(int *)(d + 0x16C) + 0x10);
+            wa[2] = *(float *)(tgt + 8);
+            qcopy(tgt, m);
+        }
+    }
+    return 0;
+}
 extern float func_002140F8(float, float);
 extern float func_00214158(void);
 extern float func_001F9F90(float);

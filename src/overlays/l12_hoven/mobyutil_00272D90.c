@@ -43,4 +43,20 @@ void func_L12_0027C9B8(unsigned char *parent, unsigned char *child, int mode) {
         *(unsigned short *)(child + 0x34) &= 0xFFBE;
     *(unsigned short *)(child + 0x34) |= 6;
 }
-INCLUDE_ASM("asm/overlays", func_L12_0027CA68);
+extern char *D_L12_001B0C30[];
+
+void func_L12_0027CA68(int group) {
+    int i;
+    char *entries;
+    int count;
+    if (group == -1) return;
+    entries = D_L12_001B0C30[group];
+    count = *(int *)entries;
+    for (i = 0; i < count - 1; i++) {
+        int o = i * 16;
+        int next = (i + 1) % count;
+        *(float *)(entries + o + 0x1C) =
+            func_001F9D10(entries + (o + 0x10), entries + (next * 16 + 0x10));
+        count = *(int *)entries;
+    }
+}

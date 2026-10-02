@@ -3,7 +3,21 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L07_00313D28);
-INCLUDE_ASM("asm/overlays", func_L07_003141A8);
+extern void func_L07_00313D28(char *, int, float, float, float, float, float);
+
+/* Starts the effect with an angle ramped from the moby's timer, capped at pi. */
+void func_L07_003141A8(char *moby)
+{
+    char *data = *(char **)(moby + 0x78);
+    float ang;
+    if (*(float *)(data + 0x1C8) < 0.8f) {
+        ang = *(float *)(data + 0x1C8) * 3.0434179f / 0.8f + 0.09817477f;
+        if (ang > 3.14159274f) ang = 3.14159274f;
+    } else {
+        ang = 3.14159274f;
+    }
+    func_L07_00313D28(moby, 0, 1.0f, 5.8f, ang, 1.0f, *(float *)(data + 0x1C8));
+}
 INCLUDE_ASM("asm/overlays", func_L07_00314250);
 INCLUDE_ASM("asm/overlays", func_L07_00314590);
 INCLUDE_ASM("asm/overlays", func_L07_00314730);

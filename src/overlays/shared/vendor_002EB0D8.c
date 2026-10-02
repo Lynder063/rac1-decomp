@@ -601,4 +601,47 @@ int func_L00_002EED60(char *a) {
     return 0;
 }
 INCLUDE_ASM("asm/overlays", func_L00_002EEE00);
-INCLUDE_ASM("asm/overlays", func_L00_002EEF88);
+extern float D_L00_00166EC0[];
+extern void func_001F9EC0(void *, void *, void *);
+extern int func_L00_0028F0B0(int a, int b, int c, int d);
+extern float func_002140F8(float, float);
+extern int func_002140B0(int);
+
+/* updates a one-shot sound box: checks the listener is inside, then starts the sound */
+void func_L00_002EEF88(char *m) {
+    float v[20];
+    int *d = *(int **)(m + 8);
+    float f = *(float *)(m + 0xC);
+    char *e;
+    float *p;
+    v[4] = f;
+    v[5] = f;
+    v[6] = f;
+    func_001F9BF0(v, D_L00_00166EC0, m + 0x40);
+    v[3] = 0;
+    func_001F9EC0(v + 8, v, m + 0x50);
+    func_001F9EC0(v + 12, v + 4, m + 0x50);
+    if (!(func_001F9B88(v[8]) <= func_001F9B88(v[12]) + 1.0f)) return;
+    if (!(func_001F9B88(v[9]) <= func_001F9B88(v[13]) + 1.0f)) return;
+    if (!(func_001F9B88(v[10]) <= func_001F9B88(v[14]) + 1.0f)) return;
+    e = (char *)D_0013E633 + 0x1D + d[4] * 0x70;
+    if (*(char **)(e + 0x8C) == m && *(unsigned char *)(e + 0x74) != 0) return;
+    if (func_001F9908(d + 3)) {
+        d[4] = func_L00_0028F0B0(d[0], 0, (int)m, 0x400);
+        if (d[4] != -1) {
+            v[16] = func_002140F8(-1.0f, 1.0f);
+            v[17] = func_002140F8(-1.0f, 1.0f);
+            v[18] = func_002140F8(-1.0f, 1.0f);
+            p = v + 16;
+            func_001F9EC0(p, p, m + 0x10);
+            func_001F9BD8(p, p, m + 0x40);
+            qcopy((char *)D_0013E633 + 0x1D + 0x90 + d[4] * 0x70, p);
+        }
+        if (d[2] > 0) {
+            int t = func_002140B0(d[2] - d[1]);
+            d[3] = (int)((float)func_001F9850(d[1] + t) * 60.0f);
+        }
+    } else {
+        d[4] = -1;
+    }
+}
