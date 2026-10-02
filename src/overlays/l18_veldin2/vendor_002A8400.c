@@ -743,7 +743,31 @@ void *func_L18_002D7F48(float *a, float *b, int idx) {
         if (*p++ < 0) return best;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L18_002D8070);
+extern float func_001F9D10(void *, void *);
+extern int *D_L18_001AC540[];
+extern char *D_L18_00160058_n __asm__("D_L18_00160058") MACRO_ADDR;
+
+/* Of the mobys of class 0x247 in list idx, the one nearest to pos (within
+   255 units), or 0. The second spelling of the table base keeps the
+   address out of the loop's $gp-relative reload in the bc1f delay slot. */
+char *func_L18_002D8070(void *pos, int idx) {
+    short *p = (short *)D_L18_001AC540[idx];
+    char *best = 0;
+    float bestd = 255.0f;
+    if (p == 0) return 0;
+    while (1) {
+        int off = (*p & 0x7FFF) << 8;
+        char *m = (char *)(off + (int)D_L18_00160058_m);
+        if (*(short *)(m + 0xA6) == 0x247) {
+            float d = func_001F9D10(pos, m + 0x10);
+            if (d < bestd) {
+                bestd = d;
+                best = D_L18_00160058_n + off;
+            }
+        }
+        if (*p++ < 0) return best;
+    }
+}
 extern int *D_L18_001AC540[];
 
 // Sets the data fields 0x30 and 0x24 of each listed moby whose class is 0x247.
