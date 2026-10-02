@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L18_002FD058 -- src/overlays/l18_veldin2/vendor_002F9D48.c
- * Best so far: BYTES 4/1384 (99.7% of the bytes match), checked 2026-10-01.
+ * Best so far: BYTES 4/1384 (99.7% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -56,11 +56,11 @@ void func_L18_002FD058(unsigned char *m) {
         *(void **)(e + 0x140) = &D_L18_00162680;
         e[0x58] = 8;
         {
-            float one = 1.0f;
-                        *(float *)(e + 0x20) = one;
+            float half = 0.5f;
+            *(float *)(e + 0x20) = 1.0f;
             *(short *)(e + 0x24) = 1;
             e[0x5C] = 1;
-            *(float *)(e + 0x30) = 0.5f;
+            *(float *)(e + 0x30) = half;
         }
         *(float *)(e + 0x1F8) = func_00214158();
         m[0x30] = 0xFF;
