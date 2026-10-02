@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L18_002F4050 -- src/overlays/l18_veldin2/vendor_002F2AE0.c
- * Best so far: BYTES 9051/12840 (29.5% of the bytes match), checked 2026-10-02.
+ * Best so far: BYTES 9047/12840 (29.5% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -1247,8 +1247,9 @@ void func_L18_002F4050(unsigned char *moby) {
         int c = func_001FA8A8(0x30C8C8C8, 0x1C393939,
                               func_001F9FA8(*(float *)(d + 0x3B4)) * 0.5f + 0.5f);
         *(int *)((char *)moby + 0x90) = c;
-        *(int *)(d + 0x3B8) = (c & 0xFF000000) | ((c >> 0x10) & 0xFF) / 3 << 0x10 |
-                              (c & 0xFF00) | (c & 0xFF) / 3;
+        *(int *)(d + 0x3B8) = (int)((unsigned int)c >> 24 << 24) |
+                              ((c >> 0x10) & 0xFF) / 3 << 0x10 | (c & 0xFF00) |
+                              (c & 0xFF) / 3;
     }
     if (moby[0x31] != 0) {
         {
