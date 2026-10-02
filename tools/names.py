@@ -43,6 +43,7 @@ the same size, is the same function at every place it lists. Where the
 two methods cover the same executable function they must agree, or both
 are dropped.
 """
+from __future__ import annotations
 import csv
 import difflib
 import json
@@ -52,6 +53,9 @@ import subprocess
 import sys
 from collections import Counter, defaultdict
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lombyte import their_report  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 TABLE = ROOT / "config/names.tsv"
@@ -157,14 +161,14 @@ def align(theirs, ours) -> dict[int, str]:
 
 def ntsc_exe_map() -> dict[int, str]:
     """US executable address -> our func_X, through Lombyte's report."""
-    report = LOMBYTE / "progress/report.json"
+    report = their_report(LOMBYTE)
     # Its "virtual_address" is the ROM offset of splat's main segment;
     # the segment's start/vram in its splat config give the address.
     yaml = (LOMBYTE / "config/us/rnc1.us.yaml").read_text()
     start = int(re.search(r"(?m)^\s*start:\s*(0x[0-9A-Fa-f]+)", yaml).group(1), 16)
     vram = int(re.search(r"(?m)^\s*vram:\s*(0x[0-9A-Fa-f]+)", yaml).group(1), 16)
     theirs = []
-    for unit in json.loads(report.read_text())["units"]:
+    for unit in report["units"]:
         if unit["name"].split("/")[0] == "shared" or unit["name"].startswith("level_"):
             continue
         for f in unit.get("functions", []):
@@ -241,7 +245,7 @@ def build() -> None:
             add(sym, name, "recovered", 0, "config/symbol_names.txt", evidence.strip())
 
     have = {"RC1": (RC1 / "config/symbols.txt").exists(),
-            "Lombyte": (LOMBYTE / "progress/report.json").exists(),
+            "Lombyte": their_report(LOMBYTE) is not None,
             "ReRAC": (RERAC / "tools/ghidra/names/doc_names.csv").exists()}
     for k, ok in have.items():
         if not ok:
