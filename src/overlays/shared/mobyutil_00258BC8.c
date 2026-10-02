@@ -1303,7 +1303,24 @@ void func_L00_002617B0(char *a, Vx *b, void *c, void *d) {
     func_002153E8(&t2, a);
     qcopy(a + 0x10, b);
 }
-INCLUDE_ASM("asm/overlays", func_L00_00261848);
+/* From Lombyte (MIT), FUN_L00_002607d0 (PR #66), adapted to PAL. */
+extern unsigned char D_0013DE48[];
+extern int D_0013D618[];
+extern int D_0015EE84 MACRO_ADDR;
+extern void func_L00_00263DB0(int);
+
+void func_L00_00261848(int id) {
+    int n = 0;
+    int i;
+    if (D_0013DE48[id] == 0) {
+        for (i = 0; i < 20; i++) {
+            if (D_0013DE48[i]) n++;
+        }
+        D_0013DE48[id] = 1;
+        D_0013D618[n] = id;
+        if (id != D_0015EE84) func_L00_00263DB0(id);
+    }
+}
 extern unsigned char D_0013D5C8[] NOT_SDA;
 extern unsigned char D_0013D5F0[] NOT_SDA;
 extern int D_0013D530[] NOT_SDA;
