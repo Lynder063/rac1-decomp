@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 696 / retail 704, checked 2026-10-01.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * Cannot land as written (#define in a candidate): rewrite that in plain C first.
  * What the last attempts found:
  *   Loops over a 16-slot table (16-byte entries at moby data +0x210, float at +0xC); for each active slot
  *   builds two random direction vectors (sin/cos * random range), scales them, and calls func_00219780 to spawn a 

@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 832 / retail 836, checked 2026-10-01.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * Cannot land as written (#define in a candidate): rewrite that in plain C first.
  * What the last attempts found:
  *   func_L02_002205B0: lock-on/camera offset update (returns 1 when handled, 0 early). Best candidate p3.c: SIZE 8
  *   Difference: block layout of the `return 0` stub. Retail keeps one `b end; daddu $2,0` stub right after the `0x

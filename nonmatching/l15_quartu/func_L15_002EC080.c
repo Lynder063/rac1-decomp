@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 1024 / retail 1040, checked 2026-10-01.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * Cannot land as written (#define in a candidate): rewrite that in plain C first.
  * What the last attempts found:
  *   func_L15_002EC080 builds three ring meshes around a moby (vertices, colours, 2D offsets from a rotating table)
  *   Prologue, the four func_00234C98 calls and the start match word for word (p2.c). The difference is loop streng

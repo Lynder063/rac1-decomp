@@ -2,6 +2,7 @@
  * Best so far: BYTES 2/1208 (99.8% of the bytes match), checked 2026-10-01.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * Cannot land as written (#define in a candidate): rewrite that in plain C first.
  * What the last attempts found:
  *   func_L00_0023A1A0 (HUD health bar + orbs): budget spent at p9.c, BYTES 2/1208 (only difference: register of th
  *   Retail loads 0x42400000 straight into $f20 (`mtc1 $at,$f20; mul.s $f20,$f21,$f20`) in the cnt==8 arm; ours use

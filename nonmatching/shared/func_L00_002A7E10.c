@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 624 / retail 632, checked 2026-10-01.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * Cannot land as written (#define in a candidate): rewrite that in plain C first.
  * What the last attempts found:
  *   CollectBolt: adds a bolt's value (5/1/20/50 by moby kind at +0xA6, else the a1 register) to the save-slot tabl
  *   Open differences: (1) retail reads D_0015EE98/D_0015EF2C via $gp in the branch delay slots but reloads D_0015E

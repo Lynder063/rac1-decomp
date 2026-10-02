@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 1292 / retail 1296, checked 2026-10-01.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * Cannot land as written (#define in a candidate): rewrite that in plain C first.
  * What the last attempts found:
  *   func_L15_00209448: per-frame camera/effect update for the current target entry (64-byte records at D_L15_00178
  *   Best candidate p10.c: 1288 vs retail 1296 bytes (8 short), structure matches through the first part and case 0

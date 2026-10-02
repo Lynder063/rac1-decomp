@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 1076 / retail 1080, checked 2026-10-01.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * Cannot land as written (#define in a candidate): rewrite that in plain C first.
  * What the last attempts found:
  *   Handled, stopped at budget (10 runs), best p7.c: SIZE 1076 vs 1080, everything matches structurally.
  *   Player-state updater: clears 16 bytes at D_0013F450+0x12E0, then per old state s sets flag bytes, may call fun

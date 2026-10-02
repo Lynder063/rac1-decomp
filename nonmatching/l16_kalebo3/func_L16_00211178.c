@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 1112 / retail 1116, checked 2026-10-01.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * Cannot land as written (#define in a candidate): rewrite that in plain C first.
  * What the last attempts found:
  *   Handled, stopped at budget (10 runs); best p9.c: SIZE 1108 vs 1116, structure and registers match retail (a in
  *   Camera position step toward a desired offset from the player: up to 8 probe attempts (func_L00_001F10E0 / 1F1D

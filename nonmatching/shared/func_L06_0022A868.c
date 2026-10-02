@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 944 / retail 956, checked 2026-10-01.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * Cannot land as written (#define in a candidate): rewrite that in plain C first.
  * What the last attempts found:
  *   func_L06_0022A868: per-frame camera pull-back (up to 8 steps) using func_L00_001F10E0 ray tests, then clamps t
  *   p3.c is structurally right (control flow, block order, all stores) but SIZE 944/956: retail holds the constant

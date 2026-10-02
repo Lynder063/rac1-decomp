@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 672 / retail 680, checked 2026-10-01.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * Cannot land as written (#define in a candidate): rewrite that in plain C first.
  * What the last attempts found:
  *   func_L00_002381D0: draws a HUD gauge (shared hud): stores the element's w/h from two gp globals, anchors it wi
  *   Best p4/p6/p7: 668 bytes vs retail 680, structure and all multiplies match (separate temps h1/h2/h3 = HH*0xEA0

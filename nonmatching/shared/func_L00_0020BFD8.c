@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 1428 / retail 1424, checked 2026-10-01.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * Cannot land as written (#define in a candidate): rewrite that in plain C first.
  * What the last attempts found:
  *   Camera/help event dispatcher: reads the pending event (short at base+0x12E0), sets per-event flags in the shar
  *   Shape: every top-level statement has its own `char *g = (char *)D_0013E633 + 0xE1D;` local, the second 12E5 te

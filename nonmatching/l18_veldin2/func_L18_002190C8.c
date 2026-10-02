@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 1344 / retail 1328, checked 2026-10-01.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * Cannot land as written (#define in a candidate): rewrite that in plain C first.
  * What the last attempts found:
  *   Best candidate p8.c is SIZE 1304/retail 1328 (326 vs 332 words); the body from the state switch on down matche
  *   instruction for instruction except three places. (1) Return-0 layout at the top: retail keeps one `b end; dadd

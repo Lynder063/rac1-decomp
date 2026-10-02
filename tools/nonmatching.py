@@ -16,6 +16,10 @@ progress report can show how close each one is (fuzzy_match_percent).
   python tools/nonmatching.py check
       Re-checks every staged file against its source as it is now, rewrites
       each header's verdict, and regenerates nonmatching/README.md.
+  python tools/nonmatching.py annotate
+      Rewrites every header from what it already says, with no build: the
+      current layout, and a line when tools/integrate.py would refuse the
+      candidate as written (a #define, an expression alias).
 
 Run it in the container (tools/docker/run.sh); builds run in parallel.
 score() is what tools/gen_progress_report.py calls.
@@ -32,7 +36,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 DIR = ROOT / "nonmatching"
 WORK = ROOT / "build-sn/nonmatching"
 HEADER_END = " */\n"
-VERDICT = re.compile(r"^ \* Best so far: (.*?)(?: \(|$)", re.M)
+VERDICT = re.compile(r"^ \* Best so far: (.*?)(?: \(|, checked|$)", re.M)
 
 
 def staged_path(name: str, source: Path) -> Path:
@@ -89,15 +93,30 @@ def build(name: str, text: str) -> tuple[str, str]:
     return "COMPILE failed", text
 
 
-def header(name: str, source: Path, verdict: str, notes: list[str]) -> str:
-    size = re.search(r"/(\d+)", verdict)
+def banned(text: str) -> str:
+    """What tools/integrate.py would refuse in TEXT ('' if nothing): a
+    staged candidate may carry one; it has to go before the function lands."""
+    import integrate
+    import tempfile
+    with tempfile.NamedTemporaryFile("w", suffix=".c", delete=False) as f:
+        f.write(text)
+    try:
+        return integrate.banned(f.name)
+    finally:
+        Path(f.name).unlink()
+
+
+def header(name: str, source: Path, verdict: str, notes: list[str], refused: str = "",
+           checked: str = "") -> str:
     share = f" ({closeness(verdict):.1f}% of the bytes match)" if verdict.startswith("BYTES") else ""
     rel = source.relative_to(ROOT) if source.is_absolute() else source
     out = [f"/* NON_MATCHING {name} -- {rel}",
-           f" * Best so far: {verdict}{share}, checked {time.strftime('%Y-%m-%d')}.",
+           f" * Best so far: {verdict}{share}, checked {checked or time.strftime('%Y-%m-%d')}.",
            " * Not built into anything: the retail assembly stays in the source file",
            " * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.",
            ]
+    if refused:
+        out.append(f" * Cannot land as written ({refused}): rewrite that in plain C first.")
     if notes:
         out.append(" * What the last attempts found:")
         out += [f" *   {n.replace('*/', '* /')}" for n in notes]
@@ -123,7 +142,7 @@ def _stage_one(job: tuple[str, str]) -> str:
         return f"{name}: {verdict}, not staged"
     out = staged_path(name, src)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(header(name, src, verdict, notes_for(name)) + text)
+    out.write_text(header(name, src, verdict, notes_for(name), banned(text)) + text)
     return f"{name}: staged, {verdict}"
 
 
@@ -137,8 +156,20 @@ def _check_one(path: Path) -> str:
         return f"{name}: no stub left (landed?), remove {path.relative_to(ROOT)}"
     verdict, cand = build(name, body(text))
     old_notes = [l[5:] for l in text.split(HEADER_END, 1)[0].splitlines() if l.startswith(" *   ")]
-    path.write_text(header(name, src, verdict, old_notes) + cand)
+    path.write_text(header(name, src, verdict, old_notes, banned(cand)) + cand)
     return f"{name}: {verdict}"
+
+
+def annotate(path: Path) -> None:
+    """Rewrites PATH's header from what it already says (no build): the
+    current header layout, and whether the candidate can land as written."""
+    text = path.read_text(errors="replace")
+    head, cand = text.split(HEADER_END, 1)
+    m = re.match(r"/\* NON_MATCHING (\S+) -- (\S+)", head)
+    notes = [l[5:] for l in head.splitlines() if l.startswith(" *   ")]
+    when = re.search(r"checked (\d{4}-\d\d-\d\d)", head)
+    path.write_text(header(m.group(1), Path(m.group(2)), verdict_of(path), notes, banned(cand),
+                           when.group(1) if when else "") + cand)
 
 
 def score(name: str, path: Path) -> float:
@@ -164,7 +195,8 @@ def index() -> None:
            "|---|---|---|---|---|"]
     for neg, name, d, size, v, path in rows:
         share = f"{-neg:.1f}%" if v.startswith("BYTES") else "-"
-        out.append(f"| [`{name}`]({d}/{name}.c) | {d} | {size} | {v} | {share} |")
+        flag = " (cannot land as written)" if "Cannot land as written" in path.read_text(errors="replace") else ""
+        out.append(f"| [`{name}`]({d}/{name}.c) | {d} | {size} | {v}{flag} | {share} |")
     out.append("")
     (DIR / "README.md").write_text("\n".join(out))
 
@@ -173,6 +205,11 @@ def main() -> None:
     from concurrent.futures import ProcessPoolExecutor
     import os
     from toolchain import start_wineserver
+    if sys.argv[1:2] == ["annotate"]:
+        for path in staged().values():
+            annotate(path)
+        index()
+        return
     if sys.argv[1:2] == ["stage"]:
         jobs = [tuple(a.split("=", 1)) for a in sys.argv[2:]]
         fn, items = _stage_one, jobs

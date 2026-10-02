@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 1220 / retail 1228, checked 2026-10-01.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * Cannot land as written (#define in a candidate): rewrite that in plain C first.
  * What the last attempts found:
  *   func_L00_0029A300 (cutscene-mode update: camera-track pacing, per-moby pose blend, frame steps): budget spent 
  *   Differences: (1) retail hoists `lui` of D_L00_001610E8 / D_L00_001610F8 into $23/$30 before the loop and on th
