@@ -1,7 +1,7 @@
 # Sibling decompilations
 
 Other projects decompile or reimplement Ratchet & Clank games. Lombyte
-and RC1 match the US build of this game, and RC1 has mapped per-file
+and the NTSC decomp match the US build of this game, and the NTSC decomp has mapped per-file
 compiler flags; ReRAC documents what the code does; ratchet-uya-decomp
 mapped retail's flags for a later game. None is part of this build.
 Clone them next to this repository:
@@ -18,7 +18,7 @@ git clone https://github.com/vetusmagnus/ratchet-uya-decomp ~/Projects/ratchet-u
 executable, `SCUS_971.99`. Its code is ours, compiled for another
 region, so a function it has matched is the best starting point we
 have. It keeps one C file per function under `src/`, with names
-recovered from RC1.
+recovered from the NTSC decomp.
 
 Its percentage leaves out SIMD, VU0 and COP2 helpers ("intentional
 asm"), so it reads higher than ours for about the same amount of
@@ -83,9 +83,9 @@ whose body is `do { ... } while (0)`. That is the original source, not
 an artificial barrier, but `tools/integrate.py` refuses any `while (0)`,
 so such a candidate is landed by hand after review.
 
-## RC1: the same game, NTSC, with per-file flags
+## NTSC decomp: the same game, with per-file flags
 
-RC1 matches the US boot ELF with
+The NTSC decomp matches the US boot ELF with
 EE-GCC 2.95.2 (`-G8 -O2 -ffast-math -fno-exceptions`, SN's assembler
 optional). Its hand-named `config/symbols.txt` is where
 `config/symbol_names.txt` came from. Since 2026-09 an automated loop
@@ -99,7 +99,7 @@ What carries over most is its Makefile: per-object flags, each verified
 against the whole NTSC boot image. Retail built some translation units
 differently:
 
-| RC1 object | Flags |
+| NTSC decomp object | Flags |
 |---|---|
 | `menu`, `menu_post_mid`, `menu_post_gadgets` | `-fno-schedule-insns` |
 | `menu_post`, `menu_post_pages`, `menu_post_pages_end`, `transition` | `-fno-schedule-insns -mno-split-addresses` |
@@ -109,27 +109,27 @@ differently:
 | `movie/movie_mid`, `movie/videodec_post`, `movie/movie_post_audio`, `movie/videodec_nodata`, `movie/disp` | `-mno-split-addresses` |
 | `permcb`, `vuchain`, `draw_post_reset` | `-mno-split-addresses` |
 
-RC1 splits some of our units finer (`menu` into several objects), so a
+The NTSC decomp splits some of our units finer (`menu` into several objects), so a
 flag applies to a range of functions, not necessarily our whole file.
 Its notes (`decomp_state/notes/`) record what each matched function
 needed.
 
 **Measured here (2026-09-30): the flags do not carry over.** They are
-relative to RC1's compiler setup (EE-GCC 2.95.2, `-G8 -ffast-math`), not
+relative to the NTSC decomp's compiler setup (EE-GCC 2.95.2, `-G8 -ffast-math`), not
 to retail's objects as our SN 2.95.3 build sees them:
 
-- Six exact `menu.c` functions inside RC1's `menu` object (func_00207200,
-  002072C0, 00207340, 00207648, 00207780, 00207930) under RC1's
+- Six exact `menu.c` functions inside the NTSC decomp's `menu` object (func_00207200,
+  002072C0, 00207340, 00207648, 00207780, 00207930) under the NTSC decomp's
   `-fno-schedule-insns`: three stay exact, 00207200 goes to 14/188
   bytes off, 00207340 to 2/104, and 00207930 changes size.
-- The one near-miss in that range, func_00227A70 (pause.c, inside RC1's
+- The one near-miss in that range, func_00227A70 (pause.c, inside the NTSC decomp's
   `pause_post2`, built there with `-G0`): 57/144 bytes off with default
   flags, `-G0`, `-fno-schedule-insns` and both; 62/144 with
   `-fno-schedule-insns2`; a size change with `-mno-split-addresses`. Its
   residual is source shape: retail keeps `%hi(D_001D5F70)` in `$t2`
   across the loop and forms the index with other registers.
 
-So treat an RC1 flag as a hint to test per function, never as a file
+So treat a flag from the NTSC decomp as a hint to test per function, never as a file
 setting.
 
 ## ReRAC: the same game as a native PC port

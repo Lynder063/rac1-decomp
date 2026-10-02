@@ -42,7 +42,7 @@ as references:
 - open-source code under its own license: newlib, libgcc/GCC, and
   anything else whose license permits it, credited in
   `THIRD_PARTY_NOTICES.md`;
-- other public decompilations and ports of this game (Lombyte, RC1,
+- other public decompilations and ports of this game (Lombyte, the NTSC decomp,
   ReRAC: docs/SIBLING_DECOMPS.md), credited, and public hardware
   documentation.
 

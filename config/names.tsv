@@ -6,44 +6,44 @@ func_001160C8	srand	descriptive	ReRAC doc_names.csv	verified at US boot 0x1160C8
 func_001160D8	rand	descriptive	ReRAC doc_names.csv	verified at US boot 0x1160D8 (docs/plan/particles.md:135): newlib rand; verified against disassembly (line 293); US/PAL size alignment	
 func_00116108	reentrant_read	descriptive	Lombyte recovered_names.json	proposal (high, runtime/newlib) at US 0x116108; US/PAL size alignment	
 func_00116168	double_is_not_nan	descriptive	Lombyte recovered_names.json	proposal (high, math/floating_point) at US 0x116168; US/PAL size alignment	
-func_00116248	sprintf	descriptive	RC1 config/symbols.txt	sprintf at US 0x116248 (2026-09 naming loop); US/PAL size alignment	
+func_00116248	sprintf	descriptive	NTSC config/symbols.txt	sprintf at US 0x116248 (2026-09 naming loop); US/PAL size alignment	
 func_001170A0	vfprintf	candidate	Lombyte recovered_names.json	proposal (medium, runtime/newlib) at US 0x116DA8; US/PAL size alignment	
-func_0011AE20	sceSifInitRpc	descriptive	RC1 config/symbols.txt	sceSifInitRpc at US 0x11AB20 (2026-09 naming loop); US/PAL size alignment	
+func_0011AE20	sceSifInitRpc	descriptive	NTSC config/symbols.txt	sceSifInitRpc at US 0x11AB20 (2026-09 naming loop); US/PAL size alignment	
 func_0011AFE8	get_available_rpc_packet	descriptive	Lombyte recovered_names.json	proposal (high, runtime/rpc) at US 0x11ACE8; US/PAL size alignment	
-func_0011B2F8	sceSifBindRpc	descriptive	RC1 config/symbols.txt	sceSifBindRpc at US 0x11AFF8 (2026-09 naming loop); US/PAL size alignment	
-func_0011BF80	sceOpen	descriptive	RC1 config/symbols.txt	sceOpen at US 0x11BC80 (2026-09 naming loop); US/PAL size alignment	
-func_0011C208	sceClose	descriptive	RC1 config/symbols.txt	sceClose at US 0x11BF08 (2026-09 naming loop); US/PAL size alignment	
-func_0011C388	sceLseek	descriptive	RC1 config/symbols.txt	sceLseek at US 0x11C088 (2026-09 naming loop); US/PAL size alignment	
-func_0011C5C0	sceRead	descriptive	RC1 config/symbols.txt	sceRead at US 0x11C2C0 (2026-09 naming loop); US/PAL size alignment	
-func_0011C820	sceWrite	descriptive	RC1 config/symbols.txt	sceWrite at US 0x11C520 (2026-09 naming loop); US/PAL size alignment	
+func_0011B2F8	sceSifBindRpc	descriptive	NTSC config/symbols.txt	sceSifBindRpc at US 0x11AFF8 (2026-09 naming loop); US/PAL size alignment	
+func_0011BF80	sceOpen	descriptive	NTSC config/symbols.txt	sceOpen at US 0x11BC80 (2026-09 naming loop); US/PAL size alignment	
+func_0011C208	sceClose	descriptive	NTSC config/symbols.txt	sceClose at US 0x11BF08 (2026-09 naming loop); US/PAL size alignment	
+func_0011C388	sceLseek	descriptive	NTSC config/symbols.txt	sceLseek at US 0x11C088 (2026-09 naming loop); US/PAL size alignment	
+func_0011C5C0	sceRead	descriptive	NTSC config/symbols.txt	sceRead at US 0x11C2C0 (2026-09 naming loop); US/PAL size alignment	
+func_0011C820	sceWrite	descriptive	NTSC config/symbols.txt	sceWrite at US 0x11C520 (2026-09 naming loop); US/PAL size alignment	
 func_0011CC38	free_sif_system_memory	descriptive	Lombyte recovered_names.json	proposal (high, runtime/rpc) at US 0x11C938; US/PAL size alignment	
 func_0011DFC8	__main	recovered	config/symbol_names.txt	libgcc2 L__main, matched byte for byte	
 func_00120D28	cd_check_ncmd	candidate	Lombyte recovered_names.json	proposal (medium, sdk/storage) at US 0x120A28; US/PAL size alignment	
 func_00121040	cd_check_scmd	candidate	Lombyte recovered_names.json	proposal (medium, sdk/storage) at US 0x120D40; US/PAL size alignment	
-func_00121B78	sceGsResetGraph	descriptive	RC1 config/symbols.txt	sceGsResetGraph at US 0x121878 (2026-09 naming loop); US/PAL size alignment	
-func_00123308	sceDmaReset	descriptive	RC1 config/symbols.txt	sceDmaReset at US 0x123008 (2026-09 naming loop); US/PAL size alignment	
+func_00121B78	sceGsResetGraph	descriptive	NTSC config/symbols.txt	sceGsResetGraph at US 0x121878 (2026-09 naming loop); US/PAL size alignment	
+func_00123308	sceDmaReset	descriptive	NTSC config/symbols.txt	sceDmaReset at US 0x123008 (2026-09 naming loop); US/PAL size alignment	
 func_00123BA0	unpack_spr_descriptor	candidate	Lombyte recovered_names.json	proposal (medium, runtime/memory) at US 0x1238A0; US/PAL size alignment	
 func_00124B60	debug_print_stub	descriptive	Lombyte recovered_names.json	proposal (high, runtime/debug) at US 0x124A20; US/PAL size alignment	
-func_00124D18	scePad2Read	recovered	RC1 config/symbols.txt	scePad2Read at US 0x124BD8 (hand-named); US/PAL size alignment	
+func_00124D18	scePad2Read	recovered	NTSC config/symbols.txt	scePad2Read at US 0x124BD8 (hand-named); US/PAL size alignment	
 func_001281E8	decode_motion_vector	candidate	Lombyte recovered_names.json	proposal (medium, sdk/library) at US 0x1280A8; US/PAL size alignment	
 func_0012BD60	reserve_aligned_buffer_space	descriptive	Lombyte recovered_names.json	proposal (high, runtime/memory) at US 0x12BC20; US/PAL size alignment	
 func_0012D500	decode_bcd_time_fields	descriptive	Lombyte recovered_names.json	proposal (high, runtime/time) at US 0x12D3C0; US/PAL size alignment	
 func_0012D568	encode_bcd_time_fields	descriptive	Lombyte recovered_names.json	proposal (high, runtime/time) at US 0x12D428; US/PAL size alignment	
 func_0012D868	_start	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	
 func_0012DA28	_exit	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	
-func_0012DA30	_exit	candidate	RC1 config/symbols.txt	_exit at US 0x12D8E8 (hand-named); US/PAL size alignment; name already taken by func_0012DA28	_exit
+func_0012DA30	_exit	candidate	NTSC config/symbols.txt	_exit at US 0x12D8E8 (hand-named); US/PAL size alignment; name already taken by func_0012DA28	_exit
 func_0012DA38	ParseBin	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	parse_bin
 func_0012DB18	main	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	run_game_main_loop
 func_0012DB68	snd_StartSoundSystem	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	snd_start_sound_system
 func_0012DDC0	snd_FlushSoundCommands	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	snd_flush_sound_commands
 func_0012DFB0	snd_GotReturns	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	
 func_0012E038	snd_PrepareReturnBuffer	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	
-func_0012E2E8	snd_ResolveBankXREFS	recovered	RC1 config/symbols.txt	snd_ResolveBankXREFS at US 0x12E1A8 (hand-named); US/PAL size alignment	snd_resolve_bank_xrefs
+func_0012E2E8	snd_ResolveBankXREFS	recovered	NTSC config/symbols.txt	snd_ResolveBankXREFS at US 0x12E1A8 (hand-named); US/PAL size alignment	snd_resolve_bank_xrefs
 func_0012E318	snd_UnloadBank	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	snd_unload_bank
 func_0012E348	snd_SetMasterVolume	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	snd_set_master_volume
 func_0012E380	snd_SetPlaybackMode	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	snd_set_playback_mode
 func_0012E3F8	snd_SetGroupVoiceRange	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	
-func_0012E4F8	snd_StopAllSounds	recovered	RC1 config/symbols.txt	snd_StopAllSounds at US 0x12E3B8 (hand-named); US/PAL size alignment	snd_stop_all_sounds
+func_0012E4F8	snd_StopAllSounds	recovered	NTSC config/symbols.txt	snd_StopAllSounds at US 0x12E3B8 (hand-named); US/PAL size alignment	snd_stop_all_sounds
 func_0012E528	snd_PauseAllSoundsInGroup	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	snd_pause_all_sounds_in_group
 func_0012E558	snd_ContinueAllSoundsInGroup	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	snd_continue_all_sounds_in_group
 func_0012E588	snd_SoundIsStillPlaying_CB	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	snd_sound_is_still_playing_cb
@@ -54,7 +54,7 @@ func_0012EB18	snd_SendCurrentBatch	recovered	config/symbol_names.txt	core tail: 
 func_0012EC40	snd_reset_state_and_flush_commands	candidate	Lombyte recovered_names.json	proposal (medium, audio/rpc) at US 0x12EB00; US/PAL size alignment	
 func_0012EC60	snd_InitVAGStreamingEx	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	snd_init_vag_streaming_ex
 func_0012ED10	snd_StopAllStreams	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	snd_stop_all_streams
-func_0012ED48	snd_PlayVAGStreamByLocEx_CB	recovered	RC1 config/symbols.txt	snd_PlayVAGStreamByLocEx_CB at US 0x12EC08 (hand-named); US/PAL size alignment	snd_play_vag_stream_by_loc_ex_cb
+func_0012ED48	snd_PlayVAGStreamByLocEx_CB	recovered	NTSC config/symbols.txt	snd_PlayVAGStreamByLocEx_CB at US 0x12EC08 (hand-named); US/PAL size alignment	snd_play_vag_stream_by_loc_ex_cb
 func_0012EDB0	snd_PauseVAGStream	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	snd_pause_vag_stream
 func_0012EDE0	snd_ContinueVAGStream	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	snd_continue_vag_stream
 func_0012EE10	snd_GetVAGStreamTimeRemaining_CB	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	snd_get_vag_stream_time_remaining_cb
@@ -69,7 +69,7 @@ func_0012F0E8	snd_PreAllocReverbWorkArea	recovered	config/symbol_names.txt	core 
 func_0012F120	snd_AutoReverb	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	
 func_0012F1E8	snd_ResetMovieSound	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	
 func_0012F248	snd_StartMovieSound	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	
-func_0012F288	snd_UpdateMovieADPCM	recovered	RC1 config/symbols.txt	snd_UpdateMovieADPCM at US 0x12F148 (hand-named); US/PAL size alignment	snd_update_movie_adpcm
+func_0012F288	snd_UpdateMovieADPCM	recovered	NTSC config/symbols.txt	snd_UpdateMovieADPCM at US 0x12F148 (hand-named); US/PAL size alignment	snd_update_movie_adpcm
 func_0012F2B8	snd_GetMovieNAX	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	snd_get_movie_nax
 func_0012F2E0	snd_GetDopplerPitchMod	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	doppler_pitch_mod
 func_0012F308	vsync_callback	recovered	config/symbol_names.txt	core tail: entry-point shift +0x140 onto a PAL function start	count_vsync
@@ -79,10 +79,10 @@ func_0012F4A8	read_file_entry_with_retry	descriptive	Lombyte recovered_names.jso
 func_001E9088	actuator_CalcPower	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	
 func_001E94E8	LoadPifAsPSMT8H	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	load_pif_as_psmt8_h
 func_001E96B8	LoadDebugFont	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	
-func_001E9730	STUB_printf	recovered	RC1 config/symbols.txt	STUB_printf at US 0x1E93B0 (hand-named); US/PAL size alignment	
-func_001E9808	showDebugFont	descriptive	RC1 config/symbols.txt	showDebugFont__Fi at US 0x1E9488 (2026-09 naming loop); US/PAL size alignment	start_level
+func_001E9730	STUB_printf	recovered	NTSC config/symbols.txt	STUB_printf at US 0x1E93B0 (hand-named); US/PAL size alignment	
+func_001E9808	showDebugFont	descriptive	NTSC config/symbols.txt	showDebugFont__Fi at US 0x1E9488 (2026-09 naming loop); US/PAL size alignment	start_level
 func_001E9E70	Transition_DrawSky	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	
-func_001EB300	Help_LoadMsgs	descriptive	RC1 config/symbols.txt	Help_LoadMsgs__Fi at US 0x1EAF50 (2026-09 naming loop); US/PAL size alignment	
+func_001EB300	Help_LoadMsgs	descriptive	NTSC config/symbols.txt	Help_LoadMsgs__Fi at US 0x1EAF50 (2026-09 naming loop); US/PAL size alignment	
 func_001EB338	Transition_UpdateMovieCamera	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	transition_update_movie_camera
 func_001EB7C0	Transition_DefaultDraw	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	transition_default_draw
 func_001EBAF0	is_active_state_entry	candidate	Lombyte recovered_names.json	proposal (medium, gameplay/state) at US 0x1EB740; US/PAL size alignment	
@@ -93,11 +93,11 @@ func_001EC210	Camera_handleCollWithHero	recovered	config/symbol_names.txt	text: 
 func_001EC270	Camera_runSetupToNewCam	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	update_moby
 func_001EC5B8	Camera_ActivationCheckPriority	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	camera_activation_check_priority
 func_001EC780	Camera_Exit	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	draw_moby
-func_001EC7C8	UpdateAllCameras	recovered	RC1 config/symbols.txt	UpdateAllCameras__Fi at US 0x1EC420 (hand-named); US/PAL size alignment	update_all_cameras
-func_001EC8D8	Camera_Pos2Polar3d	descriptive	RC1 config/symbols.txt	Camera_Pos2Polar3d__FP7PolarSmP4vec4N41 at US 0x1EC530 (2026-09 naming loop); US/PAL size alignment	compute_camera_angles
+func_001EC7C8	UpdateAllCameras	recovered	NTSC config/symbols.txt	UpdateAllCameras__Fi at US 0x1EC420 (hand-named); US/PAL size alignment	update_all_cameras
+func_001EC8D8	Camera_Pos2Polar3d	descriptive	NTSC config/symbols.txt	Camera_Pos2Polar3d__FP7PolarSmP4vec4N41 at US 0x1EC530 (2026-09 naming loop); US/PAL size alignment	compute_camera_angles
 func_001ECAB8	capture_camera_orientation	candidate	Lombyte recovered_names.json	proposal (medium, gameplay/camera) at US 0x1EC710; US/PAL size alignment	
-func_001ECB98	Camera_stagePendingTransform	descriptive	RC1 config/symbols.txt	Camera_stagePendingTransform__Fv at US 0x1EC7F0 (2026-09 naming loop); US/PAL size alignment	save_camera_vectors
-func_001ECC10	Camera_commitPendingTransform	descriptive	RC1 config/symbols.txt	Camera_commitPendingTransform__Fv at US 0x1EC868 (2026-09 naming loop); US/PAL size alignment	restore_camera_vectors
+func_001ECB98	Camera_stagePendingTransform	descriptive	NTSC config/symbols.txt	Camera_stagePendingTransform__Fv at US 0x1EC7F0 (2026-09 naming loop); US/PAL size alignment	save_camera_vectors
+func_001ECC10	Camera_commitPendingTransform	descriptive	NTSC config/symbols.txt	Camera_commitPendingTransform__Fv at US 0x1EC868 (2026-09 naming loop); US/PAL size alignment	restore_camera_vectors
 func_001ECC48	start_camera_blend	candidate	Lombyte recovered_names.json	proposal (medium, gameplay/camera) at US 0x1EC8A0; US/PAL size alignment	
 func_001ECEA0	step_camera_blend	candidate	Lombyte recovered_names.json	proposal (medium, gameplay/camera) at US 0x1ECAF8; US/PAL size alignment	
 func_001ED080	camera_update	candidate	ReRAC doc_names.csv	suggested at US boot 0x1ECCD8 (docs/plan/game_camera_fog.md:31): doc name CameraUpdate; US/PAL size alignment	
@@ -105,15 +105,15 @@ func_001ED658	update_camera_blend	candidate	Lombyte recovered_names.json	proposa
 func_001ED708	apply_camera_shake	candidate	Lombyte recovered_names.json	proposal (medium, gameplay/camera) at US 0x1ED360; US/PAL size alignment	
 func_001ED818	CameraPreUpdate	candidate	ReRAC doc_names.csv	suggested at US level 01 0x20E670 (docs/plan/player_controller.md:260): coined: computes up vectors; hero move dir/speed; fingerprint	
 func_001EDB98	update_camera_underwater_flag	candidate	Lombyte recovered_names.json	proposal (medium, gameplay/camera) at US 0x1ED7F0; US/PAL size alignment	UnderwaterTest
-func_001EDE50	UpdateCamera	descriptive	RC1 config/symbols.txt	UpdateCamera__Fv at US 0x1EDAA8 (2026-09 naming loop); US/PAL size alignment	update_camera
+func_001EDE50	UpdateCamera	descriptive	NTSC config/symbols.txt	UpdateCamera__Fv at US 0x1EDAA8 (2026-09 naming loop); US/PAL size alignment	update_camera
 func_001EDFF8	LensFlareDraw	candidate	ReRAC doc_names.csv	suggested at US level 01 0x20F480 (docs/plan/particles.md:170): coined: lens-flare pass (FX textures); not a particle; fingerprint	
 func_001EE3B0	spawn_particle_burst	candidate	Lombyte recovered_names.json	proposal (medium, rendering/effects) at US 0x1EE008; US/PAL size alignment	
 func_001EE858	EnvFogUpdate	candidate	ReRAC doc_names.csv	suggested at US level 01 0x2102B8 (docs/plan/world_animation.md:204): coined: level copy of fun_001ee4b0; fingerprint	update_fog_zones
-func_001F0F30	draw_resetTextureDmaState	descriptive	RC1 config/symbols.txt	draw_resetTextureDmaState__Fv at US 0x1F0B88 (2026-09 naming loop); US/PAL size alignment	
+func_001F0F30	draw_resetTextureDmaState	descriptive	NTSC config/symbols.txt	draw_resetTextureDmaState__Fv at US 0x1F0B88 (2026-09 naming loop); US/PAL size alignment	
 func_001F0F78	print_debug_text	candidate	Lombyte recovered_names.json	proposal (medium, rendering/debug) at US 0x1F0BD0; US/PAL size alignment	
 func_001F0FF8	print_debug_text_centered	candidate	Lombyte recovered_names.json	proposal (medium, rendering/debug) at US 0x1F0C50; US/PAL size alignment	
-func_001F2418	projectWorldPoint	descriptive	RC1 config/symbols.txt	projectWorldPoint__FPfT0 at US 0x1F2070 (2026-09 naming loop); US/PAL size alignment	project_to_screen,world_to_screen
-func_001F2568	ResetVideoPipeline	descriptive	RC1 config/symbols.txt	ResetVideoPipeline__Fv at US 0x1F21C0 (2026-09 naming loop); US/PAL size alignment	reset_graphics
+func_001F2418	projectWorldPoint	descriptive	NTSC config/symbols.txt	projectWorldPoint__FPfT0 at US 0x1F2070 (2026-09 naming loop); US/PAL size alignment	project_to_screen,world_to_screen
+func_001F2568	ResetVideoPipeline	descriptive	NTSC config/symbols.txt	ResetVideoPipeline__Fv at US 0x1F21C0 (2026-09 naming loop); US/PAL size alignment	reset_graphics
 func_001F2608	build_rotation_view_proj	candidate	ReRAC doc_names.csv	suggested at US boot 0x1F2260 (docs/plan/sky_render_notes.md:61): doc name BuildRotationViewProj; US/PAL size alignment	
 func_001F2930	UpdateFog	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	update_fog
 func_001F2A38	ParseOcclGrid	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	parse_occl_grid,parse_occlusion_grid
@@ -128,21 +128,21 @@ func_001F3B90	ResetDrawGlobals	recovered	config/symbol_names.txt	text: NTSC/PAL 
 func_001F3C10	ResetGsRegisters	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	reset_gs_registers
 func_001F3D00	ResetGsRegistersPr	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	reset_gs_registers_pr
 func_001F3D78	DrawDebugProfiler	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	DrawWorld,draw_debug_profiler,draw_world
-func_001F45F0	drawNormalFrame	descriptive	RC1 config/symbols.txt	drawNormalFrame__Fv at US 0x1F4248 (2026-09 naming loop); US/PAL size alignment	prepare_debug_profiler_render
+func_001F45F0	drawNormalFrame	descriptive	NTSC config/symbols.txt	drawNormalFrame__Fv at US 0x1F4248 (2026-09 naming loop); US/PAL size alignment	prepare_debug_profiler_render
 func_001F4630	SetupGifPaging	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	setup_gif_paging
 func_001F4748	DoGifPaging	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	do_gif_paging
 func_001F4868	GetEffectTex	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	get_effect_texture
-func_001F49B0	AddDrawCallback	descriptive	RC1 config/symbols.txt	AddDrawCallback__FUiUi at US 0x1F4600 (2026-09 naming loop); US/PAL size alignment	RegisterDrawCallback,RegisterDrawCallback2,enqueue_callback_list_1
-func_001F4A00	ExecuteDrawCallbacks	descriptive	RC1 config/symbols.txt	ExecuteDrawCallbacks__Fv at US 0x1F4650 (2026-09 naming loop); US/PAL size alignment	RunDrawCallbacksPostMoby,RunDrawCallbacksPostPart,RunDrawCallbacksPostShrub,RunDrawCallbacksPostTie,dispatch_callback_list_1
-func_001F4A78	ExecuteDrawCallbacks3	descriptive	RC1 config/symbols.txt	ExecuteDrawCallbacks3__Fv at US 0x1F46C8 (2026-09 naming loop); US/PAL size alignment	dispatch_callback_list_2
-func_001F4AF0	ExecuteDrawCallbacks4	descriptive	RC1 config/symbols.txt	ExecuteDrawCallbacks4__Fv at US 0x1F4740 (2026-09 naming loop); US/PAL size alignment	dispatch_callback_list_3
+func_001F49B0	AddDrawCallback	descriptive	NTSC config/symbols.txt	AddDrawCallback__FUiUi at US 0x1F4600 (2026-09 naming loop); US/PAL size alignment	RegisterDrawCallback,RegisterDrawCallback2,enqueue_callback_list_1
+func_001F4A00	ExecuteDrawCallbacks	descriptive	NTSC config/symbols.txt	ExecuteDrawCallbacks__Fv at US 0x1F4650 (2026-09 naming loop); US/PAL size alignment	RunDrawCallbacksPostMoby,RunDrawCallbacksPostPart,RunDrawCallbacksPostShrub,RunDrawCallbacksPostTie,dispatch_callback_list_1
+func_001F4A78	ExecuteDrawCallbacks3	descriptive	NTSC config/symbols.txt	ExecuteDrawCallbacks3__Fv at US 0x1F46C8 (2026-09 naming loop); US/PAL size alignment	dispatch_callback_list_2
+func_001F4AF0	ExecuteDrawCallbacks4	descriptive	NTSC config/symbols.txt	ExecuteDrawCallbacks4__Fv at US 0x1F4740 (2026-09 naming loop); US/PAL size alignment	dispatch_callback_list_3
 func_001F4B68	enqueue_callback_list_4	descriptive	Lombyte recovered_names.json	proposal (high, gameplay/callbacks) at US 0x1F47B8; US/PAL size alignment	
-func_001F4BB8	ExecuteDrawCallbacks2	descriptive	RC1 config/symbols.txt	ExecuteDrawCallbacks2__Fv at US 0x1F4808 (2026-09 naming loop); US/PAL size alignment	dispatch_callback_list_4
+func_001F4BB8	ExecuteDrawCallbacks2	descriptive	NTSC config/symbols.txt	ExecuteDrawCallbacks2__Fv at US 0x1F4808 (2026-09 naming loop); US/PAL size alignment	dispatch_callback_list_4
 func_001F4C30	draw_light_quads	candidate	Lombyte recovered_names.json	proposal (medium, rendering/effects) at US 0x1F4880; US/PAL size alignment	
 func_001F4E08	FadeToBlack	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	fade_to_black
 func_001F4F90	draw_subtitles	candidate	Lombyte recovered_names.json	proposal (medium, ui/text) at US 0x1F4BE0; US/PAL size alignment	
 func_001F5148	draw_letterbox_bars	candidate	Lombyte recovered_names.json	proposal (medium, rendering/effects) at US 0x1F4D98; US/PAL size alignment	draw_screen_fade
-func_001F5368	DrawScreenEffect	descriptive	RC1 config/symbols.txt	DrawScreenEffect__Fv at US 0x1F4FB8 (2026-09 naming loop); US/PAL size alignment	
+func_001F5368	DrawScreenEffect	descriptive	NTSC config/symbols.txt	DrawScreenEffect__Fv at US 0x1F4FB8 (2026-09 naming loop); US/PAL size alignment	
 func_001F54E8	draw_fogged_fullscreen_sprite	descriptive	Lombyte recovered_names.json	proposal (high, rendering/effects) at US 0x1F5138; US/PAL size alignment	
 func_001F55C0	emit_rgba_draw_packet	descriptive	Lombyte recovered_names.json	proposal (high, rendering/packets) at US 0x1F5210; US/PAL size alignment	
 func_001F5650	DrawRectOverlay_FiiiiUl	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	DrawRectOverlay,draw_rect_overlay
@@ -169,56 +169,56 @@ func_001F7560	font_print_window_regular	candidate	Lombyte recovered_names.json	p
 func_001F7648	FontSetWindow	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	
 func_001F7868	DrawSpriteHelper_A	candidate	ReRAC doc_names.csv	suggested at US level 01 0x21E340 (docs/plan/render_pipeline.md:16): coined: billboard/sprite draw helper using VU1 prog 0x10e818; fingerprint	setup_water_strip_vu1
 func_001F7B40	begin_draw_frame	candidate	Lombyte recovered_names.json	proposal (medium, rendering/state) at US 0x1F7978; US/PAL size alignment	
-func_001F7BF8	buildBitSwapLut	descriptive	RC1 config/symbols.txt	buildBitSwapLut__Fv at US 0x1F7A30 (2026-09 naming loop); US/PAL size alignment	initialize_alpha_lookup_table
-func_001F7C60	FastIntersectVert	recovered	RC1 config/symbols.txt	FastIntersectVert at US 0x1F7A98 (hand-named); US/PAL size alignment	
-func_001F84AC	writeSetupBlock	recovered	RC1 config/symbols.txt	writeSetupBlock at US 0x1F82E4 (hand-named); US/PAL size alignment	
-func_001F852C	writeGSHeader	recovered	RC1 config/symbols.txt	writeGSHeader at US 0x1F8364 (hand-named); US/PAL size alignment	
-func_001F856C	ScisAndRender	recovered	RC1 config/symbols.txt	ScisAndRender at US 0x1F83A4 (hand-named); US/PAL size alignment	
+func_001F7BF8	buildBitSwapLut	descriptive	NTSC config/symbols.txt	buildBitSwapLut__Fv at US 0x1F7A30 (2026-09 naming loop); US/PAL size alignment	initialize_alpha_lookup_table
+func_001F7C60	FastIntersectVert	recovered	NTSC config/symbols.txt	FastIntersectVert at US 0x1F7A98 (hand-named); US/PAL size alignment	
+func_001F84AC	writeSetupBlock	recovered	NTSC config/symbols.txt	writeSetupBlock at US 0x1F82E4 (hand-named); US/PAL size alignment	
+func_001F852C	writeGSHeader	recovered	NTSC config/symbols.txt	writeGSHeader at US 0x1F8364 (hand-named); US/PAL size alignment	
+func_001F856C	ScisAndRender	recovered	NTSC config/symbols.txt	ScisAndRender at US 0x1F83A4 (hand-named); US/PAL size alignment	
 func_001F9850	scale_ticks	descriptive	ReRAC doc_names.csv	verified at US boot 0x1F96F8 (docs/plan/menus.md:6): doc name ScaleTicks; US/PAL size alignment	ticks
-func_001F9908	FastDecTimer	candidate	RC1 config/symbols.txt	FastDecTimer__FRi at US 0x1F9740 (hand-named); US/PAL size alignment; name already taken by func_001F9938	FastDecTimer
-func_001F9938	FastDecTimer	recovered	RC1 config/symbols.txt	FastDecTimer__FRs at US 0x1F9770 (hand-named); US/PAL size alignment	
-func_001F9968	log2dim	descriptive	RC1 config/symbols.txt	log2dim at US 0x1F97A0 (2026-09 naming loop); US/PAL size alignment	log2_plzcw
-func_001F99B0	FastMemSet	recovered	RC1 config/symbols.txt	FastMemSet at US 0x1F97E8 (hand-named); US/PAL size alignment	fill_transfer_words
-func_001F99D8	FastMemZero16	recovered	RC1 config/symbols.txt	FastMemZero16__FPvi at US 0x1F9810 (hand-named); US/PAL size alignment	
-func_001F9A98	FastMemCopy	recovered	RC1 config/symbols.txt	FastMemCopy at US 0x1F98D0 (hand-named); US/PAL size alignment	
-func_001F9AC0	FastMemOr16	descriptive	RC1 config/symbols.txt	FastMemOr16__FPvN20i at US 0x1F98F8 (2026-09 naming loop); US/PAL size alignment	
+func_001F9908	FastDecTimer	candidate	NTSC config/symbols.txt	FastDecTimer__FRi at US 0x1F9740 (hand-named); US/PAL size alignment; name already taken by func_001F9938	FastDecTimer
+func_001F9938	FastDecTimer	recovered	NTSC config/symbols.txt	FastDecTimer__FRs at US 0x1F9770 (hand-named); US/PAL size alignment	
+func_001F9968	log2dim	descriptive	NTSC config/symbols.txt	log2dim at US 0x1F97A0 (2026-09 naming loop); US/PAL size alignment	log2_plzcw
+func_001F99B0	FastMemSet	recovered	NTSC config/symbols.txt	FastMemSet at US 0x1F97E8 (hand-named); US/PAL size alignment	fill_transfer_words
+func_001F99D8	FastMemZero16	recovered	NTSC config/symbols.txt	FastMemZero16__FPvi at US 0x1F9810 (hand-named); US/PAL size alignment	
+func_001F9A98	FastMemCopy	recovered	NTSC config/symbols.txt	FastMemCopy at US 0x1F98D0 (hand-named); US/PAL size alignment	
+func_001F9AC0	FastMemOr16	descriptive	NTSC config/symbols.txt	FastMemOr16__FPvN20i at US 0x1F98F8 (2026-09 naming loop); US/PAL size alignment	
 func_001F9AF0	write_dma_channel	descriptive	ReRAC doc_names.csv	verified at US level 01 0x221090 (docs/plan/render_pipeline.md:27): SPR_FROM (D8) scratchpad to main copy; fingerprint	
 func_001F9B50	vec_length	candidate	ReRAC doc_names.csv	suggested at US boot 0x1F9988 (docs/plan/world_animation.md:140): doc name VecLength; US/PAL size alignment	
-func_001F9B88	FastAbsF	descriptive	RC1 config/symbols.txt	FastAbsF at US 0x1F99C0 (2026-09 naming loop); US/PAL size alignment	
+func_001F9B88	FastAbsF	descriptive	NTSC config/symbols.txt	FastAbsF at US 0x1F99C0 (2026-09 naming loop); US/PAL size alignment	
 func_001F9BC0	clear_u64_value	descriptive	Lombyte recovered_names.json	proposal (high, runtime/memory) at US 0x1F99F8; US/PAL size alignment	
-func_001F9BD8	FastVecAdd	descriptive	RC1 config/symbols.txt	FastVecAdd at US 0x1F9A10 (2026-09 naming loop); US/PAL size alignment	VecAdd,vec_add
-func_001F9BF0	FastVecSub	recovered	RC1 config/symbols.txt	FastVecSub at US 0x1F9A28 (hand-named); US/PAL size alignment	VecSub
-func_001F9C30	FastVecScale	descriptive	RC1 config/symbols.txt	FastVecScale at US 0x1F9A68 (2026-09 naming loop); US/PAL size alignment	VecScale
+func_001F9BD8	FastVecAdd	descriptive	NTSC config/symbols.txt	FastVecAdd at US 0x1F9A10 (2026-09 naming loop); US/PAL size alignment	VecAdd,vec_add
+func_001F9BF0	FastVecSub	recovered	NTSC config/symbols.txt	FastVecSub at US 0x1F9A28 (hand-named); US/PAL size alignment	VecSub
+func_001F9C30	FastVecScale	descriptive	NTSC config/symbols.txt	FastVecScale at US 0x1F9A68 (2026-09 naming loop); US/PAL size alignment	VecScale
 func_001F9C48	vec_scale	candidate	ReRAC doc_names.csv	suggested at US boot 0x1F9A80 (docs/plan/tie_lighting.md:31): doc name VecScale; US/PAL size alignment	
-func_001F9C78	FastVecDot	recovered	RC1 config/symbols.txt	FastVecDot at US 0x1F9AB0 (hand-named); US/PAL size alignment	
-func_001F9CA0	FastVecCross	recovered	RC1 config/symbols.txt	FastVecCross at US 0x1F9AD8 (hand-named); US/PAL size alignment	
-func_001F9CB8	FastVecLength	recovered	RC1 config/symbols.txt	FastVecLength at US 0x1F9AF0 (hand-named); US/PAL size alignment	
-func_001F9D10	FastVecDist	descriptive	RC1 config/symbols.txt	FastVecDist at US 0x1F9B48 (2026-09 naming loop); US/PAL size alignment	VecDistance
+func_001F9C78	FastVecDot	recovered	NTSC config/symbols.txt	FastVecDot at US 0x1F9AB0 (hand-named); US/PAL size alignment	
+func_001F9CA0	FastVecCross	recovered	NTSC config/symbols.txt	FastVecCross at US 0x1F9AD8 (hand-named); US/PAL size alignment	
+func_001F9CB8	FastVecLength	recovered	NTSC config/symbols.txt	FastVecLength at US 0x1F9AF0 (hand-named); US/PAL size alignment	
+func_001F9D10	FastVecDist	descriptive	NTSC config/symbols.txt	FastVecDist at US 0x1F9B48 (2026-09 naming loop); US/PAL size alignment	VecDistance
 func_001F9D48	VecDistance2	candidate	ReRAC doc_names.csv	suggested at US level 01 0x221398 (docs/plan/moby_update_catalogue.md:299): coined: distance (second variant); fingerprint	
 func_001F9EC0	matrix_mul_vec3	candidate	ReRAC doc_names.csv	suggested at US boot 0x1F9CF8 (docs/plan/tie_lighting.md:31): doc name MatrixMulVec3; US/PAL size alignment	
-func_001F9F18	FastVectorFromPackedChars	recovered	RC1 config/symbols.txt	FastVectorFromPackedChars__FR4vec4i at US 0x1F9D50 (hand-named); US/PAL size alignment	
-func_001F9F30	FastVectorToPackedChars	recovered	RC1 config/symbols.txt	FastVectorToPackedChars__FR4vec4 at US 0x1F9D68 (hand-named); US/PAL size alignment	
-func_001F9F60	FastCountChars	recovered	RC1 config/symbols.txt	FastCountChars__FPvi at US 0x1F9D98 (hand-named); US/PAL size alignment	
-func_001F9F90	FastCos	recovered	RC1 config/symbols.txt	FastCos at US 0x1F9DC8 (hand-named); US/PAL size alignment	
-func_001F9FA8	FastSin	recovered	RC1 config/symbols.txt	FastSin__Ff at US 0x1F9DE0 (hand-named); US/PAL size alignment	
-func_001F9FC0	FastArcSin	recovered	RC1 config/symbols.txt	FastArcSin__Ff at US 0x1F9DF8 (hand-named); US/PAL size alignment	
+func_001F9F18	FastVectorFromPackedChars	recovered	NTSC config/symbols.txt	FastVectorFromPackedChars__FR4vec4i at US 0x1F9D50 (hand-named); US/PAL size alignment	
+func_001F9F30	FastVectorToPackedChars	recovered	NTSC config/symbols.txt	FastVectorToPackedChars__FR4vec4 at US 0x1F9D68 (hand-named); US/PAL size alignment	
+func_001F9F60	FastCountChars	recovered	NTSC config/symbols.txt	FastCountChars__FPvi at US 0x1F9D98 (hand-named); US/PAL size alignment	
+func_001F9F90	FastCos	recovered	NTSC config/symbols.txt	FastCos at US 0x1F9DC8 (hand-named); US/PAL size alignment	
+func_001F9FA8	FastSin	recovered	NTSC config/symbols.txt	FastSin__Ff at US 0x1F9DE0 (hand-named); US/PAL size alignment	
+func_001F9FC0	FastArcSin	recovered	NTSC config/symbols.txt	FastArcSin__Ff at US 0x1F9DF8 (hand-named); US/PAL size alignment	
 func_001FA218	euler_to_matrix	candidate	ReRAC doc_names.csv	suggested at US boot 0x1FA050 (docs/plan/player_controller.md:54): doc name EulerToMatrix; US/PAL size alignment	
 func_001FA480	matrix_copy_rows	candidate	ReRAC doc_names.csv	suggested at US boot 0x1FA2B8 (docs/formats/moby_rac1.md:73): doc name MatrixCopyRows; US/PAL size alignment	
 func_001FA540	sce_vu0_mul_matrix	descriptive	ReRAC doc_names.csv	verified at US boot 0x1FA378 (docs/plan/game_camera_fog.md:22): doc name sceVu0MulMatrix; US/PAL size alignment	
-func_001FA748	FastAddRots	recovered	RC1 config/symbols.txt	FastAddRots__Fff at US 0x1FA580 (hand-named); US/PAL size alignment	AngleAdd,fast_add_rotations
-func_001FA790	FastSubRots	recovered	RC1 config/symbols.txt	FastSubRots__Fff at US 0x1FA5C8 (hand-named); US/PAL size alignment	fast_subtract_rotations
-func_001FA7D8	FastNormalizeAngle	recovered	RC1 config/symbols.txt	FastNormalizeAngle at US 0x1FA610 (hand-named); US/PAL size alignment	fast_normalize_angle
-func_001FA850	FastDiffRots	recovered	RC1 config/symbols.txt	FastDiffRots__Fff at US 0x1FA688 (hand-named); US/PAL size alignment	AngleDiff,fast_difference_between_rotations
+func_001FA748	FastAddRots	recovered	NTSC config/symbols.txt	FastAddRots__Fff at US 0x1FA580 (hand-named); US/PAL size alignment	AngleAdd,fast_add_rotations
+func_001FA790	FastSubRots	recovered	NTSC config/symbols.txt	FastSubRots__Fff at US 0x1FA5C8 (hand-named); US/PAL size alignment	fast_subtract_rotations
+func_001FA7D8	FastNormalizeAngle	recovered	NTSC config/symbols.txt	FastNormalizeAngle at US 0x1FA610 (hand-named); US/PAL size alignment	fast_normalize_angle
+func_001FA850	FastDiffRots	recovered	NTSC config/symbols.txt	FastDiffRots__Fff at US 0x1FA688 (hand-named); US/PAL size alignment	AngleDiff,fast_difference_between_rotations
 func_001FA898	truncate_float_to_s32	descriptive	Lombyte recovered_names.json	proposal (high, math/conversion) at US 0x1FA6D0; US/PAL size alignment	
-func_001FA8A8	FastTweenColor	recovered	RC1 config/symbols.txt	FastTweenColor at US 0x1FA6E0 (hand-named); US/PAL size alignment	
-func_001FAB40	SetupFS_AA_buffer	recovered	RC1 config/symbols.txt	SetupFS_AA_buffer__Fiiiiii at US 0x1FA978 (hand-named); US/PAL size alignment	setup_fs_aa_buffer
-func_001FB448	SetBackgroundColor	recovered	RC1 config/symbols.txt	SetBackgroundColor__Fiii at US 0x1FB280 (hand-named); US/PAL size alignment	set_background_color
+func_001FA8A8	FastTweenColor	recovered	NTSC config/symbols.txt	FastTweenColor at US 0x1FA6E0 (hand-named); US/PAL size alignment	
+func_001FAB40	SetupFS_AA_buffer	recovered	NTSC config/symbols.txt	SetupFS_AA_buffer__Fiiiiii at US 0x1FA978 (hand-named); US/PAL size alignment	setup_fs_aa_buffer
+func_001FB448	SetBackgroundColor	recovered	NTSC config/symbols.txt	SetBackgroundColor__Fiii at US 0x1FB280 (hand-named); US/PAL size alignment	set_background_color
 func_001FB470	PutDispBuffer	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	put_disp_buffer
 func_001FB498	PutDrawBufferLarge	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	append_draw_environment_packet
-func_001FB530	framebuf_appendLargeSetup	descriptive	RC1 config/symbols.txt	framebuf_appendLargeSetup__Fv at US 0x1FB368 (2026-09 naming loop); US/PAL size alignment	append_gif_transfer_packet
+func_001FB530	framebuf_appendLargeSetup	descriptive	NTSC config/symbols.txt	framebuf_appendLargeSetup__Fv at US 0x1FB368 (2026-09 naming loop); US/PAL size alignment	append_gif_transfer_packet
 func_001FB598	PutDrawBufferSmall	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	append_draw_buffer_packet
 func_001FB848	AA_BlurPass	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	PutAABlitPacket_A,PutAABlitPacket_B,ReplayHudGsState,VU1_restoreGsRegs_A,VU1_restoreGsRegs_B,append_texture_transfer_packet
-func_001FB8A8	framebuf_appendSmallSetup	descriptive	RC1 config/symbols.txt	framebuf_appendSmallSetup__Fv at US 0x1FB6E0 (2026-09 naming loop); US/PAL size alignment	append_palette_transfer_packet
+func_001FB8A8	framebuf_appendSmallSetup	descriptive	NTSC config/symbols.txt	framebuf_appendSmallSetup__Fv at US 0x1FB6E0 (2026-09 naming loop); US/PAL size alignment	append_palette_transfer_packet
 func_001FBAB8	draw_framebuffer_rect	candidate	Lombyte recovered_names.json	proposal (medium, rendering/framebuffer) at US 0x1FB8F0; US/PAL size alignment	
 func_001FE4D0	Help_FindIndex	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	find_help_message_index
 func_001FE540	msg_string	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	get_help_message_text
@@ -254,7 +254,7 @@ func_002014B8	draw_hud_rect	candidate	Lombyte recovered_names.json	proposal (med
 func_002017C8	draw_hud_rect_depth	candidate	Lombyte recovered_names.json	proposal (medium, ui/hud) at US 0x200F90; US/PAL size alignment	
 func_00201960	draw_stretchable_ui_frame	descriptive	Lombyte recovered_names.json	proposal (high, ui/frames) at US 0x201128; US/PAL size alignment	DrawBarFrame
 func_00201A38	draw_framed_text	candidate	Lombyte recovered_names.json	proposal (medium, ui/frames) at US 0x201200; US/PAL size alignment	DrawBanner
-func_00201AF0	draw_bootImage	descriptive	RC1 config/symbols.txt	draw_bootImage__Fi at US 0x2012B8 (2026-09 naming loop); US/PAL size alignment	
+func_00201AF0	draw_bootImage	descriptive	NTSC config/symbols.txt	draw_bootImage__Fi at US 0x2012B8 (2026-09 naming loop); US/PAL size alignment	
 func_00201D58	LoadIRXModule	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	load_irx_module
 func_00201E10	InitMemSlots	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	init_mem_slots
 func_00201E88	InitOnce	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	init_once
@@ -270,7 +270,7 @@ func_00203548	LoadCompressedHudBank	recovered	config/symbol_names.txt	text: NTSC
 func_002035B0	BuildMobyAdGif	candidate	ReRAC doc_names.csv	suggested at US level 01 0x254108 (docs/plan/moby_untextured.md:18): coined: level01 copy of fun_00202d78; fingerprint	build_moby_ad_gif
 func_00203808	SetUpVisGifViewer	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	set_up_vis_gif_viewer
 func_00203958	upload_texture_images	candidate	Lombyte recovered_names.json	proposal (medium, world/loaders) at US 0x203120; US/PAL size alignment	
-func_00203B18	relocateObjectPointers	descriptive	RC1 config/symbols.txt	relocateObjectPointers at US 0x2032E0 (2026-09 naming loop); US/PAL size alignment	relocate_asset_entry_pointers
+func_00203B18	relocateObjectPointers	descriptive	NTSC config/symbols.txt	relocateObjectPointers at US 0x2032E0 (2026-09 naming loop); US/PAL size alignment	relocate_asset_entry_pointers
 func_00203B70	MobyClassRelocate	candidate	ReRAC doc_names.csv	suggested at US level 01 0x2546C8 (docs/plan/moby_untextured.md:14): coined: level01 copy of fun_00203338; fingerprint	moby_class_relocate
 func_00203E78	register_moby_class	candidate	Lombyte recovered_names.json	proposal (medium, world/loaders) at US 0x203640; US/PAL size alignment	MobyClassesRelocate,moby_classes_relocate
 func_00203F68	tie_ad_gif_convert	candidate	ReRAC doc_names.csv	suggested at US boot 0x203730 (docs/plan/tie_lighting.md:75): doc name TieAdGifConvert; US/PAL size alignment	
@@ -281,7 +281,7 @@ func_00205270	select_world_object_resource_tables	candidate	Lombyte recovered_na
 func_00205728	find_free_map_slot	candidate	Lombyte recovered_names.json	proposal (medium, ui/map) at US 0x204EF8; US/PAL size alignment	
 func_00205790	promote_first_available_map_entry	candidate	Lombyte recovered_names.json	proposal (medium, ui/map) at US 0x204F60; US/PAL size alignment	
 func_00205830	move_map_entry_slot	descriptive	Lombyte recovered_names.json	proposal (high, ui/map) at US 0x205000; US/PAL size alignment	
-func_002058D0	findMapSlot	descriptive	RC1 config/symbols.txt	findMapSlot__Fi at US 0x2050A0 (2026-09 naming loop); US/PAL size alignment	find_map_entry_slot
+func_002058D0	findMapSlot	descriptive	NTSC config/symbols.txt	findMapSlot__Fi at US 0x2050A0 (2026-09 naming loop); US/PAL size alignment	find_map_entry_slot
 func_00205918	pick_next_map	candidate	Lombyte recovered_names.json	proposal (medium, ui/map) at US 0x2050E8; US/PAL size alignment	
 func_00205A50	find_id_in_terminated_table	descriptive	Lombyte recovered_names.json	proposal (high, world/data) at US 0x205220; US/PAL size alignment	
 func_00205AA8	pick_map_slot_to_evict	candidate	Lombyte recovered_names.json	proposal (medium, ui/map) at US 0x205278; US/PAL size alignment	
@@ -292,8 +292,8 @@ func_00206F40	decode_map_mask	candidate	Lombyte recovered_names.json	proposal (m
 func_00207090	decode_map_rle_row	candidate	Lombyte recovered_names.json	proposal (medium, ui/map) at US 0x206860; US/PAL size alignment	
 func_002071A8	hit_test_fixed_screen_rectangle	candidate	Lombyte recovered_names.json	proposal (medium, ui/menus) at US 0x206978; US/PAL size alignment	
 func_00208AB0	format_menu_item_text	candidate	Lombyte recovered_names.json	proposal (medium, ui/menus) at US 0x208280; US/PAL size alignment	
-func_00209048	menu_pointIsClockwise	descriptive	RC1 config/symbols.txt	menu_pointIsClockwise at US 0x208818 (2026-09 naming loop); US/PAL size alignment	
-func_00209418	menu_post_preparePageOpen	descriptive	RC1 config/symbols.txt	menu_post_preparePageOpen__Fv at US 0x208AF8 (2026-09 naming loop); US/PAL size alignment	
+func_00209048	menu_pointIsClockwise	descriptive	NTSC config/symbols.txt	menu_pointIsClockwise at US 0x208818 (2026-09 naming loop); US/PAL size alignment	
+func_00209418	menu_post_preparePageOpen	descriptive	NTSC config/symbols.txt	menu_post_preparePageOpen__Fv at US 0x208AF8 (2026-09 naming loop); US/PAL size alignment	
 func_00209CE8	memcard_RestoreGame	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	initialize_dma_packet_payloads
 func_0020BA00	memcard_MakeWholeSave	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	memcard_make_whole_save
 func_0020BAA8	memcard_Init	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	memcard_initialize
@@ -304,9 +304,9 @@ func_0020BBC8	memcard_PrepData	recovered	config/symbol_names.txt	text: NTSC/PAL 
 func_0020BCB0	memcard_RestoreInfo	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	memcard_restore_info
 func_0020BD70	memcard_RestoreData	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	memcard_restore_data
 func_0020BFC8	memcard_Save	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	memcard_save_data
-func_0020C210	DmaToSpr	recovered	RC1 config/symbols.txt	DmaToSpr at US 0x20B3C0 (hand-named); US/PAL size alignment	
-func_0020C230	DmaToSprSync	recovered	RC1 config/symbols.txt	DmaToSprSync at US 0x20B3E0 (hand-named); US/PAL size alignment	dma_to_spr_sync
-func_0020C268	InitDma	recovered	RC1 config/symbols.txt	InitDma at US 0x20B418 (hand-named); US/PAL size alignment	init_dma
+func_0020C210	DmaToSpr	recovered	NTSC config/symbols.txt	DmaToSpr at US 0x20B3C0 (hand-named); US/PAL size alignment	
+func_0020C230	DmaToSprSync	recovered	NTSC config/symbols.txt	DmaToSprSync at US 0x20B3E0 (hand-named); US/PAL size alignment	dma_to_spr_sync
+func_0020C268	InitDma	recovered	NTSC config/symbols.txt	InitDma at US 0x20B418 (hand-named); US/PAL size alignment	init_dma
 func_0020C7A0	update_mission_list	candidate	Lombyte recovered_names.json	proposal (medium, gameplay/missions) at US 0x20B950; US/PAL size alignment	
 func_0020C940	check_mission_condition	candidate	Lombyte recovered_names.json	proposal (medium, gameplay/missions) at US 0x20BAF0; US/PAL size alignment	
 func_0020CA50	collect_mission_ids	candidate	Lombyte recovered_names.json	proposal (medium, gameplay/missions) at US 0x20BC00; US/PAL size alignment	
@@ -335,7 +335,7 @@ func_0020E2B0	DrawMobys	recovered	config/symbol_names.txt	text: NTSC/PAL functio
 func_0020EEE8	moby_anim_sphere_lerp	candidate	ReRAC doc_names.csv	suggested at US boot 0x20E098 (docs/plan/moby_animation.md:19): doc name MobyAnimSphereLerp; US/PAL size alignment	
 func_002116A0	moby_mark_joint_chain	candidate	ReRAC doc_names.csv	suggested at US boot 0x210850 (docs/formats/moby_rac1.md:70): doc name MobyMarkJointChain; US/PAL size alignment	
 func_00211808	moby_anim_eval_chain	descriptive	ReRAC doc_names.csv	verified at US boot 0x2109B8 (docs/formats/moby_rac1.md:70): doc name MobyAnimEvalChain; US/PAL size alignment	
-func_00212578	MobyAnimProc	recovered	RC1 config/symbols.txt	MobyAnimProc at US 0x211728 (hand-named); US/PAL size alignment	moby_anim_proc
+func_00212578	MobyAnimProc	recovered	NTSC config/symbols.txt	MobyAnimProc at US 0x211728 (hand-named); US/PAL size alignment	moby_anim_proc
 func_00213BB8	assign_moby_class_data	candidate	Lombyte recovered_names.json	proposal (medium, gameplay/entities) at US 0x212D68; US/PAL size alignment	MobyClassRegister,moby_class_register
 func_00213C78	MobyUpdateLoop	candidate	ReRAC doc_names.csv	suggested at US level 01 0x2793D8 (docs/plan/moby_update_catalogue.md:35): coined: per-frame moby loop (anim advance; update fn; matrix); fingerprint	
 func_00213D28	set_moby_animation	candidate	Lombyte recovered_names.json	proposal (medium, gameplay/animation) at US 0x212ED8; US/PAL size alignment	hard_cut,moby_change_sequence
@@ -377,7 +377,7 @@ func_00216960	continue_audio_stream_if_ready	candidate	Lombyte recovered_names.j
 func_002169B8	music_PreseekTrack	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	music_preseek_track,music_start_track
 func_00216A90	music_StartTrack	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	music_start_track
 func_00216B68	music_StartTrackBody	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	StartTrackBody,music_start_track_body
-func_00216C50	music_Transition	recovered	RC1 config/symbols.txt	music_Transition__Fiiii at US 0x215E00 (hand-named); US/PAL size alignment	music_transition
+func_00216C50	music_Transition	recovered	NTSC config/symbols.txt	music_Transition__Fiiii at US 0x215E00 (hand-named); US/PAL size alignment	music_transition
 func_00216D88	music_Stop	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	music_stop
 func_00216EF0	music_Pause	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	
 func_00216F28	music_Unpause	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	
@@ -393,14 +393,14 @@ func_00217860	update_sound_handle_a	candidate	Lombyte recovered_names.json	propo
 func_002178C0	update_sound_handle_b	candidate	Lombyte recovered_names.json	proposal (low, audio/streaming) at US 0x216A20; US/PAL size alignment	
 func_00217A08	set_sound_handle_id	candidate	Lombyte recovered_names.json	proposal (medium, audio/voices) at US 0x216B68; US/PAL size alignment	
 func_00217A60	MusicTimeRemainingCallback	candidate	ReRAC doc_names.csv	suggested at US level 01 0x27AFB8 (docs/plan/audio.md:197): coined: arms fade; fingerprint	
-func_00217EC0	pad_resetState	descriptive	RC1 config/symbols.txt	pad_resetState__Fv at US 0x217020 (2026-09 naming loop); US/PAL size alignment	
+func_00217EC0	pad_resetState	descriptive	NTSC config/symbols.txt	pad_resetState__Fv at US 0x217020 (2026-09 naming loop); US/PAL size alignment	
 func_00217EE8	init_pads	candidate	Lombyte recovered_names.json	proposal (medium, input/pad) at US 0x217048; US/PAL size alignment	
 func_00218188	ClearPadInput	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	clear_pad_input
 func_00218908	UpdatePad	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	
 func_00218928	CreatePart	candidate	ReRAC doc_names.csv	inferred at US level 01 0x27C498 (docs/plan/particles.md:13): Lombyte name; stub a1=0 then jumps to CreatePart2; fingerprint	
-func_00218A80	UpdateParts	recovered	RC1 config/symbols.txt	UpdateParts at US 0x217B88 (hand-named); US/PAL size alignment	update_parts
-func_00218B10	PartProc	recovered	RC1 config/symbols.txt	PartProc at US 0x217C18 (hand-named); US/PAL size alignment	part_proc
-func_00219704	_part_load_tex	recovered	RC1 config/symbols.txt	_part_load_tex at US 0x21880C (hand-named); US/PAL size alignment	
+func_00218A80	UpdateParts	recovered	NTSC config/symbols.txt	UpdateParts at US 0x217B88 (hand-named); US/PAL size alignment	update_parts
+func_00218B10	PartProc	recovered	NTSC config/symbols.txt	PartProc at US 0x217C18 (hand-named); US/PAL size alignment	part_proc
+func_00219704	_part_load_tex	recovered	NTSC config/symbols.txt	_part_load_tex at US 0x21880C (hand-named); US/PAL size alignment	
 func_00219780	PartType02Spawn	candidate	ReRAC doc_names.csv	suggested at US level 01 0x27DC98 (docs/plan/particles.md:60): coined: particle type 2 spawner (only CreatePart call site); fingerprint	
 func_00219C70	PauseAllSounds	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	EnterMenuMode,pause_all_sounds
 func_0021CE60	DrawMapScreen	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	
@@ -424,7 +424,7 @@ func_00222640	build_pause_item_list	candidate	Lombyte recovered_names.json	propo
 func_00222B98	draw_prompt_box	candidate	Lombyte recovered_names.json	proposal (medium, ui/menus) at US 0x221B50; US/PAL size alignment	
 func_002239F0	ObtainAllGoldWeaponsMenu	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	obtain_all_gold_weapons_menu
 func_00223B40	DrawEndScreenMenuMaybe	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	draw_localized_three_option_menu
-func_002255F8	LoadHandGadget	recovered	RC1 config/symbols.txt	LoadHandGadget at US 0x224368 (hand-named); US/PAL size alignment	load_hand_gadget
+func_002255F8	LoadHandGadget	recovered	NTSC config/symbols.txt	LoadHandGadget at US 0x224368 (hand-named); US/PAL size alignment	load_hand_gadget
 func_00225E00	HandItemUpdate	candidate	ReRAC doc_names.csv	suggested at US level 01 0x298578 (docs/formats/moby_rac1.md:60): coined: update fn of hand items (wrench 71 etc.); fingerprint	hand_item_update
 func_00225FB8	HeadItemUpdate	candidate	ReRAC doc_names.csv	suggested at US level 01 0x298730 (docs/formats/moby_rac1.md:64): coined: update fn of head items; fingerprint	head_item_update
 func_002260A8	FeetItemUpdate	candidate	ReRAC doc_names.csv	suggested at US level 01 0x298820 (docs/formats/moby_rac1.md:65): coined: update fn of feet items; fingerprint	feet_item_update
@@ -442,8 +442,8 @@ func_00228400	parse_typed_resource_record	candidate	Lombyte recovered_names.json
 func_00229C08	DmaShrubTextures	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	dma_shrub_textures,dma_tie_textures
 func_00229D48	PatchShrubGifs	descriptive	ReRAC doc_names.csv	verified at US level 01 0x29CC38 (docs/plan/shrub_lighting.md:223): level01 copy of fun_00228a30; name from render_pipeline.md:51; fingerprint	patch_shrub_gifs
 func_00229E50	DrawShrubs	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	draw_shrubs
-func_00229F00	ShrubProc	recovered	RC1 config/symbols.txt	ShrubProc at US 0x228BE8 (hand-named); US/PAL size alignment	shrub_proc
-func_0022B648	BuildShrubTextureDma	recovered	RC1 config/symbols.txt	BuildShrubTextureDma at US 0x22A330 (hand-named); US/PAL size alignment	shrub_texture_paging
+func_00229F00	ShrubProc	recovered	NTSC config/symbols.txt	ShrubProc at US 0x228BE8 (hand-named); US/PAL size alignment	shrub_proc
+func_0022B648	BuildShrubTextureDma	recovered	NTSC config/symbols.txt	BuildShrubTextureDma at US 0x22A330 (hand-named); US/PAL size alignment	shrub_texture_paging
 func_0022B8F8	LightShrubs	descriptive	ReRAC doc_names.csv	verified at US level 01 0x29E7E8 (docs/plan/shrub_lighting.md:14): was FUN_0029e7e8; boot copy not located; VU0 prog 436083; fingerprint	
 func_0022C188	SkyLevelGeneric___maybe	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	update_sky_effects
 func_0022C5A0	DrawSkyShells	candidate	ReRAC doc_names.csv	suggested at US level 01 0x29F260 (docs/plan/sky_render_notes.md:122): FUN_0029f260 standalone sky shell loop; name from render_pipeline.md:51; fingerprint	draw_sky_shells
@@ -452,18 +452,18 @@ func_0022C870	DoSkyGifPaging	recovered	config/symbol_names.txt	text: NTSC/PAL fu
 func_0022C9A8	SkyDrawShell	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	sky_draw_shell
 func_0022CA00	SkyDrawShellTextured	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	sky_draw_shell_textured
 func_0022CC40	SkyDrawShellGouraud	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	sky_draw_shell_gouraud
-func_0022CEB8	SkySpriteProc	recovered	RC1 config/symbols.txt	SkySpriteProc at US 0x22BBA0 (hand-named); US/PAL size alignment	sky_sprite_proc
-func_0022D1DC	_ssp_load_tex	recovered	RC1 config/symbols.txt	_ssp_load_tex at US 0x22BEC4 (hand-named); US/PAL size alignment	_load_tex
+func_0022CEB8	SkySpriteProc	recovered	NTSC config/symbols.txt	SkySpriteProc at US 0x22BBA0 (hand-named); US/PAL size alignment	sky_sprite_proc
+func_0022D1DC	_ssp_load_tex	recovered	NTSC config/symbols.txt	_ssp_load_tex at US 0x22BEC4 (hand-named); US/PAL size alignment	_load_tex
 func_0022D2AC	sky_transform_vertices	candidate	ReRAC doc_names.csv	suggested at US boot 0x22BF94 (docs/plan/sky_render_notes.md:19): doc name SkyTransformVertices; US/PAL size alignment	
 func_0022D3F8	sky_build_gif_gouraud	candidate	ReRAC doc_names.csv	suggested at US boot 0x22C0E0 (docs/plan/sky_render_notes.md:20): doc name SkyBuildGifGouraud; US/PAL size alignment	
 func_0022D8C0	SoundOcclusionOrigin	candidate	ReRAC doc_names.csv	suggested at US level 01 0x2A0190 (docs/plan/audio.md:156): coined: jittered listener origin for occlusion; fingerprint	
-func_0022DA10	sound_GetFade	descriptive	RC1 config/symbols.txt	sound_GetFade__FP8SoundDeffff at US 0x22C6F8 (2026-09 naming loop); US/PAL size alignment	SoundDistanceVolume
-func_0022DB00	sound_GetFade	candidate	RC1 config/symbols.txt	sound_GetFade__FP9SoundDataP4vec4 at US 0x22C7E8 (2026-09 naming loop); US/PAL size alignment; name already taken by func_0022DA10	sound_GetFade
+func_0022DA10	sound_GetFade	descriptive	NTSC config/symbols.txt	sound_GetFade__FP8SoundDeffff at US 0x22C6F8 (2026-09 naming loop); US/PAL size alignment	SoundDistanceVolume
+func_0022DB00	sound_GetFade	candidate	NTSC config/symbols.txt	sound_GetFade__FP9SoundDataP4vec4 at US 0x22C7E8 (2026-09 naming loop); US/PAL size alignment; name already taken by func_0022DA10	sound_GetFade
 func_0022DB48	SoundComputePan	candidate	ReRAC doc_names.csv	suggested at US level 01 0x2A0418 (docs/plan/audio.md:149): coined: pan; fingerprint	
 func_0022DBE8	SoundMasterVolumeInit	candidate	ReRAC doc_names.csv	suggested at US level 01 0x2A04B8 (docs/plan/audio.md:164): coined: master volume groups init; fingerprint	
 func_0022DD68	sound_update	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	
-func_0022EA20	sound_loadBankByLocation	descriptive	RC1 config/symbols.txt	sound_loadBankByLocation__Fi at US 0x22D708 (2026-09 naming loop); US/PAL size alignment	load_audio_bank_by_location
-func_0022EAB0	sound_KillChannel	descriptive	RC1 config/symbols.txt	sound_KillChannel__Fi at US 0x22D798 (2026-09 naming loop); US/PAL size alignment	release_voice_slot
+func_0022EA20	sound_loadBankByLocation	descriptive	NTSC config/symbols.txt	sound_loadBankByLocation__Fi at US 0x22D708 (2026-09 naming loop); US/PAL size alignment	load_audio_bank_by_location
+func_0022EAB0	sound_KillChannel	descriptive	NTSC config/symbols.txt	sound_KillChannel__Fi at US 0x22D798 (2026-09 naming loop); US/PAL size alignment	release_voice_slot
 func_0022EB08	SoundSlotAlloc	candidate	ReRAC doc_names.csv	suggested at US level 01 0x2A13A0 (docs/plan/audio.md:116): coined: sound slot allocation; fingerprint	sound_slot_alloc
 func_0022ED80	PlayClassSound	candidate	ReRAC doc_names.csv	suggested at US level 01 0x2A1618 (docs/plan/audio.md:126): coined: class sound i of moby; doc writes fun_0022da68; fingerprint	play_class_sound
 func_0022EE28	allocate_voice_for_bank_entry	candidate	Lombyte recovered_names.json	proposal (medium, audio/voices) at US 0x22DB10; US/PAL size alignment	PlayLevelSoundAtMoby
@@ -500,19 +500,19 @@ func_00234EE0	VU1_gsRegsNormal	recovered	config/symbol_names.txt	text: NTSC/PAL 
 func_00235018	DMAC_VIF1_Enable	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	dmac_vif1_enable
 func_002350A8	DMAC_VIF1_Disable	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	dmac_vif1_disable
 func_00235218	print_register_values_and_halt	descriptive	Lombyte recovered_names.json	proposal (high, runtime/diagnostics) at US 0x233F00; US/PAL size alignment	
-func_00235290	Vif1ChainCmd	descriptive	RC1 config/symbols.txt	Vif1ChainCmd__Fi at US 0x233F78 (2026-09 naming loop); US/PAL size alignment	VU1_addIrqTag
-func_002352C8	TfragProc	recovered	RC1 config/symbols.txt	TfragProc at US 0x233FB0 (hand-named); US/PAL size alignment	tfrag_proc
-func_00235EF0	ComputeTfragTextureUsage	recovered	RC1 config/symbols.txt	ComputeTfragTextureUsage at US 0x234BD8 (hand-named); US/PAL size alignment	compute_tfrag_texture_usage
-func_002362B0	LightTfrags	recovered	RC1 config/symbols.txt	LightTfrags at US 0x234F98 (hand-named); US/PAL size alignment	light_tfrags
+func_00235290	Vif1ChainCmd	descriptive	NTSC config/symbols.txt	Vif1ChainCmd__Fi at US 0x233F78 (2026-09 naming loop); US/PAL size alignment	VU1_addIrqTag
+func_002352C8	TfragProc	recovered	NTSC config/symbols.txt	TfragProc at US 0x233FB0 (hand-named); US/PAL size alignment	tfrag_proc
+func_00235EF0	ComputeTfragTextureUsage	recovered	NTSC config/symbols.txt	ComputeTfragTextureUsage at US 0x234BD8 (hand-named); US/PAL size alignment	compute_tfrag_texture_usage
+func_002362B0	LightTfrags	recovered	NTSC config/symbols.txt	LightTfrags at US 0x234F98 (hand-named); US/PAL size alignment	light_tfrags
 func_00236958	DmaTieTextures	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	dma_tie_textures
 func_00236A98	PatchTieGifs	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	patch_tie_texture_fields
 func_00236B58	copy_render_buffer_pair	descriptive	Lombyte recovered_names.json	proposal (high, rendering/buffers) at US 0x235840; US/PAL size alignment	
 func_00236BB0	register_entity_render_resources	candidate	Lombyte recovered_names.json	proposal (medium, rendering/entities) at US 0x235898; US/PAL size alignment	
 func_00236BE0	DrawTies_1	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	draw_ties_1
 func_00236CA8	DrawTies_2	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	draw_ties_2
-func_00236F00	TieProc	recovered	RC1 config/symbols.txt	TieProc at US 0x235BE8 (hand-named); US/PAL size alignment	tie_proc
-func_002383D8	BuildTieTextureDma	recovered	RC1 config/symbols.txt	BuildTieTextureDma at US 0x2370C0 (hand-named); US/PAL size alignment	tie_texture_paging
-func_00238688	LightTies	recovered	RC1 config/symbols.txt	LightTies at US 0x237370 (hand-named); US/PAL size alignment	light_ties
+func_00236F00	TieProc	recovered	NTSC config/symbols.txt	TieProc at US 0x235BE8 (hand-named); US/PAL size alignment	tie_proc
+func_002383D8	BuildTieTextureDma	recovered	NTSC config/symbols.txt	BuildTieTextureDma at US 0x2370C0 (hand-named); US/PAL size alignment	tie_texture_paging
+func_00238688	LightTies	recovered	NTSC config/symbols.txt	LightTies at US 0x237370 (hand-named); US/PAL size alignment	light_ties
 func_00238D90	moby_screen_rect	candidate	ReRAC doc_names.csv	suggested at US boot 0x237A78 (docs/plan/menus.md:136): doc name MobyScreenRect; US/PAL size alignment	
 func_002391A8	set_scrolling_status_message	descriptive	Lombyte recovered_names.json	proposal (high, ui/text) at US 0x237E90; US/PAL size alignment	
 func_00239838	update_scrolling_status_message	descriptive	Lombyte recovered_names.json	proposal (high, ui/text) at US 0x238520; US/PAL size alignment	VendorDrawTicker
@@ -520,7 +520,7 @@ func_00239948	VendorDrawSalesmanVideo	candidate	ReRAC doc_names.csv	suggested at
 func_002399A0	format_scaled_display_value	candidate	Lombyte recovered_names.json	proposal (medium, ui/menus) at US 0x238688; US/PAL size alignment	
 func_00239A00	VendorDrawIconStrip	candidate	ReRAC doc_names.csv	suggested at US level 01 0x2B1C10 (docs/plan/menus.md:210): coined: icon strip target; fingerprint	
 func_00239CF8	VendorDrawItemPanel	candidate	ReRAC doc_names.csv	suggested at US level 01 0x2B1F08 (docs/plan/menus.md:212): coined: item panel target; fingerprint	
-func_0023AA08	setupViewContext	descriptive	RC1 config/symbols.txt	setupViewContext at US 0x239750 (2026-09 naming loop); US/PAL size alignment	
+func_0023AA08	setupViewContext	descriptive	NTSC config/symbols.txt	setupViewContext at US 0x239750 (2026-09 naming loop); US/PAL size alignment	
 func_0023AA38	VendorDrawScreens	candidate	ReRAC doc_names.csv	suggested at US level 01 0x2B3130 (docs/plan/menus.md:203): coined: draws off-screen monitor targets; does not decompile; fingerprint	
 func_0023B018	find_zone_at_point	candidate	Lombyte recovered_names.json	proposal (medium, gameplay/vendor) at US 0x239D60; US/PAL size alignment	
 func_0023B210	RippleHeightQuery	candidate	ReRAC doc_names.csv	suggested at US level 01 0x2B8910 (docs/plan/world_animation.md:144): coined: water height (+normal) from active patch or flat plane; fingerprint	
@@ -536,7 +536,7 @@ func_0023C088	audioDecStart	recovered	config/symbol_names.txt	text: NTSC/PAL fun
 func_0023C0E0	audioDecReset	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	audio_dec_reset
 func_0023C128	audioDecBeginPut	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	audio_dec_begin_put
 func_0023C1F8	audioDecEndPut	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	audio_dec_end_put
-func_0023C2B0	audioDecIsPageFull	descriptive	RC1 config/symbols.txt	audioDecIsPageFull at US 0x23AEE0 (2026-09 naming loop); US/PAL size alignment	
+func_0023C2B0	audioDecIsPageFull	descriptive	NTSC config/symbols.txt	audioDecIsPageFull at US 0x23AEE0 (2026-09 naming loop); US/PAL size alignment	
 func_0023C2C0	audioDecSend	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	audio_dec_send
 func_0023C2E8	sendToSPU	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	send_to_spu
 func_0023C390	sendADPCM	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	send_adpcm
@@ -548,13 +548,13 @@ func_0023C9B0	endDisplay	recovered	config/symbol_names.txt	text: NTSC/PAL functi
 func_0023C9C0	videoCallback	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	video_callback
 func_0023CAF8	pcmCallback	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	pcm_callback
 func_0023CBE0	cpy2area	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	copy_video_buffer_region
-func_0023CD10	readBufCreate	recovered	RC1 config/symbols.txt	readBufCreate__FP7ReadBuf at US 0x23B940 (hand-named); US/PAL size alignment	
-func_0023CD28	readBufDelete	recovered	RC1 config/symbols.txt	readBufDelete__FP7ReadBuf at US 0x23B958 (hand-named); US/PAL size alignment	
+func_0023CD10	readBufCreate	recovered	NTSC config/symbols.txt	readBufCreate__FP7ReadBuf at US 0x23B940 (hand-named); US/PAL size alignment	
+func_0023CD28	readBufDelete	recovered	NTSC config/symbols.txt	readBufDelete__FP7ReadBuf at US 0x23B958 (hand-named); US/PAL size alignment	
 func_0023CD30	readBufBeginPut	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	
 func_0023CD60	readBufEndPut	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	
 func_0023CDA8	readBufBeginGet	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	read_buf_begin_get
 func_0023CDF0	readBufEndGet	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	
-func_0023CE28	strFileDelete	descriptive	RC1 config/symbols.txt	strFileDelete__FP7StrFile at US 0x23BA58 (2026-09 naming loop); US/PAL size alignment	
+func_0023CE28	strFileDelete	descriptive	NTSC config/symbols.txt	strFileDelete__FP7StrFile at US 0x23BA58 (2026-09 naming loop); US/PAL size alignment	
 func_0023CEC8	getFIFOindex	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	get_fifo_index
 func_0023CF10	setD3_CHCR	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	set_dma_channel_3_control_register
 func_0023CF80	setD4_CHCR	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	set_dma_channel_4_control_register
@@ -590,10 +590,10 @@ func_0023E298	decBs0	recovered	config/symbol_names.txt	text: NTSC/PAL function-s
 func_0023E450	mpegError	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	handle_mpeg_error
 func_0023E478	mpegNodata	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	handle_mpeg_no_data
 func_0023E4B0	mpeg_stop_dma	candidate	Lombyte recovered_names.json	proposal (medium, video/decoder) at US 0x23D0E0; US/PAL size alignment	
-func_0023E4E0	mpegRestartVideoDMA	descriptive	RC1 config/symbols.txt	mpegRestartVideoDMA__Fv at US 0x23D110 (2026-09 naming loop); US/PAL size alignment	
+func_0023E4E0	mpegRestartVideoDMA	descriptive	NTSC config/symbols.txt	mpegRestartVideoDMA__Fv at US 0x23D110 (2026-09 naming loop); US/PAL size alignment	
 func_0023E510	get_mpeg_timestamp	candidate	Lombyte recovered_names.json	proposal (medium, video/decoder/callbacks) at US 0x23D140; US/PAL size alignment	
-func_0023E560	voBufCreate	recovered	RC1 config/symbols.txt	voBufCreate__FP5VoBufP6VoDataP5VoTagi at US 0x23D190 (hand-named); US/PAL size alignment	vo_buf_create
-func_0023E5B0	voBufDelete	recovered	RC1 config/symbols.txt	voBufDelete__FP5VoBuf at US 0x23D1E0 (hand-named); US/PAL size alignment	
+func_0023E560	voBufCreate	recovered	NTSC config/symbols.txt	voBufCreate__FP5VoBufP6VoDataP5VoTagi at US 0x23D190 (hand-named); US/PAL size alignment	vo_buf_create
+func_0023E5B0	voBufDelete	recovered	NTSC config/symbols.txt	voBufDelete__FP5VoBuf at US 0x23D1E0 (hand-named); US/PAL size alignment	
 func_0023E5B8	voBufReset	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	
 func_0023E5C8	voBufIsFull	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	
 func_0023E5E0	voBufIncCount	recovered	config/symbol_names.txt	text: NTSC/PAL function-size alignment	vo_buf_inc_count

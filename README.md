@@ -5,6 +5,14 @@
 [![Functions](https://decomp.dev/Lynder063/rac1-decomp.svg?mode=shield&label=Functions&measure=matched_functions)](https://decomp.dev/Lynder063/rac1-decomp)
 [![Discord](https://img.shields.io/badge/Discord-Join%20Community-5865F2?logo=discord&logoColor=white)](https://discord.gg/Sfd2B54PDG)
 
+> [!NOTE]
+> Because of recent events in the Ratchet & Clank community, I had to remove
+> all information associated with John Doe #1 and John Doe #2 from this project
+> at their request. If anyone else would like mentions of them removed, please
+> contact me on the [Discord](https://discord.gg/Sfd2B54PDG).
+>
+> - Kryštof "Lynder063" Malinda
+
 A work-in-progress **matching decompilation** of *Ratchet & Clank* (Insomniac
 Games, 2002) for the PlayStation 2. The goal is C/C++ source that, built with
 the original toolchain, produces a byte-identical copy of the retail executable.

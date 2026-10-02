@@ -29,8 +29,8 @@ own, and a macro for them would shadow the real library spelling.
 
 | Tier | In names.h | Meaning |
 |---|---|---|
-| recovered | yes | the original identifier: `config/symbol_names.txt`; RC1's `symbols.txt` as it stood before its 2026-09 automated naming loop; a symbol Lombyte recovered |
-| descriptive | yes | a later name with evidence: RC1's 2026-09 names, a Lombyte proposal of high confidence, a ReRAC name marked verified, the PAL memory map (globals) |
+| recovered | yes | the original identifier: `config/symbol_names.txt`; the NTSC decomp's `symbols.txt` as it stood before its 2026-09 automated naming loop; a symbol Lombyte recovered |
+| descriptive | yes | a later name with evidence: the NTSC decomp's 2026-09 names, a Lombyte proposal of high confidence, a ReRAC name marked verified, the PAL memory map (globals) |
 | candidate | no | weaker: Lombyte medium confidence, ReRAC suggested or inferred, or a name another symbol already took. Shown in dossiers for workers |
 
 When sources disagree, the best tier wins, then the source order above;
@@ -39,7 +39,7 @@ one symbol only.
 
 ## Sources (all RaC1)
 
-- **RC1**: matching NTSC
+- **NTSC decomp**: matching NTSC
   decompilation; `config/symbols.txt`, mangled GCC 2.x names demangled to
   the base name (`Class_method` for members).
 - **Lombyte** (github.com/mateuszklysz/Lombyte, MIT): matching US
@@ -67,17 +67,17 @@ one symbol only.
 - **Cross-checks:** where alignment and fingerprints both place an
   executable function they must agree (they do everywhere; a
   disagreement would drop both). Of the functions `symbol_names.txt`
-  already named, RC1's and Lombyte's names placed by the alignment agree
+  already named, the NTSC decomp's and Lombyte's names placed by the alignment agree
   209 of 209.
 
 ## Refreshing
 
 ```sh
-RC1=... LOMBYTE=... RERAC=... python3 tools/names.py build
+NTSC=... LOMBYTE=... RERAC=... python3 tools/names.py build
 python3 tools/names.py header
 python3 tools/names.py apply      # new C that still spells address names
 python3 tools/names.py check
 ```
 
-`build` needs full clones (RC1's history dates its names). Then rebuild
+`build` needs full clones (the NTSC decomp's history dates its names). Then rebuild
 and check that nothing but source text changed.

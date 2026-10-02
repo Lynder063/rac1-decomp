@@ -43,7 +43,7 @@ Be deliberate about it:
   It is used locally to run `splat` and to check the build against
   retail, and is never committed or redistributed through this repo.
 
-## Why this is a bigger legal step than the RC1 engine-port project
+## Why this is a bigger legal step than an engine-port project
 
 Recreating the original binary's *exact* code shape (not just its
 behavior, rewritten independently) sits closer to the disputed edge of
