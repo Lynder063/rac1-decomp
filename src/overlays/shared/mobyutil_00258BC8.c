@@ -382,7 +382,12 @@ int func_L00_0025A778(float *p, float *v, int n) {
     return r;
 }
 INCLUDE_ASM("asm/overlays", func_L00_0025A848);
-INCLUDE_ASM("asm/overlays", func_L00_0025A868);
+/* From Lombyte (MIT), FUN_L00_00259830 (PR #66), adapted to PAL. */
+int func_L00_0025A868(char *a) {
+    char *p = *(char **)(a + 0x94);
+    if (p && *(int *)(p + 8)) return 1;
+    return 0;
+}
 extern void func_001F9BC0(void *);
 void func_L00_0025A890(char *a, int b, int c, float d) {
     *(int *)(a + 0x10) = b;
