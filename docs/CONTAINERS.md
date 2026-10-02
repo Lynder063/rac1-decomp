@@ -72,6 +72,26 @@ Ghidra; use Ghidra's own importer if you want one.
 Ghidra output is a reference, like m2c's, and is never pasted into
 `src/`.
 
+### A level's own code
+
+The project holds only the executable, so a level's own code (the part
+that replaces `main` when the level loads, docs/OVERLAYS.md) is not in it,
+and the headless server cannot import files. `tools/ghidra_level.py`
+fills that gap:
+
+```sh
+python3 tools/ghidra_level.py 18                    # every stub still INCLUDE_ASM in src/overlays/l18_*/
+python3 tools/ghidra_level.py 18 func_L18_002DD8A8  # just these
+```
+
+It builds a flat image of the level's memory (the resident executable
+below 0x15F000, then the level's records at their load addresses),
+imports it into a scratch project inside the running container with
+`analyzeHeadless` (the container's own project is untouched), creates a
+function at every address this repository names, and writes the
+decompiler's C to `build-sn/ghidra/lNN/out/`. Nothing it writes is
+tracked.
+
 ### Start and stop
 
 ```sh
