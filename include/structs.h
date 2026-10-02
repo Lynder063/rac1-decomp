@@ -270,6 +270,44 @@ typedef enum CardState {
 } CardState;
 
 /*
+ * Save Game IFF (Interchange File Format) Chunk IDs.
+ * Recovered from save file streams and memcard_PrepData / memcard_RestoreData handlers.
+ */
+typedef enum SaveGameBlockId {
+    SAVE_BLOCK_LEVEL                    = 0,     /* Current / last level ID (int) */
+    SAVE_BLOCK_BOLT_COUNT               = 1,     /* Total bolt count (int) */
+    SAVE_BLOCK_GAME_COMPLETES           = 2,     /* Challenge mode / playthrough counter (int) */
+    SAVE_BLOCK_ELAPSED_TIME             = 3,     /* In-game elapsed time (int) */
+    SAVE_BLOCK_LAST_SAVE_TIME           = 4,     /* Timestamp (sceCdCLOCK) */
+    SAVE_BLOCK_GLOBAL_FLAGS             = 5,     /* Global progression bit flags */
+    SAVE_BLOCK_CHEATS_ACTIVATED         = 7,     /* Active cheats bitmask */
+    SAVE_BLOCK_SKILL_POINTS             = 8,     /* Skill points unlocked bitmask */
+    SAVE_BLOCK_AMMO                     = 9,     /* Current ammo table */
+    SAVE_BLOCK_UNLOCKS                  = 10,    /* Weapon / Gadget unlock bitmask */
+    SAVE_BLOCK_PURCHASABLE_VENDOR_ITEMS = 12,    /* Vendor purchase availability */
+    SAVE_BLOCK_GALACTIC_MAP             = 14,    /* Visited planet coordinates / map state */
+    SAVE_BLOCK_HELP_MESSAGES            = 16,    /* Help prompt messages */
+    SAVE_BLOCK_HELP_MISC                = 17,    /* Miscellaneous help data */
+    SAVE_BLOCK_HELP_GADGETS             = 18,    /* Gadget help prompts */
+    SAVE_BLOCK_CAMERA_UP_DOWN_MODE      = 25,    /* Invert pitch setting (int) */
+    SAVE_BLOCK_CAMERA_LEFT_RIGHT_MODE   = 26,    /* Invert yaw setting (int) */
+    SAVE_BLOCK_CAMERA_ROTATION_SPEED    = 27,    /* Camera sensitivity (int) */
+    SAVE_BLOCK_CHEATS_EVER_ACTIVATED    = 37,    /* Permanent cheat taint flag */
+    SAVE_BLOCK_TOTAL_PLAY_TIME          = 1003,  /* Lifetime playtime (int) */
+    SAVE_BLOCK_TOTAL_DEATHS             = 1005,  /* Lifetime death counter (int) */
+    SAVE_BLOCK_HELP_LOG                 = 1010,  /* Help log history */
+    SAVE_BLOCK_HELP_LOG_POS             = 1011   /* Help log write cursor (int) */
+} SaveGameBlockId;
+
+typedef enum SaveLevelBlockId {
+    SAVE_LEVEL_BLOCK_VISITED            = 3001,  /* 0=unvisited, 1=visited, 2=completed (char) */
+    SAVE_LEVEL_BLOCK_GOLD_BOLTS         = 3003,  /* Gold bolts collected in level */
+    SAVE_LEVEL_BLOCK_SEGMENTS_COMPLETED = 3004,  /* Level mission segments completed */
+    SAVE_LEVEL_BLOCK_TOTAL_BOLTS        = 4000,  /* Total bolts collected on this level */
+    SAVE_LEVEL_BLOCK_TOTAL_DEATHS       = 4002   /* Total deaths on this level (int) */
+} SaveLevelBlockId;
+
+/*
  * IOP Stash subsystem structures and enums.
  * Recovered from unstripped IOPSTASH.IRX STABS debug symbols in the June 25, 2002 prototype.
  * Original source path: C:\code\i5\stash\iopstash.c
