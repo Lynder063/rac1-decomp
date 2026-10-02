@@ -157,6 +157,7 @@ The following functions adapt source from
 - `src/overlays/shared/vendor_002D9438.c`: `func_L00_002DCD40` (calls the callback a moby's class defines at +0x10, unless the moby is deleted)
 - `src/overlays/shared/mobyutil_00258BC8.c`: `func_L00_00261848` (marks a planet as discovered and appends it to the galaxy list)
 - `src/overlays/shared/mobyutil_00258BC8.c`: `func_L00_0025BBA0` (splits a vector into an angle and two scales)
+- `src/overlays/shared/vendor_002EB0D8.c`: `func_L00_002EC860` (sets a moby's damping and scale constants, then re-runs its setup)
 
 MIT License
 
