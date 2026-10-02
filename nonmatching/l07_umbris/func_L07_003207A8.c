@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L07_003207A8 -- src/overlays/l07_umbris/vendor_0031BDB8.c
- * Best so far: BYTES 16/460 (96.5% of the bytes match), checked 2026-10-01.
+ * Best so far: COMPILE failed, checked 2026-10-01.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

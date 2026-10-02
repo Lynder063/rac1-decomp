@@ -16,7 +16,8 @@ extern void func_L00_0025F4A8(void *, void *, void *, float, float, int, int, in
 extern char D_0013E633[];
 extern char D_L18_0015F660[];
 
-void func_L18_002D7310(char *moby) {
+void impl_2D7310(char *moby) __asm__("func_L18_002D7310");
+void impl_2D7310(char *moby) {
     char *data = *(char **)(moby + 0x78);
     unsigned short fl;
     char *g;

@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L00_0026F510 -- src/overlays/shared/partupd_0026A130.c
- * Best so far: SIZE ours 1296 / retail 1292, checked 2026-10-01.
+ * Best so far: BYTES 38/1292 (97.1% of the bytes match), checked 2026-10-01.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
