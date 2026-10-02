@@ -1027,6 +1027,7 @@ D_0015EEE8	gStereo	descriptive	RaC1 PAL memory map	sheet row "Stereo/Mono settin
 D_0015EF1C	gHelpDeskVoice	descriptive	RaC1 PAL memory map	sheet row "HelpDesk voice setting"	
 D_0015EF1D	gHelpDeskText	descriptive	RaC1 PAL memory map	sheet row "HelpDesk text setting"	
 D_0015EF40	gSubtitles	descriptive	RaC1 PAL memory map	sheet row "Subtitles setting"	
+D_0015F6A8	gGameMode	descriptive	TCRF Debug Mode	TCRF Debug Mode trigger and game mode register (0: Paused, 2: Gameplay, 0xFFFFFFFF: Debug Menu)	gDebugMenuState,gMode
 func_00121DC8	sceGsDefDispEnv	recovered	retail debug strings	sceGsDefDispEnv:Not support displaymode for 0x%x!!	
 func_001224B0	sceGsPutDrawEnv	recovered	retail debug strings	sceGsPutDrawEnv: DMA Ch.2 does not terminate	
 func_00122630	sceGsSetDefLoadImage	recovered	retail debug strings	sceGsSetDefLoadImage: too big size	

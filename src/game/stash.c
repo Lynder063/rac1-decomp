@@ -301,20 +301,14 @@ extern int func_0011B2F8(void *client, int id, int mode);
 extern int func_0011B6B8(void *client);
 extern int func_0011B4C8(void *, int, int, void *, int, void *, int, void *, void *); /* sceSifCallRpc */
 
-typedef struct {
-    int base;
-    int size;
-    char cd[0x28];
-    int cur;
-    int count;
-} StashState_00234018;
+/*
+ * Authentic structs from IOPSTASH.IRX STABS debug symbols:
+ *   StashInfo: base, size, cd[10], free (cur), block (count)
+ *   StashBlock: ram (unk_00), qwc (unk_04), comment (unk_08), pad (unk_0C)
+ */
+typedef StashInfo StashState_00234018;
 extern StashState_00234018 D_001DD530_alias __asm__("D_001DD530");
-typedef struct {
-    int unk_00;
-    int unk_04;
-    int unk_08;
-    int unk_0C;
-} Rec10_00234018;
+typedef StashBlock Rec10_00234018;
 extern Rec10_00234018 D_001DD568_alias[] __asm__("D_001DD568");
 
 /* Stash_Init: binds the IOP stash RPC server (0x11, no-wait mode; a bind
@@ -337,7 +331,7 @@ void func_00234018(void) {
         while (func_0011B6B8(D_001DD530_alias.cd) != 0) {
         }
         s = &D_001DD530_alias;
-        if (*(int *)(s->cd + 0x24) != 0) {
+        if (*(int *)((char *)s->cd + 0x24) != 0) {
             break;
         }
         i = 0xFFFF;
@@ -347,63 +341,48 @@ void func_00234018(void) {
     func_0011B4C8(D_001DD530_alias.cd, 2, 0, 0, 0, reply, 0x10, 0, 0);
     D_001DD530_alias.base = reply[0];
     D_001DD530_alias.size = reply[1];
-    D_001DD530_alias.cur = reply[0];
-    D_001DD530_alias.count = 0;
+    D_001DD530_alias.free = reply[0];
+    D_001DD530_alias.block = 0;
     for (i = 0; i < 0x40; i++) {
-        D_001DD568_alias[i].unk_00 = 0;
-        D_001DD568_alias[i].unk_04 = 0;
+        D_001DD568_alias[i].ram = 0;
+        D_001DD568_alias[i].qwc = 0;
     }
 }
 __asm__(".section .text\n\tnop\n");
 
-/* 0x10-stride records. Typed array, not `char[]` + byte offset -- see
-   the addu-order lever on D_001E8F80 above. */
-typedef struct {
-    int unk_00;
-    int unk_04;
-    int unk_08;
-    int unk_0C;
-} Rec10;
-extern Rec10 D_001DD568[];
+extern StashBlock D_001DD568[];
 
 /* The stash: a buffer on the IOP side (base, size, from func_00234018's
    RPC), the SIF RPC client at D_001DD538, and a bump allocator over the
    buffer that hands out up to 0x40 slots in D_001DD568. */
-typedef struct {
-    int base;
-    int size;
-    char cd[0x28];
-    int cur;
-    int count;
-} StashState;
-extern StashState D_001DD530;
+extern StashInfo D_001DD530;
 extern int func_00118E20(void *, int);
 
 /* Stash_SendData: DMA arg1 quadwords from arg0 to the stash's next free
    address (func_00118E20 takes a {src, dst, size, mode} record), reserve
-   arg2 quadwords there, and return the slot. `h->count++` read into the
+   arg2 quadwords there, and return the slot. `h->block++` read into the
    slot index is what keeps retail's copy of the old count. */
 int func_00234158(int arg0, int arg1, int arg2, int arg3) {
-    StashState *h = &D_001DD530;
+    StashInfo *h = &D_001DD530;
     int dma[4];
     int n;
 
-    if (h->size - (h->cur - h->base) < arg2 * 16) {
+    if (h->size - (h->free - h->base) < arg2 * 16) {
         return -1;
     }
-    if (h->count == 0x40) {
+    if (h->block == 0x40) {
         return -2;
     }
     dma[0] = arg0;
-    dma[1] = h->cur;
+    dma[1] = h->free;
     dma[2] = arg1 * 16;
     dma[3] = 0;
-    func_00118E20(dma, 1);
-    n = h->count++;
-    D_001DD568[n].unk_00 = h->cur;
-    D_001DD568[n].unk_04 = arg2;
-    D_001DD568[n].unk_08 = arg3;
-    h->cur += arg2 * 16;
+    func_00118E20(dma, IOP_STASH_FETCH);
+    n = h->block++;
+    D_001DD568[n].ram = h->free;
+    D_001DD568[n].qwc = arg2;
+    D_001DD568[n].comment = arg3;
+    h->free += arg2 * 16;
     return n;
 }
 
@@ -415,7 +394,7 @@ extern char D_001DD538[];
    slot's whole length (func_00234350). -3 for a bad or empty slot, -1
    if offset + size runs past the slot. Otherwise the data is fetched
    from the stash (slot base + offset quadwords) to dest by the stash
-   client's RPC 1, at most 0xFFFF quadwords per call; returns 0. The RPC
+   client's RPC 1 (IOP_STASH_FETCH), at most 0xFFFF quadwords per call; returns 0. The RPC
    is sceSifCallRpc, with nine arguments: end function and end
    parameter 0, the last on the stack. */
 int func_00234238(void *dest, unsigned int slot, int offset, int size, int mode) {
@@ -428,16 +407,16 @@ int func_00234238(void *dest, unsigned int slot, int offset, int size, int mode)
     if (slot >= 0x40) {
         return -3;
     }
-    if (D_001DD568[slot].unk_04 == 0) {
+    if (D_001DD568[slot].qwc == 0) {
         return -3;
     }
-    if (D_001DD568[slot].unk_04 < offset + size) {
+    if (D_001DD568[slot].qwc < offset + size) {
         return -1;
     }
-    src = D_001DD568[slot].unk_00 + offset * 16;
+    src = D_001DD568[slot].ram + offset * 16;
     while (size != 0) {
         chunk = (size > 0xFFFF) ? 0xFFFF : size;
-        func_0011B4C8(D_001DD538, 1, mode, &src, 0x10, dest, chunk * 16, 0, 0);
+        func_0011B4C8(D_001DD538, IOP_STASH_FETCH, mode, &src, 0x10, dest, chunk * 16, 0, 0);
         size -= chunk;
         dest = (char *)dest + chunk * 16;
         src += chunk * 16;
@@ -449,5 +428,5 @@ int func_00234350(unsigned int arg0) {
     if (arg0 >= 0x40) {
         return -3;
     }
-    return D_001DD568[arg0].unk_04;
+    return D_001DD568[arg0].qwc;
 }

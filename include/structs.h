@@ -269,4 +269,42 @@ typedef enum CardState {
     CS_PROMPT_BEGIN_NOSAVE = 24
 } CardState;
 
+/*
+ * IOP Stash subsystem structures and enums.
+ * Recovered from unstripped IOPSTASH.IRX STABS debug symbols in the June 25, 2002 prototype.
+ * Original source path: C:\code\i5\stash\iopstash.c
+ */
+enum {
+    IOP_STASH_SEND  = 0,
+    IOP_STASH_FETCH = 1,
+    IOP_STASH_INFO  = 2
+};
+
+typedef struct StashBlock {
+    /* 0x00 */ int   ram;      /* IOP stash RAM address */
+    /* 0x04 */ int   qwc;      /* quadword count (16 bytes per unit) */
+    /* 0x08 */ int   comment;  /* char* debug comment / tag */
+    /* 0x0C */ int   pad;
+} StashBlock;
+
+typedef struct StashFetch {
+    /* 0x00 */ int   ram;
+    /* 0x04 */ int   pad[3];
+} StashFetch;
+
+typedef struct StashGetInfo {
+    /* 0x00 */ int   base;
+    /* 0x04 */ int   size;
+    /* 0x08 */ int   pad[2];
+} StashGetInfo;
+
+typedef struct StashInfo {
+    /* 0x00 */ int   base;
+    /* 0x04 */ int   size;
+    /* 0x08 */ int   cd[10];   /* sceSifClientData (0x28 bytes) */
+    /* 0x30 */ int   free;     /* next free address in stash RAM */
+    /* 0x34 */ int   block;    /* allocated block count (max 0x40) */
+} StashInfo;
+
 #endif /* STRUCTS_H */
+
