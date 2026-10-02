@@ -206,3 +206,44 @@ On builds with cheat mode enabled or available:
 - **Walloper:** Solid red body lacking electric particle arcs.
 - **Sonic Summoner:** Sandmouse followed on foot rather than flying, and leading it between burrows granted bolts.
 - **Wanted Posters on Kerwan:** Removed prior to retail because baked-in image text complicated international localization.
+
+---
+
+## 8. Deep Data Mining Discoveries
+
+### A. Uncompressed Dialogue and Text Table in June 25 Prototype (LBA 2213822)
+Unlike retail PAL and August 2 (where dialogue and UI strings are compressed), the June 25 prototype contains an uncompressed, plain-text copy of the master game string table (`all_text`). Mining this table uncovered:
+1. **Big Al was originally named "Bob":**
+   - Text entry: `"garage, you should stop by Bob's Roboshack. Bob may have something to help you out."`
+   - In retail, this is Big Al's Roboshack on Planet Kerwan.
+2. **Early Equipment & Weapon Terminology:**
+   - `"Drone Glove"` instead of Drone Device.
+   - `"Morpha-Ray"` (original spelling before Morph-o-Ray).
+   - `"Super Nanotech"` instead of Ultra / Premium Nanotech.
+   - `"Magna-Strips"` instead of Magne-Tracks / Magne-boots.
+   - `"Super Glide"` instead of Stretch Jump.
+3. **Planet Arrival Notifications for All 18 Worlds:**
+   The table contains the original welcome announcements for all 18 levels, including cut names:
+   - `"You have arrived at the Deforestation Site on planet Eudora"` (Retail: Logging Site)
+   - `"You have arrived at the Blarg Tactical Station in Nebula G34"`
+   - `"You've arrived at Qwark's Headquarters on Planet Umbris"`
+   - `"You've arrived at the Gorda City Remains on Planet Oltanis"` (Retail: Gorda City Ruins)
+   - `"You've arrived at Drek's Flagship in Veldin Orbit"` (Retail: Drek's Fleet)
+
+### B. Table of Contents (TOC) Architecture Evolution
+Cross-referencing the container structures across all prototypes reveals how Insomniac progressively unified game assets:
+1. **April 7, 2002 Demo:**
+   - Separate files on CD-ROM for video cutscenes: `DEMOLOGO.NTS` (14.5 MB), `FINAL.PSS` (101.3 MB), `REPORTER.PSS` (39.5 MB).
+   - `GAME.WAD` is small (13 MB).
+2. **June 25, 2002 Prototype:**
+   - `GAME.WAD` (775 MB) now encapsulates all PSS cutscenes as numbered TOC entries (slot `0x0560` = 14,565,380 bytes, slot `0x0570` = 101,367,812 bytes, matching the demo files byte-for-byte).
+   - TOC contains **216 slots** (`0x6C0` bytes).
+3. **August 2, 2002 Prototype:**
+   - Game assets exceed single-layer capacity, splitting `GAME.WAD` into `GAME.WAD` (1.11 GB) and `GAMEWAD.1` (1.05 GB).
+   - TOC expands to **639 slots** (`0x13F8` bytes).
+4. **October 6, 2002 (Retail PAL):**
+   - Production TOC reaches **1,324 slots** (`0x2960` bytes) at absolute sector LBA 1500.
+
+### C. Persistent Unstripped IOP Modules (`IOPSTASH.IRX`)
+Verification across `Apr 7 demo`, `Jun 11 demo`, and `Jun 25 prototype` proved that all three contain bit-identical unstripped copies of `IOPSTASH.IRX` (`USR/LOCAL/SCE/IOP/MODULES/IOPSTASH.IRX`). The module was consistently distributed with full `.symtab`, `.strtab`, and `.mdebug` sections, providing definitive C struct layouts for the game's streaming pipeline.
+
