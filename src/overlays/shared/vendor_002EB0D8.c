@@ -59,12 +59,22 @@ void func_L00_002EB280(char *m) {
     FastVecCross(m, a, p);
     qcopy(m + 0x40, m);
 }
-INCLUDE_ASM("asm/overlays", func_L00_002EB3A0);
+/* From Lombyte (MIT), FUN_L00_002e9ef0 (PR #66), adapted to PAL. */
+extern void func_L00_002EB280(char *);
+
+void func_L00_002EB3A0(p)
+    char *p;
+{
+    int *q = *(int **)(p + 0x70);
+    q[0] = 0; q[2] = 0; q[1] = 0; q[3] = 0; q[4] = 0; q[5] = 0; q[6] = 0;
+    func_L00_002EB280(p);
+    *(short *)(p + 0x7E) = 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002EB3E8);
 INCLUDE_ASM("asm/overlays", func_L00_002EB938);
 typedef struct { char pad[0x254]; int p; char pad2[0x18]; short s; char pad3[1]; char c; char pad4[0x14]; float f0; char pad5[8]; float f1; } S;
 extern S D_L00_00166D80;
-extern void func_L00_002EB3A0(void);
+extern void func_L00_002EB3A0();
 extern void func_0022ED80(int, int, int);
 
 void func_L00_002EBC50(void) {

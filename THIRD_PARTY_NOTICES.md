@@ -150,6 +150,7 @@ The following functions adapt source from
 - `src/overlays/shared/tieproc_00299108.c`: `func_L00_0029A8D0` (looks up table entry i, from one of two sets chosen by a flag, and passes it on)
 - `src/overlays/shared/vendor_002C12B0.c`: `func_L00_002C6F48` (per-frame step of a counter moby: advances, plays sound and finishes)
 - `src/overlays/shared/vendor_002C96D0.c`: `func_L00_002CD3B8` (spawns a debris moby with randomized spin and velocity)
+- `src/overlays/shared/vendor_002EB0D8.c`: `func_L00_002EB3A0` (clears a moby's work block and re-runs its setup)
 
 MIT License
 
