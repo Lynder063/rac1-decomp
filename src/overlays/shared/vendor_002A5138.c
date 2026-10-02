@@ -536,7 +536,27 @@ void *func_L00_002AAC50(int unused, void *pos, int c, float scale, float a, floa
 }
 INCLUDE_ASM("asm/overlays", func_L00_002AAD28);
 INCLUDE_ASM("asm/overlays", func_L00_002AAD40);
-INCLUDE_ASM("asm/overlays", func_L00_002AAE20);
+/* From Lombyte (MIT), FUN_L00_002a9b80 (PR #66), adapted to PAL. */
+typedef struct { float v[4]; } __attribute__((aligned(16))) Q2AAE20;
+extern short D_L00_00161490;
+extern void func_L00_002AAD40(void *, void *);
+
+void func_L00_002AAE20(void *a, Q2AAE20 *v) {
+    Q2AAE20 t = *v;
+    char *g, *p, *q;
+    g = *(char **)&D_L00_00161490;
+    if (g == 0) {
+        func_L00_002AAD40(a, &t);
+        g = *(char **)&D_L00_00161490;
+        if (g == 0) return;
+    }
+    p = *(char **)&D_L00_00161490;
+    q = *(char **)(p + 0x78);
+    if (*(short *)(p + 0xA6) == 0x5F3) {
+        *(Q2AAE20 *)(p + 0x10) = t;
+        *(short *)(q + 0x2E) = 1;
+    }
+}
 extern void func_L00_0023F1D0(int);
 extern void func_0020D678(void *);
 extern int D_L00_0015F420 MACRO_ADDR;

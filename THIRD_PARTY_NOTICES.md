@@ -153,6 +153,7 @@ The following functions adapt source from
 - `src/overlays/shared/vendor_002EB0D8.c`: `func_L00_002EB3A0` (clears a moby's work block and re-runs its setup)
 - `src/overlays/shared/mobyutil_00258BC8.c`: `func_L00_0025A868` (tests whether a moby's linked object has a non-zero field at +8)
 - `src/overlays/shared/vendor_002E1660.c`: `func_L00_002E99E4` (stores a float into a moby field at +0xB4)
+- `src/overlays/shared/vendor_002A5138.c`: `func_L00_002AAE20` (moves the tracked class 0x5F3 moby to a position, creating it first if needed)
 
 MIT License
 
