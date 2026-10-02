@@ -120,7 +120,47 @@ float func_L00_0020DCF0(int back) {
     }
     return b->ring[(b->head - n + 31) % 32];
 }
-INCLUDE_ASM("asm/overlays", func_L00_0020DD48);
+extern char D_L00_00166D80[];
+extern float func_001F9D10(void *, void *);
+extern float func_L00_001FF860(float, float);
+extern float func_001FA850(float, float);
+extern float func_001F9D48(void *, void *);
+extern int func_L00_0025F410(void *);
+
+/* Scores how far moby O is from the camera/hero reference point; flags *OUT when it is out of range. Adapted from Lombyte (MIT) for PAL: overlays/shared/ui_help_0020c758.c, FUN_L00_0020d6b0. */
+float func_L00_0020DD48(void *o_v, float yaw, float range, float ylim, float plim, int *out) {
+    char *o = o_v;
+    float v[4] __attribute__((aligned(16)));
+    char *g;
+    char *q = D_0013F450 + 0x80;
+    float d, a, s, p, m, r;
+
+    *out = 0;
+    qcopy(v, q);
+    g = q - 0x80;
+    if (*(int *)(g + 0x2084) == 0x14) {
+        v[2] = *(float *)(g + 0x2D8);
+    }
+    d = func_001F9D10(v, o + 0x10);
+    if (range < d) *out = 1;
+    a = func_001FA850(func_L00_001FF860(*(float *)(o + 0x10) - v[0], *(float *)(o + 0x14) - v[1]), yaw);
+    s = a;
+    m = a;
+    p = func_001FA850(func_L00_001FF860(func_001F9D48(v, o + 0x10), *(float *)(o + 0x18) - v[2]), 0.0f);
+    if (*(int *)(g + 0x2084) == 1 || *(int *)(g + 0x2084) == 0x1E) {
+        char *c = D_L00_00166D80;
+        float b = func_001FA850(func_L00_001FF860(*(float *)(o + 0x10) - *(float *)(c + 0x140), *(float *)(o + 0x14) - *(float *)(c + 0x144)), *(float *)(c + 0x158));
+        p = func_001FA850(func_L00_001FF860(func_001F9D48(c + 0x140, o + 0x10), *(float *)(o + 0x18) - *(float *)(c + 0x148)), -*(float *)(c + 0x154));
+        m = p;
+        s = b + p;
+        if (p < b) m = b;
+    }
+    if (0.0f < ylim && ylim < m) *out = 1;
+    if (0.0f < plim && plim < p) *out = 1;
+    r = d + s * d;
+    if (func_L00_0025F410(o)) r += 7.0f;
+    return r;
+}
 extern int func_L00_0025D390(void *obj);
 extern float func_L00_0020DD48(void *obj, float y, float x, float z, float w, int *failed);
 

@@ -462,7 +462,38 @@ void func_L00_00264E28(int a, int b, int c) {
     func_00116248(D_L00_00179218, msg_string(a), b);
     D_L00_0015F720 = c;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00264EA8);
+extern float D_L00_0015F660[] MACRO_ADDR;
+extern void *func_L00_00265050(char *src, int cls, float *pos, void *mat, int a8, int a9, float *v10, float *v11, float scale, float *v12);
+extern int func_L00_0025BCF8(void *, int, void *, void *, float);
+extern float func_00214158(void);
+
+/* Spawns a burst of effects on a moby: a fixed set at its own position, then randomly offset ones at points gathered around it. Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay_entities_002630b8.c, FUN_L00_00263e30. */
+void func_L00_00264EA8(char *m, int n, int cnt, int base, int range, int cnt2, int flag) {
+    char buf[256] __attribute__((aligned(16)));
+    float v[4] __attribute__((aligned(16)));
+    int mode = 0;
+    int i, k;
+    if (flag) {
+        mode = 2;
+    }
+    if (n > 0) {
+        if (cnt > 0) for (i = 0; i < cnt; i++) {
+            func_L00_00265050(m, n + i, (float *)(m + 0x10), m + 0x40, 0, mode, D_L00_0015F660, D_L00_0015F660, 0.0f, D_L00_0015F660);
+        }
+    }
+    if (n > 0 && range > 0) {
+        k = func_L00_0025BCF8(m, cnt2, buf, (void *)0xFFFF, 1000.0f);
+        if (k) {
+            for (i = 0; i < cnt2 && i < k; i++) {
+                func_001F9BC0(v);
+                v[0] = func_00214158();
+                v[1] = func_00214158();
+                v[2] = func_00214158();
+                func_L00_00265050(m, base + func_002140B0(range), (float *)(buf + i * 16), v, 0, mode, D_L00_0015F660, D_L00_0015F660, 0.0f, D_L00_0015F660);
+            }
+        }
+    }
+}
 extern void func_001FA1F8(void *, void *);
 extern float func_002140F8(float, float);
 extern float func_001F9878(float);

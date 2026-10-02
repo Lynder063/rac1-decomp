@@ -314,7 +314,89 @@ unsigned char *func_L00_002B0B98(unsigned char *owner, void *vel, void *pos, voi
     return m;
 }
 INCLUDE_ASM("asm/overlays", func_L00_002B0D30);
-INCLUDE_ASM("asm/overlays", func_L00_002B0F58);
+typedef union { u128 q; float f[4]; } V4;
+extern unsigned char *func_L00_0025D390(unsigned char *);
+extern float func_001F9CB8(void *);
+extern int func_L00_001EFFF0(void *, void *, int, int, int);
+extern void func_L00_002607F8(int, short *, short);
+extern unsigned char D_0013E633_u[] __asm__("D_0013E633") NOT_SDA;
+extern char D_L00_00173F60[];
+extern short D_L00_001B0AF0[];
+
+// spawns an effect moby (class 0x99) at pos, tied to an owner and a target, and aims its starting state
+// Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002aa670.c, FUN_L00_002afc70.
+unsigned char *func_L00_002B0F58(unsigned char *a, V4 *pos, unsigned char *tgt, float f12, float f13, float f14, float f15, float f16) {
+    V4 tmp;
+    unsigned char *m;
+    unsigned char *v;
+    unsigned char *r;
+    float t;
+    int n;
+    float x;
+
+    m = (unsigned char *)func_0020D348(0x99);
+    if (m != 0) {
+        v = *(unsigned char **)(m + 0x78);
+        m[0x30] = 0xFF;
+        *(short *)(m + 0x32) = 0xFF;
+        m[0x31] = 1;
+        *(float *)(m + 0x48) = f15;
+        *(float *)(m + 0x44) = f16;
+        m[0x20] = 0;
+        *(unsigned char **)(v + 0x10) = a;
+        qcopy(m + 0x10, pos);
+        t = D_0015EE6C * 20.0f;
+        *(int *)(v + 0x38) = 1;
+        *(float *)(v + 0x48) = 70.0f;
+        *(float *)(v + 0x34) = t;
+        *(int *)(v + 0x24) = 0;
+        *(int *)(v + 0x28) = 0;
+        *(unsigned char **)(v + 0x18) = tgt;
+        *(float *)(v + 0x20) = t / 3.0f;
+        if (tgt != 0) {
+            r = func_L00_0025D390(tgt);
+            if (r != 0) {
+                *(unsigned short *)(r + 0x1E) |= 0x80;
+                if (r[0xB]) {
+                    *(int *)(v + 0x38) = 0;
+                }
+                if (r[0xC]) {
+                    *(float *)(v + 0x34) = (float)r[0xC] * D_0015EE6C;
+                }
+                if (D_0015EE6C * 20.0f < *(float *)(v + 0x34)) {
+                    *(float *)(v + 0x48) = 140.0f;
+                }
+            }
+        }
+        *(float *)(v + 0x2C) = f12;
+        *(float *)(v + 0x30) = f13;
+        *(int *)(v + 0x14) = func_001F9850(300);
+        if (tgt != 0) {
+            qcopy(v, tgt + 0x10);
+            *(float *)(v + 0x1C) = f14;
+            *(float *)(v + 8) += f14;
+        }
+        x = func_001F9CB8(D_0013E633_u + 0xF5D);
+        n = func_001F9850(D_0015EE6C * 0.1f < x ? 0x3C : 0xF);
+        *(short *)(v + 0x3E) = n;
+        *(short *)(v + 0x3C) = n;
+        if (a != 0 && a[0x20] != 0xFE && a[0x20] != 0xFD) {
+            tmp.q = ((V4 *)(a + 0x10))->q;
+        } else {
+            qcopy(&tmp, D_0013E633_u + 0xE9D);
+            tmp.f[2] += 0.6f;
+        }
+        tmp.f[2] = pos->f[2];
+        if (func_L00_001EFFF0(&tmp, pos, 0, *(int *)(D_0013E633_u + 0x2E9D), 0)) {
+            m[0xBC] = 1;
+            qcopy(m + 0x10, D_L00_00173F60);
+        }
+        func_L00_00251E30(m);
+        func_L00_002607F8((int)m, D_L00_001B0AF0, 0x1F);
+        *(float *)(m + 0x2C) += *(float *)(m + 0x2C);
+    }
+    return m;
+}
 extern float D_0015EE6C MACRO_ADDR;
 extern float D_0015EE64 MACRO_ADDR;
 
