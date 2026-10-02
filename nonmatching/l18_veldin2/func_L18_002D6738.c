@@ -3,15 +3,14 @@
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
- *   Spawns moby 0x234 (colour 0xFF, scale by gp float), copies three vectors, sets fields on its data, then direct
- *   Best p2.c: 10 bytes differ: args c/e swap saved regs (s4/s5) and the sw 0x34 / sw $zero 0x2C store pair is swa
- *   Would need something that changes regalloc priority of c vs e (unknown); a scheduler/allocator tie.
+ *   ## Round 1
+ *   Allocates a 0x234 moby, inits header bytes, 0xC0 call, scales f2c by gp float (read as *(float*)&short D), cop
+ *   Best p3.c (16 differing bytes of 320, 10 runs used). Remaining: s4/s5 allocation swap (c vs e params) and stor
  */
 extern char *func_0020D348(int);
 extern void func_L00_00251328(void *, int, int, int);
 extern float func_L00_001FF860(float, float);
 extern float func_001F9CE8(void *);
-extern int func_0022ED80(int, int, int);
 extern short D_L18_001619F0;
 
 /* spawns a moby at pos with a direction and speed */

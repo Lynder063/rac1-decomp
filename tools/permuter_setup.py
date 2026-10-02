@@ -129,6 +129,31 @@ def main():
     # mutated, stripped, reformatted file each time.
     func_line = re.search(r"^(?!extern\b)[A-Za-z_].*?\b" + re.escape(name) + r"\s*\(",
                           candidate_text, re.M)
+    defname = ""
+    if func_line is None:
+        # A candidate may define the function under another C name that is an
+        # alias of it (`void impl(...) __asm__("func_X");`), the way try_func
+        # candidates do when the source file already declares func_X with
+        # another prototype. The permuter's base.c calls the function func_X
+        # (so pycparser and the scorer see the right symbol); compile.sh
+        # turns the name back into the alias before compiling.
+        alias = re.search(r"\b(\w+)\s*\([^;{]*\)\s*__asm__\s*\(\s*\"" + re.escape(name) + r"\"\s*\)\s*;",
+                          candidate_text)
+        if alias:
+            defname = alias.group(1)
+            own = None
+            for m in re.finditer(r"^(?!extern\b)[A-Za-z_].*?\b" + re.escape(defname) + r"\s*\(",
+                                 candidate_text, re.M):
+                line_end = candidate_text.find("\n", m.start())
+                if not candidate_text[m.start():line_end].rstrip().endswith(";"):
+                    own = m
+                    break
+            if own is not None:
+                candidate_text = (candidate_text[:own.start()]
+                                  + re.sub(r"\b" + re.escape(defname) + r"\b", name,
+                                           candidate_text[own.start():], count=1))
+                func_line = re.search(r"^(?!extern\b)[A-Za-z_].*?\b" + re.escape(name) + r"\s*\(",
+                                      candidate_text, re.M)
     if func_line is None:
         sys.exit(f"{name}: no definition of {name} found in {args.candidate}")
     (d / "decls.c").write_text(candidate_text[:func_line.start()])
@@ -179,7 +204,7 @@ def main():
 set -e
 DIR="$(cd "$(dirname "${{BASH_SOURCE[0]}}")" && pwd)"
 cd {ROOT}
-exec python3 tools/permuter_compile.py --name {name} --decls "$DIR/decls.c" "$1" -o "$3"
+exec python3 tools/permuter_compile.py --name {name} {("--defname " + defname + " ") if defname else ""}--decls "$DIR/decls.c" "$1" -o "$3"
 """
     sh_path = d / "compile.sh"
     sh_path.write_text(sh)

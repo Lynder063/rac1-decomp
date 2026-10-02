@@ -64,12 +64,15 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--name", required=True, help="func_XXXXXXXX or func_LNN_XXXXXXXX")
     ap.add_argument("--decls", help="declarations to prepend (tools/permuter_setup.py's decls.c)")
+    ap.add_argument("--defname", help="C name the function is really defined under (an alias of --name)")
     ap.add_argument("infile")
     ap.add_argument("-o", dest="out", required=True)
     args = ap.parse_args()
 
     seg, src, first, last = tf.find_stub(args.name)
     candidate = extract_function(Path(args.infile).read_text(), args.name)
+    if args.defname:
+        candidate = re.sub(r"\b" + re.escape(args.name) + r"\b", args.defname, candidate, count=1)
     if args.decls:
         candidate = Path(args.decls).read_text() + candidate
 

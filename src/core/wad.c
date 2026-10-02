@@ -3,7 +3,7 @@
 
 /*
  * wad.cpp (0x12F348-0x12F580), the last object in core_text. Name from
- * bordplate's NTSC RC1 split.
+ * the NTSC split.
  */
 
 /* Declarations in scope here before the split. */

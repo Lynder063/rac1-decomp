@@ -18,7 +18,7 @@ void func_L18_00214138(void) {
     int c = *(unsigned char *)(g + 0x12ED);
     int s = *(short *)(g + 0x12E0);
     int t;
-    func_001F99D8(g + 0x12E0, 0x10);
+    FastMemZero16(g + 0x12E0, 0x10);
     *(unsigned char *)(g + 0x12ED) = c;
     *(short *)(g + 0x12E0) = -1;
     *(unsigned char *)(g + 0x20A9) = 0;
@@ -58,8 +58,8 @@ void func_L18_00214138(void) {
     if (D_0015EE84 == 0xD) {
         char *p = (char *)D_0013E633 + 0xE1D;
         if (*(int *)(p + 0x2084) != 0x7B) {
-            if (func_L00_001F10E0(*(float *)(p + 0x234) + 0.03f, p + 0xD0, 2, 0) != 0) {
-                if (func_L00_001F3958() == 0xB) {
+            if (coll_sphere(*(float *)(p + 0x234) + 0.03f, p + 0xD0, 2, 0) != 0) {
+                if (CollType() == 0xB) {
                     func_L18_002284E0(0x7B, 1);
                     return;
                 }
@@ -87,7 +87,7 @@ void func_L18_00214138(void) {
         if (*(unsigned char *)(p + 0x12E6) != 0) {
             t = *(int *)(p + 0x2084);
             if (t != 0x68 && t != 0x7B) {
-                if (func_001F9B88(*(float *)(p + 0x2F4) - (*(float *)(p + 0x88) + 0.25f)) < 1.0f) {
+                if (FastAbsF(*(float *)(p + 0x2F4) - (*(float *)(p + 0x88) + 0.25f)) < 1.0f) {
                     if (0.0f < *(float *)(p + 0x2F4) - *(float *)(p + 0x88)) {
                         if (*(int *)(p + 0x2084) != 0x69 || *(short *)(p + 0x41E) != 0) {
                             if (*(float *)(p + 0x108) < 0.0f) {
@@ -109,7 +109,7 @@ void func_L18_00214138(void) {
         char *p = (char *)D_0013E633 + 0xE1D;
         if (*(unsigned char *)(p + 0x12EB) != 0) {
             if (*(int *)(p + 0x2084) != 0x7B) {
-                if (func_001F9B88(*(float *)(p + 0x2F4) - (*(float *)(p + 0x88) + 0.25f)) < 1.0f) {
+                if (FastAbsF(*(float *)(p + 0x2F4) - (*(float *)(p + 0x88) + 0.25f)) < 1.0f) {
                     if (0.0f < *(float *)(p + 0x2F4) - *(float *)(p + 0x88)) {
                         if (*(float *)(p + 0x108) < 0.0f) {
                             if ((unsigned)(*(unsigned char *)(p + 0x20A4) - 1) < 2) {

@@ -50,6 +50,60 @@ typedef enum {
 } CardState;
 ```
 
+### Save Game IFF Chunk Architecture (`save.h` / `memcard.c`)
+Recovered from `memcard_PrepData` (`func_0020BBC8`) and save stream chunk parsers:
+- **Global Save (`game`)**:
+  - `0`: `SAVE_BLOCK_LEVEL` (`int`)
+  - `1`: `SAVE_BLOCK_BOLT_COUNT` (`int`)
+  - `2`: `SAVE_BLOCK_GAME_COMPLETES` (`int`, playthroughs / challenge mode)
+  - `3`: `SAVE_BLOCK_ELAPSED_TIME` (`int`)
+  - `4`: `SAVE_BLOCK_LAST_SAVE_TIME` (`sceCdCLOCK`)
+  - `5`: `SAVE_BLOCK_GLOBAL_FLAGS` (progression bitmask)
+  - `7`: `SAVE_BLOCK_CHEATS_ACTIVATED`
+  - `8`: `SAVE_BLOCK_SKILL_POINTS`
+  - `9`: `SAVE_BLOCK_AMMO`
+  - `10`: `SAVE_BLOCK_UNLOCKS` (weapon & gadget possession bitmask)
+  - `12`: `SAVE_BLOCK_PURCHASABLE_VENDOR_ITEMS`
+  - `14`: `SAVE_BLOCK_GALACTIC_MAP`
+  - `25`: `SAVE_BLOCK_CAMERA_UP_DOWN_MODE` (invert pitch)
+  - `26`: `SAVE_BLOCK_CAMERA_LEFT_RIGHT_MODE` (invert yaw)
+  - `27`: `SAVE_BLOCK_CAMERA_ROTATION_SPEED` (sensitivity)
+  - `37`: `SAVE_BLOCK_CHEATS_EVER_ACTIVATED`
+  - `1003`: `SAVE_BLOCK_TOTAL_PLAY_TIME`
+  - `1005`: `SAVE_BLOCK_TOTAL_DEATHS`
+- **Level Save (`level`)**:
+  - `3001`: `SAVE_LEVEL_BLOCK_VISITED` (0=unvisited, 1=visited, 2=completed)
+  - `3003`: `SAVE_LEVEL_BLOCK_GOLD_BOLTS`
+  - `3004`: `SAVE_LEVEL_BLOCK_SEGMENTS_COMPLETED`
+  - `4000`: `SAVE_LEVEL_BLOCK_TOTAL_BOLTS`
+  - `4002`: `SAVE_LEVEL_BLOCK_TOTAL_DEATHS`
+
+### RaC1 Gadget Inventory Enum (`RaC1GadgetId`)
+Complete 29-element inventory sequence (IDs 0 to 28) verified across weapon dispatch and save importing:
+`BOMB_GLOVE` (0), `PYROCITOR` (1), `BLASTER` (2), `GLOVE_OF_DOOM` (3), `SUCK_CANNON` (4), `SWINGSHOT` (5), `HYDRODISPLACER` (6), `SONIC_SUMMONER` (7), `RYNO` (8), `WALLOPER` (9), `VISIBOMB` (10), `DECOY_GLOVE` (11), `TESLA_CLAW` (12), `TAUNTER` (13), `TRESPASSER` (14), `METAL_DETECTOR` (15), `MAGNEBOOTS` (16), `GRIND_BOOTS` (17), `HOVERBOARD` (18), `HELI_PACK` (19), `THRUSTER_PACK` (20), `HYDRO_PACK` (21), `O2_MASK` (22), `PILOTS_HELMET` (23), `MORPH_O_RAY` (24), `CODEBOT` (25), `HOLOGUISE` (26), `PDA` (27), `PERSUADER` (28).
+
+### Authentic `MobyInstance` Entity Structure (256 B / 0x100)
+Recovered from unstripped `.mdebug` STABS types:
+- `0x00`: `BSphere bSphere` (world bounding sphere `x, y, z, rad`)
+- `0x10`: `vec4 pos` (world position `x, y, z, w`)
+- `0x20`: `u8 state` (`0xFE` = free slot, `0xFF` = array tail)
+- `0x21`: `u8 group` (collision / grouping index)
+- `0x22`: `u8 mClass` (moby class sub-type)
+- `0x23`: `u8 alpha` (opacity / blend alpha, default `0x80`)
+- `0x24`: `void *pClass` (pointer to class descriptor)
+- `0x28`: `struct MobyInstance *pChain` (next in update chain)
+- `0x34`: `u16 modeBits` (behavioral mode flags, bit `0x40` = no pre-update)
+- `0x36`: `u16 modeBits2` (secondary flags, default `0x7F80`)
+- `0x38`: `u64 lights` (lighting bitmask `0x40404000000000L`)
+- `0x40`: `void *animSeq` / `f32 animSeqT` / `f32 animSpeed`
+- `0x80`: `BSphere lSphere` (local bounding sphere)
+- `0xA8`: `void (*pUpdate)(struct MobyInstance *)` (per-tick update callback)
+- `0xAC`: `void *pVar` (moby private variables, 0x80 bytes)
+- `0xB2`: `s16 UID` (unique actor ID in loaded level)
+- `0xBC`: `s16 oClass` (Object Class ID)
+- `0xC0`: `float rMtx[3][4]` (3x4 orientation matrix)
+- `0xF0`: `vec4 rot` (Euler angles Pitch, Yaw, Roll)
+
 ## 3. High-Value Hub Functions (Most Called)
 
 Functions called by the largest number of callers across the game code:

@@ -45,18 +45,14 @@ void func_L12_0027C9B8(unsigned char *parent, unsigned char *child, int mode) {
 }
 extern char *D_L12_001B0C30[];
 
-void func_L12_0027CA68(int group) {
+// Fills in the per-segment lengths of path record number idx.
+void func_L12_0027CA68(int idx) {
+    char *p;
     int i;
-    char *entries;
-    int count;
-    if (group == -1) return;
-    entries = D_L12_001B0C30[group];
-    count = *(int *)entries;
-    for (i = 0; i < count - 1; i++) {
+    if (idx == -1) return;
+    p = D_L12_001B0C30[idx];
+    for (i = 0; i < *(int *)p - 1; i++) {
         int o = i * 16;
-        int next = (i + 1) % count;
-        *(float *)(entries + o + 0x1C) =
-            func_001F9D10(entries + (o + 0x10), entries + (next * 16 + 0x10));
-        count = *(int *)entries;
+        *(float *)(p + o + 0x1C) = func_001F9D10(p + (o + 0x10), p + (((i + 1) % *(int *)p) * 16 + 0x10));
     }
 }

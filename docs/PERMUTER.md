@@ -141,6 +141,16 @@ EOF
 into clean C for `src/`, never pasted in verbatim (see "What it doesn't
 do").
 
+## Candidates defined through an alias
+
+When the source file already declares the function with another prototype, a
+candidate defines it as `void impl(char *m) __asm__("func_X");` (see
+LEVERS.md). `permuter_setup.py` accepts that: base.c calls the function
+`func_X` (pycparser and the scorer need the real symbol), and `compile.sh`
+turns the name back into `impl` before compiling (`permuter_compile.py
+--defname`). Declarations the candidate needs (including the alias line) are
+the ones above the definition, as before.
+
 ## What it doesn't do
 
 - **Only works on a live `INCLUDE_ASM` stub.** `target.o` is built from

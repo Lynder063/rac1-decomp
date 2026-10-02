@@ -1,13 +1,12 @@
 # Sibling decompilations
 
 Other projects decompile or reimplement Ratchet & Clank games. Lombyte
-and RC1 match the US build of this game, and RC1 has mapped per-file
+and the NTSC decomp match the US build of this game, and the NTSC decomp has mapped per-file
 compiler flags; ReRAC documents what the code does; ratchet-uya-decomp
 mapped retail's flags for a later game. None is part of this build.
 Clone them next to this repository:
 
 ```sh
-git clone https://codeberg.org/bordplate/RC1 ~/Projects/RC1
 git clone https://github.com/re-rac/rerac ~/Projects/rerac
 git clone https://github.com/mateuszklysz/Lombyte ~/Projects/Lombyte
 git clone https://github.com/vetusmagnus/ratchet-uya-decomp ~/Projects/ratchet-uya-decomp
@@ -19,7 +18,7 @@ git clone https://github.com/vetusmagnus/ratchet-uya-decomp ~/Projects/ratchet-u
 executable, `SCUS_971.99`. Its code is ours, compiled for another
 region, so a function it has matched is the best starting point we
 have. It keeps one C file per function under `src/`, with names
-recovered from bordplate's [RC1](https://codeberg.org/bordplate/RC1).
+recovered from the NTSC decomp.
 
 Its percentage leaves out SIMD, VU0 and COP2 helpers ("intentional
 asm"), so it reads higher than ours for about the same amount of
@@ -84,9 +83,9 @@ whose body is `do { ... } while (0)`. That is the original source, not
 an artificial barrier, but `tools/integrate.py` refuses any `while (0)`,
 so such a candidate is landed by hand after review.
 
-## bordplate/RC1: the same game, NTSC, with per-file flags
+## NTSC decomp: the same game, with per-file flags
 
-[RC1](https://codeberg.org/bordplate/RC1) matches the US boot ELF with
+The NTSC decomp matches the US boot ELF with
 EE-GCC 2.95.2 (`-G8 -O2 -ffast-math -fno-exceptions`, SN's assembler
 optional). Its hand-named `config/symbols.txt` is where
 `config/symbol_names.txt` came from. Since 2026-09 an automated loop
@@ -100,7 +99,7 @@ What carries over most is its Makefile: per-object flags, each verified
 against the whole NTSC boot image. Retail built some translation units
 differently:
 
-| RC1 object | Flags |
+| NTSC decomp object | Flags |
 |---|---|
 | `menu`, `menu_post_mid`, `menu_post_gadgets` | `-fno-schedule-insns` |
 | `menu_post`, `menu_post_pages`, `menu_post_pages_end`, `transition` | `-fno-schedule-insns -mno-split-addresses` |
@@ -110,27 +109,27 @@ differently:
 | `movie/movie_mid`, `movie/videodec_post`, `movie/movie_post_audio`, `movie/videodec_nodata`, `movie/disp` | `-mno-split-addresses` |
 | `permcb`, `vuchain`, `draw_post_reset` | `-mno-split-addresses` |
 
-RC1 splits some of our units finer (`menu` into several objects), so a
+The NTSC decomp splits some of our units finer (`menu` into several objects), so a
 flag applies to a range of functions, not necessarily our whole file.
 Its notes (`decomp_state/notes/`) record what each matched function
 needed.
 
 **Measured here (2026-09-30): the flags do not carry over.** They are
-relative to RC1's compiler setup (EE-GCC 2.95.2, `-G8 -ffast-math`), not
+relative to the NTSC decomp's compiler setup (EE-GCC 2.95.2, `-G8 -ffast-math`), not
 to retail's objects as our SN 2.95.3 build sees them:
 
-- Six exact `menu.c` functions inside RC1's `menu` object (func_00207200,
-  002072C0, 00207340, 00207648, 00207780, 00207930) under RC1's
+- Six exact `menu.c` functions inside the NTSC decomp's `menu` object (func_00207200,
+  002072C0, 00207340, 00207648, 00207780, 00207930) under the NTSC decomp's
   `-fno-schedule-insns`: three stay exact, 00207200 goes to 14/188
   bytes off, 00207340 to 2/104, and 00207930 changes size.
-- The one near-miss in that range, func_00227A70 (pause.c, inside RC1's
+- The one near-miss in that range, func_00227A70 (pause.c, inside the NTSC decomp's
   `pause_post2`, built there with `-G0`): 57/144 bytes off with default
   flags, `-G0`, `-fno-schedule-insns` and both; 62/144 with
   `-fno-schedule-insns2`; a size change with `-mno-split-addresses`. Its
   residual is source shape: retail keeps `%hi(D_001D5F70)` in `$t2`
   across the loop and forms the index with other registers.
 
-So treat an RC1 flag as a hint to test per function, never as a file
+So treat a flag from the NTSC decomp as a hint to test per function, never as a file
 setting.
 
 ## ReRAC: the same game as a native PC port
@@ -244,3 +243,32 @@ div.s   %0,%1,%2
   here.
 
 Not explained yet: UYA functions that mix two, one and no `nop`s.
+
+## rac2-decomp: Going Commando & Deadlocked Cross-Game Intelligence
+
+[rac2-decomp](https://github.com/llesieur99/rac2-decomp) targets the US
+executable of *Ratchet & Clank: Going Commando* (`SCUS_972.68`). Because
+Insomniac Games developed the PS2 games under intense yearly release cycles
+(2002 to 2005) on the same core engine architecture, extensive code, algorithms,
+and structures were reused across games:
+
+### 1. Byte-Identical Engine Functions (24+ functions shared)
+`rac2-decomp` verified that at least **24 reviewed C functions** are
+byte-identical between RAC1 and RAC2:
+- `FUN_0028B740` (HUD alignment / bounding box calculation, matching `FUN_L00_00235a70` in `gameplay_animation_00235878.c`)
+- `FUN_002A7AA8` (cubic spline / Hermite interpolation, matching `FUN_L00_00257e20` in `gameplay_entities_00257d78.c`)
+- `FUN_002A8860` (integer pack/unpack manipulation, matching `FUN_L00_00259430` in `math_interpolation_00257ef0.c`)
+- `FUN_002A8AF0` (2D point-in-polygon ray-casting test, matching `FUN_L00_00259740` in `gameplay_entities_00259710.c`)
+- `FUN_002AA140` (`lerp(a, b, t)`: `a + (b - a) * t`, matching `FUN_L00_0025b6a8` in `gameplay_entities_00259710.c`)
+- `FUN_002AAF40` (3-way element swap/permute by bitmask, matching `FUN_L00_0025c088` in `unclassified_0025bb38.c`)
+- `FUN_002CC6A0` (clearing state flag at `+0x44`, matching `FUN_L00_00277f60`)
+- `FUN_00312B58` (vendor moby state check `moby->state == 6`, matching `FUN_L16_002c4710`)
+- `FUN_00312E10` (byte flag check at `+0x20`, matching `FUN_L00_002d8128`)
+- `FUN_003505E0` (Ring buffer FIFO consumption at `base + 0x50000`, matching `FUN_L00_002ef300` in `runtime_buffers_002ef300.c`)
+
+### 2. Shared Enums & Systems
+- **RaC1 Gadget Enum**: 29 gadgets (`GADGET_BOMB_GLOVE` = 0 through `GADGET_PERSUADER` = 28)
+  reused directly by RaC2's save-import system.
+- **Memory Card FSM (`CardState`)**: Identical 25-state machine (`CS_INIT` to `CS_PROMPT_BEGIN_NOSAVE`).
+- **Geometry Pillars**: `tfrag`, `tie`, `shrub`, `moby` collision pill sweep
+  `MB_CheckCollPill` and camera collision `Camera_CollPrimTest`.

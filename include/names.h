@@ -414,6 +414,7 @@
 #define gHelpDeskVoice                   D_0015EF1C
 #define gHelpDeskText                    D_0015EF1D
 #define gSubtitles                       D_0015EF40
+#define gGameMode                        D_0015F6A8
 #define gCardStateNames                  D_001A04D0
 #define gGameSaveData                    D_001A05C0
 #define gLevelSaveData                   D_001A08C0
