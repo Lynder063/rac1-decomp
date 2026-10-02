@@ -12,6 +12,7 @@ This document summarizes the comprehensive analysis of the prerelease materials,
 | **June 11, 2002 USA Demo** (EB Games / E3) | Jun 11, 2002 | `SCUS_972.40` | 751 KB | CD-ROM Mode 2 (2352 b/s) | Contains Kerwan and Rilgar. Features early music loops, early level switch hooks, and early debug menu structures. |
 | **June 25, 2002 Prototype** | Jun 25, 2002 | `SCPS_000.00` | 745 KB | DVD ISO | 8 playable planets. **Debug mode enabled by default (`R3` triggers debug menu)**. Unique interactive Galactic Map with pan/zoom. **Contains leftover C++ source filenames and assertions in `.lit` and `.data`.** |
 | **August 2, 2002 Prototype** | Aug 2, 2002 | `SCPS_000.00` | 1,137 KB | DVD ISO | Late beta (14 playable planets). Near-final game logic, full debug menu string tables, profiler data, and weapon cheat definitions. |
+| **September 9, 2002 Review Prototype** | Sep 9, 2002 | `SCUS_971.99` | 1,347 KB | DVD ISO | Review copy sent to press (~3 weeks before retail master). Contains active pause-menu cheat input, WIBU dongle protection (`WIBU.IRX`), and complete level 0-17 tables; **Level 18 (Veldin 2) is not yet implemented**. |
 | **Final PAL (Retail)** | Oct 6, 2002 | `SCES_509.16` | 1,388 KB | DVD ISO | Production release used as the project baserom. Assert strings and debug symbol references were stripped. |
 
 ---
@@ -246,4 +247,74 @@ Cross-referencing the container structures across all prototypes reveals how Ins
 
 ### C. Persistent Unstripped IOP Modules (`IOPSTASH.IRX`)
 Verification across `Apr 7 demo`, `Jun 11 demo`, and `Jun 25 prototype` proved that all three contain bit-identical unstripped copies of `IOPSTASH.IRX` (`USR/LOCAL/SCE/IOP/MODULES/IOPSTASH.IRX`). The module was consistently distributed with full `.symtab`, `.strtab`, and `.mdebug` sections, providing definitive C struct layouts for the game's streaming pipeline.
+
+---
+
+## 9. September 9, 2002 Review Prototype Analysis
+
+The September 9, 2002 build represents a critical milestone in the development history of *Ratchet & Clank*. Distributed as a review copy on DVD-R to gaming press roughly three weeks prior to the North American gold master (October 1, 2002), it bridges the late beta engine with the final production codebase.
+
+### A. Binary Architecture & Section Layout
+- **Executable:** `SCUS_971.99`, size 1,347,252 bytes (compiled 2002-09-08 17:37:01).
+- **Entry Point:** `0x12d5b8` (near-final, compared to `0x12d868` in retail PAL).
+- **`core.text` Alignment:**
+  - Base address: `0x00112180` (identical to retail NTSC `SCUS_971.99`, shifted by `-0x200` relative to PAL `0x00112380`).
+  - Size: `0x01d0f0` bytes (only 264 bytes / 66 instructions smaller than retail PAL `0x01d1f8`).
+  - **Zero drift across first ~12 KB:** Comparison of machine code against retail PAL reveals a strict `+0` byte offset delta throughout the initialization and core system routines, confirming identical object file order and compiler flags (`-O2 -G0`).
+- **C++ Virtual Table Sections:**
+  Retains explicit linker section boundaries for C++ polymorphism:
+  - `lvl.vtbl` (virtual table at `0x001e5b00`)
+  - `lvl.camvtbl` (camera virtual table at `0x001e5b80`)
+  - `lvl.sndvtbl` (sound virtual table at `0x001e5c00`)
+
+### B. Hardware Dongle Protection System (`WIBU-KEY`)
+Unlike retail builds, this review prototype was protected with physical USB dongle security to prevent unauthorized leaks on retail or test consoles:
+- **IOP Modules:** `USR/LOCAL/SCE/IOP/MODULES/WIBU.IRX` (3,288 B) and `USBD.IRX` (34,873 B).
+- **EE Client Subsystem (`wibu_ee`):**
+  Direct RPC client communicating with the IOP WIBU driver, containing diagnostic strings:
+  - `"wibu_ee: could not bind to WIBU_RPC"`
+  - `"wibu_ee: RPC collision"`
+  - `"wibu_ee: sceSifCallRpc returned 0x%x"`
+- In the examined ISO, the binary was patched with `PSX-PS2 DISC PATCHER V1.0` to bypass this check for public preservation.
+
+### C. Active Pause-Menu Cheat Code & Debug Menu Unlock
+While the retail game requires memory manipulation (GameShark / Action Replay) to trigger the Debug Menu (`0x0015F6A8 = 0xFFFFFFFF` in PAL, `0x0015F5C4 = 0xFFFFFFFF` in NTSC), this build has a built-in controller cheat:
+1. **Button Combination (Pause Menu):**
+   `Up, Down, Up, Down, Left, Right, Left, Right, Square`
+2. **Action:**
+   Unpause the game and press **`R3`** to bring up the full Insomniac Debug Menu.
+3. **Decompiled Cheat Routine (`0x00214EE8` - `0x0021562C`):**
+   - The button parser evaluates the controller buffer in the pause loop.
+   - Upon successful activation, the game displays on-screen confirmation:
+     ```c
+     // Screen X=256, Y=32, RGBA=0x80F0F0F0
+     DrawString(256, 32, 0x80f0f0f0, "***cheats enabled***");
+     ```
+   - In the retail baserom (`SCES_509.16`), this entire check and the `"***cheats enabled***"` string were explicitly removed.
+
+### D. Critical Level Status: Absence of Veldin 2 (Level 18)
+- **Level Table Scope:** The game binary registers names `map level 0` through `map level 18` in `gMapLevelNames` (`0x0019BCE0`), but **Level 18 (Veldin 2) assets and gameplay logic are not present on the disc**.
+- **Decompilation Relevance:** This confirms that Level 18 (`level-18-veldin2`) was the very last level developed and mastered by Insomniac in the final three weeks before gold release. This explains why Level 18 has distinct code differences, later asset packaging, and specialized final-boss overlay mechanics compared to earlier levels.
+
+### E. Newly Recovered Function Names and Developer Tags
+Mining the literal pools and error diagnostics in `sep09_SCUS_971.99` yielded several new authoritative symbol names and programmer attributions:
+1. **`Camera_CollPrimTest`**:
+   - String: `"Camera_CollPrimTest WARNING! - grid out of bounds! (RAR)\n"`
+   - Tag: `RAR` = **Rich A. Rayl** (Insomniac camera and gameplay programmer).
+2. **`MB_CheckCollPill`**:
+   - Strings: `"MB_CheckCollPill: No collision data for this moby... aborting"` and `"MB_CheckCollPill - Strange collision type %d"`.
+   - Function: Collision pill capsule sweep test for moby instances.
+3. **`TJB` (Ted J. Baker)**:
+   - String: `"TJB - No env sample point found"`.
+   - Author tag for Insomniac's lead graphics/environment engine programmer.
+4. **Authoritative Sound API Names (Sony 989 Studios SDK `989snd.c`)**:
+   - `snd_BankLoad`
+   - `snd_BankLoadByLoc`
+   - `snd_BankLoadFromEE` / `snd_BankLoadFromEE_CB`
+   - `snd_BankLoadFromIOP` / `snd_BankLoadFromIOP_CB`
+   - `snd_SendIOPCommandNoWait`
+5. **Asset Repository Path:**
+   - `"host0:z:/i5/levels/level%d/npcs/scene_%d/scene.dat"`
+   - Confirms internal network share `z:/i5` (Insomniac 5) for level NPC scene data.
+
 
