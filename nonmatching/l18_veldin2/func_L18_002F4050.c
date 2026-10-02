@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L18_002F4050 -- src/overlays/l18_veldin2/vendor_002F2AE0.c
- * Best so far: BYTES 10457/12840 (18.6% of the bytes match), checked 2026-10-02.
+ * Best so far: BYTES 9052/12840 (29.5% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -129,7 +129,6 @@ extern float func_00214D88(float, float, float, float, float *, float *);
 extern int func_001FA8A8(int, int, float);
 extern void func_001F49B0(void (*)(void), void *);
 extern float D_0015EE64 MACRO_ADDR;
-extern short D_L18_0016D32A;
 /* 18 arguments; the file's shared sibling spells it the same way. The two call
    sites' lists were read off the retail assembly, because Ghidra prints only
    the eight integer arguments that go in registers. */
@@ -584,7 +583,7 @@ void func_L18_002F4050(unsigned char *moby) {
         v4[2] = *(float *)(b + 0x38);
         v4[3] = *(float *)(b + 0x78);
         func_L18_002E0E90(*(char **)(d + 0x334), v0, v1, v2, v3, v4,
-                          D_L18_00162424, D_L18_00162428, 0);
+                          D_L18_00162424, D_L18_00162428, 1);
         *(int *)(D_0013E633_u + 0x2EE1) = 3;
         moby[0x20] = 8;
         func_L18_002D9358((unsigned char *)D_L18_00160058 +
@@ -688,8 +687,8 @@ void func_L18_002F4050(unsigned char *moby) {
                 t = (int *)(d + 0x280);
                 for (i = 2; i >= 0; i--) {
                     float w;
-                    b = D_L18_0016016C + *t * 0x80;
-                    qcopy((char *)v0, b + 0x30);
+                    char *bb = (char *)((*t << 7) + (int)D_L18_0016016C);
+                    qcopy((char *)v0, bb + 0x30);
                     w = func_001FA850(
                         func_L00_001FF860(*(float *)(d + 0x3C0) - *(float *)(g + 0x80),
                                           *(float *)(d + 0x3C4) - *(float *)(g + 0x84)),
@@ -1139,7 +1138,7 @@ void func_L18_002F4050(unsigned char *moby) {
         if (k < 7) {
             func_L00_00299B68(3);
             *(int *)(d + 0x34C) = 7;
-            D_L18_0016D32A = 1;
+            ((char *)D_L18_0016D2E0_s)[0x4A] = 1;
             b = D_L18_0016016C + *(int *)(d + 0x294) * 0x80;
             qcopy((char *)D_L18_0016D2F0, b + 0x30);
             qcopy((char *)D_L18_0016D300, b + 0x70);
