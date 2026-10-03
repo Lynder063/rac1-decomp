@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L00_001ED6D8 -- src/overlays/shared/camera_001EB508.c
- * Best so far: BYTES 3/552 (99.5% of the bytes match), checked 2026-10-02.
+ * Best so far: BYTES 3/552 (99.5% of the bytes match), checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

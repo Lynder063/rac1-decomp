@@ -192,6 +192,8 @@ def write(names: list[str]) -> None:
                                  if (f.get("fuzzy_match_percent") or 0) == 100] for u in report["units"]}
     rows = {r["name"]: r for r in triage.triage()}
     roles = load_overlay_roles()
+    classes = load_moby_classes()
+    rerac = load_rerac_notes()
     known = load_names()
     strings_by_addr, strings_by_func = load_strings()
     index = declaration_index()
@@ -215,7 +217,8 @@ def write(names: list[str]) -> None:
         if row["symbol"]:
             out.append(f"- Real name: {row['symbol']}" + (f" ({row['library']})" if row["library"] else ""))
         out += name_lines(known.get(name))
-        out += role_lines(roles.get(name, []))
+        out += role_lines(roles.get(name, []), classes)
+        out += rerac_lines(rerac.get(name, []))
         if row["reference"]:
             out.append(f"- Original source: {row['reference']} (start from it, not from m2c)")
         sketch = ROOT / "build-sn/try" / name / "m2c.c"
@@ -304,13 +307,75 @@ def name_lines(row: dict | None) -> list[str]:
     return [f"- Name: {row['name']} ({row['tier']}, from {row['source']}{alts}){use}"]
 
 
-def role_lines(roles: list[str]) -> list[str]:
+def load_moby_classes() -> dict[int, str]:
+    """oClass -> moby class name, from tools/extract/moby_classes.tsv."""
+    path = ROOT / "tools/extract/moby_classes.tsv"
+    if not path.exists():
+        return {}
+    rows = {}
+    for line in path.read_text().splitlines():
+        if line and not line.startswith("#"):
+            number, name = line.split("\t")[:2]
+            rows[int(number)] = name
+    return rows
+
+
+CAMERA_ROLES = {"InitCamera": "init", "ActivateCamera": "activate", "UpdateCamera": "update", "ExitCamera": "exit"}
+
+
+def describe_role(role: str, classes: dict[int, str]) -> str:
+    """"UpdateMoby_726:01" -> "update function of moby class 726 (novalis_elevator) on level 01"."""
+    what, _, levels = role.partition(":")
+    kind, _, number = what.rpartition("_")
+    lv = levels.split("/") if levels else []
+    where = ("on every level" if len(lv) == ALL_LEVELS else f"on level {lv[0]}" if len(lv) == 1
+             else f"on levels {', '.join(lv)}" if len(lv) <= 4 else f"on {len(lv)} levels")
+    if kind == "UpdateMoby":
+        name = classes.get(int(number)) if number.isdigit() else None
+        return f"update function of moby class {number}" + (f" ({name})" if name else "") + f" {where}"
+    if kind in CAMERA_ROLES:
+        return f"{CAMERA_ROLES[kind]} function of camera {number} {where}"
+    if kind == "SoundFunc":
+        return f"sound function {number} {where}"
+    return f"{what} {where}"
+
+
+def role_lines(roles: list[str], classes: dict[int, str] | None = None) -> list[str]:
     if not roles:
         return []
-    shown = ", ".join(r.replace(":", " in levels ", 1) for r in roles[:6])
-    more = f" (+{len(roles) - 6} more)" if len(roles) > 6 else ""
-    return [f"- Role, from the levels' dispatch records: {shown}{more}. An UpdateMoby_<oClass> "
-            "takes the moby in $a0 (a partial `Moby` struct is in src/game/mobyfunc.c)."]
+    classes = load_moby_classes() if classes is None else classes
+    shown = "; ".join(describe_role(r, classes) for r in roles[:3])
+    more = f"; +{len(roles) - 3} more" if len(roles) > 3 else ""
+    moby = (" An update function takes the moby in $a0 (a partial `Moby` struct is in src/game/mobyfunc.c)."
+            if any(r.startswith("UpdateMoby_") for r in roles) else "")
+    return [f"- Role, from the levels' dispatch records (config/overlays/names.tsv): {shown}{more}.{moby}"]
+
+
+def load_rerac_notes() -> dict[str, list[tuple[str, str, str, str]]]:
+    """name -> [(ReRAC's name, confidence, note, source doc)], from
+    config/overlays/rerac_notes.tsv (docs/OVERLAYS.md, "ReRAC notes")."""
+    path = ROOT / "config/overlays/rerac_notes.tsv"
+    if not path.exists():
+        return {}
+    rows: dict[str, list] = {}
+    for line in path.read_text().splitlines():
+        if line and not line.startswith("#"):
+            name, rerac, confidence, note, source = line.split("\t")[:5]
+            rows.setdefault(name, []).append((rerac, confidence, note, source))
+    return rows
+
+
+def rerac_lines(notes: list[tuple[str, str, str, str]]) -> list[str]:
+    """What ReRAC (ISC) says the function does: at most two of its entries."""
+    out = []
+    for rerac, confidence, note, source in notes[:2]:
+        out.append(f"- ReRAC (ISC) calls it `{rerac}` ({confidence}, its {source})" + (f": {note}" if note else ""))
+    if len(notes) > 2:
+        out.append(f"  (+{len(notes) - 2} more ReRAC entries in config/overlays/rerac_notes.tsv)")
+    if len({n[0] for n in notes}) > 1:
+        out.append("  (ReRAC documents several copies of this code under different names: the one name here "
+                   "covers every identical copy)")
+    return out
 
 
 def load_strings() -> tuple[dict, dict]:
@@ -382,14 +447,17 @@ def overlay_file_index() -> dict[str, tuple[Path, list[tuple[str, bool]]]]:
     return index
 
 
-def overlay_write(names: list[str]) -> None:
+def overlay_write(names: list[str], out_dir: Path | None = None) -> None:
     """CONTEXT.md for overlay functions (docs/OVERLAYS.md): no progress-report
     row or triage reason exists for these yet, so this covers what an
     overlay worker needs instead -- which levels it's in, the file it lands
-    in and its neighbours there, and its family relative."""
+    in and its neighbours there, and its family relative. OUT_DIR replaces
+    build-sn/try/ (to look at a dossier without touching a worker's folder)."""
     catalogue = load_overlay_catalogue()
     families = load_overlay_families()
     roles = load_overlay_roles()
+    classes = load_moby_classes()
+    rerac = load_rerac_notes()
     known = load_names()
     strings_by_addr, strings_by_func = load_strings()
     findex = overlay_file_index()
@@ -406,7 +474,8 @@ def overlay_write(names: list[str]) -> None:
                f"- Kind: {kind}, {size} bytes, in {levels_count} level(s): "
                + ", ".join(f"{lv:02d}" for lv in levels),
                *name_lines(known.get(name)),
-               *role_lines(roles.get(name, [])),
+               *role_lines(roles.get(name, []), classes),
+               *rerac_lines(rerac.get(name, [])),
                "- Retail assembly: asm/overlays/" + name + ".s"
                + ("" if asm else " (missing -- run tools/overlay_asm.py, or wait: it's being regenerated)"),
                "- No m2c sketch: tools/m2c.py only reads asm/nonmatchings/. Start from the "
@@ -454,10 +523,11 @@ def overlay_write(names: list[str]) -> None:
             out += ["", "## Relative", "- None recorded in config/overlays/families.tsv."]
 
         out += ["", "## Earlier attempts", *attempts(name)]
-        work = ROOT / "build-sn/try" / name
+        work = (out_dir or ROOT / "build-sn/try") / name
         work.mkdir(parents=True, exist_ok=True)
         (work / "CONTEXT.md").write_text("\n".join(out) + "\n")
-        print(f"{name}: build-sn/try/{name}/CONTEXT.md ({len(calls)} calls, {len(data)} globals)")
+        shown = work.relative_to(ROOT) if work.is_relative_to(ROOT) else work
+        print(f"{name}: {shown}/CONTEXT.md ({len(calls)} calls, {len(data)} globals)")
 
 
 def sketches(names: list[str]) -> None:

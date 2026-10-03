@@ -2,7 +2,7 @@
  * Best so far: SIZE ours 228 / retail 232, checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
- * No longer builds in its file (COMPILE failed, 2026-10-02): match its declarations to the file's first.
+ * No longer builds in its file (COMPILE failed, 2026-10-03): match its declarations to the file's first.
  * What the last attempts found:
  *   Counts the mobys in list D_L13_001ABE40[idx] (stop at entry with bit 15 set) that are alive, unbusy (func_L00_
  *   Logic matches (p0.c: 228 bytes vs 232, structure identical). Wall: retail reads D_L13_00160058 twice in one fu

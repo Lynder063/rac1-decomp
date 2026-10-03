@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L01_002F9640 -- src/overlays/l01_novalis/vendor_002BA898.c
- * Best so far: BYTES 8/708 (98.9% of the bytes match), checked 2026-10-02.
+ * Best so far: BYTES 8/708 (98.9% of the bytes match), checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

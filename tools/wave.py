@@ -555,18 +555,19 @@ def packet(name: str, budget: int, near: bool = False) -> str:
                 "", "## What still differs (offset, ours, retail)", *(shown[1:] or ["- nothing listed"])]
     port = lombyte_port(name)
     if port:
-        path, ntsc, text = port
+        path, ntsc, text, caveat = port
         out += ["", f"## Lombyte's matched C for this function: {ntsc} in {path}",
                 "Port it (QUEUE.md, \"Lombyte ports\"): it matched the US build, so start from it and keep its "
-                "control flow; your candidate's comment must credit it.", text]
+                "control flow; your candidate's comment must credit it." + caveat, text]
     for label, other in start_from(name):
         out += ["", f"## Matched C to start from: {label}", other]
     return "\n".join(out) + "\n"
 
 
-def lombyte_port(name: str) -> tuple[str, str, str] | None:
-    """(Lombyte file, its name, its C) when Lombyte matched NAME's US
-    counterpart (tools/lombyte.py; docs/SIBLING_DECOMPS.md)."""
+def lombyte_port(name: str) -> tuple[str, str, str, str] | None:
+    """(Lombyte file, its name, its C, a caveat when its function's size
+    differs from ours) when Lombyte matched NAME's US counterpart
+    (tools/lombyte.py; docs/SIBLING_DECOMPS.md)."""
     import lombyte
     if not lombyte.MAP.exists() or not lombyte.LOMBYTE.is_dir():
         return None
@@ -575,7 +576,11 @@ def lombyte_port(name: str) -> tuple[str, str, str] | None:
     if not found:
         return None
     path, text = found
-    return path, pair["ntsc"], text
+    there = pair.get("ntsc_size", pair["size"])
+    caveat = "" if there == pair["size"] else (
+        f" Its function is {there} bytes and ours {pair['size']}: the PAL code differs, or the two projects "
+        "cut the functions there differently (config/overlays/us_map.tsv), so adapt it, don't port it as is.")
+    return path, pair["ntsc"], text, caveat
 
 
 def start_from(name: str) -> list[tuple[str, str]]:

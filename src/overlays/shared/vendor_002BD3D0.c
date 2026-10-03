@@ -39,7 +39,36 @@ void func_L12_002BD3D0(void *list_, int count, int tex0, int tex1) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L12_002E7EE0);
+typedef struct {
+    char pad0[0x44];
+    short count;
+    char pad46[0x132];
+    char *mobys[1];
+} Level12MobyList;
+extern void func_0020D960(char *, int, unsigned char *);
+extern int D_L12_0015F6A8 MACRO_ADDR;
+extern unsigned char D_0015EEB0[] MACRO_ADDR;
+extern Level12MobyList D_L12_0016CD60;
+extern unsigned char D_L12_0017C940[];
+
+/* Re-arms the matching entry of the moby list when the level mode is 2 (func_L02_002E2110 with argument 1). */
+void func_L12_002E7EE0(char *moby) {
+    int i;
+    if (D_L12_0015F6A8 == 2 && D_0015EEB0[0] != 0) {
+        for (i = 0; i < D_L12_0016CD60.count; i++) {
+            char *e = D_L12_0016CD60.mobys[i];
+            if (*(short *)(e + 0xA6) == *(short *)(moby + 0xA6)) {
+                unsigned char *s = D_L12_0017C940;
+                if (s[1] == 0) {
+                    func_0020D960(e, 1, s);
+                    *(float *)(s + 0x20) = 2.75f;
+                    *(float *)(s + 0x24) = 2.75f;
+                    *(float *)(s + 0x28) = 2.75f;
+                }
+            }
+        }
+    }
+}
 extern int func_001F4868(int);
 extern void func_L12_002BD3D0(void *, int, int, int);
 extern char D_L12_001F5740[];

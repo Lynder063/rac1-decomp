@@ -5,7 +5,7 @@ functions with the same instructions as another function except for a
 constant, a float or a struct offset.
 
   python3 tools/overlay_variants.py stubs    # INCLUDE_ASM stubs for new variants
-  bash tools/docker/run.sh python tools/overlay_variants.py clone [name ...]
+  bash tools/docker/run.sh python tools/overlay_variants.py clone [name | name=parent ...]
 
 `stubs` adds a stub for every catalogued shared or level function that
 src/overlays/ doesn't have yet, in address order: after the function
@@ -19,7 +19,9 @@ names in place of the parent's, and the numbers that differ between the
 two functions' instructions replaced in the C. Each candidate goes through
 tools/try_func.py (the strict overlay check); an EXACT one replaces the
 stub. Variants whose parent isn't matched, or whose difference has no
-literal in the C (a struct field), are left for a worker.
+literal in the C (a struct field), are left for a worker. name=parent
+clones from a parent variants.tsv doesn't list, such as a relative at
+100% in config/overlays/families.tsv.
 """
 from __future__ import annotations
 import itertools
@@ -219,7 +221,12 @@ def clone(only: list[str]) -> None:
     names_h = ROOT / "include/names.h"
     readable = dict(re.findall(r"^#define\s+(\w+)\s+((?:func_|D_)\w+)\s*$", names_h.read_text(), flags=re.M)) \
         if names_h.exists() else {}
-    for name, par, kind, size in rows(VARIANTS):
+    # NAME=PARENT clones from a parent variants.tsv doesn't list (a close
+    # relative in config/overlays/families.tsv, say); plain names keep theirs.
+    pairs = dict(a.split("=", 1) for a in only if "=" in a)
+    only = [a.split("=", 1)[0] for a in only]
+    listed = [(n, pairs.pop(n, p), k, s) for n, p, k, s in rows(VARIANTS)]
+    for name, par, kind, size in listed + [(n, p, "", "") for n, p in pairs.items()]:
         if only and name not in only:
             continue
         if name not in have or have[name][3] or par not in have or not have[par][3]:

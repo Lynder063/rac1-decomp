@@ -350,7 +350,44 @@ void func_L16_002E8680(char *moby) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L16_002E8B30);
-INCLUDE_ASM("asm/overlays", func_L16_002E8EA8);
+typedef int u128 __attribute__((mode(TI)));
+extern short D_L16_00161F58;
+extern short D_L16_00161F5C;
+extern short D_L16_00161F60;
+extern short D_L16_00161F64;
+extern short D_L16_00161F68;
+extern float D_0015EE6C MACRO_ADDR;
+extern void func_001F9C30(void *, void *, float);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern float func_00214158(void);
+extern void func_L00_0026DD70_emit(void *, void *, int, int, float, int) __asm__("func_L00_0026DD70");
+
+/* Emits a particle near an active moby when the target is close. */
+void func_L16_002E8EA8(unsigned char *m, void *v) {
+    float input[4];
+    float offset[4];
+    float out[4];
+    float velocity[4];
+    float a, b, size, r, final_size;
+    *(u128 *)input = *(u128 *)v;
+    if ((unsigned char)m[0x31] == 0) return;
+    if ((D_L16_0015F6B0 & 1) != (((int)m >> 8) & 1)) return;
+    if (!(func_001F9D10(m + 0x10, D_L16_00167240) < 75.0f)) return;
+    r = func_001F9D10(m + 0x10, input);
+    func_001F9C30(out, m + 0xC0, *(float *)&D_L16_00161F60 * r);
+    size = *(float *)&D_L16_00161F64;
+    size *= D_0015EE6C;
+    func_L00_001FF4B0(offset, m + 0xC0, -0.5f);
+    func_001F9BD8(offset, offset, m + 0x10);
+    a = func_00214158();
+    b = func_00214158();
+    func_00215C00(velocity, size, a, b);
+    func_001F9BD8(velocity, velocity, out);
+    final_size = *(float *)&D_L16_00161F68;
+    final_size *= 210000.0f;
+    func_L00_0026DD70_emit(offset, velocity, *(int *)&D_L16_00161F58,
+                        *(int *)&D_L16_00161F5C, final_size, func_001F9850(0x23));
+}
 INCLUDE_ASM("asm/overlays", func_L16_002E9018);
 INCLUDE_ASM("asm/overlays", func_L16_002E9278);
 INCLUDE_ASM("asm/overlays", func_L16_002E93F8);
@@ -515,8 +552,95 @@ void func_L16_002EA1B8(void) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L16_002EA2F8);
-INCLUDE_ASM("asm/overlays", func_L16_002EA6E8);
-INCLUDE_ASM("asm/overlays", func_L16_002EA828);
+extern short D_L16_00162000;
+extern short D_L16_00162020;
+extern short D_L16_00162028;
+extern short D_L16_00162030;
+extern short D_L16_00162038;
+extern char D_L16_00162040_draw[][16] __asm__("D_L16_00162040") MACRO_ADDR;
+extern char D_L16_001DDF50[];
+
+/* Sets up the draw state, then draws the one entry of the level's table. */
+void func_L16_002EA6E8(void) {
+    int *a = (int *)&D_L16_00162000;
+    int *b = (int *)&D_L16_00162020;
+    int *c = (int *)&D_L16_00162028;
+    int *d = (int *)&D_L16_00162030;
+    int *e = (int *)&D_L16_00162038;
+    int i;
+    char (*p)[16] = D_L16_00162040_draw;
+
+    VU1_addGSregister(6, GetEffectTex(0x29));
+    VU1_addGSregister(0x42, 0x4000000064);
+    VU1_addGSregister(8, 0);
+    VU1_addGSregister(0x14, 0xFF9000000260);
+    func_001F7868();
+    for (i = 0; i < 1; i++) {
+        if (FastBSphereCheck(p[i], 512.0f) != -1) {
+            func_L16_002EA010(a[i], d[i], b[i], c[i], (float *)D_L16_001DDF50);
+            func_L00_001FDE48(a[i], b[i], e[i], D_L16_001DDF50, 1);
+        }
+    }
+}
+extern short D_L16_00162000_bounds __asm__("D_L16_00162000");
+extern short D_L16_00162020_bounds __asm__("D_L16_00162020");
+typedef struct {float x,y,z,radius;} L16SingleSphere;
+extern L16SingleSphere D_L16_00162040_bounds[] __asm__("D_L16_00162040") MACRO_ADDR;
+extern void func_001F49B0(void *, void *);
+extern void func_L16_002EA6E8(void);
+
+/* Compute bounding spheres for one mesh and register their renderer. */
+void func_L16_002EA828(unsigned char *m) {
+    int i, j;
+    float maxx, maxy, maxz, minx, miny, minz;
+    float p[4];
+    float *out;
+    float *verts;
+    int count;
+    switch (m[0x20]) {
+    case 0: {
+        for (i = 0; i <= 0; i++) {
+            maxx = maxy = maxz = -1024.0f;
+            minx = miny = minz = 1024.0f;
+            {int k;
+            for (k=0;k<((int*)&D_L16_00162000_bounds)[i];k++) {
+                float x,y,z;
+                verts=((float**)&D_L16_00162020_bounds)[i]+k*3;
+                x = verts[0];
+                if (x > maxx) maxx = x;
+                y = verts[1];
+                if (y > maxy) maxy = y;
+                z = verts[2];
+                if (z > maxz) maxz = z;
+                if (x < minx) minx = x;
+                if (y < miny) miny = y;
+                if (z < minz) minz = z;
+            }
+            }
+            {L16SingleSphere *sphere = D_L16_00162040_bounds + i;
+            sphere->radius=0.0f;
+            sphere->x=(maxx+minx)*0.5f;
+            sphere->y=(maxy+miny)*0.5f;
+            sphere->z=(maxz+minz)*0.5f;}
+            for (j = 0; j < ((int*)&D_L16_00162000_bounds)[i]; j++) {
+                float dist;
+                out = (float*)(D_L16_00162040_bounds + i);
+                p[0] = ((float**)&D_L16_00162020_bounds)[i][j * 3 + 0];
+                p[1] = ((float**)&D_L16_00162020_bounds)[i][j * 3 + 1];
+                p[2] = ((float**)&D_L16_00162020_bounds)[i][j * 3 + 2];
+                dist = func_001F9D10(p, out);
+                if (dist > out[3]) out[3] = dist;
+            }
+        }
+        m[0x20] = 1;
+        m[0x30] = *(unsigned short *)(m+0x32) = 255;
+        break;
+    }
+    case 1:
+        func_001F49B0(func_L16_002EA6E8, m);
+        break;
+    }
+}
 extern char D_L16_001DF580[][16];
 extern char D_L16_001DF5A0[];
 extern short D_L16_00162050;

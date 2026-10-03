@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L00_00299B68 -- src/overlays/shared/tieproc_00299108.c
- * Best so far: SIZE ours 780 / retail 772, checked 2026-10-02.
+ * Best so far: SIZE ours 780 / retail 772, checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

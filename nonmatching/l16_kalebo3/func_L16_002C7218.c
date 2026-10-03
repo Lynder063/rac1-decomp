@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L16_002C7218 -- src/overlays/l16_kalebo3/vendor_002A50F0.c
- * Best so far: BYTES 44/948 (95.4% of the bytes match), checked 2026-10-02.
+ * Best so far: BYTES 44/948 (95.4% of the bytes match), checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * Cannot land as written (#define in a candidate): rewrite that in plain C first.

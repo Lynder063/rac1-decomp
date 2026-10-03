@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L15_002EC080 -- src/overlays/l15_quartu/vendor_0029C1D0.c
- * Best so far: SIZE ours 1024 / retail 1040, checked 2026-10-02.
+ * Best so far: SIZE ours 1024 / retail 1040, checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * Cannot land as written (#define in a candidate): rewrite that in plain C first.

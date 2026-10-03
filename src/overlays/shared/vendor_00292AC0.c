@@ -175,7 +175,38 @@ void func_L03_002CF600(char *m) {
     *(unsigned char *)(m + 0xA4) = 0xFF;
     func_L00_0025E590(m, d + 0x60);
 }
-INCLUDE_ASM("asm/overlays", func_L03_002D50A0);
+extern float D_L03_0015F660[] MACRO_ADDR;
+extern void func_L01_00279790(void *);
+extern void func_L00_00265050(void *, int, void *, void *, int, int, float, void *, void *, void *);
+void func_L03_002D50A0(unsigned char *m) {
+    int flag = 0;
+    float z;
+    char *p, *pos, *vel;
+    char *x = func_L00_0025B478(m, 0x10000, 0);
+    switch (m[0x20]) {
+    case 0:
+        m[0x20] = 1;
+        break;
+    case 1:
+        if (x != 0) {
+            if (*(float *)(x + 0x2C) > 0.0f) flag = 1;
+        }
+        if (flag) m[0x20] = 2;
+        break;
+    case 2:
+        func_0022ED80(0, 0, (int)m);
+        z = 0.0f;
+        p = D_L03_0015F660;
+        pos = m + 0x10;
+        func_L01_00279790(m);
+        vel = m + 0x40;
+        func_L00_00265050(m, 0x727, pos, vel, 0, 0, z, p, p, p);
+        func_L00_00265050(m, 0x728, pos, vel, 0, 0, z, p, p, p);
+        func_L00_00265050(m, 0x729, pos, vel, 0, 0, z, p, p, p);
+        func_0020D678(m);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L03_002D5B88);
 extern struct Moby *func_0020D348_m(int) __asm__("func_0020D348");
 
@@ -199,7 +230,37 @@ char *func_L03_002D65D0(char *a, char *pos, int c, int d, float f)
     }
     return m;
 }
-INCLUDE_ASM("asm/overlays", func_L03_002DC848);
+typedef struct {
+    char pad0[0x44];
+    short n;
+    char pad1[0x132];
+    char *m[1];
+} G_2DC848;
+extern void func_0020D960(char *, int, void *);
+extern int D_L03_0015F6A8 MACRO_ADDR;
+extern unsigned char D_0015EEB0[] MACRO_ADDR;
+extern G_2DC848 D_L03_0016C9E0;
+extern unsigned char D_L03_0017C5C0[];
+extern short D_L03_00161C44;
+
+/* Re-arms the matching entry of the level's moby list in mode 2 (func_L05_003188A8 with argument 1). */
+void func_L03_002DC848(char *a) {
+    if (D_L03_0015F6A8 == 2 && D_0015EEB0[0] != 0) {
+        int i;
+        for (i = 0; i < D_L03_0016C9E0.n; i++) {
+            char *moby = D_L03_0016C9E0.m[i];
+            if (*(short *)(moby + 0xA6) == *(short *)(a + 0xA6)) {
+                unsigned char *q = D_L03_0017C5C0;
+                if (q[1] == 0) {
+                    func_0020D960(moby, 1, q);
+                    *(float *)(q + 0x20) = *(float *)&D_L03_00161C44;
+                    *(float *)(q + 0x24) = *(float *)&D_L03_00161C44;
+                    *(float *)(q + 0x28) = *(float *)&D_L03_00161C44;
+                }
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L03_002DD6D8);
 INCLUDE_ASM("asm/overlays", func_L03_002DD840);
 extern void func_L02_002A5238(char *, float, int);

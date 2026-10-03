@@ -565,8 +565,105 @@ void func_L16_002D5CD0(char *m) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L16_002E3740);
-INCLUDE_ASM("asm/overlays", func_L16_002E3FC8);
-INCLUDE_ASM("asm/overlays", func_L16_002E42F0);
+extern int func_L00_0028EB98(void*,int);
+extern int func_0022ED80_6B70(int,int,void*) __asm__("func_0022ED80");
+extern void func_L00_0028EBF0(int);
+extern char *func_L00_0025B478(void*,int,int);
+extern int func_L00_0025B4D0(void*,void*,void*,int,int*,float*,int,int);
+extern float func_L00_00258C80(float,float);
+extern void func_L00_0025E4B0(void*,void*);
+extern void func_L00_0025E590(void*,void*);
+extern int func_L00_00260FB0(float,char*,void*,int,int,void*,int);
+extern short D_L16_00161E38;
+extern char *D_L16_00160098 MACRO_ADDR;
+typedef struct {char pad[0x74];unsigned char active;char pad75[0x13];char *owner;} L16InteractionSlot;
+typedef struct {char pad[0x80];float position[4];char pad90[0x1FF0];int owner;} L16PursuitPlayer;
+typedef struct {int status;float amount;} L16HitResult;
+/* Update interaction ownership, damage responses and pursuit tracking. */
+void func_L16_002E3FC8(char *m) {
+    L16HitResult hit;
+    char *d=*(char**)(m+0x78);
+    float zero;
+    char *record;
+    int response;
+    (*(float*)((char*)(m)+(0x2C)))=(*(float*)((char*)(*(char**)(m+0x24))+(0x24)))*(*(float*)&D_L16_00161E38);
+    if((unsigned int)((*(unsigned char*)((char*)(m)+(0x20)))-2)<4) {
+        if(!func_L00_0028EB98(m,(*(int*)((char*)(d)+(0x190))))) (*(int*)((char*)(d)+(0x190)))=func_0022ED80_6B70(0,4,m);
+    } else if(func_L00_0028EB98(m,(*(int*)((char*)(d)+(0x190))))) {
+        int slot=(*(int*)((char*)(d)+(0x190)));
+        if(slot!=-1) {
+            L16InteractionSlot *s=(L16InteractionSlot*)(D_0013E633+0x1D+slot*0x70);
+            if(s->owner==m && s->active!=0) func_L00_0028EBF0(slot);
+        }
+        (*(int*)((char*)(d)+(0x190)))=-1;
+    }
+    hit.amount=zero=0.0f;
+    record=func_L00_0025B478(m,0x330000,0);
+    response=func_L00_0025B4D0(m,record,d+0x20,0,&hit.status,&hit.amount,0,4);
+    if(hit.status!=1 && (*(unsigned char*)((char*)(m)+(0x20)))!=8) {
+        (*(float*)((char*)(d)+(0x20)))-=hit.amount;
+        if((*(float*)((char*)(d)+(0x20)))<=zero || ((*(unsigned char*)((char*)(D_0013E633)+(0x2EC1)))==2 && hit.amount>=2.0f)) response=1;
+            if(response>0) {
+            if(response>=3) {
+                if(response<9) {
+                func_0022ED80_6B70(3,0,m);
+                (*(unsigned char*)((char*)(d)+(0x67)))=120;
+                (*(float*)((char*)(d)+(0x188)))=func_L00_00258C80(30.0f,50.0f)*0.017453292f*D_0015EE6C;
+                }
+            } else {
+                func_0022ED80_6B70(3,0,m);
+                if((*(unsigned char*)((char*)(D_0013E633)+(0x2EC1)))!=2) func_0022ED80_6B70(2,0,m);
+                {int *child=(int*)(d+0xC0),count=3;
+                do {
+                    char *pool=D_L16_00160098;
+                    if(*child>=0) func_0020D678(pool+(*child<<8));
+                    child++;
+                } while(--count>=0);
+                }
+                (*(unsigned char*)((char*)(m)+(0x20)))=8;(*(int*)((char*)(d)+(0x160)))=func_001F9850(90);(*(unsigned char*)((char*)(d)+(0x67)))=120;
+
+            }
+        }
+        func_L00_0025E4B0(m,d+0x60);
+    }
+    (*(unsigned char*)((char*)(m)+(0xA4)))=255;
+    func_L00_0025E590(m,d+0x60);
+    if((*(int*)((char*)(d)+(0xD0)))!=-1 && (*(int*)((char*)(D_0013E633)+(0x2EA9)))!=22) {
+        char *path=D_L16_001B0C30[(*(int*)((char*)(d)+(0xD0)))];
+        func_L00_00260FB0(128.0f,m,d+0x70,0,0,path+0x10,*(int*)path);
+    } else (*(int*)((char*)(d)+(0xB4)))=2;
+    if((*(int*)((char*)(d)+(0xB0)))==0) {
+        L16PursuitPlayer *player=(L16PursuitPlayer*)(D_0013E633+0xE1D);
+        (*(int*)((char*)(d)+(0xB0)))=player->owner;
+        qcopy(d+0x70,player->position);
+    }
+}
+extern void func_00215CA8_path42(float,void*,int,void*,void*,int) __asm__("func_00215CA8");
+extern float func_001F9D10_path42(void*,void*) __asm__("func_001F9D10");
+extern float func_00214D88_path42(float,float,float,float,float*,float*) __asm__("func_00214D88");
+extern short D_L16_00161E44, D_L16_00161E40;
+/* Advance a path segment and ease the remaining travel distance. */
+int func_L16_002E42F0(char *m, char *path) {
+    char *d = *(char **)(m+0x78);
+    float progress = (float)*(int *)(d+0x168) + *(float *)(d+0x16C) + *(float *)(d+0x170) / *(float *)(d+0x174);
+    int index = func_001FA898(progress);
+    float speed;
+    float distance, rate;
+    char *position;
+    *(int *)(d+0x168)=index;
+    *(float *)(d+0x16C)=progress-(float)index;
+    if(index<*(int *)path-1) {
+    position=m+0x10;
+    func_00215CA8_path42(progress,path,0,position,m+0x40,0);
+    *(float *)(d+0x194)=*(float *)(m+0x18);
+    speed=0.0f;
+    distance=func_001F9D10_path42(position,path+(*(int *)path<<4));
+    rate=*(float *)&D_L16_00161E44*D_0015EE70;
+    func_00214D88_path42(distance,rate,rate,*(float *)&D_L16_00161E40*D_0015EE6C,&speed,(float *)(d+0x170));
+    return 0;
+    }
+    return 1;
+}
 INCLUDE_ASM("asm/overlays", func_L16_002E4408);
 extern float D_0015EE64 MACRO_ADDR;
 extern void func_L00_00263950(char *, char *, int, float, float);

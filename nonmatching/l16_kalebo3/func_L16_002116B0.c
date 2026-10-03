@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L16_002116B0 -- src/overlays/l16_kalebo3/help_00209D98.c
- * Best so far: BYTES 69/1672 (95.9% of the bytes match), checked 2026-10-02.
+ * Best so far: BYTES 69/1672 (95.9% of the bytes match), checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

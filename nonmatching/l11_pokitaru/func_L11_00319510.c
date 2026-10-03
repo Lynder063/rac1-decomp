@@ -2,7 +2,7 @@
  * Best so far: SIZE ours 316 / retail 324, checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
- * No longer builds in its file (COMPILE failed, 2026-10-02): match its declarations to the file's first.
+ * No longer builds in its file (COMPILE failed, 2026-10-03): match its declarations to the file's first.
  * What the last attempts found:
  *   func_L11_00319510: counts the type-0x527 mobys in the list D_L11_001AC540[moby data+0xE4], then hands each one
  *   Best candidate p0.c (BYTES 68/324, same size, structure right): retail hoists `lw D_L11_00160058` out of the s

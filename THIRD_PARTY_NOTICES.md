@@ -166,6 +166,13 @@ The following functions adapt source from
 - `src/overlays/shared/vendor_002EB0D8.c`: `func_L00_002EC860` (sets a moby's damping and scale constants, then re-runs its setup)
 - `src/overlays/shared/help_00203E98.c`: `func_L00_0020A8B8` (tests a segment against the world and returns the hit distance)
 
+Data taken from Lombyte:
+
+- `tools/extract/moby_classes.tsv`: the moby class names the level editor
+  shows, from its `config/overlays/us/names/level-NN.json` ("moby-class-record"
+  evidence), which joins each level's class dispatch table with the class
+  names of [Wrench](https://github.com/chaoticgd/wrench)'s moby class unpack.
+
 MIT License
 
 Copyright (c) 2026 Mateusz Kłysz
@@ -187,3 +194,43 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## ReRAC
+
+[ReRAC](https://github.com/re-rac/rerac), a native PC port of the US build,
+documents the game's formats and systems. The following adapt its format
+code and notes, or quote it:
+
+- `tools/extract/mobys.py`: the moby instance record and what the level
+  loader does with each field, from `crates/rc-formats/src/gameplay.rs` and
+  `docs/plan/moby_render_notes.md`; described in `docs/ASSETS.md` ("Mobys").
+- `tools/extract/moby_class.py`: the moby class header and model format
+  (packets, vertex cache, skinning slots, normals, untextured faces), from
+  `docs/formats/moby_rac1.md` §1-§2 and `crates/rc-formats/src/moby.rs`;
+  described in `docs/ASSETS.md` ("Moby classes").
+- `tools/extract/moby_anim.py`: moby skeletons and animation sequences,
+  from `docs/formats/moby_rac1.md` §3-§4, `docs/plan/moby_animation.md` and
+  `crates/rc-formats/src/moby_anim.rs`.
+- `tools/extract/collision.py`: the collision block (cell tree, packed
+  vertices, faces and surface bytes), from `docs/formats/collision_rac1.md`,
+  `docs/plan/collision_queries.md` and `crates/rc-formats/src/collision.rs`;
+  described in `docs/ASSETS.md` ("Collision").
+- `config/overlays/rerac_notes.tsv`: names and notes quoted from its
+  `tools/ghidra/names/doc_names.csv` (the commit is in the file's header),
+  shown in worker packets.
+
+ISC License
+
+Copyright (c) 2026 ReRAC contributors
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.

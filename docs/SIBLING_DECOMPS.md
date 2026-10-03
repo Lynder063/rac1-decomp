@@ -24,8 +24,7 @@ Its percentage leaves out SIMD, VU0 and COP2 helpers ("intentional
 asm"), so it reads higher than ours for about the same amount of
 matched code.
 
-`tools/lombyte.py` pairs its functions with ours by aligning the two
-builds' function sizes:
+`tools/lombyte.py` pairs its functions with ours:
 
 ```sh
 python3 tools/lombyte.py map            # rebuild the pairing, executable and levels
@@ -33,6 +32,17 @@ python3 tools/lombyte.py func_001123A8  # -> _calloc_r, matched, its C file
 python3 tools/lombyte.py _malloc_r      # a Lombyte name -> func_00114920
 python3 tools/lombyte.py todo           # matched there, not here
 ```
+
+It pairs through `config/overlays/us_map.tsv` when that exists: our map
+of every US function to its PAL counterpart, made from the two builds'
+code by `tools/overlays.py us-map` (docs/OVERLAYS.md, "US map"). A
+Lombyte function's US address (`FUN_LNN_xxxxxxxx` in level NN, or its
+place in the executable) gives our function, whatever their sizes. The
+US binaries it compares are the ones ReRAC (ISC, below) extracts from
+the US disc; the map itself is our own comparison. Without the map, and
+for whatever it leaves, `map` falls back to aligning the two builds'
+function sizes. Each pair records which (`"how"`), and Lombyte's size
+when it differs from ours (`todo` shows it).
 
 On 2026-09-27, 66 functions (31,576 bytes, 6.8% of our code) were
 matched there and not here, the newlib allocator family and `_dtoa_r`
@@ -50,6 +60,16 @@ when Lombyte matched it. The first two such waves (lb1, lb2) ported
 105 functions (63,424 bytes); `wave.py salvage --ports` later landed 7
 more whose files had clashed (4,372 bytes). Each is listed in
 THIRD_PARTY_NOTICES.md.
+
+On 2026-10-02 the size alignment paired 3,028 functions, 186 of them
+(75,812 bytes) matched there and not here. Through the map, `map` pairs
+4,164 (all of them through the map), 276 (123,600 bytes) matched there
+and not here: 91 more than before, and one size-aligned pair the map
+showed to be a neighbour (func_L08_002F20D8 is Lombyte's
+`FUN_L08_002f0c18`, not `FUN_L08_002f0b40`). In 58 of the 276 Lombyte's
+function is another size than ours: the PAL code differs (an `aligned`
+pair in the map) or the two projects cut the functions there differently.
+A queue packet carrying such a port says so (`wave.py`'s `lombyte_port`).
 
 ### Porting a function
 
@@ -144,6 +164,14 @@ the functions those docs discuss; the verified ones are in our
 `include/names.h`, the rest are candidates in `config/names.tsv`.
 Addresses there are US: the level programs' through Lombyte's overlay
 catalogue (docs/NAMES.md).
+
+Its extraction of the US disc (`extracted/boot/SCUS_971.99`,
+`extracted/levels/NN/overlay.bin`) is what `tools/overlays.py us-map`
+compares with our PAL code (docs/OVERLAYS.md, "US map"). Through that
+map, `tools/overlays.py rerac-notes` quotes its function entries' names
+and notes for our functions into `config/overlays/rerac_notes.tsv`
+(crediting ReRAC and its commit), and `tools/dossier.py` puts them in
+a worker's `CONTEXT.md` marked "ReRAC (ISC)".
 
 ## ratchet-uya-decomp: Up Your Arsenal
 
