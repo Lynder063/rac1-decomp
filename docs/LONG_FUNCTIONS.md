@@ -25,7 +25,7 @@ An attempt is ONE message with two tool calls:
 - Write `build-sn/try/<FUNC>/<ARM>/pK.c` (K = 0, 1, ...; a new file each time);
 - Bash `bash tools/docker/run.sh python tools/try_func.py <FUNC> build-sn/try/<FUNC>/<ARM>/pK.c --diff --arm=<ARM>`
 
-Your budget is 20 runs; try_func refuses more.
+Your budget is the number in `<ARM>/BUDGET` (30 runs for a first pass); try_func refuses more.
 
 ## Method
 

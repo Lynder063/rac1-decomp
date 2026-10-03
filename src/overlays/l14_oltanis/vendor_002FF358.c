@@ -8,7 +8,41 @@ INCLUDE_ASM("asm/overlays", func_L14_002FF728);
 INCLUDE_ASM("asm/overlays", func_L14_002FFF08);
 INCLUDE_ASM("asm/overlays", func_L14_00300468);
 INCLUDE_ASM("asm/overlays", func_L14_00302288);
-INCLUDE_ASM("asm/overlays", func_L14_00302968);
+extern char *func_0020D348(int);
+extern float func_L00_001FF860(float, float);
+extern void func_L00_00251E30(void *);
+extern short D_L14_0016215C;
+extern short D_L14_00162168;
+
+/* Spawns a moby with its data block filled from the arguments. */
+char *func_L14_00302968(int a0, float *a1, float *a2, int a3, float f) {
+    char *moby = func_0020D348(0x4A9);
+    float t, u;
+    unsigned short g;
+    if (moby != 0) {
+        char *d = *(char **)(moby + 0x78);
+        ((unsigned char *)moby)[0x30] = 0xFF;
+        *(short *)(moby + 0x32) = 0xFF;
+        moby[0x31] = 1;
+        moby[0x20] = 0;
+        *(int *)(d + 0x24) = a0;
+        qcopy(moby + 0x10, a1);
+        qcopy(d + 0x10, a2);
+        g = D_L14_0016215C;
+        *(float *)(d + 0x1C) = f;
+        *(int *)(d + 0x20) = a3;
+        *(unsigned short *)(d + 0x28) = g;
+        *(short *)(d + 0x2A) = 0;
+        *(int *)(moby + 0x40) = 0;
+        *(int *)(moby + 0x44) = 0;
+        t = func_L00_001FF860(a2[0], a2[1]);
+        u = *(float *)(moby + 0x2C) * *(float *)&D_L14_00162168;
+        *(float *)(moby + 0x48) = t;
+        *(float *)(moby + 0x2C) = u;
+        func_L00_00251E30(moby);
+    }
+    return moby;
+}
 extern char D_L14_001E9FA0[];
 extern void func_00216270(void);
 extern void func_L02_002A5238(char *, float, int);
@@ -53,7 +87,65 @@ void func_L14_00306EC0(char *moby) {
     *(float *)(d + 0x5C) = 2.0f;
     *(float *)(d + 0x58) = 2.5f;
 }
-INCLUDE_ASM("asm/overlays", func_L14_00306FA0);
+extern void func_001F9BF0(void *dst, void *a, void *b);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern int func_001F9908_r(int *arg0) __asm__("func_001F9908");
+extern float func_001FA888(int);
+extern float func_001F9B88(float);
+extern int func_001FA8A8(int, int, float);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern unsigned char *func_L00_00273E08(float f, void *pos, int a1, unsigned char a2, int idx, int flag, int s, int mode);
+extern char D_L14_001675C0[];
+
+typedef struct {
+    float pad[2];
+    float z;
+    float pad2[5];
+    float a[4];
+    float b[4];
+    int t[4];
+    float c[4];
+} FxData14;
+
+/* Updates and draws four scrolling particle streaks for an Oltanis moby. */
+void func_L14_00306FA0(char *p) {
+    float v[8];
+    FxData14 *m = *(FxData14 **)(p + 0x78);
+    float *a;
+    int *t;
+    int i, j, c, k;
+    float f, g;
+    j = 0;
+    m->z += 0.1f;
+    func_001F9BF0(v, D_L14_001675C0, m);
+    t = m->t;
+    a = m->a;
+    func_L00_001FF4B0(v, v, -0.3f);
+    func_L00_001FF4B0(&v[4], v, 0.1f);
+    func_001F9BD8(v, v, m);
+    m->z -= 0.1f;
+    for (i = 3; i >= 0; i--) {
+        f = *a + m->b[j];
+        *a = f;
+        if (f >= 255.0f) {
+            *a = f - 255.0f;
+        } else if (f <= 0.0f) {
+            *a = f + 255.0f;
+        }
+        if (func_001F9908_r(t)) {
+            m->t[j] = func_001F9850(255);
+        }
+        t++;
+        g = func_001FA888(func_001F9850(255) - m->t[j]);
+        g = g / (float)func_001F9850(255);
+        c = func_001FA8A8(0x4040FFFF, 0x1040FFFF, func_001F9B88(0.5f - g));
+        k = func_001FA898_r(*a++);
+        func_L00_00273E08(m->c[j], v, c, k, 0x35, 1, 2, 0);
+        j++;
+        func_001F9BD8(v, v, &v[4]);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L14_003071B0);
 extern char *func_0020D348(int);
 extern void func_L00_00251E30(void *);

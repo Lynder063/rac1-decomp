@@ -168,7 +168,163 @@ void func_L07_002CE470(unsigned char *moby) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L07_002CECE8);
+extern unsigned char D_L07_0015FD08[] MACRO_ADDR;
+
+/* Moves a moby along a path between its two ends, hidden while its gate byte is set. */
+void func_L07_002CECE8(unsigned char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    char *hero;
+    char *path;
+    float orig[4], delta[4], tmp[4];
+    if (D_L07_0015FD08[moby[0xB0]] != 0xFF) {
+        *(int *)(moby + 0x94) = 0;
+        *(unsigned short *)(moby + 0x34) |= 0x41;
+        return;
+    }
+    if (*(int *)(data + 0xB4) == -1) {
+        return;
+    }
+    path = D_L07_001B0830[*(int *)(data + 0xB4)];
+    qcopy(orig, moby + 0x10);
+    func_001F9938(data + 0xBA);
+    if (moby[0x20] == 0) {
+        float f;
+        char *pts;
+        data[0x28] = 4;
+        *(short *)(data + 0x3E) = 5;
+        *(int *)(data + 0x20) = 0;
+        *(short *)(data + 0x24) = 0;
+        f = 0.0f;
+        if ((moby[0xBC] = data[0xA0]) == 0) {
+            f = 1.0f;
+        }
+        *(float *)(data + 0xA4) = f;
+        pts = path + 0x10;
+        qcopy((moby + 0x10), func_001FA898_r(f) ? pts + (*(int *)path - 1) * 16 : pts);
+        *(short *)(data + 0xBA) = 0;
+        *(int *)(data + 0xA8) = 0;
+        *(int *)(data + 0xBC) = 0;
+        moby[0x20] = 1;
+        moby[0x30] = 0xFF;
+        *(short *)(moby + 0x32) = 0xFF;
+        *(int *)(data + 0xC4) = -1;
+        *(unsigned short *)(moby + 0x34) &= 0xFFBE;
+        *(int *)(moby + 0x94) = *(int *)(*(char **)(moby + 0x24) + 0x10);
+    }
+    switch (moby[0xBC]) {
+    case 0: {
+        char *cls = *(char **)(moby + 0x24);
+        float t = *(float *)(moby + 0x2C) - *(float *)(cls + 0x24) / 60.0f;
+        *(float *)(moby + 0x2C) = t;
+        if (t < 0.0f) {
+            *(float *)(moby + 0x2C) = *(float *)(cls + 0x24);
+            qcopy((moby + 0x10), path + 0x10);
+            moby[0xBC] = 1;
+            *(float *)(data + 0xA4) = 0.0f;
+        }
+        break;
+    }
+    case 1:
+        if (*(short *)(data + 0xB8) != 0) {
+            if (func_L01_00278FA8(moby)) {
+                if (*(int *)(data + 0xC8) == 0) {
+                    if (func_L01_00278FA8(moby)) {
+                        func_L00_00222B80(0x72, 1);
+                    }
+                }
+                moby[0xBC] = 2;
+                *(float *)(data + 0xAC) = 1.0f / func_001F9878(*(float *)(data + 0xB0) * 60.0f);
+                *(short *)(data + 0xB8) = 0;
+            }
+        }
+        break;
+    case 2:
+        if (*(short *)(data + 0xBA) != 0
+            || (*(float *)(data + 0xBC) < 0.0f
+                && func_001F9D48((moby + 0x10), hero = D_0013E633 + 0xE9D) < 2.0f
+                && func_001F9B88(*(float *)((hero -= 0x80) + 0x88) - *(float *)(moby + 0x18)) < 4.0f
+                && *(float *)(moby + 0x18) - *(float *)(hero + 0x88) > 1.0f)) {
+            int r;
+            if (*(short *)(data + 0xBA) == 0) {
+                *(short *)(data + 0xBA) = func_001F9850(30);
+            }
+            r = *(int *)(data + 0xC4);
+            *(int *)(data + 0xA8) = 0;
+            if (r != -1) {
+                unsigned char *s = (unsigned char *)D_0013E633 + 0x1D + r * 0x70;
+                if (*(unsigned char **)(s + 0x88) == moby && s[0x74] != 0) {
+                    func_L00_0028EBF0(r);
+                }
+            }
+            *(int *)(data + 0xC4) = -1;
+        } else {
+            int i;
+            float f20, t;
+            char *q;
+            if (!func_L00_0028EB98(moby, *(int *)(data + 0xC4))) {
+                *(int *)(data + 0xC4) = func_0022ED80(0, 4, (int)moby);
+            }
+            *(float *)(data + 0xA8) += *(float *)(data + 0xAC) * D_0015EE6C;
+            if (func_001F9B88(*(float *)(data + 0xA8)) > func_001F9B88(*(float *)(data + 0xAC))) {
+                *(float *)(data + 0xA8) = *(float *)(data + 0xAC);
+            }
+            *(float *)(data + 0xA4) = *(float *)(data + 0xA4) + *(float *)(data + 0xA8);
+            if (0.5f < func_001F9B88(*(float *)(data + 0xA4) - 0.5f)) {
+                int r;
+                if (*(int *)(data + 0xC8) == 0 && func_L01_00278FA8(moby)) {
+                    func_L00_00227E08();
+                }
+                if (0.0f < *(float *)(data + 0xAC)) {
+                    moby[0xBC] = 3;
+                    *(float *)(data + 0xA4) = 1.0f;
+                } else {
+                    moby[0xBC] = 1;
+                    *(float *)(data + 0xA4) = 0.0f;
+                }
+                *(int *)(data + 0xA8) = 0;
+                *(short *)(data + 0xBA) = func_001F9850(15);
+                r = *(int *)(data + 0xC4);
+                if (r != -1) {
+                    unsigned char *s = (unsigned char *)D_0013E633 + 0x1D + r * 0x70;
+                    if (*(unsigned char **)(s + 0x88) == moby && s[0x74] != 0) {
+                        func_L00_0028EBF0(r);
+                    }
+                }
+                *(int *)(data + 0xC4) = -1;
+            }
+            f20 = func_001FA888(*(int *)path - 1);
+            i = func_001FA898_r(f20 * *(float *)(data + 0xA4));
+            f20 = func_001FA888(*(int *)path - 1);
+            t = func_001FA888(i);
+            f20 *= *(float *)(data + 0xA4);
+            f20 -= t;
+            if (i == *(int *)path - 1) {
+                qcopy((moby + 0x10), path + 0x10 + i * 16);
+            } else {
+                q = path + 0x10 + i * 16;
+                func_001F9BF0(tmp, path + 0x20 + i * 16, q);
+                func_001F9C30(tmp, tmp, f20);
+                func_001F9BD8((moby + 0x10), tmp, q);
+            }
+            *(float *)(data + 0xBC) = *(float *)(moby + 0x18) - orig[2];
+        }
+        break;
+    case 3:
+        if (!func_L01_00278FA8(moby)) {
+            moby[0xBC] = 0;
+        }
+        break;
+    }
+    func_001F9BF0(delta, (moby + 0x10), orig);
+    func_L00_002617B0(data + 0x60, delta, moby + 0x40, moby + 0x40);
+    if (!func_L01_00278FA8(moby)) {
+        if (2.0f < func_001F9D48((moby + 0x10), D_0013E633 + 0xE9D)) {
+            if (*(short *)(data + 0xBA) == 0) {
+                *(short *)(data + 0xB8) = 1;
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L07_002F6F20);
 extern void func_001F49B0(void *, void *);
 extern void func_00233AB8(void);
@@ -278,7 +434,36 @@ void func_L07_0030E820(unsigned char *moby) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L07_0030E8B8);
-INCLUDE_ASM("asm/overlays", func_L07_0030EF90);
+// spawns a moby of class 0x416 and initialises its data from the arguments
+unsigned char *func_L07_0030EF90(int a, void *pos, int b, float f0, float f1, float f2, float f3, float f4) {
+    unsigned char *moby = (unsigned char *)func_0020D348_m(0x416);
+    if (moby != 0) {
+        char *data;
+        char *g;
+        char *h;
+        data = *(char **)(moby + 0x78);
+        moby[0x30] = 0xFF;
+        *(short *)(moby + 0x32) = 0xFF;
+        moby[0x31] = 1;
+        qcopy(moby + 0x10, pos);
+        *(int *)(data + 0x14) = a;
+        *(float *)(data + 4) = f1;
+        *(float *)(data + 0x10) = f2;
+        *(float *)(data + 0xC) = f3;
+        *(float *)data = f0;
+        *(float *)(data + 8) = f0;
+        *(int *)(data + 0x18) = b;
+        *(float *)(data + 0x1C) = f4;
+        *(unsigned short *)(moby + 0x34) |= 0x200;
+        g = D_L07_00166EC0;
+        h = g - 0x140;
+        *(float *)(h + 0x160) = 0.3f - func_001F9D48(moby + 0x10, g) / 100.0f;
+        *(int *)(h + 0x168) = func_001F9850(0x14);
+        func_L00_00251E30(moby);
+        func_0022ED80(0, 0, (int)moby);
+    }
+    return moby;
+}
 INCLUDE_ASM("asm/overlays", func_L07_0030F0D0);
 extern float func_001F9D48(void *, void *);
 extern float func_001F9B88(float);
@@ -360,7 +545,24 @@ INCLUDE_ASM("asm/overlays", func_L07_0030F838);
 INCLUDE_ASM("asm/overlays", func_L07_0030FB00);
 INCLUDE_ASM("asm/overlays", func_L07_0030FC38);
 INCLUDE_ASM("asm/overlays", func_L07_0030FD78);
-INCLUDE_ASM("asm/overlays", func_L07_0030FF18);
+extern float func_001F9D10(void *, void *);
+
+void func_L07_0030FF18(char *data) {
+    int i, count;
+    if (data != 0) {
+        count = *(int *)data;
+        i = 0;
+        if (count > 0) {
+            do {
+                int o = i * 16;
+                int next = (i + 1) % count;
+                *(float *)(data + o + 0x1C) = func_001F9D10(data + (o + 0x10), data + (next * 16 + 0x10));
+                i++;
+                count = *(int *)data;
+            } while (i < count);
+        }
+    }
+}
 extern float func_L00_0025A748(void *);
 
 int func_L07_0030FFA8(char *moby, char *data) {

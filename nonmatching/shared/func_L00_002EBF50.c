@@ -1,14 +1,14 @@
 /* NON_MATCHING func_L00_002EBF50 -- src/overlays/shared/vendor_002EB0D8.c
- * Best so far: BYTES 5/372 (98.7% of the bytes match), checked 2026-10-01.
+ * Best so far: BYTES 5/372 (98.7% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-02): match its declarations to the file's first.
  * What the last attempts found:
  *   CameraScript setup: fills the type-5 moby from two positions, a mode (2 or 3) and two values. p3.c is 5 bytes 
  *   Only difference: in the mode-3 block the copy D_0013E633+0xE9D -> p+0x110 uses dest $a0 / src $v1 in ours, des
  *   Three wordings of that copy (plain, named src local, named dest local) compile to identical bytes: an allocato
  */
 extern char D_0013E633[];
-extern char D_L00_00166EC0[];
 extern char *func_L00_001EB578(int);
 extern int func_L00_001ED9B0_2(float *, float *) __asm__("func_L00_001ED9B0");
 

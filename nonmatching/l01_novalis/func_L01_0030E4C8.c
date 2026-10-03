@@ -1,7 +1,8 @@
 /* NON_MATCHING func_L01_0030E4C8 -- src/overlays/l01_novalis/vendor_002FABE8.c
- * Best so far: SIZE ours 260 / retail 268, checked 2026-10-01.
+ * Best so far: SIZE ours 260 / retail 268, checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-02): match its declarations to the file's first.
  * What the last attempts found:
  *   BreakableCrateVariantUpdate: switch on state (0 -> 1; 1 -> 2 once the found object's float at +0x2C is > 0; 2 
  *   p2..p6 all give the same bytes (28/268 differ): the call setup is scheduled differently (retail does addiu/%lo
@@ -10,8 +11,6 @@
 extern int func_0022ED80(int, int, int);
 extern void func_L01_00279790(void *);
 extern void func_L01_00279E10(void *, int);
-extern void func_L00_00265050(char *, int, void *, void *, int, int, float, void *, void *, void *);
-extern char D_L01_0015F660[];
 
 // Breakable crate variant update: state 0 starts, 1 waits for a positive value, 2 breaks into pieces.
 void func_L01_0030E4C8(char *moby) {

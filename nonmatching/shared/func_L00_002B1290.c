@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L00_002B1290 -- src/overlays/shared/vendor_002AB910.c
- * Best so far: SIZE ours 1008 / retail 1012, checked 2026-10-01.
+ * Best so far: SIZE ours 1008 / retail 1012, checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -8,7 +8,6 @@
  *   Wall: the dead load has no plain-C form I found; would need knowing what the original did with D_L00_00173F40[
  */
 extern float func_001F9D10(void *, void *);
-extern int func_L00_0025D390(char *);
 extern float func_L00_001FF860(float, float);
 extern float func_001F9D48(void *, void *);
 extern float func_001FA850(float, float);

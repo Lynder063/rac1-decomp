@@ -17,7 +17,7 @@ the level-code catalogue the waves draw from.
 |---|---|---|
 | Lead | Opus 5.5 | plans, launches, refills, reviews, lands, commits; matches nothing itself |
 | Queue worker | Sonnet 5.5 (`model: sonnet`), 8 to 10 at once | functions up to about 600 bytes, and near waves: 8 functions from the queue, 2 at a time, 6 runs each |
-| Long-function worker | Opus 5.5 (`model: opus`), 2 to 4 at once | one function of 1 KB or more per agent, 20 runs ([LONG_FUNCTIONS.md](LONG_FUNCTIONS.md)) |
+| Long-function worker | Opus 5.5 (`model: opus`), 2 to 4 at once | one function of 1 KB or more per agent, 30 runs ([LONG_FUNCTIONS.md](LONG_FUNCTIONS.md)): the Opus matches that took a second pass needed 5 to 13 runs past the first 20 |
 | (none) | Haiku 4.5 | no tier: see [Why Sonnet only](#why-sonnet-only) |
 | Clone and salvage | no model | variants of matched functions; EXACT runs that never landed |
 
@@ -53,7 +53,7 @@ Picking a function for an Opus worker:
 3. Not in a file another worker holds a function of.
 
 `python3 tools/wave.py long NAME func_X ...` sets each one up (dossier,
-m2c sketch, `PACKET.md`, a 20-run budget in `build-sn/try/func_X/opus/`),
+m2c sketch, `PACKET.md`, a 30-run budget in `build-sn/try/func_X/opus/`),
 refuses a blocked one, and prints each worker's one-line prompt:
 `Read docs/LONG_FUNCTIONS.md and follow it exactly. FUNC=func_X ARM=opus.`
 Its runs land through `wave.py salvage`, and a near miss goes to the next

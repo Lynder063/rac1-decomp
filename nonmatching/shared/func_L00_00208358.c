@@ -1,7 +1,8 @@
 /* NON_MATCHING func_L00_00208358 -- src/overlays/shared/help_00203E98.c
- * Best so far: BYTES 11/760 (98.5% of the bytes match), checked 2026-10-01.
+ * Best so far: BYTES 11/760 (98.5% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * Cannot land as written (#define in a candidate): rewrite that in plain C first.
  * What the last attempts found:
  *   Draws the queued effect particles (DrawQ at D_0013E633+0xE1D) and a per-state glow; p5.c/p7.c/p8.c are 11 byte
  *   Only difference: in the 3-iteration loop (state 3) retail keeps the pointer in $s1 and the counter in $s0; our

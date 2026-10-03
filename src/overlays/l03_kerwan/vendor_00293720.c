@@ -8,7 +8,38 @@ INCLUDE_ASM("asm/overlays", func_L03_00293EB8);
 INCLUDE_ASM("asm/overlays", func_L03_00294040);
 INCLUDE_ASM("asm/overlays", func_L03_00295DB0);
 INCLUDE_ASM("asm/overlays", func_L03_002965A0);
-INCLUDE_ASM("asm/overlays", func_L03_0029DA60);
+typedef int u128 __attribute__((mode(TI)));
+extern void func_001FA218(float *, float *);
+extern void func_001F9EE8(void *, void *, void *);
+extern void func_001F9CA0(void *, void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+
+/* Builds two scaled offset vectors from the moby's matrix and adds them to out. */
+void func_L03_0029DA60(char *moby, float *out) {
+    float v[4];
+    float a[4];
+    float c[4];
+    float d[4];
+    float b[4];
+    float m[16];
+    char *data;
+    *(u128 *)v = 0;
+    v[0] = 1.0f;
+    data = *(char **)(moby + 0x78);
+    if (*(float *)(data + 0x140) != 0.0f || *(float *)(data + 0x144) != 0.0f) {
+        func_001FA218(m, (float *)(moby + 0x40));
+        func_001F9EE8(a, v, m);
+        *(u128 *)b = *(u128 *)a;
+        b[2] = b[2] - 1.0f;
+        func_001F9CA0(c, a, b);
+        func_001F9CA0(d, a, c);
+        func_001F9C30(c, c, *(float *)(data + 0x140));
+        func_001F9C30(d, d, *(float *)(data + 0x144));
+        func_001F9BD8(out, out, c);
+        func_001F9BD8(out, out, d);
+    }
+}
 extern int D_L03_0015F6B0_m __asm__("D_L03_0015F6B0") MACRO_ADDR;
 extern int func_L00_0028EB98(void *, int);
 extern int func_0022ED80(int, int, int);
@@ -40,7 +71,42 @@ void func_L03_0029DB88(unsigned char *moby) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L03_0029DC60);
-INCLUDE_ASM("asm/overlays", func_L03_0029E1A8);
+extern float func_001FA790(float, float);
+extern float func_L00_001FF860(float, float);
+extern float func_001FA748(float, float);
+extern void func_001F9BF0(void *, void *, void *);
+extern float func_001F9CE8(void *);
+extern float func_L00_00259148(float *vel, float cur, float target, float k, float d, float max);
+extern float func_L00_0025F368(float);
+extern float D_0015EE60 MACRO_ADDR;
+extern float D_0015EE70 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+// Steers a moby's rotation toward its target using spring-damped angle updates.
+void func_L03_0029E1A8(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float v[4];
+    float ang = (float)*(short *)(d + 0x132) * 0.017453292f;
+    float t, x, y, z, w;
+    func_001FA790(*(float *)(m + 0x48), ang);
+    x = func_L00_001FF860(*(float *)(d + 0xD0) - *(float *)(d + 0xE0), *(float *)(d + 0xD4) - *(float *)(d + 0xE4));
+    x = func_001FA748(x, ang);
+    y = func_001FA790(x, *(float *)(m + 0x48));
+    t = y * (1.0f / *(float *)(d + 0x120) * D_0015EE60);
+    *(float *)(m + 0x48) = func_001FA748(t, *(float *)(m + 0x48));
+    func_001F9BF0(v, d + 0xD0, d + 0xE0);
+    z = func_L00_001FF860(func_001F9CE8(v), v[2]);
+    *(float *)(m + 0x44) = func_L00_00259148((float *)(d + 0x11C), *(float *)(m + 0x44), -z,
+        *(float *)(d + 0x118) * 10.0f * 0.017453292f * D_0015EE70,
+        *(float *)(d + 0x118) * 5.0f * 0.017453292f * D_0015EE70,
+        *(float *)(d + 0x118) * 0.017453292f * D_0015EE6C);
+    w = func_L00_0025F368(t * *(float *)(d + 0x124));
+    w = func_001FA790(*(float *)(m + 0x40), w);
+    w = func_L00_0025F368(w * *(float *)(d + 0x128));
+    *(float *)(m + 0x40) = func_L00_00259148((float *)(d + 0x114), *(float *)(m + 0x40), w,
+        *(float *)(d + 0x110) * 10.0f * 0.017453292f * D_0015EE70,
+        *(float *)(d + 0x110) * 5.0f * 0.017453292f * D_0015EE70,
+        *(float *)(d + 0x110) * 0.017453292f * D_0015EE6C);
+}
 extern int func_001F9938(void *);
 extern float func_001F9D10(void *, void *);
 extern int func_001F9850(int);
@@ -113,7 +179,48 @@ int func_L03_002C8120(unsigned char *moby) {
     return 0;
 }
 INCLUDE_ASM("asm/overlays", func_L03_002C8160);
-INCLUDE_ASM("asm/overlays", func_L03_002C81E0);
+extern short D_L03_00160058;
+extern float func_001F9B88(float);
+extern float func_001F9D48(void *, void *);
+extern void func_00213DE0(void *, int, int, int);
+
+// Checks whether a moby can start an attack on a target and switches its state.
+int func_L03_002C81E0(float ang, unsigned char *moby, char *target) {
+    char *data = *(char **)(moby + 0x78);
+    int idx;
+    float f20;
+    unsigned char st;
+    if (*(int *)(target + 0x40) != 0) {
+        idx = *(int *)(data + 0x264);
+        if (idx != -1) {
+            char *e = (char *)(idx << 8) + (int)*(char **)&D_L03_00160058;
+            if (*(short *)(e + 0xA6) == 0x336) {
+                if ((unsigned char)e[0xBC] != 4) return 0;
+            }
+        }
+        f20 = func_001FA790(ang, *(float *)(moby + 0x48));
+        if (func_001F9B88(f20) >= 0.7853982f && *(unsigned char *)(data + 0x263) == 0 && moby[0x53] != 1) {
+            goto go;
+        }
+        if (func_001F9B88(f20) > 1.5707964f) {
+go:
+            if (func_001F9D48(moby + 0x10, target) < 20.0f) {
+                if (func_001F9B88(f20) > 1.1780972f) {
+                    func_00213DE0(moby, 1, 0, func_001F9850(10));
+                    *(float *)(moby + 0x58) = 1.0f;
+                } else {
+                    func_00213DE0(moby, 9, 0, func_001F9850(10));
+                }
+                *(float *)(data + 0x28C) = ang;
+                st = moby[0x20];
+                moby[0x20] = 0xC;
+                moby[0xBC] = st;
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L03_002C8398);
 INCLUDE_ASM("asm/overlays", func_L03_002CA970);
 INCLUDE_ASM("asm/overlays", func_L03_002CB068);

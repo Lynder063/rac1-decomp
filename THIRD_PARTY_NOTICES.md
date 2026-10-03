@@ -150,6 +150,14 @@ The following functions adapt source from
 - `src/overlays/shared/tieproc_00299108.c`: `func_L00_0029A8D0` (looks up table entry i, from one of two sets chosen by a flag, and passes it on)
 - `src/overlays/shared/vendor_002C12B0.c`: `func_L00_002C6F48` (per-frame step of a counter moby: advances, plays sound and finishes)
 - `src/overlays/shared/vendor_002C96D0.c`: `func_L00_002CD3B8` (spawns a debris moby with randomized spin and velocity)
+- `src/overlays/shared/mobyutil_00261B00.c`: `func_L00_00264EA8` (spawns a burst of effects on a moby: a fixed set at its position, then randomly offset ones around it)
+- `src/overlays/shared/help_0020CDF0.c`: `func_L00_0020DD48` (scores how far a moby is from the camera/hero reference point and flags it when out of range)
+- `src/overlays/shared/vendor_002AB910.c`: `func_L00_002B0F58` (spawns an effect moby tied to an owner and a target and aims its starting state)
+- `src/overlays/shared/vendor_002EB0D8.c`: `func_L00_002EB3A0` (clears a moby's state block and calls its reset helper)
+- `src/overlays/shared/vendor_002EB0D8.c`: `func_L00_002ECAF8` (steps a follow-camera object toward a target moby, easing its angle and position)
+- `src/overlays/l00_veldin1/vendor_002DB278.c`: `func_L00_002E2038` (Veldin vendor update: walks a path, turns toward the player, attacks and self-destructs)
+- `src/overlays/l01_novalis/vendor_002FABE8.c`: `func_L01_002FED78` (breakable pot: waits for its hit flag, then shatters into four sparks)
+- `src/overlays/l01_novalis/vendor_002FABE8.c`: `func_L01_002FCC80` (hinged bridge: swings with a sound while triggered and poses the bridge from its pivot)
 
 MIT License
 

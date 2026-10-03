@@ -63,7 +63,29 @@ INCLUDE_ASM("asm/overlays", func_L08_002DB768);
 INCLUDE_ASM("asm/overlays", func_L08_002DBD88);
 INCLUDE_ASM("asm/overlays", func_L08_002DBF68);
 INCLUDE_ASM("asm/overlays", func_L08_002DD128);
-INCLUDE_ASM("asm/overlays", func_L08_002DD440);
+extern int D_L08_001B0FB0[];
+extern char D_L08_001DB540[];
+extern void func_001F9EC0(void *, void *, void *);
+extern void func_001F9BD8(void *, void *, void *);
+
+// Transforms eight vectors of the current table entry by the moby's matrix.
+void func_L08_002DD440(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    int *t = (int *)D_L08_001B0FB0[*(int *)(data + 0x8C)];
+    if (*t == 8) {
+        char *q = D_L08_001DB540;
+        char *mat = moby + 0xC0;
+        char *pos = moby + 0x10;
+        char *p = (char *)t + 0x10;
+        int i;
+        for (i = 7; i >= 0; i--) {
+            func_001F9EC0(p, q, mat);
+            q += 0x10;
+            func_001F9BD8(p, p, pos);
+            p += 0x10;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L08_002DD4F8);
 extern float func_001FA748(float, float);
 extern float D_0015EE6C MACRO_ADDR;
@@ -91,7 +113,33 @@ void func_L08_002DD818(char *moby) {
     if (*(float *)(moby + 0x44) > 0.17453292f) *(float *)(moby + 0x44) = 0.17453292f;
     else if (*(float *)(moby + 0x44) < -0.17453292f) *(float *)(moby + 0x44) = -0.17453292f;
 }
-INCLUDE_ASM("asm/overlays", func_L08_002DD9C0);
+extern float func_00214D88(float *, float *, float, float, float, float);
+extern void func_00215CA8(int *, int, void *, float *, int, float);
+extern float func_001F9B88(float);
+extern float D_0015EE70 MACRO_ADDR;
+
+/* Per-frame update: ease the angle and position fields toward their targets. */
+int func_L08_002DD9C0(char *m) {
+    char *d = *(char **)(m + 0x78);
+    int *path;
+    float a = D_0015EE70 * 0.1f;
+    float b = D_0015EE6C * 0.08f;
+    path = *(int **)(d + 0x120);
+    func_00214D88((float *)(d + 0xE4), (float *)(d + 0xE8), *(float *)(d + 0x104), a, a, b);
+    *(float *)(d + 0x110) = func_001FA748(*(float *)(d + 0x110), *(float *)(d + 0xE8) * 50.0f);
+    func_00215CA8(path, 0, d + 0x60, (float *)(d + 0x70), 0, *(float *)(d + 0xE4) * (float)(*path - 1));
+    *(int *)(d + 0x74) = 0;
+    if (func_001F9B88(*(float *)(d + 0xE4) - *(float *)(d + 0x104)) < 0.2f) {
+        func_00214D88((float *)(d + 0x108), (float *)(d + 0x10C), 3.14159f, D_0015EE70 * 2.0943952f, D_0015EE70 * 2.0943952f, D_0015EE6C * 6.2831855f);
+    } else {
+        *(int *)(d + 0x108) = 0;
+    }
+    if (*(float *)(d + 0x104) == 0.0f) {
+        *(float *)(d + 0x78) = func_001FA748(*(float *)(d + 0x78), 3.14159f);
+    }
+    *(float *)(d + 0x78) = func_001FA748(*(float *)(d + 0x78), *(float *)(d + 0x108));
+    return *(float *)(d + 0xE4) == *(float *)(d + 0x104);
+}
 extern void func_00215F80(int, int);
 extern int D_L08_001B0FB0[];
 
@@ -140,4 +188,59 @@ INCLUDE_ASM("asm/overlays", func_L08_002DF750);
 INCLUDE_ASM("asm/overlays", func_L08_002DF758);
 INCLUDE_ASM("asm/overlays", func_L08_002DF8A0);
 INCLUDE_ASM("asm/overlays", func_L08_002DFBC0);
-INCLUDE_ASM("asm/overlays", func_L08_002E0008);
+typedef int u128 __attribute__((mode(TI)));
+extern void func_001F9BF0(void *dst, void *a, void *b);
+extern void func_001F9C30(void *, void *, float);
+extern void func_L00_00258DB0(float *, float, float);
+extern int func_001FA8A8(int, int, float);
+extern float func_001F9878(float);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern char *func_00219780(void *, void *, void *, int, int, int, int, int, int);
+extern short D_L08_00161AD8;
+extern short D_L08_00161ADC;
+extern short D_L08_00161AE0;
+extern short D_L08_00161AE4;
+extern short D_L08_00161AE8;
+extern short D_L08_00161AEC;
+extern short D_L08_00161AF0;
+extern short D_L08_00161AF4;
+extern short D_L08_00161AF8;
+extern short D_L08_00161AFC;
+extern short D_L08_00161B00;
+extern short D_L08_00161B04;
+extern short D_L08_00161B08;
+extern short D_L08_00161B0C;
+extern short D_L08_00161B10;
+
+// Spawns a debris moby: builds position/velocity vectors with random ranges and creates it.
+void func_L08_002E0008(char *m, char *pos) {
+    float v10[4];
+    float v20[4];
+    float v30[4];
+    float v40[4];
+    float v50[4];
+    float v60[4];
+    int a, b, c, d, e;
+    char *r;
+    func_001F9BF0(v30, m + 0x10, pos);
+    *(u128 *)v60 = 0;
+    v60[0] = -2.3f;
+    v60[2] = 0.3f;
+    func_001F9EC0(v50, v60, m + 0xC0);
+    func_001F9BD8(v50, v50, m + 0x10);
+    func_001F9C30(v10, v30, *(float *)&D_L08_00161AD8);
+    func_001F9C30(v20, v30, *(float *)&D_L08_00161ADC);
+    func_L00_00258DB0(v40, 0.0f, *(float *)&D_L08_00161AE0 * D_0015EE6C);
+    func_001F9BD8(v20, v20, v40);
+    v10[3] = func_002140F8(*(float *)&D_L08_00161AF4, *(float *)&D_L08_00161AF8);
+    v20[3] = func_002140F8(*(float *)&D_L08_00161AFC, *(float *)&D_L08_00161B00);
+    a = func_001FA8A8(*(int *)&D_L08_00161B04, *(int *)&D_L08_00161B08, func_002140F8(0.0f, 1.0f));
+    b = func_001FA8A8(*(int *)&D_L08_00161B0C, *(int *)&D_L08_00161B10, func_002140F8(0.0f, 1.0f));
+    c = func_001FA898_r(func_001F9878((float)*(int *)&D_L08_00161AE4 * func_002140F8(0.0f, 1.0f) + 1.0f));
+    d = func_001FA898_r(func_001F9878((float)*(int *)&D_L08_00161AE8 * (func_002140F8(-*(float *)&D_L08_00161AF0, *(float *)&D_L08_00161AF0) + 1.0f)));
+    e = func_001FA898_r(func_001F9878((float)*(int *)&D_L08_00161AEC * (func_002140F8(-*(float *)&D_L08_00161AF0, *(float *)&D_L08_00161AF0) + 1.0f)));
+    r = func_00219780(v50, v10, v20, a, b, c, d, e, -1);
+    if (r != 0) {
+        r[9] = func_001FA898_r(8.0f) - 0x70;
+    }
+}

@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L16_002E5D68 -- src/overlays/l16_kalebo3/vendor_002A50F0.c
- * Best so far: BYTES 7/340 (97.9% of the bytes match), checked 2026-10-01.
+ * Best so far: BYTES 11/340 (96.8% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -8,11 +8,11 @@
  *   Would need the source spelling that puts base first in the two address adds; index-local or `base - (-(i*4))` 
  */
 extern float func_001F9D10(void *, void *);
-extern char *D_L16_001601AC MACRO_ADDR;
 extern unsigned char D_0013D5C8_b[] __asm__("D_0013D5C8");
 
 /* picks the nearest target slot and sets the moby's state */
-void func_L16_002E5D68(char *moby) {
+void func_L16_002E5D68(void *moby_v) {
+    char *moby = moby_v;
     char *data = *(char **)(moby + 0x78);
     int *list = (int *)(data + 0x80);
     int i;

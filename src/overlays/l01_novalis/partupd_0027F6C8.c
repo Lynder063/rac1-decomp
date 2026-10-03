@@ -2,7 +2,52 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L01_0027F6C8);
+typedef int u128 __attribute__((mode(TI)));
+extern unsigned char *func_00218928(int);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern int func_001F9850(int);
+extern int func_L00_0025D038(float, float, float, float);
+extern unsigned char *D_L01_001B2800[];
+
+/* Spawns a type 6 particle with position, colour, scale and owner. */
+void func_L01_0027F6C8(int owner, float *pos, int snd, unsigned char arg, unsigned char idx, unsigned char mode, float x, float y, float z, float scale, float f21, float r, float g, float b, float a) {
+    float buf[4];
+    float *tmp = buf;
+    unsigned char *p;
+    unsigned char *u;
+    *(u128 *)tmp = *(u128 *)pos;
+    if (owner != 0) {
+        p = func_00218928(6);
+        if (p != 0) {
+            u = p + 0x20;
+            qcopy(p + 0x10, tmp);
+            if (mode == 0xFF) {
+                p[9] = ((arg >> 5) << 4) + func_001FA898_r(4.0f);
+                if (arg & 1) p[3] = 0x48;
+                else p[3] = 0x44;
+            } else {
+                p[9] = arg;
+                p[3] = mode;
+            }
+            p[1] = 0;
+            p[2] = *D_L01_001B2800[idx];
+            *(float *)u = x;
+            *(float *)(u + 4) = y;
+            *(float *)(u + 8) = z;
+            *(float *)(u + 0x14) = f21;
+            u[0x18] = func_001FA898_r(r * 65535.0f);
+            u[0x19] = func_001FA898_r(g * 65535.0f);
+            u[0x1A] = func_001FA898_r(b * 65535.0f);
+            *(float *)(u + 0x10) = a;
+            *(int *)(u + 0xC) = owner;
+            *(float *)(p + 0xC) = scale;
+            p[8] = (int)(f21 * 255.0f);
+            *(short *)(p + 0xA) = func_001F9850(snd);
+            u[0x1B] = 0;
+            *(int *)(p + 4) = func_L00_0025D038(r, g, b, a);
+        }
+    }
+}
 extern char *D_L01_001B28E0;
 extern unsigned char *func_00218928(int);
 extern int func_002140B0(int);

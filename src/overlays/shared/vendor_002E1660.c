@@ -225,8 +225,42 @@ int func_L00_002E5740(VS *a) {
     v = *a;
     return func_L00_001EE530(&v, 0.0f) != 0;
 }
-INCLUDE_ASM("asm/overlays", func_L00_002E5770);
-extern void func_L00_002E5770(void *, int);
+typedef float VQ_2E5770[4] __attribute__((aligned(16)));
+extern char D_L00_00166F10[];
+extern char D_L00_00173F60_a[] __asm__("D_L00_00173F60");
+extern void func_L00_002E5618(char *, void *);
+extern int func_L00_001EFFF0(void *, void *, int, int, int);
+
+/* build the two edge vectors of a moving box from the game vector and clip them */
+int func_L00_002E5770(void *out, int flag) {
+    VQ_2E5770 a, b, c, d;
+    char *base = D_0013E633 + 0xE1D;
+    float f;
+    char *g = D_L00_00166F10;
+
+    if (*(short *)(base + 0x30C) == 0) {
+        func_L00_002E5618(*(char **)(g - 0x10), out);
+        return 1;
+    }
+    func_L00_002E5618(*(char **)(g - 0x10), a);
+    f = *(float *)(base + 0x2DC);
+    if (f >= 30.0f || flag == 0) {
+        func_001F9C30(d, g + 0x30, 0.2f);
+        func_001F9BD8(b, a, d);
+        func_001F9C30(d, g + 0x30, -30.0f);
+        func_001F9BD8(c, a, d);
+        if (func_L00_001EFFF0(b, c, 0x12, *(int *)(base + 0x2080), 0) != 0) {
+            qcopy(out, D_L00_00173F60_a);
+            return 0;
+        }
+        qcopy(out, a);
+        return -1;
+    }
+    func_001F9C30(b, g + 0x30, -f);
+    func_001F9BD8(out, a, b);
+    return 1;
+}
+extern int func_L00_002E5770(void *, int);
 extern float func_001F9C78(void *, void *);
 extern void func_001F9C30(void *, void *, float);
 extern void func_001F9BF0(float *, float *, float *);
@@ -357,7 +391,274 @@ void func_L00_002E5D50(void *out, float f) {
     FastVecAdd(&t0, &t0, &t1);
     FastVecScale(out, b + 0x30, FastVecDot(b + 0x30, &t0));
 }
-INCLUDE_ASM("asm/overlays", func_L00_002E5DE0);
+extern void func_L00_002E5D50(void *out, float f);
+extern int func_001F9938(void *);
+extern float D_L00_00166FEC;
+extern short D_L00_00161DF4;
+extern short D_L00_00161E08;
+extern short D_L00_00161E0C;
+extern short D_L00_00161E10;
+extern short D_L00_00161E18;
+extern short D_L00_00161E1C;
+extern short D_L00_00161E20;
+extern short D_L00_00161E24;
+extern short D_L00_00161E28;
+extern short D_L00_00161E2C;
+extern short D_L00_00161E30;
+extern short D_L00_00161E34;
+extern short D_L00_00161E38;
+extern short D_L00_00161E3C;
+extern short D_L00_00161E48;
+extern short D_L00_00161E4C;
+
+typedef struct {
+    float v00[4];
+    float v10[4];
+    float v20[4];
+    float v30[4];
+    char pad40[0x84];
+    unsigned char state;
+    unsigned char prev;
+    short timer;
+    float invTimer;
+    float invMove;
+    float dist;
+    short moveTimer;
+    char padD6;
+    unsigned char hit;
+} CamAttach;
+
+/* camera attach mode transitions: picks the next state from the player's state and arms its timers */
+void func_L00_002E5DE0(char *m) {
+    char *d = *(char **)(m + 0x70);
+    CamAttach *e = (CamAttach *)(d + 0x40);
+    char *q;
+    float inv, x, y;
+    int t;
+
+    if (e->state == 0) {
+        char *p0 = D_0013E633 + 0xE1D;
+        if (*(int *)(p0 + 0x208C) == 2) {
+            e->prev = e->state;
+            e->state = 1;
+            e->timer = D_L00_00161E0C;
+            e->invTimer = 1.0f / func_001FA888(e->timer);
+        } else {
+            char *p1 = D_0013E633 + 0xE1D;
+            if (*(int *)(p1 + 0x2084) == 0xF && D_L00_00166FEC == 0.0f) {
+                e->prev = e->state;
+                e->state = 3;
+                e->moveTimer = func_001F9850(*(int *)&D_L00_00161E1C);
+                e->invMove = 1.0f / func_001FA888(e->moveTimer);
+                e->timer = D_L00_00161E20;
+                inv = 1.0f / func_001FA888(e->timer);
+                e->dist = *(float *)&D_L00_00161E28;
+                e->hit = 0;
+                x = *(float *)&D_L00_00161E28;
+                e->invTimer = inv;
+                func_L00_002E5D50(e->v30, x);
+                qcopy(e->v20, e->v10);
+            } else {
+                char *p2 = D_0013E633 + 0xE1D;
+                if (*(int *)(p2 + 0x2084) == 0xC && D_L00_00166FEC == 0.0f) {
+                    e->prev = e->state;
+                    e->state = 8;
+                    e->timer = D_L00_00161E30;
+                    e->invTimer = 1.0f / func_001FA888(e->timer);
+                } else {
+                    char *p3 = D_0013E633 + 0xE1D;
+                    if (*(int *)(p3 + 0x2084) == 0xB && D_L00_00166FEC == 0.0f) {
+                        e->prev = e->state;
+                        e->state = 6;
+                        e->moveTimer = func_001F9850(*(int *)&D_L00_00161E10);
+                        e->invMove = 1.0f / func_001FA888(e->moveTimer);
+                        e->timer = D_L00_00161E20;
+                        inv = 1.0f / func_001FA888(e->timer);
+                        e->dist = *(float *)&D_L00_00161E18;
+                        e->hit = 0;
+                        x = *(float *)&D_L00_00161E18;
+                        e->invTimer = inv;
+                        func_L00_002E5D50(e->v30, x);
+                        qcopy(e->v20, e->v10);
+                    } else {
+                        char *p4 = D_0013E633 + 0xE1D;
+                        if ((*(int *)(p4 + 0x2084) == 0xD || *(int *)(p4 + 0x2084) == 0xE) && D_L00_00166FEC == 0.0f) {
+                            e->prev = e->state;
+                            e->state = 5;
+                            e->moveTimer = func_001F9850(*(int *)&D_L00_00161E2C);
+                            e->invMove = 1.0f / func_001FA888(e->moveTimer);
+                            e->timer = D_L00_00161E30;
+                            inv = 1.0f / func_001FA888(e->timer);
+                            e->dist = *(float *)&D_L00_00161E38;
+                            e->hit = 0;
+                            x = *(float *)&D_L00_00161E38;
+                            e->invTimer = inv;
+                            func_L00_002E5D50(e->v30, x);
+                            qcopy(e->v20, e->v10);
+                        } else {
+                            char *p5 = D_0013E633 + 0xE1D;
+                            if (*(int *)(p5 + 0x208C) == 4 && D_L00_00166FEC == 0.0f) {
+                                e->prev = e->state;
+                                e->state = 2;
+                                e->timer = D_L00_00161E08;
+                                e->invTimer = 1.0f / func_001FA888(e->timer);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return;
+    }
+    if (e->state != 9 && e->state != 1 && *(int *)(D_0013E633 + 0x2EA1) == 0x14) {
+        float r;
+        e->prev = e->state;
+        e->state = 9;
+        e->moveTimer = func_001F9850(*(int *)&D_L00_00161E3C);
+        r = 1.0f / func_001FA888(e->moveTimer);
+        y = *(float *)&D_L00_00161E4C;
+        e->hit = 0;
+        e->timer = 0;
+        x = *(float *)&D_L00_00161E4C;
+        e->invTimer = 1.0f;
+        e->dist = y;
+        e->invMove = r;
+        func_L00_002E5D50(e->v30, x);
+        qcopy(e->v20, e->v10);
+        return;
+    }
+    if ((e->state == 1 || e->state == 2) && *(int *)(D_0013E633 + 0x2EA9) != 4 && *(int *)(D_0013E633 + 0x2EA9) != 2) {
+        e->timer = 0;
+        e->invTimer = 1.0f;
+        e->state = 0;
+        return;
+    }
+    if (e->state == 7) {
+        char *p = D_0013E633 + 0xE1D;
+        if (*(short *)(p + 0x41E) == 0) {
+            e->prev = e->state;
+            e->state = 6;
+            e->moveTimer = func_001F9850(*(int *)&D_L00_00161E10);
+            e->invMove = 1.0f / func_001FA888(e->moveTimer);
+            e->timer = D_L00_00161E20;
+            inv = 1.0f / func_001FA888(e->timer);
+            e->dist = *(float *)&D_L00_00161E18;
+            e->hit = 0;
+            x = *(float *)&D_L00_00161E18;
+            e->invTimer = inv;
+            func_L00_002E5D50(e->v30, x);
+            qcopy(e->v20, e->v10);
+            return;
+        }
+        if (*(int *)(p + 0x208C) == 2) {
+            e->prev = e->state;
+            e->state = 1;
+            e->timer = func_001F9850(*(int *)&D_L00_00161E24);
+            e->invTimer = 1.0f / func_001FA888(e->timer);
+            return;
+        }
+    }
+    if (e->state == 4 && *(int *)(D_0013E633 + 0x2EA9) != 4) {
+        if (*(int *)(D_0013E633 + 0x2EA9) == 2) {
+            e->prev = 4;
+            e->state = 1;
+            e->timer = func_001F9850(*(int *)&D_L00_00161E24);
+            e->invTimer = 1.0f / func_001FA888(e->timer);
+        } else {
+            e->prev = 4;
+            e->state = 0;
+            e->timer = func_001F9850(*(int *)&D_L00_00161E24);
+            e->invTimer = 1.0f / func_001FA888(e->timer);
+        }
+        return;
+    }
+    if (e->state == 3 && *(int *)(D_0013E633 + 0x2EA1) == 0xB) {
+        e->prev = e->state;
+        e->state = 6;
+        e->moveTimer = func_001F9850(*(int *)&D_L00_00161E10);
+        e->invMove = 1.0f / func_001FA888(e->moveTimer);
+        e->timer = D_L00_00161E20;
+        inv = 1.0f / func_001FA888(e->timer);
+        e->dist = *(float *)&D_L00_00161E18;
+        e->hit = 0;
+        x = *(float *)&D_L00_00161E18;
+        e->invTimer = inv;
+        func_L00_002E5D50(e->v30, x);
+        qcopy(e->v20, e->v10);
+        return;
+    }
+    if (e->state == 5 && *(int *)(D_0013E633 + 0x2EA1) == 0xC) {
+        e->prev = e->state;
+        e->state = 8;
+        e->timer = D_L00_00161E30;
+        e->invTimer = 1.0f / func_001FA888(e->timer);
+        return;
+    }
+    if (e->state == 8 && *(int *)(D_0013E633 + 0x2EA1) != 0xC) {
+        e->prev = e->state;
+        e->state = 0;
+        e->timer = func_001F9850(*(int *)&D_L00_00161E34);
+        e->invTimer = 1.0f / func_001FA888(e->timer);
+        return;
+    }
+    if (e->state == 6 && *(int *)(D_0013E633 + 0x2EA1) != 0xB) {
+        e->prev = e->state;
+        e->state = 0;
+        e->timer = func_001F9850(*(int *)&D_L00_00161E24);
+        e->invTimer = 1.0f / func_001FA888(e->timer);
+        return;
+    }
+    if ((e->state == 3 || e->state == 5) && *(int *)(D_0013E633 + 0x2EA9) != 4) {
+        e->prev = e->state;
+        e->state = 0;
+        e->timer = func_001F9850(*(int *)&D_L00_00161E24);
+        e->invTimer = 1.0f / func_001FA888(e->timer);
+        return;
+    }
+    if (e->state == 9) {
+        char *p = D_0013E633 + 0xE1D;
+        if (*(int *)(p + 0x208C) == 2 || *(short *)(p + 0x30C) >= func_001F9850(0x37)) {
+            goto to_one;
+        }
+    }
+    if (e->state == 0xA) {
+        char *p = D_0013E633 + 0xE1D;
+        if (*(int *)(p + 0x208C) == 2 || *(short *)(p + 0x30C) >= func_001F9850(0x37)) {
+            float r;
+        to_one:
+            e->prev = e->state;
+            e->state = 1;
+            e->timer = func_001F9850(*(int *)&D_L00_00161E24);
+            r = 1.0f / func_001FA888(e->timer);
+            t = *(int *)&D_L00_00161DF4;
+            e->invTimer = r;
+            q = *(char **)(m + 0x70);
+            *(short *)(q + 0x20) = func_001F9850(t);
+            qcopy(m + 0x40, m);
+            return;
+        }
+    }
+    if (e->state == 9 && *(int *)(D_0013E633 + 0x2EA1) != 0x14) {
+        e->prev = e->state;
+        e->state = 0xA;
+        e->timer = D_L00_00161E48;
+        e->invTimer = 1.0f / func_001FA888(e->timer);
+        return;
+    }
+    if (e->state == 0xA && func_001F9938(&e->moveTimer)) {
+        e->prev = e->state;
+        e->state = 0;
+        e->timer = func_001F9850(*(int *)&D_L00_00161E24);
+        e->invTimer = 1.0f / func_001FA888(e->timer);
+        return;
+    }
+    if (e->state == 5 && *(int *)(D_0013E633 + 0x2EA1) == 0x10) {
+        e->prev = e->state;
+        e->state = 0;
+        e->timer = func_001F9850(*(int *)&D_L00_00161E34);
+        e->invTimer = 1.0f / func_001FA888(e->timer);
+    }
+}
 extern short D_L00_00161DF4;
 extern short D_L00_00161DE0;
 extern short D_L00_00161DDC;

@@ -167,7 +167,48 @@ void func_L14_002AFD18(char *moby) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L14_002AFDE0);
+extern void func_001F9BF0(void *dst, void *a, void *b);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern float func_001F9CB8(void *a);
+extern float func_L00_001FF860(float, float);
+extern float func_001FA790(float, float);
+extern void func_L00_001FFED8(void *, int, float);
+extern float func_001F9CE8(void *);
+extern void func_001F49B0(void *, void *);
+extern void func_L14_002AF4A0(void);
+
+// Sets up the moby's motion data from its vectors; returns whether it succeeded.
+int func_L14_002AFDE0(char *moby, int flag) {
+    int ok = 0;
+    char *data = *(char **)(moby + 0x78);
+    float w[4];
+    float v[4];
+    float t;
+    func_001F9BF0(v, data + 0x170, data + 0xD0);
+    func_001F9C30(v, v, 0.5f);
+    func_001F9BD8(w, data + 0xD0, v);
+    w[3] = func_001F9CB8(v) + 2.0f;
+    if (func_L00_00200290((char *)w, func_001FA888(*(short *)(moby + 0x32))) >= 0) {
+        func_0020DAF8(moby, 1, data + 0xA0);
+        ok = 1;
+        func_L00_001FF4B0(data + 0xA0, data + 0xA0, 1.0f);
+        func_L00_001FF4B0(data + 0xB0, data + 0xB0, 1.0f);
+        func_L00_001FF4B0(data + 0xC0, data + 0xC0, 1.0f);
+        t = func_001FA790(func_L00_001FF860(v[0], v[1]), *(float *)(moby + 0x48));
+        func_L00_001FFED8(data + 0xF0, 2, t);
+        *(float *)(data + 0x1BC) = t;
+        t = -func_L00_001FF860(func_001F9CE8(v), v[2]);
+        func_L00_001FFED8(data + 0x130, 1, t);
+        *(float *)(data + 0x1C0) = t;
+        qcopy(data + 0x90, data + 0x170);
+        if (flag != 0) {
+            func_001F49B0(func_L14_002AF4A0, moby);
+            *(int *)(data + 0x20C) |= 2;
+        }
+    }
+    return ok;
+}
 extern int func_001FA898_r(float) __asm__("func_001FA898");
 extern int D_L14_001D8510[];
 extern int D_L14_001D83C8[];
@@ -194,7 +235,38 @@ void func_L14_002AFF90(char *moby) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L14_002B0068);
-INCLUDE_ASM("asm/overlays", func_L14_002B0168);
+extern float func_001F9D48(void *, void *);
+extern short *D_L14_001AC2C0_2B0168[] __asm__("D_L14_001AC2C0");
+extern int D_L14_001D8980[];
+extern char D_L14_001675C0[];
+extern char *D_L14_00160098_2B0168 __asm__("D_L14_00160098") MACRO_ADDR;
+
+/* Returns the farthest moby in a list that is not in the excluded-id table, by distance from a point. */
+char *func_L14_002B0168(int index) {
+    short *p = D_L14_001AC2C0_2B0168[index];
+    char *best = 0;
+    float bestd = 0.0f;
+    if (p == 0) return 0;
+    do {
+        char *moby = D_L14_00160098_2B0168 + ((*(unsigned short *)p & 0x7FFF) << 8);
+        int found = 0;
+        int i;
+        for (i = 0; i < 20; i++) {
+            if (*(short *)(moby + 0xB2) == D_L14_001D8980[i]) {
+                found = 1;
+                break;
+            }
+        }
+        if (!found) {
+            float d = func_001F9D48(D_L14_001675C0, moby + 0x10);
+            if (bestd < d) {
+                bestd = d;
+                best = moby;
+            }
+        }
+    } while (*p++ >= 0);
+    return best;
+}
 INCLUDE_ASM("asm/overlays", func_L14_002B0288);
 INCLUDE_ASM("asm/overlays", func_L14_002B02B0);
 INCLUDE_ASM("asm/overlays", func_L14_002B4E40);
@@ -404,7 +476,69 @@ INCLUDE_ASM("asm/overlays", func_L14_002D8500);
 INCLUDE_ASM("asm/overlays", func_L14_002D87A0);
 INCLUDE_ASM("asm/overlays", func_L14_002DF5F8);
 INCLUDE_ASM("asm/overlays", func_L14_002DF6B8);
-INCLUDE_ASM("asm/overlays", func_L14_002E0228);
+typedef int u128 __attribute__((mode(TI)));
+extern void func_L14_002E0480(char *);
+extern float func_001F9B88(float);
+extern int func_L00_0028EB98(void *, int);
+extern int func_L00_0028EF68(int i, int a1, int v, int k);
+extern void func_L14_002E1058(char *);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_L14_002E0538(char *);
+
+/* Updates a gem-lock sentry: picks up a sound slot and fires when the player is near. */
+void func_L14_002E0228(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    char *x;
+    float v[4];
+    float w[4];
+    int idx;
+    switch (((unsigned char *)moby)[0x20]) {
+    case 0:
+        if (*(int *)(data + 0x1F4) == -1 || *(int *)(data + 0x1F8) == -1 || *(int *)(data + 0x1FC) == -1 || *(int *)(data + 0x200) < 0) {
+            func_0020D678(moby);
+            return;
+        }
+        func_L14_002E0480(moby);
+        moby[0x20] = 1;
+        *(int *)(data + 0x204) = -1;
+        break;
+    case 1:
+        x = D_0013E633 + 0xE1D;
+        if (*(int *)(x + 0x208C) != 0xF
+            || (*(int *)(x + 0x560) != *(int *)((*(int *)(data + 0x1F4) << 5) + D_L14_0015F7EC + 0x10)
+                && *(int *)(x + 0x560) != *(int *)((*(int *)(data + 0x1F8) << 5) + D_L14_0015F7EC + 0x10)
+                && *(int *)(x + 0x560) != *(int *)((*(int *)(data + 0x1FC) << 5) + D_L14_0015F7EC + 0x10))) {
+            if (16.0f < func_001F9B88(*(float *)(x + 0x80) - *(float *)(moby + 0x10))) goto end;
+            if (16.0f < func_001F9B88(*(float *)(x + 0x84) - *(float *)(moby + 0x14))) goto end;
+        }
+        if (func_L00_0028EB98(moby, *(int *)(data + 0x204)) == 0) {
+            *(int *)(data + 0x204) = func_L00_0028EF68(6, 4, (int)moby, 0xD3);
+        }
+        func_L14_002E1058(moby);
+        v[0] = func_001F9F90(*(float *)(moby + 0x48)) * 3.125f;
+        v[1] = func_001F9FA8(*(float *)(moby + 0x48)) * 3.125f;
+        v[2] = 0.0f;
+        func_001F9BD8(v, moby + 0x10, v);
+        qcopy(w, v);
+        w[3] = 4.5f;
+        if (func_L00_00200290((char *)w, 64.0f) >= 0) {
+            func_L14_002E0538(moby);
+        }
+        return;
+    }
+end:
+    idx = *(int *)(data + 0x204);
+    if (idx >= 0) {
+        if (idx != -1) {
+            char *e = D_0013E633 + 0x1D + idx * 0x70;
+            if (*(char **)(e + 0x88) == moby && *(unsigned char *)(e + 0x74) != 0) {
+                func_L00_0028EBF0(idx);
+            }
+        }
+        *(int *)(data + 0x204) = -1;
+    }
+}
 /* Initialises two tables of spaced vectors in the moby's data block and clears four fields. */
 void func_L14_002E0480(char *moby) {
     float *d = *(float **)(moby + 0x78);

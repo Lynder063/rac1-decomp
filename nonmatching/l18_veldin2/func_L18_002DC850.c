@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L18_002DC850 -- src/overlays/l18_veldin2/vendor_002A8400.c
- * Best so far: BYTES 8/1236 (99.3% of the bytes match), checked 2026-10-01.
+ * Best so far: BYTES 8/1236 (99.3% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

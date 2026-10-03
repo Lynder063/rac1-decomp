@@ -236,9 +236,125 @@ void func_L01_002FC058(void) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L01_002FC140);
-INCLUDE_ASM("asm/overlays", func_L01_002FCC80);
+typedef int u128_2FCC80 __attribute__((mode(TI)));
+typedef union { u128_2FCC80 q; float f[4]; } Vec4U;
+extern void func_L00_0028EBF0(int);
+extern int func_L00_0028EB98(void *, int);
+extern int func_0022ED80(int, int, int);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern short D_0015EE84;
+extern unsigned char D_0014171B[] NOT_SDA;
+extern unsigned char D_0013E633_u[] __asm__("D_0013E633") NOT_SDA;
+
+// hinged bridge: swings with a sound while triggered and poses the bridge moby from its pivot
+// Adapted from Lombyte (MIT) for PAL: overlays/l01/unclassified_002f9810.c, FUN_L01_002fb8a8.
+void func_L01_002FCC80(char *self) {
+    char *v;
+    Vec4U arm;
+    Vec4U d;
+    int h;
+    char *voice;
+
+    v = *(char **)(self + 0x78);
+    switch (*(unsigned char *)(self + 0x20)) {
+    case 0:
+        qcopy(v + 0x60, self + 0x10);
+        *(float *)(v + 0x70) = 1.0f;
+        self[0x20] = 1;
+        *(int *)(v + 0x74) = -1;
+        break;
+    case 1:
+        if (*(unsigned char *)(self + 0xBC) == 2 || (D_0014171B + 0xAA35)[*(unsigned char *)(self + 0xB0) + (*(int *)&D_0015EE84 << 4)] == 0xFF) {
+            self[0x20] = 2;
+            self[0xBC] = 0;
+        }
+        break;
+    case 2:
+        *(float *)(v + 0x70) -= D_0015EE6C * 0.5f;
+        if (*(float *)(v + 0x70) < 0.0f) {
+            *(float *)(v + 0x70) = 0.0f;
+        }
+        if (*(float *)(v + 0x70) == 0.0f) {
+            h = *(int *)(v + 0x74);
+            if (h != -1) {
+                voice = (char *)D_0013E633_u + 0x1D + h * 0x70;
+                if (*(void **)(voice + 0x88) == self && *(unsigned char *)(voice + 0x74) != 0) {
+                    func_L00_0028EBF0(h);
+                }
+            }
+            *(int *)(v + 0x74) = -1;
+            self[0x20] = 1;
+        } else if (!func_L00_0028EB98(self, *(int *)(v + 0x74))) {
+            *(int *)(v + 0x74) = func_0022ED80(0, 4, (int)self);
+        }
+        break;
+    }
+    *(float *)(self + 0x44) = *(float *)(v + 0x70) * 0.62831855f;
+    arm.q = 0;
+    arm.f[2] = -11.0f;
+    func_001F9BD8(&arm, &arm, v + 0x60);
+    d.f[0] = func_001F9F90(*(float *)(self + 0x48)) * 11.0f * func_001F9FA8(*(float *)(self + 0x44));
+    d.f[1] = func_001F9FA8(*(float *)(self + 0x48)) * 11.0f * func_001F9FA8(*(float *)(self + 0x44));
+    d.f[2] = func_001F9F90(*(float *)(self + 0x44)) * 11.0f;
+    func_001F9BD8(self + 0x10, &arm, &d);
+}
 INCLUDE_ASM("asm/overlays", func_L01_002FE4C0);
-INCLUDE_ASM("asm/overlays", func_L01_002FED78);
+typedef struct { float x, y, z, w; } __attribute__((aligned(16))) SV4;
+extern char *func_L00_0025B478(void *, int, int);
+extern void func_L01_00279790(void *);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void *func_L00_00265050(char *src, int cls, float *pos, void *mat, int a8, int a9, float *v10, float *v11, float scale, float *v12);
+extern void func_L01_00279E10(void *, int);
+extern float D_L01_0015F660[] MACRO_ADDR;
+
+/* Update for a breakable pot: waits for its hit flag, then shatters into four sparks. Adapted from Lombyte (MIT) for PAL: overlays/l01/unclassified_002f9810.c, FUN_L01_002fd9a0. */
+void func_L01_002FED78(char *m) {
+    char *hit;
+    int flag;
+    int i;
+    float ang;
+    float s;
+    SV4 off;
+    SV4 rot;
+
+    flag = 0;
+    hit = func_L00_0025B478(m, 0x10000, 0);
+    switch (*(unsigned char *)(m + 0x20)) {
+    case 0:
+        m[0x20] = 1;
+        break;
+    case 1:
+        if (hit != 0 && *(float *)(hit + 0x2C) > 0.0f) {
+            flag = 1;
+        }
+        if (flag) {
+            m[0x20] = 2;
+        }
+        break;
+    case 2:
+        func_0022ED80(0, 0, (int)m);
+        func_L01_00279790(m);
+        s = *(float *)(m + 0x2C) / *(float *)(*(char **)(m + 0x24) + 0x24);
+        i = 0;
+        do {
+            ang = (float)i * 1.5707964f;
+            func_001F9BC0(&rot);
+            rot.z = func_001FA748(ang, 0.87266463f);
+            off.x = func_001F9F90(ang) * -0.57f * s;
+            off.y = func_001F9FA8(ang) * -0.57f * s;
+            off.z = 0.0f;
+            func_001F9BD8(&off, &off, m + 0x10);
+            off.z += s * 1.2f;
+            func_L00_00265050(m, 0x719, (float *)&off, &rot, 0, 0, D_L01_0015F660, D_L01_0015F660, 0.0f, D_L01_0015F660);
+            i++;
+        } while (i < 4);
+        func_L01_00279E10(m, 0x718);
+        func_0020D678(m);
+        break;
+    }
+}
 extern char D_L01_001FBF40[];
 void func_L01_002FFF00(void) {
     DefaultVtbl_DeleteMoby();
@@ -325,7 +441,54 @@ void func_L01_00300140(HoverMoby *m) {
     m->pos.f[0] = v->home.f[0] + off.f[0];
     m->pos.f[1] = v->home.f[1] + off.f[1];
 }
-INCLUDE_ASM("asm/overlays", func_L01_00300C38);
+extern char *func_L00_0025B478(void *, int, int);
+extern int func_002140B0(int);
+extern int func_0022ED80(int, int, int);
+extern int func_L00_00258BC8(int, int);
+extern void func_L00_0026DD70(void *, void *, int, int, float, int);
+extern char *func_L01_00300E68(char *owner);
+typedef int u128b __attribute__((mode(TI)));
+
+// Breakable prop update: when hit, spawns a burst of debris sparks then replaces itself.
+void func_L01_00300C38(char *m) {
+    char *d = *(char **)(m + 0x78);
+    char *t = func_L00_0025B478(m, 0x10000, 0);
+    *(unsigned char *)(m + 0xA4) = 0xFF;
+    if (t != 0 && 0.0f < *(float *)(t + 0x2C)) {
+        float v[4];
+        float w[4];
+        int n = func_002140B0(*(int *)(d + 4) - *(int *)d + 1) + *(int *)d;
+        int k;
+        if (n > 0) {
+            do {
+                n--;
+            } while (n != 0);
+        }
+        func_0022ED80(0, 0, (int)m);
+        for (k = 0x95; k >= 0; ) {
+            float a, b;
+            *(u128b *)v = 0;
+            v[0] = -0.2f;
+            v[2] = 1.2f;
+            k--;
+            func_001F9BD8(v, v, m + 0x10);
+            a = func_001F9F90(func_00214158());
+            b = func_002140F8(1.5f, 3.0f);
+            a = a * (b * D_0015EE6C);
+            w[0] = a;
+            a = func_001F9FA8(func_00214158());
+            b = func_002140F8(1.5f, 3.0f);
+            a = a * (b * D_0015EE6C);
+            w[1] = a;
+            w[2] = 0;
+            w[2] = func_002140F8(w[2], 3.0f) * D_0015EE6C;
+            a = func_002140F8(125000.0f, 175000.0f);
+            func_L00_0026DD70(v, w, 0x207F7F7F, 0x272727, a, func_001F9850(func_L00_00258BC8(0x2D, 0x3C)));
+        }
+        func_L01_00300E68(m);
+        func_0020D678(m);
+    }
+}
 extern char *func_0020D348(int);
 extern void func_L00_00251E30(void *, int);
 

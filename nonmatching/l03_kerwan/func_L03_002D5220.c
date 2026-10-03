@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L03_002D5220 -- src/overlays/l03_kerwan/vendor_002CB280.c
- * Best so far: SIZE ours 132 / retail 128, checked 2026-10-01.
+ * Best so far: SIZE ours 132 / retail 128, checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  */

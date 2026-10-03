@@ -281,6 +281,83 @@ void func_L00_0028BD70(void) {
     VU1_addGSregister(0x42, 0x8000000044L);
     SkyDrawShell(1);
 }
-INCLUDE_ASM("asm/overlays", func_L00_0028BF60);
+extern short D_L00_001605C0;
+
+/* Initialises and animates a second star field of the sky (variant of func_L00_0028A878). */
+void func_L00_0028BF60(void) {
+    int i, j;
+    SkyStar *s;
+    f32 a, b;
+    int t16, t18, r;
+    SKY->s4 = 0;
+    func_001FA190(D_L00_001BDB70);
+    func_0022C9A8(0);
+    if (SKY->count == 0) {
+        SKY->count = 0x100;
+        for (i = 0; i < SKY->count; i++) {
+            s = &SKY->stars[i];
+            if (i >= 0xF0) {
+                u16 *h;
+                s->type = 0;
+                h = &s->c.h.a;
+                h[0] = func_001160D8() >> 16;
+                h[1] = func_001160D8() >> 16;
+                s->b2 = 1;
+                s->b3 = 0x48;
+                s->f1C = 0.18f;
+                {
+                    int k = ((func_001160D8() >> 16) & 3) * 4;
+                    s->color = *(u32 *)((char *)&D_L00_001605C0 + k);
+                }
+            } else {
+                s->type = 1;
+                s->c.h.a = func_002140B0(0x100);
+                {
+                    int q = func_001160D8() >> 16;
+                    s->b3 = 0x48;
+                    s->b2 = q & 1;
+                }
+                s->f8 = func_00214158();
+                s->f1C = func_001FA888(func_002140B0(0x30) + 0x20) * (1.0f / 256.0f);
+                a = func_00214158();
+                b = func_00214158();
+                s->x = func_001F9F90(a) * func_001F9FA8(b) * 50.0f;
+                s->y = func_001F9FA8(a) * func_001F9FA8(b) * 50.0f;
+                s->z = func_001F9F90(b) * 50.0f;
+                t16 = func_002140B0(0x18) + 8;
+                t18 = func_002140B0(0x20) << 24;
+                {
+                    u32 u, w;
+                    if ((func_001160D8() >> 16) & 1) { u = (t16 << 16) + 0x30505050; w = t18 + u; }
+                    else { u = (t16 << 8) + 0x30505050; w = t18 + u; w |= t16; }
+                    s->c.w = w;
+                }
+            }
+        }
+    }
+    for (j = 0; j < SKY->count; j++) {
+        s = &SKY->stars[j];
+        if (s->type == 0) {
+            u16 *h = &s->c.h.a;
+            h[0]++;
+            h[1]++;
+            a = func_001FA888((s->c.h.a & 0xFFF) - 0x800) * 0.0015339808f;
+            b = func_001FA888((h[1] & 0xFFF) - 0x800) * 0.0015339808f;
+            s->x = func_001F9F90(a) * func_001F9FA8(b) * 50.0f;
+            s->y = func_001F9FA8(a) * func_001F9FA8(b) * 50.0f;
+            s->z = func_001F9F90(b) * 50.0f;
+            s->color &= 0xFFFFFF;
+            if ((s->c.h.a & 0x3F) < 8) s->color |= 0x70000000;
+            else s->color |= 0x24000000;
+        } else {
+            r = func_001160D8() >> 16;
+            { u32 u = ((r & 0x1F00) << 10) + 0xFFDFDFE0; u32 c = s->c.w + u; c += (r & 0x1F0) << 6; c += (r & 0x1F) << 2; s->color = c; }
+        }
+    }
+    func_0022CEB8();
+    func_00234C98(0x42, 0x8000000044L);
+    func_0022C9A8(1);
+    func_0022C9A8(2);
+}
 INCLUDE_ASM("asm/overlays", func_L00_0028C358);
 INCLUDE_ASM("asm/overlays", func_L00_0028C478);

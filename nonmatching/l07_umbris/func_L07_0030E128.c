@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L07_0030E128 -- src/overlays/l07_umbris/vendor_002CE470.c
- * Best so far: SIZE ours 564 / retail 580, checked 2026-10-01.
+ * Best so far: SIZE ours 564 / retail 580, checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

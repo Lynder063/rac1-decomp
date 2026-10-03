@@ -1,16 +1,16 @@
 /* NON_MATCHING func_L17_002EDE50 -- src/overlays/l17_fleet/vendor_002AA068.c
- * Best so far: BYTES 107/3252 (96.7% of the bytes match), checked 2026-10-01.
+ * Best so far: BYTES 58/3252 (98.2% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
- *   - run15 p14: BYTES 108; S as a local `sc`: same bytes as p10/p12 (three wordings, same table residue) -> STOP.
- *   STOP. Best p10.c BYTES 108/3252 (legit: aliases only where a short ref precedes, so all accesses stay $gp).
- *   Left: (1) table 0x640-0x714: ratio-block zero reg f4 vs f3, 1BC/1C0/2110/S register choice, S-mul order, c0 lo
- *   (2) 0x914-0x93c E4/E8 load order: needs scalar MEMs (MEM_SCALAR_P). Verified: `extern float D_x_f __asm__("D_x
- *   gives retail's order exactly (p3/p8 d.s), but the compiler then prints `.extern D_x, 4`; the assembler takes t
- *   .extern, so it stays $gp only if an `extern short` reference to D_x comes earlier in the file. E4/E8/table glo
- *   none -> lui $at. Unblock: tooling that keeps such aliases $gp (e.g. treat a MACRO_ADDR float alias of an `exte
- *   gp symbol as size 2), then convert every gp float to an alias. (3) +0xC00 orphan-HI16 checker artifact (as opu
+ *   prints `.extern D,4` (lui) unless an `extern short` ref to the same symbol is parsed earlier in the file, whic
+ *   never have. Needs tooling (e.g. treat a MACRO_ADDR float alias of a gp `extern short` symbol as small).
+ *   (2) table 0x668-0x6f0: regs of A/C/F/J/K/L/P and two sched2 swaps (Q before N, PS before MS/NS, stores follow)
+ *   Diagnostics: sched1's order (run23) already has N before Q like retail; the swap comes from sched2 under our r
+ *   choice, and the final registers come from a sched2-aware local allocation (runs 6/7: with -fschedule-insns2 on
+ *   alloc differs from plain 2.95), so they could not be steered further by statement order.
+ *   - run25 p24: BYTES 65. p20 with 2110 read into a local at the top: worse (load position does matter for J).
+ *   - run26 p25: BYTES 61. p20 with [0][1] inline instead of the x01 local: close but worse. Stopping with p20.
  */
 extern void func_L00_0028EBF0(int);
 extern int func_0022ED80(int, int, int);
@@ -321,12 +321,14 @@ void func_L17_002EDE50(Moby *m, Obj *o) {
     }
     {
         float sc = *(float *)&D_L17_0016211C;
+        float x02 = (*(float *)&D_L17_001620B8 + o->f70 * *(float *)&D_L17_001621BC) * sc;
+        float x10 = *(float *)&D_L17_001620BC * sc;
         float x01 = o->f6C * *(float *)&D_L17_00162110 * sc;
         W4 tbl[2] = {
             { (*(float *)&D_L17_001620B4 - o->f70 * *(float *)&D_L17_001621B8 - ratio * *(float *)&D_L17_001621C0) * sc,
               x01,
-              (*(float *)&D_L17_001620B8 + o->f70 * *(float *)&D_L17_001621BC) * sc },
-            { *(float *)&D_L17_001620BC * sc,
+              x02 },
+            { x10,
               0.0f,
               *(float *)&D_L17_001620C0 * sc }
         };

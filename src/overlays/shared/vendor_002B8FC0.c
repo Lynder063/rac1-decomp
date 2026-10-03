@@ -55,6 +55,51 @@ unsigned char *func_L13_002E2F98(char *position, int moby_class)
     return moby;
 }
 INCLUDE_ASM("asm/overlays", func_L13_002E3010);
-INCLUDE_ASM("asm/overlays", func_L13_002E7E90);
+extern void *func_L00_0025D390(char *);
+extern void func_00215C00(void *, float, float, float);
+extern void func_00213DE0(void *, int, int, int);
+extern void func_001F9BD8(void *, void *, void *);
+extern char *func_L00_0026E940(char *, int, int, int, float);
+
+// Spawns an effect moby attached to a target and positioned from a source.
+unsigned char *func_L13_002E7E90(char *src, char *pos, char *target, char *vec, int arg, float scale) {
+    unsigned char *moby = func_0020D348(0x127);
+    if (moby != 0) {
+        char *data = *(char **)(moby + 0x78);
+        moby[0x30] = 0xFF;
+        *(short *)(moby + 0x32) = 0xFF;
+        moby[0x31] = 1;
+        moby[0x20] = 0;
+        *(char **)(data + 0x20) = src;
+        *(char **)(data + 0x24) = target;
+        qcopy(moby + 0x10, pos);
+        qcopy(moby + 0x40, vec);
+        if (target != 0) {
+            char *e;
+            *(int *)(data + 0x3C) = *(short *)(target + 0xA6);
+            e = func_L00_0025D390(target);
+            if (e != 0) {
+                *(unsigned short *)(e + 0x1E) |= 0x80;
+            }
+        }
+        *(int *)(data + 0x28) = arg;
+        *(float *)(data + 0x2C) = scale;
+        *(int *)(data + 0x30) = 0;
+        *(int *)(data + 0x34) = 0;
+        func_00215C00(data, scale, *(float *)(vec + 8), -*(float *)(vec + 4));
+        if (moby[0x53] != 1) {
+            func_00213DE0(moby, 1, 0, 10);
+        }
+        func_001F9BD8(moby + 0x10, moby + 0x10, data);
+        if (*(char **)(data + 0x24) != 0) {
+            qcopy(data + 0x10, *(char **)(data + 0x24) + 0x10);
+        }
+        *(float *)(moby + 0x2C) = *(float *)(*(char **)(moby + 0x24) + 0x24) *
+                                  (*(float *)(src + 0x2C) / *(float *)(*(char **)(src + 0x24) + 0x24));
+        func_L00_00251E30(moby);
+        func_L00_0026E940((char *)moby, 0x60808080, arg, 0, 500000.0f);
+    }
+    return moby;
+}
 INCLUDE_ASM("asm/overlays", func_L13_002E8040);
 INCLUDE_ASM("asm/overlays", func_L13_003184A0);

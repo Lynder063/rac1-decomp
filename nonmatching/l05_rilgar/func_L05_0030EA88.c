@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L05_0030EA88 -- src/overlays/l05_rilgar/vendor_002D28D0.c
- * Best so far: SIZE ours 180 / retail 184, checked 2026-10-01.
+ * Best so far: SIZE ours 180 / retail 184, checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -9,7 +9,6 @@
  */
 extern char D_L05_001D6BC0[];
 extern short *D_L05_001AC040[];
-extern char *D_L05_00160098;
 
 // copies the moby's x position onto each linked moby of type 0x33F, following the parent's offset
 void func_L05_0030EA88(char *moby) {
