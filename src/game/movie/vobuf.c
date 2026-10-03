@@ -8,7 +8,9 @@
  */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E560);
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E5B0);
+/* NoOpStateUpdate - does nothing */
+void func_0023E5B0(void) {
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E5B8); /* voBufReset(VoBuf *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E5C8); /* voBufIsFull(VoBuf *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E5E0); /* voBufIncCount(VoBuf *) */
