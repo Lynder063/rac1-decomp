@@ -10,13 +10,18 @@ starting point there is: same source, same compiler family.
   python3 tools/lombyte.py NAME [...]       # a Lombyte name's PAL function
   python3 tools/lombyte.py todo             # matched there, not here
 
-The map pairs functions by aligning both builds' function-size sequences
-(runs of three or more equal sizes), so a paired function has the same
-size in both. Level code is aligned level by level: Lombyte's
-FUN_LNN_xxxxxxxx against every function config/overlays/functions.tsv
-places in level NN (its shared code is named after level 00, as ours
-is). It lives in build-sn/lombyte_ntsc_pal_map.json. Lombyte is looked
-for in $LOMBYTE, else ~/Projects/Lombyte.
+The map pairs functions through config/overlays/us_map.tsv when it
+exists (tools/overlays.py us-map: every US function's PAL counterpart,
+found from the code): a Lombyte function's US address, in the executable
+or in level NN for FUN_LNN_xxxxxxxx, gives our function. What that
+leaves, or everything without it, is paired by aligning both builds'
+function-size sequences (runs of three or more equal sizes), so such a
+pair has the same size in both. Level code is aligned level by level:
+Lombyte's FUN_LNN_xxxxxxxx against every function
+config/overlays/functions.tsv places in level NN (its shared code is
+named after level 00, as ours is). Each pair records how it was found
+("us_map" or "sizes"). It lives in build-sn/lombyte_ntsc_pal_map.json.
+Lombyte is looked for in $LOMBYTE, else ~/Projects/Lombyte.
 """
 from __future__ import annotations
 import difflib
@@ -30,6 +35,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 LOMBYTE = Path(os.environ.get("LOMBYTE", Path.home() / "Projects/Lombyte"))
 MAP = ROOT / "build-sn/lombyte_ntsc_pal_map.json"
+US_MAP = ROOT / "config/overlays/us_map.tsv"
+US_EXE_DELTA = 0xFF080      # SCUS-97199: vram - file offset of its one loaded segment
+LEVEL_NAME = re.compile(r"FUN_L(\d\d)_([0-9a-fA-F]{8})")
 
 
 def their_report(lombyte: Path = LOMBYTE) -> dict | None:
@@ -72,36 +80,41 @@ def functions(units: list[dict], key) -> list[tuple[int, int, str, bool]]:
     return sorted(r for r in rows if r[0] is not None)
 
 
-def overlay_pairs() -> list[dict]:
-    """Level-code pairs, level by level (see the module docstring)."""
-    sys.path.insert(0, str(ROOT / "tools"))
-    import dossier
-    ours_exact = {f["name"]: (f.get("fuzzy_match_percent") or 0) == 100
-                  for u in json.loads((ROOT / "progress/report.json").read_text())["units"]
-                  for f in u.get("functions", [])}
+def size_runs(theirs: list, ours: list):
+    """(theirs[i], ours[j]) along runs of three or more equal sizes (the
+    second field of each) in both sequences."""
+    match = difflib.SequenceMatcher(None, [x[1] for x in theirs], [x[1] for x in ours], autojunk=False)
+    for a, b, n in match.get_matching_blocks():
+        if n >= 3:
+            for k in range(n):
+                yield theirs[a + k], ours[b + k]
+
+
+def level_functions(units: list[dict]) -> dict[int, list[tuple[int, int, str, bool]]]:
+    """level -> Lombyte's FUN_LNN_xxxxxxxx there: (US address, size, name, matched)."""
     theirs: dict[int, list] = {}
-    for unit in their_units():
+    for unit in units:
         for f in unit.get("functions", []):
-            m = re.fullmatch(r"FUN_L(\d\d)_([0-9a-fA-F]{8})", f["name"])
+            m = LEVEL_NAME.fullmatch(f["name"])
             if m:
                 theirs.setdefault(int(m.group(1)), []).append(
                     (int(m.group(2), 16), int(f["size"]), f["name"], (f.get("fuzzy_match_percent") or 0) == 100))
-    ours: dict[int, list] = {}
-    for name, (_kind, size, _n, places) in dossier.load_overlay_catalogue().items():
-        for level, addr in places:
-            ours.setdefault(level, []).append((addr, size, name))
-    pairs = {}
-    for level in sorted(theirs):
-        t, o = sorted(theirs[level]), sorted(ours.get(level, []))
-        match = difflib.SequenceMatcher(None, [x[1] for x in t], [x[1] for x in o], autojunk=False)
-        for a, b, n in match.get_matching_blocks():
-            if n < 3:
-                continue
-            for k in range(n):
-                tt, oo = t[a + k], o[b + k]
-                pairs.setdefault(oo[2], {"pal": oo[2], "size": oo[1], "ntsc": tt[2], "ntsc_exact": tt[3],
-                                         "pal_exact": ours_exact.get(oo[2], False), "overlay": True})
-    return list(pairs.values())
+    return {level: sorted(fns) for level, fns in theirs.items()}
+
+
+def read_us_map() -> dict[tuple[str, int], str]:
+    """(program, US address) -> our function, from config/overlays/us_map.tsv
+    (tools/overlays.py us-map), or {} without it. Program is "boot" or
+    "level_NN"."""
+    if not US_MAP.exists():
+        return {}
+    rows = {}
+    for line in US_MAP.read_text().splitlines():
+        if not line.startswith("#"):
+            program, addr, _size, pal, _method, _sim = line.split("\t")
+            if pal != "-":
+                rows[(program, int(addr, 16))] = pal
+    return rows
 
 
 def definition(ntsc: str) -> tuple[str, str] | None:
@@ -121,23 +134,58 @@ def definition(ntsc: str) -> tuple[str, str] | None:
 
 
 def build_map() -> list[dict]:
-    theirs = functions(their_units(),
-                       lambda f: int(f.get("metadata", {}).get("virtual_address") or 0))
-    ours = functions(json.loads((ROOT / "progress/report.json").read_text())["units"],
+    """Pairs through config/overlays/us_map.tsv first, then by sizes (see the
+    module docstring). One pair per PAL function; when two Lombyte functions
+    reach the same one, the one Lombyte matched is kept."""
+    sys.path.insert(0, str(ROOT / "tools"))
+    import dossier
+    units = their_units()
+    report = json.loads((ROOT / "progress/report.json").read_text())["units"]
+    exact = {f["name"]: (f.get("fuzzy_match_percent") or 0) == 100 for u in report for f in u.get("functions", [])}
+    mapped = read_us_map()
+    # Lombyte's report gives the executable's functions at their offset in
+    # the file (its "virtual_address" of CheckStateRange, 0x112380, is 0x13300).
+    # Take whichever reading puts more of them on a US function start.
+    theirs = functions(units, lambda f: int(f.get("metadata", {}).get("virtual_address") or 0))
+    if sum(("boot", a + US_EXE_DELTA) in mapped for a, *_ in theirs) >= sum(("boot", a) in mapped for a, *_ in theirs):
+        theirs = [(a + US_EXE_DELTA, *rest) for a, *rest in theirs]
+    ours = functions(report,
                      lambda f: int(f["name"][5:], 16) if re.fullmatch(r"func_[0-9A-Fa-f]{8}", f["name"]) else None)
-    match = difflib.SequenceMatcher(None, [s for _, s, _, _ in theirs], [s for _, s, _, _ in ours],
-                                    autojunk=False)
-    pairs = []
-    for a, b, n in match.get_matching_blocks():
-        if n < 3:
-            continue
-        for k in range(n):
-            t, o = theirs[a + k], ours[b + k]
-            pairs.append({"pal": o[2], "size": o[1], "ntsc": t[2], "ntsc_exact": t[3], "pal_exact": o[3]})
-    pairs += overlay_pairs()
+    theirs_lv = level_functions(units)
+    ours_lv: dict[int, list] = {}
+    sizes = {name: size for _, size, name, _ in ours}
+    for name, (_kind, size, _n, places) in dossier.load_overlay_catalogue().items():
+        sizes.setdefault(name, size)
+        for level, addr in places:
+            ours_lv.setdefault(level, []).append((addr, size, name))
+    pairs: dict[str, dict] = {}
+
+    def add(pal: str, ntsc: str, ntsc_size: int, ntsc_exact: bool, how: str, overlay: bool) -> None:
+        old = pairs.get(pal)
+        if old and (old["ntsc_exact"] or not ntsc_exact):
+            return
+        pairs[pal] = {"pal": pal, "size": sizes.get(pal, 0), "ntsc": ntsc, "ntsc_size": ntsc_size,
+                      "ntsc_exact": ntsc_exact, "pal_exact": exact.get(pal, False), "how": how,
+                      **({"overlay": True} if overlay else {})}
+
+    for addr, size, name, ok in theirs:
+        if ("boot", addr) in mapped:
+            add(mapped[("boot", addr)], name, size, ok, "us_map", False)
+    for level, fns in theirs_lv.items():
+        for addr, size, name, ok in fns:
+            if (f"level_{level:02d}", addr) in mapped:
+                add(mapped[(f"level_{level:02d}", addr)], name, size, ok, "us_map", True)
+    paired = {p["ntsc"] for p in pairs.values()}
+    for t, o in size_runs(theirs, ours):
+        if t[2] not in paired and o[2] not in pairs:
+            add(o[2], t[2], t[1], t[3], "sizes", False)
+    for level in sorted(theirs_lv):
+        for t, o in size_runs(theirs_lv[level], sorted(ours_lv.get(level, []))):
+            if t[2] not in paired and o[2] not in pairs:
+                add(o[2], t[2], t[1], t[3], "sizes", True)
     MAP.parent.mkdir(parents=True, exist_ok=True)
-    MAP.write_text(json.dumps(pairs, indent=1) + "\n")
-    return pairs
+    MAP.write_text(json.dumps(list(pairs.values()), indent=1) + "\n")
+    return list(pairs.values())
 
 
 def load_map() -> list[dict]:
@@ -165,13 +213,16 @@ def main() -> None:
     if args[0] == "map":
         pairs = build_map()
         todo = [p for p in pairs if p["ntsc_exact"] and not p["pal_exact"]]
-        print(f"{len(pairs)} functions paired; {len(todo)} matched in Lombyte only "
+        how = {h: sum(1 for p in pairs if p["how"] == h) for h in ("us_map", "sizes")}
+        print(f"{len(pairs)} functions paired ({how['us_map']} through {US_MAP.relative_to(ROOT)}, "
+              f"{how['sizes']} by sizes); {len(todo)} matched in Lombyte only "
               f"({sum(p['size'] for p in todo)} bytes). Written to {MAP.relative_to(ROOT)}.")
         return
     pairs = load_map()
     if args[0] == "todo":
         for p in sorted((p for p in pairs if p["ntsc_exact"] and not p["pal_exact"]), key=lambda p: p["size"]):
-            print(f"{p['pal']}  {p['size']:>5}  {p['ntsc']}")
+            there = p.get("ntsc_size", p["size"])
+            print(f"{p['pal']}  {p['size']:>5}  {p['ntsc']}" + (f"  ({there} bytes there)" if there != p["size"] else ""))
         return
     by_pal = {p["pal"]: p for p in pairs}
     by_ntsc = {p["ntsc"]: p for p in pairs}
@@ -186,7 +237,9 @@ def main() -> None:
             continue
         state = "matched in Lombyte" if p["ntsc_exact"] else "not matched in Lombyte either"
         files = source_of(p["ntsc"])
-        print(f"{name}: Lombyte {p['ntsc']} ({p['size']} bytes), {state}")
+        there = p.get("ntsc_size", p["size"])
+        print(f"{name}: Lombyte {p['ntsc']} ({p['size']} bytes" + (f", {there} there" if there != p["size"] else "")
+              + f"), {state}")
         for f in files:
             print(f"  {f}")
 
