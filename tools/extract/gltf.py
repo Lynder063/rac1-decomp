@@ -11,7 +11,7 @@ import struct
 
 from mesh import Mesh
 
-FLOAT, ARRAY_BUFFER = 5126, 34962
+FLOAT, UNSIGNED_INT, ARRAY_BUFFER, ELEMENT_ARRAY_BUFFER = 5126, 5125, 34962, 34963
 REPEAT, LINEAR, LINEAR_MIPMAP_LINEAR = 10497, 9729, 9987
 
 
@@ -65,14 +65,35 @@ class Gltf:
             self.materials[key] = len(self.doc["materials"]) - 1
         return self.materials[key]
 
+    def indices(self, values: list[int]) -> int:
+        """An accessor for triangle vertex indices."""
+        payload = struct.pack(f"<{len(values)}I", *values)
+        self.buffer.extend(bytes(-len(self.buffer) % 4))
+        self.doc["bufferViews"].append({"buffer": 0, "byteOffset": len(self.buffer),
+                                        "byteLength": len(payload), "target": ELEMENT_ARRAY_BUFFER})
+        self.buffer.extend(payload)
+        self.doc["accessors"].append({"bufferView": len(self.doc["bufferViews"]) - 1,
+                                      "componentType": UNSIGNED_INT, "count": len(values), "type": "SCALAR"})
+        return len(self.doc["accessors"]) - 1
+
     def mesh(self, mesh: Mesh, materials: dict) -> int:
-        """One primitive per texture, unindexed so each face keeps a flat normal.
+        """One primitive per texture. Without vertex normals it is unindexed,
+        so each face keeps a flat normal; with them it is indexed.
 
         materials maps each of the mesh's texture keys to a material index.
         """
         primitives = []
         for key, faces in mesh.faces.items():
             corners = [v for face in faces for v in face]
+            if mesh.normals is not None:
+                used = list(dict.fromkeys(corners))  # In order of first use.
+                local = {v: i for i, v in enumerate(used)}
+                attributes = {"POSITION": self.floats([mesh.positions[v] for v in used], bounds=True),
+                              "NORMAL": self.floats([mesh.normals[v] for v in used]),
+                              "TEXCOORD_0": self.floats([mesh.uvs[v] for v in used])}
+                primitives.append({"attributes": attributes, "indices": self.indices([local[v] for v in corners]),
+                                   "material": materials[key], "mode": 4})
+                continue
             flat = [face_normal(*(mesh.positions[v] for v in face)) for face in faces]
             attributes = {"POSITION": self.floats([mesh.positions[v] for v in corners], bounds=True),
                           "NORMAL": self.floats([n for n in flat for _ in range(3)]),

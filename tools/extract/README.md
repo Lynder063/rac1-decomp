@@ -32,8 +32,8 @@ godot --path assets/godot -e res://levels/level_00/level_00.tscn
 The second command opens level 0 in the editor. Other levels are in the
 FileSystem dock under `levels/`; double-click a `level_NN.tscn` to open it.
 
-All 19 levels take about 15 seconds and 365 MB, one level per CPU core at
-a time. Godot's first import takes about a minute. Options:
+All 19 levels take about 20 seconds and 475 MB, one level per CPU core at
+a time. Godot's first import takes about two minutes. Options:
 
 - `--level N` (repeatable) exports only some levels.
 - `--jobs N` limits how many levels are exported at once.
@@ -85,7 +85,8 @@ levels/level_NN/
   collision.glb              the collision mesh, coloured by surface type
   ties/tie_<class>.glb       one mesh per tie class
   shrubs/shrub_<class>.glb   one mesh per shrub class
-  mobys/moby_<class>.tscn    a moby class's marker and label (meshes later)
+  mobys/moby_<class>.tscn    a moby class: its mesh (or a box) and a label
+  mobys/moby_<class>.glb     a moby class's mesh, in model units
   sky.png                    the sky as a panorama, used by the WorldEnvironment
   textures/*.png             shared by the level's meshes
 ```
@@ -117,10 +118,14 @@ To edit a level:
   - ties only: `rc1_occlusion_index`, `rc1_uid`;
   - shrubs only: `rc1_colour`, raw integers;
   - `rc1_matrix_w`: only on objects that store 0.0 instead of the usual 0.01.
-- Mobys show as a coloured box with their class number and name
-  (`11 vendor`); the label fades out beyond 60 units. Their rotation in
-  the Inspector is the game's own Euler angles (rotation order XYZ). Their
-  metadata:
+- Mobys show as their class's mesh in its bind pose, with a label giving
+  the class number and name (`11 vendor`) that fades out beyond 60 units.
+  Classes without a mesh (spawn points, triggers, particle spawners...)
+  show as a coloured box. Each class scene, `mobys/moby_<class>.tscn`,
+  has one for every class the level loads, placed or not; drag one onto
+  `Game/Mobys` to add a moby. Its `Model` node carries the class scale.
+  A moby's rotation in the Inspector is the game's own Euler angles
+  (rotation order XYZ). Its metadata:
   - always `rc1_index`, `rc1_spawn_id`, `rc1_group`, `rc1_pvar_index` and
     `rc1_colour` (the ambient colour, 128 = 1.0);
   - the other fields only when they differ from what most mobys store:
@@ -188,6 +193,8 @@ The Godot check loads every level scene and compares its meshes, triangles,
 textures, bounds, sky panorama and moby count with what the extractor wrote.
 The collision layer is not counted with the textured meshes; its triangles
 are compared with `level.json` on their own, and it must be hidden.
+It also loads every moby class scene and compares their models, triangles
+and textures, and the meshes the placed mobys show.
 
 ## Coverage
 
@@ -195,7 +202,7 @@ Extracted:
 
 - terrain (tfrags);
 - ties and shrubs, with their placements;
-- moby placements, as labelled markers;
+- moby placements, and each moby class's high-detail mesh in its bind pose;
 - the sky;
 - the collision mesh, as a hidden layer;
 - the textures they use.
@@ -203,16 +210,22 @@ Extracted:
 Approximations:
 
 - Normals are flat, and Godot lights the scene. The game's own lighting,
-  baked into vertex colours, is not decoded yet.
+  baked into vertex colours, is not decoded yet. Mobys use their stored
+  vertex normals; the game lights them at run time.
 - Alpha-tested textures become cutouts.
+- Moby faces the game draws untextured get a flat grey texture, which is
+  what the game binds for them. Some classes are made only of such faces
+  (rings, force fields, barriers); the game may draw those translucent,
+  glowing or not at all. Glow parts are lit like the rest, and the chrome
+  and glass passes and the low-detail meshes are not extracted.
 - The sky is baked into a 2048×1024 panorama. The game centres its sky
   shells on the camera and never moves them, so a panorama loses nothing.
   Their blending follows the PS2's usual texture and alpha modes, which is
   inferred rather than traced in the game's code. Sprites the game adds
   to the sky at run time are not included.
 
-Not yet extracted: moby meshes and animations, hero collision, audio, video and
-each level's code overlay. [docs/ASSETS.md](../../docs/ASSETS.md) describes
+Not yet extracted: low-detail moby meshes, hero collision, audio, video
+and each level's code overlay. [docs/ASSETS.md](../../docs/ASSETS.md) describes
 the formats and the evidence for them.
 
 ## Code
@@ -226,6 +239,7 @@ The GDScript files follow [`docs/GDSCRIPT_CONVENTIONS.md`](../../docs/GDSCRIPT_C
 | `level.py` | A level's sections, core blocks and textures |
 | `formats.py` | Bounded reads, WAD decompression, code overlays, textures |
 | `terrain.py`, `ties.py`, `shrubs.py`, `sky.py`, `collision.py` | Geometry and placements |
+| `mobys.py`, `moby_class.py` | Moby placements and class meshes |
 | `mesh.py`, `gltf.py` | The mesh type and the GLB writer |
 | `godot.py` | Project, scenes and level.json |
 
@@ -242,11 +256,12 @@ The decoders accept only the layouts found on this disc and raise
 - **[Replanetizer](https://github.com/RatchetModding/Replanetizer)** by
   RatchetModding contributors, consulted for what fields mean.
 - **[ReRAC](https://github.com/re-rac/rerac)** (ISC): the moby instance
-  record and what each field does in the game's level loader, and the
-  collision block and the meaning of its surface bytes
-  ([docs/ASSETS.md](../../docs/ASSETS.md#collision)).
+  record and what each field does in the game's level loader, the moby
+  class format (packets, vertex cache, skinning slots, normals and the
+  untextured faces), and the collision block and the meaning of its
+  surface bytes ([docs/ASSETS.md](../../docs/ASSETS.md#collision)).
 - **[Lombyte](https://github.com/mateuszklysz/Lombyte)** (MIT): the moby
-  class names on the markers (`moby_classes.tsv`, see its header).
+  class names on the labels (`moby_classes.tsv`, see its header).
 - **[OpenGOAL's jak-project](https://github.com/open-goal/jak-project)**,
   whose extractor was the model for extracting from your own disc.
 - **[Godot Engine](https://godotengine.org)** and the Khronos Group's

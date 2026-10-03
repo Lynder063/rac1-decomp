@@ -6,10 +6,12 @@ extends SceneTree
 ##
 ## Every placed mesh must be textured; the counts, triangles and world
 ## bounds of each level scene, its sky panorama and its placed mobys must
-## match what was extracted. Moby markers are stand-ins, not geometry, so
-## they are counted on their own. The collision layer (Game/Collision, hidden)
-## is not one of the textured meshes; its triangles are compared with
-## level.json separately.
+## match what was extracted. Moby meshes are counted on their own, not as
+## level geometry: every class scene's model must be textured, and the
+## models, triangles and textures of the class scenes, and the meshes the
+## placed mobys show, must match level.json. The collision layer
+## (Game/Collision, hidden) is not one of the textured meshes either; its
+## triangles are compared with level.json separately.
 
 
 func _initialize() -> void:
@@ -29,6 +31,7 @@ func _initialize() -> void:
 		var mobys := moby_count(root)
 		var collision := collision_triangles(root)
 		var expected_collision := int(info.collision.triangles) if info.has("collision") else 0
+		failed += 0 if check_moby_meshes(name, root, info) else 1
 		root.free()
 		var low := Vector3(info.bounds[0][0], info.bounds[0][1], info.bounds[0][2])
 		var high := Vector3(info.bounds[1][0], info.bounds[1][1], info.bounds[1][2])
@@ -111,3 +114,68 @@ func collision_triangles(root: Node) -> int:
 			var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
 			total += (indices.size() if not indices.is_empty() else arrays[Mesh.ARRAY_VERTEX].size()) / 3
 	return total
+
+
+## Moby class scenes (mobys/*.tscn) and the meshes placed mobys show,
+## against level.json's "mobys" entry.
+func check_moby_meshes(level: String, root: Node, info: Dictionary) -> bool:
+	var classes := {"scenes": 0, "models": 0, "triangles": 0, "untextured": 0, "textures": {}}
+	var dir := "res://levels/%s/mobys" % level
+	for file in DirAccess.get_files_at(dir):
+		if not file.ends_with(".tscn"):
+			continue
+		var scene := load("%s/%s" % [dir, file]) as PackedScene
+		if scene == null:
+			printerr("%s: %s did not load" % [level, file])
+			return false
+		var instance := scene.instantiate()
+		var totals := mesh_totals(instance)
+		instance.free()
+		classes.scenes += 1
+		classes.models += 1 if totals.meshes > 0 else 0
+		classes.triangles += totals.triangles
+		classes.untextured += totals.untextured
+		classes.textures.merge(totals.textures)
+	var placed := {"meshes": 0, "triangles": 0}
+	var mobys := root.get_node_or_null("Game/Mobys")
+	if mobys != null:
+		for child in mobys.get_children():
+			var totals := mesh_totals(child)
+			placed.meshes += totals.meshes
+			placed.triangles += totals.triangles
+	var expected: Dictionary = info.get("mobys", {})
+	var ok: bool = (classes.scenes == int(expected.get("classes", 0))
+		and classes.models == int(expected.get("model_classes", 0))
+		and classes.triangles == int(expected.get("class_triangles", 0))
+		and classes.textures.size() == int(expected.get("textures", 0))
+		and classes.untextured == 0
+		and placed.meshes == int(expected.get("mesh_instances", 0))
+		and placed.triangles == int(expected.get("triangles", 0)))
+	print("%s: %d moby classes, %d with models (%d triangles, %d textures); %d placed meshes, %d triangles: %s" % [
+		level, classes.scenes, classes.models, classes.triangles, classes.textures.size(), placed.meshes,
+		placed.triangles, "ok" if ok else "MISMATCH"])
+	return ok
+
+
+## Meshes, triangles, untextured surfaces and albedo textures under node;
+## box markers are not meshes.
+func mesh_totals(node: Node) -> Dictionary:
+	var totals := {"meshes": 0, "triangles": 0, "untextured": 0, "textures": {}}
+	var pending: Array[Node] = [node]
+	while not pending.is_empty():
+		var current: Node = pending.pop_back()
+		pending.append_array(current.get_children())
+		if not current is MeshInstance3D or current.name == &"Marker":
+			continue
+		var mesh: Mesh = current.mesh
+		totals.meshes += 1
+		for i in mesh.get_surface_count():
+			var arrays := mesh.surface_get_arrays(i)
+			var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+			totals.triangles += (indices.size() if not indices.is_empty() else arrays[Mesh.ARRAY_VERTEX].size()) / 3
+			var material := mesh.surface_get_material(i) as StandardMaterial3D
+			if material == null or material.albedo_texture == null:
+				totals.untextured += 1
+			else:
+				totals.textures[material.albedo_texture.resource_path] = true
+	return totals

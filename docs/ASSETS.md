@@ -20,11 +20,15 @@ contains no game data.
   the US release. Its format crate and notes give the moby instance record
   and what the game's level loader does with each field
   (`crates/rc-formats/src/gameplay.rs`, `docs/plan/moby_render_notes.md`),
-  and the collision block and what the game's code does with it
-  (`docs/formats/collision_rac1.md`, `docs/plan/collision_queries.md`, in
-  turn based on Wrench's collision reader, `collision.cpp`). The PAL data
-  has the same layouts; our decoders were checked against the PAL disc
-  (see "Mobys" and "Collision").
+  the moby class format (`docs/formats/moby_rac1.md` §1–§2,
+  `crates/rc-formats/src/moby.rs`, `docs/plan/moby_skinning_lighting.md`,
+  `docs/plan/moby_untextured.md`), which ReRAC built from Wrench's moby
+  reader and corrected against the game's code, and the collision block and
+  what the game's code does with it (`docs/formats/collision_rac1.md`,
+  `docs/plan/collision_queries.md`, in turn based on Wrench's collision
+  reader, `collision.cpp`). The PAL data has the same layouts; our decoders
+  were checked against the PAL disc (see "Mobys", "Moby classes" and
+  "Collision").
 - **[Lombyte](https://github.com/mateuszklysz/Lombyte)** (MIT): the moby class
   names the editor shows (`tools/extract/moby_classes.tsv`), which it joins
   from each level's class dispatch table and Wrench's class names.
@@ -70,6 +74,8 @@ How the decoders were checked:
   19 levels: every vertex, UV, face, placement and texture pixel. The one
   exception is the untextured sky shells, whose colours the prototype
   misread as texture coordinates (see "Sky").
+- The moby class decoder follows ReRAC's description and loader, and
+  every check its loader makes holds on all 19 PAL levels (see "Mobys").
 
 ## The disc
 
@@ -199,7 +205,7 @@ checked against the decompressed sizes on all 19 levels.
 |---|---|
 | +0x00 | GS RAM table: count, offset. 16-byte entries (PSM, size, GS offset). |
 | +0x08, +0x0c, +0x10, +0x14 | Core data offsets of the terrain, occlusion, sky and collision blocks. |
-| +0x18, +0x20, +0x28 | Moby, tie and shrub class tables. Each entry is 32, 32 or 48 bytes and starts with a core offset and a class ID; tie and shrub entries remap 16 texture slots at +16. |
+| +0x18, +0x20, +0x28 | Moby, tie and shrub class tables. Each entry is 32, 32 or 48 bytes and starts with a core offset and a class ID, and remaps 16 texture slots at +16. |
 | +0x30…+0x48 | Terrain, moby, tie and shrub texture tables: count, offset. |
 | +0x60 | Core offset of texture pixel data. |
 | +0x78 | Index offset of 256 ratchet-sequence core offsets. |
@@ -315,9 +321,9 @@ unknown, so the Godot scenes record it when it isn't 0.01.
 ## Mobys
 
 Mobys are the level's objects with behaviour: Ratchet's spawn point,
-crates, bolts, enemies, NPCs, vendors, platforms. Only their placements
-are extracted so far; the editor shows each one as a marker labelled with
-its class.
+crates, bolts, enemies, NPCs, vendors, platforms. Their placements and
+their classes' high-detail meshes are extracted; skeletons and animations
+are not yet.
 
 - **Placements:** PAL gameplay +0x44 points to a count, 12 bytes of
   padding, then 0x78-byte instances (16,232 on the 19 levels):
@@ -337,6 +343,81 @@ its class.
 The Godot scenes keep every field a packer needs: the transform, plus
 node metadata for the fields that differ from the value most instances
 store (`tools/extract/mobys.py`, `USUAL`).
+
+### Moby classes
+
+The layouts are ReRAC's (`docs/formats/moby_rac1.md` §1–§2 and its
+corrections); `tools/extract/moby_class.py` reads them.
+
+- **Class table:** core index +0x18, 32-byte entries: the core offset of
+  the class blob, the class number, two unknown words and 16 texture slots
+  into the moby texture table (0xff unused). Offset 0 means no blob: spawn
+  points, triggers and the 21 gadget classes, whose blobs are
+  WAD-compressed in the gadget table and not decoded yet. The 19 levels
+  have 2,972 blobs, 2,934 of them with a mesh.
+- **Header** (0x48 bytes): the packet table at +0x00 (0: no mesh), the
+  high-detail, low-detail and metal packet counts at +0x04–+0x06, the
+  first metal packet at +0x07, the joint count at +0x08 and the class
+  scale (float) at +0x24.
+- **Scale:** a vertex is drawn at packed × class scale / 1024, then the
+  instance's scale, rotation and position. The GLBs keep model units
+  (packed / 1024), and each class scene's `Model` node carries the class
+  scale.
+- **Packets:** 16-byte entries: VIF list offset and size in qwords, vertex
+  table offset and size, two qword counts that follow from the vertex
+  count, and the number of vertices sent to VU1. Only the high-detail
+  packets are read.
+- **VIF list:** NOPs and UNPACKs only:
+  - texture coordinates, V2-16 with the write mask, at VU address 0xc2:
+    s and t / 4096;
+  - the index stream, V4-8 at 0x12d, after a 4-byte header;
+  - optionally GS texture blocks, V4-32 right after the indices: 64 bytes
+    each, whose TEX0 data word is the class texture slot until the game
+    patches it at load time (-1: untextured).
+- **Vertex table:** eight words: matrix transfers, two-way, three-way and
+  single-joint vertices, duplicates, their total, the offset of the
+  vertices and the offset of a colour multiplier per vertex (0x80 on the
+  whole disc). Then the 2-byte matrix transfers, the duplicates (8-byte
+  aligned, a cache slot × 128) and 16-byte vertices:
+  - bytes 0–7: skinning (VU0 matrix slots and weights);
+  - bytes 8–9: the normal's azimuth a and elevation e in 256ths of a turn,
+    (cos a cos e, sin a cos e, sin e);
+  - bytes 10–15: the position, signed 16 bits.
+- **Vertex cache:** each vertex record holds the 9-bit cache ID of the
+  vertex seven places earlier, the depth of the VU1 program's pipeline;
+  the last IDs are in one to six records after the vertices. A duplicate
+  copies an earlier vertex, possibly from an earlier packet, out of the
+  512-entry cache and takes its own texture coordinates.
+- **Index stream:** 1-based indices, bit 7 suppresses the drawing kick.
+  - A kicked index draws the triangle of the last three.
+  - A 0 switches to the next GS block's texture and pushes an extra
+    index: the first is in the index header, the rest at byte 12 of the
+    GS blocks' successive qwords.
+  - An extra index of 0 ends the packet, and its last three indices
+    (1, 1, 1) only flush the pipeline.
+  - A packet without GS blocks keeps the previous packet's texture.
+- **Winding:** strips keep no consistent winding, so each face is turned
+  towards its vertices' stored normals, as with shrubs. The normals are
+  decoded as ReRAC does from the game's VU0 code; Wrench swaps x and y.
+  On levels 0, 5 and 9 the faces agree with the stored normals at a mean
+  |cos| of 0.98, against 0.59 with x and y swapped.
+- **Skinning:** the VU0 matrix slots resolve to up to three joints per
+  vertex, weights in 256ths. The extractor replays them and checks every
+  load, weight sum and joint number, but exports the bind pose only.
+- **Untextured faces:** for a texture of -1 the game binds an 8×8 texture
+  of 0x80 texels, which leaves the vertex colour. The extractor gives
+  those faces `textures/moby_untextured.png`, flat grey.
+- **Not read:** low-detail and metal (chrome, glass) packets, glow
+  packets' colour, collision, sounds, the shadow block and the skeleton.
+
+On all 19 levels, every class decodes with every check passing: the
+counts in each packet entry and vertex table agree, every packet has one
+to six records after its vertices, every duplicate finds its cache slot,
+and every index stream uses all its GS blocks and ends on the flush
+trailer. The high-detail meshes have 1,942,238 triangles; ReRAC counts
+1,933,983 on the US disc, which has four fewer class blobs. Renders of
+vendors, crates, bolts, Ratchet, NPCs and enemies on levels 0, 3 and 5
+show them textured and standing on their placements.
 
 ## Sky
 
