@@ -15,6 +15,9 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023E5B8); /* voBufReset(VoBuf *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E5C8); /* voBufIsFull(VoBuf *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E5E0); /* voBufIncCount(VoBuf *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E658); /* voBufGetData(VoBuf *) */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E698); /* voBufIsEmpty */
+/* IsStateFieldZero - checks if field at offset 0xC is zero */
+int func_0023E698(int *a) {
+    return a[3] == 0;
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E6A8); /* voBufGetTag(VoBuf *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E710); /* voBufDecCount(VoBuf *) */
