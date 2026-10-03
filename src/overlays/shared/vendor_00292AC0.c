@@ -175,7 +175,38 @@ void func_L03_002CF600(char *m) {
     *(unsigned char *)(m + 0xA4) = 0xFF;
     func_L00_0025E590(m, d + 0x60);
 }
-INCLUDE_ASM("asm/overlays", func_L03_002D50A0);
+extern float D_L03_0015F660[] MACRO_ADDR;
+extern void func_L01_00279790(void *);
+extern void func_L00_00265050(void *, int, void *, void *, int, int, float, void *, void *, void *);
+void func_L03_002D50A0(unsigned char *m) {
+    int flag = 0;
+    float z;
+    char *p, *pos, *vel;
+    char *x = func_L00_0025B478(m, 0x10000, 0);
+    switch (m[0x20]) {
+    case 0:
+        m[0x20] = 1;
+        break;
+    case 1:
+        if (x != 0) {
+            if (*(float *)(x + 0x2C) > 0.0f) flag = 1;
+        }
+        if (flag) m[0x20] = 2;
+        break;
+    case 2:
+        func_0022ED80(0, 0, (int)m);
+        z = 0.0f;
+        p = D_L03_0015F660;
+        pos = m + 0x10;
+        func_L01_00279790(m);
+        vel = m + 0x40;
+        func_L00_00265050(m, 0x727, pos, vel, 0, 0, z, p, p, p);
+        func_L00_00265050(m, 0x728, pos, vel, 0, 0, z, p, p, p);
+        func_L00_00265050(m, 0x729, pos, vel, 0, 0, z, p, p, p);
+        func_0020D678(m);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L03_002D5B88);
 extern struct Moby *func_0020D348_m(int) __asm__("func_0020D348");
 

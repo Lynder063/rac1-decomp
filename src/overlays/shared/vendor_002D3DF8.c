@@ -98,7 +98,21 @@ void func_L08_002F2000(int a) {
         func_L00_001FDE48(D_L08_001E2B18[i], D_L08_001E8528[i], D_L08_001E85D0[i], D_L08_001E8620, 1);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L08_002F20D8);
+typedef struct { int a, b; } Pair8;
+extern int D_L08_001E2A88[];
+extern int D_L08_001DE200[];
+extern int D_L08_001E2A58[];
+extern int D_L08_001E2AE8[];
+extern Pair8 D_L08_00161EA0[] MACRO_ADDR;
+
+/* Places the level's 11 effect pieces from their tables (a relative of func_L11_0031FCC8). */
+void func_L08_002F20D8(int a) {
+    int i;
+    for (i = 0; i < 11; i++) {
+        func_L08_00259040(D_L08_001E8620, D_L08_001E2A88[i], D_L08_001DE200[i], &D_L08_00161EA0[a]);
+        func_L00_001FDE48(D_L08_001DE200[i], D_L08_001E2A58[i], D_L08_001E2AE8[i], D_L08_001E8620, 1);
+    }
+}
 extern int D_L08_001DE1A0[];
 extern int D_L08_001DB7D8[];
 extern int D_L08_001DE180[];
