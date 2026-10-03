@@ -1,0 +1,30 @@
+{
+  "mcpServers": {
+    "ghidra-ps2": {
+      "command": "podman",
+      "args": [
+        "exec",
+        "-i",
+        "-e",
+        "GHIDRA_MCP_AUTH_TOKEN=rac1-decomp-mcp-token-2026",
+        "ghidra-ps2-mcp",
+        "bridge-mcp-ghidra",
+        "--transport",
+        "stdio"
+      ]
+    },
+    "rac1-companion": {
+      "command": "python3",
+      "args": [
+        "/home/lynder063/rac1-ai-platform/mcp/server.py",
+        "--mode",
+        "stdio"
+      ],
+      "env": {
+        "GHIDRA_URL": "http://127.0.0.1:8089",
+        "GHIDRA_MCP_AUTH_TOKEN": "rac1-decomp-mcp-token-2026",
+        "RAC1_REPO_DIR": "/home/lynder063/rac1-decomp"
+      }
+    }
+  }
+}
