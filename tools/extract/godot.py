@@ -18,6 +18,7 @@ per instance are node metadata (rc1_*), so a packer can write them back.
 """
 
 import colorsys
+from dataclasses import replace
 import json
 import shutil
 import struct
@@ -168,6 +169,44 @@ class LevelWriter:
         target.write_bytes(gltf.glb())
         return f"{self.res}/{path}"
 
+    def moby_glb(self, path: str, moby: MobyClass) -> str:
+        """A moby class's mesh and, for an animated class, its skeleton (joint
+        nodes in their bind pose, with a child node for joints scaled after
+        the chain) and one animation per sequence. A looping sequence's name
+        ends in _loop, which Godot's importer turns into a looping animation.
+        """
+        bones = moby.skeleton
+        if bones is None:
+            return self.glb(path, [moby.mesh], 1)
+        count = len(bones.joints)
+        scaled = [j for j, joint in enumerate(bones.joints) if joint.post_scale]
+        # Every node is a skin joint, so that Godot makes each one a bone;
+        # vertices of a post-scaled joint use its child node.
+        slot = {j: count + i for i, j in enumerate(scaled)}
+        skins = [tuple((slot.get(j, j), w) for j, w in pairs) for pairs in moby.mesh.skins]
+        gltf = Gltf()
+        mesh = gltf.mesh(replace(moby.mesh, skins=skins), {key: self.material(gltf, key, 1) for key in moby.mesh.faces})
+        first = len(gltf.doc["nodes"])
+        post = {j: first + slot[j] for j in scaled}
+        for j, joint in enumerate(bones.joints):
+            children = [first + c for c, other in enumerate(bones.joints) if other.parent == j]
+            children += [post[j]] if j in post else []
+            gltf.node(f"joint_{j:03}", root=joint.parent is None, translation=list(joint.translation),
+                      rotation=list(joint.rotation), scale=list(joint.scale), **({"children": children} if children else {}))
+        for j in post:
+            gltf.node(f"joint_{j:03}_post", root=False)
+        skin = gltf.skin(list(range(first, first + count + len(scaled))),
+                         [joint.inverse_bind for joint in bones.joints] + [bones.joints[j].inverse_bind for j in scaled])
+        gltf.node(moby.mesh.name, mesh, skin=skin)
+        for animation in bones.animations:
+            gltf.animation(animation.name + ("_loop" if animation.loop else ""), animation.times,
+                           [(post[j], "scale", values) if kind == "post_scale" else (first + j, kind, values)
+                            for (j, kind), values in animation.tracks.items()])
+        target = self.dir / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(gltf.glb())
+        return f"{self.res}/{path}"
+
     def place(self, mesh: Mesh, matrix: list[float] | None = None) -> None:
         """Count a placed mesh, and keep its corners in Godot space for check.gd."""
         low, high = mesh.bounds()
@@ -246,8 +285,9 @@ class LevelWriter:
         """A scene per moby class the level loads, mobys/moby_<class>.tscn,
         and an instance of it per placed moby.
 
-        A class scene shows the class's high-LOD mesh (mobys/moby_<class>.glb)
-        at the class scale, or a box for a class without one, and a label.
+        A class scene shows the class's high-LOD mesh (mobys/moby_<class>.glb,
+        with its skeleton and animations) at the class scale, or a box for a
+        class without one, and a label.
         Moby meshes are counted on their own, not in the level geometry
         totals and bounds.
 
@@ -260,8 +300,8 @@ class LevelWriter:
         for class_id in sorted(set(classes) | placed):
             moby, model = classes.get(class_id), None
             if moby is not None and moby.mesh is not None:
-                models[class_id] = moby.mesh
-                model = (self.glb(f"mobys/moby_{class_id}.glb", [moby.mesh], 1), moby.scale,
+                models[class_id] = moby
+                model = (self.moby_glb(f"mobys/moby_{class_id}.glb", moby), moby.scale,
                          moby.mesh.bounds()[1][2] * moby.scale)
             path = f"mobys/moby_{class_id}.tscn"
             write_marker(self.dir / path, class_id, f"{class_id} {names[class_id]}" if class_id in names else str(class_id),
@@ -273,13 +313,17 @@ class LevelWriter:
             fields = {f"metadata__rc1_{k}": v for k, v in {"index": p["index"], **p["fields"]}.items()}
             self.scene.node(f"Moby_{p['index']:04}", "Game/Mobys", instance=scenes[p["class_id"]],
                             rotation_order=0, transform=transform(p["matrix"]), **fields)
-        shown = [models[p["class_id"]] for p in placements if p["class_id"] in models]
+        shown = [models[p["class_id"]].mesh for p in placements if p["class_id"] in models]
+        animated = [m.skeleton for m in models.values() if m.skeleton is not None]
         self.stats["mobys"] = {"classes": len(set(classes) | placed),
                                "named_classes": sum(c in names for c in set(classes) | placed),
                                "instances": len(placements), "model_classes": len(models),
-                               "class_triangles": sum(m.triangles for m in models.values()),
-                               "textures": len({key for m in models.values() for key in m.faces}),
-                               "mesh_instances": len(shown), "triangles": sum(m.triangles for m in shown)}
+                               "class_triangles": sum(m.mesh.triangles for m in models.values()),
+                               "textures": len({key for m in models.values() for key in m.mesh.faces}),
+                               "mesh_instances": len(shown), "triangles": sum(m.triangles for m in shown),
+                               "animated_classes": len(animated),
+                               "bones": sum(len(s.joints) + sum(j.post_scale for j in s.joints) for s in animated),
+                               "animations": sum(len(s.animations) for s in animated)}
 
     def write_environment(self, data) -> None:
         """The sky as a panorama (sky.png), flat ambient light and a sun.

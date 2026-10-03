@@ -8,10 +8,11 @@ extends SceneTree
 ## bounds of each level scene, its sky panorama and its placed mobys must
 ## match what was extracted. Moby meshes are counted on their own, not as
 ## level geometry: every class scene's model must be textured, and the
-## models, triangles and textures of the class scenes, and the meshes the
-## placed mobys show, must match level.json. The collision layer
-## (Game/Collision, hidden) is not one of the textured meshes either; its
-## triangles are compared with level.json separately.
+## models, triangles, textures, skeletons, bones and animations of the
+## class scenes, and the meshes the placed mobys show, must match
+## level.json. The collision layer (Game/Collision, hidden) is not one of
+## the textured meshes either; its triangles are compared with level.json
+## separately.
 
 
 func _initialize() -> void:
@@ -119,7 +120,8 @@ func collision_triangles(root: Node) -> int:
 ## Moby class scenes (mobys/*.tscn) and the meshes placed mobys show,
 ## against level.json's "mobys" entry.
 func check_moby_meshes(level: String, root: Node, info: Dictionary) -> bool:
-	var classes := {"scenes": 0, "models": 0, "triangles": 0, "untextured": 0, "textures": {}}
+	var classes := {"scenes": 0, "models": 0, "triangles": 0, "untextured": 0, "textures": {},
+		"skeletons": 0, "bones": 0, "animations": 0}
 	var dir := "res://levels/%s/mobys" % level
 	for file in DirAccess.get_files_at(dir):
 		if not file.ends_with(".tscn"):
@@ -136,6 +138,9 @@ func check_moby_meshes(level: String, root: Node, info: Dictionary) -> bool:
 		classes.triangles += totals.triangles
 		classes.untextured += totals.untextured
 		classes.textures.merge(totals.textures)
+		classes.skeletons += totals.skeletons
+		classes.bones += totals.bones
+		classes.animations += totals.animations
 	var placed := {"meshes": 0, "triangles": 0}
 	var mobys := root.get_node_or_null("Game/Mobys")
 	if mobys != null:
@@ -149,22 +154,32 @@ func check_moby_meshes(level: String, root: Node, info: Dictionary) -> bool:
 		and classes.triangles == int(expected.get("class_triangles", 0))
 		and classes.textures.size() == int(expected.get("textures", 0))
 		and classes.untextured == 0
+		and classes.skeletons == int(expected.get("animated_classes", 0))
+		and classes.bones == int(expected.get("bones", 0))
+		and classes.animations == int(expected.get("animations", 0))
 		and placed.meshes == int(expected.get("mesh_instances", 0))
 		and placed.triangles == int(expected.get("triangles", 0)))
-	print("%s: %d moby classes, %d with models (%d triangles, %d textures); %d placed meshes, %d triangles: %s" % [
-		level, classes.scenes, classes.models, classes.triangles, classes.textures.size(), placed.meshes,
-		placed.triangles, "ok" if ok else "MISMATCH"])
+	print("%s: %d moby classes, %d with models (%d triangles, %d textures), %d animated (%d bones, %d animations); %d placed meshes, %d triangles: %s" % [
+		level, classes.scenes, classes.models, classes.triangles, classes.textures.size(), classes.skeletons,
+		classes.bones, classes.animations, placed.meshes, placed.triangles, "ok" if ok else "MISMATCH"])
 	return ok
 
 
-## Meshes, triangles, untextured surfaces and albedo textures under node;
-## box markers are not meshes.
+## Meshes, triangles, untextured surfaces and albedo textures under node,
+## and its skeletons, their bones and its animations; box markers are not
+## meshes.
 func mesh_totals(node: Node) -> Dictionary:
-	var totals := {"meshes": 0, "triangles": 0, "untextured": 0, "textures": {}}
+	var totals := {"meshes": 0, "triangles": 0, "untextured": 0, "textures": {}, "skeletons": 0, "bones": 0,
+		"animations": 0}
 	var pending: Array[Node] = [node]
 	while not pending.is_empty():
 		var current: Node = pending.pop_back()
 		pending.append_array(current.get_children())
+		if current is Skeleton3D:
+			totals.skeletons += 1
+			totals.bones += (current as Skeleton3D).get_bone_count()
+		if current is AnimationPlayer:
+			totals.animations += (current as AnimationPlayer).get_animation_list().size()
 		if not current is MeshInstance3D or current.name == &"Marker":
 			continue
 		var mesh: Mesh = current.mesh

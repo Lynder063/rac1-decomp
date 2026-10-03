@@ -20,11 +20,12 @@ contains no game data.
   the US release. Its format crate and notes give the moby instance record
   and what the game's level loader does with each field
   (`crates/rc-formats/src/gameplay.rs`, `docs/plan/moby_render_notes.md`),
-  the moby class format (`docs/formats/moby_rac1.md` §1–§2,
-  `crates/rc-formats/src/moby.rs`, `docs/plan/moby_skinning_lighting.md`,
-  `docs/plan/moby_untextured.md`), which ReRAC built from Wrench's moby
-  reader and corrected against the game's code, and the collision block and
-  what the game's code does with it (`docs/formats/collision_rac1.md`,
+  the moby class format (`docs/formats/moby_rac1.md` §1–§4,
+  `crates/rc-formats/src/moby.rs` and `moby_anim.rs`,
+  `docs/plan/moby_skinning_lighting.md`, `docs/plan/moby_untextured.md`,
+  `docs/plan/moby_animation.md`), which ReRAC built from Wrench's moby
+  reader and the game's code, and the collision block and what the game's
+  code does with it (`docs/formats/collision_rac1.md`,
   `docs/plan/collision_queries.md`, in turn based on Wrench's collision
   reader, `collision.cpp`). The PAL data has the same layouts; our decoders
   were checked against the PAL disc (see "Mobys", "Moby classes" and
@@ -322,8 +323,8 @@ unknown, so the Godot scenes record it when it isn't 0.01.
 
 Mobys are the level's objects with behaviour: Ratchet's spawn point,
 crates, bolts, enemies, NPCs, vendors, platforms. Their placements and
-their classes' high-detail meshes are extracted; skeletons and animations
-are not yet.
+their classes' high-detail meshes, skeletons and animations are
+extracted.
 
 - **Placements:** PAL gameplay +0x44 points to a count, 12 bytes of
   padding, then 0x78-byte instances (16,232 on the 19 levels):
@@ -403,12 +404,14 @@ corrections); `tools/extract/moby_class.py` reads them.
   |cos| of 0.98, against 0.59 with x and y swapped.
 - **Skinning:** the VU0 matrix slots resolve to up to three joints per
   vertex, weights in 256ths. The extractor replays them and checks every
-  load, weight sum and joint number, but exports the bind pose only.
+  load, weight sum and joint number; they become the GLB's joints and
+  weights.
 - **Untextured faces:** for a texture of -1 the game binds an 8×8 texture
   of 0x80 texels, which leaves the vertex colour. The extractor gives
   those faces `textures/moby_untextured.png`, flat grey.
 - **Not read:** low-detail and metal (chrome, glass) packets, glow
-  packets' colour, collision, sounds, the shadow block and the skeleton.
+  packets' colour, collision, sounds and sound triggers, and the shadow
+  block.
 
 On all 19 levels, every class decodes with every check passing: the
 counts in each packet entry and vertex table agree, every packet has one
@@ -418,6 +421,66 @@ trailer. The high-detail meshes have 1,942,238 triangles; ReRAC counts
 1,933,983 on the US disc, which has four fewer class blobs. Renders of
 vendors, crates, bolts, Ratchet, NPCs and enemies on levels 0, 3 and 5
 show them textured and standing on their placements.
+
+### Moby skeletons and animations
+
+ReRAC traced these in the game's animation evaluator (`fun_0020e0e0`) and
+per-tick step (`fun_0020d580`); `tools/extract/moby_anim.py` reads them.
+
+- **Skeleton** (class +0x14): one matrix per joint, four rows of four
+  floats. Rows 0–2 are the images of the axes and row 3 the translation,
+  in packed units; the w lanes are never read. The game skins with
+  F = P · S for a joint pose P, so S is the inverse bind matrix and the
+  bind pose is S⁻¹. Every joint's S_parent · S⁻¹ is a rotation and a
+  scale without shear (residual below 3e-7; three joints are mirrored), so
+  the GLB's joint nodes hold the bind pose exactly.
+- **Hierarchy** (class +0x18, `common_trans`): 16 bytes per joint, the
+  rest translation relative to the parent and a word: 0 for a root, else
+  0x70000000 + 0x40 × parent, a scratchpad address. Parents come first.
+- **Sequences:** class +0x48 lists `sequence count` offsets (0: empty
+  slot). A sequence is a 0x1c-byte header (bounding sphere, frame count,
+  loop sound, trigger count and pointer, rate override at +0x18), then
+  frame offsets and trigger words.
+- **Frames:** a 16-byte header (rate, time in 1/8 ticks, payload qwords,
+  quaternion bytes = 8 × joints, scale count, translation offset and
+  count), then:
+  - one quaternion per joint, four signed 16-bit values / 32768;
+  - scale records: three unsigned 16-bit values / 4096, a joint and a
+    flag, 0x80 when the scale is inherited by the children, 0 when it
+    scales only that joint after the whole chain;
+  - translation records: three signed 16-bit values in packed units and a
+    joint. Joints without one use their rest translation.
+- **Local matrix:** [R(q)ᵀ · diag(s) | t], so the glTF rotation is the
+  conjugate quaternion. A scale applied after the chain goes on a child
+  node of the joint, which the joint's vertices follow.
+- **Timing:** one tick is 1/60 s (ReRAC infers the rate). Each interval
+  lasts 1 / rate ticks, from the sequence's rate override or else the
+  earlier frame's rate; the last frame's rate leads back to the first.
+  A rate of 0 there stops the sequence on its last frame; two classes on
+  level 2 store a negative one, treated the same. Five intervals on the
+  disc have zero length and are merged. Looping sequences get `_loop` in
+  their glTF name, which Godot's importer turns into a looping
+  animation.
+- **Ratchet** (class 0) has empty sequence slots. His sequences are the
+  core index's 256 ratchet sequence offsets (+0x78), each with frame
+  offsets relative to itself; ReRAC takes the slot as the sequence
+  number.
+- **Output:** a channel that never leaves the bind pose in a sequence is
+  left out of that animation (Godot then holds the bone at its rest), and
+  rotation keys are normalized shorts. Classes 1 and 2 have joints and
+  sequences but no skeleton matrices (ReRAC finds that their translation
+  records drive another skeleton), and they stay static.
+
+On all 19 levels, every class with skeleton matrices and sequences
+decodes: 1,371 classes, and Ratchet on each level. In 1,123 of them some
+joint leaves the bind pose, and their GLBs have 25,947 bones and 9,900
+animations; the rest stay static meshes. For the five classes ReRAC
+checked on its level 1 (11, 608, 724, 754, 1365), frame 0 of sequence 0
+matches the bind pose decoded from S⁻¹ within 0.005° and 0.15 packed
+units, which pins the quaternion convention, the parent chain and the
+units. Renders of Ratchet, the robot dogs, Big Al, the horny toads (whose
+tongue joints use the post-chain scale) and the Blarg paratroopers posed
+by their animations show natural poses on undistorted meshes.
 
 ## Sky
 

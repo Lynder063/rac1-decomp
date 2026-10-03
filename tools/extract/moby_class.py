@@ -1,4 +1,5 @@
-"""Moby classes: each class blob's high-LOD mesh in its bind pose.
+"""Moby classes: each class blob's high-LOD mesh in its bind pose, and its
+skeleton and animations (moby_anim.py).
 
 The core index's moby class table (+0x18) has 32-byte entries: the core
 offset of the class blob (0 for classes without one), the class number,
@@ -20,6 +21,7 @@ import struct
 
 from formats import FormatError, Texture, span, unpack
 from mesh import Mesh
+from moby_anim import Skeleton, class_sequences, ratchet_sequences, skeleton
 
 HEADER_SIZE = 0x48
 # UNPACK commands: V2-16 with the write mask (texture coordinates), V4-8
@@ -38,16 +40,19 @@ GREY = Texture(8, 8, bytes(64), bytes((0x80,) * 4) + bytes(1020))
 
 @dataclass
 class MobyClass:
-    """A class's scale and its high-LOD mesh, in model units (packed / 1024).
+    """A class's scale, its high-LOD mesh in model units (packed / 1024)
+    and, for an animated class, its skeleton.
 
     Drawn size is model units times the class scale times the instance's
     own scale. skins[i] lists the (joint, weight) pairs of mesh vertex i,
-    weights in 256ths summing to 256.
+    weights in 256ths summing to 256; the mesh carries them only when the
+    class has a skeleton.
     """
     scale: float
     mesh: Mesh | None
     joint_count: int = 0
     skins: list[tuple[tuple[int, int], ...]] = field(default_factory=list)
+    skeleton: Skeleton | None = None
 
 
 def normal(azimuth: int, elevation: int) -> tuple[float, float, float]:
@@ -236,8 +241,10 @@ def orient(mesh: Mesh, a: int, b: int, c: int) -> tuple[int, int, int]:
     return (c, b, a) if dot < 0 else (a, b, c)
 
 
-def moby_class(data: bytes, remap: bytes, name: str) -> MobyClass:
-    """Decode a class blob's header and high-LOD packets (low LOD and metal are not read)."""
+def moby_class(data: bytes, remap: bytes, name: str, sequences: list | None = None) -> MobyClass:
+    """Decode a class blob's header, high-LOD packets (low LOD and metal are
+    not read), skeleton and sequences: the class's own unless sequences
+    lists others, as moby_anim.skeleton takes them."""
     header = span(data, 0, HEADER_SIZE)
     packet_table, = unpack("<i", header)
     high, low, metal, metal_begin, joint_count = header[4:9]
@@ -259,12 +266,16 @@ def moby_class(data: bytes, remap: bytes, name: str) -> MobyClass:
     for skin in skins:
         if any(j >= max(joint_count, 1) for j, _ in skin):
             raise FormatError("moby vertex uses a joint past the class's joint count")
-    return MobyClass(scale, mesh, joint_count, skins)
+    bones = skeleton(data, class_sequences(data) if sequences is None else sequences)
+    if bones is not None:
+        mesh.skins = skins
+    return MobyClass(scale, mesh, joint_count, skins, bones)
 
 
 def moby_classes(level) -> dict[int, MobyClass | None]:
     """Class number -> decoded class, or None for a class without a blob,
-    for every entry of the core index's moby class table."""
+    for every entry of the core index's moby class table. Ratchet (class 0)
+    takes the level's ratchet sequences."""
     result = {}
     for entry in level.table(0x18, 32):
         start, class_id = unpack("<ii", entry)
@@ -274,7 +285,8 @@ def moby_classes(level) -> dict[int, MobyClass | None]:
             result[class_id] = None
             continue
         try:
-            result[class_id] = moby_class(level.block(start), entry[16:32], f"moby_{class_id}")
+            result[class_id] = moby_class(level.block(start), entry[16:32], f"moby_{class_id}",
+                                          ratchet_sequences(level) if class_id == 0 else None)
         except FormatError as exc:
             raise FormatError(f"moby class {class_id}: {exc}") from exc
     return result

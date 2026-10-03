@@ -32,7 +32,7 @@ godot --path assets/godot -e res://levels/level_00/level_00.tscn
 The second command opens level 0 in the editor. Other levels are in the
 FileSystem dock under `levels/`; double-click a `level_NN.tscn` to open it.
 
-All 19 levels take about 20 seconds and 475 MB, one level per CPU core at
+All 19 levels take about 20 seconds and 630 MB, one level per CPU core at
 a time. Godot's first import takes about two minutes. Options:
 
 - `--level N` (repeatable) exports only some levels.
@@ -86,7 +86,7 @@ levels/level_NN/
   ties/tie_<class>.glb       one mesh per tie class
   shrubs/shrub_<class>.glb   one mesh per shrub class
   mobys/moby_<class>.tscn    a moby class: its mesh (or a box) and a label
-  mobys/moby_<class>.glb     a moby class's mesh, in model units
+  mobys/moby_<class>.glb     a moby class's mesh, skeleton and animations
   sky.png                    the sky as a panorama, used by the WorldEnvironment
   textures/*.png             shared by the level's meshes
 ```
@@ -125,7 +125,15 @@ To edit a level:
   has one for every class the level loads, placed or not; drag one onto
   `Game/Mobys` to add a moby. Its `Model` node carries the class scale.
   A moby's rotation in the Inspector is the game's own Euler angles
-  (rotation order XYZ). Its metadata:
+  (rotation order XYZ).
+- Animated classes have a `Skeleton3D` in the bind pose and an
+  `AnimationPlayer` with one animation per sequence: `seq_NN` by slot, and
+  Ratchet's `ratchet_seq_NNN`. Sequences that loop in the game loop here.
+  To preview one, double-click `mobys/moby_<class>.glb` in the FileSystem
+  dock: Godot's import settings window plays each animation. In a scene,
+  enable Editable Children on the `Model` node to reach the
+  `AnimationPlayer`.
+- A moby's metadata:
   - always `rc1_index`, `rc1_spawn_id`, `rc1_group`, `rc1_pvar_index` and
     `rc1_colour` (the ambient colour, 128 = 1.0);
   - the other fields only when they differ from what most mobys store:
@@ -193,8 +201,9 @@ The Godot check loads every level scene and compares its meshes, triangles,
 textures, bounds, sky panorama and moby count with what the extractor wrote.
 The collision layer is not counted with the textured meshes; its triangles
 are compared with `level.json` on their own, and it must be hidden.
-It also loads every moby class scene and compares their models, triangles
-and textures, and the meshes the placed mobys show.
+It also loads every moby class scene and compares their models, triangles,
+textures, skeletons, bones and animations, and the meshes the placed mobys
+show.
 
 ## Coverage
 
@@ -202,7 +211,8 @@ Extracted:
 
 - terrain (tfrags);
 - ties and shrubs, with their placements;
-- moby placements, and each moby class's high-detail mesh in its bind pose;
+- moby placements, and each moby class's high-detail mesh, skeleton and
+  animations;
 - the sky;
 - the collision mesh, as a hidden layer;
 - the textures they use.
@@ -218,6 +228,12 @@ Approximations:
   (rings, force fields, barriers); the game may draw those translucent,
   glowing or not at all. Glow parts are lit like the rest, and the chrome
   and glass passes and the low-detail meshes are not extracted.
+- Moby animations run at the game's 60 Hz tick, as ReRAC infers it. Godot
+  interpolates rotation keys spherically where the game lerps, and a joint
+  channel that stays within 1e-5 of the bind pose (1e-4 for rotations) is
+  left out of an animation. The two helper classes 1 and 2, which animate
+  joints of another skeleton, stay static. The gadget classes (the wrench
+  and weapons in Ratchet's hand) are not extracted.
 - The sky is baked into a 2048×1024 panorama. The game centres its sky
   shells on the camera and never moves them, so a panorama loses nothing.
   Their blending follows the PS2's usual texture and alpha modes, which is
@@ -239,7 +255,7 @@ The GDScript files follow [`docs/GDSCRIPT_CONVENTIONS.md`](../../docs/GDSCRIPT_C
 | `level.py` | A level's sections, core blocks and textures |
 | `formats.py` | Bounded reads, WAD decompression, code overlays, textures |
 | `terrain.py`, `ties.py`, `shrubs.py`, `sky.py`, `collision.py` | Geometry and placements |
-| `mobys.py`, `moby_class.py` | Moby placements and class meshes |
+| `mobys.py`, `moby_class.py`, `moby_anim.py` | Moby placements, class meshes, skeletons and animations |
 | `mesh.py`, `gltf.py` | The mesh type and the GLB writer |
 | `godot.py` | Project, scenes and level.json |
 
@@ -257,9 +273,10 @@ The decoders accept only the layouts found on this disc and raise
   RatchetModding contributors, consulted for what fields mean.
 - **[ReRAC](https://github.com/re-rac/rerac)** (ISC): the moby instance
   record and what each field does in the game's level loader, the moby
-  class format (packets, vertex cache, skinning slots, normals and the
-  untextured faces), and the collision block and the meaning of its
-  surface bytes ([docs/ASSETS.md](../../docs/ASSETS.md#collision)).
+  class format (packets, vertex cache, skinning slots, normals, the
+  untextured faces, skeletons and animation sequences), and the collision
+  block and the meaning of its surface bytes
+  ([docs/ASSETS.md](../../docs/ASSETS.md#collision)).
 - **[Lombyte](https://github.com/mateuszklysz/Lombyte)** (MIT): the moby
   class names on the labels (`moby_classes.tsv`, see its header).
 - **[OpenGOAL's jak-project](https://github.com/open-goal/jak-project)**,
