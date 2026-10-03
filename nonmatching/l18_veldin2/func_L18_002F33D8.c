@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L18_002F33D8 -- src/overlays/l18_veldin2/vendor_002F2AE0.c
- * Best so far: SIZE ours 816 / retail 824, checked 2026-10-03.
+ * Best so far: BYTES 65/824 (92.1% of the bytes match), checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -50,7 +50,6 @@ void func_L18_002F33D8_a(char *moby) {
     float sc;
     int i;
     int n;
-    float *zp;
     int j;
 
     func_001FA460(mat, moby + 0xC0);
@@ -68,7 +67,6 @@ void func_L18_002F33D8_a(char *moby) {
     }
     quarter = 0.25f;
     for (i = 0; i < 4; i = n) {
-        float ofs;
         float t;
         int c;
         q[i].pkt[1] = func_001F4868(14);
@@ -77,23 +75,21 @@ void func_L18_002F33D8_a(char *moby) {
         q[i].pkt[3] = (*(int *)&D_L18_00162374) | (long)(*(int *)&D_L18_00162378) << 2 |
                       (long)(*(int *)&D_L18_0016237C) << 4 | (long)(*(int *)&D_L18_00162380) << 6 |
                       (long)0x8000 << 24;
-        ofs = (float)i * quarter;
-        t = d[2] + ofs;
+        t = d[2] + (float)i * quarter;
         t -= (float)func_001FA898_r(t);
         c = func_001FA8A8(*(int *)&D_L18_00162358, *(int *)&D_L18_0016235C, t);
         c = func_001FA8A8(c & 0xFFFFFF, c, lim);
         n = i + 1;
         sc = *(float *)&D_L18_00162364;
         for (j = 0; j < 4; j++) {
-            q[i].uv[j][0] = D_L18_001DA620[j][0] + ofs;
+            q[i].uv[j][0] = D_L18_001DA620[j][0] + (float)i * quarter;
             q[i].uv[j][1] = D_L18_001DA620[j][1];
             q[i].colors[j] = c;
             qcopy(&q[i].m[j], &D_L18_001DA640[j]);
-            zp = &q[i].m[j].v[2];
             if (j & 1) {
-                *zp = *zp + t * sc;
+                q[i].m[j].v[2] += t * sc;
             } else {
-                *zp = *zp - t * sc;
+                q[i].m[j].v[2] -= sc * t;
             }
         }
     }

@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L18_002D76D8 -- src/overlays/l18_veldin2/vendor_002A8400.c
- * Best so far: SIZE ours 780 / retail 788, checked 2026-10-03.
+ * Best so far: BYTES 91/788 (88.5% of the bytes match), checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -23,10 +23,10 @@ typedef struct {
 } L18Sel;
 
 void func_L18_002D76D8(unsigned char *moby) {
-    int i;
     L18Sel *s = *(L18Sel **)(moby + 0x78);
     switch (moby[0x20]) {
     case 0: {
+        int i;
         int *q;
         int n;
         moby[0x20] = 1;
@@ -64,14 +64,13 @@ void func_L18_002D76D8(unsigned char *moby) {
     case 1: {
         char *base = D_0013E633 + 0xE1D;
         int i;
-        char *ref = base + 0x80;
         *(short *)(base + 0x1CA) = 5;
         for (i = 0; i < 4; i++) {
             if (*(int *)(base + 0x208C) == 15) {
-                int *v = *(int **)(base + 0x560);
-                if (v == s->pr[i].a->geom || v == s->pr[i].b->geom) continue;
+                int v = *(int *)(base + 0x560);
+                if (v == s->pr[i].a->geom[4] || v == s->pr[i].b->geom[4]) continue;
             }
-            if (func_001F9D48(ref, (char *)s->pr[i].a->geom + 0x10) < func_001F9D48(ref, (char *)s->pr[i].b->geom + 0x10)) {
+            if (func_001F9D48(base + 0x80, (char *)s->pr[i].a->geom + 0x10) < func_001F9D48(base + 0x80, (char *)s->pr[i].b->geom + 0x10)) {
                 s->pr[i].a->w = s->fl[i].a;
                 s->pr[i].b->w = 0.0f;
             } else {

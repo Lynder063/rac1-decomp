@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L18_002D96B0 -- src/overlays/l18_veldin2/vendor_002A8400.c
- * Best so far: SIZE ours 1100 / retail 1104, checked 2026-10-03.
+ * Best so far: BYTES 98/1104 (91.1% of the bytes match), checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -42,7 +42,7 @@ void func_L18_002D96B0(char *moby) {
     char *data = *(char **)(moby + 0x78);
     float vec[4];
     float q[4];
-    float t;
+    float t, k, m;
     func_001F9C30(vec, moby + 0x10, -1.0f);
     qcopy(q, moby + 0x40);
     switch (((unsigned char *)moby)[0x20]) {
@@ -65,7 +65,6 @@ void func_L18_002D96B0(char *moby) {
         break;
     case 3:
         if (func_001F9908((int *)(data + 0x7C)) != 0) {
-            float k;
             t = (func_001FA888(*(int *)&D_L18_00162438) - *(float *)&D_L18_00161AF0) /
                 (*(float *)&D_L18_00161AF4 - *(float *)&D_L18_00161AF0);
             if (t > 1.0f) {
@@ -73,7 +72,7 @@ void func_L18_002D96B0(char *moby) {
             } else if (t < 0.0f) {
                 t = 0.0f;
             }
-            t = 1.0f - t * 0.33333f;
+            t = 1.0f - t * 0.333f;
             if (*(int *)(data + 0x84) != 0) {
                 k = *(float *)&D_L18_00161AE0;
             } else {
@@ -113,7 +112,6 @@ void func_L18_002D96B0(char *moby) {
             }
         }
         {
-            float k, m;
             t = (func_001FA888(*(int *)&D_L18_00162438) - *(float *)&D_L18_00161AF0) /
                 (*(float *)&D_L18_00161AF4 - *(float *)&D_L18_00161AF0);
             if (t > 1.0f) {
@@ -121,7 +119,7 @@ void func_L18_002D96B0(char *moby) {
             } else if (t < 0.0f) {
                 t = 0.0f;
             }
-            t = 1.0f - t * 0.33333f;
+            t = 1.0f - t * 0.333f;
             if (*(int *)(data + 0x80) != 0 || (*(int *)(data + 0x88) != 0 && *(int *)(data + 0x84) == 0)) {
                 k = *(float *)&D_0015EE70_g;
                 m = 15.0f;
@@ -134,9 +132,9 @@ void func_L18_002D96B0(char *moby) {
                 m = *(float *)((char *)&D_0015EE6C + 4);
                 k = k * t;
             }
-            *(float *)(data + 0x70) = *(float *)(data + 0x70) - k * m;
+            *(volatile float *)(data + 0x70) = *(volatile float *)(data + 0x70) - k * m;
         }
-        *(float *)(data + 0x64) = *(float *)(data + 0x64) + *(float *)(data + 0x70);
+        *(volatile float *)(data + 0x64) = *(volatile float *)(data + 0x64) + *(volatile float *)(data + 0x70);
         if (*(float *)(moby + 0x18) < *(float *)(data + 0x60) - 10.0f) {
             float f = *(float *)&D_0015EE70_g;
             char *g = D_0013E633 + 0xE1D;
@@ -148,7 +146,7 @@ void func_L18_002D96B0(char *moby) {
                 }
                 f = *(float *)((char *)&D_0015EE6C + 4);
             }
-            *(float *)(data + 0x70) = *(float *)(data + 0x70) - f * 13.7f;
+            *(volatile float *)(data + 0x70) = *(volatile float *)(data + 0x70) - f * 13.7f;
             if (*(float *)(moby + 0x18) < 15.0f) {
                 func_0020D678(moby);
                 return;

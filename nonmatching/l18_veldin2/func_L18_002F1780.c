@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L18_002F1780 -- src/overlays/l18_veldin2/vendor_002A8400.c
- * Best so far: SIZE ours 828 / retail 816, checked 2026-10-03.
+ * Best so far: SIZE ours 824 / retail 816, checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * Cannot land as written (#define in a candidate): rewrite that in plain C first.
@@ -47,23 +47,21 @@ extern void func_L18_002F1780_c(char *) __asm__("func_L18_002F1780");
 void func_L18_002F1780_c(char *arg) {
     Row rows[16];
     float v2[8];
-    float *v2p = v2;
     int i, j;
     if (W(D_L18_001622C8) == 0) {
         for (i = 0; i < 16; i++) {
             float base;
-            long tex = func_001F4868(0x13);
             Row *r = &rows[i];
-            r->z = 0;
-            r->tex = tex;
+            r->tex = func_001F4868(0x13);
             r->k = 0xFF90L << 32 | 0x260;
             r->packed = (long)W(D_L18_001622D0) | (long)W(D_L18_001622D4) << 2 |
                              (long)W(D_L18_001622D8) << 4 | (long)W(D_L18_001622DC) << 6 | 0x8000L << 24;
             base = func_001FA888((D_L18_0015F6B0 + 3) & 3) * 0.0625f;
+            r->z = 0;
             for (j = 0; j < 4; j++) {
                 float f;
+                ((float *)rows[i].pt)[j * 2 + 1] = D_L18_001DA5C0[j * 2 + 1];
                 rows[i].pt[j][0] = D_L18_001DA5C0[j * 2];
-                rows[i].pt[j][1] = D_L18_001DA5C0[j * 2 + 1];
                 f = func_001FA888(i - ((j >> 1) - 1)) * 0.25f + base;
                 if (f > 1.0f) {
                     f = 1.0f;
@@ -73,9 +71,9 @@ void func_L18_002F1780_c(char *arg) {
                 rows[i].col[j] = func_001FA8A8(W(D_L18_001622E0), W(D_L18_001622E4), f);
             }
         }
-        func_001153FC(v2p, 0, 0x20);
-        v2p[2] = 0.15f;
-        v2p[6] = -0.15f;
+        func_001153FC(v2, 0, 0x20);
+        v2[2] = 0.15f;
+        v2[6] = -0.15f;
         {
             short *p = (short *)D_L18_001AC540[(unsigned char)arg[0x21]];
             do {
@@ -90,7 +88,7 @@ void func_L18_002F1780_c(char *arg) {
                     int n = (*(short *)(data + 0x166) - k + 15) & 15;
                     if (W(D_L18_001622CC) == 0) {
                         for (j = 0; j < 4; j++) {
-                            func_001F9BD8(rows[k].v[j], data + (((n + (j >> 1)) & 15) << 4) + 0x10, (char *)v2p + ((j & 1) << 4));
+                            func_001F9BD8(rows[k].v[j], data + (((n + (j >> 1)) & 15) << 4) + 0x10, (char *)v2 + ((j & 1) << 4));
                         }
                         func_L00_001FD1D8(&rows[k], 0, 0);
                     }

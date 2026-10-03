@@ -1,6 +1,6 @@
 {
  "measures": {
-  "fuzzy_match_percent": 22.362128178995505,
+  "fuzzy_match_percent": 22.701840838524358,
   "total_code": "3712808",
   "matched_code": "734720",
   "matched_code_percent": 19.7887959732903,
@@ -52119,7 +52119,7 @@
   {
    "name": "Level 18: Veldin (return)",
    "measures": {
-    "fuzzy_match_percent": 26.059739615623066,
+    "fuzzy_match_percent": 34.20506845422608,
     "total_code": "154848",
     "matched_code": "29360",
     "matched_code_percent": 18.960529034924573,
@@ -52315,7 +52315,7 @@
     {
      "name": "func_L18_002D76D8",
      "size": "788",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 88.45,
      "address": "800160",
      "metadata": {
       "virtual_address": "2979544"
@@ -52369,7 +52369,7 @@
     {
      "name": "func_L18_002D8F10",
      "size": "1092",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 93.41,
      "address": "806360",
      "metadata": {
       "virtual_address": "2985744"
@@ -52423,7 +52423,7 @@
     {
      "name": "func_L18_002D96B0",
      "size": "1104",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 91.12,
      "address": "808312",
      "metadata": {
       "virtual_address": "2987696"
@@ -52495,7 +52495,7 @@
     {
      "name": "func_L18_002DCE10",
      "size": "1116",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 93.28,
      "address": "822488",
      "metadata": {
       "virtual_address": "3001872"
@@ -52549,7 +52549,7 @@
     {
      "name": "func_L18_002DD8A8",
      "size": "1116",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 93.37,
      "address": "825200",
      "metadata": {
       "virtual_address": "3004584"
@@ -52603,7 +52603,7 @@
     {
      "name": "func_L18_002EAB58",
      "size": "1764",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 80.78,
      "address": "879136",
      "metadata": {
       "virtual_address": "3058520"
@@ -52648,7 +52648,7 @@
     {
      "name": "func_L18_002EB5E8",
      "size": "924",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 81.39,
      "address": "881840",
      "metadata": {
       "virtual_address": "3061224"
@@ -52666,7 +52666,7 @@
     {
      "name": "func_L18_002EBBF0",
      "size": "1236",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 89.56,
      "address": "883384",
      "metadata": {
       "virtual_address": "3062768"
@@ -52810,7 +52810,7 @@
     {
      "name": "func_L18_002F33D8",
      "size": "824",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 92.11,
      "address": "914080",
      "metadata": {
       "virtual_address": "3093464"
@@ -52891,7 +52891,7 @@
     {
      "name": "func_L18_002F72E0",
      "size": "2548",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 94.7,
      "address": "930216",
      "metadata": {
       "virtual_address": "3109600"
@@ -52972,7 +52972,7 @@
     {
      "name": "func_L18_002F86E8",
      "size": "1048",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 96.37,
      "address": "935344",
      "metadata": {
       "virtual_address": "3114728"
@@ -53170,7 +53170,7 @@
     {
      "name": "func_L18_002FDB28",
      "size": "372",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 91.67,
      "address": "956912",
      "metadata": {
       "virtual_address": "3136296"
@@ -53263,7 +53263,7 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 17.24638921772851,
+    "fuzzy_match_percent": 17.63482344289133,
     "total_code": "3247108",
     "matched_code": "465096",
     "matched_code_percent": 14.323391768921761,
@@ -53323,7 +53323,7 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 13.108797232320864,
+    "fuzzy_match_percent": 13.725117880458157,
     "total_code": "2046480",
     "matched_code": "211992",
     "matched_code_percent": 10.35886009147414,
@@ -53608,7 +53608,7 @@
    "id": "level_18",
    "name": "Level 18: Veldin (return)",
    "measures": {
-    "fuzzy_match_percent": 26.059739615623066,
+    "fuzzy_match_percent": 34.20506845422608,
     "total_code": "154848",
     "matched_code": "29360",
     "matched_code_percent": 18.960529034924573,

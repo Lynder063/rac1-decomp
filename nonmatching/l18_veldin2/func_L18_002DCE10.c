@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L18_002DCE10 -- src/overlays/l18_veldin2/vendor_002A8400.c
- * Best so far: SIZE ours 1124 / retail 1116, checked 2026-10-03.
+ * Best so far: BYTES 75/1116 (93.3% of the bytes match), checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -12,6 +12,7 @@
  *   Retail keeps &m in $s1 from the prologue (addiu s1,sp,0x240 before the first call); no variant made GCC hoist 
  *   Remaining: s0/s1 assignment, prologue spill order, mov.s $f24,$f20 + K in $f23.
  */
+#include "common.h"
 typedef struct { float f[4]; } __attribute__((aligned(16))) V_dce10;
 typedef struct { float u, v; } UV_dce10;
 typedef struct {
@@ -60,28 +61,27 @@ extern short D_L18_00161D0C;
 extern float D_L18_001D45E0[];
 
 void func_L18_002DCE10(M_dce10 *moby) {
-    V_dce10 rv;
-    V_dce10 rot[3];
     Q_dce10 q[4];
     V_dce10 m[4];
+    V_dce10 rot[3];
+    V_dce10 rv;
     D_dce10 *d = moby->data;
     int j, k, n;
     int col;
 
     func_001FA190(m);
-    m[3] = moby->pos;
+    qcopy(&m[3], &moby->pos);
     m[3].f[2] += *(float *)&D_L18_00161CF8;
     m[3].f[3] = 1.0f;
     for (j = 0; j < 4; j++) {
         float fj;
         float t, ang, rad;
-        fj = (float)j;
         q[j].tex = func_001F4868(0xE);
         q[j].unk70 = 0;
         q[j].unk80 = 0xFF9000000260L;
         q[j].unk88 = (long)*(int *)&D_L18_00161CD8 | ((long)*(int *)&D_L18_00161CDC << 2) | ((long)*(int *)&D_L18_00161CE0 << 4) | ((long)*(int *)&D_L18_00161CE4 << 6) | 0x8000000000L;
-        t = d->f24 * *(float *)&D_L18_00161D04 + fj * 0.25f;
-        rad = d->f24 + *(float *)&D_L18_00161D00 * fj;
+        t = d->f24 * *(float *)&D_L18_00161D04 + (float)j * 0.25f;
+        rad = d->f24 + *(float *)&D_L18_00161D00 * (float)j;
         t = t - (float)func_001FA898_r(t);
         col = func_001FA8A8(*(int *)&D_L18_00161CEC, *(int *)&D_L18_00161CF0, t);
         ang = t * *(float *)&D_L18_00161D08;
@@ -94,6 +94,7 @@ void func_L18_002DCE10(M_dce10 *moby) {
             ang = 0.0f;
         }
         col = func_001FA8A8(col & 0xFFFFFF, col, ang);
+        fj = (float)j;
         for (k = 0; k < 4; k++) {
             float a;
             q[j].uv[k].u = D_L18_001D45E0[2 * k];

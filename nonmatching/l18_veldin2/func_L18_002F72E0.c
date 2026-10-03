@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L18_002F72E0 -- src/overlays/l18_veldin2/vendor_002F2AE0.c
- * Best so far: SIZE ours 2544 / retail 2548, checked 2026-10-03.
+ * Best so far: BYTES 135/2548 (94.7% of the bytes match), checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -217,7 +217,7 @@ void func_L18_002F72E0(char *moby) {
             }
             if (*(int *)(d + 0x34C) < 2) {
                 int n;
-                unsigned int k;
+                int k;
                 int j;
                 char *e;
                 int *w;
@@ -228,12 +228,11 @@ void func_L18_002F72E0(char *moby) {
                 P = (float *)(d + 0x300);
                 n = *(int *)(d + 0x34C);
                 k = n + 1;
-                e = d + k * 4;
-                *(int *)(d + 0x34C) = k;
-                w = D_L18_001B11B0[*(int *)(e + 0x260)];
+                                *(int *)(d + 0x34C) = k;
+                w = D_L18_001B11B0[*(int *)(d + k * 4 + 0x260)];
                 *(int **)(d + 0x340) = w;
                 *(int *)(d + 0x348) = 1;
-                *(int *)(d + 0x398) = *(int *)(e + 0x204);
+                *(int *)(d + 0x398) = *(int *)(d + (n + 1) * 4 + 0x204);
                 *(int *)(d + 0x374) = 0;
                 qcopy(P, (char *)w + 0x10);
                 base = d + 0x250;
