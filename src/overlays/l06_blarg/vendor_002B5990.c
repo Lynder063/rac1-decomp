@@ -61,7 +61,70 @@ INCLUDE_ASM("asm/overlays", func_L06_002EB348);
 INCLUDE_ASM("asm/overlays", func_L06_002F4F08);
 INCLUDE_ASM("asm/overlays", func_L06_002F51A0);
 INCLUDE_ASM("asm/overlays", func_L06_002F5560);
-INCLUDE_ASM("asm/overlays", func_L06_002F57C0);
+extern char D_0013E633[];
+extern float D_0015EE6C MACRO_ADDR;
+extern void func_001F9BC0(void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern int func_L00_001EFFF0(void *, void *, int, void *, void *);
+extern short D_L06_00161D7C;
+extern short D_L06_00161D80;
+
+// Sweeps two probe segments around a moby (sin/cos offsets scaled by its speed) via a collision query.
+void func_L06_002F57C0(char *m)
+{
+    struct {
+        int pad0[2];
+        float f8;
+        float fC;
+        char *owner;
+        int flags;
+        char b18;
+        char b19;
+        short s1A;
+        float f1C;
+        int i20;
+    } q;
+    float v[4];
+    float w[4];
+    char *d;
+    float sp;
+    int fl;
+
+    fl = 0x10000;
+    if (*(int *)(D_0013E633 + 0x1F75) != 6) fl = 0x10001;
+    q.flags = fl;
+    d = *(char **)(m + 0x78);
+    q.owner = m;
+    q.f1C = 1.0f;
+    q.i20 = 1;
+    func_001F9BC0(&q);
+    q.f8 = 1.0f;
+    q.fC = 5627.9248046875f;
+    q.b18 = 3;
+    q.b19 = 1;
+    q.s1A = *(unsigned short *)(m + 0xA6);
+    sp = (*(float *)(d + 0x70) * 60.0f - (float)*(int *)(d + 0x88)) * (*(float *)&D_L06_00161D7C * D_0015EE6C);
+    if (*(float *)&D_L06_00161D80 < sp) sp = *(float *)&D_L06_00161D80;
+    func_L00_001FF4B0(v, m + 0xD0, 0.125f);
+    func_001F9BD8(v, v, m + 0x10);
+    v[2] = v[2] + 0.125f;
+    w[0] = func_001F9F90(*(float *)(m + 0x48)) * sp;
+    w[1] = func_001F9FA8(*(float *)(m + 0x48)) * sp;
+    w[2] = 0;
+    func_001F9BD8(w, w, v);
+    func_L00_001EFFF0(v, w, 0, m, &q);
+    func_L00_001FF4B0(v, m + 0xD0, -0.125f);
+    func_001F9BD8(v, v, m + 0x10);
+    v[2] = v[2] + 0.125f;
+    w[0] = func_001F9F90(*(float *)(m + 0x48)) * sp;
+    w[1] = func_001F9FA8(*(float *)(m + 0x48)) * sp;
+    w[2] = 0;
+    func_001F9BD8(w, w, v);
+    func_L00_001EFFF0(v, w, 0, m, &q);
+}
 /* Clears state 4 from every moby in the selected table. */
 void func_L06_002F59D0(int idx)
 {
@@ -127,7 +190,36 @@ void func_L06_002F6818(char *moby)
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L06_002F68D0);
+extern float func_001FA790(float, float);
+extern void func_L00_00251E30(void *);
+
+/* Puts a moby in state 2 and its seven linked mobys in state 3, resetting each one's heading. */
+void func_L06_002F68D0(char *a) {
+    char *data = *(char **)(a + 0x78);
+    char **p;
+    int i;
+    a[0xBC] = 1;
+    if (*(unsigned char *)(a + 0x20) == 6) {
+        a[0x20] = 2;
+        a[0x31] = 1;
+        *(unsigned short *)(a + 0x34) &= 0xFFFE;
+        *(int *)(data + 0x14) = 0;
+        *(float *)(a + 0x40) = func_001FA790(*(float *)(data + 0x10), *(float *)(data + 0x14));
+        func_L00_00251E30(a);
+        p = (char **)(data + 0x24);
+        for (i = 0; i < 7; i++) {
+            char *c = p[i];
+            char *d;
+            c[0x20] = 3;
+            d = *(char **)(c + 0x78);
+            *(unsigned short *)(p[i] + 0x34) &= 0xFFFE;
+            p[i][0x31] = 1;
+            *(int *)(d + 0x14) = 0;
+            *(float *)(p[i] + 0x40) = func_001FA790(*(float *)(d + 0x10), *(float *)(d + 0x14));
+            func_L00_00251E30(p[i]);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L06_002F69D0);
 INCLUDE_ASM("asm/overlays", func_L06_002F71A8);
 INCLUDE_ASM("asm/overlays", func_L06_002F78A0);

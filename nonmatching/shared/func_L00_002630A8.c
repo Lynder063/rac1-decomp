@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L00_002630A8 -- src/overlays/shared/mobyutil_00261B00.c
- * Best so far: BYTES 15/816 (98.2% of the bytes match), checked 2026-10-01.
+ * Best so far: BYTES 15/816 (98.2% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -15,7 +15,6 @@ extern float func_001F9B88(float);
 extern float func_001F9CB8(void *);
 extern void func_001F9BD8(void *, void *, void *);
 extern char D_L00_001B0830[];
-extern unsigned char D_0013E633[];
 
 /* clamps a point to a polyline's segments and writes the pushed-out point */
 int func_L00_002630A8(int idx, void *pos, void *out, float thr) {

@@ -329,7 +329,49 @@ void func_L00_002A8088(char *moby, void *out1, void *out2) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002A84B0);
+extern int D_L00_0015F6B0 MACRO_ADDR;
+extern short D_L00_00161474;
+extern short D_L00_00161470;
+extern int func_0022ED80(int, int, int);
+extern void func_001F9CA0(void *, void *, void *);
+extern void func_00215380(void *arg0, void *axis, float angle);
+
+// Starts the moby's tumble: picks default spin rates, builds its basis and launches it.
+int func_L00_002A84B0(void *moby_v, int target_i, float sx, float sy) {
+    char *moby = moby_v;
+    char *target = (char *)target_i;
+    float v[12];
+    char *data = *(char **)(moby + 0x78);
+
+    if (*(unsigned char *)(moby + 0x20) == 4) {
+        return 0;
+    }
+    if ((*(int *)&(D_L00_00161474)) + func_001F9850(3) < D_L00_0015F6B0 || D_L00_0015F6B0 < (*(int *)&(D_L00_00161474))) {
+        (*(int *)&(D_L00_00161474)) = D_L00_0015F6B0;
+        func_0022ED80(0, 0x20, (int)moby);
+    } else {
+        if (sx == 0.0f) {
+            sx = func_002140F8(-30.0f, 30.0f) * 0.017453293f;
+        }
+        if (sy == 0.0f) {
+            sy = func_002140F8(0.0f, 30.0f) * 0.017453293f;
+        }
+    }
+    if (*(unsigned char *)(moby + 0x20) == 3) {
+        func_001FA1F8(v, data + 0x10);
+        func_L00_001FF4B0((float *)(data + 0x20), v + 8, func_002140F8(3.0f, 7.0f) * D_0015EE6C);
+    }
+    *(float *)(data + 0x4C) = sx;
+    *(float *)(data + 0x48) = sy;
+    *(int *)(data + 0x64) = 0;
+    *(char **)(data + 0x60) = target;
+    func_001F9BF0(v + 4, target + 0x10, moby + 0x10);
+    func_001F9CA0(v, data + 0x20, v + 4);
+    func_L00_001FF4B0((float *)(data + 0x30), v, 1.0f);
+    func_00215380(data + 0x30, data + 0x30, func_002140F8((*(float *)&(D_L00_00161470)) * 0.333f, (*(float *)&(D_L00_00161470))) * 0.017453293f * D_0015EE6C);
+    moby[0x20] = 4;
+    return 1;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002A86D8);
 INCLUDE_ASM("asm/overlays", func_L00_002A8A20);
 extern char D_0013E633[];
@@ -535,26 +577,56 @@ void *func_L00_002AAC50(int unused, void *pos, int c, float scale, float a, floa
     return m;
 }
 INCLUDE_ASM("asm/overlays", func_L00_002AAD28);
-INCLUDE_ASM("asm/overlays", func_L00_002AAD40);
-/* From Lombyte (MIT), FUN_L00_002a9b80 (PR #66), adapted to PAL. */
-typedef struct { float v[4]; } __attribute__((aligned(16))) Q2AAE20;
+typedef int u128 __attribute__((mode(TI)));
+extern int func_L00_0023EF78(float *pos, float radius, float intensity, int color);
+extern int D_L00_0015F420 MACRO_ADDR;
+extern int D_L00_0015F430 MACRO_ADDR;
 extern short D_L00_00161490;
-extern void func_L00_002AAD40(void *, void *);
+extern int D_L00_0015F424 MACRO_ADDR;
+extern int D_L00_0015F434 MACRO_ADDR;
+extern long D_L00_0015F438 MACRO_ADDR;
+extern long D_L00_0015F428 MACRO_ADDR;
 
-void func_L00_002AAE20(void *a, Q2AAE20 *v) {
-    Q2AAE20 t = *v;
-    char *g, *p, *q;
-    g = *(char **)&D_L00_00161490;
-    if (g == 0) {
-        func_L00_002AAD40(a, &t);
-        g = *(char **)&D_L00_00161490;
-        if (g == 0) return;
+// Creates the singleton light moby and resets its globals.
+void *func_L00_002AAD40(int unused, float *pos) {
+    char *m = func_0020D348(0x5F3);
+    if (m != 0 && *(int *)&D_L00_00161490 == 0) {
+        char *d;
+        m[0x20] = 0;
+        *(unsigned char *)(m + 0x30) = 0xFF;
+        *(short *)(m + 0x32) = 0xFF;
+        m[0x31] = 1;
+        d = *(char **)(m + 0x78);
+        *(u128 *)(m + 0x10) = *(u128 *)pos;
+        D_L00_0015F424 = 0xFF;
+        D_L00_0015F434 = 0xFFFFFF;
+        D_L00_0015F438 = 0x1F00000042L;
+        *(int *)&D_L00_00161490 = (int)m;
+        D_L00_0015F428 = 0;
+        D_L00_0015F420 = 0;
+        D_L00_0015F430 = 0;
+        *(int *)(d + 0x10) = 0;
+        *(short *)(d + 0x2C) = func_L00_0023EF78(pos, 0.0f, 0.0f, 0);
     }
-    p = *(char **)&D_L00_00161490;
-    q = *(char **)(p + 0x78);
-    if (*(short *)(p + 0xA6) == 0x5F3) {
-        *(Q2AAE20 *)(p + 0x10) = t;
-        *(short *)(q + 0x2E) = 1;
+    return m;
+}
+typedef int u128_2AAE20 __attribute__((mode(TI)));
+extern void func_L00_002AAD40_2AAE20(int, void *) __asm__("func_L00_002AAD40");
+// Moves the tracked moby to a position when it is class 0x5F3.
+void func_L00_002AAE20(int a, char *pos) {
+    u128_2AAE20 tmp = *(u128_2AAE20 *)pos;
+    int v = *(int *)&D_L00_00161490;
+    if (v == 0) {
+        func_L00_002AAD40_2AAE20(a, &tmp);
+        v = *(int *)&D_L00_00161490;
+    }
+    if (v != 0) {
+        char *m = *(char **)&D_L00_00161490;
+        char *d = *(char **)(m + 0x78);
+        if (*(short *)(m + 0xA6) == 0x5F3) {
+            *(u128_2AAE20 *)(m + 0x10) = tmp;
+            *(short *)(d + 0x2E) = 1;
+        }
     }
 }
 extern void func_L00_0023F1D0(int);

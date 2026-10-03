@@ -42,7 +42,61 @@ unsigned char *func_L13_002C31B0(char *owner, char *pos, char *vec) {
 INCLUDE_ASM("asm/overlays", func_L13_002C32D0);
 INCLUDE_ASM("asm/overlays", func_L13_002C3840);
 INCLUDE_ASM("asm/overlays", func_L13_002C3FB8);
-INCLUDE_ASM("asm/overlays", func_L13_002C4A68);
+extern char *func_L00_0025B478(void *, int, int);
+extern int func_L00_0025B4D0(void *, void *, void *, int, void *, void *, int, int);
+extern void func_L00_0025E4B0(void *m, short *p);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_L00_00258DB0(float *, float, float);
+extern void func_L00_0025E590(void *, void *);
+
+// steps a moby's hit-reaction timer and applies a small positional shake
+void func_L13_002C4A68(unsigned char *moby, unsigned char *d, float *fp) {
+    if (*(unsigned char *)(moby + 0x20) != 3) {
+        int cnt;
+        float vec[4];
+        char *t = func_L00_0025B478(moby, 0x330000, 0);
+        switch (func_L00_0025B4D0(moby, t, fp, 0, &cnt, 0, 0, 4)) {
+        case 1:
+        case 2:
+            *fp = 0;
+            break;
+        case 0:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+        case 11:
+            break;
+        }
+        if (cnt >= 2) {
+            if (*fp <= *(float *)(t + 0x2C)) {
+                *fp = 0;
+                *(unsigned short *)(moby + 0x34) &= 0xEFFF;
+                d[0x67] = 0x78;
+                func_L00_0025E4B0(moby, (short *)(d + 0x60));
+                moby[0x20] = 3;
+            } else {
+                *fp = *fp - *(float *)(t + 0x2C);
+                d[0x67] = 0xFA;
+                *(short *)(d + 0x26) = func_001F9850(0x3C);
+                func_L00_0025E4B0(moby, (short *)(d + 0x60));
+                func_L00_001FF4B0(vec, t + 0x10, 0.1f);
+                func_001F9BD8(moby + 0x10, moby + 0x10, vec);
+                func_L00_00258DB0(vec, -0.1f, 0.1f);
+                func_001F9BD8(moby + 0x10, moby + 0x10, vec);
+            }
+            moby[0xA4] = 0xFF;
+        } else {
+            moby[0xA4] = 0xFF;
+        }
+    }
+    func_L00_0025E590(moby, d + 0x60);
+}
 extern void func_L00_002592B0(char *moby, float *vel, float target, float k, float d, float max);
 extern float func_L00_00259148(float *vel, float cur, float target, float k, float d, float max);
 extern float func_001F9B88(float);
@@ -64,7 +118,33 @@ void func_L13_002C4C10(char *moby, char *d, float p2, float p3) {
     *(float *)(moby + 0x40) = *(float *)(moby + 0x40) * 0.98f;
     func_L00_0025F368(*(float *)(moby + 0x40));
 }
-INCLUDE_ASM("asm/overlays", func_L13_002C4D50);
+extern float func_001F9D10(void *, void *);
+extern float func_001FA888(int);
+
+// picks the entry of a ring table nearest a point, scanning outward from a start index
+int func_L13_002C4D50(char *pt, int *tbl, int start, float ref) {
+    int best = start;
+    int i = 0;
+    float bestd = 1e11f;
+    while (i < *tbl / 2) {
+        int j = (start + i) % *tbl;
+        float d = func_001F9D10(tbl + 4 + j * 4, pt);
+        float s = func_001F9B88(d - ref) + func_001FA888(i) * 0.4f;
+        if (s < bestd + func_001FA888(i) * 0.1f) {
+            bestd = d;
+            best = j;
+        }
+        j = (*tbl + start - i) % *tbl;
+        d = func_001F9D10(tbl + 4 + j * 4, pt);
+        s = func_001F9B88(d - ref) + func_001FA888(i) * 0.4f;
+        if (s < bestd) {
+            bestd = d;
+            best = j;
+        }
+        i++;
+    }
+    return best;
+}
 INCLUDE_ASM("asm/overlays", func_L13_002C4F10);
 extern char D_0013E633[];
 extern float func_001FA748(float, float);
@@ -90,10 +170,101 @@ INCLUDE_ASM("asm/overlays", func_L13_002C9208);
 INCLUDE_ASM("asm/overlays", func_L13_002CF960);
 INCLUDE_ASM("asm/overlays", func_L13_002CFF90);
 INCLUDE_ASM("asm/overlays", func_L13_002D0298);
-INCLUDE_ASM("asm/overlays", func_L13_002E2488);
+extern float func_002140F8(float, float);
+extern int func_001160D8(void);
+extern float func_00214158(void);
+
+// spawns a spinning moby of class 0x584 with randomized angular rates
+char *func_L13_002E2488(char *owner, char *pos, char *vec, int a3, float f) {
+    char *moby = func_0020D348(0x584);
+    if (moby != 0) {
+        char *d;
+        float r;
+        ((unsigned char *)moby)[0x30] = 0xFF;
+        d = *(char **)(moby + 0x78);
+        *(unsigned short *)(moby + 0x32) = *(unsigned short *)(owner + 0x32);
+        moby[0x31] = 1;
+        moby[0x20] = 2;
+        moby[0xBC] = 0;
+        moby[0x72] = 0;
+        qcopy(moby + 0x10, pos);
+        qcopy(d, vec);
+        *(float *)(moby + 0x2C) = f;
+        *(char **)(d + 0x48) = owner;
+        *(int *)(d + 0x40) = 1;
+        *(short *)(d + 0x4C) = func_001F9850(0x1E);
+        *(short *)(d + 0x4E) = a3;
+        *(int *)(moby + 0x94) = 0;
+        r = func_002140F8(-30.0f, 30.0f) * 0.017453292f * D_0015EE6C;
+        switch (func_001160D8() % 3) {
+        case 0: *(float *)(d + 0x30) = r; break;
+        case 1: *(float *)(d + 0x34) = r; break;
+        case 2: *(float *)(d + 0x38) = r; break;
+        }
+        r = func_002140F8(-180.0f, 180.0f) * 0.017453292f * D_0015EE6C;
+        switch (func_001160D8() % 3) {
+        case 0: *(float *)(d + 0x30) = r; break;
+        case 1: *(float *)(d + 0x34) = r; break;
+        case 2: *(float *)(d + 0x38) = r; break;
+        }
+        *(float *)(moby + 0x40) = func_00214158();
+        *(float *)(moby + 0x44) = func_00214158();
+        *(float *)(moby + 0x48) = func_00214158();
+        func_L00_00251E30(moby);
+        func_L00_0025E210(moby);
+    }
+    return moby;
+}
 INCLUDE_ASM("asm/overlays", func_L13_002E2690);
 INCLUDE_ASM("asm/overlays", func_L13_002E2980);
-INCLUDE_ASM("asm/overlays", func_L13_002E56C8);
+/* runs one step of a moby's timed state and reports whether the timer ran out */
+int func_L13_002E56C8(char *m, char *arg, float *t) {
+    char *r = func_L00_0025B478(m, 0x330000, 0);
+    int n;
+    int result = 0;
+    char *e;
+    switch (func_L00_0025B4D0(m, r, t, 0, &n, 0, 0, 4)) {
+    case 0:
+        break;
+    case 1:
+        *(int *)t = 0;
+        break;
+    case 2:
+        *(int *)t = 0;
+        break;
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+        break;
+    }
+    e = arg + 0x60;
+    if (n >= 2) {
+        float lim = *(float *)(r + 0x2C);
+        unsigned short fl;
+        if (*t <= lim) {
+            *(int *)t = 0;
+            fl = *(unsigned short *)(m + 0x34);
+            *(unsigned short *)(m + 0x34) = fl & 0xEFFF;
+            *(unsigned char *)(arg + 0x67) = 0x78;
+            func_L00_0025E4B0(m, (short *)e);
+            result = 1;
+        } else {
+            *t = *t - lim;
+            *(unsigned char *)(arg + 0x67) = 0xFA;
+            *(short *)(arg + 0x26) = func_001F9850(0x3C);
+            func_L00_0025E4B0(m, (short *)e);
+        }
+    }
+    *(unsigned char *)(m + 0xA4) = 0xFF;
+    func_L00_0025E590(m, e);
+    return result;
+}
 INCLUDE_ASM("asm/overlays", func_L13_002E5810);
 extern char *func_0020D348(int);
 extern void func_L00_00251E30(void *);
@@ -192,4 +363,33 @@ void func_L13_002EB768(char *a, char *b, float f) {
 }
 INCLUDE_ASM("asm/overlays", func_L13_002EB838);
 INCLUDE_ASM("asm/overlays", func_L13_002EB978);
-INCLUDE_ASM("asm/overlays", func_L13_002EBAF0);
+extern void func_L00_00250800(void *, int, void *);
+extern void func_L13_002EB768(char *a, char *b, float f);
+extern void func_001F9BF0(void *dst, void *a, void *b);
+extern unsigned char *func_L13_002C31B0(char *owner, char *pos, char *vec);
+extern void func_0022ED80(int, int, int);
+
+/* computes a velocity vector for a moby from the camera/player and spawns a projectile */
+unsigned char *func_L13_002EBAF0(char *a, char *b) {
+    float v0[4], v1[4], v2[4], v3[4], v4[4];
+    char *x;
+    unsigned char *r;
+    func_L00_00250800(a, 0xE, v0);
+    x = D_0013E633 + 0xE1D;
+    if (*(char **)(x + 0x15F0) != 0 && *(short *)(*(char **)(x + 0x15F0) + 0xA6) == 0x45) {
+        func_L13_002EB768((char *)v2, (char *)v0, D_0015EE6C * 20.0f);
+        func_001F9BF0(v3, v2, v0);
+        func_L00_001FF4B0(v1, v3, D_0015EE6C * 20.0f);
+        func_L00_001FF4B0(v4, *(char **)(x + 0x15F0) + 0xD0, func_002140F8(-(D_0015EE6C * 30.0f), D_0015EE6C * 30.0f));
+        func_L00_001FF4B0(v3, *(char **)(x + 0x15F0) + 0xE0, func_002140F8(-(D_0015EE6C * 30.0f), D_0015EE6C * 30.0f));
+        func_001F9BD8(v4, v4, v3);
+        func_L00_001FF4B0(v4, v4, func_002140F8(D_0015EE6C * 5.0f, D_0015EE6C * 30.0f));
+        func_001F9BD8(v1, v1, v4);
+    } else {
+        func_L00_00258DB0(v1, D_0015EE6C * 0.0f, D_0015EE6C * 30.0f);
+    }
+    func_001F9BD8(v1, v1, b + 0x70);
+    r = func_L13_002C31B0(a, (char *)v0, (char *)v1);
+    if (r) func_0022ED80(3, 0, (int)a);
+    return r;
+}

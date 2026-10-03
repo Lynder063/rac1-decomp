@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L16_002E5FC0 -- src/overlays/l16_kalebo3/vendor_002A50F0.c
- * Best so far: SIZE ours 128 / retail 132, checked 2026-10-01.
+ * Best so far: SIZE ours 128 / retail 132, checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -9,11 +9,11 @@
  */
 #include "common.h"
 extern char *D_L16_001601AC_m __asm__("D_L16_001601AC") MACRO_ADDR;
-extern char *func_L05_0031AAA8(void *, short);
 extern void func_L16_002E5D68(void *);
 
-void func_L16_002E5FC0(char *moby)
+void func_L16_002E5FC0(void *moby_v)
 {
+    char *moby = moby_v;
     char *data = *(char **)(moby + 0x78);
     char *spawn = func_L05_0031AAA8(moby, *(short *)(data + 0xAE));
     if (spawn != 0) {

@@ -59,9 +59,9 @@ void func_L00_002EB280(char *m) {
     FastVecCross(m, a, p);
     qcopy(m + 0x40, m);
 }
-/* From Lombyte (MIT), FUN_L00_002e9ef0 (PR #66), adapted to PAL. */
-extern void func_L00_002EB280(char *);
+extern void func_L00_002EB280(char *m);
 
+/* clears the 7 words of the state block, calls the helper, clears halfword 0x7E. Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay_vendor_002e9010.c, FUN_L00_002e9ef0. */
 void func_L00_002EB3A0(p)
     char *p;
 {
@@ -403,10 +403,86 @@ void func_L00_002EC930(char *m) {
     func_001FA218(mat, m + 0x40);
     func_001FA480(m, mat);
 }
-INCLUDE_ASM("asm/overlays", func_L00_002ECAF8);
+typedef int u128 __attribute__((mode(TI)));
+extern void func_001F9EC0(void *, void *, void *);
+extern void func_L00_002EC7D0(char *, void *, void *, float);
+extern float func_L00_001FF860(float, float);
+extern float func_001FA850(float, float);
+extern float func_001F9D48(void *, void *);
+extern char D_0013E633[] NOT_SDA;
+extern float D_L00_00161EA4;
+extern char D_L00_00166D80_c[] __asm__("D_L00_00166D80") NOT_SDA;
+
+// steps a follow-camera object toward a target moby, easing its angle and position or snapping to a goal
+// Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay_vendor_002e9010.c, FUN_L00_002eb648.
+int func_L00_002ECAF8(char *a, char *t) {
+    u128 v[1];
+    u128 w[1];
+    char *m;
+    float *c;
+    char *n;
+    u128 *pw;
+    char *g;
+    char *cam;
+    char *pp;
+    char *cp;
+    float ang, d1, x;
+    m = *(char **)(a + 0x70);
+    c = (float *)(m + 0x64);
+    if (!t) goto one;
+    v[0] = 0;
+    ((float *)v)[2] = 0.12f;
+    ((float *)v)[0] = D_L00_00161EA4;
+    n = *(char **)(t + 0x78);
+    func_001F9EC0(v, v, t + 0xC0);
+    func_001F9BD8(w, t + 0x10, v);
+    pw = w;
+    if (*(int *)(n + 0x10) == -1) {
+        func_L00_001EB448(c, a + 0x50, 0.0f);
+        c[2] = 6.0f;
+        c[1] = c[3];
+        c[3] = 0.0f;
+        func_L00_002EC7D0(a, c, w, 0.0f);
+    }
+    if (*(int *)(n + 0x10) > 0) goto pos;
+    *(float *)(m + 0xAC) = func_001FA748(*(float *)(m + 0xAC), *(float *)(n + 0x18));
+    *(float *)(n + 0x18) *= 0.97f;
+    g = (char *)D_0013E633 + 0xE1D;
+    cam = D_L00_00166D80_c;
+    pp = g + 0x80;
+    cp = cam + 0x140;
+    ang = func_L00_001FF860(*(float *)(cam + 0x140) - *(float *)(g + 0x80), *(float *)(cam + 0x144) - *(float *)(g + 0x84));
+    ang = func_001FA850(ang, *(float *)(cam + 0x158));
+    d1 = func_001F9D48(pp, cp);
+    if (d1 < func_001F9D48(*(char **)(g + 0x1090) + 0x10, cp)) {
+        x = func_001F9D48(pp, cp);
+    } else {
+        x = func_001F9D48(*(char **)(g + 0x1090) + 0x10, cp);
+    }
+    if (x < 0.77f) {
+        if (ang < 1.5707964f) {
+            *(float *)(m + 0x1C) -= 0.7f - x;
+            *(int *)(n + 4) = 0;
+        } else {
+            *(float *)(m + 0x1C) += 0.7f - x;
+        }
+    } else {
+        *(float *)(m + 0x1C) += *(float *)(n + 4);
+        *(float *)(n + 4) *= 0.97f;
+    }
+    qcopy(m + 0x80, pw);
+    return 0;
+pos:
+    *(float *)(m + 0xAC) = *(float *)(t + 0x40) * 0.5f;
+    *(float *)(m + 0x20) += (*(float *)(t + 0x44) - *(float *)(m + 0x20)) * 0.05f;
+    qcopy(m + 0x80, w);
+    qcopy(m + 0xC0, t + 0x40);
+one:
+    return 1;
+}
 extern void func_L00_002EC860(void *);
 extern void func_L00_001EB890(char *);
-extern void func_L00_002ECAF8(char *, char *);
+extern int func_L00_002ECAF8(char *, char *);
 extern short D_L00_00166FF0[];
 extern char D_L00_001E7B10[];
 extern char D_L00_001E7B28[];
@@ -638,4 +714,47 @@ int func_L00_002EED60(char *a) {
     return 0;
 }
 INCLUDE_ASM("asm/overlays", func_L00_002EEE00);
-INCLUDE_ASM("asm/overlays", func_L00_002EEF88);
+extern float D_L00_00166EC0[];
+extern void func_001F9EC0(void *, void *, void *);
+extern int func_L00_0028F0B0(int a, int b, int c, int d);
+extern float func_002140F8(float, float);
+extern int func_002140B0(int);
+
+/* updates a one-shot sound box: checks the listener is inside, then starts the sound */
+void func_L00_002EEF88(char *m) {
+    float v[20];
+    int *d = *(int **)(m + 8);
+    float f = *(float *)(m + 0xC);
+    char *e;
+    float *p;
+    v[4] = f;
+    v[5] = f;
+    v[6] = f;
+    func_001F9BF0(v, D_L00_00166EC0, m + 0x40);
+    v[3] = 0;
+    func_001F9EC0(v + 8, v, m + 0x50);
+    func_001F9EC0(v + 12, v + 4, m + 0x50);
+    if (!(func_001F9B88(v[8]) <= func_001F9B88(v[12]) + 1.0f)) return;
+    if (!(func_001F9B88(v[9]) <= func_001F9B88(v[13]) + 1.0f)) return;
+    if (!(func_001F9B88(v[10]) <= func_001F9B88(v[14]) + 1.0f)) return;
+    e = (char *)D_0013E633 + 0x1D + d[4] * 0x70;
+    if (*(char **)(e + 0x8C) == m && *(unsigned char *)(e + 0x74) != 0) return;
+    if (func_001F9908(d + 3)) {
+        d[4] = func_L00_0028F0B0(d[0], 0, (int)m, 0x400);
+        if (d[4] != -1) {
+            v[16] = func_002140F8(-1.0f, 1.0f);
+            v[17] = func_002140F8(-1.0f, 1.0f);
+            v[18] = func_002140F8(-1.0f, 1.0f);
+            p = v + 16;
+            func_001F9EC0(p, p, m + 0x10);
+            func_001F9BD8(p, p, m + 0x40);
+            qcopy((char *)D_0013E633 + 0x1D + 0x90 + d[4] * 0x70, p);
+        }
+        if (d[2] > 0) {
+            int t = func_002140B0(d[2] - d[1]);
+            d[3] = (int)((float)func_001F9850(d[1] + t) * 60.0f);
+        }
+    } else {
+        d[4] = -1;
+    }
+}

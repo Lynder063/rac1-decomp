@@ -1,7 +1,8 @@
 /* NON_MATCHING func_L00_00207310 -- src/overlays/shared/help_00203E98.c
- * Best so far: BYTES 2/264 (99.2% of the bytes match), checked 2026-10-01.
+ * Best so far: BYTES 2/264 (99.2% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * Cannot land as written (expression alias): rewrite that in plain C first.
  * What the last attempts found:
  *   func_L00_00207310: periodic help-message check. Trigger 0x4E2E/0x78 if heli pack flag and func_L00_0020DC00();
  *   Best candidate p8.c: body and loop match, size 256 vs retail 264. Retail forms the lo half of D_0014171B+0x34D

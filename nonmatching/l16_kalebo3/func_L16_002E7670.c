@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L16_002E7670 -- src/overlays/l16_kalebo3/vendor_002A50F0.c
- * Best so far: SIZE ours 548 / retail 544, checked 2026-10-01.
+ * Best so far: SIZE ours 548 / retail 544, checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -23,7 +23,8 @@ extern float func_001F9D48(void *, void *);
 extern float func_001F9B88(float);
 extern void func_L16_002E5D68(void *);
 
-void func_L16_002E7670(unsigned char *m) {
+void func_L16_002E7670(void *m_v) {
+    unsigned char *m = m_v;
     char *d = *(char **)(m + 0x78);
     char *hit;
     char *path;

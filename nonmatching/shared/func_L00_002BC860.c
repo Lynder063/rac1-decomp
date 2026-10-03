@@ -1,7 +1,8 @@
 /* NON_MATCHING func_L00_002BC860 -- src/overlays/shared/vendor_002BA7C8.c
- * Best so far: BYTES 9/1448 (99.4% of the bytes match), checked 2026-10-01.
+ * Best so far: BYTES 9/1448 (99.4% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * Cannot land as written (#define in a candidate): rewrite that in plain C first.
  * What the last attempts found:
  *   UpdateMoby_180: sparkle-quad spawner. State 0 clears three 10-entry short tables; state 2 reads the hero dista
  *   Left: (1) alive branch: retail has `addiu $s7,$sp,0x30` (w base) before `addiu $s6,$s4,1` (i+1); ours swaps th

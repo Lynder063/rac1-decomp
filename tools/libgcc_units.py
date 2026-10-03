@@ -8,6 +8,7 @@ modules.
 Each entry: (unit, source file, [functions built from source],
              [functions still kept as asm stubs]).
 """
+from __future__ import annotations
 from pathlib import Path
 
 L2 = "src/libgcc/libgcc2.c"

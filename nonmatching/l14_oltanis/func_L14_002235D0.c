@@ -1,11 +1,12 @@
 /* NON_MATCHING func_L14_002235D0 -- src/overlays/l14_oltanis/help_0021E3A8.c
- * Best so far: BYTES 18/608 (97.0% of the bytes match), checked 2026-10-01.
+ * Best so far: BYTES 8/608 (98.7% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
  *   func_L14_002235D0: per-frame camera follow update. Picks target values (0x228/0x22C/0x230 of the D_0013F450 bl
  *   Budget spent at p8.c: same size (608), 18 bytes differ. Shape that got there: switch(t){case 0,case 3,default:
  *   Remaining: (1) 0.35 constant is 0x3EB33334, write 0.35000002f (not 0.35f); (2) block-2 loads: retail loads 0x1
+ *   z07: p14.c best (8 bytes): 0.35000002f and 0x198 > 0x420 fixed. Left: join-block float regs (retail a=f0,.45=f
  */
 extern float D_0015EE60 MACRO_ADDR;
 extern float D_0015EE64 MACRO_ADDR;
@@ -37,13 +38,13 @@ void func_L14_002235D0(void) {
     default:
         goto skip;
     }
-    *(float *)(g + 0x228) = a;
     *(float *)(g + 0x230) = 0.45f;
     *(float *)(g + 0x22C) = b;
+    *(float *)(g + 0x228) = a;
 skip:
     g2 = D_0013E633 + 0xE1D;
     if (*(int *)(g2 + 0x208C) == 4) {
-        if (*(int *)(g2 + 0x420) < *(int *)(g2 + 0x198)) {
+        if (*(int *)(g2 + 0x198) > *(int *)(g2 + 0x420)) {
             if (*(short *)(g2 + 0x41E) == 0) {
                 *(float *)(g2 + 0x22C) = *(float *)(g2 + 0x434);
             }
@@ -51,7 +52,7 @@ skip:
     } else if (*(int *)(g2 + 0x2084) == 6) {
         *(float *)(g2 + 0x22C) = 0.5f;
     } else if (*(int *)(g2 + 0x2084) == 4) {
-        *(float *)(g2 + 0x228) = 0.35f;
+        *(float *)(g2 + 0x228) = 0.35000002f;
     } else if (*(unsigned char *)(g2 + 0x12E2) != 0 && *(int *)(g2 + 0x300) != 0) {
         *(float *)(g2 + 0x228) = 0.8f;
         *(float *)(g2 + 0x22C) = 0.9f;

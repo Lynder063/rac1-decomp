@@ -1082,9 +1082,189 @@ void func_L00_0020AB78(void) {
         p += 0x10;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_0020ABB8);
+extern int func_001F9908(int *);
+extern float func_L00_00258C80(float, float);
+extern float func_L00_0025C700(float, float, float);
+extern float D_0015EEF0_f[] __asm__("D_0015EEF0") MACRO_ADDR;
+extern float D_0015EEF0_p[] __asm__("D_0015EEF0") MACRO_ADDR;
+extern short D_0015EE64_g __asm__("D_0015EE64");
+extern float D_0015EE64_m __asm__("D_0015EE64") MACRO_ADDR;
+
+// per-frame update of the camera/cursor sway: eases a value and feeds two scaled values into a global block
+void func_L00_0020ABB8(void) {
+    char *g1;
+    char *h1;
+    char *h2;
+    char *ga;
+    char *h3;
+    char *q;
+    char *g3;
+    char *g4;
+    char *h4;
+    float a;
+    float b;
+    float lim;
+    float f;
+    int t;
+    float f1;
+    float f2;
+    if (D_0015EEB0[3] != 0) {
+        g1 = (char *)D_0013E633 + 0xE1D;
+        if (*(int *)(g1 + 0x1184) != 0) {
+            h1 = D_L00_0017A780;
+            *(float *)(h1 + 0xD0C) = *(float *)&D_0015EF18;
+        }
+    }
+    h2 = D_L00_0017A780;
+    *(float *)(h2 + 0xC5C) = D_0015EEF0_f[9];
+    if (D_0015EEB0[1] != 0) {
+        func_00214D28(&D_0015EEF0_p[9], 1.57f, 0.05f);
+    } else {
+        func_00214D28(&D_0015EEF0_p[9], 0.92f, 0.05f);
+    }
+    ga = (char *)D_0013E633 + 0xE1D;
+    if (*(int *)(ga + 0x260) != 0 && *(float *)(ga + 0x258) > 1.4f && *(float *)(ga + 0x248) > 1.0f) {
+        b = *(float *)&D_0015EE64_g;
+        func_L00_0020A858(b * 0.015f, b * 0.3f);
+        a = *(float *)(ga + 0x258) * 1.5f * 0.0174532924f + 0.191986218f;
+        if (a > 0.471238881f) a = 0.471238881f;
+        lim = (1.0f - *(float *)(ga + 0x25C)) * 35.0f * 0.0174532924f;
+        if (lim < a) a = lim;
+        f1 = D_0015EE64_m;
+        h3 = D_L00_0017A780;
+        *(float *)(h3 + 0x274) = a;
+        func_L00_0020A858(f1 * 0.008f, f1 * 0.3f);
+        *(float *)(h3 + 0x114) = *(float *)(h3 + 0x274) * 0.7f;
+        return;
+    }
+    q = (char *)D_0013E633 + 0xE1D;
+    if (*(int *)(q + 0x2084) != 0) return;
+    t = *(unsigned char *)(*(char **)(q + 0x2080) + 0x53);
+    if ((unsigned char)t >= 3 && (unsigned char)t != 0x3A) return;
+    if (*(int *)(q + 0x2274) != 0) return;
+    if ((unsigned)(t - 1) < 2) {
+        *(int *)(q + 0x1010) = func_L00_00258BC8(func_001F9850(0x28), func_001F9850(0x46));
+    }
+    if (func_001F9908((int *)(q + 0x1010)) != 0) {
+        *(float *)(q + 0x1004) = -func_002140F8(-0.157079637f, 0.436332315f);
+        *(float *)(q + 0x1008) = func_L00_00258C80(0.349065840f, 0.994837642f);
+        f = func_002140F8(0.0f, 1.0f);
+        *(float *)(q + 0x1014) = func_L00_0025C700(0.015f, 0.007f, f);
+        *(float *)(q + 0x1018) = func_L00_0025C700(0.29f, 0.3f, f);
+        *(int *)(q + 0x1010) = func_L00_00258BC8(func_001F9850(0x5A), func_001F9850(0xC8));
+        *(int *)(q + 0x1010) += func_001FA898((float)func_001F9850(0x50) * f);
+    }
+    if ((unsigned)(*(unsigned char *)(*(char **)(q + 0x2080) + 0x53) - 1) < 2) {
+        if (*(float *)(q + 0x1008) > 0.349065840f) {
+            *(float *)(q + 0x1008) = 0.349065840f;
+        } else if (*(float *)(q + 0x1008) < -0.349065840f) {
+            *(float *)(q + 0x1008) = -0.349065840f;
+        }
+        g3 = (char *)D_0013E633 + 0xE1D;
+        if (*(float *)(g3 + 0x1004) > 0.261799395f) *(float *)(g3 + 0x1004) = 0.261799395f;
+        if (*(float *)(g3 + 0x1004) < 0.0f) *(float *)(g3 + 0x1004) = 0.0f;
+    }
+    g4 = (char *)D_0013E633 + 0xE1D;
+    func_L00_0020A858(*(float *)(g4 + 0x1014), *(float *)(g4 + 0x1018));
+    f2 = D_0015EE64_m;
+    h4 = D_L00_0017A780;
+    *(float *)(h4 + 0x278) = *(float *)(g4 + 0x1008);
+    *(float *)(h4 + 0x274) = *(float *)(g4 + 0x1004);
+    func_L00_0020A858(f2 * 0.008f, f2 * 0.3f);
+    *(float *)(h4 + 0x118) = *(float *)(h4 + 0x278) * 0.52f;
+    *(float *)(h4 + 0x114) = *(float *)(h4 + 0x274) * 0.55f;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0020B060);
-INCLUDE_ASM("asm/overlays", func_L00_0020B310);
+extern int func_L00_0025D390(char *);
+extern float func_001F9D48(void *, void *);
+extern float func_L00_001FF860(float, float);
+extern float func_001FA850(float, float);
+extern int func_L00_001EFFF0(void *, void *, int, int, int);
+extern char *D_L00_001ABD80[];
+extern void func_L00_00233EE0(float *, float, float, float);
+// picks the best lock-on target for the hero's aim and tunes the camera toward it
+void func_L00_0020B310(void) {
+    char *g1 = (char *)D_0013E633 + 0xE1D;
+    char *g2, *g3, *g4, *g5, *g6;
+    int i;
+    char *m;
+    char *best;
+    float bestPri, bestDist;
+    float v[8];
+    char *q;
+    char *info, *info2, *p, *t;
+    float f20, f21, s;
+    int mode = *(int *)(g1 + 0x208C);
+    if (mode != 1 && mode != 4 && mode != 2 && mode != 7 && mode != 0) {
+        *(int *)(g1 + 0x2274) = 0;
+        return;
+    }
+    g2 = (char *)D_0013E633 + 0xE1D;
+    if (*(unsigned char *)(*(int *)(g2 + 0x2080) + 0x53) == 0x54) return;
+    if (D_L00_0015F6B0 % 7 == 0) {
+        bestDist = 100000000.0f;
+        bestPri = 0.0f;
+        best = 0;
+        for (i = 0; (m = D_L00_001ABD80[i]) != 0; i++) {
+            info = (char *)func_L00_0025D390(m);
+            if (info != 0) {
+                float d, a, sc, pri;
+                d = func_001F9D48(D_0013E633 + 0xE9D, m + 0x10);
+                if ((float)*(unsigned char *)(info + 0x38) < d) continue;
+                g3 = (char *)D_0013E633 + 0xE1D;
+                a = func_001FA850(func_L00_001FF860(*(float *)(m + 0x10) - *(float *)(g3 + 0x80), *(float *)(m + 0x14) - *(float *)(g3 + 0x84)), *(float *)(g3 + 0x98));
+                if (1.91986215f < a) continue;
+                if (1.04719758f < func_001F9B88(func_L00_001FF860(func_001F9D48(m + 0x10, D_0013E633 + 0xE9D), *(float *)(g3 + 0x88) - *(float *)(m + 0x18)))) continue;
+                sc = a * d + d;
+                if ((int)m == *(int *)(g3 + 0x2274)) {
+                    sc -= 1.5f;
+                    if (sc < 0.0f) sc = 0.0f;
+                }
+                pri = (float)*(unsigned char *)(info + 0x39);
+                if (bestPri < pri) goto upd;
+                if (sc < bestDist) {
+                upd:
+                    if (pri > bestPri) bestPri = pri;
+                    bestDist = sc;
+                    best = m;
+                }
+            }
+        }
+        g4 = (char *)D_0013E633 + 0xE1D;
+        *(char **)(g4 + 0x2274) = best;
+    }
+    g5 = (char *)D_0013E633 + 0xE1D;
+    if (*(int *)(g5 + 0x2274) == 0) return;
+    func_L00_00233EE0(v, 0.0f, 0.0f, 1.2f);
+    q = (char *)&v[4];
+    qcopy(q, *(char **)(g5 + 0x2274) + 0x10);
+    v[6] += 0.5f;
+    if (func_L00_001EFFF0(v, q, 2, 0, 0)) *(int *)(g5 + 0x2274) = 0;
+    t = *(char **)(g5 + 0x2274);
+    if (t == 0) return;
+    qcopy(v, t + 0x10);
+    info2 = (char *)func_L00_0025D390(t);
+    if (info2 != 0) v[2] += (float)*(unsigned char *)(info2 + 0x3A) * 0.125f;
+    func_L00_00233EE0(&v[4], 0.3f, 0.0f, 0.85f);
+    f20 = func_001FA790(func_L00_001FF860(v[0] - v[4], v[1] - v[5]), *(float *)(g5 + 0x98));
+    f21 = func_L00_001FF860(func_001F9D48(v, q), v[6] - v[2]);
+    if (f20 > 1.02974427f) f20 = 1.02974427f;
+    else if (f20 < -1.02974427f) f20 = -1.02974427f;
+    if (f21 > 0.610865235f) f21 = 0.610865235f;
+    if (f21 < -0.436332315f) f21 = -0.436332315f;
+    g6 = (char *)D_0013E633 + 0xE1D;
+    if (scale_ticks(0x4D) - scale_ticks(0x32) < *(int *)(g6 + 0x1C0)) {
+        if (f20 > 0.296705961f) f20 = 0.296705961f;
+        else if (f20 < -0.296705961f) f20 = -0.296705961f;
+        f21 = 0.0f;
+    }
+    func_L00_0020A858(D_0015EE64 * 0.021f, D_0015EE64 * 0.27f);
+    p = D_L00_0017A780;
+    *(float *)(p + 0x274) = f21;
+    *(float *)(p + 0x278) = f20 * 0.7f;
+    func_L00_0020A858(D_0015EE64 * 0.014f, D_0015EE64 * 0.3f);
+    *(float *)(p + 0x1C8) = *(float *)(p + 0x278) * 0.55f;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0020B850);
 INCLUDE_ASM("asm/overlays", func_L00_0020BC30);
 extern void func_L00_002111E8(void);
@@ -1093,5 +1273,180 @@ void func_L00_0020BFA8(void) {
         func_L00_002111E8();
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_0020BFD8);
+extern void func_001F99D8(void *, int);
+extern int func_L00_001F10E0(float, void *, int, void *);
+extern int func_L00_001F3958(void);
+extern void func_L00_0020BFA8(void);
+extern void func_L00_00211908(void);
+
+/* Per-frame update of the state flags for the current action, then the follow-up action it requests. */
+void func_L00_0020BFD8(void) {
+    char *g = (char *)D_0013E633 + 0xE1D;
+    unsigned char keep = *(unsigned char *)(g + 0x12ED);
+    int s = *(short *)(g + 0x12E0);
+    func_001F99D8(g + 0x12E0, 0x10);
+    *(unsigned char *)(g + 0x12ED) = keep;
+    *(short *)(g + 0x12E0) = -1;
+    *(unsigned char *)(g + 0x20A9) = 0;
+    *(short *)(g + 0x308) = 0;
+    if (s == -1) return;
+    if (s == 2) {
+        if (*(short *)(g + 0x30C) == 0 || *(float *)(g + 0x2DC) < 0.3f) {
+            *(unsigned char *)(g + 0x12E7) = 1;
+            if (*(unsigned char *)(g + 0x20A4) == 0) {
+                int p = *(int *)(g + 0x10E0);
+                if (p != 0 && *(short *)(p + 0xA6) == 0xAD) {
+                    *(short *)(g + 0x308) = 1;
+                }
+            }
+        }
+    }
+    if (s == 0xE) {
+        char *g = (char *)D_0013E633 + 0xE1D;
+        *(unsigned char *)(g + 0x12E4) = 1;
+        *(float *)(g + 0x22A4) = 0.2f;
+        *(float *)(g + 0x2F0) = *(float *)(g + 0x2D8) + 0.2f;
+    }
+    if (s == 0) {
+        char *g = (char *)D_0013E633 + 0xE1D;
+        float d = *(float *)(g + 0x2F0) - *(float *)(g + 0x2D8);
+        *(float *)(g + 0x22A4) = d;
+        if (d < 0.85f && 0.25f < d) {
+            *(unsigned char *)(g + 0x20A9) = 1;
+        }
+        g = (char *)D_0013E633 + 0xE1D;
+        *(unsigned char *)(g + 0x12E4) = 1;
+    }
+    if (s == 3) {
+        char *g = (char *)D_0013E633 + 0xE1D;
+        *(unsigned char *)(g + 0x12E6) = 1;
+    }
+    if (D_0015EE84_m == 0xD) {
+        char *g = (char *)D_0013E633 + 0xE1D;
+        if (*(int *)(g + 0x2084) != 0x7B) {
+            if (func_L00_001F10E0(*(float *)(g + 0x234) + 0.03f, g + 0xD0, 2, 0)) {
+                if (func_L00_001F3958() == 0xB) {
+                    func_L00_00222B80(0x7B, 1);
+                    return;
+                }
+            }
+        }
+    }
+    if (s == 0xB) {
+        char *g = (char *)D_0013E633 + 0xE1D;
+        *(unsigned char *)(g + 0x12EB) = 1;
+    }
+    if (s == 2) {
+        char *g = (char *)D_0013E633 + 0xE1D;
+        *(unsigned char *)(g + 0x12E7) = 1;
+    }
+    if (s == 4) {
+        char *g = (char *)D_0013E633 + 0xE1D;
+        *(unsigned char *)(g + 0x12E3) = 1;
+    }
+    if (s == 7) {
+        char *g = (char *)D_0013E633 + 0xE1D;
+        *(unsigned char *)(g + 0x12E2) = 1;
+    }
+    if (s == 0xD) {
+        char *g = (char *)D_0013E633 + 0xE1D;
+        *(unsigned char *)(g + 0x12EC) = 1;
+    }
+    if (s == 1) {
+        char *g = (char *)D_0013E633 + 0xE1D;
+        *(unsigned char *)(g + 0x12E5) = 1;
+    }
+    if (s == 8) {
+        char *g = (char *)D_0013E633 + 0xE1D;
+        *(unsigned char *)(g + 0x12EA) = 1;
+    }
+    if (s == 9) {
+        char *g = (char *)D_0013E633 + 0xE1D;
+        *(unsigned char *)(g + 0x12EE) = 1;
+    }
+    if (s == 0xC) {
+        char *g = (char *)D_0013E633 + 0xE1D;
+        *(unsigned char *)(g + 0x12EA) = 1;
+    }
+    {
+    char *g = (char *)D_0013E633 + 0xE1D;
+    if (*(unsigned char *)(g + 0x12E3) != 0 && *(int *)(g + 0x300) != 0) {
+        int v = *(int *)(g + 0x208C);
+        if (v != 0x10 && v != 0x14 && v != 7) {
+            func_L00_00222B80(0x31, 1);
+            return;
+        }
+    }
+    }
+    {
+    char *g = (char *)D_0013E633 + 0xE1D;
+    if (*(unsigned char *)(g + 0x12E5) != 0) {
+        if (*(int *)(g + 0x300) != 0 && *(unsigned char *)(g + 0x20A4) == 1
+            && *(int *)(g + 0x2084) != 0x7D) {
+            func_L00_00222B80(0x7D, 1);
+            return;
+        }
+        {
+        char *g = (char *)D_0013E633 + 0xE1D;
+        if (*(unsigned char *)(g + 0x12E5) != 0) {
+            if (*(int *)(g + 0x300) != 0) {
+                if (!(*(int *)(g + 0x2084) == 0x3C && *(short *)(g + 0x41E) == 0)) {
+                    func_L00_0020BFA8();
+                    if (*(int *)(g + 0x22A8) != 0) {
+                        func_L00_00222B80(0x3C, 1);
+                        return;
+                    }
+                    func_L00_00222B80(0x7C, 1);
+                    return;
+                }
+            }
+        }
+        }
+    }
+    }
+    {
+    char *g = (char *)D_0013E633 + 0xE1D;
+    if (*(unsigned char *)(g + 0x12EC) != 0 && *(int *)(g + 0x2084) != 0x7F) {
+        if (func_001F9B88(*(float *)(g + 0x2F0) - (*(float *)(g + 0x88) + 0.25f)) < 1.0f
+            && *(float *)(g + 0x2F0) - *(float *)(g + 0x88) > 0.0f && *(float *)(g + 0x108) < 0.0f) {
+            func_L00_0020BFA8();
+            func_L00_00222B80(0x7F, 1);
+            return;
+        }
+    }
+    }
+    {
+    char *g = (char *)D_0013E633 + 0xE1D;
+    if (*(unsigned char *)(g + 0x12E6) != 0 && *(int *)(g + 0x2084) != 0x68 && *(int *)(g + 0x2084) != 0x7B) {
+        if (func_001F9B88(*(float *)(g + 0x2F4) - (*(float *)(g + 0x88) + 0.25f)) < 1.0f
+            && *(float *)(g + 0x2F4) - *(float *)(g + 0x88) > 0.0f) {
+            if ((*(int *)(g + 0x2084) != 0x69 || *(short *)(g + 0x41E) != 0) && *(float *)(g + 0x108) < 0.0f) {
+                func_L00_0020BFA8();
+                if (*(int *)(g + 0x22A8) != 0) {
+                    func_L00_00222B80(0x68, 1);
+                    return;
+                }
+                func_L00_00222B80(0x7B, 1);
+                return;
+            }
+        }
+    }
+    }
+    {
+    char *g = (char *)D_0013E633 + 0xE1D;
+    if (*(unsigned char *)(g + 0x12EB) != 0 && *(int *)(g + 0x2084) != 0x7B) {
+        if (func_001F9B88(*(float *)(g + 0x2F4) - (*(float *)(g + 0x88) + 0.25f)) < 1.0f
+            && *(float *)(g + 0x2F4) - *(float *)(g + 0x88) > 0.0f && *(float *)(g + 0x108) < 0.0f) {
+            if ((unsigned)(*(unsigned char *)(g + 0x20A4) - 1) < 2) {
+                func_L00_00211908();
+                return;
+            }
+            func_L00_0020BFA8();
+            func_L00_00222B80(0x7B, 1);
+            return;
+        }
+    }
+    }
+    return;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0020C568);

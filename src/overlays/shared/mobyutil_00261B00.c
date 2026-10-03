@@ -5,7 +5,59 @@
 INCLUDE_ASM("asm/overlays", func_L00_00261B00);
 INCLUDE_ASM("asm/overlays", func_L00_002623D0);
 INCLUDE_ASM("asm/overlays", func_L00_00262450);
-INCLUDE_ASM("asm/overlays", func_L00_002626A8);
+typedef int u128 __attribute__((mode(TI)));
+extern char D_0013E633[];
+extern float func_L00_00258C80(float lo, float hi);
+extern int func_L00_00258BC8(int, int);
+extern float func_L00_0025CC58(float *p, int n, float x, float y);
+extern int func_001F9938(void *);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern int func_L00_002594C8(void *, void *, void *, int, float, float, float, float);
+extern float func_00214358(void *, int, float);
+extern float func_001F9D48(void *, void *);
+extern float func_L00_001FF860(float, float);
+extern int func_001F9850(int);
+extern float func_L00_0025C7A8(float, float, float);
+
+// Steers a moby around: picks a wander heading, moves it and updates its heading toward a target.
+void func_L00_002626A8(char *moby, char *d, float a, float b) {
+    char *pos;
+    float v[4];
+    int r;
+    int t;
+    float dist;
+    if (*(short *)(d + 0x28) == 0) {
+        pos = moby + 0x10;
+        *(float *)(d + 0x24) = *(float *)(d + 0x24) + func_L00_00258C80(0.7853982f, 2.6179938f);
+        *(short *)(d + 0x2A) = func_L00_00258BC8(*(short *)(d + 0x2C), *(short *)(d + 0x2E));
+        *(short *)(d + 0x28) = 1;
+    } else {
+        func_L00_0025CC58((float *)(moby + 0x48), 0, *(float *)(d + 0x24), *(float *)(d + 0x18));
+        if (func_001F9938(d + 0x2A) != 0) *(short *)(d + 0x28) = 0;
+        pos = moby + 0x10;
+    }
+    qcopy(v, pos);
+    v[0] = v[0] + func_001F9F90(*(float *)(moby + 0x48)) * *(float *)(d + 0x14);
+    v[1] = v[1] + func_001F9FA8(*(float *)(moby + 0x48)) * *(float *)(d + 0x14);
+    r = func_L00_002594C8(moby, pos, v, 0, a, *(float *)(d + 0x10), b, 0.5235988f);
+    *(float *)(moby + 0x18) = func_00214358(pos, 0, 0.5f);
+    dist = func_001F9D48(pos, d);
+    if (r == 0 || *(float *)(d + 0x1C) < dist) {
+        *(float *)(d + 0x24) = func_L00_001FF860(*(float *)(d + 0) - *(float *)(moby + 0x10), *(float *)(d + 4) - *(float *)(moby + 0x14));
+        t = func_001F9850(0x1E);
+        *(short *)(d + 0x2A) = func_L00_00258BC8(t, func_001F9850(0x5A));
+        *(short *)(d + 0x28) = 1;
+    } else {
+        char *g = D_0013E633 + 0xE9D;
+        dist = func_001F9D48(pos, g);
+        if (dist < *(float *)(d + 0x20)) {
+            char *q = g - 0x80;
+            dist = dist / *(float *)(d + 0x20);
+            *(float *)(d + 0x24) = func_L00_0025C7A8(*(float *)(d + 0x24), func_L00_001FF860(*(float *)(moby + 0x10) - *(float *)(q + 0x80), *(float *)(moby + 0x14) - *(float *)(q + 0x84)), dist);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002629E0);
 INCLUDE_ASM("asm/overlays", func_L00_00262BC0);
 INCLUDE_ASM("asm/overlays", func_L00_00262DE8);
@@ -265,7 +317,54 @@ void func_L00_00264570(V *v) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00264690);
+typedef int u128_264690 __attribute__((mode(TI)));
+extern int func_001F4868(int);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9CA0(void *, void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9EE8(void *, void *, void *);
+extern void func_L00_001FD1D8(void *, void *, int);
+extern float D_L00_00166EC0[];
+extern float D_L00_001B07F0[];
+
+/* builds a set of four scaled vectors from a position and hands them to the draw helper */
+void func_L00_00264690(float *p, int b, float s, float t) {
+    float m[16];
+    int bb[4];
+    float c[8];
+    long g[4];
+    u128_264690 z = 0;
+    float up[4];
+    float v0[4], v1[4], v2[4], v4[4], v3[4];
+    float one = 1.0f;
+    int i;
+    float *r;
+    float *src;
+    *(u128_264690 *)up = z; up[2] = one; up[3] = one;
+    g[1] = func_001F4868(11);
+    g[3] = 0x8000000048LL;
+    g[2] = 0xFF9000000260LL;
+    g[0] = 5;
+    c[0] = 0; c[1] = 0; c[2] = 0; c[3] = one; c[4] = one; c[5] = 0; c[6] = one; c[7] = one;
+    qcopy(v4, p);
+    func_001F9BF0(v0, D_L00_00166EC0, v4);
+    func_L00_001FF4B0(v0, v0, one);
+    func_001F9CA0(v1, v0, up);
+    func_L00_001FF4B0(v1, v1, one);
+    func_001F9CA0(v2, v1, v0);
+    func_001F9C30(v3, v0, t);
+    func_001F9BD8(v4, v4, v3);
+    bb[3] = b; bb[2] = b; bb[1] = b; bb[0] = b;
+    src = D_L00_001B07F0;
+    r = m;
+    for (i = 3; i >= 0; i--) {
+        func_001F9C30(r, src, s);
+        src += 4;
+        func_001F9EE8(r, r, v0);
+        r += 4;
+    }
+    func_L00_001FD1D8(m, 0, 0);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00264860);
 INCLUDE_ASM("asm/overlays", func_L00_00264870);
 extern unsigned char D_0015EEB4_m[4] __asm__("D_0015EEB4") MACRO_ADDR;
@@ -363,7 +462,38 @@ void func_L00_00264E28(int a, int b, int c) {
     func_00116248(D_L00_00179218, msg_string(a), b);
     D_L00_0015F720 = c;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00264EA8);
+extern float D_L00_0015F660[] MACRO_ADDR;
+extern void *func_L00_00265050(char *src, int cls, float *pos, void *mat, int a8, int a9, float *v10, float *v11, float scale, float *v12);
+extern int func_L00_0025BCF8(void *, int, void *, void *, float);
+extern float func_00214158(void);
+
+/* Spawns a burst of effects on a moby: a fixed set at its own position, then randomly offset ones at points gathered around it. Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay_entities_002630b8.c, FUN_L00_00263e30. */
+void func_L00_00264EA8(char *m, int n, int cnt, int base, int range, int cnt2, int flag) {
+    char buf[256] __attribute__((aligned(16)));
+    float v[4] __attribute__((aligned(16)));
+    int mode = 0;
+    int i, k;
+    if (flag) {
+        mode = 2;
+    }
+    if (n > 0) {
+        if (cnt > 0) for (i = 0; i < cnt; i++) {
+            func_L00_00265050(m, n + i, (float *)(m + 0x10), m + 0x40, 0, mode, D_L00_0015F660, D_L00_0015F660, 0.0f, D_L00_0015F660);
+        }
+    }
+    if (n > 0 && range > 0) {
+        k = func_L00_0025BCF8(m, cnt2, buf, (void *)0xFFFF, 1000.0f);
+        if (k) {
+            for (i = 0; i < cnt2 && i < k; i++) {
+                func_001F9BC0(v);
+                v[0] = func_00214158();
+                v[1] = func_00214158();
+                v[2] = func_00214158();
+                func_L00_00265050(m, base + func_002140B0(range), (float *)(buf + i * 16), v, 0, mode, D_L00_0015F660, D_L00_0015F660, 0.0f, D_L00_0015F660);
+            }
+        }
+    }
+}
 extern void func_001FA1F8(void *, void *);
 extern float func_002140F8(float, float);
 extern float func_001F9878(float);

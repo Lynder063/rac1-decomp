@@ -23,6 +23,7 @@ import difflib
 import json
 import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -31,9 +32,34 @@ LOMBYTE = Path(os.environ.get("LOMBYTE", Path.home() / "Projects/Lombyte"))
 MAP = ROOT / "build-sn/lombyte_ntsc_pal_map.json"
 
 
-def functions(report: Path, key) -> list[tuple[int, int, str, bool]]:
+def their_report(lombyte: Path = LOMBYTE) -> dict | None:
+    """Lombyte's progress report, or None. It was committed as
+    progress/report.json until their #64; since then their CI publishes
+    it as report.json on the `progress` branch, and their
+    scripts/gen_progress_report.py writes build/progress/report.json."""
+    for path in (lombyte / "progress/report.json", lombyte / "build/progress/report.json"):
+        if path.exists():
+            return json.loads(path.read_text())
+    for ref in ("origin/progress", "progress"):
+        shown = subprocess.run(["git", "-C", str(lombyte), "show", f"{ref}:report.json"],
+                               capture_output=True, text=True)
+        if shown.returncode == 0:
+            return json.loads(shown.stdout)
+    return None
+
+
+def their_units() -> list[dict]:
+    report = their_report()
+    if report is None:
+        sys.exit(f"no Lombyte progress report in {LOMBYTE} (progress/report.json, "
+                 "build/progress/report.json or its progress branch): fetch it, or run its "
+                 "scripts/gen_progress_report.py")
+    return report["units"]
+
+
+def functions(units: list[dict], key) -> list[tuple[int, int, str, bool]]:
     rows = []
-    for unit in json.loads(report.read_text())["units"]:
+    for unit in units:
         # Both reports also hold level overlay code (Lombyte's level_NN/...
         # and shared/..., our overlays/...): those addresses are in the
         # levels' own address space, and would corrupt the alignment.
@@ -54,7 +80,7 @@ def overlay_pairs() -> list[dict]:
                   for u in json.loads((ROOT / "progress/report.json").read_text())["units"]
                   for f in u.get("functions", [])}
     theirs: dict[int, list] = {}
-    for unit in json.loads((LOMBYTE / "progress/report.json").read_text())["units"]:
+    for unit in their_units():
         for f in unit.get("functions", []):
             m = re.fullmatch(r"FUN_L(\d\d)_([0-9a-fA-F]{8})", f["name"])
             if m:
@@ -95,9 +121,9 @@ def definition(ntsc: str) -> tuple[str, str] | None:
 
 
 def build_map() -> list[dict]:
-    theirs = functions(LOMBYTE / "progress/report.json",
+    theirs = functions(their_units(),
                        lambda f: int(f.get("metadata", {}).get("virtual_address") or 0))
-    ours = functions(ROOT / "progress/report.json",
+    ours = functions(json.loads((ROOT / "progress/report.json").read_text())["units"],
                      lambda f: int(f["name"][5:], 16) if re.fullmatch(r"func_[0-9A-Fa-f]{8}", f["name"]) else None)
     match = difflib.SequenceMatcher(None, [s for _, s, _, _ in theirs], [s for _, s, _, _ in ours],
                                     autojunk=False)

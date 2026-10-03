@@ -1,7 +1,8 @@
 /* NON_MATCHING func_L18_002EBBF0 -- src/overlays/l18_veldin2/vendor_002A8400.c
- * Best so far: SIZE ours 1240 / retail 1236, checked 2026-10-01.
+ * Best so far: SIZE ours 1240 / retail 1236, checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * Cannot land as written (#define in a candidate): rewrite that in plain C first.
  * What the last attempts found:
  *   ## Round 1 (match worker, 14 of 16 runs)
  *   Function: Veldin 2 effect spawner. Copies self+0x10 (QVec aligned struct assign, no sq $zero: not a wall), spa

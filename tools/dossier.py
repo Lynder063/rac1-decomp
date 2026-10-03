@@ -24,6 +24,7 @@ and its neighbours there, and its relative from config/overlays/families.tsv.
 
 Scripts do this for free; every line here is a search a worker doesn't pay for.
 """
+from __future__ import annotations
 import json
 import re
 import subprocess

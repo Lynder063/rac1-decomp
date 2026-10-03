@@ -75,7 +75,47 @@ void func_L05_002DC1E8(unsigned char *m) {
         m[0xA4] = 0xFF;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L05_002DC2A8);
+extern int func_002140B0(int);
+extern float func_00214158(void);
+extern float func_002140F8(float, float);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_L01_00287F20(float *, float, float, int, int, int);
+
+/* Emits up to two particle effects around the moby, each in a random direction. */
+void func_L05_002DC2A8(unsigned char *moby) {
+    float v[3];
+    if (moby[0x31] != 0) {
+        if (func_002140B0(0x13) == 0) {
+            float a = func_00214158();
+            float z = 0.0f;
+            float b = func_002140F8(z, 0.1f);
+            float c = func_002140F8(z, 0.5f);
+            float e = func_002140F8(0.5f, 1.0f);
+            int s = func_001FA898_r(func_002140F8(120.0f, 180.0f));
+            v[0] = func_001F9F90(a) * b;
+            v[1] = func_001F9FA8(a) * b;
+            v[2] = z;
+            func_001F9BD8(v, v, moby + 0x10);
+            func_L01_00287F20(v, c, e, 0x30002028, 0x2020, func_001F9850(s));
+        }
+        if (func_002140B0(4) == 0) {
+            float a = func_00214158();
+            float z = 0.0f;
+            float b = func_002140F8(z, 0.1f);
+            float c = func_002140F8(z, 1.75f);
+            float e = func_002140F8(1.75f, 2.25f);
+            int s = func_001FA898_r(func_002140F8(120.0f, 180.0f));
+            v[0] = func_001F9F90(a) * b;
+            v[1] = func_001F9FA8(a) * b;
+            v[2] = z;
+            func_001F9BD8(v, v, moby + 0x10);
+            func_L01_00287F20(v, c, e, 0x20002020, 0x2030, func_001F9850(s));
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L05_002DC4C8);
 extern char *func_0020D348(int);
 extern void func_L00_00251E30(void *);
