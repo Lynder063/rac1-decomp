@@ -32,7 +32,7 @@ void func_L07_00320CD0(unsigned char *moby) {
                 char *o;
                 if (s == 1) idx = 3;
                 if (s == 2) idx = 4;
-                o = *(char **)(g + idx * 4 + 0x178);
+                o = *(char **)(g + (0x178 + idx * 4));
                 func_L00_00250800(o, 0, a0);
                 func_L00_00250800(o, 3, b0);
                 func_001F9BF0(c0, a0, b0);

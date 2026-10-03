@@ -20,8 +20,9 @@ typedef struct { char pad[0x20]; unsigned char state; } MobyState;
 int func_L18_002D74F8(unsigned char *moby, int b, int c) {
     char *data = *(char **)(moby + 0x78);
     int result = func_L00_002DCDA8(moby, b, c);
+    unsigned char state = ((MobyState *)moby)->state;
+    unsigned char moby_state = moby[0x20];
     if (result != 0) {
-        unsigned char state = ((MobyState *)moby)->state;
         if (state >= 3 && state <= 4) {
             if (state != 4) {
                 moby[0xBC] = state;
@@ -32,7 +33,7 @@ int func_L18_002D74F8(unsigned char *moby, int b, int c) {
             *(short *)(data + 0xC8) = 0;
             result = 0;
         }
-    } else if ((char)moby[0x20] == 4) {
+    } else if (moby_state == 4) {
         moby[0x20] = moby[0xBC];
     }
     return result;
