@@ -403,7 +403,7 @@ extern short D_L16_00161A4C;
 extern float D_0015EE70 MACRO_ADDR;
 extern float func_00214D28(float *, float, float);
 extern void func_001F49B0(void (*)(void), void *);
-extern void func_L16_002CB098(void);
+extern void func_L16_002CB098();
 extern void func_L16_002CAE18(unsigned char *);
 extern void func_L16_002CB000(int, void *);
 
@@ -561,7 +561,7 @@ int func_L16_002D00E8(char *moby, void *vec, float angle) {
     return 0;
 }
 extern int D_L16_0015F6B0 MACRO_ADDR;
-extern void func_L16_002D0328(void);
+extern void func_L16_002D0328();
 extern short D_L16_00161A9C;
 /* spins the level's rotating parts by the current angle and queues the draw callback */
 void func_L16_002D0238(char *moby) {
