@@ -9,6 +9,7 @@
  *   - run17 p15: BYTES 56; reusing h for the head pointer and if-form lo: worse, reverted
  *   - run18 p16: BYTES; MACRO_ADDR on D_0013E15A makes lui/addiu one la macro (adjacent like retail) but sched hoi
  *   - run19 p17: BYTES 99; tex/s statements with the MACRO_ADDR la: still hoisted; lo = old > v ? v : old: same $3
+ *   - permuter (16 workers, ~1h): best scores 35, 45; register allocation tie on loop min/max (v/s3 vs t0/a3)
  *   BEST p13.c BYTES 42/1620. Left: (1) first func_001F5800 call scheduling (retail sd tex, then lui/addiu s0 adja
  *   Notes for lead: the candidate calls func_L17_002EBF08 through a float-first alias (same EABI registers); reord
  */
