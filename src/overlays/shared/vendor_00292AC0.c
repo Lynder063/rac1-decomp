@@ -230,7 +230,37 @@ char *func_L03_002D65D0(char *a, char *pos, int c, int d, float f)
     }
     return m;
 }
-INCLUDE_ASM("asm/overlays", func_L03_002DC848);
+typedef struct {
+    char pad0[0x44];
+    short n;
+    char pad1[0x132];
+    char *m[1];
+} G_2DC848;
+extern void func_0020D960(char *, int, void *);
+extern int D_L03_0015F6A8 MACRO_ADDR;
+extern unsigned char D_0015EEB0[] MACRO_ADDR;
+extern G_2DC848 D_L03_0016C9E0;
+extern unsigned char D_L03_0017C5C0[];
+extern short D_L03_00161C44;
+
+/* Re-arms the matching entry of the level's moby list in mode 2 (func_L05_003188A8 with argument 1). */
+void func_L03_002DC848(char *a) {
+    if (D_L03_0015F6A8 == 2 && D_0015EEB0[0] != 0) {
+        int i;
+        for (i = 0; i < D_L03_0016C9E0.n; i++) {
+            char *moby = D_L03_0016C9E0.m[i];
+            if (*(short *)(moby + 0xA6) == *(short *)(a + 0xA6)) {
+                unsigned char *q = D_L03_0017C5C0;
+                if (q[1] == 0) {
+                    func_0020D960(moby, 1, q);
+                    *(float *)(q + 0x20) = *(float *)&D_L03_00161C44;
+                    *(float *)(q + 0x24) = *(float *)&D_L03_00161C44;
+                    *(float *)(q + 0x28) = *(float *)&D_L03_00161C44;
+                }
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L03_002DD6D8);
 INCLUDE_ASM("asm/overlays", func_L03_002DD840);
 extern void func_L02_002A5238(char *, float, int);

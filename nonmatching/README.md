@@ -156,7 +156,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L11_002CC9D0`](l11_pokitaru/func_L11_002CC9D0.c) | l11_pokitaru | 380 | BYTES 27/380 | 92.9% |
 | [`func_L01_002B9440`](shared/func_L01_002B9440.c) | shared | 28 | BYTES 2/28 | 92.9% |
 | [`func_L05_003108D0`](l05_rilgar/func_L05_003108D0.c) | l05_rilgar | 444 | BYTES 32/444 | 92.8% |
-| [`func_L12_002E7EE0`](shared/func_L12_002E7EE0.c) | shared | 232 | BYTES 17/232 | 92.7% |
 | [`func_L00_00272BC0`](shared/func_L00_00272BC0.c) | shared | 204 | BYTES 15/204 | 92.7% |
 | [`func_L13_002E9F90`](l13_gemlik/func_L13_002E9F90.c) | l13_gemlik | 460 | BYTES 34/460 | 92.6% |
 | [`func_L02_002E03B8`](l02_aridia/func_L02_002E03B8.c) | l02_aridia | 304 | BYTES 24/304 | 92.1% |
