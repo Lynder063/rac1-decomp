@@ -25,7 +25,12 @@ void func_0023E040(int *a) {
 int func_0023E050(int *a) {
     return a[0x2A];
 }
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E058); /* videoDecSetState(VideoDec *, unsigned int) */
+/* ReplaceStateField - returns old value and sets new value at offset 0xA8 */
+int func_0023E058(int *a, int val) {
+    int old = a[0x2A];
+    a[0x2A] = val;
+    return old;
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E068); /* videoDecPutTs(VideoDec *, long, long, unsigned char *, int) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E0B0); /* videoDecInputCount(VideoDec *) */
 LINKER_REMNANT("asm/remnants/text", func_0023E0D0);
