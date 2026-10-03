@@ -192,6 +192,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_0029AB38`](shared/func_L00_0029AB38.c) | shared | 480 | BYTES 88/480 | 81.7% |
 | [`func_L16_002E4408`](shared/func_L16_002E4408.c) | shared | 172 | BYTES 37/172 | 78.5% |
 | [`func_L01_002293D0`](shared/func_L01_002293D0.c) | shared | 364 | BYTES 79/364 | 78.3% |
+| [`func_L18_002D7310`](l18_veldin2/func_L18_002D7310.c) | l18_veldin2 | 484 | BYTES 107/484 | 77.9% |
 | [`func_L02_002F9ED8`](shared/func_L02_002F9ED8.c) | shared | 48 | BYTES 14/48 | 70.8% |
 | [`func_L18_002D9C90`](l18_veldin2/func_L18_002D9C90.c) | l18_veldin2 | 24 | BYTES 7/24 | 70.8% |
 | [`func_L14_002B5750`](l14_oltanis/func_L14_002B5750.c) | l14_oltanis | 368 | BYTES 116/368 | 68.5% |
@@ -514,7 +515,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L17_002F1FE0`](l17_fleet/func_L17_002F1FE0.c) | l17_fleet | 1040 | SIZE ours 1048 / retail 1040 | - |
 | [`func_L17_002F2BD8`](l17_fleet/func_L17_002F2BD8.c) | l17_fleet | 848 | SIZE ours 856 / retail 848 | - |
 | [`func_L18_002190C8`](l18_veldin2/func_L18_002190C8.c) | l18_veldin2 | 1328 | SIZE ours 1332 / retail 1328 | - |
-| [`func_L18_002D7310`](l18_veldin2/func_L18_002D7310.c) | l18_veldin2 | 484 | SIZE ours 488 / retail 484 | - |
 | [`func_L18_002D76D8`](l18_veldin2/func_L18_002D76D8.c) | l18_veldin2 | 788 | SIZE ours 780 / retail 788 | - |
 | [`func_L18_002D8F10`](l18_veldin2/func_L18_002D8F10.c) | l18_veldin2 | 1092 | SIZE ours 1096 / retail 1092 | - |
 | [`func_L18_002D96B0`](l18_veldin2/func_L18_002D96B0.c) | l18_veldin2 | 1104 | SIZE ours 1100 / retail 1104 | - |
