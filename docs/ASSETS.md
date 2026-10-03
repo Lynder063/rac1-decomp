@@ -16,6 +16,14 @@ contains no game data.
   of these layouts would have had to be worked out from the game's code
   and VU microcode. The table below lists what came from where, and the
   sections further down say where a layout rests on Wrench alone.
+- **[ReRAC](https://github.com/re-rac/rerac)** (ISC), a native PC port of
+  the US release. Its format crate and notes give the moby instance record
+  and what the game's level loader does with each field
+  (`crates/rc-formats/src/gameplay.rs`, `docs/plan/moby_render_notes.md`).
+  The PAL gameplay file has the same layout.
+- **[Lombyte](https://github.com/mateuszklysz/Lombyte)** (MIT): the moby class
+  names the editor shows (`tools/extract/moby_classes.tsv`), which it joins
+  from each level's class dispatch table and Wrench's class names.
 - **[Replanetizer](https://github.com/RatchetModding/Replanetizer)** by
   RatchetModding contributors (GPL-3.0-or-later). It reads the PS3 HD
   collection's files, whose layouts differ from the PS2 disc. The earlier
@@ -299,6 +307,32 @@ Shrubs follow Wrench's shrub reader.
 In both tie and shrub placements, the matrix's W component (+0x4c) holds
 0.01 on 89% of ties and 99% of shrubs, and 0.0 on the rest. Its meaning is
 unknown, so the Godot scenes record it when it isn't 0.01.
+
+## Mobys
+
+Mobys are the level's objects with behaviour: Ratchet's spawn point,
+crates, bolts, enemies, NPCs, vendors, platforms. Only their placements
+are extracted so far; the editor shows each one as a marker labelled with
+its class.
+
+- **Placements:** PAL gameplay +0x44 points to a count, 12 bytes of
+  padding, then 0x78-byte instances (16,232 on the 19 levels):
+  - +0x00 record size (always 0x78), +0x18 class, +0x1c instance scale;
+  - +0x08 spawn flags and +0x0c spawn id: the save-state tests that decide
+    whether the moby is created;
+  - +0x20 draw distance and +0x24 update distance, integers (64 on most);
+  - +0x30 position and +0x3c Euler angles in radians, rotation
+    R = Rz(z) · Ry(y) · Rx(x);
+  - +0x48 group, +0x58 pvar index (the instance's class variables, -1 for
+    none), +0x60 mode bits, +0x64 ambient colour (three integers, 128 =
+    1.0), +0x70 light sets;
+  - +0x04, +0x10, +0x14, +0x4c/+0x50 (rooting), +0x54, +0x5c (occlusion)
+    and +0x74 as ReRAC describes them; +0x28 and +0x2c always hold 32 and
+    64.
+
+The Godot scenes keep every field a packer needs: the transform, plus
+node metadata for the fields that differ from the value most instances
+store (`tools/extract/mobys.py`, `USUAL`).
 
 ## Sky
 

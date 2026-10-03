@@ -9,11 +9,14 @@ Each level is a scene, levels/level_NN/level_NN.tscn:
         Terrain           terrain.glb, one node per fragment (editable children)
         Ties/Tie_NNNN     instances of ties/tie_<class>.glb
         Shrubs/Shrub_NNNN instances of shrubs/shrub_<class>.glb
+        Mobys/Moby_NNNN   instances of mobys/moby_<class>.tscn: for now a
+                          marker and a label naming the class
 
 Placements are node transforms in game units; fields the game stores
 per instance are node metadata (rc1_*), so a packer can write them back.
 """
 
+import colorsys
 import json
 import shutil
 import struct
@@ -23,6 +26,7 @@ from formats import png, unpack
 from gltf import Gltf
 from level import Level
 from mesh import Mesh
+from mobys import moby_class_names, moby_instances
 from shrubs import shrub_classes, shrub_instances
 from sky import panorama, sky
 from terrain import terrain
@@ -181,6 +185,7 @@ class LevelWriter:
         self.write_objects("tie", ties, tie_instances(level.gameplay, ties))
         shrubs = shrub_classes(level)
         self.write_objects("shrub", shrubs, shrub_instances(level.gameplay, shrubs))
+        self.write_mobys(moby_instances(level.gameplay))
         return self.finish()
 
     def write_terrain(self, fragments: list[Mesh], lod: int) -> None:
@@ -210,6 +215,28 @@ class LevelWriter:
         self.stats["meshes"] += len({p["class_id"] for p in placements})
         self.stats[f"{family}s"] = {"classes": len(classes), "instances": len(placements),
                                     "class_triangles": sum(m.triangles for m in classes.values())}
+
+    def write_mobys(self, placements: list[dict]) -> None:
+        """Placed mobys, each an instance of its class's scene. Until class
+        meshes are extracted that scene is a marker and a label, so mobys
+        are not level geometry and stay out of the mesh counts and bounds.
+
+        rotation_order XYZ makes the Inspector show the game's own Euler
+        angles (R = Rz * Ry * Rx); the transform itself is exact either way.
+        """
+        names = moby_class_names()
+        scenes = {}
+        for class_id in sorted({p["class_id"] for p in placements}):
+            path = f"mobys/moby_{class_id}.tscn"
+            write_marker(self.dir / path, class_id, f"{class_id} {names[class_id]}" if class_id in names else str(class_id))
+            scenes[class_id] = self.scene.resource("PackedScene", f"{self.res}/{path}", f"moby_{class_id}")
+        self.scene.node("Mobys", "Game", "Node3D")
+        for p in placements:
+            fields = {f"metadata__rc1_{k}": v for k, v in {"index": p["index"], **p["fields"]}.items()}
+            self.scene.node(f"Moby_{p['index']:04}", "Game/Mobys", instance=scenes[p["class_id"]],
+                            rotation_order=0, transform=transform(p["matrix"]), **fields)
+        self.stats["mobys"] = {"classes": len(scenes), "named_classes": sum(c in names for c in scenes),
+                               "instances": len(placements)}
 
     def write_environment(self, data) -> None:
         """The sky as a panorama (sky.png), flat ambient light and a sun.
@@ -245,6 +272,23 @@ class LevelWriter:
         (self.dir / f"{self.name}.tscn").write_text(self.scene.text())
         (self.dir / "level.json").write_text(json.dumps(self.stats, indent=2) + "\n")
         return self.stats
+
+
+def write_marker(path: Path, class_id: int, label: str) -> None:
+    """A moby class's stand-in: a box coloured by class number, and a label
+    that faces the camera and fades out beyond 60 units."""
+    scene = Scene()
+    r, g, b = colorsys.hsv_to_rgb(class_id * 0.618034 % 1.0, 0.65, 0.95)
+    colour = scene.subresource("StandardMaterial3D", "colour",
+                               albedo_color=Raw(f"Color({number(r)}, {number(g)}, {number(b)}, 1)"))
+    box = scene.subresource("BoxMesh", "box", material=colour, size=Raw("Vector3(0.5, 0.5, 0.5)"))
+    scene.node(f"Moby_{class_id}", kind="Node3D", metadata__rc1_class=class_id)
+    scene.node("Marker", ".", "MeshInstance3D", transform=Raw("Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.25)"),
+               mesh=box)
+    scene.node("Label", ".", "Label3D", transform=Raw("Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.9)"),
+               visibility_range_end=60.0, billboard=1, pixel_size=0.006, text=label, font_size=48)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(scene.text())
 
 
 def write_project(project: Path, levels: list[int]) -> None:

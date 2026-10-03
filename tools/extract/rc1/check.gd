@@ -5,8 +5,9 @@ extends SceneTree
 ##   godot --headless --path PROJECT --script res://rc1/check.gd
 ##
 ## Every placed mesh must be textured; the counts, triangles and world
-## bounds of each level scene, and its sky panorama, must match what was
-## extracted.
+## bounds of each level scene, its sky panorama and its placed mobys must
+## match what was extracted. Moby markers are stand-ins, not geometry, so
+## they are counted on their own.
 
 
 func _initialize() -> void:
@@ -23,25 +24,30 @@ func _initialize() -> void:
 		var totals := {"instances": 0, "triangles": 0, "meshes": {}, "untextured": 0, "bounds": AABB()}
 		walk(root, Transform3D.IDENTITY, totals)
 		var sky := sky_size(root)
+		var mobys := moby_count(root)
 		root.free()
 		var low := Vector3(info.bounds[0][0], info.bounds[0][1], info.bounds[0][2])
 		var high := Vector3(info.bounds[1][0], info.bounds[1][1], info.bounds[1][2])
 		var box: AABB = totals.bounds
 		var expected_sky: Array = info.sky.panorama if info.has("sky") else [0, 0]
+		var expected_mobys: int = int(info.mobys.instances) if info.has("mobys") else 0
 		var ok: bool = (totals.instances == int(info.mesh_instances)
 			and totals.triangles == int(info.triangles)
 			and totals.meshes.size() == int(info.meshes)
 			and totals.untextured == 0
 			and sky == Vector2i(int(expected_sky[0]), int(expected_sky[1]))
+			and mobys == expected_mobys
 			and box.position.distance_to(low) < 0.01 and box.end.distance_to(high) < 0.01)
-		print("%s: %d instances, %d meshes, %d triangles, sky %s, bounds %s: %s" % [
-			name, totals.instances, totals.meshes.size(), totals.triangles, sky, box,
+		print("%s: %d instances, %d meshes, %d triangles, sky %s, %d mobys, bounds %s: %s" % [
+			name, totals.instances, totals.meshes.size(), totals.triangles, sky, mobys, box,
 			"ok" if ok else "MISMATCH"])
 		failed += 0 if ok else 1
 	quit(1 if failed else 0)
 
 
 func walk(node: Node, parent: Transform3D, totals: Dictionary) -> void:
+	if node.name == &"Mobys":
+		return
 	var here: Transform3D = parent * node.transform if node is Node3D else parent
 	if node is MeshInstance3D:
 		var mesh: Mesh = node.mesh
@@ -69,3 +75,14 @@ func sky_size(root: Node) -> Vector2i:
 	if material == null or material.panorama == null:
 		return Vector2i.ZERO
 	return Vector2i(material.panorama.get_width(), material.panorama.get_height())
+
+
+## Placed mobys: the children of Game/Mobys that are instances of a class scene.
+func moby_count(root: Node) -> int:
+	var mobys := root.get_node_or_null("Game/Mobys")
+	if mobys == null:
+		return 0
+	var count := 0
+	for child in mobys.get_children():
+		count += 1 if child.scene_file_path.begins_with("res://") and child.has_meta("rc1_index") else 0
+	return count

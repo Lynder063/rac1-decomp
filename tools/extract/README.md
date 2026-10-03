@@ -84,6 +84,7 @@ levels/level_NN/
   terrain.glb                one node per terrain fragment
   ties/tie_<class>.glb       one mesh per tie class
   shrubs/shrub_<class>.glb   one mesh per shrub class
+  mobys/moby_<class>.tscn    a moby class's marker and label (meshes later)
   sky.png                    the sky as a panorama, used by the WorldEnvironment
   textures/*.png             shared by the level's meshes
 ```
@@ -98,6 +99,7 @@ Level_NN
     Terrain             fragments Terrain_000... (editable children)
     Ties/Tie_NNNN       one node per placed tie
     Shrubs/Shrub_NNNN   one node per placed shrub
+    Mobys/Moby_NNNN     one node per placed moby (crates, enemies, NPCs...)
 ```
 
 To edit a level:
@@ -113,6 +115,17 @@ To edit a level:
   - ties only: `rc1_occlusion_index`, `rc1_uid`;
   - shrubs only: `rc1_colour`, raw integers;
   - `rc1_matrix_w`: only on objects that store 0.0 instead of the usual 0.01.
+- Mobys show as a coloured box with their class number and name
+  (`11 vendor`); the label fades out beyond 60 units. Their rotation in
+  the Inspector is the game's own Euler angles (rotation order XYZ). Their
+  metadata:
+  - always `rc1_index`, `rc1_spawn_id`, `rc1_group`, `rc1_pvar_index` and
+    `rc1_colour` (the ambient colour, 128 = 1.0);
+  - the other fields only when they differ from what most mobys store:
+    `rc1_spawn_flags` (0), `rc1_draw_distance` and `rc1_update_distance`
+    (64), `rc1_mode_bits` (32), `rc1_occlusion` (1), `rc1_light` (0),
+    `rc1_unknown_74` (-1), and a few unknown fields
+    ([docs/ASSETS.md](../../docs/ASSETS.md#mobys)).
 - Textures are ordinary PNGs. Editing one changes every mesh that uses it.
 
 Run a level (F6) to fly around it:
@@ -135,7 +148,7 @@ godot --headless --path assets/godot --script res://rc1/check.gd
 ```
 
 The Godot check loads every level scene and compares its meshes, triangles,
-textures, bounds and sky panorama with what the extractor wrote.
+textures, bounds, sky panorama and moby count with what the extractor wrote.
 
 ## Coverage
 
@@ -143,6 +156,7 @@ Extracted:
 
 - terrain (tfrags);
 - ties and shrubs, with their placements;
+- moby placements, as labelled markers;
 - the sky;
 - the textures they use.
 
@@ -157,7 +171,7 @@ Approximations:
   inferred rather than traced in the game's code. Sprites the game adds
   to the sky at run time are not included.
 
-Not yet extracted: mobys (animated objects), collision, audio, video and
+Not yet extracted: moby meshes and animations, collision, audio, video and
 each level's code overlay. [docs/ASSETS.md](../../docs/ASSETS.md) describes
 the formats and the evidence for them.
 
@@ -185,6 +199,10 @@ The decoders accept only the layouts found on this disc and raise
   lists which files each format came from.
 - **[Replanetizer](https://github.com/RatchetModding/Replanetizer)** by
   RatchetModding contributors, consulted for what fields mean.
+- **[ReRAC](https://github.com/re-rac/rerac)** (ISC): the moby instance
+  record and what each field does in the game's level loader.
+- **[Lombyte](https://github.com/mateuszklysz/Lombyte)** (MIT): the moby
+  class names on the markers (`moby_classes.tsv`, see its header).
 - **[OpenGOAL's jak-project](https://github.com/open-goal/jak-project)**,
   whose extractor was the model for extracting from your own disc.
 - **[Godot Engine](https://godotengine.org)** and the Khronos Group's
