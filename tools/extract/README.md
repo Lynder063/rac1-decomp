@@ -82,6 +82,7 @@ levels/level_NN/
   level_NN.tscn              the level
   level.json                 what was extracted: counts, bounds, code overlay
   terrain.glb                one node per terrain fragment
+  collision.glb              the collision mesh, coloured by surface type
   ties/tie_<class>.glb       one mesh per tie class
   shrubs/shrub_<class>.glb   one mesh per shrub class
   mobys/moby_<class>.tscn    a moby class's marker and label (meshes later)
@@ -97,6 +98,7 @@ Level_NN
   Sun                   a directional light, so shapes read in the editor
   Game                  turns the game's Z-up axes into Godot's Y-up
     Terrain             fragments Terrain_000... (editable children)
+    Collision           the collision layer, hidden until you show it
     Ties/Tie_NNNN       one node per placed tie
     Shrubs/Shrub_NNNN   one node per placed shrub
     Mobys/Moby_NNNN     one node per placed moby (crates, enemies, NPCs...)
@@ -138,6 +140,41 @@ Run a level (F6) to fly around it:
 | Shift | Faster |
 | Mouse wheel | Change speed |
 | F | Frame the terrain |
+| C | Show or hide the collision layer |
+
+## Collision layer
+
+`Game/Collision` is the level's baked collision mesh: the triangles the game
+tests Ratchet, bolts and shots against, with ties and shrubs already
+included. It is hidden by default (`visible` is off) so it does not hide the
+terrain. In the editor, click its eye icon in the Scene dock; in a running
+level press C. It is one translucent, unshaded mesh with a colour per
+surface, so it reads over the terrain. Triangles are double-sided here, but
+the game treats them as one-sided.
+
+The colour is the surface id, the low five bits of each face's type byte
+(the other bits choose footstep sounds and exclude the face from some
+queries). The game has no table of surface types, so the names are
+inferences from how its code tests them, and most ids are only colours:
+
+| Id | Colour | What is known |
+|---|---|---|
+| 31 (0x1f) | grey `#8c8c8c` | no special surface; most of every level |
+| 0 | blue `#3373ff` | water surface (the ground probe looks for the floor below it) |
+| 8, 9, 10, 12 | orange `#f27130`, `#30f2aa`, `#e230f2`, blue `#3091f2` | common; the game's wall and ledge checks test for these ids |
+| 11 (0x0b) | `#caf230` | the ground snap is skipped (some special floor) |
+| 13 (0x0d) | `#f23058` | liquid-like (level 12 only) |
+| 1-7, 14 | other hues | used in many levels; meaning unknown |
+
+The other ids are coloured by hue from the id. Each level's `level.json`
+lists its surfaces and how many triangles use each.
+
+The mesh is decoded from the level's collision block with every cell's
+faces merged, so a face that straddles several cells appears once.
+Vertices are quantised (1/16 unit across, 1/64 up), which leaves tiny
+gaps and some doubled faces. Hero-only walls and fences (invisible walls
+that only block the player) are in the block too, but they are not
+extracted yet.
 
 ## Checks
 
@@ -149,6 +186,8 @@ godot --headless --path assets/godot --script res://rc1/check.gd
 
 The Godot check loads every level scene and compares its meshes, triangles,
 textures, bounds, sky panorama and moby count with what the extractor wrote.
+The collision layer is not counted with the textured meshes; its triangles
+are compared with `level.json` on their own, and it must be hidden.
 
 ## Coverage
 
@@ -158,6 +197,7 @@ Extracted:
 - ties and shrubs, with their placements;
 - moby placements, as labelled markers;
 - the sky;
+- the collision mesh, as a hidden layer;
 - the textures they use.
 
 Approximations:
@@ -171,7 +211,7 @@ Approximations:
   inferred rather than traced in the game's code. Sprites the game adds
   to the sky at run time are not included.
 
-Not yet extracted: moby meshes and animations, collision, audio, video and
+Not yet extracted: moby meshes and animations, hero collision, audio, video and
 each level's code overlay. [docs/ASSETS.md](../../docs/ASSETS.md) describes
 the formats and the evidence for them.
 
@@ -183,7 +223,7 @@ the formats and the evidence for them.
 | `disc.py` | ISO files, sector table of contents, level headers |
 | `level.py` | A level's sections, core blocks and textures |
 | `formats.py` | Bounded reads, WAD decompression, code overlays, textures |
-| `terrain.py`, `ties.py`, `shrubs.py`, `sky.py` | Geometry and placements |
+| `terrain.py`, `ties.py`, `shrubs.py`, `sky.py`, `collision.py` | Geometry and placements |
 | `mesh.py`, `gltf.py` | The mesh type and the GLB writer |
 | `godot.py` | Project, scenes and level.json |
 
@@ -200,7 +240,9 @@ The decoders accept only the layouts found on this disc and raise
 - **[Replanetizer](https://github.com/RatchetModding/Replanetizer)** by
   RatchetModding contributors, consulted for what fields mean.
 - **[ReRAC](https://github.com/re-rac/rerac)** (ISC): the moby instance
-  record and what each field does in the game's level loader.
+  record and what each field does in the game's level loader, and the
+  collision block and the meaning of its surface bytes
+  ([docs/ASSETS.md](../../docs/ASSETS.md#collision)).
 - **[Lombyte](https://github.com/mateuszklysz/Lombyte)** (MIT): the moby
   class names on the markers (`moby_classes.tsv`, see its header).
 - **[OpenGOAL's jak-project](https://github.com/open-goal/jak-project)**,

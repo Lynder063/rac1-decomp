@@ -19,8 +19,12 @@ contains no game data.
 - **[ReRAC](https://github.com/re-rac/rerac)** (ISC), a native PC port of
   the US release. Its format crate and notes give the moby instance record
   and what the game's level loader does with each field
-  (`crates/rc-formats/src/gameplay.rs`, `docs/plan/moby_render_notes.md`).
-  The PAL gameplay file has the same layout.
+  (`crates/rc-formats/src/gameplay.rs`, `docs/plan/moby_render_notes.md`),
+  and the collision block and what the game's code does with it
+  (`docs/formats/collision_rac1.md`, `docs/plan/collision_queries.md`, in
+  turn based on Wrench's collision reader, `collision.cpp`). The PAL data
+  has the same layouts; our decoders were checked against the PAL disc
+  (see "Mobys" and "Collision").
 - **[Lombyte](https://github.com/mateuszklysz/Lombyte)** (MIT): the moby class
   names the editor shows (`tools/extract/moby_classes.tsv`), which it joins
   from each level's class dispatch table and Wrench's class names.
@@ -364,6 +368,48 @@ The extractor composites the shells in order into a panorama. Each layer
 is blended over the last by its alpha: the texture's alpha times the
 vertex alpha, with 0x80 as full. That is the PS2's usual MODULATE and
 alpha blend, inferred rather than traced in the game's code.
+
+## Collision
+
+The collision block is at the core offset in index +0x14 and ends at the
+next core block. All the layouts here are from ReRAC's notes; the checks
+are ours, on the PAL disc.
+
+- **Header:** two offsets, the mesh (0x40) and the hero groups (0 if none).
+  The mesh ends at the hero groups, or at the end of the block.
+- **Tree:** a grid of 4-unit cells, three levels deep, indexed Z, then Y,
+  then X. The root holds a signed base and a count, then 16-bit entries
+  (offset from the mesh / 4) to Z slabs; a slab holds a base, a count and
+  32-bit offsets to Y rows; a row holds a base, a count and a word per cell.
+  Zero means empty. All offsets are from the start of the mesh. A cell's
+  word is its leaf's offset in bits 8-31 and its size in 16-byte units in
+  the low byte.
+- **Leaf:** face count (16 bits), vertex count and quad count (bytes), the
+  vertices, the faces, then one byte per quad. Total size is rounded up
+  to 16. A vertex is one word: X in bits 0-9 and Y in 10-19, signed and in
+  1/16 units, Z in bits 20-31, signed and in 1/64 units, all from the
+  cell's centre (4 × cell + 2). A face is three vertex indices and a type
+  byte; the first quad-count faces are quads and take their fourth index
+  from the trailing bytes. The decoder checks each leaf's declared size
+  against its contents and each index against its vertex count.
+- **Faces:** the game's normal is (v2 − v0) × (v1 − v0), and faces are
+  one-sided. Quads are split as (v0, v1, v2) and (v0, v2, v3). A face is
+  stored in every cell it touches, so the decoder merges identical
+  triangles (the same three world positions and type) and then winds each
+  one the other way for glTF.
+- **Type byte:** bits 0-4 are the surface id (0x1f is none), 5-6 a
+  footstep class and bit 7 excludes the face from some queries. Surface
+  ids have no table; see the legend in the extractor's README.
+- **Hero groups:** a count and records of bounding sphere, triangle and
+  vertex counts and an offset, with unsigned 1/64 vertices. Only the count
+  is read, so far.
+
+Measured on the PAL disc (the 19 levels' `level.json`): 429,500 cells,
+2,374,105 stored faces and 1,165,544 distinct triangles, with surface ids
+0-5, 7-14 and 31, and 518 hero groups. ReRAC reports slightly lower
+cell and face totals on the NTSC-U disc; the two builds' levels differ.
+Drawn over the terrain (level 0, by eye), the mesh coincides with the
+terrain's footprint, which agrees with the axes and scales above.
 
 ## Table of contents groups
 
