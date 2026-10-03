@@ -100,7 +100,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_002353B8`](shared/func_L00_002353B8.c) | shared | 588 | BYTES 26/588 | 95.6% |
 | [`func_L02_002CCD18`](shared/func_L02_002CCD18.c) | shared | 44 | BYTES 2/44 | 95.5% |
 | [`func_L14_002B4128`](shared/func_L14_002B4128.c) | shared | 132 | BYTES 6/132 | 95.5% |
-| [`func_L00_00205B50`](shared/func_L00_00205B50.c) | shared | 196 | BYTES 9/196 | 95.4% |
 | [`func_L07_0030EF90`](l07_umbris/func_L07_0030EF90.c) | l07_umbris | 316 | BYTES 15/316 | 95.2% |
 | [`func_L00_002D19E8`](shared/func_L00_002D19E8.c) | shared | 1148 | BYTES 56/1148 | 95.1% |
 | [`func_L14_00302968`](l14_oltanis/func_L14_00302968.c) | l14_oltanis | 236 | BYTES 12/236 | 94.9% |
@@ -128,6 +127,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L01_002B9440`](shared/func_L01_002B9440.c) | shared | 28 | BYTES 2/28 | 92.9% |
 | [`func_L12_002E7EE0`](shared/func_L12_002E7EE0.c) | shared | 232 | BYTES 17/232 | 92.7% |
 | [`func_L02_002E03B8`](l02_aridia/func_L02_002E03B8.c) | l02_aridia | 304 | BYTES 24/304 | 92.1% |
+| [`func_L00_002DDDE8`](shared/func_L00_002DDDE8.c) | shared | 184 | BYTES 15/184 | 91.8% |
 | [`func_L15_002F8D9C`](l15_quartu/func_L15_002F8D9C.c) | l15_quartu | 12 | BYTES 1/12 | 91.7% |
 | [`func_L02_002DC2C0`](shared/func_L02_002DC2C0.c) | shared | 208 | BYTES 18/208 | 91.3% |
 | [`func_L00_0023FAB8`](shared/func_L00_0023FAB8.c) | shared | 184 | BYTES 16/184 | 91.3% |
@@ -151,6 +151,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L04_002CF440`](l04_eudora/func_L04_002CF440.c) | l04_eudora | 28 | BYTES 4/28 | 85.7% |
 | [`func_L01_002F0E60`](shared/func_L01_002F0E60.c) | shared | 112 | BYTES 17/112 | 84.8% |
 | [`func_L18_002D93C0`](l18_veldin2/func_L18_002D93C0.c) | l18_veldin2 | 128 | BYTES 20/128 | 84.4% |
+| [`func_L00_00205B50`](shared/func_L00_00205B50.c) | shared | 196 | BYTES 32/196 | 83.7% |
 | [`func_L13_002EB978`](l13_gemlik/func_L13_002EB978.c) | l13_gemlik | 372 | BYTES 63/372 | 83.1% |
 | [`func_L00_0029AB38`](shared/func_L00_0029AB38.c) | shared | 480 | BYTES 88/480 | 81.7% |
 | [`func_L16_002E4408`](shared/func_L16_002E4408.c) | shared | 172 | BYTES 37/172 | 78.5% |
