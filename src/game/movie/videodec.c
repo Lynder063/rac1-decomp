@@ -17,7 +17,10 @@ void func_0023E000(int *a) {
     a[0x2A] = 0;
 }
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E008); /* videoDecDelete(VideoDec *) */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E040); /* videoDecAbort(VideoDec *) */
+/* SetStateField - sets field at offset 0xA8 to 1 */
+void func_0023E040(int *a) {
+    a[0x2A] = 1;
+}
 /* GetStateField - returns field at offset 0xA8 */
 int func_0023E050(int *a) {
     return a[0x2A];
