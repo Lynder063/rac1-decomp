@@ -8,5 +8,8 @@
  */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023CE18);
-INCLUDE_ASM("asm/nonmatchings/text", func_0023CE28);
+/* GetStateCallbackResult - returns 1 */
+int func_0023CE28(void) {
+    return 1;
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023CE30);
