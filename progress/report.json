@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 22.702810131846288,
+  "fuzzy_match_percent": 22.70302560218572,
   "total_code": "3712808",
-  "matched_code": "734744",
-  "matched_code_percent": 19.78944238430859,
+  "matched_code": "734752",
+  "matched_code_percent": 19.78965785464802,
   "total_functions": 5109,
-  "matched_functions": 2779,
-  "matched_functions_percent": 54.39420630260325,
+  "matched_functions": 2780,
+  "matched_functions_percent": 54.4137796046193,
   "complete_code": "90120",
   "complete_code_percent": 2.4272733736837457,
   "total_units": 278,
@@ -17951,13 +17951,13 @@
   {
    "name": "game/movie/videodec",
    "measures": {
-    "fuzzy_match_percent": 0.9433962264150944,
+    "fuzzy_match_percent": 1.4150943396226414,
     "total_code": "1696",
-    "matched_code": "16",
-    "matched_code_percent": 0.9433962264150944,
+    "matched_code": "24",
+    "matched_code_percent": 1.4150943396226414,
     "total_functions": 22,
-    "matched_functions": 3,
-    "matched_functions_percent": 13.636363636363637,
+    "matched_functions": 4,
+    "matched_functions_percent": 18.181818181818183,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -18039,7 +18039,7 @@
     {
      "name": "func_0023E050",
      "size": "8",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "440",
      "metadata": {
       "virtual_address": "2351184"
@@ -53248,13 +53248,13 @@
    "id": "executable",
    "name": "Executable",
    "measures": {
-    "fuzzy_match_percent": 58.03693364827142,
+    "fuzzy_match_percent": 58.03865149237706,
     "total_code": "465700",
-    "matched_code": "269648",
-    "matched_code_percent": 57.90165342495168,
+    "matched_code": "269656",
+    "matched_code_percent": 57.90337126905733,
     "total_functions": 1680,
-    "matched_functions": 1304,
-    "matched_functions_percent": 77.61904761904762,
+    "matched_functions": 1305,
+    "matched_functions_percent": 77.67857142857143,
     "complete_code": "87704",
     "complete_code_percent": 18.832724930212585
    }
@@ -53278,13 +53278,13 @@
    "id": "game",
    "name": "Executable game code",
    "measures": {
-    "fuzzy_match_percent": 58.066882170025124,
+    "fuzzy_match_percent": 58.0686389908821,
     "total_code": "455368",
-    "matched_code": "263788",
-    "matched_code_percent": 57.92853252753817,
+    "matched_code": "263796",
+    "matched_code_percent": 57.93028934839514,
     "total_functions": 1646,
-    "matched_functions": 1273,
-    "matched_functions_percent": 77.33900364520049,
+    "matched_functions": 1274,
+    "matched_functions_percent": 77.39975698663426,
     "complete_code": "81844",
     "complete_code_percent": 17.973155777305386
    }

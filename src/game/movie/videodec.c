@@ -18,7 +18,10 @@ void func_0023E000(int *a) {
 }
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E008); /* videoDecDelete(VideoDec *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E040); /* videoDecAbort(VideoDec *) */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E050); /* videoDecGetState */
+/* GetStateField - returns field at offset 0xA8 */
+int func_0023E050(int *a) {
+    return a[0x2A];
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E058); /* videoDecSetState(VideoDec *, unsigned int) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E068); /* videoDecPutTs(VideoDec *, long, long, unsigned char *, int) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E0B0); /* videoDecInputCount(VideoDec *) */
