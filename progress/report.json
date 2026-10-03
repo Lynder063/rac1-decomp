@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 22.701840838524358,
+  "fuzzy_match_percent": 22.702379191167427,
   "total_code": "3712808",
-  "matched_code": "734720",
-  "matched_code_percent": 19.7887959732903,
+  "matched_code": "734728",
+  "matched_code_percent": 19.78901144362973,
   "total_functions": 5109,
-  "matched_functions": 2776,
-  "matched_functions_percent": 54.3354863965551,
+  "matched_functions": 2777,
+  "matched_functions_percent": 54.35505969857115,
   "complete_code": "90120",
   "complete_code_percent": 2.4272733736837457,
   "total_units": 278,
@@ -17639,13 +17639,13 @@
   {
    "name": "game/movie/readbuf",
    "measures": {
-    "fuzzy_match_percent": 0.0,
+    "fuzzy_match_percent": 3.125,
     "total_code": "256",
-    "matched_code": "0",
-    "matched_code_percent": 0.0,
+    "matched_code": "8",
+    "matched_code_percent": 3.125,
     "total_functions": 6,
-    "matched_functions": 0,
-    "matched_functions_percent": 0.0,
+    "matched_functions": 1,
+    "matched_functions_percent": 16.666666666666668,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -17664,7 +17664,7 @@
     {
      "name": "func_0023CD28",
      "size": "8",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "24",
      "metadata": {
       "virtual_address": "2346280"
@@ -41715,7 +41715,7 @@
   {
    "name": "Level 04: Eudora",
    "measures": {
-    "fuzzy_match_percent": 9.410315872598053,
+    "fuzzy_match_percent": 9.430038167938932,
     "total_code": "60784",
     "matched_code": "3504",
     "matched_code_percent": 5.764674914451171,
@@ -42109,7 +42109,7 @@
     {
      "name": "func_L04_002D48B8",
      "size": "148",
-     "fuzzy_match_percent": 91.89,
+     "fuzzy_match_percent": 99.99,
      "address": "923984",
      "metadata": {
       "virtual_address": "2967736"
@@ -53248,13 +53248,13 @@
    "id": "executable",
    "name": "Executable",
    "measures": {
-    "fuzzy_match_percent": 58.031780115954476,
+    "fuzzy_match_percent": 58.033497960060124,
     "total_code": "465700",
-    "matched_code": "269624",
-    "matched_code_percent": 57.89649989263474,
+    "matched_code": "269632",
+    "matched_code_percent": 57.89821773674039,
     "total_functions": 1680,
-    "matched_functions": 1301,
-    "matched_functions_percent": 77.44047619047619,
+    "matched_functions": 1302,
+    "matched_functions_percent": 77.5,
     "complete_code": "87704",
     "complete_code_percent": 18.832724930212585
    }
@@ -53263,7 +53263,7 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 17.63482344289133,
+    "fuzzy_match_percent": 17.63519263295215,
     "total_code": "3247108",
     "matched_code": "465096",
     "matched_code_percent": 14.323391768921761,
@@ -53278,13 +53278,13 @@
    "id": "game",
    "name": "Executable game code",
    "measures": {
-    "fuzzy_match_percent": 58.06161170745419,
+    "fuzzy_match_percent": 58.063368528311166,
     "total_code": "455368",
-    "matched_code": "263764",
-    "matched_code_percent": 57.92326206496723,
+    "matched_code": "263772",
+    "matched_code_percent": 57.925018885824215,
     "total_functions": 1646,
-    "matched_functions": 1270,
-    "matched_functions_percent": 77.15674362089915,
+    "matched_functions": 1271,
+    "matched_functions_percent": 77.21749696233293,
     "complete_code": "81844",
     "complete_code_percent": 17.973155777305386
    }
@@ -53323,7 +53323,7 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 13.725117880458157,
+    "fuzzy_match_percent": 13.725703666783946,
     "total_code": "2046480",
     "matched_code": "211992",
     "matched_code_percent": 10.35886009147414,
@@ -53398,7 +53398,7 @@
    "id": "level_04",
    "name": "Level 04: Eudora",
    "measures": {
-    "fuzzy_match_percent": 9.410315872598053,
+    "fuzzy_match_percent": 9.430038167938932,
     "total_code": "60784",
     "matched_code": "3504",
     "matched_code_percent": 5.764674914451171,
