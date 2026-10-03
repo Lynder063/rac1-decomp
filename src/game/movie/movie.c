@@ -9,7 +9,12 @@
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023B670);
 INCLUDE_ASM("asm/nonmatchings/text", func_0023B740);
-INCLUDE_ASM("asm/nonmatchings/text", func_0023BB40); /* switchThread */
+extern int func_00118BC0(int);
+
+/* switch_thread - calls func_00118BC0(1) */
+void func_0023BB40(void) {
+    func_00118BC0(1);
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023BB60); /* isAudioOK */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023BB90); /* initAll(int, int, int) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023BE38); /* termAll(void) */
