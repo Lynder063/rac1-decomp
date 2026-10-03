@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L12_002E41C8 -- src/overlays/l12_hoven/vendor_002C0310.c
- * Best so far: SIZE ours 480 / retail 476, checked 2026-10-02.
+ * Best so far: SIZE ours 480 / retail 476, checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

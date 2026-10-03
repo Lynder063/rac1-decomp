@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L17_0020E320 -- src/overlays/l17_fleet/help_00202740.c
- * Best so far: SIZE ours 1200 / retail 1192, checked 2026-10-02.
+ * Best so far: SIZE ours 1200 / retail 1192, checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

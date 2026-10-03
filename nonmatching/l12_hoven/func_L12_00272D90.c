@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L12_00272D90 -- src/overlays/l12_hoven/mobyutil_00272D90.c
- * Best so far: BYTES 17/148 (88.5% of the bytes match), checked 2026-10-02.
+ * Best so far: BYTES 17/148 (88.5% of the bytes match), checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  */

@@ -2,7 +2,7 @@
  * Best so far: SIZE ours 260 / retail 268, checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
- * No longer builds in its file (COMPILE failed, 2026-10-02): match its declarations to the file's first.
+ * No longer builds in its file (COMPILE failed, 2026-10-03): match its declarations to the file's first.
  * What the last attempts found:
  *   BreakableCrateVariantUpdate: switch on state (0 -> 1; 1 -> 2 once the found object's float at +0x2C is > 0; 2 
  *   p2..p6 all give the same bytes (28/268 differ): the call setup is scheduled differently (retail does addiu/%lo

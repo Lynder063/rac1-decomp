@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L00_0023E9A0 -- src/overlays/shared/initonce_0023E4C8.c
- * Best so far: BYTES 18/608 (97.0% of the bytes match), checked 2026-10-02.
+ * Best so far: BYTES 18/608 (97.0% of the bytes match), checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

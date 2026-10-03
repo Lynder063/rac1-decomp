@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L00_00250418 -- src/overlays/shared/mobyfunc_0024FD50.c
- * Best so far: BYTES 6/92 (93.5% of the bytes match), checked 2026-10-02.
+ * Best so far: BYTES 6/92 (93.5% of the bytes match), checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  */

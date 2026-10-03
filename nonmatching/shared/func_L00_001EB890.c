@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L00_001EB890 -- src/overlays/shared/camera_001EB508.c
- * Best so far: SIZE ours 768 / retail 764, checked 2026-10-02.
+ * Best so far: SIZE ours 768 / retail 764, checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

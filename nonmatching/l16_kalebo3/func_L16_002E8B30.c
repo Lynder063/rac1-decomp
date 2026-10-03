@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L16_002E8B30 -- src/overlays/l16_kalebo3/vendor_002E7C70.c
- * Best so far: SIZE ours 888 / retail 884, checked 2026-10-02.
+ * Best so far: SIZE ours 888 / retail 884, checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * Cannot land as written (#define in a candidate): rewrite that in plain C first.
@@ -21,7 +21,6 @@ extern void func_L16_002E9018(void *);
 extern void func_00215CA8(float,int *,int,void *,float *,int);
 extern void func_00214D28(float,float,float *);
 extern int func_L00_00200290(char *,float);
-extern void func_L16_002E8EA8(void *,void *);
 extern char *D_L16_001B0C30[];
 extern float D_0015EE70 MACRO_ADDR;
 extern float D_0015EE6C MACRO_ADDR;

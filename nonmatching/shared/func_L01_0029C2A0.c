@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L01_0029C2A0 -- src/overlays/shared/pause_0029C2A0.c
- * Best so far: BYTES 17/288 (94.1% of the bytes match), checked 2026-10-02.
+ * Best so far: BYTES 17/288 (94.1% of the bytes match), checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

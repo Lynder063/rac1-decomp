@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L00_00205B50 -- src/overlays/shared/help_00203E98.c
- * Best so far: BYTES 9/196 (95.4% of the bytes match), checked 2026-10-02.
+ * Best so far: BYTES 9/196 (95.4% of the bytes match), checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

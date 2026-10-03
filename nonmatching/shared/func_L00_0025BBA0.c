@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L00_0025BBA0 -- src/overlays/shared/mobyutil_00258BC8.c
- * Best so far: SIZE ours 164 / retail 168, checked 2026-10-02.
+ * Best so far: SIZE ours 164 / retail 168, checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
