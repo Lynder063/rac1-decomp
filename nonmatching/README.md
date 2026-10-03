@@ -346,7 +346,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L02_002D9D48`](shared/func_L02_002D9D48.c) | shared | 444 | SIZE ours 440 / retail 444 | - |
 | [`func_L02_002DF038`](l02_aridia/func_L02_002DF038.c) | l02_aridia | 136 | SIZE ours 140 / retail 136 | - |
 | [`func_L02_002E33F0`](l02_aridia/func_L02_002E33F0.c) | l02_aridia | 612 | SIZE ours 608 / retail 612 | - |
-| [`func_L02_002EBCE8`](shared/func_L02_002EBCE8.c) | shared | 548 | SIZE ours 560 / retail 548 | - |
 | [`func_L02_002EE0A0`](shared/func_L02_002EE0A0.c) | shared | 228 | COMPILE failed | - |
 | [`func_L03_00205E28`](l03_kerwan/func_L03_00205E28.c) | l03_kerwan | 512 | SIZE ours 508 / retail 512 | - |
 | [`func_L03_00250B88`](l03_kerwan/func_L03_00250B88.c) | l03_kerwan | 312 | SIZE ours 316 / retail 312 | - |

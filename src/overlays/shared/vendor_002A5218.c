@@ -159,7 +159,56 @@ void func_L02_002EBC08(char *moby) {
     d[15] = 2.5f;
     d[14] = 3.0f;
 }
-INCLUDE_ASM("asm/overlays", func_L02_002EBCE8);
+typedef struct {
+    float a[4];
+    float b[4];
+    int c[4];
+    float d[4];
+} L02SpriteData;
+extern char D_L02_00167440[];
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern int func_001F9908(int *);
+extern float func_001FA888(int);
+extern int func_001FA8A8_2ebce8(int, int, float) __asm__("func_001FA8A8");
+extern int func_001FA898_2ebce8(float) __asm__("func_001FA898");
+extern unsigned char *func_L00_00273E08(void *, int, unsigned char, int, int, int, int, float);
+
+extern float func_001F9B88(float);
+
+/* Animates a moby's four sprite layers (func_L16_002CAA18 lifted by 0.5 instead of 0.1). */
+void func_L02_002EBCE8(char *m) {
+    L02SpriteData *p = *(L02SpriteData **)(m + 0x78);
+    float d[4] __attribute__((aligned(16)));
+    float e[4] __attribute__((aligned(16)));
+    int i, col;
+    float f;
+
+    *(float *)(m + 0x18) += 0.5f;
+    func_001F9BF0(d, D_L02_00167440, m + 0x10);
+    func_L00_001FF4B0(d, d, -0.3f);
+    func_L00_001FF4B0(e, d, 0.1f);
+    func_001F9BD8(d, d, m + 0x10);
+    *(float *)(m + 0x18) -= 0.5f;
+    for (i = 0; i < 4; i++) {
+        float h = p->a[i] + p->b[i];
+        p->a[i] = h;
+        if (255.0f <= h) {
+            p->a[i] = h - 255.0f;
+        } else if (h <= 0.0f) {
+            p->a[i] = h + 255.0f;
+        }
+        if (func_001F9908(&p->c[i])) {
+            p->c[i] = func_001F9850(0xFF);
+        }
+        f = func_001FA888(func_001F9850(0xFF) - p->c[i]);
+        f = f / (float)func_001F9850(0xFF);
+        col = func_001FA8A8_2ebce8(0x4040FFFF, 0x1040FFFF, func_001F9B88(0.5f - f));
+        func_L00_00273E08(d, col, func_001FA898_2ebce8(p->a[i]) & 0xFF, 0x35, 1, 2, 0, p->d[i]);
+        func_001F9BD8(d, d, e);
+    }
+}
 extern int func_L00_0025A208(int *, int, int, int);
 extern int func_L00_0025A2F0(int *, int, int, int);
 extern void func_L00_00264690(void *, int, float, float);
