@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L18_002EB5E8 -- src/overlays/l18_veldin2/vendor_002A8400.c
- * Best so far: SIZE ours 916 / retail 924, checked 2026-10-03.
+ * Best so far: BYTES 172/924 (81.4% of the bytes match), checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -85,9 +85,9 @@ void func_L18_002EB5E8(char *moby) {
             if (i == 0) {
                 pkt[0].color[j] = func_001FA8A8(*(int *)&D_L18_00161F88 & 0xFFFFFF, *(int *)&D_L18_00161F88, *(float *)(data + 0x24));
             } else {
-                p->color[j] = ((int *)&D_L18_00161F88)[i];
+                pkt[i].color[j] = ((int *)&D_L18_00161F88)[i];
             }
-            qcopy(pkt[i].vtx[j], D_L18_001D9E40[i][j]);
+            qcopy(p->vtx[j], D_L18_001D9E40[i][j]);
         }
     }
     func_L00_001FD1D8(&pkt[0], m[0], 0);

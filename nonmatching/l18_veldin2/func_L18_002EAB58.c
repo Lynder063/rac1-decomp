@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L18_002EAB58 -- src/overlays/l18_veldin2/vendor_002A8400.c
- * Best so far: SIZE ours 1768 / retail 1764, checked 2026-10-03.
+ * Best so far: BYTES 339/1764 (80.8% of the bytes match), checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -89,11 +89,11 @@ void func_L18_002EAB58(char *moby) {
             }
             j = 0;
             while ((float)j < 10.0f) {
+                float pos[4];
                 Tab6 ta;
                 Tab6 tb;
-                QVec tmp;
                 float vel[4] __attribute__((aligned(16)));
-                float pos[4];
+                QVec tmp;
                 qcopy(pos, moby + 0x10);
                 j++;
                 pos[2] += func_002140F8(0.0f, 6.0f);

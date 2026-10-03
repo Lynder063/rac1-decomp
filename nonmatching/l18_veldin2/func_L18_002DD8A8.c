@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L18_002DD8A8 -- src/overlays/l18_veldin2/vendor_002A8400.c
- * Best so far: SIZE ours 1108 / retail 1116, checked 2026-10-03.
+ * Best so far: BYTES 74/1116 (93.4% of the bytes match), checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -50,26 +50,28 @@ extern short D_L18_00161D64;
 void func_L18_002DD8A8_impl(char *moby) __asm__("func_L18_002DD8A8");
 void func_L18_002DD8A8_impl(char *moby) {
     Q_dd8a8 quad[4];
-    V_dd8a8 mat;
+    V_dd8a8 mat[4];
+    V_dd8a8 ang;
     V_dd8a8 rot[3];
     float *p;
     int i, j, k;
     int c;
-    float t, r, d, s;
+    float t, r, d, s, gi;
 
     p = *(float **)(moby + 0x78);
-    func_001FA190(&mat);
-    qcopy(&mat.f[0] + 12, moby + 0x10);
-    mat.f[14] = mat.f[14] + *(float *)&D_L18_00161D54;
-    mat.f[15] = 1.0f;
+    func_001FA190(mat);
+    qcopy(&mat[3], moby + 0x10);
+    mat[3].f[2] = mat[3].f[2] + *(float *)&D_L18_00161D54;
+    mat[3].f[3] = 1.0f;
     for (i = 0; i < 4; i++) {
         quad[i].tex = func_001F4868(14);
+        gi = *(float *)&D_L18_00161D5C * (float)i;
         quad[i].unk70 = 0;
         quad[i].unk80 = 0xFF9000000260L;
         quad[i].unk88 = (long)*(int *)&D_L18_00161D34 | ((long)*(int *)&D_L18_00161D38 << 2) |
                         ((long)*(int *)&D_L18_00161D3C << 4) | ((long)*(int *)&D_L18_00161D40 << 6) | 0x8000000000L;
         t = p[1] + (float)i * 0.25f;
-        r = p[0] + *(float *)&D_L18_00161D5C * (float)i;
+        r = p[0] + gi;
         t = t - (float)func_001FA898_r(t);
         c = func_001FA8A8(*(int *)&D_L18_00161D48, *(int *)&D_L18_00161D4C, t);
         s = t * *(float *)&D_L18_00161D64;
@@ -100,14 +102,14 @@ void func_L18_002DD8A8_impl(char *moby) {
             quad[i].color[j] = c;
         }
     }
-    func_001F9BC0(&rot[2]);
-    rot[2].f[2] = *(float *)&D_L18_00161D50 * 0.017453292f;
-    func_001FA1F8(&rot[0], &rot[2]);
+    func_001F9BC0(&ang);
+    ang.f[2] = *(float *)&D_L18_00161D50 * 0.017453292f;
+    func_001FA1F8(&rot[0], &ang);
     for (k = 0; (float)k < 360.0f / *(float *)&D_L18_00161D50; k++) {
-        func_L00_001FD1D8(&quad[0], &mat, 0);
-        func_L00_001FD1D8(&quad[1], &mat, 0);
-        func_L00_001FD1D8(&quad[2], &mat, 0);
-        func_L00_001FD1D8(&quad[3], &mat, 0);
-        func_001FA4F0(&mat, &mat, &rot[0]);
+        func_L00_001FD1D8(&quad[0], mat, 0);
+        func_L00_001FD1D8(&quad[1], mat, 0);
+        func_L00_001FD1D8(&quad[2], mat, 0);
+        func_L00_001FD1D8(&quad[3], mat, 0);
+        func_001FA4F0(mat, mat, &rot[0]);
     }
 }

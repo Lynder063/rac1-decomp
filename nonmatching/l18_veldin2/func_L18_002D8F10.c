@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L18_002D8F10 -- src/overlays/l18_veldin2/vendor_002A8400.c
- * Best so far: SIZE ours 1096 / retail 1092, checked 2026-10-03.
+ * Best so far: BYTES 72/1092 (93.4% of the bytes match), checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -107,12 +107,12 @@ void func_L18_002D8F10(unsigned char *moby) {
         if (*(short *)(t + 0x30E) == 0 && *(unsigned char **)(t + 0x2FC) == moby && *(int *)(t + 0x2084) == 0x22) {
             int d;
             moby[0x20] = 5;
+            moby[0xBC] = 1;
             d = D_0015EE84_far;
             *(float *)(moby + 0x18) = *(float *)(moby + 0x18) - 1.5f;
             if (d == 0x12) {
                 D_0013D50F = 1;
             }
-            moby[0xBC] = 1;
         }
         if (func_001F9D48(moby + 0x10, D_0013E633 + 0xE9D) < 2.5f) {
             char *q = (char *)(data = (Data *)(D_0014171B + 0x34D));
@@ -128,7 +128,7 @@ void func_L18_002D8F10(unsigned char *moby) {
                         *(unsigned short *)(q + 0x38A) = func_001F9850(*(int *)&D_0015EFA4) / 600;
                     }
                 } else {
-                    *(unsigned short *)(q + 0x388) = *(unsigned short *)(q + 0x388) + 1;
+                    (*(unsigned short *)(q + 0x388))++;
                     {
                         int b, r = func_001F9850(a) / 600;
                         b = *(int *)&D_0015EE84;
@@ -136,7 +136,7 @@ void func_L18_002D8F10(unsigned char *moby) {
                             *(unsigned short *)(q + 0x38A) = func_001F9850(*(int *)&D_0015EFA4) / 600;
                             b = D_0015EE84_far2;
                         }
-                        *(unsigned int *)(q + 0x38C) = *(unsigned int *)(q + 0x38C) | (1 << b) | 0x80000000;
+                        *(unsigned int *)(q + 0x38C) = *(unsigned int *)(q + 0x38C) | 0x80000000 | (1 << b);
                     }
                 }
             }
