@@ -2,7 +2,7 @@
  * Best so far: BYTES 56/1148 (95.1% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
- * No longer builds in its file (COMPILE failed, 2026-10-02): match its declarations to the file's first.
+ * No longer builds in its file (COMPILE failed, 2026-10-03): match its declarations to the file's first.
  * What the last attempts found:
  *   CrateDropBolts: crate break. Copies a 28-byte rodata table to a local (T28 struct assign), then either runs th
  *   Best candidate: build-sn/try/func_L00_002D19E8/base.c (BYTES 56/1148, same size, all mnemonics aligned except 

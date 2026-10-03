@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L14_002B0068 -- src/overlays/l14_oltanis/vendor_002ACCC0.c
- * Best so far: SIZE ours 260 / retail 252, checked 2026-10-02.
+ * Best so far: SIZE ours 260 / retail 252, checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -8,7 +8,6 @@
  *   Looks like a per-function flag / CSE-path difference (repeated lui for one symbol); reworded 6 ways (array vs 
  */
 extern int D_L14_001D8980[20];
-extern char *func_L14_002B0168(int, int *);
 extern void func_L14_002AEF88(char *);
 extern void func_L14_002AEC58(char *);
 

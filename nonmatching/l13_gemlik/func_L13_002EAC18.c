@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L13_002EAC18 -- src/overlays/l13_gemlik/vendor_002C2638.c
- * Best so far: SIZE ours 628 / retail 616, checked 2026-10-02.
+ * Best so far: SIZE ours 628 / retail 616, checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

@@ -7,6 +7,8 @@ Level code overlays: each level's program, which replaces the executable's
   python3 tools/overlays.py catalogue   # config/overlays/functions.tsv
   python3 tools/overlays.py families    # config/overlays/families.tsv
   python3 tools/overlays.py names       # config/overlays/names.tsv
+  python3 tools/overlays.py us-map      # config/overlays/us_map.tsv
+  python3 tools/overlays.py rerac-notes # config/overlays/rerac_notes.tsv
 
 `dump` writes every level's overlay records from the disc image
 (baserom/SCES_509.16.iso) to baserom/overlays/level_NN/, one file per
@@ -30,12 +32,23 @@ most similar one within 15% of its size, comparing masked instructions by
 alignment. Many level functions are another function compiled with small
 changes; once one of them is matched, its C is the starting point for the
 other. Relatives at 75% or more are written to config/overlays/families.tsv.
+
+`us-map` pairs every function of the US build (SCUS-97199: its executable
+and each level's overlay, as ReRAC extracts them to $RERAC/extracted,
+default ~/Projects/rerac) with its PAL counterpart, from the code alone:
+identical masked instructions first, then the functions left between
+those anchors by similarity (docs/OVERLAYS.md, "US map"). `rerac-notes`
+puts ReRAC's documented names and notes on our functions through it.
 """
 import bisect
+import csv
 import difflib
 import hashlib
 import json
+import os
+import re
 import struct
+import subprocess
 import sys
 from pathlib import Path
 
@@ -194,13 +207,15 @@ def read_levels() -> dict[int, dict]:
     return levels
 
 
-def exe_functions() -> list[tuple[str, int, int, bytes]]:
-    """(name, address, size, bytes) of the executable's game-text functions."""
+def exe_functions(everything: bool = False) -> list[tuple[str, int, int, bytes]]:
+    """(name, address, size, bytes) of the executable's game-text functions,
+    or with EVERYTHING of all its functions (core and libgcc too)."""
     elf = ELF.read_bytes()
     report = json.loads((ROOT / "progress/report.json").read_text())
     out = []
     for unit in report["units"]:
-        if not unit["name"].startswith("game/"):
+        cats = (unit.get("metadata") or {}).get("progress_categories", [])
+        if not (unit["name"].startswith("game/") or everything and "executable" in cats):
             continue
         for f in unit["functions"]:
             va, size = int(f["name"][5:], 16), int(f["size"])
@@ -409,8 +424,313 @@ def names() -> None:
           f"Written to {NAMES.relative_to(ROOT)}.")
 
 
+RERAC = Path(os.environ.get("RERAC", Path.home() / "Projects/rerac"))
+US_LEVELS = RERAC / "extracted/levels"          # NN/overlay.bin
+US_ELF = RERAC / "extracted/boot/SCUS_971.99"
+US_MAP = ROOT / "config/overlays/us_map.tsv"
+EXE_TEXT = ("core.text", ".text")              # the executables' code sections
+WINDOW = 0x1000          # how far from where the last one was a PAL function's US copy is looked for
+ALIGNED = 0.5            # least similarity for a pairing between anchors
+SIMILAR = 0.8            # least similarity for a pairing found elsewhere in the program
+
+
+def elf_sections(path: Path) -> dict[str, tuple[int, bytes]]:
+    """name -> (address, bytes) of an ELF's sections."""
+    b = path.read_bytes()
+    shoff, = struct.unpack_from("<I", b, 0x20)
+    entsize, count, names_at = struct.unpack_from("<3H", b, 0x2E)
+    strtab = struct.unpack_from("<6I", b, shoff + names_at * entsize)[4]
+    out = {}
+    for i in range(count):
+        name, _type, _flags, addr, off, size = struct.unpack_from("<6I", b, shoff + i * entsize)
+        out[b[strtab + name:b.index(b"\0", strtab + name)].decode()] = (addr, b[off:off + size])
+    return out
+
+
+def project(data: bytes, base: int, pal_base: int, funcs) -> list[tuple[int, int]]:
+    """Word spans [start, end) in DATA (a US text at BASE) of the PAL
+    functions FUNCS ((address, size, name, bytes) in address order, from the
+    text at PAL_BASE) whose masked instructions occur there: the occurrence
+    nearest where the last one found puts it, within WINDOW bytes. Both
+    builds link their code in one order, so the distance between copies only
+    drifts. A short function must sit exactly there, or at a start split()
+    finds: its few instructions occur in many places."""
+    m = masked(data)
+    starts = {off for off, _ in split(data, base)}
+    delta = base - pal_base
+    spans = []
+    for addr, _size, _name, body in funcs:
+        fm = trim(masked(body))
+        if not fm:
+            continue
+        expected = addr + delta - base
+        hi = min(len(m), expected + WINDOW + len(fm))
+        best, i = None, m.find(fm, max(0, expected - WINDOW), hi)
+        while i >= 0:
+            if i % 4 == 0 and (i == expected or i in starts or len(fm) >= 64) \
+                    and (best is None or abs(i - expected) < abs(best - expected)):
+                best = i
+            i = m.find(fm, i + 1, hi)
+        if best is not None:
+            delta = base + best - addr
+            spans.append((best // 4, (best + max(len(fm), code_size(body))) // 4))
+    return spans
+
+
+def us_functions(data: bytes, base: int, pal_base: int, funcs) -> list[tuple[int, int, bytes]]:
+    """(address, size, bytes) of each function of a US text: split()'s
+    boundaries and those of the PAL functions FUNCS found in it (project()),
+    less split()'s starts inside one of those (an early return, a call into
+    its middle), so the US functions are cut as their PAL counterparts are.
+    Pieces of nothing but padding (zero words, or the 0xCDCDCDCD the
+    executable's core text is padded with) are left out."""
+    spans = project(data, base, pal_base, funcs)
+    inside = {k for s, e in spans for k in range(s + 1, e)}
+    extra = {s for s, _ in spans} | {e for _, e in spans}
+    starts = sorted({off // 4 for off, _ in split(data, base, extra)} - inside)
+    out = []
+    for a, b in zip(starts, starts[1:] + [len(data) // 4]):
+        body = data[a * 4:b * 4]
+        if any(x not in (0, 0xCDCDCDCD) for x in words(body)):
+            out.append((base + a * 4, code_size(body), body))
+    return out
+
+
+def similarity(a: tuple, b: tuple, least: float) -> float:
+    """How alike two functions' masked instructions are (difflib's ratio),
+    or 0 below LEAST."""
+    sm = difflib.SequenceMatcher(None, a, b, autojunk=False)
+    if sm.real_quick_ratio() < least or sm.quick_ratio() < least:
+        return 0.0
+    r = sm.ratio()
+    return r if r >= least else 0.0
+
+
+def align(ui: list[int], pj: list[int], uw: list, pw: list, least: float) -> list[tuple[int, int, float]]:
+    """The in-order pairing of US functions UI with PAL functions PJ, over
+    pairs at least LEAST alike, with the largest total similarity."""
+    n, m = len(ui), len(pj)
+    if not n or not m:
+        return []
+    sim = [[similarity(uw[i], pw[j], least) for j in pj] for i in ui]
+    best = [[0.0] * (m + 1) for _ in range(n + 1)]
+    for a in range(n - 1, -1, -1):
+        for b in range(m - 1, -1, -1):
+            best[a][b] = max(best[a + 1][b], best[a][b + 1],
+                             sim[a][b] + best[a + 1][b + 1] if sim[a][b] else 0.0)
+    out, a, b = [], 0, 0
+    while a < n and b < m:
+        if sim[a][b] and best[a][b] == sim[a][b] + best[a + 1][b + 1]:
+            out.append((ui[a], pj[b], sim[a][b]))
+            a, b = a + 1, b + 1
+        elif best[a][b] == best[a + 1][b]:
+            a += 1
+        else:
+            b += 1
+    return out
+
+
+def pair_program(us, pal, lookup) -> dict[int, tuple[str, str, float]]:
+    """US function index -> (PAL name, method, similarity), for one program:
+    US (address, size, bytes) and PAL (address, size, name, bytes) functions
+    in address order, and LOOKUP, fingerprint -> name for code found once in
+    the whole PAL build."""
+    ufp = [fingerprint(b) for *_, b in us]
+    pfp = [fingerprint(b) for *_, b in pal]
+    uw = [words(masked(trim(b))) for *_, b in us]
+    pw = [words(masked(trim(b))) for *_, b in pal]
+    result, used = {}, set()
+    blocks = difflib.SequenceMatcher(None, ufp, pfp, autojunk=False).get_matching_blocks()
+    for a, b, n in blocks:
+        for k in range(n):
+            result[a + k] = (pal[b + k][2], "fingerprint", 1.0)
+            used.add(b + k)
+    where = {}
+    for j, p in enumerate(pal):
+        where.setdefault(p[2], []).append(j)
+    for i, fp in enumerate(ufp):
+        if i not in result and fp in lookup and us[i][1] >= 16:     # not a stub found everywhere
+            result[i] = (lookup[fp], "fingerprint", 1.0)
+            if len(where.get(lookup[fp], ())) == 1:
+                used.add(where[lookup[fp]][0])
+    prev = (0, 0)
+    for a, b, n in blocks:
+        ui = [i for i in range(prev[0], a) if i not in result]
+        pj = [j for j in range(prev[1], b) if j not in used]
+        for i, j, s in align(ui, pj, uw, pw, ALIGNED):
+            result[i] = (pal[j][2], "aligned", s)
+            used.add(j)
+        prev = (a + n, b + n)
+    candidates = []
+    left = [j for j in range(len(pal)) if j not in used]
+    for i in range(len(us)):
+        if i in result:
+            continue
+        for j in left:
+            if 0.85 <= us[i][1] / max(pal[j][1], 1) <= 1.15:
+                s = similarity(uw[i], pw[j], SIMILAR)
+                if s:
+                    candidates.append((s, i, j))
+    for s, i, j in sorted(candidates, reverse=True):
+        if i not in result and j not in used:
+            result[i] = (pal[j][2], "similar", s)
+            used.add(j)
+    return result
+
+
+def read_us_map() -> dict[tuple[str, int], tuple[str, int, str, str, float]]:
+    """(program, US address) -> (PAL name or "", US size, method, similarity)
+    from config/overlays/us_map.tsv."""
+    rows = {}
+    for line in US_MAP.read_text().splitlines():
+        if line.startswith("#"):
+            continue
+        program, addr, size, pal, method, sim = line.split("\t")
+        rows[(program, int(addr, 16))] = ("" if pal == "-" else pal, int(size), method,
+                                          float(sim) if sim != "-" else 0.0)
+    return rows
+
+
+def us_map() -> None:
+    """config/overlays/us_map.tsv: each US function's PAL counterpart
+    (docs/OVERLAYS.md, "US map")."""
+    if not US_ELF.exists() or not US_LEVELS.is_dir():
+        sys.exit(f"no ReRAC extraction at {RERAC}/extracted (set $RERAC)")
+    from formats import overlay_sections
+    fps = {}
+    for line in CATALOGUE.read_text().splitlines():
+        if not line.startswith("#"):
+            name, _kind, _size, fp, _rest = line.split("\t", 4)
+            fps[fp] = name
+    exe = sorted((addr, size, name, b) for name, addr, size, b in exe_functions(everything=True))
+    exe_fps, seen = {}, set()
+    for _, _, name, b in exe:
+        fp = fingerprint(b)
+        if fp in seen:
+            exe_fps.pop(fp, None)          # in the executable more than once: no single name
+        else:
+            exe_fps[fp] = name
+        seen.add(fp)
+    programs = []                          # (program, [(us base, us text, pal base, pal functions)])
+    us_elf, pal_elf = elf_sections(US_ELF), elf_sections(ELF)
+    programs.append(("boot", [(*us_elf[s], pal_elf[s][0],
+                               [f for f in exe if pal_elf[s][0] <= f[0] < pal_elf[s][0] + len(pal_elf[s][1])])
+                              for s in EXE_TEXT]))
+    texts = {}
+    for d in sorted(DUMP.glob("level_*")):
+        text = next(r for r in json.loads((d / "manifest.json").read_text())["records"] if r["name"] == "text")
+        texts[int(d.name[6:])] = (text["address"], (d / "text.bin").read_bytes())
+    in_level: dict[int, list] = {}
+    for name, _kind, size, places in read_catalogue():
+        for level, addr in places:
+            base, data = texts[level]
+            in_level.setdefault(level, []).append((addr, size, name, data[addr - base:addr - base + size]))
+    for level in sorted(texts):
+        raw = (US_LEVELS / f"{level:02d}/overlay.bin").read_bytes()
+        rec = overlay_sections(raw)["sections"][RECORD_NAMES.index("text")]
+        programs.append((f"level_{level:02d}", [(rec["address"], raw[rec["offset"]:rec["offset"] + rec["bytes"]],
+                                                 texts[level][0], sorted(in_level[level]))]))
+    rows, totals = [], {}
+    for program, sections in programs:
+        us, pal = [], []
+        for base, data, pal_base, funcs in sections:
+            us += us_functions(data, base, pal_base, funcs)
+            pal += funcs
+        # The executable's own names come first in the executable, the catalogue's in a level.
+        lookup = {**fps, **exe_fps} if program == "boot" else {**exe_fps, **fps}
+        result = pair_program(us, pal, lookup)
+        for i, (addr, size, _b) in enumerate(us):
+            name, method, sim = result.get(i, ("-", "-", None))
+            rows.append(f"{program}\t{addr:08X}\t{size}\t{name}\t{method}\t" + ("-" if sim is None else f"{sim:.2f}"))
+            t = totals.setdefault(program, {"functions": 0, "bytes": 0})
+            t["functions"] += 1
+            t["bytes"] += size
+            if sim is not None:
+                t[method] = t.get(method, 0) + 1
+                t["mapped"] = t.get("mapped", 0) + 1
+                t["mapped bytes"] = t.get("mapped bytes", 0) + size
+    US_MAP.write_text(
+        "# US (SCUS-97199) to PAL (SCES-50916) function map, from the code alone: python3 tools/overlays.py us-map\n"
+        "# program: boot (the US executable) or level_NN (level NN's overlay); the US address and size of a function;\n"
+        "# its PAL counterpart (config/overlays/functions.tsv's name, func_X for the executable's), or - if none.\n"
+        "# US functions are each text cut by split() and at the PAL functions found in it (masked instructions,\n"
+        "# near where the last one was), so they are cut as their counterparts are. Methods, in order:\n"
+        "#   fingerprint  identical instructions with address fields masked (identity()): aligned in address order\n"
+        "#                with the same program's PAL functions, else (16 bytes or more) code found once in the PAL\n"
+        "#                catalogue or executable\n"
+        f"#   aligned      between two fingerprint anchors, paired in order by similarity (at least {ALIGNED})\n"
+        f"#   similar      elsewhere in the same program, the most similar unpaired function (at least {SIMILAR},\n"
+        "#                size within 15%)\n"
+        "# similarity: difflib's ratio over masked instructions (mask()); 1.00 when only constants differ.\n"
+        "# Addresses and names only; regenerate with the ReRAC extraction (docs/OVERLAYS.md, \"US map\").\n"
+        "# program\tus address\tus size\tpal\tmethod\tsimilarity\n" + "\n".join(rows) + "\n")
+    print(f"{'program':<10} {'functions mapped':>20} {'bytes mapped':>24}  fingerprint/aligned/similar")
+    whole = {}
+    for program, t in totals.items():
+        for k, v in t.items():
+            whole[k] = whole.get(k, 0) + v
+    for program, t in [*totals.items(), ("total", whole)]:
+        print(f"{program:<10} {t.get('mapped', 0):>6}/{t['functions']:<6} {t.get('mapped', 0) / t['functions']:>6.1%}"
+              f" {t.get('mapped bytes', 0):>8}/{t['bytes']:<8} {t.get('mapped bytes', 0) / t['bytes']:>6.1%}"
+              f"  {t.get('fingerprint', 0)}/{t.get('aligned', 0)}/{t.get('similar', 0)}")
+    print(f"Written to {US_MAP.relative_to(ROOT)}.")
+
+
+RERAC_NOTES = ROOT / "config/overlays/rerac_notes.tsv"
+NOTE_LENGTH = 160
+
+
+def rerac_notes() -> None:
+    """config/overlays/rerac_notes.tsv: ReRAC's names and notes for the
+    functions its docs discuss, on our names through us_map.tsv
+    (docs/OVERLAYS.md, "ReRAC notes")."""
+    doc = RERAC / "tools/ghidra/names/doc_names.csv"
+    if not doc.exists():
+        sys.exit(f"no ReRAC checkout at {RERAC} (set $RERAC)")
+    if not US_MAP.exists():
+        sys.exit(f"no {US_MAP.relative_to(ROOT)}: run `python3 tools/overlays.py us-map` first")
+    commit = subprocess.run(["git", "-C", str(RERAC), "rev-parse", "--short", "HEAD"],
+                            capture_output=True, text=True).stdout.strip() or "unknown"
+    mapped = read_us_map()
+    rows, missed = [], {"not a function start": 0, "no PAL counterpart": 0, "program not known": 0}
+    with doc.open(newline="") as f:
+        for r in csv.DictReader(f):
+            if r["kind"] != "fn":
+                continue
+            m = re.fullmatch(r"level(\d\d)", r["program"])
+            program = "boot" if r["program"] == "boot" else f"level_{m.group(1)}" if m else None
+            if program is None:
+                missed["program not known"] += 1
+                continue
+            row = mapped.get((program, int(r["address"], 16)))
+            if row is None:
+                missed["not a function start"] += 1
+                continue
+            if not row[0]:
+                missed["no PAL counterpart"] += 1
+                continue
+            note = " ".join(r["note"].split())
+            if len(note) > NOTE_LENGTH:
+                note = note[:NOTE_LENGTH - 3].rstrip() + "..."
+            rows.append((row[0], r["name"], r["confidence"], note, r["source_doc"],
+                         f"{r['program']}:{r['address']}"))
+    RERAC_NOTES.write_text(
+        "# ReRAC's names and notes for our functions: python3 tools/overlays.py rerac-notes\n"
+        "# Quoted from ReRAC (https://github.com/re-rac/rerac, ISC, \"Copyright (c) 2026 ReRAC contributors\"),\n"
+        f"# tools/ghidra/names/doc_names.csv at its commit {commit}: every function entry (kind fn) whose US\n"
+        "# address is a function start with a PAL counterpart in config/overlays/us_map.tsv. Its names are\n"
+        "# ReRAC's own (coined from what the code does, or taken from other projects; see its confidence and\n"
+        f"# note), not this project's. Notes trimmed to {NOTE_LENGTH} characters; source doc is a ReRAC file.\n"
+        "# name\trerac name\tconfidence\tnote\tsource doc\tus place\n"
+        + "".join("\t".join(r) + "\n" for r in rows))
+    print(f"{len(rows)} ReRAC function entries on {len({r[0] for r in rows})} of our functions; "
+          + ", ".join(f"{n} {why}" for why, n in missed.items())
+          + f". Written to {RERAC_NOTES.relative_to(ROOT)}.")
+
+
 def main() -> None:
-    commands = {"dump": dump, "catalogue": catalogue, "families": families, "names": names}
+    commands = {"dump": dump, "catalogue": catalogue, "families": families, "names": names,
+                "us-map": us_map, "rerac-notes": rerac_notes}
     if len(sys.argv) != 2 or sys.argv[1] not in commands:
         sys.exit(__doc__)
     commands[sys.argv[1]]()

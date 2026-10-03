@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L13_00266128 -- src/overlays/l13_gemlik/mobyutil_00266128.c
- * Best so far: SIZE ours 80 / retail 84, checked 2026-10-02.
+ * Best so far: SIZE ours 80 / retail 84, checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  */

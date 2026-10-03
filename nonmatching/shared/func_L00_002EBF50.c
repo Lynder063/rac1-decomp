@@ -2,7 +2,7 @@
  * Best so far: BYTES 5/372 (98.7% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
- * No longer builds in its file (COMPILE failed, 2026-10-02): match its declarations to the file's first.
+ * No longer builds in its file (COMPILE failed, 2026-10-03): match its declarations to the file's first.
  * What the last attempts found:
  *   CameraScript setup: fills the type-5 moby from two positions, a mode (2 or 3) and two values. p3.c is 5 bytes 
  *   Only difference: in the mode-3 block the copy D_0013E633+0xE9D -> p+0x110 uses dest $a0 / src $v1 in ours, des

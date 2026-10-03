@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L08_00273A80 -- src/overlays/shared/partproc_00273A80.c
- * Best so far: BYTES 16/512 (96.9% of the bytes match), checked 2026-10-02.
+ * Best so far: BYTES 16/512 (96.9% of the bytes match), checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

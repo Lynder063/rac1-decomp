@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L11_00311260 -- src/overlays/l11_pokitaru/vendor_002CC828.c
- * Best so far: SIZE ours 176 / retail 180, checked 2026-10-02.
+ * Best so far: SIZE ours 176 / retail 180, checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  */

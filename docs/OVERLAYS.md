@@ -15,6 +15,8 @@ the tools involved.
 | `config/overlays/functions.tsv`: every distinct function, its name, kind and places | yes | `tools/overlays.py catalogue` |
 | `asm/overlays/<name>.s`: one file per distinct non-exe function, from its canonical level | no, generated | `tools/overlay_asm.py` |
 | `src/overlays/...`: C and `INCLUDE_ASM` stubs for overlay functions | yes | generated stubs, then matching |
+| `config/overlays/us_map.tsv`: every US function (executable and levels) and its PAL counterpart | yes | `tools/overlays.py us-map` |
+| `config/overlays/rerac_notes.tsv`: ReRAC's names and notes on our functions | yes | `tools/overlays.py rerac-notes` |
 
 ## Levels
 
@@ -188,7 +190,10 @@ with its roles (`UpdateMoby_<oClass>`, `InitCamera_<id>`, ...,
 210 shared functions (1.03 MB, a third of all level code) and 5
 executable ones. A function with many roles is a generic one (an empty
 `Exit`, a class that reuses another's update). An update function gets
-the moby in `$a0`. `tools/dossier.py` puts the role in `CONTEXT.md`.
+the moby in `$a0`. `tools/dossier.py` puts the role in `CONTEXT.md` in
+words, with the class's name from `tools/extract/moby_classes.tsv`
+("update function of moby class 726 (novalis_elevator) on levels 01, 03,
+13").
 
 The names stay `func_LNN_XXXXXXXX` everywhere else: a role is a hint for
 the worker, and the oClass numbers are RaC1's own.
@@ -233,6 +238,86 @@ the result when the strict check says EXACT. Run it after each wave: every
 newly matched parent can bring its variants along. It leaves alone a
 variant whose difference has no literal in the C (a struct field) or
 whose parent is in the executable.
+
+## US map
+
+`python3 tools/overlays.py us-map` pairs every function of the US build
+(SCUS-97199) with its PAL counterpart, from the code alone, and writes
+`config/overlays/us_map.tsv`: program (`boot` for the executable,
+`level_NN`), US address and size, our name (the catalogue's, `func_X`
+for the executable's; `-` if none), method and similarity. It reads the
+US disc as ReRAC extracts it (`$RERAC/extracted`, default
+`~/Projects/rerac`: `boot/SCUS_971.99` and `levels/NN/overlay.bin`,
+whose seven records `formats.overlay_sections()` reads as it does ours),
+plus the dump, the catalogue and `progress/report.json`. It never writes
+there. The table holds addresses and names only.
+
+1. **Cutting the US code.** Each US text (the executable's `core.text`
+   and `.text`, each level's `text` record) is split by `split()` and at
+   the PAL functions found in it: each PAL function's masked instructions
+   are looked for near where the previous one was found, since both
+   builds link their code in one order and the distance only drifts. A
+   function under 64 bytes must sit exactly there or at a `split()`
+   start. `split()` starts inside a found function are dropped, so US
+   functions are cut as their counterparts are. Padding (zero words, the
+   executable's `0xCDCDCDCD` fill) is not a function.
+2. **fingerprint**: `identity()` fingerprints aligned in address order
+   (difflib) with the same program's PAL functions: the report's for the
+   executable, the catalogue's places in level NN for a level. A function
+   left over, of 16 bytes or more, whose fingerprint is one function
+   anywhere in the PAL build takes that name.
+3. **aligned**: the functions left between two anchors, paired in order
+   to maximise their total similarity, each pair at least 0.5 alike.
+   Similarity is difflib's ratio over `mask()`ed instructions, so 1.00
+   means only constants differ (a PAL timing or screen constant).
+4. **similar**: what is left against any unpaired PAL function of the
+   program, at least 0.8 alike and within 15% of its size. Nothing needs
+   it on the current data.
+
+On 2026-10-02 (rerac `a7efec0`):
+
+| Program | Functions mapped | Bytes mapped |
+|---|---|---|
+| boot | 1,667 of 1,689 | 458,024 of 461,288 (99.3%) |
+| 19 levels | 46,319 of 46,639 | 21,364,832 of 21,433,136 (99.7%) |
+
+45,797 pairs are fingerprints and 2,189 aligned. About 17 functions per
+level (3.6 KB) and 22 in the executable have no counterpart: US code the
+PAL build replaced or dropped, and dead fragments such as a lone
+`addiu $sp` after a return.
+
+Checks: the levels' dispatch tables (see Roles) name each function in
+both builds by its class, camera or sound id. For all 3,669 ids found in
+both, the US function's mapped name is the PAL function's catalogue name
+(3,430 fingerprint pairs, 239 aligned). The 4 US pointers that are not a
+function start are the ones Roles lists for PAL (InitCamera_7 in levels
+0, 1 and 8, UpdateMoby_324 in level 8). In the executable it agrees
+with `tools/lombyte.py`'s size alignment on 969 Lombyte functions,
+corrects 2 that alignment put one function off (`IsNaN`,
+`JumpToRfuStatus`) and pairs 216 it could not.
+
+`tools/lombyte.py` pairs through the map (docs/SIBLING_DECOMPS.md).
+Rerun `us-map` after the catalogue changes, then `rerac-notes`.
+
+## ReRAC notes
+
+`python3 tools/overlays.py rerac-notes` writes
+`config/overlays/rerac_notes.tsv`: every function entry of ReRAC's
+`tools/ghidra/names/doc_names.csv` (ISC, "Copyright (c) 2026 ReRAC
+contributors") whose US address is a function start with a counterpart
+in `us_map.tsv`, with our name, ReRAC's name, its confidence, its note
+(trimmed to 160 characters), its source doc and the US place. The header
+records ReRAC's commit. On `a7efec0`: 795 entries on 712 of our
+functions; 2 more have no PAL counterpart. Where `config/names.tsv`
+already has a ReRAC name for the function (471, through Lombyte's
+catalogue), the two agree; 241 functions get one only through the map.
+Several identical stubs ReRAC names apart share one of our names, as the
+catalogue gives every copy of the same code one name.
+
+`tools/dossier.py` adds up to two of them to a function's `CONTEXT.md`
+as "ReRAC (ISC) calls it `PathPlatformUpdate` (suggested, its
+docs/plan/moby_update_catalogue.md:143): ...". They describe what the
+code does; they are ReRAC's names, not recovered ones.
 
 ## Status
 

@@ -2,7 +2,7 @@
  * Best so far: BYTES 4/96 (95.8% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
- * No longer builds in its file (COMPILE failed, 2026-10-02): match its declarations to the file's first.
+ * No longer builds in its file (COMPILE failed, 2026-10-03): match its declarations to the file's first.
  * What the last attempts found:
  *   Clears the parent and three child active flags. The C in p1.c compiles to 96 bytes. With literal `1` for both 
  */
