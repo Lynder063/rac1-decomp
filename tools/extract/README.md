@@ -217,6 +217,8 @@ the formats and the evidence for them.
 
 ## Code
 
+The GDScript files follow [`docs/GDSCRIPT_CONVENTIONS.md`](../../docs/GDSCRIPT_CONVENTIONS.md).
+
 | File | Contents |
 |---|---|
 | `extract.py` | Command line and safe output |
