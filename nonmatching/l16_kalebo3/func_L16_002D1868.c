@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L16_002D1868 -- src/overlays/l16_kalebo3/vendor_002A50F0.c
- * Best so far: BYTES 67/3388 (98.0% of the bytes match), checked 2026-10-03.
+ * Best so far: SIZE ours 3492 / retail 3388, checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * Cannot land as written (#define in a candidate): rewrite that in plain C first.
@@ -44,7 +44,6 @@ extern void func_L00_0025AC00(char *,float,int,int,void *,void *);
 extern float func_00214358(void *,int,float);
 extern float func_001F9B88(float);
 extern int func_001F9938(void *);
-extern void func_L00_00263950(int,unsigned char *,int,float,float);
 extern float func_001FA748(float,float);
 extern void func_L00_00250800(void *,int,void *);
 extern void func_L00_001FF4B0(void *,void *,float);

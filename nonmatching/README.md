@@ -59,7 +59,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_002C2A80`](shared/func_L00_002C2A80.c) | shared | 432 | BYTES 8/432 | 98.2% |
 | [`func_L00_002EB3E8`](shared/func_L00_002EB3E8.c) | shared | 1356 | BYTES 26/1356 | 98.1% |
 | [`func_L14_002AD4F8`](l14_oltanis/func_L14_002AD4F8.c) | l14_oltanis | 252 | BYTES 5/252 | 98.0% |
-| [`func_L16_002D1868`](l16_kalebo3/func_L16_002D1868.c) | l16_kalebo3 | 3388 | BYTES 67/3388 (cannot land as written) | 98.0% |
+| [`func_L16_002D1868`](l16_kalebo3/func_L16_002D1868.c) | l16_kalebo3 | 3388 | SIZE ours 3492 / retail 3388 (cannot land as written) | - |
 | [`func_L05_003106E0`](l05_rilgar/func_L05_003106E0.c) | l05_rilgar | 492 | BYTES 10/492 | 98.0% |
 | [`func_L01_002F5AE8`](l01_novalis/func_L01_002F5AE8.c) | l01_novalis | 588 | BYTES 12/588 | 98.0% |
 | [`func_L09_00306DD8`](l09_gaspar/func_L09_00306DD8.c) | l09_gaspar | 488 | BYTES 10/488 | 98.0% |
@@ -115,7 +115,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L11_00319FA0`](l11_pokitaru/func_L11_00319FA0.c) | l11_pokitaru | 480 | BYTES 20/480 | 95.8% |
 | [`func_L11_0031F760`](l11_pokitaru/func_L11_0031F760.c) | l11_pokitaru | 952 | BYTES 40/952 | 95.8% |
 | [`func_L16_002D0C18`](l16_kalebo3/func_L16_002D0C18.c) | l16_kalebo3 | 380 | BYTES 16/380 | 95.8% |
-| [`func_L16_002E45F8`](l16_kalebo3/func_L16_002E45F8.c) | l16_kalebo3 | 1364 | BYTES 58/1364 | 95.8% |
 | [`func_L00_002DCDA8`](shared/func_L00_002DCDA8.c) | shared | 548 | BYTES 24/548 | 95.6% |
 | [`func_L00_002353B8`](shared/func_L00_002353B8.c) | shared | 588 | BYTES 26/588 | 95.6% |
 | [`func_L00_001FE940`](shared/func_L00_001FE940.c) | shared | 132 | BYTES 6/132 | 95.5% |
