@@ -479,7 +479,130 @@ void func_L00_00239FC0(HudElem *e) {
     }
     func_L00_0023B440((char *)e + 0x40);
 }
-INCLUDE_ASM("asm/overlays", func_L00_0023A1A0);
+extern char D_0013E633[];
+extern int D_0015EE80_m __asm__("D_0015EE80") MACRO_ADDR;
+extern int D_0015EEA0 MACRO_ADDR;
+extern short D_L00_0015F8E8;
+extern short D_L00_0015F900;
+extern short D_L00_0015F8F0;
+extern short D_L00_0015F8FC;
+extern short D_L00_0015F8EC;
+extern short D_L00_0015F8D8;
+extern short D_L00_0017E578[];
+extern short D_L00_0017E560[];
+
+extern int func_00200198(int, int);
+extern void func_00200650(int, int, int, int, int, int);
+extern void func_00200468(int, int, int, int, int, int);
+extern void func_L00_0023BAB8(char *, int, int, int, int, int);
+
+/* Draws the health bar (and its nanotech orbs) of a HUD element; returns the element's field 0x58. */
+int func_L00_0023A1A0(char *e) {
+    int y0, n, alpha;
+    char *ip;
+    short *tbl;
+    int cnt, tex2;
+    int x, y, bw, bw2, tex;
+    int x0, w, i, phase;
+    float f20, f21, f22;
+    unsigned char *q;
+
+    if (({ char *gb = D_0013E633 + 0xE1D; *(unsigned char *)(gb + (0x20A4)); }) == 2 || ({ char *gb = D_0013E633 + 0xE1D; *(int *)(gb + (0x2084)); }) == 0x32) {
+        return *(int *)(e + 0x58);
+    }
+    x0 = *(int *)(e + 0x50);
+    if (D_0015EE80_m) {
+        y0 = *(int *)&D_L00_0015F8E8 + 0xA;
+    } else {
+        y0 = *(int *)&D_L00_0015F8E8 + 0x12;
+    }
+    n = *(int *)(e + 0x78);
+    q = (unsigned char *)e + 0x70;
+    if (((unsigned char *)e)[0x70] == 0) {
+        return *(int *)(e + 0x58);
+    }
+    f20 = func_001FA888(((unsigned char *)e)[0x70]);
+    f21 = f20 / func_001FA888((*(int *)&D_L00_0015F8D0));
+    if (f21 > 1.0f) {
+        f21 = 1.0f;
+    } else if (f21 < 0.0f) {
+        f21 = 0.0f;
+    }
+    f20 = func_001FA888(q[1]);
+    f22 = f20 / func_001FA888((*(int *)&D_L00_0015F8D0));
+    if (f22 > 1.0f) {
+        f22 = 1.0f;
+    } else if (f22 < 0.0f) {
+        f22 = 0.0f;
+    }
+    alpha = func_001FA898(f22 * 128.0f);
+    w = func_001FA898((float)*(int *)&D_L00_0015F900 * f21);
+    ip = *(char **)(e + 0x80);
+    phase = *(short *)ip >> 1;
+    if (n == 0) {
+        phase = 0x1E;
+    }
+    cnt = D_0015EEA0;
+    if (({ char *gb = D_0013E633 + 0xE1D; *(unsigned char *)(gb + (0x20A4)); }) == 1) {
+        cnt = ({ char *gb = D_0013E633 + 0xE1D; *(int *)(gb + (0x22AC)); });
+    }
+    if (cnt == 8) {
+        f20 = 48.0f;
+        f20 = f21 * f20;
+        tbl = D_L00_0017E578;
+        bw = func_001FA898(f20);
+        bw2 = func_001FA898(f20);
+    } else if (cnt == 5) {
+        tbl = D_L00_0017E560;
+        bw = func_001FA898(f21 * 32.0f);
+        bw2 = func_001FA898(f21 * 16.0f);
+    } else {
+        bw2 = 0;
+        tbl = &D_L00_0015F8D8;
+        bw = func_001FA898(f21 * 48.0f);
+    }
+    x = x0 - bw;
+    y = y0 + *(int *)&D_L00_0015F8F0;
+    tex = func_00200198(0x7580, 1);
+    tex2 = func_00200198(0x7580, 0);
+    func_00200650(tex, x0 + bw, y, (*(int *)&D_L00_0015F8FC), (*(int *)&D_L00_0015F8FC), w);
+    func_00200468(tex2, x, y, bw << 1, (*(int *)&D_L00_0015F8FC), w);
+    {
+        int h = (*(int *)&D_L00_0015F8FC);
+        func_00200468(tex, x - h, y, h, h, w);
+    }
+    if (bw2) {
+        int x2;
+        y += *(int *)&D_L00_0015F8EC;
+        func_00200650(tex, x0 + bw2, y, (*(int *)&D_L00_0015F8FC), (*(int *)&D_L00_0015F8FC), w);
+        x2 = x0 - bw2;
+        func_00200468(tex2, x2, y, bw2 << 1, (*(int *)&D_L00_0015F8FC), w);
+        {
+            int h = (*(int *)&D_L00_0015F8FC);
+            func_00200468(tex, x2 - h, y, h, h, w);
+        }
+    }
+    for (i = 0; i < cnt; i++) {
+        func_L00_0023BAB8(e, func_00200198(0x7536, phase), x0 + tbl[i * 2], y0 + tbl[i * 2 + 1], 1, alpha);
+        if (phase != 0x1E) {
+            int a, b, px, py;
+            func_L00_0023BAB8(e, func_00200198(0x7536, 0x1E), x0 + tbl[i * 2], y0 + tbl[i * 2 + 1], 1, alpha);
+            a = func_00200198(0x7536, 0x1F);
+            px = x0 + tbl[i * 2];
+            py = y0 + tbl[i * 2 + 1];
+            px += 0xE;
+            py -= 0x11;
+            b = func_001FA898((float)(*(short *)(ip + 2) >> 4) * f22);
+            func_00200468(a, px, py, 0x22, 0x22, b);
+            if (n == i + 1) {
+                phase = 0x1E;
+            } else {
+                phase = (phase + 6) % 0x1E;
+            }
+        }
+    }
+    return *(int *)(e + 0x58);
+}
 extern HudCounter D_L00_0015FB70 MACRO_ADDR;
 extern void func_L00_0023B0F8(HudElem *);
 

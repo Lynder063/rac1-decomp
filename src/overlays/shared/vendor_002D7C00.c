@@ -156,5 +156,63 @@ void func_L15_002EC490(char *moby)
         *(unsigned short *)(moby + 0x34) |= 1;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L15_002ED168);
+extern float func_001FA748(float, float);
+extern void func_L02_002EBC08(char *);
+extern void func_0020D678(void *);
+extern void func_L02_002EBCE8(char *);
+extern float func_001F9D10(void *, void *);
+extern void func_L00_00299B68(int);
+extern void func_L00_00264DB8(int arg0, int arg1);
+extern int func_0020BFC8(int, int);
+extern int D_0015EE84 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+extern int D_L15_0015F6A8 MACRO_ADDR;
+extern int D_L15_0015F720 MACRO_ADDR;
+extern short D_L15_00162220;
+extern unsigned char D_0013D355[];
+extern char D_0013E633[];
+
+/* Update for moby class 1428: a four-state trigger that spins and then deletes itself. */
+void func_L15_002ED168(unsigned char *moby) {
+    unsigned char *p;
+    if (D_0015EE84 != 0xF) {
+        *(float *)(moby + 0x48) = func_001FA748(*(float *)(moby + 0x48), D_0015EE6C * 1.5707964f);
+        *(float *)(moby + 0x2C) = *(float *)(*(char **)(moby + 0x24) + 0x24) * *(float *)&D_L15_00162220;
+        switch (moby[0x20]) {
+        case 0:
+            func_L02_002EBC08(moby);
+            if (D_0013D355[0x13D] != 0) {
+                func_0020D678(moby);
+            } else {
+                moby[0x20] = 1;
+                *(float *)(moby + 0x18) += 1.0f;
+            }
+            break;
+        case 1:
+            func_L02_002EBCE8(moby);
+            if (func_001F9D10(moby + 0x10, D_0013E633 + 0xE9D) < 3.0f) {
+                if (*(int *)(D_0013E633 + 0xE9D + 0x2004) != 0x32) {
+                    *(unsigned short *)(moby + 0x34) |= 0x41;
+                    func_L00_00299B68(1);
+                    moby[0x20] = 2;
+                }
+            }
+            break;
+        case 2:
+            if (D_L15_0015F6A8 != 2) {
+                func_L00_00264DB8(0x426A, -1);
+                D_L15_0015F720 = func_001F9850(0xB4);
+                p = D_0013D355 + 0x13B;
+                p[2] = 1;
+                p[0x78] = 1;
+                moby[0x20] = 3;
+                func_0020BFC8(0, -1);
+            }
+            break;
+        case 3:
+            func_0020D678(moby);
+            break;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L15_002EE458);

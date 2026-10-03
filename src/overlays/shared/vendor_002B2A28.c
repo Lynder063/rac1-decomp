@@ -139,7 +139,50 @@ int func_L14_002DAC00(int i)
     return r;
 }
 INCLUDE_ASM("asm/overlays", func_L14_002DFA70);
-INCLUDE_ASM("asm/overlays", func_L14_002DFE98);
+extern short D_L14_00161BD8;
+extern short D_L14_00161BDC;
+extern short D_L14_00161BE0;
+extern short D_L14_00161BE4;
+extern unsigned char *func_0020D348(int);
+extern float func_002140F8(float, float);
+extern void func_001F9BF0(void *dst, void *a, void *b);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9CA0(void *, void *, void *);
+extern float func_L00_00258C80(float lo, float hi);
+extern void func_002156E0(void *dst, void *vec, void *axis, float angle);
+extern void func_L00_00251E30(void *);
+
+// Spawns moby 0x145 from an owner and a position, orienting its data vectors and randomising its parameters.
+unsigned char *func_L14_002DFE98(char *owner, char *pos) {
+    unsigned char *m = func_0020D348(0x145);
+    char *d;
+    char *g;
+    float vec[8];
+    if (m != 0) {
+        d = *(char **)(m + 0x78);
+        *(char **)(d + 0x24) = owner;
+        qcopy(m + 0x10, pos);
+        *(float *)(m + 0x48) = *(float *)(owner + 0x48);
+        m[0x20] = 0;
+        m[0x30] = 0xFF;
+        *(short *)(m + 0x32) = 0xFF;
+        m[0x31] = 1;
+        g = D_0013E633 + 0xE9D;
+        func_001F9BF0(vec, m + 0x10, g);
+        g = g + 0x210;
+        vec[2] = 0.0f;
+        func_L00_001FF4B0(vec, vec, func_002140F8(*(float *)&D_L14_00161BD8 * D_0015EE60, *(float *)&D_L14_00161BDC * D_0015EE60));
+        func_001F9CA0(vec + 4, g, vec);
+        func_002156E0(d, vec, g, func_L00_00258C80(0.34906584f, 1.0471976f));
+        *(float *)(d + 8) = func_002140F8(*(float *)&D_L14_00161BE0 * D_0015EE60, *(float *)&D_L14_00161BE4 * D_0015EE60);
+        *(float *)(d + 0x10) = func_L00_00258C80(0.0f, 0.008726646f);
+        *(float *)(d + 0x14) = func_L00_00258C80(0.05235988f, 0.13962634f);
+        *(float *)(d + 0x18) = func_L00_00258C80(0.0f, 0.017453292f);
+        *(int *)(d + 0x20) = func_001F9850(200);
+        func_L00_00251E30(m);
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L14_002E1110);
 INCLUDE_ASM("asm/overlays", func_L14_002E1570);
 INCLUDE_ASM("asm/overlays", func_L14_002E17B8);

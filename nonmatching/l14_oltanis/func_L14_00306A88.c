@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L14_00306A88 -- src/overlays/l14_oltanis/vendor_002FF358.c
- * Best so far: BYTES 16/128 (87.5% of the bytes match), checked 2026-10-01.
+ * Best so far: BYTES 16/128 (87.5% of the bytes match), checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

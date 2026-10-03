@@ -438,6 +438,15 @@ class Placer:
                 except Unresolved as e:
                     self.note_unresolved(str(e.what))
                     continue
+            # A function with several identical copies in this level: the
+            # address is right if it is any of them, so take the copy
+            # retail's %hi/%lo pair names (as for calls below).
+            if self.retail is not None and lo_rel is not None:
+                r_hi = self.word_at(self.retail, hi_off - self.off) & 0xFFFF
+                r_lo = self.word_at(self.retail, lo_rel["r_offset"] - self.off) & 0xFFFF
+                theirs = ((r_hi << 16) + sign16(r_lo)) & 0xFFFFFFFF
+                if theirs != value and same_function(self.level, value, theirs):
+                    value = theirs
             new_lo = value & 0xFFFF
             new_hi = ((value - sign16(new_lo)) >> 16) & 0xFFFF
             orig_hi_word = self.word_at(orig, hi_off)

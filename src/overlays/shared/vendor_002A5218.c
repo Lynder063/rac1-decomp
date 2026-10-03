@@ -49,7 +49,14 @@ void func_L02_002A58C0(void) {
     D_L02_00161240 = q + 12;
     AA_BlurPass();
 }
-INCLUDE_ASM("asm/overlays", func_L02_002CCD18);
+extern unsigned int D_L02_0016005C MACRO_ADDR;
+
+void func_L02_002CCD18(char *moby) {
+    if ((unsigned int)moby < D_L02_0016005C) {
+        *(int *)(moby + 0x58) = 0;
+        *(unsigned short *)(moby + 0x34) |= 0x40;
+    }
+}
 int func_L02_002D75F8(char *a) {
     int r = func_L00_002DCDA8(a);
     if (r == 0) {
@@ -470,7 +477,57 @@ void func_L02_002FBBA8(void) {
     }
     s->a = 0;
 }
-INCLUDE_ASM("asm/overlays", func_L02_002FBC00);
+extern float func_001F9B88(float);
+extern float func_001F9CB8(void *);
+extern float func_001F9C78(void *, void *);
+extern float func_001F9FC0(float);
+extern char D_L02_00167300[];
+extern char D_0013A5E0[];
+
+// Tracks the nearest target in front of the player that lies inside a view cone.
+void func_L02_002FBC00(char *m) {
+    float v[4];
+    char *g = D_L02_00167300;
+    char *p = *(char **)(g + 0x180);
+    char *h;
+    float d;
+    float f;
+    float ang;
+    if (*(short *)(p + 0x86) == 0) {
+        if (!(0.05f < func_001F9B88(*(float *)(D_0013A5E0 + 0x2564)))) {
+            h = g + 0x380;
+            func_001F9BF0(v, m + 0x10, D_0013E633 + 0xE9D);
+            d = func_001F9CB8(v);
+            if (d < 22.0f) {
+                if (0.0f < d) {
+                    if (d < *(float *)(h + 8)) {
+                        if (0.0f < v[2]) {
+                            ang = 1.5707964f - func_001F9FC0(func_001F9C78(p, v) / d);
+                            if (ang < 1.1170107f) {
+                                func_001F9BF0(v, m + 0x10, p + 0x30);
+                                d = func_001F9CB8(v);
+                                if (d == 0.0f) {
+                                    d = 0.0001f;
+                                }
+                                ang = 1.5707964f - func_001F9FC0(func_001F9C78(p, v) / d);
+                                if (ang < 0.62831855f) {
+                                    f = *(float *)(h + 0xC) + *(float *)&D_L02_0016241C;
+                                    *(char **)(g + 0x380) = p;
+                                    *(float *)(h + 8) = d;
+                                    *(char **)(h + 4) = m;
+                                    *(float *)(h + 0xC) = f;
+                                    if (1.0f < f) {
+                                        *(float *)(h + 0xC) = 1.0f;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L02_002FCA80);
 extern char *D_L02_0015F050 MACRO_ADDR;
 extern char D_L02_00167490[];

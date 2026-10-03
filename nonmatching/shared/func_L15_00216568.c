@@ -1,7 +1,8 @@
 /* NON_MATCHING func_L15_00216568 -- src/overlays/shared/help_001FFED0.c
- * Best so far: SIZE ours 1388 / retail 1360, checked 2026-10-01.
+ * Best so far: SIZE ours 1388 / retail 1360, checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * Cannot land as written (#define in a candidate): rewrite that in plain C first.
  * What the last attempts found:
  *   Per-frame update of the help/cursor state block at D_0013E633+0xE1D (counters ++, 001F9908/9938 init calls, mo
  *   Stopped early: p1.c (one local `base = D_0013E633 + 0xE1D`) compiles to 1308 bytes vs retail 1360, a macro exp

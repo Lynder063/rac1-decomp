@@ -277,7 +277,59 @@ void func_L06_002F8978(char *moby) {
 }
 INCLUDE_ASM("asm/overlays", func_L06_002F8A58);
 INCLUDE_ASM("asm/overlays", func_L06_002F8D60);
-INCLUDE_ASM("asm/overlays", func_L06_002F8EE8);
+extern char *func_L00_0025B478(void *, int, int);
+extern void func_L06_002F9098(char *m);
+extern int func_0022ED80(int, int, int);
+extern void func_L00_0028EBF0(int);
+extern void func_0020D678(void *);
+extern void func_L00_00251328(void *, int, int, int);
+extern float func_001FA748(float, float);
+extern int func_L00_0028EB98(void *, int);
+extern char D_0013E633[];
+extern short D_L06_00161F04, D_L06_00161F08, D_L06_00161F0C, D_L06_00161F10;
+
+// UpdateMoby_1040: spins up, rotates and tracks a slot, deleting itself when its target is gone.
+void func_L06_002F8EE8(char *m) {
+    char *d = *(char **)(m + 0x78);
+    if (func_L00_0025B478(m, 0x330000, 0) != 0) {
+        int idx;
+        func_L06_002F9098(m);
+        func_0022ED80(1, 0, (int)m);
+        idx = *(int *)(d + 0x60);
+        if (idx != -1) {
+            char *e = D_0013E633 + 0x1D + idx * 0x70;
+            if (*(char **)(e + 0x88) == m && *(unsigned char *)(e + 0x74) != 0) {
+                func_L00_0028EBF0(idx);
+            }
+        }
+        *(int *)(d + 0x60) = -1;
+        func_0020D678(m);
+        return;
+    }
+    switch (*(unsigned char *)(m + 0x20)) {
+    case 0:
+        func_L00_00251328(m, 0x80, 0x80, 0x80);
+        *(float *)(m + 0x2C) = *(float *)(*(char **)(m + 0x24) + 0x24) * *(float *)&D_L06_00161F10;
+        *(char **)d = d + 0x20;
+        m[0x20] = 1;
+        *(unsigned short *)(m + 0x34) |= 0x20;
+        *(int *)(d + 0x60) = -1;
+    case 1: {
+        float a0 = *(float *)&D_L06_00161F04 * 0.017453292f * D_0015EE6C;
+        float a1, a2;
+        float x = func_001FA748(*(float *)(m + 0x40), a0);
+        a1 = *(float *)&D_L06_00161F08 * 0.017453292f * D_0015EE6C;
+        *(float *)(m + 0x40) = x;
+        x = func_001FA748(*(float *)(m + 0x44), a1);
+        a2 = *(float *)&D_L06_00161F0C * 0.017453292f * D_0015EE6C;
+        *(float *)(m + 0x44) = x;
+        *(float *)(m + 0x48) = func_001FA748(*(float *)(m + 0x48), a2);
+    }
+    }
+    if (func_L00_0028EB98(m, *(int *)(d + 0x60)) == 0) {
+        *(int *)(d + 0x60) = func_0022ED80(0, 4, (int)m);
+    }
+}
 extern void func_L00_00258DB0(float *, float, float);
 extern float func_002140F8(float, float);
 extern void func_L00_00273F80(void *, float, void *, int, int, int, int);

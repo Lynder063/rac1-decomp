@@ -13,9 +13,84 @@ void func_L15_0029AC48(char *moby, void *a, float *point, void *b, void *c)
                                      point[1] - *(float *)(moby + 0x14));
     func_L15_0029AA60(moby, a, b, c, angle);
 }
-INCLUDE_ASM("asm/overlays", func_L15_0029ACC0);
+extern float D_0015EE70 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+extern float func_L00_0025CE58(float *p, float *v, float a, float b, float c, float d);
+extern float func_001FA850(float, float);
+extern void func_00214D28(void *, float, float);
+extern float func_001F9F90(float x);
+extern float func_001F9FA8(float);
+extern void func_L00_00259868(int, int, float, float, float, int);
+extern float func_001F9D48(float *, float *);
+
+// Turns a moby toward a point, updates its speed and velocity, and reports whether it is within 0.2 of it.
+int func_L15_0029ACC0(char *moby, float *point, float arg) {
+    float *fp = (float *)(moby + 0x48);
+    char *d = *(char **)(moby + 0x78);
+    float vec[4];
+    float a;
+    float ang;
+    a = func_L00_001FF860(point[0] - *(float *)(moby + 0x10), point[1] - *(float *)(moby + 0x14));
+    func_L00_0025CE58(fp, (float *)(d + 0x138), a, D_0015EE70 * 12.566371f, D_0015EE70 * 12.566371f, D_0015EE6C * 6.981317f);
+    ang = func_L00_001FF860(point[0] - *(float *)(moby + 0x10), point[1] - *(float *)(moby + 0x14));
+    if (func_001FA850(*(float *)(moby + 0x48), ang) < 0.7853982f) {
+        func_00214D28(d + 0x134, arg, D_0015EE70 * 9.0f);
+    } else {
+        func_00214D28(d + 0x134, 0.0f, D_0015EE70 * 9.0f);
+    }
+    vec[0] = func_001F9F90(*(float *)(moby + 0x48)) * *(float *)(d + 0x134);
+    vec[1] = func_001F9FA8(*(float *)(moby + 0x48)) * *(float *)(d + 0x134);
+    vec[2] = -(D_0015EE6C * 0.5f);
+    func_L00_00259868((int)moby, (int)vec, 0.5f, 0.5f, 0.0f, 0);
+    return func_001F9D48((float *)(moby + 0x10), point) < 0.2f;
+}
 INCLUDE_ASM("asm/overlays", func_L15_0029AE80);
-INCLUDE_ASM("asm/overlays", func_L15_0029AFB8);
+extern int func_L00_001EFFF0(void *, void *, int, void *, void *);
+extern float func_001F9D10(void *, void *);
+extern int D_L15_001AC140[];
+extern int D_L15_00160058_m __asm__("D_L15_00160058") MACRO_ADDR;
+
+// Finds the nearest visible target moby from the moby's candidate list, returning its address.
+int func_L15_0029AFB8(char *m) {
+    char *d = *(char **)(m + 0x78);
+    int best = 0;
+    float bd;
+    float a[4];
+    float b[4];
+    short *p;
+    int idx = *(int *)(d + 0x17C);
+    if (idx == -1) return 0;
+    p = (short *)D_L15_001AC140[idx];
+    if (p == 0) return 0;
+    qcopy(a, m + 0x10);
+    a[2] += 1.0f;
+    bd = 0.0f;
+    do {
+        int id = *(unsigned short *)p & 0x7FFF;
+        char *o = (char *)((id << 8) + D_L15_00160058_m);
+        if (*(short *)(o + 0xA6) == 0x27B && *(unsigned char *)(o + 0x20) >= 6 && *(unsigned char *)(o + 0x20) < 0x10) {
+            float f = func_001FA850(*(float *)(m + 0x48),
+                func_L00_001FF860(*(float *)(o + 0x10) - *(float *)(m + 0x10), *(float *)(o + 0x14) - *(float *)(m + 0x14)));
+            unsigned char st = ((char *)((id << 8) + D_L15_00160058_m))[0x20];
+            if (st == 7 || st == 0xF) *(short *)(d + 0x194) = 1;
+            if (*(short *)(d + 0x194) != 0 || f < 1.2217305f) {
+                qcopy(b, (char *)((id << 8) + D_L15_00160058_m) + 0x10);
+                a[2] += 1.0f;
+                if (func_L00_001EFFF0(a, b, 2, 0, 0) == 0) {
+                    float dist = func_001F9D10(a, b);
+                    if (best == 0 || dist < bd) {
+                        bd = dist;
+                        best = D_L15_00160058_m + (id << 8);
+                    }
+                }
+            }
+        }
+    } while (*p++ >= 0);
+    if (*(short *)(d + 0x194) == 0) {
+        if (bd > 8.0f) best = 0;
+    }
+    return best;
+}
 INCLUDE_ASM("asm/overlays", func_L15_0029B1D8);
 INCLUDE_ASM("asm/overlays", func_L15_0029B210);
 INCLUDE_ASM("asm/overlays", func_L15_0029B2B0);
@@ -241,4 +316,24 @@ void func_L15_002CD118(void) {
     k = *(int *)&D_L15_00161B54;
     emit_rgba_draw_packet(k & 0xFF, k >= 9, k >= 17, r);
 }
-INCLUDE_ASM("asm/overlays", func_L15_002D7B60);
+typedef int u128 __attribute__((mode(TI)));
+extern int func_L00_0020DC00(void);
+extern float func_00214358(void *, int, float);
+extern int func_L00_001F3958(void);
+
+// Checks whether the pad-state object is in state 0x18/0x19 and a probed height is above a threshold.
+int func_L15_002D7B60(void) {
+    char *p;
+    float vec[4];
+    float h;
+    if (func_L00_0020DC00() != 0) return 1;
+    p = D_0013E633 + 0xE1D;
+    if ((unsigned)(*(int *)(p + 0x2084) - 0x18) < 2) {
+        *(u128 *)vec = *(u128 *)(p + 0x80);
+        vec[2] = vec[2] + 2.0f;
+        h = func_00214358(vec, 0, 0.5f);
+        if (func_L00_001F3958() != 0) return 0;
+        if (*(float *)(p + 0x88) <= h) return 1;
+    }
+    return 0;
+}

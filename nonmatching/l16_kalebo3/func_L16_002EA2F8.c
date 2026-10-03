@@ -1,7 +1,8 @@
 /* NON_MATCHING func_L16_002EA2F8 -- src/overlays/l16_kalebo3/vendor_002E7C70.c
- * Best so far: SIZE ours 592 / retail 584, checked 2026-10-01.
+ * Best so far: SIZE ours 592 / retail 584, checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * Cannot land as written (#define in a candidate): rewrite that in plain C first.
  * What the last attempts found:
  *   UpdateMoby_1943: state 0 builds a bounding sphere (centre = (max+min)*0.5, radius = max func_001F9D10 distance
  *   Best p4.c: size 584 matches, BYTES 227/584. Differences: retail's i lives in $a0 (ours $a1) and the loop-carri

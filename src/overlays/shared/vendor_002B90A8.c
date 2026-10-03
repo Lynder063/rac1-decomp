@@ -57,7 +57,51 @@ void func_L01_002B9198(char *p, int n) {
     }
     *(float *)&D_L01_001612A4 = *(float *)&D_L01_001612A4 + D_L01_001CAF80[8];
 }
-INCLUDE_ASM("asm/overlays", func_L01_002B9288);
+extern float func_001FA748(float, float);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern int D_L01_001CB430[];
+extern float D_L01_001CB0E0[];
+extern float D_L01_001CB260[];
+
+// Scrolls a ripple's UV offsets and phases, then rebuilds the 46 ripple UV pairs from them.
+void func_L01_002B9288(float *m) {
+    int i;
+    float u0, v0, u1, v1;
+    float f;
+    float *src, *dst;
+    f = m[8] + m[10];
+    m[8] = f;
+    if (1.0f < f) {
+        m[8] = f - 1.0f;
+    }
+    if (m[8] < 0.0f) {
+        m[8] = m[8] + 1.0f;
+    }
+    f = m[9] + m[11];
+    m[9] = f;
+    if (1.0f < f) {
+        m[9] = f - 1.0f;
+    }
+    if (m[9] < 0.0f) {
+        m[9] = m[9] + 1.0f;
+    }
+    m[12] = func_001FA748(m[12], m[14]);
+    m[13] = func_001FA748(m[13], m[15]);
+    u0 = m[8] + func_001F9F90(m[12]) * m[16];
+    v0 = m[9] + func_001F9FA8(m[12]) * m[16];
+    u1 = m[8] + func_001F9F90(m[13]) * m[16];
+    v1 = m[9] + func_001F9FA8(m[13]) * m[16];
+    for (i = 0; i < 0x5C; i += 2) {
+        if (D_L01_001CB430[i >> 1] == 0) {
+            D_L01_001CB0E0[i] = D_L01_001CB260[i] + u0;
+            D_L01_001CB0E0[i + 1] = D_L01_001CB260[i + 1] + v0;
+        } else {
+            D_L01_001CB0E0[i] = D_L01_001CB260[i] + u1;
+            D_L01_001CB0E0[i + 1] = D_L01_001CB260[i + 1] + v1;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_002B9440);
 extern float D_L01_001CAF80[];
 
@@ -235,5 +279,34 @@ int func_L01_002F31A0(char *a) {
 INCLUDE_ASM("asm/overlays", func_L01_002F31D0);
 INCLUDE_ASM("asm/overlays", func_L01_002F3F40);
 INCLUDE_ASM("asm/overlays", func_L01_002F4290);
-INCLUDE_ASM("asm/overlays", func_L01_002F6418);
+typedef int u128 __attribute__((mode(TI)));
+extern void func_001FA218(float *, float *);
+extern void func_001F9EE8(void *, void *, void *);
+extern void func_001F9CA0(void *, void *, void *);
+
+/* Build a rotation from two angle fields in the moby data and apply both to a vector. */
+void func_L01_002F6418(char *m, float *out) {
+    float v[4] __attribute__((aligned(16)));
+    float t10[4] __attribute__((aligned(16)));
+    float t20[4] __attribute__((aligned(16)));
+    float t30[4] __attribute__((aligned(16)));
+    float t40[4] __attribute__((aligned(16)));
+    float t50[16] __attribute__((aligned(16)));
+    char *d;
+    *(u128 *)v = 0;
+    v[0] = 1.0f;
+    d = *(char **)(m + 0x78);
+    if (*(float *)(d + 0x130) != 0.0f || *(float *)(d + 0x134) != 0.0f) {
+        func_001FA218(t50, (float *)(m + 0x40));
+        func_001F9EE8(t10, v, t50);
+        *(u128 *)t40 = *(u128 *)t10;
+        t40[2] = t40[2] - 1.0f;
+        func_001F9CA0(t20, t10, t40);
+        func_001F9CA0(t30, t10, t20);
+        func_001F9C30(t20, t20, *(float *)(d + 0x130));
+        func_001F9C30(t30, t30, *(float *)(d + 0x134));
+        func_001F9BD8(out, out, t20);
+        func_001F9BD8(out, out, t30);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_002F6540);

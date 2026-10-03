@@ -4,7 +4,51 @@
 
 INCLUDE_ASM("asm/overlays", func_L11_002C99E0);
 INCLUDE_ASM("asm/overlays", func_L11_002CC950);
-INCLUDE_ASM("asm/overlays", func_L11_00309A40);
+extern float func_001F9D48(void *, void *);
+extern float func_L00_001FF860(float, float);
+extern float func_001FA850(float, float);
+extern float func_001F9D10(void *, void *);
+extern float func_001F9B50(float);
+extern char *D_L11_00160064 MACRO_ADDR;
+
+typedef int u128 __attribute__((mode(TI)));
+
+// Finds the best-scoring moby of class 5 in range of a position, by distance and aim cone.
+char *func_L11_00309A40(float *pos, float *aim, float r1, float r2, float maxd) {
+    char *best = 0;
+    char *q;
+    char *p = D_L11_00160064;
+    float bestd = 10.0f;
+    while (p != 0) {
+        if ((*(unsigned short *)(p + 0x34) & 0x1000) && p != 0 && *(char **)(p + 0x24) != 0 && *(short *)(*(char **)(p + 0x24) + 0x46) == 5) {
+            float d;
+            q = p + 0x10;
+            d = func_001F9D48(pos, q);
+            if (d < maxd) {
+                float tmp[4];
+                float ra, rb, y, score;
+                qcopy(tmp, q);
+                tmp[2] = tmp[2] + 0.4f;
+                ra = func_001FA850(aim[2], func_L00_001FF860(tmp[0] - pos[0], tmp[1] - pos[1]));
+                ra = ra * ra;
+                if (ra < r1 * r1) {
+                    y = func_001FA850(aim[1], func_L00_001FF860(d, tmp[2] - pos[2]));
+                    rb = y * y;
+                    if (rb < r2 * r2) {
+                        score = ra * rb * 30.0f;
+                        score = score + func_001F9B50(func_001F9D10(pos, tmp));
+                        if (score < bestd) {
+                            bestd = score;
+                            best = p;
+                        }
+                    }
+                }
+            }
+        }
+        p = *(char **)(p + 0x28);
+    }
+    return best;
+}
 extern int func_001FA898_r(float) __asm__("func_001FA898");
 extern float func_001F9CE8(void *);
 extern float func_L00_001FF860(float, float);
@@ -148,9 +192,116 @@ void func_L11_003126D8(void *pt, int *outx, int *outy, int yoff) {
     *outx = func_001FA898_r((p[0] - (float)g[4]) * 0.0625f);
     *outy = func_001FA898_r((p[1] - (float)g[5]) * 0.0625f) + yoff;
 }
-INCLUDE_ASM("asm/overlays", func_L11_00312780);
+typedef int u128_312780 __attribute__((mode(TI)));
+
+extern void func_L00_00250800(void *, int, void *);
+extern void func_L00_00260958(float *v, float s);
+extern float func_002140F8(float, float);
+extern void func_L01_0028B570(void *, float *, float *, void *, int);
+extern float D_0015EE6C MACRO_ADDR;
+extern short D_L11_00162084;
+extern short D_L11_00162258;
+extern short D_L11_00162268;
+extern short D_L11_00162278;
+extern short D_L11_00162288;
+extern short D_L11_00162298;
+
+// Spawns two rounds of scaled particle trails from three offset copies of a moby's point.
+void func_L11_00312780(void *m, char *t) {
+    int i;
+    for (i = 1; i < 3; i++) {
+        float vel[4];
+        float pos[4];
+        float a[4];
+        float b[4];
+        float c[4];
+        float scale;
+
+        *(u128_312780 *)vel = 0;
+        scale = *(float *)(t + 0x64) / *(float *)&D_L11_00162084;
+        if (scale > 1.0f) {
+            scale = 1.0f;
+        } else if (scale < 0.35f) {
+            scale = 0.35f;
+        }
+        func_L00_00250800(m, i, pos);
+        pos[3] = 0.0f;
+        qcopy(a, pos);
+        qcopy(b, pos);
+        qcopy(c, pos);
+        func_L00_00260958(a, *(float *)(t + 0xC4) * 0.02f + 0.02f);
+        func_L00_00260958(b, *(float *)(t + 0xC4) * 0.02f + 0.02f);
+        func_L00_00260958(c, *(float *)(t + 0xC4) * 0.01f + 0.02f);
+        vel[0] = -((func_002140F8(6.0f, 7.0f) + *(float *)(t + 0xC4) * 2.0f) * D_0015EE6C) * scale;
+        func_L01_0028B570(m, a, vel, &D_L11_00162258, 1);
+        vel[0] = -((func_002140F8(6.0f, 7.0f) + *(float *)(t + 0xC4) * 3.0f) * D_0015EE6C) * scale;
+        func_L01_0028B570(m, b, vel, &D_L11_00162268, 1);
+        vel[0] = -((func_002140F8(6.0f, 7.0f) + *(float *)(t + 0xC4) * 4.0f) * D_0015EE6C) * scale;
+        func_L01_0028B570(m, c, vel, &D_L11_00162278, 1);
+        if (*(float *)(t + 0xC4) > 0.5f) {
+            func_L00_00260958(a, *(float *)(t + 0xC4) * 0.02f + 0.01f);
+            func_L00_00260958(b, *(float *)(t + 0xC4) * 0.02f + 0.01f);
+            func_L00_00260958(c, *(float *)(t + 0xC4) * 0.01f + 0.01f);
+            vel[0] = -((func_002140F8(6.0f, 7.0f) + *(float *)(t + 0xC4) * 2.0f) * D_0015EE6C) * scale;
+            func_L01_0028B570(m, a, vel, &D_L11_00162258, 1);
+            vel[0] = -((func_002140F8(6.0f, 7.0f) + *(float *)(t + 0xC4) * 3.0f) * D_0015EE6C) * scale;
+            func_L01_0028B570(m, b, vel, &D_L11_00162268, 1);
+            vel[0] = -((func_002140F8(6.0f, 7.0f) + *(float *)(t + 0xC4) * 4.0f) * D_0015EE6C) * scale;
+            func_L01_0028B570(m, c, vel, &D_L11_00162278, 1);
+            vel[0] = -((func_002140F8(6.0f, 7.0f) + *(float *)(t + 0xC4) * 2.0f) * D_0015EE6C) * scale;
+            func_L01_0028B570(m, a, vel, &D_L11_00162288, 1);
+            vel[0] = -((func_002140F8(6.0f, 7.0f) + *(float *)(t + 0xC4) * 3.0f) * D_0015EE6C) * scale;
+            func_L01_0028B570(m, pos, vel, &D_L11_00162298, 1);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L11_0031A738);
-INCLUDE_ASM("asm/overlays", func_L11_0031AAE0);
+typedef int u128_31AAE0 __attribute__((mode(TI)));
+extern void func_001F9EC0(void *, void *, void *);
+extern void func_001F9BD8(void *, void *, void *);
+extern void f49(void *, void *) __asm__("func_001F49B0");
+extern void cb(void) __asm__("func_L11_0031A738");
+extern int D_L11_0015F6B0 MACRO_ADDR;
+extern short D_L11_00162480;
+
+/* Advances a trail ring buffer and records two offset points each fourth frame. */
+void func_L11_0031AAE0(char *moby) {
+    char *d = *(char **)(moby + 0x78);
+    float v[4];
+    float w[4];
+    int t;
+    if ((D_L11_0015F6B0 & 3) == 0) {
+        int cnt;
+        float lim = *(float *)&D_L11_00162480;
+        cnt = *(int *)(d + 0x2C0);
+        *(int *)(d + 0x2C4) = (*(int *)(d + 0x2C4) + 1) % 16;
+        if ((float)cnt < lim) {
+            *(int *)(d + 0x2C0) = cnt + 1;
+        }
+    }
+    *(u128_31AAE0 *)v = 0;
+    v[1] = 0.7f;
+    v[0] = -1.2f;
+    v[2] = 0.3f;
+    func_001F9EC0(v, v, moby + 0xC0);
+    func_001F9BD8(d + ((*(int *)(d + 0x2C4) << 4) + 0xC0), v, moby + 0x10);
+    *(float *)(d + (*(int *)(d + 0x2C4) << 4) + 0xCC) = 1.0f;
+    *(u128_31AAE0 *)w = 0;
+    w[0] = -1.2f;
+    w[1] = -0.7f;
+    w[2] = 0.3f;
+    func_001F9EC0(w, w, moby + 0xC0);
+    func_001F9BD8(d + ((*(int *)(d + 0x2C4) << 4) + 0x1C0), w, moby + 0x10);
+    t = D_L11_0015F6B0;
+    *(float *)(d + (*(int *)(d + 0x2C4) << 4) + 0x1CC) = 1.0f;
+    if (t != 0) {
+        int *p = *(int **)(d + 0x2C8);
+        if (t != *p) {
+            *p = t;
+            f49(cb, moby);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L11_0031B630);
 INCLUDE_ASM("asm/overlays", func_L11_0031B8A8);
 typedef struct { int a, b; } Pair8;

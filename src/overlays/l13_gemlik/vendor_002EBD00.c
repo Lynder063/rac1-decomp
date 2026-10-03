@@ -5,7 +5,38 @@
 INCLUDE_ASM("asm/overlays", func_L13_002EBD00);
 INCLUDE_ASM("asm/overlays", func_L13_002EC038);
 INCLUDE_ASM("asm/overlays", func_L13_002EC4D0);
-INCLUDE_ASM("asm/overlays", func_L13_002EE148);
+extern char *func_0020D348_m(int) __asm__("func_0020D348");
+extern void func_L00_00250800(void *, int, void *);
+extern void func_L00_00251E30(void *);
+extern int func_001F9850(int);
+typedef int u128 __attribute__((mode(TI)));
+
+// Spawns a moby from a template moby and copies its transform.
+char *func_L13_002EE148(char *src, int arg, int id) {
+    char *moby = func_0020D348_m(id);
+    if (moby != 0) {
+        char *data;
+        float f = *(float *)(*(char **)(moby + 0x24) + 0x24) * *(float *)(src + 0x2C) /
+                  *(float *)(*(char **)(src + 0x24) + 0x24);
+        data = *(char **)(moby + 0x78);
+        *(unsigned char *)(moby + 0x30) = 0xFF;
+        *(short *)(moby + 0x32) = 0xFF;
+        moby[0x31] = 1;
+        moby[0x20] = 0;
+        *(float *)(moby + 0x2C) = f;
+        *(int *)(data + 0x44) = arg;
+        func_L00_00250800(src, arg, moby + 0x10);
+        *(char **)(data + 0x3C) = src;
+        func_L00_00251E30(moby);
+        qcopy(moby + 0x40, src + 0x40);
+        *(u128 *)(moby + 0xC0) = *(u128 *)(src + 0xC0);
+        *(u128 *)(moby + 0xD0) = *(u128 *)(src + 0xD0);
+        *(u128 *)(moby + 0xE0) = *(u128 *)(src + 0xE0);
+        *(int *)(data + 0x40) = func_001F9850(0x258);
+        func_L00_00251E30(moby);
+    }
+    return moby;
+}
 INCLUDE_ASM("asm/overlays", func_L13_002EE238);
 INCLUDE_ASM("asm/overlays", func_L13_002EE590);
 INCLUDE_ASM("asm/overlays", func_L13_002EE8E0);
@@ -26,10 +57,98 @@ void func_L13_002F4BE8(Level13VendorMoby *moby) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L13_002F4C10);
-INCLUDE_ASM("asm/overlays", func_L13_002F9D18);
+extern int func_001E9730();
+extern void func_0020D678(void *);
+extern char *D_L13_00160058_m __asm__("D_L13_00160058") MACRO_ADDR;
+extern char D_L13_001F54A0[];
+
+/* State machine: waits for a linked moby to reach one of a set of states, then pushes states onto linked mobys. */
+void func_L13_002F9D18(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    char *m = 0;
+    int idx = *(int *)data;
+    int found;
+    int i;
+    if (idx != -1) {
+        m = D_L13_00160058_m + (idx << 8);
+    }
+    switch (data[0x1C]) {
+    case 0:
+        if (m == 0) {
+            func_001E9730(D_L13_001F54A0, *(short *)(moby + 0xB2), *(short *)(moby + 0xA6));
+            func_0020D678(moby);
+        } else if (data[0x1D] != 0) {
+            data[0x1C] = 1;
+        } else {
+            data[0x1C] = 2;
+        }
+        break;
+    case 1:
+        found = 0;
+        for (i = 0; i < 6; i++) {
+            if ((unsigned char)m[0x20] == (data + i)[0xA]) {
+                found = 1;
+                break;
+            }
+        }
+        if (found) {
+            int idx2 = *(int *)(data + 0x10);
+            if (idx2 != -1) {
+                char *o = *(char **)&D_L13_00160058_m + (idx2 << 8);
+                if (data[0x15] != -1) o[0x20] = data[0x15];
+                if (data[0x17] != -1) o[0xBC] = data[0x17];
+            }
+            if (data[0x19] != -1) moby[0x20] = data[0x19];
+            if (data[0x1B] != -1) moby[0xBC] = data[0x1B];
+            data[0x1C] = 2;
+        }
+        break;
+    case 2:
+        found = 0;
+        for (i = 0; i < 6; i++) {
+            if ((unsigned char)m[0x20] == (data + i)[4]) {
+                found = 1;
+                break;
+            }
+        }
+        if (found) {
+            int idx2 = *(int *)(data + 0x10);
+            if (idx2 != -1) {
+                char *o = *(char **)&D_L13_00160058_m + (idx2 << 8);
+                if (data[0x14] != -1) o[0x20] = data[0x14];
+                if (data[0x16] != -1) o[0xBC] = data[0x16];
+            }
+            if (data[0x18] != -1) moby[0x20] = data[0x18];
+            if (data[0x1A] != -1) moby[0xBC] = data[0x1A];
+            data[0x1C] = 1;
+        }
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L13_002F9F10);
 INCLUDE_ASM("asm/overlays", func_L13_00306D40);
-INCLUDE_ASM("asm/overlays", func_L13_00306E20);
+typedef int u128_306E20 __attribute__((mode(TI)));
+
+/* Initializes a Gemlik moby from its data block, copying transforms and resetting state. */
+void func_L13_00306E20(char *moby, char *pos, int arg2, float arg3) {
+    char *d = *(char **)(moby + 0x78);
+    char *s = *(char **)(d + 0x20);
+    char *mp;
+    *(float *)(d + 0x28) = arg3;
+    qcopy(moby + 0x40, s + 0x40);
+    mp = moby + 0x10;
+    *(u128_306E20 *)(moby + 0xC0) = *(u128_306E20 *)(s + 0xC0);
+    *(u128_306E20 *)(moby + 0xD0) = *(u128_306E20 *)(s + 0xD0);
+    *(u128_306E20 *)(moby + 0xE0) = *(u128_306E20 *)(s + 0xE0);
+    func_L00_00250800(*(void **)(d + 0x20), *(short *)(d + 0x26), mp);
+    qcopy(d + 0x10, mp);
+    qcopy(d, pos);
+    *(int *)(d + 0x2C) = arg2;
+    moby[0x20] = 0;
+    *(unsigned short *)(moby + 0x34) &= 0xFFFE;
+    *(int *)(moby + 0x94) = *(int *)(*(char **)(moby + 0x24) + 0x10);
+    func_L00_00251E30(moby);
+}
 INCLUDE_ASM("asm/overlays", func_L13_00306EF0);
 extern void func_L00_0025F4A8_alt(void *, void *, void *, float, float, int, int, int,
                                   float, float, float, float, int, float, int, int, int, int)

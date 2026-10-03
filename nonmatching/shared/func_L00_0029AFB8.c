@@ -1,7 +1,8 @@
 /* NON_MATCHING func_L00_0029AFB8 -- src/overlays/shared/tieproc_00299108.c
- * Best so far: SIZE ours 748 / retail 756, checked 2026-10-01.
+ * Best so far: SIZE ours 748 / retail 756, checked 2026-10-02.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * Cannot land as written (#define in a candidate): rewrite that in plain C first.
  * What the last attempts found:
  *   Per-frame state machine for the level intro/stream swap: fades D_L00_0015F4FC, steps D_L00_0015F700 state 0 (w
  *   Structure and all gp/lui forms match except SIZE 748 vs 756: retail never fills the delay slots of the branche

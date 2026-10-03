@@ -21,5 +21,112 @@ void func_L16_0020FEC8(void) {
     func_L00_002607A8(p - 0x690, *(float *)(q + 0x85C) + *(float *)(q + 0x868));
 }
 INCLUDE_ASM("asm/overlays", func_L16_002105C8);
-INCLUDE_ASM("asm/overlays", func_L16_00211178);
+extern float D_0015EE60 MACRO_ADDR;
+extern char D_L16_001742F0[];
+extern void func_001F9BC0(void *);
+extern void func_L00_00235040(void);
+extern void func_L00_00233EE0(float *, float, float, float);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_00234090(float *, float *, float);
+extern void func_L00_00233D50(float *, float *, float);
+extern int func_L00_001F10E0(float, void *, int, void *);
+extern int func_L00_001F1D20(float, float, void *, int, void *);
+extern int func_L00_001F34F0(float, void *);
+extern float func_001F9CB8(void *);
+
+/* Pulls the camera position toward a desired offset from the player; returns 1 when settled, -1 when clamped. */
+int func_L16_00211178(int a) {
+    char *g = D_0013E633 + 0xE1D;
+    char *p;
+    char *p2;
+    char *p3;
+    char *q;
+    float a0[4], v1[4], v2[4];
+    int i;
+    int k;
+    int t;
+    int r;
+    if ((*(int *)(g + 0x1CC)) != 0) return 1;
+    qcopy(a0, g + 0x80);
+    func_001F9BC0(v1);
+    if ((*(short *)(g + 0x22DA)) != 0) {
+        func_L00_00235040();
+        (*(short *)(g + 0x22DA)) = 0;
+    }
+    t = (*(int *)(g + 0x208C));
+    if (t == 0x11) {
+    } else if (t == 0x16) {
+        func_L00_00233EE0(v1, 0.0f, 0.0f, 0.7f);
+        func_001F9BF0(v1, v1, g + 0x80);
+    } else {
+        int c = (*(unsigned char *)(g + 0x20B3));
+        if (c != 0 || (*(short *)(g + 0x1F8)) != 0) {
+            if (c == 1 || (*(short *)(g + 0x1F8)) != 0 || (unsigned)(t - 0x15) < 2U) {
+                func_L00_00234090(v1, v1, 0.6f);
+            } else {
+                func_L00_00233D50(v1, v1, -(*(float *)(g + 0x224)));
+            }
+        } else {
+            v1[2] = (*(float *)(g + 0x224));
+        }
+    }
+    p = D_0013E633 + 0xE9D;
+    func_001F9BD8(p, p, v1);
+    k = 0x24;
+    if (*(int *)(p + 0x2004) == 0x7F) k = 0xD24;
+    i = 0;
+    while (i < 8) {
+        q = D_0013E633 + 0xE1D;
+        if ((*(unsigned char *)(q + 0x20B3)) != 0) {
+            r = func_L00_001F10E0(D_0015EE60 * 0.4f, q + 0x80, k, *(void **)(q + 0x2080));
+            if (r == 0) break;
+        } else {
+            t = (*(int *)(q + 0x208C));
+            if (t == 0x11) {
+                r = func_L00_001F10E0(0.6f, q + 0x80, k, *(void **)(q + 0x2080));
+                if (r == 0) break;
+            } else if (t == 0x16) {
+                r = func_L00_001F10E0(D_0015EE60 * 0.5f, q + 0x80, k, *(void **)(q + 0x2080));
+                if (r == 0) break;
+            } else if (t == 0xF) {
+                r = func_L00_001F10E0(D_0015EE60 * 0.45f, q + 0x80, k, *(void **)(q + 0x2080));
+                if (r == 0) break;
+            } else {
+                float h = (*(float *)(q + 0x220)) - (*(float *)(q + 0x224));
+                if (h < 0.05f) h = 0.05f;
+                r = func_L00_001F1D20((*(float *)(q + 0x234)), h, q + 0x80, k, *(void **)(q + 0x2080));
+                r |= func_L00_001F34F0((*(float *)(q + 0x234)), q + 0x80);
+                if (r == 0) break;
+            }
+        }
+        p2 = D_0013E633 + 0xE9D;
+        qcopy(p2, D_L16_001742F0);
+        qcopy(p2 + 0x180, D_L16_001742F0 + 0x10);
+        qcopy(p2 + 0x190, D_L16_001742F0 - 0x10);
+        p2 -= 0x80;
+        *(unsigned char *)(p2 + 0x257) = 1;
+        *(int *)(p2 + 0x23C) = *(int *)(D_L16_001742F0 - 0x18);
+        i++;
+    }
+    p3 = D_0013E633 + 0xE9D;
+    func_001F9BF0(p3, p3, v1);
+    func_001F9BF0(v2, p3, a0);
+    if (func_001F9CB8(v2) > *(float *)(p3 + 0x1B4) * 1.5f) {
+        if (a == 0xF) {
+            if (512.0f < v2[0]) v2[0] = 512.0f;
+            else if (v2[0] < -512.0f) v2[0] = -512.0f;
+            if (512.0f < v2[1]) v2[1] = 512.0f;
+            else if (v2[1] < -512.0f) v2[1] = -512.0f;
+            if (512.0f < v2[2]) v2[2] = 512.0f;
+            else if (v2[2] < -512.0f) v2[2] = -512.0f;
+            {
+                char *w = D_0013E633 + 0xE1D;
+                func_L00_001FF4B0(v2, v2, *(float *)(w + 0x234));
+                func_001F9BD8(w + 0x80, a0, v2);
+            }
+        }
+        return -1;
+    }
+    return 1;
+}
 INCLUDE_ASM("asm/overlays", func_L16_002116B0);
