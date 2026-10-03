@@ -14,7 +14,11 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023C088); /* audioDecStart */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C0E0); /* audioDecReset(_AudioDec *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C128); /* audioDecBeginPut(_AudioDec *, unsigned char **, int *, unsigned char **, int *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C1F8); /* audioDecEndPut(_AudioDec *, int) */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C2B0);
+/* IsStateFieldLarge - returns !((*(int*)(a+0x50)) < 0x1000) */
+int func_0023C2B0(int *a) {
+    int v = a[0x14];
+    return !(v < 0x1000);
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C2C0); /* audioDecSend */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C2E8); /* sendToSPU(_AudioDec *, unsigned char *, int, int) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C390); /* sendADPCM(_AudioDec *) */
