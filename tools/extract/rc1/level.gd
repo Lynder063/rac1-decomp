@@ -2,7 +2,7 @@ extends Node3D
 ## An extracted level. Edit it as an ordinary scene; run it (F6) to fly around.
 ##
 ## Right mouse: look. WASD: move. Q/E: down/up. Shift: faster. Wheel: speed.
-## F: frame the terrain. Esc: release the mouse.
+## F: frame the terrain. C: show or hide the collision layer. Esc: release the mouse.
 ## "-- --capture out.png" saves the first frame and quits.
 
 var camera: Camera3D
@@ -64,6 +64,10 @@ func _unhandled_input(event: InputEvent) -> void:
 				Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 			KEY_F:
 				frame_terrain()
+			KEY_C:
+				var collision := get_node_or_null("Game/Collision") as Node3D
+				if collision != null:
+					collision.visible = not collision.visible
 
 
 func _process(delta: float) -> void:

@@ -7,7 +7,9 @@ extends SceneTree
 ## Every placed mesh must be textured; the counts, triangles and world
 ## bounds of each level scene, its sky panorama and its placed mobys must
 ## match what was extracted. Moby markers are stand-ins, not geometry, so
-## they are counted on their own.
+## they are counted on their own. The collision layer (Game/Collision, hidden)
+## is not one of the textured meshes; its triangles are compared with
+## level.json separately.
 
 
 func _initialize() -> void:
@@ -25,6 +27,8 @@ func _initialize() -> void:
 		walk(root, Transform3D.IDENTITY, totals)
 		var sky := sky_size(root)
 		var mobys := moby_count(root)
+		var collision := collision_triangles(root)
+		var expected_collision := int(info.collision.triangles) if info.has("collision") else 0
 		root.free()
 		var low := Vector3(info.bounds[0][0], info.bounds[0][1], info.bounds[0][2])
 		var high := Vector3(info.bounds[1][0], info.bounds[1][1], info.bounds[1][2])
@@ -35,11 +39,12 @@ func _initialize() -> void:
 			and totals.triangles == int(info.triangles)
 			and totals.meshes.size() == int(info.meshes)
 			and totals.untextured == 0
+			and collision == expected_collision
 			and sky == Vector2i(int(expected_sky[0]), int(expected_sky[1]))
 			and mobys == expected_mobys
 			and box.position.distance_to(low) < 0.01 and box.end.distance_to(high) < 0.01)
-		print("%s: %d instances, %d meshes, %d triangles, sky %s, %d mobys, bounds %s: %s" % [
-			name, totals.instances, totals.meshes.size(), totals.triangles, sky, mobys, box,
+		print("%s: %d instances, %d meshes, %d triangles, collision %d, sky %s, %d mobys, bounds %s: %s" % [
+			name, totals.instances, totals.meshes.size(), totals.triangles, collision, sky, mobys, box,
 			"ok" if ok else "MISMATCH"])
 		failed += 0 if ok else 1
 	quit(1 if failed else 0)
@@ -49,6 +54,8 @@ func walk(node: Node, parent: Transform3D, totals: Dictionary) -> void:
 	if node.name == &"Mobys":
 		return
 	var here: Transform3D = parent * node.transform if node is Node3D else parent
+	if node.name == "Collision" and node.get_parent().name == "Game":
+		return  # A layer for the editor, counted by collision_triangles().
 	if node is MeshInstance3D:
 		var mesh: Mesh = node.mesh
 		for i in mesh.get_surface_count():
@@ -86,3 +93,21 @@ func moby_count(root: Node) -> int:
 	for child in mobys.get_children():
 		count += 1 if child.scene_file_path.begins_with("res://") and child.has_meta("rc1_index") else 0
 	return count
+
+
+## The triangles of the collision layer, which must be hidden by default.
+func collision_triangles(root: Node) -> int:
+	var layer := root.get_node_or_null("Game/Collision") as Node3D
+	if layer == null:
+		return 0
+	if layer.visible:
+		printerr("Game/Collision should be hidden by default")
+		return -1
+	var total := 0
+	for node in layer.find_children("*", "MeshInstance3D", true, false):
+		var mesh: Mesh = (node as MeshInstance3D).mesh
+		for i in mesh.get_surface_count():
+			var arrays := mesh.surface_get_arrays(i)
+			var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+			total += (indices.size() if not indices.is_empty() else arrays[Mesh.ARRAY_VERTEX].size()) / 3
+	return total

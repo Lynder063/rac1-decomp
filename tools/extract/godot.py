@@ -7,6 +7,7 @@ Each level is a scene, levels/level_NN/level_NN.tscn:
       Sun                 a directional light for the editor and the fly camera
       Game                game axes (Z up) rotated into Godot's (Y up)
         Terrain           terrain.glb, one node per fragment (editable children)
+        Collision         collision.glb, hidden: the baked collision mesh by surface type
         Ties/Tie_NNNN     instances of ties/tie_<class>.glb
         Shrubs/Shrub_NNNN instances of shrubs/shrub_<class>.glb
         Mobys/Moby_NNNN   instances of mobys/moby_<class>.tscn: for now a
@@ -22,6 +23,7 @@ import shutil
 import struct
 from pathlib import Path
 
+from collision import collision_mesh, decode
 from formats import png, unpack
 from gltf import Gltf
 from level import Level
@@ -36,6 +38,7 @@ SCRIPTS = Path(__file__).parent / "rc1"
 GAME_TO_GODOT = [1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1]  # (x, y, z) -> (x, z, -y)
 # Placements store W = 0.01 (0.0 on some); only other values become metadata.
 STORED_W = struct.unpack("<f", struct.pack("<f", 0.01))[0]
+COLLISION_ALPHA = 0.55
 PANORAMA = (2048, 1024)  # About one texel per pixel around the horizon.
 
 PROJECT = """config_version=5
@@ -117,10 +120,11 @@ class Scene:
         return Raw(f'SubResource("{rid}")')
 
     def node(self, name: str, parent: str | None = None, kind: str | None = None,
-             instance: str | None = None, **properties) -> None:
+             instance: str | None = None, index: int | None = None, **properties) -> None:
         head = f'[node name="{name}"'
         head += f' type="{kind}"' if kind else ""
         head += f' parent="{parent}"' if parent is not None else ""
+        head += f' index="{index}"' if index is not None else ""
         head += f" instance={instance}" if instance else ""
         self.nodes.append(self.block(head + "]", properties))
 
@@ -186,7 +190,28 @@ class LevelWriter:
         shrubs = shrub_classes(level)
         self.write_objects("shrub", shrubs, shrub_instances(level.gameplay, shrubs))
         self.write_mobys(moby_instances(level.gameplay))
+        self.write_collision(level.block(unpack("<I", level.index, 0x14)[0]))
         return self.finish()
+
+    def write_collision(self, block: bytes) -> None:
+        """collision.glb and a hidden Game/Collision; it is not counted with the textured meshes."""
+        data = decode(block)
+        self.stats["collision"] = {"cells": data.cells, "faces": data.faces, "triangles": len(data.triangles),
+                                   "surfaces": {str(k): v for k, v in data.surfaces().items()},
+                                   "hero_groups": data.hero_groups}
+        if not data.triangles:
+            return
+        gltf = Gltf()
+        gltf.node("Collision", gltf.coloured(collision_mesh(data), gltf.overlay("collision", COLLISION_ALPHA)))
+        (self.dir / "collision.glb").write_bytes(gltf.glb())
+        self.scene.node("Collision", "Game", instance=self.scene.resource("PackedScene", f"{self.res}/collision.glb", "collision"),
+                        visible=False)
+        # Godot's glTF import ignores vertex colours, so the mesh gets the material here.
+        material = self.scene.subresource("StandardMaterial3D", "collision_material", transparency=1, shading_mode=0,
+                                          cull_mode=2, vertex_color_use_as_albedo=True,
+                                          albedo_color=Raw(f"Color(1, 1, 1, {number(COLLISION_ALPHA)})"))
+        self.scene.node("Collision", "Game/Collision", index=0, surface_material_override__0=material)
+        self.scene.editable.append("Game/Collision")
 
     def write_terrain(self, fragments: list[Mesh], lod: int) -> None:
         path = self.glb("terrain.glb", fragments, 0)
