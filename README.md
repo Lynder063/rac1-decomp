@@ -227,7 +227,8 @@ Whether you're interested in matching functions, analyzing PS2 disassembly, rese
   with ours as starting points (see `docs/SIBLING_DECOMPS.md`)
 - [ReRAC](https://github.com/re-rac/rerac) (ISC): native PC port of the
   same game's US build; its format notes and parsers inform the level
-  extractor (moby placements, collision), its documented names feed
+  extractor (moby placements, models and animations, collision), its
+  documented names feed
   `config/names.tsv` (`docs/NAMES.md`), and its notes on what functions do
   reach worker packets through `config/overlays/rerac_notes.tsv` and the
   US map (`docs/OVERLAYS.md`); see `THIRD_PARTY_NOTICES.md`

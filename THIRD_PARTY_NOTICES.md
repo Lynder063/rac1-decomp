@@ -197,6 +197,13 @@ code and notes, or quote it:
 - `tools/extract/mobys.py`: the moby instance record and what the level
   loader does with each field, from `crates/rc-formats/src/gameplay.rs` and
   `docs/plan/moby_render_notes.md`; described in `docs/ASSETS.md` ("Mobys").
+- `tools/extract/moby_class.py`: the moby class header and model format
+  (packets, vertex cache, skinning slots, normals, untextured faces), from
+  `docs/formats/moby_rac1.md` §1-§2 and `crates/rc-formats/src/moby.rs`;
+  described in `docs/ASSETS.md` ("Moby classes").
+- `tools/extract/moby_anim.py`: moby skeletons and animation sequences,
+  from `docs/formats/moby_rac1.md` §3-§4, `docs/plan/moby_animation.md` and
+  `crates/rc-formats/src/moby_anim.rs`.
 - `tools/extract/collision.py`: the collision block (cell tree, packed
   vertices, faces and surface bytes), from `docs/formats/collision_rac1.md`,
   `docs/plan/collision_queries.md` and `crates/rc-formats/src/collision.rs`;
