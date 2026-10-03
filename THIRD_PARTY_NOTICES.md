@@ -159,6 +159,13 @@ The following functions adapt source from
 - `src/overlays/l01_novalis/vendor_002FABE8.c`: `func_L01_002FED78` (breakable pot: waits for its hit flag, then shatters into four sparks)
 - `src/overlays/l01_novalis/vendor_002FABE8.c`: `func_L01_002FCC80` (hinged bridge: swings with a sound while triggered and poses the bridge from its pivot)
 
+Data taken from Lombyte:
+
+- `tools/extract/moby_classes.tsv`: the moby class names the level editor
+  shows, from its `config/overlays/us/names/level-NN.json` ("moby-class-record"
+  evidence), which joins each level's class dispatch table with the class
+  names of [Wrench](https://github.com/chaoticgd/wrench)'s moby class unpack.
+
 MIT License
 
 Copyright (c) 2026 Mateusz Kłysz
@@ -180,3 +187,29 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## ReRAC
+
+[ReRAC](https://github.com/re-rac/rerac), a native PC port of the US build,
+documents the game's formats and systems. The following adapt its format
+code and notes, or quote it:
+
+- `tools/extract/mobys.py`: the moby instance record and what the level
+  loader does with each field, from `crates/rc-formats/src/gameplay.rs` and
+  `docs/plan/moby_render_notes.md`; described in `docs/ASSETS.md` ("Mobys").
+
+ISC License
+
+Copyright (c) 2026 ReRAC contributors
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.

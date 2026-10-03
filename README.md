@@ -225,6 +225,10 @@ Whether you're interested in matching functions, analyzing PS2 disassembly, rese
   layouts in `src/` comments (e.g. `src/game/draw.c`, `src/game/vuchain.c`)
   are corroborated against it, and `tools/lombyte.py` pairs its functions
   with ours as starting points (see `docs/SIBLING_DECOMPS.md`)
+- [ReRAC](https://github.com/re-rac/rerac) (ISC): native PC port of the
+  same game's US build; its format notes and parsers inform the level
+  extractor (moby placements), and its documented names feed
+  `config/names.tsv` (see `docs/NAMES.md`, `THIRD_PARTY_NOTICES.md`)
 - [ratchet-uya-decomp](https://github.com/vetusmagnus/ratchet-uya-decomp):
   matching decompilation of R&C 3 with the same SN compiler; its compiler
   and flag research (per-file `-mno-split-addresses`) is summarised in
