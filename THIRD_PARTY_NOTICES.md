@@ -197,6 +197,13 @@ code and notes, or quote it:
 - `tools/extract/mobys.py`: the moby instance record and what the level
   loader does with each field, from `crates/rc-formats/src/gameplay.rs` and
   `docs/plan/moby_render_notes.md`; described in `docs/ASSETS.md` ("Mobys").
+- `tools/extract/collision.py`: the collision block (cell tree, packed
+  vertices, faces and surface bytes), from `docs/formats/collision_rac1.md`,
+  `docs/plan/collision_queries.md` and `crates/rc-formats/src/collision.rs`;
+  described in `docs/ASSETS.md` ("Collision").
+- `config/overlays/rerac_notes.tsv`: names and notes quoted from its
+  `tools/ghidra/names/doc_names.csv` (the commit is in the file's header),
+  shown in worker packets.
 
 ISC License
 
