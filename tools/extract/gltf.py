@@ -81,6 +81,24 @@ class Gltf:
         self.doc["meshes"].append({"name": mesh.name, "primitives": primitives})
         return len(self.doc["meshes"]) - 1
 
+    def overlay(self, name: str, alpha: float) -> int:
+        """An unshaded, double-sided, translucent material that shows vertex colours."""
+        self.doc["extensionsUsed"] = ["KHR_materials_unlit"]
+        self.doc["materials"].append({
+            "name": name, "doubleSided": True, "alphaMode": "BLEND",
+            "pbrMetallicRoughness": {"baseColorFactor": [1, 1, 1, alpha], "metallicFactor": 0},
+            "extensions": {"KHR_materials_unlit": {}}})
+        return len(self.doc["materials"]) - 1
+
+    def coloured(self, mesh: Mesh, material: int) -> int:
+        """One unindexed primitive with a colour per vertex (mesh.colours), no textures."""
+        corners = [v for faces in mesh.faces.values() for face in faces for v in face]
+        attributes = {"POSITION": self.floats([mesh.positions[v] for v in corners], bounds=True),
+                      "COLOR_0": self.floats([mesh.colours[v] for v in corners])}
+        self.doc["meshes"].append({"name": mesh.name, "primitives": [
+            {"attributes": attributes, "material": material, "mode": 4}]})
+        return len(self.doc["meshes"]) - 1
+
     def node(self, name: str, mesh: int) -> None:
         self.doc["scenes"][0]["nodes"].append(len(self.doc["nodes"]))
         self.doc["nodes"].append({"name": name, "mesh": mesh})
