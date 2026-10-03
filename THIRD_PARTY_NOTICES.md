@@ -158,6 +158,13 @@ The following functions adapt source from
 - `src/overlays/l00_veldin1/vendor_002DB278.c`: `func_L00_002E2038` (Veldin vendor update: walks a path, turns toward the player, attacks and self-destructs)
 - `src/overlays/l01_novalis/vendor_002FABE8.c`: `func_L01_002FED78` (breakable pot: waits for its hit flag, then shatters into four sparks)
 - `src/overlays/l01_novalis/vendor_002FABE8.c`: `func_L01_002FCC80` (hinged bridge: swings with a sound while triggered and poses the bridge from its pivot)
+- `src/overlays/shared/mobyutil_00258BC8.c`: `func_L00_0025A868` (tests whether a moby's linked object has a non-zero field at +8)
+- `src/overlays/shared/vendor_002E1660.c`: `func_L00_002E99E4` (stores a float into a moby field at +0xB4)
+- `src/overlays/shared/vendor_002D9438.c`: `func_L00_002DCD40` (calls the callback a moby's class defines at +0x10, unless the moby is deleted)
+- `src/overlays/shared/mobyutil_00258BC8.c`: `func_L00_00261848` (marks a planet as discovered and appends it to the galaxy list)
+- `src/overlays/shared/mobyutil_00258BC8.c`: `func_L00_0025BBA0` (splits a vector into an angle and two scales)
+- `src/overlays/shared/vendor_002EB0D8.c`: `func_L00_002EC860` (sets a moby's damping and scale constants, then re-runs its setup)
+- `src/overlays/shared/help_00203E98.c`: `func_L00_0020A8B8` (tests a segment against the world and returns the hit distance)
 
 MIT License
 

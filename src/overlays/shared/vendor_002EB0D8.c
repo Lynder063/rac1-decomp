@@ -346,7 +346,34 @@ void func_L00_002EC7D0(char *a, void *b, void *c, float f) {
     func_L00_001FF200(p + 0x90);
     func_L00_002EC728(a);
 }
-INCLUDE_ASM("asm/overlays", func_L00_002EC860);
+/* From Lombyte (MIT), FUN_L00_002eb3b0 (PR #66), adapted to PAL. */
+
+void func_L00_002EC860(void *arg) {
+    char *p = arg;
+    char *m;
+    *(int *)(*(char **)(p + 0x70) + 0xF0) = 0;
+    m = *(char **)(p + 0x70);
+    *(int *)(m + 0x9C) = 0;
+    *(int *)(m + 0xA8) = 0;
+    *(int *)(m + 0xAC) = 0;
+    *(float *)(m + 0xA0) = 0.3f;
+    *(float *)(m + 0xA4) = 0.3f;
+    *(float *)(m + 0x48) = 0.99f;
+    *(float *)(m + 0x3C) = 0.04f;
+    *(float *)(m + 0x40) = 0.04f;
+    *(float *)(m + 0x44) = 0.04f;
+    *(float *)(m + 0x4C) = 0.04f;
+    *(float *)(m + 0x28) = 0.07f;
+    *(float *)(m + 0x2C) = 1.0f;
+    *(float *)(m + 0x30) = 0.07f;
+    *(float *)(m + 0x34) = 1.0f;
+    *(float *)(m + 0x38) = 0.07f;
+    func_L00_001EB430(m + 0x50);
+    func_L00_001EB430(m);
+    func_L00_001FF200(m + 0x90);
+    func_L00_002EC728(p);
+    *(short *)(p + 0x7E) = 0;
+}
 extern float func_L00_001EB6A8(void *, float, float, float, float, float);
 extern float func_001EC120(void *, float, float, float, float, float);
 /* smooths camera values toward targets and rebuilds the camera matrix */

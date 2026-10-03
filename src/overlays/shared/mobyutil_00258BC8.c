@@ -382,7 +382,12 @@ int func_L00_0025A778(float *p, float *v, int n) {
     return r;
 }
 INCLUDE_ASM("asm/overlays", func_L00_0025A848);
-INCLUDE_ASM("asm/overlays", func_L00_0025A868);
+/* From Lombyte (MIT), FUN_L00_00259830 (PR #66), adapted to PAL. */
+int func_L00_0025A868(char *a) {
+    char *p = *(char **)(a + 0x94);
+    if (p && *(int *)(p + 8)) return 1;
+    return 0;
+}
 extern void func_001F9BC0(void *);
 void func_L00_0025A890(char *a, int b, int c, float d) {
     *(int *)(a + 0x10) = b;
@@ -601,7 +606,21 @@ void func_L00_0025BA50(char *self, Q4 *pos, char **list, int n, char *skip, int 
         func_L00_0025AAC0(list[i], &l.m);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_0025BBA0);
+/* From Lombyte (MIT), FUN_L00_0025ab48 (PR #66), adapted to PAL. */
+typedef struct { float f[4]; } __attribute__((aligned(16))) Q25BBA0;
+
+void func_L00_0025BBA0(Q25BBA0 *v, float *ang, float *s1, float *s2) {
+    Q25BBA0 t;
+    t = *v;
+    if (t.f[3] != 5627.9248046875f) {
+        *ang = func_L00_001FF860(t.f[0], t.f[1]);
+        return;
+    }
+    *ang = func_L00_001FF860(t.f[0], t.f[1]);
+    *s1 *= func_001F9CE8(&t);
+    t.f[3] = 0;
+    *s2 *= t.f[2];
+}
 typedef struct { float x, y, z, w; } Vc0 __attribute__((aligned(16)));
 extern void func_001F9BF0(void *, void *, void *);
 extern float func_001F9CE8(void *);
@@ -1298,7 +1317,24 @@ void func_L00_002617B0(char *a, Vx *b, void *c, void *d) {
     func_002153E8(&t2, a);
     qcopy(a + 0x10, b);
 }
-INCLUDE_ASM("asm/overlays", func_L00_00261848);
+/* From Lombyte (MIT), FUN_L00_002607d0 (PR #66), adapted to PAL. */
+extern unsigned char D_0013DE48[];
+extern int D_0013D618[];
+extern int D_0015EE84 MACRO_ADDR;
+extern void func_L00_00263DB0(int);
+
+void func_L00_00261848(int id) {
+    int n = 0;
+    int i;
+    if (D_0013DE48[id] == 0) {
+        for (i = 0; i < 20; i++) {
+            if (D_0013DE48[i]) n++;
+        }
+        D_0013DE48[id] = 1;
+        D_0013D618[n] = id;
+        if (id != D_0015EE84) func_L00_00263DB0(id);
+    }
+}
 extern unsigned char D_0013D5C8[] NOT_SDA;
 extern unsigned char D_0013D5F0[] NOT_SDA;
 extern int D_0013D530[] NOT_SDA;

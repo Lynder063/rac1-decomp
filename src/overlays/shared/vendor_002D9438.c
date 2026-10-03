@@ -307,7 +307,21 @@ void func_L00_002DB700(char *m, float *a, float *b, float *c) {
 INCLUDE_ASM("asm/overlays", func_L00_002DB810);
 INCLUDE_ASM("asm/overlays", func_L00_002DBB10);
 INCLUDE_ASM("asm/overlays", func_L00_002DBC40);
-INCLUDE_ASM("asm/overlays", func_L00_002DCD40);
+/* From Lombyte (MIT), FUN_L00_002db890 (PR #66), adapted to PAL. */
+typedef int (*Fn2DCD40)(void *);
+typedef struct { char pad[0x10]; Fn2DCD40 f10; } Cb2DCD40;
+typedef struct { char pad[0x2C]; Cb2DCD40 *f2C; } Sub2DCD40;
+typedef struct { char pad0[0x20]; unsigned char f20; char pad1[3]; Sub2DCD40 *f24; char pad2[0x50]; int f78; } Obj2DCD40;
+
+char *func_L00_002DCD40(char *p) {
+    Obj2DCD40 *o = (Obj2DCD40 *)p;
+    Fn2DCD40 f;
+    if (o == 0 || o->f20 == 0xFE) return 0;
+    if (o->f20 == 0xFD || o->f78 == 0 || o->f24 == 0) return 0;
+    f = o->f24->f2C->f10;
+    if (f) return (char *)f(o);
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002DCDA8);
 extern short D_L00_00161BF0;
 extern char *func_L00_002DCD40(char *);
