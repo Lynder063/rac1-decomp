@@ -82,7 +82,38 @@ int func_L00_0023EF78(float *pos, float radius, float intensity, int color) {
     *(int *)(s + 0xC) = (int)(D_L00_00180740 + i * 0x400);
     return i;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0023F0D0);
+typedef unsigned int u128_pt __attribute__((mode(TI)));
+typedef union { u128_pt q_0023e738; float f[4]; } Vec4_0023e738;
+typedef struct { float x, y, z, b_0023e738; Vec4_0023e738 pos; } P_0023e738;
+typedef struct { char pad[0xc]; char *buf; int used; char pad2[0x30 - 0x14]; } T_0023e738;
+extern float D_L00_0015F6B8_0023e738 __asm__("D_L00_0015F6B8") MACRO_ADDR;
+extern T_0023e738 D_L00_001805C0_0023e738[] __asm__("D_L00_001805C0");
+extern P_0023e738 D_L00_001803C0_0023e738[] __asm__("D_L00_001803C0");
+extern char D_L00_00180740_0023e738[] __asm__("D_L00_00180740");
+void func_001F99D8_0023e738(void *, int) __asm__("func_001F99D8");
+/* Update (reads the frame-time float D_L00_0015F6B8). Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_0023db30.c, FUN_L00_0023e738. */
+int func_L00_0023F0D0(u128_pt *v, float a, float b_0023e738, float c, float d, float e) {
+    int i;
+    T_0023e738 *t;
+    P_0023e738 *p;
+    if (0.8f < D_L00_0015F6B8_0023e738) return -1;
+    for (i = 0;
+    i < 8;
+    i++) if (D_L00_001805C0_0023e738[i].used == 0) break;
+    if (i == 8) return -1;
+    t = &D_L00_001805C0_0023e738[i];
+    p = &D_L00_001803C0_0023e738[i];
+    qcopy(&p->pos, v);
+    p->pos.f[3] = a;
+    p->x = c;
+    p->y = d;
+    p->z = e;
+    p->b_0023e738 = b_0023e738;
+    func_001F99D8_0023e738(t, 0x30);
+    t->used = 1;
+    t->buf = D_L00_00180740_0023e738 + i * 1024;
+    return i;
+}
 extern void func_002027C0(int);
 extern void func_001F99D8(void *, int);
 extern unsigned char D_L00_001803C0[];
