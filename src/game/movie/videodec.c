@@ -60,7 +60,16 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023E1B0); /* videoDecIsFlushed(VideoD
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E1F8); /* videoDecMain(void *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E298); /* decBs0(VideoDec *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E450); /* mpegError(sceMpeg *, sceMpegCbDataError *, void *) */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E478); /* mpegNodata(sceMpeg *, sceMpegCbData *, void *) */
+extern void func_0023BB40(void);
+extern int func_0023D340(int);
+extern int D_0016130C MACRO_ADDR;
+
+/* process_video_stream - calls func_0023BB40 then func_0023D340 */
+int func_0023E478(void) {
+    func_0023BB40();
+    func_0023D340(D_0016130C + 0xD9090);
+    return 1;
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E4B0);
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E4E0);
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E510);
