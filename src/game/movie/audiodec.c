@@ -8,7 +8,13 @@
  */
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023BFA0); /* audioDecCreate(_AudioDec *, unsigned char *, int, sceMpegStrType) */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C060); /* audioDecDelete(_AudioDec *) */
+extern int func_0012F220(void);
+
+/* audio_dec_delete - calls func_0012F220 */
+int func_0023C060(void) {
+    func_0012F220();
+    return 1;
+}
 LINKER_REMNANT("asm/remnants/text", func_0023C080);
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C088); /* audioDecStart */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C0E0); /* audioDecReset(_AudioDec *) */
