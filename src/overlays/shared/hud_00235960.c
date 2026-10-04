@@ -7,7 +7,7 @@ typedef struct { int pad[5]; int a[8]; int b[16]; int c[8]; } T_235310;
 typedef struct { int v; short s; short pad; } E_235310;
 typedef struct { char pad[0x18]; T_235310 *t; char pad2[8]; E_235310 *a; E_235310 *b; } G_235310;
 extern G_235310 D_L00_0017E5D8_235ca0  __asm__("D_L00_0017E5D8") __attribute__((section(".data")));
-/* HUD update. Adapted from Lombyte (MIT) for PAL: 380, FUN_L00_00235310. */
+/* HUD update. Adapted from Lombyte (MIT) for PAL: overlays/shared/ui_hud_00234fd0.c, FUN_L00_00235310. */
 void func_L00_00235CA0(int n) {
     int d = D_L00_0017E5D8_235ca0.t->c[n];
     int i, j, s, end;
@@ -882,7 +882,7 @@ typedef struct { int a; int b; } H_23ac78;
 extern H_23ac78 D_L00_0017E5D8_23b610  __asm__("D_L00_0017E5D8") __attribute__((section(".data")));
 extern void func_L00_0023B750_23b610(void) __asm__("func_L00_0023B750");
 extern void func_001FFC48_23b610(void *) __asm__("func_001FFC48");
-/* HUD update. Adapted from Lombyte (MIT) for PAL: 316, FUN_L00_0023ac78. */
+/* Text/HUD update. Adapted from Lombyte (MIT) for PAL: overlays/shared/ui_text_0023a7a8.c, FUN_L00_0023ac78. */
 int func_L00_0023B610(int call) {
     int n = 0;
     E_23ac78 *e;
