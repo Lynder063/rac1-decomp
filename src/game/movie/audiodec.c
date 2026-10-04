@@ -25,6 +25,14 @@ int func_0023C2B0(int *a) {
     int v = a[0x14];
     return !(v < 0x1000);
 }
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C2C0); /* audioDecSend */
+extern void func_0023C390(void);
+
+/* audio_dec_send - calls func_0023C390 if *a is non-zero */
+void func_0023C2C0(int *a) {
+    int v = *a;
+    if (v) {
+        func_0023C390();
+    }
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C2E8); /* sendToSPU(_AudioDec *, unsigned char *, int, int) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C390); /* sendADPCM(_AudioDec *) */
