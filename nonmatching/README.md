@@ -77,7 +77,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L18_002D6738`](l18_veldin2/func_L18_002D6738.c) | l18_veldin2 | 320 | BYTES 10/320 | 96.9% |
 | [`func_L05_002D3220`](l05_rilgar/func_L05_002D3220.c) | l05_rilgar | 508 | BYTES 16/508 | 96.8% |
 | [`func_L14_002EFB10`](l14_oltanis/func_L14_002EFB10.c) | l14_oltanis | 552 | BYTES 18/552 | 96.7% |
-| [`func_L00_0020B850`](shared/func_L00_0020B850.c) | shared | 992 | BYTES 33/992 | 96.7% |
 | [`func_L02_002EB480`](l02_aridia/func_L02_002EB480.c) | l02_aridia | 336 | BYTES 12/336 | 96.4% |
 | [`func_L00_002781D8`](shared/func_L00_002781D8.c) | shared | 1772 | BYTES 64/1772 | 96.4% |
 | [`func_L02_002D4E50`](l02_aridia/func_L02_002D4E50.c) | l02_aridia | 580 | BYTES 21/580 | 96.4% |

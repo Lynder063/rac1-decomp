@@ -1286,7 +1286,62 @@ void func_L00_0020B310(void) {
     func_L00_0020A858(D_0015EE64 * 0.014f, D_0015EE64 * 0.3f);
     *(float *)(p + 0x1C8) = *(float *)(p + 0x278) * 0.55f;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0020B850);
+typedef struct { u8 p0[0x2C0]; f32 f2C0, f2C4, f2C8, f2CC, f2D0, f2D4; u8 p2D8[0x308 - 0x2D8]; s16 h308; u8 p30A[0x418 - 0x30A]; s32 i418; u8 p41C[0x10E0 - 0x41C]; s32 i10E0; u8 p10E4[0x12A0 - 0x10E4]; f32 f12A0, f12A4; s32 i12A8; s16 h12AC; u16 h12AE; u8 p12B0[0x2080 - 0x12B0]; u8 *p2080; s32 i2084; u8 p2088[4]; s32 i208C; } P_20b1d8;
+typedef struct { u8 p0[0x320]; f32 f320, f324; u8 p328[0x36C - 0x328]; f32 f36C; u8 p370[0x3D0 - 0x370]; f32 f3D0, f3D4; u8 p3D8[0x41C - 0x3D8]; f32 f41C; u8 p420[0x480 - 0x420]; f32 f480; u8 p484[0x530 - 0x484]; f32 f530; } A_20b1d8;
+extern P_20b1d8 D_0013F450_20b1d8 __asm__("D_0013F450");
+extern A_20b1d8 D_L00_0017A780_20b1d8 __asm__("D_L00_0017A780");
+extern s32 func_L00_0020DC00_20b850(void) __asm__("func_L00_0020DC00") ;
+extern f32 func_001F9B88_20b850(f32) __asm__("func_001F9B88") ;
+extern f32 func_L00_001FF860_20b850(f32, f32) __asm__("func_L00_001FF860") ;
+extern f32 func_001FA790_20b850(f32, f32) __asm__("func_001FA790") ;
+extern void func_L00_00233B08_20b850(s32, s32, s32, s32, f32, f32) __asm__("func_L00_00233B08") ;
+extern s32 func_001F9850_c(s32) __asm__("func_001F9850");
+extern void func_L00_00250800_20b850(void *, s32, void *) __asm__("func_L00_00250800") ;
+extern f32 func_002140F8_20b850(f32, f32) __asm__("func_002140F8") ;
+extern void func_L00_0026ED30_20b850(void *, void *, f32) __asm__("func_L00_0026ED30") ;
+/* Hero movement check: tests the six stick/velocity thresholds against the pad and the state word, then runs the transition tests. Adapted from Lombyte (MIT) for PAL: overlays/shared/ui_help_00203b18.c, FUN_L00_0020b1d8. */
+void func_L00_0020B850(void) {
+    u8 buf[0x10] __attribute__((aligned(16)));
+    f32 a, b;
+    u8 *q;
+    s32 i;
+    if (func_L00_0020DC00_20b850()) return;
+    if (0.03f < func_001F9B88_20b850(D_0013F450_20b1d8.f2C0) || 0.03f < func_001F9B88_20b850(D_0013F450_20b1d8.f2C4) ||
+        0.06981317f < func_001F9B88_20b850(D_0013F450_20b1d8.f2C8) || 0.06981317f < func_001F9B88_20b850(D_0013F450_20b1d8.f2CC) ||
+        0.06981317f < func_001F9B88_20b850(D_0013F450_20b1d8.f2D0) || 0.06981317f < func_001F9B88_20b850(D_0013F450_20b1d8.f2D4)) {
+        if (D_0013F450_20b1d8.h308 != 1) {
+            D_L00_0017A780_20b1d8.f324 = -D_0013F450_20b1d8.f2C8;
+            D_L00_0017A780_20b1d8.f3D4 = -D_0013F450_20b1d8.f2CC;
+            a = func_L00_001FF860_20b850(0.2f, D_0013F450_20b1d8.f2C0) * 1.2f;
+            b = -func_L00_001FF860_20b850(0.2f, D_0013F450_20b1d8.f2C4) * 1.2f;
+            if (0.7853982f < a) a = 0.7853982f;
+            if (a < -0.17453292f) a = -0.17453292f;
+            if (0.17453292f < b) b = 0.17453292f;
+            if (b < -0.7853982f) b = -0.7853982f;
+            D_L00_0017A780_20b1d8.f480 = a;
+            D_L00_0017A780_20b1d8.f530 = b;
+            D_L00_0017A780_20b1d8.f320 = -func_001FA790_20b850(D_0013F450_20b1d8.f2D0, -a);
+            D_L00_0017A780_20b1d8.f3D0 = -func_001FA790_20b850(D_0013F450_20b1d8.f2D4, -b);
+        }
+    }
+    if (D_0013F450_20b1d8.i10E0) {
+        D_L00_0017A780_20b1d8.f36C = 0.01f;
+        D_L00_0017A780_20b1d8.f41C = 0.01f;
+    }
+    if (!(D_0013F450_20b1d8.h12AE & 0x80)) {
+    if (D_0013F450_20b1d8.i2084 == 3) func_L00_00233B08_20b850(1, 2, 1, 0, 0.021f, 0.002f);
+    if (D_0013F450_20b1d8.i208C == 4 && D_0013F450_20b1d8.i418 > 0 && D_0013F450_20b1d8.i418 < func_001F9850_c(12)) func_L00_00233B08_20b850(1, 2, 0, 1, 0.016f, 0.002f);
+    if (D_0013F450_20b1d8.i12A8 <= 0) return;
+    if (D_0013F450_20b1d8.h12AC == 0) return;
+    q = 0;
+    if (D_0013F450_20b1d8.h12AE & 1) q = D_0013F450_20b1d8.p2080 + 0xC0;
+    D_0013F450_20b1d8.i12A8--;
+    func_L00_00250800_20b850(D_0013F450_20b1d8.p2080, 0x16, buf);
+    for (i = 0; i < D_0013F450_20b1d8.h12AC; i++) func_L00_0026ED30_20b850(buf, q, D_0013F450_20b1d8.f12A0 + func_002140F8_20b850(-D_0013F450_20b1d8.f12A4, D_0013F450_20b1d8.f12A4));
+    func_L00_00250800_20b850(D_0013F450_20b1d8.p2080, 0x17, buf);
+    for (i = 0; i < D_0013F450_20b1d8.h12AC; i++) func_L00_0026ED30_20b850(buf, q, D_0013F450_20b1d8.f12A0 + func_002140F8_20b850(-D_0013F450_20b1d8.f12A4, D_0013F450_20b1d8.f12A4));
+    } else D_0013F450_20b1d8.i12A8 = 0;
+}
 typedef unsigned int u128_20b5b8 __attribute__((mode(TI)));
 typedef union { u128_20b5b8 q; f32 f[4]; } V4_20b5b8;
 typedef struct { u8 pad[0x40]; f32 x, y; } S2_20b5b8;
