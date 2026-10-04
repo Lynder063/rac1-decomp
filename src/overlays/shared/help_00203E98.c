@@ -314,7 +314,28 @@ void func_L00_00206808(void) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_002068C8);
 INCLUDE_ASM("asm/overlays", func_L00_00207220);
-INCLUDE_ASM("asm/overlays", func_L00_00207310);
+typedef struct { unsigned char p[8]; int x8; unsigned char pc[0x40]; } E00207310;
+typedef struct { unsigned char p[0x280]; unsigned short x280; unsigned char p282[0x13E]; unsigned short x3c0; } G00207310;
+extern G00207310 D_00141A68;
+extern unsigned short D_001419F0 NOT_SDA;
+extern unsigned char D_0013D5C8[] NOT_SDA;
+extern int func_L00_0020DC00(void);
+/* Periodic help-message check: tick-based hints for the pack and the unused-slot count. The two message tables sit behind separate symbols (D_00141A68 and D_001419F0) as in retail. */
+void func_L00_00207310(void) {
+    int i, n;
+    if (D_00141A68.x3c0 == 0 && D_0013D5C8[4] != 0 && func_L00_0020DC00() != 0) {
+        func_L00_00203F20(0x4E2E, 0x78);
+    }
+    if (D_L00_0015F6B0 <= 0) return;
+    if (D_L00_0015F6B0 & 0x7F) return;
+    if (D_00141A68.x280 != 0) return;
+    if (D_001419F0 != 0) return;
+    n = 0;
+    for (i = 0; i < 0x25; i++) {
+        if (((E00207310 *)D_L00_00179BC0)[i].x8 == 0 && i != 8 && i != 0x18 && D_0013D5C8[i] != 0) n++;
+    }
+    if (n >= 9) func_L00_00203F20(0x4E26, 0x50);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00207418);
 extern void func_001F4E08(int);
 extern void func_L00_002068C8(void);
