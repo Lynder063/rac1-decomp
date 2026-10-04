@@ -1287,7 +1287,130 @@ void func_L00_0020B310(void) {
     *(float *)(p + 0x1C8) = *(float *)(p + 0x278) * 0.55f;
 }
 INCLUDE_ASM("asm/overlays", func_L00_0020B850);
-INCLUDE_ASM("asm/overlays", func_L00_0020BC30);
+typedef unsigned int u128_20b5b8 __attribute__((mode(TI)));
+typedef union { u128_20b5b8 q; f32 f[4]; } V4_20b5b8;
+typedef struct { u8 pad[0x40]; f32 x, y; } S2_20b5b8;
+extern u8 D_0013F450_20b5b8[] __asm__("D_0013F450");
+extern f32 D_0015EE6C_20b5b8 __asm__("D_0015EE6C") MACRO_ADDR;
+extern V4_20b5b8 D_L00_00173F80_20b5b8[] __asm__("D_L00_00173F80");
+extern f32 func_L00_002342F8_20b5b8(void *) __asm__("func_L00_002342F8");
+extern s32 func_001F9850_20b5b8(s32) __asm__("func_001F9850");
+extern s32 func_L00_0020CDF0_20b5b8(void *, void *) __asm__("func_L00_0020CDF0");
+extern s32 func_L00_0020A8B8_20b5b8(s32, f32, f32) __asm__("func_L00_0020A8B8");
+extern void func_L00_00233E48_20b5b8(void *, f32, f32, f32) __asm__("func_L00_00233E48");
+extern s32 func_L00_001EFFF0_20b5b8(void *, void *, s32, void *, void *) __asm__("func_L00_001EFFF0");
+extern s32 func_L00_001F3958_20b5b8(void) __asm__("func_L00_001F3958");
+extern f32 func_L00_002345B0_20b5b8(void *) __asm__("func_L00_002345B0");
+extern void func_001F9EE8_20b5b8(void *, void *, void *) __asm__("func_001F9EE8");
+extern f32 func_L00_001FF860_20b5b8(f32, f32) __asm__("func_L00_001FF860");
+extern f32 func_001FA850_20b5b8(f32, f32) __asm__("func_001FA850");
+extern f32 func_001F9D48_20b5b8(void *, void *) __asm__("func_001F9D48");
+/* Hero ledge-grab check: predicts a position with gravity, probes for a ledge and tests angle and dot thresholds before setting the grab state. Adapted from Lombyte (MIT) for PAL: overlays/shared/ui_help_00203b18.c, FUN_L00_0020b5b8. */
+void func_L00_0020BC30(void) {
+    V4_20b5b8 v, w, z;
+    u8 *g;
+    u8 *h;
+    u8 *k2;
+    u8 *pz;
+    s32 t;
+    s32 n;
+    f32 f;
+    f32 r;
+    f32 s;
+    f32 a, b, c, d;
+
+    g = D_0013F450_20b5b8;
+    if (*(f32 *)(g + 0x2DC) < 0.4f) {
+        return;
+    }
+    if (func_L00_002342F8_20b5b8(g + 0xE0) < D_0015EE6C_20b5b8 * -20.0f) {
+        return;
+    }
+    if (*(s32 *)(g + 0x4E8) != 0) {
+        *(s32 *)(g + 0x1B4) = 0;
+        return;
+    }
+    qcopy(&v, g + 0x80);
+    t = func_001F9850_20b5b8(0x14);
+    {
+    f32 st = (f32)t;
+    a = *(f32 *)(g + 0x4A0) * st;
+    b = *(f32 *)(g + 0xE8) * st;
+    c = *(f32 *)(g + 0x100) * st;
+    d = *(f32 *)(g + 0x104) * st;
+    v.f[2] = v.f[2] + b - a * st * 0.5f;
+    }
+    v.f[0] = v.f[0] + c;
+    v.f[1] = v.f[1] + d;
+    if (func_L00_0020CDF0_20b5b8(&v, g + 0x98) != 0) {
+        *(s32 *)(g + 0x1B4) = 0;
+        *(s16 *)(g + 0x1F0) = t + 2;
+        return;
+    }
+    if (func_L00_0020A8B8_20b5b8(0, 0.3f, 1.0f) == 0) {
+        return;
+    }
+    r = 1.7f;
+    if (*(s32 *)(g + 0x2084) != 0x11) {
+        if (g[0x255] == 0 || g[0x254] != 0) {
+            r = 3.0f;
+        }
+    }
+    k2 = D_0013F450_20b5b8;
+    func_L00_00233E48_20b5b8(&v, 0.0f, 0.0f, r);
+    func_L00_00233E48_20b5b8(&w, *(f32 *)(k2 + 0x234) + 1.4f, 0.0f, r);
+    if (func_L00_001EFFF0_20b5b8(&v, &w, 2, 0, 0) == 0) {
+        return;
+    }
+    n = func_L00_001F3958_20b5b8();
+    if (n == 0xA) {
+        return;
+    }
+    if (n == 0xC) {
+        return;
+    }
+    pz = (u8 *)D_L00_00173F80_20b5b8;
+    if (func_L00_002345B0_20b5b8(pz) < 1.3089969f) {
+        return;
+    }
+    func_001F9EE8_20b5b8(&z, pz, k2 + 0x40);
+    f = func_L00_001FF860_20b5b8(z.f[0], z.f[1]);
+    f = func_001FA850_20b5b8(f, 3.1415927f);
+    if (0.87266463f < f) {
+        return;
+    }
+    if (*(s32 *)(k2 + 0x2084) == 0x11) {
+        s = 0.95f;
+    } else {
+        s = 0.72f;
+    }
+    f = func_001F9D48_20b5b8(pz - 0x20, &v);
+    if (s < f) {
+        return;
+    }
+    {
+    S2_20b5b8 *q2;
+    *(u128_20b5b8 *)(k2 + 0x460) = *(u128_20b5b8 *)pz;
+    q2 = (S2_20b5b8 *)(pz - 0x40);
+    f = func_L00_001FF860_20b5b8(q2->x, q2->y);
+    }
+    *(f32 *)(k2 + 0x46C) = f;
+    if (*(s32 *)(k2 + 0x208C) != 4 && *(s32 *)(k2 + 0x2094) != 4 && *(s32 *)(k2 + 0x20A0) != 4) {
+        return;
+    }
+    h = D_0013F450_20b5b8;
+    if (*(s32 *)(h + 0x22B4) != 0) {
+        f = func_001FA850_20b5b8(*(f32 *)(h + 0x47C), *(f32 *)(h + 0x46C));
+        if (f < 2.9670596f) {
+            return;
+        }
+    }
+    if (*(s32 *)(h + 0x2084) == 0x11) {
+        *(s32 *)(h + 0x1B4) = func_001F9850_20b5b8(7);
+    } else {
+        *(s32 *)(h + 0x1B4) = func_001F9850_20b5b8(6);
+    }
+}
 extern void func_L00_002111E8(void);
 void func_L00_0020BFA8(void) {
     if (*(unsigned char *)(D_0013F450 + 0x20A4) == 3) {
