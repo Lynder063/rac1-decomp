@@ -819,7 +819,34 @@ float func_L00_00209690(float *a, int n) {
     w = func_L00_002001D8(buf, *(float *)(d + 0xAA8));
     return w * a[i] + (*(float *)(d + 0xAAC) - w) * a[p];
 }
-INCLUDE_ASM("asm/overlays", func_L00_00209748);
+typedef unsigned int u128_002090d0 __attribute__((mode(TI), aligned(16)));
+typedef struct { float x, y, z, w_002090d0; } __attribute__((aligned(16))) Vec4_002090d0;
+typedef struct { Vec4_002090d0 r[4]; } Mtx_002090d0;
+extern Vec4_002090d0 D_0013F4E0_002090d0 __asm__("D_0013F4E0");
+void func_001FA218_002090d0(Mtx_002090d0 *, Vec4_002090d0 *) __asm__("func_001FA218");
+void func_001F9EE8_002090d0(Vec4_002090d0 *, Vec4_002090d0 *, Mtx_002090d0 *) __asm__("func_001F9EE8");
+void func_001FA540_002090d0(Mtx_002090d0 *, Mtx_002090d0 *, Mtx_002090d0 *) __asm__("func_001FA540");
+void func_001F9BF0_002090d0(Vec4_002090d0 *, Vec4_002090d0 *, Vec4_002090d0 *) __asm__("func_001F9BF0");
+void func_001F9BD8_002090d0(Vec4_002090d0 *, Vec4_002090d0 *, Vec4_002090d0 *) __asm__("func_001F9BD8");
+void func_002153E8_002090d0(Mtx_002090d0 *, Vec4_002090d0 *) __asm__("func_002153E8");
+/* Camera-relative placement: transforms a position through the camera matrix and an offset rotation, then writes the difference back into the camera block. Adapted from Lombyte (MIT) for PAL: 260, FUN_L00_002090d0. */
+void func_L00_00209748(float *inf, float x, float y, float z) {
+    u128_002090d0 *in = (u128_002090d0 *)inf;
+    struct { Vec4_002090d0 p; Vec4_002090d0 a; Vec4_002090d0 b; Vec4_002090d0 d; Mtx_002090d0 m; Mtx_002090d0 r; Vec4_002090d0 e; } L_002090d0;
+    Vec4_002090d0 *cam = &D_0013F4E0_002090d0;
+    *(u128_002090d0 *)&L_002090d0.p = *in;
+    func_001FA218_002090d0(&L_002090d0.m, cam);
+    func_001F9EE8_002090d0(&L_002090d0.a, &L_002090d0.p, &L_002090d0.m);
+    L_002090d0.e.x = x;
+    L_002090d0.e.y = y;
+    L_002090d0.e.z = z;
+    func_001FA218_002090d0(&L_002090d0.r, &L_002090d0.e);
+    func_001FA540_002090d0(&L_002090d0.m, &L_002090d0.m, &L_002090d0.r);
+    func_001F9EE8_002090d0(&L_002090d0.b, &L_002090d0.p, &L_002090d0.m);
+    func_001F9BF0_002090d0(&L_002090d0.d, &L_002090d0.a, &L_002090d0.b);
+    func_001F9BD8_002090d0(cam - 1, cam - 1, &L_002090d0.d);
+    func_002153E8_002090d0(&L_002090d0.m, cam);
+}
 typedef float V[4] __attribute__((aligned(16)));
 
 extern void func_001F9BC0(float *);
