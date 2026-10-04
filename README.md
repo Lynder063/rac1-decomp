@@ -5,14 +5,6 @@
 [![Functions](https://decomp.dev/Lynder063/rac1-decomp.svg?mode=shield&label=Functions&measure=matched_functions)](https://decomp.dev/Lynder063/rac1-decomp)
 [![Discord](https://img.shields.io/badge/Discord-Join%20Community-5865F2?logo=discord&logoColor=white)](https://discord.gg/Sfd2B54PDG)
 
-> [!NOTE]
-> Because of recent events in the Ratchet & Clank community, I had to remove
-> all information associated with John Doe #1 and John Doe #2 from this project
-> at their request. If anyone else would like mentions of them removed, please
-> contact me on the [Discord](https://discord.gg/Sfd2B54PDG).
->
-> - Kryštof "Lynder063" Malinda
-
 A work-in-progress **matching decompilation** of *Ratchet & Clank* (Insomniac
 Games, 2002) for the PlayStation 2. The goal is C/C++ source that, built with
 the original toolchain, produces a byte-identical copy of the retail executable.
@@ -220,6 +212,10 @@ Whether you're interested in matching functions, analyzing PS2 disassembly, rese
   [asm-differ](https://github.com/simonlindholm/asm-differ),
   [objdiff](https://github.com/encounter/objdiff)
 - [AngheloAlf's PS2 toolchain mirrors](https://github.com/AngheloAlf)
+
+## Credits
+
+- **GFI (Game Fuckery Inc.)**: Special thanks to the GFI Discord server for the years of time spent researching and exploring the game, which helped make this decompilation possible.
 - [Lombyte](https://github.com/mateuszklysz/Lombyte) (MIT): matching
   decompilation of the same game's NTSC build; some real names and struct
   layouts in `src/` comments (e.g. `src/game/draw.c`, `src/game/vuchain.c`)
