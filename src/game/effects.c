@@ -25,17 +25,17 @@ extern DispatchRec D_001E8F80[];
 typedef struct { u8 pad_0[0x10]; f32 pos[4]; u8 flags; } FlareMoby;
 typedef struct { FlareMoby *moby; s32 state; f32 intensity; s32 pad_c; s16 alpha[16]; s16 tex[16]; s32 color[16]; f32 dist[16]; f32 scale[16]; } LensFlare;
 typedef struct { u8 pad_0[0x8]; s32 cx; s32 cy; s32 ox; s32 oy; } ScreenInfo;
-extern u8 D_00187080_1edff8[] __asm__("D_00187080");
+extern u8 D_00187080_1edff8[] __asm__("D_00187180");
 extern ScreenInfo D_0013E600_1edff8 __asm__("D_0013E600");
-extern LensFlare D_00187300_1edff8 __asm__("D_00187300");
+extern LensFlare D_00187300_1edff8 __asm__("D_00187400");
 extern f32 func_001F9D10_1edff8(void *, void *) __asm__("func_001F9D10");
-extern f32 ConvertIntegerToFloat(s32) __asm__("func_001FA6C0");
+extern f32 ConvertIntegerToFloat(s32) __asm__("func_001FA888");
 extern s32 truncate_float_to_s32(f32) __asm__("func_001FA898");
-extern float AbsoluteFloat(float input) __asm__("func_001F99C0");
+extern float AbsoluteFloat(float input) __asm__("func_001F9B88");
 extern void project_to_screen(f32 *, void *) __asm__("func_001F2418");
 extern s64 get_effect_texture(s32) __asm__("func_001F4868");
 extern void draw_textured_quad(s32, s32, s32, s32, s32, s32, s32, s32, s64, s64) __asm__("func_001F5800");
-/* Effects routine. Adapted from Lombyte (MIT) for PAL: 948, FUN_001edc50. */
+/* Lens flare: projects the flare moby to the screen and fills the per-element alpha, texture, colour, distance and scale tables. Adapted from Lombyte (MIT) for PAL: 948, FUN_001edc50. */
 void func_001EDFF8(void) {
     f32 scr[4];
     f32 ctr[4];
