@@ -35,7 +35,7 @@ extern float AbsoluteFloat(float input) __asm__("func_001F9B88");
 extern void project_to_screen(f32 *, void *) __asm__("func_001F2418");
 extern s64 get_effect_texture(s32) __asm__("func_001F4868");
 extern void draw_textured_quad(s32, s32, s32, s32, s32, s32, s32, s32, s64, s64) __asm__("func_001F5800");
-/* Lens flare: projects the flare moby to the screen and fills the per-element alpha, texture, colour, distance and scale tables. Adapted from Lombyte (MIT) for PAL: 948, FUN_001edc50. */
+/* Lens flare: projects the flare moby to the screen and fills the per-element alpha, texture, colour, distance and scale tables. Adapted from Lombyte (MIT) for PAL: rendering/effects/fun_001edc50.c, FUN_001edc50. */
 void func_001EDFF8(void) {
     f32 scr[4];
     f32 ctr[4];

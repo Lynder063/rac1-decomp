@@ -429,7 +429,7 @@ int fr_2b1af0(int) __asm__("func_001F9850");
 int rndi_2b1af0(int, int) __asm__("func_L00_00258BC8");
 void smoke_2b1af0(void *, void *, int, int, int, int, float, float, float, float, float) __asm__("func_L00_00272158");
 void spark_2b1af0(void *, void *, int, int, int, int, float) __asm__("func_L00_0026DA50");
-/* Moby update. Adapted from Lombyte (MIT) for PAL: 748, FUN_L00_002b1af0. */
+/* Moby update. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002aa670.c, FUN_L00_002b1af0. */
 void func_L00_002B2DD8(unsigned char *o) {
     V_2b1af0 b;
     V_2b1af0 a;

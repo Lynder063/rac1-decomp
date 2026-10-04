@@ -829,7 +829,7 @@ void func_001FA540_002090d0(Mtx_002090d0 *, Mtx_002090d0 *, Mtx_002090d0 *) __as
 void func_001F9BF0_002090d0(Vec4_002090d0 *, Vec4_002090d0 *, Vec4_002090d0 *) __asm__("func_001F9BF0");
 void func_001F9BD8_002090d0(Vec4_002090d0 *, Vec4_002090d0 *, Vec4_002090d0 *) __asm__("func_001F9BD8");
 void func_002153E8_002090d0(Mtx_002090d0 *, Vec4_002090d0 *) __asm__("func_002153E8");
-/* Camera-relative placement: transforms a position through the camera matrix and an offset rotation, then writes the difference back into the camera block. Adapted from Lombyte (MIT) for PAL: 260, FUN_L00_002090d0. */
+/* Camera-relative placement: transforms a position through the camera matrix and an offset rotation, then writes the difference back into the camera block. Adapted from Lombyte (MIT) for PAL: overlays/shared/ui_help_00203b18.c, FUN_L00_002090d0. */
 void func_L00_00209748(float *inf, float x, float y, float z) {
     u128_002090d0 *in = (u128_002090d0 *)inf;
     struct { Vec4_002090d0 p; Vec4_002090d0 a; Vec4_002090d0 b; Vec4_002090d0 d; Mtx_002090d0 m; Mtx_002090d0 r; Vec4_002090d0 e; } L_002090d0;

@@ -371,7 +371,7 @@ void func_001F9BC0_28b1a0(void *) __asm__("func_001F9BC0");
 void func_L00_001FFA40_28b1a0(void *, void *) __asm__("func_L00_001FFA40");
 void func_001F9C48_28b1a0(void *, void *, float) __asm__("func_001F9C48");
 void func_0022C9A8_28b1a0(int) __asm__("func_0022C9A8");
-/* Spins the layers of a stacked model (up to five): each entry gets its own tilt, scale and turn speed in a switch, and its matrix is rebuilt every frame. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_00288ec0.c, FUN_L00_0028b1a0. */
+/* Per-entry update of a table of up to five entries (a switch on the index): each entry gets its own tilt, scale and turn speed, and its matrix is rebuilt every frame. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_00288ec0.c, FUN_L00_0028b1a0. */
 void func_L00_0028C478(void)
 {
     float v[4] __attribute__((aligned(16)));

@@ -952,7 +952,7 @@ extern void func_001F9BF0_25e290(void *, void *, void *) __asm__("func_001F9BF0"
 extern f32 func_001F9B88_25e290(f32) __asm__("func_001F9B88");
 extern void func_001F9C30_25e290(void *, void *, f32) __asm__("func_001F9C30");
 extern void func_001F9BD8_25e290(void *, void *, void *) __asm__("func_001F9BD8");
-/* Clamps a vector against a quaternion-like reference: for each of the three components that is negative it rotates the vector back by the angle given by the reference. Adapted from Lombyte (MIT) for PAL: overlays/shared/math_rotations_0025d238.c, FUN_L00_0025d238. */
+/* Per-component adjustment of v against src: for each of the three components of v that is negative it recomputes v through the vector helpers. Adapted from Lombyte (MIT) for PAL: overlays/shared/math_rotations_0025d238.c, FUN_L00_0025d238. */
 void func_L00_0025E290(V0025d238 *src, V0025d238 *v) {
     V0025d238 t0, t1;
     f32 *pv, *p0, *p1;

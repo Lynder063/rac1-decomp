@@ -404,7 +404,7 @@ extern void func_L00_00250800_273578(void *, s32, void *) __asm__("func_L00_0025
 extern void func_001F9BF0_273578(void *, void *, void *) __asm__("func_001F9BF0");
 extern f32 func_001F9CB8_273578(void *) __asm__("func_001F9CB8");
 extern void func_L00_001FF4B0_273578(void *, void *, f32) __asm__("func_L00_001FF4B0");
-/* Particle update. Adapted from Lombyte (MIT) for PAL: 352, FUN_L00_002726d8. */
+/* Particle update. Adapted from Lombyte (MIT) for PAL: overlays/shared/rendering_002712b8.c, FUN_L00_002726d8. */
 void func_L00_00273578(P_2726d8 *p) {
     Q_2726d8 *q = &p->q;
     u128_2726d8 t;
