@@ -177,7 +177,117 @@ char *func_L00_002B5428(int a) {
     }
     return m;
 }
-INCLUDE_ASM("asm/overlays", func_L00_002B5488);
+typedef struct { char pad000[0x198]; s32 i198; char pad19C[0x30E - 0x19C]; s16 i30E; char pad310[0x41E - 0x310]; s16 i41E; char pad420[0xAA8 - 0x420]; f32 fAA8; char padAAC[0x1180 - 0xAAC]; s32 i1180; char pad1184[0x11A8 - 0x1184]; s32 i11A8; char pad11AC[0x2080 - 0x11AC]; void *p2080; s32 i2084; } G_4198;
+typedef struct { s32 i0; char pad4[4]; s32 i8; s32 iC; char pad10[0x10]; f32 f20; f32 f24; f32 f28; f32 f2C; f32 f30; f32 f34; f32 f38; f32 f3C; } V_4198;
+typedef struct { char pad00[0x18]; f32 f18; char pad1C[4]; u8 state; char pad21[0xF]; u8 u30; char pad31[3]; u16 u34; char pad36[0x42]; V_4198 *v; } O_4198;
+extern G_4198 D_0013F450_4198 __asm__("D_0013F450");
+extern s32 func_001F9850_4198(s32) __asm__("func_001F9850");
+extern s32 func_001F9908_4198(void *) __asm__("func_001F9908");
+extern void func_001F49B0_4198(void *, void *) __asm__("func_001F49B0");
+extern void func_L00_002B4918_4198(void) __asm__("func_L00_002B4918");
+extern s32 func_L00_0020DB30_4198(s32) __asm__("func_L00_0020DB30");
+extern void func_0020D678_4198(void *) __asm__("func_0020D678");
+extern void func_L00_002B4F40_4198(void *) __asm__("func_L00_002B4F40");
+/* Multi-state update for a timed object: random delays from func_001F9850 pace the stages, which adjust the step and scale fields of its private block and call the shared callback. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002b2100.c, FUN_L00_002b4198. */
+void func_L00_002B5488(void *p) {
+    O_4198 *o = (O_4198 *)p;
+    V_4198 *v = o->v;
+    s32 flag = 0;
+    s32 st;
+    s32 lim;
+
+    if ((&D_0013F450_4198)->i11A8 == 3) {
+        if (o->state == 1 || o->state == 3) {
+            st = (&D_0013F450_4198)->i2084;
+            if ((u32)(st - 0xB) < 4
+                || (st == 0x1C && ((u8 *)(&D_0013F450_4198)->p2080)[0x52] == ((u8 *)(&D_0013F450_4198)->p2080)[0x53]
+                    && (&D_0013F450_4198)->fAA8 >= 6.0f && (&D_0013F450_4198)->fAA8 <= 16.0f)) {
+                if (!(&D_0013F450_4198)->i41E) flag = 1;
+            }
+            if ((&D_0013F450_4198)->i2084 == 0x10) {
+                if ((&D_0013F450_4198)->i198 < func_001F9850_4198(0x2C)) {
+                    flag = 1;
+                }
+            }
+            if ((&D_0013F450_4198)->i2084 == 0x22) {
+                if ((&D_0013F450_4198)->i198 < func_001F9850_4198(0xF)
+                    || (func_001F9850_4198(0x21) < (&D_0013F450_4198)->i198 && (&D_0013F450_4198)->i30E != 0)) {
+                    flag = 1;
+                }
+            }
+            if ((&D_0013F450_4198)->i2084 == 8 || (&D_0013F450_4198)->i2084 == 0x81) {
+                flag = 1;
+            }
+        }
+    }
+    switch (o->state) {
+    case 0:
+        o->f18 += 0.5f;
+        o->state = 1;
+        o->u30 = 0xFF;
+        o->u34 |= 1;
+        break;
+    case 1:
+        if (func_L00_0020DB30_4198(3) != 3) {
+            func_0020D678_4198(o);
+        } else if (flag != 0) {
+            o->state = 2;
+            v->i0 = func_001F9850_4198(2);
+            v->f30 = 0.0125f / func_001F9850_4198(2);
+            v->f34 = 0.2f / func_001F9850_4198(2);
+            v->f38 = 0.05f / func_001F9850_4198(2);
+            v->f3C = 0.025f / func_001F9850_4198(2);
+            v->f20 = 0.0f;
+            v->f24 = 0.0f;
+            v->f28 = 0.0f;
+            v->f2C = 0.0f;
+        }
+        break;
+    case 2:
+        v->f20 += v->f30;
+        v->f24 += v->f34;
+        v->f28 += v->f38;
+        v->f2C += v->f3C;
+        v->i8 = (&D_0013F450_4198)->i1180;
+        func_001F49B0_4198(func_L00_002B4918_4198, o);
+        if (func_001F9908_4198(v) != 0) {
+            o->state = 3;
+            v->f20 = 0.0125f;
+            v->f24 = 0.2f;
+            v->f28 = 0.05f;
+            v->iC = 0;
+            v->f2C = 0.025f;
+        }
+        break;
+    case 3:
+        v->i8 = (&D_0013F450_4198)->i1180;
+        func_001F49B0_4198(func_L00_002B4918_4198, o);
+        if (flag == 0) {
+            o->state = 4;
+            v->i0 = func_001F9850_4198(8);
+            v->f30 = 0.0125f / func_001F9850_4198(8);
+            v->f34 = 0.2f / func_001F9850_4198(8);
+            v->f38 = 0.05f / func_001F9850_4198(8);
+            v->f3C = 0.025f / func_001F9850_4198(8);
+        } else {
+            v->f20 = 0.0125f;
+            func_L00_002B4F40_4198(o);
+        }
+        break;
+    case 4:
+        if (func_001F9908_4198(v) != 0) {
+            o->state = 1;
+        } else {
+            v->f20 -= v->f30;
+            v->f24 -= v->f34;
+            v->f28 -= v->f38;
+            v->f2C -= v->f3C;
+            v->i8 = (&D_0013F450_4198)->i1180;
+            func_001F49B0_4198(func_L00_002B4918_4198, o);
+        }
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002B5990);
 typedef int u128_2b46a8 __attribute__((mode(TI)));
 typedef union { u128_2b46a8 q; float f[4]; } V_2b46a8;
