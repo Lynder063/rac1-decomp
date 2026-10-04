@@ -125,7 +125,25 @@ void func_L00_002E35A8(int i) {
         D_L00_00161D18[i] = -1;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002E3640);
+typedef struct { unsigned char b[0x40]; } B002E3640;
+typedef struct { unsigned char b[0x10]; } Q002E3640;
+extern B002E3640 D_L00_001E7070[];
+extern Q002E3640 D_L00_001E7130[];
+extern void func_001F9A98(void *, void *, int);
+/* Finds the slot holding handle id, advances its state word and stores the 0x40-byte matrix and the vector for it. */
+int func_L00_002E3640(int id, void *src, void *v) {
+    int i;
+    for (i = 0; i < 3; i++) {
+        if (id == D_L00_00161D58[i]) {
+            if (D_L00_00161CC8[i] == 1) D_L00_00161CC8[i] = 2;
+            else if (D_L00_00161CC8[i] == 4) D_L00_00161CC8[i] = 3;
+            func_001F9A98(&D_L00_001E7070[i], src, 0x40);
+            qcopy(&D_L00_001E7130[i], v);
+            return 1;
+        }
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E3700);
 INCLUDE_ASM("asm/overlays", func_L00_002E3FA0);
 INCLUDE_ASM("asm/overlays", func_L00_002E4138);
