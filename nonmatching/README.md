@@ -70,7 +70,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_0026F510`](shared/func_L00_0026F510.c) | shared | 1292 | BYTES 38/1292 | 97.1% |
 | [`func_L09_00304EE0`](l09_gaspar/func_L09_00304EE0.c) | l09_gaspar | 476 | BYTES 14/476 | 97.1% |
 | [`func_L00_0026B890`](shared/func_L00_0026B890.c) | shared | 644 | BYTES 19/644 | 97.0% |
-| [`func_L00_0023E9A0`](shared/func_L00_0023E9A0.c) | shared | 608 | BYTES 18/608 | 97.0% |
 | [`func_L05_003052A8`](l05_rilgar/func_L05_003052A8.c) | l05_rilgar | 304 | BYTES 9/304 | 97.0% |
 | [`func_L11_00311318`](l11_pokitaru/func_L11_00311318.c) | l11_pokitaru | 472 | BYTES 14/472 | 97.0% |
 | [`func_L08_00273A80`](shared/func_L08_00273A80.c) | shared | 512 | BYTES 16/512 | 96.9% |
