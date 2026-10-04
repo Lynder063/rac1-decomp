@@ -42,7 +42,12 @@ int func_0023E058(int *a, int val) {
     return old;
 }
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E068); /* videoDecPutTs(VideoDec *, long, long, unsigned char *, int) */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E0B0); /* videoDecInputCount(VideoDec *) */
+extern int func_0023D9E0(int);
+
+/* video_dec_input_count - calls func_0023D9E0 with offset */
+int func_0023E0B0(int *a) {
+    return func_0023D9E0(a + 0x12);
+}
 LINKER_REMNANT("asm/remnants/text", func_0023E0D0);
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E0D8); /* videoDecFlush(VideoDec *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E1B0); /* videoDecIsFlushed(VideoDec *) */
