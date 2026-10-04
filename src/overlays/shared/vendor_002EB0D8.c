@@ -23,7 +23,34 @@ void func_L00_002EB0D8(char *m) {
     func_001E9768(m);
     func_L00_002E72E8(m);
 }
-INCLUDE_ASM("asm/overlays", func_L00_002EB170);
+extern char D_0013E633[] NOT_SDA;
+extern int D_0015EEB3 MACRO_ADDR;
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+/* Builds a view matrix and multiplies it into the camera and projection matrices. The mode flag is read as a byte of a MACRO_ADDR int, which gives retail's one-register lui/lbu. */
+void func_L00_002EB170(char *p) {
+    char a[16] __attribute__((aligned(16)));
+    char b[16] __attribute__((aligned(16)));
+    char *g = D_0013E633 + 0xE1D;
+    int m;
+    func_L00_001FF4B0(a, *(char **)(g + 0x2080) + 0xE0, 1.0f);
+    m = *(unsigned char *)(g + 0x20A4);
+    if (m == 2) {
+        func_001F9C30(b, a, 9.5f);
+    } else if (m == 1) {
+        if (*(unsigned char *)&D_0015EEB3) {
+            func_001F9C30(b, a, 1.2f);
+        } else {
+            func_001F9C30(b, a, 0.9f);
+        }
+    } else {
+        func_001F9C30(b, a, 1.6f);
+    }
+    p += 0x30;
+    func_001F9BD8(p, D_0013E633 + 0xE9D, b);
+    func_001F9BD8(p, D_0013E633 + 0xE9D + 0xC0, p);
+}
 extern void func_L00_001FF4B0(void *, void *, float);
 extern void func_001F9C30(void *, void *, float);
 extern void func_001F9BD8(void *, void *, void *);
