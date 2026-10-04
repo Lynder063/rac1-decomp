@@ -18,5 +18,11 @@ void func_0023BB40(void) {
 INCLUDE_ASM("asm/nonmatchings/text", func_0023BB60); /* isAudioOK */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023BB90); /* initAll(int, int, int) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023BE38); /* termAll(void) */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023BF48); /* ErrMessage */
+extern void func_001E9730(char *, ...);
+extern char D_001612F8[];
+
+/* log_audio_error - logs to D_001612F8 */
+void func_0023BF48(char *fmt) {
+    func_001E9730(D_001612F8, fmt);
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023BF70); /* proceedAudio(void) */
