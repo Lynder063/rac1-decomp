@@ -261,7 +261,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_0026F248`](shared/func_L00_0026F248.c) | shared | 712 | SIZE ours 704 / retail 712 | - |
 | [`func_L00_002709A0`](shared/func_L00_002709A0.c) | shared | 312 | SIZE ours 304 / retail 312 | - |
 | [`func_L00_00273090`](shared/func_L00_00273090.c) | shared | 576 | SIZE ours 568 / retail 576 | - |
-| [`func_L00_00273578`](shared/func_L00_00273578.c) | shared | 352 | SIZE ours 348 / retail 352 | - |
 | [`func_L00_002761C0`](shared/func_L00_002761C0.c) | shared | 492 | SIZE ours 500 / retail 492 | - |
 | [`func_L00_00276940`](shared/func_L00_00276940.c) | shared | 712 | SIZE ours 700 / retail 712 | - |
 | [`func_L00_00284410`](shared/func_L00_00284410.c) | shared | 512 | SIZE ours 508 / retail 512 | - |
