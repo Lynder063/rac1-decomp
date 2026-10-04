@@ -16,7 +16,12 @@ extern void func_0023D1F0(int);
 void func_0023DFC0(int *a) {
     func_0023D1F0(a + 0x12);
 }
-INCLUDE_ASM("asm/nonmatchings/text", func_0023DFE0); /* videoDecEndPut(VideoDec *) */
+extern void func_0023D2E8(int);
+
+/* video_dec_end_put - calls func_0023D2E8 with offset */
+void func_0023DFE0(int *a) {
+    func_0023D2E8(a + 0x12);
+}
 /* ClearStateField - clears a field at offset 0xA8 */
 void func_0023E000(int *a) {
     a[0x2A] = 0;
