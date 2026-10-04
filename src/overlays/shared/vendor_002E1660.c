@@ -105,7 +105,26 @@ void func_L00_002E1C38(char *p) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_002E33D8);
 INCLUDE_ASM("asm/overlays", func_L00_002E34F0);
-INCLUDE_ASM("asm/overlays", func_L00_002E35A8);
+extern int D_L00_00161CC8[] MACRO_ADDR;
+extern int D_L00_00161D08[] MACRO_ADDR;
+extern int D_L00_00161D18[] MACRO_ADDR;
+extern int D_L00_00161D58[] MACRO_ADDR;
+extern void func_L00_0023F1D0(int);
+/* Frees one slot: clears its two state words and releases its two handles. MACRO_ADDR arrays, as the NTSC decomp declares them. */
+void func_L00_002E35A8(int i) {
+    int v;
+    v = D_L00_00161D08[i];
+    D_L00_00161CC8[i] = 0;
+    D_L00_00161D58[i] = 0;
+    if (v != -1) {
+        func_L00_0023F1D0(v);
+        D_L00_00161D08[i] = -1;
+    }
+    if (D_L00_00161D18[i] != -1) {
+        func_L00_0023F1D0(D_L00_00161D18[i]);
+        D_L00_00161D18[i] = -1;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E3640);
 INCLUDE_ASM("asm/overlays", func_L00_002E3700);
 INCLUDE_ASM("asm/overlays", func_L00_002E3FA0);
