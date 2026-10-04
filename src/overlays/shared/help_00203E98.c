@@ -156,7 +156,28 @@ void func_L00_00205B00(void) {
         p += 0xB0;
     } while (p < end);
 }
-INCLUDE_ASM("asm/overlays", func_L00_00205B50);
+typedef struct { u8 a0; u8 active; char pad[0x3E]; char m40[0x20]; char m60[0x30]; char m90[0x12]; s16 type; char pad2[8]; f32 scale; } Ent;
+extern Ent D_L00_0017A780_c[] __asm__("D_L00_0017A780");
+s32 func_L00_00205728_c(s32) __asm__("func_L00_00205728");
+extern void func_0020D9D8_205b50(s32, Ent *) __asm__("func_0020D9D8");
+void func_001F9BC0_c(void *) __asm__("func_001F9BC0");
+/* Per-frame update over the 31-entry table at D_L00_0017A780: runs the type handler for active entries and resets their matrices and scale. Adapted from Lombyte (MIT) for PAL: 196, FUN_L00_00205538. */
+void func_L00_00205B50(void) {
+    s32 i;
+    char *tbl = (char *)D_L00_0017A780_c; char *c = tbl + 0x90;
+    char *b = tbl + 0x60;
+    for (i = 0; i < 31; i++) {
+        Ent *e = &D_L00_0017A780_c[i];
+        if (e->active != 0) {
+            s32 r = func_L00_00205728_c(e->type);
+            if (r != 0) func_0020D9D8_205b50(r, e);
+        }
+        func_001F9BC0_c(D_L00_0017A780_c[i].m40);
+        func_001F9BC0_c(b); b += sizeof(Ent);
+        func_001F9BC0_c(c); c += sizeof(Ent);
+        e->scale = 1.0f;
+    }
+}
 extern int D_L00_0015F6B0 MACRO_ADDR;
 extern int func_002140B0(int);
 
