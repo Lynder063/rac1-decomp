@@ -98,7 +98,104 @@ void func_L00_002EB3A0(p)
     *(short *)(p + 0x7E) = 0;
 }
 INCLUDE_ASM("asm/overlays", func_L00_002EB3E8);
-INCLUDE_ASM("asm/overlays", func_L00_002EB938);
+typedef int q_2eb938 __attribute__((mode(TI)));
+typedef struct { f32 f[4]; } V_2eb938;
+typedef struct { u8 p0[0x20]; s16 h20; s16 h22; s32 i24; } Q_2eb938;
+typedef struct { u8 p0[0x1C]; Q_2eb938 *q; } E_2eb938;
+typedef struct { u8 p0[0x98]; f32 f98; u8 p1[0x2080 - 0x9C]; char *p2080; u8 p2[0x2284 - 0x2084]; s32 i2284; } P_2eb938;
+extern P_2eb938 D_0013F450_2eb938 __asm__("D_0013F450") NOT_SDA;
+extern q_2eb938 D_0013F4D0_2eb938 __asm__("D_0013F4D0") NOT_SDA;
+extern E_2eb938 *D_L00_0015F050_2eb938 __asm__("D_L00_0015F050") MACRO_ADDR;
+extern char *D_L00_00166F00_2eb938 __asm__("D_L00_00166F00") NOT_SDA;
+extern char D_L00_00166F10_2eb938[] __asm__("D_L00_00166F10") NOT_SDA;
+extern char *func_L00_001EE530_2eb938(void *, f32) __asm__("func_L00_001EE530");
+extern int func_001F9850_2eb938(int) __asm__("func_001F9850");
+extern f32 func_001F9F90_2eb938(f32) __asm__("func_001F9F90");
+extern f32 func_001F9FA8_2eb938(f32) __asm__("func_001F9FA8");
+extern f32 func_001F9FC0_2eb938(f32) __asm__("func_001F9FC0");
+extern void func_L00_002E9DC8_2eb938(void *, f32, f32) __asm__("func_L00_002E9DC8");
+extern f32 func_001F9C78_2eb938(void *, void *) __asm__("func_001F9C78");
+extern void func_001F9C30_2eb938(void *, void *, f32) __asm__("func_001F9C30");
+extern void func_001F9BF0_2eb938(void *, void *, void *) __asm__("func_001F9BF0");
+extern f32 func_001F9CB8_2eb938(void *) __asm__("func_001F9CB8");
+extern void func_L00_001ED600_2eb938(void) __asm__("func_L00_001ED600");
+extern void func_001F9908_2eb938(void *) __asm__("func_001F9908");
+#define P D_0013F450_2eb938
+/* Camera-mode transition update for an InitCamera moby: counts frames while the player and the other camera are in an allowed state, and eases the camera (0.07 / 0.14 rad) toward the target. Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay_vendor_002e9010.c, FUN_L00_002ea488. */
+int func_L00_002EB938(u8 *m, char *a1) {
+    Q_2eb938 *q;
+    char *o;
+    char *r;
+    s32 st;
+    int t;
+    int s;
+    V_2eb938 v;
+    V_2eb938 d1, d2;
+    f32 l, x;
+    P_2eb938 *g;
+    char *b, *b2, *vec;
+
+    q = D_L00_0015F050_2eb938[*(s16 *)(m + 0x84)].q;
+    g = &P;
+    st = g->i2284;
+    if (st == *(s16 *)(m + 0x86) || st == 0x51) {
+        o = D_L00_00166F00_2eb938;
+        t = *(s16 *)(a1 + 0x86);
+        if (t != 0 && t != 10 && t != 14 && t != 2) goto off;
+        s = *(s16 *)(o + 0x86);
+        if (s != 0 && s != 10 && s != 14 && s != 2) goto off;
+        *(q_2eb938 *)&v = D_0013F4D0_2eb938;
+        r = func_L00_001EE530_2eb938(&v, 0.25f);
+        if (r && (*(s32 *)(r + 0x18) & 1)) return 0;
+        q->i24 = 0;
+        q->h22 = 1;
+        q->h20++;
+        if (q->h20 >= func_001F9850_2eb938(7)) {
+            if (*(s16 *)(o + 0x86) == 0) m[0x7C] = 5;
+            return 1;
+        }
+        v.f[0] = func_001F9F90_2eb938(P.f98);
+        v.f[1] = func_001F9FA8_2eb938(P.f98);
+        *(s32 *)&v.f[2] = 0;
+        func_L00_002E9DC8_2eb938(&v, 0.06981316953897476f, v.f[2]);
+        goto tail;
+off:
+        q->h20 = 0;
+        q->h22 = 0;
+        goto tail;
+    }
+    q->h20 = 0;
+    if (q->h22 == 0) goto tail;
+    q->h22 = 0;
+    b = D_L00_00166F10_2eb938;
+    b2 = b - 0x190;
+    vec = b + 0x30;
+    func_001F9C30_2eb938(&v, vec, func_001F9C78_2eb938(vec, *(char **)(b2 + 0x180)));
+    func_001F9BF0_2eb938(&d1, *(char **)(b2 + 0x180), &v);
+    func_001F9C30_2eb938(&v, vec, func_001F9C78_2eb938(vec, g->p2080 + 0xC0));
+    func_001F9BF0_2eb938(&d2, g->p2080 + 0xC0, &v);
+    l = func_001F9CB8_2eb938(&d2);
+    if (l != 0.0f) {
+        l *= func_001F9CB8_2eb938(&d1);
+    }
+    if (l != 0.0f) {
+        x = func_001F9FC0_2eb938(func_001F9C78_2eb938(&d2, &d1) / l);
+        if (1.3962633609771729f <= 1.5707964f - x) {
+            func_L00_001ED600_2eb938();
+            return 0;
+        }
+    }
+    q->i24 = func_001F9850_2eb938(30);
+tail:
+    if (q->i24) {
+        func_001F9908_2eb938(&q->i24);
+        v.f[0] = func_001F9F90_2eb938(P.f98);
+        v.f[1] = func_001F9FA8_2eb938(P.f98);
+        *(s32 *)&v.f[2] = 0;
+        func_L00_002E9DC8_2eb938(&v, 0.13962633907794952f, v.f[2]);
+    }
+    return 0;
+}
 typedef struct { char pad[0x254]; int p; char pad2[0x18]; short s; char pad3[1]; char c; char pad4[0x14]; float f0; char pad5[8]; float f1; } S;
 extern S D_L00_00166D80;
 extern void func_L00_002EB3A0();
