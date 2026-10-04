@@ -3,7 +3,33 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L00_00235960);
-INCLUDE_ASM("asm/overlays", func_L00_00235CA0);
+typedef struct { int pad[5]; int a[8]; int b[16]; int c[8]; } T_235310;
+typedef struct { int v; short s; short pad; } E_235310;
+typedef struct { char pad[0x18]; T_235310 *t; char pad2[8]; E_235310 *a; E_235310 *b; } G_235310;
+extern G_235310 D_L00_0017E5D8_235ca0  __asm__("D_L00_0017E5D8") __attribute__((section(".data")));
+/* HUD update. Adapted from Lombyte (MIT) for PAL: 380, FUN_L00_00235310. */
+void func_L00_00235CA0(int n) {
+    int d = D_L00_0017E5D8_235ca0.t->c[n];
+    int i, j, s, end;
+    if (n == 0) {
+        for (j = 0; j < D_L00_0017E5D8_235ca0.t->b[0]; j++) {
+            D_L00_0017E5D8_235ca0.a[j].s = 0;
+        }
+    }
+    if (n) s = D_L00_0017E5D8_235ca0.t->a[n - 1]; else s = 0;
+    end = D_L00_0017E5D8_235ca0.t->a[n];
+    for (i = s; i < end; i++) {
+        D_L00_0017E5D8_235ca0.b[i].v -= d;
+        D_L00_0017E5D8_235ca0.b[i].v |= 0x80000000;
+    }
+    if (n) s = D_L00_0017E5D8_235ca0.t->b[n - 1]; else s = 0;
+    end = D_L00_0017E5D8_235ca0.t->b[n];
+    for (i = s; i < end; i++) {
+        D_L00_0017E5D8_235ca0.a[i].v -= d;
+        D_L00_0017E5D8_235ca0.a[i].v |= 0x80000000;
+    }
+    D_L00_0017E5D8_235ca0.t->c[n] = 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00235FF8);
 typedef struct {
     int unk00, unk04;
