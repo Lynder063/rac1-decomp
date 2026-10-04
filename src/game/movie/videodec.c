@@ -10,7 +10,12 @@
 INCLUDE_ASM("asm/nonmatchings/text", func_0023DE98); /* videoDecCreate(VideoDec *, unsigned char *, int, unsigned long long *, unsigned long long *, int, TimeStamp *, int) */
 LINKER_REMNANT("asm/remnants/text", func_0023DF98);
 INCLUDE_ASM("asm/nonmatchings/text", func_0023DFA0); /* videoDecSetStream(VideoDec *, int, int, int (*)(sceMpeg *, sceMpegCbData *, void *), void *) */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023DFC0); /* videoDecBeginPut(VideoDec *, unsigned char **, int *, unsigned char **, int *) */
+extern void func_0023D1F0(int);
+
+/* video_dec_begin_put - calls func_0023D1F0 with offset */
+void func_0023DFC0(int *a) {
+    func_0023D1F0(a + 0x12);
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023DFE0); /* videoDecEndPut(VideoDec *) */
 /* ClearStateField - clears a field at offset 0xA8 */
 void func_0023E000(int *a) {
