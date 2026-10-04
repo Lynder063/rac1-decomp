@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L07_00320CD0 -- src/overlays/l07_umbris/vendor_0031BDB8.c
- * Best so far: BYTES 1/476 (99.8% of the bytes match), checked 2026-10-03.
+ * Best so far: BYTES 1/476 (99.8% of the bytes match), checked 2026-10-04.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -17,6 +17,8 @@ extern short D_L07_00161D6C;
 
 /* UpdateMoby_1789: spawn state then position three points. */
 void func_L07_00320CD0(unsigned char *moby) {
+    int idx = 0;
+    char *o;
     switch (moby[0x20]) {
     case 0:
         moby[0x30] = 0xFF;
@@ -28,11 +30,9 @@ void func_L07_00320CD0(unsigned char *moby) {
             int s = *(int *)(g + 0x30);
             if (s == 1 || s == 2) {
                 float a0[4], a1[4], a2[4], b0[4], b1[4], b2[4], c0[4], c1[4], c2[4];
-                int idx = 0;
-                char *o;
                 if (s == 1) idx = 3;
                 if (s == 2) idx = 4;
-                o = *(char **)(g + (0x178 + idx * 4));
+                o = *(char **)(g + idx * 4 + 0x178);
                 func_L00_00250800(o, 0, a0);
                 func_L00_00250800(o, 3, b0);
                 func_001F9BF0(c0, a0, b0);
