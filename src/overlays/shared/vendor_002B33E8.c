@@ -316,7 +316,89 @@ void func_L00_002B6AE0(int m_, int flag) {
     d = D_L00_0016CB40;
     SetBackgroundColor(*(int *)(d + 0x23C), *(int *)(d + 0x240), *(int *)(d + 0x244));
 }
-INCLUDE_ASM("asm/overlays", func_L00_002B6BC8);
+typedef struct { u8 p0[0x2084]; s32 i2084; } G;
+typedef int q_2b58d8 __attribute__((mode(TI)));
+typedef union { q_2b58d8 q; float f[4]; } V_2b58d8;
+typedef struct { unsigned char p[0x2080]; void *w2080; } G_2b58d8;
+extern G_2b58d8 D_0013F450_2b58d8 __asm__("D_0013F450");
+extern int D_L00_0017E608_2b58d8 __asm__("D_L00_0017E608") __attribute__((section(".data")));
+extern int D_L00_0015F6E8_2b58d8 __asm__("D_L00_0015F6E8") __attribute__((section(".sdata")));
+extern short D_L00_0016156C_2b58d8 __asm__("D_L00_0016156C");
+extern float D_0015EE6C_2b58d8 __asm__("D_0015EE6C") __attribute__((section(".sdata")));
+extern q_2b58d8 D_L00_00173F60_2b58d8 __asm__("D_L00_00173F60") __attribute__((section(".data")));
+unsigned char *func_0020D348_2b58d8(int) __asm__("func_0020D348");
+int func_L00_0025D390_2b58d8(void *) __asm__("func_L00_0025D390");
+float func_001F9CB8_2b58d8(void *) __asm__("func_001F9CB8");
+int func_001F9850_2b58d8(int) __asm__("func_001F9850");
+void func_L00_002B69C0_2b58d8(void *) __asm__("func_L00_002B69C0");
+void func_L00_00251E30_2b58d8(void *) __asm__("func_L00_00251E30");
+int func_L00_002ECDE0_2b58d8(void *) __asm__("func_L00_002ECDE0");
+int func_L00_00222B80_2b58d8(int, int) __asm__("func_L00_00222B80");
+void func_001F99B0_2b58d8(void *, int, int) __asm__("func_001F99B0");
+void func_0020D960_2b58d8(void *, int, void *) __asm__("func_0020D960");
+int func_L00_002BC668_2b58d8(void *) __asm__("func_L00_002BC668");
+void func_L00_0025E210_2b58d8(void *) __asm__("func_L00_0025E210");
+int func_0022ED80_2b58d8(int, int, void *) __asm__("func_0022ED80");
+int func_L00_001EFFF0_2b58d8(void *, void *, int, void *, int) __asm__("func_L00_001EFFF0");
+void func_00216028_2b58d8(int, int) __asm__("func_00216028");
+/* Creates the type-0xAC moby: links it to its owner and a spawn position, fills its private data, sets up two child objects and probes the line to the owner. Adapted from Lombyte (MIT) for PAL: overlays/shared/unclassified_002b2100.c, FUN_L00_002b58d8. Declared with the callers' (void *, void *, float, float) -> int prototype. */
+int func_L00_002B6BC8(void *a_, void *pos_, float fa, float fb)
+{
+    unsigned char *m = func_0020D348_2b58d8(0xAC);
+    if (m) {
+        unsigned char *v = *(unsigned char **)(m + 0x78);
+        unsigned char *G = (unsigned char *)&D_0013F450_2b58d8;
+        V_2b58d8 t;
+        *(unsigned char **)(G + 0x1FE0) = m;
+        D_L00_0017E608_2b58d8 = 1;
+        m[0x30] = 0xFF;
+        *(short *)(m + 0x32) = 0xFF;
+        m[0x31] = 1;
+        m[0x20] = 1;
+        *(float *)(m + 0x48) = fa;
+        *(float *)(m + 0x44) = fb;
+        *(unsigned char **)(v + 0x24) = G + 0x1F60;
+        *(unsigned char **)(v + 0x28) = G + 0x1FA0;
+        *(unsigned char **)(v + 0x0) = (unsigned char *)a_;
+        qcopy(m + 0x10, (V_2b58d8 *)pos_);
+        *(int *)(v + 0x8) = 0;
+        *(int *)(v + 0xC) = 0;
+        if (*(void **)(G + 0x2FC) && func_L00_0025D390_2b58d8(*(void **)(G + 0x2FC)))
+            *(float *)(v + 0x4) = func_001F9CB8_2b58d8(G + 0x100);
+        else
+            *(int *)(v + 0x4) = 0;
+        *(int *)(v + 0x10) = func_001F9850_2b58d8(0xBB8);
+        *(int *)(v + 0x18) = 0;
+        *(int *)(v + 0x1C) = 0;
+        *(int *)(v + 0x14) = 0;
+        *(float *)(v + 0x44) = 0.4f;
+        func_L00_002B69C0_2b58d8(m);
+        func_L00_00251E30_2b58d8(m);
+        *(int *)(v + 0x14) = func_L00_002ECDE0_2b58d8(m);
+        func_L00_00222B80_2b58d8(0x1D, 1);
+        func_001F99B0_2b58d8(*(void **)(v + 0x24), 0, 0x40);
+        func_001F99B0_2b58d8(*(void **)(v + 0x28), 0, 0x40);
+        func_0020D960_2b58d8(m, 0, *(void **)(v + 0x24));
+        func_0020D960_2b58d8(m, 1, *(void **)(v + 0x28));
+        {
+            int r = func_L00_002BC668_2b58d8(m);
+            float k = *(float *)&D_L00_0016156C_2b58d8 * D_0015EE6C_2b58d8;
+            *(int *)(v + 0x20) = r;
+            *(float *)(v + 0x48) = k;
+        }
+        func_L00_0025E210_2b58d8(m);
+        *(int *)(v + 0x2C) = func_0022ED80_2b58d8(0, 4, m);
+        t.q = *(q_2b58d8 *)((unsigned char *)a_ + 0x10);
+        t.f[2] = ((V_2b58d8 *)pos_)->f[2];
+        if (func_L00_001EFFF0_2b58d8(&t, (V_2b58d8 *)pos_, 0, ({ G_2b58d8 *g2 = &D_0013F450_2b58d8; g2->w2080; }), 0)) {
+            m[0xBC] = 1;
+            qcopy(m + 0x10, &D_L00_00173F60_2b58d8);
+        }
+        D_L00_0015F6E8_2b58d8 = 1;
+        func_00216028_2b58d8(6, 0);
+    }
+    return (int)m;
+}
 extern char D_0013E633[] NOT_SDA;
 extern int D_L00_00167114 NOT_SDA;
 extern void func_L00_002ECEC8(int);

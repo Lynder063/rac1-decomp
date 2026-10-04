@@ -33,7 +33,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L14_002235D0`](l14_oltanis/func_L14_002235D0.c) | l14_oltanis | 608 | BYTES 8/608 | 98.7% |
 | [`func_L02_002E16B8`](l02_aridia/func_L02_002E16B8.c) | l02_aridia | 452 | BYTES 6/452 | 98.7% |
 | [`func_L15_002A8850`](shared/func_L15_002A8850.c) | shared | 596 | BYTES 8/596 | 98.7% |
-| [`func_L00_002B6BC8`](shared/func_L00_002B6BC8.c) | shared | 580 | BYTES 8/580 | 98.6% |
 | [`func_L10_00299818`](l10_orxon/func_L10_00299818.c) | l10_orxon | 504 | BYTES 7/504 | 98.6% |
 | [`func_L00_00208358`](shared/func_L00_00208358.c) | shared | 760 | BYTES 11/760 (cannot land as written) | 98.5% |
 | [`func_L10_00299AF0`](shared/func_L10_00299AF0.c) | shared | 548 | BYTES 8/548 | 98.5% |
