@@ -31,4 +31,9 @@ extern char D_001612F8[];
 void func_0023BF48(char *fmt) {
     func_001E9730(D_001612F8, fmt);
 }
-INCLUDE_ASM("asm/nonmatchings/text", func_0023BF70); /* proceedAudio(void) */
+extern void func_0023C2C0(int *);
+
+/* process_audio_stream - calls func_0023C2C0 with address */
+void func_0023BF70(void) {
+    func_0023C2C0(D_0016130C + 0xD9100);
+}
