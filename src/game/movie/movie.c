@@ -15,7 +15,13 @@ extern int func_00118BC0(int);
 void func_0023BB40(void) {
     func_00118BC0(1);
 }
-INCLUDE_ASM("asm/nonmatchings/text", func_0023BB60); /* isAudioOK */
+extern int func_0023C2B0(int);
+extern int D_0016130C MACRO_ADDR;
+
+/* is_audio_ok - checks if audio is OK */
+int func_0023BB60(void) {
+    return func_0023C2B0(D_0016130C + 0xD9100);
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023BB90); /* initAll(int, int, int) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023BE38); /* termAll(void) */
 extern void func_001E9730(char *, ...);
