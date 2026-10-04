@@ -1100,7 +1100,46 @@ void func_L00_0026ECA0(char *a) {
     if (func_001F9908(a + 0x30)) KillPart(a);
 }
 INCLUDE_ASM("asm/overlays", func_L00_0026ED30);
-INCLUDE_ASM("asm/overlays", func_L00_0026EFF0);
+typedef struct { unsigned char pad0[4]; unsigned int i4; unsigned char b8; unsigned char pad9; unsigned char cA[2]; float fC; float pos[4]; struct Q_26e150 { float f0; float size; float phase; float vel; float dv[4]; } q; } M_26e150;
+extern float D_0015EE60_26e150 __asm__("D_0015EE60") MACRO_ADDR;
+extern int func_001F9938_26e150(void *) __asm__("func_001F9938");
+extern void func_L00_002688A8_26e150(void *) __asm__("func_L00_002688A8");
+extern int func_001FA898_26e150(float) __asm__("func_001FA898");
+extern void func_001F9BD8_26e150(void *, void *, void *) __asm__("func_001F9BD8");
+/* Particle update: size and phase advance with the frame time (D_0015EE60), the size following the particle's velocity. Adapted from Lombyte (MIT) for PAL: overlays/shared/rendering_00269290.c, FUN_L00_0026e150. */
+void func_L00_0026EFF0(M_26e150 *m) {
+    struct Q_26e150 *q = &m->q;
+    float vel = q->vel;
+    float s;
+    float d;
+
+    if (0.0f < vel) {
+        q->size += D_0015EE60_26e150 * 0.007f * vel;
+    } else if (0.03f < q->size) {
+        q->size = q->size + D_0015EE60_26e150 * 0.007f * vel;
+    } else {
+        d = D_0015EE60_26e150;
+        q->size = q->size + d * 0.007f * vel * 0.2f;
+        m->fC += d * 5460.0f;
+    }
+    if (q->size <= 0.0244f || func_001F9938_26e150(m->cA) != 0) {
+        func_L00_002688A8_26e150(m);
+        return;
+    }
+    s = q->size;
+    if (0.12f <= s) {
+        q->vel = -q->vel;
+        q->size = s + D_0015EE60_26e150 * 0.007f * q->vel;
+    }
+    m->fC += D_0015EE60_26e150 * 5460.0f;
+    m->i4 = (m->i4 & 0xFFFFFF) | (func_001FA898_26e150(q->size * 255.0f) << 24);
+    q->phase += D_0015EE60_26e150 * 0.002f;
+    if (1.0f < q->phase) {
+        q->phase -= 1.0f;
+    }
+    m->b8 = (int)(q->phase * 255.0f);
+    func_001F9BD8_26e150(m->pos, m->pos, q->dv);
+}
 INCLUDE_ASM("asm/overlays", func_L00_0026F248);
 INCLUDE_ASM("asm/overlays", func_L00_0026F510);
 typedef struct { int a[4]; } V31 __attribute__((aligned(16)));
