@@ -78,7 +78,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_0023E9A0`](shared/func_L00_0023E9A0.c) | shared | 608 | BYTES 18/608 | 97.0% |
 | [`func_L05_003052A8`](l05_rilgar/func_L05_003052A8.c) | l05_rilgar | 304 | BYTES 9/304 | 97.0% |
 | [`func_L11_00311318`](l11_pokitaru/func_L11_00311318.c) | l11_pokitaru | 472 | BYTES 14/472 | 97.0% |
-| [`func_L00_002C82E8`](shared/func_L00_002C82E8.c) | shared | 228 | BYTES 7/228 | 96.9% |
 | [`func_L08_00273A80`](shared/func_L08_00273A80.c) | shared | 512 | BYTES 16/512 | 96.9% |
 | [`func_L13_00306D40`](l13_gemlik/func_L13_00306D40.c) | l13_gemlik | 224 | BYTES 7/224 | 96.9% |
 | [`func_L18_002D6738`](l18_veldin2/func_L18_002D6738.c) | l18_veldin2 | 320 | BYTES 10/320 | 96.9% |
