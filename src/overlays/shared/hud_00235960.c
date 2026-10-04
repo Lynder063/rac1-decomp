@@ -2,7 +2,52 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L00_00235960);
+typedef struct { char pad[0x50]; int sz[8]; char pad2[0x20]; void *p[8]; } T_234fd0;
+typedef struct { char pad[0x18]; T_234fd0 *t; } G_234fd0;
+typedef struct { char pad[0x10]; void *h; char pad2[0x104 - 0x14]; int off; } B_234fd0;
+extern G_234fd0 D_L00_0017E5D8_234fd0 __asm__("D_L00_0017E5D8") __attribute__((section(".data")));
+extern B_234fd0 D_L00_001BA070_234fd0 __asm__("D_L00_001BA070") __attribute__((section(".data")));
+extern int D_L00_0017E610_234fd0 __asm__("D_L00_0017E610") __attribute__((section(".data")));
+extern int D_L00_0017E618_234fd0 __asm__("D_L00_0017E618") __attribute__((section(".data")));
+extern int D_L00_0017E61C_234fd0 __asm__("D_L00_0017E61C") __attribute__((section(".data")));
+extern int D_L00_0017E620_234fd0 __asm__("D_L00_0017E620") __attribute__((section(".data")));
+void func_00234238_234fd0(void *, void *, int, int, int) __asm__("func_00234238");
+void func_0020C468_234fd0(void *, int) __asm__("func_0020C468");
+void func_001FF7F0_234fd0(int, int) __asm__("func_001FF7F0");
+/* HUD update. Adapted from Lombyte (MIT) for PAL: overlays/shared/ui_hud_00234fd0.c, FUN_L00_00234fd0. */
+void func_L00_00235960(int mode) {
+    G_234fd0 *g = &D_L00_0017E5D8_234fd0;
+    int off = D_L00_001BA070_234fd0.off;
+    void *h = D_L00_001BA070_234fd0.h;
+    { int n1; if ((n1 = g->t->sz[1])) {
+        func_00234238_234fd0(h, g->t->p[1], 0, D_L00_0017E610_234fd0 / 16, 0);
+        func_0020C468_234fd0(h, off);
+        func_001FF7F0_234fd0(0, off);
+        off += n1; }
+    }
+    { int n3; if ((n3 = g->t->sz[3])) {
+        func_00234238_234fd0(h, g->t->p[3], 0, D_L00_0017E618_234fd0 / 16, 0);
+        func_0020C468_234fd0(h, off);
+        func_001FF7F0_234fd0(2, off);
+        off += n3; }
+    }
+    if (mode == 0 || mode == 2) {
+        { int n4; if ((n4 = g->t->sz[4])) {
+            func_00234238_234fd0(h, g->t->p[4], 0, D_L00_0017E61C_234fd0 / 16, 0);
+            func_0020C468_234fd0(h, off);
+            func_001FF7F0_234fd0(3, off);
+            off += n4; }
+        }
+    }
+    if ((unsigned)(mode - 1) < 2) {
+        G_234fd0 *g2 = &D_L00_0017E5D8_234fd0;
+        if (g2->t->sz[5]) {
+            func_00234238_234fd0(h, g2->t->p[5], 0, D_L00_0017E620_234fd0 / 16, 0);
+            func_0020C468_234fd0(h, off);
+            func_001FF7F0_234fd0(4, off);
+        }
+    }
+}
 typedef struct { int pad[5]; int a[8]; int b[16]; int c[8]; } T_235310;
 typedef struct { int v; short s; short pad; } E_235310;
 typedef struct { char pad[0x18]; T_235310 *t; char pad2[8]; E_235310 *a; E_235310 *b; } G_235310;
