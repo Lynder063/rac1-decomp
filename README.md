@@ -75,6 +75,24 @@ level only under *Level-specific* and that level's own row.
 
 </details>
 
+## How it works
+
+- **The compiler is SN Systems ProDG's GCC 2.95.3** (32-bit Windows programs,
+  run through Wine in a container on Linux and macOS), with `-O2 -G2`. Parts of
+  the SDK and C library code were built by Sony's `2.9-ee` compiler instead, and
+  the GCC runtime (`libgcc`) is rebuilt from GCC's own sources the way Sony's
+  toolchain built it. Retail was assembled by SN's own assembler, whose extra
+  nops `tools/ps2eeas_nops.py` reproduces ([`docs/TOOLCHAIN.md`](docs/TOOLCHAIN.md)).
+- **The whole image already links with every function at its retail address.**
+  Functions that are not decompiled yet are included as assembly, so the build
+  can be checked end to end against the retail executable.
+- **Level code is overlays.** Each level carries its own build of the game
+  program ([`docs/OVERLAYS.md`](docs/OVERLAYS.md)); its functions are decompiled
+  in `src/overlays/` and counted once each.
+- **Progress is measured per function.** The report on decomp.dev is generated
+  locally from a from-scratch build and committed, because CI cannot build the
+  game (the compiler and the executable cannot be redistributed).
+
 ## Disclaimer
 
 This repository contains **no game assets, executable, or disassembly**. To
@@ -237,4 +255,15 @@ Whether you're interested in matching functions, analyzing PS2 disassembly, rese
   source; `tools/extract/README.md` credits it and the other projects the
   extractor drew on
 
+## Contributing
 
+Contributions are welcome: see [`CONTRIBUTING.md`](CONTRIBUTING.md) and
+[`docs/WORKFLOW.md`](docs/WORKFLOW.md). A good first step is a function from
+`python tools/rank_candidates.py`, a draft from `tools/m2c.py`, and
+`tools/diff.sh` to compare it with retail.
+
+## License
+
+The original work in this repository is MIT licensed (`LICENSE`). Third-party
+files keep their own licenses (see `THIRD_PARTY_NOTICES.md` and each file's
+header, for example the GPL-with-exception files under `src/libgcc/`).
