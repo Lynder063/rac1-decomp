@@ -36,7 +36,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_002B6BC8`](shared/func_L00_002B6BC8.c) | shared | 580 | BYTES 8/580 | 98.6% |
 | [`func_L10_00299818`](l10_orxon/func_L10_00299818.c) | l10_orxon | 504 | BYTES 7/504 | 98.6% |
 | [`func_L00_00208358`](shared/func_L00_00208358.c) | shared | 760 | BYTES 11/760 (cannot land as written) | 98.5% |
-| [`func_L00_0026CB48`](shared/func_L00_0026CB48.c) | shared | 552 | BYTES 8/552 | 98.5% |
 | [`func_L10_00299AF0`](shared/func_L10_00299AF0.c) | shared | 548 | BYTES 8/548 | 98.5% |
 | [`func_L06_00223630`](l06_blarg/func_L06_00223630.c) | l06_blarg | 612 | BYTES 9/612 | 98.5% |
 | [`func_L01_002328A8`](shared/func_L01_002328A8.c) | shared | 196 | BYTES 3/196 | 98.5% |

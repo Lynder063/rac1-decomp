@@ -534,7 +534,58 @@ void *func_L00_0026CA10(void *pos, void *vel, int a2, int a3, int cnt, int s, in
     }
     return p;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0026CB48);
+typedef unsigned int u128_pt __attribute__((mode(TI)));
+typedef union { u128_pt q; float f[4]; } V26bca8;
+extern float D_0015EE70_26bca8 __asm__("D_0015EE70") MACRO_ADDR;
+extern int D_L00_0015F6B0_26bca8 __asm__("D_L00_0015F6B0") MACRO_ADDR;
+int func_001F9938_26bca8(void *) __asm__("func_001F9938");
+void func_L00_002688A8_26bca8(void *) __asm__("func_L00_002688A8");
+float func_001FA888_26bca8(int) __asm__("func_001FA888");
+int func_L00_00237B70_26bca8(int, int, float) __asm__("func_L00_00237B70");
+void func_001F9BD8_26bca8(void *, void *, void *) __asm__("func_001F9BD8");
+void func_001F9C30_26bca8(void *, void *, float) __asm__("func_001F9C30");
+float func_002140F8_26bca8(float, float) __asm__("func_002140F8");
+float func_001F9CB8_26bca8(void *) __asm__("func_001F9CB8");
+void func_L00_001FF4B0_26bca8(void *, void *, float) __asm__("func_L00_001FF4B0");
+int func_L00_00258BC8_26bca8(int, int) __asm__("func_L00_00258BC8");
+int func_001F9850_26bca8(int) __asm__("func_001F9850");
+unsigned char *func_L00_0026CA10_26bca8(void *, void *, int, int, int, float, int, int, int) __asm__("func_L00_0026CA10");
+/* Particle update: counts down its life, applies velocity and gravity, and now and then spawns a child particle with a random kick. Adapted from Lombyte (MIT) for PAL: overlays/shared/rendering_00269290.c, FUN_L00_0026bca8. */
+void func_L00_0026CB48(unsigned char *m) {
+    V26bca8 u, t, w;
+    unsigned char *o = m + 0x20;
+    unsigned char *p;
+    float a, b;
+    if (func_001F9938_26bca8(m + 0xA)) {
+        func_L00_002688A8_26bca8(m);
+        return;
+    }
+    p = m + 0x10;
+    a = func_001FA888_26bca8(*(short *)(m + 0xA));
+    b = func_001FA888_26bca8(*(short *)(o + 0x18));
+    a *= *(float *)(o + 0x1C);
+    a /= b;
+    *(float *)(m + 0xC) = a;
+    a = func_001FA888_26bca8(*(short *)(m + 0xA));
+    *(int *)(m + 4) = func_L00_00237B70_26bca8(*(int *)(o + 0x14), *(int *)(o + 0x10), a / func_001FA888_26bca8(*(short *)(o + 0x18)));
+    func_001F9BD8_26bca8(p, p, o);
+    *(float *)(o + 8) -= D_0015EE70_26bca8 * 14.6f;
+    qcopy(&u, p);
+    if (*(short *)(o + 0x1A) && (D_L00_0015F6B0_26bca8 & 1)) {
+        w.q = 0;
+        w.f[0] = func_002140F8_26bca8(-1.0f, 1.0f);
+        w.f[1] = func_002140F8_26bca8(-1.0f, 1.0f);
+        w.f[2] = func_002140F8_26bca8(-1.0f, 1.0f);
+        t.q = w.q;
+        b = func_001F9CB8_26bca8(o);
+        func_L00_001FF4B0_26bca8(&t, &t, b * func_002140F8_26bca8(0.15f, 0.25f));
+        func_001F9BD8_26bca8(&t, &t, o);
+        func_001F9C30_26bca8(&t, &t, func_002140F8_26bca8(0.75f, 0.95f));
+        func_L00_0026CA10_26bca8(p, &t, *(int *)(m + 4), *(int *)(o + 0x14), func_001F9850_26bca8(func_L00_00258BC8_26bca8(0xF, 0x1E)), *(float *)(m + 0xC), 0, m[2], m[3]);
+    } else {
+        func_001F9C30_26bca8(o, o, 0.96f);
+    }
+}
 extern float D_L00_0015F6B4 MACRO_ADDR;
 extern unsigned char *D_L00_001B2440;
 
