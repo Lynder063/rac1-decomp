@@ -9,7 +9,13 @@
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023DE98); /* videoDecCreate(VideoDec *, unsigned char *, int, unsigned long long *, unsigned long long *, int, TimeStamp *, int) */
 LINKER_REMNANT("asm/remnants/text", func_0023DF98);
-INCLUDE_ASM("asm/nonmatchings/text", func_0023DFA0); /* videoDecSetStream(VideoDec *, int, int, int (*)(sceMpeg *, sceMpegCbData *, void *), void *) */
+extern int func_0012B008(void);
+
+/* video_dec_set_stream - calls func_0012B008 */
+int func_0023DFA0(void) {
+    func_0012B008();
+    return 1;
+}
 extern void func_0023D1F0(int);
 
 /* video_dec_begin_put - calls func_0023D1F0 with offset */
