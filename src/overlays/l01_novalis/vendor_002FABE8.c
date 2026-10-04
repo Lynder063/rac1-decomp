@@ -654,7 +654,34 @@ char *func_L01_0030D248(char *src, void *dir, float scale) {
     return m;
 }
 INCLUDE_ASM("asm/overlays", func_L01_0030D568);
-INCLUDE_ASM("asm/overlays", func_L01_0030E4C8);
+/* Breakable crate variant update: state 0 starts, 1 waits for a positive value, 2 breaks into pieces. Keeping 'flag' as its own variable (as the NTSC decomp does) gives retail's second callee-saved register. */
+void func_L01_0030E4C8(char *moby) {
+    char *hit;
+    int flag;
+
+    flag = 0;
+    hit = func_L00_0025B478(moby, 0x10000, 0);
+    switch (*(unsigned char *)(moby + 0x20)) {
+    case 0:
+        moby[0x20] = 1;
+        break;
+    case 1:
+        if (hit != 0 && *(float *)(hit + 0x2C) > 0.0f) {
+            flag = 1;
+        }
+        if (flag) {
+            moby[0x20] = 2;
+        }
+        break;
+    case 2:
+        func_0022ED80(0, 0, (int)moby);
+        func_L01_00279790(moby);
+        func_L00_00265050(moby, 0x717, (float *)(moby + 0x10), moby + 0x40, 0, 0, D_L01_0015F660, D_L01_0015F660, 0.0f, D_L01_0015F660);
+        func_L01_00279E10(moby, 0x718);
+        func_0020D678(moby);
+        break;
+    }
+}
 extern void func_001F9BF0(void *, void *, void *);
 extern void func_L00_001FF4B0(void *, void *, float);
 extern float func_001F9C78(void *, void *);

@@ -346,7 +346,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L01_002F4290`](shared/func_L01_002F4290.c) | shared | 520 | SIZE ours 516 / retail 520 | - |
 | [`func_L01_002FFF30`](l01_novalis/func_L01_002FFF30.c) | l01_novalis | 524 | SIZE ours 512 / retail 524 | - |
 | [`func_L01_0030D380`](shared/func_L01_0030D380.c) | shared | 488 | SIZE ours 480 / retail 488 | - |
-| [`func_L01_0030E4C8`](l01_novalis/func_L01_0030E4C8.c) | l01_novalis | 268 | SIZE ours 260 / retail 268 | - |
 | [`func_L01_003171B8`](shared/func_L01_003171B8.c) | shared | 588 | SIZE ours 600 / retail 588 | - |
 | [`func_L01_0031B2F0`](shared/func_L01_0031B2F0.c) | shared | 348 | SIZE ours 344 / retail 348 | - |
 | [`func_L02_001FC308`](shared/func_L02_001FC308.c) | shared | 104 | SIZE ours 100 / retail 104 | - |
