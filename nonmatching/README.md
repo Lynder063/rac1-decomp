@@ -111,7 +111,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L16_002E45F8`](l16_kalebo3/func_L16_002E45F8.c) | l16_kalebo3 | 1364 | BYTES 58/1364 | 95.8% |
 | [`func_L00_002DCDA8`](shared/func_L00_002DCDA8.c) | shared | 548 | BYTES 24/548 | 95.6% |
 | [`func_L00_002353B8`](shared/func_L00_002353B8.c) | shared | 588 | BYTES 26/588 | 95.6% |
-| [`func_L00_001FE940`](shared/func_L00_001FE940.c) | shared | 132 | BYTES 6/132 | 95.5% |
 | [`func_L14_002B4128`](shared/func_L14_002B4128.c) | shared | 132 | BYTES 6/132 | 95.5% |
 | [`func_L16_002C7218`](l16_kalebo3/func_L16_002C7218.c) | l16_kalebo3 | 948 | BYTES 44/948 (cannot land as written) | 95.4% |
 | [`func_L07_0031C7C0`](l07_umbris/func_L07_0031C7C0.c) | l07_umbris | 508 | BYTES 24/508 | 95.3% |
