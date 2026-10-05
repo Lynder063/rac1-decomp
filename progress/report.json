@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 56.3285147844973,
+  "fuzzy_match_percent": 56.40209790541279,
   "total_code": "3712808",
-  "matched_code": "2002220",
-  "matched_code_percent": 53.92737787679837,
+  "matched_code": "2004952",
+  "matched_code_percent": 54.00096099771386,
   "total_functions": 5109,
-  "matched_functions": 3164,
-  "matched_functions_percent": 61.92992757878254,
+  "matched_functions": 3168,
+  "matched_functions_percent": 62.00822078684674,
   "complete_code": "172932",
   "complete_code_percent": 4.657714592297797,
   "total_units": 278,
@@ -51534,13 +51534,13 @@
   {
    "name": "Level 17: Drek's Fleet",
    "measures": {
-    "fuzzy_match_percent": 97.82472702456779,
+    "fuzzy_match_percent": 99.76683348498635,
     "total_code": "140672",
-    "matched_code": "137612",
-    "matched_code_percent": 97.82472702456779,
+    "matched_code": "140344",
+    "matched_code_percent": 99.76683348498635,
     "total_functions": 62,
-    "matched_functions": 57,
-    "matched_functions_percent": 91.93548387096774,
+    "matched_functions": 61,
+    "matched_functions_percent": 98.38709677419355,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -51694,7 +51694,7 @@
     {
      "name": "func_L17_002D91C8",
      "size": "792",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "879240",
      "metadata": {
       "virtual_address": "2986440"
@@ -51748,7 +51748,7 @@
     {
      "name": "func_L17_002EC5D0",
      "size": "520",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "958096",
      "metadata": {
       "virtual_address": "3065296"
@@ -51910,7 +51910,7 @@
     {
      "name": "func_L17_002F1D20",
      "size": "564",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "980448",
      "metadata": {
       "virtual_address": "3087648"
@@ -51937,7 +51937,7 @@
     {
      "name": "func_L17_002F2458",
      "size": "856",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "982296",
      "metadata": {
       "virtual_address": "3089496"
@@ -53263,13 +53263,13 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 55.501344679634904,
+    "fuzzy_match_percent": 55.58548108655454,
     "total_code": "3247108",
-    "matched_code": "1713228",
-    "matched_code_percent": 52.76165745026035,
+    "matched_code": "1715960",
+    "matched_code_percent": 52.84579385717999,
     "total_functions": 3429,
-    "matched_functions": 1808,
-    "matched_functions_percent": 52.72674249052202,
+    "matched_functions": 1812,
+    "matched_functions_percent": 52.84339457567804,
     "complete_code": "79588",
     "complete_code_percent": 2.4510425892825247
    }
@@ -53323,13 +53323,13 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 62.67435008404676,
+    "fuzzy_match_percent": 62.807847601735666,
     "total_code": "2046480",
-    "matched_code": "1231844",
-    "matched_code_percent": 60.1933075329346,
+    "matched_code": "1234576",
+    "matched_code_percent": 60.32680505062351,
     "total_functions": 1449,
-    "matched_functions": 741,
-    "matched_functions_percent": 51.13871635610766,
+    "matched_functions": 745,
+    "matched_functions_percent": 51.414768806073155,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53593,13 +53593,13 @@
    "id": "level_17",
    "name": "Level 17: Drek's Fleet",
    "measures": {
-    "fuzzy_match_percent": 97.82472702456779,
+    "fuzzy_match_percent": 99.76683348498635,
     "total_code": "140672",
-    "matched_code": "137612",
-    "matched_code_percent": 97.82472702456779,
+    "matched_code": "140344",
+    "matched_code_percent": 99.76683348498635,
     "total_functions": 62,
-    "matched_functions": 57,
-    "matched_functions_percent": 91.93548387096774,
+    "matched_functions": 61,
+    "matched_functions_percent": 98.38709677419355,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }

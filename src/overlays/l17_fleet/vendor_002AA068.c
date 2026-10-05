@@ -613,7 +613,83 @@ void func_L17_002D8CC8(char *m) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L17_002D91C8);
+typedef struct { float v[2]; } RingStep;
+typedef struct {
+    float v[4][4];
+    int rgba[4];
+    struct { float x, y; } uv[4];
+    long z70;
+    long tex;
+    long q80;
+    long alpha;
+} RingPrim;
+extern float func_L00_00200210(float, float);
+extern void func_001FA218(float *, float *);
+extern struct { float x, y; } D_L17_001D4240[4];
+extern RingStep D_L17_00161C40;
+extern RingStep D_L17_00161C48;
+extern int D_L17_00161C18 SDATA(D_L17_00161C18);
+extern int D_L17_00161C1C SDATA(D_L17_00161C1C);
+extern int D_L17_00161C20 SDATA(D_L17_00161C20);
+extern int D_L17_00161C24 SDATA(D_L17_00161C24);
+extern int D_L17_00161C38 SDATA(D_L17_00161C38);
+extern float D_L17_00161C3C SDATA(D_L17_00161C3C);
+
+/* Draw callback of fleet moby 669: two passes of three textured quads fanned around the moby, with scrolling texture coordinates. */
+void func_L17_002D91C8(char *moby) {
+    RingPrim q;
+    float mat[16];
+    float scroll;
+    int pass;
+    int i;
+    int j;
+    int k;
+
+    scroll = func_001FA888(D_L17_0015F6B0) * (D_L17_00161C3C * D_0015EE6C);
+    scroll = func_L00_00200210(scroll, 1.0f);
+    func_001FA218(mat, (float *)(moby + 0x40));
+    *(u128 *)&mat[12] = *(u128 *)(moby + 0x10);
+    mat[15] = 1.0f;
+    q.tex = func_001F4868(0x28);
+    q.q80 = 0xFF9000000260L;
+    q.alpha = (long)D_L17_00161C18 | ((long)D_L17_00161C1C << 2) | ((long)D_L17_00161C20 << 4) | ((long)D_L17_00161C24 << 6) | 0x8000000000L;
+    q.z70 = 0;
+    for (pass = 0; pass < 2; pass++) {
+        for (k = 0; k < 4; k++) {
+            RingStep step = D_L17_00161C40;
+
+            q.uv[k].y = D_L17_001D4240[k].y + scroll * step.v[pass];
+        }
+        for (i = 0; i < 3; i++) {
+            for (j = 0; j < 4; j++) {
+                RingStep step = D_L17_00161C48;
+                float spread[4] = {
+                    0.0f,
+                    -*(float *)&D_L17_00161C00 * 0.017453292f,
+                    *(float *)&D_L17_00161C00 * 0.017453292f,
+                    0.0f
+                };
+                float *vj;
+                float radius;
+
+                q.uv[j].x = D_L17_001D4240[j].x + scroll * step.v[pass];
+                radius = 0.0f;
+                if (j != 0) {
+                    radius = *(float *)&D_L17_00161C04;
+                }
+                vj = q.v[j];
+                func_00215C00(vj, radius, 1.5707964f,
+                              func_001FA7D8(*(float *)&D_L17_00161BFC * 0.017453292f + func_001FA888(i) * 2.0943952f + spread[j]));
+                vj[3] = 1.0f;
+            }
+            q.rgba[3] = D_L17_00161C38;
+            q.rgba[2] = D_L17_00161C38;
+            q.rgba[1] = D_L17_00161C38;
+            q.rgba[0] = D_L17_00161C38;
+            func_L00_001FD1D8(&q, mat, 0);
+        }
+    }
+}
 extern void func_001F9BC0(void *);
 extern void func_L00_0025F4A8_alt(void *, void *, void *, float, float, int, int, int, float, float, float, float, int, float, int, int, int, int) __asm__("func_L00_0025F4A8");
 extern void func_0020D678(void *);
@@ -1027,7 +1103,66 @@ void func_L17_002EBF08(unsigned char a, unsigned char b, unsigned char c, unsign
     ang = FastAddRots(ang, 1.5707964f);
     func_L11_003121C0(x, y, w, w, ang, 0x3F, 0x3F, h, 0xFFFFF3, a, b, c, d);
 }
-INCLUDE_ASM("asm/overlays", func_L17_002EC5D0);
+extern float func_001FA790(float, float);
+extern void func_001FA218(float *, float *);
+extern void func_001F5800(int, int, int, int, int, int, int, int, long, long);
+extern unsigned char D_0015EEB4[4] MACRO_ADDR;
+extern unsigned char D_0013E15A[];
+
+/* One radar icon: its texture (counted from the radar's own), its rectangle in that texture and its hot spot. */
+typedef struct {
+    short tex;
+    short u;
+    short v;
+    short w;
+    short h;
+    short fA;
+    short x;
+    short y;
+} IconEC5D0;
+extern IconEC5D0 D_L17_001D9E08[];
+
+/* Draws one moby's icon on the radar: its offset from the viewer turned into the radar's frame, faded near the rim. */
+void func_L17_002EC5D0(char *rot, char *from, char *moby, int icon, long color, int tex) {
+    float turn[4];
+    float mat[16];
+    float delta[4];
+    float pos[4];
+    float len;
+    float side;
+    int x, y;
+    IconEC5D0 *t;
+
+    qzero(turn);
+    turn[2] = *(float *)(rot + 8);
+    turn[2] = FastSubRots(1.5707964f, turn[2]);
+    func_001FA218(mat, turn);
+    FastVecSub(delta, moby + 0x10, from);
+    delta[2] = 0.0f;
+    func_001F9EE8(pos, delta, mat);
+    FastVecScale(pos, pos, 0.0714285746f);
+    len = FastVecLength(pos);
+    side = 1.0f;
+    if (D_0015EEB4[0] != 0) {
+        side = -1.0f;
+    }
+    x = func_001FA898_r(side * pos[0]);
+    y = func_001FA898_r(-pos[1]);
+    if (len < 46.0f) {
+        if (len > 38.0f) {
+            float f;
+            len = 46.0f - len;
+            f = func_001FA888(((unsigned long)color >> 24) & 0xFF) * len;
+            color &= 0xFFFFFF;
+            color = (func_001FA898_r(f * 0.125f) << 24) | color;
+        }
+        t = &D_L17_001D9E08[icon];
+        y -= 0x50;
+        y += *(int *)(D_0013E15A + 0x4AA);
+        x += 0x1B0;
+        func_001F5800(x - t->x, y - t->y, t->w, t->h, t->u, t->v, t->w, t->h, color, func_001F4868(tex + 0x28 + t->tex));
+    }
+}
 extern void func_L11_003126D8(void *, void *, void *, int);
 extern float func_001FA888(int);
 extern float func_001F9B50(float);
