@@ -174,7 +174,68 @@ void func_L08_002E9F78(char *a) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L08_002EA0A8);
-INCLUDE_ASM("asm/overlays", func_L08_002EA930);
+/* Builds the moby's part hierarchy: body, head, arms and eight trailing segments. */
+void func_L08_002EA930(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    char *e = data + 0xFC;
+    int i = 0;
+    char *c;
+    char *c2;
+    char *c6;
+    char *c8;
+    *(char **)(data + 0x60) = moby;
+    *(int *)(data + 0x64) = 0;
+    *(int *)(data + 0x68) = 0;
+    *(int *)(data + 0x6C) = 0;
+    *(char **)(data + 0x90) = func_L08_002E3010(moby, 0x1C0, 0, 0);
+    *(char **)(data + 0x94) = moby;
+    *(int *)(data + 0x98) = 0;
+    *(int *)(data + 0x9C) = 0;
+    c = func_L08_002E3010(moby, 0x1BD, 0, 2);
+    *(char **)(data + 0x70) = c;
+    *(int *)(data + 0x7C) = 2;
+    *(char **)(data + 0x74) = moby;
+    *(int *)(data + 0x78) = 0;
+    *(float *)(c + 0x2C) = *(float *)(*(char **)(c + 0x24) + 0x24) * 0.75f;
+    c2 = func_L08_002E3010(*(char **)(data + 0x90), 0x1BA, 1, 1);
+    *(char **)(data + 0x80) = c2;
+    *(char **)(data + 0x84) = *(char **)(data + 0x90);
+    *(int *)(data + 0x88) = 1;
+    *(int *)(data + 0x8C) = 1;
+    *(char **)(data + 0xA0) = func_L08_002E3010(c2, 0x1B9, 0, 0);
+    *(char **)(data + 0xA4) = *(char **)(data + 0x80);
+    *(int *)(data + 0xA8) = 0;
+    *(int *)(data + 0xAC) = 0;
+    *(char **)(data + 0xB0) = func_L08_002E3010(moby, 0x1D0, 0, 1);
+    *(char **)(data + 0xB4) = moby;
+    *(int *)(data + 0xB8) = 0;
+    *(int *)(data + 0xBC) = 1;
+    c6 = func_L08_002E3010(moby, 0x1D0, 0, 1);
+    *(char **)(data + 0xC0) = c6;
+    *(char **)(data + 0xC4) = moby;
+    *(int *)(data + 0xC8) = 0;
+    *(int *)(data + 0xCC) = 1;
+    *(unsigned short *)(c6 + 0x34) |= 0x8000;
+    *(char **)(data + 0xD0) = func_L08_002E3010(*(char **)(data + 0x80), 0x1D1, 0, 0);
+    *(char **)(data + 0xD4) = *(char **)(data + 0x80);
+    *(int *)(data + 0xD8) = 0;
+    *(int *)(data + 0xDC) = 0;
+    c8 = func_L08_002E3010(*(char **)(data + 0x80), 0x1D1, 0, 0);
+    *(char **)(data + 0xE0) = c8;
+    *(char **)(data + 0xE4) = *(char **)(data + 0x80);
+    *(int *)(data + 0xE8) = 0;
+    *(int *)(data + 0xEC) = 0;
+    *(unsigned short *)(c8 + 0x34) |= 0x8000;
+    do {
+        int j = i + 2;
+        i++;
+        *(char **)(e - 0xC) = func_L08_002E3010(*(char **)(data + 0x90), 0x1BB, 0, j);
+        *(char **)(e - 8) = *(char **)(data + 0x90);
+        *(int *)(e - 4) = 0;
+        *(int *)e = j;
+        e += 0x10;
+    } while (i < 8);
+}
 INCLUDE_ASM("asm/overlays", func_L08_002EAB30);
 extern void func_L00_00251E30();
 extern void func_001F9C30(void *, void *, float);
