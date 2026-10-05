@@ -67,7 +67,25 @@ float func_L11_00312F50(void *moby_v, void *o_v) {
     }
     return 10000.0f;
 }
-INCLUDE_ASM("asm/overlays", func_L11_003130B0);
+/* counts the listed mobys of the type that are active, and of those the ones with 0x31 set */
+void func_L11_003130B0(void *a0, void *a1, void *a2) {
+    char *d = *(char **)((char *)a0 + 0x78);
+    int type = *(short *)(d + 0x108);
+    short *p;
+    *(unsigned short *)a1 = 0;
+    *(unsigned short *)a2 = 0;
+    p = D_L11_001AC540[type];
+    if (p == 0) return;
+    do {
+        int off = (*(unsigned short *)p & 0x7FFF) << 8;
+        if (((char *)D_L11_00160058_m)[off + 0x20] >= 0) {
+            (*(unsigned short *)a1)++;
+            if (((unsigned char *)D_L11_00160058_m)[off + 0x31] != 0) {
+                (*(unsigned short *)a2)++;
+            }
+        }
+    } while (*p++ >= 0);
+}
 INCLUDE_ASM("asm/overlays", func_L11_00313148);
 INCLUDE_ASM("asm/overlays", func_L11_00313218);
 extern void func_L11_003126D8_313a70(void *, void *, void *, int) __asm__("func_L11_003126D8");
