@@ -92,6 +92,23 @@ def noreorder_ranges():
             for k, (a, obj) in enumerate(rows) if obj in NOREORDER_OBJECTS]
 BRANCH_LINE = re.compile(r"^\s*(b[a-z0-9]*)\s+(.*)$")
 BC1_LINE = re.compile(r"^\s*bc1(t|f)l?\s")
+LABEL_LINE = re.compile(r"^\s*(\$L\w+|\.L\w+):")
+
+
+def label_before_hazard(lines, j):
+    """True when a local label sits between an FP compare and the bc1 at
+    source line J. Retail puts such a label before the hazard nop (a jump
+    to it executes the nop); GNU as, which adds the nop itself, puts the
+    label after it, so the nop is spelled out after the label instead."""
+    seen, k = False, j - 1
+    while k >= 0:
+        stripped = lines[k].split("#")[0].strip()
+        if LABEL_LINE.match(lines[k]):
+            seen = True
+        elif stripped and not stripped.startswith("."):
+            return seen and re.match(r"c\.[a-z]+\.s\b", stripped) is not None
+        k -= 1
+    return False
 
 
 def is_local_branch(mnemonic: str, operands: str) -> bool:
@@ -361,7 +378,7 @@ def main() -> None:
                      f"{len(src_back)}, {len(src_bc1)}, {len(src_moves)} -- refusing to guess")
         fp_nops = [addr for addr, needs in obj_fp if needs] + obj_moves
         for (addr, needs), j in zip(obj_fp, src_bc1):
-            if needs:
+            if needs or label_before_hazard(lines, j):
                 inserts[j] = inserts.get(j, 0) + 1
                 fps += 1
             elif fp_label_nop(lines, i, j, text, addr):

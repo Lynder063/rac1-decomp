@@ -1336,7 +1336,8 @@ int func_L00_002E8EE0(char *m) {
     return ret;
 }
 INCLUDE_ASM("asm/overlays", func_L00_002E91D0);
-INCLUDE_ASM("asm/overlays", func_L00_002E9828);
+/* Empty function that only reserves 0x50 bytes of stack. Adapted from Lombyte (MIT), FUN_L00_002e8378; the volatile buffer is what keeps the frame. */
+void func_L00_002E9828(int a) { volatile char buf[0x50]; }
 INCLUDE_ASM("asm/overlays", func_L00_002E9838);
 INCLUDE_ASM("asm/overlays", func_L00_002E9854);
 INCLUDE_ASM("asm/overlays", func_L00_002E9870);
@@ -1473,7 +1474,15 @@ float func_L00_002E9B60(char *a0, float *a1, float lim) {
     *(float *)(q + 0x1C) = func_L00_00258E58(-1.0f, 0.0f, 1.0f, 0.0f, t) * sign;
     return r;
 }
-INCLUDE_ASM("asm/overlays", func_L00_002E9D78);
+extern float func_L00_002E9B60(char *, float *, float);
+
+/* Exact match: needs -fno-schedule-insns (config/func_cflags.txt). */
+void func_L00_002E9D78(char *moby, int arg, float f)
+{
+    float scratch[4];
+    char *data = *(char **)(moby + 0x70);
+    func_L00_002E9B60(moby, (func_001F9BF0(scratch, (float *)arg, (float *)(data + 0x40)), scratch), f);
+}
 void func_L00_002E9DC8(void *a, float x, float y) {
     char *p = D_L00_00166F00;
     if (*(short *)(p + 0x86) == 0) {

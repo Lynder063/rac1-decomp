@@ -149,7 +149,7 @@ INCLUDE_ASM("asm/overlays", func_L05_003052A8);
  */
 typedef struct { char p0[0x10]; char pos[0x10]; unsigned char state; char p1[0x13]; unsigned short flags; char p2[0xCA]; } Ent;
 extern short *D_L05_001AC040[];
-extern short D_L05_00160098;
+extern int D_L05_00160098 MACRO_ADDR;
 extern Ent *D_L05_00160098_m __asm__("D_L05_00160098") MACRO_ADDR;
 extern float func_001F9D10(void *, void *);
 

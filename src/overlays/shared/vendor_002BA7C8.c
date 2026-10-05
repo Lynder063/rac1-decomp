@@ -746,7 +746,8 @@ extern f32 func_001F9D10(void *, void *);
 extern s32 func_L00_001EFFF0_C0358(void *, void *, s32, void *, s32) __asm__("func_L00_001EFFF0");
 extern f32 func_L00_002BFF88_C0358(void *, void *) __asm__("func_L00_002BFF88");
 
-/* Searches steering rays and limits the chosen turn toward the current yaw. Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/unclassified_002b94d0.c, FUN_L00_002bf050. */
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/unclassified_002b94d0.c, FUN_L00_002bf050. */
+/* Exact match: tools/ps2eeas_nops.py keeps the hazard nop after the label the branch lands on. */
 f32 func_L00_002C0358(Mob *m, VU *pos, f32 *tgt, f32 *out, f32 ang, f32 arc, f32 step, f32 h, f32 r2, f32 r1) {
     VU v0;
     VU v1;
@@ -886,7 +887,7 @@ f32 func_L00_002C0358(Mob *m, VU *pos, f32 *tgt, f32 *out, f32 ang, f32 arc, f32
             best = func_001FA790(best, (r2 - d) * 3.1415927f / (r2 * 3.0f));
         }
     }
-    if (2.51327419281005859375f < func_001FA850(best, m->f48)) {
+    if (2.5132742f < func_001FA850(best, m->f48)) {
         best = func_001FA748(m->f48, func_001FA790(best, m->f48) * 0.5f);
     }
     return best;

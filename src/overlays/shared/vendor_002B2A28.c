@@ -319,7 +319,109 @@ unsigned char *func_L14_00300F80(unsigned char *owner, char *pos) {
 void func_L14_00301090(unsigned char *moby) {
     moby[0x20] = 1;
 }
-INCLUDE_ASM("asm/overlays", func_L14_00302A58);
+/* UpdateMoby_1224 (names.tsv role). Data block: +0 index (<< 7 into the D_L14_001601AC table),
+ * +4/+6 timer values, +8/+0xA flags, +0xC value, +0x10 timer, +0x12 count, +0x624 radius.
+ * Skips itself while the culling test func_L00_00200290 (52.0) fails or D_L14_0016219C is set.
+ * State 0: starts, takes its radius from the table entry, goes to state 2. State 1 counts a
+ * level counter down while +0x12 is zero. State 2 waits for the timer then goes to 3. State 3
+ * waits for the timer, then restarts it (state 2 when +6 is set). Then, while the hero is within
+ * 10.0 it calls func_L14_003039C0; with a non-zero count it also runs func_L14_00303270 and may
+ * queue func_L14_00303430. */
+typedef struct {
+    int w0;
+    short s4, s6, s8, sA;
+    int wC;
+    short s10, s12;
+    char pad14[0x610];
+    float f624;
+} D1224;
+extern short D_L14_0016219C_s __asm__("D_L14_0016219C");
+extern short D_L14_001621A8_s __asm__("D_L14_001621A8");
+extern short D_L14_00162188_s __asm__("D_L14_00162188");
+extern short D_L14_001621A0_s __asm__("D_L14_001621A0");
+extern short D_L14_00162198_s __asm__("D_L14_00162198");
+extern short D_L14_001621A4_s __asm__("D_L14_001621A4");
+extern char *D_L14_001601AC_t __asm__("D_L14_001601AC") MACRO_ADDR;
+extern int func_L00_00200290(void *, float);
+extern void func_L14_00302C80(char *);
+extern float func_001F9CB8(void *);
+extern int func_001F9938(void *);
+extern void func_L14_003039C0(char *);
+extern void func_L14_00303270(char *);
+extern void func_L14_00303430(void);
+extern void func_001F49B0(void (*)(void), void *);
+
+void func_L14_00302A58(unsigned char *m) {
+    D1224 *d = *(D1224 **)(m + 0x78);
+    float v[4] __attribute__((aligned(16)));
+    int s;
+    int arg;
+    if (m[0x20] != 0) {
+        qcopy(v, m + 0x10);
+        v[3] = d->f624;
+        if (func_L00_00200290(v, 52.0f) < 0) {
+            return;
+        }
+    }
+    if (*(int *)&D_L14_0016219C_s != 0) {
+        return;
+    }
+    s = m[0x20];
+    switch (s) {
+    case 0:
+        func_L14_00302C80((char *)m);
+        d->s10 = func_001F9850(d->wC);
+        m[0x20] = 2;
+        d->f624 = func_001F9CB8(D_L14_001601AC_t + (d->w0 << 7) + 0x10);
+        d->s8 = 1;
+        d->sA = 1;
+        break;
+    case 1:
+        if (*(int *)&D_L14_00162188_s != 0) {
+            if (d->s12 == 0) {
+                *(int *)&D_L14_00162188_s = *(int *)&D_L14_00162188_s - 1;
+                func_L14_00302C80((char *)m);
+            }
+        }
+        break;
+    case 2:
+        if (func_001F9938(&d->s10) != 0) {
+            m[0x20] = 3;
+            d->s10 = func_001F9850(d->s4);
+            func_L14_00302C80((char *)m);
+        }
+        break;
+    case 3:
+        if (func_001F9938(&d->s10) != 0) {
+            if (d->s6 != 0) {
+                m[0x20] = 2;
+                arg = d->s6;
+            } else {
+                arg = d->s4;
+            }
+            d->s10 = func_001F9850(arg);
+        } else if (d->s12 == 0) {
+            func_L14_00302C80((char *)m);
+        }
+        break;
+    }
+    if (*(int *)&D_L14_001621A8_s == 0) {
+        if (func_001F9D48(m + 0x10, D_0013E633 + 0xE9D) < 10.0f) {
+            func_L14_003039C0((char *)m);
+        }
+    }
+    if (d->s12 != 0) {
+        if (*(int *)&D_L14_001621A0_s == 0) {
+            func_L14_00303270((char *)m);
+        }
+        if (*(int *)&D_L14_00162198_s < d->s12) {
+            if (*(int *)&D_L14_001621A4_s != 0) {
+                return;
+            }
+            func_001F49B0(func_L14_00303430, m);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L14_00302C80);
 INCLUDE_ASM("asm/overlays", func_L14_00303270);
 INCLUDE_ASM("asm/overlays", func_L14_00303430);

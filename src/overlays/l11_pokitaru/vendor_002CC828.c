@@ -278,7 +278,74 @@ void func_L11_0030FBD0(void) {
     func_L01_002BA380(D_L11_001DAB40, 0x14);
 }
 INCLUDE_ASM("asm/overlays", func_L11_0030FBF8);
-INCLUDE_ASM("asm/overlays", func_L11_0030FE40);
+/* UpdateMoby_1159 (names.tsv role). Data block fields (+0x08 slot, +0x0C scale, +0x10, +0x14).
+ * State 0: raises the moby by scale * 1.9, spawns a class 0x487 child that copies its position,
+ * heading (func_001FA748 with pi), +0x34/+0x38 and the data block fields, and goes to state 1.
+ * State 1: watches moby slot d[2]; when it is class 0x267 in state 4, or class 0x33E with byte
+ * +0xBC set, marks a byte in the D_0013D355 + 0x13B table and goes to state 2. State 2: steps
+ * the data block with func_00214D88 and moves the moby by the resulting vector.
+ * The index-first sums (`idx + base`) and the Rec57 member are what keep retail's addressing. */
+extern char *func_0020D348_c(int) __asm__("func_0020D348");
+extern float func_001FA748_f(float, float) __asm__("func_001FA748");
+extern void func_L00_00251E30_u(void *) __asm__("func_L00_00251E30");
+extern void func_0022ED80_u(int, int, void *) __asm__("func_0022ED80");
+extern float func_00214D88_f(float *, float *, float, float, float, float) __asm__("func_00214D88");
+extern void func_L00_001FF4B0_u(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern void func_001F9BD8_u(void *, void *, void *) __asm__("func_001F9BD8");
+extern unsigned char *D_L11_00160058_t __asm__("D_L11_00160058") MACRO_ADDR;
+extern float D_0015EE6C_f __asm__("D_0015EE6C") MACRO_ADDR;
+extern float D_0015EE70_f __asm__("D_0015EE70") MACRO_ADDR;
+extern char D_0013D355_t[] __asm__("D_0013D355");
+typedef struct { char pad[0x57]; char f57; } Rec57;
+
+void func_L11_0030FE40(unsigned char *m) {
+    char *d = *(char **)(m + 0x78);
+    float v[4] __attribute__((aligned(16)));
+    unsigned char *c;
+    unsigned char *o;
+    char *p;
+    char *q;
+    switch (m[0x20]) {
+    case 0:
+        *(float *)(m + 0x18) = *(float *)(m + 0x18) + *(float *)(d + 0xC) * 1.9f;
+        c = (unsigned char *)func_0020D348_c(0x487);
+        c[0x31] = 1;
+        *(short *)(c + 0x32) = 0x40;
+        *(long *)(c + 0x38) = *(long *)(m + 0x38);
+        *(unsigned short *)(c + 0x34) = *(unsigned short *)(m + 0x34);
+        qcopy(c + 0x10, m + 0x10);
+        qcopy(c + 0x40, m + 0x40);
+        *(float *)(c + 0x40) = func_001FA748_f(*(float *)(c + 0x40), 3.1415927f);
+        func_L00_00251E30_u(c);
+        p = *(char **)(c + 0x78);
+        *(int *)(p + 8) = *(int *)(d + 8);
+        *(float *)(p + 0x10) = *(float *)(d + 0x10);
+        *(int *)(p + 0x14) = *(int *)(d + 0x14);
+        q = *(char **)(m + 0x24);
+        *(float *)(m + 0x2C) = *(float *)(q + 0x24) * *(float *)(d + 0xC);
+        *(float *)(c + 0x2C) = *(float *)(q + 0x24) * *(float *)(d + 0xC);
+        c[0x20] = 1;
+        m[0x20] = 1;
+        break;
+    case 1:
+        o = (unsigned char *)((*(int *)(d + 8) << 8) + (int)D_L11_00160058_t);
+        if (*(short *)(o + 0xA6) == 0x267 && o[0x20] == 4) {
+            goto go;
+        }
+        if (*(short *)(o + 0xA6) == 0x33E && o[0xBC] != 0) {
+        go:
+            m[0x20] = 2;
+            ((Rec57 *)(*(int *)(d + 0x14) + (int)(D_0013D355_t + 0x13B)))->f57 = 1;
+            func_0022ED80_u(0, 0, m);
+        }
+        break;
+    case 2:
+        func_00214D88_f((float *)d, (float *)(d + 4), *(float *)(d + 0x10), D_0015EE70_f, D_0015EE70_f, D_0015EE6C_f + D_0015EE6C_f);
+        func_L00_001FF4B0_u(v, m + 0xD0, -*(float *)(d + 4));
+        func_001F9BD8_u(m + 0x10, m + 0x10, v);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L11_00310058);
 INCLUDE_ASM("asm/overlays", func_L11_00310770);
 extern char *func_0020D348(int);
