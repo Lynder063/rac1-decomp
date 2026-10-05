@@ -305,7 +305,63 @@ void func_0011AA68(int arg0) {
     *(int *)offset = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AA90);
+typedef struct {
+    u32 f0 : 8;
+    u32 f0_8 : 24;
+    u32 f4;
+    u32 f8;
+} SifCmd;
+typedef struct {
+    u32 f0;
+    u32 f4;
+    u32 f8;
+    u32 fC;
+} SifDma;
+extern u32 D_00154F60[];
+extern void func_0011AD70(void *addr, s32 size);
+extern s32 func_00118E20();
+extern s32 func_00118E30();
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/sdk/rpc/sce_sif_send_cmd.c, _sceSifSendCmd. */
+s32 func_0011AA90(u32 packet, s32 mode, SifCmd *cmd, s32 size, u32 src, u32 dst, s32 dst_size) {
+    SifDma tags[2];
+    s32 num;
+    register u32 mode44;
+    register u32 addr0;
+
+    if ((u32)(size - 0x10) >= 0x61) {
+        return 0;
+    }
+    num = 0;
+    if (dst_size > 0) {
+        cmd->f0_8 = dst_size;
+        tags[0].f0 = src;
+        tags[0].f4 = dst;
+        cmd->f4 = dst;
+        tags[0].f8 = dst_size;
+        tags[0].fC = 0;
+        num = 1;
+        if (mode & 4) {
+            func_0011AD70(src, dst_size);
+        }
+    } else {
+        cmd->f4 = 0;
+        cmd->f0_8 = 0;
+    }
+    addr0 = D_00154F60[0];
+    tags[num].f0 = (u32)cmd;
+    tags[num].f4 = addr0;
+    tags[num].f8 = size;
+    cmd->f0 = size;
+    cmd->f8 = packet;
+    tags[num].fC = 0x44;
+    func_0011AD70(cmd, size);
+    num++;
+    if (mode & 1) {
+        return func_00118E30(tags, num);
+    }
+    return func_00118E20(tags, num);
+}
 
 /* sceSifSendCmd and isceSifSendCmd: forward to the common sender
    func_0011AA90 with the mode (0, or 1 from interrupt context) injected
@@ -317,7 +373,6 @@ INCLUDE_ASM("asm/nonmatchings/core_text", func_0011AA90);
    jump (SIZE 40/60 when void), and its schedule is then retail's: the
    `addiu $sp,$sp,-0x10` fourth, after three argument moves, which
    2.95.3 could not produce (11/60). */
-extern int func_0011AA90(int, int, int, int, int, int, int);
 
 int func_0011ABC8(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5) {
     return func_0011AA90(arg0, 0, arg1, arg2, arg3, arg4, arg5);
