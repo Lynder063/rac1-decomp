@@ -20,7 +20,7 @@ int func_0023CE18(StrFile *f, int first, int second) {
     f->second = second;
     return 1;
 }
-/* strFileDelete(StrFile *) -- nothing to free, returns 1. */
+/* No recovered name. Nothing to free, returns 1. */
 int func_0023CE28(StrFile *f) {
     return 1;
 }

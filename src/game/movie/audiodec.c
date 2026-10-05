@@ -41,7 +41,7 @@ void func_0023C088(AudioDec *dec) {
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C0E0); /* audioDecReset(_AudioDec *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C128); /* audioDecBeginPut(_AudioDec *, unsigned char **, int *, unsigned char **, int *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C1F8); /* audioDecEndPut(_AudioDec *, int) */
-/* audioDecIsPageFull -- true once 0x1000 bytes or more are queued. */
+/* No recovered name. True once 0x1000 bytes or more are queued. */
 int func_0023C2B0(AudioDec *dec) {
     return dec->bytes >= 0x1000;
 }

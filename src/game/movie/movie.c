@@ -18,7 +18,8 @@ void func_0023BB40(void) {
 extern int func_0023C2B0(char *);
 extern char *D_0016130C MACRO_ADDR;
 
-/* isAudioOK -- audioDecIsPageFull on the audio decoder at offset 0xD9100 of the movie state. */
+/* isAudioOK -- true when the audio decoder at offset 0xD9100 of the movie state holds 0x1000
+ * bytes or more. */
 int func_0023BB60(void) {
     return func_0023C2B0(D_0016130C + 0xD9100);
 }
