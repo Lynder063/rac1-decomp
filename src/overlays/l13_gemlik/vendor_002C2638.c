@@ -361,7 +361,34 @@ void func_L13_002EB768(char *a, char *b, float f) {
     func_00215C00(a, dist / (k + f) * k, y, -x);
     FastVecAdd(a, a, *(char **)(base + 0x15F0) + 0x10);
 }
-INCLUDE_ASM("asm/overlays", func_L13_002EB838);
+extern float func_L00_001FF860(float, float);
+extern float func_001F9D48(void *, void *);
+extern void func_L13_002EB768(char *a, char *b, float f);
+
+/* Angles from pos to the hero's target (led by lead when positive) or to the hero; returns the yaw. */
+float func_L13_002EB838(float *pos, float *pitch, float *yaw, float lead) {
+    char *base = D_0013E633 + 0xE1D;
+    char *t = *(char **)(base + 0x15F0);
+    float v[4];
+    float y;
+    float p;
+    if (t != 0 && *(short *)(t + 0xA6) == 0x45) {
+        if (lead > 0.0f) {
+            func_L13_002EB768((char *)v, (char *)pos, lead);
+        } else {
+            qcopy(v, t + 0x10);
+        }
+        y = func_L00_001FF860(v[0] - pos[0], v[1] - pos[1]);
+        p = -func_L00_001FF860(func_001F9D48(pos, v), v[2] - pos[2]);
+    } else {
+        char *p0 = D_0013E633 + 0xE1D;
+        y = func_L00_001FF860(*(float *)(p0 + 0x80) - pos[0], *(float *)(p0 + 0x84) - pos[1]);
+        p = -func_L00_001FF860(func_001F9D48(pos, p0 + 0x80), *(float *)(p0 + 0x88) - pos[2]);
+    }
+    if (yaw != 0) *yaw = y;
+    if (pitch != 0) *pitch = p;
+    return y;
+}
 INCLUDE_ASM("asm/overlays", func_L13_002EB978);
 extern void func_L00_00250800(void *, int, void *);
 extern void func_L13_002EB768(char *a, char *b, float f);
