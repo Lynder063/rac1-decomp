@@ -139,7 +139,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L15_002F9FF8`](l15_quartu/func_L15_002F9FF8.c) | l15_quartu | 104 | BYTES 10/104 | 90.4% |
 | [`func_L00_00250120`](shared/func_L00_00250120.c) | shared | 164 | BYTES 16/164 | 90.2% |
 | [`func_L18_002EBBF0`](l18_veldin2/func_L18_002EBBF0.c) | l18_veldin2 | 1236 | BYTES 129/1236 (cannot land as written) | 89.6% |
-| [`func_L00_002E9D78`](shared/func_L00_002E9D78.c) | shared | 76 | BYTES 8/76 | 89.5% |
 | [`func_L06_002F8200`](l06_blarg/func_L06_002F8200.c) | l06_blarg | 560 | BYTES 59/560 | 89.5% |
 | [`func_L18_002EC0C8`](l18_veldin2/func_L18_002EC0C8.c) | l18_veldin2 | 452 | BYTES 51/452 | 88.7% |
 | [`func_L00_002B0D30`](shared/func_L00_002B0D30.c) | shared | 548 | BYTES 62/548 | 88.7% |
