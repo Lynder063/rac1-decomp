@@ -103,7 +103,36 @@ INCLUDE_ASM("asm/overlays", func_L14_002EFB10);
 INCLUDE_ASM("asm/overlays", func_L14_002EFD38);
 INCLUDE_ASM("asm/overlays", func_L14_002F03E8);
 INCLUDE_ASM("asm/overlays", func_L14_002F05D8);
-INCLUDE_ASM("asm/overlays", func_L14_002F0868);
+extern char *D_L14_001B0F30[];
+extern float func_L00_0025C918(float *p, float *v, float t, float u1, float u2, float eps);
+
+/* Springs the moby's position (and, while moving, its rotation) toward its current path point. */
+void func_L14_002F0868(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float pos[4];
+    float rot[4];
+    char *e;
+    if (((unsigned char *)m)[0xBC] == 0) {
+        e = D_L14_001B0F30[*(int *)(d + 0xA0)];
+        qcopy(rot, d + 0xE0);
+    } else {
+        e = D_L14_001B0F30[*(int *)(d + 0xB8)];
+        qcopy(rot, d + 0xF0);
+    }
+    if (*(float *)(d + 0xAC) > 0.0f) {
+        qcopy(pos, e + *(int *)e * 16);
+    } else {
+        qcopy(pos, e + 0x10);
+    }
+    func_L00_0025C918((float *)(m + 0x10), (float *)(d + 0xC0), pos[0], 0.003f, 0.2f, 0.0f);
+    func_L00_0025C918((float *)(m + 0x14), (float *)(d + 0xC4), pos[1], 0.003f, 0.2f, 0.0f);
+    func_L00_0025C918((float *)(m + 0x18), (float *)(d + 0xC8), pos[2], 0.003f, 0.2f, 0.0f);
+    if (0.0f < *(float *)(d + 0xAC)) {
+        func_L00_0025C918((float *)(m + 0x40), (float *)(d + 0x100), rot[0], 0.003f, 0.2f, 0.0f);
+        func_L00_0025C918((float *)(m + 0x44), (float *)(d + 0x104), rot[1], 0.003f, 0.2f, 0.0f);
+        func_L00_0025C918((float *)(m + 0x48), (float *)(d + 0x108), rot[2], 0.003f, 0.2f, 0.0f);
+    }
+}
 typedef struct {
     char pad0[0xAC];
     float value;

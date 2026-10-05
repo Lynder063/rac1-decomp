@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 25.324299215041542,
+  "fuzzy_match_percent": 25.335180467182777,
   "total_code": "3712808",
-  "matched_code": "844320",
-  "matched_code_percent": 22.74073962348713,
+  "matched_code": "844724",
+  "matched_code_percent": 22.751620875628365,
   "total_functions": 5109,
-  "matched_functions": 2993,
-  "matched_functions_percent": 58.58289293403797,
+  "matched_functions": 2994,
+  "matched_functions_percent": 58.60246623605402,
   "complete_code": "97220",
   "complete_code_percent": 2.6185032999282485,
   "total_units": 278,
@@ -48915,13 +48915,13 @@
   {
    "name": "Level 14: Oltanis",
    "measures": {
-    "fuzzy_match_percent": 8.622877923181056,
+    "fuzzy_match_percent": 8.890974437926365,
     "total_code": "150692",
-    "matched_code": "10492",
-    "matched_code_percent": 6.962546120563799,
+    "matched_code": "10896",
+    "matched_code_percent": 7.230642635309107,
     "total_functions": 135,
-    "matched_functions": 46,
-    "matched_functions_percent": 34.074074074074076,
+    "matched_functions": 47,
+    "matched_functions_percent": 34.81481481481482,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -49651,7 +49651,7 @@
     {
      "name": "func_L14_002F0868",
      "size": "404",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "861376",
      "metadata": {
       "virtual_address": "3082344"
@@ -53263,13 +53263,13 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 20.127251917706456,
+    "fuzzy_match_percent": 20.13969375826119,
     "total_code": "3247108",
-    "matched_code": "557820",
-    "matched_code_percent": 17.17897895604335,
+    "matched_code": "558224",
+    "matched_code_percent": 17.19142079659808,
     "total_functions": 3429,
-    "matched_functions": 1641,
-    "matched_functions_percent": 47.85651793525809,
+    "matched_functions": 1642,
+    "matched_functions_percent": 47.8856809565471,
     "complete_code": "3876",
     "complete_code_percent": 0.1193677574013553
    }
@@ -53323,13 +53323,13 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 14.884240295531846,
+    "fuzzy_match_percent": 14.903981509714248,
     "total_code": "2046480",
-    "matched_code": "236900",
-    "matched_code_percent": 11.57597435596732,
+    "matched_code": "237304",
+    "matched_code_percent": 11.59571557014972,
     "total_functions": 1449,
-    "matched_functions": 637,
-    "matched_functions_percent": 43.96135265700483,
+    "matched_functions": 638,
+    "matched_functions_percent": 44.03036576949621,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53548,13 +53548,13 @@
    "id": "level_14",
    "name": "Level 14: Oltanis",
    "measures": {
-    "fuzzy_match_percent": 8.622877923181056,
+    "fuzzy_match_percent": 8.890974437926365,
     "total_code": "150692",
-    "matched_code": "10492",
-    "matched_code_percent": 6.962546120563799,
+    "matched_code": "10896",
+    "matched_code_percent": 7.230642635309107,
     "total_functions": 135,
-    "matched_functions": 46,
-    "matched_functions_percent": 34.074074074074076,
+    "matched_functions": 47,
+    "matched_functions_percent": 34.81481481481482,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
