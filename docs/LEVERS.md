@@ -135,9 +135,10 @@ in `config/core_rodata.txt`).
    `tools/integrate.py` refuses a candidate that uses one. `__asm__` is only
    for file-scope aliases (`extern T D_x_alias __asm__("D_x");`) and padding
    directives. The one exception is retail's own vector copy: `lq $2,0(a)`
-   then `sq $2,0(b)` is `qcopy(dst, src)` in `include/common.h`. A 128-bit
-   zero store (`sq $zero`) has no known C form: `*(long long *)p = 0`
-   adds a `por` first.
+   then `sq $2,0(b)` is `qcopy(dst, src)` in `include/common.h`, or
+   `qcopy_nc(dst, src)` where retail keeps a value live across the copy.
+   A 128-bit zero store (`sq $zero,0(p)`) is `qzero(p)` there too:
+   `*(long long *)p = 0` adds a `por` first.
 
 10. **Per-function flags.** Retail built some functions with
     `-mno-split-addresses` ([SIBLING_DECOMPS.md](SIBLING_DECOMPS.md)),
@@ -188,7 +189,8 @@ in `config/core_rodata.txt`).
       under 2.9-ee: `return callee(...)` (func_0012BB30).
     - `lq`/`sq` through `$v0` that stays inside a loop, while values read
       before it are not reloaded after it: `qcopy`, with the values it
-      must not clobber held in locals (func_001F4C30).
+      must not clobber held in locals (func_001F4C30), or `qcopy_nc`
+      when a local does not do it (func_L05_00256148, case 107).
     - A `lui`-reached global that also shows up `$gp`-relative in branch
       delay slots: plain `MACRO_ADDR` does both (func_001F5148). Keep
       short aliases away from such a symbol: the assembler takes the
@@ -220,7 +222,8 @@ in `config/core_rodata.txt`).
 No plain-C wording has reached these. Name the one you hit in NOTES.md
 and stop, rather than spending the budget on it:
 
-- A 128-bit zero store (`sq $zero`): C adds a `por` first
+- A 128-bit zero store at a non-zero offset (`sq $zero,16(p)`): C adds a
+  `por` first, and `qzero()` stores at offset 0 only
   (`src/game/fastfunc.c`, func_001F9BC0).
 - A register allocation that three different wordings leave unchanged
   (`WORKER.md`'s stop rule).

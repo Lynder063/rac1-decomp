@@ -148,10 +148,12 @@ def instructions(body: str) -> list[str]:
 # `sq $2,0(b)` is qcopy() in include/common.h; any other register, offset
 # or a store in a delay slot is a plain 128-bit copy through
 # `typedef int u128 __attribute__((mode(TI)))` (checked 2026-10-01: SN gcc
-# emits `lq $2,16($5)` / `sq $2,48($4)` for it). Only a zero store
-# (`sq $0`) has no C form: the zero is materialised with `por` first.
+# emits `lq $2,16($5)` / `sq $2,48($4)` for it). A zero store at offset 0
+# (`sq $0,0(a)`) is qzero() in include/common.h; at another offset it has
+# no C form: the zero is materialised with `por` first.
 BARE_QUAD = re.compile(r"\b(sq|lq)\s+\$(?!29\b|1[6-9]\b|2[0-3]\b|3[01]\b)")
 ZERO_QUAD = re.compile(r"\bsq\s+\$0,")
+QZERO_SQ = re.compile(r"^sq\s+\$0,\s*0x0\(\$\d+\)$")
 QCOPY_LQ = re.compile(r"^lq\s+\$2,\s*0x0\(\$\d+\)$")
 QCOPY_SQ = re.compile(r"^sq\s+\$2,\s*0x0\(\$\d+\)$")
 
@@ -275,8 +277,8 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
     if len(ins) > 4 and best >= 4:
         return "blocked", "varargs definition", "needs stdarg.h"
     qcopy = u128 = False
-    if ZERO_QUAD.search(text):
-        return "blocked", "bare quadword", "sq $0: a 128-bit zero store has no C form"
+    if any(ZERO_QUAD.search(s) and not QZERO_SQ.match(s) for s in ins):
+        return "blocked", "bare quadword", "sq $0 at an offset: only a zero store at offset 0 is qzero()"
     if BARE_QUAD.search(text):
         qcopy = True
         u128 = not only_qcopies(ins)
