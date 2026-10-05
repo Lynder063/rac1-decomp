@@ -426,7 +426,68 @@ void func_L01_002E4488(char *a, char *m) {
 }
 INCLUDE_ASM("asm/overlays", func_L01_002E4580);
 INCLUDE_ASM("asm/overlays", func_L01_002E4620);
-INCLUDE_ASM("asm/overlays", func_L01_002E4920);
+typedef int u128_w22c __attribute__((mode(TI)));
+extern float func_001FA850(float, float);
+extern void *func_L00_0025D390(void *);
+extern void *func_L01_002E4620(void *, void *, void *, float, float, float, float, float, float);
+extern void func_L01_0030DC70(void *, void *, float, float, float, float);
+extern short D_L01_00161994;
+extern short D_L01_00161998;
+extern short D_L01_0016199C;
+extern short D_L01_001619A0;
+extern short D_L01_001619A4;
+extern short D_L01_00161990;
+extern short D_L01_0015F6A8;
+typedef union { u128_w22c q; float f[4]; } V4_w22c;
+extern V4_w22c D_0013F4D0;
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/unclassified_002b8c08.c, FUN_L01_002e35a8. */
+void func_L01_002E4920(char *moby, char *state) {
+    V4_w22c v;
+    V4_w22c q;
+    V4_w22c p;
+    char *e;
+    float a, b, c, d, t, dist;
+
+    if (func_001F9938(state + 0x4E) == 0) return;
+    qzero(&v);
+    func_001F9BD8(&v, &v, moby + 0x10);
+    v.f[2] = v.f[2] + (*(float *)&D_L01_001619A4);
+    e = func_L01_002E4620(moby, &v, moby + 0x40,
+                         (*(float *)&D_L01_00161998) * 0.017453292f,
+                         (*(float *)&D_L01_0016199C) * 0.017453292f,
+                         (*(float *)&D_L01_00161994), 2.0f, 3.1415927f, 3.1415927f);
+    if (e != 0) {
+        *(char **)(state + 0x68) = e;
+        if (D_0013F4D0.f[2] + 1.1f < *(float *)(moby + 0x18)) {
+            t = func_L00_001FF860(*(float *)(e + 0x10) - *(float *)(moby + 0x10),
+                             *(float *)(e + 0x14) - *(float *)(moby + 0x14));
+            if (func_001FA850(*(float *)(moby + 0x48), t) < 0.5235988f) {
+                if ((*(int *)&D_L01_0015F6A8) != 2) {
+                    char *r;
+                    qcopy(&q, e + 0x10);
+                    r = func_L00_0025D390(e);
+                    if (r != 0) q.f[2] = q.f[2] + *(float *)(r + 0x10);
+                    else q.f[2] = q.f[2] + (*(float *)&D_L01_001619A4);
+                    func_001F9BF0(&p, &q, &v);
+                    func_L00_001FF4B0(&p, &p, (*(float *)&D_L01_001619A0));
+                    func_001F9BD8(&v, &v, &p);
+                    a = func_L00_001FF860(q.f[0] - v.f[0], q.f[1] - v.f[1]);
+                    dist = func_001F9D48(&v, &q);
+                    b = -func_L00_001FF860(dist, q.f[2] - v.f[2]);
+                    c = func_L00_001FF860(q.f[0] - v.f[0], q.f[1] - v.f[1]);
+                    dist = func_001F9D48(&v, &q);
+                    d = -func_L00_001FF860(dist, q.f[2] - v.f[2]);
+                    func_L01_0030DC70(moby, &v, a, b, c, d);
+                    *(short *)(state + 0x4E) = func_001F9850((*(int *)&D_L01_00161990));
+                    *(int *)(state + 0x64) = *(int *)(state + 0x64) + 1;
+                }
+            }
+        }
+    } else {
+        *(int *)(state + 0x68) = 0;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_002E4BA8);
 INCLUDE_ASM("asm/overlays", func_L01_002E5298);
 INCLUDE_ASM("asm/overlays", func_L01_002EEDD8);

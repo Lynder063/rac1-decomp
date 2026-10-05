@@ -72,4 +72,30 @@ static __inline__ void qcopy(void *dst, void *src) {
     __asm__ __volatile__("lq $2,0x0(%1)\n\tsq $2,0x0(%0)" : : "r"(dst), "r"(src) : "$2", "memory");
 }
 
+/*
+ * The same copy without the "memory" clobber. Retail has both behaviours.
+ * Where a value read before a copy is read again after it, the hero's
+ * state-setting function (func_L02_0022BE40 and its level versions) reloads
+ * it, which is qcopy(); the hero's update function keeps it in its register
+ * across the copy (case 107 of func_L05_00256148 and func_L16_00227818),
+ * which is this one. Dropping the clobber from qcopy() itself leaves eleven
+ * state-setting functions 8 bytes short, so the two are separate. Use this
+ * one only where retail keeps a value live across the copy.
+ */
+static __inline__ void qcopy_nc(void *dst, void *src) {
+    __asm__ __volatile__("lq $2,0x0(%1)\n\tsq $2,0x0(%0)" : : "r"(dst), "r"(src) : "$2");
+}
+
+/*
+ * Clears one 16-byte quadword with `sq $0`, the other store retail's own
+ * source had as inline asm: this compiler's `sq` takes a register, so C
+ * zeroing a 128-bit value always comes out `por $2,$0,$0` + `sq $2`, while
+ * retail has `sq $0` in code that is otherwise the compiler's. No clobbers:
+ * with a "memory" clobber the compiler reloads the base address around it.
+ * Identified by Lombyte, the US decompilation (its include/qzero.h).
+ */
+static __inline__ void qzero(void *p) {
+    __asm__ __volatile__("sq $0,0x0(%0)" : : "r"(p));
+}
+
 #endif /* COMMON_H */

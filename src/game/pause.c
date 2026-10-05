@@ -213,7 +213,33 @@ extern int func_00205790(void);
 extern void func_0020BA00(char *out);
 extern void func_00217588(void);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00219C08);
+struct S {
+    u8 pad_0[0x140];
+    float f140, f144, f148;
+    u8 pad_14C[0x204];
+    float f350;
+    u8 pad_354[0x10];
+    float f364;
+    u8 pad_368[0x10];
+    float f378, f37C;
+};
+extern struct S D_00187040_19C08 __asm__("D_00187040");
+extern s32 D_001873A0;
+extern s32 D_001873B0;
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/rendering/fun_00218d10.c, FUN_00218d10. */
+void func_00219C08(void) {
+    D_00187040_19C08.f140 = 256.0f;
+    D_00187040_19C08.f148 = 64.0f;
+    D_00187040_19C08.f144 = 256.0f;
+    qzero(&D_00187040_19C08.f350);
+    qzero(&D_001873A0);
+    qzero(&D_001873B0);
+    D_00187040_19C08.f350 = 1.0f;
+    D_00187040_19C08.f364 = 1.0f;
+    D_00187040_19C08.f378 = 1.0f;
+    D_00187040_19C08.f37C = 1.0f;
+}
 
 extern void func_0012E528(int);
 extern void func_00216EF0(int);

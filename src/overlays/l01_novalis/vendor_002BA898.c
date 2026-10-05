@@ -1035,7 +1035,61 @@ void func_L01_002F7528(void) {
     DefaultVtbl_DeleteMoby();
     func_L01_002BA898(2, D_L01_001E3660);
 }
-INCLUDE_ASM("asm/overlays", func_L01_002F7558);
+typedef u32 u128_F7558 __attribute__((mode(TI), aligned(16)));
+typedef union {
+    u128_F7558 q;
+    f32 f[4];
+} Vec4_F7558;
+typedef struct {
+    Vec4_F7558 *pts;
+    u8 pad4[4];
+    Vec4_F7558 *out;
+    s32 count;
+    u8 pad10[0x50];
+} BoundGroup;
+extern short D_L01_00161C30;
+extern BoundGroup D_L01_001E3660_F7558[] __asm__("D_L01_001E3660");
+extern void func_001F9C30(void *, void *, float);
+extern f32 func_001F9CB8(void *);
+extern f32 func_001FA888(s32);
+extern void func_L01_002F7528(void);
+void func_001F49B0(void *fn, void *arg);
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l01/unclassified_002b96e0.c, FUN_L01_002f6180. */
+void func_L01_002F7558(void *arg) {
+    Vec4_F7558 c;
+    Vec4_F7558 d;
+    Vec4_F7558 *p;
+    s32 i;
+    s32 j;
+    s32 k;
+    f32 r;
+
+    if ((*(s32 *)&D_L01_00161C30) == 0) {
+        (*(s32 *)&D_L01_00161C30) = 1;
+        for (i = 0; i < 2; i++) {
+            qzero(&c);
+            p = (D_L01_001E3660_F7558 + i)->pts;
+            for (j = 0; j < (D_L01_001E3660_F7558 + i)->count; j++) {
+                func_001F9BD8(&c, &c, p);
+                p++;
+            }
+            func_001F9C30(&c, &c, 1.0f / func_001FA888((D_L01_001E3660_F7558 + i)->count));
+            c.f[3] = 0.0f;
+            p = (D_L01_001E3660_F7558 + i)->pts;
+            for (k = 0; k < (D_L01_001E3660_F7558 + i)->count; k++) {
+                func_001F9BF0(&d, &c, p);
+                r = func_001F9CB8(&d);
+                if (c.f[3] < r) {
+                    c.f[3] = r;
+                }
+                p++;
+            }
+            qcopy((D_L01_001E3660_F7558 + i)->out, &c);
+        }
+    }
+    func_001F49B0(func_L01_002F7528, arg);
+}
 typedef unsigned int u128_t __attribute__((mode(TI), aligned(16)));
 typedef struct { u128_t q; } Vec4;
 typedef struct {
