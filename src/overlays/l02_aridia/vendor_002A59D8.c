@@ -72,7 +72,29 @@ void func_L02_002D51D0(void *moby) {
     func_L02_002D5098(moby, 8, 9, *(int *)&D_L02_00161A88);
 }
 INCLUDE_ASM("asm/overlays", func_L02_002D5250);
-INCLUDE_ASM("asm/overlays", func_L02_002D6A90);
+extern int D_L02_001AC140[];
+extern int D_L02_00160058_m __asm__("D_L02_00160058") MACRO_ADDR;
+extern char D_L02_00160058;
+extern int func_002140B0(int);
+
+/* picks one of the listed mobys of type 0x29C with 0x20 below 0x7F, the first or a random later one */
+/* picks one of the listed mobys of type 0x29C with 0x20 below 0x7F, the first or a random later one */
+int func_L02_002D6A90(void *arg) {
+    int found = 0;
+    short *p;
+    if (((unsigned char *)arg)[0x21] == 0xFF) return 0;
+    p = (short *)D_L02_001AC140[((unsigned char *)arg)[0x21]];
+    do {
+        int off = (*(unsigned short *)p & 0x7FFF) << 8;
+        char *o = (char *)(off + D_L02_00160058_m);
+        if (*(short *)(o + 0xA6) == 0x29C && ((unsigned char *)o)[0x20] < 0x7F) {
+            if (found == 0 || (func_002140B0(0xFF) & 1)) {
+                found = *(int *)&D_L02_00160058 + off;
+            }
+        }
+    } while (*p++ >= 0);
+    return found;
+}
 extern int D_L02_001AC140[];
 extern int D_L02_00160058_m __asm__("D_L02_00160058") MACRO_ADDR;
 extern float func_002140F8(float, float);
