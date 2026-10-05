@@ -1,34 +1,31 @@
 /* NON_MATCHING func_L06_0021D6B8 -- src/overlays/shared/help_0021D6B8.c
- * Best so far: SIZE ours 148 / retail 156, checked 2026-10-03.
+ * Best so far: BYTES 120/156 (23.1% of the bytes match), checked 2026-10-05.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
- *   Returns 0 / 0x54 / table[f(0)].v (0x4C-byte entries, field 0x24) from game-state bytes at D_0013E633+0xE1D+off
- *   Best p4.c: same logic, 148 vs 156 bytes. Retail keeps lui(hi) in a copy ($6) and recomputes the lo for the lat
- *   Tried: local base pointer, separate second pointer, switch for the 1/3 test, direct addend expressions (folds 
+ *   copies the %hi half (`daddu $a2,$v0,$zero`) and re-forms it in the second beq's delay slot
+ *   (`addiu $a1,$a2,%lo`), while our compiler keeps one copy in $a1 for both blocks (everything else,
+ *   instruction for instruction, already matches, so only the alloc/reg number differs). p2 (longhand
+ *   first access) and p3 (two separate `if`s, which also un-merges the two return-0 blocks and drops
+ *   to 144) are worse. Unblocking it needs the source shape that stops gcc's reload CSE from sharing
+ *   the one base address across the branch -- most likely the `||` condition spelled so the first
+ *   block's copy is dead before the branch, as in the matched func_L00_00205618 whose ternary
+ *   condition leaves the %hi half needing its own register.
  */
-#include "common.h"
-extern unsigned char D_0013E633[] NOT_SDA;
-typedef struct { char pad[0x24]; int v; char pad2[0x24]; } Entry;
-extern char D_L06_0017A340[];
+extern unsigned char D_0013F450[] NOT_SDA;
+typedef struct { char pad[0x24]; int v; char pad2[0x24]; } Rec;
+extern Rec D_L06_0017A340[];
 extern int func_L00_0020DB30(int);
 
-/* Returns a value for the current game state, or zero when a condition fails. */
-int func_L06_0021D6B8(int flag) {
-    unsigned char *g = D_0013E633 + 0xE1D;
-    unsigned char *h;
-    if (g[0x20A4] == 1 || g[0x20A4] == 3)
-        return 0;
-    h = D_0013E633 + 0xE1D;
-    if (*(int *)(h + 0x22A8) == 1)
-        return 0x54;
-    if (flag == 0)
-        return 0;
-    if (h[0x20A8] == 0)
-        return 0;
-    if (h[0x20AA] == 0)
-        return 0;
-    if (*(short *)(h + 0x22C8) != 0)
-        return 0;
-    return ((Entry *)D_L06_0017A340)[func_L00_0020DB30(0)].v;
+// Looks up a value in a 0x4C-byte record table, gated on the game state flags.
+int func_L06_0021D6B8(int a) {
+    char *g = (char *)D_0013F450;
+    int c = *(unsigned char *)(g + 0x20A4);
+    if (c == 1 || c == 3) return 0;
+    if (*(int *)(g + 0x22A8) == 1) return 0x54;
+    if (a == 0) return 0;
+    if (*(unsigned char *)(g + 0x20A8) == 0) return 0;
+    if (*(unsigned char *)(g + 0x20AA) == 0) return 0;
+    if (*(short *)(g + 0x22C8) != 0) return 0;
+    return D_L06_0017A340[func_L00_0020DB30(0)].v;
 }

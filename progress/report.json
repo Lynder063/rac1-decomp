@@ -1,6 +1,6 @@
 {
  "measures": {
-  "fuzzy_match_percent": 24.925902702213513,
+  "fuzzy_match_percent": 24.93786123063728,
   "total_code": "3712808",
   "matched_code": "834120",
   "matched_code_percent": 22.466014940713336,
@@ -21538,7 +21538,7 @@
   {
    "name": "Shared level code/help_0021D6B8",
    "measures": {
-    "fuzzy_match_percent": 31.270939257592797,
+    "fuzzy_match_percent": 31.777193475815523,
     "total_code": "7112",
     "matched_code": "1296",
     "matched_code_percent": 18.222722159730033,
@@ -21554,7 +21554,7 @@
     {
      "name": "func_L06_0021D6B8",
      "size": "156",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 23.08,
      "address": "0",
      "metadata": {
       "virtual_address": "2217656"
@@ -22915,7 +22915,7 @@
   {
    "name": "Shared level code/hud_00235960",
    "measures": {
-    "fuzzy_match_percent": 45.2510024691358,
+    "fuzzy_match_percent": 45.70779259259259,
     "total_code": "24300",
     "matched_code": "9444",
     "matched_code_percent": 38.864197530864196,
@@ -22949,7 +22949,7 @@
     {
      "name": "func_L00_00235FF8",
      "size": "148",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 75.0,
      "address": "1688",
      "metadata": {
       "virtual_address": "2318328"
@@ -33389,7 +33389,7 @@
   {
    "name": "Shared level code/vendor_002B0068",
    "measures": {
-    "fuzzy_match_percent": 25.085910652920962,
+    "fuzzy_match_percent": 30.927714776632303,
     "total_code": "2328",
     "matched_code": "584",
     "matched_code_percent": 25.085910652920962,
@@ -33441,7 +33441,7 @@
     {
      "name": "func_L04_002CF460",
      "size": "148",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 91.89,
      "address": "127992",
      "metadata": {
       "virtual_address": "2946144"
@@ -33828,7 +33828,7 @@
   {
    "name": "Shared level code/vendor_002B33E8",
    "measures": {
-    "fuzzy_match_percent": 32.351351351351354,
+    "fuzzy_match_percent": 32.439194594594596,
     "total_code": "29600",
     "matched_code": "9576",
     "matched_code_percent": 32.351351351351354,
@@ -34069,7 +34069,7 @@
     {
      "name": "func_L00_002B9AA8",
      "size": "48",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 54.17,
      "address": "26304",
      "metadata": {
       "virtual_address": "2857640"
@@ -52119,7 +52119,7 @@
   {
    "name": "Level 18: Veldin (return)",
    "measures": {
-    "fuzzy_match_percent": 34.976163721843356,
+    "fuzzy_match_percent": 35.06334185782186,
     "total_code": "154848",
     "matched_code": "30688",
     "matched_code_percent": 19.818144244678653,
@@ -52288,7 +52288,7 @@
     {
      "name": "func_L18_002D74F8",
      "size": "136",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 99.26,
      "address": "799680",
      "metadata": {
       "virtual_address": "2979064"
@@ -53263,7 +53263,7 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 19.69647789971876,
+    "fuzzy_match_percent": 19.710151519444373,
     "total_code": "3247108",
     "matched_code": "548424",
     "matched_code_percent": 16.88961377324068,
@@ -53308,7 +53308,7 @@
    "id": "common",
    "name": "Shared level code",
    "measures": {
-    "fuzzy_match_percent": 28.55747905262913,
+    "fuzzy_match_percent": 28.583215883687537,
     "total_code": "1200628",
     "matched_code": "317244",
     "matched_code_percent": 26.423171873386263,
@@ -53323,7 +53323,7 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 14.497909581329898,
+    "fuzzy_match_percent": 14.504505961455774,
     "total_code": "2046480",
     "matched_code": "231180",
     "matched_code_percent": 11.296470036355107,
@@ -53608,7 +53608,7 @@
    "id": "level_18",
    "name": "Level 18: Veldin (return)",
    "measures": {
-    "fuzzy_match_percent": 34.976163721843356,
+    "fuzzy_match_percent": 35.06334185782186,
     "total_code": "154848",
     "matched_code": "30688",
     "matched_code_percent": 19.818144244678653,
