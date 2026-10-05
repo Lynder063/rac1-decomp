@@ -172,9 +172,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_001EB380`](shared/func_L00_001EB380.c) | shared | 104 | SIZE ours 108 / retail 104 | - |
 | [`func_L00_001EB430`](shared/func_L00_001EB430.c) | shared | 8 | SIZE ours 24 / retail 8 | - |
 | [`func_L00_001EB448`](shared/func_L00_001EB448.c) | shared | 88 | SIZE ours 92 / retail 88 | - |
-| [`func_L00_001EB6A8`](shared/func_L00_001EB6A8.c) | shared | 280 | SIZE ours 284 / retail 280 | - |
 | [`func_L00_001EB890`](shared/func_L00_001EB890.c) | shared | 764 | SIZE ours 768 / retail 764 | - |
-| [`func_L00_001EC090`](shared/func_L00_001EC090.c) | shared | 216 | SIZE ours 220 / retail 216 | - |
 | [`func_L00_001EC220`](shared/func_L00_001EC220.c) | shared | 592 | SIZE ours 604 / retail 592 | - |
 | [`func_L00_001EE530`](shared/func_L00_001EE530.c) | shared | 352 | SIZE ours 356 / retail 352 | - |
 | [`func_L00_001F3A78`](shared/func_L00_001F3A78.c) | shared | 116 | SIZE ours 124 / retail 116 | - |
@@ -219,7 +217,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_00262BC0`](shared/func_L00_00262BC0.c) | shared | 548 | SIZE ours 552 / retail 548 | - |
 | [`func_L00_002633D8`](shared/func_L00_002633D8.c) | shared | 288 | SIZE ours 284 / retail 288 | - |
 | [`func_L00_002657B8`](shared/func_L00_002657B8.c) | shared | 260 | SIZE ours 264 / retail 260 | - |
-| [`func_L00_00267CC8`](shared/func_L00_00267CC8.c) | shared | 64 | SIZE ours 68 / retail 64 | - |
 | [`func_L00_002697A0`](shared/func_L00_002697A0.c) | shared | 1096 | SIZE ours 1092 / retail 1096 | - |
 | [`func_L00_00269BE8`](shared/func_L00_00269BE8.c) | shared | 452 | SIZE ours 460 / retail 452 | - |
 | [`func_L00_0026C0D0`](shared/func_L00_0026C0D0.c) | shared | 720 | SIZE ours 716 / retail 720 | - |

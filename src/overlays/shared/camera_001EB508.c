@@ -8,7 +8,30 @@ INCLUDE_ASM("asm/overlays", func_L00_001EB578);
 INCLUDE_ASM("asm/overlays", func_L00_001EB598);
 INCLUDE_ASM("asm/overlays", func_L00_001EB5A8);
 INCLUDE_ASM("asm/overlays", func_L00_001EB5B0);
-INCLUDE_ASM("asm/overlays", func_L00_001EB6A8);
+extern float func_001FA790_f(float, float) __asm__("func_001FA790");
+extern float func_001F9B88(float);
+extern float func_001FA748(float, float);
+
+/* steers *p toward a target with damping, clamps it, then calls FA748 */
+/* Joined to the fragment that follows it (config/overlays/joined.tsv): the catalogue splits the delay slot of the final jr off. */
+void func_L00_001EB6A8(float *p, float a, float b, float c, float d, float lim) {
+    float r = func_001FA790_f(b, a);
+    float v;
+    *p = *p + (c * r - d * *p);
+    if (lim != 0.0f) {
+        if (lim < *p) {
+            *p = lim;
+        } else if (*p < -lim) {
+            *p = -lim;
+        }
+    }
+    if (func_001F9B88(r) < *p) {
+        *p = func_001F9B88(r);
+    } else if (*p < -func_001F9B88(r)) {
+        *p = -func_001F9B88(r);
+    }
+    func_001FA748(a, *p);
+}
 typedef struct { char pad[0x254]; int p; char pad2[0x18]; short s; char pad3[1]; char c; char pad4[0x14]; float f0; char pad5[8]; float f1; } S;
 extern S D_L00_00166D80;
 
@@ -20,7 +43,28 @@ void func_L00_001EB7C8(void) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_001EB890);
 INCLUDE_ASM("asm/overlays", func_L00_001EBDA0);
-INCLUDE_ASM("asm/overlays", func_L00_001EC090);
+extern char D_0013E633[];
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001EC8D8(float *out, void *p0, void *p1, void *dir0, void *dir1, void *axis);
+extern char D_L00_00166FF0[];
+
+// Samples three axes of the active camera, stores two and derives the look-at vector from them.
+/* Joined to the fragment that follows it (config/overlays/joined.tsv): the catalogue splits the delay slot of the final jr off. */
+void func_L00_001EC090(void) {
+    float a[4];
+    float b[4];
+    float c[4];
+    char *g = D_0013E633 + 0xE1D;
+    char *d = D_L00_00166FF0;
+
+    func_L00_001FF4B0(a, *(char **)(g + 0x2080) + 0xC0, 1.0f);
+    func_L00_001FF4B0(b, *(char **)(g + 0x2080) + 0xD0, 1.0f);
+    func_L00_001FF4B0(c, *(char **)(g + 0x2080) + 0xE0, 1.0f);
+    qcopy(d + 0x90, a);
+    qcopy(d + 0xA0, c);
+    func_001EC8D8((float *)(d + 0x70), d + 0xC0, g + 0x80, a, b, c);
+    qcopy(d + 0xB0, d + 0xD0);
+}
 INCLUDE_ASM("asm/overlays", func_L00_001EC220);
 INCLUDE_ASM("asm/overlays", func_L00_001ED2C0);
 INCLUDE_ASM("asm/overlays", func_L00_001ED380);
