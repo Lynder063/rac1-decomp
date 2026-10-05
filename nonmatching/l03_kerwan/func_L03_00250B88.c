@@ -1,9 +1,7 @@
 /* NON_MATCHING func_L03_00250B88 -- src/overlays/l03_kerwan/mobyutil_00250B88.c
- * Best so far: SIZE ours 316 / retail 312, checked 2026-10-03.
+ * Best so far: BYTES 14/316 (95.6% of the bytes match), checked 2026-10-05.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
- * What the last attempts found:
- *   Builds a 4x4 cross-product matrix from vec a, Rodrigues-style rotation via func_L00_001FFCF8/FFDD0, result int
  */
 typedef int u128 __attribute__((mode(TI)));
 extern void func_001FA540(void *, void *, void *);
@@ -26,7 +24,7 @@ void func_L03_00250B88(float *pa, float *pb, float ang) {
     float *bp = b;
     *(u128 *)a = *(u128 *)pa;
     *(u128 *)bp = *(u128 *)pb;
-    m[1] = a[2]; m[4] = -a[2]; m[9] = -a[0]; m[2] = -a[1]; m[8] = a[1]; m[6] = a[0]; m[0] = 0.0f;
+    m[0] = 0.0f; m[1] = a[2]; m[4] = -a[2]; m[2] = -a[1]; m[8] = a[1]; m[9] = -a[0]; m[6] = a[0];
     m[12] = 0.0f; m[5] = 0.0f; m[13] = 0.0f; m[10] = 0.0f; m[14] = 0.0f; m[3] = 0.0f; m[7] = 0.0f; m[11] = 0.0f; m[15] = 0.0f;
     func_001FA540(t60, m, m);
     func_L00_001FFCF8(tE0, t60, 1.0f - func_001F9F90(ang));

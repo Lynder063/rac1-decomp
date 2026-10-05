@@ -92,6 +92,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L16_002D0C18`](l16_kalebo3/func_L16_002D0C18.c) | l16_kalebo3 | 380 | BYTES 16/380 | 95.8% |
 | [`func_L00_002DCDA8`](shared/func_L00_002DCDA8.c) | shared | 548 | BYTES 24/548 | 95.6% |
 | [`func_L00_002353B8`](shared/func_L00_002353B8.c) | shared | 588 | BYTES 26/588 | 95.6% |
+| [`func_L03_00250B88`](l03_kerwan/func_L03_00250B88.c) | l03_kerwan | 312 | BYTES 14/316 | 95.6% |
 | [`func_L14_002B4128`](shared/func_L14_002B4128.c) | shared | 132 | BYTES 6/132 | 95.5% |
 | [`func_L16_002C7218`](l16_kalebo3/func_L16_002C7218.c) | l16_kalebo3 | 948 | BYTES 44/948 (cannot land as written) | 95.4% |
 | [`func_L07_0031C7C0`](l07_umbris/func_L07_0031C7C0.c) | l07_umbris | 508 | BYTES 24/508 | 95.3% |
@@ -288,7 +289,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L02_002E33F0`](l02_aridia/func_L02_002E33F0.c) | l02_aridia | 612 | SIZE ours 608 / retail 612 | - |
 | [`func_L02_002EE0A0`](shared/func_L02_002EE0A0.c) | shared | 228 | COMPILE failed | - |
 | [`func_L03_00205E28`](l03_kerwan/func_L03_00205E28.c) | l03_kerwan | 512 | SIZE ours 508 / retail 512 | - |
-| [`func_L03_00250B88`](l03_kerwan/func_L03_00250B88.c) | l03_kerwan | 312 | SIZE ours 316 / retail 312 | - |
 | [`func_L03_002965A0`](l03_kerwan/func_L03_002965A0.c) | l03_kerwan | 264 | SIZE ours 268 / retail 264 | - |
 | [`func_L03_002C8160`](l03_kerwan/func_L03_002C8160.c) | l03_kerwan | 128 | SIZE ours 136 / retail 128 | - |
 | [`func_L03_002CB068`](l03_kerwan/func_L03_002CB068.c) | l03_kerwan | 536 | SIZE ours 532 / retail 536 | - |
