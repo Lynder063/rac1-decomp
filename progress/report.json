@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 25.575752616348584,
+  "fuzzy_match_percent": 25.590727804939,
   "total_code": "3712808",
-  "matched_code": "849608",
-  "matched_code_percent": 22.88316551785064,
+  "matched_code": "850164",
+  "matched_code_percent": 22.898140706441055,
   "total_functions": 5109,
-  "matched_functions": 3005,
-  "matched_functions_percent": 58.81777255823057,
+  "matched_functions": 3006,
+  "matched_functions_percent": 58.83734586024662,
   "complete_code": "97220",
   "complete_code_percent": 2.6185032999282485,
   "total_units": 278,
@@ -46296,13 +46296,13 @@
   {
    "name": "Level 11: Pokitaru",
    "measures": {
-    "fuzzy_match_percent": 11.742882919129709,
+    "fuzzy_match_percent": 12.173076970691097,
     "total_code": "129244",
-    "matched_code": "12624",
-    "matched_code_percent": 9.767571415307481,
+    "matched_code": "13180",
+    "matched_code_percent": 10.197765466868868,
     "total_functions": 100,
-    "matched_functions": 42,
-    "matched_functions_percent": 42.0,
+    "matched_functions": 43,
+    "matched_functions_percent": 43.0,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -47122,7 +47122,7 @@
     {
      "name": "func_L11_0031C2D8",
      "size": "556",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "914752",
      "metadata": {
       "virtual_address": "3261144"
@@ -53263,13 +53263,13 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 20.41476874806751,
+    "fuzzy_match_percent": 20.431891677147785,
     "total_code": "3247108",
-    "matched_code": "563108",
-    "matched_code_percent": 17.341831562116198,
+    "matched_code": "563664",
+    "matched_code_percent": 17.358954491196474,
     "total_functions": 3429,
-    "matched_functions": 1653,
-    "matched_functions_percent": 48.20647419072616,
+    "matched_functions": 1654,
+    "matched_functions_percent": 48.23563721201516,
     "complete_code": "3876",
     "complete_code_percent": 0.1193677574013553
    }
@@ -53323,13 +53323,13 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 15.123381298620076,
+    "fuzzy_match_percent": 15.150549900316648,
     "total_code": "2046480",
-    "matched_code": "239536",
-    "matched_code_percent": 11.704780892068332,
+    "matched_code": "240092",
+    "matched_code_percent": 11.731949493764903,
     "total_functions": 1449,
-    "matched_functions": 643,
-    "matched_functions_percent": 44.375431331953074,
+    "matched_functions": 644,
+    "matched_functions_percent": 44.44444444444444,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53503,13 +53503,13 @@
    "id": "level_11",
    "name": "Level 11: Pokitaru",
    "measures": {
-    "fuzzy_match_percent": 11.742882919129709,
+    "fuzzy_match_percent": 12.173076970691097,
     "total_code": "129244",
-    "matched_code": "12624",
-    "matched_code_percent": 9.767571415307481,
+    "matched_code": "13180",
+    "matched_code_percent": 10.197765466868868,
     "total_functions": 100,
-    "matched_functions": 42,
-    "matched_functions_percent": 42.0,
+    "matched_functions": 43,
+    "matched_functions_percent": 43.0,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }

@@ -678,7 +678,40 @@ char *func_L11_0031C210(void *position, void *vector, void *owner, float scale) 
     }
     return moby;
 }
-INCLUDE_ASM("asm/overlays", func_L11_0031C2D8);
+extern short D_L11_001624B0;
+extern short D_L11_001624B4;
+extern int func_L00_00258BC8(int, int);
+extern void func_L00_002703E8(void *, void *, int, int);
+extern char *func_L00_00272770_p(void *, void *, void *, float, float) __asm__("func_L00_00272770");
+extern float func_001F9878(float);
+
+/* Bursts n1 sparks and n2 smoke puffs at the moby, the puffs sitting on the ground height. */
+void func_L11_0031C2D8(char *m, float *ground, int n1, int n2) {
+    float v[4];
+    int i;
+    for (i = 0; i < n1; i++) {
+        float a = func_00214158();
+        float r = func_002140F8(D_0015EE6C * 0.0f, D_0015EE6C * 6.0f);
+        int k;
+        v[0] = func_001F9F90(a) * r;
+        v[1] = func_001F9FA8(a) * r;
+        v[2] = func_002140F8(D_0015EE6C * 3.0f, D_0015EE6C * 6.5f);
+        k = func_L00_00258BC8(0x5A, 0x78);
+        func_L00_002703E8(m + 0x10, v, func_002140B0(2), k);
+    }
+    for (i = 0; i < n2; i++) {
+        char *e;
+        func_L00_00258DB0(v, 1.0f, 1.0f);
+        func_001F9BD8(v, v, m + 0x10);
+        v[2] = *ground + 0.05f;
+        e = func_L00_00272770_p(v, D_L11_0015F660, ground, func_002140F8(3.0f, 6.0f), i == 0 ? 1.0f : -1.0f);
+        if (e != 0) {
+            e[9] = func_001FA898_r(4.0f) + 0x40;
+            *(short *)(e + 0xA) = func_001FA898_r(func_001F9878(func_002140F8(30.0f, 90.0f)));
+            *(int *)(e + 4) = func_001FA8A8(*(int *)&D_L11_001624B0, *(int *)&D_L11_001624B4, func_002140F8(0.0f, 1.0f));
+        }
+    }
+}
 extern float func_001F9878(float);
 extern short D_L11_001624B8;
 extern short D_L11_001624BC;
