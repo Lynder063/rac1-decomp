@@ -65,7 +65,49 @@ INCLUDE_ASM("asm/overlays", func_L10_002EAA08);
 INCLUDE_ASM("asm/overlays", func_L10_002EAD50);
 INCLUDE_ASM("asm/overlays", func_L10_002EB5B0);
 INCLUDE_ASM("asm/overlays", func_L10_002EB8A8);
-INCLUDE_ASM("asm/overlays", func_L10_002EBB70);
+extern char D_L10_001672C0[];
+extern float D_0015EE6C MACRO_ADDR;
+extern short D_L10_0016203C, D_L10_00162040, D_L10_00162044, D_L10_00162048, D_L10_0016204C;
+extern short D_L10_00162050, D_L10_00162054, D_L10_00162058, D_L10_0016205C, D_L10_00162060;
+extern short D_L10_00162064, D_L10_00162068, D_L10_0016206C, D_L10_00162070, D_L10_00162074;
+extern short D_L10_00162078, D_L10_0016207C;
+extern int func_L00_00200290(char *, float);
+extern int func_002140B0(int);
+extern int func_001F9938(void *);
+extern void func_001F9BC0(void *);
+extern void func_L00_00258DB0(float *, float, float);
+extern float func_002140F8(float, float);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern int func_001FA8A8(int, int, float);
+extern char *func_00219780(void *, void *, void *, int, int, int, int, int, int);
+
+/* Emits a smoke particle from pos on its timer, when the camera is near and the spot is visible. */
+void func_L10_002EBB70(void *pos, short *timer) {
+    float p[4];
+    float vel[4];
+    float acc[4];
+    float s;
+    int a, b, c, c1;
+    if (32.0f < func_001F9D10(D_L10_001672C0, pos)) return;
+    qcopy(p, pos);
+    p[2] += 6.0f;
+    p[3] = 5.0f;
+    if (func_L00_00200290((char *)p, 32.0f) == -1 && func_002140B0(3) != 0) return;
+    if (!func_001F9938(timer)) return;
+    func_001F9BC0(vel);
+    vel[2] = *(float *)&D_L10_0016203C * D_0015EE6C;
+    func_L00_00258DB0(acc, 0.0f, *(float *)&D_L10_00162044 * D_0015EE6C);
+    acc[2] += *(float *)&D_L10_00162040 * D_0015EE6C;
+    vel[3] = func_002140F8(*(float *)&D_L10_00162048, *(float *)&D_L10_0016204C);
+    acc[3] = func_002140F8(*(float *)&D_L10_00162050, *(float *)&D_L10_00162054);
+    s = func_002140F8(1.0f - *(float *)&D_L10_00162064, *(float *)&D_L10_00162064 + 1.0f);
+    a = func_001FA898_r((float)*(int *)&D_L10_00162058 * s);
+    b = func_001FA898_r((float)*(int *)&D_L10_0016205C * s);
+    c = func_001FA898_r((float)*(int *)&D_L10_00162060 * s);
+    c1 = func_001FA8A8(*(int *)&D_L10_00162068, *(int *)&D_L10_0016206C, func_002140F8(0.0f, 1.0f));
+    func_00219780(pos, vel, acc, c1, func_001FA8A8(*(int *)&D_L10_00162070, *(int *)&D_L10_00162074, func_002140F8(0.0f, 1.0f)), a, b, c, -1);
+    *timer = func_001FA898_r(func_002140F8((float)*(int *)&D_L10_00162078, (float)*(int *)&D_L10_0016207C));
+}
 INCLUDE_ASM("asm/overlays", func_L10_002EBDC8);
 struct L10Data {
     char pad0[0x30];
