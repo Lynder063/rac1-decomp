@@ -18,7 +18,24 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023D2E8); /* viBufEndPut(ViBuf *, int
 INCLUDE_ASM("asm/nonmatchings/text", func_0023D340); /* viBufAddDMA(ViBuf *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023D540); /* viBufStopDMA(ViBuf *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023D650); /* viBufRestartDMA(ViBuf *) */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023D988); /* viBufDelete(ViBuf *) */
+typedef struct ViBuf {
+    char pad0[0x40];
+    int sema;       /* 0x40 */
+} ViBuf;
+
+extern void func_0023CF80(unsigned int);
+extern void func_00118C80(int);     /* DeleteSema */
+
+/* viBufDelete(ViBuf *) -- stops DMA channel 4 (setD4_CHCR(5)), zeroes its MADR/QWC/TADR
+ * and deletes the buffer's semaphore. Returns 1. */
+int func_0023D988(ViBuf *vb) {
+    func_0023CF80(5);
+    *(volatile unsigned int *)0x1000B420 = 0;
+    *(volatile unsigned int *)0x1000B410 = 0;
+    *(volatile unsigned int *)0x1000B430 = 0;
+    func_00118C80(vb->sema);
+    return 1;
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023D9E0); /* viBufCount(ViBuf *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023DA30); /* viBufFlush(ViBuf *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023DA88); /* viBufModifyPts(ViBuf *, TimeStamp *) */

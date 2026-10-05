@@ -10,9 +10,16 @@
 INCLUDE_ASM("asm/nonmatchings/text", func_0023BFA0); /* audioDecCreate(_AudioDec *, unsigned char *, int, sceMpegStrType) */
 /* AudioDec: only the fields these functions touch are known. */
 typedef struct AudioDec {
-    int pending;        /* non-zero while data waits for the SPU */
-    char pad4[0x4C];
+    int pending;        /* non-zero while data waits for the SPU; audioDecStart sets it to 2 */
+    char pad4[0x10];
+    int f14;            /* 0x14 */
+    int f18;            /* 0x18 */
+    char pad1C[0x2C];
+    int f48;            /* 0x48 */
+    int f4C;            /* 0x4C, rounded down to a multiple of 0x400 for the sound call */
     int bytes;          /* 0x50 */
+    char pad54[8];
+    int f5C;            /* 0x5C */
 } AudioDec;
 
 extern int func_0012F220(void);
@@ -23,7 +30,14 @@ int func_0023C060(AudioDec *dec) {
     return 1;
 }
 LINKER_REMNANT("asm/remnants/text", func_0023C080);
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C088); /* audioDecStart */
+extern void func_0012F248(int, int, int, int, int);   /* snd_StartMovieSound */
+
+/* audioDecStart -- starts the movie sound with the decoder's parameters (size rounded down to
+ * 0x400) and marks the decoder as started. */
+void func_0023C088(AudioDec *dec) {
+    func_0012F248(dec->f48, dec->f4C / 0x400 * 0x400, dec->f5C, dec->f14, dec->f18);
+    dec->pending = 2;
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C0E0); /* audioDecReset(_AudioDec *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C128); /* audioDecBeginPut(_AudioDec *, unsigned char **, int *, unsigned char **, int *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C1F8); /* audioDecEndPut(_AudioDec *, int) */

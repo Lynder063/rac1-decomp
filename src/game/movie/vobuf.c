@@ -9,8 +9,11 @@
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E560);
 typedef struct VoBuf {
-    char pad0[0xC];
-    int count;
+    char pad0[4];
+    char *data;     /* ring of 0x138C0-byte entries */
+    int wr;         /* 0x8 */
+    int count;      /* 0xC */
+    int cap;        /* 0x10 */
 } VoBuf;
 
 /* voBufDelete(VoBuf *) -- nothing to free. */

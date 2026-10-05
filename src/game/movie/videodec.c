@@ -78,6 +78,32 @@ int func_0023E478(void *mpeg, void *cbdata, void *arg) {
     func_0023D340(D_0016130C + 0xD9090);
     return 1;
 }
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E4B0);
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E4E0);
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E510);
+extern int func_0023D540(char *);   /* viBufStopDMA */
+
+/* No recovered name (names.tsv only has the candidate mpeg_stop_dma). viBufStopDMA on the
+ * ViBuf at offset 0xD9090 of the movie state. Returns 1. */
+int func_0023E4B0(void) {
+    func_0023D540(D_0016130C + 0xD9090);
+    return 1;
+}
+extern int func_0023D650(char *);   /* viBufRestartDMA */
+
+/* mpegRestartVideoDMA (descriptive name in names.tsv) -- viBufRestartDMA on the ViBuf at
+ * offset 0xD9090 of the movie state. Returns 1. */
+int func_0023E4E0(void) {
+    func_0023D650(D_0016130C + 0xD9090);
+    return 1;
+}
+typedef struct { long first, second; long pad[2]; } TimeStamp;   /* 0x20 bytes: retail reserves that much */
+extern void func_0023DCF0(char *, TimeStamp *);   /* viBufGetTs */
+
+/* No recovered name (names.tsv only has the candidate get_mpeg_timestamp). Reads the
+ * timestamp of the ViBuf at offset 0xD9090 of the movie state with viBufGetTs and stores it
+ * at out+8. Returns 1. */
+int func_0023E510(int unused, char *out) {
+    TimeStamp ts;
+    func_0023DCF0(D_0016130C + 0xD9090, &ts);
+    *(long *)(out + 8) = ts.first;
+    *(long *)(out + 0x10) = ts.second;
+    return 1;
+}
