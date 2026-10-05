@@ -18,6 +18,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L13_002F4C10`](l13_gemlik/func_L13_002F4C10.c) | l13_gemlik | 472 | BYTES 4/472 | 99.2% |
 | [`func_L04_002E4458`](l04_eudora/func_L04_002E4458.c) | l04_eudora | 552 | BYTES 5/552 | 99.1% |
 | [`func_L06_002289F8`](l06_blarg/func_L06_002289F8.c) | l06_blarg | 616 | BYTES 6/616 | 99.0% |
+| [`func_L06_00301848`](l06_blarg/func_L06_00301848.c) | l06_blarg | 408 | BYTES 4/408 | 99.0% |
 | [`func_L03_002ECBA8`](l03_kerwan/func_L03_002ECBA8.c) | l03_kerwan | 404 | BYTES 4/404 | 99.0% |
 | [`func_L15_002EC8B0`](l15_quartu/func_L15_002EC8B0.c) | l15_quartu | 500 | BYTES 5/500 | 99.0% |
 | [`func_L13_002EE8E0`](l13_gemlik/func_L13_002EE8E0.c) | l13_gemlik | 588 | BYTES 6/588 | 99.0% |
