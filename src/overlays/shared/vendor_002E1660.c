@@ -272,7 +272,36 @@ int func_L00_002E3640(int id, void *src, void *v) {
     return 0;
 }
 INCLUDE_ASM("asm/overlays", func_L00_002E3700);
-INCLUDE_ASM("asm/overlays", func_L00_002E3FA0);
+typedef struct { char b[0x140]; } Pane_2e3fa0;
+extern float D_L00_00161D48_f[] __asm__("D_L00_00161D48") MACRO_ADDR;
+extern float D_0015EE60 MACRO_ADDR;
+extern Pane_2e3fa0 D_L00_001E7190[];
+extern void func_00234C98(int, long);
+extern void func_L00_002E4838(int, int);
+extern void func_L00_002E4138(int, int, void *, int, int, int);
+
+/* Scrolls and draws the two panes of each active slot (3 slots). */
+void func_L00_002E3FA0(char *m) {
+    int *d = *(int **)(m + 0x78);
+    int i;
+    func_00234C98(0x47, 0x51001);
+    for (i = 0; i < 3; i++) {
+        float f;
+        int a, b;
+        int k, k1;
+        if (D_L00_00161D58[i] == 0 || D_L00_00161CC8[i] < 2) continue;
+        k = i << 1;
+        k1 = k + 1;
+        f = D_L00_00161D48_f[i] - D_0015EE60 * 0.2f;
+        D_L00_00161D48_f[i] = f;
+        if (f <= -8.0f) D_L00_00161D48_f[i] = f + 8.0f;
+        func_L00_002E4838(D_L00_00161D58[i], i);
+        a = d[1] + 0x28;
+        b = d[0] + 0x28;
+        func_L00_002E4138(a, b, &D_L00_001E7190[k], 0x80, 0x40, i);
+        func_L00_002E4138(a, b, &D_L00_001E7190[k1], 0x30, 0x10, i);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E4138);
 typedef struct {
     f32 v[4][4];
