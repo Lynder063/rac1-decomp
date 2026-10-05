@@ -167,6 +167,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L05_00317B68`](l05_rilgar/func_L05_00317B68.c) | l05_rilgar | 368 | BYTES 49/368 | 86.7% |
 | [`func_L05_0031A718`](l05_rilgar/func_L05_0031A718.c) | l05_rilgar | 416 | BYTES 56/416 | 86.5% |
 | [`func_L07_00314730`](l07_umbris/func_L07_00314730.c) | l07_umbris | 208 | BYTES 28/208 | 86.5% |
+| [`func_L03_002C7DE8`](l03_kerwan/func_L03_002C7DE8.c) | l03_kerwan | 532 | BYTES 74/532 | 86.1% |
 | [`func_L04_002CF440`](l04_eudora/func_L04_002CF440.c) | l04_eudora | 28 | BYTES 4/28 | 85.7% |
 | [`func_L13_0030B940`](l13_gemlik/func_L13_0030B940.c) | l13_gemlik | 580 | BYTES 83/580 | 85.7% |
 | [`func_L00_002E2B28`](l00_veldin1/func_L00_002E2B28.c) | l00_veldin1 | 1068 | BYTES 158/1068 | 85.2% |
