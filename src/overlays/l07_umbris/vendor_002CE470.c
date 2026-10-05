@@ -544,7 +544,67 @@ char *func_L07_0030F750(char *pos, char *vec, int arg) {
 INCLUDE_ASM("asm/overlays", func_L07_0030F838);
 INCLUDE_ASM("asm/overlays", func_L07_0030FB00);
 INCLUDE_ASM("asm/overlays", func_L07_0030FC38);
-INCLUDE_ASM("asm/overlays", func_L07_0030FD78);
+extern char *func_L00_0025B478(void *, int, int);
+extern int func_L00_0025B4D0(void *, void *, void *, int, int *, float *, int, int);
+extern void func_L07_0030FC38(void *, void *, void *);
+extern void func_L07_0030FB00(void *, void *, void *);
+extern void func_L00_002584A8(void *, int, int);
+extern void func_L00_0025E4B0(void *, short *);
+
+/* Hit handler: reacts to the hit type, then takes damage and dies (state 0xE) when health runs out. */
+void func_L07_0030FD78(char *m, char *x, float *hp) {
+    char *info;
+    int hit;
+    int r;
+    if (((unsigned char *)m)[0x20] == 0xE) return;
+    info = func_L00_0025B478(m, 0x330000, 0);
+    r = func_L00_0025B4D0(m, info, hp, 0, &hit, 0, 0, 4);
+    if (((unsigned char *)m)[0xBC] != 0) {
+        switch (r) {
+        case 0:
+            break;
+        case 1:
+        case 2:
+            *hp = 0.0f;
+            break;
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+            func_L07_0030FC38(m, x + 0x70, info + 0x10);
+            m[0x20] = 0xC;
+            break;
+        case 9:
+        case 10:
+            if (((unsigned char *)m)[0x53] != 4) {
+                func_00213DE0(m, 4, 4, 4);
+            }
+            m[0x20] = 0xD;
+            break;
+        case 11:
+            break;
+        }
+        if (hit >= 2) {
+            if (*hp <= *(float *)(info + 0x2C)) {
+                *hp = 0.0f;
+                *(unsigned short *)(m + 0x34) &= 0xEFFF;
+                func_L07_0030FB00(m, x + 0x70, info + 0x10);
+                func_L00_002584A8(m, 0, -1);
+                x[0x67] = 0x78;
+                func_L00_0025E4B0(m, (short *)(x + 0x60));
+                m[0x20] = 0xE;
+            } else {
+                *hp -= *(float *)(info + 0x2C);
+                ((unsigned char *)x)[0x67] = 0xFA;
+                *(short *)(x + 0x26) = func_001F9850(0x3C);
+                func_L00_0025E4B0(m, (short *)(x + 0x60));
+            }
+        }
+    }
+    ((unsigned char *)m)[0xA4] = 0xFF;
+}
 extern float func_001F9D10(void *, void *);
 
 void func_L07_0030FF18(char *data) {
