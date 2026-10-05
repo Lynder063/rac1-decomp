@@ -191,7 +191,139 @@ void func_L00_002BC708(char *m) {
     *(float *)(m + 0x44) = FastAddRots(*(float *)(m + 0x44), func_L00_0025F368(*(float *)(p + 0xC)));
     func_0020EEE8(m);
 }
-INCLUDE_ASM("asm/overlays", func_L00_002BC860);
+extern short D_L00_001DC1C0[];
+extern short D_L00_001DC1D8[];
+extern short D_L00_001DC1F0[];
+extern short D_L00_001DC208[];
+extern char D_L00_001DBEA0[];
+typedef struct { float previous[4]; float point[4][4]; } SparkleRowC860;
+extern SparkleRowC860 D_L00_001DBE90_rows[] __asm__("D_L00_001DBE90");
+extern short D_L00_00161778;
+extern short D_L00_0016177C;
+extern int D_L00_0016179C MACRO_ADDR;
+extern int D_L00_001617A0 MACRO_ADDR;
+extern float D_L00_001617A4 MACRO_ADDR;
+extern short D_L00_00161774;
+extern float D_L00_0017AFBC;
+extern float func_0020D830(void *);
+extern int func_001F9908_r(void *) __asm__("func_001F9908");
+extern float func_001FA888(int);
+extern void func_00213DE0(void *, int, int, int);
+extern void func_002141A8(void *, float, float);
+extern void func_002156E0(void *dst, void *vec, void *axis, float angle);
+extern void func_001F49B0(void *, void *);
+extern void func_L00_002BCE08(int);
+
+// Per-frame update of a moby that scatters ten fading sparkle quads around the hero.
+void func_L00_002BC860(char *m) {
+    int flag = 0;
+    float vec0[4] __attribute__((aligned(16)));
+    float vec1[4] __attribute__((aligned(16)));
+    float t[4] __attribute__((aligned(16)));
+    float w[5][4] __attribute__((aligned(16)));
+    char *g = D_0013E633 + 0xE1D;
+    int i;
+    int n;
+    int j;
+    int q;
+    int any;
+
+    if (*(unsigned char *)(*(char **)(g + 0x2080) + 0x53) != 0x82) {
+        D_L00_0017AFBC = 0.1f;
+    }
+    switch (*(unsigned char *)(m + 0x20)) {
+    case 0:
+        m[0x20] = 2;
+        for (q = 0; q < 10; q++) {
+            D_L00_001DC1C0[q] = 0;
+            D_L00_001DC1F0[q] = 2;
+            D_L00_001DC208[q] = 1;
+        }
+        D_L00_0016179C = func_001F9850(*(int *)&D_L00_00161778);
+        D_L00_001617A0 = func_001F9850(*(int *)&D_L00_0016177C);
+        break;
+    case 2:
+        if (*(int *)(g + 0x2084) == 0x20) {
+            float f = func_0020D830(m);
+            if (6.0f <= f) {
+                flag = 1;
+                if (func_001F9908_r(&D_L00_0016179C) == 0) {
+                    float a = func_001FA888(D_L00_0016179C);
+                    a = a / func_001FA888(func_001F9850(*(int *)&D_L00_00161778));
+                    D_L00_001617A4 = 1.0f - a;
+                } else if (12.0f <= f) {
+                    if (func_001F9908_r(&D_L00_001617A0) == 0) {
+                        float a = func_001FA888(D_L00_001617A0);
+                        a = a / func_001FA888(func_001F9850(*(int *)&D_L00_0016177C));
+                        D_L00_001617A4 = a;
+                    } else {
+                        D_L00_001617A4 = 0.0f;
+                    }
+                } else {
+                    D_L00_001617A4 = 1.0f;
+                }
+            }
+        } else {
+            D_L00_0016179C = func_001F9850(*(int *)&D_L00_00161778);
+            D_L00_001617A0 = func_001F9850(*(int *)&D_L00_0016177C);
+            func_00213DE0(m, 1, 0, func_001F9850(12));
+        }
+    }
+    func_001F9C30(vec0, m + 0xD0, -0.5f);
+    func_001F9BD8(vec0, vec0, m + 0x10);
+    any = 0;
+    for (j = 0; j < 10; j++) {
+        if (D_L00_001DC1C0[j] != 0) {
+            any = 1;
+            break;
+        }
+    }
+    if (!flag && !any) return;
+    for (i = 0; i < 10; i = n) {
+        D_L00_001DC1C0[i]--;
+        if (D_L00_001DC1C0[i] < 0) D_L00_001DC1C0[i] = 0;
+        if (D_L00_001DC1C0[i] == 0) {
+            if (flag) {
+                float sign;
+                int k;
+                D_L00_001DC1C0[i] = 2;
+                D_L00_001DC1D8[i] = 0x40;
+                func_002141A8(vec1, *(float *)&D_L00_00161774, *(float *)&D_L00_00161774);
+                qcopy(D_L00_001DBEA0 + i * 0x50, vec0);
+                n = i + 1;
+                sign = 1.0f;
+                for (k = 1; k < 5; k++) {
+                    float ang;
+                    func_001F9BF0(t, D_L00_001DBE90_rows[i].point[k - 1], D_L00_00166EC0);
+                    ang = func_002140F8(0.17453292f, 0.7853982f) * sign;
+                    sign = -sign;
+                    func_002156E0(vec1, vec1, t, ang);
+                    func_001F9BD8(((float (*)[4])(D_L00_001DBEA0+i*0x50))[k], D_L00_001DBE90_rows[i].point[k - 1], vec1);
+                }
+            } else {
+                n = i + 1;
+            }
+        } else {
+            int k;
+            float (*workspace)[4] = w;
+            for (k = 1; k < 5; k++) {
+                float *v = workspace[k];
+                func_001F9BF0(v, ((float (*)[4])(D_L00_001DBEA0+i*0x50))[k], D_L00_001DBE90_rows[i].point[k - 1]);
+                v[0] += func_L00_00258C80(0.0f, 0.1f);
+                v[1] += func_L00_00258C80(0.0f, 0.1f);
+                v[2] += func_L00_00258C80(0.0f, 0.1f);
+            }
+            n = i + 1;
+            qcopy(D_L00_001DBEA0 + i * 0x50, vec0);
+            for (k = 1; k < 5; k++) {
+                func_001F9BD8(((float (*)[4])(D_L00_001DBEA0+i*0x50))[k], D_L00_001DBE90_rows[i].point[k - 1], workspace[k]);
+            }
+            if (D_L00_001DC1C0[i] > 0) D_L00_001DC1D8[i] = 0x20;
+            else D_L00_001DC1D8[i] = 0;
+        }
+    }
+    func_001F49B0(func_L00_002BCE08, m);
+}
 extern float func_001FA888(int);
 extern int func_001FA898_r(float) __asm__("func_001FA898");
 extern short D_L00_001DC1C0[];

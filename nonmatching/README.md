@@ -14,7 +14,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L18_002FD058`](l18_veldin2/func_L18_002FD058.c) | l18_veldin2 | 1384 | BYTES 4/1384 | 99.7% |
 | [`func_L04_002D2A98`](l04_eudora/func_L04_002D2A98.c) | l04_eudora | 7712 | BYTES 25/7712 | 99.7% |
 | [`func_L00_001ED6D8`](shared/func_L00_001ED6D8.c) | shared | 552 | BYTES 3/552 | 99.5% |
-| [`func_L00_002BC860`](shared/func_L00_002BC860.c) | shared | 1448 | BYTES 9/1448 (cannot land as written) | 99.4% |
 | [`func_L18_002DC850`](l18_veldin2/func_L18_002DC850.c) | l18_veldin2 | 1236 | BYTES 8/1236 | 99.3% |
 | [`func_L18_002D74F8`](l18_veldin2/func_L18_002D74F8.c) | l18_veldin2 | 136 | BYTES 1/136 | 99.3% |
 | [`func_L18_002F0F78`](l18_veldin2/func_L18_002F0F78.c) | l18_veldin2 | 1192 | BYTES 10/1192 | 99.2% |
@@ -425,7 +424,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L16_002CB098`](l16_kalebo3/func_L16_002CB098.c) | l16_kalebo3 | 984 | SIZE ours 992 / retail 984 (cannot land as written) | - |
 | [`func_L16_002CF180`](l16_kalebo3/func_L16_002CF180.c) | l16_kalebo3 | 3124 | SIZE ours 3248 / retail 3124 (cannot land as written) | - |
 | [`func_L16_002CFDB8`](l16_kalebo3/func_L16_002CFDB8.c) | l16_kalebo3 | 696 | SIZE ours 688 / retail 696 (cannot land as written) | - |
-| [`func_L16_002D40B8`](shared/func_L16_002D40B8.c) | shared | 3008 | SIZE ours 3004 / retail 3008 | - |
 | [`func_L16_002D7178`](l16_kalebo3/func_L16_002D7178.c) | l16_kalebo3 | 204 | SIZE ours 200 / retail 204 | - |
 | [`func_L16_002E3740`](shared/func_L16_002E3740.c) | shared | 2184 | SIZE ours 2172 / retail 2184 | - |
 | [`func_L16_002E4C08`](l16_kalebo3/func_L16_002E4C08.c) | l16_kalebo3 | 1664 | SIZE ours 1652 / retail 1664 | - |
