@@ -2,7 +2,46 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L17_00202740);
+typedef struct { char pad[0x24]; int v; char pad2[0x24]; } Rec;
+extern Rec D_L17_0017A440[];
+extern char D_0013E633[];
+extern int func_L00_0020DB30(int);
+
+/* Returns the current help record's value, 0x54 or 0x6E in two special states, or 0 when no record applies. */
+int func_L17_00202740(int a) {
+    char *g = (char *)D_0013E633 + 0xE1D;
+    switch (*(unsigned char *)(g + 0x20A4)) {
+    case 1:
+        return 0;
+    case 3:
+        return 0;
+    }
+    {
+        char *g2 = (char *)D_0013E633 + 0xE1D;
+        if (*(int *)(g2 + 0x22A8) == 1) {
+            return 0x54;
+        }
+        if (*(unsigned char *)(g2 + 0x12E2) != 0) {
+            return 0x6E;
+        }
+        if (a == 0) {
+            return 0;
+        }
+        if (*(unsigned char *)(g2 + 0x20A8) == 0) {
+            return 0;
+        }
+        if (*(unsigned char *)(g2 + 0x20AA) == 0) {
+            return 0;
+        }
+        if (*(short *)(g2 + 0x22C8) != 0) {
+            return 0;
+        }
+    }
+    {
+        int i = func_L00_0020DB30(0);
+        return D_L17_0017A440[i].v;
+    }
+}
 typedef int Q_8 __attribute__((mode(TI)));
 typedef struct {
     u8 pad0[0x98];

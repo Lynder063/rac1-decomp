@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 55.65269702069157,
+  "fuzzy_match_percent": 56.32614461076356,
   "total_code": "3712808",
-  "matched_code": "1971340",
-  "matched_code_percent": 53.095662366596926,
+  "matched_code": "2002132",
+  "matched_code_percent": 53.92500770306464,
   "total_functions": 5109,
-  "matched_functions": 3131,
-  "matched_functions_percent": 61.28400861225289,
+  "matched_functions": 3142,
+  "matched_functions_percent": 61.499314934429435,
   "complete_code": "172928",
   "complete_code_percent": 4.657606857128082,
   "total_units": 278,
@@ -33201,13 +33201,13 @@
   {
    "name": "Shared level code/vendor_002AB910",
    "measures": {
-    "fuzzy_match_percent": 17.110459931201426,
+    "fuzzy_match_percent": 45.33061536501465,
     "total_code": "31396",
-    "matched_code": "5372",
-    "matched_code_percent": 17.110459931201426,
+    "matched_code": "14232",
+    "matched_code_percent": 45.33061536501465,
     "total_functions": 18,
-    "matched_functions": 10,
-    "matched_functions_percent": 55.55555555555556,
+    "matched_functions": 11,
+    "matched_functions_percent": 61.111111111111114,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -33217,7 +33217,7 @@
     {
      "name": "func_L00_002AB910",
      "size": "8860",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "0",
      "metadata": {
       "virtual_address": "2799888"
@@ -41715,13 +41715,13 @@
   {
    "name": "Level 04: Eudora",
    "measures": {
-    "fuzzy_match_percent": 46.70960976572782,
+    "fuzzy_match_percent": 57.7914510397473,
     "total_code": "60784",
-    "matched_code": "26312",
-    "matched_code_percent": 43.28770729139247,
+    "matched_code": "34024",
+    "matched_code_percent": 55.97525664648592,
     "total_functions": 57,
-    "matched_functions": 26,
-    "matched_functions_percent": 45.6140350877193,
+    "matched_functions": 27,
+    "matched_functions_percent": 47.36842105263158,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -42082,7 +42082,7 @@
     {
      "name": "func_L04_002D27F8",
      "size": "496",
-     "fuzzy_match_percent": 91.53,
+     "fuzzy_match_percent": 0.0,
      "address": "915600",
      "metadata": {
       "virtual_address": "2959352"
@@ -42100,7 +42100,7 @@
     {
      "name": "func_L04_002D2A98",
      "size": "7712",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "916272",
      "metadata": {
       "virtual_address": "2960024"
@@ -42217,7 +42217,7 @@
     {
      "name": "func_L04_002E6558",
      "size": "548",
-     "fuzzy_match_percent": 95.26,
+     "fuzzy_match_percent": 0.0,
      "address": "996848",
      "metadata": {
       "virtual_address": "3040600"
@@ -51534,13 +51534,13 @@
   {
    "name": "Level 17: Drek's Fleet",
    "measures": {
-    "fuzzy_match_percent": 91.13126308007278,
+    "fuzzy_match_percent": 97.81904003639673,
     "total_code": "140672",
-    "matched_code": "123384",
-    "matched_code_percent": 87.7104185623294,
+    "matched_code": "137604",
+    "matched_code_percent": 97.81904003639673,
     "total_functions": 62,
-    "matched_functions": 46,
-    "matched_functions_percent": 74.19354838709677,
+    "matched_functions": 55,
+    "matched_functions_percent": 88.70967741935483,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -51550,7 +51550,7 @@
     {
      "name": "func_L17_00202740",
      "size": "172",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "0",
      "metadata": {
       "virtual_address": "2107200"
@@ -51658,7 +51658,7 @@
     {
      "name": "func_L17_002CC788",
      "size": "2300",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "827464",
      "metadata": {
       "virtual_address": "2934664"
@@ -51775,7 +51775,7 @@
     {
      "name": "func_L17_002ED498",
      "size": "1620",
-     "fuzzy_match_percent": 99.88,
+     "fuzzy_match_percent": 100.0,
      "address": "961880",
      "metadata": {
       "virtual_address": "3069080"
@@ -51802,7 +51802,7 @@
     {
      "name": "func_L17_002EDE50",
      "size": "3252",
-     "fuzzy_match_percent": 98.22,
+     "fuzzy_match_percent": 100.0,
      "address": "964368",
      "metadata": {
       "virtual_address": "3071568"
@@ -51811,7 +51811,7 @@
     {
      "name": "func_L17_002EEB08",
      "size": "3860",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "967624",
      "metadata": {
       "virtual_address": "3074824"
@@ -51865,7 +51865,7 @@
     {
      "name": "func_L17_002F1558",
      "size": "764",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "978456",
      "metadata": {
       "virtual_address": "3085656"
@@ -51901,7 +51901,7 @@
     {
      "name": "func_L17_002F1BB0",
      "size": "364",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "980080",
      "metadata": {
       "virtual_address": "3087280"
@@ -51928,7 +51928,7 @@
     {
      "name": "func_L17_002F1FE0",
      "size": "1040",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "981152",
      "metadata": {
       "virtual_address": "3088352"
@@ -51946,7 +51946,7 @@
     {
      "name": "func_L17_002F2BD8",
      "size": "848",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "984216",
      "metadata": {
       "virtual_address": "3091416"
@@ -53263,13 +53263,13 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 54.72860117988066,
+    "fuzzy_match_percent": 55.498634575751694,
     "total_code": "3247108",
-    "matched_code": "1682348",
-    "matched_code_percent": 51.81065736033418,
+    "matched_code": "1713140",
+    "matched_code_percent": 52.75894734637715,
     "total_functions": 3429,
-    "matched_functions": 1775,
-    "matched_functions_percent": 51.76436278798484,
+    "matched_functions": 1786,
+    "matched_functions_percent": 52.08515602216389,
     "complete_code": "79584",
     "complete_code_percent": 2.450919402742379
    }
@@ -53308,13 +53308,13 @@
    "id": "common",
    "name": "Shared level code",
    "measures": {
-    "fuzzy_match_percent": 42.53162208444247,
+    "fuzzy_match_percent": 43.26956922543868,
     "total_code": "1200628",
-    "matched_code": "472460",
-    "matched_code_percent": 39.35107293849552,
+    "matched_code": "481320",
+    "matched_code_percent": 40.08902007949173,
     "total_functions": 1980,
-    "matched_functions": 1050,
-    "matched_functions_percent": 53.03030303030303,
+    "matched_functions": 1051,
+    "matched_functions_percent": 53.08080808080808,
     "complete_code": "79584",
     "complete_code_percent": 6.628531068740692
    }
@@ -53323,13 +53323,13 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 61.88431959266643,
+    "fuzzy_match_percent": 62.673177338649786,
     "total_code": "2046480",
-    "matched_code": "1209888",
-    "matched_code_percent": 59.12044095226926,
+    "matched_code": "1231820",
+    "matched_code_percent": 60.192134787537626,
     "total_functions": 1449,
-    "matched_functions": 725,
-    "matched_functions_percent": 50.03450655624569,
+    "matched_functions": 735,
+    "matched_functions_percent": 50.72463768115942,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53398,13 +53398,13 @@
    "id": "level_04",
    "name": "Level 04: Eudora",
    "measures": {
-    "fuzzy_match_percent": 46.70960976572782,
+    "fuzzy_match_percent": 57.7914510397473,
     "total_code": "60784",
-    "matched_code": "26312",
-    "matched_code_percent": 43.28770729139247,
+    "matched_code": "34024",
+    "matched_code_percent": 55.97525664648592,
     "total_functions": 57,
-    "matched_functions": 26,
-    "matched_functions_percent": 45.6140350877193,
+    "matched_functions": 27,
+    "matched_functions_percent": 47.36842105263158,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53593,13 +53593,13 @@
    "id": "level_17",
    "name": "Level 17: Drek's Fleet",
    "measures": {
-    "fuzzy_match_percent": 91.13126308007278,
+    "fuzzy_match_percent": 97.81904003639673,
     "total_code": "140672",
-    "matched_code": "123384",
-    "matched_code_percent": 87.7104185623294,
+    "matched_code": "137604",
+    "matched_code_percent": 97.81904003639673,
     "total_functions": 62,
-    "matched_functions": 46,
-    "matched_functions_percent": 74.19354838709677,
+    "matched_functions": 55,
+    "matched_functions_percent": 88.70967741935483,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
