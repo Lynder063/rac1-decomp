@@ -21,7 +21,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_002422D8`](shared/func_L00_002422D8.c) | shared | 9264 | BYTES 85/9264 | 99.1% |
 | [`func_L15_002EC8B0`](l15_quartu/func_L15_002EC8B0.c) | l15_quartu | 500 | BYTES 5/500 | 99.0% |
 | [`func_L13_002EE8E0`](l13_gemlik/func_L13_002EE8E0.c) | l13_gemlik | 588 | BYTES 6/588 | 99.0% |
-| [`func_L16_002CB098`](l16_kalebo3/func_L16_002CB098.c) | l16_kalebo3 | 984 | BYTES 11/984 | 98.9% |
+| [`func_L16_002E8B30`](l16_kalebo3/func_L16_002E8B30.c) | l16_kalebo3 | 884 | BYTES 10/884 | 98.9% |
 | [`func_L00_002B9730`](shared/func_L00_002B9730.c) | shared | 864 | BYTES 10/864 | 98.8% |
 | [`func_L16_002E6D40`](shared/func_L16_002E6D40.c) | shared | 1012 | BYTES 12/1012 | 98.8% |
 | [`func_L07_0031FF78`](l07_umbris/func_L07_0031FF78.c) | l07_umbris | 564 | BYTES 7/564 | 98.8% |
@@ -40,7 +40,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L07_003106E8`](l07_umbris/func_L07_003106E8.c) | l07_umbris | 452 | BYTES 8/452 | 98.2% |
 | [`func_L00_00260460`](shared/func_L00_00260460.c) | shared | 836 | BYTES 15/836 | 98.2% |
 | [`func_L00_002D6E38`](shared/func_L00_002D6E38.c) | shared | 1116 | BYTES 20/1116 | 98.2% |
-| [`func_L16_002E8B30`](l16_kalebo3/func_L16_002E8B30.c) | l16_kalebo3 | 884 | BYTES 16/884 | 98.2% |
 | [`func_L16_002E3740`](shared/func_L16_002E3740.c) | shared | 2184 | BYTES 40/2184 | 98.2% |
 | [`func_L00_002630A8`](shared/func_L00_002630A8.c) | shared | 816 | BYTES 15/816 | 98.2% |
 | [`func_L00_002C2A80`](shared/func_L00_002C2A80.c) | shared | 432 | BYTES 8/432 | 98.2% |
@@ -381,6 +380,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L16_002CFDB8`](l16_kalebo3/func_L16_002CFDB8.c) | l16_kalebo3 | 696 | SIZE ours 688 / retail 696 | - |
 | [`func_L16_002D0DC0`](l16_kalebo3/func_L16_002D0DC0.c) | l16_kalebo3 | 520 | SIZE ours 524 / retail 520 | - |
 | [`func_L16_002D6E98`](l16_kalebo3/func_L16_002D6E98.c) | l16_kalebo3 | 244 | SIZE ours 240 / retail 244 | - |
+| [`func_L16_002D6F90`](l16_kalebo3/func_L16_002D6F90.c) | l16_kalebo3 | 240 | SIZE ours 236 / retail 240 | - |
 | [`func_L16_002D7178`](l16_kalebo3/func_L16_002D7178.c) | l16_kalebo3 | 204 | SIZE ours 200 / retail 204 | - |
 | [`func_L16_002E4408`](shared/func_L16_002E4408.c) | shared | 172 | SIZE ours 176 / retail 172 | - |
 | [`func_L16_002E4C08`](l16_kalebo3/func_L16_002E4C08.c) | l16_kalebo3 | 1664 | SIZE ours 1868 / retail 1664 | - |

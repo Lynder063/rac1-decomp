@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L16_002E8B30 -- src/overlays/l16_kalebo3/vendor_002E7C70.c
- * Best so far: BYTES 16/884 (98.2% of the bytes match), checked 2026-10-05.
+ * Best so far: BYTES 10/884 (98.9% of the bytes match), checked 2026-10-05.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -35,9 +35,11 @@ typedef struct {
 /* Follow a shared path, maintain spacing, and test randomized movement ahead. */
 void func_L16_002E8B30(char *m) {
     float old[4],rotation[4],trial[4];
+    int *path;
+    L16WalkerData *d;
     int failed=0;
-    L16WalkerData *d=*(L16WalkerData **)(m+0x78);
-    int *path=(int *)D_L16_001B0C30[d->path_index];
+    d=*(L16WalkerData **)(m+0x78);
+    path=(int *)D_L16_001B0C30[d->path_index];
     if((((*(unsigned short *)((char *)m+0xA6))^1)&1)!=0) {
         if(func_L00_0028EB98(m,d->token)==0) d->token=func_0022ED80(0,4,m);
         else failed=1;
@@ -57,10 +59,11 @@ void func_L16_002E8B30(char *m) {
         func_00214D28(d->target_speed,acceleration,&d->speed);
         gap=other->parameter-d->parameter;
         gap=gap<0.0f ? gap+d->period : gap;
-        if(gap<(*(float *)&D_L16_00161F28) && other->target_speed<d->target_speed) {
+        if(gap<(*(float *)&D_L16_00161F28) && d->target_speed>other->target_speed) {
             float saved=d->target_speed;
-            d->target_speed=other->target_speed;
+            float theirs=other->target_speed;
             other->target_speed=saved;
+            d->target_speed=theirs;
         }
         if(gap<1.5f) {
             step=(*(float *)&D_L16_0015EE70)*50.0f;
