@@ -1336,7 +1336,8 @@ int func_L00_002E8EE0(char *m) {
     return ret;
 }
 INCLUDE_ASM("asm/overlays", func_L00_002E91D0);
-INCLUDE_ASM("asm/overlays", func_L00_002E9828);
+/* Empty function that only reserves 0x50 bytes of stack. Adapted from Lombyte (MIT), FUN_L00_002e8378; the volatile buffer is what keeps the frame. */
+void func_L00_002E9828(int a) { volatile char buf[0x50]; }
 INCLUDE_ASM("asm/overlays", func_L00_002E9838);
 INCLUDE_ASM("asm/overlays", func_L00_002E9854);
 INCLUDE_ASM("asm/overlays", func_L00_002E9870);
