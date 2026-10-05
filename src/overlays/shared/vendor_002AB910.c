@@ -3,7 +3,50 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L00_002AB910);
-INCLUDE_ASM("asm/overlays", func_L00_002ADBB0);
+typedef int q_2adbb0 __attribute__((mode(TI)));
+typedef union { q_2adbb0 q; float f[4]; } V_2adbb0;
+extern char *func_0020D348(int);
+extern float func_002140F8(float, float);
+extern void func_L00_00251328(void *, int, int, int);
+extern int func_001F9850(int);
+extern float func_001FA888(int);
+extern void func_L00_00251E30(void *);
+
+/* Spawns a spinning shard (type 0x70) at pos with velocity vel, tinted r/g/b, fading out over life. */
+char *func_L00_002ADBB0(void *owner, void *pos, void *vel, float scale, int life,
+                        unsigned char r, unsigned char g, unsigned char b, unsigned char a) {
+    char *m = func_0020D348(0x70);
+    if (m != 0) {
+        char *d = *(char **)(m + 0x78);
+        V_2adbb0 tmp;
+        V_2adbb0 rot;
+        int s;
+        rot.q = 0;
+        rot.f[0] = func_002140F8(-3.1415927f, 3.1415927f);
+        rot.f[1] = func_002140F8(-3.1415927f, 3.1415927f);
+        rot.f[2] = func_002140F8(-3.1415927f, 3.1415927f);
+        tmp = rot;
+        m[0x20] = 0;
+        m[0x23] = a;
+        ((unsigned char *)m)[0x30] = 0xFF;
+        *(short *)(m + 0x32) = 0xFF;
+        m[0x31] = 1;
+        func_L00_00251328(m, r, g, b);
+        *(float *)(d + 0x18) = *(float *)(m + 0x2C) * scale;
+        *(int *)(m + 0x2C) = 0;
+        *(void **)(d + 0x10) = owner;
+        qcopy(m + 0x10, pos);
+        qcopy(d, vel);
+        qcopy(m + 0x40, &tmp);
+        *(int *)(d + 0x14) = life;
+        s = *(unsigned short *)(d + 0x14) - func_001F9850(4);
+        *(short *)(d + 0x1C) = s;
+        *(float *)(m + 0x2C) = func_001FA888(*(int *)(d + 0x14) - (short)s) * *(float *)(d + 0x18) / func_001FA888(*(int *)(d + 0x14));
+        *(short *)(d + 0x1E) = a;
+        func_L00_00251E30(m);
+    }
+    return m;
+}
 extern float func_001FA888(int);
 extern float func_001FA748(float, float);
 extern int func_001F9938(void *);
