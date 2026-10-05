@@ -59,7 +59,83 @@ void func_L14_002AEAF8(char *moby) {
 INCLUDE_ASM("asm/overlays", func_L14_002AEC58);
 INCLUDE_ASM("asm/overlays", func_L14_002AEF88);
 INCLUDE_ASM("asm/overlays", func_L14_002AF2E8);
-INCLUDE_ASM("asm/overlays", func_L14_002AF4A0);
+typedef struct {
+    float m[4][4];
+    u32 col[4];
+    float uv[8];
+    u64 a, b, c, d;
+} Pk_2af4a0;
+extern char D_L14_001675C0[];
+extern float D_L14_001D8940[4][4];
+extern short D_L14_00161544;
+extern short D_L14_00161548;
+u64 func_001F4868(s32);
+extern void func_00234C98(int, long);
+extern void func_001F9BF0(void *, void *, void *);
+extern float func_001F9CB8(void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern void func_L00_001FD1D8(void *, void *, s32);
+
+/* Draws the moby's glow quad, pulled toward the camera so it is not hidden by the moby. */
+void func_L14_002AF4A0(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float pos[4];
+    Pk_2af4a0 pk;
+    float v[4];
+    float w[4];
+    float len;
+    u32 col;
+    int j;
+    qcopy(pos, d + 0x90);
+    pos[2] += 0.01f;
+    pos[3] = 1.0f;
+    pk.b = func_001F4868(0xB);
+    pk.c = 0x0000FF9000000260ULL;
+    pk.d = 0x8000000048ULL;
+    pk.a = 0;
+    func_00234C98(0x4A, 0);
+    func_00234C98(0x47, 0x51001);
+    func_001F9BF0(v, D_L14_001675C0, pos);
+    len = func_001F9CB8(v);
+    if (0.0f < len) {
+        float s = *(float *)(d + 0x218);
+        float f = len - *(float *)&D_L14_00161544;
+        if (f < s) {
+            s = f;
+            if (f < 0.0f) s = 0.0f;
+        }
+        func_L00_001FF4B0(w, v, s);
+        func_001F9BD8(pos, pos, w);
+    }
+    pk.uv[2] = 0.0f;
+    pk.uv[0] = 1.0f;
+    pk.uv[1] = 1.0f;
+    pk.uv[3] = 1.0f;
+    pk.uv[4] = 1.0f;
+    pk.uv[5] = 0.0f;
+    pk.uv[6] = 0.0f;
+    pk.uv[7] = 0.0f;
+    if (*(short *)(d + 0x202) != 0) {
+        col = 0x7F40407F;
+        pk.col[3] = col;
+        pk.col[2] = col;
+        pk.col[1] = col;
+        pk.col[0] = col;
+    } else {
+        col = *(u32 *)&D_L14_00161548;
+        pk.col[3] = col;
+        pk.col[2] = col;
+        pk.col[1] = col;
+        pk.col[0] = col;
+    }
+    for (j = 0; j < 4; j++) {
+        func_001F9C30(pk.m[j], D_L14_001D8940[j], *(float *)(d + 0x214));
+        func_001F9BD8(pk.m[j], pk.m[j], pos);
+    }
+    func_L00_001FD1D8(&pk, 0, 0);
+}
 INCLUDE_ASM("asm/overlays", func_L14_002AF688);
 extern float func_L00_0025C918(float *p, float *v, float t, float u1, float u2, float eps);
 extern int func_L00_0025E860_2AF918(int *tab, float *out, int *a, float *b, int c, float d) __asm__("func_L00_0025E860");
@@ -176,7 +252,7 @@ extern float func_001FA790(float, float);
 extern void func_L00_001FFED8(void *, int, float);
 extern float func_001F9CE8(void *);
 extern void func_001F49B0(void *, void *);
-extern void func_L14_002AF4A0(void);
+extern void func_L14_002AF4A0(char *);
 
 // Sets up the moby's motion data from its vectors; returns whether it succeeded.
 int func_L14_002AFDE0(char *moby, int flag) {
