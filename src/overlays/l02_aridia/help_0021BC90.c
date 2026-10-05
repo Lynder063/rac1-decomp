@@ -2,7 +2,108 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L02_0021BC90);
+extern unsigned char D_0013E633[];
+extern int D_0015EE84 MACRO_ADDR;
+extern void func_001F99D8(void *, int);
+extern int func_L00_001F10E0(float, void *, int, void *);
+extern int func_L00_001F3958(void);
+extern float func_001F9B88(float);
+extern void func_L00_0020BFA8(void);
+extern void func_L02_0022BE40(int, int);
+extern void func_L00_00211908(void);
+
+// Updates the pickup/aim flags after a state change, and requests a follow-up state when the target is in range. Adapted from Lombyte (MIT) for PAL: src/overlays/l02/ui_help_0021b698.c, FUN_L02_0021b698.
+void func_L02_0021BC90(void) {
+    char *g = (char *)D_0013E633 + 0xE1D;
+    int keep = *(unsigned char *)(g + 0x12ED);
+    int st = *(short *)(g + 0x12E0);
+    func_001F99D8(g + 0x12E0, 0x10);
+    *(unsigned char *)(g + 0x12ED) = keep;
+    *(short *)(g + 0x12E0) = -1;
+    *(unsigned char *)(g + 0x20A9) = 0;
+    *(short *)(g + 0x308) = 0;
+    if (st == -1) return;
+    if (st == 2) {
+        if (*(short *)(g + 0x30C) == 0 || *(float *)(g + 0x2DC) < 0.3f) {
+            *(unsigned char *)(g + 0x12E7) = 1;
+            if (*(unsigned char *)(g + 0x20A4) == 0) {
+                char *p = *(char **)(g + 0x10E0);
+                if (p != 0 && *(short *)(p + 0xA6) == 0xAD) {
+                    *(short *)(g + 0x308) = 1;
+                }
+            }
+        }
+    }
+    if (st == 3) {
+        char *q = (char *)D_0013E633 + 0xE1D;
+        *(unsigned char *)(q + 0x12E6) = 1;
+    }
+    if (D_0015EE84 == 0xD) {
+        char *q = (char *)D_0013E633 + 0xE1D;
+        if (*(int *)(q + 0x2084) != 0x7B) {
+            if (func_L00_001F10E0(*(float *)(q + 0x234) + 0.03f, q + 0xD0, 2, 0) != 0) {
+                if (func_L00_001F3958() == 0xB) {
+                    func_L02_0022BE40(0x7B, 1);
+                    return;
+                }
+            }
+        }
+    }
+    if (st == 0xB) { char *q = (char *)D_0013E633 + 0xE1D; *(unsigned char *)(q + 0x12EB) = 1; }
+    if (st == 2) { char *q = (char *)D_0013E633 + 0xE1D; *(unsigned char *)(q + 0x12E7) = 1; }
+    if (st == 0xD) { char *q = (char *)D_0013E633 + 0xE1D; *(unsigned char *)(q + 0x12EC) = 1; }
+    if (st == 8) { char *q = (char *)D_0013E633 + 0xE1D; *(unsigned char *)(q + 0x12EA) = 1; }
+    if (st == 9) { char *q = (char *)D_0013E633 + 0xE1D; *(unsigned char *)(q + 0x12EE) = 1; }
+    if (st == 0xC) { char *q = (char *)D_0013E633 + 0xE1D; *(unsigned char *)(q + 0x12EA) = 1; }
+    {
+        char *q = (char *)D_0013E633 + 0xE1D;
+        if (*(unsigned char *)(q + 0x12EC) != 0 && *(int *)(q + 0x2084) != 0x7F) {
+            if (func_001F9B88(*(float *)(q + 0x2F0) - (*(float *)(q + 0x88) + 0.25f)) < 1.0f) {
+                if (*(float *)(q + 0x2F0) - *(float *)(q + 0x88) > 0.0f) {
+                    if (*(float *)(q + 0x108) < 0.0f) {
+                        func_L00_0020BFA8();
+                        func_L02_0022BE40(0x7F, 1);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    {
+        char *h = (char *)D_0013E633 + 0xE1D;
+        if (*(unsigned char *)(h + 0x12E6) != 0 && *(int *)(h + 0x2084) != 0x68 && *(int *)(h + 0x2084) != 0x7B) {
+            if (func_001F9B88(*(float *)(h + 0x2F4) - (*(float *)(h + 0x88) + 0.25f)) < 1.0f) {
+                if (*(float *)(h + 0x2F4) - *(float *)(h + 0x88) > 0.0f) {
+                    if (*(int *)(h + 0x2084) != 0x69 || *(short *)(h + 0x41E) != 0) {
+                        if (*(float *)(h + 0x108) < 0.0f) {
+                            func_L00_0020BFA8();
+                            if (*(int *)(h + 0x22A8) == 0) func_L02_0022BE40(0x7B, 1);
+                            else func_L02_0022BE40(0x68, 1);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    {
+        char *h = (char *)D_0013E633 + 0xE1D;
+        if (*(unsigned char *)(h + 0x12EB) != 0 && *(int *)(h + 0x2084) != 0x7B) {
+            if (func_001F9B88(*(float *)(h + 0x2F4) - (*(float *)(h + 0x88) + 0.25f)) < 1.0f) {
+                if (*(float *)(h + 0x2F4) - *(float *)(h + 0x88) > 0.0f) {
+                    if (*(float *)(h + 0x108) < 0.0f) {
+                        if ((unsigned)(*(unsigned char *)(h + 0x20A4) - 1) < 2) {
+                            func_L00_00211908();
+                        } else {
+                            func_L00_0020BFA8();
+                            func_L02_0022BE40(0x7B, 1);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 typedef int Q_8 __attribute__((mode(TI)));
 typedef struct {
     u8 pad0[0x98];

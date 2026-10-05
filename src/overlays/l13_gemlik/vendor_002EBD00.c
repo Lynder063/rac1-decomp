@@ -371,7 +371,31 @@ void func_L13_0030C1F0(char *moby, float *p, float *q) {
     base = D_0013E633 + 0xE1D;
     q[2] = func_L00_001FF860(*(float *)(base + 0xD0) - p[0], *(float *)(base + 0xD4) - p[1]);
 }
-INCLUDE_ASM("asm/overlays", func_L13_0030C320);
+extern short *D_L13_001ABE40[];
+extern char *func_L00_002DCD40(char *);
+
+// Counts the mobys of a list that are alive and idle, optionally ignoring those in a given state.
+int func_L13_0030C320(int idx, int arg)
+{
+    short *q = D_L13_001ABE40[idx];
+    short *p;
+    int count = 0;
+    if (q == 0) return 0;
+    p = q;
+    do {
+        int id = *p & 0x7FFF;
+        char *m = (char *)(id << 8) + (int)D_L13_00160058_m;
+        if (m[0x20] >= 0) {
+            char *f = func_L00_002DCD40(m);
+            if (f == 0 || *(short *)(f + 0x68) < 4) {
+                if (arg == -1 || *(unsigned char *)((char *)(id << 8) + (int)D_L13_00160058_m + 0x20) != arg) {
+                    count++;
+                }
+            }
+        }
+    } while (*p++ >= 0);
+    return count;
+}
 extern char D_0013E633[];
 extern int func_L13_0030C320(int, int);
 extern int func_00215570(void *, int);

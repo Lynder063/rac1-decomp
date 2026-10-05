@@ -2,7 +2,90 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L12_0022E428);
+extern char D_0013E633[];
+extern void func_001F99D8(void *, int);
+extern float func_001F9B88(float);
+extern void func_L00_0020BFA8(void);
+extern int func_L12_002407C0(int, int);
+
+/* Level 12 pickup/ability state update. Adapted from Lombyte (MIT) for PAL: src/overlays/l12/ui_help_0022de30.c, FUN_L12_0022de30. */
+void func_L12_0022E428(void) {
+    char *g = D_0013E633 + 0xE1D;
+    unsigned char saved;
+    int state;
+    saved = *(unsigned char *)(g + 0x12ED);
+    state = *(short *)(g + 0x12E0);
+    func_001F99D8(g + 0x12E0, 0x10);
+    *(unsigned char *)(g + 0x12ED) = saved;
+    *(short *)(g + 0x12E0) = -1;
+    *(unsigned char *)(g + 0x20A9) = 0;
+    *(short *)(g + 0x308) = 0;
+    if (state == -1) return;
+    if (state == 2) {
+        if (*(short *)(g + 0x30C) == 0 || *(float *)(g + 0x2DC) < 0.3f) {
+            *(unsigned char *)(g + 0x12E7) = 1;
+            if (*(unsigned char *)(g + 0x20A4) == 0) {
+                if (*(int *)(g + 0x10E0) != 0 && *(short *)(*(int *)(g + 0x10E0) + 0xA6) == 0xAD)
+                    *(short *)(g + 0x308) = 1;
+            }
+        }
+    }
+    if (state == 0xE) {
+        char *a = D_0013E633 + 0xE1D;
+        *(unsigned char *)(a + 0x12E4) = 1;
+        *(float *)(a + 0x22A4) = 0.2f;
+        *(float *)(a + 0x2F0) = *(float *)(a + 0x2D8) + 0.2f;
+    }
+    if (state == 0) {
+        char *b = D_0013E633 + 0xE1D;
+        char *b2;
+        float v = *(float *)(b + 0x2F0) - *(float *)(b + 0x2D8);
+        *(float *)(b + 0x22A4) = v;
+        if (v < 0.85f && 0.25f < v) *(unsigned char *)(b + 0x20A9) = 1;
+        b2 = D_0013E633 + 0xE1D;
+        *(unsigned char *)(b2 + 0x12E4) = 1;
+    }
+    if (state == 2) {
+        char *d = D_0013E633 + 0xE1D;
+        *(unsigned char *)(d + 0x12E7) = 1;
+    }
+    if (state == 7) {
+        char *d = D_0013E633 + 0xE1D;
+        *(unsigned char *)(d + 0x12E2) = 1;
+    }
+    if (state == 0xD) {
+        char *d = D_0013E633 + 0xE1D;
+        *(unsigned char *)(d + 0x12EC) = 1;
+    }
+    if (state == 8) {
+        char *d = D_0013E633 + 0xE1D;
+        *(unsigned char *)(d + 0x12EA) = 1;
+    }
+    if (state == 9) {
+        char *d = D_0013E633 + 0xE1D;
+        *(unsigned char *)(d + 0x12EE) = 1;
+    }
+    if (state == 0xC) {
+        char *d = D_0013E633 + 0xE1D;
+        *(unsigned char *)(d + 0x12EA) = 1;
+    }
+    {
+        char *h = D_0013E633 + 0xE1D;
+        if (*(unsigned char *)(h + 0x12EC)) {
+            if (*(int *)(h + 0x2084) != 0x7F) {
+                float e = func_001F9B88(*(float *)(h + 0x2F0) - (*(float *)(h + 0x88) + 0.25f));
+                if (e < 1.0f) {
+                    if (*(float *)(h + 0x2F0) - *(float *)(h + 0x88) > 0.0f) {
+                        if (*(float *)(h + 0x108) < 0.0f) {
+                            func_L00_0020BFA8();
+                            func_L12_002407C0(0x7F, 1);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 typedef struct {
     u8 pad0[0x80];
     f32 v80[4];

@@ -312,7 +312,70 @@ void func_L00_0026B720(char *m) {
     FastVecScale(p, p, D_0015EE60 * -0.10000002384185791f + 1.0f);
     m[8]--;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0026B890);
+extern int func_002140B0(int);
+extern float func_002140F8(float, float);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern float D_L00_0015F6B4 MACRO_ADDR;
+extern float D_L00_0015F6B8 MACRO_ADDR;
+extern unsigned char *D_L00_001B242C;
+typedef int u128 __attribute__((mode(TI)));
+typedef union { u128 q; float f[4]; } V_26a9f0;
+
+// Spawns a type-11 particle, skipped by chance under load. Adapted from Lombyte (MIT) for PAL: src/overlays/shared/rendering_00269290.c, FUN_L00_0026a9f0.
+void func_L00_0026B890(void *pos, void *dir, int col, int d, int n, int b1A, int b18, float x, int b19, float y) {
+    unsigned char *m;
+    unsigned char *q;
+    V_26a9f0 t;
+    V_26a9f0 v;
+
+    if (0 == n) {
+        return;
+    }
+    if (0.85f < D_L00_0015F6B4 || 0.85f < D_L00_0015F6B8) {
+        if (func_002140B0(3) == 0) {
+            return;
+        }
+    }
+    if (0.9f < D_L00_0015F6B4 || 0.9f < D_L00_0015F6B8) {
+        if (func_002140B0(2) == 0) {
+            return;
+        }
+    }
+    if (1.0f < D_L00_0015F6B4 || 1.0f < D_L00_0015F6B8) {
+        if (func_002140B0(1) == 0) {
+            return;
+        }
+    }
+    m = func_00218928(0xB);
+    if (m == 0) {
+        return;
+    }
+    qcopy(m + 0x10, pos);
+    *(int *)(m + 4) = col;
+    m[9] = func_001FA898_r(4.0f) - 0x60;
+    m[3] = (func_002140B0(100) < 0x14) ? 0x44 : 0x48;
+    m[1] = 0;
+    q = m + 0x20;
+    *(int *)(m + 0xC) = 0;
+    m[8] = func_001160D8();
+    m[2] = *D_L00_001B242C;
+    v.q = 0;
+    v.f[0] = func_002140F8(-1.0f, 1.0f);
+    v.f[1] = func_002140F8(-1.0f, 1.0f);
+    v.f[2] = func_002140F8(-1.0f, 1.0f);
+    t.q = v.q;
+    func_L00_001FF4B0(&t, &t, y);
+    func_001F9BD8(q, dir, &t);
+    *(float *)(q + 0xC) = y * 0.75f;
+    *(short *)(m + 0xA) = n;
+    q[0x1B] = n;
+    q[0x18] = b1A;
+    *(float *)(q + 0x1C) = x;
+    *(int *)(q + 0x10) = col;
+    *(int *)(q + 0x14) = d;
+    q[0x1A] = b18;
+    q[0x19] = b19;
+}
 extern float func_002140F8(float, float);
 extern void func_L00_0026B890(void *, void *, int, int, int, int, int, float, int, float);
 extern float func_001F9B50(float);

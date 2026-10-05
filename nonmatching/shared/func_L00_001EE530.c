@@ -3,7 +3,6 @@
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
- *   (`addiu $29,$29,0xA0`); the next symbol is 360 bytes on, so the real function is 356 and try_func's SIZE check
  *   pass. Our words equal retail's (masked) except scheduling: prologue order (retail puts lui/mtc1 of 0.0625 afte
  *   register saves, ours hoists it between them), `lw D_L00_0015F080` before `addu` (ours reverse), and `daddu $18
  *   in the blez delay slot (ours puts `addiu $16,$17,0x10` there). Needed: `float *pv = v;` (gives the `daddu $20,
@@ -11,6 +10,7 @@
  *   `t = s[3]` read before `d[3] = 1.0f`. For the lead: fix the size row for this function.
  *   q28/t01: best.c fails COMPILE: the file later declares func_L00_001EE698 with typed args, so declare ours as `
  *   Left: prologue order (retail lui/mtc1 of 0.0625 after the saves), `lw D_L00_0015F080` before the `addu`, `dadd
+ *   q29/u08: p10.c = Lombyte's FUN_L00_001ee1b0 ported verbatim in structure (V struct, tp, k loop): same scheduli
  */
 extern int func_001FA898_r(float) __asm__("func_001FA898");
 extern int func_001E9730();

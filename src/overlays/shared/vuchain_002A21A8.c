@@ -49,7 +49,35 @@ void func_L00_002A2258(int a, int b, int n) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_002A2668);
-INCLUDE_ASM("asm/overlays", func_L00_002A2680);
+/* classifies a point against wrapped ranges and bounds; returns a bitmask. Adapted from Lombyte (MIT) for PAL: src/overlays/shared/runtime_dma_002a13d8.c, FUN_L00_002a13f0. */
+struct WalkAnim;
+int func_L00_002A2680(struct WalkAnim *anim, float v) {
+    int bit = 1;
+    int r = 0;
+    int i;
+    float *p = ((float *)anim) + 12;
+    for (i = 0; i < 2; i++, p++) {
+        float x = p[4], y = p[6];
+        if (x <= y) {
+            if (x <= v && v <= y) r |= bit;
+        } else {
+            if (x <= v || v <= y) r |= bit;
+        }
+        bit <<= 1;
+        x = p[-2]; y = p[0];
+        if (x <= y) {
+            if (x <= v && v <= y) r |= bit;
+        } else {
+            if (x <= v || v <= y) r |= bit;
+        }
+        bit <<= 1;
+    }
+    if (r == 0) {
+        if (v < ((float *)anim)[6] || ((float *)anim)[6] + 1.0f < v) r |= bit;
+        if (v < ((float *)anim)[7] || ((float *)anim)[7] + 1.0f < v) r |= bit << 1;
+    }
+    return r;
+}
 extern void func_L00_001FFED8(void *, int, float);
 void func_L00_002A27C8(char *a) {
     int i;

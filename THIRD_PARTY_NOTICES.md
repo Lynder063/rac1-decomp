@@ -312,6 +312,27 @@ address, and each passed this project's own check):
 - `src/overlays/l17_fleet/help_00202740.c`: `func_L17_0020E320` (`FUN_L17_0020dbe8`)
 - `src/overlays/shared/vendor_002A5138.c`: `func_L00_002A6058` (`FUN_L00_002a4dc8`)
 
+Fifteen more were adapted by queue workers on 2026-10-05, each from Lombyte's matched C for the function's US
+counterpart where the PAL code is not the same instructions (so the machine port above does not apply): the
+control flow is Lombyte's, the symbols and the differing parts are PAL's, and each passed this project's own
+check. In parentheses, Lombyte's name.
+
+- `src/overlays/l01_novalis/help_002343F8.c`: `func_L01_002351A8` (`FUN_L01_00234b40`)
+- `src/overlays/l02_aridia/help_0021BC90.c`: `func_L02_0021BC90` (`FUN_L02_0021b698`)
+- `src/overlays/l06_blarg/help_00223630.c`: `func_L06_0022BB20` (`FUN_L06_0022b438`)
+- `src/overlays/l09_gaspar/vendor_002C2B08.c`: `func_L09_00304750` (`FUN_L09_003033a0`)
+- `src/overlays/l11_pokitaru/vendor_00312BD8.c`: `func_L11_003153D0` (`FUN_L11_00313f60`)
+- `src/overlays/l12_hoven/help_0022E428.c`: `func_L12_0022E428` (`FUN_L12_0022de30`)
+- `src/overlays/shared/help_00214D60.c`: `func_L00_00216B40` (`FUN_L00_002163f0`)
+- `src/overlays/shared/help_0021A2E0.c`: `func_L02_00223AE0` (`FUN_L02_00223450`)
+- `src/overlays/shared/help_002284A8.c`: `func_L12_00236270` (`FUN_L12_00235c08`)
+- `src/overlays/shared/mobyutil_00258BC8.c`: `func_L00_0025B4D0` (`FUN_L00_0025a478`)
+- `src/overlays/shared/partupd_0026A130.c`: `func_L00_0026B890` (`FUN_L00_0026a9f0`)
+- `src/overlays/shared/tieproc_00299108.c`: `func_L00_00299250` (`FUN_L00_00297f78`)
+- `src/overlays/shared/vendor_002A5138.c`: `func_L00_002A6A38` (`FUN_L00_002a57a8`)
+- `src/overlays/shared/vendor_002B90A8.c`: `func_L01_002BB068` (`FUN_L01_002b9eb0`)
+- `src/overlays/shared/vuchain_002A21A8.c`: `func_L00_002A2680` (`FUN_L00_002a13f0`)
+
 Data taken from Lombyte:
 
 - `tools/extract/moby_classes.tsv`: the moby class names the level editor

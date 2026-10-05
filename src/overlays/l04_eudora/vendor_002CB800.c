@@ -66,7 +66,40 @@ void func_L04_002D4960(char *m) {
         m[0x20] = 1;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L04_002D8348);
+extern int *D_L04_001B0930[];
+extern char *D_L04_00160058 MACRO_ADDR;
+extern float func_001FA888(int);
+extern float func_L00_00200210(float, float);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+
+/* update: blend two keyframes of a path and write the result to a position */
+void func_L04_002D8348(char *moby) {
+    int *p = *(int **)(moby + 0x78);
+    int *t = D_L04_001B0930[p[2]];
+    char *base = D_L04_00160058;
+    int o0 = p[0] * 256;
+    float *src = *(float **)(base + o0 + 0x78);
+    char *dst = base + p[1] * 256;
+    float a[4];
+    float b[4];
+    float f, g;
+    int idx;
+    int n = 1;
+    float one = 1.0f;
+
+    f = func_001FA888(t[0] - 1);
+    g = (one - src[0]) * f;
+    f = func_L00_00200210(g, one);
+    idx = func_001FA898_r(g);
+    if (f == 0.0f) n = 0;
+    n += idx;
+    func_001F9C30(a, (char *)t + (idx * 16 + 0x10), one - f);
+    func_001F9C30(b, (char *)t + (n * 16 + 0x10), f);
+    func_001F9BD8(moby + 0x10, a, b);
+    qcopy(dst + 0x10, moby + 0x10);
+}
 INCLUDE_ASM("asm/overlays", func_L04_002D9270);
 INCLUDE_ASM("asm/overlays", func_L04_002E2B48);
 // Return float constant

@@ -19,7 +19,6 @@ extern void func_00122818(void *, int, int, int, int, int, int, int);
 extern void func_00122AD8(void *, int);
 extern void func_00216A90(int, int, int);
 extern void func_00217AE8(int, int, int);
-extern char D_0014171B[];
 extern int D_0015EF88 MACRO_ADDR;
 extern short D_0015EF78;
 extern int D_0015EFD8_m __asm__("D_0015EFD8") MACRO_ADDR;

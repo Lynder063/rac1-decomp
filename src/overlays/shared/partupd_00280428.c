@@ -97,7 +97,26 @@ unsigned char *func_L01_00287F20(void *a, int b, int c, int d, float f, float g)
 }
 INCLUDE_ASM("asm/overlays", func_L01_0028B570);
 INCLUDE_ASM("asm/overlays", func_L01_0028C1D0);
-INCLUDE_ASM("asm/overlays", func_L01_0028C1D8);
+extern float func_001F9D10(void *, void *);
+extern char *D_L01_001B0C30[];
+
+// Resets a path object and computes per-segment lengths of its points.
+void func_L01_0028C1D8(char *p)
+{
+    int i;
+    int off;
+    char *q;
+    p[5] = 0;
+    *(int *)(p + 8) = 0;
+    *(char **)(p + 0x10) = D_L01_001B0C30[*(int *)(p + 0x14)];
+    for (i = 0; i < **(int **)(p + 0x10); i++) {
+        q = *(char **)(p + 0x10);
+        off = i << 4;
+        *(float *)(*(char **)(p + 0x10) + off + 0x1C) = func_001F9D10(q + (off + 0x10), q + ((((i + 1) % *(int *)q) << 4) + 0x10));
+        *(float *)(*(char **)(p + 0x10) + off + 0x18) += 0.5f;
+        *(float *)(*(char **)(p + 0x10) + off + 0x18) -= 0.5f;
+    }
+}
 typedef struct {
     int count;
     int pad[3];

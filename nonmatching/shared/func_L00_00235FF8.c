@@ -3,14 +3,14 @@
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
- *   `-G8`); `MACRO_ADDR` was considered for the last field to make the store
- *   "count as one instruction" for delay-slot purposes, but under the `-G8`
  *   needed for the two resident globals a 4-byte `MACRO_ADDR` field would
  *   itself become truly gp-relative (wrong -- retail uses `lui`/`lo` for it),
  *   so it isn't a safe thing to combine here.
  *   Best candidate: `p5.c`, run with
  *   `TRY_CFLAGS='-G8 -mno-split-addresses' python tools/try_func.py func_L00_00235FF8 build-sn/try/func_L00_00235F
  *   (a plain `p5.c` run without those flags will not reproduce this result).
+ *   ## Round q30/x05
+ *   No run. Retail repeats `lui` for every access of the same symbol (15 lui for 8 symbols): per-function compiler
  */
 #include "common.h"
 

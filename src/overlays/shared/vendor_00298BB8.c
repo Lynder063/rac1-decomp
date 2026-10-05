@@ -828,7 +828,34 @@ int func_L15_0029ACC0(char *moby, float *point, float arg) {
     func_L00_00259868((int)moby, (int)vec, 0.5f, 0.5f, 0.0f, 0);
     return func_001F9D48((float *)(moby + 0x10), point) < 0.2f;
 }
-INCLUDE_ASM("asm/overlays", func_L15_0029AE80);
+extern int D_L15_001AC140[];
+
+/* checks that no closer live object blocks the line to the target */
+int func_L15_0029AE80(void *mm) {
+    char *m = mm;
+    int idx = *(int *)(*(char **)(m + 0x78) + 0x128);
+    char *t;
+    float d;
+    short *p;
+    if (idx == -1) return 0;
+    t = (char *)D_L15_00160058_m + (idx << 8);
+    if (*(int *)(*(char **)(t + 0x78) + 8) != 0) return 0;
+    if (((unsigned char *)m)[0x21] == 0xFF) return 1;
+    d = func_001F9D48((float *)(m + 0x10), (float *)(t + 0x10));
+    p = (short *)D_L15_001AC140[((unsigned char *)m)[0x21]];
+    if (p == 0) return 1;
+    do {
+        char *o = (char *)(((*(unsigned short *)p & 0x7FFF) << 8) + D_L15_00160058_m);
+        if (((unsigned char *)o)[0x20] == 0xE) return 0;
+        if (((unsigned char *)o)[0xBC] == 1) {
+            int j = *(int *)(*(char **)(o + 0x78) + 0x128);
+            if (j != -1) {
+                if (func_001F9D48((float *)(o + 0x10), (float *)((char *)D_L15_00160058_m + (j << 8) + 0x10)) < d) return 0;
+            }
+        }
+    } while (*p++ >= 0);
+    return 1;
+}
 extern int func_L00_001EFFF0(void *, void *, int, void *, void *);
 extern float func_001F9D10(void *, void *);
 extern int D_L15_001AC140[];
