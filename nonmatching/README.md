@@ -98,6 +98,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L11_00319FA0`](l11_pokitaru/func_L11_00319FA0.c) | l11_pokitaru | 480 | BYTES 20/480 | 95.8% |
 | [`func_L11_0031F760`](l11_pokitaru/func_L11_0031F760.c) | l11_pokitaru | 952 | BYTES 40/952 | 95.8% |
 | [`func_L16_002D0C18`](l16_kalebo3/func_L16_002D0C18.c) | l16_kalebo3 | 380 | BYTES 16/380 | 95.8% |
+| [`func_L05_002D3078`](l05_rilgar/func_L05_002D3078.c) | l05_rilgar | 420 | BYTES 18/420 | 95.7% |
 | [`func_L00_002DCDA8`](shared/func_L00_002DCDA8.c) | shared | 548 | BYTES 24/548 | 95.6% |
 | [`func_L00_002353B8`](shared/func_L00_002353B8.c) | shared | 588 | BYTES 26/588 | 95.6% |
 | [`func_L03_00250B88`](l03_kerwan/func_L03_00250B88.c) | l03_kerwan | 312 | BYTES 14/316 | 95.6% |
