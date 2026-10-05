@@ -932,7 +932,7 @@ extern float func_001FA748(float, float);
 extern int func_L00_0028EB98(void *, int);
 extern int func_0022ED80_6B70(int, int, void *) __asm__("func_0022ED80");
 extern void func_001F49B0(void (*)(void), void *);
-extern void func_L16_002E6D40(void);
+extern void func_L16_002E6D40();
 extern int func_L16_002E7138(int);
 extern void func_L16_002E7198(int);
 
