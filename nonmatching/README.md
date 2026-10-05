@@ -9,7 +9,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L02_002D8B80`](l02_aridia/func_L02_002D8B80.c) | l02_aridia | 3696 | BYTES 8/3696 | 99.8% |
 | [`func_L00_002C48C8`](shared/func_L00_002C48C8.c) | shared | 708 | BYTES 2/708 | 99.7% |
 | [`func_L18_002FD058`](l18_veldin2/func_L18_002FD058.c) | l18_veldin2 | 1384 | BYTES 4/1384 | 99.7% |
-| [`func_L00_001ED6D8`](shared/func_L00_001ED6D8.c) | shared | 552 | BYTES 3/552 | 99.5% |
 | [`func_L00_002BC860`](shared/func_L00_002BC860.c) | shared | 1448 | BYTES 9/1448 (cannot land as written) | 99.4% |
 | [`func_L18_002DC850`](l18_veldin2/func_L18_002DC850.c) | l18_veldin2 | 1236 | BYTES 8/1236 | 99.3% |
 | [`func_L18_002D74F8`](l18_veldin2/func_L18_002D74F8.c) | l18_veldin2 | 136 | BYTES 1/136 | 99.3% |
