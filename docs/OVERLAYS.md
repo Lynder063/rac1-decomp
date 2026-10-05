@@ -217,7 +217,17 @@ one real C function show up as several entries, and `tools/overlay_check.py` (an
   see the file). Write the C under the owner's name and leave the fragment alone.
 
 The pieces must follow the owner in the catalogue; the check compares the C against the bytes of
-all of them together.
+all of them together, and the progress report counts each piece as finished once the owner is EXACT.
+
+A function that ends in a return of its own which other code also reaches has `func_001E9768`
+(the executable's empty function, `jr $31; nop`) as its last piece. The catalogue sizes that entry
+4 bytes, from a place where another entry starts in its delay slot, so the check adds the nop:
+`func_L16_002E4BD8` is 40 bytes in the catalogue and 48 in retail and in C.
+
+A 4-byte entry that follows a finished function is a different thing: the word the linker left of
+a function it stripped. Those are listed in `config/overlays/linker_remnants.txt` and marked
+`LINKER_REMNANT` in the source (docs/ASM_CLASSIFICATION.md, "Level code"); `tools/overlay_remnants.py`
+tells the two apart from the bytes.
 
 ## Relatives
 

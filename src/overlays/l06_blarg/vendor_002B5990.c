@@ -65,7 +65,7 @@ void func_L06_002DB248(int idx)
     }
 }
 INCLUDE_ASM("asm/overlays", func_L06_002EB140);
-INCLUDE_ASM("asm/overlays", func_L06_002EB258);
+LINKER_REMNANT("asm/overlays", func_L06_002EB258);
 extern short *D_L06_001AC340[];
 extern char *D_L06_00160058 MACRO_ADDR;
 

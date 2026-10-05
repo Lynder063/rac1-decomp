@@ -451,7 +451,7 @@ void func_L00_002EC0C8(int mode) {
         *(float *)(g + 0x288) = 0.018f;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002EC208);
+LINKER_REMNANT("asm/overlays", func_L00_002EC208);
 extern void func_001F9BC0(void *);
 extern void func_001FA218(void *, void *);
 extern void func_001FA480(void *, void *);

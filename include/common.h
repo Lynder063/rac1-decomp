@@ -59,6 +59,29 @@ typedef double f64;
 #define MACRO_ADDR __attribute__((section(".sdata")))
 
 /*
+ * A scalar in the file's own small data, declared with its real type:
+ *
+ *     extern float D_L17_00162108 SDATA(D_L17_00162108);
+ *
+ * Retail reaches a level file's own tuning floats and ints through $gp at
+ * every access, in one instruction. The older way to get that here is
+ * `extern short D_x;` read as `*(float *)&D_x`, and for most functions it
+ * matches. But a read through a cast is not a scalar to the compiler: it may
+ * alias any store through a pointer, so the load is ordered behind such
+ * stores and its value is forgotten at each one. Where retail loads the
+ * global before a store through a struct pointer, only the real type
+ * reproduces it (func_L17_002EEB08, func_L17_002EDE50), with the stores
+ * written as struct members.
+ *
+ * The declaration gives the symbol the assembler label `sym__gp`;
+ * tools/check_macro_slots.py makes every such label a 1-byte .extern equated
+ * to the symbol, so the assembler emits the $gp-relative form. A file that
+ * also declares the same symbol `extern short` for an older function needs
+ * two C names for it; keep the real name for this declaration.
+ */
+#define SDATA(sym) __asm__(#sym "__gp") MACRO_ADDR
+
+/*
  * Copies one 16-byte quadword from src to dst through $2, the way retail's
  * own source did: an inline-asm copy shaped like libvu0's sceVu0CopyVector
  * (which uses $6). Each address goes into its own register and is read at

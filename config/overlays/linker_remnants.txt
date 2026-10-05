@@ -1,0 +1,27 @@
+# Level code's linker remnants: the one word retail's linker left of a function it stripped
+# (that function's last delay slot). Kept as original assembly and counted as finished, as
+# config/linker_remnants.txt does for the executable (docs/ASM_CLASSIFICATION.md).
+# tools/overlay_remnants.py states the rule and checks this list against the level dumps;
+# the source marks each with LINKER_REMNANT("asm/overlays", name).
+func_L00_001EDBF8
+func_L00_0023D838
+func_L00_0025F360
+func_L00_00262DE8
+func_L00_0028F208
+func_L00_002AAC48
+func_L00_002B5990
+func_L00_002C6F40
+func_L00_002CABB8
+func_L00_002EC208
+func_L01_0026FFC0
+func_L01_00277CA0
+func_L01_00279AC0
+func_L01_0028C1D0
+func_L01_002A0D78
+func_L02_0025D778
+func_L03_00249488
+func_L06_002EB258
+func_L08_002DF750
+func_L14_003162A0
+func_L17_002F4208
+func_L17_002F6AF0

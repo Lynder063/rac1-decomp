@@ -391,7 +391,7 @@ void func_L00_002B5488(void *p) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002B5990);
+LINKER_REMNANT("asm/overlays", func_L00_002B5990);
 typedef int u128_2b46a8 __attribute__((mode(TI)));
 typedef union { u128_2b46a8 q; float f[4]; } V_2b46a8;
 extern char D_L00_00166EC0[];

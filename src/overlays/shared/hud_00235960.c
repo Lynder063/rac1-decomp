@@ -1239,7 +1239,7 @@ void func_L00_0023C458(int tex, int x, int y, int w, int h, int alpha) {
     D_L00_00161280 = (int *)((char *)D_L00_00161280 + 0x70);
 }
 INCLUDE_ASM("asm/overlays", func_L00_0023D750);
-INCLUDE_ASM("asm/overlays", func_L00_0023D838);
+LINKER_REMNANT("asm/overlays", func_L00_0023D838);
 extern int D_0015EF8C MACRO_ADDR;
 extern int D_0015EF78 MACRO_ADDR;
 extern int D_0015EF74 MACRO_ADDR;

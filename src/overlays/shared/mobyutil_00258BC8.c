@@ -1551,7 +1551,7 @@ float func_L00_0025ED30(u128_ED30 *out, u128_ED30 *p, u128_ED30 *a, u128_ED30 *b
     return func_L00_0025EAC8_f(e, g, 0.0f);
 }
 INCLUDE_ASM("asm/overlays", func_L00_0025EFC0);
-INCLUDE_ASM("asm/overlays", func_L00_0025F360);
+LINKER_REMNANT("asm/overlays", func_L00_0025F360);
 extern f32 func_L00_002001D8(void *, f32);
 
 /* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/math_rotations_0025d238.c, FUN_L00_0025e310. */

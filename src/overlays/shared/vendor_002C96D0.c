@@ -68,7 +68,7 @@ void func_L00_002CA6B8(char *a) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_002CA728);
-INCLUDE_ASM("asm/overlays", func_L00_002CABB8);
+LINKER_REMNANT("asm/overlays", func_L00_002CABB8);
 INCLUDE_ASM("asm/overlays", func_L00_002CABC0);
 extern int func_L00_002DCDA8(void *);
 int func_L00_002CC210(char *a) {
