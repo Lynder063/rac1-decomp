@@ -94,7 +94,80 @@ INCLUDE_ASM("asm/overlays", func_L12_003078C8);
 INCLUDE_ASM("asm/overlays", func_L12_00307C08);
 INCLUDE_ASM("asm/overlays", func_L12_00307DB0);
 INCLUDE_ASM("asm/overlays", func_L12_00308AC0);
-INCLUDE_ASM("asm/overlays", func_L12_00308C20);
+extern int D_L12_00160058_m __asm__("D_L12_00160058") MACRO_ADDR;
+extern void func_L12_00308E98(char *m);
+extern void func_0020D678(void *);
+extern float func_001F9D48(void *, void *);
+extern void func_00213DE0(void *, int, int, int);
+extern int func_001F9938(void *);
+extern void func_L12_00308AC0(char *);
+
+/* Door/switch moby: clears its linked mobys, waits for the hero, opens, fires its list one by one, closes. */
+void func_L12_00308C20(char *m) {
+    char *d = *(char **)(m + 0x78);
+    int *slots;
+    int i;
+    func_L12_00308E98(m);
+    slots = (int *)(d + 0xC0);
+    switch (((unsigned char *)m)[0x20]) {
+    case 0:
+        for (i = 0; i < 12; i++) {
+            if (slots[i] != -1) {
+                char *o = (char *)(D_L12_00160058_m + (slots[i] << 8));
+                if (o != 0 && ((unsigned char *)o)[0x20] != 0xFE && ((unsigned char *)o)[0x20] != 0xFD) {
+                    func_0020D678(o);
+                }
+            }
+        }
+        m[0x20] = 1;
+        break;
+    case 1:
+        if (*(int *)(d + 0xB4) != 2) {
+            if (func_001F9D48(m + 0x10, d + 0x70) < *(float *)(d + 0xF8)) {
+                m[0x20] = 2;
+            }
+        }
+        break;
+    case 2:
+        if (((unsigned char *)m)[0x53] != 1) {
+            func_00213DE0(m, 1, 0, func_001F9850(2));
+        }
+        if (m[0x70] & 2) {
+            if (((unsigned char *)m)[0x53] != 2) {
+                func_00213DE0(m, 2, 0, func_001F9850(2));
+            }
+            m[0x20] = 3;
+        }
+        break;
+    case 3:
+        if (func_001F9938(d + 0xFC)) {
+            if (slots[*(int *)(d + 0xF0)] != -1) {
+                func_L12_00308AC0(m);
+                m[0xBC] = ((unsigned char *)m)[0xBC] == 0;
+                *(short *)(d + 0xFC) = func_001F9850(0x28);
+            }
+            *(int *)(d + 0xF0) += 1;
+        }
+        if (*(int *)(d + 0xF0) == 12 || slots[*(int *)(d + 0xF0)] == -1) {
+            m[0x20] = 4;
+        }
+        break;
+    case 4:
+        *(unsigned short *)(m + 0x34) &= 0xEFFF;
+        if (((unsigned char *)m)[0x53] != 3) {
+            func_00213DE0(m, 3, 0, func_001F9850(2));
+        }
+        if (m[0x70] & 2) {
+            if (((unsigned char *)m)[0x53] != 0) {
+                func_00213DE0(m, 0, 0, func_001F9850(2));
+            }
+            m[0x20] = 5;
+        }
+        break;
+    case 5:
+        break;
+    }
+}
 extern char D_0013E633[] NOT_SDA;
 extern int func_001F9938(void *);
 extern float func_001F9B88(float);
