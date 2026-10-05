@@ -74,7 +74,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L18_002F86E8`](l18_veldin2/func_L18_002F86E8.c) | l18_veldin2 | 1048 | BYTES 38/1048 | 96.4% |
 | [`func_L02_002ED660`](l02_aridia/func_L02_002ED660.c) | l02_aridia | 220 | BYTES 8/220 | 96.4% |
 | [`func_L18_002FD5C0`](l18_veldin2/func_L18_002FD5C0.c) | l18_veldin2 | 988 | BYTES 36/988 | 96.4% |
-| [`func_L16_002D0A40`](l16_kalebo3/func_L16_002D0A40.c) | l16_kalebo3 | 192 | BYTES 7/192 | 96.3% |
 | [`func_L09_00305378`](l09_gaspar/func_L09_00305378.c) | l09_gaspar | 516 | BYTES 19/516 | 96.3% |
 | [`func_L06_002F4720`](shared/func_L06_002F4720.c) | shared | 244 | BYTES 9/244 | 96.3% |
 | [`func_L14_002B4668`](shared/func_L14_002B4668.c) | shared | 352 | BYTES 13/352 | 96.3% |
@@ -379,13 +378,11 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L15_002EF030`](l15_quartu/func_L15_002EF030.c) | l15_quartu | 888 | SIZE ours 880 / retail 888 | - |
 | [`func_L16_002CFDB8`](l16_kalebo3/func_L16_002CFDB8.c) | l16_kalebo3 | 696 | SIZE ours 688 / retail 696 | - |
 | [`func_L16_002D0DC0`](l16_kalebo3/func_L16_002D0DC0.c) | l16_kalebo3 | 520 | SIZE ours 524 / retail 520 | - |
-| [`func_L16_002D6E98`](l16_kalebo3/func_L16_002D6E98.c) | l16_kalebo3 | 244 | SIZE ours 240 / retail 244 | - |
 | [`func_L16_002D6F90`](l16_kalebo3/func_L16_002D6F90.c) | l16_kalebo3 | 240 | SIZE ours 236 / retail 240 | - |
 | [`func_L16_002D7178`](l16_kalebo3/func_L16_002D7178.c) | l16_kalebo3 | 204 | SIZE ours 200 / retail 204 | - |
 | [`func_L16_002E4408`](shared/func_L16_002E4408.c) | shared | 172 | SIZE ours 176 / retail 172 | - |
 | [`func_L16_002E4C08`](l16_kalebo3/func_L16_002E4C08.c) | l16_kalebo3 | 1664 | SIZE ours 1868 / retail 1664 | - |
 | [`func_L16_002E9018`](l16_kalebo3/func_L16_002E9018.c) | l16_kalebo3 | 608 | SIZE ours 604 / retail 608 | - |
-| [`func_L16_002E9F80`](l16_kalebo3/func_L16_002E9F80.c) | l16_kalebo3 | 140 | SIZE ours 144 / retail 140 | - |
 | [`func_L17_002CD1B0`](l17_fleet/func_L17_002CD1B0.c) | l17_fleet | 328 | SIZE ours 332 / retail 328 | - |
 | [`func_L18_002D7310`](l18_veldin2/func_L18_002D7310.c) | l18_veldin2 | 484 | SIZE ours 488 / retail 484 | - |
 | [`func_L18_002EC290`](l18_veldin2/func_L18_002EC290.c) | l18_veldin2 | 2904 | SIZE ours 2896 / retail 2904 | - |

@@ -389,7 +389,42 @@ void func_L16_002E8EA8(unsigned char *m, void *v) {
                         *(int *)&D_L16_00161F5C, final_size, func_001F9850(0x23));
 }
 INCLUDE_ASM("asm/overlays", func_L16_002E9018);
-INCLUDE_ASM("asm/overlays", func_L16_002E9278);
+extern int D_L16_0015F6A8;
+extern char D_L16_0016CCE0[];
+extern void func_L00_00250800(void *, int, void *);
+extern void func_L00_00264BE8(void *, void *, void *, float, float);
+typedef float W[4] __attribute__((aligned(16)));
+
+/* Waits one tick, then pushes two pairs of the player's points apart along their difference. */
+void func_L16_002E9278(char *moby) {
+    W a, b, c, d, e, f;
+    float k1 = 0.075f, k2 = 20000.0f, k3 = 1000.0f;
+    float j1 = 0.075f, j2 = 20000.0f, j3 = 1000.0f;
+    switch (*(unsigned char *)(moby + 0x20)) {
+    case 0:
+        *(unsigned char *)(moby + 0x30) = 0xFF;
+        moby[0x20] = 1;
+        break;
+    case 1:
+        if (D_L16_0015F6A8 == 2) {
+        char *g = D_L16_0016CCE0;
+        if (*(int *)(g + 0x30) == 0) {
+            char *p = *(char **)(g + 0x184);
+            func_L00_00250800(p, 6, a);
+            func_L00_00250800(p, 4, c);
+            func_001F9BF0(e, a, c);
+            func_L00_001FF4B0(e, e, k1);
+            func_L00_00264BE8(a, a, e, k2, k3);
+            func_L00_00250800(p, 7, b);
+            func_L00_00250800(p, 5, d);
+            func_001F9BF0(f, b, d);
+            func_L00_001FF4B0(f, f, j1);
+            func_L00_00264BE8(b, b, f, j2, j3);
+        }
+        }
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L16_002E93F8);
 extern float func_001F9B88(float);
 extern int func_001FA8A8(int,int,float);
@@ -551,7 +586,24 @@ void func_L16_002E9DE8(char *moby) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002E9F80);
+extern short *D_L16_001ABFC0[];
+extern int func_L16_002C5A08(void *);
+
+// Finds the first moby of type 0x10E in a level's id list that passes the check.
+char *func_L16_002E9F80(int idx)
+{
+    short *p = D_L16_001ABFC0[idx];
+    char *moby;
+    if (p == 0)
+        return 0;
+    for (;;) {
+        moby = D_L16_00160098 + ((*(unsigned short *)p & 0x7FFF) << 8);
+        if (*(short *)(moby + 0xA6) == 0x10E && func_L16_002C5A08(moby))
+            return moby;
+        if (*p++ < 0)
+            return 0;
+    }
+}
 typedef struct {
     float x, y, z;
 } Vec3f;

@@ -767,7 +767,20 @@ void func_L16_002D0990(char *moby) {
         } while (*p++ >= 0);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002D0A40);
+typedef struct {char pad00[0x10];float position[4];unsigned char state,group;char pad22[0x84];short type;} L16HeightPeer;
+/* Find another linked class-228 moby at the same height. */
+int func_L16_002D0A40(char *arg) {
+    L16HeightPeer *m=(L16HeightPeer *)arg,*other;
+    short *p=(short *)D_L16_001ABFC0[m->group];
+    if(!p) return 0;
+    for(;;p++) {
+        other=(L16HeightPeer *)(D_L16_00160098+((*(unsigned short *)p&0x7FFF)<<8));
+        if(0x228==other->type && m!=other) {
+            if(func_001F9B88(other->position[2]-m->position[2])<0.1f) return (int)other;
+        }
+        if(*p<0) return 0;
+    }
+}
 // Returns 0 if any moby in the list at m[0x21] has type 0x222 and a nonzero byte at 0xBC, else 1.
 int func_L16_002D0B00(void *mv) {
     unsigned char *m = mv;
@@ -1039,7 +1052,30 @@ void func_L16_002D6DA8(unsigned char *moby) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002D6E98);
+extern float D_L16_00161B40 SDATA(D_L16_00161B40);
+/* Activate the linked mobys and return the one nearest the challenge target. */
+void *func_L16_002D6E98(int index, int secondary) {
+    short *p = (short *)D_L16_001ABFC0[index];
+    char *nearest = 0;
+    float distance = 1000.0f;
+    char *moby;
+    float *data;
+    float d;
+    float g;
+    if (!p) return 0;
+    while (1) {
+        moby = D_L16_00160098 + ((*(unsigned short *)p & 0x7FFF) << 8);
+        if (*(short *)(moby + 0xA6) != 0x287) continue;
+        d = func_001F9D10(D_L16_00167240, moby + 0x10);
+        if (d < distance) {distance = d; nearest = moby;}
+        data = *(float **)(moby + 0x78);
+        moby[0x20] = 1;
+        g = D_L16_00161B40;
+        data[5] = g;
+        if (secondary) data[6] = g;
+        if (*p++ < 0) return nearest;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L16_002D6F90);
 extern int func_001F9B70(int);
 extern void func_0022ED80(int, int, void *);

@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 56.40912848711807,
+  "fuzzy_match_percent": 56.42989465655102,
   "total_code": "3712808",
-  "matched_code": "2006180",
-  "matched_code_percent": 54.03403569481643,
+  "matched_code": "2007136",
+  "matched_code_percent": 54.05978440037837,
   "total_functions": 5109,
-  "matched_functions": 3176,
-  "matched_functions_percent": 62.16480720297514,
+  "matched_functions": 3180,
+  "matched_functions_percent": 62.24310041103934,
   "complete_code": "172932",
   "complete_code_percent": 4.657714592297797,
   "total_units": 278,
@@ -50625,13 +50625,13 @@
   {
    "name": "Level 16: Kalebo III",
    "measures": {
-    "fuzzy_match_percent": 95.25177754269306,
+    "fuzzy_match_percent": 95.83437388544658,
     "total_code": "132340",
-    "matched_code": "114564",
-    "matched_code_percent": 86.56793108659514,
+    "matched_code": "115520",
+    "matched_code_percent": 87.29031283058788,
     "total_functions": 98,
-    "matched_functions": 79,
-    "matched_functions_percent": 80.61224489795919,
+    "matched_functions": 83,
+    "matched_functions_percent": 84.6938775510204,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -50920,7 +50920,7 @@
     {
      "name": "func_L16_002D0A40",
      "size": "192",
-     "fuzzy_match_percent": 96.35,
+     "fuzzy_match_percent": 100.0,
      "address": "814248",
      "metadata": {
       "virtual_address": "2951744"
@@ -51037,7 +51037,7 @@
     {
      "name": "func_L16_002D6E98",
      "size": "244",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "839936",
      "metadata": {
       "virtual_address": "2977432"
@@ -51388,7 +51388,7 @@
     {
      "name": "func_L16_002E9278",
      "size": "380",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "914656",
      "metadata": {
       "virtual_address": "3052152"
@@ -51433,7 +51433,7 @@
     {
      "name": "func_L16_002E9F80",
      "size": "140",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "917992",
      "metadata": {
       "virtual_address": "3055488"
@@ -53263,13 +53263,13 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 55.59351999379138,
+    "fuzzy_match_percent": 55.617264445777586,
     "total_code": "3247108",
-    "matched_code": "1717188",
-    "matched_code_percent": 52.883612125004774,
+    "matched_code": "1718144",
+    "matched_code_percent": 52.91305370809964,
     "total_functions": 3429,
-    "matched_functions": 1820,
-    "matched_functions_percent": 53.076698745990086,
+    "matched_functions": 1824,
+    "matched_functions_percent": 53.193350831146105,
     "complete_code": "79588",
     "complete_code_percent": 2.4510425892825247
    }
@@ -53323,13 +53323,13 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 62.820407314022134,
+    "fuzzy_match_percent": 62.858082150815065,
     "total_code": "2046480",
-    "matched_code": "1235800",
-    "matched_code_percent": 60.3866150658692,
+    "matched_code": "1236756",
+    "matched_code_percent": 60.43332942418201,
     "total_functions": 1449,
-    "matched_functions": 752,
-    "matched_functions_percent": 51.89786059351277,
+    "matched_functions": 756,
+    "matched_functions_percent": 52.17391304347826,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53578,13 +53578,13 @@
    "id": "level_16",
    "name": "Level 16: Kalebo III",
    "measures": {
-    "fuzzy_match_percent": 95.25177754269306,
+    "fuzzy_match_percent": 95.83437388544658,
     "total_code": "132340",
-    "matched_code": "114564",
-    "matched_code_percent": 86.56793108659514,
+    "matched_code": "115520",
+    "matched_code_percent": 87.29031283058788,
     "total_functions": 98,
-    "matched_functions": 79,
-    "matched_functions_percent": 80.61224489795919,
+    "matched_functions": 83,
+    "matched_functions_percent": 84.6938775510204,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
