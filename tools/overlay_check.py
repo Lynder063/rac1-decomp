@@ -109,6 +109,7 @@ _catalogue_cache = None
 
 
 JOINED = ROOT / "config/overlays/joined.tsv"
+BARE_RETURN = "func_001E9768"     # `jr $31; nop`, the executable's empty function
 _joined_cache = None
 
 
@@ -133,10 +134,15 @@ def joined_size(name: str, csize: int, catalogue) -> int:
     """CSIZE plus the sizes of the pieces joined to NAME (docs/OVERLAYS.md, joined functions).
     A piece of kind exe is a shared fragment such as the delay slot that the catalogue split
     off the preceding jr (func_001EC030); it still counts as part of this function's bytes."""
-    for piece in load_joined().get(name, []):
+    pieces = load_joined().get(name, [])
+    for piece in pieces:
         if piece not in catalogue:
             raise SystemExit(f"joined.tsv: {name} is joined to {piece}, which is not in the catalogue")
         csize += catalogue[piece][1]
+    # A function whose last piece is the bare return ends in that return's delay slot too: a nop,
+    # which the catalogue takes for padding (it sizes func_001E9768 as the `jr $31` alone).
+    if pieces and pieces[-1] == BARE_RETURN:
+        csize += 4
     return csize
 
 
