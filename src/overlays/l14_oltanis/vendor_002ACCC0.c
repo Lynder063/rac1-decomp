@@ -342,7 +342,63 @@ INCLUDE_ASM("asm/overlays", func_L14_002B5750);
 INCLUDE_ASM("asm/overlays", func_L14_002B58C0);
 INCLUDE_ASM("asm/overlays", func_L14_002B58E4);
 INCLUDE_ASM("asm/overlays", func_L14_002B5938);
-INCLUDE_ASM("asm/overlays", func_L14_002B64E0);
+/* Sibling of func_L14_002B5590 (84% similar): same collision step on the moby's data block, but
+ * it is skipped for states 0 and 9, state 9 is what cases 1/2 set (6 in the sibling) and cases
+ * 3-8 also start func_00213DE0 and store 1.75f at +0x58. Written from the sibling's C; f4 has to
+ * be zeroed after the +0x2C store. */
+void func_L14_002B64E0(unsigned char *m) {
+    unsigned char *d = *(unsigned char **)(m + 0x78);
+    int loc0;
+    float f4;
+    char *q;
+    int k;
+    float t;
+    if (m[0x20] == 0 || m[0x20] == 9) {
+        return;
+    }
+    *(float *)(m + 0x2C) = *(float *)(*(char **)(m + 0x24) + 0x24);
+    f4 = 0.0f;
+    q = func_L00_0025B478(m, 0x330000, 0);
+    if (q != 0) {
+        if (*(int *)(q + 0x20) != 0) {
+            int a = *(short *)(*(int *)(q + 0x20) + 0xA6);
+            if (a == *(short *)(m + 0xA6) || a == 0x370) q = 0;
+        }
+    }
+    k = func_L00_0025B4D0(m, q, d + 0x20, 0, &loc0, &f4, 0, 4);
+    if (loc0 != 1 && m[0x20] != 9) {
+        t = *(float *)(d + 0x20) - f4;
+        *(float *)(d + 0x20) = t;
+        if (t <= 0.0f) k = 1;
+        switch (k) {
+        case 0:
+        case 11:
+            break;
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+            func_00213DE0(m, 2, 0, 5);
+            *(float *)(m + 0x58) = 1.75f;
+        case 9:
+        case 10:
+            d[0x67] = 0xFA;
+            break;
+        case 1:
+        case 2:
+            m[0x20] = 9;
+            *(unsigned short *)(m + 0x34) &= 0xEFFF;
+            d[0x67] = 0xFA;
+            func_L00_002584A8(m, 0, -1);
+            break;
+        }
+        func_L00_0025E4B0(m, (short *)(d + 0x60));
+    }
+    m[0xA4] = 0xFF;
+    func_L00_0025E590(m, d + 0x60);
+}
 extern short D_L14_00161600;
 extern short D_L14_00161604;
 extern short D_L14_00161608;
