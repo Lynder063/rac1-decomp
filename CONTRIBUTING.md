@@ -53,6 +53,7 @@ to check a match against. On 2026-09-30 the movie code (`movie/*`, Sony's
 ezmpeg sample in retail) and one libmpeg helper were reverted to
 assembly for exactly this: they had been compiled from that sample's
 source. They are to be redone from the assembly alone.
+The rules for doing that are in [`docs/MOVIE.md`](docs/MOVIE.md).
 
 Known compiler behaviour, useful levers and measured dead ends are collected
 in [`docs/DECOMP_PROGRESS.md`](docs/DECOMP_PROGRESS.md).
