@@ -40,7 +40,28 @@ char *func_L09_002C3690(char *src, char *pos, int cls) {
     }
     return m;
 }
-INCLUDE_ASM("asm/overlays", func_L09_002C37A0);
+extern char *D_L09_00160064 MACRO_ADDR;
+extern float func_001F9D10(void *, void *);
+
+/* closest moby of the given type to pos; its distance goes to *dist if given */
+char *func_L09_002C37A0(void *pos, int type, float *dist) {
+    char *best = 0;
+    float bestd = 100000.0f;
+    char *m;
+    for (m = D_L09_00160064; m != 0; m = *(char **)(m + 0x28)) {
+        if (*(short *)(m + 0xA6) == type) {
+            float d = func_001F9D10(pos, m + 0x10);
+            if (d < bestd) {
+                bestd = d;
+                best = m;
+            }
+        }
+    }
+    if (dist != 0) {
+        *dist = bestd;
+    }
+    return best;
+}
 INCLUDE_ASM("asm/overlays", func_L09_002C3858);
 extern float D_0015EE6C MACRO_ADDR;
 extern float D_0015EE60 MACRO_ADDR;
