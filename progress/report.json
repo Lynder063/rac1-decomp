@@ -1,6 +1,6 @@
 {
  "measures": {
-  "fuzzy_match_percent": 25.10599954535757,
+  "fuzzy_match_percent": 25.115615210913127,
   "total_code": "3712808",
   "matched_code": "838628",
   "matched_code_percent": 22.587432476982382,
@@ -43785,7 +43785,7 @@
   {
    "name": "Level 07: Umbris",
    "measures": {
-    "fuzzy_match_percent": 20.271146384479714,
+    "fuzzy_match_percent": 20.519166666666663,
     "total_code": "72576",
     "matched_code": "11444",
     "matched_code_percent": 15.768298059964726,
@@ -44278,7 +44278,7 @@
     {
      "name": "func_L07_00314730",
      "size": "208",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 86.54,
      "address": "713408",
      "metadata": {
       "virtual_address": "3229488"
@@ -46296,7 +46296,7 @@
   {
    "name": "Level 11: Pokitaru",
    "measures": {
-    "fuzzy_match_percent": 11.338989508217017,
+    "fuzzy_match_percent": 11.475945962675251,
     "total_code": "129244",
     "matched_code": "12472",
     "matched_code_percent": 9.649964408405806,
@@ -46789,7 +46789,7 @@
     {
      "name": "func_L11_00313148",
      "size": "208",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 85.1,
      "address": "877488",
      "metadata": {
       "virtual_address": "3223880"
@@ -53263,7 +53263,7 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 19.877643724816046,
+    "fuzzy_match_percent": 19.888638468446377,
     "total_code": "3247108",
     "matched_code": "552128",
     "matched_code_percent": 17.003684509415763,
@@ -53323,7 +53323,7 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 14.625942242289204,
+    "fuzzy_match_percent": 14.643387377350384,
     "total_code": "2046480",
     "matched_code": "232944",
     "matched_code_percent": 11.38266682303272,
@@ -53443,7 +53443,7 @@
    "id": "level_07",
    "name": "Level 07: Umbris",
    "measures": {
-    "fuzzy_match_percent": 20.271146384479714,
+    "fuzzy_match_percent": 20.519166666666663,
     "total_code": "72576",
     "matched_code": "11444",
     "matched_code_percent": 15.768298059964726,
@@ -53503,7 +53503,7 @@
    "id": "level_11",
    "name": "Level 11: Pokitaru",
    "measures": {
-    "fuzzy_match_percent": 11.338989508217017,
+    "fuzzy_match_percent": 11.475945962675251,
     "total_code": "129244",
     "matched_code": "12472",
     "matched_code_percent": 9.649964408405806,
