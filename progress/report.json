@@ -1,16 +1,16 @@
 {
  "measures": {
-  "fuzzy_match_percent": 56.44185326038941,
+  "fuzzy_match_percent": 56.45068754430606,
   "total_code": "3712808",
-  "matched_code": "2007580",
-  "matched_code_percent": 54.071743004216756,
+  "matched_code": "2007908",
+  "matched_code_percent": 54.080577288133405,
   "total_functions": 5109,
-  "matched_functions": 3182,
-  "matched_functions_percent": 62.28224701507144,
-  "complete_code": "172932",
-  "complete_code_percent": 4.657714592297797,
+  "matched_functions": 3183,
+  "matched_functions_percent": 62.30182031708749,
+  "complete_code": "313604",
+  "complete_code_percent": 8.446545040842404,
   "total_units": 278,
-  "complete_units": 70
+  "complete_units": 71
  },
  "units": [
   {
@@ -51534,17 +51534,17 @@
   {
    "name": "Level 17: Drek's Fleet",
    "measures": {
-    "fuzzy_match_percent": 99.76683348498635,
+    "fuzzy_match_percent": 100.0,
     "total_code": "140672",
-    "matched_code": "140344",
-    "matched_code_percent": 99.76683348498635,
+    "matched_code": "140672",
+    "matched_code_percent": 100.0,
     "total_functions": 62,
-    "matched_functions": 61,
-    "matched_functions_percent": 98.38709677419355,
-    "complete_code": "0",
-    "complete_code_percent": 0.0,
+    "matched_functions": 62,
+    "matched_functions_percent": 100.0,
+    "complete_code": "140672",
+    "complete_code_percent": 100.0,
     "total_units": 1,
-    "complete_units": 0
+    "complete_units": 1
    },
    "functions": [
     {
@@ -51676,7 +51676,7 @@
     {
      "name": "func_L17_002CD1B0",
      "size": "328",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "830064",
      "metadata": {
       "virtual_address": "2937264"
@@ -52107,7 +52107,7 @@
     }
    ],
    "metadata": {
-    "complete": false,
+    "complete": true,
     "source_path": "src/overlays/l17_fleet",
     "progress_categories": [
      "level_code",
@@ -53263,15 +53263,15 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 55.63093815173378,
+    "fuzzy_match_percent": 55.64103944802574,
     "total_code": "3247108",
-    "matched_code": "1718588",
-    "matched_code_percent": 52.92672741405583,
+    "matched_code": "1718916",
+    "matched_code_percent": 52.93682871034779,
     "total_functions": 3429,
-    "matched_functions": 1826,
-    "matched_functions_percent": 53.251676873724115,
-    "complete_code": "79588",
-    "complete_code_percent": 2.4510425892825247
+    "matched_functions": 1827,
+    "matched_functions_percent": 53.28083989501312,
+    "complete_code": "220260",
+    "complete_code_percent": 6.783266833132744
    }
   },
   {
@@ -53323,15 +53323,15 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 62.87977794065909,
+    "fuzzy_match_percent": 62.8958054610844,
     "total_code": "2046480",
-    "matched_code": "1237200",
-    "matched_code_percent": 60.45502521402604,
+    "matched_code": "1237528",
+    "matched_code_percent": 60.47105273445135,
     "total_functions": 1449,
-    "matched_functions": 758,
-    "matched_functions_percent": 52.31193926846101,
-    "complete_code": "0",
-    "complete_code_percent": 0.0
+    "matched_functions": 759,
+    "matched_functions_percent": 52.38095238095238,
+    "complete_code": "140672",
+    "complete_code_percent": 6.873851686798796
    }
   },
   {
@@ -53593,15 +53593,15 @@
    "id": "level_17",
    "name": "Level 17: Drek's Fleet",
    "measures": {
-    "fuzzy_match_percent": 99.76683348498635,
+    "fuzzy_match_percent": 100.0,
     "total_code": "140672",
-    "matched_code": "140344",
-    "matched_code_percent": 99.76683348498635,
+    "matched_code": "140672",
+    "matched_code_percent": 100.0,
     "total_functions": 62,
-    "matched_functions": 61,
-    "matched_functions_percent": 98.38709677419355,
-    "complete_code": "0",
-    "complete_code_percent": 0.0
+    "matched_functions": 62,
+    "matched_functions_percent": 100.0,
+    "complete_code": "140672",
+    "complete_code_percent": 100.0
    }
   },
   {

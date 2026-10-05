@@ -381,7 +381,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L16_002E4408`](shared/func_L16_002E4408.c) | shared | 172 | SIZE ours 176 / retail 172 | - |
 | [`func_L16_002E4C08`](l16_kalebo3/func_L16_002E4C08.c) | l16_kalebo3 | 1664 | SIZE ours 1868 / retail 1664 | - |
 | [`func_L16_002E9018`](l16_kalebo3/func_L16_002E9018.c) | l16_kalebo3 | 608 | SIZE ours 604 / retail 608 | - |
-| [`func_L17_002CD1B0`](l17_fleet/func_L17_002CD1B0.c) | l17_fleet | 328 | SIZE ours 332 / retail 328 | - |
 | [`func_L18_002D7310`](l18_veldin2/func_L18_002D7310.c) | l18_veldin2 | 484 | SIZE ours 488 / retail 484 | - |
 | [`func_L18_002EC290`](l18_veldin2/func_L18_002EC290.c) | l18_veldin2 | 2904 | SIZE ours 2896 / retail 2904 | - |
 | [`func_L18_002F1444`](l18_veldin2/func_L18_002F1444.c) | l18_veldin2 | 204 | SIZE ours 200 / retail 204 | - |

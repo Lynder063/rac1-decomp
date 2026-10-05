@@ -269,7 +269,10 @@ typedef struct {
     int timer;
     float yawvel;
     int list;
-    char pad80[0x10];
+    short group;
+    char pad82[2];
+    int path;
+    char pad88[8];
     char a90[0x44];
     float fD4;
     char padD8[0x1C];
@@ -471,7 +474,65 @@ void func_L17_002CD088(char *m) {
         func_L00_0025E590(m, e);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L17_002CD1B0);
+extern short *D_L17_001AC440[];
+extern char D_L17_001B10B0[];
+
+/* What a class 0x733 craft (moby 1843) keeps of its path: func_L17_002F5C18 follows it from these. */
+typedef struct {
+    char pad0[0x60];
+    int path;
+    int node;
+    float t;
+} Vars1843;
+
+/* One entry of the level's path table: a node count, then the nodes' positions. */
+typedef struct {
+    int count;
+    int pad4[3];
+    float pos[1][4];
+} FleetPath;
+
+/* Counts the class 0x733 craft in this moby's group, then spreads them evenly over its path: each gets the path, a node and that node's position. */
+void func_L17_002CD1B0(char *moby) {
+    Vars347 *v = *(Vars347 **)(moby + 0x78);
+    short count = 0;
+    short k = 0;
+    short *p;
+    int i = v->group;
+
+    if (i != -1) {
+        p = D_L17_001AC440[i];
+        if (p != 0) {
+            unsigned short s;
+            FleetPath *path;
+            short q;
+
+            do {
+                s = *p;
+                if (*(short *)(D_L17_00160058 + (s & 0x7FFF) * 0x100 + 0xA6) == 0x733) {
+                    count++;
+                }
+                p++;
+            } while ((short)s >= 0);
+            path = *(FleetPath **)(D_L17_001B10B0 + v->path * 4);
+            q = path->count / count;
+            p = D_L17_001AC440[i];
+            do {
+                /* i again, now the listed moby's offset in the moby table */
+                i = (*p & 0x7FFF) << 8;
+                if (*(short *)(0xA6 + i + D_L17_00160058) == 0x733) {
+                    char *m = D_L17_00160058 + i;
+                    Vars1843 *d = *(Vars1843 **)(m + 0x78);
+                    qcopy_nc(m + 0x10, path->pos[k]);
+                    d->path = v->path;
+                    d->node = k;
+                    d->t = 0.0f;
+                    k = k + q;
+                }
+            } while (*p++ >= 0);
+        }
+    }
+}
 typedef int u128_2D8CC8 __attribute__((mode(TI)));
 extern int func_L00_0020DC00(void);
 extern void func_001FA1F8(void *, void *);
