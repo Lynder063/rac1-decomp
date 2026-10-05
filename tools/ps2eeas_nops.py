@@ -30,6 +30,9 @@ with calls (func_0012E688, func_0012EC60). Three rules:
    Only branches in the compiler's noreorder blocks, whose delay slot is
    spelled out, are rewritten.
 
+   Adding explicit padding can also suppress GNU's implicit FP compare
+   hazard nop. Preserve that nop when padding a short FP loop.
+
 2. FP compare then branch. A `c.cond.fmt` immediately followed by a
    `bc1*` gets a nop between them. In retail text the pair is never
    adjacent (191 of 191 have the nop). GNU as adds one on its own in
@@ -175,6 +178,30 @@ def gnu_padding(text, start, branch, lines, j):
         else:
             break
     return max(0, run - written)
+
+
+def implicit_loop_compare_nop(text, start, branch, lines, j):
+    """Whether explicit loop padding will replace GNU's FP hazard nop.
+
+    GNU supplies the nop between a compare and a bc1 branch, but stops
+    supplying it when we insert explicit nops there. That existing nop
+    must be spelled out along with any additional short-loop padding.
+    """
+    if not decode(text, branch).getOpcodeName().startswith("bc1"):
+        return False
+    a = branch - 4
+    if a < start or text[a:a + 4] != b"\0\0\0\0":
+        return False
+    while a >= start and text[a:a + 4] == b"\0\0\0\0":
+        a -= 4
+    if a < start or not decode(text, a).getOpcodeName().startswith("c."):
+        return False
+    for k in range(j - 1, -1, -1):
+        source = lines[k].split("#")[0].strip()
+        if not source or source.startswith(".") or source.endswith(":"):
+            continue
+        return source.startswith("c.")
+    return False
 
 
 REGS = {"$zero": 0, "$at": 1, "$gp": 28, "$sp": 29, "$fp": 30, "$ra": 31}
@@ -353,7 +380,9 @@ def main() -> None:
                     inserts[j] = inserts.get(j, 0) + need
                     loops += 1
             elif span < MIN_SPAN:
-                inserts[j] = inserts.get(j, 0) + MIN_SPAN - span
+                replace_hazard = j not in inserts and implicit_loop_compare_nop(
+                    text, start, branch, lines, j)
+                inserts[j] = inserts.get(j, 0) + MIN_SPAN - span + int(replace_hazard)
                 loops += 1
         i = end + 1
 
