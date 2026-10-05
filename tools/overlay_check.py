@@ -100,6 +100,38 @@ class Unresolved(Exception):
 _catalogue_cache = None
 
 
+JOINED = ROOT / "config/overlays/joined.tsv"
+_joined_cache = None
+
+
+def load_joined() -> dict[str, list[str]]:
+    """owner -> [piece, ...] from config/overlays/joined.tsv: catalogue entries that are
+    really one C function (the owner and the entries that follow it)."""
+    global _joined_cache
+    if _joined_cache is not None:
+        return _joined_cache
+    rows = {}
+    if JOINED.exists():
+        for line in JOINED.read_text().splitlines():
+            if not line or line.startswith("#"):
+                continue
+            owner, pieces = line.split("\t", 1)
+            rows[owner] = pieces.split()
+    _joined_cache = rows
+    return rows
+
+
+def joined_size(name: str, csize: int, catalogue) -> int:
+    """CSIZE plus the sizes of the pieces joined to NAME (docs/OVERLAYS.md, joined functions).
+    A piece of kind exe is a shared fragment such as the delay slot that the catalogue split
+    off the preceding jr (func_001EC030); it still counts as part of this function's bytes."""
+    for piece in load_joined().get(name, []):
+        if piece not in catalogue:
+            raise SystemExit(f"joined.tsv: {name} is joined to {piece}, which is not in the catalogue")
+        csize += catalogue[piece][1]
+    return csize
+
+
 def load_catalogue():
     """name -> (kind, size, [(level, address), ...])."""
     global _catalogue_cache
@@ -590,6 +622,7 @@ def check(obj_path, name: str, show: bool = False) -> str:
     if row is None:
         return f"LINK {name} is not in the catalogue"
     _kind, csize, _places = row
+    csize = joined_size(name, csize, catalogue)
 
     elf = ELFFile(open(obj_path, "rb"))
     try:
