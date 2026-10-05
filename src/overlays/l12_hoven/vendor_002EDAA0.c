@@ -188,5 +188,42 @@ void func_L12_0030CAA8(char *m) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L12_0030D248);
+extern void func_001F7868(void);
+extern void func_00234C98(int, long);
+extern int func_001F4868(int);
+extern int func_00215570(void *, int);
+extern void func_L08_00259040(void *, int, int, void *);
+extern void func_L00_001FDE48(int, int, int, void *, int);
+extern void func_L11_0031FCC8(int);
+extern char D_L12_001672C0[];
+extern char D_L12_00208DC0[];
+extern char D_L12_00162188[] MACRO_ADDR;
+extern int D_L12_00205CC8[];
+extern int D_L12_001FBFD0[];
+extern int D_L12_00205CA0[];
+extern int D_L12_00205D18[];
+extern int D_L12_00162154 MACRO_ADDR;
+
+/* Draws the moby's 10-piece overlay when its trigger is visible, with its own GS state. */
+void func_L12_0030D248(char *m) {
+    int *d = *(int **)(m + 0x78);
+    int i;
+    func_001F7868();
+    func_00234C98(0x42, 0x7F00000064L);
+    func_00234C98(8, 0);
+    func_00234C98(0x14, 0xFF9000000260L);
+    func_00234C98(0x47, 0x5360A);
+    if (func_00215570(D_L12_001672C0, d[0])) {
+        func_00234C98(6, func_001F4868(0x2C));
+        for (i = 0; i < 10; i++) {
+            func_L08_00259040(D_L12_00208DC0, D_L12_00205CC8[i], D_L12_001FBFD0[i], D_L12_00162188);
+            func_L00_001FDE48(D_L12_001FBFD0[i], D_L12_00205CA0[i], D_L12_00205D18[i], D_L12_00208DC0, 1);
+        }
+    }
+    func_00234C98(6, func_001F4868(0x2F));
+    func_L11_0031FCC8(0);
+    func_00234C98(0x42, ((long)D_L12_00162154 << 32) | 0x68);
+    func_00234C98(6, func_001F4868(0x30));
+    func_L11_0031FCC8(1);
+}
 INCLUDE_ASM("asm/overlays", func_L12_0030D3D0);
