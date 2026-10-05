@@ -966,7 +966,125 @@ int func_0011BF48(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011BF80);
+typedef char *va_list_1BF80;
+struct FsOpenRequest {
+    s32 completion_semaphore;
+    void *result;
+    s32 result_size;
+    s32 flags;
+    s32 mode;
+    char path[0x400];
+    s32 slot;
+};
+struct SemaphoreParameters {
+    s32 count;
+    s32 max_count;
+    s32 init_count;
+    s32 wait_threads;
+    s32 attr;
+    s32 option;
+};
+struct SifFileSlot {
+    s32 fd;
+    s32 flags;
+    s32 reserved8;
+    s32 reservedC;
+};
+extern s32 D_0012FD94_1BF80[] __asm__("D_0012FD94");
+extern s32 D_0012FDA0_1BF80[] __asm__("D_0012FDA0");
+extern struct FsOpenRequest D_00156980_1BF80 __asm__("D_00156980");
+extern u8 D_001575C0_1BF80[] __asm__("D_001575C0");
+extern struct SifFileSlot D_00157E80_1BF80[] __asm__("D_00157E80");
+extern u8 D_00158080_1BF80[] __asm__("D_00158080");
+extern s32 func_00118C70_1BF80(struct SemaphoreParameters *) __asm__("func_00118C70");
+extern s32 func_00118C80_1BF80(s32) __asm__("func_00118C80");
+extern s32 func_0011BC70_1BF80(void) __asm__("func_0011BC70");
+extern s32 func_00118C90(s32);
+extern s32 func_00118CB0(s32);
+extern s32 func_0011BC40_1BF80(s32) __asm__("func_0011BC40");
+extern s32 func_0011BEB8(void);
+extern struct SifFileSlot *func_0011B770_1BF80(void) __asm__("func_0011B770");
+extern s32 func_0011BCB0(void);
+extern s32 func_0011B4C8(void *, s32, s32, void *, s32, void *, s32, void *, void *);
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/sdk/library/sceopen.c, sceOpen. */
+s32 func_0011BF80(const u8 *path, s32 flags, ...)
+{
+    struct SemaphoreParameters semaphore_parameters;
+    va_list_1BF80 arguments;
+    s32 result;
+    s32 path_index;
+    s32 slot_mutex;
+    s32 mode;
+    s32 completion_semaphore;
+    s32 slot_index;
+    s32 return_value;
+    struct SifFileSlot *file_slot;
+    struct FsOpenRequest *request;
+
+    request = &D_00156980_1BF80;
+    /* The six remaining EE argument registers occupy eight bytes each. */
+    arguments = __builtin_next_arg(flags) - 0x30;
+    func_0011BC40_1BF80(0);
+    if (D_0012FD94_1BF80[0] == 0) {
+        func_0011BCB0();
+    }
+    if (func_0011BEB8() != 0) {
+        func_0011BC70_1BF80();
+        return -0x10004;
+    }
+    file_slot = func_0011B770_1BF80();
+    if (file_slot == 0) {
+        func_0011BC70_1BF80();
+        return -0x13;
+    }
+    mode = *(s32 *)arguments;
+    for (path_index = 0; path_index < 0x400; path_index++) {
+        if ((request->path[path_index] = path[path_index]) == 0) {
+            break;
+        }
+    }
+    if (path_index == 0x400) {
+        request->path[0x3FF] = 0;
+    }
+    slot_index = file_slot - D_00157E80_1BF80;
+    request->flags = (s32) (flags & 0x6FFFFFFF);
+    request->mode = mode;
+    semaphore_parameters.max_count = 1;
+    request->slot = slot_index;
+    semaphore_parameters.init_count = 0;
+    semaphore_parameters.option = 0;
+    completion_semaphore = func_00118C70_1BF80(&semaphore_parameters);
+    request->result = &result;
+    request->completion_semaphore = completion_semaphore;
+    request->result_size = 4;
+    if (func_0011B4C8(D_00158080_1BF80, 0, 0, &D_00156980_1BF80, 0x418, D_001575C0_1BF80, 4, 0, 0) < 0) {
+        func_00118C80_1BF80(completion_semaphore);
+        func_0011BC70_1BF80();
+        return -0xB;
+    }
+    return_value = *(u32 *)((u32) D_001575C0_1BF80 | 0x20000000);
+    func_0011BC70_1BF80();
+    if (return_value == 0) {
+        func_00118C80_1BF80(completion_semaphore);
+        return -0xB;
+    }
+    func_00118CB0(completion_semaphore);
+    func_00118C80_1BF80(completion_semaphore);
+    if (result < 0) {
+        func_00118CB0(D_0012FDA0_1BF80[0]);
+        file_slot->flags = 0;
+        func_00118C90(D_0012FDA0_1BF80[0]);
+        return result;
+    }
+    return_value = slot_index;
+    func_00118CB0(D_0012FDA0_1BF80[0]);
+    slot_mutex = D_0012FDA0_1BF80[0];
+    file_slot->fd = result;
+    file_slot->flags = (s32) (file_slot->flags | flags);
+    func_00118C90(slot_mutex);
+    return return_value;
+}
 
 typedef struct {
     int handle;
@@ -1048,11 +1166,321 @@ int func_0011C208(unsigned int fd) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011C388);
+struct FsSeekRequest {
+    s32 completion_semaphore;
+    void *result;
+    s32 result_size;
+    s32 fd;
+    s32 offset;
+    s32 origin;
+    s32 slot;
+};
+struct SemaphoreParameters2 {
+    s32 count;
+    s32 max_count;
+    s32 init_count;
+    s32 wait_threads;
+    u32 attr;
+    u32 option;
+};
+extern struct FsSeekRequest D_00156980_1C388 __asm__("D_00156980");
+extern volatile s32 D_0012FD10[];
+extern s32 D_0012FD94_1C388[] __asm__("D_0012FD94");
+extern s32 D_0012FDA4_1C388[] __asm__("D_0012FDA4");
+extern u8 D_001575C0_1C388[] __asm__("D_001575C0");
+extern struct SifFileSlot D_00157E80_1C388[] __asm__("D_00157E80");
+struct SifClient {
+    u8 pad[0x28];
+};
+extern struct SifClient D_00158080_1C388 __asm__("D_00158080");
+extern struct SifFileSlot *func_0011B7F8_1C388(s32 fd) __asm__("func_0011B7F8");
+extern s32 func_0011BC40_1C388(s32) __asm__("func_0011BC40");
+extern s32 func_0011BC70_1C388(void) __asm__("func_0011BC70");
+extern s32 func_00118C70_1C388(struct SemaphoreParameters2 *) __asm__("func_00118C70");
+extern s32 func_00118C80_1C388(s32) __asm__("func_00118C80");
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011C5C0);
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/sdk/library/sce_lseek.c, sceLseek. */
+s32 func_0011C388(s32 fd, s32 offset, s32 origin)
+{
+    struct FsSeekRequest *request;
+    struct SifFileSlot *file_slot;
+    struct SemaphoreParameters2 semaphore_parameters;
+    s32 result;
+    s32 flags;
+    s32 completion_semaphore;
+    s32 async_index;
+    volatile s32 *async_slot;
+    s32 rpc_result;
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011C820);
+    request = &D_00156980_1C388;
+    file_slot = func_0011B7F8_1C388(fd);
+    func_0011BC40_1C388(4);
+    if (D_0012FD94_1C388[0] == 0) {
+        func_0011BC70_1C388();
+        return -1;
+    }
+    if (file_slot == 0 || (flags = file_slot->flags) == 0) {
+        func_0011BC70_1C388();
+        return -9;
+    }
+    request->fd = file_slot->fd;
+    request->offset = offset;
+    request->origin = origin;
+    request->slot = file_slot - D_00157E80_1C388;
+    semaphore_parameters.max_count = 1;
+    semaphore_parameters.init_count = 0;
+    semaphore_parameters.option = 0;
+    completion_semaphore = func_00118C70_1C388(&semaphore_parameters);
+    request->result = &result;
+    request->result_size = 4;
+    D_00156980_1C388.completion_semaphore = completion_semaphore;
+    if ((s16)flags & 0x8000) {
+        func_00118CB0(D_0012FDA4_1C388[0]);
+        for (async_index = 0; async_index < 32; async_index++) {
+            volatile s32 *async_semaphores = D_0012FD10;
+
+            async_slot = async_semaphores + async_index;
+            if (*async_slot == -1) {
+                *async_slot = request->completion_semaphore;
+                request->completion_semaphore = -request->completion_semaphore;
+                break;
+            }
+        }
+        func_00118C90(D_0012FDA4_1C388[0]);
+    }
+    if (func_0011B4C8(&D_00158080_1C388, 4, 0, &D_00156980_1C388, 0x1C, D_001575C0_1C388, 4, 0, 0) < 0) {
+        func_00118C80_1C388(completion_semaphore);
+        func_0011BC70_1C388();
+        return -11;
+    }
+    rpc_result = *(s32 *)((u32)D_001575C0_1C388 | 0x20000000);
+    func_0011BC70_1C388();
+    if (rpc_result == 0) {
+        func_00118C80_1C388(completion_semaphore);
+        return -11;
+    }
+    if (flags & 0x8000) {
+        func_00118C80_1C388(completion_semaphore);
+        return 0;
+    }
+    func_00118CB0(completion_semaphore);
+    func_00118C80_1C388(completion_semaphore);
+    return result;
+}
+
+struct FsReadRequest {
+    s32 completion_semaphore;
+    void *result;
+    s32 result_size;
+    s32 fd;
+    void *buffer;
+    s32 length;
+    s32 reserved18;
+    s32 slot;
+};
+extern struct FsReadRequest D_00156980_1C5C0 __asm__("D_00156980");
+extern volatile s32 D_0012FD10[];
+extern s32 D_0012FD94_1C5C0[] __asm__("D_0012FD94");
+extern s32 D_0012FDA4_1C5C0[] __asm__("D_0012FDA4");
+extern u8 D_001575C0_1C5C0[] __asm__("D_001575C0");
+extern struct SifFileSlot D_00157E80_1C5C0[] __asm__("D_00157E80");
+extern struct SifClient D_00158080_1C5C0 __asm__("D_00158080");
+extern struct SifFileSlot *func_0011B7F8_1C5C0(s32 fd) __asm__("func_0011B7F8");
+extern s32 func_0011BC40_1C5C0(s32) __asm__("func_0011BC40");
+extern s32 func_0011BC70_1C5C0(void) __asm__("func_0011BC70");
+extern s32 func_00118C70_1C5C0(struct SemaphoreParameters2 *) __asm__("func_00118C70");
+extern s32 func_00118C80_1C5C0(s32) __asm__("func_00118C80");
+extern void func_0011AD70(void *, s32);
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/sdk/library/sceRead.c, sceRead. */
+s32 func_0011C5C0(s32 fd, void *buffer, s32 length)
+{
+    struct FsReadRequest *request;
+    struct SifFileSlot *file_slot;
+    struct SemaphoreParameters2 semaphore_parameters;
+    s32 result;
+    s32 flags;
+    s32 completion_semaphore;
+    s32 async_index;
+    volatile s32 *async_slot;
+    s32 rpc_result;
+
+    request = &D_00156980_1C5C0;
+    file_slot = func_0011B7F8_1C5C0(fd);
+    func_0011BC40_1C5C0(2);
+    if (D_0012FD94_1C5C0[0] == 0) {
+        func_0011BC70_1C5C0();
+        return -1;
+    }
+    if (file_slot == 0 || (flags = file_slot->flags) == 0) {
+        func_0011BC70_1C5C0();
+        return -9;
+    }
+    request->fd = file_slot->fd;
+    semaphore_parameters.max_count = 1;
+    request->slot = file_slot - D_00157E80_1C5C0;
+    request->buffer = buffer;
+    request->length = length;
+    semaphore_parameters.init_count = 0;
+    semaphore_parameters.option = 0;
+    completion_semaphore = func_00118C70_1C5C0(&semaphore_parameters);
+    request->result = &result;
+    request->result_size = 4;
+    D_00156980_1C5C0.completion_semaphore = completion_semaphore;
+    if ((s16)flags & 0x8000) {
+        func_00118CB0(D_0012FDA4_1C5C0[0]);
+        for (async_index = 0; async_index < 32; async_index++) {
+            volatile s32 *async_semaphores = D_0012FD10;
+
+            async_slot = async_semaphores + async_index;
+            if (*async_slot == -1) {
+                *async_slot = request->completion_semaphore;
+                request->completion_semaphore = -request->completion_semaphore;
+                break;
+            }
+        }
+        func_00118C90(D_0012FDA4_1C5C0[0]);
+    }
+    if (!(flags & 0x20000000)) {
+        func_0011AD70(buffer, length);
+    }
+    func_0011AD70(request, 0x20);
+    if (func_0011B4C8(&D_00158080_1C5C0, 2, 0, &D_00156980_1C5C0, 0x20, D_001575C0_1C5C0, 4, 0, 0) < 0) {
+        func_00118C80_1C5C0(completion_semaphore);
+        func_0011BC70_1C5C0();
+        return -11;
+    }
+    rpc_result = *(s32 *)((u32)D_001575C0_1C5C0 | 0x20000000);
+    func_0011BC70_1C5C0();
+    if (rpc_result == 0) {
+        func_00118C80_1C5C0(completion_semaphore);
+        return -11;
+    }
+    if (flags & 0x8000) {
+        func_00118C80_1C5C0(completion_semaphore);
+        return 0;
+    }
+    func_00118CB0(completion_semaphore);
+    func_00118C80_1C5C0(completion_semaphore);
+    return result;
+}
+
+struct FsWriteRequest {
+    s32 completion_semaphore;
+    void *result;
+    s32 result_size;
+    s32 fd;
+    void *buffer;
+    s32 length;
+    s32 prefix_length;
+    u8 prefix[0x10];
+    s32 slot;
+};
+extern struct FsWriteRequest D_00156980_1C820 __asm__("D_00156980");
+extern volatile s32 D_0012FD10[];
+extern s32 D_0012FD94_1C820[] __asm__("D_0012FD94");
+extern s32 D_0012FDA4_1C820[] __asm__("D_0012FDA4");
+extern u8 D_001575C0_1C820[] __asm__("D_001575C0");
+extern struct SifFileSlot D_00157E80_1C820[] __asm__("D_00157E80");
+extern struct SifClient D_00158080_1C820 __asm__("D_00158080");
+extern struct SifFileSlot *func_0011B7F8_1C820(s32 fd) __asm__("func_0011B7F8");
+extern s32 func_0011BC40_1C820(s32) __asm__("func_0011BC40");
+extern s32 func_0011BC70_1C820(void) __asm__("func_0011BC70");
+extern s32 func_00118C70_1C820(struct SemaphoreParameters2 *) __asm__("func_00118C70");
+extern s32 func_00118C80_1C820(s32) __asm__("func_00118C80");
+extern s32 func_00118CB0(s32);
+extern s32 func_00118C90(s32);
+extern void func_0011AD70(void *, s32);
+extern s32 func_0011B4C8(void *, s32, s32, void *, s32, void *, s32, void *, void *);
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/sdk/library/scewrite.c, sceWrite. */
+s32 func_0011C820(s32 fd, u8 *buffer, s32 length)
+{
+    struct FsWriteRequest *request;
+    struct SifFileSlot *file_slot;
+    struct SemaphoreParameters2 semaphore_parameters;
+    s32 result;
+    s32 flags;
+    s32 completion_semaphore;
+    s32 async_index;
+    volatile s32 *async_slot;
+    s32 rpc_result;
+    s32 prefix_length;
+    s32 prefix_index;
+    u32 previous_block_address;
+
+    request = &D_00156980_1C820;
+    file_slot = func_0011B7F8_1C820(fd);
+    func_0011BC40_1C820(3);
+    if (D_0012FD94_1C820[0] == 0) {
+        func_0011BC70_1C820();
+        return -1;
+    }
+    if (file_slot == 0 || (flags = file_slot->flags) == 0) {
+        func_0011BC70_1C820();
+        return -9;
+    }
+    request->fd = file_slot->fd;
+    semaphore_parameters.max_count = 1;
+    request->slot = file_slot - D_00157E80_1C820;
+    request->length = length;
+    request->buffer = buffer;
+    semaphore_parameters.init_count = 0;
+    semaphore_parameters.option = 0;
+    completion_semaphore = func_00118C70_1C820(&semaphore_parameters);
+    request->result = &result;
+    request->result_size = 4;
+    D_00156980_1C820.completion_semaphore = completion_semaphore;
+    if ((s16)flags & 0x8000) {
+        func_00118CB0(D_0012FDA4_1C820[0]);
+        for (async_index = 0; async_index < 32; async_index++) {
+            volatile s32 *async_semaphores = D_0012FD10;
+
+            async_slot = async_semaphores + async_index;
+            if (*async_slot == -1) {
+                *async_slot = request->completion_semaphore;
+                request->completion_semaphore = -request->completion_semaphore;
+                break;
+            }
+        }
+        func_00118C90(D_0012FDA4_1C820[0]);
+    }
+    if (((u32)buffer & 0xF) == 0) {
+        prefix_length = 0;
+    } else {
+        previous_block_address = (u32)buffer - 0x10;
+        prefix_length = (((u32)buffer >> 4) << 4) - previous_block_address;
+    }
+    if (length < prefix_length) {
+        prefix_length = length;
+    }
+    if (!(flags & 0x20000000)) {
+        func_0011AD70(buffer, length);
+    }
+    buffer = (u8 *)((u32)buffer | 0x20000000);
+    request->prefix_length = prefix_length;
+    for (prefix_index = 0; prefix_index < prefix_length; prefix_index++) {
+        request->prefix[prefix_index] = buffer[prefix_index];
+    }
+    if (func_0011B4C8(&D_00158080_1C820, 3, 0, &D_00156980_1C820, 0x30, D_001575C0_1C820, 4, 0, 0) < 0) {
+        func_00118C80_1C820(completion_semaphore);
+        func_0011BC70_1C820();
+        return -11;
+    }
+    rpc_result = *(s32 *)((u32)D_001575C0_1C820 | 0x20000000);
+    func_0011BC70_1C820();
+    if (rpc_result == 0) {
+        func_00118C80_1C820(completion_semaphore);
+        return -11;
+    }
+    if (flags & 0x8000) {
+        func_00118C80_1C820(completion_semaphore);
+        return 0;
+    }
+    func_00118CB0(completion_semaphore);
+    func_00118C80_1C820(completion_semaphore);
+    return result;
+}
 
 LINKER_REMNANT("asm/remnants/core_text", func_0011CAE0);
 
