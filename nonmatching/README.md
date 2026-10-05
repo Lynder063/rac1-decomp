@@ -127,6 +127,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L06_002DB0E0`](l06_blarg/func_L06_002DB0E0.c) | l06_blarg | 248 | BYTES 16/248 | 93.5% |
 | [`func_L14_002B4C70`](shared/func_L14_002B4C70.c) | shared | 460 | BYTES 30/460 | 93.5% |
 | [`func_L18_002D8F10`](l18_veldin2/func_L18_002D8F10.c) | l18_veldin2 | 1092 | BYTES 72/1092 | 93.4% |
+| [`func_L01_002F9908`](shared/func_L01_002F9908.c) | shared | 484 | BYTES 32/484 | 93.4% |
 | [`func_L18_002DD8A8`](l18_veldin2/func_L18_002DD8A8.c) | l18_veldin2 | 1116 | BYTES 74/1116 | 93.4% |
 | [`func_L18_002DCE10`](l18_veldin2/func_L18_002DCE10.c) | l18_veldin2 | 1116 | BYTES 75/1116 | 93.3% |
 | [`func_L15_0029BE10`](shared/func_L15_0029BE10.c) | shared | 484 | BYTES 33/484 | 93.2% |
