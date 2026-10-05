@@ -134,6 +134,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_00216B40`](shared/func_L00_00216B40.c) | shared | 512 | BYTES 41/512 | 92.0% |
 | [`func_L04_002CF460`](shared/func_L04_002CF460.c) | shared | 148 | BYTES 12/148 | 91.9% |
 | [`func_L00_002DDDE8`](shared/func_L00_002DDDE8.c) | shared | 184 | BYTES 15/184 | 91.8% |
+| [`func_L00_002E80A8`](shared/func_L00_002E80A8.c) | shared | 360 | BYTES 30/360 | 91.7% |
 | [`func_L15_002F8D9C`](l15_quartu/func_L15_002F8D9C.c) | l15_quartu | 12 | BYTES 1/12 | 91.7% |
 | [`func_L18_002F1420`](l18_veldin2/func_L18_002F1420.c) | l18_veldin2 | 36 | BYTES 20/240 | 91.7% |
 | [`func_L18_002FDB28`](l18_veldin2/func_L18_002FDB28.c) | l18_veldin2 | 372 | BYTES 31/372 | 91.7% |
