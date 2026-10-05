@@ -176,7 +176,51 @@ void func_L14_002F0B78(char *moby) {
 }
 INCLUDE_ASM("asm/overlays", func_L14_002F19C0);
 INCLUDE_ASM("asm/overlays", func_L14_002F24C8);
-INCLUDE_ASM("asm/overlays", func_L14_002F25C8);
+extern float func_001F9D10(void *, void *);
+extern float D_0015EE6C_f __asm__("D_0015EE6C") MACRO_ADDR;
+extern float D_0015EE70 MACRO_ADDR;
+
+// Picks a target by phase, then sets velocity scale from its distance.
+void func_L14_002F25C8(char *moby)
+{
+    char *data = *(char **)(moby + 0x78);
+    int *t;
+    float d;
+    float k;
+    float y;
+    float x;
+
+    switch (*(short *)(data + 0xB4)) {
+    case 0:
+        *(char **)(data + 0xAC) = D_L14_001B0F30[*(int *)(data + 0x94)];
+        *(short *)(data + 0xB6) = 1;
+        break;
+    case 1:
+        *(char **)(data + 0xAC) = D_L14_001B0F30[*(int *)(data + 0x98)];
+        *(short *)(data + 0xB6) = 0;
+        break;
+    case 2:
+        *(char **)(data + 0xAC) = D_L14_001B0F30[*(int *)(data + 0x9C)];
+        *(short *)(data + 0xB6) = 3;
+        break;
+    case 3:
+        *(char **)(data + 0xAC) = D_L14_001B0F30[*(int *)(data + 0xA0)];
+        *(short *)(data + 0xB6) = 0;
+        break;
+    case 4:
+        break;
+    }
+    t = *(int **)(data + 0xAC);
+    d = func_001F9D10((char *)t + 0x10, (char *)t + 0x20);
+    d = d * (float)*(int *)*(int **)(data + 0xAC);
+    x = D_0015EE6C_f * 5.0f;
+    y = D_0015EE70 * 2.5f;
+    k = 1.0f / d;
+    *(int *)(data + 0xC4) = 0;
+    *(int *)(data + 0xC0) = 0;
+    *(float *)(data + 0xD4) = x * k;
+    *(float *)(data + 0xD8) = y * k;
+}
 INCLUDE_ASM("asm/overlays", func_L14_002F2778);
 extern void func_00215F80(int, int);
 

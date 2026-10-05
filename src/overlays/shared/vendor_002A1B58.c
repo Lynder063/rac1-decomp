@@ -639,7 +639,33 @@ float func_L16_002D5280(char *moby, float *target) {
     FastVecAdd(p, p, vec);
     return d;
 }
-INCLUDE_ASM("asm/overlays", func_L16_002D5340);
+extern short *D_L16_001ABFC0[];
+extern char *D_L16_00160098 MACRO_ADDR;
+extern float func_002140F8(float,float);
+extern float func_001F9878_timer(float) __asm__("func_001F9878");
+extern int func_001FA898_timer(float) __asm__("func_001FA898");
+typedef struct {char pad00[0x2E0];int timer;} L16GroupTimer;
+typedef struct {char pad00[0x20];signed char state;unsigned char group;char pad22[0x56];L16GroupTimer *data;} L16GroupMoby;
+/* Randomize the timers of active mobys in the selected linked group. */
+void func_L16_002D5340(void *arg, int lower, int upper) {
+    L16GroupMoby *m = arg;
+    L16GroupTimer *d;
+    short *p;
+    if (m->group == 255) {
+        d=m->data;
+        d->timer=func_001FA898_timer(func_001F9878_timer(func_002140F8((float)lower,(float)upper)));
+    } else {
+        L16GroupMoby *other;
+        p=D_L16_001ABFC0[m->group];
+next:
+        other=(L16GroupMoby *)(((*(unsigned short *)p&0x7FFF)<<8)+(int)D_L16_00160098);
+        if (other->state>=0) {
+            d=other->data;
+            d->timer=func_001FA898_timer(func_001F9878_timer(func_002140F8((float)lower,(float)upper)));
+        }
+        if (*p++ >= 0) goto next;
+    }
+}
 extern char *D_L16_001B0C30[];
 extern float func_L00_001FF860(float, float);
 extern float func_001FA790(float, float);

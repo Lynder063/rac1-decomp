@@ -261,5 +261,75 @@ void func_L06_0030A788(unsigned char *moby)
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L06_0030B248);
+typedef struct {
+    char v[16]; char padv[16];
+    float f20;
+    char pad24[4];
+    float f28;
+    char pad2C[4];
+    int f30;
+    int f34;
+} Child;
+typedef struct {
+    char pad0[0x10];
+    char pos[0x10];
+    unsigned char b20;
+    char pad21[0xB];
+    float f2C;
+    unsigned char b30;
+    unsigned char b31;
+    short s32;
+    unsigned short h34;
+    char pad36[0x12];
+    float f48;
+    char pad4C[0x2C];
+    Child *child;
+    char pad7C[0x14];
+    int f90;
+} Obj;
+extern char *func_L00_0025B478(void *, int, int);
+extern float D_L06_0015F660[] MACRO_ADDR;
+extern int func_0022ED80_0B248(int, int, int) __asm__("func_0022ED80");
+extern void func_L00_00265050(void *, int, void *, void *, int, int, float, void *, void *, void *);
+extern void func_L01_00279790(void *);
+void func_0020D678_0B248(struct Obj *obj) __asm__("func_0020D678");
+extern char *func_0020D348(int);
+extern void func_L00_00251E30(void *);
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l06/gameplay_vendor_003083b0.c, FUN_L06_00309e08. */
+void func_L06_0030B248(char *self) {
+    int flag = 0;
+    char *o = func_L00_0025B478(self, 0x10000, 0);
+    switch (((unsigned char *)self)[0x20]) {
+    case 0:
+        self[0x20] = 1;
+        break;
+    case 1:
+        if (o != 0 && *(float *)(o + 0x2C) > 0.0f) {
+            flag = 1;
+        }
+        if (flag) {
+            self[0x20] = 2;
+        }
+        break;
+    case 2: {
+        char *m;
+        func_0022ED80_0B248(0, 0, (int)self);
+        func_L01_00279790(self);
+        func_L00_00265050(self, 0x67E, self + 0x10, self + 0x40, 0, 0, 0.0f, D_L06_0015F660, D_L06_0015F660, D_L06_0015F660);
+        func_L00_00265050(self, 0x67E, self + 0x10, self + 0x40, 0, 0, 0.0f, D_L06_0015F660, D_L06_0015F660, D_L06_0015F660);
+        m = func_0020D348(0x67D);
+        if (m != 0) {
+            m[0x31] = 1;
+            *(short *)(m + 0x32) = 0xFF;
+            qcopy(m + 0x10, self + 0x10);
+            qcopy(m + 0x40, self + 0x40);
+            *(long *)(m + 0x38) = *(long *)(self + 0x38);
+            func_L00_00251E30(m);
+        }
+        func_0020D678_0B248(self);
+        break;
+    }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L06_0030B3E8);

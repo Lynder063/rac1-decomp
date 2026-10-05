@@ -377,7 +377,27 @@ char *func_L11_00310A70(void *position, void *vector, int id) {
 }
 INCLUDE_ASM("asm/overlays", func_L11_00310B28);
 INCLUDE_ASM("asm/overlays", func_L11_00310BF0);
-INCLUDE_ASM("asm/overlays", func_L11_00311260);
+char *func_L11_00311260(char *owner) {
+    char *moby = func_0020D348(0x4C3);
+    if (moby != 0) {
+        char *data;
+        data = *(char **)(moby + 0x78);
+        ((unsigned char *)moby)[0x30] = 0xFF;
+        *(short *)(moby + 0x32) = 0xFF;
+        moby[0x31] = 1;
+        moby[0x20] = 0;
+        moby[0xBC] = 0;
+        qcopy(moby + 0x10, owner + 0x10);
+        qcopy(moby + 0x40, owner + 0x40);
+        *(char **)(data + 0x70) = owner;
+        if ((unsigned char)moby[0x53] != 2) {
+            func_00213DE0(moby, 2, 0xD, 0);
+        }
+        func_L00_00251E30(moby);
+        func_L00_0025E210(moby);
+    }
+    return moby;
+}
 INCLUDE_ASM("asm/overlays", func_L11_00311318);
 extern void func_L11_00311318(void *, void *, void *);
 extern float func_0020D830(void *);

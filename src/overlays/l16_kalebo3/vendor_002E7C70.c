@@ -391,7 +391,86 @@ void func_L16_002E8EA8(unsigned char *m, void *v) {
 INCLUDE_ASM("asm/overlays", func_L16_002E9018);
 INCLUDE_ASM("asm/overlays", func_L16_002E9278);
 INCLUDE_ASM("asm/overlays", func_L16_002E93F8);
-INCLUDE_ASM("asm/overlays", func_L16_002E9960);
+extern float func_001F9B88(float);
+extern int func_001FA8A8(int,int,float);
+extern void func_001FA460(void *,void *);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern float func_001FA7D8(float);
+extern void func_L00_001FD1D8(void *,void *,int);
+extern char *D_L16_001601BC MACRO_ADDR;
+extern float D_L16_001D9B50[][2];
+extern short D_L16_00161F78,D_L16_00161F9C,D_L16_00161FA0;
+extern short D_L16_00161F90,D_L16_00161F8C,D_L16_00161F94,D_L16_00161F98;
+extern short D_L16_00161F88,D_L16_00161F84,D_L16_00161FA8;
+typedef float L16RingVector[4] __attribute__((aligned(16)));
+typedef struct {
+    L16RingVector position[4];
+    int color[4];
+    struct { float u,v; } uv[4];
+    long zero,texture,flags,mode;
+} L16RingPacket;
+typedef struct { L16RingVector basis[3]; L16RingVector position; } L16RingMatrix;
+/* Draw stacked alternating rings with a rotating transformation and interpolated tint. */
+void func_L16_002E9960(char *m) {
+    L16RingPacket packet;
+    L16RingMatrix matrix;
+    char *d=*(char **)(m+0x78);
+    int bound_index=(*(int *)((char *)d+0xA0))<<7;
+    char *entry=(char *)(bound_index+(int)D_L16_001601BC);
+    float translation=(*(float *)((char *)d+0xB8));
+    float lower=(*(float *)((char *)entry+0x38));
+    float half=(*(float *)((char *)entry+0x28));
+    float upper=lower+half+translation;
+    int color;
+    float (*uv)[2];
+    L16RingVector *point;
+    float *v,*u;
+    L16RingMatrix *transform;
+    float radius,index,phase;
+    int i,j,sign,period;
+    lower=lower-half;
+    lower+=translation;
+    color=func_001FA8A8((*(int *)&D_L16_00161F9C),(*(int *)&D_L16_00161FA0),func_001F9B88((*(float *)((char *)d+0xB0)))/((*(float *)&D_L16_00161F78)*D_0015EE6C));
+    func_001FA460(&matrix,m+0xC0);
+    qcopy(matrix.position,m+16);
+    matrix.position[2]=lower; matrix.position[3]=1.0f;
+    packet.texture=func_001F4868(14);
+    packet.flags=0xFF9000000260L;
+    packet.mode=(long)(*(int *)&D_L16_00161F8C)|((long)(*(int *)&D_L16_00161F90)<<2)|((long)(*(int *)&D_L16_00161F94)<<4)|((long)(*(int *)&D_L16_00161F98)<<6)|0x8000000000L;
+    packet.zero=0;
+    uv=D_L16_001D9B50;point=packet.position;v=&packet.uv[0].v;u=&packet.uv[0].u;
+    for(i=0;i<4;i++) {
+        *u=(*uv)[0]; *v=(*uv)[1];
+        if(i&1) { (*point)[2]=(*(float *)&D_L16_00161F88); radius=(*(float *)&D_L16_00161F84); }
+        else { (*point)[2]=-(*(float *)&D_L16_00161F88); radius=(*(float *)&D_L16_00161F84)-0.05f; }
+        index=(float)(i>>1);
+        (*point)[0]=func_001F9F90(index*((*(float *)&D_L16_00161FA8)*0.017453292f))*radius;
+        (*point)[1]=func_001F9FA8(index*((*(float *)&D_L16_00161FA8)*0.017453292f))*radius;
+        (*point)[3]=1.0f;
+        v+=2;u+=2;uv++;point++;
+    }
+    transform=&matrix;
+    sign=1;
+    if(matrix.position[2]<upper) {
+        period=120;
+        do {
+        phase=(float)(D_L16_0015F6B0%period)*0.02617991715669632f;
+        sign=-sign;
+        for(j=0;(float)j<360.0f/(*(float *)&D_L16_00161FA8);j++) {
+            matrix.basis[0][0]=func_001F9F90(func_001FA7D8(((*(float *)&D_L16_00161FA8)*0.017453292f)*(float)j+phase*(float)sign));
+            matrix.basis[0][1]=func_001F9FA8(func_001FA7D8(((*(float *)&D_L16_00161FA8)*0.017453292f)*(float)j+phase*(float)sign));
+            matrix.basis[0][2]=0.0f;
+            matrix.basis[1][0]=func_001F9F90(func_001FA7D8(((*(float *)&D_L16_00161FA8)*0.017453292f)*(float)j+1.5707964f+phase*(float)sign));
+            matrix.basis[1][1]=func_001F9FA8(func_001FA7D8(((*(float *)&D_L16_00161FA8)*0.017453292f)*(float)j+1.5707964f+phase*(float)sign));
+            matrix.basis[1][2]=0.0f; matrix.basis[2][2]=1.0f;
+            packet.color[3]=color;packet.color[2]=color;packet.color[1]=color;packet.color[0]=color;
+            func_L00_001FD1D8(&packet,transform,0);
+        }
+        matrix.position[2]+=(*(float *)((char *)d+0xBC));
+        } while(matrix.position[2]<upper);
+    }
+}
 extern float D_0015EE6C MACRO_ADDR;
 extern float func_001FA748(float, float);
 
@@ -551,7 +630,62 @@ void func_L16_002EA1B8(void) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002EA2F8);
+typedef struct {float x,y,z,radius;} L16SingleSphere_2e8e80;
+void func_001F49B0_EA2F8(int arg0, int arg1) __asm__("func_001F49B0");
+extern L16SingleSphere_2e8e80 D_L16_001DC8D0_EA2F8[] __asm__("D_L16_001DC8D0");
+extern void func_L16_002EA1B8_EA2F8(void *) __asm__("func_L16_002EA1B8");
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l16/gameplay_vendor_002e3190.c, FUN_L16_002e8e80. */
+void func_L16_002EA2F8(unsigned char *m) {
+    int i, j;
+    float maxx, maxy, maxz, minx, miny, minz;
+    float p[4];
+    float *out;
+    float *verts;
+    int count;
+    switch (m[0x20]) {
+    case 0: {
+        for (i = 0; i <= 2; i++) {
+            maxx = maxy = maxz = -1024.0f;
+            minx = miny = minz = 1024.0f;
+            {int k;
+            for (k=0;k<((int*)&D_L16_00161FB0)[i];k++) {
+                float x,y,z;
+                verts=((float**)&D_L16_00161FC0)[i]+k*3;
+                x = verts[0];
+                if (x > maxx) maxx = x;
+                y = verts[1];
+                if (y > maxy) maxy = y;
+                z = verts[2];
+                if (z > maxz) maxz = z;
+                if (x < minx) minx = x;
+                if (y < miny) miny = y;
+                if (z < minz) minz = z;
+            }
+            }
+            {L16SingleSphere_2e8e80 *base = D_L16_001DC8D0_EA2F8; L16SingleSphere_2e8e80 *sphere = base + i;
+            sphere->radius=0.0f;
+            sphere->x=(maxx+minx)*0.5f;
+            sphere->y=(maxy+miny)*0.5f;
+            sphere->z=(maxz+minz)*0.5f;}
+            for (j = 0; j < ((int*)&D_L16_00161FB0)[i]; j++) {
+                float dist;
+                out = (float*)(D_L16_001DC8D0_EA2F8 + i);
+                p[0] = ((float**)&D_L16_00161FC0)[i][j * 3 + 0];
+                p[1] = ((float**)&D_L16_00161FC0)[i][j * 3 + 1];
+                p[2] = ((float**)&D_L16_00161FC0)[i][j * 3 + 2];
+                dist = func_001F9D10(p, out);
+                if (dist > out[3]) out[3] = dist;
+            }
+        }
+        m[0x20] = 1;
+        break;
+    }
+    case 1:
+        func_001F49B0_EA2F8(func_L16_002EA1B8_EA2F8, m);
+        break;
+    }
+}
 extern short D_L16_00162000;
 extern short D_L16_00162020;
 extern short D_L16_00162028;
@@ -670,7 +804,63 @@ void func_L16_002EAC18(void) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002EAD58);
+void func_L16_002EAC18(void);
+typedef struct {float x,y,z,radius;} L16SingleSphere_2e98e0;
+void func_001F49B0_EAD58(int arg0, int arg1) __asm__("func_001F49B0");
+extern L16SingleSphere_2e98e0 D_L16_001DF580_EAD58[] __asm__("D_L16_001DF580");
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l16/gameplay_vendor_002e3190.c, FUN_L16_002e98e0. */
+void func_L16_002EAD58(unsigned char *m) {
+    int i, j;
+    float maxx, maxy, maxz, minx, miny, minz;
+    float p[4];
+    float *out;
+    float *verts;
+    int count;
+    switch (m[0x20]) {
+    case 0: {
+        for (i = 0; i <= 1; i++) {
+            maxx = maxy = maxz = -1024.0f;
+            minx = miny = minz = 1024.0f;
+            {int k;
+            for (k=0;k<((int*)&D_L16_00162050)[i];k++) {
+                float x,y,z;
+                verts=((float**)&D_L16_00162058)[i]+k*3;
+                x = verts[0];
+                if (x > maxx) maxx = x;
+                y = verts[1];
+                if (y > maxy) maxy = y;
+                z = verts[2];
+                if (z > maxz) maxz = z;
+                if (x < minx) minx = x;
+                if (y < miny) miny = y;
+                if (z < minz) minz = z;
+            }
+            }
+            {L16SingleSphere_2e98e0 *base = D_L16_001DF580_EAD58; L16SingleSphere_2e98e0 *sphere = base + i;
+            sphere->radius=0.0f;
+            sphere->x=(maxx+minx)*0.5f;
+            sphere->y=(maxy+miny)*0.5f;
+            sphere->z=(maxz+minz)*0.5f;}
+            for (j = 0; j < ((int*)&D_L16_00162050)[i]; j++) {
+                float dist;
+                out = (float*)(D_L16_001DF580_EAD58 + i);
+                p[0] = ((float**)&D_L16_00162058)[i][j * 3 + 0];
+                p[1] = ((float**)&D_L16_00162058)[i][j * 3 + 1];
+                p[2] = ((float**)&D_L16_00162058)[i][j * 3 + 2];
+                dist = func_001F9D10(p, out);
+                if (dist > out[3]) out[3] = dist;
+            }
+        }
+        m[0x20] = 1;
+        m[0x30] = *(unsigned short *)(m+0x32) = 255;
+        break;
+    }
+    case 1:
+        func_001F49B0_EAD58(func_L16_002EAC18, m);
+        break;
+    }
+}
 extern short D_L16_00162078[1];
 extern short D_L16_00162088[1];
 extern short D_L16_00162098[1];
@@ -690,4 +880,62 @@ void func_L16_002EB158(void) {
         func_L00_001FDE48(((int *)D_L16_00162078)[i], ((int *)D_L16_00162088)[i], ((int *)D_L16_001620B8)[i], D_L16_001E2BA0, 1);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002EB5A0);
+void func_L16_002EA1B8(void);
+typedef struct {float x,y,z,radius;} L16SingleSphere_2ea128;
+void func_001F49B0_EB5A0(int arg0, int arg1) __asm__("func_001F49B0");
+extern short D_L16_001620C8;
+extern short D_L16_001620D8;
+extern L16SingleSphere_2ea128 D_L16_001E5660[];
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l16/gameplay_vendor_002e3190.c, FUN_L16_002ea128. */
+void func_L16_002EB5A0(unsigned char *m) {
+    int i, j;
+    float maxx, maxy, maxz, minx, miny, minz;
+    float p[4];
+    float *out;
+    float *verts;
+    int count;
+    switch (m[0x20]) {
+    case 0: {
+        for (i = 0; i <= 2; i++) {
+            maxx = maxy = maxz = -1024.0f;
+            minx = miny = minz = 1024.0f;
+            {int k;
+            for (k=0;k<((int*)&D_L16_001620C8)[i];k++) {
+                float x,y,z;
+                verts=((float**)&D_L16_001620D8)[i]+k*3;
+                x = verts[0];
+                if (x > maxx) maxx = x;
+                y = verts[1];
+                if (y > maxy) maxy = y;
+                z = verts[2];
+                if (z > maxz) maxz = z;
+                if (x < minx) minx = x;
+                if (y < miny) miny = y;
+                if (z < minz) minz = z;
+            }
+            }
+            {L16SingleSphere_2ea128 *base = D_L16_001E5660; L16SingleSphere_2ea128 *sphere = base + i;
+            sphere->radius=0.0f;
+            sphere->x=(maxx+minx)*0.5f;
+            sphere->y=(maxy+miny)*0.5f;
+            sphere->z=(maxz+minz)*0.5f;}
+            for (j = 0; j < ((int*)&D_L16_001620C8)[i]; j++) {
+                float dist;
+                out = (float*)(D_L16_001E5660 + i);
+                p[0] = ((float**)&D_L16_001620D8)[i][j * 3 + 0];
+                p[1] = ((float**)&D_L16_001620D8)[i][j * 3 + 1];
+                p[2] = ((float**)&D_L16_001620D8)[i][j * 3 + 2];
+                dist = func_001F9D10(p, out);
+                if (dist > out[3]) out[3] = dist;
+            }
+        }
+        m[0x20] = 1;
+        m[0x30] = *(unsigned short *)(m+0x32) = 255;
+        break;
+    }
+    case 1:
+        func_001F49B0_EB5A0(func_L16_002EA1B8, m);
+        break;
+    }
+}

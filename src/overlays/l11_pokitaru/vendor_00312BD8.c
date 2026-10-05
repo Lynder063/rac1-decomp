@@ -223,7 +223,52 @@ void func_L11_003198F8(char *m) {
     *(float *)(d + 0x20) = random_float_between(20.0f, 60.0f) * 0.017453292f * D_0015EE6C;
     *(float *)(d + 0x24) = random_float_between(20.0f, 60.0f) * 0.017453292f * D_0015EE6C;
 }
-INCLUDE_ASM("asm/overlays", func_L11_00319FA0);
+extern void func_L11_0031A498(char *moby);
+extern float func_00214D28(float *p, float target, float maxstep);
+extern void func_0020D678(void *);
+extern void func_L11_0031A630(char *moby);
+extern int func_L00_001EFFF0(void *, void *, int, void *, void *);
+extern int func_L00_001F2BE8(float, void *, int, void *, void *);
+extern void func_L00_0025F4A8(void *, void *, void *, float, float, int, int, int, float, float, float, int, float, float, int, int, int, int);
+extern short D_L11_00162418;
+
+// Update function for a moby that eases values, then flies to a target and bursts.
+void func_L11_00319FA0(unsigned char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    float v[4];
+    float *vp;
+    func_L11_0031A498((char *)moby);
+    switch (moby[0x20]) {
+    case 1:
+        if (func_001F9908_i(data + 0x20)) {
+            float *p = *(float **)(moby + 0x24);
+            float n = (float)func_001F9850(0x14);
+            float a = p[9];
+            float b = (*(float **)(moby + 0x24))[9] / n;
+            p = (float *)(data + 0x1C);
+            func_00214D28((float *)(moby + 0x2C), a, b);
+            func_00214D28(p, *(float *)&D_L11_00162418, *(float *)&D_L11_00162418 / (float)func_001F9850(0x14));
+        }
+        if (func_001F9908_i(data + 0x28)) {
+            func_0020D678(moby);
+        }
+        break;
+    case 2: {
+        char *pos = (char *)moby + 0x10;
+        func_L11_0031A630((char *)moby);
+        vp = v;
+        qcopy(vp, pos);
+        func_001F9BD8(pos, pos, data);
+        if (func_001F9908_i(data + 0x20) ||
+            func_L00_001EFFF0(vp, (char *)moby + 0x10, 0, moby, 0) ||
+            func_L00_001F2BE8(0.333f, (char *)moby + 0x10, 0, *(void **)(data + 0x24), 0)) {
+            func_L00_0025F4A8(moby, data, (char *)moby + 0x10, 1.5f, 2.0f, 10, 3, 16, 4.0f, 2.0f, 9.0f, -1, 1.0f, 15.0f, 1, 1, -1, 0);
+            func_0020D678(moby);
+        }
+        break;
+    }
+    }
+}
 extern char *func_0020D348(int);
 extern void func_001F9BC0(void *);
 extern void func_001FA1F8(void *, void *);

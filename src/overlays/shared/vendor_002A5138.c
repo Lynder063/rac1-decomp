@@ -163,7 +163,8 @@ void func_L00_002A5F68(char *m) {
     }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002A6058);
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/unclassified_002a4830.c, FUN_L00_002a4dc8. */
+int func_L00_002A6058(int a) { int t = D_L00_00161458; D_L00_00161458 = t + a; return t; }
 extern void *func_0020D348(int oClass);
 extern void func_L00_00251E30(void *);
 

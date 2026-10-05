@@ -293,6 +293,25 @@ Four more began as machine ports that came out a few bytes off and were finished
 - `src/overlays/shared/hud_00235960.c`: `func_L00_00239510` (`FUN_L00_00238b80`)
 - `src/overlays/shared/help_00203E98.c`: `func_L00_002091D8` (`FUN_L00_00208b60`)
 
+Fourteen more were carried over by machine on 2026-10-05, from what Lombyte matched in its pull request 94
+(the same tool, the same rule: identical instructions, Lombyte's C with every symbol renamed to its PAL
+address, and each passed this project's own check):
+
+- `src/overlays/l02_aridia/help_0021BC90.c`: `func_L02_002205B0` (`FUN_L02_0021ff70`)
+- `src/overlays/l02_aridia/help_0021BC90.c`: `func_L02_00220A28` (`FUN_L02_002203e8`)
+- `src/overlays/l04_eudora/vendor_002CB800.c`: `func_L04_002E30E0` (`FUN_L04_002e1d00`)
+- `src/overlays/l05_rilgar/vendor_0030EB68.c`: `func_L05_0031A8B8` (`FUN_L05_003193a8`)
+- `src/overlays/l06_blarg/help_00223630.c`: `func_L06_00228510` (`FUN_L06_00227e78`)
+- `src/overlays/l06_blarg/vendor_002FE5D0.c`: `func_L06_0030B248` (`FUN_L06_00309e08`)
+- `src/overlays/l12_hoven/help_0022E428.c`: `func_L12_00233130` (`FUN_L12_00232b18`)
+- `src/overlays/l14_oltanis/help_0021E3A8.c`: `func_L14_00223140` (`FUN_L14_00222aa8`)
+- `src/overlays/l14_oltanis/help_0021E3A8.c`: `func_L14_002235D0` (`FUN_L14_00222f38`)
+- `src/overlays/l16_kalebo3/vendor_002E7C70.c`: `func_L16_002EA2F8` (`FUN_L16_002e8e80`)
+- `src/overlays/l16_kalebo3/vendor_002E7C70.c`: `func_L16_002EAD58` (`FUN_L16_002e98e0`)
+- `src/overlays/l16_kalebo3/vendor_002E7C70.c`: `func_L16_002EB5A0` (`FUN_L16_002ea128`)
+- `src/overlays/l17_fleet/help_00202740.c`: `func_L17_0020E320` (`FUN_L17_0020dbe8`)
+- `src/overlays/shared/vendor_002A5138.c`: `func_L00_002A6058` (`FUN_L00_002a4dc8`)
+
 Data taken from Lombyte:
 
 - `tools/extract/moby_classes.tsv`: the moby class names the level editor

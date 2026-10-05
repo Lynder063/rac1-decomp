@@ -27,7 +27,7 @@ extern float func_001FA748(float, float);
 extern float func_0020D830(void *);
 extern float func_001FA888(int);
 extern int func_L15_0029ACC0(char *moby, float *point, float arg);
-extern void func_L15_0029AA60(void *, void *, void *, void *, float);
+extern int func_L15_0029AA60(unsigned char *, char *, int, int, float);
 extern void func_L15_002CCF30(unsigned char *moby);
 extern void func_L15_0029B2B0(void *);
 extern int func_L15_0029AE80(void *);
@@ -219,7 +219,7 @@ void func_L15_00298BB8(unsigned char *moby) {
                     if (moby[0x53] != 2) func_00213DE0(moby, 2, 0, func_001F9850(10));
                 }
             } else if (*(int *)(data + 0x124) == -1) {
-                func_L15_0029AA60(moby, data, (void *)2, (void *)0, *(float *)(data + 0x16C));
+                func_L15_0029AA60(moby, data, 2, 0, *(float *)(data + 0x16C));
             }
         } else if (moby[0x20] == 3) {
             if (func_001F9908(data + 0x14C) != 0) {
@@ -408,7 +408,7 @@ void func_L15_00298BB8(unsigned char *moby) {
             *(int *)(data + 0x144) = 0;
             func_L15_0029AC48((char *)moby, data, (float *)((char *)D_L15_001B0DB0[*(int *)(data + 0x124)] + (*(int *)(data + 0x13C) * 0x10 + 0x10)), (void *)2, (void *)0);
         } else {
-            func_L15_0029AA60(moby, data, (void *)2, (void *)0, *(float *)(data + 0x16C));
+            func_L15_0029AA60(moby, data, 2, 0, *(float *)(data + 0x16C));
         }
         break;
     }
@@ -422,7 +422,7 @@ void func_L15_00298BB8(unsigned char *moby) {
             if (*(int *)(data + 0x124) != -1) {
                 func_L15_0029AC48((char *)moby, data, (float *)((char *)D_L15_001B0DB0[*(int *)(data + 0x124)] + (*(int *)(data + 0x13C) * 0x10 + 0x10)), (void *)2, (void *)0);
             } else {
-                func_L15_0029AA60(moby, data, (void *)2, (void *)0, *(float *)(data + 0x16C));
+                func_L15_0029AA60(moby, data, 2, 0, *(float *)(data + 0x16C));
             }
         } else if (func_001FA850(*(float *)(moby + 0x48), func_L00_001FF860(*(float *)(data + 0xD0) - *(float *)(moby + 0x10), *(float *)(data + 0xD4) - *(float *)(moby + 0x14))) > 0.7853982f
                    && data[0x15B] == 0) {
@@ -744,9 +744,52 @@ void func_L15_00298BB8(unsigned char *moby) {
     }
     func_001F49B0((void (*)(void))func_L15_0029BD88, moby);
 }
-INCLUDE_ASM("asm/overlays", func_L15_0029AA60);
+extern float func_001FA790(float, float);
+
+/* Picks a facing state from the signed angle to a target; returns 1 when it turned a lot, else 0. */
+int func_L15_0029AA60(unsigned char *moby, char *d, int a, int b, float angle) {
+    float n = -func_001FA790(*(float *)(moby + 0x48), angle);
+    float v;
+    int ret = 1;
+    *(int *)(d + 0x144) = 0;
+    *(float *)(d + 0x170) = *(float *)(moby + 0x48);
+    *(float *)(d + 0x174) = angle;
+    *(float *)(d + 0x178) = n;
+    d[0x15C] = a;
+    d[0x15D] = b;
+    if (n > 2.0943952f || n < -2.0943952f) {
+        moby[0x20] = 8;
+        v = *(float *)(d + 0x178);
+        if (v > 0.0f) {
+            *(float *)(d + 0x178) = v + -6.2831855f;
+        }
+        if (moby[0x53] != 0xC) {
+            func_00213DE0(moby, 0xC, 0, func_001F9850(10));
+        }
+
+    } else if (n < -0.7853982f) {
+        moby[0x20] = 6;
+        if (moby[0x53] != 0xA) {
+            func_00213DE0(moby, 0xA, 0, func_001F9850(10));
+        }
+
+    } else if (n > 0.7853982f) {
+        moby[0x20] = 7;
+        if (moby[0x53] != 0xB) {
+            func_00213DE0(moby, 0xB, 0, func_001F9850(10));
+        }
+
+    } else {
+        moby[0x20] = a;
+        if (moby[0x53] != b) {
+            func_00213DE0(moby, b, 0, func_001F9850(10));
+        }
+        ret = 0;
+    }
+    return ret;
+}
 extern float func_L00_001FF860(float, float);
-extern void func_L15_0029AA60(void *, void *, void *, void *, float);
+extern int func_L15_0029AA60(unsigned char *, char *, int, int, float);
 
 void func_L15_0029AC48(char *moby, void *a, float *point, void *b, void *c)
 {
@@ -942,7 +985,67 @@ INCLUDE_ASM("asm/overlays", func_L15_002A3DD0);
 INCLUDE_ASM("asm/overlays", func_L15_002A4318);
 INCLUDE_ASM("asm/overlays", func_L15_002A47B8);
 INCLUDE_ASM("asm/overlays", func_L15_002A8090);
-INCLUDE_ASM("asm/overlays", func_L15_002A8850);
+typedef int u128_2A8850 __attribute__((mode(TI)));
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9CA0(void *, void *, void *);
+extern void func_L00_001FF240(void *, void *, void *);
+extern int func_001F4868(int);
+extern void func_L00_001FD1D8(void *, void *, int);
+extern float D_L15_00167440[];
+extern float D_L15_001E2AF0[];
+
+typedef struct {
+    float v[4][4];
+    int col[4];
+    float uv[4][2];
+    long a, b, c, d;
+} Quad;
+
+/* Builds a screen-space quad from the moby's offset and draws it. */
+void func_L15_002A8850(char *moby) {
+    float B[4];
+    float A[4];
+    Quad q;
+    float F[4];
+    float E[4];
+    float C[4];
+    float D[4];
+    char *d = *(char **)(moby + 0x78);
+    int i;
+    func_001F9BF0(A, d + 0x10, moby + 0x10);
+    *(u128_2A8850 *)B = *(u128_2A8850 *)A;
+    func_L00_001FF4B0(B, B, 0.5f);
+    *(u128_2A8850 *)C = *(u128_2A8850 *)(moby + 0x10);
+    func_L00_001FF240(D, C, B);
+    func_001F9BF0(E, C, d + 0x10);
+    func_001F9BF0(A, C, D_L15_00167440);
+    func_001F9BF0(F, d + 0x10, D_L15_00167440);
+    func_001F9CA0(A, A, E);
+    func_L00_001FF4B0(A, A, 0.1f);
+    func_001F9CA0(F, F, E);
+    func_L00_001FF4B0(F, F, 0.1f);
+    q.b = func_001F4868(0xE);
+    q.c = 0xFF9000000260L;
+    q.d = 0x8000000048L;
+    q.a = 0;
+    q.col[3] = 0x80243278;
+    q.col[2] = 0x80243278;
+    q.col[1] = 0x80243278;
+    q.col[0] = 0x80243278;
+    for (i = 0; i < 4; i++) {
+        q.uv[i][0] = D_L15_001E2AF0[i * 2];
+        q.uv[i][1] = D_L15_001E2AF0[i * 2 + 1];
+    }
+    func_001F9BF0(D, C, A);
+    *(u128_2A8850 *)q.v[0] = *(u128_2A8850 *)D;
+    func_001F9BD8(D, C, A);
+    *(u128_2A8850 *)q.v[1] = *(u128_2A8850 *)D;
+    func_001F9BF0(D, d + 0x10, F);
+    *(u128_2A8850 *)q.v[2] = *(u128_2A8850 *)D;
+    func_001F9BD8(D, d + 0x10, F);
+    *(u128_2A8850 *)q.v[3] = *(u128_2A8850 *)D;
+    func_L00_001FD1D8(&q, 0, 0);
+}
 INCLUDE_ASM("asm/overlays", func_L15_002BEFF8);
 INCLUDE_ASM("asm/overlays", func_L15_002CC858);
 extern int D_L15_001AC140[];

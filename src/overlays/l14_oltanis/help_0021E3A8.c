@@ -65,8 +65,235 @@ void func_L14_0021E3A8(void) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L14_00223140);
-INCLUDE_ASM("asm/overlays", func_L14_002235D0);
+typedef int Q_8 __attribute__((mode(TI)));
+typedef struct {
+    u8 pad0[0x98];
+    f32 f98;
+    u8 pad9C[0x128 - 0x9C];
+    f32 f128;
+    u8 pad12C[0x1C0 - 0x12C];
+    s32 i1C0;
+    u8 pad1C4[0x30E - 0x1C4];
+    s16 h30E;
+    u8 pad310[0x5BE - 0x310];
+    s16 h5BE;
+    u8 pad5C0[0x12E7 - 0x5C0];
+    u8 b12E7;
+    u8 pad12E8[0x2080 - 0x12E8];
+    u8 *p2080;
+    s32 i2084;
+    u8 pad2088[4];
+    s32 i208C;
+    u8 pad2090[0x20A4 - 0x2090];
+    u8 b20A4;
+    u8 pad20A5[0x2280 - 0x20A5];
+    u8 *p2280;
+} G_8;
+typedef struct {
+    u8 pad0[0x10];
+    Q_8 v10;
+    u8 *p20;
+    s32 i24;
+    u8 b28;
+    u8 pad29[3];
+    f32 f2C;
+    s32 i30;
+    u8 *p34;
+    u8 pad38[8];
+} T_8;
+typedef union { Q_8 q; f32 f[4]; s32 i[4]; } V_8;
+extern G_8 D_0013F450_23140 __asm__("D_0013F450");
+extern s32 D_L14_0015F6A8 MACRO_ADDR;
+extern T_8 D_L14_00178900[];
+extern s32 D_0015EE84 MACRO_ADDR;
+extern s32 D_0013E090[];
+extern s32 D_0015EFA8 MACRO_ADDR;
+extern f32 D_0015EE6C MACRO_ADDR;
+extern u8 D_0013F530[];
+void func_L00_00207220(void);
+void func_001F9BF0(void *, void *, void *);
+f32 func_001FA748(f32, f32);
+f32 func_001F9F90(f32);
+f32 func_001F9FA8(f32);
+void func_001F9BD8(void *, void *, void *);
+void func_L14_002306C8(s32, s32);
+void func_L00_00211338(void *, s32, f32, f32);
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l14/ui_help_0021dd30.c, FUN_L14_00222aa8. */
+s32 func_L14_00223140(s32 arg) {
+    u8 *m;
+    T_8 *tbl;
+    u8 *mob;
+    s32 flag;
+    s32 id;
+    f32 a, b, e;
+    V_8 v;
+
+    if (D_0013F450_23140.i208C == 0x14) {
+        return 0;
+    }
+    if (D_0013F450_23140.i208C == 7) {
+        return 0;
+    }
+    if (D_0013F450_23140.i2084 == 0x32) {
+        return 0;
+    }
+    if (D_0013F450_23140.i1C0 != 0) {
+        return 0;
+    }
+    if (D_L14_0015F6A8 != 0) {
+        return 0;
+    }
+    D_0013F450_23140.p2280 = 0;
+    m = D_0013F450_23140.p2080;
+    if (m[0xA4] == 0xFF) {
+        return 0;
+    }
+    tbl = &D_L14_00178900[m[0xA4]];
+    if (tbl->p34 != m) {
+        return 0;
+    }
+    if ((tbl->i24 ^ 1) & 1) {
+        return 0;
+    }
+    D_0013E090[D_0015EE84]++;
+    D_0013F450_23140.p2280 = tbl->p20;
+    D_0015EFA8++;
+    if (D_0013F450_23140.i208C == 0xF) {
+        D_0013F450_23140.h5BE = 1;
+        return 0;
+    }
+    if (arg == 0) {
+        return 1;
+    }
+    func_L00_00207220();
+    flag = 0;
+    if (tbl->i30 & 1) {
+        qcopy(&v, &tbl->v10);
+        if (*(f32 *)((u8 *)tbl + 0x1C) == 5627.9248046875f) {
+            flag = 1;
+        }
+    } else if (tbl->p20 != 0) {
+        func_001F9BF0(&v, (u8 *)&D_0013F450_23140 + 0x80, tbl->p20 + 0x10);
+    } else {
+        v.f[0] = func_001F9F90(func_001FA748(D_0013F450_23140.f98, 3.1415927f));
+        v.f[1] = func_001F9FA8(func_001FA748(D_0013F450_23140.f98, 3.1415927f));
+        v.i[2] = 0;
+    }
+    switch (D_0013F450_23140.b20A4) {
+    case 0:
+        mob = D_0013F450_23140.p2280;
+        if (mob != 0 && (*(s16 *)(mob + 0xA6) == 0x4EB || *(s16 *)(mob + 0xA6) == 0x558)) {
+            id = 0x80;
+        call_ret:
+            func_L14_002306C8(id, 1);
+            return 1;
+        }
+        if (D_0013F450_23140.i208C == 0x16) {
+            func_L14_002306C8(0x6D, 1);
+            D_0013F450_23140.f128 = D_0015EE6C * 7.0f;
+            return 1;
+        }
+        func_L14_002306C8(0x16, 1);
+        e = D_0015EE6C;
+        a = e * 5.7f;
+        b = e * 2.4f;
+        if (D_0013F450_23140.b12E7 != 0) {
+            a = 0.0f;
+            b = e * 1.7f;
+        }
+        func_L00_00211338(&v, flag, a, b);
+        if (flag != 0 && tbl->b28 == 4) {
+            v.f[2] += v.f[2];
+        }
+        break;
+    case 3:
+        func_L14_002306C8(0x56, 1);
+        func_L00_00211338(&v, flag, D_0015EE6C * 5.0f, D_0015EE6C * 2.4f);
+        break;
+    }
+    func_001F9BD8(D_0013F530, D_0013F530, &v);
+    func_001F9BD8(D_0013F530 + 0x20, D_0013F530 + 0x20, &v);
+    return 1;
+}
+typedef struct {
+    u8 pad0[0x80];
+    f32 v80[4];
+    u8 pad90[0x108];
+    s32 i198;
+    u8 pad19C[0x74];
+    f32 v210[4];
+    f32 f220;
+    f32 f224;
+    f32 f228;
+    f32 f22C;
+    f32 f230;
+    f32 f234;
+    f32 f238;
+    u8 pad23C[0x1B];
+    u8 b257;
+    u8 pad258[0xA8];
+    s32 i300;
+    u8 pad304[0x11A];
+    s16 s41E;
+    s32 i420;
+    u8 pad424[0x10];
+    f32 f434;
+    u8 pad438[0xEAA];
+    u8 b12E2;
+    u8 pad12E3;
+    u8 b12E4;
+    u8 pad12E5[0xD9F];
+    s32 i2084;
+    u8 pad2088[0x4];
+    s32 i208C;
+    u8 pad2090[0x4];
+    s32 i2094;
+    u8 pad2098[0xC];
+    u8 b20A4;
+} P231ae0;
+extern P231ae0 D_0013F450_235D0 __asm__("D_0013F450");
+extern f32 D_0013F670[];
+extern f32 D_0015EE60 MACRO_ADDR;
+extern f32 D_0015EE64 MACRO_ADDR;
+f32 func_001F9D48(void *, void *);
+f32 func_00214D28_235D0(f32, f32, f32 *) __asm__("func_00214D28");
+void func_L00_0025C918_235D0(f32 *, f32 *, f32, f32, f32, f32) __asm__("func_L00_0025C918");
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l14/ui_help_0021dd30.c, FUN_L14_00222f38. */
+void func_L14_002235D0(void) {
+    switch (D_0013F450_235D0.b20A4) {
+    case 0:
+        D_0013F450_235D0.f228 = 0.8f;
+        D_0013F450_235D0.f22C = 0.7f;
+        D_0013F450_235D0.f230 = 0.45f;
+        break;
+    case 3:
+        D_0013F450_235D0.f228 = 0.8f;
+        D_0013F450_235D0.f22C = 0.6f;
+        D_0013F450_235D0.f230 = 0.45f;
+        break;
+    }
+    if (D_0013F450_235D0.i208C == 4) {
+        if (D_0013F450_235D0.i198 > D_0013F450_235D0.i420 && D_0013F450_235D0.s41E == 0) D_0013F450_235D0.f22C = D_0013F450_235D0.f434;
+    } else if (D_0013F450_235D0.i2084 == 6) {
+        D_0013F450_235D0.f22C = 0.5f;
+    } else if (D_0013F450_235D0.i2084 == 4) {
+        D_0013F450_235D0.f228 = 0.35000002f;
+    } else if (D_0013F450_235D0.b12E2 && D_0013F450_235D0.i300) {
+        D_0013F450_235D0.f228 = 0.8f;
+        D_0013F450_235D0.f22C = 0.9f;
+    } else if (D_0013F450_235D0.i2084 == 0x7F) {
+        D_0013F450_235D0.f230 = 0.8f;
+    }
+    if (!D_0013F450_235D0.b257 || D_0013F450_235D0.i2094 == 0x12 || D_0013F450_235D0.i208C == 0x11 || D_0013F450_235D0.b12E4 || func_001F9D48(D_0013F450_235D0.v210, D_0013F450_235D0.v80) > D_0013F450_235D0.f234 * 0.5f) {
+        f32 *q = D_0013F670;
+        P231ae0 *b = (P231ae0 *)((u8 *)q - 0x220);
+        func_00214D28_235D0(b->f228, D_0015EE60 * 0.02f, q);
+        func_00214D28_235D0(b->f22C, D_0015EE60 * 0.02f, q + 1);
+        func_L00_0025C918_235D0(q + 5, q + 6, b->f230, D_0015EE64 * 0.02f, D_0015EE64 * 0.3f, D_0015EE6C * 4.0f);
+    }
+}
 typedef int u128 __attribute__((mode(TI)));
 typedef struct Moby {
     char p0[0x10];

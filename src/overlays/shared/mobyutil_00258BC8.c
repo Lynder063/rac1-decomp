@@ -259,13 +259,73 @@ int func_L00_002594C8(void *ign, V_94C8 *to, V_94C8 *pos, int flags, float h, fl
     to->f[1] = pos->f[1];
     return ok;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00259868);
+extern float func_001F9CB8(void *);
+
+/* Moves a moby position by a vector with ground collision steps; returns hit flags. */
+int func_L00_00259868(char *m, char *v, int flags, float a, float b, float c) {
+    Vs t0;
+    Vs t1;
+    Vs t2;
+    Vs t3;
+    int r = 0;
+    int fl = (flags * 2) & 0x20;
+    char *p = m + 0x10;
+    int i;
+    char *q;
+
+    qcopy(&t0, p);
+    func_001F9BD8(p, p, v);
+    if (b < func_001F9CB8(v)) {
+        qcopy(&t1, &t0);
+        t1.a[2] += a;
+        func_L00_001FF4B0(&t3, v, b);
+        func_001F9BD8(&t2, &t3, p);
+        t2.a[2] += a;
+        if (func_L00_001EFFF0(&t1, &t2, fl, (int)m, 0)) {
+            func_001F9BF0(p, (char *)&D_94C8_60, &t3);
+            r = 1;
+            *(float *)(m + 0x18) -= a;
+        }
+    }
+    for (i = 0, q = m + 0x10; i < 6; i++) {
+        qcopy(&t1, q);
+        t1.a[2] += a;
+        if (func_L00_001F10E0_l(&t1, b, fl | 4, m)) {
+            qcopy(q, &D_L00_00173F70);
+            r |= 1;
+            *(float *)(m + 0x18) -= a;
+        } else {
+            break;
+        }
+    }
+    b = *(float *)(m + 0x18) - c;
+    qcopy(&t1, q);
+    qcopy(&t2, q);
+    t1.a[2] += a;
+    t2.a[2] = b - 0.05f;
+    if (func_L00_001EFFF0(&t1, &t2, fl | 2, (int)m, 0)) {
+        if (D_L00_00173F40[7] > 0) {
+            float g;
+            r |= 2;
+            g = func_L00_001FF860(*(float *)((char *)D_L00_00173F40 + 0x48), func_001F9CE8((char *)D_L00_00173F40 + 0x40));
+            if (g > 0.5f) {
+                r |= 4;
+            }
+            g = *(float *)((char *)D_L00_00173F40 + 0x28);
+            if (b < g) {
+                *(float *)(m + 0x18) += (g - b) * 0.3f;
+            }
+        }
+    }
+    func_001F9BF0(v, q, &t0);
+    return r;
+}
 extern float func_001FA888(int);
-extern void func_L00_00259868(int, int, float, float, float, int);
+extern void func_L00_00259868_c(int, int, float, float, float, int) __asm__("func_L00_00259868");
 
 /* Forwards its arguments, replacing the middle float with func_001FA888's result scaled by 1/1024. */
 void func_L00_00259B08(int a, int b, int g, int e, float c, float d) {
-    func_L00_00259868(a, b, c, func_001FA888(g) * 0.0009765625f, d, e);
+    func_L00_00259868_c(a, b, c, func_001FA888(g) * 0.0009765625f, d, e);
 }
 typedef u32 u128 __attribute__((mode(TI), aligned(16)));
 typedef union {
