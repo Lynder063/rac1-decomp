@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 25.16800160956342,
+  "fuzzy_match_percent": 25.176189482461776,
   "total_code": "3712808",
-  "matched_code": "839956",
-  "matched_code_percent": 22.62320055332783,
+  "matched_code": "840260",
+  "matched_code_percent": 22.631388426226188,
   "total_functions": 5109,
-  "matched_functions": 2981,
-  "matched_functions_percent": 58.34801330984537,
+  "matched_functions": 2982,
+  "matched_functions_percent": 58.36758661186142,
   "complete_code": "97220",
   "complete_code_percent": 2.6185032999282485,
   "total_units": 278,
@@ -44532,13 +44532,13 @@
   {
    "name": "Level 08: Batalia",
    "measures": {
-    "fuzzy_match_percent": 6.347269376471792,
+    "fuzzy_match_percent": 6.541801986280332,
     "total_code": "156272",
-    "matched_code": "9684",
-    "matched_code_percent": 6.196887478243063,
+    "matched_code": "9988",
+    "matched_code_percent": 6.3914200880516026,
     "total_functions": 85,
-    "matched_functions": 30,
-    "matched_functions_percent": 35.294117647058826,
+    "matched_functions": 31,
+    "matched_functions_percent": 36.470588235294116,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -44611,7 +44611,7 @@
     {
      "name": "func_L08_0027C218",
      "size": "304",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "385632",
      "metadata": {
       "virtual_address": "2605592"
@@ -53263,13 +53263,13 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 19.948538120690774,
+    "fuzzy_match_percent": 19.957900297741862,
     "total_code": "3247108",
-    "matched_code": "553456",
-    "matched_code_percent": 17.044582440744193,
+    "matched_code": "553760",
+    "matched_code_percent": 17.05394461779528,
     "total_functions": 3429,
-    "matched_functions": 1629,
-    "matched_functions_percent": 47.506561679790025,
+    "matched_functions": 1630,
+    "matched_functions_percent": 47.53572470107903,
     "complete_code": "3876",
     "complete_code_percent": 0.1193677574013553
    }
@@ -53323,13 +53323,13 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 14.7038326296861,
+    "fuzzy_match_percent": 14.718687404714442,
     "total_code": "2046480",
-    "matched_code": "233988",
-    "matched_code_percent": 11.433681247801102,
+    "matched_code": "234292",
+    "matched_code_percent": 11.448536022829444,
     "total_functions": 1449,
-    "matched_functions": 629,
-    "matched_functions_percent": 43.40924775707384,
+    "matched_functions": 630,
+    "matched_functions_percent": 43.47826086956522,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53458,13 +53458,13 @@
    "id": "level_08",
    "name": "Level 08: Batalia",
    "measures": {
-    "fuzzy_match_percent": 6.347269376471792,
+    "fuzzy_match_percent": 6.541801986280332,
     "total_code": "156272",
-    "matched_code": "9684",
-    "matched_code_percent": 6.196887478243063,
+    "matched_code": "9988",
+    "matched_code_percent": 6.3914200880516026,
     "total_functions": 85,
-    "matched_functions": 30,
-    "matched_functions_percent": 35.294117647058826,
+    "matched_functions": 31,
+    "matched_functions_percent": 36.470588235294116,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
