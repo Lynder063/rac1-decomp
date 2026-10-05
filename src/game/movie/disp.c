@@ -11,7 +11,9 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023C5E0); /* setImageTag */
 ASM_FUNC("asm/handwritten/text", func_0023C7A8); /* vblankHandler */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C910); /* handler_endimage */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023C960); /* startDisplay(int) */
-/* ClearStageStateFlag - clears state flag at D_001612E0 */
+extern int D_001612E0 NOT_SDA;
+
+/* endDisplay(void) -- clears the display-active flag. */
 void func_0023C9B0(void) {
-    *(int *)0x001612E0 = 0;
+    D_001612E0 = 0;
 }
