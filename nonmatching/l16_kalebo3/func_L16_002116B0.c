@@ -1,17 +1,18 @@
 /* NON_MATCHING func_L16_002116B0 -- src/overlays/l16_kalebo3/help_00209D98.c
- * Best so far: BYTES 69/1672 (95.9% of the bytes match), checked 2026-10-03.
+ * Best so far: BYTES 55/1672 (96.7% of the bytes match), checked 2026-10-05.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
- *   Run 6: SIZE 1620 after ANSI C declaration correction and scoped velocity pointers.
- *   Runs 7-8: SIZE 1652. Assign scratch pointers by dispatch path, and reuse position register for limiting veloci
- *   Run 9: SIZE 1664. Separate shared unconstrained decision and assign scratch pointers after first collision vec
- *   Run 10: BYTES 79/1672. Distinct mode13/14 goto paths prevent range folding; reverse contact stores.
- *   Run 11: BYTES 76; restore literal work.quad stack store and separate collision scratch locals.
- *   Run 12: BYTES 69/1672 (p11.c). Assign shared scratch pointers after collision result; temporary collision plan
- *   Run 13: BYTES 89 with float-first vector-scale alias, worsens call scheduling.
- *   Run 14: declaration-order check, no improvement. Remaining mainly high-half cache s2 vs retail s4; scratch wor
+ *   Tail slope ratio clamped +/-.5 then cap external motion at dt*52.
+ *   p0 BYTES69/1672: staged verdict reproduced; main cache/work/plane/velocity/vertical permutation plus collision
+ *   p1 BYTES69 unchanged: early collision goto normalized identically. Reuse finished plane pointer for contact ve
+ *   p2 BYTES55: plane pointer reused for contact displacement fixes plane/velocity s2/s5. Remaining work s4 vs s3,
+ *   p3 BYTES55 unchanged: grouped vector workspace normalizes identically. Split projected vertical pointer from l
+ *   p4 BYTES55 unchanged: separate projected vertical/external pointer lifetimes normalize identically. Check unty
+ *   p5 BYTES55 unchanged: byte-array resident storage declaration normalizes identically. Stop after three unchang
+ *   Best p2 improves staged 69 to55 differing bytes; cache/work/vertical allocation and collision/mode14 branch sh
  */
+#include "common.h"
 extern void func_L00_00234800(int, void *, void *);
 extern float func_L00_00234250(void *);
 extern float func_L00_002342F8(void *);
@@ -69,7 +70,7 @@ typedef struct {
     char pad2088[4];
     int mode;
 } L16MovementPlayer;
-extern L16MovementPlayer D_0013E633_movement __asm__("D_0013E633");
+extern char D_0013E633_movement[] __asm__("D_0013E633");
 
 /* Integrate player motion, resolve contacts, and measure the resulting movement. */
 void func_L16_002116B0(void) {
@@ -79,7 +80,7 @@ void func_L16_002116B0(void) {
     L16MovementPlayer *contact_player;
     L16MovementPlayer *motion_player;
     L16MovementPlayer *cap_player;
-    float *position = (float *)((char *)&D_0013E633_movement + 0xE9D);
+    float *position = (float *)(D_0013E633_movement + 0xE9D);
     L16MovementPlayer *player;
     float *delta;
     float *vertical;
@@ -104,7 +105,7 @@ void func_L16_002116B0(void) {
             limit = player->speed_limit - 0.02f;
             if (limit < length) func_L00_001FF4B0(position, position, limit);
         }
-        limited_velocity = (float *)((char *)&D_0013E633_movement + 0xEFD);
+        limited_velocity = (float *)(D_0013E633_movement + 0xEFD);
         magnitude = func_L00_002342F8(limited_velocity);
         work_address = work.f;
         plane_address = plane.f;
@@ -139,13 +140,13 @@ void func_L16_002116B0(void) {
         if (collided) {
             char *hit = D_L16_001742D8;
             if (!hit || *(short *)(hit + 0xA6) == 0x1F6 || *(short *)(hit + 0xA6) == 0x59F) {
-                player = (L16MovementPlayer *)((char *)&D_0013E633_movement + 0xE1D);
+                player = (L16MovementPlayer *)(D_0013E633_movement + 0xE1D);
                 unconstrained = player->unconstrained;
 clamp_vertical:
                 if (!unconstrained) {
                     float length;
                     float limit;
-                    position = (float *)((char *)&D_0013E633_movement + 0xEFD);
+                    position = (float *)(D_0013E633_movement + 0xEFD);
                     length = func_001F9CE8(position);
                     limit = player->speed_limit - 0.02f;
                     if (limit < length) func_L00_001FF500(position, position, limit);
@@ -157,7 +158,7 @@ clamp_vertical:
         plane_address = plane.f;
         if (player->mode == 13) goto reset_position;
         if (player->mode == 14) {
-            position = (float *)((char *)&D_0013E633_movement + 0xE9D);
+            position = (float *)(D_0013E633_movement + 0xE9D);
             goto integrate_position;
         }
         if (!player->unconstrained) {
@@ -170,7 +171,7 @@ clamp_vertical:
         }
     }
 reset_position:
-    position = (float *)((char *)&D_0013E633_movement + 0xE9D);
+    position = (float *)(D_0013E633_movement + 0xE9D);
 integrate_position:
     func_001F9BD8(position, position, (char *)position + 0x60);
     extra_step = (float *)((char *)position + 0x8A0);
@@ -187,7 +188,7 @@ integrate_position:
     } else {
         func_L16_002105C8();
     }
-    delta = (float *)((char *)&D_0013E633_movement + 0xF2D);
+    delta = (float *)(D_0013E633_movement + 0xF2D);
     new_position = (float *)((char *)delta - 0x90);
     horizontal = (float *)((char *)delta + 0x20);
     func_001F9BF0(delta, new_position, previous.f);
@@ -220,13 +221,13 @@ integrate_position:
     motion_player->vertical_speed = func_L00_00213A08(work_address);
     if (motion_player->vertical_speed < 0.0f) motion_player->vertical_speed = 0.0f;
     qcopy(work_address, new_position);
-    velocity = (float *)((char *)delta - 0x20);
+    plane_address = (float *)((char *)delta - 0x20);
     vertical = (float *)((char *)delta - 0x10);
-    if (func_001F9CB8(velocity) > 0.0001f) {
+    if (func_001F9CB8(plane_address) > 0.0001f) {
         float saved;
-        func_001F9BD8(new_position, new_position, velocity);
+        func_001F9BD8(new_position, new_position, plane_address);
         saved = motion_player->contact[3];
-        func_001F9BC0(velocity);
+        func_001F9BC0(plane_address);
         motion_player->contact[3] = saved;
         func_L00_00213E60();
         func_L16_002105C8();
@@ -243,7 +244,7 @@ integrate_position:
         if (motion_player->slope > 0.5f) motion_player->slope = 0.5f;
         else if (motion_player->slope < -0.5f) motion_player->slope = -0.5f;
     }
-    cap_player = (L16MovementPlayer *)((char *)&D_0013E633_movement + 0xE1D);
+    cap_player = (L16MovementPlayer *)(D_0013E633_movement + 0xE1D);
     magnitude = D_0015EE6C * 52.0f;
     if (magnitude < cap_player->speed) {
         func_001F9C30(cap_player->external, cap_player->external, magnitude / cap_player->speed);

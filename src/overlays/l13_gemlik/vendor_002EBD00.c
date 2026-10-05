@@ -56,7 +56,64 @@ void func_L13_002F4BE8(Level13VendorMoby *moby) {
         moby->flags |= 3;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L13_002F4C10);
+extern int func_00215570(void *, int);
+extern int func_L00_00203F20(int a, int b);
+extern int D_L13_00179790[] NOT_SDA;
+extern int D_L13_0015F6A8 MACRO_ADDR;
+extern int D_0015EFA4 MACRO_ADDR;
+extern int D_0015EE84 MACRO_ADDR;
+extern char *D_L13_00160058_m __asm__("D_L13_00160058") MACRO_ADDR;
+extern char D_0013E633[] NOT_SDA;
+extern unsigned char D_0013D50F[] NOT_SDA;
+extern unsigned char D_0014171B[] NOT_SDA;
+
+/* Per-frame update: awards a stat/flag when its linked moby is gone, then sets a flag byte from a test. */
+void func_L13_002F4C10(char *moby) {
+    char *data;
+    unsigned char *p;
+    ((unsigned char *)moby)[0x30] = 0xFF;
+    data = *(char **)(moby + 0x78);
+    if (D_L13_00179790[0] == 0 && D_L13_00179790[9] == -1) {
+        unsigned int v = *(unsigned int *)(D_0013E633 + 0x2EA9);
+        if ((v < 2 || v == 9) ? D_L13_0015F6A8 == 0 : 0) {
+            int idx = *(int *)(data + 4);
+            char *m;
+            if (idx != -1) {
+                m = D_L13_00160058_m + (idx << 8);
+                if (m != 0 && *(short *)(m + 0xA6) == 0xAA) {
+                    int s = (unsigned char)m[0x20];
+                    if (s == 0xFE) goto join;
+                    if (s != 0xFD) goto direct;
+                }
+            }
+        join:
+            p = D_0013D50F + 0xB9;
+            if (p[0xB] != 0 || p[0xD] != 0) {
+                unsigned char *q = D_0014171B + 0x34D;
+                unsigned int h = *(unsigned short *)(q + 0x378);
+                if (h <= 0xFFFE) {
+                    *(unsigned short *)(q + 0x378) = h + 1;
+                }
+                if (func_001F9850(D_0015EFA4) / 600 > *(unsigned short *)(q + 0x37A)) {
+                    *(unsigned short *)(q + 0x37A) = func_001F9850(D_0015EFA4) / 600;
+                }
+                *(unsigned int *)(q + 0x37C) = *(unsigned int *)(q + 0x37C) | (1 << D_0015EE84) | 0x80000000;
+            } else {
+            direct:
+                if (func_00215570(D_0013E633 + 0xE9D, *(int *)data) != 0) {
+                    if (*(int *)(D_0014171B + 0x6C9) >= 0) {
+                        func_L00_00203F20(0x32C8, 0x6F);
+                    }
+                }
+            }
+        }
+    }
+    if (func_00215570(D_0013E633 + 0xE9D, *(int *)(data + 8)) != 0) {
+        (D_0013E633 + 0xE9D)[0x224B] = 0;
+    } else {
+        (D_0013E633 + 0xE9D)[0x224B] = 1;
+    }
+}
 extern int func_001E9730();
 extern void func_0020D678(void *);
 extern char *D_L13_00160058_m __asm__("D_L13_00160058") MACRO_ADDR;
@@ -216,7 +273,67 @@ INCLUDE_ASM("asm/overlays", func_L13_00309330);
 INCLUDE_ASM("asm/overlays", func_L13_0030A1C8);
 INCLUDE_ASM("asm/overlays", func_L13_0030A828);
 INCLUDE_ASM("asm/overlays", func_L13_0030A9B0);
-INCLUDE_ASM("asm/overlays", func_L13_0030B080);
+extern float func_002140F8(float, float);
+extern float func_00214158(void);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern float func_001F9878(float);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9C08(void *, void *, void *, float);
+extern char *func_00219780(void *, void *, void *, int, int, int, int, int, int);
+extern short D_L13_00161F40;
+extern short D_L13_00161F44;
+extern short D_L13_00161F48;
+extern short D_L13_00161F4C;
+extern short D_L13_00161F50;
+extern short D_L13_00161F54;
+extern short D_L13_00161F58;
+extern short D_L13_00161F5C;
+extern short D_L13_00161F60;
+extern short D_L13_00161F64;
+extern short D_L13_00161F68;
+extern short D_L13_00161F6C;
+extern short D_L13_00161F70;
+extern short D_L13_00161F74;
+extern short D_L13_00161F78;
+extern short D_L13_00161F7C;
+
+/* spawns particles for each active entry of the moby's 16-slot table */
+void func_L13_0030B080(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    int i, n;
+    for (i = 0; i < 15; i = n) {
+        float f21, f22;
+        int s18, s19, s17;
+        int s10[4];
+        float v[4], w[4];
+        char *p;
+        int off = i * 16;
+        n = i + 1;
+        if (*(float *)(data + off + 0x21C) < 0.99f && *(float *)(data - (-(n * 16)) + 0x21C) < 0.99f) { continue; }
+        if (*(float *)&D_L13_00161F78 < func_002140F8(0.0f, 1.0f)) { continue; }
+        f21 = func_00214158();
+        f22 = func_00214158();
+        v[0] = func_001F9F90(f21) * func_002140F8(*(float *)&D_L13_00161F68, *(float *)&D_L13_00161F6C);
+        v[1] = func_001F9FA8(f21) * func_002140F8(*(float *)&D_L13_00161F68, *(float *)&D_L13_00161F6C);
+        v[2] = 0;
+        w[0] = func_001F9F90(f22) * func_002140F8(*(float *)&D_L13_00161F68, *(float *)&D_L13_00161F6C);
+        w[1] = func_001F9FA8(f22) * func_002140F8(*(float *)&D_L13_00161F68, *(float *)&D_L13_00161F6C);
+        w[2] = 0;
+        v[2] = func_002140F8(*(float *)&D_L13_00161F70, *(float *)&D_L13_00161F74);
+        w[2] = func_002140F8(*(float *)&D_L13_00161F70, *(float *)&D_L13_00161F74);
+        s18 = func_001FA898_r(func_001F9878(func_002140F8(*(float *)&D_L13_00161F50, *(float *)&D_L13_00161F54)));
+        s19 = func_001FA898_r(func_001F9878(func_002140F8(*(float *)&D_L13_00161F58, *(float *)&D_L13_00161F5C)));
+        s17 = func_001FA898_r(func_001F9878(func_002140F8(*(float *)&D_L13_00161F60, *(float *)&D_L13_00161F64)));
+        func_001F9C30(v, v, 1.0f / (float)s18);
+        v[3] = *(float *)&D_L13_00161F48;
+        func_001F9C30(w, w, 1.0f / (float)s17);
+        w[3] = *(float *)&D_L13_00161F4C;
+        p = data + (off + 0x210);
+        func_001F9C08(s10, p, p, func_002140F8(0.0f, 1.0f));
+        func_00219780(s10, v, w, *(int *)&D_L13_00161F40, *(int *)&D_L13_00161F44, s18, s19, s17, *(int *)&D_L13_00161F7C);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L13_0030B340);
 extern void func_L01_002BA380(char *, int);
 extern char D_L13_001D9E80[];
@@ -254,7 +371,31 @@ void func_L13_0030C1F0(char *moby, float *p, float *q) {
     base = D_0013E633 + 0xE1D;
     q[2] = func_L00_001FF860(*(float *)(base + 0xD0) - p[0], *(float *)(base + 0xD4) - p[1]);
 }
-INCLUDE_ASM("asm/overlays", func_L13_0030C320);
+extern short *D_L13_001ABE40[];
+extern char *func_L00_002DCD40(char *);
+
+// Counts the mobys of a list that are alive and idle, optionally ignoring those in a given state.
+int func_L13_0030C320(int idx, int arg)
+{
+    short *q = D_L13_001ABE40[idx];
+    short *p;
+    int count = 0;
+    if (q == 0) return 0;
+    p = q;
+    do {
+        int id = *p & 0x7FFF;
+        char *m = (char *)(id << 8) + (int)D_L13_00160058_m;
+        if (m[0x20] >= 0) {
+            char *f = func_L00_002DCD40(m);
+            if (f == 0 || *(short *)(f + 0x68) < 4) {
+                if (arg == -1 || *(unsigned char *)((char *)(id << 8) + (int)D_L13_00160058_m + 0x20) != arg) {
+                    count++;
+                }
+            }
+        }
+    } while (*p++ >= 0);
+    return count;
+}
 extern char D_0013E633[];
 extern int func_L13_0030C320(int, int);
 extern int func_00215570(void *, int);

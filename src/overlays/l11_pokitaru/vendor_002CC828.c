@@ -146,7 +146,56 @@ int func_L11_002D3500(char *moby, char *other) {
     return func_L01_00277FD8(buf, n, d->b[d->idx], moby + 0x10, other, d->e, 0.2f) != 0;
 }
 INCLUDE_ASM("asm/overlays", func_L11_002D3620);
-INCLUDE_ASM("asm/overlays", func_L11_002D37A8);
+extern int func_00215570(void *arg0, int arg1);
+extern float func_001F9CB8(void *a);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern float func_L00_0025A748_f(void *) __asm__("func_L00_0025A748");
+extern float func_001F9B88(float);
+extern int func_L00_001EFFF0(void *, void *, int, void *, int);
+typedef int u128 __attribute__((mode(TI)));
+
+/* Tests whether a moby can drop onto the ground, writing the landing point. */
+int func_L11_002D37A8(char *m, float *out) {
+    char *s = *(char **)(m + 0x78);
+    int *p = (int *)(s + 0xF8);
+    int i;
+    int found = 0;
+    float a[4];
+    float b[4];
+    float g;
+    for (i = 0; i < 2; i++) {
+        if (func_00215570(m + 0x10, *p)) {
+            found = 1;
+            break;
+        }
+        p++;
+    }
+    if (found) {
+        float *pos = (float *)(m + 0x10);
+        func_001F9BF0(a, out, pos);
+        if (func_001F9CB8(a) > 4.0f) func_L00_001FF4B0(a, a, 4.0f);
+        func_001F9BD8(a, a, pos);
+        {
+            int *q = D_L11_001B11B0[*(int *)(s - (-(*(int *)(s + 0x158) * 4)) + 0x60)];
+            if (func_L00_0025A778(a, q + 4, *q)) {
+                a[2] += 5.0f;
+                g = func_L00_0025A748_f(a);
+                if (func_001F9B88(g - *(float *)(m + 0x18)) > 0.5f) {
+                    qcopy(b, pos);
+                    b[2] += 0.15f;
+                    a[2] = g + 0.15f;
+                    if (func_L00_001EFFF0(b, a, 2, m, 0)) {
+                        a[2] = g;
+                        qcopy(out, a);
+                        return 1;
+                    }
+                }
+            }
+        }
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L11_002D3970);
 INCLUDE_ASM("asm/overlays", func_L11_002F21B0);
 INCLUDE_ASM("asm/overlays", func_L11_002F3888);
@@ -377,7 +426,27 @@ char *func_L11_00310A70(void *position, void *vector, int id) {
 }
 INCLUDE_ASM("asm/overlays", func_L11_00310B28);
 INCLUDE_ASM("asm/overlays", func_L11_00310BF0);
-INCLUDE_ASM("asm/overlays", func_L11_00311260);
+char *func_L11_00311260(char *owner) {
+    char *moby = func_0020D348(0x4C3);
+    if (moby != 0) {
+        char *data;
+        data = *(char **)(moby + 0x78);
+        ((unsigned char *)moby)[0x30] = 0xFF;
+        *(short *)(moby + 0x32) = 0xFF;
+        moby[0x31] = 1;
+        moby[0x20] = 0;
+        moby[0xBC] = 0;
+        qcopy(moby + 0x10, owner + 0x10);
+        qcopy(moby + 0x40, owner + 0x40);
+        *(char **)(data + 0x70) = owner;
+        if ((unsigned char)moby[0x53] != 2) {
+            func_00213DE0(moby, 2, 0xD, 0);
+        }
+        func_L00_00251E30(moby);
+        func_L00_0025E210(moby);
+    }
+    return moby;
+}
 INCLUDE_ASM("asm/overlays", func_L11_00311318);
 extern void func_L11_00311318(void *, void *, void *);
 extern float func_0020D830(void *);

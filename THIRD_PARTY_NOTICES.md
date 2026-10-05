@@ -166,7 +166,7 @@ The following functions adapt source from
 - `src/overlays/shared/vendor_002EB0D8.c`: `func_L00_002EC860` (sets a moby's damping and scale constants, then re-runs its setup)
 - `src/overlays/shared/help_00203E98.c`: `func_L00_0020A8B8` (tests a segment against the world and returns the hit distance)
 
-The next 107 were carried over by machine (OpenRAC's `tools/port.py`, 2026-10-04): the PAL code is
+The next 114 were carried over by machine (OpenRAC's `tools/port.py`, 2026-10-04): the PAL code is
 the same instructions as the US code Lombyte matched, the C is Lombyte's with every symbol renamed
 to its PAL address, and each passed this project's own check. In parentheses, Lombyte's name.
 
@@ -277,6 +277,61 @@ to its PAL address, and each passed this project's own check. In parentheses, Lo
 - `src/core/00119D88.c`: `func_0011C388` (`sceLseek`)
 - `src/core/00119D88.c`: `func_0011C5C0` (`sceRead`)
 - `src/core/00119D88.c`: `func_0011C820` (`sceWrite`)
+- `src/overlays/shared/vendor_002C12B0.c`: `func_L00_002C4748` (`FUN_L00_002c3440`)
+- `src/overlays/shared/mobyutil_00258BC8.c`: `func_L00_00259B88` (`FUN_L00_00258b50`)
+- `src/overlays/shared/vendor_002D9438.c`: `func_L00_002E0958` (`FUN_L00_002df4a8`)
+- `src/overlays/shared/vendor_00299AF0.c`: `func_L10_002F6E38` (`FUN_L10_002f5a78`)
+- `src/overlays/shared/vendor_002A5218.c`: `func_L02_002A5238` (`FUN_L02_002a4058`)
+- `src/core/00114518.c`: `func_00114920` (`_malloc_r`; newlib's allocator, see below)
+- `src/core/00119D88.c`: `func_0011AA90` (`_sceSifSendCmd`; its two small structs' members are named by offset here)
+
+Four more began as machine ports that came out a few bytes off and were finished by hand by the GPT agent
+(2026-10-05):
+
+- `src/overlays/shared/vendor_002BA7C8.c`: `func_L00_002C0358` (`FUN_L00_002bf050`)
+- `src/overlays/shared/shrubproc_0028A198.c`: `func_L00_0028AF90` (`FUN_L00_00289cb8`)
+- `src/overlays/shared/hud_00235960.c`: `func_L00_00239510` (`FUN_L00_00238b80`)
+- `src/overlays/shared/help_00203E98.c`: `func_L00_002091D8` (`FUN_L00_00208b60`)
+
+Fourteen more were carried over by machine on 2026-10-05, from what Lombyte matched in its pull request 94
+(the same tool, the same rule: identical instructions, Lombyte's C with every symbol renamed to its PAL
+address, and each passed this project's own check):
+
+- `src/overlays/l02_aridia/help_0021BC90.c`: `func_L02_002205B0` (`FUN_L02_0021ff70`)
+- `src/overlays/l02_aridia/help_0021BC90.c`: `func_L02_00220A28` (`FUN_L02_002203e8`)
+- `src/overlays/l04_eudora/vendor_002CB800.c`: `func_L04_002E30E0` (`FUN_L04_002e1d00`)
+- `src/overlays/l05_rilgar/vendor_0030EB68.c`: `func_L05_0031A8B8` (`FUN_L05_003193a8`)
+- `src/overlays/l06_blarg/help_00223630.c`: `func_L06_00228510` (`FUN_L06_00227e78`)
+- `src/overlays/l06_blarg/vendor_002FE5D0.c`: `func_L06_0030B248` (`FUN_L06_00309e08`)
+- `src/overlays/l12_hoven/help_0022E428.c`: `func_L12_00233130` (`FUN_L12_00232b18`)
+- `src/overlays/l14_oltanis/help_0021E3A8.c`: `func_L14_00223140` (`FUN_L14_00222aa8`)
+- `src/overlays/l14_oltanis/help_0021E3A8.c`: `func_L14_002235D0` (`FUN_L14_00222f38`)
+- `src/overlays/l16_kalebo3/vendor_002E7C70.c`: `func_L16_002EA2F8` (`FUN_L16_002e8e80`)
+- `src/overlays/l16_kalebo3/vendor_002E7C70.c`: `func_L16_002EAD58` (`FUN_L16_002e98e0`)
+- `src/overlays/l16_kalebo3/vendor_002E7C70.c`: `func_L16_002EB5A0` (`FUN_L16_002ea128`)
+- `src/overlays/l17_fleet/help_00202740.c`: `func_L17_0020E320` (`FUN_L17_0020dbe8`)
+- `src/overlays/shared/vendor_002A5138.c`: `func_L00_002A6058` (`FUN_L00_002a4dc8`)
+
+Fifteen more were adapted by queue workers on 2026-10-05, each from Lombyte's matched C for the function's US
+counterpart where the PAL code is not the same instructions (so the machine port above does not apply): the
+control flow is Lombyte's, the symbols and the differing parts are PAL's, and each passed this project's own
+check. In parentheses, Lombyte's name.
+
+- `src/overlays/l01_novalis/help_002343F8.c`: `func_L01_002351A8` (`FUN_L01_00234b40`)
+- `src/overlays/l02_aridia/help_0021BC90.c`: `func_L02_0021BC90` (`FUN_L02_0021b698`)
+- `src/overlays/l06_blarg/help_00223630.c`: `func_L06_0022BB20` (`FUN_L06_0022b438`)
+- `src/overlays/l09_gaspar/vendor_002C2B08.c`: `func_L09_00304750` (`FUN_L09_003033a0`)
+- `src/overlays/l11_pokitaru/vendor_00312BD8.c`: `func_L11_003153D0` (`FUN_L11_00313f60`)
+- `src/overlays/l12_hoven/help_0022E428.c`: `func_L12_0022E428` (`FUN_L12_0022de30`)
+- `src/overlays/shared/help_00214D60.c`: `func_L00_00216B40` (`FUN_L00_002163f0`)
+- `src/overlays/shared/help_0021A2E0.c`: `func_L02_00223AE0` (`FUN_L02_00223450`)
+- `src/overlays/shared/help_002284A8.c`: `func_L12_00236270` (`FUN_L12_00235c08`)
+- `src/overlays/shared/mobyutil_00258BC8.c`: `func_L00_0025B4D0` (`FUN_L00_0025a478`)
+- `src/overlays/shared/partupd_0026A130.c`: `func_L00_0026B890` (`FUN_L00_0026a9f0`)
+- `src/overlays/shared/tieproc_00299108.c`: `func_L00_00299250` (`FUN_L00_00297f78`)
+- `src/overlays/shared/vendor_002A5138.c`: `func_L00_002A6A38` (`FUN_L00_002a57a8`)
+- `src/overlays/shared/vendor_002B90A8.c`: `func_L01_002BB068` (`FUN_L01_002b9eb0`)
+- `src/overlays/shared/vuchain_002A21A8.c`: `func_L00_002A2680` (`FUN_L00_002a13f0`)
 
 Data taken from Lombyte:
 
@@ -309,7 +364,7 @@ SOFTWARE.
 
 ## newlib, fdlibm and David M. Gay's dtoa
 
-The game's C library is newlib. Three functions here are its open sources,
+The game's C library is newlib. Four functions here are its open sources,
 as Lombyte reconstructed them for the US build and adapted above:
 
 - `src/core/00112468.c`: `func_001126D8` (`_dtoa_r`), David M. Gay's dtoa:
@@ -330,6 +385,10 @@ WARRANTY.  IN PARTICULAR, NEITHER THE AUTHOR NOR AT&T MAKES ANY
 REPRESENTATION OR WARRANTY OF ANY KIND CONCERNING THE MERCHANTABILITY
 OF THIS SOFTWARE OR ITS FITNESS FOR ANY PARTICULAR PURPOSE.
 ```
+
+- `src/core/00114518.c`: `func_00114920` (`_malloc_r`), newlib's allocator, which
+  is Doug Lea's malloc (dlmalloc 2.6.5), released by its author to the public
+  domain.
 
 - `src/core/00116070.c`: `func_00116168` and `func_001161B0`, fdlibm's finite
   and NaN tests:

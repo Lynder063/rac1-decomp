@@ -3,7 +3,36 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L06_002B5990);
-INCLUDE_ASM("asm/overlays", func_L06_002DB0E0);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern float func_00214D88(float *, float *, float, float, float, float);
+extern void func_001F9C08(void *, void *, void *, float);
+extern float D_0015EE6C MACRO_ADDR;
+
+// Updates a moby that swells its scale vector toward a target.
+void func_L06_002DB0E0(unsigned char *moby) {
+    char *data;
+    data = *(char **)(moby + 0x78);
+    switch (moby[0x20]) {
+    case 0: {
+        char *p = (char *)moby + 0x10;
+        char *q;
+        qcopy(data, p);
+        q = data + 0x10;
+        func_L00_001FF4B0(q, moby + 0xD0, 11.0f);
+        func_001F9BD8(q, q, p);
+        moby[0x20] = 1;
+        break;
+    }
+    case 2: {
+        float a = (&D_0015EE6C)[1] * 10.0f;
+        func_00214D88((float *)(data + 0x20), (float *)(data + 0x24), *(float *)(data + 0x28), a, a, D_0015EE6C * 20.0f);
+        func_001F9C08(moby + 0x10, data, data + 0x10, *(float *)(data + 0x20));
+        if (*(float *)(data + 0x20) == *(float *)(data + 0x28)) moby[0x20] = 1;
+        break;
+    }
+    }
+}
 extern short *D_L06_001AC340[];
 extern char *D_L06_00160058 MACRO_ADDR;
 
@@ -60,7 +89,77 @@ INCLUDE_ASM("asm/overlays", func_L06_002EB2F8);
 INCLUDE_ASM("asm/overlays", func_L06_002EB348);
 INCLUDE_ASM("asm/overlays", func_L06_002F4F08);
 INCLUDE_ASM("asm/overlays", func_L06_002F51A0);
-INCLUDE_ASM("asm/overlays", func_L06_002F5560);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern float func_001FA790(float, float);
+extern void func_001F9BC0(void *);
+extern float func_001F9FA8(float);
+extern float func_001F9F90(float);
+extern float func_001FA748(float, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern int func_L00_001EFFF0(void *, void *, int, void *, void *);
+extern float D_0015EE6C MACRO_ADDR;
+extern short D_L06_00161D7C;
+extern short D_L06_00161D80;
+extern char D_0013E633[];
+typedef struct {
+    int pad0;
+    int pad4;
+    float f8;
+    float fC;
+    void *m;
+    int flags;
+    char b18;
+    char b19;
+    unsigned short h1A;
+    float f1C;
+    int i20;
+} Sx;
+typedef struct { float x, y, z, w; } __attribute__((aligned(16))) Vx;
+
+// Spawns four rings of sparks around a moby, sweeping the angle each pass.
+void func_L06_002F5560(char *m) {
+    Sx s;
+    Vx a;
+    Vx b;
+    int i;
+    char *pos = m + 0x10;
+    int one = 1;
+    char *d;
+    int n;
+    float f25, f27, cur, prev, ang, ra, rb;
+    d = *(char **)(m + 0x78);
+    n = func_001FA898_r(*(float *)&D_L06_00161D80 / (*(float *)&D_L06_00161D7C * D_0015EE6C) * 0.25f);
+    f25 = *(float *)(d + 0x80) * (float)n;
+    f27 = *(float *)&D_L06_00161D80 * 0.25f;
+    cur = *(float *)&D_L06_00161D80;
+    ang = func_001FA790(*(float *)(d + 0x7C), f25 * 4.0f);
+    s.m = m;
+    s.f1C = 1.0f;
+    s.flags = *(int *)(D_0013E633 + 0x1F75) != 6 ? 0x10001 : 0x10000;
+    s.i20 = one;
+    func_001F9BC0(&s);
+    s.f8 = 1.0f;
+    s.fC = 5627.9248f;
+    s.b18 = 3;
+    s.b19 = one;
+    s.h1A = *(unsigned short *)(m + 0xA6);
+    for (i = 3; i >= 0; i--) {
+        prev = cur;
+        ra = func_001FA748(*(float *)(d + 0x84), *(float *)(d + 0x64) * 0.017453292f * func_001F9FA8(ang));
+        cur -= f27;
+        ang = func_001FA748(ang, f25);
+        rb = func_001FA748(*(float *)(d + 0x84), *(float *)(d + 0x64) * 0.017453292f * func_001F9FA8(ang));
+        a.x = func_001F9F90(ra) * prev;
+        a.y = func_001F9FA8(ra) * prev;
+        a.z = 0.0f;
+        b.x = func_001F9F90(rb) * cur;
+        b.y = func_001F9FA8(rb) * cur;
+        b.z = 0.0f;
+        func_001F9BD8(&a, &a, pos);
+        func_001F9BD8(&b, &b, pos);
+        func_L00_001EFFF0(&a, &b, 0, m, &s);
+    }
+}
 extern char D_0013E633[];
 extern float D_0015EE6C MACRO_ADDR;
 extern void func_001F9BC0(void *);

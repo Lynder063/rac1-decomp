@@ -134,7 +134,60 @@ void func_L01_00309848(char *moby) {
     *(float *)(data + 0x58) = 3.0f;
 }
 INCLUDE_ASM("asm/overlays", func_L01_00309928);
-INCLUDE_ASM("asm/overlays", func_L01_00309BB8);
+typedef int u128_309BB8 __attribute__((mode(TI)));
+extern float func_0020D830(void);
+extern float func_001F9F90(float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_001F9BC0(void *);
+extern void func_001F9C08(void *, void *, void *, float);
+extern float func_001FA790(float, float);
+extern void func_L00_002EBE88(void *);
+extern void func_L00_002EBEE0(void *);
+extern char D_0013E633[];
+extern char *D_L01_0016016C MACRO_ADDR;
+
+// Computes a rotation/blend for a moby from its data and passes it to two helpers.
+void func_L01_00309BB8(char *m) {
+    float out[4];
+    float v[4];
+    float a[4];
+    float b[4];
+    char *d = *(char **)(m + 0x78);
+    float f;
+    float k;
+    char *t;
+    char *g;
+    if (*(unsigned char *)(m + 0x52) == 1) {
+        f = func_0020D830();
+    } else {
+        f = 170.0f;
+    }
+    k = f / 170.0f;
+    if (*(int *)(d + 4) == -1 || *(int *)(d + 8) == -1) {
+        float ang;
+        g = D_0013E633 + 0xE1D;
+        ang = func_001FA748(k * 0.6981317f - 0.34906585f, *(float *)(g + 0x98));
+        out[0] = func_001F9F90(ang) * 5.0f;
+        out[1] = func_001F9FA8(ang) * 5.0f;
+        out[2] = 0;
+        func_001F9BD8(out, out, g + 0x80);
+        out[2] = out[2] + 1.0f;
+        func_001F9BC0(v);
+        v[2] = func_001FA748(ang, 3.14159f);
+        v[1] = k * -0.17f;
+    } else {
+        func_001F9C08(out, D_L01_0016016C + *(int *)(d + 4) * 128 + 0x30,
+                      D_L01_0016016C + *(int *)(d + 8) * 128 + 0x30, k);
+        t = D_L01_0016016C;
+        qcopy(a, t + *(int *)(d + 4) * 128 + 0x70);
+        qcopy(b, t + *(int *)(d + 8) * 128 + 0x70);
+        v[2] = func_001FA748(func_001FA790(b[2], a[2]) * k, a[2]);
+        v[1] = func_001FA748(func_001FA790(b[1], a[1]) * k, a[1]);
+        v[0] = func_001FA748(func_001FA790(b[0], a[0]) * k, a[0]);
+    }
+    func_L00_002EBE88(out);
+    func_L00_002EBEE0(v);
+}
 extern short D_L01_00161FE4;
 extern short D_L01_00161FE8;
 extern short D_L01_00161FF4;

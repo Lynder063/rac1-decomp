@@ -4,7 +4,53 @@
 
 INCLUDE_ASM("asm/overlays", func_L05_002D28D0);
 INCLUDE_ASM("asm/overlays", func_L05_002D3078);
-INCLUDE_ASM("asm/overlays", func_L05_002D3220);
+extern char *func_L00_002D9340(void *, float);
+extern float func_00214158(void);
+extern float func_002140F8(float, float);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern int func_L00_00258BC8(int, int);
+extern int func_002140B0(int);
+extern void func_L00_002703E8(void *, void *, int, int);
+extern void func_L00_00258DB0(float *, float, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern unsigned char *func_L00_00272770(void *, void *, void *, float, float);
+extern float func_001F9878(float);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern char D_L05_001613A8[];
+extern float D_L05_001613A8_m __asm__("D_L05_001613A8") MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+extern char D_L05_0015F660[] MACRO_ADDR;
+
+/* Spawns a burst of particles and a ring of sparks around a position. */
+void func_L05_002D3220(int unused, char *p) {
+    float v[4];
+    char *r;
+    int i;
+    char *base;
+    int n;
+    r = func_L00_002D9340(p, 3.0f);
+    if (r) r[0x23] = 0x70;
+    for (base = (char *)&D_L05_001613A8_m, i = 15; i >= 0; i--) {
+        float ang = func_00214158();
+        float k = func_002140F8(D_0015EE6C * 0.0f, D_0015EE6C * 3.0f);
+        v[0] = func_001F9F90(ang) * k;
+        v[1] = func_001F9FA8(ang) * k;
+        v[2] = func_002140F8(D_0015EE6C * 3.0f, D_0015EE6C * 6.5f);
+        n = func_L00_00258BC8(0x5A, 0x78);
+        func_L00_002703E8(p, v, func_002140B0(2), n);
+    }
+    for (i = 0; i < 16; i++) {
+        unsigned char *q;
+        func_L00_00258DB0(v, 1.0f, 1.0f);
+        func_001F9BD8(v, v, p);
+        v[2] = D_L05_001613A8_m + 0.05f;
+        q = func_L00_00272770(v, D_L05_0015F660, base, func_002140F8(0.7f, 1.0f), i == 0 ? 2.0f : -2.0f);
+        if (q) {
+            *(short *)(q + 0xA) = func_001FA898_r(func_001F9878(func_002140F8(30.0f, 60.0f)));
+        }
+    }
+}
 extern int func_L00_0025A208(int *, int, int, int);
 extern int func_L00_0025A2F0(int *, int, int, int);
 extern void func_L00_00264690(void *, int, float, float);
@@ -253,10 +299,82 @@ void func_L05_003088D8(char *moby, int a1, int a2, int a3) {
 }
 INCLUDE_ASM("asm/overlays", func_L05_003089C8);
 INCLUDE_ASM("asm/overlays", func_L05_00308D68);
-INCLUDE_ASM("asm/overlays", func_L05_0030D230);
+extern int func_001F9908(int *arg0);
+extern void func_001F9BF0(void *dst, void *a, void *b);
+extern void func_L00_002617B0(char *, void *, void *, void *);
+extern short D_L05_00161D94;
+extern short D_L05_00161D98;
+extern short D_L05_00161D9C;
+extern short D_L05_00161DA0;
+extern short D_L05_00161DA4;
+extern short D_L05_00161DA8;
+
+// Update function for a swaying moby: picks a random angle, then eases and rotates it.
+void func_L05_0030D230(unsigned char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    float v[4];
+    float w[4];
+    float d[4];
+    char *p;
+    char *q;
+    float *r;
+    float k;
+    float t;
+    switch (moby[0x20]) {
+    case 0:
+        *(int *)(data + 0x78) = func_001FA898_r(func_001F9878(func_002140F8((float)*(int *)&D_L05_00161DA4, (float)*(int *)&D_L05_00161DA8)));
+        *(float *)(data + 0x60) = func_00214158();
+        *(float *)(data + 0x6C) = func_00214158();
+        moby[0x20] = 1;
+        break;
+    case 1:
+        if (func_001F9908((int *)(data + 0x78))) {
+            func_0022ED80(0, 0, (int)moby);
+            *(int *)(data + 0x78) = func_001FA898_r(func_001F9878(func_002140F8((float)*(int *)&D_L05_00161DA4, (float)*(int *)&D_L05_00161DA8)));
+        }
+        p = (char *)moby + 0x10;
+        qcopy(v, p);
+        r = w;
+        q = (char *)moby + 0x40;
+        qcopy(r, q);
+        t = func_001FA748(*(float *)(data + 0x60), *(float *)&D_L05_00161D94 * 0.017453292f * D_0015EE6C);
+        k = *(float *)&D_L05_00161D98 * 0.017453292f * D_0015EE6C;
+        *(float *)(data + 0x60) = t;
+        *(float *)(data + 0x6C) = func_001FA748(*(float *)(data + 0x6C), k);
+        *(float *)(moby + 0x44) = *(float *)&D_L05_00161D9C * 0.017453292f * func_001F9FA8(*(float *)(data + 0x60));
+        *(float *)(moby + 0x40) = *(float *)&D_L05_00161DA0 * 0.017453292f * func_001F9FA8(*(float *)(data + 0x6C));
+        func_001F9BF0(d, p, v);
+        func_L00_002617B0(data + 0x20, d, r, q);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L05_0030D3F0);
 INCLUDE_ASM("asm/overlays", func_L05_0030DED8);
-INCLUDE_ASM("asm/overlays", func_L05_0030EA88);
+extern char D_L05_001D6BC0[];
+
+// copies the moby's x position onto each linked moby of type 0x33F, following the parent's offset
+void func_L05_0030EA88(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    short *p = D_L05_001AC040[*(unsigned char *)(moby + 0x21)];
+    char (*base)[256] = (char (*)[256])D_L05_00160098;
+    do {
+        int idx = *p & 0x7FFF;
+        char *m = (char *)(idx * 256 + (int)base);
+        if (*(short *)(m + 0xA6) == 0x33F) {
+            char *d2 = *(char **)(m + 0x78);
+            char *q;
+            float f;
+            if (*(int *)(data + 0xC) != 0 || *(float *)(d2 + 4) == *(float *)(data + 4)) {
+                f = *(float *)(moby + 0x18);
+            } else {
+                f = *(float *)(d2 + 4) + (*(float *)(moby + 0x18) - *(float *)(data + 4));
+            }
+            *(float *)(m + 0x18) = f;
+            q = D_L05_001D6BC0 + *(int *)(d2 + 0x14) * 0x1190;
+            *(float *)(q + 8) = *(float *)(base[idx] + 0x18);
+        }
+    } while (*p++ >= 0);
+}
 extern void func_L01_002BA380(char *, int);
 extern char D_L05_001D6BC0[];
 void func_L05_0030EB40(void) {

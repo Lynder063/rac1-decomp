@@ -114,7 +114,55 @@ INCLUDE_ASM("asm/overlays", func_L05_0030F358);
 INCLUDE_ASM("asm/overlays", func_L05_0030F6C0);
 INCLUDE_ASM("asm/overlays", func_L05_0030F9D0);
 INCLUDE_ASM("asm/overlays", func_L05_0030FCC0);
-INCLUDE_ASM("asm/overlays", func_L05_003106E0);
+extern void func_001F9BC0(void *);
+extern float func_001FA888(int);
+extern float func_002140F8(float, float);
+extern float func_00214158(void);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_001F9BD8(void *, void *, void *);
+extern int func_001F9850(int);
+extern float func_L00_00258C80(float lo, float hi);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern void func_L05_0029CA28(float, void *, void *, int, int, int);
+extern float D_0015EE6C MACRO_ADDR;
+extern short D_L05_00161E74;
+extern short D_L05_00161E78;
+extern short D_L05_00161E7C;
+extern short D_L05_00161E80;
+extern short D_L05_00161E84;
+extern short D_L05_00161E88;
+extern short D_L05_00161E8C;
+extern short D_L05_00161E90;
+
+/* Scatters points along a range, placing each one with a heading and radius. */
+void func_L05_003106E0(char *obj, float a, float b) {
+    float v[4];
+    float w[4];
+    float ground, x, y, t, u;
+    int i, j, k, m, n;
+    func_001F9BC0(v);
+    v[2] = *(float *)&D_L05_00161E88 * D_0015EE6C;
+    ground = v[2] * 0.75f * func_001FA888(*(int *)&D_L05_00161E78);
+    j = 0;
+    for (i = j; (float)i < (b - a) / *(float *)&D_L05_00161E74; i++) {
+        float fi = (float)j;
+        x = func_002140F8(fi, *(float *)&D_L05_00161E90);
+        y = func_00214158();
+        w[0] = func_001F9F90(y) * x;
+        w[1] = func_001F9FA8(y) * x;
+        w[2] = fi;
+        func_001F9BD8(w, obj + 0x10, w);
+        w[2] = func_002140F8(a, b) - ground;
+        t = func_002140F8((a + b) * 0.5f, b) - ground;
+        if (t < w[2]) w[2] = t;
+        u = func_002140F8(*(float *)&D_L05_00161E7C, *(float *)&D_L05_00161E80);
+        k = func_001F9850(*(int *)&D_L05_00161E78);
+        m = func_001FA898_r(func_L00_00258C80(fi, (float)*(int *)&D_L05_00161E84));
+        n = *(int *)&D_L05_00161E8C;
+        func_L05_0029CA28(u, w, v, k, m, n);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L05_003108D0);
 INCLUDE_ASM("asm/overlays", func_L05_00310A90);
 INCLUDE_ASM("asm/overlays", func_L05_00316378);
@@ -439,7 +487,51 @@ void func_L05_0031A188(char *moby) {
     func_L00_002617B0(d + 0x20, v20, v10, moby + 0x40);
 }
 INCLUDE_ASM("asm/overlays", func_L05_0031A718);
-INCLUDE_ASM("asm/overlays", func_L05_0031A8B8);
+extern char * D_L05_001B0CB0[];
+extern unsigned char D_0014C150[][16];
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l05/unclassified_0030d6a0.c, FUN_L05_003193a8. */
+void func_L05_0031A8B8(char *moby) {
+    char *d = *(char **)(moby + 0x78);
+    char *p;
+    float inv, a, b, r;
+    switch (*(short *)(d + 0xB4)) {
+    case 0:
+        *(char **)(d + 0xAC) = D_L05_001B0CB0[*(int *)(d + 0x94)];
+        *(short *)(d + 0xB6) = 1;
+        break;
+    case 1:
+        *(char **)(d + 0xAC) = D_L05_001B0CB0[*(int *)(d + 0x98)];
+        *(short *)(d + 0xB6) = 0;
+        break;
+    case 2:
+        if (D_0014C150[D_0015EE84][*(int *)(d + 0xB8)] != 0xFF) {
+            *(char **)(d + 0xAC) = D_L05_001B0CB0[*(int *)(d + 0x9C)];
+            *(short *)(d + 0xB6) = 3;
+        } else {
+            *(char **)(d + 0xAC) = D_L05_001B0CB0[*(int *)(d + 0xA4)];
+            *(short *)(d + 0xB6) = 4;
+        }
+        break;
+    case 3:
+        *(char **)(d + 0xAC) = D_L05_001B0CB0[*(int *)(d + 0xA0)];
+        *(short *)(d + 0xB6) = 2;
+        break;
+    case 4:
+        *(char **)(d + 0xAC) = D_L05_001B0CB0[*(int *)(d + 0xA8)];
+        *(short *)(d + 0xB6) = 2;
+        break;
+    }
+    p = *(char **)(d + 0xAC);
+    r = func_001F9D10(p + 0x10, p + 0x20);
+    a = D_0015EE6C * 20.0f;
+    b = D_0015EE70 * 5.0f;
+    inv = 1.0f / (r * (float)**(int **)(d + 0xAC));
+    *(int *)(d + 0xC4) = 0;
+    *(int *)(d + 0xC0) = 0;
+    *(float *)(d + 0xD4) = a * inv;
+    *(float *)(d + 0xD8) = b * inv;
+}
 INCLUDE_ASM("asm/overlays", func_L05_0031B138);
 INCLUDE_ASM("asm/overlays", func_L05_0031B15C);
 INCLUDE_ASM("asm/overlays", func_L05_0031D450);

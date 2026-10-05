@@ -66,7 +66,40 @@ void func_L04_002D4960(char *m) {
         m[0x20] = 1;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L04_002D8348);
+extern int *D_L04_001B0930[];
+extern char *D_L04_00160058 MACRO_ADDR;
+extern float func_001FA888(int);
+extern float func_L00_00200210(float, float);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+
+/* update: blend two keyframes of a path and write the result to a position */
+void func_L04_002D8348(char *moby) {
+    int *p = *(int **)(moby + 0x78);
+    int *t = D_L04_001B0930[p[2]];
+    char *base = D_L04_00160058;
+    int o0 = p[0] * 256;
+    float *src = *(float **)(base + o0 + 0x78);
+    char *dst = base + p[1] * 256;
+    float a[4];
+    float b[4];
+    float f, g;
+    int idx;
+    int n = 1;
+    float one = 1.0f;
+
+    f = func_001FA888(t[0] - 1);
+    g = (one - src[0]) * f;
+    f = func_L00_00200210(g, one);
+    idx = func_001FA898_r(g);
+    if (f == 0.0f) n = 0;
+    n += idx;
+    func_001F9C30(a, (char *)t + (idx * 16 + 0x10), one - f);
+    func_001F9C30(b, (char *)t + (n * 16 + 0x10), f);
+    func_001F9BD8(moby + 0x10, a, b);
+    qcopy(dst + 0x10, moby + 0x10);
+}
 INCLUDE_ASM("asm/overlays", func_L04_002D9270);
 INCLUDE_ASM("asm/overlays", func_L04_002E2B48);
 // Return float constant
@@ -79,7 +112,58 @@ float func_L04_002E2BA4(void) {
 }
 INCLUDE_ASM("asm/overlays", func_L04_002E2BB8);
 INCLUDE_ASM("asm/overlays", func_L04_002E2DF0);
-INCLUDE_ASM("asm/overlays", func_L04_002E30E0);
+typedef struct {
+    float pad0[4];
+    float a[4];
+    float b[4];
+    int c[4];
+    float d[4];
+} L10SpriteData_298940;
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern int func_001F9908(int *);
+extern int func_001F9850(int);
+extern float func_001FA888(int);
+extern int func_001FA8A8(int, int, float);
+extern float func_001F9B88(float);
+extern unsigned char *func_L00_00273E08(void *, int, unsigned char, int, int, int, int, float);
+extern int func_001FA898(float);
+extern char D_L04_00166FC0[];
+extern int D_L04_0015F6A8 MACRO_ADDR;
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l04/unclassified_002ca420.c, FUN_L04_002e1d00. */
+void func_L04_002E30E0(char *m) {
+    L10SpriteData_298940 *p = *(L10SpriteData_298940 **)(m + 0x78);
+    float d[4] __attribute__((aligned(16)));
+    float e[4] __attribute__((aligned(16)));
+    int i, col;
+    float f;
+
+    *(float *)(m + 0x18) += 0.25f;
+    func_001F9BF0(d, D_L04_00166FC0, m + 0x10);
+    func_L00_001FF4B0(d, d, -0.3f);
+    func_L00_001FF4B0(e, d, 0.1f);
+    func_001F9BD8(d, d, m + 0x10);
+    *(float *)(m + 0x18) -= 0.25f;
+    for (i = 0; i < 4; i++) {
+        float h = p->a[i] + p->b[i];
+        p->a[i] = h;
+        if (255.0f <= h) {
+            p->a[i] = h - 255.0f;
+        } else if (h <= 0.0f) {
+            p->a[i] = h + 255.0f;
+        }
+        if (func_001F9908(&p->c[i])) {
+            p->c[i] = func_001F9850(0xFF);
+        }
+        f = func_001FA888(func_001F9850(0xFF) - p->c[i]);
+        f = f / (float)func_001F9850(0xFF);
+        col = func_001FA8A8(0x4040FFFF, 0x1040FFFF, func_001F9B88(0.5f - f));
+        if (D_L04_0015F6A8 != 2)
+            func_L00_00273E08(d, col, func_001FA898(p->a[i]) & 0xFF, 0x35, 1, 2, 0, p->d[i]);
+        func_001F9BD8(d, d, e);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L04_002E4458);
 INCLUDE_ASM("asm/overlays", func_L04_002E57F8);
 INCLUDE_ASM("asm/overlays", func_L04_002E6558);

@@ -72,7 +72,30 @@ void func_L02_002D51D0(void *moby) {
     func_L02_002D5098(moby, 8, 9, *(int *)&D_L02_00161A88);
 }
 INCLUDE_ASM("asm/overlays", func_L02_002D5250);
-INCLUDE_ASM("asm/overlays", func_L02_002D6A90);
+extern int D_L02_001AC140[];
+extern int D_L02_00160058_m __asm__("D_L02_00160058") MACRO_ADDR;
+extern int func_002140B0(int);
+
+// Finds the last live moby of type 0x29C among the ones a level list names.
+int func_L02_002D6A90(void *argp) {
+    char *arg = argp;
+    int result = 0;
+    short *p;
+    if (((unsigned char *)arg)[0x21] == 0xFF) {
+        return 0;
+    }
+    p = (short *)D_L02_001AC140[((unsigned char *)arg)[0x21]];
+    do {
+        int idx = (*(unsigned short *)p & 0x7FFF) << 8;
+        char *o = (char *)(idx + D_L02_00160058_m);
+        if (*(short *)(o + 0xA6) == 0x29C && ((unsigned char *)o)[0x20] < 0x7F) {
+            if (result == 0 || (func_002140B0(0xFF) & 1)) {
+                result = D_L02_00160058_m + idx;
+            }
+        }
+    } while (*p++ >= 0);
+    return result;
+}
 extern int D_L02_001AC140[];
 extern int D_L02_00160058_m __asm__("D_L02_00160058") MACRO_ADDR;
 extern float func_002140F8(float, float);
@@ -235,7 +258,40 @@ void func_L02_002DE7A8(char *moby) {
 }
 INCLUDE_ASM("asm/overlays", func_L02_002DF038);
 INCLUDE_ASM("asm/overlays", func_L02_002DF0C0);
-INCLUDE_ASM("asm/overlays", func_L02_002E03B8);
+extern float func_00214D88(float *, float *, float, float, float, float);
+extern float func_001FA748(float, float);
+extern float D_0015EE70 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+extern short D_L02_00161CC0;
+extern short D_L02_00161CC4;
+extern short D_L02_00161CC8;
+extern short D_L02_00161CCC;
+
+// Updates two linked mobys' heights and angles toward this moby.
+void func_L02_002E03B8(char *moby) {
+    char *d = *(char **)(moby + 0x78);
+    func_00214D88((float *)(*(char **)(d + 0x84) + 0x18), (float *)(d + 0x8C),
+                  *(float *)(moby + 0x18) + *(float *)(d + 0x94),
+                  *(float *)&D_L02_00161CC4 * D_0015EE70,
+                  *(float *)&D_L02_00161CC8 * D_0015EE70,
+                  *(float *)&D_L02_00161CC0 * D_0015EE6C);
+    func_00214D88((float *)(*(char **)(d + 0x88) + 0x18), (float *)(d + 0x90),
+                  *(float *)(moby + 0x18) + *(float *)(d + 0x98),
+                  *(float *)&D_L02_00161CC4 * D_0015EE70,
+                  *(float *)&D_L02_00161CC8 * D_0015EE70,
+                  *(float *)&D_L02_00161CC0 * D_0015EE6C);
+    {
+        float r0 = func_001FA748(*(float *)(moby + 0x48),
+                      (*(float *)(*(char **)(d + 0x84) + 0x18) - *(float *)(moby + 0x18)) * *(float *)&D_L02_00161CCC * 0.017453292f);
+        float k = *(float *)&D_L02_00161CCC;
+        *(float *)(*(char **)(d + 0x84) + 0x48) = r0;
+        *(float *)(*(char **)(d + 0x88) + 0x48) =
+            func_001FA748(*(float *)(moby + 0x48),
+                      (*(float *)(*(char **)(d + 0x88) + 0x18) - *(float *)(moby + 0x18)) * k * 0.017453292f);
+    }
+    func_L00_00251E30(*(void **)(d + 0x84));
+    func_L00_00251E30(*(void **)(d + 0x88));
+}
 extern float func_001FA748(float, float);
 extern short D_L02_00161CCC;
 
@@ -405,5 +461,52 @@ void func_L02_002E1570(char *moby) {
     }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L02_002E16B8);
+extern void func_001F9BC0(void *);
+extern int func_L00_0025D6F0(void *, void *);
+extern int func_L00_00258BC8(int, int);
+extern void func_L00_0026A7F8(void *, void *, int, int, int, int, int, int);
+extern short D_L02_00161D2C;
+extern short D_L02_00161D30;
+
+// UpdateMoby_755: debris burst while state 1, spawn child on state 2.
+void func_L02_002E16B8(char *moby) {
+    float u[4];
+    float v[4];
+    char *d = *(char **)(moby + 0x78);
+    int i;
+    float *vp;
+    int r;
+    int s;
+    char *c;
+    switch (((unsigned char *)moby)[0x20]) {
+    case 1:
+        func_001F9BC0(u);
+        if (func_L00_0025D6F0(moby, d) & 1) {
+            moby[0x20] = 2;
+        }
+        vp = v;
+        i = 2;
+        do {
+            qcopy(vp, moby + 0x10);
+            v[2] += func_002140F8(0.0f, 0.5f);
+            v[0] += func_002140F8(-0.15f, 0.15f);
+            v[1] += func_002140F8(-0.15f, 0.15f);
+            r = func_001F9850(func_L00_00258BC8(0x14, 0x28));
+            s = func_L00_00258BC8(0x14, 0x28);
+            func_L00_0026A7F8(vp, u, *(int *)&D_L02_00161D2C, *(int *)&D_L02_00161D30, r, 0x28, s, 1);
+            i--;
+        } while (i >= 0);
+        break;
+    case 2:
+        c = *(char **)(d + 0x60);
+        qcopy(c + 0x10, moby + 0x10);
+        c[0x20] = 0x11;
+        func_00213DE0(*(char **)(d + 0x60), 5, 0, 1);
+        *(int *)(*(char **)(d + 0x60) + 0x94) = *(int *)(*(char **)(*(char **)(d + 0x60) + 0x24) + 0x10);
+        *(float *)(*(char **)(d + 0x60) + 0x58) = 1.0f;
+        func_L00_00251E30(*(char **)(d + 0x60));
+        func_0020D678(moby);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L02_002E1B58);

@@ -210,7 +210,48 @@ void func_L00_00216880(V_c *v, M_c *m, void *p, float a, float b, float c) {
     if (p) func_002153E8(m, p);
     else func_002153E8(m, D_0013E633 + 0xEAD);
 }
-INCLUDE_ASM("asm/overlays", func_L00_00216B40);
+typedef int U128 __attribute__((mode(TI)));
+extern float D_0015EE64 MACRO_ADDR;
+extern void func_001F9C30(void *, void *, float);
+extern int func_001F9850(int);
+
+/* builds the three view vectors and applies the camera offset to the moby. Adapted from Lombyte (MIT) for PAL: src/overlays/shared/ui_help_00214658.c, FUN_L00_002163f0. */
+void func_L00_00216B40(void) {
+    unsigned char *g = (unsigned char *)D_0013E633 + 0xE1D;
+    unsigned char *h;
+    M_c m;
+    V_c a, b, c;
+    float f20, f21, f22, one = 1.0f, k = 0.8f;
+    U128 z = 0;
+    f21 = D_0015EE64 * 0.05f;
+    f20 = D_0015EE64 * 0.3f;
+    f22 = D_0015EE6C * 9.5993109f;
+    *(U128 *)&a = z; *(U128 *)&b = z; *(U128 *)&c = z;
+    a.f[2] = one;
+    b.f[2] = k;
+    c.f[2] = k;
+    func_001F9EE8(&b, &b, g);
+    *(U128 *)&a = *(U128 *)(g + 0x270);
+    if (g[0x20B3] == 2) func_001F9C30(&a, g + 0x290, -1.0f);
+    if (g[0x20B3] == 1) {
+        if (*(short *)(g + 0x30E) < func_001F9850(10) || *(float *)(g + 0x2DC) < one)
+            *(U128 *)&a = *(U128 *)(g + 0x270);
+    }
+    h = (unsigned char *)D_0013E633 + 0xE1D;
+    if (*(short *)(h + 0x30E) != 0 && *(short *)(h + 0x1F8) != 0) {
+        f20 = D_0015EE64 * 0.001f;
+        f21 = f20;
+    }
+    func_L00_00216880(&a, &m, 0, f21, f20, f22);
+    {
+    unsigned char *n = (unsigned char *)D_0013E633 + 0xE1D;
+    if (n[0x20B3] == 1 && *(short *)(n + 0x30E) != 0) {
+        func_001F9EE8(&c, &c, &m);
+        func_001F9BF0(n + 0x80, n + 0x80, &c);
+        func_001F9BD8(n + 0x80, n + 0x80, &b);
+    }
+    }
+}
 extern float func_L00_0025CCF0(char *, char *, int, float, float, float, float);
 extern void func_L00_00216B40(void);
 extern float D_0015EE64 MACRO_ADDR;

@@ -1,9 +1,10 @@
 /* NON_MATCHING func_L07_00310110 -- src/overlays/l07_umbris/vendor_002CE470.c
- * Best so far: BYTES 5/436 (98.8% of the bytes match), checked 2026-10-03.
+ * Best so far: BYTES 1/436 (99.8% of the bytes match), checked 2026-10-05.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
  *   Resolves four table indices in an object's data (0x110,0x144,0x118,0x114) into pointers, logging via func_001E
+ *   q27 s08: p8.c (own local `base` for D_L07_0016016C loaded before the index) gets 1/436: only the last addu ope
  */
 extern void func_L07_0030FF18(char *data);
 extern int func_L07_0030FFA8(char *moby, char *data);
@@ -23,6 +24,7 @@ extern void qcopy(void *, void *);
 int func_L07_00310110(char *moby, char *d) {
     char *p;
     char *q;
+    char *base;
     char **t;
     int i = *(int *)(d + 0x110);
     int j, k, n;
@@ -49,12 +51,13 @@ int func_L07_00310110(char *moby, char *d) {
     }
     *(char **)(d + 0x12C) = D_L07_00160058 + (k << 8) + 0x18;
     moby[0xBC] = func_L07_0030FFA8(moby, d);
+    base = D_L07_0016016C;
     n = *(int *)(d + 0x114);
     if (n == -1) {
         func_001E9730(D_L07_00211AB0, (int)(moby - D_L07_00160058) >> 8);
         return 1;
     }
-    qcopy(d + 0xF0, D_L07_0016016C + (n << 7) + 0x30);
+    qcopy(d + 0xF0, (char *)(((int)base) + (n << 7)) + 0x30);
     qcopy(d + 0xE0, moby + 0x10);
     ((void (*)(char *, char *))func_L07_00310038)(moby, d);
     *(int *)(d + 0x134) = func_001160D8() % 0x78;
