@@ -5,7 +5,62 @@
 INCLUDE_ASM("asm/overlays", func_L06_002FE5D0);
 INCLUDE_ASM("asm/overlays", func_L06_002FE890);
 INCLUDE_ASM("asm/overlays", func_L06_002FEB78);
-INCLUDE_ASM("asm/overlays", func_L06_002FEE60);
+extern char D_0013E633[];
+extern short *D_L06_001AC340[];
+extern char *D_L06_00160058_p __asm__("D_L06_00160058") MACRO_ADDR;
+extern int func_00215570(void *, int);
+extern void func_00213DE0(void *, int, int, int);
+extern int func_001F9908(void *);
+extern int func_L06_002EB140(void *, void *);
+extern int func_001F9850(int);
+
+/* Trigger moby: waits for the hero in its zone, plays its open animation, then launches a listed moby. */
+void func_L06_002FEE60(char *m) {
+    int *d = *(int **)(m + 0x78);
+    switch (((unsigned char *)m)[0x20]) {
+    case 0:
+        if (d[1] >= 0 && func_00215570(D_0013E633 + 0xE9D, d[1])) {
+            m[0x20] = 1;
+            if (((unsigned char *)m)[0x53] != 1) {
+                func_00213DE0(m, 1, 0, 5);
+            }
+        }
+        break;
+    case 1:
+        if (m[0x70] & 2) {
+            if (d[0] >= 0) {
+                m[0x20] = 2;
+            } else {
+                m[0x20] = 3;
+            }
+            if (((unsigned char *)m)[0x53] != 2) {
+                func_00213DE0(m, 2, 0, 5);
+            }
+        }
+        break;
+    case 2:
+        if (func_001F9908(d + 2)) {
+            float found = 0.0f;
+            short *list = D_L06_001AC340[d[0]];
+            if (list != 0) {
+                short *p = list;
+                char *pos = m + 0x10;
+                do {
+                    if (func_L06_002EB140(D_L06_00160058_p + ((*(unsigned short *)p & 0x7FFF) << 8), pos)) {
+                        found = 1.0f;
+                        break;
+                    }
+                } while (*p++ >= 0);
+            }
+            if (found != 0.0f) {
+                d[2] = func_001F9850(0x14);
+            } else {
+                m[0x20] = 3;
+            }
+        }
+        break;
+    }
+}
 extern short *D_L06_001AC340[];
 extern char *D_L06_00160058 MACRO_ADDR;
 void func_L06_00301068(int idx)
