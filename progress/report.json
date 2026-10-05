@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 46.127017534976176,
+  "fuzzy_match_percent": 48.44531680604,
   "total_code": "3712808",
-  "matched_code": "1558080",
-  "matched_code_percent": 41.96500330746971,
+  "matched_code": "1645364",
+  "matched_code_percent": 44.31589244582537,
   "total_functions": 5109,
-  "matched_functions": 2993,
-  "matched_functions_percent": 58.58289293403797,
+  "matched_functions": 2996,
+  "matched_functions_percent": 58.641612840086125,
   "complete_code": "169752",
   "complete_code_percent": 4.572065132374203,
   "total_units": 278,
@@ -42966,13 +42966,13 @@
   {
    "name": "Level 06: Blarg Station (Nebula G34)",
    "measures": {
-    "fuzzy_match_percent": 39.34641361954108,
+    "fuzzy_match_percent": 58.2139008142117,
     "total_code": "135100",
-    "matched_code": "50944",
-    "matched_code_percent": 37.70836417468542,
+    "matched_code": "77044",
+    "matched_code_percent": 57.02738712065137,
     "total_functions": 88,
-    "matched_functions": 35,
-    "matched_functions_percent": 39.77272727272727,
+    "matched_functions": 36,
+    "matched_functions_percent": 40.90909090909091,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -43018,7 +43018,7 @@
     {
      "name": "func_L06_002289F8",
      "size": "616",
-     "fuzzy_match_percent": 99.03,
+     "fuzzy_match_percent": 0.0,
      "address": "73408",
      "metadata": {
       "virtual_address": "2263544"
@@ -43054,7 +43054,7 @@
     {
      "name": "func_L06_0022E788",
      "size": "26100",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "97360",
      "metadata": {
       "virtual_address": "2287496"
@@ -48915,13 +48915,13 @@
   {
    "name": "Level 14: Oltanis",
    "measures": {
-    "fuzzy_match_percent": 32.913483927481224,
+    "fuzzy_match_percent": 49.193064528973004,
     "total_code": "150692",
-    "matched_code": "47096",
-    "matched_code_percent": 31.25315212486396,
+    "matched_code": "72228",
+    "matched_code_percent": 47.930878878772596,
     "total_functions": 135,
-    "matched_functions": 45,
-    "matched_functions_percent": 33.333333333333336,
+    "matched_functions": 46,
+    "matched_functions_percent": 34.074074074074076,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -48949,7 +48949,7 @@
     {
      "name": "func_L14_002235D0",
      "size": "608",
-     "fuzzy_match_percent": 98.68,
+     "fuzzy_match_percent": 0.0,
      "address": "21032",
      "metadata": {
       "virtual_address": "2242000"
@@ -48958,7 +48958,7 @@
     {
      "name": "func_L14_00229440",
      "size": "25132",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "45208",
      "metadata": {
       "virtual_address": "2266176"
@@ -50625,13 +50625,13 @@
   {
    "name": "Level 16: Kalebo III",
    "measures": {
-    "fuzzy_match_percent": 61.79522472419526,
+    "fuzzy_match_percent": 89.03717727066646,
     "total_code": "132340",
-    "matched_code": "47664",
-    "matched_code_percent": 36.01632159588937,
+    "matched_code": "83716",
+    "matched_code_percent": 63.258274142360584,
     "total_functions": 98,
-    "matched_functions": 65,
-    "matched_functions_percent": 66.3265306122449,
+    "matched_functions": 66,
+    "matched_functions_percent": 67.34693877551021,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -50686,7 +50686,7 @@
     {
      "name": "func_L16_00214C88",
      "size": "36052",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "44784",
      "metadata": {
       "virtual_address": "2182280"
@@ -53263,13 +53263,13 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 43.869886594471105,
+    "fuzzy_match_percent": 46.520676183237484,
     "total_code": "3247108",
-    "matched_code": "1270164",
-    "matched_code_percent": 39.116777144462084,
+    "matched_code": "1357448",
+    "matched_code_percent": 41.80483063698528,
     "total_functions": 3429,
-    "matched_functions": 1647,
-    "matched_functions_percent": 48.031496062992126,
+    "matched_functions": 1650,
+    "matched_functions_percent": 48.118985126859144,
     "complete_code": "76408",
     "complete_code_percent": 2.353109289866552
    }
@@ -53323,13 +53323,13 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 46.746261111762635,
+    "fuzzy_match_percent": 50.95221478831946,
     "total_code": "2046480",
-    "matched_code": "833956",
-    "matched_code_percent": 40.75075251162973,
+    "matched_code": "921240",
+    "matched_code_percent": 45.015832062859154,
     "total_functions": 1449,
-    "matched_functions": 646,
-    "matched_functions_percent": 44.58247066942719,
+    "matched_functions": 649,
+    "matched_functions_percent": 44.78951000690131,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53428,13 +53428,13 @@
    "id": "level_06",
    "name": "Level 06: Blarg Station (Nebula G34)",
    "measures": {
-    "fuzzy_match_percent": 39.34641361954108,
+    "fuzzy_match_percent": 58.2139008142117,
     "total_code": "135100",
-    "matched_code": "50944",
-    "matched_code_percent": 37.70836417468542,
+    "matched_code": "77044",
+    "matched_code_percent": 57.02738712065137,
     "total_functions": 88,
-    "matched_functions": 35,
-    "matched_functions_percent": 39.77272727272727,
+    "matched_functions": 36,
+    "matched_functions_percent": 40.90909090909091,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53548,13 +53548,13 @@
    "id": "level_14",
    "name": "Level 14: Oltanis",
    "measures": {
-    "fuzzy_match_percent": 32.913483927481224,
+    "fuzzy_match_percent": 49.193064528973004,
     "total_code": "150692",
-    "matched_code": "47096",
-    "matched_code_percent": 31.25315212486396,
+    "matched_code": "72228",
+    "matched_code_percent": 47.930878878772596,
     "total_functions": 135,
-    "matched_functions": 45,
-    "matched_functions_percent": 33.333333333333336,
+    "matched_functions": 46,
+    "matched_functions_percent": 34.074074074074076,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53578,13 +53578,13 @@
    "id": "level_16",
    "name": "Level 16: Kalebo III",
    "measures": {
-    "fuzzy_match_percent": 61.79522472419526,
+    "fuzzy_match_percent": 89.03717727066646,
     "total_code": "132340",
-    "matched_code": "47664",
-    "matched_code_percent": 36.01632159588937,
+    "matched_code": "83716",
+    "matched_code_percent": 63.258274142360584,
     "total_functions": 98,
-    "matched_functions": 65,
-    "matched_functions_percent": 66.3265306122449,
+    "matched_functions": 66,
+    "matched_functions_percent": 67.34693877551021,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
