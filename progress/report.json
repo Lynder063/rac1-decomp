@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 39.04168796231852,
+  "fuzzy_match_percent": 40.5847787981495,
   "total_code": "3712808",
-  "matched_code": "1330592",
-  "matched_code_percent": 35.83788873542613,
+  "matched_code": "1387884",
+  "matched_code_percent": 37.38097957125712,
   "total_functions": 5109,
-  "matched_functions": 2983,
-  "matched_functions_percent": 58.38715991387747,
+  "matched_functions": 2985,
+  "matched_functions_percent": 58.42630651790957,
   "complete_code": "169752",
   "complete_code_percent": 4.572065132374203,
   "total_units": 278,
@@ -21636,13 +21636,13 @@
   {
    "name": "Shared level code/help_00221A98",
    "measures": {
-    "fuzzy_match_percent": 11.227675783689271,
+    "fuzzy_match_percent": 77.18246534282503,
     "total_code": "32028",
-    "matched_code": "3596",
-    "matched_code_percent": 11.227675783689271,
+    "matched_code": "24720",
+    "matched_code_percent": 77.18246534282503,
     "total_functions": 17,
-    "matched_functions": 10,
-    "matched_functions_percent": 58.8235294117647,
+    "matched_functions": 11,
+    "matched_functions_percent": 64.70588235294117,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -21715,7 +21715,7 @@
     {
      "name": "func_L00_00222B80",
      "size": "21124",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "4328",
      "metadata": {
       "virtual_address": "2239360"
@@ -51534,13 +51534,13 @@
   {
    "name": "Level 17: Drek's Fleet",
    "measures": {
-    "fuzzy_match_percent": 50.27594005914468,
+    "fuzzy_match_percent": 75.98681358052775,
     "total_code": "140672",
-    "matched_code": "65912",
-    "matched_code_percent": 46.855095541401276,
+    "matched_code": "102080",
+    "matched_code_percent": 72.56596906278435,
     "total_functions": 62,
-    "matched_functions": 43,
-    "matched_functions_percent": 69.35483870967742,
+    "matched_functions": 44,
+    "matched_functions_percent": 70.96774193548387,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -51577,7 +51577,7 @@
     {
      "name": "func_L17_00214F68",
      "size": "36168",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "75816",
      "metadata": {
       "virtual_address": "2183016"
@@ -53263,13 +53263,13 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 35.76837955497629,
+    "fuzzy_match_percent": 37.5327803694857,
     "total_code": "3247108",
-    "matched_code": "1042676",
-    "matched_code_percent": 32.110912233285745,
+    "matched_code": "1099968",
+    "matched_code_percent": 33.875313047795146,
     "total_functions": 3429,
-    "matched_functions": 1637,
-    "matched_functions_percent": 47.73986585010207,
+    "matched_functions": 1639,
+    "matched_functions_percent": 47.79819189268008,
     "complete_code": "76408",
     "complete_code_percent": 2.353109289866552
    }
@@ -53308,13 +53308,13 @@
    "id": "common",
    "name": "Shared level code",
    "measures": {
-    "fuzzy_match_percent": 36.44317320602217,
+    "fuzzy_match_percent": 38.2025857801084,
     "total_code": "1200628",
-    "matched_code": "415084",
-    "matched_code_percent": 34.572240527457296,
+    "matched_code": "436208",
+    "matched_code_percent": 36.33165310154352,
     "total_functions": 1980,
-    "matched_functions": 1000,
-    "matched_functions_percent": 50.505050505050505,
+    "matched_functions": 1001,
+    "matched_functions_percent": 50.55555555555556,
     "complete_code": "76408",
     "complete_code_percent": 6.36400283851451
    }
@@ -53323,13 +53323,13 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 35.372491908056766,
+    "fuzzy_match_percent": 37.13981922129706,
     "total_code": "2046480",
-    "matched_code": "627592",
-    "matched_code_percent": 30.666901215746062,
+    "matched_code": "663760",
+    "matched_code_percent": 32.43422852898636,
     "total_functions": 1449,
-    "matched_functions": 637,
-    "matched_functions_percent": 43.96135265700483,
+    "matched_functions": 638,
+    "matched_functions_percent": 44.03036576949621,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53593,13 +53593,13 @@
    "id": "level_17",
    "name": "Level 17: Drek's Fleet",
    "measures": {
-    "fuzzy_match_percent": 50.27594005914468,
+    "fuzzy_match_percent": 75.98681358052775,
     "total_code": "140672",
-    "matched_code": "65912",
-    "matched_code_percent": 46.855095541401276,
+    "matched_code": "102080",
+    "matched_code_percent": 72.56596906278435,
     "total_functions": 62,
-    "matched_functions": 43,
-    "matched_functions_percent": 69.35483870967742,
+    "matched_functions": 44,
+    "matched_functions_percent": 70.96774193548387,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
