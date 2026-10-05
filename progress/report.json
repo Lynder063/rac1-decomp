@@ -1,16 +1,16 @@
 {
  "measures": {
-  "fuzzy_match_percent": 31.923517564064703,
+  "fuzzy_match_percent": 34.466390774852876,
   "total_code": "3712808",
-  "matched_code": "1066308",
-  "matched_code_percent": 28.719718337172296,
+  "matched_code": "1160720",
+  "matched_code_percent": 31.262591547960465,
   "total_functions": 5109,
-  "matched_functions": 2972,
-  "matched_functions_percent": 58.17185359170092,
-  "complete_code": "97116",
-  "complete_code_percent": 2.615702185515653,
+  "matched_functions": 2976,
+  "matched_functions_percent": 58.25014679976512,
+  "complete_code": "130428",
+  "complete_code_percent": 3.5129206789039453,
   "total_units": 278,
-  "complete_units": 63
+  "complete_units": 64
  },
  "units": [
   {
@@ -22189,23 +22189,23 @@
   {
    "name": "Shared level code/help_0022A340",
    "measures": {
-    "fuzzy_match_percent": 0.0,
+    "fuzzy_match_percent": 100.0,
     "total_code": "33312",
-    "matched_code": "0",
-    "matched_code_percent": 0.0,
+    "matched_code": "33312",
+    "matched_code_percent": 100.0,
     "total_functions": 1,
-    "matched_functions": 0,
-    "matched_functions_percent": 0.0,
-    "complete_code": "0",
-    "complete_code_percent": 0.0,
+    "matched_functions": 1,
+    "matched_functions_percent": 100.0,
+    "complete_code": "33312",
+    "complete_code_percent": 100.0,
     "total_units": 1,
-    "complete_units": 0
+    "complete_units": 1
    },
    "functions": [
     {
      "name": "func_L00_0022A340",
      "size": "33312",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "0",
      "metadata": {
       "virtual_address": "2270016"
@@ -22213,7 +22213,7 @@
     }
    ],
    "metadata": {
-    "complete": false,
+    "complete": true,
     "source_path": "src/overlays/shared/help_0022A340.c",
     "progress_categories": [
      "level_code",
@@ -46296,13 +46296,13 @@
   {
    "name": "Level 11: Pokitaru",
    "measures": {
-    "fuzzy_match_percent": 26.35554733682028,
+    "fuzzy_match_percent": 37.9119832255269,
     "total_code": "129244",
-    "matched_code": "31880",
-    "matched_code_percent": 24.66652223700907,
+    "matched_code": "46816",
+    "matched_code_percent": 36.2229581257157,
     "total_functions": 100,
-    "matched_functions": 41,
-    "matched_functions_percent": 41.0,
+    "matched_functions": 42,
+    "matched_functions_percent": 42.0,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -46330,7 +46330,7 @@
     {
      "name": "func_L11_0024E240",
      "size": "14936",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "70824",
      "metadata": {
       "virtual_address": "2417216"
@@ -47223,13 +47223,13 @@
   {
    "name": "Level 12: Hoven",
    "measures": {
-    "fuzzy_match_percent": 23.066370567932225,
+    "fuzzy_match_percent": 35.21886507687481,
     "total_code": "127480",
-    "matched_code": "28932",
-    "matched_code_percent": 22.6953247568246,
+    "matched_code": "44424",
+    "matched_code_percent": 34.84781926576718,
     "total_functions": 75,
-    "matched_functions": 28,
-    "matched_functions_percent": 37.333333333333336,
+    "matched_functions": 29,
+    "matched_functions_percent": 38.666666666666664,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -47275,7 +47275,7 @@
     {
      "name": "func_L12_002407C0",
      "size": "15492",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "74648",
      "metadata": {
       "virtual_address": "2361280"
@@ -51534,13 +51534,13 @@
   {
    "name": "Level 17: Drek's Fleet",
    "measures": {
-    "fuzzy_match_percent": 28.472027411282983,
+    "fuzzy_match_percent": 50.27594005914468,
     "total_code": "140672",
-    "matched_code": "35240",
-    "matched_code_percent": 25.051182893539583,
+    "matched_code": "65912",
+    "matched_code_percent": 46.855095541401276,
     "total_functions": 62,
-    "matched_functions": 42,
-    "matched_functions_percent": 67.74193548387096,
+    "matched_functions": 43,
+    "matched_functions_percent": 69.35483870967742,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -51595,7 +51595,7 @@
     {
      "name": "func_L17_002260F0",
      "size": "30672",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "145840",
      "metadata": {
       "virtual_address": "2253040"
@@ -53263,15 +53263,15 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 27.629321660998027,
+    "fuzzy_match_percent": 30.53689356806117,
     "total_code": "3247108",
-    "matched_code": "778392",
-    "matched_code_percent": 23.97185433930747,
+    "matched_code": "872804",
+    "matched_code_percent": 26.879426246370617,
     "total_functions": 3429,
-    "matched_functions": 1626,
-    "matched_functions_percent": 47.41907261592301,
-    "complete_code": "3772",
-    "complete_code_percent": 0.11616490735756248
+    "matched_functions": 1630,
+    "matched_functions_percent": 47.53572470107903,
+    "complete_code": "37084",
+    "complete_code_percent": 1.1420624136924302
    }
   },
   {
@@ -53308,28 +53308,28 @@
    "id": "common",
    "name": "Shared level code",
    "measures": {
-    "fuzzy_match_percent": 30.39333928577378,
+    "fuzzy_match_percent": 33.16788727232748,
     "total_code": "1200628",
-    "matched_code": "342448",
-    "matched_code_percent": 28.522406607208893,
+    "matched_code": "375760",
+    "matched_code_percent": 31.296954593762596,
     "total_functions": 1980,
-    "matched_functions": 998,
-    "matched_functions_percent": 50.4040404040404,
-    "complete_code": "3772",
-    "complete_code_percent": 0.3141689182661074
+    "matched_functions": 999,
+    "matched_functions_percent": 50.45454545454545,
+    "complete_code": "37084",
+    "complete_code_percent": 3.088716904819811
    }
   },
   {
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 26.007728998084524,
+    "fuzzy_match_percent": 28.993343321214972,
     "total_code": "2046480",
-    "matched_code": "435944",
-    "matched_code_percent": 21.302138305773816,
+    "matched_code": "497044",
+    "matched_code_percent": 24.287752628904265,
     "total_functions": 1449,
-    "matched_functions": 628,
-    "matched_functions_percent": 43.34023464458247,
+    "matched_functions": 631,
+    "matched_functions_percent": 43.54727398205659,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53503,13 +53503,13 @@
    "id": "level_11",
    "name": "Level 11: Pokitaru",
    "measures": {
-    "fuzzy_match_percent": 26.35554733682028,
+    "fuzzy_match_percent": 37.9119832255269,
     "total_code": "129244",
-    "matched_code": "31880",
-    "matched_code_percent": 24.66652223700907,
+    "matched_code": "46816",
+    "matched_code_percent": 36.2229581257157,
     "total_functions": 100,
-    "matched_functions": 41,
-    "matched_functions_percent": 41.0,
+    "matched_functions": 42,
+    "matched_functions_percent": 42.0,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53518,13 +53518,13 @@
    "id": "level_12",
    "name": "Level 12: Hoven",
    "measures": {
-    "fuzzy_match_percent": 23.066370567932225,
+    "fuzzy_match_percent": 35.21886507687481,
     "total_code": "127480",
-    "matched_code": "28932",
-    "matched_code_percent": 22.6953247568246,
+    "matched_code": "44424",
+    "matched_code_percent": 34.84781926576718,
     "total_functions": 75,
-    "matched_functions": 28,
-    "matched_functions_percent": 37.333333333333336,
+    "matched_functions": 29,
+    "matched_functions_percent": 38.666666666666664,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53593,13 +53593,13 @@
    "id": "level_17",
    "name": "Level 17: Drek's Fleet",
    "measures": {
-    "fuzzy_match_percent": 28.472027411282983,
+    "fuzzy_match_percent": 50.27594005914468,
     "total_code": "140672",
-    "matched_code": "35240",
-    "matched_code_percent": 25.051182893539583,
+    "matched_code": "65912",
+    "matched_code_percent": 46.855095541401276,
     "total_functions": 62,
-    "matched_functions": 42,
-    "matched_functions_percent": 67.74193548387096,
+    "matched_functions": 43,
+    "matched_functions_percent": 69.35483870967742,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
