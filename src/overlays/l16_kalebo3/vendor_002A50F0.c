@@ -1076,7 +1076,27 @@ void *func_L16_002D6E98(int index, int secondary) {
         if (*p++ < 0) return nearest;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002D6F90);
+/* Activate the linked mobys, clearing their timers, and return the one nearest the challenge target. */
+void *func_L16_002D6F90(int index, int secondary) {
+    short *p = (short *)D_L16_001ABFC0[index];
+    char *nearest = 0;
+    float distance = 1000.0f;
+    char *moby;
+    int *data;
+    float d;
+    if (!p) return 0;
+    while (1) {
+        moby = D_L16_00160098 + ((*(unsigned short *)p & 0x7FFF) << 8);
+        if (*(short *)(moby + 0xA6) != 0x287) continue;
+        d = func_001F9D10(D_L16_00167240, moby + 0x10);
+        data = *(int **)(moby + 0x78);
+        if (d < distance) {distance = d; nearest = moby;}
+        moby[0x20] = 1;
+        data[5] = 0;
+        if (secondary) data[6] = 0;
+        if (*p++ < 0) return nearest;
+    }
+}
 extern int func_001F9B70(int);
 extern void func_0022ED80(int, int, void *);
 extern int D_L16_0015F6B0 MACRO_ADDR;
@@ -1110,7 +1130,22 @@ void func_L16_002D7080(char *moby) {
     }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002D7178);
+/* The linked moby of class 0x28A nearest a position, within 37 units. */
+void *func_L16_002D7178(int index, void *position) {
+    short *p = (short *)D_L16_001ABFC0[index];
+    char *nearest = 0;
+    float distance = 37.0f;
+    char *moby;
+    float d;
+    if (!p) return 0;
+    while (1) {
+        moby = D_L16_00160098 + ((*(unsigned short *)p & 0x7FFF) << 8);
+        if (*(short *)(moby + 0xA6) != 0x28A) continue;
+        d = func_001F9D10(position, moby + 0x10);
+        if (d < distance) {distance = d; nearest = moby;}
+        if (*p++ < 0) return nearest;
+    }
+}
 extern int D_L16_0015F6B0_abs __asm__("D_L16_0015F6B0") MACRO_ADDR;
 extern void func_0022ED80_timeout(int,int,void*) __asm__("func_0022ED80");
 /* Rate-limit an idle moby's notification, then reset its random timer. */
