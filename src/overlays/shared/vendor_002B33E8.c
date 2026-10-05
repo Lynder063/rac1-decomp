@@ -480,7 +480,56 @@ unsigned char *func_L00_002B5998(int ign, V_2b46a8 *from, float *yaw, float *pit
     return best;
 }
 INCLUDE_ASM("asm/overlays", func_L00_002B5C98);
-INCLUDE_ASM("asm/overlays", func_L00_002B69C0);
+extern void func_001FB448(int, int, int);
+extern int D_L00_0015F40C_m __asm__("D_L00_0015F40C") MACRO_ADDR;
+extern float D_L00_0015F548_m __asm__("D_L00_0015F548") MACRO_ADDR;
+extern float D_L00_0015F54C_m __asm__("D_L00_0015F54C") MACRO_ADDR;
+extern float D_L00_0015F550_m __asm__("D_L00_0015F550") MACRO_ADDR;
+extern float D_L00_0015F554_m __asm__("D_L00_0015F554") MACRO_ADDR;
+extern int D_L00_0015F544_m __asm__("D_L00_0015F544") MACRO_ADDR;
+extern int D_L00_0015F545_m __asm__("D_L00_0015F545") MACRO_ADDR;
+extern int D_L00_0015F546_m __asm__("D_L00_0015F546") MACRO_ADDR;
+extern float D_L00_00161040_m __asm__("D_L00_00161040") MACRO_ADDR;
+extern float D_L00_001610A0_m __asm__("D_L00_001610A0") MACRO_ADDR;
+extern float D_L00_00160564_m __asm__("D_L00_00160564") MACRO_ADDR;
+extern int D_L00_001600B0_m __asm__("D_L00_001600B0") MACRO_ADDR;
+extern int D_L00_0016023C_m __asm__("D_L00_0016023C") MACRO_ADDR;
+extern int D_L00_0016A0F8;
+
+// Saves the camera parameters into a moby and switches the globals to a fixed screen setup.
+void func_L00_002B69C0(void *m_) {
+    char *m = (char *)m_;
+    char *p;
+    float f0, f1, f2, f3;
+
+    p = *(char **)(m + 0x78);
+    f0 = D_L00_0015F548_m;
+    f1 = D_L00_0015F54C_m;
+    f2 = D_L00_0015F550_m;
+    f3 = D_L00_0015F554_m;
+    D_L00_0015F40C_m = 1;
+    *(float *)(p + 0x30) = f0;
+    *(float *)(p + 0x34) = f1;
+    *(float *)(p + 0x38) = f2;
+    *(float *)(p + 0x3C) = f3;
+    p[0x40] = *(unsigned char *)&D_L00_0015F544_m;
+    p[0x41] = *(unsigned char *)&D_L00_0015F545_m;
+    p[0x42] = *(unsigned char *)&D_L00_0015F546_m;
+    *(unsigned char *)&D_L00_0015F544_m = 0x40;
+    *(unsigned char *)&D_L00_0015F545_m = 0x60;
+    *(unsigned char *)&D_L00_0015F546_m = 0x40;
+    D_L00_0015F54C_m = 131072.0f;
+    D_L00_0015F550_m = 255.0f;
+    D_L00_0016A0F8 = 0;
+    D_L00_001610A0_m = 144.0f;
+    D_L00_00161040_m = 147456.0f;
+    D_L00_00160564_m = 144.0f;
+    D_L00_001600B0_m = 0x90;
+    D_L00_0016023C_m = 0x50000;
+    *(int *)&D_L00_0015F548_m = 0;
+    *(int *)&D_L00_0015F554_m = 0;
+    func_001FB448(0x40, 0x60, 0x40);
+}
 extern void func_001FB448(int, int, int);
 extern int D_L00_0015F40C_m __asm__("D_L00_0015F40C") MACRO_ADDR;
 extern float D_L00_0015F548_m __asm__("D_L00_0015F548") MACRO_ADDR;
