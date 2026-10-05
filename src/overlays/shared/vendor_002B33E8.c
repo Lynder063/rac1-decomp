@@ -903,7 +903,62 @@ L7340:
 end:
     if ((s32)(D_0013F450_2B8208.w10B4 ^ 3) != 0) func_L00_002B8690(m);
 }
-INCLUDE_ASM("asm/overlays", func_L00_002B8690);
+typedef struct { float f; short s4; short x; short s8; short y; } E_2b8690;
+extern E_2b8690 D_L00_001DB740_e[] __asm__("D_L00_001DB740");
+extern s32 D_L00_001615A0_m __asm__("D_L00_001615A0") MACRO_ADDR;
+extern s32 D_L00_001615A8_m __asm__("D_L00_001615A8") MACRO_ADDR;
+extern float D_L00_001615AC MACRO_ADDR;
+extern float D_L00_001615B0[] MACRO_ADDR;
+extern short D_L00_00161580;
+extern short D_L00_00161584;
+extern short D_L00_00161588;
+extern short D_L00_0016158C;
+extern int func_001F9938(void *);
+extern void func_L00_00250800(void *, int, void *);
+extern void func_001F49B0(void (*)(char *), char *);
+extern void func_L00_002B8860(char *m);
+
+/* Updates the ten glints around the moby: (re)starts them on a timer, ages them, and queues their draw. */
+void func_L00_002B8690(Moby *mo) {
+    char *m = (char *)mo;
+    int i;
+    if (D_L00_0016159C != 0) {
+        int n;
+        for (i = 9; i >= 0; i--) {
+            D_L00_001DB740_e[i].s8 = 0;
+        }
+        D_L00_0016159C = 0;
+        D_L00_001615A0_m = 0;
+        n = func_001FA898_r(*(float *)&D_L00_00161584 / (*(float *)&D_L00_00161588 * D_0015EE6C));
+        D_L00_001615A8_m = n;
+        D_L00_001615AC = 1.0f / func_001FA888(n);
+    }
+    if (D_L00_001615A4 == 0 && func_001F9908(&D_L00_001615A0_m)) {
+        for (i = 0; i < 10; i++) {
+            if (D_L00_001DB740_e[i].s8 == 0) {
+                unsigned short t;
+                D_L00_001615A0_m = func_001F9850(*(int *)&D_L00_00161580);
+                t = *(unsigned short *)&D_L00_001615A8_m;
+                D_L00_001DB740_e[i].x = *(unsigned short *)&D_L00_0016158C;
+                D_L00_001DB740_e[i].s8 = 1;
+                D_L00_001DB740_e[i].s4 = t;
+                D_L00_001DB740_e[i].f = 0.0f;
+                break;
+            }
+        }
+    }
+    for (i = 0; i < 10; i++) {
+        if (D_L00_001DB740_e[i].s8 != 0) {
+            if (func_001F9938(&D_L00_001DB740_e[i].s4)) {
+                D_L00_001DB740_e[i].s8 = 0;
+            } else {
+                D_L00_001DB740_e[i].f += *(float *)&D_L00_00161588 * D_0015EE6C;
+            }
+        }
+    }
+    func_L00_00250800(m, 0, D_L00_001615B0);
+    func_001F49B0(func_L00_002B8860, m);
+}
 extern int func_001F4868(int);
 extern void func_L00_001FF4B0(void *, void *, float);
 extern void func_001F9C30(void *, void *, float);
