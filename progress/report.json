@@ -1,6 +1,6 @@
 {
  "measures": {
-  "fuzzy_match_percent": 25.01863161251537,
+  "fuzzy_match_percent": 25.033440188665818,
   "total_code": "3712808",
   "matched_code": "836324",
   "matched_code_percent": 22.52537701922642,
@@ -18317,7 +18317,7 @@
   {
    "name": "Shared level code/camera_001EB508",
    "measures": {
-    "fuzzy_match_percent": 59.96649825783973,
+    "fuzzy_match_percent": 65.7169425087108,
     "total_code": "4592",
     "matched_code": "2120",
     "matched_code_percent": 46.167247386759584,
@@ -18414,7 +18414,7 @@
     {
      "name": "func_L00_001EBDA0",
      "size": "268",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 98.53,
      "address": "2200",
      "metadata": {
       "virtual_address": "2014624"
@@ -19012,7 +19012,7 @@
   {
    "name": "Shared level code/effects_001EE2E0",
    "measures": {
-    "fuzzy_match_percent": 5.356476297125793,
+    "fuzzy_match_percent": 6.689779768570362,
     "total_code": "21432",
     "matched_code": "1148",
     "matched_code_percent": 5.356476297125793,
@@ -19037,7 +19037,7 @@
     {
      "name": "func_L00_001EE530",
      "size": "352",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 81.18,
      "address": "592",
      "metadata": {
       "virtual_address": "2024752"
@@ -53263,7 +53263,7 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 19.777745489216862,
+    "fuzzy_match_percent": 19.794677910312803,
     "total_code": "3247108",
     "matched_code": "549824",
     "matched_code_percent": 16.932729062291738,
@@ -53308,7 +53308,7 @@
    "id": "common",
    "name": "Shared level code",
    "measures": {
-    "fuzzy_match_percent": 28.704458233524456,
+    "fuzzy_match_percent": 28.750252101400267,
     "total_code": "1200628",
     "matched_code": "318236",
     "matched_code_percent": 26.505795300459425,
