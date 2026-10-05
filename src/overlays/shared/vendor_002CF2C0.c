@@ -445,7 +445,44 @@ char *func_L05_0031E670(unsigned char *a0)
 INCLUDE_ASM("asm/overlays", func_L05_0032A868);
 INCLUDE_ASM("asm/overlays", func_L05_0032A9D0);
 INCLUDE_ASM("asm/overlays", func_L05_0032AA48);
-INCLUDE_ASM("asm/overlays", func_L05_0032AA50);
+extern void func_L05_0032A868(void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9CA0(void *, void *, void *);
+
+/* Places the camera moby relative to the hero's target and builds its look-at basis. */
+void func_L05_0032AA50(char *m) {
+    char *d = *(char **)(m + 0x70);
+    char *at = m + 0x30;
+    char *up = m + 0x10;
+    char *side = m + 0x20;
+    char *g;
+    char *a;
+    char *b;
+    float v0[4];
+    float v1[4];
+    float v2[4];
+    float v3[4];
+    float v4[4];
+    func_L05_0032A868(m);
+    g = D_0013E633 + 0xE1D;
+    a = d + 0x80;
+    b = d + 0xE0;
+    func_L00_001FF4B0(v3, *(char **)(g + 0x2080) + 0xC0, 1.0f);
+    func_L00_001FF4B0(v3, v3, *(float *)(d + 0xE0));
+    func_001F9BF0(at, a, v3);
+    func_L00_001FF4B0(v4, g + 0x290, -1.0f);
+    func_L00_001FF4B0(v3, v4, *(float *)(b + 0x10));
+    func_001F9BD8(at, at, v3);
+    func_L00_001FF4B0(v0, v4, *(float *)(a + 0x4C));
+    func_001F9BD8(v2, v0, a);
+    func_001F9BF0(v1, v2, at);
+    func_L00_001FF4B0(m, v1, 1.0f);
+    func_001F9CA0(up, m, v4);
+    func_001F9CA0(side, up, m);
+    func_L00_001FF4B0(up, up, 1.0f);
+    func_L00_001FF4B0(side, side, 1.0f);
+    qcopy(m + 0x40, m);
+}
 INCLUDE_ASM("asm/overlays", func_L05_0032ABF0);
 INCLUDE_ASM("asm/overlays", func_L05_0032ADE8);
 INCLUDE_ASM("asm/overlays", func_L05_0032B1F8);
