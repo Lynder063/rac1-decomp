@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 34.466390774852876,
+  "fuzzy_match_percent": 36.698340285842946,
   "total_code": "3712808",
-  "matched_code": "1160720",
-  "matched_code_percent": 31.262591547960465,
+  "matched_code": "1243588",
+  "matched_code_percent": 33.49454105895053,
   "total_functions": 5109,
-  "matched_functions": 2976,
-  "matched_functions_percent": 58.25014679976512,
+  "matched_functions": 2980,
+  "matched_functions_percent": 58.32844000782932,
   "complete_code": "130428",
   "complete_code_percent": 3.5129206789039453,
   "total_units": 278,
@@ -39816,13 +39816,13 @@
   {
    "name": "Level 01: Novalis",
    "measures": {
-    "fuzzy_match_percent": 29.981265875494483,
+    "fuzzy_match_percent": 42.05358178915956,
     "total_code": "115272",
-    "matched_code": "33984",
-    "matched_code_percent": 29.48157401623985,
+    "matched_code": "47900",
+    "matched_code_percent": 41.55388992990492,
     "total_functions": 69,
-    "matched_functions": 38,
-    "matched_functions_percent": 55.072463768115945,
+    "matched_functions": 39,
+    "matched_functions_percent": 56.52173913043478,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -39859,7 +39859,7 @@
     {
      "name": "func_L01_0023D688",
      "size": "13916",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "37520",
      "metadata": {
       "virtual_address": "2348680"
@@ -41067,13 +41067,13 @@
   {
    "name": "Level 03: Kerwan",
    "measures": {
-    "fuzzy_match_percent": 28.704474829294416,
+    "fuzzy_match_percent": 41.47057470879636,
     "total_code": "119504",
-    "matched_code": "33836",
-    "matched_code_percent": 28.313696612665684,
+    "matched_code": "49092",
+    "matched_code_percent": 41.079796492167624,
     "total_functions": 69,
-    "matched_functions": 22,
-    "matched_functions_percent": 31.884057971014492,
+    "matched_functions": 23,
+    "matched_functions_percent": 33.333333333333336,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -41101,7 +41101,7 @@
     {
      "name": "func_L03_00216D38",
      "size": "15256",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "69392",
      "metadata": {
       "virtual_address": "2190648"
@@ -42966,13 +42966,13 @@
   {
    "name": "Level 06: Blarg Station (Nebula G34)",
    "measures": {
-    "fuzzy_match_percent": 19.823097557364914,
+    "fuzzy_match_percent": 39.34641361954108,
     "total_code": "135100",
-    "matched_code": "24568",
-    "matched_code_percent": 18.185048112509254,
+    "matched_code": "50944",
+    "matched_code_percent": 37.70836417468542,
     "total_functions": 88,
-    "matched_functions": 34,
-    "matched_functions_percent": 38.63636363636363,
+    "matched_functions": 35,
+    "matched_functions_percent": 39.77272727272727,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -43072,7 +43072,7 @@
     {
      "name": "func_L06_0023BBE8",
      "size": "26376",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "151728",
      "metadata": {
       "virtual_address": "2341864"
@@ -52119,13 +52119,13 @@
   {
    "name": "Level 18: Veldin (return)",
    "measures": {
-    "fuzzy_match_percent": 34.976163721843356,
+    "fuzzy_match_percent": 52.61927180202521,
     "total_code": "154848",
-    "matched_code": "30688",
-    "matched_code_percent": 19.818144244678653,
+    "matched_code": "58008",
+    "matched_code_percent": 37.46125232486051,
     "total_functions": 122,
-    "matched_functions": 80,
-    "matched_functions_percent": 65.57377049180327,
+    "matched_functions": 81,
+    "matched_functions_percent": 66.39344262295081,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -52171,7 +52171,7 @@
     {
      "name": "func_L18_0022F058",
      "size": "27320",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "110368",
      "metadata": {
       "virtual_address": "2289752"
@@ -53263,13 +53263,13 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 30.53689356806117,
+    "fuzzy_match_percent": 33.08894912026331,
     "total_code": "3247108",
-    "matched_code": "872804",
-    "matched_code_percent": 26.879426246370617,
+    "matched_code": "955672",
+    "matched_code_percent": 29.43148179857276,
     "total_functions": 3429,
-    "matched_functions": 1630,
-    "matched_functions_percent": 47.53572470107903,
+    "matched_functions": 1634,
+    "matched_functions_percent": 47.65237678623505,
     "complete_code": "37084",
     "complete_code_percent": 1.1420624136924302
    }
@@ -53323,13 +53323,13 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 28.993343321214972,
+    "fuzzy_match_percent": 33.042637719401114,
     "total_code": "2046480",
-    "matched_code": "497044",
-    "matched_code_percent": 24.287752628904265,
+    "matched_code": "579912",
+    "matched_code_percent": 28.337047027090417,
     "total_functions": 1449,
-    "matched_functions": 631,
-    "matched_functions_percent": 43.54727398205659,
+    "matched_functions": 635,
+    "matched_functions_percent": 43.823326432022085,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53353,13 +53353,13 @@
    "id": "level_01",
    "name": "Level 01: Novalis",
    "measures": {
-    "fuzzy_match_percent": 29.981265875494483,
+    "fuzzy_match_percent": 42.05358178915956,
     "total_code": "115272",
-    "matched_code": "33984",
-    "matched_code_percent": 29.48157401623985,
+    "matched_code": "47900",
+    "matched_code_percent": 41.55388992990492,
     "total_functions": 69,
-    "matched_functions": 38,
-    "matched_functions_percent": 55.072463768115945,
+    "matched_functions": 39,
+    "matched_functions_percent": 56.52173913043478,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53383,13 +53383,13 @@
    "id": "level_03",
    "name": "Level 03: Kerwan",
    "measures": {
-    "fuzzy_match_percent": 28.704474829294416,
+    "fuzzy_match_percent": 41.47057470879636,
     "total_code": "119504",
-    "matched_code": "33836",
-    "matched_code_percent": 28.313696612665684,
+    "matched_code": "49092",
+    "matched_code_percent": 41.079796492167624,
     "total_functions": 69,
-    "matched_functions": 22,
-    "matched_functions_percent": 31.884057971014492,
+    "matched_functions": 23,
+    "matched_functions_percent": 33.333333333333336,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53428,13 +53428,13 @@
    "id": "level_06",
    "name": "Level 06: Blarg Station (Nebula G34)",
    "measures": {
-    "fuzzy_match_percent": 19.823097557364914,
+    "fuzzy_match_percent": 39.34641361954108,
     "total_code": "135100",
-    "matched_code": "24568",
-    "matched_code_percent": 18.185048112509254,
+    "matched_code": "50944",
+    "matched_code_percent": 37.70836417468542,
     "total_functions": 88,
-    "matched_functions": 34,
-    "matched_functions_percent": 38.63636363636363,
+    "matched_functions": 35,
+    "matched_functions_percent": 39.77272727272727,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53608,13 +53608,13 @@
    "id": "level_18",
    "name": "Level 18: Veldin (return)",
    "measures": {
-    "fuzzy_match_percent": 34.976163721843356,
+    "fuzzy_match_percent": 52.61927180202521,
     "total_code": "154848",
-    "matched_code": "30688",
-    "matched_code_percent": 19.818144244678653,
+    "matched_code": "58008",
+    "matched_code_percent": 37.46125232486051,
     "total_functions": 122,
-    "matched_functions": 80,
-    "matched_functions_percent": 65.57377049180327,
+    "matched_functions": 81,
+    "matched_functions_percent": 66.39344262295081,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
