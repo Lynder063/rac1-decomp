@@ -1,11 +1,12 @@
 /* NON_MATCHING func_L02_002D4E50 -- src/overlays/l02_aridia/vendor_002A59D8.c
- * Best so far: BYTES 21/580 (96.4% of the bytes match), checked 2026-10-03.
+ * Best so far: BYTES 16/580 (97.2% of the bytes match), checked 2026-10-05.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
  *   Spawns d particles along vb-va (func_L00_0026DEA0 with random color/speed). p5.c is 21/580 bytes off: only the
  *   col = c | c<<8 | c<<16 (retail: sll 8, sll 16, or v1=v1|v0, or c) and the order of the f13/f14/a1/a2 argument 
  *   Try c | (c << 16) | (c << 8) and moving the s[2] store; needs another pass.
+ *   q27 s08: best p9.c = 16/580 (col = c | ((c << 16) | (c << 8)) fixes the shift order). Left: order of f14/a1 an
  */
 typedef int u128b __attribute__((mode(TI)));
 extern void func_001F9BF0(void *, void *, void *);
@@ -47,7 +48,7 @@ void func_L02_002D4E50(void *moby, void *va_, void *vb_, int d, float fa, float 
         func_001F9BD8(tmp, va, tmp);
         a = func_L00_00258BC8(0x40, 0x70);
         c = func_L00_00258BC8(0x40, 0x7F);
-        col = c | (c << 8) | (c << 16);
+        col = c | ((c << 16) | (c << 8));
         sp = func_002140F8(1.0f, 1.02f);
         r = func_L00_00258BC8(-2, 2);
         s[0] = func_L00_00258C80(0.0f, 0.0025f);

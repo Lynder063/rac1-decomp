@@ -1,16 +1,16 @@
 /* NON_MATCHING func_L16_00227818 -- src/overlays/l16_kalebo3/help_00227818.c
- * Best so far: BYTES 83/26480 (99.7% of the bytes match), checked 2026-10-05.
+ * Best so far: BYTES 78/26480 (99.7% of the bytes match), checked 2026-10-05.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
- *   - From level 05's text: `func_L05_002559F0/A0/B8` return int (tested or passed on), `func_L05_00254030/0025432
- *   00254838` are void (a guess), `func_L05_00254B38` is `int (float *, float *)`; `top` and `up` in case 107 are 
- *   locals (the loop's maximum is never read: retail keeps the loop for its call).
- *   - New Hero fields (level 05's): f120, f6C0 (0x60 bytes), f7D0 (32 floats), f860, f86C, f874, f888, f89C, f89E,
- *   f8AC, f8B0, f8B2, f8BC, f8BE, f12E8. Left over from the removed cases, harmless: fields f2F4, f1630, f1636, f1
- *   - D_L16_0015F674 is `int ... MACRO_ADDR` here as in the relatives; src/overlays/l16_kalebo3/vendor_002A50F0.c
- *   declares it `short` (another file).
- *   Claimed after 0021EA88 budget ended. No earlier near candidate. Dossier86callees;26480bytes, candidate screen 
+ *   p2 SIZE26468/26480: initialize up before conditional; GCC merges false path and preloads saved f20, losing ret
+ *   p3 BYTES78/26480: explicit cached height then unconditional reload fixes common zero float register, but clamp
+ *   p4 SIZE26476/26480: refresh cached stack height BEFORE upper-bound clamp; all aligned instructions now match, 
+ *   p5 SIZE26476/26480 unchanged: reading v0[2] directly for the threshold still coalesces cached initial height i
+ *   p6 SIZE26476/26480 unchanged: separate sampled height and mutable cached height coalesce identically. Three up
+ *   Lead's diagnostic, not candidates: does a 16-byte copy helper without the "memory" clobber close the 83 bytes?
+ *   one_site.c: only case 107's copy uses it. all_sites.c: every copy in the function uses it.
+ *   Neither may be landed or staged (inline asm outside common.h).
  */
 typedef struct { char p0[0x44]; int f44; int f48; char p1[0x10]; float f5C; int f60; char p2[0xC]; } Rec70;
 typedef struct { char p0[0x24]; int f24; char p1[0x24]; } Rec4C;
@@ -19,7 +19,7 @@ typedef struct { char p0[0x254]; float f254; float f258; } S17AB60;
 typedef struct { char p0[0xC]; float fC; char p1[8]; float f18; } S17C298;
 typedef struct { char p0[0xF8]; unsigned short fF8; unsigned short fFA; int fFC; } S141948;
 typedef struct { char p0[0x74]; unsigned char f74; char p1[0x13]; unsigned char *f88; } Row13E650;
-typedef int u128 __attribute__((mode(TI)));
+typedef unsigned long long u128;
 typedef struct {
     char p0[0x80] __attribute__((aligned(16)));
     float f80[4];
@@ -2354,6 +2354,7 @@ void func_L16_00227818(void) {
                     {
                         float top;
                         float up;
+                        float z;
                         int i;
 
                         top = 0.0f;
@@ -2373,6 +2374,7 @@ void func_L16_00227818(void) {
                             }
                         }
                         qcopy(v0, D_0013F450.f110);
+                        z = v0[2];
                         if (-0.025f < v0[2]) {
                             up = func_001F9FA8(D_0013F450.f2E0) * D_0013F450.f164;
                             if (up < 0.0f) {
@@ -2382,9 +2384,10 @@ void func_L16_00227818(void) {
                                 up = D_0013F450.f164 * 0.5f;
                             }
                         } else {
-                            up = v0[2];
+                            up = z;
                         }
-                        if (v0[2] < 0.0f) {
+                        z = v0[2];
+                        if (z < 0.0f) {
                             v0[2] = 0.0f;
                         }
                         if (up < 0.0f) {

@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L16_002E6D40 -- src/overlays/shared/vendor_002A1B58.c
- * Best so far: BYTES 14/1012 (98.6% of the bytes match), checked 2026-10-05.
+ * Best so far: BYTES 12/1012 (98.8% of the bytes match), checked 2026-10-05.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -54,11 +54,13 @@ void func_L16_002E6D40(char *m) {
     quad.flags = 0;
     color_base = quad.color;
     {
-        float (*source_uv)[2] = D_L16_001D9A50;
-        float (*source_position)[4] = D_L16_001D9A90;
+        float (*source_uv)[2];
+        float (*source_position)[4];
         int *color;
         float *next_v, *next_u;
         int count;
+        source_position = D_L16_001D9A90;
+        source_uv = D_L16_001D9A50;
         position = quad.position[0];
         color = color_base;
         next_v = v;

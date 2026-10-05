@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L00_002B9730 -- src/overlays/shared/vendor_002B33E8.c
- * Best so far: SIZE ours 860 / retail 864, checked 2026-10-03.
+ * Best so far: BYTES 10/864 (98.8% of the bytes match), checked 2026-10-05.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -8,6 +8,7 @@
  *   Would unblock: combine p3 (array buf used directly, src a block local, pos an expression, q = D_0013E15A + 0x4
  *   Helper: build-sn/try/func_L00_002B9730/sdiff.py gives an instruction-level diff when try_func only prints SIZE
  *   Budget spent. Latest (p6/p7, SIZE 860/864): everything matches except i lives in $a1 (retail $a0) and the else
+ *   q27 s08: best p9.c = 10/864 (same size): dropped the off local (base - (-(i * 4)) in all three accesses fixes 
  */
 extern char D_0013E15A[];
 extern float D_0015EE6C MACRO_ADDR;
@@ -47,12 +48,10 @@ void func_L00_002B9730(char *m) {
     int i;
 
     for (i = 0; i < 15; i++) {
-        int off;
-        char *o = *(char **)(base + i * 4);
+        char *o = *(char **)(base - (-(i * 4)));
         if (o == 0) {
             continue;
         }
-        off = i * 4;
         if (*(unsigned char *)o == 0xC && o[1] >= 0) {
             float f20 = *(float *)(o + 0xC) / 210000.0f * 0.5f;
             char *src = o + 0x20;
@@ -89,10 +88,10 @@ void func_L00_002B9730(char *m) {
                     func_00219780(v3, qv, v2, c1, c2, 0xA, c3, c4, *(int *)&D_L00_001615FC);
                 }
             } else if (type < 2) {
-                *(int *)(base + i * 4) = 0;
+                *(int *)(base - (-(i * 4))) = 0;
             }
         } else {
-            *(int *)(base + off) = 0;
+            *(int *)(base - (-(i * 4))) = 0;
         }
     }
 }

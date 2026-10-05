@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L16_002E8B30 -- src/overlays/l16_kalebo3/vendor_002E7C70.c
- * Best so far: SIZE ours 888 / retail 884, checked 2026-10-05.
+ * Best so far: BYTES 16/884 (98.2% of the bytes match), checked 2026-10-05.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -49,7 +49,6 @@ void func_L16_002E8B30(char *m) {
         break;
     case 1: {
         L16WalkerData *other=*(L16WalkerData **)(d->owner+0x78);
-        float *speed;
         float gap,step,next,height,acceleration;
         func_00215CA8(d->parameter,path,0,m+0x10,(float *)(m+0x40),0);
         acceleration=(*(float *)&D_L16_00161F38)*D_0015EE70;
@@ -58,15 +57,14 @@ void func_L16_002E8B30(char *m) {
         func_00214D28(d->target_speed,acceleration,&d->speed);
         gap=other->parameter-d->parameter;
         gap=gap<0.0f ? gap+d->period : gap;
-        speed=&d->speed;
-        if(gap<(*(float *)&D_L16_00161F28) && d->target_speed>other->target_speed) {
+        if(gap<(*(float *)&D_L16_00161F28) && other->target_speed<d->target_speed) {
             float saved=d->target_speed;
             d->target_speed=other->target_speed;
             other->target_speed=saved;
         }
         if(gap<1.5f) {
             step=(*(float *)&D_L16_0015EE70)*50.0f;
-            func_00214D28(d->target_speed,step,speed);
+            func_00214D28(d->target_speed,step,&d->speed);
             func_00214D28(other->target_speed,step,&other->speed);
         }
         if((*(unsigned char *)((char *)m+0x31))==0 && failed==0) {

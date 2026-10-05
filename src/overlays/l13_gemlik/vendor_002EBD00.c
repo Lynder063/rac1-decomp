@@ -273,7 +273,67 @@ INCLUDE_ASM("asm/overlays", func_L13_00309330);
 INCLUDE_ASM("asm/overlays", func_L13_0030A1C8);
 INCLUDE_ASM("asm/overlays", func_L13_0030A828);
 INCLUDE_ASM("asm/overlays", func_L13_0030A9B0);
-INCLUDE_ASM("asm/overlays", func_L13_0030B080);
+extern float func_002140F8(float, float);
+extern float func_00214158(void);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern float func_001F9878(float);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9C08(void *, void *, void *, float);
+extern char *func_00219780(void *, void *, void *, int, int, int, int, int, int);
+extern short D_L13_00161F40;
+extern short D_L13_00161F44;
+extern short D_L13_00161F48;
+extern short D_L13_00161F4C;
+extern short D_L13_00161F50;
+extern short D_L13_00161F54;
+extern short D_L13_00161F58;
+extern short D_L13_00161F5C;
+extern short D_L13_00161F60;
+extern short D_L13_00161F64;
+extern short D_L13_00161F68;
+extern short D_L13_00161F6C;
+extern short D_L13_00161F70;
+extern short D_L13_00161F74;
+extern short D_L13_00161F78;
+extern short D_L13_00161F7C;
+
+/* spawns particles for each active entry of the moby's 16-slot table */
+void func_L13_0030B080(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    int i, n;
+    for (i = 0; i < 15; i = n) {
+        float f21, f22;
+        int s18, s19, s17;
+        int s10[4];
+        float v[4], w[4];
+        char *p;
+        int off = i * 16;
+        n = i + 1;
+        if (*(float *)(data + off + 0x21C) < 0.99f && *(float *)(data - (-(n * 16)) + 0x21C) < 0.99f) { continue; }
+        if (*(float *)&D_L13_00161F78 < func_002140F8(0.0f, 1.0f)) { continue; }
+        f21 = func_00214158();
+        f22 = func_00214158();
+        v[0] = func_001F9F90(f21) * func_002140F8(*(float *)&D_L13_00161F68, *(float *)&D_L13_00161F6C);
+        v[1] = func_001F9FA8(f21) * func_002140F8(*(float *)&D_L13_00161F68, *(float *)&D_L13_00161F6C);
+        v[2] = 0;
+        w[0] = func_001F9F90(f22) * func_002140F8(*(float *)&D_L13_00161F68, *(float *)&D_L13_00161F6C);
+        w[1] = func_001F9FA8(f22) * func_002140F8(*(float *)&D_L13_00161F68, *(float *)&D_L13_00161F6C);
+        w[2] = 0;
+        v[2] = func_002140F8(*(float *)&D_L13_00161F70, *(float *)&D_L13_00161F74);
+        w[2] = func_002140F8(*(float *)&D_L13_00161F70, *(float *)&D_L13_00161F74);
+        s18 = func_001FA898_r(func_001F9878(func_002140F8(*(float *)&D_L13_00161F50, *(float *)&D_L13_00161F54)));
+        s19 = func_001FA898_r(func_001F9878(func_002140F8(*(float *)&D_L13_00161F58, *(float *)&D_L13_00161F5C)));
+        s17 = func_001FA898_r(func_001F9878(func_002140F8(*(float *)&D_L13_00161F60, *(float *)&D_L13_00161F64)));
+        func_001F9C30(v, v, 1.0f / (float)s18);
+        v[3] = *(float *)&D_L13_00161F48;
+        func_001F9C30(w, w, 1.0f / (float)s17);
+        w[3] = *(float *)&D_L13_00161F4C;
+        p = data + (off + 0x210);
+        func_001F9C08(s10, p, p, func_002140F8(0.0f, 1.0f));
+        func_00219780(s10, v, w, *(int *)&D_L13_00161F40, *(int *)&D_L13_00161F44, s18, s19, s17, *(int *)&D_L13_00161F7C);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L13_0030B340);
 extern void func_L01_002BA380(char *, int);
 extern char D_L13_001D9E80[];
