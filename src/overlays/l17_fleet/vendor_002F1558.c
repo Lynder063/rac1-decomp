@@ -734,7 +734,7 @@ int func_L17_002F3CC0(char *moby, int idx) {
     }
     return d->fA4 == 1.0f;
 }
-INCLUDE_ASM("asm/overlays", func_L17_002F4208);
+LINKER_REMNANT("asm/overlays", func_L17_002F4208);
 extern int func_00215570(void *arg0, int arg1);
 extern int func_0022EE28(int, int, int);
 extern void func_L00_00264DB8(int arg0, int arg1);
@@ -1419,7 +1419,7 @@ void func_L17_002F5C18(unsigned char *moby) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L17_002F6AF0);
+LINKER_REMNANT("asm/overlays", func_L17_002F6AF0);
 extern short *D_L17_001AC440[];
 extern char D_L17_00167750[];
 extern char D_L17_00167740[];

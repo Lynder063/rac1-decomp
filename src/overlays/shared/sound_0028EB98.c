@@ -78,7 +78,7 @@ int func_L00_0028F140(int a0, int a1, int a2, int a3, int a4) {
     }
     return h;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0028F208);
+LINKER_REMNANT("asm/overlays", func_L00_0028F208);
 /* sets the pitch-bend word of sound slot i to v */
 int func_L00_0028F210(int i, int v) {
     char *e = D_0013E633 + 0x1D + i * 0x70;

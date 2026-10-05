@@ -295,7 +295,7 @@ char *func_L00_002C6608(void *pos, int idx, int a2, int a3) {
     return m;
 }
 INCLUDE_ASM("asm/overlays", func_L00_002C6720);
-INCLUDE_ASM("asm/overlays", func_L00_002C6F40);
+LINKER_REMNANT("asm/overlays", func_L00_002C6F40);
 extern int func_L00_002346C0(int, int);
 extern void func_L00_00264E28(int a, int b, int c);
 extern void func_001F9BC0(void *);

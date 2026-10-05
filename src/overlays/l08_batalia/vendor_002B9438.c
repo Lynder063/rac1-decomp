@@ -231,7 +231,7 @@ char *func_L08_002DDC18(char *src, char *pos, char *vec) {
 }
 INCLUDE_ASM("asm/overlays", func_L08_002DDD20);
 INCLUDE_ASM("asm/overlays", func_L08_002DE738);
-INCLUDE_ASM("asm/overlays", func_L08_002DF750);
+LINKER_REMNANT("asm/overlays", func_L08_002DF750);
 INCLUDE_ASM("asm/overlays", func_L08_002DF758);
 INCLUDE_ASM("asm/overlays", func_L08_002DF8A0);
 INCLUDE_ASM("asm/overlays", func_L08_002DFBC0);

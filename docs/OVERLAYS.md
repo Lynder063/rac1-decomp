@@ -219,6 +219,11 @@ one real C function show up as several entries, and `tools/overlay_check.py` (an
 The pieces must follow the owner in the catalogue; the check compares the C against the bytes of
 all of them together.
 
+A 4-byte entry that follows a finished function is a different thing: the word the linker left of
+a function it stripped. Those are listed in `config/overlays/linker_remnants.txt` and marked
+`LINKER_REMNANT` in the source (docs/ASM_CLASSIFICATION.md, "Level code"); `tools/overlay_remnants.py`
+tells the two apart from the bytes.
+
 ## Relatives
 
 `python3 tools/overlays.py families` lists, for each shared and level

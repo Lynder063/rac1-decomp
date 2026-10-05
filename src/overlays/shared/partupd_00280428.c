@@ -96,7 +96,7 @@ unsigned char *func_L01_00287F20(void *a, int b, int c, int d, float f, float g)
     return r;
 }
 INCLUDE_ASM("asm/overlays", func_L01_0028B570);
-INCLUDE_ASM("asm/overlays", func_L01_0028C1D0);
+LINKER_REMNANT("asm/overlays", func_L01_0028C1D0);
 extern float func_001F9D10(void *, void *);
 extern char *D_L01_001B0C30[];
 

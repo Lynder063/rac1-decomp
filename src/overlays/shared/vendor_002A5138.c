@@ -683,7 +683,7 @@ void func_L00_002A96B8(float *v) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_002A9768);
 INCLUDE_ASM("asm/overlays", func_L00_002AA998);
-INCLUDE_ASM("asm/overlays", func_L00_002AAC48);
+LINKER_REMNANT("asm/overlays", func_L00_002AAC48);
 extern void func_L00_00251328(void *, int, int, int);
 
 /* Creates a moby at a position with a scale, colour and a few data fields. */

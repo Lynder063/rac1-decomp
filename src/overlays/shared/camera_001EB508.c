@@ -312,4 +312,4 @@ void func_L00_001EDA28(float *pos, float r) {
         qcopy(&D_L00_00166EC0, pos);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_001EDBF8);
+LINKER_REMNANT("asm/overlays", func_L00_001EDBF8);
