@@ -146,7 +146,61 @@ char *func_L15_002E92C8(void *unused, void *vector) {
     return moby;
 }
 INCLUDE_ASM("asm/overlays", func_L15_002E9358);
-INCLUDE_ASM("asm/overlays", func_L15_002EBB38);
+extern void func_L00_002D80A0(char *);
+extern void func_0020D678(void *);
+extern void func_L10_00299AF0(char *);
+extern float func_001F9D48(void *, void *);
+extern void func_L00_00299B68(int);
+extern void func_L00_00264DB8(int, int);
+extern void func_L00_002618D8(int, int);
+extern int func_0020BFC8(int, int);
+extern short D_L15_001620F8;
+extern unsigned char D_0013D605[];
+extern char D_0013E633[];
+extern int D_L15_0015F720 MACRO_ADDR;
+extern int D_L15_0015F6A8 MACRO_ADDR;
+
+/* UpdateMoby_1388 (names.tsv role). Every frame: func_001FA748 on the heading at +0x48 with
+ * frame time * pi/2, and the +0x2C scale from the model's +0x24 value. State 0: runs
+ * func_L00_002D80A0, then deletes the moby if flag byte 0xD is set, else raises it by 1.0
+ * and goes to state 1. State 1: when the hero (D_0013E633 + 0xE9D) is within 3.0, sets
+ * flags 0x41, calls func_L00_00299B68(5) and goes to state 2. State 2: once the level flag
+ * is no longer 2, starts the exit sequence and goes to state 3. State 3: deletes the moby. */
+void func_L15_002EBB38(unsigned char *m) {
+    *(float *)(m + 0x48) = func_001FA748(*(float *)(m + 0x48), D_0015EE6C * 1.5707964f);
+    *(float *)(m + 0x2C) = *(float *)(*(char **)(m + 0x24) + 0x24) * *(float *)&D_L15_001620F8;
+    switch (m[0x20]) {
+    case 0:
+        func_L00_002D80A0((char *)m);
+        if (D_0013D605[0xD] != 0) {
+            func_0020D678(m);
+            return;
+        }
+        m[0x20] = 1;
+        *(float *)(m + 0x18) = *(float *)(m + 0x18) + 1.0f;
+        break;
+    case 1:
+        func_L10_00299AF0((char *)m);
+        if (func_001F9D48(m + 0x10, D_0013E633 + 0xE9D) < 3.0f) {
+            *(unsigned short *)(m + 0x34) |= 0x41;
+            func_L00_00299B68(5);
+            m[0x20] = 2;
+        }
+        break;
+    case 2:
+        if (D_L15_0015F6A8 != 2) {
+            func_L00_00264DB8(0x3AA3, -1);
+            D_L15_0015F720 = func_001F9850(0xB4);
+            func_L00_002618D8(0x22, 1);
+            func_0020BFC8(0, -1);
+            m[0x20] = 3;
+        }
+        break;
+    case 3:
+        func_0020D678(m);
+        break;
+    }
+}
 extern short D_L15_001620FC;
 extern float func_001F9878(float);
 extern int func_001FA898_r(float) __asm__("func_001FA898");
