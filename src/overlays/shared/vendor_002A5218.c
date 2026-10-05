@@ -99,7 +99,90 @@ void func_L02_002DA728(char *moby) {
 }
 INCLUDE_ASM("asm/overlays", func_L02_002DA820);
 INCLUDE_ASM("asm/overlays", func_L02_002DB810);
-INCLUDE_ASM("asm/overlays", func_L02_002DBAF8);
+extern short D_L02_00161B4C;
+extern short D_L02_00161B50;
+extern short D_L02_00161B54;
+extern short D_L02_00161B58;
+extern short D_L02_00161B5C;
+extern short D_L02_00161B60;
+extern short D_L02_00161B64;
+extern short D_L02_00161B68;
+extern short D_L02_00161B6C;
+extern short D_L02_00161B70;
+extern short D_L02_00161B74;
+extern short D_L02_00161B78;
+extern short D_L02_00161C2C;
+extern short D_L02_00161BAC;
+extern float D_L02_001D3680[4][4];
+extern float func_001F9FA8(float);
+extern float func_001F9F90(float);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern void func_001F9BC0(void *);
+extern void func_001FA218(void *, void *);
+extern void func_001FA540(void *, void *, void *);
+extern int func_001F4868(int);
+extern void func_L02_0020BF88(void *, void *, void *, s32, s32);
+
+/* Draws the rotating radar arrow sprite (style sel) at angle a and scale s, twice. */
+void func_L02_002DBAF8(int p0, int p1, int sel, float a, float s) {
+    long xy[4];
+    u32 col[4];
+    int uv[4];
+    float M[4][4];
+    float ang[4];
+    int x, y;
+    long v;
+    int tex;
+    switch (sel) {
+    case 0:
+        uv[0] = *(int *)&D_L02_00161B4C;
+        uv[1] = *(int *)&D_L02_00161B50;
+        uv[2] = *(int *)&D_L02_00161B54;
+        uv[3] = *(int *)&D_L02_00161B58;
+        break;
+    case 1:
+        uv[0] = *(int *)&D_L02_00161B5C;
+        uv[1] = *(int *)&D_L02_00161B60;
+        uv[2] = *(int *)&D_L02_00161B64;
+        uv[3] = *(int *)&D_L02_00161B68;
+        break;
+    case 2:
+    default:
+        uv[0] = *(int *)&D_L02_00161B6C;
+        uv[1] = *(int *)&D_L02_00161B70;
+        uv[2] = *(int *)&D_L02_00161B74;
+        uv[3] = *(int *)&D_L02_00161B78;
+        break;
+    }
+    col[3] = *(u32 *)&D_L02_00161C2C;
+    col[2] = *(u32 *)&D_L02_00161C2C;
+    col[1] = *(u32 *)&D_L02_00161C2C;
+    col[0] = *(u32 *)&D_L02_00161C2C;
+    y = func_001FA898_r(func_001F9FA8(a) * s * 16.0f);
+    x = func_001FA898_r(func_001F9F90(a) * s * 16.0f);
+    v = (long)y + 0xFFFFF080000000L;
+    v -= x << 16;
+    v += 0x8000;
+    xy[3] = v;
+    xy[2] = v;
+    xy[1] = v;
+    xy[0] = v;
+    func_001F9BC0(ang);
+    ang[2] = -a;
+    func_001FA218(M, ang);
+    func_001FA540(M, M, D_L02_001D3680);
+    xy[0] += func_001FA898_r(M[0][0] * 16.0f) << 16;
+    xy[0] += func_001FA898_r(M[0][1] * 16.0f);
+    xy[1] += func_001FA898_r(M[1][0] * 16.0f) << 16;
+    xy[1] += func_001FA898_r(M[1][1] * 16.0f);
+    xy[2] += func_001FA898_r(M[2][0] * 16.0f) << 16;
+    xy[2] += func_001FA898_r(M[2][1] * 16.0f);
+    xy[3] += func_001FA898_r(M[3][0] * 16.0f) << 16;
+    xy[3] += func_001FA898_r(M[3][1] * 16.0f);
+    tex = func_001F4868(*(int *)&D_L02_00161BAC + 0x29);
+    func_L02_0020BF88(xy, uv, col, tex, 1);
+    func_L02_0020BF88(xy, uv, col, tex, 1);
+}
 extern s32 D_L02_0015F6B0 MACRO_ADDR;
 extern short D_L02_00161BF0;
 extern short D_L02_00161B7C;
