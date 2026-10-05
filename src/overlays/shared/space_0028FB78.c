@@ -160,4 +160,62 @@ in:
     D_L00_0016128C_901A8 = u;
     func_L00_0028FCA0(8);
 }
-INCLUDE_ASM("asm/overlays", func_L00_002902A0);
+typedef struct { float f[4]; } __attribute__((aligned(16))) V_28efc8;
+typedef struct {
+    V_28efc8 corner[4];
+    unsigned int color[4];
+    struct { float u, v; } uv[4];
+    long unk70, tex, unk80, unk88;
+} Q_28efc8;
+typedef struct { char *p0; char pad[0x22]; short h26; } G_28efc8;
+extern G_28efc8 D_0013E130_902A0 __asm__("D_0013E130");
+extern V_28efc8 D_L00_001BDD40[];
+extern V_28efc8 D_L00_001BDDC0[];
+extern V_28efc8 D_L00_001BDDE0[];
+extern float D_L00_001BDD20[];
+extern V_28efc8 D_L00_001BDE00[];
+extern short D_L00_00160640;
+void func_001F9C30(float, void *, void *);
+void func_001F9BD8(void *, void *, void *);
+void func_001F9EC0(void *, void *, void *);
+long func_001F4868(int);
+int func_002140B0(int);
+float func_001FA888(int);
+void func_L00_001FD1D8(void *, void *, int);
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay_space_0028e8a0.c, FUN_L00_0028efc8. */
+void func_L00_002902A0(unsigned char *m) {
+    Q_28efc8 quad;
+    V_28efc8 v;
+    V_28efc8 *tbl;
+    int i, j, k;
+    tbl = D_L00_001BDD40;
+    if (D_0013E130_902A0.h26 == 1) tbl = D_L00_001BDDC0;
+    else if (D_0013E130_902A0.h26 == 2) tbl = D_L00_001BDDE0;
+    quad.tex = func_001F4868(5);
+    quad.unk80 = 0xFF9000000260L;
+    quad.unk88 = 0x8000000048L;
+    quad.unk70 = 0;
+    for (j = 0; j < 4; j++) {
+        quad.uv[j].u = ((float (*)[2])D_L00_001BDD20)[j][0];
+        quad.uv[j].v = ((float (*)[2])D_L00_001BDD20)[j][1];
+    }
+    func_001F9C30(0.0009765625f, &v, m);
+    for (i = 0; i < (((int *)&D_L00_00160640))[D_0013E130_902A0.h26]; i++) {
+        int c = m[0xBC];
+        unsigned int col;
+        float s;
+        if (*(short *)(m + 0xB2)) c += func_002140B0(*(short *)(m + 0xB2));
+        s = func_001FA888(c) * (tbl[i].f[3] / 40.0f);
+        col = (c << 24) | 0x2058B0;
+        if (*(short *)(m + 0xA6) == 0x215) col = (c << 24) | 0x308000;
+        for (k = 0; k < 4; k++) {
+            quad.color[k] = col;
+            func_001F9C30(s, &quad.corner[k], &D_L00_001BDE00[k]);
+            func_001F9BD8(&quad.corner[k], &quad.corner[k], &tbl[i]);
+            func_001F9EC0(&quad.corner[k], &quad.corner[k], D_0013E130_902A0.p0 + 0xC0);
+            func_001F9BD8(&quad.corner[k], &quad.corner[k], &v);
+        }
+        func_L00_001FD1D8(&quad, 0, 0);
+    }
+}

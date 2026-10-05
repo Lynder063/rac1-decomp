@@ -333,6 +333,26 @@ check. In parentheses, Lombyte's name.
 - `src/overlays/shared/vendor_002B90A8.c`: `func_L01_002BB068` (`FUN_L01_002b9eb0`)
 - `src/overlays/shared/vuchain_002A21A8.c`: `func_L00_002A2680` (`FUN_L00_002a13f0`)
 
+Fifteen more were carried over by machine on 2026-10-05 once `include/common.h` had `qzero()`, the 128-bit
+zero store Lombyte identified as inline assembly in the original (its `include/qzero.h`; the helper here is
+written after it). Same tool, same rule; the two executable functions are proven by the full build:
+
+- `src/game/pause.c`: `func_00219C08` (`FUN_00218d10`)
+- `src/game/sound.c`: `func_0022EFE8` (`sound_stop_all_sounds`)
+- `src/overlays/l00_veldin1/shrubproc_0028A608.c`: `func_L00_0028A608` (`FUN_L00_00289330`)
+- `src/overlays/l01_novalis/vendor_002BA898.c`: `func_L01_002F7558` (`FUN_L01_002f6180`)
+- `src/overlays/shared/mobyutil_00258BC8.c`: `func_L00_00260D30` (`FUN_L00_0025fcb8`)
+- `src/overlays/shared/partupd_0026A130.c`: `func_L00_0026D270` (`FUN_L00_0026c3d0`)
+- `src/overlays/shared/partupd_0026A130.c`: `func_L00_0026ED30` (`FUN_L00_0026de90`)
+- `src/overlays/shared/shrubproc_0028A198.c`: `func_L00_0028AEB0` (`FUN_L00_00289bd8`)
+- `src/overlays/shared/shrubproc_0028A198.c`: `func_L00_0028B4E0` (`FUN_L00_0028a208`)
+- `src/overlays/shared/shrubproc_0028A198.c`: `func_L00_0028B5C8` (`FUN_L00_0028a2f0`)
+- `src/overlays/shared/shrubproc_0028A198.c`: `func_L00_0028B758` (`FUN_L00_0028a480`)
+- `src/overlays/shared/shrubproc_0028A198.c`: `func_L00_0028BC70` (`FUN_L00_0028a998`)
+- `src/overlays/shared/shrubproc_0028A198.c`: `func_L00_0028C358` (`FUN_L00_0028b080`)
+- `src/overlays/shared/space_0028FB78.c`: `func_L00_002902A0` (`FUN_L00_0028efc8`)
+- `src/overlays/shared/vendor_002B90A8.c`: `func_L01_002E4920` (`FUN_L01_002e35a8`)
+
 Data taken from Lombyte:
 
 - `tools/extract/moby_classes.tsv`: the moby class names the level editor

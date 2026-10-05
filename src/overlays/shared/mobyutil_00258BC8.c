@@ -1652,7 +1652,79 @@ int func_L00_00260B68(float *p, int idx) {
     }
     return 0;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00260D30);
+extern char D_0013F450[];
+extern short D_L00_001B0BB0[];
+extern char * D_L00_00160098_60D30 __asm__("D_L00_00160098") MACRO_ADDR;
+extern char * D_L00_001DD450[];
+extern float func_001F9D48_60D30(void *, void *) __asm__("func_001F9D48");
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/rendering_view_0025fcb8.c, FUN_L00_0025fcb8. */
+int func_L00_00260D30(char *a, char *o, float best) {
+    char *g = D_0013F450;
+    char *m;
+    char *p;
+    int res;
+    int i;
+    int j;
+    float d;
+
+    m = *(char **)(g + 0x2080);
+    res = 0;
+    if (*(int *)(g + 0x208C) == 0x18 || *(int *)(g + 0x2084) == 0x72) {
+        m = 0;
+        res = 2;
+    }
+    for (i = 1; i <= D_L00_001B0BB0[0]; i++) {
+        p = D_L00_00160098_60D30 + (D_L00_001B0BB0[i] << 8);
+        if (p == 0) continue;
+        if (*(short *)(p + 0xA6) != 0xCB && *(short *)(p + 0xA6) != 0x76C) continue;
+        if (*(unsigned char *)(p + 0x20) == 0xFE) continue;
+        if (*(unsigned char *)(p + 0x20) == 0xFD) continue;
+        if (*(unsigned char *)(p + 0x20) != 3) continue;
+        d = func_001F9D48_60D30(a + 0x10, p + 0x10);
+        if (d < best) {
+            m = p;
+            best = d;
+            res = 1;
+        }
+    }
+    for (j = 0; j < 20; j++) {
+        p = D_L00_001DD450[j];
+        if (p == 0) continue;
+        if (*(short *)(p + 0xA6) != 0x10E) continue;
+        if (*(unsigned char *)(p + 0x20) == 0xFE) continue;
+        if (*(unsigned char *)(p + 0x20) == 0xFD) continue;
+        if (*(unsigned char *)(p + 0xBC) == 0) continue;
+        d = func_001F9D48_60D30(a + 0x10, p + 0x10);
+        if (d < best) {
+            m = p;
+            best = d;
+            res = 1;
+        }
+    }
+    if (m != 0) {
+        *(char **)(o + 0x40) = m;
+        qcopy(o, m + 0x10);
+        qcopy(o + 0x10, m + 0x40);
+        g = D_0013F450;
+        if (m == *(char **)(g + 0x2080)) {
+            qcopy(o + 0x20, g + 0xC0);
+            qcopy(o + 0x30, g + 0xD0);
+        } else {
+            qcopy(o + 0x30, o);
+            *(float *)(o + 0x38) += 0.6f;
+            qcopy(o + 0x20, o + 0x30);
+        }
+    } else {
+        *(char **)(o + 0x40) = 0;
+        qzero(o);
+        qzero(o + 0x10);
+        qzero(o + 0x30);
+        qzero(o + 0x20);
+    }
+    *(int *)(o + 0x44) = res;
+    return res;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00260FB0);
 INCLUDE_ASM("asm/overlays", func_L00_00261458);
 extern int func_L00_0025D390(char *);
