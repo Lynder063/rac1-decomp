@@ -2,4 +2,40 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L03_0022D028);
+extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+extern char D_L03_0016C9E0[];
+extern int func_001F9850(int);
+extern void func_001F9BC0(void *);
+extern void func_L00_00250800(void *, int, void *);
+extern float func_00214158(void);
+extern float func_002140F8(float, float);
+extern void func_00215C00(void *, float, float, float);
+extern int func_L00_00258BC8(int, int);
+extern void func_L00_0026DD70(void *, void *, int, int, float, int);
+
+/* In level 3, while the timer of state 5 is between 900 and 1100 ticks, throws four sparks off the moby. */
+void func_L03_0022D028(void) {
+    char *g;
+    char *m;
+    float w[4];
+    float v[4];
+    int i;
+    if (D_0015EE84_m != 3) return;
+    g = D_L03_0016C9E0;
+    if (*(int *)(g + 0x30) != 5) return;
+    if (func_001F9850(900) >= *(int *)(g + 0x34)) return;
+    if (*(int *)(g + 0x34) >= func_001F9850(1100)) return;
+    m = *(char **)(g + 0x184);
+    if (m == 0) return;
+    for (i = 0; i < 4; i++) {
+        float a, b;
+        func_001F9BC0(v);
+        func_L00_00250800(m, i % 2, w);
+        a = func_00214158();
+        b = func_00214158();
+        func_00215C00(v, func_002140F8(D_0015EE6C * 0.7f, D_0015EE6C * 2.2f), a, b);
+        func_L00_0026DD70(w, v, 0x80808080, 0x808080, 147000.0f,
+                          func_L00_00258BC8(func_001F9850(12), func_001F9850(35)));
+    }
+}

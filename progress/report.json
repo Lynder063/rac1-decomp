@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 25.291978653353457,
+  "fuzzy_match_percent": 25.30275217032498,
   "total_code": "3712808",
-  "matched_code": "843520",
-  "matched_code_percent": 22.719192589544086,
+  "matched_code": "843920",
+  "matched_code_percent": 22.729966106515608,
   "total_functions": 5109,
-  "matched_functions": 2991,
-  "matched_functions_percent": 58.543746330005874,
+  "matched_functions": 2992,
+  "matched_functions_percent": 58.56331963202192,
   "complete_code": "97220",
   "complete_code_percent": 2.6185032999282485,
   "total_units": 278,
@@ -41067,13 +41067,13 @@
   {
    "name": "Level 03: Kerwan",
    "measures": {
-    "fuzzy_match_percent": 3.8870447851117955,
+    "fuzzy_match_percent": 4.221761614673986,
     "total_code": "119504",
-    "matched_code": "3880",
-    "matched_code_percent": 3.2467532467532467,
+    "matched_code": "4280",
+    "matched_code_percent": 3.581470076315437,
     "total_functions": 69,
-    "matched_functions": 20,
-    "matched_functions_percent": 28.985507246376812,
+    "matched_functions": 21,
+    "matched_functions_percent": 30.434782608695652,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -41128,7 +41128,7 @@
     {
      "name": "func_L03_0022D028",
      "size": "400",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "160256",
      "metadata": {
       "virtual_address": "2281512"
@@ -53263,13 +53263,13 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 20.09029594334404,
+    "fuzzy_match_percent": 20.102614597358627,
     "total_code": "3247108",
-    "matched_code": "557020",
-    "matched_code_percent": 17.15434164801417,
+    "matched_code": "557420",
+    "matched_code_percent": 17.16666030202876,
     "total_functions": 3429,
-    "matched_functions": 1639,
-    "matched_functions_percent": 47.79819189268008,
+    "matched_functions": 1640,
+    "matched_functions_percent": 47.82735491396909,
     "complete_code": "3876",
     "complete_code_percent": 0.1193677574013553
    }
@@ -53323,13 +53323,13 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 14.825603006137374,
+    "fuzzy_match_percent": 14.845148762753613,
     "total_code": "2046480",
-    "matched_code": "236100",
-    "matched_code_percent": 11.536882842734842,
+    "matched_code": "236500",
+    "matched_code_percent": 11.556428599351081,
     "total_functions": 1449,
-    "matched_functions": 635,
-    "matched_functions_percent": 43.823326432022085,
+    "matched_functions": 636,
+    "matched_functions_percent": 43.892339544513455,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53383,13 +53383,13 @@
    "id": "level_03",
    "name": "Level 03: Kerwan",
    "measures": {
-    "fuzzy_match_percent": 3.8870447851117955,
+    "fuzzy_match_percent": 4.221761614673986,
     "total_code": "119504",
-    "matched_code": "3880",
-    "matched_code_percent": 3.2467532467532467,
+    "matched_code": "4280",
+    "matched_code_percent": 3.581470076315437,
     "total_functions": 69,
-    "matched_functions": 20,
-    "matched_functions_percent": 28.985507246376812,
+    "matched_functions": 21,
+    "matched_functions_percent": 30.434782608695652,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
