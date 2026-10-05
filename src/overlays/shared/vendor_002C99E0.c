@@ -321,7 +321,76 @@ void func_L11_0031AAE0(char *moby) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L11_0031B630);
+extern char D_0013E633[];
+extern unsigned char D_0014171B[] NOT_SDA;
+extern int D_0015EFA4 MACRO_ADDR;
+extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
+extern int D_0015EF00 MACRO_ADDR;
+extern unsigned char D_0013D510[] NOT_SDA;
+extern char *func_L00_0025B478(void *, int, int);
+extern int func_0022EE28(int, int, int);
+extern void func_L00_00264DB8(int, int);
+extern void func_00213DE0(void *, int, int, int);
+extern int func_L00_001F10E0(float, void *, int, void *);
+
+/* Collectable crate: when hit, updates the totals (count, best time, levels mask, a level-11 bonus) and breaks open. */
+void func_L11_0031B630(char *m) {
+    char *d = *(char **)(m + 0x78);
+    char *info = func_L00_0025B478(m, 0x330000, 0);
+    char *g;
+    ((unsigned char *)m)[0xA4] = 0xFF;
+    g = D_0013E633 + 0xE1D;
+    if (*(int *)(g + 0x2084) != 0x32) {
+        *(unsigned short *)(m + 0x34) &= 0xEFFF;
+    } else {
+        *(unsigned short *)(m + 0x34) |= 0x1000;
+    }
+    if (info != 0) {
+        char *st = (char *)D_0014171B + 0x34D;
+        int st2;
+        int cur;
+        if (*(unsigned short *)(st + 0x157E8) < 0xFFFF) {
+            *(unsigned short *)(st + 0x157E8) += 1;
+        }
+        if (func_001F9850(D_0015EFA4) / 600 > *(unsigned short *)(st + 0x157EA)) {
+            *(unsigned short *)(st + 0x157EA) = func_001F9850(D_0015EFA4) / 600;
+        }
+        *(int *)(st + 0x157EC) = *(int *)(st + 0x157EC) | (1 << D_0015EE84_m) | 0x80000000;
+        if (D_0015EE84_m == 0xB && *(char **)(info + 0x20) != 0 && *(short *)(*(char **)(info + 0x20) + 0xA6) == 0xAC) {
+            if (++D_0015EF00 >= 3 && D_0013D510[0x12] == 0) {
+                D_0013D510[0x12] = 1;
+                func_0022EE28(1, 0, 0);
+                func_L00_00264DB8(0x53DB, -1);
+            }
+        }
+        if (*(int *)(d + 0x88) != 0) {
+            st2 = 6;
+            cur = ((unsigned char *)m)[0x20];
+        } else {
+            cur = ((unsigned char *)m)[0x20];
+            st2 = 2;
+        }
+        if (cur != st2) {
+            m[0x20] = st2;
+            if (((unsigned char *)m)[0x53] != 1) {
+                func_00213DE0(m, 1, 0, func_001F9850(10));
+            }
+        }
+    } else if (((unsigned char *)m)[0x20] == 5) {
+        char *g2 = D_0013E633 + 0xE1D;
+        if (*(int *)(g2 + 0x2084) != 0x32) {
+            m[0x20] = 4;
+            *(int *)(m + 0x94) = 0;
+            *(unsigned short *)(m + 0x34) |= 1;
+        }
+        if (func_L00_001F10E0(1.0f, m + 0x10, 0, m)) {
+            m[0x20] = 6;
+            if (((unsigned char *)m)[0x53] != 1) {
+                func_00213DE0(m, 1, 0, func_001F9850(10));
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L11_0031B8A8);
 typedef struct { int a, b; } Pair8;
 
