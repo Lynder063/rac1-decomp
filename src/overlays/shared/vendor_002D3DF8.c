@@ -3,7 +3,48 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L08_002D3DF8);
-INCLUDE_ASM("asm/overlays", func_L08_002D49E8);
+extern char D_0013E633[];
+extern char *D_L08_001B0FB0[];
+extern char *func_L00_0025B478(void *, int, int);
+extern int func_L00_0025B4D0(void *, void *, void *, int, int *, float *, int, int);
+extern void func_L00_002584A8(void *, int, int);
+extern int func_L00_00260FB0_f(char *, void *, float, int, int, void *, int) __asm__("func_L00_00260FB0");
+extern float func_001F9D48(void *, void *);
+extern float func_001F9B88(float);
+
+/* Takes hits (dying at 0 health), then follows the moby's path and gives up on it when too far off. */
+void func_L08_002D49E8(char *m) {
+    char *d = *(char **)(m + 0x78);
+    int hit;
+    float dmg;
+    int idx;
+    dmg = 0.0f;
+    idx = func_L00_0025B4D0(m, func_L00_0025B478(m, 0x330000, 0), d + 0x20, 0, &hit, &dmg, 0, 4);
+    if (hit != 1 && ((unsigned char *)m)[0x20] != 0x63) {
+        *(float *)(d + 0x20) -= dmg;
+        if (*(float *)(d + 0x20) <= 0.0f) idx = 1;
+        if (idx < 12) {
+            if (idx >= 0) {
+                func_L00_002584A8(m, 0, -1);
+                m[0x20] = 0x63;
+            }
+        }
+    }
+    ((unsigned char *)m)[0xA4] = 0xFF;
+    if (((unsigned char *)m)[0x20] != 0 && ((unsigned char *)m)[0x20] != 4) {
+        char *e = D_L08_001B0FB0[*(int *)(d + 0x21C)];
+        if (func_L00_00260FB0_f(m, d + 0x170, 14.0f, 0, 0, e + 0x10, *(int *)e) != 2) {
+            if (14.0f < func_001F9D48(d + 0x1C0, d + 0x170)) {
+                *(int *)(d + 0x1B4) = 2;
+            } else if (3.0f < func_001F9B88(*(float *)(d + 0x1C8) - *(float *)(d + 0x178))) {
+                *(int *)(d + 0x1B4) = 2;
+            }
+        }
+    }
+    if (*(int *)(d + 0x1B0) == 0) {
+        *(int *)(d + 0x1B0) = *(int *)(D_0013E633 + 0x2E9D);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L08_002D4B80);
 extern float D_0015EE6C MACRO_ADDR;
 extern float func_001F9FA8(float);
