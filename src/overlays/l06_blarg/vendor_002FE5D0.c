@@ -26,7 +26,52 @@ void func_L06_00301068(int idx)
     }
 }
 INCLUDE_ASM("asm/overlays", func_L06_003010E0);
-INCLUDE_ASM("asm/overlays", func_L06_003016B8);
+extern char *func_0020D348(int);
+extern void func_L00_00251E30(void *);
+extern float func_002140F8(float, float);
+extern float func_00214158(void);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_L06_003020B8(void *, void *, void *);
+extern float D_0015EE6C MACRO_ADDR;
+extern short D_L06_001620DC;
+
+/* Replaces the moby with a broken copy (type 0x43C); with burst set, also throws 50 pieces around it. */
+void func_L06_003016B8(char *m, int burst) {
+    char *n;
+    float w[4];
+    float v[4];
+    int i;
+    *(int *)(*(char **)(m + 0x78) + 4) = 0;
+    n = func_0020D348(0x43C);
+    *(short *)(n + 0x32) = 0x40;
+    n[0x31] = 1;
+    *(long *)(n + 0x38) = *(long *)(m + 0x38);
+    *(short *)(n + 0x34) = *(unsigned short *)(m + 0x34);
+    qcopy(n + 0x10, m + 0x10);
+    qcopy(n + 0x40, m + 0x40);
+    *(float *)(n + 0x2C) = *(float *)(m + 0x2C);
+    func_L00_00251E30(n);
+    *(unsigned short *)(m + 0x34) |= 1;
+    if (burst != 0) {
+        for (i = 0; i < 50; i++) {
+            float spd = func_002140F8(1.0f, 6.0f) * D_0015EE6C;
+            float a = func_00214158();
+            float c = func_001F9F90(a);
+            float s;
+            v[0] = c + c;
+            s = func_001F9FA8(a);
+            v[1] = s + s;
+            v[2] = 0.0f;
+            func_001F9BD8(w, m + 0x10, v);
+            w[2] += func_002140F8(*(float *)&D_L06_001620DC + 0.5f, *(float *)&D_L06_001620DC + 4.5f);
+            func_L00_001FF4B0(v, v, spd);
+            func_L06_003020B8(m, w, v);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L06_00301848);
 INCLUDE_ASM("asm/overlays", func_L06_00301B78);
 extern void func_0020D678(void *);
