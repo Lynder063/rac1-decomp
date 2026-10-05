@@ -1,6 +1,6 @@
 # Ratchet & Clank Decompilation
 
-[![Progress report](https://github.com/Lynder063/rac1-decomp/actions/workflows/progress.yml/badge.svg)](https://github.com/Lynder063/rac1-decomp/actions/workflows/progress.yml)
+[![Progress report](https://github.com/OpenRAC/rac1-decomp/actions/workflows/progress.yml/badge.svg)](https://github.com/OpenRAC/rac1-decomp/actions/workflows/progress.yml)
 [![Code](https://decomp.dev/OpenRAC/rac1-decomp.svg?mode=shield&label=Code&measure=matched_code_percent)](https://decomp.dev/OpenRAC/rac1-decomp)
 [![Functions](https://decomp.dev/OpenRAC/rac1-decomp.svg?mode=shield&label=Functions&measure=matched_functions)](https://decomp.dev/OpenRAC/rac1-decomp)
 [![Discord](https://img.shields.io/badge/Discord-Join%20Community-5865F2?logo=discord&logoColor=white)](https://discord.gg/Sfd2B54PDG)
@@ -123,7 +123,7 @@ bash tools/docker/run.sh bash tools/build_sn.sh
 ### 1. Clone
 
 ```
-git clone https://github.com/Lynder063/rac1-decomp.git C:\rac1-decomp
+git clone https://github.com/OpenRAC/rac1-decomp.git C:\rac1-decomp
 ```
 
 On Windows keep the path short: the toolchain's `make` 3.77 fails with
