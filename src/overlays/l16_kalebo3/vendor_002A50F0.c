@@ -578,7 +578,352 @@ void func_L16_002CB098(char *m) {
     }
 }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002CF180);
+/* The test dummy's own data (moby + 0x78). */
+typedef struct {
+    char pad00[0x20];
+    float f20;
+    short h24;
+    char pad26[2];
+    unsigned char b28;
+    char pad29[5];
+    unsigned char b2E;
+    char pad2F[0x41];
+    float target[4];
+    char pad80[0x34];
+    int mode;
+    char padB8[8];
+    int kind;
+    int path;
+    int lives;
+    int iCC;
+    int aim[2];
+    int sound_path;
+    int node;
+    float spawn[4];
+    int timer;
+    char padF4[4];
+    char *route;
+    float turn;
+    char pad100[4];
+    char *child;
+    int step;
+    float f10C;
+    unsigned char next_state;
+    char pad111[3];
+    int next_anim;
+    char pad118[4];
+    float f11C;
+    char slots[0x20];
+    char block140[1];
+} L16DummyData;
+extern char *D_L16_001742D8;
+extern int D_L16_00161A88 SDATA(D_L16_00161A88);
+extern float D_L16_00161A8C SDATA(D_L16_00161A8C);
+extern float D_L16_00161A90 SDATA(D_L16_00161A90);
+extern float D_L16_00161A94 SDATA(D_L16_00161A94);
+extern void func_L16_002CFDB8(void *);
+extern void *func_L16_002D7178(int, void *);
+extern void func_L16_002D7248(char *);
+extern int func_L16_002D00E8(char *, void *, float);
+extern void func_L02_00265E58(char *);
+extern int func_00215B18(char *, float);
+extern void func_L00_00250800(void *, int, void *);
+extern float func_L00_0025BC48(void *, void *, void *, float, float);
+extern float func_0020D830(void *);
+extern void func_L00_002607A8(void *, float);
+extern float func_L00_0025CE58(float *, float *, float, float, float, float);
+extern int func_L00_00260FB0(float, char *, void *, int, int, void *, int);
+extern float func_001F9F90(float);
+extern void func_L02_00265E88(void *, void *, void *, float);
+extern void func_L00_0025A8C0(void *, void *, int, float, void *);
+extern void func_L02_002661E8(char **, int, int);
+extern void func_L00_00260108(void *, void *, int, float, float);
+extern void func_L00_002584A8(void *, int, int);
+extern void func_L00_00264B40(float, int, int, unsigned char *);
+extern void *func_L00_00265050(void *, int, void *, void *, int, int, float, void *, void *, void *);
+/* This file defines it (int a, void *pos, float *dir, int c, float f); retail sets the float argument up before the
+   int one here, so its last two parameters are the other way round. */
+extern unsigned char *func_L16_002C75D0_2cf180(int, void *, float *, float, int) __asm__("func_L16_002C75D0");
+/* Declared void further down this file; here the first temporary after the call avoids $v0, as after a call that
+   returns a value. */
+extern int func_L00_0025A8E8_2cf180(int, float, void *, int, float, float, int, int, int) __asm__("func_L00_0025A8E8");
+
+/* Updates the test dummy (moby class 541): walks its path, throws at or sprays its target, bursts and respawns. */
+void func_L16_002CF180(unsigned char *m) {
+    L16SparkVector v0, v1, v2;
+    L16SparkQuery fx;
+    L16DummyData *d = *(L16DummyData **)(m + 0x78);
+    /* A count, then 16-byte points from +0x10. A point copied whole is `path + i * 16 + 16`; its x and y are read
+       through `path + (i << 4)`: retail forms index + base for the first and base + index for the second, which
+       is what this compiler does with a multiplication and with a shift in an address. */
+    char *path;
+
+    func_L16_002CFDB8(m);
+    path = D_L16_001B0C30[d->path];
+    func_L00_00264B40(2.5f, (int)m, 2, (unsigned char *)d->block140);
+    switch (m[0x20]) {
+    case 0: /* set up: lives, home position, the held child for the variant */
+        d->b2E = 1;
+        if (d->lives > 0) {
+            *(short *)(m + 0xB4) /= d->lives;
+        }
+        m[0x20] = 1;
+        m[0x31] = 0;
+        *(unsigned short *)(m + 0x34) |= 1;
+        if (func_002140B0(2)) {
+            *(unsigned short *)(m + 0x34) |= 0x8000;
+        }
+        d->b28 = 1;
+        d->h24 = 2;
+        d->f20 = 2.0f;
+        d->f11C = func_00214158();
+        d->route = func_L16_002D7178(d->iCC, m + 0x10);
+        qcopy(d->spawn, m + 0x10);
+        switch (d->kind) {
+        case 0:
+            d->child = func_0020D348_m(0x35F);
+            break;
+        case 1:
+            d->child = func_0020D348_m(0x374);
+            break;
+        case 2:
+            d->child = func_0020D348_m(0x36C);
+            func_L02_00265E58(d->slots);
+            break;
+        }
+        if (d->child) {
+            *(unsigned short *)(d->child + 0x34) |= 0x100;
+            *(short *)(d->child + 0x32) = 0x40;
+            *(unsigned char *)(d->child + 0x30) = 0;
+            *(unsigned char *)(d->child + 0x31) = 1;
+        }
+        break;
+    case 1:
+        break;
+    case 2: /* turn to the path's first node, then start by variant */
+        func_L16_002D7248(d->route);
+        v0.quad = *(u128 *)(path + 0x10);
+        if (func_L16_002D00E8(m, v0.f, *(float *)(m + 0x48))) {
+            d->timer = func_001F9850(30);
+            d->node = 1;
+            d->step = 1;
+            if (d->kind == 0) {
+                m[0x20] = 3;
+            } else if (d->kind == 1) {
+                m[0x20] = 5;
+            } else {
+                m[0x20] = 7;
+            }
+        }
+        break;
+    case 3: /* thrower: wait, face the node, wind up */
+        if (func_001F9908(&d->timer)) {
+            v0.quad = *(u128 *)(path + d->node * 16 + 16);
+            if (func_L16_002D00E8(m, v0.f, func_L00_001FF860(
+                    ((float *)(path + (d->node << 4)))[4] - *(float *)(m + 16),
+                    ((float *)(path + (d->node << 4)))[5] - *(float *)(m + 20)))) {
+                d->timer = func_001F9850(30);
+                m[0x20] = 4;
+                if (m[0x53] != 21) {
+                    func_00213DE0(m, 21, 0, func_001F9850(30));
+                }
+                if (func_002140B0(2)) {
+                    char *p = D_L16_001B0C30[d->sound_path];
+                    func_L00_00260FB0(12.0f, (char *)m, d->target, 0, 0, p + 16, *(int *)p);
+                } else {
+                    d->mode = 2;
+                }
+            }
+        }
+        break;
+    case 4: /* thrower: launch the held object at the target, then face it or the next node */
+        if (d->mode == 2) {
+            qcopy(v0.f, D_L16_001601AC_m + d->aim[d->node] * 0x80 + 0x30);
+        } else {
+            qcopy(v0.f, d->target);
+        }
+        if (func_00215B18(m, 15.0f) && d->child) {
+            float speed = D_L16_00161A8C * D_0015EE6C;
+            float gravity = D_0015EE70 * 10.0f;
+            v0.f[2] = func_00214358(v0.f, 0, 0.5f);
+            func_L00_00250800(d->child, 0, v1.f);
+            func_001F9BF0(v2.f, v0.f, v1.f);
+            v2.f[2] = 0.0f;
+            func_L00_001FF4B0(v2.f, v2.f, speed);
+            v2.f[2] = func_L00_0025BC48(v1.f, v0.f, 0, speed, -gravity);
+            func_L16_002C75D0_2cf180((int)m, v1.f, v2.f, gravity, func_001F9850(300));
+        } else if (m[0x70] & 2) {
+            d->node = (d->node + 1) & 1;
+            m[0x20] = 3;
+            if (m[0x53] != 23) {
+                func_00213DE0(m, 23, 0, func_001F9850(30));
+            }
+        }
+        if (func_0020D830(m) < 15.0f) {
+            v1.quad = *(u128 *)(m + 16);
+            func_L16_002D00E8(m, v1.f, func_L00_001FF860(
+                v0.f[0] - *(float *)(m + 16),
+                v0.f[1] - *(float *)(m + 20)));
+        } else {
+            int node = (d->node + 1) & 1;
+            v1.quad = *(u128 *)(m + 16);
+            func_L16_002D00E8(m, v1.f, func_L00_001FF860(
+                ((float *)(path + (node << 4)))[4] - *(float *)(m + 16),
+                ((float *)(path + (node << 4)))[5] - *(float *)(m + 20)));
+        }
+        break;
+    case 5: /* slider: move toward the node, emit, stop on arrival */
+        if (m[0x53] == 10) {
+            if (m[0x70] & 2) {
+                func_00213DE0(m, 11, 0, 1);
+            }
+        } else {
+            char *position = (char *)m + 16;
+            char *g;
+            func_001F9BF0(v0.f, path + (d->node * 16 + 16), position);
+            func_L00_002607A8(v0.f, D_L16_00161A90 * D_0015EE6C);
+            func_001F9BD8(position, position, v0.f);
+            func_L00_00250800(m, D_L16_00161A88, v1.f);
+            func_L00_0025A8E8_2cf180((int)m, 0.333f, v1.f, 1, 1.0f, 1.0f, 0, 1, 0);
+            g = D_0013E633 + 0xE1D;
+            if (D_L16_001742D8 == *(char **)(g + 0x2080) && *(int *)(g + 0x1C0) == 0) {
+                func_0022ED80_i(6, 0, m);
+            }
+            if (func_001F9CB8(v0.f) < 0.0001f) {
+                if (m[0x53] != 9) {
+                    func_00213DE0(m, 9, 0, func_001F9850(20));
+                }
+                m[0x20] = 6;
+                d->timer = func_001F9850(60);
+                if (d->node == 0) {
+                    d->step = 1;
+                } else if (d->node == *(int *)path - 1) {
+                    d->step = -1;
+                }
+            }
+        }
+        break;
+    case 6: { /* slider: turn toward the next node while the timer runs */
+        float *yaw = (float *)(m + 0x48);
+        int next = d->node + d->step;
+        float angle = func_L00_001FF860(
+            ((float *)(path + (next << 4)))[4] - *(float *)(m + 16),
+            ((float *)(path + (next << 4)))[5] - *(float *)(m + 20));
+        func_L00_0025CE58(yaw, &d->turn, angle, D_0015EE70 * 12.566371f, D_0015EE70 * 12.566371f, D_0015EE6C * 25.132742f);
+        if (func_001F9908(&d->timer)) {
+            d->node = next;
+            if (m[0x53] != 10) {
+                func_00213DE0(m, 10, 0, func_001F9850(10));
+            }
+            m[0x20] = 5;
+        }
+        break;
+    }
+    case 7: /* sprayer: wait, face the node, start */
+        if (func_001F9908(&d->timer)) {
+            v0.quad = *(u128 *)(path + d->node * 16 + 16);
+            if (func_L16_002D00E8(m, v0.f, *(float *)(m + 0x48))) {
+                d->timer = func_001F9850(30);
+                m[0x20] = 8;
+                if (m[0x53] != 1) {
+                    func_00213DE0(m, 1, 0, func_001F9850(30));
+                }
+                if (func_002140B0(2)) {
+                    char *p = D_L16_001B0C30[d->sound_path];
+                    func_L00_00260FB0(12.0f, (char *)m, d->target, 0, 0, p + 16, *(int *)p);
+                } else {
+                    d->mode = 2;
+                }
+            }
+        }
+        break;
+    case 8: /* sprayer: face the target and emit from the child toward it */
+        if (d->mode != 2) {
+            v0.quad = *(u128 *)(m + 16);
+            func_L16_002D00E8(m, v0.f, func_L00_001FF860(
+                d->target[0] - *(float *)(m + 16),
+                d->target[1] - *(float *)(m + 20)));
+        }
+        if (d->child) {
+            char *slots;
+            func_L00_00250800(d->child, 0, v0.f);
+            slots = d->slots;
+            v1.f[0] = func_001F9F90(func_L00_001FF860(
+                v0.f[0] - *(float *)(m + 16),
+                v0.f[1] - *(float *)(m + 20)));
+            v1.f[1] = func_001F9FA8(func_L00_001FF860(
+                v0.f[0] - *(float *)(m + 16),
+                v0.f[1] - *(float *)(m + 20)));
+            v1.f[2] = 0.0f;
+            func_L02_00265E88(slots, v0.f, v1.f, D_L16_00161A94);
+            v1.f[3] = 5627.925f;
+            v1.f[2] = 1.0f;
+            func_L00_0025A8C0(&fx, m, 0x10001, 1.0f, v1.f);
+            fx.kind = 5;
+            fx.enabled = 1;
+            fx.cls = *(unsigned short *)(m + 0xA6);
+            func_L02_002661E8((char **)slots, (int)m, (int)&fx);
+        }
+        if (m[0x70] & 2) {
+            d->node = (d->node + 1) & 1;
+            m[0x20] = 7;
+            if (m[0x53] != 3) {
+                func_00213DE0(m, 3, 0, func_001F9850(30));
+            }
+        }
+        break;
+    case 9: /* turn back to the node, then resume the saved state and animation */
+        v0.quad = *(u128 *)(path + d->node * 16 + 16);
+        func_L16_002D00E8(m, v0.f, d->f10C);
+        if (m[0x70] & 2) {
+            m[0x20] = d->next_state;
+            if (m[0x53] != d->next_anim) {
+                func_00213DE0(m, d->next_anim, 0, func_001F9850(20));
+            }
+        }
+        break;
+    case 10: { /* burst into three pieces; respawn at home or delete */
+        char *position = (char *)m + 16;
+        char *rot = (char *)m + 0x40;
+        float burst;
+        d->f20 = 2.0f;
+        d->timer = func_001F9850(60);
+        burst = D_0015EE70 * 12.0f;
+        func_L00_00265050(m, 0x655, position, rot, 0, 0, burst, D_L16_0015F660_spark, D_L16_0015F660_spark, D_L16_0015F660_spark);
+        func_L00_00265050(m, 0x656, position, rot, 0, 0, burst, D_L16_0015F660_spark, D_L16_0015F660_spark, D_L16_0015F660_spark);
+        func_L00_00265050(m, 0x657, position, rot, 0, 0, burst, D_L16_0015F660_spark, D_L16_0015F660_spark, D_L16_0015F660_spark);
+        qcopy(v0.f, position);
+        v0.f[2] += 1.2f;
+        func_L00_00260108(m, v0.f, -1, 0.5f, 10.0f);
+        func_L00_002584A8(m, 0, -1);
+        func_0022ED80_i(7, 0, m);
+        d->lives--;
+        if (d->lives != -1) {
+            m[0x20] = 11;
+            qcopy(position, d->spawn);
+            d->timer = func_001F9850(60);
+        } else {
+            if (d->child) {
+                func_0020D678(d->child);
+            }
+            func_0020D678(m);
+        }
+        break;
+    }
+    case 11: /* respawn: settle to the home height as the timer runs out */
+        if (func_001F9908(&d->timer)) {
+            d->turn = 0.0f;
+            m[0x20] = 2;
+            if (m[0x53] != 9) {
+                func_00213DE0(m, 9, 0, func_001F9850(10));
+            }
+            d->f20 = 2.0f;
+            *(unsigned short *)(m + 0x34) |= 0x1000;
+        }
+        *(float *)(m + 0x18) = d->spawn[2] + D_0015EE6C * 3.0f * (float)d->timer;
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L16_002CFDB8);
 extern int *D_L16_001ABFC0[];
 extern char *D_L16_00160098 MACRO_ADDR;
