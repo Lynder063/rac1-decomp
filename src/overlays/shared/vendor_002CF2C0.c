@@ -79,7 +79,45 @@ void func_L05_002F9478(char *m) {
     }
     func_L05_002F95B0(m);
 }
-INCLUDE_ASM("asm/overlays", func_L05_002F95B0);
+extern float func_00214D28(float *p, float target, float maxstep);
+extern float func_001FA748(float, float);
+extern float func_001F9FA8(float);
+extern int func_001FA8A8(int, int, float);
+extern short D_L05_00161980;
+extern short D_L05_00161984;
+extern short D_L05_00161988;
+extern short D_L05_0016198C;
+extern short D_L05_00161990;
+
+/* Glow colour: fades in while the hero stands on the moby, pulsing between two colour pairs. */
+void func_L05_002F95B0(void *m_) {
+    char *m = (char *)m_;
+    char *g = D_0013F450;
+    char *d = *(char **)(m + 0x78);
+    if (*(char **)(g + 0x2FC) == m) {
+        func_00214D28((float *)(d + 0x1C), 1.0f, D_0015EE6C + D_0015EE6C);
+        if (*(int *)(g + 0x1090) != 0 && *(int *)(g + 0x10B8) == 0x16) {
+            m[0xBC] = 1;
+        } else {
+            m[0xBC] = 0;
+        }
+    } else {
+        func_00214D28((float *)(d + 0x1C), 0.0f, D_0015EE6C);
+    }
+    if (*(float *)(d + 0x1C) != 0.0f) {
+        int c2;
+        float a = func_001FA748(*(float *)(d + 0x18), D_0015EE6C * 6.2831855f);
+        *(float *)(d + 0x18) = a;
+        if (((unsigned char *)m)[0xBC] == 1) {
+            c2 = func_001FA8A8(*(int *)&D_L05_00161984, *(int *)&D_L05_00161988, (func_001F9FA8(a) + 1.0f) * 0.5f);
+        } else {
+            c2 = func_001FA8A8(*(int *)&D_L05_0016198C, *(int *)&D_L05_00161990, (func_001F9FA8(a) + 1.0f) * 0.5f);
+        }
+        *(int *)(m + 0x90) = func_001FA8A8(*(int *)&D_L05_00161980, c2, *(float *)(d + 0x1C));
+    } else {
+        *(int *)(m + 0x90) = *(int *)&D_L05_00161980;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L05_002F9BA0);
 extern int func_001F9850(int);
 extern int func_001F9908(int *);
