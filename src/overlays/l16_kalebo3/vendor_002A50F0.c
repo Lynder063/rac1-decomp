@@ -700,7 +700,22 @@ void func_L16_002D0990(char *moby) {
         } while (*p++ >= 0);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002D0A40);
+extern short *D_L16_001ABFC0_2d0a40[] __asm__("D_L16_001ABFC0");
+
+/* first other moby of type 0x228 in m's list whose 0x18 is within 0.1 of m's */
+int func_L16_002D0A40(char *m) {
+    short *p = D_L16_001ABFC0_2d0a40[((unsigned char *)m)[0x21]];
+    if (p == 0) return 0;
+    while (1) {
+        char *o = D_L16_00160098 + ((*(unsigned short *)p & 0x7FFF) << 8);
+        if (*(short *)(o + 0xA6) == 0x228 && m != o) {
+            if (func_001F9B88(*(float *)(o + 0x18) - *(float *)(m + 0x18)) < 0.1f) {
+                return (int)o;
+            }
+        }
+        if (*p++ < 0) return 0;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L16_002D0B00);
 INCLUDE_ASM("asm/overlays", func_L16_002D0B28);
 INCLUDE_ASM("asm/overlays", func_L16_002D0B60);
