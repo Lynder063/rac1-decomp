@@ -309,7 +309,31 @@ void func_L15_002ECD18(char *moby)
         func_L00_0026FF20(random_float_between(0.06f, 0.12f) * 210000.0f, *data, pos, vec);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L15_002ECDD0);
+typedef int u128 __attribute__((mode(TI)));
+extern char *func_0020D348_c(int) __asm__("func_0020D348");
+extern void func_L00_0025E210_u(void *) __asm__("func_L00_0025E210");
+extern void func_L00_00251E30_u(void *) __asm__("func_L00_00251E30");
+
+/* Spawns a class 0x594 moby: position from the first quad, the second quad stored at +0x40.
+ * Same shape as func_L04_002D48B8; the 0xFF store has to go through unsigned char. */
+char *func_L15_002ECDD0(char *pos, char *vec) {
+    char tmp[32] __attribute__((aligned(16)));
+    char *p = tmp;
+    char *m;
+    *(u128 *)tmp = *(u128 *)pos;
+    *(u128 *)(tmp + 0x10) = *(u128 *)vec;
+    m = func_0020D348_c(0x594);
+    if (m != 0) {
+        func_L00_0025E210_u(m);
+        *(unsigned char *)(m + 0x30) = 0xFF;
+        *(short *)(m + 0x32) = 0xFF;
+        m[0x31] = 1;
+        qcopy(m + 0x10, p);
+        *(u128 *)(m + 0x40) = *(u128 *)(tmp + 0x10);
+        func_L00_00251E30_u(m);
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L15_002ED318);
 INCLUDE_ASM("asm/overlays", func_L15_002ED3A0);
 INCLUDE_ASM("asm/overlays", func_L15_002ED3C4);

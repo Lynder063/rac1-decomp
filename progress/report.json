@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 25.09468733099044,
+  "fuzzy_match_percent": 25.10599954535757,
   "total_code": "3712808",
-  "matched_code": "838332",
-  "matched_code_percent": 22.579460074423455,
+  "matched_code": "838628",
+  "matched_code_percent": 22.587432476982382,
   "total_functions": 5109,
-  "matched_functions": 2972,
-  "matched_functions_percent": 58.17185359170092,
+  "matched_functions": 2974,
+  "matched_functions_percent": 58.21100019573302,
   "complete_code": "97220",
   "complete_code_percent": 2.6185032999282485,
   "total_units": 278,
@@ -40464,7 +40464,7 @@
   {
    "name": "Level 02: Aridia",
    "measures": {
-    "fuzzy_match_percent": 14.81329448237972,
+    "fuzzy_match_percent": 14.934949768464014,
     "total_code": "101928",
     "matched_code": "9068",
     "matched_code_percent": 8.89647594380347,
@@ -41047,7 +41047,7 @@
     {
      "name": "func_L02_002F9E50",
      "size": "132",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 93.94,
      "address": "909760",
      "metadata": {
       "virtual_address": "3120720"
@@ -48915,13 +48915,13 @@
   {
    "name": "Level 14: Oltanis",
    "measures": {
-    "fuzzy_match_percent": 8.269839938417434,
+    "fuzzy_match_percent": 8.373362355002255,
     "total_code": "150692",
-    "matched_code": "9960",
-    "matched_code_percent": 6.6095081358001755,
+    "matched_code": "10116",
+    "matched_code_percent": 6.713030552384997,
     "total_functions": 135,
-    "matched_functions": 44,
-    "matched_functions_percent": 32.592592592592595,
+    "matched_functions": 45,
+    "matched_functions_percent": 33.333333333333336,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -49390,7 +49390,7 @@
     {
      "name": "func_L14_002D77E0",
      "size": "156",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "758840",
      "metadata": {
       "virtual_address": "2979808"
@@ -50157,13 +50157,13 @@
   {
    "name": "Level 15: Quartu",
    "measures": {
-    "fuzzy_match_percent": 5.981373124592303,
+    "fuzzy_match_percent": 6.108212292527361,
     "total_code": "110376",
-    "matched_code": "6096",
-    "matched_code_percent": 5.522939769515112,
+    "matched_code": "6236",
+    "matched_code_percent": 5.64977893745017,
     "total_functions": 49,
-    "matched_functions": 15,
-    "matched_functions_percent": 30.612244897959183,
+    "matched_functions": 16,
+    "matched_functions_percent": 32.6530612244898,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -50470,7 +50470,7 @@
     {
      "name": "func_L15_002ECDD0",
      "size": "140",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "951056",
      "metadata": {
       "virtual_address": "3067344"
@@ -53263,13 +53263,13 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 19.864709113463423,
+    "fuzzy_match_percent": 19.877643724816046,
     "total_code": "3247108",
-    "matched_code": "551832",
-    "matched_code_percent": 16.99456870544497,
+    "matched_code": "552128",
+    "matched_code_percent": 17.003684509415763,
     "total_functions": 3429,
-    "matched_functions": 1620,
-    "matched_functions_percent": 47.24409448818898,
+    "matched_functions": 1622,
+    "matched_functions_percent": 47.30242053076699,
     "complete_code": "3876",
     "complete_code_percent": 0.1193677574013553
    }
@@ -53323,13 +53323,13 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 14.60541915875064,
+    "fuzzy_match_percent": 14.625942242289204,
     "total_code": "2046480",
-    "matched_code": "232648",
-    "matched_code_percent": 11.368202963136703,
+    "matched_code": "232944",
+    "matched_code_percent": 11.38266682303272,
     "total_functions": 1449,
-    "matched_functions": 621,
-    "matched_functions_percent": 42.857142857142854,
+    "matched_functions": 623,
+    "matched_functions_percent": 42.99516908212561,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53368,7 +53368,7 @@
    "id": "level_02",
    "name": "Level 02: Aridia",
    "measures": {
-    "fuzzy_match_percent": 14.81329448237972,
+    "fuzzy_match_percent": 14.934949768464014,
     "total_code": "101928",
     "matched_code": "9068",
     "matched_code_percent": 8.89647594380347,
@@ -53548,13 +53548,13 @@
    "id": "level_14",
    "name": "Level 14: Oltanis",
    "measures": {
-    "fuzzy_match_percent": 8.269839938417434,
+    "fuzzy_match_percent": 8.373362355002255,
     "total_code": "150692",
-    "matched_code": "9960",
-    "matched_code_percent": 6.6095081358001755,
+    "matched_code": "10116",
+    "matched_code_percent": 6.713030552384997,
     "total_functions": 135,
-    "matched_functions": 44,
-    "matched_functions_percent": 32.592592592592595,
+    "matched_functions": 45,
+    "matched_functions_percent": 33.333333333333336,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53563,13 +53563,13 @@
    "id": "level_15",
    "name": "Level 15: Quartu",
    "measures": {
-    "fuzzy_match_percent": 5.981373124592303,
+    "fuzzy_match_percent": 6.108212292527361,
     "total_code": "110376",
-    "matched_code": "6096",
-    "matched_code_percent": 5.522939769515112,
+    "matched_code": "6236",
+    "matched_code_percent": 5.64977893745017,
     "total_functions": 49,
-    "matched_functions": 15,
-    "matched_functions_percent": 30.612244897959183,
+    "matched_functions": 16,
+    "matched_functions_percent": 32.6530612244898,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }

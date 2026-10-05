@@ -513,7 +513,25 @@ void func_L14_002BC728(char *moby)
 }
 INCLUDE_ASM("asm/overlays", func_L14_002D7250);
 INCLUDE_ASM("asm/overlays", func_L14_002D7668);
-INCLUDE_ASM("asm/overlays", func_L14_002D77E0);
+/* Moves toward the table entry: looks up entry d[0x60] (32-byte records, pointer at +0x10), runs
+ * func_001F9908 on the data block's +0x6C and returns whether that was non-zero; then calls
+ * func_001F9C08 with the moby position, the entry, the D_L14_001B0F30 target and
+ * func_001FA888(+0x6C) * +0x70 as the factor. The index-first sum keeps retail's addu order. */
+extern char *D_L14_0015F7EC_p __asm__("D_L14_0015F7EC") MACRO_ADDR;
+extern char *D_L14_001B0F30_a[] __asm__("D_L14_001B0F30");
+extern int func_001F9908(void *);
+extern void func_001F9C08(void *, void *, void *, float);
+
+int func_L14_002D77E0(char *m) {
+    char *d = *(char **)(m + 0x78);
+    char *ent = *(char **)((char *)((*(int *)(d + 0x60) << 5) + (int)D_L14_0015F7EC_p) + 0x10);
+    int ok;
+    float t;
+    ok = func_001F9908(d + 0x6C) != 0;
+    t = func_001FA888(*(int *)(d + 0x6C));
+    func_001F9C08(m + 0x10, ent + 0x10, D_L14_001B0F30_a[*(int *)(d + 0x84)] + 0x10, t * *(float *)(d + 0x70));
+    return ok;
+}
 INCLUDE_ASM("asm/overlays", func_L14_002D7880);
 INCLUDE_ASM("asm/overlays", func_L14_002D7AF8);
 extern int D_L14_0015F7EC MACRO_ADDR;
