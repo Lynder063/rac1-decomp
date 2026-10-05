@@ -421,7 +421,72 @@ void func_L05_0031C0F0(char *moby) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L05_0031DDF0);
-INCLUDE_ASM("asm/overlays", func_L05_0031E468);
+typedef int ti_31e468 __attribute__((mode(TI)));
+typedef struct {
+    float m[4][4];
+    u32 col[4];
+    float uv[8];
+    u64 a, b, c, d;
+} Pk_31e468;
+extern char D_L05_001672C0[];
+extern float D_L05_00215FB0[4][4];
+extern short D_L05_00162088;
+extern short D_L05_0016208C;
+u64 func_001F4868(s32);
+extern void func_001F9C30(void *, void *, float);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9CA0(void *, void *, void *);
+extern int func_002140B0(int);
+extern void func_L00_001FD1D8(void *, void *, s32);
+
+/* Draws the moby's camera-facing glow sprite, flickering its alpha at random. */
+void func_L05_0031E468(char *m) {
+    char *d = *(char **)(m + 0x78);
+    Pk_31e468 pk;
+    float up[4];
+    float M[4][4];
+    float t[4];
+    float w[4];
+    u32 col;
+    int j;
+    *(ti_31e468 *)up = 0;
+    up[2] = 1.0f;
+    up[3] = 1.0f;
+    pk.b = func_001F4868(0xB);
+    pk.d = 0x8000000048ULL;
+    pk.c = 0x0000FF9000000260ULL;
+    pk.a = 5;
+    pk.uv[0] = 0.0f;
+    pk.uv[1] = 0.0f;
+    pk.uv[2] = 0.0f;
+    pk.uv[3] = 1.0f;
+    pk.uv[4] = 1.0f;
+    pk.uv[5] = 0.0f;
+    pk.uv[6] = 1.0f;
+    pk.uv[7] = 1.0f;
+    func_001F9C30(t, m + 0xE0, *(float *)&D_L05_00162088);
+    func_001F9BD8(M[3], m + 0x10, t);
+    func_001F9BF0(M[0], D_L05_001672C0, M[3]);
+    func_L00_001FF4B0(M[0], M[0], 1.0f);
+    func_001F9CA0(M[1], M[0], up);
+    func_L00_001FF4B0(M[1], M[1], 1.0f);
+    func_001F9CA0(M[2], M[1], M[0]);
+    func_001F9C30(w, M[0], *(float *)&D_L05_0016208C);
+    func_001F9BD8(M[3], M[3], w);
+    if (((unsigned char *)d)[0x67] != 0 && func_002140B0(8) == 0) {
+        *(int *)(d + 0x60) >>= 1;
+    }
+    col = (*(int *)(d + 0x60) << 24) | *(int *)(d + 0x68);
+    pk.col[3] = col;
+    pk.col[2] = col;
+    pk.col[1] = col;
+    pk.col[0] = col;
+    for (j = 0; j < 4; j++) {
+        func_001F9C30(pk.m[j], D_L05_00215FB0[j], *(float *)(d + 0x70));
+        func_001F9EE8(pk.m[j], pk.m[j], M);
+    }
+    func_L00_001FD1D8(&pk, 0, 0);
+}
 extern char *func_0020D348(int);
 extern void func_L00_00251E30(void *);
 
