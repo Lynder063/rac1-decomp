@@ -180,7 +180,56 @@ char *func_L05_003053D8(char *self, int idx) {
 INCLUDE_ASM("asm/overlays", func_L05_003054B0);
 INCLUDE_ASM("asm/overlays", func_L05_00305778);
 INCLUDE_ASM("asm/overlays", func_L05_003065D0);
-INCLUDE_ASM("asm/overlays", func_L05_00306CF0);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_001FF500(void *, void *, float);
+extern void func_L00_001F2BE8(void *, int, void *, void *, float);
+
+typedef struct {
+    float v[4];
+    char *owner;
+    int x14;
+    unsigned char x18;
+    unsigned char x19;
+    short type;
+    float x1C;
+    int flags;
+} Hit_306CF0;
+
+/* Drops stale entries from the moby's 8 slots, then pushes each remaining one away from the hero. */
+void func_L05_00306CF0(char *m) {
+    char **slots = (char **)(*(char **)(m + 0x78) + 0x1A0);
+    char *base;
+    Hit_306CF0 h;
+    int i;
+    int j;
+    for (i = 0; i < 8; i++) {
+        char *e = slots[i];
+        if (e != 0) {
+            if (*(unsigned char *)e != 2 || *(short *)(e + 0x32) == 0) {
+                slots[i] = 0;
+            }
+        }
+    }
+    base = D_0013E633 + 0xE1D;
+    if (*(int *)(base + 0x1158) == 6) return;
+    h.flags |= 1;
+    h.owner = m;
+    h.x14 = 1;
+    h.x1C = 1.0f;
+    func_001F9BF0(h.v, base + 0x80, m + 0x10);
+    h.v[2] = 0.0f;
+    func_L00_001FF500(h.v, h.v, 1.5f);
+    h.v[2] = 1.0f;
+    h.v[3] = 5627.9248f;
+    h.x19 = 1;
+    h.type = *(short *)(m + 0xA6);
+    h.x18 = 0;
+    for (j = 0; j < 8; j++) {
+        if (slots[j] != 0) {
+            func_L00_001F2BE8(slots[j] + 0x10, 0, m, &h, 0.75f);
+        }
+    }
+}
 extern float func_L00_001FF860(float, float);
 extern float func_001FA748(float, float);
 extern float func_001F9F90(float);
