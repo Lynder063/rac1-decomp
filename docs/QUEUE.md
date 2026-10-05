@@ -135,7 +135,13 @@ stop and say in NOTES.md which instructions are left.
   objects of two bytes or less go through `$gp`, so declare it
   `extern short D_x;` (or `char`) and read a word as `*(int *)&D_x`, a
   float as `*(float *)&D_x`. This is the project's convention
-  (`include/common.h`). A bare `$gp` offset (`addiu $2, $28, -0x7580`)
+  (`include/common.h`), and for most functions it matches. Where it
+  does not (a load retail has before a store through a pointer comes
+  out after it, or is repeated after it), declare the global with its
+  real type, `extern float D_x SDATA(D_x);`, and write the stores as
+  struct members: a read through a cast is not a scalar to the
+  compiler and waits behind every pointer store (`SDATA` in
+  `include/common.h`; func_L17_002EEB08). A bare `$gp` offset (`addiu $2, $28, -0x7580`)
   is the address 0x166D00 + offset: at 0x15F000 or above it is level
   data, `D_LNN_<address>` (`D_L00_0015F780`), never `D_<address>`.
 - A moby (game object) is a `char *`/struct pointer with fields at fixed
