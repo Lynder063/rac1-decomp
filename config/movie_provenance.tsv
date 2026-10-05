@@ -34,3 +34,5 @@ func_0023C088	asm only	2026-10-05	audioDecStart
 func_0023E510	asm only	2026-10-05	no recovered name
 func_0023E4B0	asm only	2026-10-05	no recovered name
 func_0023E4E0	asm only	2026-10-05	no recovered name
+func_0023C128	asm only	2026-10-05	audioDecBeginPut
+func_0023C2E8	asm only	2026-10-05	sendToSPU
