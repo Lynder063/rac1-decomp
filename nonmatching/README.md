@@ -106,6 +106,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L07_0031C7C0`](l07_umbris/func_L07_0031C7C0.c) | l07_umbris | 508 | BYTES 24/508 | 95.3% |
 | [`func_L04_002E6558`](l04_eudora/func_L04_002E6558.c) | l04_eudora | 548 | BYTES 26/548 | 95.3% |
 | [`func_L00_002D19E8`](shared/func_L00_002D19E8.c) | shared | 1148 | BYTES 56/1148 | 95.1% |
+| [`func_L06_0030B3E8`](l06_blarg/func_L06_0030B3E8.c) | l06_blarg | 416 | BYTES 21/416 | 95.0% |
 | [`func_L05_0030D230`](l05_rilgar/func_L05_0030D230.c) | l05_rilgar | 448 | BYTES 23/448 | 94.9% |
 | [`func_L08_002D7758`](l08_batalia/func_L08_002D7758.c) | l08_batalia | 248 | BYTES 13/248 | 94.8% |
 | [`func_L00_002A11E8`](shared/func_L00_002A11E8.c) | shared | 852 | BYTES 45/852 | 94.7% |
