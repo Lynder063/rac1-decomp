@@ -1,6 +1,6 @@
 {
  "measures": {
-  "fuzzy_match_percent": 25.202045923193428,
+  "fuzzy_match_percent": 25.210907442560977,
   "total_code": "3712808",
   "matched_code": "841220",
   "matched_code_percent": 22.65724486695784,
@@ -25030,7 +25030,7 @@
   {
    "name": "Shared level code/mobyfunc_0024FD50",
    "measures": {
-    "fuzzy_match_percent": 60.20084422110553,
+    "fuzzy_match_percent": 68.46745728643215,
     "total_code": "3980",
     "matched_code": "2248",
     "matched_code_percent": 56.482412060301506,
@@ -25118,7 +25118,7 @@
     {
      "name": "func_L00_00250478",
      "size": "336",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 97.92,
      "address": "1832",
      "metadata": {
       "virtual_address": "2425976"
@@ -53263,7 +53263,7 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 19.98746506737687,
+    "fuzzy_match_percent": 19.99759750522618,
     "total_code": "3247108",
     "matched_code": "554720",
     "matched_code_percent": 17.083509387430293,
@@ -53308,7 +53308,7 @@
    "id": "common",
    "name": "Shared level code",
    "measures": {
-    "fuzzy_match_percent": 28.914166852680424,
+    "fuzzy_match_percent": 28.94157011164157,
     "total_code": "1200628",
     "matched_code": "319780",
     "matched_code_percent": 26.634394666791046,
