@@ -402,7 +402,59 @@ void func_L06_002F8978(char *moby) {
     *(float *)(data + 0x38) = 2.25f;
 }
 INCLUDE_ASM("asm/overlays", func_L06_002F8A58);
-INCLUDE_ASM("asm/overlays", func_L06_002F8D60);
+extern char D_0013E633[];
+extern int func_00215570(void *, int);
+extern void func_001F4E08(int);
+extern void func_L00_00211908(void);
+extern void func_L06_00235E08(int, int);
+
+/* Watches the moby's two 32-entry trigger lists against the hero and fires the matching events. */
+void func_L06_002F8D60(char *m) {
+    char *d = *(char **)(m + 0x78);
+    char *g;
+    int *list;
+    int *list2;
+    char *t;
+    int i;
+    int j;
+    switch (((unsigned char *)m)[0x20]) {
+    case 0:
+        m[0x20] = 1;
+        ((unsigned char *)m)[0x30] = 0xFF;
+        return;
+    case 1:
+        break;
+    default:
+        return;
+    }
+    g = D_0013E633 + 0xE1D;
+    if (*(int *)(g + 0x2084) == 0x32) {
+        t = *(char **)(g + 0x15F0);
+        if (t != 0 && ((unsigned char *)t)[0x20] != 0xFE && ((unsigned char *)t)[0x20] != 0xFD
+            && *(short *)(g + 0x15F4) == 0x45) {
+            return;
+        }
+    }
+    list = (int *)d;
+    list2 = (int *)(d + 0x80);
+    for (i = 0; i < 32; i++) {
+        if (list[i] >= 0 && func_00215570(D_0013E633 + 0xE9D, list[i])) {
+            char *h = D_0013E633 + 0xE1D;
+            if (*(unsigned char *)(h + 0x20A4) != 0) {
+                func_001F4E08(func_001F9850(10));
+                func_L00_00211908();
+            } else if (*(int *)(h + 0x2084) != 0x77) {
+                func_L06_00235E08(0x77, 1);
+            }
+        }
+    }
+    for (j = 0; j < 32; j++) {
+        if (list2[j] >= 0 && func_00215570(D_0013E633 + 0xE9D, list2[j])) {
+            func_001F4E08(func_001F9850(10));
+            func_L00_00211908();
+        }
+    }
+}
 extern char *func_L00_0025B478(void *, int, int);
 extern void func_L06_002F9098(char *m);
 extern int func_0022ED80(int, int, int);
