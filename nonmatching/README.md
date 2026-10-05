@@ -48,6 +48,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_00260460`](shared/func_L00_00260460.c) | shared | 836 | BYTES 15/836 | 98.2% |
 | [`func_L00_002630A8`](shared/func_L00_002630A8.c) | shared | 816 | BYTES 15/816 | 98.2% |
 | [`func_L00_002C2A80`](shared/func_L00_002C2A80.c) | shared | 432 | BYTES 8/432 | 98.2% |
+| [`func_L01_00303A20`](shared/func_L01_00303A20.c) | shared | 416 | BYTES 8/416 | 98.1% |
 | [`func_L14_002AD4F8`](l14_oltanis/func_L14_002AD4F8.c) | l14_oltanis | 252 | BYTES 5/252 | 98.0% |
 | [`func_L16_002D1868`](l16_kalebo3/func_L16_002D1868.c) | l16_kalebo3 | 3388 | BYTES 67/3388 (cannot land as written) | 98.0% |
 | [`func_L05_003106E0`](l05_rilgar/func_L05_003106E0.c) | l05_rilgar | 492 | BYTES 10/492 | 98.0% |
