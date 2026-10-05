@@ -1022,7 +1022,287 @@ void func_L16_002D1420(L16LeapMoby *m) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002D1868);
+extern void func_L00_00264BB0(void *, float);
+extern float func_001FA850(float, float);
+extern void func_L00_00264EA8(void *, int, int, int, int, int, int);
+extern void func_L16_002D0DC0(char *);
+extern float func_001F9F90(float);
+extern void func_001F9C30(void *, void *, float);
+extern int func_L00_001F2BE8(float, void *, int, void *, void *);
+extern int func_L00_0025F410(int);
+extern void func_L00_0025AC00(void *, int, int, void *, void *, float);
+extern void func_L00_00263950(float, float, void *, void *, int);
+extern void func_L00_00250800(void *, int, void *);
+extern void func_L00_0026A7F8(void *, void *, int, int, int, int, int, int);
+extern unsigned char D_0013D5E7 NOT_SDA;
+typedef struct { char pad0[0x140]; float position[4]; char pad150[8]; float yaw; } L16RacePlayer;
+extern L16RacePlayer D_L16_00167100;
+extern int *D_L16_00178380[];
+extern int D_0015EF3C SDATA(D_0015EF3C);
+extern int D_L16_00161AC8 SDATA(D_L16_00161AC8);
+extern int D_L16_00161ACC SDATA(D_L16_00161ACC);
+
+/* Update the hoverboard race competitor: wait for the race, follow the path, leap, and emit spray. */
+void func_L16_002D1868(unsigned char *m) {
+    float pos[4], delta[4], ahead[4], impact[4], spray[4], lateral[4], dust[4];
+    char *d = *(char **)(m + 0x78);
+    char *g;
+    int i, n, next;
+    /* One mask for both collision calls. Held in a local it is one more instruction when GCSE sizes its
+       expression table, and that size orders the stack slots of the cached addresses (sp+0x90..0xC4):
+       with the literal at both calls every one of those slots is rotated by three. */
+    int mask = 0x30000;
+    float distance, duration, target, z, gap, speed, angle, scale, rate, limit, offset, slow;
+
+    /* No pointer locals: every address is written where it is used. The compiler caches them itself
+       (d + 0x1E0 from here on, the others at the top of the active state). */
+    func_L00_00264BB0(d + 0x1E0, 2.5f);
+    switch (m[0x20]) {
+    case 0: {
+        float time;
+        char *path;
+
+        m[0x30] = 24;
+        *(unsigned short *)(m + 0x34) |= 0x41;
+        path = D_L16_001B0C30[*(int *)(d + 0x2B0)];
+        *(char **)(d + 0x2C0) = path;
+        func_L16_002D0D98((Level16VendorVectorMoby *)m, 0, pos);
+        qcopy(m + 0x10, pos);
+        qcopy(d + 0x260, m + 0x10);
+        *(int *)(m + 0x40) = 0;
+        *(int *)(m + 0x44) = 0;
+        *(float *)(m + 0x48) = func_L00_001FF860(*(float *)(path + 0x20) - *(float *)(path + 0x10),
+                                                 *(float *)(path + 0x24) - *(float *)(path + 0x14));
+        *(unsigned char *)(d + 0x2B) = 1;
+        time = D_0015EE6C;
+        offset = (float)*(int *)(d + 0x2CC) * (time * 1.55f);
+        *(float *)(d + 0x2B4) = time * 17.0f + offset;
+        *(float *)(d + 0x2B8) = time * 24.0f + offset;
+        if (D_0013D5E7 == 0) {
+            slow = (float)(D_0015EF3C - 5);
+            if (slow < 0.0f) {
+                slow = 0.0f;
+            }
+            slow = 1.0f - slow * 0.008f;
+            if (slow < 0.8f) {
+                slow = 0.8f;
+            }
+            *(float *)(d + 0x2B4) *= slow;
+            *(float *)(d + 0x2B8) *= slow;
+        }
+        *(float *)(d + 0x2E8) = func_00214158();
+        *(unsigned char *)(d + 0x29) = 0;
+        m[0x20] = 1;
+        break;
+    }
+    case 1:
+        if (*(int *)(D_0013E633 + 0x2EA9) == 22) {
+            m[0x30] = 255;
+            *(int *)(m + 0x94) = *(int *)(*(char **)(m + 0x24) + 0x10);
+            *(unsigned short *)(m + 0x34) &= ~0x41;
+            *(short *)(d + 0x2F4) = 0;
+            *(short *)(d + 0x2F6) = func_001F9850(180);
+            *(int *)(d + 0x2C8) = 0;
+            *(int *)(d + 0x2C4) = 0;
+            *(int *)(d + 0x2E4) = 0;
+            *(int *)(d + 0x2DC) = 0;
+            *(int *)(d + 0x2BC) = 0;
+            if (*(int *)(d + 0x2CC) % 2 == 1) {
+                *(unsigned short *)(m + 0x34) |= 0x8000;
+            }
+            m[0xA4] = 255;
+            m[0x20] = 2;
+        }
+        break;
+    case 3:
+        if (*(int *)(D_0013E633 + 0x2EA9) != 22) {
+            m[0x20] = 0;
+        } else {
+            int count = *(unsigned short *)(d + 0x2F2) + 1;
+            short timer = count;
+
+            *(short *)(d + 0x2F2) = count;
+            if (func_001F9850(240) < timer) {
+                L16RacePlayer *player = &D_L16_00167100;
+
+                if (func_001FA850(func_L00_001FF860(*(float *)(m + 0x10) - player->position[0],
+                                                    *(float *)(m + 0x14) - player->position[1]),
+                                  player->yaw) > 1.5707964f) {
+                    *(int *)(m + 0x94) = *(int *)(*(char **)(m + 0x24) + 0x10);
+                    *(unsigned short *)(m + 0x34) &= ~0x41;
+                    m[0xA4] = 255;
+                    m[0x20] = 2;
+                }
+            }
+        }
+        break;
+    case 2:
+        g = D_0013E633 + 0xE1D;
+        if (*(int *)(g + 0x208C) != 22) {
+            m[0x20] = 0;
+            break;
+        }
+        if (func_L00_0025B478(m, mask, 0)) {
+            qcopy(pos, m + 0x10);
+            pos[2] += 0.5f;
+            func_L00_0025F4A8(m, D_L16_0015F660_spark, pos, 0.0f, 0.0f, 5, 15, 25, 2.5f, 1.5f, 4.0f, -1, 1.0f, 7.0f, 0, 9, -1, 0);
+            func_L00_00264EA8(m, 0x655, 1, 0x656, 2, 2, 0);
+            func_L00_00264EA8(m, 0x6FA, 1, 0x6FB, 1, 1, 0);
+            *(short *)(d + 0x2F2) = 0;
+            *(int *)(g + 0x8A8) += 250;
+            m[0x20] = 3;
+            *(int *)(m + 0x94) = 0;
+            *(unsigned short *)(m + 0x34) |= 0x41;
+            break;
+        }
+        m[0xA4] = 255;
+        func_L16_002D0DC0((char *)m);
+        func_L16_002D0FC8((char *)m);
+        func_L16_002D1310((char *)m);
+        if (*(int *)(d + 0x2E4) != 0) {
+            (*(int *)(d + 0x2E4))++;
+            if (*(int *)(d + 0x2E4) < func_001F9850(17)) {
+                i = *(short *)(d + 0x2F4);
+                distance = 0.0f;
+                while (i < *(short *)(d + 0x2F0)) {
+                    char *path;
+
+                    next = func_L00_0025E7F8(*(char **)(d + 0x2C0), i, 1, 1);
+                    path = *(char **)(d + 0x2C0);
+                    distance += func_001F9D48(path + (i * 16 + 16), path + (next * 16 + 16));
+                    i = next;
+                }
+                {
+                    short last = *(short *)(d + 0x2F0);
+                    short first = *(short *)(d + 0x2F4);
+                    char *path = *(char **)(d + 0x2C0);
+                    float rise = *(float *)(path - (-(last * 16)) + 0x18) - *(float *)(path - (-(first * 16)) + 0x18);
+
+                    duration = distance / *(float *)(d + 0x2BC);
+                    target = rise / duration + D_0015EE70 * 21.0f * duration * 0.5f;
+                }
+                if (*(float *)(d + 0x2C8) < 0.0f) {
+                    *(float *)(d + 0x2C8) = 0.0f;
+                }
+                func_00214D28((float *)(d + 0x2C8), target, D_0015EE70 * 110.0f);
+            }
+        }
+        func_L16_002D1420((L16LeapMoby *)m);
+        func_L16_002D0D98((Level16VendorVectorMoby *)m, *(short *)(d + 0x2F4), pos);
+        angle = func_L00_001FF860(pos[0] - *(float *)(m + 0x10), pos[1] - *(float *)(m + 0x14));
+        func_L00_0025CCF0(m + 0x48, d + 0x2C4, 0, angle, D_0015EE64 * 0.035f, D_0015EE64 * 0.3f, D_0015EE6C * 6.981317f);
+        if (*(float *)(d + 0x268) < pos[2] - 5.0f) {
+            *(float *)(d + 0x268) = pos[2];
+        }
+        delta[0] = func_001F9F90(*(float *)(m + 0x48)) * *(float *)(d + 0x2BC);
+        delta[1] = func_001F9FA8(*(float *)(m + 0x48)) * *(float *)(d + 0x2BC);
+        delta[2] = 0.0f;
+        func_001F9BD8(d + 0x260, d + 0x260, delta);
+        func_001F9C30(ahead, delta, 3.0f);
+        func_001F9BD8(ahead, ahead, d + 0x260);
+        ahead[2] += 0.7f;
+        n = func_L00_001F2BE8(0.7f, ahead, 0, m, 0);
+        if (n) {
+            func_001F9C30(impact, delta, 7.0f);
+            for (i = 0; i < n; i++) {
+                if (func_L00_0025F410((int)D_L16_00178380[i])) {
+                    func_L00_0025AC00(D_L16_00178380[i], (int)m, mask, d + 0x260, impact, 1.0f);
+                }
+            }
+        }
+        z = func_00214358(d + 0x260, 0, 0.5f);
+        gap = *(float *)(d + 0x268) - z;
+        if (gap > 0.0f || *(float *)(d + 0x2C8) > 0.0f) {
+            *(float *)(d + 0x2C8) -= D_0015EE70 * 21.0f;
+        } else if (func_001F9B88(gap) < 0.5f) {
+            *(float *)(d + 0x2C8) = 0.0f;
+            *(float *)(d + 0x268) = z;
+            *(int *)(d + 0x2E4) = 0;
+        }
+        *(float *)(d + 0x268) += *(float *)(d + 0x2C8);
+        if (func_001F9938(d + 0x2F6)) {
+            speed = *(float *)(d + 0x2B4);
+            if (z < *(float *)(d + 0x268)) {
+                speed = D_0015EE6C * 19.0f;
+            }
+            g = D_0013E633 + 0xE1D;
+            if (*(int *)(g + 0x894) < func_001F9850(700)) {
+                speed += D_0015EE6C * 3.0f;
+            }
+            if (*(short *)(g - (-(*(int *)(d + 0x2CC) * 2)) + 0x7C0) < *(int *)(g + 0x8C0)) {
+                speed -= D_0015EE6C;
+            } else {
+                speed += D_0015EE6C;
+            }
+            if (speed < *(float *)(d + 0x2BC)) {
+                func_00214D28((float *)(d + 0x2BC), speed, D_0015EE70 * 7.0f);
+            } else {
+                func_00214D28((float *)(d + 0x2BC), speed, D_0015EE70 * 15.0f);
+            }
+        } else {
+            func_00214D28((float *)(d + 0x2BC), *(float *)(d + 0x2B8), D_0015EE70 * 20.0f);
+        }
+        if (gap < 0.2f && *(float *)(d + 0x2C8) < 0.0f) {
+            *(float *)(d + 0x268) = z;
+            *(int *)(d + 0x2E4) = 0;
+        }
+        rate = *(float *)(d + 0x2C4);
+        limit = D_0015EE6C * 2.6179938f;
+        if (limit < rate) {
+            rate = limit;
+        } else if (rate < -limit) {
+            rate = -limit;
+        }
+        if (*(unsigned short *)(m + 0x34) & 0x8000) {
+            rate = -rate;
+        }
+        {
+            float coefficient = D_0015EE64;
+
+            *(float *)(d + 0x248) = rate * 30.0f;
+            *(float *)(d + 0xC8) = rate * 20.0f;
+            *(float *)(d + 0x1C8) = rate * 50.0f;
+            *(float *)(d + 0x144) = rate * 40.0f;
+            func_L00_00263950(coefficient * 0.02f, coefficient * 0.3f, m, d + 0x1E0, 3);
+        }
+        func_L00_00263950(D_0015EE64 * 0.02f, D_0015EE64 * 0.3f, m, d + 0x60, 0);
+        func_L00_00263950(D_0015EE64 * 0.02f, D_0015EE64 * 0.3f, m, d + 0x160, 1);
+        func_L00_00263950(D_0015EE64 * 0.015f, D_0015EE64 * 0.3f, m, d + 0xE0, 2);
+        qcopy(m + 0x10, d + 0x260);
+        {
+            float bob_time = D_0015EE6C;
+
+            *(float *)(m + 0x18) += 0.25f;
+            *(float *)(d + 0x2E8) = func_001FA748(*(float *)(d + 0x2E8), bob_time * 6.108652f);
+        }
+        *(float *)(m + 0x18) += func_001F9FA8(*(float *)(d + 0x2E8)) * 0.08f;
+        func_001F9BF0(ahead, m + 0x10, d + 0x280);
+        qcopy(d + 0x280, m + 0x10);
+        func_L00_00250800(m, (D_L16_0015F6B0 & 1) | 4, impact);
+        angle = func_00214158();
+        scale = D_0015EE6C * 0.25f;
+        func_L00_001FF4B0(spray, m + 0xE0, scale * func_001F9F90(angle));
+        func_L00_001FF4B0(lateral, m + 0xD0, scale * func_001F9FA8(angle));
+        func_001F9BD8(spray, spray, ahead);
+        func_001F9BD8(spray, spray, lateral);
+        qcopy(spray, ahead);
+        spray[3] = 120000.0f;
+        if (*(short *)(d + 0x2F6) == 0) {
+            int ticks = func_L00_00258BC8(func_001F9850(10), func_001F9850(13));
+
+            func_L00_0026A7F8(impact, spray, D_L16_00161AC8, D_L16_00161ACC, ticks, 15, 15, 1);
+        } else {
+            int ticks;
+
+            func_001F9C30(dust, ahead, 0.92f);
+            ticks = func_L00_00258BC8(func_001F9850(15), func_001F9850(18));
+            func_L00_0026A7F8(impact, dust, 0x5032F0D2, D_L16_00161ACC, ticks, 30, 20, 1);
+            ticks = func_L00_00258BC8(func_001F9850(8), func_001F9850(17));
+            func_L00_0026DA50(impact, spray, D_L16_00161AC8, D_L16_00161ACC, ticks, 1, 15000.0f);
+        }
+        break;
+    }
+}
 extern float func_00214D88(float, float, float, float, float *, float *);
 extern void func_L00_001FF4B0(void *, void *, float);
 extern void func_001F9BD8(void *, void *, void *);
