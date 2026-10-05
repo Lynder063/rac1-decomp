@@ -204,6 +204,21 @@ the 16-byte func_L08_002DB438 (UpdateMoby_324 in level 8). Each is two
 small functions the split joined; the next catalogue run can use the
 table pointers as split points.
 
+## Joined functions (`config/overlays/joined.tsv`)
+
+The catalogue ends a function wherever the next address is a function start. Two cases make
+one real C function show up as several entries, and `tools/overlay_check.py` (and so
+`try_func.py`) handles both by adding the sizes of the pieces listed after the owner:
+
+- A function whose first half branches into the second (the level 18 pairs).
+- A function whose last `jr` has its delay slot catalogued as a separate 4-byte entry, a shared
+  fragment such as `func_001EC030` (kind `exe`). Retail has one function of size + 4; a C
+  function compiles to that size, so the entry reads `owner<TAB>fragment` (16 of these:
+  see the file). Write the C under the owner's name and leave the fragment alone.
+
+The pieces must follow the owner in the catalogue; the check compares the C against the bytes of
+all of them together.
+
 ## Relatives
 
 `python3 tools/overlays.py families` lists, for each shared and level

@@ -10,4 +10,9 @@
 # units this way, e.g. sceSifInitIopHeap).
 func_002282D0  -mno-split-addresses
 func_0011CB40  -fno-schedule-insns
+func_0023C9B0  -mno-split-addresses
+func_L00_002E9D78  -fno-schedule-insns
 func_L18_002FAEF8  -mno-split-addresses
+func_L00_001ED6D8  -fno-force-mem
+func_L15_002F9FF8  -fno-force-mem
+func_0023C960  -mno-split-addresses
