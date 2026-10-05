@@ -35,7 +35,40 @@ void func_L06_002DB248(int idx)
         } while (*p++ >= 0);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L06_002EB140);
+extern void func_001F9BC0(void *);
+extern float func_00214158(void);
+extern void func_001FA1F8(void *, void *);
+extern void func_L00_0025D5B0_2eb140(void *, void *, int, int, int, float) __asm__("func_L00_0025D5B0");
+extern float D_0015EE70 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+
+/* starts a moby in state 0xF at pos: state 6, fresh random spin, motion setup; 0 if not in state 0xF */
+int func_L06_002EB140(void *m_, void *pos) {
+    char *m = (char *)m_;
+    char *d = *(char **)(m + 0x78);
+    float f, g;
+    if (((unsigned char *)m)[0x20] == 0xF) {
+        qcopy(m + 0x10, pos);
+        *(int *)(m + 0x94) = *(int *)(*(char **)(m + 0x24) + 0x10);
+        *(unsigned short *)(m + 0x34) = (*(unsigned short *)(m + 0x34) & 0xFFBE) | 0x1000;
+        m[0x20] = 6;
+        func_001F9BC0(m + 0x40);
+        *(float *)(m + 0x48) = func_00214158();
+        func_001FA1F8(m + 0xC0, m + 0x40);
+        g = D_0015EE70 * 20.0f;
+        f = D_0015EE6C + D_0015EE6C;
+        *(float *)(d + 0x130) = g;
+        *(int *)(d + 0x134) = 0;
+        *(float *)(d + 0x138) = f;
+        *(float *)(d + 0x13C) = f;
+        d[0x15D] = 3;
+        *(int *)(d + 0x144) = 5;
+        func_L00_0025D5B0_2eb140(m, d + 0x120, 2, 1, 0, func_00214158());
+        *(float *)(d + 0x128) = -*(float *)(d + 0x128);
+        return 1;
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L06_002EB258);
 extern short *D_L06_001AC340[];
 extern char *D_L06_00160058 MACRO_ADDR;
