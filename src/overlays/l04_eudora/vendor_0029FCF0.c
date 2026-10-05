@@ -39,7 +39,14 @@ void func_L04_002BB670(char *arg, void *a, void *b, void *c) {
         func_00213DE0(other, a, b, c);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L04_002BB6D8);
+/* Sets the float at 0x58 on the moby and on the linked moby at data+0x424, if any. */
+void func_L04_002BB6D8(char *arg, float f) {
+    char *data = *(char **)(arg + 0x78);
+    *(float *)(arg + 0x58) = f;
+    if (*(char **)(data + 0x424) != 0) {
+        *(float *)(*(char **)(data + 0x424) + 0x58) = f;
+    }
+}
 extern void func_001F9BC0(float *);
 extern void func_L00_00250800(void *, int, void *);
 extern void func_L00_0025F4A8(void *, void *, void *, float, float, int, int, int, float, float, float, int, float, float, int, int, int, int);

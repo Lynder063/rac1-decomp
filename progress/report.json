@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 25.120624960945985,
+  "fuzzy_match_percent": 25.127789457467216,
   "total_code": "3712808",
-  "matched_code": "838628",
-  "matched_code_percent": 22.587432476982382,
+  "matched_code": "838656",
+  "matched_code_percent": 22.588186623170387,
   "total_functions": 5109,
-  "matched_functions": 2974,
-  "matched_functions_percent": 58.21100019573302,
+  "matched_functions": 2975,
+  "matched_functions_percent": 58.23057349774907,
   "complete_code": "97220",
   "complete_code_percent": 2.6185032999282485,
   "total_units": 278,
@@ -31417,7 +31417,7 @@
   {
    "name": "Shared level code/vendor_00292AC0",
    "measures": {
-    "fuzzy_match_percent": 14.87868457990776,
+    "fuzzy_match_percent": 16.071806697413276,
     "total_code": "19948",
     "matched_code": "2968",
     "matched_code_percent": 14.87868457990776,
@@ -31640,7 +31640,7 @@
     {
      "name": "func_L03_002E99F0",
      "size": "260",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 91.54,
      "address": "356144",
      "metadata": {
       "virtual_address": "3054064"
@@ -41715,13 +41715,13 @@
   {
    "name": "Level 04: Eudora",
    "measures": {
-    "fuzzy_match_percent": 9.430062516451699,
+    "fuzzy_match_percent": 9.476127270334299,
     "total_code": "60784",
-    "matched_code": "3652",
-    "matched_code_percent": 6.008160042116346,
+    "matched_code": "3680",
+    "matched_code_percent": 6.054224795998947,
     "total_functions": 57,
-    "matched_functions": 21,
-    "matched_functions_percent": 36.8421052631579,
+    "matched_functions": 22,
+    "matched_functions_percent": 38.59649122807018,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -41920,7 +41920,7 @@
     {
      "name": "func_L04_002BB6D8",
      "size": "28",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "821104",
      "metadata": {
       "virtual_address": "2864856"
@@ -53263,13 +53263,13 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 19.894366716475087,
+    "fuzzy_match_percent": 19.902558744581324,
     "total_code": "3247108",
-    "matched_code": "552128",
-    "matched_code_percent": 17.003684509415763,
+    "matched_code": "552156",
+    "matched_code_percent": 17.004546815196786,
     "total_functions": 3429,
-    "matched_functions": 1622,
-    "matched_functions_percent": 47.30242053076699,
+    "matched_functions": 1623,
+    "matched_functions_percent": 47.331583552055996,
     "complete_code": "3876",
     "complete_code_percent": 0.1193677574013553
    }
@@ -53308,7 +53308,7 @@
    "id": "common",
    "name": "Shared level code",
    "measures": {
-    "fuzzy_match_percent": 28.84470287216357,
+    "fuzzy_match_percent": 28.8645261646405,
     "total_code": "1200628",
     "matched_code": "319184",
     "matched_code_percent": 26.58475397875112,
@@ -53323,13 +53323,13 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 14.643387377350384,
+    "fuzzy_match_percent": 14.64475558031352,
     "total_code": "2046480",
-    "matched_code": "232944",
-    "matched_code_percent": 11.38266682303272,
+    "matched_code": "232972",
+    "matched_code_percent": 11.384035025995857,
     "total_functions": 1449,
-    "matched_functions": 623,
-    "matched_functions_percent": 42.99516908212561,
+    "matched_functions": 624,
+    "matched_functions_percent": 43.064182194616976,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
@@ -53398,13 +53398,13 @@
    "id": "level_04",
    "name": "Level 04: Eudora",
    "measures": {
-    "fuzzy_match_percent": 9.430062516451699,
+    "fuzzy_match_percent": 9.476127270334299,
     "total_code": "60784",
-    "matched_code": "3652",
-    "matched_code_percent": 6.008160042116346,
+    "matched_code": "3680",
+    "matched_code_percent": 6.054224795998947,
     "total_functions": 57,
-    "matched_functions": 21,
-    "matched_functions_percent": 36.8421052631579,
+    "matched_functions": 22,
+    "matched_functions_percent": 38.59649122807018,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
