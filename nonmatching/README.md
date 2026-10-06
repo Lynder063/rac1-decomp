@@ -175,6 +175,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L11_00313148`](l11_pokitaru/func_L11_00313148.c) | l11_pokitaru | 208 | BYTES 31/208 | 85.1% |
 | [`func_L01_002F0E60`](shared/func_L01_002F0E60.c) | shared | 112 | BYTES 17/112 | 84.8% |
 | [`func_L13_002EB978`](l13_gemlik/func_L13_002EB978.c) | l13_gemlik | 372 | BYTES 63/372 | 83.1% |
+| [`func_L14_002D7880`](l14_oltanis/func_L14_002D7880.c) | l14_oltanis | 632 | BYTES 115/632 | 81.8% |
 | [`func_L00_0029AB38`](shared/func_L00_0029AB38.c) | shared | 480 | BYTES 88/480 | 81.7% |
 | [`func_L08_002F2838`](shared/func_L08_002F2838.c) | shared | 228 | BYTES 42/228 | 81.6% |
 | [`func_L18_002EB5E8`](l18_veldin2/func_L18_002EB5E8.c) | l18_veldin2 | 924 | BYTES 172/924 | 81.4% |
