@@ -851,7 +851,71 @@ int func_L04_002C3218(char *moby) {
     }
     return 1;
 }
-INCLUDE_ASM("asm/overlays", func_L04_002C3338);
+extern short D_L04_00161914;
+extern void func_L00_00260D30_k(void *, void *, float) __asm__("func_L00_00260D30");
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern void func_L00_001FF4B0(void *, void *, float);
+
+/* Flock steering for moby m: picks its path target, pushes away from same-class mobys within 3 units,
+ * keeps its spacing to the target unless another flock member is closer to it, writes the steer point
+ * to out and returns the yaw toward it. (The passed speed is recomputed from the moby's state.) */
+float func_L04_002C3338(void *m, void *out, float speed) {
+    float sep[4];
+    float tgt[4];
+    float pad[4][4];
+    char *d = *(char **)((char *)m + 0x78);
+    char *o;
+    float dist;
+    float w;
+    int alone;
+    int fast = 0;
+    if (*(int *)(d + 0x38) != 0 || *(short *)(d + 0x136) != 0) fast = 1;
+    if (fast) {
+        speed = *(float *)(d + 0x140) + *(float *)(d + 0x140);
+    } else {
+        speed = *(float *)(d + 0x140);
+    }
+    func_L00_00260D30_k(m, tgt, speed);
+    dist = func_001F9D48((float *)((char *)m + 0x10), tgt);
+    func_001F9BC0(out);
+    alone = 1;
+    o = D_L04_00160064;
+    w = 0.0f;
+    for (; o != 0; o = *(char **)(o + 0x28)) {
+        if (o == m || *(short *)(o + 0xA6) != *(short *)((char *)m + 0xA6)) continue;
+        if (func_001F9D48((float *)(o + 0x10), (float *)((char *)m + 0x10)) < 3.0f) {
+            func_001F9BF0(sep, (char *)m + 0x10, o + 0x10);
+            func_001F9C30(sep, sep, *(float *)&D_L04_00161914);
+            func_001F9BD8(out, out, sep);
+            w += *(float *)&D_L04_00161914;
+        }
+        if (func_001F9D48((float *)(o + 0x10), tgt) < dist) alone = 0;
+    }
+    if (!alone) {
+        float k;
+        func_001F9BF0(sep, (char *)m + 0x10, tgt);
+        if (dist < 4.5f) {
+            k = 5.0f;
+        } else if (5.5f < dist) {
+            k = -5.0f;
+        } else {
+            k = 0.0f;
+        }
+        func_L00_001FF4B0(sep, sep, k * 10.0f);
+        w += 10.0f;
+        func_001F9BD8(out, out, sep);
+        func_001F9C30(out, out, 1.0f / w);
+        func_001F9BD8(out, out, (char *)m + 0x10);
+    } else {
+        qcopy(out, tgt);
+    }
+    if (func_001F9D48((float *)((char *)m + 0x10), (float *)out) < 1.0f) {
+        qcopy(out, (char *)m + 0x10);
+        return func_L00_001FF860(tgt[0] - *(float *)((char *)m + 0x10), tgt[1] - *(float *)((char *)m + 0x14));
+    }
+    return func_L00_001FF860(((float *)out)[0] - *(float *)((char *)m + 0x10), ((float *)out)[1] - *(float *)((char *)m + 0x14));
+}
 typedef int u128_35F0 __attribute__((mode(TI)));
 typedef float V4_35F0[4] __attribute__((aligned(16)));
 
