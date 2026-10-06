@@ -136,7 +136,53 @@ void func_L14_002AF4A0(char *m) {
     }
     func_L00_001FD1D8(&pk, 0, 0);
 }
-INCLUDE_ASM("asm/overlays", func_L14_002AF688);
+extern int *D_L14_001B0F30[];
+extern float func_001F9D10(void *, void *);
+extern int func_L00_0025E860_2AF688(void *, void *, void *, void *, int, float) __asm__("func_L00_0025E860");
+
+/* Measures the segments of the moby's three paths, sums two of them and places it on the first two. */
+void func_L14_002AF688(char *m) {
+    char *d = *(char **)(m + 0x78);
+    int *p;
+    int i;
+    float len;
+    p = D_L14_001B0F30[*(int *)(d + 0x78)];
+    *(int *)(d + 0x16C) = 0;
+    for (i = 0; i < p[0]; i++) {
+        len = func_001F9D10((char *)p + (i * 16 + 0x10), (char *)p + (((i + 1) % p[0]) * 16 + 0x10));
+        *(float *)((char *)p + (i << 4) + 0x1C) = len;
+        if (i != p[0] - 1) {
+            *(float *)(d + 0x16C) += len;
+        }
+    }
+    p = D_L14_001B0F30[*(int *)(d + 0x74)];
+    *(int *)(d + 0x190) = 0;
+    for (i = 0; i < p[0]; i++) {
+        len = func_001F9D10((char *)p + (i * 16 + 0x10), (char *)p + (((i + 1) % p[0]) * 16 + 0x10));
+        *(float *)((char *)p + (i << 4) + 0x1C) = len;
+        if (i != p[0] - 1) {
+            *(float *)(d + 0x190) += len;
+        }
+    }
+    p = D_L14_001B0F30[*(int *)(d + 0x204)];
+    for (i = 0; i < p[0]; i++) {
+        *(float *)((char *)p + (i << 4) + 0x1C) = func_001F9D10((char *)p + (i * 16 + 0x10), (char *)p + (((i + 1) % p[0]) * 16 + 0x10));
+    }
+    if (*(float *)(d + 0x210) != 0.0f) {
+        int *q = D_L14_001B0F30[*(int *)(d + 0x78)];
+        *(int *)(d + 0x84) = 0;
+        *(float *)(d + 0x1CC) = 0.0f;
+        func_L00_0025E860_2AF688(q, m + 0x10, d + 0x84, d + 0x1CC, *(short *)(d + 0x8A), *(float *)(d + 0x210) * *(float *)(d + 0x16C));
+        *(float *)(d + 0x8C) = 0.0f;
+        *(int *)(d + 0x80) = 0;
+        func_L00_0025E860_2AF688(q, m + 0x10, d + 0x80, d + 0x8C, *(short *)(d + 0x8A), *(float *)(d + 0x210) * *(float *)(d + 0x190));
+    } else {
+        *(int *)(d + 0x80) = 0;
+        *(int *)(d + 0x84) = 0;
+        *(float *)(d + 0x8C) = 0.0f;
+        *(float *)(d + 0x1CC) = 0.0f;
+    }
+}
 extern float func_L00_0025C918(float *p, float *v, float t, float u1, float u2, float eps);
 extern int func_L00_0025E860_2AF918(int *tab, float *out, int *a, float *b, int c, float d) __asm__("func_L00_0025E860");
 extern int *D_L14_001B0F30[];
