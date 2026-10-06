@@ -2,7 +2,83 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L03_00293720);
+typedef int Q_293720 __attribute__((mode(TI)));
+extern char *D_L03_00160058_t __asm__("D_L03_00160058") MACRO_ADDR;
+extern short D_L03_001613F0;
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_001F9BF0(void *, void *, void *);
+extern float func_001FA748(float, float);
+extern float func_L00_001FF860(float, float);
+extern void func_L00_002617B0(char *, void *, void *, void *);
+extern void func_L00_002514B8(void *);
+extern void func_L00_00251E30(void *);
+extern void func_L00_00250800(void *, int, void *);
+
+/* Places a train: puts the engine at `at` facing ang (offset back by its length), then lays each linked
+ * car behind the previous one along ang, updating their motion deltas, and enables the coupling moby. */
+void func_L03_00293720(char *m, float *at, float ang) {
+    float tmp[4];
+    float off[4];
+    float dv[4];
+    float oldp[4];
+    float oldr[4];
+    float v[4];
+    float w[4];
+    char *d;
+    char *head;
+    int next;
+    *(Q_293720 *)tmp = *(Q_293720 *)at;
+    d = *(char **)(m + 0x78);
+    head = D_L03_00160058_t + (*(int *)(d + 0xC4) << 8);
+    next = *(int *)(d + 0xA0);
+    *(Q_293720 *)oldp = *(Q_293720 *)(m + 0x10);
+    *(Q_293720 *)oldr = *(Q_293720 *)(m + 0x40);
+    qcopy(head + 0x10, tmp);
+    off[0] = func_001F9F90(ang) * -*(float *)(d + 0xDC);
+    off[1] = func_001F9FA8(ang) * -*(float *)(d + 0xDC);
+    off[2] = 0.0f;
+    func_001F9BD8(m + 0x10, tmp, off);
+    *(float *)(m + 0x48) = func_001FA748(ang, 3.1415927f);
+    *(float *)(m + 0x44) = 0.0f;
+    func_001F9BF0(dv, m + 0x10, oldp);
+    func_L00_002617B0(d + 0x60, dv, oldr, m + 0x40);
+    *(int *)(d + 0xCC) = 0;
+    *(int *)(d + 0xD0) = 0;
+    off[0] = func_001F9F90(ang) * -*(float *)(d + 0xBC);
+    off[1] = func_001F9FA8(ang) * -*(float *)(d + 0xBC);
+    off[2] = 0.0f;
+    func_001F9BD8(off, off, m + 0x10);
+    while (next != -1) {
+        char *o = D_L03_00160058_t + (next << 8);
+        char *od = *(char **)(o + 0x78);
+        qcopy(od + 0xA0, o + 0x10);
+        qcopy(od + 0xB0, o + 0x40);
+        v[0] = func_001F9F90(ang) * -*(float *)&D_L03_001613F0;
+        v[1] = func_001F9FA8(ang) * -*(float *)&D_L03_001613F0;
+        v[2] = 0.0f;
+        func_001F9BD8(v, v, off);
+        w[0] = func_001F9F90(ang) * -*(float *)(od + 0xC4);
+        w[1] = func_001F9FA8(ang) * -*(float *)(od + 0xC4);
+        w[2] = 0.0f;
+        func_001F9BD8(o + 0x10, w, v);
+        *(float *)(o + 0x18) = *(float *)(m + 0x18);
+        *(float *)(o + 0x48) = func_001FA748(func_L00_001FF860(v[0] - *(float *)(o + 0x10), v[1] - *(float *)(o + 0x14)), 0.0f);
+        *(float *)(o + 0x44) = 0.0f;
+        func_L00_002514B8(o);
+        func_L00_00251E30(o);
+        *(unsigned short *)(o + 0x34) |= 6;
+        func_L00_00250800(o, 1, off);
+        func_001F9BF0(dv, o + 0x10, od + 0xA0);
+        func_L00_002617B0(od + 0x20, dv, od + 0xB0, o + 0x40);
+        qcopy(od + 0xA0, o + 0x10);
+        qcopy(od + 0xB0, o + 0x40);
+        next = *(int *)(od + 0xC0);
+    }
+    head[0x20] = 0;
+    *(unsigned short *)(head + 0x34) |= 6;
+}
 INCLUDE_ASM("asm/overlays", func_L03_00293A38);
 INCLUDE_ASM("asm/overlays", func_L03_00293EB8);
 INCLUDE_ASM("asm/overlays", func_L03_00294040);
