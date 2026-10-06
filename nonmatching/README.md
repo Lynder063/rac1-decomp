@@ -111,6 +111,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L18_002F72E0`](l18_veldin2/func_L18_002F72E0.c) | l18_veldin2 | 2548 | BYTES 135/2548 | 94.7% |
 | [`func_L02_002FCA80`](shared/func_L02_002FCA80.c) | shared | 316 | BYTES 17/316 | 94.6% |
 | [`func_L04_002E2BB8`](l04_eudora/func_L04_002E2BB8.c) | l04_eudora | 564 | BYTES 31/564 | 94.5% |
+| [`func_L00_002AA998`](shared/func_L00_002AA998.c) | shared | 688 | BYTES 39/688 | 94.3% |
 | [`func_L13_002B60D8`](l13_gemlik/func_L13_002B60D8.c) | l13_gemlik | 140 | BYTES 8/140 | 94.3% |
 | [`func_L02_002F9E50`](l02_aridia/func_L02_002F9E50.c) | l02_aridia | 132 | BYTES 8/132 | 93.9% |
 | [`func_L14_00300130`](shared/func_L14_00300130.c) | shared | 588 | BYTES 36/588 | 93.9% |
