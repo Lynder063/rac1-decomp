@@ -17,6 +17,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_002AB548`](shared/func_L00_002AB548.c) | shared | 964 | BYTES 8/964 | 99.2% |
 | [`func_L18_002F0F78`](l18_veldin2/func_L18_002F0F78.c) | l18_veldin2 | 1192 | BYTES 10/1192 | 99.2% |
 | [`func_L00_002136A8`](shared/func_L00_002136A8.c) | shared | 708 | BYTES 6/708 | 99.2% |
+| [`func_L12_002EC2E8`](l12_hoven/func_L12_002EC2E8.c) | l12_hoven | 692 | BYTES 6/692 | 99.1% |
 | [`func_L04_002E4458`](l04_eudora/func_L04_002E4458.c) | l04_eudora | 552 | BYTES 5/552 | 99.1% |
 | [`func_L00_002422D8`](shared/func_L00_002422D8.c) | shared | 9264 | BYTES 85/9264 | 99.1% |
 | [`func_L05_0030F9D0`](l05_rilgar/func_L05_0030F9D0.c) | l05_rilgar | 748 | BYTES 7/748 | 99.1% |
