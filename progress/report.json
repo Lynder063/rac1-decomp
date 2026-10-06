@@ -1,16 +1,16 @@
 {
  "measures": {
-  "fuzzy_match_percent": 57.07601315230948,
+  "fuzzy_match_percent": 57.09475907183993,
   "total_code": "3712808",
-  "matched_code": "2040924",
-  "matched_code_percent": 54.96982337896277,
+  "matched_code": "2041620",
+  "matched_code_percent": 54.98856929849322,
   "total_functions": 5109,
-  "matched_functions": 3291,
-  "matched_functions_percent": 64.4157369348209,
-  "complete_code": "322676",
-  "complete_code_percent": 8.690888405756505,
+  "matched_functions": 3292,
+  "matched_functions_percent": 64.43531023683695,
+  "complete_code": "455016",
+  "complete_code_percent": 12.255306495784323,
   "total_units": 278,
-  "complete_units": 76
+  "complete_units": 77
  },
  "units": [
   {
@@ -50625,17 +50625,17 @@
   {
    "name": "Level 16: Kalebo III",
    "measures": {
-    "fuzzy_match_percent": 99.47408191023122,
+    "fuzzy_match_percent": 100.0,
     "total_code": "132340",
-    "matched_code": "131644",
-    "matched_code_percent": 99.47408191023122,
+    "matched_code": "132340",
+    "matched_code_percent": 100.0,
     "total_functions": 98,
-    "matched_functions": 97,
-    "matched_functions_percent": 98.9795918367347,
-    "complete_code": "0",
-    "complete_code_percent": 0.0,
+    "matched_functions": 98,
+    "matched_functions_percent": 100.0,
+    "complete_code": "132340",
+    "complete_code_percent": 100.0,
     "total_units": 1,
-    "complete_units": 0
+    "complete_units": 1
    },
    "functions": [
     {
@@ -50848,7 +50848,7 @@
     {
      "name": "func_L16_002CFDB8",
      "size": "696",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "811040",
      "metadata": {
       "virtual_address": "2948536"
@@ -51522,7 +51522,7 @@
     }
    ],
    "metadata": {
-    "complete": false,
+    "complete": true,
     "source_path": "src/overlays/l16_kalebo3",
     "progress_categories": [
      "level_code",
@@ -53263,15 +53263,15 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 56.35604921055904,
+    "fuzzy_match_percent": 56.37748366854442,
     "total_code": "3247108",
-    "matched_code": "1751932",
-    "matched_code_percent": 53.95361041271187,
+    "matched_code": "1752628",
+    "matched_code_percent": 53.975044870697246,
     "total_functions": 3429,
-    "matched_functions": 1935,
-    "matched_functions_percent": 56.43044619422572,
-    "complete_code": "229332",
-    "complete_code_percent": 7.062653906183595
+    "matched_functions": 1936,
+    "matched_functions_percent": 56.459609215514725,
+    "complete_code": "361672",
+    "complete_code_percent": 11.138280586909952
    }
   },
   {
@@ -53323,15 +53323,15 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 63.38421969430438,
+    "fuzzy_match_percent": 63.41822931081663,
     "total_code": "2046480",
-    "matched_code": "1257840",
-    "matched_code_percent": 61.46358625542395,
+    "matched_code": "1258536",
+    "matched_code_percent": 61.497595871936205,
     "total_functions": 1449,
-    "matched_functions": 795,
-    "matched_functions_percent": 54.86542443064182,
-    "complete_code": "140672",
-    "complete_code_percent": 6.873851686798796
+    "matched_functions": 796,
+    "matched_functions_percent": 54.93443754313319,
+    "complete_code": "273012",
+    "complete_code_percent": 13.340565263281341
    }
   },
   {
@@ -53578,15 +53578,15 @@
    "id": "level_16",
    "name": "Level 16: Kalebo III",
    "measures": {
-    "fuzzy_match_percent": 99.47408191023122,
+    "fuzzy_match_percent": 100.0,
     "total_code": "132340",
-    "matched_code": "131644",
-    "matched_code_percent": 99.47408191023122,
+    "matched_code": "132340",
+    "matched_code_percent": 100.0,
     "total_functions": 98,
-    "matched_functions": 97,
-    "matched_functions_percent": 98.9795918367347,
-    "complete_code": "0",
-    "complete_code_percent": 0.0
+    "matched_functions": 98,
+    "matched_functions_percent": 100.0,
+    "complete_code": "132340",
+    "complete_code_percent": 100.0
    }
   },
   {

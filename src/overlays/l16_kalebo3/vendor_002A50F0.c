@@ -1004,7 +1004,137 @@ void func_L16_002CF180(unsigned char *m) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002CFDB8);
+extern void func_L16_002D0238(char *);
+extern char *func_L00_0025B478(void *, int, int);
+extern int func_L00_0025B4D0(void *, void *, void *, int, int *, float *, int, int);
+extern void func_0020DAF8(char *, int, char *);
+extern void func_001FA480(void *, void *);
+/* The hero block as this function reads it (D_0013E633 + 0xE1D). */
+typedef struct {
+    char pad00[0x80];
+    float position[4];          /* 0x80 */
+} L16HitPlayer;
+struct L16HitMoby;
+/* The test dummy's data (moby + 0x78) as this function uses it; the same record as L16DummyData. */
+typedef struct {
+    char pad00[0x20];
+    float health;               /* 0x20 */
+    char pad24[10];
+    unsigned char substate;     /* 0x2E: 2 asks for a respawn */
+    char pad2F[0x31];
+    short reaction[3];          /* 0x60: record func_L00_0025E4B0 and func_L00_0025E590 take */
+    char pad66;
+    unsigned char reaction_time; /* 0x67 */
+    char pad68[0x60];
+    int lives;                  /* 0xC8 */
+    char padCC[0x14];
+    float spawn[4];             /* 0xE0 */
+    int timer;                  /* 0xF0 */
+    char padF4[0x10];
+    struct L16HitMoby *child;   /* 0x104 */
+    char pad108[4];
+    float heading;              /* 0x10C */
+    int next_state;             /* 0x110: stored here as a word */
+    int next_anim;              /* 0x114 */
+    int frame;                  /* 0x118: frame counter of the last func_L16_002D0238 */
+} L16HitData;
+typedef struct L16HitMoby {
+    char pad00[0x10];
+    float position[4];          /* 0x10 */
+    unsigned char state;        /* 0x20 */
+    char pad21[0x13];
+    unsigned short flags;       /* 0x34 */
+    char pad36[0x1D];
+    unsigned char animation;    /* 0x53 */
+    char pad54[0x24];
+    L16HitData *data;           /* 0x78 */
+    char pad7C[0x28];
+    unsigned char opacity;      /* 0xA4 */
+    char padA5[0x1B];
+    float matrix[3][4];         /* 0xC0 */
+} L16HitMoby;
+
+/* The test dummy's respawn and hit handling: respawns or deletes it, takes damage, and carries its child on a joint. */
+void func_L16_002CFDB8(void *moby) {
+    L16HitMoby *m = moby;
+    float matrix[16];
+    int status;
+    float amount;
+    L16HitData *d;
+    char *record;
+
+    if (m->state == 1) {
+        return;
+    }
+    d = m->data;
+    if (d->substate == 2) {
+        d->substate = 1;
+        d->health = 2.0f;
+        d->timer = func_001F9850(60);
+        func_L00_002584A8(m, 0, -1);
+        m->flags &= 0xEFFF;
+        d->lives--;
+        if (d->lives != -1) {
+            m->state = 11;
+            qcopy(m->position, d->spawn);
+            d->timer = func_001F9850(60);
+        } else {
+            if (d->child) {
+                func_0020D678(d->child);
+            }
+            func_0020D678(m);
+        }
+        return;
+    }
+    if (d->frame != D_L16_0015F6B0) {
+        func_L16_002D0238((char *)m);
+    }
+    amount = 0.0f;
+    record = func_L00_0025B478(m, 0x330000, 0);
+    func_L00_0025B4D0(m, record, &d->health, 0, &status, &amount, 0, 4);
+    if (status != 1 && m->state != 10 && m->state != 11) {
+        d->health -= amount;
+        if (d->health <= 0.0f) {
+            m->state = 10;
+        } else {
+            if (m->state != 9) {
+                d->next_state = m->state;
+                d->next_anim = m->animation;
+            }
+            {
+                float x = m->position[0], y = m->position[1];
+                L16HitPlayer *player = (L16HitPlayer *)(D_0013E633 + 0xE1D);
+                d->heading = func_L00_001FF860(player->position[0] - x, player->position[1] - y);
+            }
+            m->state = 9;
+            /* No pointer local for the reaction record anywhere: d->reaction is written at each call and the
+               compiler caches it itself (formed before the hit query, and formed again here with a copy after
+               the call). It only forms it again here when this place cannot be reached along one straight path
+               from the hit query, that is when the animation test has two arms while its common-subexpression
+               pass runs: the else arm below is what supplies the second one. The assignment is dead and leaves
+               no instruction; without it the function is two instructions short (see NOTES.md). */
+            if (m->animation != 8) {
+                func_00213DE0(m, 8, 2, 1);
+            } else {
+                record = 0;
+            }
+            d->reaction_time = 120;
+            func_L00_0025E4B0(m, d->reaction);
+        }
+    }
+    m->opacity = 255;
+    func_L00_0025E590(m, d->reaction);
+    if (d->child) {
+        func_L00_00250800(m, D_L16_00161A88, d->child->position);
+        func_0020DAF8((char *)m, D_L16_00161A88, (char *)matrix);
+        func_001FA480(d->child->matrix[0], matrix);
+        func_L00_001FF4B0(d->child->matrix[0], d->child->matrix[0], 1.0f);
+        func_L00_001FF4B0(d->child->matrix[1], d->child->matrix[1], 1.0f);
+        func_L00_001FF4B0(d->child->matrix[2], d->child->matrix[2], 1.0f);
+        func_L00_00251E30(d->child);
+    }
+    func_L00_0025E590(m, d->reaction);
+}
 extern int *D_L16_001ABFC0[];
 extern char *D_L16_00160098 MACRO_ADDR;
 
