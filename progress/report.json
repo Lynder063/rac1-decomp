@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 56.894182376249965,
+  "fuzzy_match_percent": 56.9776504360042,
   "total_code": "3712808",
-  "matched_code": "2029200",
-  "matched_code_percent": 54.65405159652748,
+  "matched_code": "2033916",
+  "matched_code_percent": 54.78107136162171,
   "total_functions": 5109,
-  "matched_functions": 3271,
-  "matched_functions_percent": 64.0242708944999,
+  "matched_functions": 3274,
+  "matched_functions_percent": 64.08299080054805,
   "complete_code": "322676",
   "complete_code_percent": 8.690888405756505,
   "total_units": 278,
@@ -50625,13 +50625,13 @@
   {
    "name": "Level 16: Kalebo III",
    "measures": {
-    "fuzzy_match_percent": 96.20143206891342,
+    "fuzzy_match_percent": 98.54313435091431,
     "total_code": "132340",
-    "matched_code": "122476",
-    "matched_code_percent": 92.54647121051836,
+    "matched_code": "127192",
+    "matched_code_percent": 96.11001964636542,
     "total_functions": 98,
-    "matched_functions": 87,
-    "matched_functions_percent": 88.77551020408163,
+    "matched_functions": 90,
+    "matched_functions_percent": 91.83673469387755,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -50677,7 +50677,7 @@
     {
      "name": "func_L16_002116B0",
      "size": "1672",
-     "fuzzy_match_percent": 96.71,
+     "fuzzy_match_percent": 100.0,
      "address": "31000",
      "metadata": {
       "virtual_address": "2168496"
@@ -51172,7 +51172,7 @@
     {
      "name": "func_L16_002E4C08",
      "size": "1664",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "896624",
      "metadata": {
       "virtual_address": "3034120"
@@ -51397,7 +51397,7 @@
     {
      "name": "func_L16_002E93F8",
      "size": "1380",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "915040",
      "metadata": {
       "virtual_address": "3052536"
@@ -53263,13 +53263,13 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 56.14814027744071,
+    "fuzzy_match_percent": 56.24357932042912,
     "total_code": "3247108",
-    "matched_code": "1740208",
-    "matched_code_percent": 53.5925506635443,
+    "matched_code": "1744924",
+    "matched_code_percent": 53.737787594376286,
     "total_functions": 3429,
-    "matched_functions": 1915,
-    "matched_functions_percent": 55.84718576844561,
+    "matched_functions": 1918,
+    "matched_functions_percent": 55.93467483231263,
     "complete_code": "229332",
     "complete_code_percent": 7.062653906183595
    }
@@ -53323,13 +53323,13 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 63.081894492005794,
+    "fuzzy_match_percent": 63.23332567139674,
     "total_code": "2046480",
-    "matched_code": "1246816",
-    "matched_code_percent": 60.924905203080414,
+    "matched_code": "1251532",
+    "matched_code_percent": 61.15534967358587,
     "total_functions": 1449,
-    "matched_functions": 778,
-    "matched_functions_percent": 53.69220151828848,
+    "matched_functions": 781,
+    "matched_functions_percent": 53.89924085576259,
     "complete_code": "140672",
     "complete_code_percent": 6.873851686798796
    }
@@ -53578,13 +53578,13 @@
    "id": "level_16",
    "name": "Level 16: Kalebo III",
    "measures": {
-    "fuzzy_match_percent": 96.20143206891342,
+    "fuzzy_match_percent": 98.54313435091431,
     "total_code": "132340",
-    "matched_code": "122476",
-    "matched_code_percent": 92.54647121051836,
+    "matched_code": "127192",
+    "matched_code_percent": 96.11001964636542,
     "total_functions": 98,
-    "matched_functions": 87,
-    "matched_functions_percent": 88.77551020408163,
+    "matched_functions": 90,
+    "matched_functions_percent": 91.83673469387755,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
