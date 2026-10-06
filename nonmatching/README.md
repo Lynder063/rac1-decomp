@@ -26,7 +26,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L07_00310110`](l07_umbris/func_L07_00310110.c) | l07_umbris | 436 | BYTES 5/436 | 98.8% |
 | [`func_L00_00239510`](shared/func_L00_00239510.c) | shared | 1028 | BYTES 12/1028 | 98.8% |
 | [`func_L16_002E9960`](l16_kalebo3/func_L16_002E9960.c) | l16_kalebo3 | 1000 | BYTES 12/1000 | 98.8% |
-| [`func_L07_0031FF78`](l07_umbris/func_L07_0031FF78.c) | l07_umbris | 564 | BYTES 7/564 | 98.8% |
 | [`func_L14_002235D0`](l14_oltanis/func_L14_002235D0.c) | l14_oltanis | 608 | BYTES 8/608 | 98.7% |
 | [`func_L02_002E16B8`](l02_aridia/func_L02_002E16B8.c) | l02_aridia | 452 | BYTES 6/452 | 98.7% |
 | [`func_L15_002A8850`](shared/func_L15_002A8850.c) | shared | 596 | BYTES 8/596 | 98.7% |
