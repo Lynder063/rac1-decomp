@@ -22,6 +22,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L15_002EC8B0`](l15_quartu/func_L15_002EC8B0.c) | l15_quartu | 500 | BYTES 5/500 | 99.0% |
 | [`func_L13_002EE8E0`](l13_gemlik/func_L13_002EE8E0.c) | l13_gemlik | 588 | BYTES 6/588 | 99.0% |
 | [`func_L05_00317CD8`](l05_rilgar/func_L05_00317CD8.c) | l05_rilgar | 384 | BYTES 4/384 | 99.0% |
+| [`func_L14_00306BE0`](l14_oltanis/func_L14_00306BE0.c) | l14_oltanis | 736 | BYTES 8/736 | 98.9% |
 | [`func_L16_002E8B30`](l16_kalebo3/func_L16_002E8B30.c) | l16_kalebo3 | 884 | BYTES 10/884 | 98.9% |
 | [`func_L00_002B9730`](shared/func_L00_002B9730.c) | shared | 864 | BYTES 10/864 | 98.8% |
 | [`func_L16_002E6D40`](shared/func_L16_002E6D40.c) | shared | 1012 | BYTES 12/1012 | 98.8% |
