@@ -2,7 +2,87 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L12_0022E428);
+extern unsigned char D_0013E633[];
+extern void func_001F99D8(void *, int);
+extern float func_001F9B88(float);
+extern void func_L00_0020BFA8(void);
+extern void func_L12_002407C0(int, int);
+
+/* Applies the help message queued in the hero state: clears the request and sets the flags it implies. */
+void func_L12_0022E428(void) {
+    unsigned char *g = D_0013E633 + 0xE1D;
+    unsigned char keep = g[0x12ED];
+    short st = *(short *)(g + 0x12E0);
+    float f;
+    func_001F99D8(g + 0x12E0, 0x10);
+    g[0x12ED] = keep;
+    *(short *)(g + 0x12E0) = -1;
+    g[0x20A9] = 0;
+    *(short *)(g + 0x308) = 0;
+    if (st == -1) return;
+    if (st == 2) {
+        if (*(short *)(g + 0x30C) == 0 || *(float *)(g + 0x2DC) < 0.3f) {
+            g[0x12E7] = 1;
+            if (g[0x20A4] == 0) {
+                char *p = *(char **)(g + 0x10E0);
+                if (p != 0 && *(short *)(p + 0xA6) == 0xAD) {
+                    *(short *)(g + 0x308) = 1;
+                }
+            }
+        }
+    }
+    if (st == 14) {
+        unsigned char *h = D_0013E633 + 0xE1D;
+        h[0x12E4] = 1;
+        *(float *)(h + 0x22A4) = 0.2f;
+        *(float *)(h + 0x2F0) = *(float *)(h + 0x2D8) + 0.2f;
+    }
+    if (st == 0) {
+        unsigned char *h = D_0013E633 + 0xE1D;
+        f = *(float *)(h + 0x2F0) - *(float *)(h + 0x2D8);
+        *(float *)(h + 0x22A4) = f;
+        if (f < 0.85f && 0.25f < f) h[0x20A9] = 1;
+        {
+            unsigned char *h3 = D_0013E633 + 0xE1D;
+            h3[0x12E4] = 1;
+        }
+    }
+    if (st == 2) {
+        unsigned char *h = D_0013E633 + 0xE1D;
+        h[0x12E7] = 1;
+    }
+    if (st == 7) {
+        unsigned char *h = D_0013E633 + 0xE1D;
+        h[0x12E2] = 1;
+    }
+    if (st == 13) {
+        unsigned char *h = D_0013E633 + 0xE1D;
+        h[0x12EC] = 1;
+    }
+    if (st == 8) {
+        unsigned char *h = D_0013E633 + 0xE1D;
+        h[0x12EA] = 1;
+    }
+    if (st == 9) {
+        unsigned char *h = D_0013E633 + 0xE1D;
+        h[0x12EE] = 1;
+    }
+    if (st == 12) {
+        unsigned char *h = D_0013E633 + 0xE1D;
+        h[0x12EA] = 1;
+    }
+    {
+        unsigned char *h = D_0013E633 + 0xE1D;
+        if (h[0x12EC] == 0) return;
+        if (*(int *)(h + 0x2084) == 0x7F) return;
+        if (func_001F9B88(*(float *)(h + 0x2F0) - (*(float *)(h + 0x88) + 0.25f)) < 1.0f
+            && 0.0f < *(float *)(h + 0x2F0) - *(float *)(h + 0x88)
+            && *(float *)(h + 0x108) < 0.0f) {
+            func_L00_0020BFA8();
+            func_L12_002407C0(0x7F, 1);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L12_00233130);
 typedef int Q __attribute__((mode(TI)));
 typedef union { Q q; f32 f[4]; } V;
