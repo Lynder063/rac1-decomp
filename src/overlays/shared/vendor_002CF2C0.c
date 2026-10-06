@@ -501,7 +501,37 @@ void func_L05_0032A9D0(float a,float b,float c,float d,float e,float f,float g,f
  if(h<0.0f) p[5]=0.2f; else p[5]=h;
 }
 INCLUDE_ASM("asm/overlays", func_L05_0032AA48);
-INCLUDE_ASM("asm/overlays", func_L05_0032AA50);
+extern void func_L05_0032A868(char *);
+extern void func_L00_001FF4B0(void *,void *,float);
+extern void func_001F9BF0(void *,void *,void *);
+extern void func_001F9BD8(void *,void *,void *);
+extern void func_001F9CA0(void *,void *,void *);
+/* Builds an oriented frame from target direction and a camera-relative vector. */
+void func_L05_0032AA50(char *m) {
+ float a[4],b[4],c[4],d[4],e[4];
+ char *data=*(char **)(m+0x70);
+ char *forward=m+0x30, *right=m+0x10, *up;
+ char *pad;
+ char *origin=data+0x80, *settings=data+0xE0;
+ func_L05_0032A868(m);
+ pad=D_0013F450;
+ func_L00_001FF4B0(d,*(char **)(pad+0x2080)+0xC0,1.0f);
+ up=m+0x20;
+ func_L00_001FF4B0(d,d,*(float *)settings);
+ func_001F9BF0(forward,origin,d);
+ func_L00_001FF4B0(e,pad+0x290,-1.0f);
+ func_L00_001FF4B0(d,e,*(float *)(settings+0x10));
+ func_001F9BD8(forward,forward,d);
+ func_L00_001FF4B0(a,e,*(float *)(origin+0x4C));
+ func_001F9BD8(c,a,origin);
+ func_001F9BF0(b,c,forward);
+ func_L00_001FF4B0(m,b,1.0f);
+ func_001F9CA0(right,m,e);
+ func_001F9CA0(up,right,m);
+ func_L00_001FF4B0(right,right,1.0f);
+ func_L00_001FF4B0(up,up,1.0f);
+ qcopy(m+0x40,m);
+}
 INCLUDE_ASM("asm/overlays", func_L05_0032ABF0);
 INCLUDE_ASM("asm/overlays", func_L05_0032ADE8);
 INCLUDE_ASM("asm/overlays", func_L05_0032B1F8);

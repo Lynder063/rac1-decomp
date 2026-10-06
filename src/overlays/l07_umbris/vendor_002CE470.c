@@ -544,7 +544,51 @@ char *func_L07_0030F750(char *pos, char *vec, int arg) {
 INCLUDE_ASM("asm/overlays", func_L07_0030F838);
 INCLUDE_ASM("asm/overlays", func_L07_0030FB00);
 INCLUDE_ASM("asm/overlays", func_L07_0030FC38);
-INCLUDE_ASM("asm/overlays", func_L07_0030FD78);
+extern void *func_L00_0025B478(void *,int,int);
+extern int func_L00_0025B4D0(void *,void *,void *,int,int *,float *,int,int);
+extern void func_L07_0030FC38(void *,void *,void *);
+extern void func_L07_0030FB00(void *,void *,void *);
+extern void func_00213DE0(void *,int,int,int);
+extern void func_L00_002584A8(void *,int,int);
+extern void func_L00_0025E4B0(void *,short *);
+/* Handles damage reactions and death animation transitions. */
+void func_L07_0030FD78(unsigned char *m, unsigned char *data, float *health) {
+ int count;
+ unsigned char *hit;
+ int kind;
+ if(m[0x20]==14) return;
+ hit=func_L00_0025B478(m,0x330000,0);
+ kind=func_L00_0025B4D0(m,hit,health,0,&count,0,0,4);
+ if(m[0xBC]) {
+  switch(kind) {
+   case 0: break;
+   case 1: case 2: *health=0; break;
+   case 3: case 4: case 5: case 6: case 7: case 8:
+    func_L07_0030FC38(m,data+0x70,hit+0x10); m[0x20]=12; break;
+   case 9: case 10:
+    if(m[0x53]!=4) func_00213DE0(m,4,4,4);
+    m[0x20]=13; break;
+   case 11: break;
+  }
+  if(count>=2) {
+   if(*health<=*(float *)(hit+0x2C)) {
+    *health=0;
+    *(unsigned short *)(m+0x34)&=0xEFFF;
+    func_L07_0030FB00(m,data+0x70,hit+0x10);
+    func_L00_002584A8(m,0,-1);
+    data[0x67]=0x78;
+    func_L00_0025E4B0(m,(short *)(data+0x60));
+    m[0x20]=14;
+   } else {
+    *health-=*(float *)(hit+0x2C);
+    data[0x67]=0xFA;
+    *(short *)(data+0x26)=func_001F9850(0x3C);
+    func_L00_0025E4B0(m,(short *)(data+0x60));
+   }
+  }
+ }
+ m[0xA4]=0xFF;
+}
 extern float func_001F9D10(void *, void *);
 
 void func_L07_0030FF18(char *data) {
@@ -659,7 +703,31 @@ int func_L07_003108B0(void *moby, int id, float scale) {
     }
     return 0;
 }
-INCLUDE_ASM("asm/overlays", func_L07_00310920);
+extern int func_L00_0025A208(int *, int, int, int);
+extern int func_L00_0025A2F0(int *, int, int, int);
+
+/* Finds another moby whose state lies within the inclusive range. */
+int func_L07_00310920(unsigned char *moby, int lower, int upper) {
+    unsigned char *other = 0;
+    if (!func_L00_0025A208((int *)&other, moby[0x21], 0, 0)) {
+        if (other) {
+            do {
+                if (other != moby) {
+                    int state = other[0x20];
+                    if (state >= lower) {
+                        if (state <= upper) {
+                            goto found;
+                        }
+                    }
+                }
+                if (func_L00_0025A2F0((int *)&other, (int)other, 0, 0)) break;
+            } while (other);
+        }
+    }
+    return 0;
+found:
+    return 1;
+}
 INCLUDE_ASM("asm/overlays", func_L07_003109D0);
 INCLUDE_ASM("asm/overlays", func_L07_003126A8);
 INCLUDE_ASM("asm/overlays", func_L07_00312FA8);

@@ -2,4 +2,39 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L08_0026B0E8);
+extern void func_001FA190(void *);
+extern float func_L00_001FF860(float, float);
+extern void func_001FA218(float *, float *);
+extern void func_001F9EE8(void *, void *, void *);
+extern void func_L00_001FFA40(void *, void *);
+extern void func_001FA540(void *, void *, void *);
+extern void func_001FA4A0(void *, void *);
+extern void func_001FA480(void *, void *);
+typedef int V128 __attribute__((mode(TI)));
+// Builds a rotated matrix from a direction vector and roll angle.
+void func_L08_0026B0E8(void *out, float *in, float roll) {
+ float matrix[16], z[16], y[16], r[16], angles[4], vector[4];
+ float *v = vector;
+ qcopy(v,in);
+ func_001FA190(matrix);
+ angles[2] = -func_L00_001FF860(vector[0],vector[1]);
+ angles[0] = 0; angles[1] = 0;
+ func_001FA218(z,angles);
+ func_001F9EE8(v,v,z);
+ angles[1] = -func_L00_001FF860(vector[2],vector[0]);
+ angles[0] = 0; angles[2] = 0;
+ func_L00_001FFA40(y,angles);
+ func_001F9EE8(v,v,y);
+ angles[2] = roll; angles[0] = 0; angles[1] = 0;
+ func_L00_001FFA40(r,angles);
+ func_001FA540(matrix,z,matrix);
+ func_001FA540(matrix,y,matrix);
+ func_001FA540(matrix,r,matrix);
+ func_001FA4A0(y,y);
+ func_001FA540(matrix,y,matrix);
+ func_001FA4A0(z,z);
+ func_001FA540(matrix,z,matrix);
+ qcopy(v,in);
+ func_001F9EE8(v,v,matrix);
+ func_001FA480(out,matrix);
+}

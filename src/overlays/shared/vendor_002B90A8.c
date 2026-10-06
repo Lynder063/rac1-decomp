@@ -386,7 +386,26 @@ void func_L01_002C84D8(void) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L01_002C8740);
-INCLUDE_ASM("asm/overlays", func_L01_002E1F50);
+extern unsigned char D_0013D49C NOT_SDA;
+extern unsigned char D_0013D49D NOT_SDA;
+
+/* Sets completion flags for two special moby identifiers. */
+void func_L01_002E1F50(char *moby)
+{
+    int level = D_0015EE84_m;
+    if (level != 1) return;
+    if (*(short *)(moby + 0xB2) == 0x34 &&
+            *(short *)(moby + 0xA6) == 0x118 &&
+            (unsigned char)moby[0x20] == 5) {
+            *(unsigned char *)&D_0013D49C = level;
+    }
+    level = D_0015EE84_m;
+    if (level == 1 && *(short *)(moby + 0xB2) == 0x35 &&
+            *(short *)(moby + 0xA6) == 0x118 &&
+            (unsigned char)moby[0x20] == 5) {
+            *(unsigned char *)&D_0013D49D = level;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_002E1FE0);
 INCLUDE_ASM("asm/overlays", func_L01_002E2E38);
 extern char D_0013E633[];

@@ -1075,7 +1075,76 @@ again:
         func_001F49B0(func_L16_002D0328, moby);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002D0328);
+extern void func_001F9CA0(void *, void *, void *);
+extern float D_L16_001D3400[][4];
+extern int D_L16_00161AA0 SDATA(D_L16_00161AA0);
+extern int D_L16_00161AA4 SDATA(D_L16_00161AA4);
+/* A test dummy as its beam's draw callback reads it. */
+typedef struct {
+    char pad00[0x10];
+    float position[4];
+    unsigned char state, group;
+    char pad22[0x56];
+    L16DummyData *data;
+    char pad7C[0x2A];
+    short type;
+} L16BeamMoby;
+
+/* Draw callback queued by func_L16_002D0238: one textured quad per live test dummy (class 0x21D) of the
+   group, its colour pulsing with the dummy's phase, its frame built from the direction to the target. */
+void func_L16_002D0328(L16BeamMoby *moby) {
+    L16RibbonPacket packet;
+    float a[4];
+    float b[4];
+    float c[4];
+    float pos[4];
+    short *p;
+    L16BeamMoby *other;
+    L16DummyData *data;
+    int k, id, color;
+    float wave;
+    float blend;
+
+    packet.texture = func_001F4868(11);
+    packet.mode = 0x8000000048L;
+    packet.flags = 0xFF9000000260L;
+    packet.zero = 5;
+    packet.uv[0].u = 0.0f;
+    packet.uv[0].v = 0.0f;
+    packet.uv[1].u = 0.0f;
+    packet.uv[1].v = 1.0f;
+    packet.uv[2].u = 1.0f;
+    packet.uv[2].v = 0.0f;
+    packet.uv[3].u = 1.0f;
+    packet.uv[3].v = 1.0f;
+    for (k = 0; k < 4; k++) {
+        func_001F9C30(packet.point[k], D_L16_001D3400[k], 0.2f);
+    }
+    p = (short *)D_L16_001ABFC0[moby->group];
+    do {
+        id = *p & 0x7FFF;
+        other = (L16BeamMoby *)(D_L16_00160098 + (id << 8));
+        data = other->data;
+        wave = func_001F9FA8(data->f11C);
+        blend = (wave + 1.0f) * 0.5f;
+        color = func_001FA8A8_caa18(D_L16_00161AA0, D_L16_00161AA4, blend);
+        packet.color[3] = color;
+        packet.color[2] = color;
+        packet.color[1] = color;
+        packet.color[0] = color;
+        if (other && other->type == 0x21D && other->state != 0xFE && other->state != 0xFD) {
+            qcopy(pos, other->position);
+            pos[2] += 0.2f;
+            pos[3] = 1.0f;
+            func_001F9BF0(a, D_L16_00167240, pos);
+            func_L00_001FF4B0(a, a, 1.0f);
+            func_001F9CA0(b, a, D_0013E633 + 0x10AD);
+            func_L00_001FF4B0(b, b, -1.0f);
+            func_001F9CA0(c, b, a);
+            func_L00_001FD1D8(&packet, a, 0);
+        }
+    } while (*p++ >= 0);
+}
 extern float func_00214158(void);
 extern float func_001FA748(float,float);
 extern float func_001F9FA8(float);
