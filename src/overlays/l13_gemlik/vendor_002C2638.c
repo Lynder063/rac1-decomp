@@ -390,7 +390,53 @@ void func_L13_002EA450(char *m, char *p, float a, float b) {
     *(float *)(m + 0x40) *= 0.985f;
     func_L00_0025F368(*(float *)(m + 0x40));
 }
-INCLUDE_ASM("asm/overlays", func_L13_002EA598);
+extern float func_001F9CE8(void *);
+/* Steers moby m along path idx toward its next point, facing along the motion (or the hero in state 5); turns it when turn. Returns 1 on a wrap. */
+int func_L13_002EA598(char *m, char *d, int idx, int turn) {
+    char *path = D_L13_001B0AB0[*(int *)(d + (idx << 2) + 0xB0)];
+    float yaw, pitch;
+    float a, seg, diff, t;
+    int wrapped = 0;
+    float v[4];
+    a = func_001F9D10(path + (*(short *)(d + 0x9E) * 16 + 0x10), m + 0x10);
+    seg = func_001F9D10(path + (*(short *)(d + 0x9E) * 16 + 0x10), path + (*(short *)(d + 0x9C) * 16 + 0x10));
+    diff = seg - a;
+    if (0.0f <= diff && diff < *(float *)(d + 0xAC)) {
+        *(short *)(d + 0x9E) = *(unsigned short *)(d + 0x9C);
+        *(short *)(d + 0x9C) = *(unsigned short *)(d + 0x9C) + ((signed char *)d)[0x10C];
+        if (*(short *)(d + 0x9C) >= *(int *)path) {
+            *(short *)(d + 0x9C) = 0;
+            wrapped = 1;
+        }
+        if (*(short *)(d + 0x9C) < 0) {
+            wrapped = 1;
+            *(short *)(d + 0x9C) = *(unsigned short *)path - 1;
+        }
+        t = 0.0f;
+    } else {
+        t = a / seg;
+    }
+    if (t < 0.05f) t = 0.05f;
+    if (1.0f < t) t = 1.0f;
+    func_001F9C30(d + 0x70, d + 0x70, 1.0f - t);
+    func_001F9BF0(v, path + (*(short *)(d + 0x9C) * 16 + 0x10), m + 0x10);
+    func_L00_001FF4B0(v, v, *(float *)(d + 0xAC));
+    func_001F9C30(v, v, t);
+    func_001F9BD8(d + 0x70, d + 0x70, v);
+    func_L00_001FF4B0(d + 0x70, d + 0x70, *(float *)(d + 0xAC));
+    func_001F9BD8(m + 0x10, m + 0x10, d + 0x70);
+    yaw = func_L00_001FF860(v[0], v[1]);
+    pitch = -func_L00_001FF860(func_001F9CE8(v), v[2]);
+    if (((unsigned char *)m)[0x20] == 5) {
+        char *g = D_0013E633 + 0xE1D;
+        yaw = func_L00_001FF860(*(float *)(g + 0x80) - *(float *)(m + 0x10), *(float *)(g + 0x84) - *(float *)(m + 0x14));
+        pitch = -func_L00_001FF860(func_001F9D48(m + 0x10, g + 0x80), *(float *)(g + 0x88) - *(float *)(m + 0x18));
+    }
+    if (turn != 0) {
+        func_L13_002EA450(m, d, yaw, pitch);
+    }
+    return wrapped;
+}
 INCLUDE_ASM("asm/overlays", func_L13_002EA840);
 extern void func_L00_00260108(void *, void *, int, float, float);
 extern void func_001F9C30(void *, void *, float);
