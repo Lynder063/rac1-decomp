@@ -750,7 +750,64 @@ void func_L14_002D84A8(char *moby)
     func_L00_0025E860(*(int *)((idx << 5) + D_L14_0015F7EC + 0x10), moby + 0x10, data + 0x64, data + 0x68, 0, *(float *)&D_L14_00161B00 * D_0015EE6C);
 }
 INCLUDE_ASM("asm/overlays", func_L14_002D8500);
-INCLUDE_ASM("asm/overlays", func_L14_002D87A0);
+extern char D_L14_00180AC0[];
+extern short D_L14_00161B30;
+extern float D_L14_0015F660[] MACRO_ADDR;
+extern void func_L00_00250800(void *, int, void *);
+extern int func_L00_0023F0D0(float *, float, float, float, float, float);
+extern void func_002141A8(void *, float, float);
+extern char *func_L00_002757E8(void *, void *, int, void *);
+extern void func_L14_002D8500(void);
+
+/* Puffs smoke from the moby's exhaust joint: keeps its light in place while active, then spawns four puffs. */
+void func_L14_002D87A0(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float p[4];
+    float v[4];
+    float w[4];
+    char *q;
+    int i;
+    func_L00_00250800(m, 1, p);
+    func_001F9BF0(v, p, D_L14_001675C0);
+    func_L00_001FF4B0(v, v, -0.5f);
+    func_001F9BD8(d + 0xE0, p, v);
+    if ((unsigned int)(((unsigned char *)m)[0x20] - 3) < 3) {
+        p[2] += 1.0f;
+        if (*(int *)(d + 0xF0) == -1) {
+            *(int *)(d + 0xF0) = func_L00_0023F0D0(p, *(float *)&D_L14_00161B30, 0.0f, 0.5f, 0.5f, 1.0f);
+        }
+        if (*(int *)(d + 0xF0) >= 0) {
+            char *e = D_L14_00180AC0 + *(int *)(d + 0xF0) * 32;
+            qcopy(e + 0x10, p);
+            *(float *)(e + 0x1C) = *(float *)&D_L14_00161B30;
+        }
+        p[2] -= 1.0f;
+    }
+    func_002141A8(w, 0.005f, 0.03f);
+    q = func_L00_002757E8(p, w, 0x7F, m);
+    if (q != 0) {
+        *(float *)(q + 0xC) = func_002140F8(6000.0f, 32000.0f);
+    }
+    for (i = 0; i < 3; i++) {
+        char *e;
+        int t;
+        q = func_L00_002757E8(p, D_L14_0015F660, 0x7F, m);
+        if (q == 0) continue;
+        e = q + 0x20;
+        if (i == 2 && func_002140B0(8) == 0) {
+            *(float *)(q + 0xC) = 180000.0f;
+        } else {
+            *(float *)(q + 0xC) = func_002140F8(80000.0f, 120000.0f);
+        }
+        t = func_001F9850(2);
+        *(short *)(q + 0xA) = t;
+        *(float *)(e + 0x10) = 1.0f / func_001FA888((short)t);
+        *(int *)(e + 0x18) = 0x7F7F7F;
+        *(short *)(e + 0x16) = 3;
+    }
+    func_L00_00250800(m, 6, d + 0x200);
+    func_001F49B0(func_L14_002D8500, m);
+}
 INCLUDE_ASM("asm/overlays", func_L14_002DF5F8);
 INCLUDE_ASM("asm/overlays", func_L14_002DF6B8);
 typedef int u128 __attribute__((mode(TI)));
