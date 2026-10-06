@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 58.90086287252125,
+  "fuzzy_match_percent": 58.901847097937704,
   "total_code": "3712808",
-  "matched_code": "2125160",
-  "matched_code_percent": 57.23861831799544,
+  "matched_code": "2125500",
+  "matched_code_percent": 57.24777580742123,
   "total_functions": 5109,
-  "matched_functions": 3416,
-  "matched_functions_percent": 66.86239968682717,
+  "matched_functions": 3419,
+  "matched_functions_percent": 66.92111959287531,
   "complete_code": "466236",
   "complete_code_percent": 12.557503646835494,
   "total_units": 278,
@@ -24021,13 +24021,13 @@
   {
    "name": "Shared level code/menu_00249720",
    "measures": {
-    "fuzzy_match_percent": 47.40502262443439,
+    "fuzzy_match_percent": 48.211990950226244,
     "total_code": "3536",
-    "matched_code": "1140",
-    "matched_code_percent": 32.23981900452489,
+    "matched_code": "1200",
+    "matched_code_percent": 33.93665158371041,
     "total_functions": 63,
-    "matched_functions": 24,
-    "matched_functions_percent": 38.095238095238095,
+    "matched_functions": 26,
+    "matched_functions_percent": 41.26984126984127,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -24361,7 +24361,7 @@
     {
      "name": "func_L00_0024B920",
      "size": "32",
-     "fuzzy_match_percent": 98.33,
+     "fuzzy_match_percent": 100.0,
      "address": "8704",
      "metadata": {
       "virtual_address": "2406688"
@@ -24370,7 +24370,7 @@
     {
      "name": "func_L00_0024B940",
      "size": "28",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "8736",
      "metadata": {
       "virtual_address": "2406720"
@@ -48915,13 +48915,13 @@
   {
    "name": "Level 14: Oltanis",
    "measures": {
-    "fuzzy_match_percent": 56.33937355665861,
+    "fuzzy_match_percent": 56.344687707376636,
     "total_code": "150692",
-    "matched_code": "81112",
-    "matched_code_percent": 53.82634778223131,
+    "matched_code": "81392",
+    "matched_code_percent": 54.01215724789637,
     "total_functions": 135,
-    "matched_functions": 69,
-    "matched_functions_percent": 51.111111111111114,
+    "matched_functions": 70,
+    "matched_functions_percent": 51.851851851851855,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -49291,7 +49291,7 @@
     {
      "name": "func_L14_002B6AA0",
      "size": "280",
-     "fuzzy_match_percent": 97.14,
+     "fuzzy_match_percent": 100.0,
      "address": "624376",
      "metadata": {
       "virtual_address": "2845344"
@@ -53263,13 +53263,13 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 58.44261874874502,
+    "fuzzy_match_percent": 58.44374413170118,
     "total_code": "3247108",
-    "matched_code": "1836168",
-    "matched_code_percent": 56.5477957616439,
+    "matched_code": "1836508",
+    "matched_code_percent": 56.5582666175563,
     "total_functions": 3429,
-    "matched_functions": 2060,
-    "matched_functions_percent": 60.075823855351416,
+    "matched_functions": 2063,
+    "matched_functions_percent": 60.163312919218434,
     "complete_code": "372892",
     "complete_code_percent": 11.483818832019137
    }
@@ -53308,13 +53308,13 @@
    "id": "common",
    "name": "Shared level code",
    "measures": {
-    "fuzzy_match_percent": 46.34345106061161,
+    "fuzzy_match_percent": 46.3458276835123,
     "total_code": "1200628",
-    "matched_code": "532452",
-    "matched_code_percent": 44.347791322541205,
+    "matched_code": "532512",
+    "matched_code_percent": 44.35278870724321,
     "total_functions": 1980,
-    "matched_functions": 1192,
-    "matched_functions_percent": 60.2020202020202,
+    "matched_functions": 1194,
+    "matched_functions_percent": 60.303030303030305,
     "complete_code": "91700",
     "complete_code_percent": 7.63766961956576
    }
@@ -53323,13 +53323,13 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 65.54095320745867,
+    "fuzzy_match_percent": 65.54134451350612,
     "total_code": "2046480",
-    "matched_code": "1303716",
-    "matched_code_percent": 63.705289081740354,
+    "matched_code": "1303996",
+    "matched_code_percent": 63.71897111137172,
     "total_functions": 1449,
-    "matched_functions": 868,
-    "matched_functions_percent": 59.90338164251208,
+    "matched_functions": 869,
+    "matched_functions_percent": 59.97239475500345,
     "complete_code": "281192",
     "complete_code_percent": 13.740275986083422
    }
@@ -53548,13 +53548,13 @@
    "id": "level_14",
    "name": "Level 14: Oltanis",
    "measures": {
-    "fuzzy_match_percent": 56.33937355665861,
+    "fuzzy_match_percent": 56.344687707376636,
     "total_code": "150692",
-    "matched_code": "81112",
-    "matched_code_percent": 53.82634778223131,
+    "matched_code": "81392",
+    "matched_code_percent": 54.01215724789637,
     "total_functions": 135,
-    "matched_functions": 69,
-    "matched_functions_percent": 51.111111111111114,
+    "matched_functions": 70,
+    "matched_functions_percent": 51.851851851851855,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
