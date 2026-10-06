@@ -1,6 +1,6 @@
 {
  "measures": {
-  "fuzzy_match_percent": 25.70166765423904,
+  "fuzzy_match_percent": 25.718770138396582,
   "total_code": "3712808",
   "matched_code": "852652",
   "matched_code_percent": 22.965151982003917,
@@ -47925,7 +47925,7 @@
   {
    "name": "Level 13: Gemlik Base",
    "measures": {
-    "fuzzy_match_percent": 17.2054674415937,
+    "fuzzy_match_percent": 17.812455550032503,
     "total_code": "104612",
     "matched_code": "14248",
     "matched_code_percent": 13.619852406989638,
@@ -48832,7 +48832,7 @@
     {
      "name": "func_L13_0030D028",
      "size": "636",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 99.84,
      "address": "798520",
      "metadata": {
       "virtual_address": "3199016"
@@ -53263,7 +53263,7 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 20.558742511798187,
+    "fuzzy_match_percent": 20.57829783302557,
     "total_code": "3247108",
     "matched_code": "566152",
     "matched_code_percent": 17.43557651916721,
@@ -53323,7 +53323,7 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 15.235817090809594,
+    "fuzzy_match_percent": 15.26684511942458,
     "total_code": "2046480",
     "matched_code": "241320",
     "matched_code_percent": 11.791954966576757,
@@ -53533,7 +53533,7 @@
    "id": "level_13",
    "name": "Level 13: Gemlik Base",
    "measures": {
-    "fuzzy_match_percent": 17.2054674415937,
+    "fuzzy_match_percent": 17.812455550032503,
     "total_code": "104612",
     "matched_code": "14248",
     "matched_code_percent": 13.619852406989638,
