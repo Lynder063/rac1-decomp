@@ -3,7 +3,72 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L04_002CB800);
-INCLUDE_ASM("asm/overlays", func_L04_002CF180);
+extern char *D_L04_00160058_b __asm__("D_L04_00160058") MACRO_ADDR;
+extern short D_L04_001619EC;
+extern float D_0015EE6C_b __asm__("D_0015EE6C") MACRO_ADDR;
+extern float D_0015EE64_b __asm__("D_0015EE64") MACRO_ADDR;
+extern void func_0020D678(void *);
+extern float func_002140F8(float, float);
+extern float func_00214158(void);
+extern float func_0020D830(void *);
+extern float func_001FA7D8(float);
+extern float func_001F9F90(float);
+extern float func_001FA748(float, float);
+extern void func_L00_00263950(char *, char *, int, float, float);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_002617B0(char *, void *, void *, void *);
+
+/* Floating platform: bobs on a slow wave above its start height (or above the moby it rides), and spins
+ * its three rings. */
+void func_L04_002CF180(char *m) {
+    float old[4];
+    float delta[4];
+    char *d = *(char **)(m + 0x78);
+    qcopy(old, m + 0x10);
+    if (d == 0) {
+        func_0020D678(m);
+        return;
+    }
+    switch (((unsigned char *)m)[0x20]) {
+    case 0: {
+        int i;
+        *(float *)(m + 0x58) = func_002140F8(0.5f, 0.8f);
+        m[0x20] = 1;
+        *(float *)(d + 0x220) = *(float *)(m + 0x18) + 15.0f;
+        ((unsigned char *)m)[0x30] = 0xFF;
+        *(short *)(d + 0x3E) = 0xD;
+        for (i = 0; i < 3; i++) {
+            ((float *)(d + 0x224))[i] = func_00214158();
+        }
+        break;
+    }
+    case 1: {
+        float off = 0.0f;
+        float bob = func_001F9F90(func_001FA7D8(func_0020D830(m) * 6.2831855f / 118.0f)) * 0.75f;
+        int i;
+        for (i = 0; i < 3; i++) {
+            float *p = (float *)(d + 0x224) + i;
+            float a = func_001FA748(*p, *(float *)&D_L04_001619EC * 0.017453292f * D_0015EE6C_b);
+            float g = D_0015EE64_b;
+            *p = a;
+            *(float *)(d + 0x108 + i * 0x80) = a;
+            func_L00_00263950(m, d + 0xA0 + i * 0x80, i, g * 0.03f, g * 0.3f);
+        }
+        if (*(int *)(d + 0x230) != -1) {
+            char *o = D_L04_00160058_b + (*(int *)(d + 0x230) << 8);
+            if (*(short *)(o + 0xA6) == 0x118) {
+                off = **(float **)(o + 0x78) * 15.0f;
+            }
+        } else {
+            off = 15.0f;
+        }
+        *(float *)(m + 0x18) = *(float *)(d + 0x220) + bob - off;
+        break;
+    }
+    }
+    func_001F9BF0(delta, m + 0x10, old);
+    func_L00_002617B0(d + 0x60, delta, m + 0x40, m + 0x40);
+}
 INCLUDE_ASM("asm/overlays", func_L04_002CF440);
 INCLUDE_ASM("asm/overlays", func_L04_002D27F8);
 extern void func_001F9BC0(void *);

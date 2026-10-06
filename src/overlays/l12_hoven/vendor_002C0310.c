@@ -144,7 +144,40 @@ INCLUDE_ASM("asm/overlays", func_L12_002E2EF0);
 INCLUDE_ASM("asm/overlays", func_L12_002E41C8);
 INCLUDE_ASM("asm/overlays", func_L12_002E43A8);
 INCLUDE_ASM("asm/overlays", func_L12_002E4838);
-INCLUDE_ASM("asm/overlays", func_L12_002E4C58);
+extern short D_L12_001619A0;
+extern void func_001F9BD8(void *, void *, void *);
+extern char *func_L00_0026DA50(void *pos, void *dir, int c, int d, int n, int k, float f);
+extern void *func_L00_0026DEA0_x(void *, float, float, float, int, void *, float, int) __asm__("func_L00_0026DEA0");
+
+/* Hoven engine exhaust: emits a flame and a smoke puff from each of the moby's two nozzles (the second one
+ * mirrored across its local Y axis), with random jitter. */
+void func_L12_002E4C58(char *m) {
+    float a[4];
+    float b[4];
+    float p1[4];
+    float p2[4];
+    float z[4];
+    if (((unsigned char *)m)[0x31] == 0) return;
+    func_001F9BC0(z);
+    a[0] = -func_002140F8(0.0f, D_0015EE6C * 5.0f);
+    a[1] = func_002140F8(-(D_0015EE6C * 2.0f), D_0015EE6C * 2.0f);
+    a[2] = func_002140F8(-(D_0015EE6C * 2.0f), D_0015EE6C * 2.0f);
+    func_001F9EC0(a, a, m + 0xC0);
+    func_001F9EC0(p1, &D_L12_001619A0, m + 0xC0);
+    func_001F9BD8(p1, p1, m + 0x10);
+    b[0] = -func_002140F8(0.0f, D_0015EE6C);
+    b[1] = func_002140F8(-D_0015EE6C, D_0015EE6C);
+    b[2] = func_002140F8(-D_0015EE6C, D_0015EE6C);
+    func_001F9EC0(b, b, m + 0xC0);
+    qcopy(p2, &D_L12_001619A0);
+    p2[1] = -p2[1];
+    func_001F9EC0(p2, p2, m + 0xC0);
+    func_001F9BD8(p2, p2, m + 0x10);
+    func_L00_0026DA50(p1, a, 0x4F007FFF, 0x1FFFFFFF, func_L00_00258BC8(func_001F9850(8), func_001F9850(0x11)), 1, 10000.0f);
+    func_L00_0026DEA0_x(p1, 0.05f, 1.01f, 1.03f, 6, b, 30000.0f, 0x404040);
+    func_L00_0026DA50(p2, a, 0x4F007FFF, 0x1FFFFFFF, func_L00_00258BC8(func_001F9850(8), func_001F9850(0x11)), 1, 10000.0f);
+    func_L00_0026DEA0_x(p2, 0.05f, 1.01f, 1.03f, 6, b, 30000.0f, 0x404040);
+}
 INCLUDE_ASM("asm/overlays", func_L12_002E4F18);
 extern char D_0013E633[];
 extern short D_L12_00161994;

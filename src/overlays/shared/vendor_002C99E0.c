@@ -148,7 +148,70 @@ char *func_L11_0030A318(int owner, float *dir, float *pos, float size, float len
     }
     return m;
 }
-INCLUDE_ASM("asm/overlays", func_L11_0030A468);
+extern short D_L11_00161E50, D_L11_00161E54, D_L11_00161E58, D_L11_00161E5C, D_L11_00161E60;
+extern char D_L11_00174900[];
+extern float D_0015EE6C_e __asm__("D_0015EE6C") MACRO_ADDR;
+extern float func_002140F8(float, float);
+extern int func_001FA8A8(int, int, float);
+extern void func_L00_00258DB0(float *, float, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern char *func_L00_0026EBC0(char *pos, char *vel, int c, int d, float f);
+extern void func_L00_0025A8C0(void *, void *, int, float, void *);
+extern int func_L00_001EFFF0(void *, void *, int, void *, void *);
+extern void func_L00_001FF610(void *, void *, void *);
+extern int func_L00_00258BC8(int, int);
+extern int func_001F9908(int *);
+
+/* Fireball: flies along its velocity leaving smoke; when it hits something it bursts into five puffs
+ * and is deleted, otherwise it shrinks away once its timer runs out. */
+void func_L11_0030A468(char *m) {
+    float old[4];
+    float p[4];
+    float v[4];
+    float hit[4];
+    float pad[4][2];
+    float q[4];
+    float r[4];
+    char *d;
+    char *pos;
+    int c;
+    if (m == 0) return;
+    d = *(char **)(m + 0x78);
+    if (d == 0) return;
+    pos = m + 0x10;
+    qcopy(old, pos);
+    c = func_001FA8A8(*(int *)&D_L11_00161E50, *(int *)&D_L11_00161E54, func_002140F8(0.0f, 1.0f));
+    func_L00_00258DB0(p, 0.0f, 0.1f);
+    func_001F9BD8(p, p, pos);
+    func_001F9C30(v, d, *(float *)&D_L11_00161E60);
+    func_L00_0026EBC0((char *)p, (char *)v, c, func_001F9850(*(int *)&D_L11_00161E58), (float)*(int *)&D_L11_00161E5C);
+    func_001F9BD8(pos, pos, d);
+    func_L00_0025A8C0(hit, m, 0x10000, *(float *)(d + 0x20), d);
+    if (func_L00_001EFFF0(old, pos, 0, *(void **)(d + 0x1C), hit)) {
+        int i;
+        for (i = 0; i < 5; i++) {
+            *(u128 *)r = 0;
+            r[0] = func_002140F8(-1.0f, 1.0f);
+            r[1] = func_002140F8(-1.0f, 1.0f);
+            r[2] = func_002140F8(-1.0f, 1.0f);
+            *(u128 *)q = *(u128 *)r;
+            func_L00_001FF610(r, d, D_L11_00174900);
+            func_L00_001FF4B0(q, q, func_001F9CB8(r) * 0.5f);
+            func_001F9BD8(q, r, q);
+            func_L00_001FF4B0(q, q, func_002140F8(D_0015EE6C_e * 5.0f, D_0015EE6C_e * 9.0f));
+            func_L00_0026EBC0(m + 0x10, (char *)q, 0x7F2F4F6F, func_L00_00258BC8(func_001F9850(10), func_001F9850(15)), 90000.0f);
+        }
+        func_0020D678(m);
+        return;
+    }
+    if (func_001F9908((int *)(d + 0x18))) {
+        *(float *)(d + 0x10) *= 0.74f;
+        if (*(float *)(d + 0x10) < 0.02f) {
+            func_0020D678(m);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L11_0030A8C8);
 INCLUDE_ASM("asm/overlays", func_L11_0030BCD8);
 INCLUDE_ASM("asm/overlays", func_L11_0030C728);

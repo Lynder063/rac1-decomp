@@ -113,7 +113,59 @@ char *func_L09_002EB808(char *owner, float *vec) {
     }
     return moby;
 }
-INCLUDE_ASM("asm/overlays", func_L09_002EBA58);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern float func_00214358(void *, int, float);
+
+/* spawns a debris moby at a random point of a ring above the arena, falling toward the centre */
+char *func_L09_002EBA58(void) {
+    float v[4];
+    char *moby = func_0020D348(func_002140B0(4) + 0x107);
+    if (moby != 0) {
+        char *pos = moby + 0x10;
+        char *d = *(char **)(moby + 0x78);
+        float r = func_002140F8(0.0f, 250.0f);
+        float a = func_002140F8(-3.1415927f, 3.1415927f);
+        float len;
+        v[0] = func_001F9F90(a) * r;
+        v[1] = func_001F9FA8(a) * r;
+        v[0] += 256.0f;
+        v[1] += 256.0f;
+        v[2] = 100.0f;
+        *(float *)(moby + 0x10) = 1000.0f;
+        *(float *)(moby + 0x14) = 500.0f;
+        *(float *)(moby + 0x18) = func_002140F8(200.0f, 250.0f);
+        func_001F9BD8(pos, pos, v);
+        qcopy(d, pos);
+        *(float *)(moby + 0x2C) *= func_002140F8(0.5f, 1.0f);
+        *(float *)(d + 0x40) = func_002140F8(-0.015707964f, 0.015707964f);
+        *(float *)(d + 0x44) = func_002140F8(-0.015707964f, 0.015707964f);
+        v[2] = func_00214358(v, 0, 0.5f);
+        if (v[2] < 25.0f) v[2] = 25.0f;
+        qcopy(d + 0x20, v);
+        ((unsigned char *)moby)[0x30] = 0xFF;
+        *(short *)(moby + 0x32) = 0xFF;
+        moby[0x31] = 1;
+        *(int *)(d + 0x4C) = 1;
+        *(float *)(d + 0x54) = func_002140F8(110.0f, 130.0f) * D_0015EE6C;
+        *(float *)(d + 0x50) = *(float *)(moby + 0x2C);
+        *(float *)d += func_002140F8(-100.0f, 100.0f);
+        *(float *)(d + 4) += func_002140F8(-100.0f, 100.0f);
+        func_001F9BF0(pos, d, D_L09_00166FC0);
+        len = func_001F9CB8(pos);
+        if (100.0f < len) {
+            func_L00_001FF4B0(pos, pos, 100.0f);
+            func_001F9BD8(pos, pos, D_L09_00166FC0);
+            *(float *)(moby + 0x2C) = *(float *)(d + 0x50) * (100.0f / len);
+        } else {
+            qcopy(pos, d);
+            *(float *)(moby + 0x2C) = *(float *)(d + 0x50);
+        }
+        *(int *)(d + 0x58) = -1;
+        func_L00_00251E30(moby);
+    }
+    return moby;
+}
 INCLUDE_ASM("asm/overlays", func_L09_002EBD30);
 extern void func_0020D678(void *); /* DeleteMoby */
 extern void func_001F9C30(void *, void *, float);

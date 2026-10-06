@@ -261,7 +261,57 @@ char *func_L13_002E2488(char *owner, char *pos, char *vec, int a3, float f) {
     }
     return moby;
 }
-INCLUDE_ASM("asm/overlays", func_L13_002E2690);
+extern char D_L13_00160700[] MACRO_ADDR;
+extern int func_0022ED80_s(int, int, int) __asm__("func_0022ED80");
+extern int func_001FA898_s(float) __asm__("func_001FA898");
+extern void func_L00_0025F4A8_s(void *, void *, void *, float, float, int, int, int, float, float, float, float, int, float, int, int, int, int) __asm__("func_L00_0025F4A8");
+extern int func_L00_00258BC8(int, int);
+extern void func_0020D678(void *);
+
+/* Blob hit: splashes (bigger when the player is near), then splits off one or two smaller blobs while
+ * pieces are left, or turns into its pop state / is deleted when none are. */
+void func_L13_002E2690(char *m, char *d, float s) {
+    float v[4];
+    float p[4];
+    float a = s * 7.0f;
+    float b;
+    int i;
+    b = s * 10.0f;
+    if (20.0f < func_001F9D10(m + 0x10, D_0013E633 + 0xE9D)) {
+        a = b = 0.0f;
+    }
+    func_0022ED80_s(0, 0, (int)m);
+    if (*(short *)(d + 0x4C) == 0) {
+        func_L00_0025F4A8_s(m, D_L13_00160700, 0, a, b, func_001FA898_s(s * 10.0f), func_001FA898_s(s * 3.0f),
+                            func_001FA898_s(s * 16.0f), s * 4.0f, s + s, 9.0f, 1.0f, -1, s * 15.0f, 0, 1, -1, 0);
+    }
+    m[0x72] = 0;
+    if (*(short *)(d + 0x4E) > 0) {
+        for (i = 0; i < func_L00_00258BC8(1, 2); i++) {
+            float part = *(float *)(m + 0x2C) * func_002140F8(0.25f, 0.75f);
+            func_L00_00258DB0(v, D_0015EE6C * 5.0f, D_0015EE6C * 10.0f);
+            func_001F9C30(d, d, 0.75f);
+            func_001F9BD8(v, v, d);
+            func_L00_001FF4B0(p, v, 0.5f);
+            func_001F9BD8(p, p, m + 0x10);
+            func_001F9BD8(p, p, v);
+            func_L13_002E2488(m, (char *)p, (char *)v, *(short *)(d + 0x4E) - 1, part);
+            *(float *)(m + 0x2C) -= part;
+            if (--*(short *)(d + 0x4E) == 0) break;
+            if (*(float *)(m + 0x2C) / *(float *)(*(char **)(m + 0x24) + 0x24) <= 0.2f) break;
+        }
+        *(int *)(m + 0x94) = 0;
+        *(short *)(d + 0x4C) = func_001F9850(0x1E);
+    } else if (*(int *)(d + 0x40) == 0) {
+        m[0x20] = 4;
+        *(unsigned short *)(m + 0x34) |= 1;
+        *(int *)(m + 0x94) = 0;
+        m[0x31] = 0;
+        *(float *)(m + 0x2C) = *(float *)(d + 0x2C);
+    } else {
+        func_0020D678(m);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L13_002E2980);
 /* runs one step of a moby's timed state and reports whether the timer ran out */
 int func_L13_002E56C8(char *m, char *arg, float *t) {

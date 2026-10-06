@@ -123,7 +123,46 @@ void func_L02_002DA728(char *moby) {
     *(float *)(p + 0x98) = FastAddRots(f, *(float *)(p + 0x98));
 }
 INCLUDE_ASM("asm/overlays", func_L02_002DA820);
-INCLUDE_ASM("asm/overlays", func_L02_002DB810);
+extern short D_L02_00161B9C, D_L02_00161BA0, D_L02_00161BA4, D_L02_00161BA8;
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern void func_L02_0020BF88(void *, void *, void *, s32, s32);
+
+/* Draws an elliptical arc from angle a to b (radii rx, ry, around the screen centre) as five sprite
+ * segments in colour col. */
+void func_L02_002DB810(int tex, u32 col, float a, float b, float rx, float ry) {
+    long xy[4];
+    u32 cols[4];
+    int uv[4];
+    float step = func_001FA790(b, a) / 5.0f;
+    int i;
+    uv[0] = *(int *)&D_L02_00161B9C;
+    uv[1] = *(int *)&D_L02_00161BA0;
+    uv[2] = *(int *)&D_L02_00161BA4;
+    uv[3] = *(int *)&D_L02_00161BA8;
+    cols[3] = col;
+    cols[2] = col;
+    cols[1] = col;
+    cols[0] = col;
+    for (i = 0; i < 5; i++) {
+        float t0 = func_001FA748(a, step * (float)i);
+        float t1 = func_001FA748(a, step * (float)(i + 1));
+        xy[3] = 0xFFFFF000000000L;
+        xy[2] = 0xFFFFF000000000L;
+        xy[1] = 0xFFFFF000000000L;
+        xy[0] = 0xFFFFF000000000L;
+        xy[0] += (u32)(-(func_001FA898_r(func_001F9F90(t0) * rx * 16.0f) << 16) - (int)0x80000000);
+        xy[0] += func_001FA898_r(func_001F9FA8(t0) * rx * 16.0f) + 0x8000;
+        xy[1] += (u32)(-(func_001FA898_r(func_001F9F90(t0) * ry * 16.0f) << 16) - (int)0x80000000);
+        xy[1] += func_001FA898_r(func_001F9FA8(t0) * ry * 16.0f) + 0x8000;
+        xy[2] += (u32)(-(func_001FA898_r(func_001F9F90(t1) * rx * 16.0f) << 16) - (int)0x80000000);
+        xy[2] += func_001FA898_r(func_001F9FA8(t1) * rx * 16.0f) + 0x8000;
+        xy[3] += (u32)(-(func_001FA898_r(func_001F9F90(t1) * ry * 16.0f) << 16) - (int)0x80000000);
+        xy[3] += func_001FA898_r(func_001F9FA8(t1) * ry * 16.0f) + 0x8000;
+        func_L02_0020BF88(xy, uv, cols, tex, 1);
+    }
+}
 extern short D_L02_00161B4C;
 extern short D_L02_00161B50;
 extern short D_L02_00161B54;

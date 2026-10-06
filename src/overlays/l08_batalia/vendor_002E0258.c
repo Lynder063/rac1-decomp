@@ -111,7 +111,73 @@ void func_L08_002E6130(char *a, float *v) {
     func_001FA218(n, (float *)d);
     n[15] = 42.0f;
 }
-INCLUDE_ASM("asm/overlays", func_L08_002E6208);
+extern short D_L08_00161CF4, D_L08_00161CF8, D_L08_00161CFC;
+extern short D_L08_00161D00, D_L08_00161D04, D_L08_00161D08;
+extern short D_L08_00161D0C, D_L08_00161D10, D_L08_00161D14;
+extern short D_L08_00161D44, D_L08_00161D48, D_L08_00161D4C;
+extern float func_001F9FA8(float);
+extern void func_001F9BD8(void *, void *, void *);
+
+/* aims a turret: builds its barrel frame from the base rotation, yaw and pitch, writes the barrel rotation
+ * and the muzzle point (offset per turret class) */
+void func_L08_002E6208(char *m, float *out, float *rot) {
+    float r[16];
+    float b[16];
+    float up[4];
+    float side[4];
+    float fwd[4];
+    float dir[4];
+    float u[4];
+    float v[4];
+    char *d = *(char **)(m + 0x78);
+    float sx, sy, sz;
+    float t;
+    switch (*(short *)(m + 0xA6)) {
+    case 0x3DC:
+        sx = *(float *)&D_L08_00161CF8 * *(float *)&D_L08_00161D48;
+        sy = *(float *)&D_L08_00161D04 * *(float *)&D_L08_00161D48;
+        sz = *(float *)&D_L08_00161D10 * *(float *)&D_L08_00161D48;
+        break;
+    case 0x3DD:
+        sx = *(float *)&D_L08_00161CFC * *(float *)&D_L08_00161D4C;
+        sy = *(float *)&D_L08_00161D08 * *(float *)&D_L08_00161D4C;
+        sz = *(float *)&D_L08_00161D14 * *(float *)&D_L08_00161D4C;
+        break;
+    default:
+        sx = *(float *)&D_L08_00161CF4 * *(float *)&D_L08_00161D44;
+        sy = *(float *)&D_L08_00161D00 * *(float *)&D_L08_00161D44;
+        sz = *(float *)&D_L08_00161D0C * *(float *)&D_L08_00161D44;
+        break;
+    }
+    func_001FA218(b, (float *)(d + 0x10));
+    func_L00_001FF4B0(u, b, -func_001F9FA8(*(float *)(d + 0x60)));
+    func_L00_001FF4B0(v, b + 4, func_001F9F90(*(float *)(d + 0x60)));
+    func_001F9BD8(dir, u, v);
+    t = sx * 0.017453292f;
+    func_L00_001FF4B0(u, dir, func_001F9F90(t));
+    func_L00_001FF4B0(v, b + 8, func_001F9FA8(t));
+    func_001F9BD8(up, u, v);
+    func_L00_001FF4B0(u, b, -func_001F9F90(*(float *)(d + 0x60)));
+    func_L00_001FF4B0(v, b + 4, -func_001F9FA8(*(float *)(d + 0x60)));
+    func_001F9BD8(fwd, u, v);
+    func_001F9CA0(side, up, fwd);
+    func_L00_001FF4B0(u, side, func_001F9F90(*(float *)(d + 0x64)));
+    func_L00_001FF4B0(v, fwd, func_001F9FA8(*(float *)(d + 0x64)));
+    func_001F9BD8(r, u, v);
+    func_L00_001FF4B0(u, side, -func_001F9FA8(*(float *)(d + 0x64)));
+    func_L00_001FF4B0(v, fwd, func_001F9F90(*(float *)(d + 0x64)));
+    func_001F9BD8(r + 4, u, v);
+    qcopy(r + 8, up);
+    r[11] = 0.0f;
+    func_001F9BC0(r + 12);
+    r[15] = 1.0f;
+    func_002153E8(r, rot);
+    rot[3] = 0.0f;
+    func_L00_001FF4B0(u, b + 8, sy);
+    func_001F9BD8(out, d, u);
+    func_L00_001FF4B0(v, dir, sz);
+    func_001F9BD8(out, out, v);
+}
 INCLUDE_ASM("asm/overlays", func_L08_002E6500);
 /* spawns the child mobys this object owns and fills its part table */
 void func_L08_002E9B60(char *moby) {

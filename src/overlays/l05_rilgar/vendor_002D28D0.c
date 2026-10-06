@@ -229,7 +229,47 @@ void func_L05_002DC2A8(unsigned char *moby) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L05_002DC4C8);
+extern void func_L00_00260958(float *v, float s);
+extern void func_001F9C30(void *, void *, float);
+extern int func_001FA8A8(int, int, float);
+extern char *func_00219780(void *, void *, void *, int, int, int, int, int, int);
+
+/* Explosion debris: 20 bursts thrown out along dir with random spread, each trailing 10 smoke puffs. */
+void func_L05_002DC4C8(void *m, void *dir) {
+    float p[4];
+    float v[4];
+    float a[4];
+    char *pos = (char *)m + 0x10;
+    int i, j;
+    for (i = 0; i < 20; i++) {
+        float ang, sp, up;
+        qcopy(p, pos);
+        func_L00_00260958(p, 0.25f);
+        p[2] += 1.0f;
+        ang = func_00214158();
+        sp = func_002140F8(1.0f, 8.0f);
+        up = func_002140F8(2.0f, 6.0f);
+        func_001F9C30(v, dir, func_002140F8(0.0f, 1.0f));
+        v[0] += func_001F9F90(ang) * (sp * D_0015EE6C);
+        v[1] += func_001F9FA8(ang) * (sp * D_0015EE6C);
+        v[2] += up * D_0015EE6C;
+        qcopy(a, v);
+        a[2] -= D_0015EE70 * 20.0f * (float)func_001F9850(0x1E);
+        for (j = 0; j < 10; j++) {
+            float r = func_002140F8(0.5f, 1.5f);
+            int c1, c2, n1, n2;
+            v[3] = r * 0.125f;
+            a[3] = r * 0.065f;
+            func_L00_00260958(p, 0.2f);
+            func_L00_00260958(a, D_0015EE6C * 0.5f);
+            c1 = func_001FA8A8(0x8000EEEE, 0x8000FF90, func_002140F8(0.0f, 1.0f));
+            c2 = func_001FA8A8(0xFFEE, 0xFFEE, func_002140F8(0.0f, 1.0f));
+            n1 = func_001F9850(10);
+            n2 = func_001F9850(0x1E);
+            func_00219780(p, v, a, c1, c2, n1, n2, func_001FA898_r(func_001F9878(func_002140F8(5.0f, 25.0f))), -1);
+        }
+    }
+}
 extern char *func_0020D348(int);
 extern void func_L00_00251E30(void *);
 

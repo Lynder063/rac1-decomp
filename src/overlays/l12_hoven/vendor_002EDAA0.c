@@ -99,7 +99,89 @@ char *func_L12_002EE068(char *src, char *pos, int owner, int seed, float f0, flo
     return moby;
 }
 INCLUDE_ASM("asm/overlays", func_L12_002EE180);
-INCLUDE_ASM("asm/overlays", func_L12_002EE600);
+extern unsigned char D_0013D50F_e[] __asm__("D_0013D50F");
+extern unsigned char D_0013D5CA_e[] __asm__("D_0013D5CA") NOT_SDA;
+extern int D_0013A5E0_e[] __asm__("D_0013A5E0") NOT_SDA;
+extern char D_0013E633_e[] __asm__("D_0013E633");
+extern char D_0014171B_e[] __asm__("D_0014171B");
+extern int D_0015EFA4_e __asm__("D_0015EFA4") MACRO_ADDR;
+extern int D_0015EE84_e __asm__("D_0015EE84") MACRO_ADDR;
+extern int func_L01_0026EFB8(int, int);
+extern void func_0022EE28(int, int, int);
+extern void func_L00_00264DB8(int, int);
+extern int func_00215570(void *, int);
+extern void func_L00_00203F20(int, int);
+
+/* Hoven challenge tracker: unlocks the area once, records the time and run flags for two skill points and
+ * awards them (one for staying airborne long enough). */
+void func_L12_002EE600(char *m) {
+    int *d = *(int **)(m + 0x78);
+    if (func_L01_0026EFB8(d[3], -1) == 0) {
+        unsigned char *s = D_0013D50F_e + 1;
+        if (s[0x14] == 0) {
+            s[0x14] = 1;
+            func_0022EE28(1, 0, 0);
+            func_L00_00264DB8(0x53DB, -1);
+        }
+    }
+    {
+        char *h = D_0014171B_e + 0x34D;
+        if (*(unsigned short *)(h + 0x368) == 0) {
+            char *q = D_0013E633_e + 0xE1D;
+            if (*(int *)(q + 0x2084) == 0x81) {
+                *(unsigned short *)(h + 0x368) = *(unsigned short *)(h + 0x368) + 1;
+            }
+            if (func_001F9850(D_0015EFA4_e) / 600 > *(unsigned short *)(h + 0x36A)) {
+                *(unsigned short *)(h + 0x36A) = func_001F9850(D_0015EFA4_e) / 600;
+            }
+            *(unsigned int *)(h + 0x36C) = *(unsigned int *)(h + 0x36C) | (1 << D_0015EE84_e) | 0x80000000;
+            if (func_00215570(q + 0x80, d[0])) {
+                func_L00_00203F20(0x2EE3, 0x6D);
+            }
+        }
+    }
+    {
+        char *h = D_0014171B_e + 0x34D;
+        if (*(unsigned short *)(h + 0x370) == 0
+            || (*(unsigned short *)(h + 0x370) < 2
+                && func_001F9850(D_0015EFA4_e) - *(unsigned short *)(h + 0x372) * 600 > func_001F9850(72000))) {
+            char *q = D_0013E633_e + 0xE1D;
+            if (*(int *)(q + 0x2084) == 0x81) {
+                d[1]++;
+                if ((D_0013A5E0_e[0x2600 / 4] & 3) && 0.3f < *(float *)(q + 0x229C)) {
+                    d[2]++;
+                } else {
+                    d[2] = 0;
+                }
+                if (func_001F9850(0x28) < d[2]) {
+                    char *g = D_0014171B_e + 0x34D;
+                    d[1] = 0;
+                    if (*(unsigned short *)(g + 0x370) <= 0xFFFE) {
+                        *(unsigned short *)(g + 0x370) = *(unsigned short *)(g + 0x370) + 1;
+                    }
+                    if (func_001F9850(D_0015EFA4_e) / 600 > *(unsigned short *)(g + 0x372)) {
+                        *(unsigned short *)(g + 0x372) = func_001F9850(D_0015EFA4_e) / 600;
+                    }
+                    *(unsigned int *)(g + 0x374) = *(unsigned int *)(g + 0x374) | (1 << D_0015EE84_e) | 0x80000000;
+                }
+                {
+                    int a = func_001F9850(0x1C20);
+                    int b = func_001F9850(0x708);
+                    char *k = D_0014171B_e + 0x34D;
+                    if (*(unsigned short *)(k + 0x370) * a + b < d[1]) {
+                        func_L00_00203F20(0x2EE4, 0x6E);
+                    }
+                }
+            }
+        }
+    }
+    if (D_0013D5CA_e[2] != 0) {
+        char *k = D_0014171B_e + 0x34D;
+        if (*(unsigned short *)(k + 0x1F0) == 0) {
+            func_L00_00203F20(0x2EE0, 0x3E);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L12_00303CA8);
 INCLUDE_ASM("asm/overlays", func_L12_00304038);
 INCLUDE_ASM("asm/overlays", func_L12_00304310);

@@ -56,7 +56,7 @@ extern void func_L02_002E2110(void *);
 extern float func_001F9D10(void *, void *);
 extern float D_L11_00167840[];
 extern void func_L00_0025B178(void *);
-extern void func_L11_002D21F0(void *);
+extern void func_L11_002D21F0(char *);
 extern void func_L11_002D2500(void *);
 extern void func_L11_002D2670(void *);
 extern void func_L11_002D3970(void *);

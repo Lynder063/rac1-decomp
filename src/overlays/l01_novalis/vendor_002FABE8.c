@@ -650,7 +650,73 @@ void func_L01_00300F00(char *self) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L01_003010A8);
-INCLUDE_ASM("asm/overlays", func_L01_00301198);
+extern int D_L01_00161350_s __asm__("D_L01_00161350") MACRO_ADDR;
+extern int D_L01_00161358_s __asm__("D_L01_00161358") MACRO_ADDR;
+extern float D_L01_00174368_s __asm__("D_L01_00174368") NOT_SDA;
+extern float D_0015EE70_s __asm__("D_0015EE70") MACRO_ADDR;
+extern int func_L00_001F3958(void);
+extern void func_L00_002A5158(int, int, int, float, float, float, float);
+extern char *func_L00_002D9340(void *, float);
+extern void func_L00_002703E8(void *, void *, int, int);
+
+/* Falling chunk: drops and spins; on its first landing it splashes (sound, splash and 16 drops) and
+ * bounces up smaller, then fades out when its timer ends. Deleted if it lands out of bounds. */
+void func_L01_00301198(char *m) {
+    float np[4];
+    float at[4];
+    float vel[4];
+    char *d = *(char **)(m + 0x78);
+    *(float *)(d + 8) -= *(float *)(d + 0x10);
+    *(float *)(m + 0x40) += *(float *)(d + 0x1C);
+    func_001F9BD8(np, m + 0x10, d);
+    if (func_L00_001EFFF0(m + 0x10, np, 2, 0, 0)) {
+        int i;
+        char *o;
+        if (!func_L00_001F3958()) {
+            if (*(int *)(d + 0x18) == 0) {
+                func_0022ED80(0, 0, (int)m);
+            }
+            func_L00_002A5158(D_L01_00161350_s, D_L01_00161358_s, 1, *(float *)(m + 0x10), *(float *)(m + 0x14), 0.5f, -0.35f);
+            {
+                float g = D_0015EE6C;
+                float h = D_0015EE70_s;
+                *(int *)(d + 0x18) = 1;
+                *(int *)(d + 0x14) = 0x78;
+                *(int *)(d + 0x1C) = 0;
+                *(float *)(d + 8) = g * -1.5f;
+                *(float *)(d + 0x10) = h * 0.8f;
+            }
+            at[0] = *(float *)(m + 0x10);
+            at[1] = *(float *)(m + 0x14);
+            at[2] = D_L01_00174368_s;
+            o = func_L00_002D9340(at, 2.0f);
+            if (o != 0) {
+                o[0x23] = 0x70;
+            }
+            for (i = 0; i < 16; i++) {
+                float a = func_00214158();
+                float r = func_002140F8(D_0015EE6C * 0.0f, D_0015EE6C * 3.0f);
+                vel[0] = func_001F9F90(a) * r;
+                vel[1] = func_001F9FA8(a) * r;
+                vel[2] = func_002140F8(D_0015EE6C * 3.0f, D_0015EE6C * 6.5f);
+                {
+                    int c = func_L00_00258BC8(0x5A, 0x78);
+                    func_L00_002703E8(at, vel, func_002140B0(2), c);
+                }
+            }
+        } else {
+            func_0020D678(m);
+            return;
+        }
+    }
+    qcopy(m + 0x10, np);
+    if (*(int *)(d + 0x18) != 0) {
+        *(float *)(m + 0x2C) *= 0.99f;
+    }
+    if (func_001F9908((int *)(d + 0x14))) {
+        func_0020D678(m);
+    }
+}
 typedef unsigned int u128_pt __attribute__((mode(TI)));
 extern f32 func_001FA748_303590(f32, f32) __asm__("func_001FA748") ;
 typedef struct { u8 pad0[0x10]; s32 w10; u8 pad14[0x10]; f32 f24; } MobyClass;
