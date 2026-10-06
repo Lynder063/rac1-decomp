@@ -766,7 +766,75 @@ int func_L07_003108B0(void *moby, int id, float scale) {
 INCLUDE_ASM("asm/overlays", func_L07_00310920);
 INCLUDE_ASM("asm/overlays", func_L07_003109D0);
 INCLUDE_ASM("asm/overlays", func_L07_003126A8);
-INCLUDE_ASM("asm/overlays", func_L07_00312FA8);
+extern float D_0015EE60 MACRO_ADDR;
+extern void func_L00_00251328(void *, int, int, int);
+extern float func_002140F8(float, float);
+extern float func_L00_0025F368(float);
+
+/* Falling leaf: drops off its branch after a random delay, swaying, then falls faster and vanishes near the ground. */
+void func_L07_00312FA8(char *m) {
+    char *d;
+    float prev[4];
+    float v[4];
+    float t;
+    float g;
+    if (m == 0) return;
+    d = *(char **)(m + 0x78);
+    if (d == 0) return;
+    qcopy(prev, m + 0x10);
+    switch (((unsigned char *)m)[0x20]) {
+    case 0:
+        *(int *)(d + 0x20) = 0;
+        *(short *)(d + 0x24) = 0;
+        d[0x28] = 4;
+        *(short *)(d + 0x3E) = 0xD;
+        func_L00_00251328(m, 0x50, 0x40, 0x10);
+        *(float *)(m + 0x40) += func_002140F8(-0.034906585f, 0.034906585f);
+        *(float *)(m + 0x44) += func_002140F8(-0.034906585f, 0.034906585f);
+        *(float *)(m + 0x18) += func_002140F8(-0.02f, 0.02f);
+        m[0x20] = 1;
+        break;
+    case 1:
+        if (func_L01_00278FA8(m)) {
+            *(float *)(d + 0xA8) = *(float *)(m + 0x40);
+            *(float *)(d + 0xAC) = *(float *)(m + 0x44);
+            *(short *)(d + 0xA0) = func_001F9850(0x1E);
+            if (*(short *)(d + 0xA2) != -1) func_0022ED80(*(short *)(d + 0xA2), 0, (int)m);
+            m[0x20] = 2;
+        }
+        break;
+    case 2:
+        *(float *)(m + 0x40) = func_001F9FA8(func_L00_0025F368(func_001FA888(*(short *)(d + 0xA0)) * 0.75f)) * 0.017453292f;
+        {
+            float c = func_001F9F90(func_L00_0025F368(func_001FA888(*(short *)(d + 0xA0)) * 0.89f));
+            float e = D_0015EE60;
+            *(float *)(m + 0x44) = c * 0.017453292f;
+            *(float *)(m + 0x18) -= e * 0.002f;
+        }
+        if (func_001F9938(d + 0xA0)) {
+            *(float *)(d + 0xA4) = D_0015EE60 * 0.002f;
+            m[0x20] = 3;
+        }
+        break;
+    case 3:
+        t = (1.3962634f - *(float *)(m + 0x40)) * 0.05f;
+        *(float *)(m + 0x40) += t;
+        t = func_001F9FA8(t);
+        g = D_0015EE70 * 9.8f;
+        *(float *)(m + 0x18) -= t + t;
+        *(float *)(d + 0xA4) += g;
+        *(float *)(m + 0x18) -= *(float *)(d + 0xA4);
+        if (*(float *)(m + 0x18) < 2.0f) {
+            func_0020D678(m);
+            return;
+        }
+        break;
+    case 4:
+        break;
+    }
+    func_001F9BF0(v, m + 0x10, prev);
+    func_L00_002617B0(d + 0x60, v, m + 0x40, m + 0x40);
+}
 INCLUDE_ASM("asm/overlays", func_L07_00313298);
 extern float func_001F9D10(void *, void *);
 
