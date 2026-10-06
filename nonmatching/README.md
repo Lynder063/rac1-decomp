@@ -150,6 +150,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L02_002DC2C0`](shared/func_L02_002DC2C0.c) | shared | 208 | BYTES 18/208 | 91.3% |
 | [`func_L00_002346C0`](shared/func_L00_002346C0.c) | shared | 80 | BYTES 7/80 | 91.2% |
 | [`func_L18_002D96B0`](l18_veldin2/func_L18_002D96B0.c) | l18_veldin2 | 1104 | BYTES 98/1104 | 91.1% |
+| [`func_L13_002B8FC0`](shared/func_L13_002B8FC0.c) | shared | 636 | BYTES 57/636 | 91.0% |
 | [`func_L00_002A2680`](shared/func_L00_002A2680.c) | shared | 328 | BYTES 30/328 | 90.8% |
 | [`func_L00_00250120`](shared/func_L00_00250120.c) | shared | 164 | BYTES 16/164 | 90.2% |
 | [`func_L18_002EBBF0`](l18_veldin2/func_L18_002EBBF0.c) | l18_veldin2 | 1236 | BYTES 129/1236 (cannot land as written) | 89.6% |
