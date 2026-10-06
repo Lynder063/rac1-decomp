@@ -541,7 +541,51 @@ char *func_L07_0030F750(char *pos, char *vec, int arg) {
     }
     return m;
 }
-INCLUDE_ASM("asm/overlays", func_L07_0030F838);
+extern float D_0015EE70 MACRO_ADDR;
+extern int D_L07_0015F6B0 MACRO_ADDR;
+extern char *D_L07_00173F58_p __asm__("D_L07_00173F58");
+extern void func_L07_0029C6A8(char *, int, float, float);
+extern int func_L00_001EFFF0(void *, void *, int, int, int);
+extern int func_L00_001F10E0_f(float, void *, int, int) __asm__("func_L00_001F10E0");
+extern void func_L00_0025F4A8_alt(void *, void *, void *, float, float, int, int, int, float, float, float, float, int, float, int, int, int, int) __asm__("func_L00_0025F4A8");
+
+/* Lobbed bomb: falls and spins along its velocity, smoking now and then; bursts on impact or when it leaves the level. */
+void func_L07_0030F838(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float prev[4];
+    qcopy(prev, m + 0x10);
+    func_001F9BD8(m + 0x10, m + 0x10, d);
+    {
+        float g = D_0015EE70 * 9.8f;
+        float r = D_0015EE6C * 6.2831855f;
+        *(float *)(d + 8) -= g;
+        *(float *)(m + 0x48) += r;
+    }
+    if (*(float *)(m + 0x2C) < *(float *)(*(char **)(m + 0x24) + 0x24) * 2.8f) {
+        *(float *)(m + 0x2C) *= 1.2f;
+    }
+    if (D_L07_0015F6B0 % 3 == 0) {
+        func_L07_0029C6A8(m, 0, 400000.0f, 5.0f);
+    }
+    if (func_L00_001EFFF0(prev, m + 0x10, 0, *(int *)(d + 0x10), 0) != 0
+        || func_L00_001F10E0_f(0.1f, m + 0x10, 0, *(int *)(d + 0x10)) != 0) {
+        char *o = D_L07_00173F58_p;
+        if (o == 0 || (*(short *)(o + 0xA6) != 0x415 && *(short *)(o + 0xA6) != 0x419 && *(short *)(o + 0xA6) != 0x452)) {
+            if (((unsigned char *)m)[0x31] != 0) {
+                func_L00_0025F4A8_alt(m, d, 0, 2.0f, 1.0f, 0, 3, 5, 0.0f, 0.0f, 1000.0f, 1.2f, 0, 10.0f, 0, 1, -1, 0);
+            } else {
+                func_0022ED80(0, 0, (int)m);
+            }
+            func_0020D678(m);
+            return;
+        }
+    }
+    if (*(float *)(m + 0x10) < 2.0f || 1021.0f < *(float *)(m + 0x10)
+        || *(float *)(m + 0x14) < 2.0f || 1021.0f < *(float *)(m + 0x14)
+        || *(float *)(m + 0x18) < 2.0f || 1021.0f < *(float *)(m + 0x18)) {
+        func_0020D678(m);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L07_0030FB00);
 INCLUDE_ASM("asm/overlays", func_L07_0030FC38);
 extern char *func_L00_0025B478(void *, int, int);
