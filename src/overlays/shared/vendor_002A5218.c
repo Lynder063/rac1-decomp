@@ -330,7 +330,85 @@ void func_L02_002DBD70(void *unused, f32 a, f32 b, f32 c, s32 d) {
 }
 INCLUDE_ASM("asm/overlays", func_L02_002DC2C0);
 INCLUDE_ASM("asm/overlays", func_L02_002DDAE8);
-INCLUDE_ASM("asm/overlays", func_L02_002E1888);
+extern int D_L02_00160058_x __asm__("D_L02_00160058") MACRO_ADDR;
+extern int D_L02_0015F6B0_x __asm__("D_L02_0015F6B0") MACRO_ADDR;
+extern int D_0015EE84_x __asm__("D_0015EE84") MACRO_ADDR;
+extern unsigned char D_0014171B_x[] __asm__("D_0014171B");
+extern float D_0015EE70 MACRO_ADDR;
+extern short D_L02_00161D40;
+extern short D_L02_00161D44;
+extern short D_L02_00161D48;
+extern short D_L02_00161D4C;
+extern void func_L00_00251328(void *, int, int, int);
+extern void func_L02_002FBB10_c(char *) __asm__("func_L02_002FBB10");
+extern void func_L02_002FBC00_c(char *) __asm__("func_L02_002FBC00");
+extern float func_L00_001FF860(float, float);
+extern float func_L00_0025CE58_f(float *, float, float *, float, float, float) __asm__("func_L00_0025CE58");
+extern void func_L00_001FF4B0(void *, void *, float);
+extern float func_001F9878(float);
+extern void func_001F9BD8(void *, void *, void *);
+extern int func_001FA898(float);
+extern int func_002140B0(int);
+extern void func_L00_00273F80(void *, void *, int, int, int, int, float);
+
+/* Hideable flower: appears when its slot is free, faces and sparkles at the hero (class 0x323), hides again
+ * when its slot is used. */
+void func_L02_002E1888(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float v[4];
+    float w[4];
+    char *o;
+    switch (((unsigned char *)m)[0x20]) {
+    case 0:
+        if (*(int *)(d + 0x30) != -1
+            || (*(int *)(d + 0x3C) != -1 && (o = (char *)(D_L02_00160058_x + (*(int *)(d + 0x3C) << 8))) != 0
+                && ((unsigned char *)o)[0x20] != 0xFE && ((unsigned char *)o)[0x20] != 0xFD)) {
+            ((unsigned char *)m)[0x30] = 0xFF;
+            m[0x20] = 2;
+            *(unsigned short *)(m + 0x34) |= 0x41;
+        } else {
+            func_L00_00251328(m, 0xC0, 0xC0, 0xC0);
+            func_L02_002FBB10_c(m);
+            m[0x20] = 1;
+        }
+        break;
+    case 1:
+        if (*(short *)(m + 0xA6) == 0x323) {
+            char *g = D_0013E633 + 0xE1D;
+            float *rz = (float *)(m + 0x48);
+            float yaw = func_L00_001FF860(*(float *)(g + 0x80) - *(float *)(m + 0x10), *(float *)(g + 0x84) - *(float *)(m + 0x14));
+            func_L00_0025CE58_f(rz, yaw, (float *)(d + 0x38), D_0015EE70 * 6.2831855f, D_0015EE70 * 6.2831855f, D_0015EE6C * 12.566371f);
+            if (D_L02_0015F6B0_x & 1) {
+                if (((unsigned char *)m)[0x31] != 0) {
+                    float s = 1.0f;
+                    int a;
+                    if (D_L02_0015F6B0_x & 4) s = -1.0f;
+                    func_L00_001FF4B0(v, m + 0xD0, s * *(float *)&D_L02_00161D4C);
+                    func_L00_001FF4B0(w, v, -2.0f / func_001F9878(*(float *)&D_L02_00161D40));
+                    func_001F9BD8(v, v, m + 0x10);
+                    a = func_001FA898(func_001F9878(*(float *)&D_L02_00161D40)) & 0xFF;
+                    func_L00_00273F80(v, w, *(int *)&D_L02_00161D44, a, func_002140B0(0xFF) & 0xFF, 0,
+                                      *(float *)&D_L02_00161D48);
+                }
+            }
+        }
+        {
+            char *g2 = D_0013E633 + 0xE1D;
+            if (*(int *)(g2 + 0x2084) != 0x2C) func_L02_002FBC00_c(m);
+        }
+        break;
+    case 2:
+        if (((D_0014171B_x + 0xAA35))[*(int *)(d + 0x30) + (D_0015EE84_x << 4)] != 0
+            || (*(int *)(d + 0x3C) != -1
+                && ((o = (char *)(D_L02_00160058_x + (*(int *)(d + 0x3C) << 8))) == 0
+                    || ((unsigned char *)o)[0x20] == 0xFE || ((unsigned char *)o)[0x20] == 0xFD))) {
+            *(unsigned short *)(m + 0x34) &= 0xFFBE;
+            *(int *)(d + 0x30) = -1;
+            m[0x20] = 0;
+        }
+        break;
+    }
+}
 typedef struct {
     char pad0[0x44];
     short count;
