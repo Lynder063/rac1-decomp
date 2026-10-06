@@ -333,6 +333,10 @@ check. In parentheses, Lombyte's name.
 - `src/overlays/shared/vendor_002B90A8.c`: `func_L01_002BB068` (`FUN_L01_002b9eb0`)
 - `src/overlays/shared/vuchain_002A21A8.c`: `func_L00_002A2680` (`FUN_L00_002a13f0`)
 
+One more was adapted the same way on 2026-10-06:
+
+- `src/overlays/shared/pause_00277208.c`: `func_L00_00277A88` (`FUN_L00_00276bd0`)
+
 Fifteen more were carried over by machine on 2026-10-05 once `include/common.h` had `qzero()`, the 128-bit
 zero store Lombyte identified as inline assembly in the original (its `include/qzero.h`; the helper here is
 written after it). Same tool, same rule; the two executable functions are proven by the full build:

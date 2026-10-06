@@ -5,8 +5,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 
 | Function | Directory | Size | Best so far | Bytes matching |
 |---|---|---|---|---|
-| [`func_L00_00277A88`](shared/func_L00_00277A88.c) | shared | 1868 | BYTES 3/1868 | 99.8% |
-| [`func_L02_002D8B80`](l02_aridia/func_L02_002D8B80.c) | l02_aridia | 3696 | BYTES 8/3696 | 99.8% |
 | [`func_L07_00310110`](l07_umbris/func_L07_00310110.c) | l07_umbris | 436 | BYTES 1/436 | 99.8% |
 | [`func_L00_0028FCA0`](shared/func_L00_0028FCA0.c) | shared | 784 | BYTES 2/784 | 99.7% |
 | [`func_L14_002B41B0`](shared/func_L14_002B41B0.c) | shared | 772 | BYTES 2/772 | 99.7% |
