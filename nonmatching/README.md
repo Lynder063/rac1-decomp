@@ -6,7 +6,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | Function | Directory | Size | Best so far | Bytes matching |
 |---|---|---|---|---|
 | [`func_L17_002ED498`](l17_fleet/func_L17_002ED498.c) | l17_fleet | 1620 | BYTES 2/1620 | 99.9% |
-| [`func_L13_0030D028`](l13_gemlik/func_L13_0030D028.c) | l13_gemlik | 636 | BYTES 1/636 | 99.8% |
 | [`func_L02_002D8B80`](l02_aridia/func_L02_002D8B80.c) | l02_aridia | 3696 | BYTES 8/3696 | 99.8% |
 | [`func_L00_002C48C8`](shared/func_L00_002C48C8.c) | shared | 708 | BYTES 2/708 | 99.7% |
 | [`func_L18_002FD058`](l18_veldin2/func_L18_002FD058.c) | l18_veldin2 | 1384 | BYTES 4/1384 | 99.7% |
