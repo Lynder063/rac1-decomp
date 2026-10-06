@@ -553,7 +553,71 @@ void func_L09_00304750(unsigned char *moby) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L09_00304EE0);
-INCLUDE_ASM("asm/overlays", func_L09_003050C0);
+extern void func_L09_00304EE0(char *, char *, char *);
+extern char D_0013D355[];
+extern int D_L09_00160058_m __asm__("D_L09_00160058") MACRO_ADDR;
+extern int func_0022ED80_r(int, int, char *) __asm__("func_0022ED80");
+extern void func_L00_0025F4A8_alt(void *, void *, void *, float, float, int, int, int, float, float, float, float, int, float, int, int, int, int) __asm__("func_L00_0025F4A8");
+
+/* Pressure plate: waits for its trigger slot, hums while armed, wakes its linked moby when stepped on, then shatters. */
+void func_L09_003050C0(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float v[4];
+    unsigned char *q;
+    func_L09_00304EE0(m, d, d + 0x20);
+    switch (((unsigned char *)m)[0x20]) {
+    case 0:
+        if (*(short *)(d + 0x76) != -1 && (q = (unsigned char *)D_0013D355 + 0x13B + *(short *)(d + 0x76))[0x39] != 0) {
+            func_0020D678(m);
+            return;
+        }
+        *(int *)(d + 0x7C) = -1;
+        m[0x20] = 1;
+        break;
+    case 1:
+        if ((D_L09_0015F6B0 & 7) == (((int)m >> 8) & 7)) {
+            if (*(int *)(d + 0x7C) == -1
+                || (func_L00_0028EB98(m, *(int *)(d + 0x7C)) == 0 && *(int *)(d + 0x7C) == -1)) {
+                *(int *)(d + 0x7C) = func_0022ED80_r(1, 4, m);
+            }
+        }
+        if (((unsigned char *)m)[0xBC] == 1) {
+            if (*(int *)(d + 0x78) != -1) {
+                unsigned char *o = (unsigned char *)(D_L09_00160058_m + (*(int *)(d + 0x78) << 8));
+                if (o[0x20] == 1) o[0xBC] = o[0x20];
+            }
+            *(short *)(d + 0x74) = func_001F9850(0xA);
+            if (*(int *)(d + 0x7C) != -1) {
+                char *e = D_0013E633 + 0x1D + *(int *)(d + 0x7C) * 0x70;
+                if (*(char **)(e + 0x88) == m && ((unsigned char *)e)[0x74] != 0) {
+                    func_L00_0028EBF0(*(int *)(d + 0x7C));
+                }
+            }
+            *(int *)(d + 0x7C) = -1;
+            ((unsigned char *)m)[0x30] = 0xFF;
+            m[0x20] = 2;
+        }
+        break;
+    case 2:
+        if (func_001F9938(d + 0x74)) {
+            if (*(int *)(d + 0x70) != -1) {
+                unsigned char *o = (unsigned char *)(D_L09_00160058_m + (*(int *)(d + 0x70) << 8));
+                if (o != 0 && o[0x20] != 0xFE && o[0x20] != 0xFD
+                    && (*(short *)(o + 0xA6) == 0x494 || *(short *)(o + 0xA6) == 0x49D || *(short *)(o + 0xA6) == 0x4A0)) {
+                    o[0x30] = 0xFF;
+                    o[0xBC] = 1;
+                }
+            }
+            m[0x20] = 3;
+        }
+        break;
+    case 3:
+        func_001F9BF0(v, D_L09_00166FC0, m + 0x10);
+        func_L00_0025F4A8_alt(m, v, 0, 0.0f, 0.0f, 0x14, 9, 0x20, 10.0f, 7.0f, 20.0f, 2.0f, 0, 40.0f, 0, 1, -1, 0);
+        func_0020D678(m);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L09_00305378);
 typedef int u128 __attribute__((mode(TI)));
 extern char *D_L09_00160064 MACRO_ADDR;
