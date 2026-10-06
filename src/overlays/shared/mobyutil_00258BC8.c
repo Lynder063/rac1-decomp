@@ -1437,7 +1437,16 @@ void func_L00_0025E590(void *a, unsigned char *s) {
     }
     func_L00_00251328(a, cr, cg, cb);
 }
-INCLUDE_ASM("asm/overlays", func_L00_0025E7F8);
+// Advances an index with wrapping or directional clamping.
+int func_L00_0025E7F8(int *limit, int index, int delta, int wrap) {
+ if (wrap) index = (index + delta + *limit) % *limit;
+ else {
+  index += delta;
+  if (delta < 0) { if (index < 0) index = 0; }
+  else { if (index > *limit - 1) index = *limit - 1; }
+ }
+ return index;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025E828);
 INCLUDE_ASM("asm/overlays", func_L00_0025E860);
 typedef struct { int a[4]; } V __attribute__((aligned(16)));
@@ -1579,7 +1588,20 @@ int func_L00_0025F3C0(char *a) {
     }
     return r;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0025F410);
+extern int D_L00_00160098 MACRO_ADDR;
+extern int D_L00_001600A0 MACRO_ADDR;
+
+// Checks whether a moby address is in the active range and has the target class.
+int func_L00_0025F410(void *moby) {
+    if (moby == 0) {
+        return 0;
+    }
+    if ((unsigned int)moby < (unsigned int)D_L00_00160098 ||
+        (unsigned int)D_L00_001600A0 < (unsigned int)moby) {
+        return 0;
+    }
+    return (unsigned int)*(unsigned short *)((char *)moby + 0xA6) - 0x1F4 < 0x29;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025F420);
 INCLUDE_ASM("asm/overlays", func_L00_0025F450);
 INCLUDE_ASM("asm/overlays", func_L00_0025F4A8);

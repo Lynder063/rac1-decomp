@@ -556,7 +556,15 @@ INCLUDE_ASM("asm/overlays", func_L05_00254328);
 INCLUDE_ASM("asm/overlays", func_L05_00254838);
 INCLUDE_ASM("asm/overlays", func_L05_00254B38);
 INCLUDE_ASM("asm/overlays", func_L05_00254DE8);
-INCLUDE_ASM("asm/overlays", func_L05_002559A0);
+extern unsigned char D_0013FD1E NOT_SDA;
+// Load byte and return conditional value (swapped condition)
+int func_L05_002559A0(void) {
+    unsigned char b = D_0013FD1E;  // selected help mode
+    int r = 0x7F;
+    if (b == 0)
+        r = 0x55;
+    return r;
+}
 INCLUDE_ASM("asm/overlays", func_L05_002559B8);
 /* returns 0x7E when arg is nonzero, else 0x68 */
 int func_L05_002559DC(int arg) {

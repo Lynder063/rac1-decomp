@@ -173,7 +173,16 @@ void func_L00_002D3330(M2d1e80 *m) {
 INCLUDE_ASM("asm/overlays", func_L00_002D3608);
 INCLUDE_ASM("asm/overlays", func_L00_002D3B20);
 INCLUDE_ASM("asm/overlays", func_L00_002D3F40);
-INCLUDE_ASM("asm/overlays", func_L00_002D42D8);
+extern int D_0015EE84 MACRO_ADDR;
+extern unsigned char D_0014C010[];
+/* increments the selected packed nibble, saturating at fifteen */
+void func_L00_002D42D8(unsigned char *moby) {
+ int row=D_0015EE84;
+ if (row<20) { int index=moby[0xBC]-1;
+ if (index&1) { unsigned char *p=D_0014C010+(index/2+row*16); unsigned int value=*p; int n=(value&15)+1; if(n>=16)n=15; *p=(value&240)|n; }
+ else { unsigned char *p=D_0014C010+(index/2+row*16); unsigned int value=*p; int n=(value>>4)+1; if(n>=16)n=15; *p=(value&15)|(n<<4); }
+ }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002D4348);
 INCLUDE_ASM("asm/overlays", func_L00_002D4398);
 extern char D_0013E633[] NOT_SDA;

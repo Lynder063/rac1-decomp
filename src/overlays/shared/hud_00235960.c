@@ -195,7 +195,26 @@ void func_L00_00236468(HudElem *e, int *x, int *y, int t, int d) {
     *x += dx;
     *y += dy;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00236610);
+/* updates numeric HUD values and dimensions from digit count */
+void func_L00_00236610(HudElem *e) {
+ int *value=e->unk0C;
+ int digits;
+ int v,flags,width;
+ if(value && !((int)value&3)) {
+ e->unk78=*value;
+ if(e->unk08<e->unk78) e->unk78=e->unk08;
+ e->unk74=e->unk78;
+ } else { e->unk78=99999; e->unk74=99999; }
+ v=e->unk08; digits=0; flags=e->flags; width=e->h;
+ while(v>=10) { v/=10; digits++; }
+ if(!(flags&3) && (flags&12)) {
+ e->h=width+(digits+1)*12;
+ if(e->w<14) e->w=14;
+ } else {
+ if(width<12) e->h=12;
+ e->w+=(digits+1)*14;
+ }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002366DC);
 extern int func_001F9850(int);
 extern void func_L00_00236610(HudElem *);

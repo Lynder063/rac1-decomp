@@ -67,7 +67,27 @@ void func_L13_0030D028(char *m) {
         qcopy(m + 0x10, o + 0x10);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L13_0030D2A8);
+extern int D_L13_0015F6A8 MACRO_ADDR;
+typedef struct { char pad[0x30]; int state; char pad34[0x14C]; int target; } L13Action;
+extern L13Action D_L13_0016CBE0;
+extern void func_L00_00264870(int);
+
+// Initializes the moby and invokes its selected level action.
+void func_L13_0030D2A8(unsigned char *moby)
+{
+    switch (moby[0x20]) {
+    case 0:
+        moby[0x30] = 0xFF;
+        moby[0x20] = 1;
+        break;
+    case 1:
+        if (D_L13_0015F6A8 == 2 && D_L13_0016CBE0.state == 2) {
+            func_L00_00264870(D_L13_0016CBE0.target);
+        }
+        break;
+    }
+
+}
 INCLUDE_ASM("asm/overlays", func_L13_0030D318);
 extern char *func_0020D348(int);
 extern void func_L00_00251E30(void *);

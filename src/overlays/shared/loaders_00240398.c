@@ -3,7 +3,40 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L00_00240398);
-INCLUDE_ASM("asm/overlays", func_L00_00240CE0);
+extern u64 D_L00_00182740[];
+extern u64 D_L00_001828C0[];
+extern u64 D_L00_001828D8[];
+/* writes GIF viewer setup words for a selected or fallback configuration */
+void func_L00_00240CE0(char *out,int a,int b,u64 c,int d,int idx) {
+ u64 x=D_L00_00182740[idx*3];
+ u64 y=D_L00_00182740[idx*3+1];
+ u64 z=D_L00_00182740[idx*3+2];
+ if(idx>=0) {
+ u64 q=((u64)b<<6)|32;
+ u64 word=(y&28)|q;
+ word|=(u64)a<<32;
+ *(u64 *)out=word;
+ out+=16;
+ *(u64 *)out=c|((u64)d<<2)|((u64)idx<<24);
+ out+=16; *(u64 *)out=x; *(u64 *)(out+16)=z;
+ } else if(idx<-1) {
+ u64 *p=D_L00_001828C0;
+ u64 hi,lo;
+ if(idx==-3) p=D_L00_001828D8;
+ hi=(u64)a<<32; lo=(u64)b;
+ hi|=32; lo<<=6; lo|=hi;
+ *(u64 *)out=lo;
+ out+=16; *(u64 *)out=5; out+=16;
+ *(u64 *)out=p[0]; *(u64 *)(out+16)=p[2];
+ } else {
+ u64 lo=(u64)b; u64 hi=(u64)a<<32;
+ hi|=32; lo<<=6; lo|=hi;
+ *(u64 *)out=lo;
+ out+=16; *(u64 *)out=5; out+=16;
+ *(u64 *)out=0x80000004cc007ffbULL;
+ *(u64 *)(out+16)=0;
+ }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00240D80);
 INCLUDE_ASM("asm/overlays", func_L00_00240DE0);
 INCLUDE_ASM("asm/overlays", func_L00_002420C0);

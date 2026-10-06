@@ -568,7 +568,25 @@ INCLUDE_ASM("asm/overlays", func_L01_002F0728);
 INCLUDE_ASM("asm/overlays", func_L01_002F0850);
 INCLUDE_ASM("asm/overlays", func_L01_002F0938);
 INCLUDE_ASM("asm/overlays", func_L01_002F0B48);
-INCLUDE_ASM("asm/overlays", func_L01_002F0E60);
+extern int func_L00_002DCDA8(void *);
+
+// Updates the state when the vendor predicate permits it.
+int func_L01_002F0E60(unsigned char *moby)
+{
+    int value = func_L00_002DCDA8(moby);
+    if (value != 0) {
+        if (*(short *)(moby + 0xA6) != 0x362) {
+            return 0;
+        } else if (moby[0x20] == 8) {
+            return 0;
+        } else {
+            moby[0x20] = 0xE;
+        }
+    } else if (moby[0x20] == 0xE) {
+        moby[0x20] = 1;
+    }
+    return value;
+}
 extern int func_L00_002DCFD0(void *);
 int func_L01_002F0ED0(char *a) {
     int r = func_L00_002DCFD0(a);

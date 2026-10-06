@@ -424,7 +424,29 @@ char *func_L11_00310A70(void *position, void *vector, int id) {
     }
     return moby;
 }
-INCLUDE_ASM("asm/overlays", func_L11_00310B28);
+extern char *func_L11_00311260(char *);
+extern void func_L00_00250800(void *, int, void *);
+// Updates an attached object's transform or clears the unattached position state.
+int func_L11_00310B28(char *owner, char *data) {
+ char *child;
+ if (!*(char **)(data + 0x34)) {
+  *(char **)(data + 0x34) = func_L11_00311260(owner);
+  if (!*(char **)(data + 0x34)) goto missing;
+ }
+ child = *(char **)(data + 0x34);
+ if (*(unsigned char *)(child + 0x20) == 0xFE) goto missing;
+ if (*(unsigned char *)(child + 0x20) == 0xFD) goto missing;
+ qcopy(child + 0x10, owner + 0x10);
+ qcopy(child + 0x40, owner + 0x40);
+ func_L00_00251E30(child);
+ func_L00_00250800(*(char **)(data + 0x34), 0, data);
+ func_001F9BF0(data + 0x20, *(char **)(data + 0x34) + 0x10, data);
+ return 1;
+missing:
+ qcopy(data, owner + 0x10);
+ qzero(data + 0x20);
+ return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L11_00310BF0);
 char *func_L11_00311260(char *owner) {
     char *moby = func_0020D348(0x4C3);

@@ -464,7 +464,38 @@ void func_L02_002E05E0(unsigned char *moby) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L02_002E0810);
-INCLUDE_ASM("asm/overlays", func_L02_002E0B68);
+extern float func_001F9D10(void *, void *);
+extern int func_L00_0028F210(int, int);
+extern char D_L02_00167440[];
+extern short D_L02_00161D10;
+extern short D_L02_00161D18;
+extern short D_L02_00161D1C;
+extern short D_L02_00161D20;
+extern short D_L02_00161D24;
+extern int D_001414D4;
+// Sets two sound-channel gains from distance when the expanding range reaches the hero.
+void func_L02_002E0B68(char *moby) {
+ char *data = *(char **)(moby + 0x78);
+ float distance;
+ int sound_a, sound_b, gain_a, gain_b;
+ if (*(float *)(data + 0x10) >= 0.0f) {
+  distance = func_001F9D10(D_L02_00167440, moby + 0x10);
+  *(float *)(data + 0x10) += *(float *)&D_L02_00161D10 * D_0015EE6C;
+  if (distance < *(float *)(data + 0x10) && D_001414D4 != 0x72) {
+   sound_a = func_0022ED80(0, 0x10, (int)moby);
+   sound_b = func_0022ED80(1, 0x10, (int)moby);
+   gain_a = func_001FA898_r((1.0f - (distance - *(float *)&D_L02_00161D18) / (*(float *)&D_L02_00161D1C - *(float *)&D_L02_00161D18)) * 1024.0f);
+   gain_b = func_001FA898_r(((distance - *(float *)&D_L02_00161D20) / (*(float *)&D_L02_00161D24 - *(float *)&D_L02_00161D20)) * 1024.0f);
+   if (gain_a > 1024) gain_a = 1024;
+   else if (gain_a < 0) gain_a = 0;
+   if (gain_b > 1024) gain_b = 1024;
+   else if (gain_b < 0) gain_b = 0;
+   func_L00_0028F210(sound_a, gain_a);
+   func_L00_0028F210(sound_b, gain_b);
+   *(float *)(data + 0x10) = -1.0f;
+  }
+ }
+}
 INCLUDE_ASM("asm/overlays", func_L02_002E0D80);
 extern void func_L00_001FF4B0(void *, void *, float);
 extern void func_L00_002607A8(void *a, float x);

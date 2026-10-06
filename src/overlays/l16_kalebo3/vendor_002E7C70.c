@@ -425,7 +425,155 @@ void func_L16_002E9278(char *moby) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002E93F8);
+typedef union {
+    u128 q;
+    float v[4];
+} L16PlatformVector;
+typedef struct {
+    char pad00[0x60];
+    float basis[4][4];
+    int joint;
+    int padA4;
+    float goal;
+    int padAC;
+    float speed;
+    int particle;
+} L16PlatformData;
+typedef struct {
+    char pad00[0x10];
+    float position[4];
+    unsigned char state;
+    char pad21[0x1F];
+    float rotation[4];
+    char pad50[0x28];
+    L16PlatformData *data;
+    char pad7C[0x40];
+    unsigned char reverse;
+} L16PlatformMoby;
+typedef struct {
+    char pad00[0x80];
+    float position[4];
+    char pad90[0x26C];
+    L16PlatformMoby *contact;
+    char pad300[0xE];
+    short grounded;
+} L16PlatformHero;
+extern L16PlatformHero D_0013F450;
+extern char *D_L16_001601BC MACRO_ADDR;
+extern float D_L16_00161F6C SDATA(D_L16_00161F6C);
+extern float D_L16_00161F7C SDATA(D_L16_00161F7C);
+extern short D_L16_00161F78;
+extern float D_0015EE70 MACRO_ADDR;
+extern void func_001F9EC0(void *, void *, void *);
+extern void func_001F9EE8(void *, void *, void *);
+extern void func_001F9BC0(void *);
+extern float func_001F9B88(float);
+extern float func_00214D88(float *, float *, float, float, float, float);
+extern void func_L00_002617B0(char *, void *, void *, void *);
+extern int func_L00_0028EB98(void *, int);
+extern void func_L00_0028EBF0(int);
+extern int func_0022ED80(int, int, int);
+extern void func_001F49B0(void *, void *);
+extern void func_L16_002E9960(char *);
+
+/* Moves the platform between two heights above its joint, with a particle while it moves. */
+void func_L16_002E93F8(L16PlatformMoby *m) {
+    L16PlatformVector delta, old_rotation, motion;
+    L16PlatformData *d = m->data;
+    float *position = m->position;
+    float *rotation = m->rotation;
+
+    func_001F9C30(delta.v, position, -1.0f);
+    qcopy(old_rotation.v, rotation);
+    if (d) {
+        switch (m->state) {
+        case 0:
+            motion.q = 0;
+            motion.v[2] = 1.0f;
+            d->particle = -1;
+            func_001F9EC0(motion.v, motion.v, D_L16_001601BC + (d->joint << 7));
+            d->goal = motion.v[2] + *(float *)(D_L16_001601BC + d->joint * 0x80 + 0x38);
+            m->position[2] = motion.v[2] + *(float *)(D_L16_001601BC + d->joint * 0x80 + 0x38) + D_L16_00161F6C;
+            m->reverse = 1;
+            m->state = 2;
+            break;
+        case 2:
+            if (func_L00_0028EB98(m, d->particle)) {
+                func_L00_0028EBF0(d->particle);
+                d->particle = -1;
+            }
+            if (func_001F9D48(position, D_0013F450.position) < 20.0f) {
+                func_001F9BC0(motion.v);
+                if (m->reverse) {
+                    motion.v[2] = -1.0f;
+                } else {
+                    motion.v[2] = 1.0f;
+                }
+                func_001F9EE8(motion.v, motion.v, D_L16_001601BC + (d->joint << 7));
+                motion.v[2] = motion.v[2] + *(float *)(D_L16_001601BC + d->joint * 0x80 + 0x38) + D_L16_00161F6C;
+                if (func_001F9B88(D_0013F450.position[2] - motion.v[2]) < 1.0f) {
+                    m->reverse = (m->reverse + 1) & 1;
+                    d->goal = motion.v[2];
+                    d->speed = 0.0f;
+                    m->state = 3;
+                    break;
+                }
+            }
+            if (D_0013F450.contact == m && D_0013F450.grounded == 0) {
+                func_001F9BC0(motion.v);
+                if (m->reverse) {
+                    motion.v[2] = -1.0f;
+                } else {
+                    motion.v[2] = 1.0f;
+                }
+                m->reverse = (m->reverse + 1) & 1;
+                func_001F9EE8(motion.v, motion.v, D_L16_001601BC + (d->joint << 7));
+                d->goal = motion.v[2] + *(float *)(D_L16_001601BC + d->joint * 0x80 + 0x38) + D_L16_00161F6C;
+                d->speed = 0.0f;
+                m->state = 3;
+            }
+            break;
+        case 3: {
+            float *hero_position = D_0013F450.position;
+            float speed;
+
+            if (func_001F9D48(hero_position, D_L16_001601BC + (d->joint << 7) + 0x30) > 2.25f
+                || func_001F9B88(m->position[2] - hero_position[2] - 2.0f) > 1.0f
+                || m->position[2] < d->goal) {
+                speed = func_00214D88(&m->position[2], &d->speed, d->goal,
+                                      D_L16_00161F7C * D_0015EE70, D_L16_00161F7C * D_0015EE70,
+                                      *(float *)&D_L16_00161F78 * D_0015EE6C);
+            } else {
+                speed = func_00214D88(&m->position[2], &d->speed, m->position[2],
+                                      D_L16_00161F7C * 4.0f * D_0015EE70, D_L16_00161F7C * 4.0f * D_0015EE70,
+                                      *(float *)&D_L16_00161F78 * D_0015EE6C);
+            }
+            func_001F9BC0(motion.v);
+            motion.v[2] = speed;
+            func_L00_002617B0((char *)d->basis, motion.v, m->rotation, m->rotation);
+            if (motion.v[2] != 0.0f) {
+                if (!func_L00_0028EB98(m, d->particle)) {
+                    d->particle = func_0022ED80(0, 4, (int)m);
+                }
+            } else if (func_L00_0028EB98(m, d->particle)) {
+                func_L00_0028EBF0(d->particle);
+                d->particle = -1;
+            }
+            if (m->position[2] == d->goal && (D_0013F450.contact != m || D_0013F450.grounded != 0)) {
+                func_001F9BC0(d->basis[1]);
+                m->state = 2;
+                break;
+            }
+            if (d->speed != 0.0f) {
+                func_001F49B0(func_L16_002E9960, m);
+            }
+            break;
+        }
+        }
+        func_001F9BD8(delta.v, delta.v, m->position);
+        func_L00_002617B0((char *)d->basis, delta.v, old_rotation.v, m->rotation);
+    }
+}
 extern float func_001F9B88(float);
 extern int func_001FA8A8(int,int,float);
 extern void func_001FA460(void *,void *);
