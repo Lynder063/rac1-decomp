@@ -633,7 +633,20 @@ void func_L02_002F79D0(float x, float y, float z) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L02_002F9ED8);
+/* stores two coordinate triples in the selected object data */
+void func_L02_002F9ED8(float a, float b, float c,
+                       float d, float e, float f) {
+    char *moby = D_L02_00167480;
+    char *data = *(char **)(moby + 0x70);
+    char *dst = data + 0x30;
+    *(float *)(dst + 0x20) = e;
+    *(float *)(dst + 0x24) = d;
+    *(float *)(dst + 0x28) = f;
+    { char *other = *(char **)(moby + 0x70);
+    *(float *)(other + 0x10) = b;
+    *(float *)(other + 0x14) = a;
+    *(float *)(other + 0x18) = c; }
+}
 typedef struct {
     int a;
     int b;

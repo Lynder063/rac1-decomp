@@ -72,7 +72,20 @@ int func_L00_00284620(char *h) {
     }
     return 0;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00284E20);
+extern int D_L00_001BA548[];
+// Finds one of five entries and returns its flag-selected size.
+int func_L00_00284E20(int id) {
+    int *p = D_L00_001BA548;
+    int i;
+    for (i = 0; i < 5; i++, p += 2) {
+        if (p[0] == id) {
+            int result = 0x11800;
+            if (p[1] & 1) result = 0x4F000;
+            return result;
+        }
+    }
+    return -1;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00284E5C);
 INCLUDE_ASM("asm/overlays", func_L00_00284E70);
 INCLUDE_ASM("asm/overlays", func_L00_00284EA0);

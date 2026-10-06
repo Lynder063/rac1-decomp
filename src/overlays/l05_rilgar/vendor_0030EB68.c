@@ -532,7 +532,16 @@ void func_L05_0031A8B8(char *moby) {
     *(float *)(d + 0xD4) = a * inv;
     *(float *)(d + 0xD8) = b * inv;
 }
-INCLUDE_ASM("asm/overlays", func_L05_0031B138);
+// Updates trailer visibility and flag bit from the current mode.
+void func_L05_0031B138(char *moby) {
+    if (D_L05_0015F6A8 == 2) {
+        moby[0x31] = 0;
+        *(unsigned short *)(moby + 0x34) |= 1;
+    } else {
+        moby[0x31] = 1;
+        *(unsigned short *)(moby + 0x34) &= 0xFFFE;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L05_0031B15C);
 INCLUDE_ASM("asm/overlays", func_L05_0031D450);
 extern void func_L00_00264870(int);

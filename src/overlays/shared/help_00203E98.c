@@ -152,7 +152,15 @@ void func_L00_002056D8(s32 n) {
         func_L00_00235790();
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00205728);
+extern int D_001414D0;
+extern int D_001405D4;
+extern int D_001404E0;
+// Selects a help status by mode.
+int func_L00_00205728(int mode) {
+ if (mode == 0 || mode == 2 || mode == 3 || mode == 4) return D_001414D0;
+ if (mode == 1) return D_001405D4;
+ if (mode == 5) { return D_001404E0; } else { return 0; }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00205754);
 INCLUDE_ASM("asm/overlays", func_L00_00205768);
 INCLUDE_ASM("asm/overlays", func_L00_00205778);

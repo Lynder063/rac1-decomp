@@ -404,4 +404,38 @@ void func_L06_0030B248(char *self) {
     }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L06_0030B3E8);
+void func_L06_0030B3E8(char *self) {
+    int flag = 0;
+    char *o = func_L00_0025B478(self, 0x10000, 0);
+    switch (((unsigned char *)self)[0x20]) {
+    case 0:
+        self[0x20] = 1;
+        break;
+    case 1:
+        if (o != 0 && *(float *)(o + 0x2C) > 0.0f) {
+            flag = 1;
+        }
+        if (flag) {
+            self[0x20] = 2;
+        }
+        break;
+    case 2: {
+        char *m;
+        func_0022ED80_0B248(0, 0, (int)self);
+        func_L01_00279790(self);
+        func_L00_00265050(self, 0x682, self + 0x10, self + 0x40, 0, 0, 0.0f, D_L06_0015F660, D_L06_0015F660, D_L06_0015F660);
+        func_L00_00265050(self, 0x682, self + 0x10, self + 0x40, 0, 0, 0.0f, D_L06_0015F660, D_L06_0015F660, D_L06_0015F660);
+        m = func_0020D348(0x681);
+        if (m != 0) {
+            m[0x31] = 1;
+            *(short *)(m + 0x32) = 0xFF;
+            qcopy(m + 0x10, self + 0x10);
+            qcopy(m + 0x40, self + 0x40);
+            *(long *)(m + 0x38) = *(long *)(self + 0x38);
+            func_L00_00251E30(m);
+        }
+        func_0020D678_0B248(self);
+        break;
+    }
+    }
+}

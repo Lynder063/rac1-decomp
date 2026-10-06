@@ -124,7 +124,23 @@ void func_L00_0028A5A8(void) {
         SkyDrawShell(i);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_0028A6F8);
+extern int D_L00_0015F6B0 MACRO_ADDR;
+void func_L00_001FFA40(void *,void *);
+/* rotates animated sky shells and draws each layer */
+void func_L00_0028A6F8(void) {
+ float v[4] __attribute__((aligned(16))); int i;
+ *(short *)(D_L00_001605DC+4)=0;
+ qzero(v);
+ for(i=0;i<*(short *)(D_L00_001605DC+6);i++) {
+ switch(i) {
+ case 2: v[2]=(D_L00_0015F6B0&0x3ffff)*0.000023968450f-3.14159265f; func_L00_001FFA40(D_L00_001BDB70,v); break;
+ case 3: v[2]=(D_L00_0015F6B0&0x1ffff)*0.000047936900f-3.14159265f; func_L00_001FFA40(D_L00_001BDB70,v); break;
+ case 4: v[2]=(unsigned short)D_L00_0015F6B0*0.000095873800f-3.14159265f; func_L00_001FFA40(D_L00_001BDB70,v); break;
+ default:func_001FA190(D_L00_001BDB70);
+ }
+ func_0022C9A8(i);
+ }
+}
 extern void func_0022CEB8(void);
 extern void func_00234C98(int, long);
 
@@ -223,8 +239,37 @@ void func_L00_0028A878(void) {
     func_0022C9A8(2);
     func_0022C9A8(3);
 }
-INCLUDE_ASM("asm/overlays", func_L00_0028AC80);
-INCLUDE_ASM("asm/overlays", func_L00_0028AD68);
+extern int D_L00_0015F6B0 MACRO_ADDR;
+void func_L00_001FFA40(void *,void *);
+/* refreshes two rotating shrub transform layers */
+void func_L00_0028AC80(void) {
+ float v[4] __attribute__((aligned(16)));
+ *(short *)(D_L00_001605DC+4)=0;
+ func_001FA190(D_L00_001BDB70);
+ func_0022C9A8(0);
+ qzero(v);
+ v[2]=(unsigned short)D_L00_0015F6B0*0.000095873800f-3.14159265f;
+ func_L00_001FFA40(D_L00_001BDB70,v);
+ func_0022C9A8(1);
+ v[2]=(D_L00_0015F6B0&0x1ffff)*0.000047936900f-3.14159265f;
+ func_L00_001FFA40(D_L00_001BDB70,v);
+ func_0022C9A8(2);
+}
+extern void func_L00_001FFA40(void *,void *);
+/* draws sky shells with two animated rotation offsets */
+void func_L00_0028AD68(void) {
+ float v[4] __attribute__((aligned(16))); int i;
+ *(short *)(D_L00_001605DC+4)=0; qzero(v);
+ for(i=0;i<*(short *)(D_L00_001605DC+6);++i) {
+ switch(i) {
+ case 1: v[2]=(float)*(unsigned short *)&D_L00_0015F6B0*0.0000958738017f-3.14159265f; func_L00_001FFA40(D_L00_001BDB70,v); break;
+ case 2: v[2]=(float)(D_L00_0015F6B0&0x1FFFF)*0.00004793690085f-3.14159265f;
+ func_L00_001FFA40(D_L00_001BDB70,v); break;
+ default: func_001FA190(D_L00_001BDB70); break;
+ }
+ func_0022C9A8(i);
+ }
+}
 void func_L00_0028A198(s32 a, s32 b);
 void func_L00_0028A3E0(void);
 extern char D_L00_001BDB70[];
@@ -521,7 +566,32 @@ void func_L00_0028B758(void)
         func_0022C9A8(i);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_0028B8F8);
+extern short D_L00_0015F6B0_s __asm__("D_L00_0015F6B0");
+// Rotates each sky shell at its assigned angular rate before drawing.
+void func_L00_0028B8F8(void) {
+ float v[4] __attribute__((aligned(16)));
+ int i;
+ *(short *)(D_L00_001605DC + 4) = 0;
+ qzero(v);
+ for (i = 0; i < *(short *)(D_L00_001605DC + 6); i++) {
+  switch (i) {
+   case 1:
+    v[2] = (D_L00_0015F6B0 & 0x3FFFF) * (3.14159265f / 131072.0f) - 3.14159265f;
+    func_L00_001FFA40(D_L00_001BDB70, v);
+    break;
+   case 2:
+    v[2] = (D_L00_0015F6B0 & 0x1FFFF) * (3.14159265f / 65536.0f) - 3.14159265f;
+    func_L00_001FFA40(D_L00_001BDB70, v);
+    break;
+   case 3:
+    v[2] = *(unsigned short *)&D_L00_0015F6B0_s * (3.14159265f / 32768.0f) - 3.14159265f;
+    func_L00_001FFA40(D_L00_001BDB70, v);
+    break;
+   default: func_001FA190(D_L00_001BDB70); break;
+  }
+  func_0022C9A8(i);
+ }
+}
 extern char D_L00_001BDB70[] NOT_SDA;
 extern char *D_L00_001605DC MACRO_ADDR;
 extern void func_001FA190(void *);

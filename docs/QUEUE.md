@@ -147,6 +147,11 @@ stop and say in NOTES.md which instructions are left.
 - A moby (game object) is a `char *`/struct pointer with fields at fixed
   offsets: state byte at 0x20, position vector at 0x10, its own data
   pointer at 0x78. Matched code in the packet shows the usual spellings.
+- A packet that says "A joined function" lists several catalogue entries:
+  they are one function, written under the first name. A branch to the
+  next entry's name is a branch inside it. A `lui` in the delay slot of
+  such a branch belongs to the load at the top of the next entry:
+  `lui $3, 0x14` then `lw $2, 0x14DC($3)` reads `D_001414DC`.
 
 ## Codegen (verified on matched functions)
 
@@ -205,6 +210,16 @@ stop and say in NOTES.md which instructions are left.
   (func_L13_002C4A68).
 - A variant of matched C ("differs only in a number" in the packet): copy
   it and change the constant, offset or callee the assembly shows.
+- A walk over an id list (`lhu`, `andi 0x7FFF`, `sll 8`, a class compare,
+  `bgez` back to the top) where retail loads the class constant inside the
+  loop: return early for an empty list, then `for (;;)` with every exit a
+  `return` inside the body and nothing after the loop; an entry of the
+  wrong class that retail sends back to the top is `continue`. A
+  `do`/`while` with the test as its condition hoists the constant into a
+  saved register (func_L16_002D0A40, func_L16_002D6E98).
+- When one function of a family has matched, write its siblings in exactly
+  its form first (func_L16_002D6F90 and func_L16_002D7178, each EXACT on
+  the first run from func_L16_002D6E98).
 
 ## Walls: stop at once and name the wall in NOTES.md
 

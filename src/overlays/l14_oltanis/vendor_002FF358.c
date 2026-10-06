@@ -3,7 +3,15 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L14_002FF358);
-INCLUDE_ASM("asm/overlays", func_L14_002FF6C0);
+extern char *D_L14_00160098 MACRO_ADDR;
+extern void func_0020D678(void *);
+/* deletes the linked moby and then the owner if still active */
+void func_L14_002FF6C0(char *moby) {
+ char *data=*(char **)(moby+0x78);
+ char *other=D_L14_00160098+(*(int *)(data+4)<<8);
+ if(other!=0 && other[0x20]>=0) func_0020D678(other);
+ if(moby[0x20]>=0) func_0020D678(moby);
+}
 INCLUDE_ASM("asm/overlays", func_L14_002FF728);
 INCLUDE_ASM("asm/overlays", func_L14_002FFF08);
 INCLUDE_ASM("asm/overlays", func_L14_00300468);

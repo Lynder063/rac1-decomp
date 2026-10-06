@@ -50,7 +50,20 @@ int func_L12_002E2B08(Level12VendorStateMoby *moby) {
     moby->state = 8;
     return result;
 }
-INCLUDE_ASM("asm/overlays", func_L12_002E2B88);
+typedef union { long long quad; float f[4]; } L12Vector;
+extern float D_0015EE70 MACRO_ADDR;
+extern float func_00214358_order(float, void *, int) __asm__("func_00214358");
+extern void func_00214D28_order(float, float, void *) __asm__("func_00214D28");
+
+// Copies the position and updates its height from the terrain.
+void func_L12_002E2B88(char *moby) {
+    L12Vector position;
+    float value;
+    qcopy(&position, moby + 0x10);
+    position.f[2] += 0.5f;
+    value = func_00214358_order(0.5f, &position, 0);
+    func_00214D28_order(value, D_0015EE70 * 27.0f, moby + 0x18);
+}
 extern int func_002140B0(int);
 extern int func_001F9850(int);
 extern void func_00213DE0(void *, int, int, int);

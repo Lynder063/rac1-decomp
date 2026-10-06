@@ -377,7 +377,24 @@ void func_L13_002B6168(Level13VendorMoby *moby) {
         moby->value = 0;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L13_002B61A0);
+extern float func_00214358(void *,int,float);
+extern short D_0015EE70;
+/* adjusts moby height toward the sampled ground height */
+void func_L13_002B61A0(char *m,char *d) {
+ float ground=func_00214358(m+0x10,0,0.5f);
+ float z=*(float *)(m+0x18);
+ if(ground<z+0.3f) {
+ float v=*(float *)(d+0x128)-*(float *)&D_0015EE70*9.8f;
+ *(float *)(d+0x128)=v;
+ *(float *)(m+0x18)=*(float *)(m+0x18)+v;
+ if(*(float *)(m+0x18)<ground) *(float *)(m+0x18)=ground;
+ } else if(z<ground) {
+ *(float *)(m+0x18)=z+*(float *)&D_0015EE70*9.8f;
+ qzero(d+0x120);
+ } else {
+ qzero(d+0x120);
+ }
+}
 INCLUDE_ASM("asm/overlays", func_L13_002B6288);
 extern int func_001F4868(int);
 extern void func_L11_003121C0(float, float, float, float, float, int, int, int, int, int, int, int, int);

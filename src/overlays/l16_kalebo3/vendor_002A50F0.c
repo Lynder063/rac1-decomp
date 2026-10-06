@@ -5,7 +5,7 @@
 typedef int L16SparkQuad __attribute__((mode(TI)));
 typedef union { L16SparkQuad quad; float f[4]; } L16SparkVector;
 typedef struct {float direction[4]; void *owner;int flags;unsigned char kind,enabled;unsigned short cls;float scale;int active;} L16SparkQuery;
-typedef struct {char pad[0x18];char *moby;int count;float position[4];} L16SparkHit;
+typedef struct {char pad[0x18];char *moby;int count;float position[4];float unk30[4];float normal[4];} L16SparkHit;
 extern L16SparkHit D_L16_001742C0_hit __asm__("D_L16_001742C0");
 extern char *D_L16_001B285C;
 extern char D_0013E633[];
@@ -266,7 +266,87 @@ typedef struct {
 int func_L16_002C5A08(Level16VendorMoby *moby) {
     return moby->state == 6;
 }
-INCLUDE_ASM("asm/overlays", func_L16_002C7218);
+extern float func_001F9C78(void *, void *);
+extern void func_L00_001FF610(void *, void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern float func_001F9CB8(void *);
+extern int func_001F9908(int *);
+extern void func_L00_0025E4B0(void *m, short *p);
+extern void func_L00_0025E590(void *, void *);
+typedef struct {
+    char pad00[7];
+    unsigned char reaction;     /* 0x07 */
+    char pad08[8];
+    float velocity[4];          /* 0x10 */
+    void *owner;                /* 0x20: the moby that threw it, left out of the sweep */
+    float gravity;              /* 0x24 */
+    int timer;                  /* 0x28 */
+} L16FallingData;
+typedef struct {
+    char pad00[0x10];
+    float position[4];          /* 0x10 */
+    unsigned char state;        /* 0x20 */
+    char pad21[0x57];
+    L16FallingData *data;       /* 0x78 */
+} L16FallingMoby;
+
+/* Update a thrown bomb (class 0x119): fly and bounce off what it hits and off the ground, rest, then burst. */
+void func_L16_002C7218(L16FallingMoby *m) {
+    float previous[4], normal[4];
+    L16FallingData *d = m->data;
+
+    switch (m->state) {
+    case 1:
+        /* No pointer locals: m->position and d->velocity are written at each use and the compiler caches
+           them itself (velocity formed in the argument register and copied to a saved one, the position
+           copied a second time for the ground test). */
+        qcopy(previous, m->position);
+        func_001F9BD8(m->position, m->position, d->velocity);
+        if (func_L00_001EFFF0_spark(previous, m->position, 5, d->owner, 0)) {
+            func_L00_001FF4B0(normal, D_L16_001742C0_hit.normal, 1.0f);
+            if (func_001F9C78(normal, d->velocity) < 0.0f) {
+                func_L00_001FF610(d->velocity, d->velocity, normal);
+                func_001F9C30(d->velocity, d->velocity, 0.25f);
+            }
+        }
+        if (func_L00_001F10E0(0.333f, m->position, 2, 0)) {
+            func_L00_001FF4B0(normal, D_L16_001742C0_hit.normal, 0.333f);
+            if (func_001F9C78(normal, d->velocity) < 0.0f) {
+                func_L00_001FF610(d->velocity, d->velocity, normal);
+                func_001F9C30(d->velocity, d->velocity, 0.25f);
+            }
+            qcopy(m->position, D_L16_001742C0_hit.position);
+            m->position[2] += normal[2];
+            if (normal[2] >= 0.3f && func_001F9CB8(d->velocity) < D_0015EE6C * 0.25f) {
+                m->state = 2;
+                d->timer = func_001F9850(90);
+            }
+        }
+        if (func_001F9908(&d->timer)) {
+            m->state = 3;
+        } else if (d->timer < func_001F9850(45) && d->timer % func_001F9850(10) == 0) {
+            d->reaction = 250;
+            func_L00_0025E4B0(m, (short *)d);
+        }
+        d->velocity[2] -= d->gravity;
+        break;
+    case 2:
+        if (func_001F9908(&d->timer)) {
+            m->state = 3;
+        } else if (d->timer < func_001F9850(61) && d->timer % func_001F9850(20) == 0) {
+            d->reaction = 250;
+            func_L00_0025E4B0(m, (short *)d);
+        }
+        break;
+    case 3:
+        func_0022ED80_i(0, 0, m);
+        func_L00_0025F4A8(m, D_L16_0015F660_spark, 0, 1.5f, 1.0f, 7, 10, 20, 3.0f, 1.7f, 4.0f, -1, 1.0f, 7.0f,
+                          0, 7, -1, 0);
+        func_0020D678(m);
+        return;
+    }
+    func_L00_0025E590(m, d);
+}
 extern char *func_0020D348_m(int) __asm__("func_0020D348");
 extern int func_001F9850(int);
 extern float func_002140F8(float, float);
@@ -2141,7 +2221,252 @@ void func_L16_002E4BD8(void *moby, int on) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002E4C08);
+typedef struct {
+    char pad00[0x60];
+    char effect[7];             /* 0x60: record func_L00_0025E590 updates */
+    unsigned char ticks;        /* 0x67 */
+    char pad68[8];
+    float knock[4];             /* 0x70: record func_L00_0025D5B0 fills (velocity first) */
+    float knock_drag;           /* 0x80 */
+    float knock_gravity;        /* 0x84 */
+    float knock_speed;          /* 0x88 */
+    float knock_rise;           /* 0x8C */
+    int unknown90;
+    int knock_flags;            /* 0x94 */
+    char pad98[0x15];
+    unsigned char knock_bAD;    /* 0xAD */
+    char padAE[0x22];
+    int counter;                /* 0xD0 */
+    float timer;                /* 0xD4 */
+    int path;                   /* 0xD8: index into D_L16_001B0C30 */
+    int other_path;             /* 0xDC */
+    int trigger;                /* 0xE0 */
+    float vx;                   /* 0xE4 */
+    float vy;                   /* 0xE8 */
+    float vz;                   /* 0xEC */
+    float turn;                 /* 0xF0 */
+    char *child;                /* 0xF4 */
+    int unknownF8;
+    int mode;                   /* 0xFC */
+} L16CrateData;
+typedef struct {
+    char pad00[0x10];
+    int bounds;
+} L16CrateModel;
+typedef struct {
+    char pad00[0x10];
+    float position[4];          /* 0x10 */
+    unsigned char state;        /* 0x20 */
+    char pad21[3];
+    L16CrateModel *model;       /* 0x24 */
+    char pad28[8];
+    unsigned char collision;    /* 0x30 */
+    char pad31[3];
+    unsigned short flags;       /* 0x34 */
+    char pad36[10];
+    float rotation[4];          /* 0x40 */
+    char pad50[2];
+    unsigned char frame;        /* 0x52 */
+    unsigned char animation;    /* 0x53 */
+    char pad54[0x1C];
+    unsigned char status;       /* 0x70 */
+    char pad71[7];
+    L16CrateData *data;         /* 0x78 */
+    char pad7C[0x18];
+    int bounds;                 /* 0x94 */
+    char pad98[0xC];
+    unsigned char opacity;      /* 0xA4 */
+    char padA5[0xD];
+    short id;                   /* 0xB2 */
+} L16CrateMoby;
+typedef struct {
+    char pad00[0x80];
+    float position[4];          /* 0x80 */
+    char pad90[0x1AC];
+    void *standing;             /* 0x23C: the moby the hero stands on */
+} L16CratePlayer;
+extern char D_L16_001E89A0[], D_L16_001E89D8[], D_L16_001E8A20[], D_L16_001E8A58[], D_L16_001E8AA0[];
+extern short D_L16_00161E54, D_L16_00161E58;
+extern void func_00213D28(void *, int, int);
+extern int func_001E9730();
+extern void func_L14_002FFD88(void *);
+extern void func_L00_0025D5B0(void *, void *, int, int, int, float);
+extern void func_L00_002592B0_path54(char*,float,float*,float,float,float) __asm__("func_L00_002592B0");
+extern char *func_L14_00300F80(void *, void *);
+extern void func_L14_003000B0(void *);
+extern void func_L14_00301090(void *);
+extern void func_L14_00300130(void *);
+extern int func_L16_002E5408(char *moby);
+extern float func_L00_0025C918(float *p, float *v, float t, float u1, float u2, float eps);
+extern int func_L00_0025D6F0(void *,void *);
+extern void func_L00_0025E590(void *, void *);
+
+/* Update of the crate platform: hit reaction, then its seven states. */
+void func_L16_002E4C08(L16CrateMoby *m) {
+    L16CrateData *d = m->data;
+    char *hit;
+
+    if ((m->status & 2) && m->frame == m->animation && m->frame == 1)
+        func_00213DE0(m, 4, 0, func_001F9850(5));
+    if (((L16CratePlayer *)(D_0013E633 + 0xE1D))->standing == m && m->animation != 1 && m->frame != 1)
+        func_00213DE0(m, 1, 0, func_001F9850(5));
+    hit = func_L00_0025B478(m, 0x210000, 0);
+    if (!hit && d->child)
+        hit = func_L00_0025B478(d->child, 0x210000, 0);
+    if (hit && m->state != 6) {
+        L16CratePlayer *hero = (L16CratePlayer *)(D_0013E633 + 0xE1D);
+
+        d->knock_drag = 0.008f;
+        d->knock_gravity = 0.0005f;
+        d->knock_speed = D_0015EE6C * 24.0f;
+        d->knock_rise = D_0015EE6C * 12.0f;
+        d->knock_flags = 1;
+        d->knock_bAD = 0;
+        func_L00_0025D5B0(m, d->knock, 1, 1, 0,
+                          func_L00_001FF860(m->position[0] - hero->position[0], m->position[1] - hero->position[1]));
+        d->ticks = 0x78;
+        func_L00_002584A8(m, 0, -1);
+        m->state = 6;
+    }
+    m->opacity = 0xFF;
+    switch (m->state) {
+    case 0:
+        if (d->mode == 2) {
+            m->state = 1;
+            d->turn = 0.0f;
+            func_00213D28(m, 4, 0);
+        } else {
+            if (d->path == -1) {
+                func_001E9730(D_L16_001E89A0, m->id);
+                func_0020D678(m);
+                return;
+            }
+            if (*(int *)D_L16_001B0C30[d->path] == 0) {
+                func_001E9730(D_L16_001E89D8, m->id);
+                func_0020D678(m);
+                return;
+            }
+            if (d->mode != 1) {
+                if (d->other_path == -1) {
+                    func_001E9730(D_L16_001E8A20, m->id);
+                    func_0020D678(m);
+                    return;
+                }
+                if (*(int *)D_L16_001B0C30[d->other_path] == 0) {
+                    func_001E9730(D_L16_001E8A58, m->id);
+                    func_0020D678(m);
+                    return;
+                }
+            }
+            if (d->trigger == -1) {
+                func_001E9730(D_L16_001E8AA0, m->id);
+                func_0020D678(m);
+                return;
+            }
+            func_L14_002FFD88(m);
+            m->state = 2;
+            m->collision = 0x80;
+            m->flags |= 0x41;
+            m->bounds = 0;
+        }
+        d->child = 0;
+        break;
+    case 1: {
+        L16CratePlayer *hero = (L16CratePlayer *)(D_0013E633 + 0xE1D);
+
+        func_L00_002592B0_path54((char *)m,
+                                 func_L00_001FF860(hero->position[0] - m->position[0], hero->position[1] - m->position[1]),
+                                 &d->turn, 0.005f, 0.2f, 0.0f);
+        func_L14_00300130(m);
+        break;
+    }
+    case 2:
+        if (func_00215570(D_0013E633 + 0xE9D, d->trigger)) {
+            if (d->mode == 1) {
+                func_00213D28(m, 0, 0);
+            } else {
+                d->child = func_L14_00300F80(m, m->position);
+                func_L14_003000B0(m);
+                func_00213D28(m, 2, 0);
+            }
+            m->flags &= 0xFFBE;
+            m->bounds = m->model->bounds;
+            m->state = 4;
+        }
+        break;
+    case 4:
+        if (d->mode == 0)
+            func_L14_003000B0(m);
+        if (func_L16_002E5408((char *)m)) {
+            m->state = 3;
+            func_00213DE0(m, 3, 0, 5);
+        }
+        func_L14_00300130(m);
+        break;
+    case 3: {
+        L16CrateData *a = m->data;
+        char *path = D_L16_001B0C30[a->path];
+        float target[4];
+        float zero;
+
+        if (a->mode == 0)
+            func_L14_003000B0(m);
+        qcopy(target, path + *(int *)path * 16);
+        zero = 0.0f;
+        func_L00_0025C918(m->position, &a->vx, target[0], *(float *)&D_L16_00161E54, *(float *)&D_L16_00161E58, zero);
+        func_L00_0025C918(m->position + 1, &a->vy, target[1], *(float *)&D_L16_00161E54, *(float *)&D_L16_00161E58, zero);
+        func_L00_0025C918(m->position + 2, &a->vz, target[2], *(float *)&D_L16_00161E54, *(float *)&D_L16_00161E58, zero);
+        if ((m->status & 2) && m->frame == m->animation) {
+            if (a->mode == 1) {
+                m->state = 1;
+                a->turn = zero;
+                func_00213D28(m, 4, 0);
+            } else {
+                if (a->child) {
+                    func_L14_00301090(a->child);
+                    a->child = 0;
+                }
+                m->state = 5;
+                func_00213DE0(m, 0, 0, 20);
+                a->timer = zero;
+                a->counter = 0;
+            }
+        }
+        func_L14_00300130(m);
+        break;
+    }
+    case 5:
+        if (func_L16_002E5408((char *)m)) {
+            char *path;
+
+            m->state = 2;
+            m->bounds = 0;
+            m->flags |= 0x41;
+            d->timer = 0.0f;
+            d->counter = 0;
+            d->turn = d->vx = d->vy = d->vz = d->timer;
+            path = D_L16_001B0C30[d->path];
+            qcopy(m->position, path + 0x10);
+            m->rotation[2] = func_L00_001FF860(*(float *)(path + 0x20) - *(float *)(path + 0x10),
+                                               *(float *)(path + 0x24) - *(float *)(path + 0x14));
+        } else {
+            func_L14_00300130(m);
+        }
+        break;
+    case 6:
+        if (func_L00_0025D6F0(m, d->knock) & 3) {
+            func_L00_00260108(m, m->position, -1, 1.0f, 13.0f);
+            func_0020D678(m);
+            return;
+        }
+        if (m->position[2] < 5.0f) {
+            func_0020D678(m);
+            return;
+        }
+        break;
+    }
+    func_L00_0025E590(m, d->effect);
+}
 extern int func_L00_0025E860_path54(char*,float*,float*,float*,int,float) __asm__("func_L00_0025E860");
 extern float func_L00_0025C918(float *p, float *v, float t, float u1, float u2, float eps);
 extern void func_L00_002592B0_path54(char*,float,float*,float,float,float) __asm__("func_L00_002592B0");

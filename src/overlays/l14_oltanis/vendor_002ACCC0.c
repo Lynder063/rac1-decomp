@@ -267,7 +267,17 @@ char *func_L14_002B0168(int index) {
     } while (*p++ >= 0);
     return best;
 }
-INCLUDE_ASM("asm/overlays", func_L14_002B0288);
+/* counts table entries through the first negative terminator */
+int func_L14_002B0288(char *moby) {
+    short *table = D_L14_001AC2C0_2B0168[(unsigned char)moby[0x21]];
+    int count = 0;
+    if (table == 0)
+        return 0;
+    do {
+        count++;
+    } while (*table++ >= 0);
+    return count;
+}
 INCLUDE_ASM("asm/overlays", func_L14_002B02B0);
 INCLUDE_ASM("asm/overlays", func_L14_002B4E40);
 extern void func_L00_0025E4B0(void *, short *);
@@ -339,7 +349,27 @@ void func_L14_002B56F8(int idx) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L14_002B5750);
-INCLUDE_ASM("asm/overlays", func_L14_002B58C0);
+// Tests whether a vendor group has no active unready objects.
+int func_L14_002B58C0(int index) {
+ unsigned short *list = (unsigned short *)D_L14_001AC2C0_2B0168[index];
+ int count = 0;
+ char *base;
+ if (list) goto scan;
+success:
+ return 1;
+scan:
+ base = D_L14_00160098_2B0168;
+ do {
+  unsigned short id = *list;
+  char *moby = base + ((id & 0x7FFF) << 8);
+  int state = *(signed char *)(moby + 0x20);
+  char *data = *(char **)(moby + 0x78);
+  if (state >= 0) count++;
+  if (state >= 0 && *(short *)(data + 0x88)) goto success;
+  list++;
+  if ((short)id < 0) return count == 0;
+ } while (1);
+}
 INCLUDE_ASM("asm/overlays", func_L14_002B58E4);
 INCLUDE_ASM("asm/overlays", func_L14_002B5938);
 /* Sibling of func_L14_002B5590 (84% similar): same collision step on the moby's data block, but
