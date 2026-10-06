@@ -115,7 +115,18 @@ void func_L14_002B4AE0(int idx) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L14_002B4B70);
+/* counts class 28 objects in states five and six */
+int func_L14_002B4B70(int index) {
+ int count=0; unsigned short *ids; char *base; unsigned short id;
+ if (index == -1) return 0;
+ ids=(unsigned short *)D_L14_001AC2C0[index];
+ if (!ids) return 0;
+ base=D_L14_00160098;
+ do { char *m; id=*ids; m=base+(id&0x7FFF)*256;
+ if (*(short *)(m+0xA6)==28 && (unsigned char)((unsigned char)m[0x20]-5)<=1) ++count;
+ ++ids; } while ((short)id>=0);
+ return count;
+}
 INCLUDE_ASM("asm/overlays", func_L14_002B4B84);
 INCLUDE_ASM("asm/overlays", func_L14_002B4BF0);
 INCLUDE_ASM("asm/overlays", func_L14_002B4C2C);

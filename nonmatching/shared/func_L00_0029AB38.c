@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L00_0029AB38 -- src/overlays/shared/tieproc_00299108.c
- * Best so far: BYTES 88/480 (81.7% of the bytes match), checked 2026-10-05.
+ * Best so far: BYTES 88/480 (81.7% of the bytes match), checked 2026-10-06.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

@@ -511,7 +511,25 @@ void func_L00_002175D0(int idx, int a, int b) {
     }
     g->b[idx] = a;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00217648);
+extern unsigned char D_0013F450_178A0b[] __asm__("D_0013F450");
+
+/* fills the first free record in the help queue */
+void func_L00_00217648(int x, int y, int z) {
+    char *base = (char *)D_0013F450_178A0b;
+    char *p = base + 0x21D8;
+    int i = 0;
+    do {
+        if (*(short *)p == 0) {
+            *(short *)p = 1;
+            *(short *)(p + 6) = z;
+            *(short *)(p + 4) = y;
+            *(short *)(p + 2) = x;
+            return;
+        }
+        i++;
+        p += 8;
+    } while (i < 8);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00217680);
 extern unsigned char D_001414F5[] NOT_SDA;
 extern int func_001F9938(void *);

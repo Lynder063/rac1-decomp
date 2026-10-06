@@ -64,7 +64,24 @@ INCLUDE_ASM("asm/overlays", func_L08_002E30E8);
 INCLUDE_ASM("asm/overlays", func_L08_002E33F0);
 INCLUDE_ASM("asm/overlays", func_L08_002E35C8);
 INCLUDE_ASM("asm/overlays", func_L08_002E3860);
-INCLUDE_ASM("asm/overlays", func_L08_002E4118);
+extern char *D_L08_00160058 MACRO_ADDR;
+
+/* updates matching objects in the selected object range */
+void func_L08_002E4118(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    int oclass=0x279;
+    char *base = D_L08_00160058;
+    int *ids = (int *)(data + 0x130);
+    char **output = (char **)(data + 0x158);
+    int i=9;
+    for (;;) {
+        char *other = (char *)((*ids << 8) + (unsigned int)base);
+        if (*(short *)(other + 0xA6) == oclass) {
+            *output++ = other;
+        }
+        --i; if(i<0)return; ++ids;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L08_002E4168);
 INCLUDE_ASM("asm/overlays", func_L08_002E4BE8);
 extern void func_001F9CA0(void *, void *, void *);

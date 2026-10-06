@@ -271,7 +271,33 @@ INCLUDE_ASM("asm/overlays", func_L13_00308860);
 INCLUDE_ASM("asm/overlays", func_L13_00308FA8);
 INCLUDE_ASM("asm/overlays", func_L13_00309330);
 INCLUDE_ASM("asm/overlays", func_L13_0030A1C8);
-INCLUDE_ASM("asm/overlays", func_L13_0030A828);
+extern float func_00214358(void *,int,float);
+extern void func_L00_001FF4B0(void *,void *,float);
+extern void func_L00_00250800(void *,int,void *);
+extern float func_001FA888(int);
+extern float func_001FA748(float,float);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_001F9BD8(void *,void *,void *);
+extern char D_L13_00174200[];
+extern short D_L13_00161F10,D_L13_00161F14;
+/* initializes a sixteen-point curved trail around a moby */
+void func_L13_0030A828(char *m) {
+ float v[4]; int i; char *d=*(char **)(m+0x78);
+ func_00214358(m+0x10,0,0.5f);
+ func_L00_001FF4B0(d+0x200,D_L13_00174200,1.0f);
+ func_L00_00250800(m,0,d+0x1f0);
+ for(i=0;i<16;i++) {
+ float angle=(func_001FA888(i)*0.0625f-0.5f)*(*(float *)&D_L13_00161F10*0.017453292f);
+ v[0]=func_001F9F90(func_001FA748(angle,*(float *)(m+0x48)))*0.5f;
+ v[1]=func_001F9FA8(func_001FA748(angle,*(float *)(m+0x48)))*0.5f;
+ v[2]=0;
+ func_001F9BD8(d+0x210+i*16,d+0x1f0,v);
+ if(i==0 || i==15) *(int *)(d+0x21c+i*16)=0;
+ else *(float *)(d+0x21c+i*16)=1.0f;
+ }
+ *(float *)(d+0x1fc)=func_001F9850(*(int *)&D_L13_00161F14);
+}
 INCLUDE_ASM("asm/overlays", func_L13_0030A9B0);
 extern float func_002140F8(float, float);
 extern float func_00214158(void);

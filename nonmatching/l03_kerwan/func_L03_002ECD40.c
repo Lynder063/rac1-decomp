@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L03_002ECD40 -- src/overlays/l03_kerwan/vendor_002CB280.c
- * Best so far: BYTES 40/372 (89.2% of the bytes match), checked 2026-10-05.
+ * Best so far: BYTES 40/372 (89.2% of the bytes match), checked 2026-10-06.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

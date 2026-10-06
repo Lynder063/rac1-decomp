@@ -972,7 +972,23 @@ void func_L15_0029BFF8(char *moby) {
     c = func_001FA898_r(func_001F9878(random_float_between(*(float *)&D_L15_001614C0, *(float *)&D_L15_001614C4)));
     func_00219780(moby + 0x10, v0, v1, *(int *)&D_L15_001614A0, *(int *)&D_L15_001614A4, a, b, c, *(int *)&D_L15_001614DC);
 }
-INCLUDE_ASM("asm/overlays", func_L15_0029C168);
+extern void func_L00_002ADBB0(char *, char *, int, int, float, int, int, int, int);
+extern float D_L15_0015F660[] MACRO_ADDR;
+extern short D_L15_001614E4;
+extern short D_L15_001614E0;
+extern unsigned char D_L15_001614EC;
+extern unsigned char D_L15_001614F0;
+extern unsigned char D_L15_001614F4;
+extern unsigned char D_L15_001614E8;
+
+// Calls the shared moby helper with this level's constants.
+void func_L15_0029C168(char *moby)
+{
+    char *pos = moby + 0x10;
+    int t = func_001F9850(*(int *)&D_L15_001614E4);
+    func_L00_002ADBB0(moby, pos, (int)&D_L15_0015F660, t, *(float *)&D_L15_001614E0,
+                      D_L15_001614EC, D_L15_001614F0, D_L15_001614F4, D_L15_001614E8);
+}
 INCLUDE_ASM("asm/overlays", func_L15_0029E8A0);
 INCLUDE_ASM("asm/overlays", func_L15_0029FCB0);
 INCLUDE_ASM("asm/overlays", func_L15_0029FF90);

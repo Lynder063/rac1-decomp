@@ -485,7 +485,21 @@ void func_L05_0032A868(char *moby) {
     }
     func_L00_001FF4B0(p + 8, D_0013F6E0, -1.0f);
 }
-INCLUDE_ASM("asm/overlays", func_L05_0032A9D0);
+extern char *D_L05_00167300;
+/* updates camera parameters with default negative-value limits */
+void func_L05_0032A9D0(float a,float b,float c,float d,float e,float f,float g,float h) {
+ char *o=D_L05_00167300;
+ float *p=*(float **)(o+0x70);
+ p[0x184/4]=a;
+ p[0x188/4]=b;
+ p[0x180/4]=c;
+ p[0x190/4]=d;
+ p[0x194/4]=e;
+ p[0x18c/4]=f;
+ p=*(float **)(o+0x70);
+ if(g<0.0f) p[4]=0.01f; else p[4]=g;
+ if(h<0.0f) p[5]=0.2f; else p[5]=h;
+}
 INCLUDE_ASM("asm/overlays", func_L05_0032AA48);
 INCLUDE_ASM("asm/overlays", func_L05_0032AA50);
 INCLUDE_ASM("asm/overlays", func_L05_0032ABF0);
