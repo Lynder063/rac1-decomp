@@ -31,7 +31,30 @@ void func_L00_002E1660(char *m) {
         *(int *)(d + 4) = rand_range(scale_ticks(5), scale_ticks(0xF));
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002E1790);
+extern char D_0013F450[];
+extern u8 * D_L00_00160098_E1790 __asm__("D_L00_00160098") MACRO_ADDR;
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/vendor/002df730.c, FUN_L00_002e02e0. */
+s32 func_L00_002E1790(void) {
+    char *base;
+    u8 *tbl;
+    s32 v;
+    s32 idx;
+    u8 flags;
+    base = D_0013F450;
+    tbl = D_L00_00160098_E1790;
+    v = *(s32 *)(base + 0x2FC);
+    flags = (u8)base[0x20B0];
+    tbl += *(s32 *)*(s32 *)((u8 *)v + 0x78) << 8;
+    if (!flags) {
+        if (tbl[0xBC] & 2)
+            return 1;
+    } else {
+        if (tbl[0xBC] & 1)
+            return 1;
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E17D4);
 extern char D_0013F450[];
 extern int D_L00_0015F504 MACRO_ADDR;

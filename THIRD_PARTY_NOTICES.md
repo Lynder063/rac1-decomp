@@ -351,6 +351,7 @@ address, each passing this project's own check). In parentheses, Lombyte's name.
 - `src/overlays/shared/mobyutil_00258BC8.c`: `func_L00_00260878` (`FUN_L00_0025f800`)
 - `src/overlays/shared/mobyutil_00258BC8.c`: `func_L00_002608F0` (`FUN_L00_0025f878`)
 - `src/overlays/shared/vendor_002B33E8.c`: `func_L00_002B9A90` (`FUN_L00_002b8798`)
+- `src/overlays/shared/vendor_002E1660.c`: `func_L00_002E1790` (`FUN_L00_002e02e0`)
 - `src/overlays/l13_gemlik/vendor_002C2638.c`: `func_L13_002C2638` (`FUN_L13_002c13b0`)
 
 Fifteen more were carried over by machine on 2026-10-05 once `include/common.h` had `qzero()`, the 128-bit
