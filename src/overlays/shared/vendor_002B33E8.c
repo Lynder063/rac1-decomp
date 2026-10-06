@@ -1173,7 +1173,28 @@ void func_L00_002B9730(char *m) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002B9A90);
+typedef struct {
+    u8 pad0[0x78];
+    s32 *slots;
+} ListSlots8;
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/entities/002b2100.c, FUN_L00_002b8798. */
+void func_L00_002B9A90(ListSlots8 *list, s32 val) {
+    s32 *p = list->slots;
+    s32 i = 0;
+    s32 *q;
+    s32 n;
+
+    while (i < 15) {
+        n = i * 4;
+        q = (s32 *)((u8 *)p + 4);
+        if (*(s32 *)((u8 *)q + n) == 0) {
+            *(s32 *)((u8 *)q + n) = val;
+            break;
+        }
+        i++;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002B9AA8);
 INCLUDE_ASM("asm/overlays", func_L00_002B9AD8);
 INCLUDE_ASM("asm/overlays", func_L00_002BA608);

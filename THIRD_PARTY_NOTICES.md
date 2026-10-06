@@ -336,6 +336,21 @@ check. In parentheses, Lombyte's name.
 One more was adapted the same way on 2026-10-06:
 
 - `src/overlays/shared/pause_00277208.c`: `func_L00_00277A88` (`FUN_L00_00276bd0`)
+- `src/overlays/l00_veldin1/vendor_002DB278.c`: `func_L00_002E2B28` (`FUN_L00_002e1678`)
+
+Nine more were carried over by machine on 2026-10-06, from what Lombyte matched in its pull requests 98 to 108
+(the same tool, the same rule: identical instructions, Lombyte's C with every symbol renamed to its PAL
+address, each passing this project's own check). In parentheses, Lombyte's name.
+
+- `src/overlays/shared/effects_001EE2E0.c`: `func_L00_001EE530` (`FUN_L00_001ee1b0`)
+- `src/overlays/shared/help_0021A2E0.c`: `func_L02_002211C0` (`FUN_L02_00220b80`)
+- `src/overlays/shared/help_0021D6B8.c`: `func_L06_0021D6B8` (`FUN_L06_0021d0a0`)
+- `src/overlays/shared/help_0021D6B8.c`: `func_L06_0022A868` (`FUN_L06_0022a1d0`)
+- `src/overlays/shared/help_002274A8.c`: `func_L01_002328A8` (`FUN_L01_00232290`)
+- `src/overlays/shared/mobyutil_00258BC8.c`: `func_L00_0025E210` (`FUN_L00_0025d1b8`)
+- `src/overlays/shared/mobyutil_00258BC8.c`: `func_L00_00260878` (`FUN_L00_0025f800`)
+- `src/overlays/shared/mobyutil_00258BC8.c`: `func_L00_002608F0` (`FUN_L00_0025f878`)
+- `src/overlays/shared/vendor_002B33E8.c`: `func_L00_002B9A90` (`FUN_L00_002b8798`)
 
 Fifteen more were carried over by machine on 2026-10-05 once `include/common.h` had `qzero()`, the 128-bit
 zero store Lombyte identified as inline assembly in the original (its `include/qzero.h`; the helper here is

@@ -1332,7 +1332,17 @@ void func_L00_0025D5B0(float ang, char *o, float *s, int a, int b, int c) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_0025D6F0);
-INCLUDE_ASM("asm/overlays", func_L00_0025E210);
+typedef struct {
+    u8 pad[0x38];
+    s64 v;
+} S;
+extern u8 D_001414D0[];
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/entities/0025d1b8.c, FUN_L00_0025d1b8. */
+void func_L00_0025E210(S *p, s64 v) {
+    v = (*(S **)&D_001414D0[0])->v;
+    p->v = v;
+}
 typedef unsigned int u128_pt __attribute__((mode(TI)));
 typedef union { u128_pt q; f32 f[4]; } V0025d238;
 extern void func_001F9BF0_25e290(void *, void *, void *) __asm__("func_001F9BF0");
@@ -1678,9 +1688,42 @@ void func_L00_002607F8(int a, short *list, short max) {
         list[list[0]] = k;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00260878);
+extern s32 D_L00_00160098 MACRO_ADDR;
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/math/rotations/0025d238.c, FUN_L00_0025f800. */
+void func_L00_00260878(s32 p, s16 *a) {
+    s32 i;
+    for (i = 1; i <= a[0]; i++) {
+        if (D_L00_00160098 + (a[i] << 8) == p) {
+            a[i] = a[a[0]];
+            a[0]--;
+            return;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002608D0);
-INCLUDE_ASM("asm/overlays", func_L00_002608F0);
+typedef struct {
+    u8 pad[0x18];
+    s32 id;
+} V25f878;
+typedef struct {
+    u8 pad[0x78];
+    V25f878 *p78;
+    u8 pad7c[0x100 - 0x7C];
+} M25f878;
+extern s16 D_L00_001B0AF0[];
+extern u8 * D_L00_00160098_608F0 __asm__("D_L00_00160098") MACRO_ADDR;
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/math/rotations/0025d238.c, FUN_L00_0025f878. */
+M25f878 *func_L00_002608F0(s32 id) {
+    s32 i;
+    for (i = 1; i <= D_L00_001B0AF0[0]; i++) {
+        M25f878 *o = (M25f878 *)(D_L00_001B0AF0[i] * 0x100 + (s32)D_L00_00160098_608F0);
+        if (o->p78->id == id)
+            return o;
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0026093C);
 extern float func_002140F8(float, float);
 void func_L00_00260958(float *v, float s) {
