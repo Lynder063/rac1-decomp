@@ -268,7 +268,55 @@ int func_L03_002C6F40(unsigned char *moby) {
     return 0;
 }
 INCLUDE_ASM("asm/overlays", func_L03_002C6F80);
-INCLUDE_ASM("asm/overlays", func_L03_002C7DE8);
+extern int func_L03_002C8068(unsigned char *);
+extern int func_001F9908(int *);
+extern void *func_L00_0025B478(void *, int, int);
+extern int func_L00_0025B4D0(void *, void *, void *, int, int *, float *, int, int);
+extern void func_L01_0026F040(int, int);
+extern void func_L03_00251A58(float *, float, float);
+extern void func_L00_0025BBA0(void *, float *, void *, void *);
+extern void func_L00_0025D5B0(float, void *, void *, int, int, int);
+extern void func_L00_0025E4B0(void *, short *);
+extern char *D_L03_00160058 MACRO_ADDR;
+typedef int L03Quad __attribute__((mode(TI)));
+/* Applies damage reaction, knockback parameters and animation state. */
+void func_L03_002C7DE8(unsigned char *moby) {
+ float vector[4]; int result; float damage; float angle;
+ char *data=*(char **)(moby+0x78);
+ char *hit;
+ if (*(int *)(data+0x38)!=0 || (*(int *)(data+0x248)!=-1 && func_L03_002C8068((unsigned char *)(D_L03_00160058+(*(int *)(data+0x248)<<8)))))
+  *(int *)(data+0x240)=func_001F9850(240);
+ if (func_001F9908((int *)(data+0x240))) *(float *)(data+0x230)=*(float *)(data+0x22C);
+ else *(float *)(data+0x230)=*(float *)(data+0x22C)*2.0f;
+ damage=0.0f;
+ hit=func_L00_0025B478(moby,0x330000,0);
+ func_L00_0025B4D0(moby,hit,data+0x20,0,&result,&damage,0,4);
+ if (result!=1 && moby[0x20]!=21) {
+  char *other;
+  if (moby[0x21]!=255)func_L01_0026F040(moby[0x21],1);
+  { float health=*(float *)(data+0x20)-damage;
+  float speed=D_0015EE70*50.0f;
+  *(int *)(data+0x144)=9;
+  data[0x15D]=0;
+  *(float *)(data+0x130)=speed;
+  *(float *)(data+0x20)=health; }
+  other=*(char **)(hit+0x20);
+  angle=func_L00_001FF860(*(float *)(moby+0x10)-*(float *)(other+0x10),*(float *)(moby+0x14)-*(float *)(other+0x14));
+  { float rotationSpeed=D_0015EE6C*10.0f;
+  *(unsigned short *)(moby+0x34)&=0xEFFF;
+  *(float *)(data+0x13C)=rotationSpeed; }
+  func_L03_00251A58((float *)(data+0x120),4.5f,2.0f);
+  *(float *)(data+0x170)=5.0f;
+  *(float *)(data+0x174)=12.0f;
+  *(L03Quad *)vector=*(L03Quad *)(hit+0x10);
+  func_L00_0025BBA0(vector,&angle,data+0x138,data+0x13C);
+  func_L00_0025D5B0(angle,moby,data+0x120,4,1,0);
+  moby[0x20]=21;
+  *(unsigned char *)(data+0x117)=240;
+  func_L00_0025E4B0(moby,(short *)(data+0x110));
+ }
+ moby[0xA4]=255;
+}
 INCLUDE_ASM("asm/overlays", func_L03_002C8000);
 extern float func_0020D830(void *);
 

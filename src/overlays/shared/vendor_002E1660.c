@@ -231,7 +231,32 @@ s32_2e1f28 func_L00_002E33D8(s32_2e1f28 id, s32_2e1f28 a, s32_2e1f28 b) {
     }
     return 0;
 }
-INCLUDE_ASM("asm/overlays", func_L00_002E34F0);
+extern void func_L00_0023F1D0(int);
+extern int D_L00_00161CC8[];
+extern int D_L00_00161D18[];
+extern int D_L00_00161D08[];
+extern int D_L00_00161D58[];
+
+// releases the slot owning the given id and its two handles; returns 1 if found
+int func_L00_002E34F0(int id) {
+    unsigned int i;
+    for (i = 0; (int)i < 3; i++) {
+        if (D_L00_00161D58[i] == id) {
+            D_L00_00161CC8[i] = 0;
+            D_L00_00161D58[i] = 0;
+            if (D_L00_00161D08[i] != -1) {
+                func_L00_0023F1D0(D_L00_00161D08[i]);
+                D_L00_00161D08[i] = -1;
+            }
+            if (D_L00_00161D18[i] != -1) {
+                func_L00_0023F1D0(D_L00_00161D18[i]);
+                D_L00_00161D18[i] = -1;
+            }
+            return 1;
+        }
+    }
+    return 0;
+}
 extern int D_L00_00161CC8[] MACRO_ADDR;
 extern int D_L00_00161D08[] MACRO_ADDR;
 extern int D_L00_00161D18[] MACRO_ADDR;

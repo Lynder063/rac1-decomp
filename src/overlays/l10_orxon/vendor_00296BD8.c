@@ -474,7 +474,40 @@ INCLUDE_ASM("asm/overlays", func_L10_002DB688);
 INCLUDE_ASM("asm/overlays", func_L10_002DBA50);
 INCLUDE_ASM("asm/overlays", func_L10_002DE018);
 INCLUDE_ASM("asm/overlays", func_L10_002DE630);
-INCLUDE_ASM("asm/overlays", func_L10_002DE798);
+typedef int Effect128 __attribute__((mode(TI)));
+extern void func_L00_002633D8(int,float *,float *,void *,float,float);
+extern s32 func_001FA898(f32);
+extern f32 func_001FA888(s32);
+extern int func_L00_001F2BE8(float,void *,int,void *,void *);
+extern void func_L00_0025BA50(void *,void *,void *,int,int,int,int,int,float,float,float);
+extern float D_0015EE60 MACRO_ADDR;
+extern char D_L10_00178400[];
+typedef struct { int owner; float phase,speed,size; int source,timer; float growth; } EffectData;
+/* Advances an effect, scales its size over its lifetime and emits hits. */
+void func_L10_002DE798(char *m) {
+ float old[4],pos[4],a,b;
+ char *d=*(char **)(m+0x78);
+ *(Effect128 *)old=*(Effect128 *)(m+0x10);
+ ((EffectData *)d)->phase+=((EffectData *)d)->speed;
+ ((EffectData *)d)->speed*=(((EffectData *)d)->growth-1.0f)*D_0015EE60+1.0f;
+ func_L00_002633D8(((EffectData *)d)->owner,&a,&b,m+0x10,((EffectData *)d)->phase,((EffectData *)d)->size);
+ *(float *)(m+0x40)=func_00214158();
+ *(float *)(m+0x44)=func_00214158();
+ *(float *)(m+0x48)=func_00214158();
+ if(func_001F9908((int *)(d+0x14))) {func_0020D678(m);return;}
+ if(*(int *)(d+0x14)<func_001FA898(10.0f/(D_0015EE6C*5.0f))/2) {
+  float numerator=func_001FA888(*(int *)(d+0x14));
+  *(float *)(m+0x2C)=*(float *)(*(char **)(m+0x24)+0x24)*numerator/func_001FA888(func_001FA898(10.0f/(D_0015EE6C*5.0f))/2)*0.5f;
+ } else if((func_001FA898(10.0f/(D_0015EE6C*5.0f))/4)*3<*(int *)(d+0x14)) {
+  float numerator=func_001FA888(func_001FA898(10.0f/(D_0015EE6C*5.0f))-*(int *)(d+0x14));
+  *(float *)(m+0x2C)=*(float *)(*(char **)(m+0x24)+0x24)*numerator/func_001FA888(func_001FA898(10.0f/(D_0015EE6C*5.0f))/4)*0.5f;
+ }
+ if(*(float *)(*(char **)(m+0x24)+0x24)*0.25f<*(float *)(m+0x2C)) {
+  int count=func_L00_001F2BE8(0.15f,m+0x10,16,*(void **)(d+0x10),0);
+  *(Effect128 *)pos=*(Effect128 *)(m+0x10);
+  func_L00_0025BA50(*(void **)(d+0x10),pos,D_L10_00178400,count,0,0x810001,2,1,2.0f,1.0f,1.0f);
+ }
+}
 extern void func_001F9BF0(void *dst, void *a, void *b);
 extern unsigned char D_0014171B[] NOT_SDA;
 extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
