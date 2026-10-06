@@ -468,7 +468,61 @@ void func_L13_002B9800(void *moby, char *obj)
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L13_002B9C68);
+extern void func_001FA218(float *, float *);
+extern void func_001F9EE8(void *, void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern float func_001F9CB8(void *);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern float func_001FA888(int);
+extern void func_001F5800(int, int, int, int, int, int, int, int, long, long);
+extern int D_0013E604;
+typedef struct {
+    short tex;
+    short u;
+    short v;
+    short w;
+    short h;
+    short fA;
+    short x;
+    short y;
+} IconEC5D0;
+extern IconEC5D0 D_L13_001CC038[];
+// Draws a radar icon with fading near the rim.
+void func_L13_002B9C68(char *rot, char *from, char *moby, int icon, long color, int tex) {
+    float turn[4];
+    float mat[16];
+    float delta[4];
+    float pos[4];
+    float len;
+    int x, y;
+    IconEC5D0 *t;
+
+    qzero(turn);
+    turn[2] = *(float *)(rot + 8);
+    turn[2] = func_001FA790(1.5707964f, turn[2]);
+    func_001FA218(mat, turn);
+    func_001F9BF0(delta, moby + 0x10, from);
+    delta[2] = 0.0f;
+    func_001F9EE8(pos, delta, mat);
+    func_001F9C30(pos, pos, 0.0714285746f);
+    len = func_001F9CB8(pos);
+    x = func_001FA898_r(pos[0]);
+    y = func_001FA898_r(-pos[1]);
+    if (len < 46.0f) {
+        if (len > 38.0f) {
+            float f;
+            len = 46.0f - len;
+            f = func_001FA888(((unsigned long)color >> 24) & 0xFF) * len;
+            color &= 0xFFFFFF;
+            color = (func_001FA898_r(f * 0.125f) << 24) | color;
+        }
+        t = &D_L13_001CC038[icon];
+        y -= 0x50;
+        y += D_0013E604;
+        x += 0x1B0;
+        func_001F5800(x - t->x, y - t->y, t->w, t->h, t->u, t->v, t->w, t->h, color, func_001F4868(tex + 0x28 + t->tex));
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L13_002B9E50);
 extern unsigned char D_0013A5E0[];
 extern unsigned char D_0013E633[];

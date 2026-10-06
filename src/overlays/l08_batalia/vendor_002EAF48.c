@@ -133,7 +133,30 @@ void func_L08_003078B0(char *moby) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L08_00307A98);
-INCLUDE_ASM("asm/overlays", func_L08_00307FF0);
+extern void func_L00_00211908(void);
+
+// Sets the vendor state or closes the active interaction.
+void func_L08_00307FF0(char *moby, int mode) {
+    char *data = *(char **)(moby + 0x78);
+    moby[0x20] = 1;
+    if (mode != 0) {
+        if (mode <= 0) {
+            if (mode == -1) goto close;
+            return;
+        } else {
+            if (mode != 1) return;
+            data[8] = mode;
+            *(short *)(data + 0x36) = 3;
+            return;
+        }
+    } else {
+        data[8] = 1;
+        *(short *)(data + 0x36) = 4;
+    }
+    return;
+close:
+    func_L00_00211908();
+}
 INCLUDE_ASM("asm/overlays", func_L08_00308A00);
 extern int func_001F9850(int);
 extern void func_L00_00264870(int);

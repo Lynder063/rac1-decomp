@@ -334,7 +334,21 @@ void func_L02_002DE7A8(char *moby) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L02_002DF038);
+extern float D_0015EE6C MACRO_ADDR;
+extern float func_001FA748(float, float);
+extern void func_L00_002617B0(char *, void *, void *, void *);
+
+/* Rotates a platform and updates its transform. */
+void func_L02_002DF038(char *moby)
+{
+    char zero[16];
+    char pos[16];
+    char *data = *(char **)(moby + 0x78);
+    qzero(zero);
+    qcopy(pos, moby + 0x40);
+    *(float *)(moby + 0x48) = func_001FA748(*(float *)(moby + 0x48), D_0015EE6C * 0.08726646f);
+    func_L00_002617B0(data + 0x20, zero, pos, moby + 0x40);
+}
 INCLUDE_ASM("asm/overlays", func_L02_002DF0C0);
 extern float func_00214D88(float *, float *, float, float, float, float);
 extern float func_001FA748(float, float);

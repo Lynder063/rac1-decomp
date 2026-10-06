@@ -291,7 +291,24 @@ int func_L03_002C8120(unsigned char *moby) {
     }
     return 0;
 }
-INCLUDE_ASM("asm/overlays", func_L03_002C8160);
+extern int func_L00_0025A208(int *, int, int, int);
+extern int func_L03_002C6F40(unsigned char *);
+extern int func_L03_002C8120(unsigned char *);
+extern int func_L00_0025A2F0(int *, int, int, int);
+
+/* scans class instances for either predicate */
+int func_L03_002C8160(int id) {
+    unsigned char *item;
+    if (id == 0xFF) goto absent;
+    func_L00_0025A208((int *)&item, id, 0, 0);
+    while (item != 0) {
+        if (func_L03_002C8120(item)) return 1;
+        if (func_L03_002C6F40(item)) return 1;
+        func_L00_0025A2F0((int *)&item, (int)item, 0, 0);
+    }
+absent:
+    return 0;
+}
 extern char *D_L03_00160058 MACRO_ADDR;
 extern float func_001F9B88(float);
 extern float func_001F9D48(void *, void *);

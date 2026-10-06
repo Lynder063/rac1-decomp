@@ -349,7 +349,131 @@ void func_L16_002E8680(char *moby) {
     }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002E8B30);
+extern int func_L00_0028EB98(void *, int);
+extern int func_0022ED80(int, int, int);
+extern void func_0020D678(void *);
+extern void func_L16_002E9018(unsigned char *);
+extern void func_L16_002E8EA8(unsigned char *, void *);
+extern void func_00215CA8(void *, float, int, void *, float *, int);
+extern float func_00214D28(float *, float, float);
+extern int func_L00_00200290(char *, float);
+extern char *D_L16_001B0C30[];
+extern float D_0015EE70 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+extern float D_L16_00161F28 SDATA(D_L16_00161F28);
+extern float D_L16_00161F2C SDATA(D_L16_00161F2C);
+extern float D_L16_00161F30 SDATA(D_L16_00161F30);
+extern float D_L16_00161F34 SDATA(D_L16_00161F34);
+extern float D_L16_00161F38 SDATA(D_L16_00161F38);
+extern float D_L16_00161F3C SDATA(D_L16_00161F3C);
+extern float D_L16_00161F40 SDATA(D_L16_00161F40);
+extern float D_L16_00161F4C SDATA(D_L16_00161F4C);
+extern int D_L16_00161F50 SDATA(D_L16_00161F50);
+typedef struct {
+    int path_index;
+    float parameter;
+    float speed;
+    float period;
+    unsigned char *owner;
+    float height_step;
+    float target_speed;
+    short countdown;
+    short sound;
+} L16WalkerData;
+
+/* Update of a path walker: keeps its sound alive, follows the path behind its owner and jumps ahead while unobserved. */
+void func_L16_002E8B30(unsigned char *m) {
+    float old[4], rotation[4], trial[4];
+    char *path;
+    L16WalkerData *d;
+    int playing = 0;
+
+    d = *(L16WalkerData **)(m + 0x78);
+    path = D_L16_001B0C30[d->path_index];
+    if (((*(unsigned short *)(m + 0xA6) ^ 1) & 1) != 0) {
+        if (func_L00_0028EB98(m, d->sound) == 0) {
+            d->sound = func_0022ED80(0, 4, (int)m);
+        } else {
+            playing = 1;
+        }
+    } else {
+        qcopy(old, m + 0x10);
+    }
+    switch (m[0x20]) {
+    case 0:
+        if (m[0x21] == 255) {
+            func_0020D678(m);
+            return;
+        }
+        func_L16_002E9018(m);
+        break;
+    case 1: {
+        L16WalkerData *other = *(L16WalkerData **)(d->owner + 0x78);
+        float gap, step, next, height, acceleration;
+        /* `playing` again, in a variable of case 1's own. The logic does not need it: tested directly,
+           `playing` is one value from the top of the function to the test, the compiler ranks it below
+           `path` and gives them $s5 and $s4, the reverse of retail. The narrowing copy ends that value
+           here and starts another; each ranks above `path`, both get $s4 and the copy itself leaves no
+           instruction. A same-width copy (int) is folded away and does not do it. */
+        char blocked = playing;
+
+        func_00215CA8(path, d->parameter, 0, m + 0x10, (float *)(m + 0x40), 0);
+        acceleration = D_L16_00161F38 * D_0015EE70;
+        *(float *)(m + 0x18) += d->height_step;
+        d->parameter += d->speed;
+        func_00214D28(&d->speed, d->target_speed, acceleration);
+        gap = other->parameter - d->parameter;
+        if (gap < 0.0f) {
+            gap += d->period;
+        }
+        if (gap < D_L16_00161F28 && d->target_speed > other->target_speed) {
+            float saved = d->target_speed;
+            float theirs = other->target_speed;
+
+            other->target_speed = saved;
+            d->target_speed = theirs;
+        }
+        if (gap < 1.5f) {
+            step = D_0015EE70 * 50.0f;
+            func_00214D28(&d->speed, d->target_speed, step);
+            func_00214D28(&other->speed, other->target_speed, step);
+        }
+        if (m[0x31] == 0 && blocked == 0) {
+            if (gap > D_L16_00161F2C + 1.0f) {
+                height = func_002140F8(D_L16_00161F3C, D_L16_00161F40);
+                if (d->owner[0x31] != 0 && d->countdown != 0) {
+                    next = other->parameter - func_002140F8(D_L16_00161F28, D_L16_00161F2C);
+                    d->countdown--;
+                } else {
+                    next = d->parameter + D_L16_00161F4C * D_0015EE6C;
+                }
+                if (next < 0.0f) {
+                    next += d->period;
+                }
+                func_00215CA8(path, next, 0, trial, rotation, 1);
+                trial[2] += height;
+                trial[3] = 2.0f;
+                if (func_L00_00200290((char *)trial, (float)D_L16_00161F50) == -1) {
+                    float random = func_002140F8(D_L16_00161F30, D_L16_00161F34);
+
+                    d->parameter = next;
+                    d->height_step = height;
+                    d->target_speed = random * D_0015EE6C;
+                }
+            }
+        } else {
+            d->countdown = 30;
+        }
+        if (d->parameter > d->period) {
+            d->parameter -= d->period;
+        }
+        break;
+    }
+    }
+    if (*(unsigned short *)(m + 0xA6) & 1) {
+        func_L16_002E8EA8(m, old);
+    }
+}
 typedef int u128 __attribute__((mode(TI)));
 extern short D_L16_00161F58;
 extern short D_L16_00161F5C;
@@ -388,7 +512,70 @@ void func_L16_002E8EA8(unsigned char *m, void *v) {
     func_L00_0026DD70_emit(offset, velocity, *(int *)&D_L16_00161F58,
                         *(int *)&D_L16_00161F5C, final_size, func_001F9850(0x23));
 }
-INCLUDE_ASM("asm/overlays", func_L16_002E9018);
+extern int func_002140B0(int);
+extern float func_001FA888(int);
+extern short *D_L16_001ABFC0[];
+extern char *D_L16_00160098 MACRO_ADDR;
+extern float D_L16_00161F54 SDATA(D_L16_00161F54);
+
+/* Start of a walker group: lists the group's mobys and spaces them along the path in random order. */
+void func_L16_002E9018(unsigned char *m) {
+    unsigned char *objects[16];
+    unsigned char *previous;
+    L16WalkerData *d = *(L16WalkerData **)(m + 0x78);
+    short *list = D_L16_001ABFC0[m[0x21]];
+    short count = 0, rank;
+    int i;
+    float period;
+
+    if (list == 0 || d->path_index == -1) {
+        return;
+    }
+    period = (float)*(int *)D_L16_001B0C30[d->path_index] - 1.0f;
+    do {
+        objects[count] = (unsigned char *)(D_L16_00160098 + ((*(unsigned short *)list & 0x7FFF) << 8));
+        count++;
+    } while (*list++ >= 0);
+    previous = objects[count - 1];
+    rank = count;
+    for (i = 0; i < count; i++) {
+        unsigned char *current;
+        L16WalkerData *data;
+        unsigned short flags;
+
+        if (i == count - 1) {
+            /* the last one takes the slot the loop index is on */
+            current = objects[i];
+        } else {
+            /* the others take a random slot, or the next one still in use after it */
+            int selected = func_002140B0(count - 1);
+
+            for (;;) {
+                if (objects[selected] != 0) {
+                    current = objects[selected];
+                    objects[selected] = 0;
+                    break;
+                }
+                selected = (selected + 1) % (count - 1);
+            }
+        }
+        flags = D_L16_00161F50;
+        current[0x30] = 255;
+        *(float *)(current + 0x2C) *= D_L16_00161F54;
+        *(int *)(current + 0x94) = 0;
+        *(unsigned short *)(current + 0x32) = flags;
+        data = *(L16WalkerData **)(current + 0x78);
+        data->parameter = (float)rank * (period / func_001FA888(count));
+        data->owner = previous;
+        data->period = period;
+        previous = current;
+        data->height_step = func_002140F8(D_L16_00161F3C, D_L16_00161F40);
+        data->speed = func_002140F8(D_L16_00161F30, D_L16_00161F34) * D_0015EE6C;
+        data->target_speed = data->speed;
+        current[0x20] = 1;
+        rank--;
+    }
+}
 extern int D_L16_0015F6A8;
 extern char D_L16_0016CCE0[];
 extern void func_L00_00250800(void *, int, void *);
