@@ -182,7 +182,114 @@ void func_L13_002F9D18(char *moby) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L13_002F9F10);
+extern char D_L13_001F54D0[];
+extern float D_0015EE60 MACRO_ADDR;
+extern void func_L00_00251328(void *, int, int, int);
+extern int func_001FA898_d(float) __asm__("func_001FA898");
+extern void func_L00_0024FFE8(unsigned char *, int, int);
+
+/* Gate that follows its controller moby: opens when the controller is in one of its six "open" states,
+ * closes on one of its six "close" states, fading its light with the opening and spinning its wheel. */
+void func_L13_002F9F10(char *m) {
+    char *d = *(char **)(m + 0x78);
+    char *c = 0;
+    int open;
+    int close;
+    int step;
+    if (*(int *)d != -1) {
+        c = D_L13_00160058_m + (*(int *)d << 8);
+    }
+    open = 0;
+    close = 0;
+    if (((unsigned char *)m)[0x20] != 0) {
+        int i;
+        for (i = 0; i < 6; i++) {
+            if (((unsigned char *)c)[0x20] == (d + i)[4]) {
+                open = 1;
+                break;
+            }
+        }
+        for (i = 0; i < 6; i++) {
+            if (((unsigned char *)c)[0x20] == (d + i)[0xA]) {
+                close = 1;
+                break;
+            }
+        }
+    }
+    switch (((unsigned char *)m)[0x20]) {
+    case 0:
+        if (c == 0) {
+            func_001E9730(D_L13_001F54D0, *(short *)(m + 0xB2), *(short *)(m + 0xA6));
+            func_0020D678(m);
+            return;
+        }
+        func_L00_00251328(m, 0x80, 0x80, 0x80);
+        *(unsigned short *)(m + 0x34) |= 0xA08;
+        if (*(int *)(d + 0x18) == 0) {
+            *(float *)(d + 0x10) = 1.0f;
+            m[0x20] = 1;
+            *(int *)(m + 0x94) = *(int *)(*(char **)(m + 0x24) + 0x10);
+            m[0x23] = 0x14;
+        } else {
+            *(float *)(d + 0x10) = 0.0f;
+            m[0x20] = 3;
+            *(int *)(m + 0x94) = 0;
+            m[0x23] = 0;
+        }
+        break;
+    case 1:
+        if (close) {
+            *(int *)(m + 0x94) = 0;
+            m[0x20] = 2;
+        }
+        break;
+    case 2:
+        if (open) {
+            m[0x20] = 4;
+            *(int *)(m + 0x94) = *(int *)(*(char **)(m + 0x24) + 0x10);
+        }
+        *(float *)(d + 0x10) -= D_0015EE60 * 0.05f;
+        if (*(float *)(d + 0x10) < 0.0f) {
+            *(float *)(d + 0x10) = 0.0f;
+            m[0x20] = 3;
+            *(int *)(m + 0x94) = 0;
+            m[0x31] = 0;
+            *(unsigned short *)(m + 0x34) |= 1;
+        }
+        break;
+    case 3:
+        if (open) {
+            m[0x20] = 4;
+            *(int *)(m + 0x94) = *(int *)(*(char **)(m + 0x24) + 0x10);
+            m[0x31] = 1;
+            *(unsigned short *)(m + 0x34) &= 0xFFFE;
+        }
+        break;
+    case 4:
+        if (close) {
+            *(int *)(m + 0x94) = 0;
+            m[0x20] = 2;
+        }
+        *(float *)(d + 0x10) += D_0015EE60 * 0.05f;
+        if (1.0f < *(float *)(d + 0x10)) {
+            *(float *)(d + 0x10) = 1.0f;
+            m[0x20] = 1;
+            *(int *)(m + 0x94) = *(int *)(*(char **)(m + 0x24) + 0x10);
+        }
+        break;
+    }
+    m[0x23] = func_001FA898_d(*(float *)(d + 0x10) * 20.0f);
+    step = 0xC0;
+    *(int *)(d + 0x14) += step;
+    if (*(int *)(d + 0x14) > 0x1000) {
+        *(int *)(d + 0x14) -= 0x1000;
+        step -= 0x1000;
+    } else if (*(int *)(d + 0x14) < 0) {
+        *(int *)(d + 0x14) += 0x1000;
+        step += 0x1000;
+    }
+    func_L00_0024FFE8(*(unsigned char **)(m + 0x24), step, 0);
+}
 INCLUDE_ASM("asm/overlays", func_L13_00306D40);
 typedef int u128_306E20 __attribute__((mode(TI)));
 

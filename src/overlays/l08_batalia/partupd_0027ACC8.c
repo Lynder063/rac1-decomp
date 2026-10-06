@@ -40,5 +40,35 @@ unsigned char *func_L08_0027ACC8(char *a)
     }
     return m;
 }
-INCLUDE_ASM("asm/overlays", func_L08_0027C218);
+extern int func_001160D8(void);
+extern unsigned char *D_L08_001B2C2C;
+
+/* Spawns a coloured effect at pos with the given vector, size and lifetime. */
+unsigned char *func_L08_0027C218(int owner, void *pos, void *vec, short ticks,
+                                 unsigned char r, unsigned char g, unsigned char b, unsigned char a,
+                                 float size)
+{
+    unsigned char *m = func_00218928(0x2B);
+    unsigned char *q;
+    if (m != 0) {
+        q = m + 0x20;
+        qcopy(m + 0x10, pos);
+        qcopy(q, vec);
+        q[0x14] = r;
+        q[0x15] = g;
+        q[0x16] = b;
+        q[0x17] = a;
+        *(int *)(m + 4) = (b << 16) | (g << 8) | r;
+        m[9] = func_001FA898_r(4.0f) + 0x40;
+        m[3] = 0x48;
+        m[1] = 0;
+        m[8] = func_001160D8();
+        m[2] = *D_L08_001B2C2C;
+        *(float *)(m + 0xC) = size;
+        *(short *)(m + 0xA) = 0;
+        *(short *)(q + 0x18) = scale_ticks(ticks);
+        *(int *)(q + 0x10) = owner;
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L08_00280BC8);

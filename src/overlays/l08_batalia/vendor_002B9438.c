@@ -133,7 +133,92 @@ void func_L08_002DD440(char *moby) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L08_002DD4F8);
+typedef struct {
+    int count;
+    int pad[3];
+    float e[1][4];
+} Route_2dd4f8;
+extern Route_2dd4f8 *D_L08_001B0FB0_r[] __asm__("D_L08_001B0FB0");
+extern char D_0014171B_r[] __asm__("D_0014171B") NOT_SDA;
+extern int D_0015EE84_r __asm__("D_0015EE84") MACRO_ADDR;
+extern int D_L08_0015F6B0_r __asm__("D_L08_0015F6B0") MACRO_ADDR;
+extern float func_001F9D48(void *, void *);
+
+/* Platform route choice: picks whichever of its three routes is nearest the player (end of route a, or
+ * the start of b or c), and on a change starts along it; on route a it skips to b/c when the current
+ * frame's route flags say so, and hides when far from the player. */
+void func_L08_002DD4F8(char *m) {
+    char *d = *(char **)(m + 0x78);
+    char *pl = D_0013E633 + 0xE9D;
+    Route_2dd4f8 *a = D_L08_001B0FB0_r[*(int *)(d + 0x88)];
+    Route_2dd4f8 *b = D_L08_001B0FB0_r[*(int *)(d + 0x80)];
+    Route_2dd4f8 *c = D_L08_001B0FB0_r[*(int *)(d + 0x84)];
+    float d0 = func_001F9D10(pl, (char *)a + (a->count << 4));
+    float d1 = func_001F9D10(pl, b->e[0]);
+    float d2 = func_001F9D10(pl, c->e[0]);
+    int sel = 0;
+    float y;
+    if (d1 < d0) {
+        d0 = d1;
+        sel = 1;
+    }
+    if (d2 < d0) sel = 3;
+    if (*(int *)(d + 0x100) == sel) return;
+    *(int *)(d + 0x100) = sel;
+    *(int *)(d + 0xE4) = 0;
+    *(float *)(d + 0x104) = 1.0f;
+    m[0x31] = 1;
+    *(unsigned short *)(m + 0x34) &= 0xFFFE;
+    *(int *)(d + 0x124) = 1;
+    *(int *)(m + 0x94) = *(int *)(*(char **)(m + 0x24) + 0x10);
+    switch (sel) {
+    case 0: {
+        int n = a->count;
+        unsigned char *t;
+        int f94, f98;
+        int fr;
+        qcopy(d + 0x60, (char *)((n << 4) + (int)a));
+        y = func_L00_001FF860(*(float *)((char *)a + ((n - 2) << 4) + 0x10) - *(float *)(d + 0x60),
+                              *(float *)((char *)a + ((n - 2) << 4) + 0x14) - *(float *)(d + 0x64));
+        fr = D_0015EE84_r << 4;
+        t = (unsigned char *)(D_0014171B_r + 0xAA35);
+        *(float *)(d + 0x78) = y;
+        *(float *)(d + 0xE4) = 1.0f;
+        *(int *)(d + 0x104) = 0;
+        f94 = t[*(int *)(d + 0x94) + fr] == 0xFF;
+        f98 = t[*(int *)(d + 0x98) + fr] == 0xFF;
+        if (f98) {
+            *(Route_2dd4f8 **)(d + 0x120) = c;
+        } else if (f94) {
+            *(Route_2dd4f8 **)(d + 0x120) = b;
+        } else if (32.0f < func_001F9D48(m + 0x10, pl) || D_L08_0015F6B0_r < 5) {
+            m[0x31] = 0;
+            *(unsigned short *)(m + 0x34) |= 1;
+            *(int *)(d + 0x124) = 0;
+            *(int *)(m + 0x94) = 0;
+        }
+        return;
+    }
+    case 1:
+        qcopy(d + 0x60, b->e[0]);
+        y = func_L00_001FF860(b->e[1][0] - *(float *)(d + 0x60), b->e[1][1] - *(float *)(d + 0x64));
+        *(Route_2dd4f8 **)(d + 0x120) = b;
+        break;
+    case 2:
+        qcopy(d + 0x60, a->e[0]);
+        y = func_L00_001FF860(a->e[1][0] - *(float *)(d + 0x60), a->e[1][1] - *(float *)(d + 0x64));
+        *(Route_2dd4f8 **)(d + 0x120) = a;
+        break;
+    case 3:
+        qcopy(d + 0x60, c->e[0]);
+        y = func_L00_001FF860(c->e[1][0] - *(float *)(d + 0x60), c->e[1][1] - *(float *)(d + 0x64));
+        *(Route_2dd4f8 **)(d + 0x120) = c;
+        break;
+    default:
+        return;
+    }
+    *(float *)(d + 0x78) = y;
+}
 extern float func_001FA748(float, float);
 extern float D_0015EE6C MACRO_ADDR;
 extern float func_001F9FA8(float);

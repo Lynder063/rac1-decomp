@@ -111,7 +111,112 @@ void func_L05_0030F130(char *m) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L05_0030F358);
-INCLUDE_ASM("asm/overlays", func_L05_0030F6C0);
+extern unsigned char D_L05_0015F544[] MACRO_ADDR;
+extern unsigned char D_L05_0015F545[] MACRO_ADDR;
+extern unsigned char D_L05_0015F546[] MACRO_ADDR;
+extern float D_L05_0015F548 MACRO_ADDR;
+extern float D_L05_0015F54C MACRO_ADDR;
+extern float D_L05_0015F550 MACRO_ADDR;
+extern float D_L05_0015F554 MACRO_ADDR;
+extern unsigned char D_L05_001612C0[] MACRO_ADDR;
+extern unsigned char D_L05_001612C1[] MACRO_ADDR;
+extern unsigned char D_L05_001612C2[] MACRO_ADDR;
+extern unsigned char D_L05_001612C3[] MACRO_ADDR;
+extern char *D_L05_001601AC_c __asm__("D_L05_001601AC") MACRO_ADDR;
+extern int func_00215570(void *, int);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9EC0(void *, void *, void *);
+extern int func_001FA8A8(int, int, float);
+
+/* Fog zone: switches the level fog between its two settings when the hero enters either trigger volume, and
+ * tints a colour by the hero's side of a gate while inside the third. */
+void func_L05_0030F6C0(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float v[4];
+    float w[4];
+    char *g = D_0013E633 + 0xE9D;
+    if (func_00215570(g, *(int *)(d + 0x28))) {
+        *(float *)(g + 0x270) = 500.0f;
+    }
+    switch (((unsigned char *)m)[0x20]) {
+    case 0:
+        d[0x20] = D_L05_0015F544[0];
+        d[0x21] = D_L05_0015F545[0];
+        d[0x22] = D_L05_0015F546[0];
+        {
+            float f0 = D_L05_0015F548;
+            float f1 = D_L05_0015F54C;
+            float f2 = D_L05_0015F550;
+            float f3 = D_L05_0015F554;
+            *(float *)(d + 0) = f0;
+            *(float *)(d + 8) = f1;
+            *(float *)(d + 4) = f2;
+            *(float *)(d + 0xC) = f3;
+        }
+        d[0x23] = 0x49;
+        d[0x24] = 0x53;
+        d[0x25] = 0xC;
+        *(float *)(d + 0x18) = 33792.0f;
+        *(float *)(d + 0x14) = 255.0f;
+        *(int *)(d + 0x10) = 0;
+        *(int *)(d + 0x1C) = 0;
+        {
+            int c = D_L05_001612C0[0] + (D_L05_001612C1[0] << 8) + (D_L05_001612C2[0] << 16) + (D_L05_001612C3[0] << 24);
+            *(int *)(d + 0x34) = 0x40408070;
+            *(int *)(d + 0x30) = c;
+        }
+        m[0x20] = 1;
+        break;
+    case 1:
+        if (func_00215570(D_0013E633 + 0xE9D, *(int *)(d + 0x2C))) {
+            D_L05_0015F544[0] = d[0x23];
+            D_L05_0015F545[0] = d[0x24];
+            D_L05_0015F546[0] = d[0x25];
+            {
+                float f0 = *(float *)(d + 0x10);
+                float f1 = *(float *)(d + 0x18);
+                float f2 = *(float *)(d + 0x14);
+                float f3 = *(float *)(d + 0x1C);
+                D_L05_0015F548 = f0;
+                D_L05_0015F54C = f1;
+                D_L05_0015F550 = f2;
+                D_L05_0015F554 = f3;
+            }
+            m[0x20] = 2;
+        }
+        break;
+    case 2:
+        if (func_00215570(D_0013E633 + 0xE9D, *(int *)(d + 0x28))) {
+            D_L05_0015F544[0] = d[0x20];
+            D_L05_0015F545[0] = d[0x21];
+            D_L05_0015F546[0] = d[0x22];
+            {
+                float f0 = *(float *)(d + 0);
+                float f1 = *(float *)(d + 8);
+                float f2 = *(float *)(d + 4);
+                float f3 = *(float *)(d + 0xC);
+                D_L05_0015F548 = f0;
+                D_L05_0015F54C = f1;
+                D_L05_0015F550 = f2;
+                D_L05_0015F554 = f3;
+            }
+            m[0x20] = 1;
+        }
+        break;
+    }
+    g = D_0013E633 + 0xE9D;
+    if (func_00215570(g, *(int *)(d + 0x38))) {
+        int c;
+        func_001F9BF0(v, g, D_L05_001601AC_c + *(int *)(d + 0x38) * 128 + 0x30);
+        v[3] = 0.0f;
+        func_001F9EC0(w, v, D_L05_001601AC_c + *(int *)(d + 0x38) * 128 + 0x40);
+        c = func_001FA8A8(*(int *)(d + 0x30), *(int *)(d + 0x34), (w[0] + 1.0f) * 0.5f);
+        D_L05_001612C1[0] = c >> 8;
+        D_L05_001612C2[0] = c >> 16;
+        D_L05_001612C0[0] = c;
+        D_L05_001612C3[0] = c >> 24;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L05_0030F9D0);
 INCLUDE_ASM("asm/overlays", func_L05_0030FCC0);
 extern void func_001F9BC0(void *);

@@ -145,7 +145,53 @@ int func_L13_002C4D50(char *pt, int *tbl, int start, float ref) {
     }
     return best;
 }
-INCLUDE_ASM("asm/overlays", func_L13_002C4F10);
+extern char *D_L13_001B0AB0[];
+extern char D_0013E633[];
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BF0(void *, void *, void *);
+extern float func_L00_001FF860(float, float);
+extern float func_001F9D48(void *, void *);
+
+/* Steers moby m along its path toward the next point (advancing when reached); aims it at the hero when aim. Returns 1 on a wrap. */
+int func_L13_002C4F10(char *m, char *d, int aim) {
+    char *path = D_L13_001B0AB0[*(int *)(d + 0xA0)];
+    float a, seg, diff, t;
+    int wrapped = 0;
+    float v[4];
+    a = func_001F9D10(path + (*(short *)(d + 0xB6) * 16 + 0x10), m + 0x10);
+    seg = func_001F9D10(path + (*(short *)(d + 0xB6) * 16 + 0x10), path + (*(short *)(d + 0xB4) * 16 + 0x10));
+    diff = seg - a;
+    if ((0.0f <= diff && diff < *(float *)(d + 0xCC)) || seg < *(float *)(d + 0xCC)) {
+        *(short *)(d + 0xB6) = *(unsigned short *)(d + 0xB4);
+        *(short *)(d + 0xB4) = *(unsigned short *)(d + 0xB4) + ((signed char *)d)[0xD0];
+        if (*(short *)(d + 0xB4) >= *(int *)path) {
+            *(short *)(d + 0xB4) = 0;
+            wrapped = 1;
+        }
+        if (*(short *)(d + 0xB4) < 0) {
+            wrapped = 1;
+            *(short *)(d + 0xB4) = *(unsigned short *)path - 1;
+        }
+        t = 0.0f;
+    } else {
+        t = a / seg;
+    }
+    if (t < 0.05f) t = 0.05f;
+    if (1.0f < t) t = 1.0f;
+    func_001F9C30(d + 0x70, d + 0x70, 1.0f - t);
+    func_001F9BF0(v, path + (*(short *)(d + 0xB4) * 16 + 0x10), m + 0x10);
+    func_L00_001FF4B0(v, v, *(float *)(d + 0xCC));
+    func_001F9C30(v, v, t);
+    func_001F9BD8(d + 0x70, d + 0x70, v);
+    func_L00_001FF4B0(d + 0x70, d + 0x70, *(float *)(d + 0xCC));
+    func_001F9BD8(m + 0x10, m + 0x10, d + 0x70);
+    if (aim != 0) {
+        char *g = D_0013E633 + 0xE1D;
+        float yaw = func_L00_001FF860(*(float *)(g + 0x80) - *(float *)(m + 0x10), *(float *)(g + 0x84) - *(float *)(m + 0x14));
+        func_L13_002C4C10(m, d, yaw, -func_L00_001FF860(func_001F9D48(m + 0x10, g + 0x80), *(float *)(g + 0x88) - *(float *)(m + 0x18)));
+    }
+    return wrapped;
+}
 extern char D_0013E633[];
 extern float func_001FA748(float, float);
 extern void func_00215C00(void *, float, float, float);
@@ -215,7 +261,57 @@ char *func_L13_002E2488(char *owner, char *pos, char *vec, int a3, float f) {
     }
     return moby;
 }
-INCLUDE_ASM("asm/overlays", func_L13_002E2690);
+extern char D_L13_00160700[] MACRO_ADDR;
+extern int func_0022ED80_s(int, int, int) __asm__("func_0022ED80");
+extern int func_001FA898_s(float) __asm__("func_001FA898");
+extern void func_L00_0025F4A8_s(void *, void *, void *, float, float, int, int, int, float, float, float, float, int, float, int, int, int, int) __asm__("func_L00_0025F4A8");
+extern int func_L00_00258BC8(int, int);
+extern void func_0020D678(void *);
+
+/* Blob hit: splashes (bigger when the player is near), then splits off one or two smaller blobs while
+ * pieces are left, or turns into its pop state / is deleted when none are. */
+void func_L13_002E2690(char *m, char *d, float s) {
+    float v[4];
+    float p[4];
+    float a = s * 7.0f;
+    float b;
+    int i;
+    b = s * 10.0f;
+    if (20.0f < func_001F9D10(m + 0x10, D_0013E633 + 0xE9D)) {
+        a = b = 0.0f;
+    }
+    func_0022ED80_s(0, 0, (int)m);
+    if (*(short *)(d + 0x4C) == 0) {
+        func_L00_0025F4A8_s(m, D_L13_00160700, 0, a, b, func_001FA898_s(s * 10.0f), func_001FA898_s(s * 3.0f),
+                            func_001FA898_s(s * 16.0f), s * 4.0f, s + s, 9.0f, 1.0f, -1, s * 15.0f, 0, 1, -1, 0);
+    }
+    m[0x72] = 0;
+    if (*(short *)(d + 0x4E) > 0) {
+        for (i = 0; i < func_L00_00258BC8(1, 2); i++) {
+            float part = *(float *)(m + 0x2C) * func_002140F8(0.25f, 0.75f);
+            func_L00_00258DB0(v, D_0015EE6C * 5.0f, D_0015EE6C * 10.0f);
+            func_001F9C30(d, d, 0.75f);
+            func_001F9BD8(v, v, d);
+            func_L00_001FF4B0(p, v, 0.5f);
+            func_001F9BD8(p, p, m + 0x10);
+            func_001F9BD8(p, p, v);
+            func_L13_002E2488(m, (char *)p, (char *)v, *(short *)(d + 0x4E) - 1, part);
+            *(float *)(m + 0x2C) -= part;
+            if (--*(short *)(d + 0x4E) == 0) break;
+            if (*(float *)(m + 0x2C) / *(float *)(*(char **)(m + 0x24) + 0x24) <= 0.2f) break;
+        }
+        *(int *)(m + 0x94) = 0;
+        *(short *)(d + 0x4C) = func_001F9850(0x1E);
+    } else if (*(int *)(d + 0x40) == 0) {
+        m[0x20] = 4;
+        *(unsigned short *)(m + 0x34) |= 1;
+        *(int *)(m + 0x94) = 0;
+        m[0x31] = 0;
+        *(float *)(m + 0x2C) = *(float *)(d + 0x2C);
+    } else {
+        func_0020D678(m);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L13_002E2980);
 /* runs one step of a moby's timed state and reports whether the timer ran out */
 int func_L13_002E56C8(char *m, char *arg, float *t) {
@@ -344,7 +440,53 @@ void func_L13_002EA450(char *m, char *p, float a, float b) {
     *(float *)(m + 0x40) *= 0.985f;
     func_L00_0025F368(*(float *)(m + 0x40));
 }
-INCLUDE_ASM("asm/overlays", func_L13_002EA598);
+extern float func_001F9CE8(void *);
+/* Steers moby m along path idx toward its next point, facing along the motion (or the hero in state 5); turns it when turn. Returns 1 on a wrap. */
+int func_L13_002EA598(char *m, char *d, int idx, int turn) {
+    char *path = D_L13_001B0AB0[*(int *)(d + (idx << 2) + 0xB0)];
+    float yaw, pitch;
+    float a, seg, diff, t;
+    int wrapped = 0;
+    float v[4];
+    a = func_001F9D10(path + (*(short *)(d + 0x9E) * 16 + 0x10), m + 0x10);
+    seg = func_001F9D10(path + (*(short *)(d + 0x9E) * 16 + 0x10), path + (*(short *)(d + 0x9C) * 16 + 0x10));
+    diff = seg - a;
+    if (0.0f <= diff && diff < *(float *)(d + 0xAC)) {
+        *(short *)(d + 0x9E) = *(unsigned short *)(d + 0x9C);
+        *(short *)(d + 0x9C) = *(unsigned short *)(d + 0x9C) + ((signed char *)d)[0x10C];
+        if (*(short *)(d + 0x9C) >= *(int *)path) {
+            *(short *)(d + 0x9C) = 0;
+            wrapped = 1;
+        }
+        if (*(short *)(d + 0x9C) < 0) {
+            wrapped = 1;
+            *(short *)(d + 0x9C) = *(unsigned short *)path - 1;
+        }
+        t = 0.0f;
+    } else {
+        t = a / seg;
+    }
+    if (t < 0.05f) t = 0.05f;
+    if (1.0f < t) t = 1.0f;
+    func_001F9C30(d + 0x70, d + 0x70, 1.0f - t);
+    func_001F9BF0(v, path + (*(short *)(d + 0x9C) * 16 + 0x10), m + 0x10);
+    func_L00_001FF4B0(v, v, *(float *)(d + 0xAC));
+    func_001F9C30(v, v, t);
+    func_001F9BD8(d + 0x70, d + 0x70, v);
+    func_L00_001FF4B0(d + 0x70, d + 0x70, *(float *)(d + 0xAC));
+    func_001F9BD8(m + 0x10, m + 0x10, d + 0x70);
+    yaw = func_L00_001FF860(v[0], v[1]);
+    pitch = -func_L00_001FF860(func_001F9CE8(v), v[2]);
+    if (((unsigned char *)m)[0x20] == 5) {
+        char *g = D_0013E633 + 0xE1D;
+        yaw = func_L00_001FF860(*(float *)(g + 0x80) - *(float *)(m + 0x10), *(float *)(g + 0x84) - *(float *)(m + 0x14));
+        pitch = -func_L00_001FF860(func_001F9D48(m + 0x10, g + 0x80), *(float *)(g + 0x88) - *(float *)(m + 0x18));
+    }
+    if (turn != 0) {
+        func_L13_002EA450(m, d, yaw, pitch);
+    }
+    return wrapped;
+}
 INCLUDE_ASM("asm/overlays", func_L13_002EA840);
 extern void func_L00_00260108(void *, void *, int, float, float);
 extern void func_001F9C30(void *, void *, float);
@@ -398,7 +540,34 @@ void func_L13_002EB768(char *a, char *b, float f) {
     func_00215C00(a, dist / (k + f) * k, y, -x);
     FastVecAdd(a, a, *(char **)(base + 0x15F0) + 0x10);
 }
-INCLUDE_ASM("asm/overlays", func_L13_002EB838);
+extern float func_L00_001FF860(float, float);
+extern float func_001F9D48(void *, void *);
+extern void func_L13_002EB768(char *a, char *b, float f);
+
+/* Angles from pos to the hero's target (led by lead when positive) or to the hero; returns the yaw. */
+float func_L13_002EB838(float *pos, float *pitch, float *yaw, float lead) {
+    char *base = D_0013E633 + 0xE1D;
+    char *t = *(char **)(base + 0x15F0);
+    float v[4];
+    float y;
+    float p;
+    if (t != 0 && *(short *)(t + 0xA6) == 0x45) {
+        if (lead > 0.0f) {
+            func_L13_002EB768((char *)v, (char *)pos, lead);
+        } else {
+            qcopy(v, t + 0x10);
+        }
+        y = func_L00_001FF860(v[0] - pos[0], v[1] - pos[1]);
+        p = -func_L00_001FF860(func_001F9D48(pos, v), v[2] - pos[2]);
+    } else {
+        char *p0 = D_0013E633 + 0xE1D;
+        y = func_L00_001FF860(*(float *)(p0 + 0x80) - pos[0], *(float *)(p0 + 0x84) - pos[1]);
+        p = -func_L00_001FF860(func_001F9D48(pos, p0 + 0x80), *(float *)(p0 + 0x88) - pos[2]);
+    }
+    if (yaw != 0) *yaw = y;
+    if (pitch != 0) *pitch = p;
+    return y;
+}
 INCLUDE_ASM("asm/overlays", func_L13_002EB978);
 extern void func_L00_00250800(void *, int, void *);
 extern void func_L13_002EB768(char *a, char *b, float f);

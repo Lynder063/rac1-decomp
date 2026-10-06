@@ -225,7 +225,85 @@ void func_L02_002DDE48(unsigned char *moby) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L02_002DDF70);
-INCLUDE_ASM("asm/overlays", func_L02_002DE418);
+typedef int Q_2de418 __attribute__((mode(TI)));
+extern float D_0015EE6C MACRO_ADDR;
+extern char *func_L00_0025B478(void *, int, int);
+extern int func_L00_0025B4D0(void *, void *, void *, int, int *, float *, int, int);
+extern void func_L00_0025BBA0(void *, float *, void *, void *);
+extern void func_L00_0025D5B0(float, void *, void *, int, int, int);
+extern void func_L00_002584A8(void *, int, int);
+extern void func_L00_0025E4B0(void *m, short *p);
+extern void func_L00_0025E590(void *, void *);
+
+/* Enemy hit reaction: on a hit takes damage and is knocked back; when its health runs out it is flung and dies. */
+void func_L02_002DE418(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float v[4];
+    int hit;
+    float dmg;
+    float k1;
+    float k2;
+    char *h;
+    dmg = 0.0f;
+    if (((unsigned char *)d)[0x2E] == 2) {
+        d[0x2E] = 1;
+        if (*(int *)(d + 0xE0) >= 0) {
+            char *od = *(char **)((*(int *)(d + 0xE0) << 8) + D_L02_00160058_m + 0x78);
+            *(int *)(od + 0x150) -= 1;
+        }
+        func_0020D678(m);
+        return;
+    }
+    h = func_L00_0025B478(m, 0x330000, 0);
+    func_L00_0025B4D0(m, h, d + 0x20, 0, &hit, &dmg, 0, 4);
+    if (h != 0 && hit != 1 && ((unsigned char *)m)[0x20] != 4) {
+        if (hit == 3) {
+            *(float *)(d + 0x20) = 0.0f;
+        } else {
+            *(float *)(d + 0x20) -= dmg;
+        }
+        *(int *)(d + 0x94) = 4;
+        if (0.0f < *(float *)(d + 0x20)) {
+            {
+                float a = D_0015EE6C * 4.0f;
+                float b = D_0015EE6C * 3.0f;
+                *(float *)(d + 0x88) = a;
+                *(float *)(d + 0x8C) = b;
+            }
+            *(Q_2de418 *)v = *(Q_2de418 *)(h + 0x10);
+            func_L00_0025BBA0(v, &k1, d + 0x88, d + 0x8C);
+            func_L00_0025D5B0(k1, m, d + 0x70, 3, 1, 0);
+            if (1.0f <= dmg) {
+                d[0x67] = 0x78;
+                m[0x20] = 3;
+                func_00213DE0(m, 2, 0, 0);
+            } else {
+                d[0x67] = 0x78;
+            }
+        } else {
+            *(unsigned short *)(m + 0x34) &= 0xEFFF;
+            ((unsigned char *)d)[0x67] = 0xFA;
+            m[0x20] = 4;
+            {
+                float b = D_0015EE6C * 11.0f;
+                float a = D_0015EE6C * 3.0f;
+                *(float *)(d + 0x8C) = a;
+                *(float *)(d + 0x88) = b;
+            }
+            *(Q_2de418 *)v = *(Q_2de418 *)(h + 0x10);
+            func_L00_0025BBA0(v, &k2, d + 0x88, d + 0x8C);
+            func_L00_0025D5B0(k2, m, d + 0x70, 3, 1, 0);
+            *(float *)(d + 0xC0) = 9.0f;
+            *(float *)(d + 0xC4) = 19.0f;
+            if (((unsigned char *)m)[0x53] != 3) func_00213DE0(m, 3, 0, 0);
+            func_L00_002584A8(m, 0, -1);
+        }
+        func_L00_0025E4B0(m, (short *)(d + 0x60));
+    }
+    ((unsigned char *)m)[0xA4] = 0xFF;
+    func_L00_0025E590(m, d + 0x60);
+    func_L00_001FEF78(m + 0xBC);
+}
 INCLUDE_ASM("asm/overlays", func_L02_002DE6E0);
 INCLUDE_ASM("asm/overlays", func_L02_002DE6FC);
 INCLUDE_ASM("asm/overlays", func_L02_002DE798);

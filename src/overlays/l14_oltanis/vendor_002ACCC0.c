@@ -59,8 +59,130 @@ void func_L14_002AEAF8(char *moby) {
 INCLUDE_ASM("asm/overlays", func_L14_002AEC58);
 INCLUDE_ASM("asm/overlays", func_L14_002AEF88);
 INCLUDE_ASM("asm/overlays", func_L14_002AF2E8);
-INCLUDE_ASM("asm/overlays", func_L14_002AF4A0);
-INCLUDE_ASM("asm/overlays", func_L14_002AF688);
+typedef struct {
+    float m[4][4];
+    u32 col[4];
+    float uv[8];
+    u64 a, b, c, d;
+} Pk_2af4a0;
+extern char D_L14_001675C0[];
+extern float D_L14_001D8940[4][4];
+extern short D_L14_00161544;
+extern short D_L14_00161548;
+u64 func_001F4868(s32);
+extern void func_00234C98(int, long);
+extern void func_001F9BF0(void *, void *, void *);
+extern float func_001F9CB8(void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern void func_L00_001FD1D8(void *, void *, s32);
+
+/* Draws the moby's glow quad, pulled toward the camera so it is not hidden by the moby. */
+void func_L14_002AF4A0(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float pos[4];
+    Pk_2af4a0 pk;
+    float v[4];
+    float w[4];
+    float len;
+    u32 col;
+    int j;
+    qcopy(pos, d + 0x90);
+    pos[2] += 0.01f;
+    pos[3] = 1.0f;
+    pk.b = func_001F4868(0xB);
+    pk.c = 0x0000FF9000000260ULL;
+    pk.d = 0x8000000048ULL;
+    pk.a = 0;
+    func_00234C98(0x4A, 0);
+    func_00234C98(0x47, 0x51001);
+    func_001F9BF0(v, D_L14_001675C0, pos);
+    len = func_001F9CB8(v);
+    if (0.0f < len) {
+        float s = *(float *)(d + 0x218);
+        float f = len - *(float *)&D_L14_00161544;
+        if (f < s) {
+            s = f;
+            if (f < 0.0f) s = 0.0f;
+        }
+        func_L00_001FF4B0(w, v, s);
+        func_001F9BD8(pos, pos, w);
+    }
+    pk.uv[2] = 0.0f;
+    pk.uv[0] = 1.0f;
+    pk.uv[1] = 1.0f;
+    pk.uv[3] = 1.0f;
+    pk.uv[4] = 1.0f;
+    pk.uv[5] = 0.0f;
+    pk.uv[6] = 0.0f;
+    pk.uv[7] = 0.0f;
+    if (*(short *)(d + 0x202) != 0) {
+        col = 0x7F40407F;
+        pk.col[3] = col;
+        pk.col[2] = col;
+        pk.col[1] = col;
+        pk.col[0] = col;
+    } else {
+        col = *(u32 *)&D_L14_00161548;
+        pk.col[3] = col;
+        pk.col[2] = col;
+        pk.col[1] = col;
+        pk.col[0] = col;
+    }
+    for (j = 0; j < 4; j++) {
+        func_001F9C30(pk.m[j], D_L14_001D8940[j], *(float *)(d + 0x214));
+        func_001F9BD8(pk.m[j], pk.m[j], pos);
+    }
+    func_L00_001FD1D8(&pk, 0, 0);
+}
+extern int *D_L14_001B0F30[];
+extern float func_001F9D10(void *, void *);
+extern int func_L00_0025E860_2AF688(void *, void *, void *, void *, int, float) __asm__("func_L00_0025E860");
+
+/* Measures the segments of the moby's three paths, sums two of them and places it on the first two. */
+void func_L14_002AF688(char *m) {
+    char *d = *(char **)(m + 0x78);
+    int *p;
+    int i;
+    float len;
+    p = D_L14_001B0F30[*(int *)(d + 0x78)];
+    *(int *)(d + 0x16C) = 0;
+    for (i = 0; i < p[0]; i++) {
+        len = func_001F9D10((char *)p + (i * 16 + 0x10), (char *)p + (((i + 1) % p[0]) * 16 + 0x10));
+        *(float *)((char *)p + (i << 4) + 0x1C) = len;
+        if (i != p[0] - 1) {
+            *(float *)(d + 0x16C) += len;
+        }
+    }
+    p = D_L14_001B0F30[*(int *)(d + 0x74)];
+    *(int *)(d + 0x190) = 0;
+    for (i = 0; i < p[0]; i++) {
+        len = func_001F9D10((char *)p + (i * 16 + 0x10), (char *)p + (((i + 1) % p[0]) * 16 + 0x10));
+        *(float *)((char *)p + (i << 4) + 0x1C) = len;
+        if (i != p[0] - 1) {
+            *(float *)(d + 0x190) += len;
+        }
+    }
+    p = D_L14_001B0F30[*(int *)(d + 0x204)];
+    for (i = 0; i < p[0]; i++) {
+        *(float *)((char *)p + (i << 4) + 0x1C) = func_001F9D10((char *)p + (i * 16 + 0x10), (char *)p + (((i + 1) % p[0]) * 16 + 0x10));
+    }
+    if (*(float *)(d + 0x210) != 0.0f) {
+        int *q = D_L14_001B0F30[*(int *)(d + 0x78)];
+        *(int *)(d + 0x84) = 0;
+        *(float *)(d + 0x1CC) = 0.0f;
+        func_L00_0025E860_2AF688(q, m + 0x10, d + 0x84, d + 0x1CC, *(short *)(d + 0x8A), *(float *)(d + 0x210) * *(float *)(d + 0x16C));
+        *(float *)(d + 0x8C) = 0.0f;
+        *(int *)(d + 0x80) = 0;
+        func_L00_0025E860_2AF688(q, m + 0x10, d + 0x80, d + 0x8C, *(short *)(d + 0x8A), *(float *)(d + 0x210) * *(float *)(d + 0x190));
+    } else {
+        *(int *)(d + 0x80) = 0;
+        *(int *)(d + 0x84) = 0;
+        *(float *)(d + 0x8C) = 0.0f;
+        *(float *)(d + 0x1CC) = 0.0f;
+    }
+}
 extern float func_L00_0025C918(float *p, float *v, float t, float u1, float u2, float eps);
 extern int func_L00_0025E860_2AF918(int *tab, float *out, int *a, float *b, int c, float d) __asm__("func_L00_0025E860");
 extern int *D_L14_001B0F30[];
@@ -176,7 +298,7 @@ extern float func_001FA790(float, float);
 extern void func_L00_001FFED8(void *, int, float);
 extern float func_001F9CE8(void *);
 extern void func_001F49B0(void *, void *);
-extern void func_L14_002AF4A0(void);
+extern void func_L14_002AF4A0(char *);
 
 // Sets up the moby's motion data from its vectors; returns whether it succeeded.
 int func_L14_002AFDE0(char *moby, int flag) {
@@ -586,7 +708,44 @@ void func_L14_002BC728(char *moby)
     DeleteMoby(moby);
 }
 INCLUDE_ASM("asm/overlays", func_L14_002D7250);
-INCLUDE_ASM("asm/overlays", func_L14_002D7668);
+extern char *D_L14_0015F7EC_p __asm__("D_L14_0015F7EC") MACRO_ADDR;
+extern short D_L14_00161B08;
+extern int func_L00_0025EFC0(void *, void *, float *, int *, float *, int, float, float, float);
+
+typedef struct {
+    float v[4];
+    int i;
+    float t;
+} PathPos_2D7668;
+
+/* Finds the path segments nearest to the two target points and sums the segment lengths between them. */
+void func_L14_002D7668(char *m) {
+    char *d = *(char **)(m + 0x78);
+    char *path = *(char **)(D_L14_0015F7EC_p + *(int *)(d + 0x60) * 32 + 0x10);
+    char *tg;
+    PathPos_2D7668 s;
+    int k;
+    float z;
+    unsigned short n;
+    *(float *)(d + 0x74) = *(float *)&D_L14_00161B08;
+    *(int *)(d + 0x68) = 0;
+    *(int *)(d + 0x64) = 0;
+    z = *(float *)(d + 0x68);
+    tg = (char *)D_L14_001B0F30[*(int *)(d + 0x88)] + 0x30;
+    s.t = z;
+    s.i = 0;
+    func_L00_0025EFC0(path, tg, s.v, &s.i, &s.t, 0, 20.0f, 5.0f, z);
+    *(short *)(d + 0x8C) = s.i;
+    s.t = z;
+    s.i = 0;
+    func_L00_0025EFC0(path, (char *)D_L14_001B0F30[*(int *)(d + 0x88)] + 0x20, s.v, &s.i, &s.t, 0, 20.0f, 5.0f, z);
+    n = s.i;
+    *(short *)(d + 0x8E) = n;
+    *(float *)(d + 0x78) = z;
+    for (k = (short)n; k < *(short *)(d + 0x8C); k++) {
+        *(float *)(d + 0x78) += *(float *)(path + k * 16 + 0x1C);
+    }
+}
 /* Moves toward the table entry: looks up entry d[0x60] (32-byte records, pointer at +0x10), runs
  * func_001F9908 on the data block's +0x6C and returns whether that was non-zero; then calls
  * func_001F9C08 with the moby position, the entry, the D_L14_001B0F30 target and
@@ -621,7 +780,64 @@ void func_L14_002D84A8(char *moby)
     func_L00_0025E860(*(int *)((idx << 5) + D_L14_0015F7EC + 0x10), moby + 0x10, data + 0x64, data + 0x68, 0, *(float *)&D_L14_00161B00 * D_0015EE6C);
 }
 INCLUDE_ASM("asm/overlays", func_L14_002D8500);
-INCLUDE_ASM("asm/overlays", func_L14_002D87A0);
+extern char D_L14_00180AC0[];
+extern short D_L14_00161B30;
+extern float D_L14_0015F660[] MACRO_ADDR;
+extern void func_L00_00250800(void *, int, void *);
+extern int func_L00_0023F0D0(float *, float, float, float, float, float);
+extern void func_002141A8(void *, float, float);
+extern char *func_L00_002757E8(void *, void *, int, void *);
+extern void func_L14_002D8500(void);
+
+/* Puffs smoke from the moby's exhaust joint: keeps its light in place while active, then spawns four puffs. */
+void func_L14_002D87A0(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float p[4];
+    float v[4];
+    float w[4];
+    char *q;
+    int i;
+    func_L00_00250800(m, 1, p);
+    func_001F9BF0(v, p, D_L14_001675C0);
+    func_L00_001FF4B0(v, v, -0.5f);
+    func_001F9BD8(d + 0xE0, p, v);
+    if ((unsigned int)(((unsigned char *)m)[0x20] - 3) < 3) {
+        p[2] += 1.0f;
+        if (*(int *)(d + 0xF0) == -1) {
+            *(int *)(d + 0xF0) = func_L00_0023F0D0(p, *(float *)&D_L14_00161B30, 0.0f, 0.5f, 0.5f, 1.0f);
+        }
+        if (*(int *)(d + 0xF0) >= 0) {
+            char *e = D_L14_00180AC0 + *(int *)(d + 0xF0) * 32;
+            qcopy(e + 0x10, p);
+            *(float *)(e + 0x1C) = *(float *)&D_L14_00161B30;
+        }
+        p[2] -= 1.0f;
+    }
+    func_002141A8(w, 0.005f, 0.03f);
+    q = func_L00_002757E8(p, w, 0x7F, m);
+    if (q != 0) {
+        *(float *)(q + 0xC) = func_002140F8(6000.0f, 32000.0f);
+    }
+    for (i = 0; i < 3; i++) {
+        char *e;
+        int t;
+        q = func_L00_002757E8(p, D_L14_0015F660, 0x7F, m);
+        if (q == 0) continue;
+        e = q + 0x20;
+        if (i == 2 && func_002140B0(8) == 0) {
+            *(float *)(q + 0xC) = 180000.0f;
+        } else {
+            *(float *)(q + 0xC) = func_002140F8(80000.0f, 120000.0f);
+        }
+        t = func_001F9850(2);
+        *(short *)(q + 0xA) = t;
+        *(float *)(e + 0x10) = 1.0f / func_001FA888((short)t);
+        *(int *)(e + 0x18) = 0x7F7F7F;
+        *(short *)(e + 0x16) = 3;
+    }
+    func_L00_00250800(m, 6, d + 0x200);
+    func_001F49B0(func_L14_002D8500, m);
+}
 INCLUDE_ASM("asm/overlays", func_L14_002DF5F8);
 INCLUDE_ASM("asm/overlays", func_L14_002DF6B8);
 typedef int u128 __attribute__((mode(TI)));

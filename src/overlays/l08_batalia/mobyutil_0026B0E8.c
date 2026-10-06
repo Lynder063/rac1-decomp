@@ -4,37 +4,48 @@
 
 extern void func_001FA190(void *);
 extern float func_L00_001FF860(float, float);
-extern void func_001FA218(float *, float *);
-extern void func_001F9EE8(void *, void *, void *);
+extern void func_001FA218(void *, void *);
 extern void func_L00_001FFA40(void *, void *);
+extern void func_001F9EE8(void *, void *, void *);
 extern void func_001FA540(void *, void *, void *);
 extern void func_001FA4A0(void *, void *);
 extern void func_001FA480(void *, void *);
-typedef int V128 __attribute__((mode(TI)));
-// Builds a rotated matrix from a direction vector and roll angle.
-void func_L08_0026B0E8(void *out, float *in, float roll) {
- float matrix[16], z[16], y[16], r[16], angles[4], vector[4];
- float *v = vector;
- qcopy(v,in);
- func_001FA190(matrix);
- angles[2] = -func_L00_001FF860(vector[0],vector[1]);
- angles[0] = 0; angles[1] = 0;
- func_001FA218(z,angles);
- func_001F9EE8(v,v,z);
- angles[1] = -func_L00_001FF860(vector[2],vector[0]);
- angles[0] = 0; angles[2] = 0;
- func_L00_001FFA40(y,angles);
- func_001F9EE8(v,v,y);
- angles[2] = roll; angles[0] = 0; angles[1] = 0;
- func_L00_001FFA40(r,angles);
- func_001FA540(matrix,z,matrix);
- func_001FA540(matrix,y,matrix);
- func_001FA540(matrix,r,matrix);
- func_001FA4A0(y,y);
- func_001FA540(matrix,y,matrix);
- func_001FA4A0(z,z);
- func_001FA540(matrix,z,matrix);
- qcopy(v,in);
- func_001F9EE8(v,v,matrix);
- func_001FA480(out,matrix);
+
+/* Builds a matrix that rolls by roll around the direction dir and writes it to out. */
+void func_L08_0026B0E8(void *out, void *dir, float roll) {
+    float M[4][4];
+    float Rz[4][4];
+    float Ry[4][4];
+    float Rx[4][4];
+    float ang[4];
+    float d[4];
+    float a;
+    qcopy(d, dir);
+    func_001FA190(M);
+    a = -func_L00_001FF860(d[0], d[1]);
+    ang[0] = 0.0f;
+    ang[1] = 0.0f;
+    ang[2] = a;
+    func_001FA218(Rz, ang);
+    func_001F9EE8(d, d, Rz);
+    a = -func_L00_001FF860(d[2], d[0]);
+    ang[0] = 0.0f;
+    ang[2] = 0.0f;
+    ang[1] = a;
+    func_L00_001FFA40(Ry, ang);
+    func_001F9EE8(d, d, Ry);
+    ang[2] = roll;
+    ang[0] = 0.0f;
+    ang[1] = 0.0f;
+    func_L00_001FFA40(Rx, ang);
+    func_001FA540(M, Rz, M);
+    func_001FA540(M, Ry, M);
+    func_001FA540(M, Rx, M);
+    func_001FA4A0(Ry, Ry);
+    func_001FA540(M, Ry, M);
+    func_001FA4A0(Rz, Rz);
+    func_001FA540(M, Rz, M);
+    qcopy(d, dir);
+    func_001F9EE8(d, d, M);
+    func_001FA480(out, M);
 }
