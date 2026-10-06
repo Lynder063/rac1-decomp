@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 57.643930232858764,
+  "fuzzy_match_percent": 57.66353803374693,
   "total_code": "3712808",
-  "matched_code": "2052184",
-  "matched_code_percent": 55.273097881711095,
+  "matched_code": "2052912",
+  "matched_code_percent": 55.29270568259926,
   "total_functions": 5109,
-  "matched_functions": 3245,
-  "matched_functions_percent": 63.5153650420826,
+  "matched_functions": 3246,
+  "matched_functions_percent": 63.53493834409865,
   "complete_code": "314244",
   "complete_code_percent": 8.463782667996837,
   "total_units": 278,
@@ -42255,13 +42255,13 @@
   {
    "name": "Level 05: Rilgar",
    "measures": {
-    "fuzzy_match_percent": 63.192598518871016,
+    "fuzzy_match_percent": 63.733894655444196,
     "total_code": "134492",
-    "matched_code": "82996",
-    "matched_code_percent": 61.71073372393897,
+    "matched_code": "83724",
+    "matched_code_percent": 62.25202986051215,
     "total_functions": 76,
-    "matched_functions": 35,
-    "matched_functions_percent": 46.05263157894737,
+    "matched_functions": 36,
+    "matched_functions_percent": 47.36842105263158,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -42433,7 +42433,7 @@
     {
      "name": "func_L05_002DBF10",
      "size": "728",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "661720",
      "metadata": {
       "virtual_address": "2998032"
@@ -53263,13 +53263,13 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 57.005416918685775,
+    "fuzzy_match_percent": 57.027836868992324,
     "total_code": "3247108",
-    "matched_code": "1763192",
-    "matched_code_percent": 54.30038052322251,
+    "matched_code": "1763920",
+    "matched_code_percent": 54.32280047352906,
     "total_functions": 3429,
-    "matched_functions": 1889,
-    "matched_functions_percent": 55.088947214931466,
+    "matched_functions": 1890,
+    "matched_functions_percent": 55.118110236220474,
     "complete_code": "220900",
     "complete_code_percent": 6.802976679556085
    }
@@ -53323,13 +53323,13 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 64.0507527461788,
+    "fuzzy_match_percent": 64.08632602322037,
     "total_code": "2046480",
-    "matched_code": "1265352",
-    "matched_code_percent": 61.83065556467691,
+    "matched_code": "1266080",
+    "matched_code_percent": 61.86622884171846,
     "total_functions": 1449,
-    "matched_functions": 802,
-    "matched_functions_percent": 55.348516218081436,
+    "matched_functions": 803,
+    "matched_functions_percent": 55.41752933057281,
     "complete_code": "140672",
     "complete_code_percent": 6.873851686798796
    }
@@ -53413,13 +53413,13 @@
    "id": "level_05",
    "name": "Level 05: Rilgar",
    "measures": {
-    "fuzzy_match_percent": 63.192598518871016,
+    "fuzzy_match_percent": 63.733894655444196,
     "total_code": "134492",
-    "matched_code": "82996",
-    "matched_code_percent": 61.71073372393897,
+    "matched_code": "83724",
+    "matched_code_percent": 62.25202986051215,
     "total_functions": 76,
-    "matched_functions": 35,
-    "matched_functions_percent": 46.05263157894737,
+    "matched_functions": 36,
+    "matched_functions_percent": 47.36842105263158,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }

@@ -93,7 +93,74 @@ void func_L05_002D8AD8(char *moby, int *path) {
     *(float *)(moby + 0x40) = *(float *)(moby + 0x4C);
 }
 INCLUDE_ASM("asm/overlays", func_L05_002D8B68);
-INCLUDE_ASM("asm/overlays", func_L05_002DBF10);
+extern char *D_L05_001B0CB0_x[] __asm__("D_L05_001B0CB0");
+extern char D_0013E633[];
+extern float D_0015EE70 MACRO_ADDR;
+extern void func_L05_002DC1E8(unsigned char *m);
+extern void func_L05_002DC2A8(unsigned char *moby);
+extern void func_00213DE0(void *, int, int, int);
+extern void func_0020D678(void *);
+extern void func_L01_0026E8E0(char *p);
+extern int func_001FA898(float);
+extern float func_L00_001FF860(float, float);
+extern float func_L00_0025CE58(float *, float *, float, float, float, float);
+extern int func_L00_00259B88(void *, void *, void *, void *, float);
+extern int func_001F9908_v(void *) __asm__("func_001F9908");
+extern float func_001F9D48(void *, void *);
+extern int func_001F9850(int);
+
+/* Grazing critter: wanders between random points of its path, turning toward the next one; wakes up when the hero is far. */
+void func_L05_002DBF10(unsigned char *m) {
+    char *d = *(char **)(m + 0x78);
+    float dir[4];
+    func_L05_002DC1E8(m);
+    switch (m[0x20]) {
+    case 0:
+        m[0x20] = 1;
+        m[0x30] = 0x40;
+        if (m[0x53] != 0) func_00213DE0(m, 0, 0, 0);
+        if (*(int *)(d + 0xB0) == -1 || *(int *)D_L05_001B0CB0_x[*(int *)(d + 0xB0)] == 0) {
+            func_0020D678(m);
+            return;
+        }
+        func_L01_0026E8E0(d + 0x60);
+        *(float *)(d + 0x6C) = 1.0f;
+        *(float *)(d + 0x68) = 1.0f;
+        {
+            int r = func_001FA898(409.6f);
+            float f = D_0015EE6C * 4.0f;
+            *(int *)(d + 0x60) = r;
+            *(float *)(d + 0x84) = f;
+        }
+        break;
+    case 1: {
+        char *p = D_L05_001B0CB0_x[*(int *)(d + 0xB0)] + *(int *)(d + 0xB4) * 16;
+        float yaw = func_L00_001FF860(*(float *)(p + 0x10) - *(float *)(m + 0x10), *(float *)(p + 0x14) - *(float *)(m + 0x14));
+        func_L00_0025CE58((float *)(m + 0x48), (float *)(d + 0xBC), yaw, D_0015EE70 * 1.0471976f, D_0015EE70 * 1.0471976f,
+                          D_0015EE6C * 3.1415927f);
+        dir[0] = func_001F9F90(*(float *)(m + 0x48));
+        dir[1] = func_001F9FA8(*(float *)(m + 0x48));
+        dir[2] = 0.0f;
+        func_L00_00259B88(m, d + 0x60, dir, d + 0x40, 1.0f);
+        if (func_001F9908_v(d + 0xB8) != 0
+            || func_001F9D48(m + 0x10, D_L05_001B0CB0_x[*(int *)(d + 0xB0)] + (*(int *)(d + 0xB4) * 16 + 0x10)) < 1.0f) {
+            int r = func_002140B0(*(int *)D_L05_001B0CB0_x[*(int *)(d + 0xB0)]);
+            *(int *)(d + 0xB4) = (*(int *)(d + 0xB4) + r) % *(int *)D_L05_001B0CB0_x[*(int *)(d + 0xB0)];
+            *(int *)(d + 0xB8) = func_001F9850(600);
+        }
+        func_L05_002DC2A8(m);
+        break;
+    }
+    case 2:
+        if (48.0f < func_001F9D48(m + 0x10, D_0013E633 + 0xE9D)) {
+            m[0x20] = 1;
+            m[0x31] = 1;
+            *(unsigned short *)(m + 0x34) &= 0xFFFE;
+            *(int *)(m + 0x94) = *(int *)(*(char **)(m + 0x24) + 0x10);
+        }
+        break;
+    }
+}
 extern char D_0013E633[];
 extern char *func_L00_0025B478(void *, int, int);
 extern void func_L05_002DC4C8(void *, void *);
