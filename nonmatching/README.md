@@ -51,7 +51,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L03_002BC038`](l03_kerwan/func_L03_002BC038.c) | l03_kerwan | 264 | BYTES 6/264 | 97.7% |
 | [`func_L08_002DD128`](l08_batalia/func_L08_002DD128.c) | l08_batalia | 788 | BYTES 19/788 | 97.6% |
 | [`func_L00_0024A798`](shared/func_L00_0024A798.c) | shared | 288 | BYTES 7/288 | 97.6% |
-| [`func_L00_002E7B68`](shared/func_L00_002E7B68.c) | shared | 1344 | BYTES 33/1344 | 97.5% |
 | [`func_L01_00286530`](shared/func_L01_00286530.c) | shared | 316 | BYTES 8/316 | 97.5% |
 | [`func_L00_00274788`](shared/func_L00_00274788.c) | shared | 384 | BYTES 10/384 | 97.4% |
 | [`func_L00_002122A0`](shared/func_L00_002122A0.c) | shared | 268 | BYTES 7/268 | 97.4% |
