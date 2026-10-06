@@ -207,7 +207,89 @@ void func_L10_002D9FC0(char *moby) {
         *(int *)data = scale_ticks(rand_range(*(int *)&D_L10_00161C70, *(int *)&D_L10_00161C74));
     }
 }
-INCLUDE_ASM("asm/overlays", func_L10_002DA0F0);
+typedef int Q_2da0f0 __attribute__((mode(TI)));
+extern int *D_L10_001B0C30[];
+extern char D_L10_001DD420[];
+extern char D_L10_001807C0[];
+extern int D_L10_0015F6B0 MACRO_ADDR;
+extern int func_001E9730_2da0f0(void *, int) __asm__("func_001E9730");
+extern void func_L00_0023F1D0(int);
+extern int func_001F9908_v(void *) __asm__("func_001F9908");
+extern float func_001F9D10(void *, void *);
+extern void func_L00_002633D8_f(float, float, void *, int *, float *, void *) __asm__("func_L00_002633D8");
+extern int func_L00_0023F0D0(float *, float, float, float, float, float);
+extern int func_002140B0(int);
+extern void func_L10_002DE630(char *, float *, int *, float, float, float);
+extern int func_L00_0028EF68_v(int, int, void *, int) __asm__("func_L00_0028EF68");
+
+/* Electric spark: runs along its wire path with a light and a buzzing sound, then rests for a random time. */
+void func_L10_002DA0F0(char *m) {
+    char *d = *(char **)(m + 0x78);
+    int *path;
+    float pos[4];
+    int seg;
+    float frac;
+    float len;
+    if (*(int *)d == -1) {
+        func_001E9730_2da0f0(D_L10_001DD420, *(short *)(m + 0xB2));
+        func_0020D678(m);
+        return;
+    }
+    path = D_L10_001B0C30[*(int *)d];
+    ((unsigned char *)m)[0x30] = 0xFF;
+    switch (((unsigned char *)m)[0x20]) {
+    case 0:
+        if (*(int *)(d + 0xC) != -1) {
+            func_L00_0023F1D0(*(int *)(d + 0xC));
+            *(int *)(d + 0xC) = -1;
+        }
+        if (*(int *)(d + 0x10) != -1) {
+            char *e = D_0013E633 + 0x1D + *(int *)(d + 0x10) * 0x70;
+            if (*(char **)(e + 0x88) == m && ((unsigned char *)e)[0x74] != 0) {
+                func_L00_0028EBF0(*(int *)(d + 0x10));
+            }
+        }
+        *(int *)(d + 0x10) = -1;
+        if (func_001F9908_v(d + 8) != 0) {
+            m[0x20] = 1;
+            *(int *)(d + 4) = 0;
+        }
+        break;
+    case 1:
+        len = func_001F9D10((char *)path + 0x10, (char *)path + 0x20);
+        *(float *)(d + 4) += D_0015EE6C * 5.0f;
+        func_L00_002633D8_f(*(float *)(d + 4), len, path, &seg, &frac, pos);
+        if (*(int *)(d + 0xC) == -1) {
+            *(int *)(d + 0xC) = func_L00_0023F0D0(pos, 3.0f, 0.0f, 1.0f, 1.0f, 0.5f);
+        } else {
+            char *l = D_L10_001807C0 + *(int *)(d + 0xC) * 32;
+            qcopy(l + 0x10, pos);
+            *(float *)(l + 0) = 1.0f;
+            *(float *)(l + 0x1C) = 3.0f;
+            *(float *)(l + 4) = 1.0f;
+            *(float *)(l + 8) = 0.5f;
+            *(int *)(l + 0xC) = 0;
+        }
+        if (func_002140B0(2) != 0) return;
+        if (D_L10_0015F6B0 & 1) {
+            func_L10_002DE630(m, pos, path, *(float *)(d + 4), D_0015EE6C * 5.0f, len);
+        }
+        if (func_L00_0028EB98(m, *(int *)(d + 0x10)) == 0) {
+            int r = func_L00_0028EF68_v(0, 0xC, m, 0x442);
+            *(int *)(d + 0x10) = r;
+            if (r != -1) {
+                *(Q_2da0f0 *)(D_0013E633 + 0xAD + r * 0x70) = *(Q_2da0f0 *)pos;
+            }
+        } else {
+            *(Q_2da0f0 *)(D_0013E633 + 0xAD + *(int *)(d + 0x10) * 0x70) = *(Q_2da0f0 *)pos;
+        }
+        if (seg == *path - 1) {
+            m[0x20] = 0;
+            *(int *)(d + 8) = func_001F9850(0x78);
+        }
+        break;
+    }
+}
 typedef int u128_2DA3C0 __attribute__((mode(TI)));
 extern void func_001FA4A0(void *, void *);
 extern void func_001F9BF0(void *, void *, void *);
