@@ -227,7 +227,60 @@ int func_L11_003194C0(char *moby, void **out) {
     return count;
 }
 INCLUDE_ASM("asm/overlays", func_L11_00319510);
-INCLUDE_ASM("asm/overlays", func_L11_00319660);
+extern short D_L11_001623D0;
+extern short D_L11_001623E0;
+extern short D_L11_001623F0;
+extern short D_L11_001623F4;
+extern short D_L11_001623F8;
+extern short D_L11_001623FC;
+extern short D_L11_0016003C;
+extern char D_L11_00161EA8[] MACRO_ADDR;
+extern float D_L11_0015F660[] MACRO_ADDR;
+extern float D_0015EE60 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+extern float D_0015EE70 MACRO_ADDR;
+extern int func_002140B0(int);
+extern void func_001F9EC0(void *, void *, void *);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_00258DB0(float *, float, float);
+extern float func_002140F8(float, float);
+extern char *func_L11_0031C210_5(void *, void *, void *, int, float) __asm__("func_L11_0031C210");
+extern void func_L00_00260108(void *, void *, int, float, float);
+extern void *func_L00_00265050_s(char *, int, void *, void *, int, int, float *, float *, float, float *) __asm__("func_L00_00265050");
+
+/* Bubbling vent: puffs a bubble while the hero is near; on trigger spawns three debris pieces and goes idle. */
+void func_L11_00319660(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float v[4];
+    float w[4];
+    float r[4];
+    switch (((unsigned char *)m)[0x20]) {
+    case 0:
+        if (func_001F9908_i(d + 0x28) == 0 && func_002140B0(*(int *)&D_L11_001623D0) == 0
+            && ((unsigned char *)m)[0x31] != 0 && *(int *)&D_L11_0016003C >= 0x47) {
+            func_001F9EC0(v, &D_L11_001623E0, m + 0xC0);
+            func_001F9BD8(v, v, m + 0x10);
+            func_L00_00258DB0(r, 0.0f, *(float *)&D_L11_001623F8 * D_0015EE6C);
+            func_001F9BF0(w, m + 0x10, d);
+            w[2] -= D_0015EE6C + D_0015EE6C;
+            func_001F9BD8(w, w, r);
+            func_L11_0031C210_5(v, w, D_L11_00161EA8, 0, func_002140F8(*(float *)&D_L11_001623F0, *(float *)&D_L11_001623F4));
+        }
+        qcopy(d, m + 0x10);
+        break;
+    case 1:
+        func_L00_00260108(m, m + 0x10, -1, 5.0f, 13.0f);
+        func_001F9C30(v, m + 0xC0, *(float *)&D_L11_001623FC * D_0015EE60);
+        v[2] += D_0015EE60 * 0.08f;
+        func_L00_00265050_s(m, 0x785, m + 0x10, m + 0x40, func_001F9850(0x5A), 0, v, D_L11_0015F660, D_0015EE70 * 12.0f, D_L11_0015F660);
+        func_L00_00265050_s(m, 0x786, m + 0x10, m + 0x40, func_001F9850(0x5A), 0, v, D_L11_0015F660, D_0015EE70 * 12.0f, D_L11_0015F660);
+        func_L00_00265050_s(m, 0x787, m + 0x10, m + 0x40, func_001F9850(0x5A), 0, v, D_L11_0015F660, D_0015EE70 * 12.0f, D_L11_0015F660);
+        m[0x20] = 2;
+        m[0x31] = 0;
+        *(unsigned short *)(m + 0x34) |= 1;
+        break;
+    }
+}
 extern void func_001F9BF0(void *, void *, void *);
 extern float func_002140F8(float, float);
 extern float D_0015EE6C MACRO_ADDR;
