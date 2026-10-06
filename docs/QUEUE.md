@@ -175,6 +175,16 @@ stop and say in NOTES.md which instructions are left.
   arm: try the other when only the epilogue differs.
 - A callee's argument register untouched since function entry is an
   argument passed straight on: keep the parameter order and types.
+- Argument moves come out in the order the callee's PARAMETERS are declared.
+  A float set up before or after an integer or pointer (`mov.s $f12` against
+  `move $a0`) is the prototype, not a scheduler tie: declare the callee with
+  its float where retail sets it up (floats and integers travel in separate
+  registers, so the call is the same). func_L02_002D8B80 was 8 bytes off for
+  three rounds over one such line; sixteen more closed the same way.
+- With the result unused, a callee declared as returning a value gives `$v1`
+  as the first temporary after the call and a `void` one gives `$v0`. Read
+  the callee's epilogue: if it sets `$v0` or `$f0`, declare the return type
+  (func_L00_00277A88, 3 bytes off until func_0022DD68 was `int`).
 - An `addu` with the index first: `base + i * 4`. With the base first:
   index in its own local, or `base - (-(i * 4))`.
 - `sltiu $2, $2, 3` after `addiu $2, $3, -5`: a range test, written
