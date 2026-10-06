@@ -49,7 +49,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L07_003106E8`](l07_umbris/func_L07_003106E8.c) | l07_umbris | 452 | BYTES 8/452 | 98.2% |
 | [`func_L00_00260460`](shared/func_L00_00260460.c) | shared | 836 | BYTES 15/836 | 98.2% |
 | [`func_L00_002D6E38`](shared/func_L00_002D6E38.c) | shared | 1116 | BYTES 20/1116 | 98.2% |
-| [`func_L16_002E3740`](shared/func_L16_002E3740.c) | shared | 2184 | BYTES 40/2184 | 98.2% |
 | [`func_L00_002630A8`](shared/func_L00_002630A8.c) | shared | 816 | BYTES 15/816 | 98.2% |
 | [`func_L00_002C2A80`](shared/func_L00_002C2A80.c) | shared | 432 | BYTES 8/432 | 98.2% |
 | [`func_L01_00303A20`](shared/func_L01_00303A20.c) | shared | 416 | BYTES 8/416 | 98.1% |
