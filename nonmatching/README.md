@@ -367,6 +367,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L08_002DB468`](l08_batalia/func_L08_002DB468.c) | l08_batalia | 720 | SIZE ours 732 / retail 720 | - |
 | [`func_L08_002DB768`](l08_batalia/func_L08_002DB768.c) | l08_batalia | 972 | SIZE ours 964 / retail 972 | - |
 | [`func_L08_002DF758`](l08_batalia/func_L08_002DF758.c) | l08_batalia | 324 | SIZE ours 320 / retail 324 | - |
+| [`func_L08_002E30E8`](l08_batalia/func_L08_002E30E8.c) | l08_batalia | 776 | SIZE ours 668 / retail 776 | - |
 | [`func_L08_002E33F0`](l08_batalia/func_L08_002E33F0.c) | l08_batalia | 472 | SIZE ours 476 / retail 472 | - |
 | [`func_L08_002EAB30`](l08_batalia/func_L08_002EAB30.c) | l08_batalia | 700 | SIZE ours 692 / retail 700 | - |
 | [`func_L08_002EB770`](l08_batalia/func_L08_002EB770.c) | l08_batalia | 524 | SIZE ours 508 / retail 524 | - |
