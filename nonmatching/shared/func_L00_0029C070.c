@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L00_0029C070 -- src/overlays/shared/update_0029B6A0.c
- * Best so far: BYTES 93/628 (85.2% of the bytes match), checked 2026-10-05.
+ * Best so far: BYTES 90/628 (85.7% of the bytes match), checked 2026-10-06.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -41,13 +41,14 @@ extern void func_00205270(int, int);
 extern void func_L00_00245E98(int);
 extern void func_00205220(int);
 extern void func_0022DD68(void);
-extern void func_00122598(int);
+extern int func_00122598(int);
 extern int func_00216960(void);
 
 /* Enters the vendor screen: sets up its camera in front of the vendor moby, resets the screen state and runs the screen until it closes. */
 void func_L00_0029C070(void) {
     char *q;
     char *q2;
+    char *qq;
     char *g;
     char *s;
     int lvl;
@@ -75,8 +76,8 @@ void func_L00_0029C070(void) {
     func_002348B8();
     lvl = *(int *)(g + 0x48);
     n = D_L00_0016128C + (int)0xFFFC0000;
-    *(int *)(s + 0x5C) = D_L00_00173F00[2] + n;
     *(int *)(s + 0x58) = D_L00_00173F00[1] + n;
+    *(int *)(s + 0x5C) = D_L00_00173F00[2] + n;
     D_L00_0016128C = n;
     D_L00_0015F4FC = 0;
     *(int *)&D_L00_0015F500 = 0;
@@ -98,7 +99,7 @@ void func_L00_0029C070(void) {
     func_L00_00245E98(r);
     *(int *)(q2 + 0x1C) = 0x2734;
     func_00205220(0);
-    while (*(short *)((char *)D_0014171B + 0x100B5 + 0x5A) != 3) {
+    while (qq = (char *)D_0014171B + 0x100B5, *(short *)(qq + 0x5A) != 3) {
         func_0022DD68();
         func_00122598(0);
     }
