@@ -5,7 +5,7 @@
 typedef int L16SparkQuad __attribute__((mode(TI)));
 typedef union { L16SparkQuad quad; float f[4]; } L16SparkVector;
 typedef struct {float direction[4]; void *owner;int flags;unsigned char kind,enabled;unsigned short cls;float scale;int active;} L16SparkQuery;
-typedef struct {char pad[0x18];char *moby;int count;float position[4];} L16SparkHit;
+typedef struct {char pad[0x18];char *moby;int count;float position[4];float unk30[4];float normal[4];} L16SparkHit;
 extern L16SparkHit D_L16_001742C0_hit __asm__("D_L16_001742C0");
 extern char *D_L16_001B285C;
 extern char D_0013E633[];
@@ -266,7 +266,87 @@ typedef struct {
 int func_L16_002C5A08(Level16VendorMoby *moby) {
     return moby->state == 6;
 }
-INCLUDE_ASM("asm/overlays", func_L16_002C7218);
+extern float func_001F9C78(void *, void *);
+extern void func_L00_001FF610(void *, void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern float func_001F9CB8(void *);
+extern int func_001F9908(int *);
+extern void func_L00_0025E4B0(void *m, short *p);
+extern void func_L00_0025E590(void *, void *);
+typedef struct {
+    char pad00[7];
+    unsigned char reaction;     /* 0x07 */
+    char pad08[8];
+    float velocity[4];          /* 0x10 */
+    void *owner;                /* 0x20: the moby that threw it, left out of the sweep */
+    float gravity;              /* 0x24 */
+    int timer;                  /* 0x28 */
+} L16FallingData;
+typedef struct {
+    char pad00[0x10];
+    float position[4];          /* 0x10 */
+    unsigned char state;        /* 0x20 */
+    char pad21[0x57];
+    L16FallingData *data;       /* 0x78 */
+} L16FallingMoby;
+
+/* Update a thrown bomb (class 0x119): fly and bounce off what it hits and off the ground, rest, then burst. */
+void func_L16_002C7218(L16FallingMoby *m) {
+    float previous[4], normal[4];
+    L16FallingData *d = m->data;
+
+    switch (m->state) {
+    case 1:
+        /* No pointer locals: m->position and d->velocity are written at each use and the compiler caches
+           them itself (velocity formed in the argument register and copied to a saved one, the position
+           copied a second time for the ground test). */
+        qcopy(previous, m->position);
+        func_001F9BD8(m->position, m->position, d->velocity);
+        if (func_L00_001EFFF0_spark(previous, m->position, 5, d->owner, 0)) {
+            func_L00_001FF4B0(normal, D_L16_001742C0_hit.normal, 1.0f);
+            if (func_001F9C78(normal, d->velocity) < 0.0f) {
+                func_L00_001FF610(d->velocity, d->velocity, normal);
+                func_001F9C30(d->velocity, d->velocity, 0.25f);
+            }
+        }
+        if (func_L00_001F10E0(0.333f, m->position, 2, 0)) {
+            func_L00_001FF4B0(normal, D_L16_001742C0_hit.normal, 0.333f);
+            if (func_001F9C78(normal, d->velocity) < 0.0f) {
+                func_L00_001FF610(d->velocity, d->velocity, normal);
+                func_001F9C30(d->velocity, d->velocity, 0.25f);
+            }
+            qcopy(m->position, D_L16_001742C0_hit.position);
+            m->position[2] += normal[2];
+            if (normal[2] >= 0.3f && func_001F9CB8(d->velocity) < D_0015EE6C * 0.25f) {
+                m->state = 2;
+                d->timer = func_001F9850(90);
+            }
+        }
+        if (func_001F9908(&d->timer)) {
+            m->state = 3;
+        } else if (d->timer < func_001F9850(45) && d->timer % func_001F9850(10) == 0) {
+            d->reaction = 250;
+            func_L00_0025E4B0(m, (short *)d);
+        }
+        d->velocity[2] -= d->gravity;
+        break;
+    case 2:
+        if (func_001F9908(&d->timer)) {
+            m->state = 3;
+        } else if (d->timer < func_001F9850(61) && d->timer % func_001F9850(20) == 0) {
+            d->reaction = 250;
+            func_L00_0025E4B0(m, (short *)d);
+        }
+        break;
+    case 3:
+        func_0022ED80_i(0, 0, m);
+        func_L00_0025F4A8(m, D_L16_0015F660_spark, 0, 1.5f, 1.0f, 7, 10, 20, 3.0f, 1.7f, 4.0f, -1, 1.0f, 7.0f,
+                          0, 7, -1, 0);
+        func_0020D678(m);
+        return;
+    }
+    func_L00_0025E590(m, d);
+}
 extern char *func_0020D348_m(int) __asm__("func_0020D348");
 extern int func_001F9850(int);
 extern float func_002140F8(float, float);
