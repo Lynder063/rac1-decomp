@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L10_002E6FA0 -- src/overlays/l10_orxon/vendor_002E30F8.c
- * Best so far: BYTES 80/732 (89.1% of the bytes match), checked 2026-10-06.
+ * Best so far: BYTES 70/732 (90.4% of the bytes match), checked 2026-10-06.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  */
@@ -7,7 +7,7 @@ extern short D_L10_00161F70, D_L10_00161F74, D_L10_00161F78, D_L10_00161F7C, D_L
 extern void func_00215C00(void *, float, float, float);
 extern void func_001F9C30(void *, void *, float);
 extern int func_001FA8A8(int, int, float);
-extern void func_L00_00274788_x(void *, void *, float, float, int, float, int, int, int) __asm__("func_L00_00274788");
+extern int func_L00_00274788_x(void *, void *, int, float, float, float, int, int, int) __asm__("func_L00_00274788");
 
 /* Exhaust vent: each frame emits a burst of smoke puffs from a random spot across the vent, blown out
  * along its facing; some are small fast sparks instead. */
@@ -48,6 +48,6 @@ void func_L10_002E6FA0(char *m) {
         s = *(float *)(d + 4) * func_002140F8(lo, hi);
         c1 = func_001FA8A8(*(int *)&D_L10_00161F70, *(int *)&D_L10_00161F74, func_002140F8(0.5f, 1.0f));
         c2 = func_001FA8A8(*(int *)&D_L10_00161F74, *(int *)&D_L10_00161F74 & 0xFF000000, func_002140F8(0.25f, 0.5f));
-        func_L00_00274788_x(pos, vel, s, *(float *)d, func_001FA898(func_001F9878(*(float *)(d + 8) * 60.0f)), *(float *)&D_L10_00161F80 * D_0015EE70, c1, c2, spark);
+        func_L00_00274788_x(pos, vel, func_001FA898(func_001F9878(*(float *)(d + 8) * 60.0f)), s, *(float *)d, *(float *)&D_L10_00161F80 * D_0015EE70, c1, c2, spark);
     }
 }

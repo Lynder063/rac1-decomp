@@ -1048,7 +1048,26 @@ void func_L15_0029C168(char *moby)
                       D_L15_001614EC, D_L15_001614F0, D_L15_001614F4, D_L15_001614E8);
 }
 INCLUDE_ASM("asm/overlays", func_L15_0029E8A0);
-INCLUDE_ASM("asm/overlays", func_L15_0029FCB0);
+extern void func_L00_0025A8E8(float, char *, char *, float, float, int, int, int, int);
+
+/* update: scale and fade a moby, spawn an effect, delete it when done */
+void func_L15_0029FCB0(char *moby) {
+    char *cls = *(char **)(moby + 0x24);
+    char *data = *(char **)(moby + 0x78);
+    float t = *(float *)(moby + 0x2C) / *(float *)(cls + 0x24) * 0.5f;
+    char *pos;
+    char *g;
+    t = t + *(float *)data;
+    *(float *)(moby + 0x2C) = t + t;
+    *(float *)(moby + 0x2C) = *(float *)(moby + 0x2C) * *(float *)(cls + 0x24);
+    if (*(int *)(data + 8) < func_001F9850(0x28))
+        moby[0x23] = *(int *)(data + 8) * 127 / func_001F9850(0x28);
+    g = D_0013E633 + 0xE1D;
+    pos = moby + 0x10;
+    func_L00_0025A8E8(t, *(char **)(g + 0x2080), pos, (float)func_001FA898_r(*(float *)(data + 0xC)), 1.0f, 0x30000, 0, 1, 0);
+    if (func_001F9908((int *)(data + 8)))
+        func_0020D678(moby);
+}
 INCLUDE_ASM("asm/overlays", func_L15_0029FF90);
 INCLUDE_ASM("asm/overlays", func_L15_002A3668);
 extern char D_0013E633[];

@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L07_0031B318 -- src/overlays/l07_umbris/vendor_00313D28.c
- * Best so far: BYTES 10/772 (98.7% of the bytes match), checked 2026-10-06.
+ * Best so far: BYTES 6/772 (99.2% of the bytes match), checked 2026-10-06.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  */
@@ -7,7 +7,7 @@ extern float D_0015EE6C_b __asm__("D_0015EE6C") MACRO_ADDR;
 extern char *func_L00_0025B478_b(void *, int, int) __asm__("func_L00_0025B478");
 extern void func_001F9EC0(void *, void *, void *);
 extern void func_L00_00258DB0(float *, float, float);
-extern void func_L01_002F9908_x(float, void *, void *, float, float, float, unsigned int, int, int) __asm__("func_L01_002F9908");
+extern int func_L01_002F9908_x(float, void *, void *, float, float, float, unsigned int, int, int) __asm__("func_L01_002F9908");
 extern void func_L00_0025F4A8_b(void *, void *, void *, float, float, int, int, int, float, float, float, float, int, float, int, int, int, int) __asm__("func_L00_0025F4A8");
 
 /* Breakable crate: when smashed by the charged attack of one of the two hammer mobys, scatters d->0
