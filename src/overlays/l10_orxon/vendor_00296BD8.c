@@ -63,7 +63,86 @@ void func_L10_00296BD8(char *m) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L10_00296DC0);
+typedef int Q_296dc0 __attribute__((mode(TI)));
+extern float D_0015EE6C_x __asm__("D_0015EE6C") MACRO_ADDR;
+extern float D_0015EE70 MACRO_ADDR;
+extern int func_L01_00278FA8(void *);
+extern float func_00214158(void);
+extern float func_L00_00258C80(float lo, float hi);
+extern void func_L00_00263B78(float, float, char *, float *, float *);
+extern void func_L00_00263BF8(void *, char *, char *, float, float, float);
+extern int func_L00_00258BC8(int, int);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_002617B0(char *, void *, void *, void *);
+
+/* Bobbing float: drifts with a gentle wobble; when stood on it sinks, then rises back to its rest height. */
+void func_L10_00296DC0(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float prev[4];
+    float v[4];
+    *(Q_296dc0 *)prev = *(Q_296dc0 *)(m + 0x10);
+    if (func_L01_00278FA8(m)) m[0x20] = 2;
+    func_001F9908((int *)(d + 0xBC));
+    switch (((unsigned char *)m)[0x20]) {
+    case 0:
+        d[0x28] = 4;
+        *(short *)(d + 0x3E) = 5;
+        *(int *)(d + 0x20) = 0;
+        *(short *)(d + 0x24) = 0;
+        *(float *)(d + 0xA0) = *(float *)(m + 0x18);
+        *(float *)(d + 0xA8) = func_00214158();
+        *(float *)(d + 0xB4) = func_00214158();
+        {
+            float r = func_00214158();
+            float e = D_0015EE6C_x * 0.13962634f;
+            *(float *)(d + 0xB8) = r;
+            *(float *)(d + 0xB0) = D_0015EE6C_x * 1.5707964f + func_L00_00258C80(0.0f, e);
+        }
+        m[0x20] = 1;
+    case 1:
+        *(int *)(d + 0xA4) = 0;
+        func_L00_00263B78(0.1f, *(float *)(d + 0xB0), m, (float *)(d + 0xA8), (float *)(d + 0xAC));
+        func_L00_00263BF8(m, d + 0xB4, d + 0xB8, 0.047123890f, D_0015EE6C_x * 0.34906584f, D_0015EE6C_x * 0.5235988f);
+        break;
+    case 2: {
+        float a = *(float *)(d + 0xA4) - (D_0015EE70 + D_0015EE70);
+        float lim = -(D_0015EE6C_x + D_0015EE6C_x);
+        *(float *)(d + 0xA4) = a;
+        if (a < lim) *(float *)(d + 0xA4) = lim;
+        *(float *)(m + 0x18) += *(float *)(d + 0xA4);
+        if (func_L01_00278FA8(m) == 0) m[0x20] = 3;
+        if (*(int *)(d + 0xBC) <= 0) {
+            func_0022ED80(0, 0, (int)m);
+            *(int *)(d + 0xBC) = func_L00_00258BC8(0x28, 0x3C);
+        }
+        break;
+    }
+    case 3: {
+        float vz = *(float *)(d + 0xA4);
+        float g = D_0015EE70;
+        float dist, sq, t;
+        if (vz < 0.0f || (t = g + g, dist = *(float *)(d + 0xA0) - *(float *)(m + 0x18), sq = vz * vz,
+                          sq / (t + t) < dist)) {
+            float a = vz + g;
+            float mx = D_0015EE6C_x + D_0015EE6C_x;
+            *(float *)(d + 0xA4) = a;
+            if (mx < a) *(float *)(d + 0xA4) = mx;
+        } else if (0.0f < dist) {
+            float a = vz - sq / (dist + dist);
+            *(float *)(d + 0xA4) = a;
+            if (a < 0.0f) *(float *)(d + 0xA4) = 0.0f;
+        }
+        *(float *)(m + 0x18) += *(float *)(d + 0xA4);
+        if (*(float *)(d + 0xA0) <= *(float *)(m + 0x18)) {
+            *(float *)(m + 0x18) = *(float *)(d + 0xA0);
+            m[0x20] = 1;
+        }
+        break;
+    }
+    }
+    func_001F9BF0(v, m + 0x10, prev);
+    func_L00_002617B0(d + 0x60, v, m + 0x40, m + 0x40);
+}
 INCLUDE_ASM("asm/overlays", func_L10_00299818);
 INCLUDE_ASM("asm/overlays", func_L10_00299D18);
 INCLUDE_ASM("asm/overlays", func_L10_002BFBB8);
