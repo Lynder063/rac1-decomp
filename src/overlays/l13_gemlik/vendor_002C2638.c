@@ -145,7 +145,53 @@ int func_L13_002C4D50(char *pt, int *tbl, int start, float ref) {
     }
     return best;
 }
-INCLUDE_ASM("asm/overlays", func_L13_002C4F10);
+extern char *D_L13_001B0AB0[];
+extern char D_0013E633[];
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BF0(void *, void *, void *);
+extern float func_L00_001FF860(float, float);
+extern float func_001F9D48(void *, void *);
+
+/* Steers moby m along its path toward the next point (advancing when reached); aims it at the hero when aim. Returns 1 on a wrap. */
+int func_L13_002C4F10(char *m, char *d, int aim) {
+    char *path = D_L13_001B0AB0[*(int *)(d + 0xA0)];
+    float a, seg, diff, t;
+    int wrapped = 0;
+    float v[4];
+    a = func_001F9D10(path + (*(short *)(d + 0xB6) * 16 + 0x10), m + 0x10);
+    seg = func_001F9D10(path + (*(short *)(d + 0xB6) * 16 + 0x10), path + (*(short *)(d + 0xB4) * 16 + 0x10));
+    diff = seg - a;
+    if ((0.0f <= diff && diff < *(float *)(d + 0xCC)) || seg < *(float *)(d + 0xCC)) {
+        *(short *)(d + 0xB6) = *(unsigned short *)(d + 0xB4);
+        *(short *)(d + 0xB4) = *(unsigned short *)(d + 0xB4) + ((signed char *)d)[0xD0];
+        if (*(short *)(d + 0xB4) >= *(int *)path) {
+            *(short *)(d + 0xB4) = 0;
+            wrapped = 1;
+        }
+        if (*(short *)(d + 0xB4) < 0) {
+            wrapped = 1;
+            *(short *)(d + 0xB4) = *(unsigned short *)path - 1;
+        }
+        t = 0.0f;
+    } else {
+        t = a / seg;
+    }
+    if (t < 0.05f) t = 0.05f;
+    if (1.0f < t) t = 1.0f;
+    func_001F9C30(d + 0x70, d + 0x70, 1.0f - t);
+    func_001F9BF0(v, path + (*(short *)(d + 0xB4) * 16 + 0x10), m + 0x10);
+    func_L00_001FF4B0(v, v, *(float *)(d + 0xCC));
+    func_001F9C30(v, v, t);
+    func_001F9BD8(d + 0x70, d + 0x70, v);
+    func_L00_001FF4B0(d + 0x70, d + 0x70, *(float *)(d + 0xCC));
+    func_001F9BD8(m + 0x10, m + 0x10, d + 0x70);
+    if (aim != 0) {
+        char *g = D_0013E633 + 0xE1D;
+        float yaw = func_L00_001FF860(*(float *)(g + 0x80) - *(float *)(m + 0x10), *(float *)(g + 0x84) - *(float *)(m + 0x14));
+        func_L13_002C4C10(m, d, yaw, -func_L00_001FF860(func_001F9D48(m + 0x10, g + 0x80), *(float *)(g + 0x88) - *(float *)(m + 0x18)));
+    }
+    return wrapped;
+}
 extern char D_0013E633[];
 extern float func_001FA748(float, float);
 extern void func_00215C00(void *, float, float, float);
