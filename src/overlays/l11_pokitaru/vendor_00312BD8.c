@@ -657,7 +657,74 @@ char *func_L11_0031BC48(int idx) {
     return 0;
 }
 INCLUDE_ASM("asm/overlays", func_L11_0031BEF0);
-INCLUDE_ASM("asm/overlays", func_L11_0031BF78);
+extern short D_L11_00162490;
+extern short D_L11_00162494;
+extern short D_L11_00162498;
+extern short D_L11_0016249C;
+extern short D_L11_001624A0;
+extern short D_L11_001624A4;
+extern short D_L11_001624A8;
+extern short D_L11_001624AC;
+extern void func_L11_0031C508(char *);
+extern void func_L11_0031C2D8(char *, float *, int, int);
+extern float func_001F9B88(float);
+extern char *func_L00_0026FF20_p(void *, float *, float, float) __asm__("func_L00_0026FF20");
+extern void func_0020D678(void *);
+extern void func_L00_001FF500(void *, void *, float);
+
+/* Bubble update: rises to the surface, then pops and fades, drifting with its velocity. */
+void func_L11_0031BF78(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float v[4];
+    float len;
+    float rate;
+    char *p;
+    if (((unsigned char *)m)[0x31] == 0) {
+        if (++*(short *)(d + 0x22) > func_001F9850(0xF)) {
+            func_0020D678(m);
+            return;
+        }
+    } else {
+        *(short *)(d + 0x22) = 0;
+    }
+    switch (((unsigned char *)m)[0x20]) {
+    case 1:
+        *(float *)(d + 8) -= *(float *)&D_L11_00162490 * D_0015EE70;
+        if (**(float **)(d + 0x24) + 3.0f < *(float *)(m + 0x18)) {
+            if (func_002140B0(*(int *)&D_L11_001624A0) == 0) {
+                func_L11_0031C508(m);
+            }
+        }
+        if (*(float *)(m + 0x18) < **(float **)(d + 0x24)) {
+            func_001F9C30(d, d, *(float *)&D_L11_0016249C);
+            m[0x20] = 2;
+            func_L11_0031C2D8(m, *(float **)(d + 0x24), 8, 4);
+        }
+        break;
+    case 2:
+        *(float *)(d + 8) -= *(float *)&D_L11_00162494 * D_0015EE70;
+        rate = *(float *)(*(char **)(m + 0x24) + 0x24) / (float)func_001F9850(0x3C);
+        if ((D_L11_0015F6B0 & 3) == 0) {
+            func_L11_0031C2D8(m, *(float **)(d + 0x24), 0, 1);
+            func_L00_00258DB0(v, 0.0f, D_0015EE6C);
+            v[2] = func_001F9B88(v[2]);
+            p = func_L00_0026FF20_p(m + 0x10, v, *(float *)&D_L11_001624A4, **(float **)(d + 0x24));
+            if (p != 0) {
+                *(int *)(p + 4) = func_001FA8A8(*(int *)&D_L11_001624A8, *(int *)&D_L11_001624AC, func_002140F8(0.0f, 1.0f));
+            }
+        }
+        func_00214D28((float *)(m + 0x2C), 0.0f, rate);
+        if (*(float *)(m + 0x2C) == 0.0f) {
+            func_0020D678(m);
+            return;
+        }
+        break;
+    }
+    func_001F9BD8(m + 0x10, m + 0x10, d);
+    len = func_001F9CE8(d);
+    func_00214D28(&len, 0.0f, *(float *)&D_L11_00162498 * D_0015EE70);
+    func_L00_001FF500(d, d, len);
+}
 extern char *func_0020D348(int);
 extern float func_00214158(void);
 
