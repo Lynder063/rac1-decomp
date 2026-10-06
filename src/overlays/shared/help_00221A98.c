@@ -156,7 +156,73 @@ void func_L00_00222668(void) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002228E0);
+/* Picks the nearest free helper moby of class 0x2F6 in reach of the hero as the target; returns whether one is in sight. */
+int func_L00_002228E0(void) {
+    char *g0, *g, *gb, *g2, *g3;
+    char *m;
+    char *best;
+    char *q;
+    float bestd, d, a13, a14, a15, x;
+    int k;
+    int out;
+    float v[4];
+    float w[4];
+
+    g0 = (char *)D_0013E633 + 0xE1D;
+    if (*(int *)(g0 + 0x208C) == 0xD) {
+        return *(int *)(g0 + 0x968);
+    }
+    best = 0;
+    bestd = 1e8f;
+    *(int *)(g0 + 0x968) = 0;
+    for (m = D_L00_001600A4; m != 0; m = *(char **)(m + 0x28)) {
+        if (*(short *)(m + 0xA6) != 0x2F6) continue;
+        if (*(unsigned short *)(m + 0x34) & 1) continue;
+        q = *(char **)(m + 0x78);
+        if (*(int *)q != 0) continue;
+        if (*(float *)(q + 0x20) != 0.0f && *(float *)(q + 0x20) < func_001F9D10((char *)D_0013E633 + 0xE9D, m + 0x10)) continue;
+        g = (char *)D_0013E633 + 0xE1D;
+        k = *(int *)(g + 0x2084);
+        a14 = 0.5235988f;
+        a15 = -1.0f;
+        if (k == 1 || k == 0x1E) {
+            a15 = 0.08726646f;
+            a14 = a15;
+        }
+        gb = (char *)D_0013E633 + 0xE1D;
+        x = *(float *)(gb + 0x98);
+        if (*(int *)(gb + 0x208C) == 0xF) x = *(float *)(gb + 0x57C);
+        a13 = 30.0f;
+        if (*(float *)(q + 0x20) != 0.0f) a13 = *(float *)(q + 0x20);
+        d = func_L00_0020DD48(m, &out, x, a13, a14, a15);
+        if (out != 0) continue;
+        gb += 0x80;
+        if (func_001F9D48(gb, m + 0x10) < 4.0f) continue;
+        if (*(unsigned char *)(m + 0x31) == 0) d += 10.0f;
+        if (*(int *)(q + 0x1C) >= 0 && func_00215570(gb, *(int *)(q + 0x1C)) != 0) continue;
+        if (d < bestd) {
+            bestd = d;
+            best = m;
+        }
+    }
+    if (best != 0) {
+        char *bd;
+        g2 = (char *)D_0013E633 + 0xE1D;
+        *(char **)(g2 + 0x964) = best;
+        qcopy(v, g2 + 0x80);
+        v[2] += 0.5f;
+        qcopy(w, best + 0x10);
+        bd = *(char **)(best + 0x78);
+        *(int *)(g2 + 0x978) = *(int *)(bd + 8);
+        *(float *)(g2 + 0x980) = *(float *)(bd + 4);
+        *(float *)(g2 + 0x984) = bestd;
+        if (func_L00_001EFFF0(v, w, 2, 0, 0) == 0) {
+            *(int *)(g2 + 0x968) = 1;
+        }
+    }
+    g3 = (char *)D_0013E633 + 0xE1D;
+    return *(int *)(g3 + 0x968);
+}
 typedef struct { int a; int b; int c; char pad[0x20]; } T2C_222B80;
 typedef struct { char pad[0x194]; float f194; } H194_222B80;
 typedef struct { char pad[0x694]; float f694; } H694_222B80;

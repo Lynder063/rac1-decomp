@@ -1275,7 +1275,65 @@ void func_L06_002F4CF8(char *obj)
     }
 }
 INCLUDE_ASM("asm/overlays", func_L06_002F6330);
-INCLUDE_ASM("asm/overlays", func_L06_002F86B8);
+extern char D_0014171B_86b8[] __asm__("D_0014171B");
+extern char D_0014171B_aa35[] __asm__("D_0014171B");
+extern int D_0015EE84_86b8 __asm__("D_0015EE84") MACRO_ADDR;
+extern int D_L06_001BAFE0[];
+extern void func_L06_002F8978(char *);
+extern void func_L06_002F8A58(char *);
+extern void func_L00_0025AC00(void *, int, int, void *, void *, float);
+
+/* Collectible spawner: unless already collected (save bit), spawns the pickup moby; marks the bit once it is taken. */
+void func_L06_002F86B8(char *m) {
+    char *d = *(char **)(m + 0x78);
+    char *o;
+    unsigned char *q;
+    switch (((unsigned char *)m)[0x20]) {
+    case 0:
+        if ((*(int *)(D_0015EE84_86b8 * 256 + ((short)*(unsigned short *)(m + 0xB2) >> 5) * 4 + (D_0014171B_86b8 + 0xAB75))
+             >> (*(unsigned short *)(m + 0xB2) & 0x1F) & 1)
+            && (D_0015EE84_86b8 != 10 || (q = (unsigned char *)(D_0014171B_aa35 + 0xAA35), (q + ((unsigned char *)m)[0xB0]))[0xA0] == 0xFF)) {
+            m[0x20] = 2;
+            m[0xBC] = 1;
+            break;
+        }
+        o = func_0020D348_m(0x410);
+        o[0x30] = 0x40;
+        o[0x31] = 1;
+        *(short *)(o + 0x32) = 0x40;
+        *(long *)(o + 0x38) = *(long *)(m + 0x38);
+        *(unsigned short *)(o + 0x34) = *(unsigned short *)(m + 0x34) | 0x5000;
+        qcopy(o + 0x10, m + 0x10);
+        *(float *)(o + 0x40) = func_00214158();
+        *(float *)(o + 0x44) = func_00214158();
+        *(float *)(o + 0x48) = func_00214158();
+        *(float *)(o + 0x18) += 0.85f;
+        *(char **)(d + 0x40) = o;
+        m[0x20] = 1;
+        func_L06_002F8978(m);
+        *(int *)(D_0015EE84_86b8 * 256 + ((short)*(unsigned short *)(m + 0xB2) >> 5) * 4 + (D_0014171B_86b8 + 0xAB75))
+            &= ~(1 << (*(unsigned short *)(m + 0xB2) & 0x1F));
+        D_L06_001BAFE0[(short)*(unsigned short *)(m + 0xB2) >> 5] &= ~(1 << (*(unsigned short *)(m + 0xB2) & 0x1F));
+        break;
+    case 1: {
+        char *h = func_L00_0025B478(m, 0x330000, 0);
+        if (h != 0) {
+            func_L00_0025AC00(*(void **)(d + 0x40), *(int *)(h + 0x20), 0x10000, h, h + 0x10, 1.0f);
+            ((unsigned char *)m)[0xA4] = 0xFF;
+        }
+        if ((*(char **)(d + 0x40))[0x20] < 0) {
+            m[0xBC] = 1;
+            m[0x20] = 2;
+            *(int *)(D_0015EE84_86b8 * 256 + ((short)*(unsigned short *)(m + 0xB2) >> 5) * 4 + (D_0014171B_86b8 + 0xAB75))
+                |= 1 << (*(unsigned short *)(m + 0xB2) & 0x1F);
+            D_L06_001BAFE0[(short)*(unsigned short *)(m + 0xB2) >> 5] |= 1 << (*(unsigned short *)(m + 0xB2) & 0x1F);
+        } else {
+            func_L06_002F8A58(m);
+        }
+        break;
+    }
+    }
+}
 extern int func_002140B0(int);
 extern int func_001F9850(int);
 
@@ -1304,8 +1362,117 @@ void func_L06_002F8978(char *moby) {
     *(float *)(data + 0x3C) = 1.75f;
     *(float *)(data + 0x38) = 2.25f;
 }
-INCLUDE_ASM("asm/overlays", func_L06_002F8A58);
-INCLUDE_ASM("asm/overlays", func_L06_002F8D60);
+extern short D_L06_00161EE8, D_L06_00161EEC, D_L06_00161EF0, D_L06_00161EF4, D_L06_00161EF8, D_L06_00161EFC;
+extern short D_L06_00161F00;
+extern void func_001F9BC0(void *);
+extern int func_001FA898_g(float) __asm__("func_001FA898");
+extern unsigned char *func_L00_00273E08_g(void *, int, unsigned char, int, int, int, int, float) __asm__("func_L00_00273E08");
+extern void func_L00_00273F80_g(void *, void *, int, int, int, int, float) __asm__("func_L00_00273F80");
+
+typedef struct {
+    float ph[4];
+    float spd[4];
+    int t[4];
+    float sz[4];
+    char *tgt;
+} Beam_2f8a58;
+
+/* Draws the moby's light beam: four flickering glow sprites spaced from its target toward the camera,
+ * plus, every fourth frame while visible, a spark drifting up or down from the moby. */
+void func_L06_002F8A58(char *m) {
+    float pos[4];
+    float step[4];
+    float a[4];
+    float b[4];
+    Beam_2f8a58 *d = *(Beam_2f8a58 **)(m + 0x78);
+    int i;
+    func_001F9BF0(pos, D_L06_00167640, d->tgt + 0x10);
+    func_L00_001FF4B0(pos, pos, -0.3f);
+    func_L00_001FF4B0(step, pos, 0.1f);
+    func_001F9BD8(pos, pos, d->tgt + 0x10);
+    for (i = 0; i < 4; i++) {
+        float f;
+        int c;
+        d->ph[i] += d->spd[i];
+        if (255.0f <= d->ph[i]) {
+            d->ph[i] -= 255.0f;
+        } else if (d->ph[i] <= 0.0f) {
+            d->ph[i] += 255.0f;
+        }
+        if (func_001F9908(&d->t[i])) {
+            d->t[i] = func_001F9850(0xFF);
+        }
+        f = func_001FA888(func_001F9850(0xFF) - d->t[i]) / (float)func_001F9850(0xFF);
+        c = func_001FA8A8(*(int *)&D_L06_00161EE8, *(int *)&D_L06_00161EEC, func_001F9B88(0.5f - f));
+        func_L00_00273E08_g(pos, c, func_001FA898_g(d->ph[i]), *(int *)&D_L06_00161EF4, *(int *)&D_L06_00161EF0, 2, 0,
+                          d->sz[i]);
+        func_001F9BD8(pos, pos, step);
+    }
+    if ((D_L06_0015F6B0 & 3) == 3 && ((unsigned char *)m)[0x31] != 0) {
+        float sgn = 1.0f;
+        if (D_L06_0015F6B0 & 4) sgn = -1.0f;
+        func_001F9BC0(a);
+        a[2] += sgn * 0.9f;
+        func_L00_001FF4B0(b, a, -2.0f / (float)func_001F9850(*(int *)&D_L06_00161F00));
+        func_001F9BD8(a, a, m + 0x10);
+        a[2] += 0.85f;
+        func_L00_00273F80_g(a, b, *(int *)&D_L06_00161EF8, (unsigned char)func_001FA898_g((float)func_001F9850(*(int *)&D_L06_00161F00)),
+                          (unsigned char)func_002140B0(0xFF), 0, *(float *)&D_L06_00161EFC);
+    }
+}
+extern char D_0013E633[];
+extern int func_00215570(void *, int);
+extern void func_001F4E08(int);
+extern void func_L00_00211908(void);
+extern void func_L06_00235E08(int, int);
+
+/* Watches the moby's two 32-entry trigger lists against the hero and fires the matching events. */
+void func_L06_002F8D60(char *m) {
+    char *d = *(char **)(m + 0x78);
+    char *g;
+    int *list;
+    int *list2;
+    char *t;
+    int i;
+    int j;
+    switch (((unsigned char *)m)[0x20]) {
+    case 0:
+        m[0x20] = 1;
+        ((unsigned char *)m)[0x30] = 0xFF;
+        return;
+    case 1:
+        break;
+    default:
+        return;
+    }
+    g = D_0013E633 + 0xE1D;
+    if (*(int *)(g + 0x2084) == 0x32) {
+        t = *(char **)(g + 0x15F0);
+        if (t != 0 && ((unsigned char *)t)[0x20] != 0xFE && ((unsigned char *)t)[0x20] != 0xFD
+            && *(short *)(g + 0x15F4) == 0x45) {
+            return;
+        }
+    }
+    list = (int *)d;
+    list2 = (int *)(d + 0x80);
+    for (i = 0; i < 32; i++) {
+        if (list[i] >= 0 && func_00215570(D_0013E633 + 0xE9D, list[i])) {
+            char *h = D_0013E633 + 0xE1D;
+            if (*(unsigned char *)(h + 0x20A4) != 0) {
+                func_001F4E08(func_001F9850(10));
+                func_L00_00211908();
+            } else if (*(int *)(h + 0x2084) != 0x77) {
+                func_L06_00235E08(0x77, 1);
+            }
+        }
+    }
+    for (j = 0; j < 32; j++) {
+        if (list2[j] >= 0 && func_00215570(D_0013E633 + 0xE9D, list2[j])) {
+            func_001F4E08(func_001F9850(10));
+            func_L00_00211908();
+        }
+    }
+}
 extern char *func_L00_0025B478(void *, int, int);
 extern void func_L06_002F9098(char *m);
 extern int func_0022ED80(int, int, int);

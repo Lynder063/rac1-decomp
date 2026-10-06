@@ -96,14 +96,187 @@ char *func_L14_002EE150(void *a, float *b, int c, int d) {
     return m;
 }
 INCLUDE_ASM("asm/overlays", func_L14_002EE260);
-INCLUDE_ASM("asm/overlays", func_L14_002EE6E0);
+extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
+extern int D_L14_0015F6A8 MACRO_ADDR;
+extern char D_0014171B_c[] __asm__("D_0014171B");
+extern char D_0013D355[];
+extern int *D_L14_001B0F30_ee[] __asm__("D_L14_001B0F30");
+extern short D_L14_00161D20;
+extern short D_L14_00161D24;
+extern short D_L14_00161D28;
+extern short D_L14_00161D2C;
+extern short D_L14_00161D30;
+extern short D_L14_00161D34;
+extern int D_L14_00161D84 MACRO_ADDR;
+extern float D_L14_00161D90[] MACRO_ADDR;
+extern float D_L14_00161DA0[] MACRO_ADDR;
+extern void func_L00_00299B68(int);
+extern void func_L00_0028FC68(void);
+extern void func_L01_002A3680(void);
+extern int func_001F9908(void *);
+extern int func_L00_00200290(void *, float);
+extern int func_002140B0(int);
+extern float func_L00_00258C80(float, float);
+extern void func_L14_002EE990(char *);
+
+/* Camera-intro controller: waits for the cutscene flag, then every few seconds moves the focus to a random
+ * visible point of its path. */
+void func_L14_002EE6E0(char *m) {
+    char *d = *(char **)(m + 0x78);
+    int idx[5];
+    float v[4];
+    int st;
+    if (((unsigned char *)m)[0x20] == 0) {
+        if (D_0015EE84_m == 0xE) *(short *)(D_0014171B_c + 0xD) = 1;
+        m[0x20] = 1;
+        ((unsigned char *)m)[0x30] = 0xFF;
+        *(int *)&D_L14_00161D28 = 0;
+        *(int *)&D_L14_00161D20 = 0;
+    }
+    st = ((unsigned char *)m)[0x20];
+    if (st == 1) {
+        unsigned char *p;
+        if (D_L14_0015F6A8 != 0) return;
+        p = (unsigned char *)D_0013D355 + 0x13B;
+        if (p[0x68] != 0) return;
+        func_L00_00299B68(0);
+        p[0x68] = st;
+        m[0x20] = 2;
+        func_L00_0028FC68();
+        return;
+    }
+    if (st == 2) {
+        if (D_L14_0015F6A8 == st) return;
+        m[0x20] = 3;
+        func_L01_002A3680();
+        return;
+    }
+    if (func_001F9908(&D_L14_00161D20) == 0) return;
+    if (*(int *)&D_L14_00161D28 == 0) {
+        int *path = D_L14_001B0F30_ee[*(int *)d];
+        int i;
+        int n = 0;
+        for (i = 0; i < path[0] && n < 5; i++) {
+            qcopy(v, (char *)path + i * 16 + 0x10);
+            v[2] += *(float *)&D_L14_00161D34;
+            v[3] = *(float *)&D_L14_00161D30;
+            if (func_L00_00200290(v, 255.0f) > 0) {
+                idx[n++] = i;
+            }
+        }
+        if (n > 0) {
+            int k = func_002140B0(n);
+            qcopy(D_L14_00161D90, (char *)path + idx[k] * 16 + 0x10);
+            D_L14_00161D90[3] = 1.0f;
+            qcopy(D_L14_00161DA0, D_L14_00161D90);
+            D_L14_00161DA0[2] = *(float *)&D_L14_00161D2C;
+            D_L14_00161DA0[0] += func_L00_00258C80(0.0f, 20.0f);
+            D_L14_00161DA0[1] += func_L00_00258C80(0.0f, 20.0f);
+            qcopy(m + 0x10, D_L14_00161D90);
+        }
+    }
+    func_L14_002EE990(m);
+    if (D_L14_00161D84 == 0) {
+        *(int *)&D_L14_00161D20 = func_001F9850(*(int *)&D_L14_00161D24);
+        *(int *)&D_L14_00161D28 = 0;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L14_002EE990);
 INCLUDE_ASM("asm/overlays", func_L14_002EF078);
 INCLUDE_ASM("asm/overlays", func_L14_002EFB10);
 INCLUDE_ASM("asm/overlays", func_L14_002EFD38);
 INCLUDE_ASM("asm/overlays", func_L14_002F03E8);
-INCLUDE_ASM("asm/overlays", func_L14_002F05D8);
-INCLUDE_ASM("asm/overlays", func_L14_002F0868);
+extern char *D_L14_001B0F30[];
+extern float func_L00_0025C918(float *p, float *v, float t, float u1, float u2, float eps);
+extern int func_L00_0025E860_2F05D8(void *, void *, void *, void *, int, float) __asm__("func_L00_0025E860");
+extern float func_L00_0025C7A8(float, float, float);
+extern float D_0015EE6C MACRO_ADDR;
+extern short D_L14_00161DE4;
+
+/* Moves the moby along its current path, easing its rotation; returns 1 when the path end is reached. */
+int func_L14_002F05D8(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float rot[4];
+    float pos[4];
+    char *e;
+    float total;
+    float step;
+    float t;
+    float s;
+    int r;
+    if (((unsigned char *)m)[0xBC] == 0) {
+        e = D_L14_001B0F30[*(int *)(d + 0xA0)];
+        total = *(float *)(d + 0xB4);
+        qcopy(rot, d + 0xE0);
+    } else {
+        e = D_L14_001B0F30[*(int *)(d + 0xB8)];
+        total = *(float *)(d + 0xBC);
+        qcopy(rot, d + 0xF0);
+    }
+    step = *(float *)&D_L14_00161DE4 * D_0015EE6C;
+    r = func_L00_0025E860_2F05D8(e, pos, d + 0xA4, d + 0xA8, 0, step * *(float *)(d + 0xAC));
+    func_L00_0025C918((float *)(m + 0x10), (float *)(d + 0xC0), pos[0], 0.003f, 0.2f, 0.0f);
+    func_L00_0025C918((float *)(m + 0x14), (float *)(d + 0xC4), pos[1], 0.003f, 0.2f, 0.0f);
+    func_L00_0025C918((float *)(m + 0x18), (float *)(d + 0xC8), pos[2], 0.003f, 0.2f, 0.0f);
+    *(float *)(d + 0xB0) += step;
+    t = *(float *)(d + 0xB0) / total;
+    if (1.0f < t) t = 1.0f;
+    if (r != 0) t = 1.0f;
+    if (*(float *)(d + 0xAC) < 0.0f) t = 1.0f - t;
+    if (0.0f < *(float *)(d + 0xAC)) {
+        s = 0.0f;
+        if (0.5f < t) s = (t - 0.5f) + (t - 0.5f);
+    } else {
+        s = 1.0f;
+        if (t <= 0.5f) s = t + t;
+    }
+    if (1.0f < s) s = 1.0f;
+    *(float *)(m + 0x40) = func_L00_0025C7A8(*(float *)(d + 0xD0), rot[0], s);
+    *(float *)(m + 0x44) = func_L00_0025C7A8(*(float *)(d + 0xD4), rot[1], t);
+    *(float *)(m + 0x48) = func_L00_0025C7A8(*(float *)(d + 0xD8), rot[2], t);
+    if (r != 0) {
+        if (0.0f < *(float *)(d + 0xAC)) {
+            int n = *(int *)e - 2;
+            *(int *)(d + 0xA4) = n;
+            *(float *)(d + 0xA8) = *(float *)(e + (n << 4) + 0x1C);
+        } else {
+            *(int *)(d + 0xA4) = 0;
+            *(float *)(d + 0xA8) = 0.0f;
+        }
+        return 1;
+    }
+    return 0;
+}
+extern char *D_L14_001B0F30[];
+extern float func_L00_0025C918(float *p, float *v, float t, float u1, float u2, float eps);
+
+/* Springs the moby's position (and, while moving, its rotation) toward its current path point. */
+void func_L14_002F0868(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float pos[4];
+    float rot[4];
+    char *e;
+    if (((unsigned char *)m)[0xBC] == 0) {
+        e = D_L14_001B0F30[*(int *)(d + 0xA0)];
+        qcopy(rot, d + 0xE0);
+    } else {
+        e = D_L14_001B0F30[*(int *)(d + 0xB8)];
+        qcopy(rot, d + 0xF0);
+    }
+    if (*(float *)(d + 0xAC) > 0.0f) {
+        qcopy(pos, e + *(int *)e * 16);
+    } else {
+        qcopy(pos, e + 0x10);
+    }
+    func_L00_0025C918((float *)(m + 0x10), (float *)(d + 0xC0), pos[0], 0.003f, 0.2f, 0.0f);
+    func_L00_0025C918((float *)(m + 0x14), (float *)(d + 0xC4), pos[1], 0.003f, 0.2f, 0.0f);
+    func_L00_0025C918((float *)(m + 0x18), (float *)(d + 0xC8), pos[2], 0.003f, 0.2f, 0.0f);
+    if (0.0f < *(float *)(d + 0xAC)) {
+        func_L00_0025C918((float *)(m + 0x40), (float *)(d + 0x100), rot[0], 0.003f, 0.2f, 0.0f);
+        func_L00_0025C918((float *)(m + 0x44), (float *)(d + 0x104), rot[1], 0.003f, 0.2f, 0.0f);
+        func_L00_0025C918((float *)(m + 0x48), (float *)(d + 0x108), rot[2], 0.003f, 0.2f, 0.0f);
+    }
+}
 typedef struct {
     char pad0[0xAC];
     float value;
@@ -275,5 +448,60 @@ void func_L14_002FDD18(char *moby) {
 INCLUDE_ASM("asm/overlays", func_L14_002FDE28);
 INCLUDE_ASM("asm/overlays", func_L14_002FE038);
 INCLUDE_ASM("asm/overlays", func_L14_002FE798);
-INCLUDE_ASM("asm/overlays", func_L14_002FEDA0);
+extern int *D_L14_001B0F30_fe[] __asm__("D_L14_001B0F30");
+extern char *D_L14_00167600;
+extern short D_L14_00162048;
+extern short D_L14_0016204C;
+extern short D_L14_00162050;
+extern short D_L14_00162054;
+extern short D_L14_00162058;
+extern void func_L13_003184A0(int);
+extern void func_L00_0028EBF0(int);
+extern void func_0020D678(void *);
+extern void func_001F9BF0(void *, void *, void *);
+extern float func_001FA790(float, float);
+extern void func_L00_002592B0(char *moby, float *vel, float target, float k, float d, float max);
+
+/* Flies the moby along its path, banking and pitching toward the next point; returns 1 once it is removed at the end. */
+int func_L14_002FEDA0(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float v[4];
+    float w[4];
+    float yaw;
+    float t;
+    int r;
+    r = func_L00_0025E860_2F05D8(D_L14_001B0F30_fe[*(int *)(d + 0x68)], v, d + 0x60, d + 0x64,
+                                 (unsigned int)*(int *)(d + 0x8C) >> 31, *(float *)&D_L14_00162048 * D_0015EE6C);
+    if (*(int *)(d + 0x8C) != 0 && (r != 0 || *(short *)(D_L14_00167600 + 0x86) != 0x13)) {
+        func_L13_003184A0(*(int *)(d + 0x90));
+        if (*(int *)(d + 0x6C) != -1) {
+            char *e = D_0013E633 + 0x1D + *(int *)(d + 0x6C) * 0x70;
+            if (*(char **)(e + 0x88) == m && ((unsigned char *)e)[0x74] != 0) {
+                func_L00_0028EBF0(*(int *)(d + 0x6C));
+            }
+        }
+        *(int *)(d + 0x6C) = -1;
+        func_0020D678(m);
+        return 1;
+    }
+    func_L00_0025C918((float *)(m + 0x10), (float *)(d + 0x70), v[0], *(float *)&D_L14_0016204C, *(float *)&D_L14_00162050, 0.0f);
+    func_L00_0025C918((float *)(m + 0x14), (float *)(d + 0x74), v[1], *(float *)&D_L14_0016204C, *(float *)&D_L14_00162050, 0.0f);
+    func_L00_0025C918((float *)(m + 0x18), (float *)(d + 0x78), v[2], *(float *)&D_L14_0016204C, *(float *)&D_L14_00162050, 0.0f);
+    func_001F9BF0(w, v, m + 0x10);
+    if (0.01f < func_001F9B88(w[0])) {
+        if (0.01f < func_001F9B88(w[1])) {
+            yaw = func_L00_001FF860(w[0], w[1]);
+            t = func_001FA790(*(float *)(m + 0x48), yaw);
+            func_L00_002592B0(m, (float *)(d + 0x88), yaw, *(float *)&D_L14_0016204C, *(float *)&D_L14_00162050, 0.0f);
+            yaw = func_L00_001FF860(func_001F9CE8(w), w[2]);
+            func_L00_0025C918((float *)(m + 0x44), (float *)(d + 0x84), -yaw,
+                              *(float *)&D_L14_0016204C, *(float *)&D_L14_00162050, 0.0f);
+            t = t / *(float *)&D_L14_00162058;
+            if (1.0f < t) t = 1.0f;
+            if (t < -1.0f) t = -1.0f;
+            func_L00_0025C918((float *)(m + 0x40), (float *)(d + 0x80), t * *(float *)&D_L14_00162054, 0.003f, *(float *)&D_L14_00162050, 0.0f);
+        }
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L14_002FF040);

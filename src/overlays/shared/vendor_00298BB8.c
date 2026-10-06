@@ -919,7 +919,65 @@ void func_L15_0029B428(char *a, char *b) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L15_0029B488);
+extern float D_0015EE64 MACRO_ADDR;
+extern void func_L00_00263950(char *, char *, int, float, float);
+
+/* Turns the turret head toward its current target (or remembered point), clamping yaw and pitch, and eases both joints. */
+void func_L15_0029B488(void *mv) {
+    char *m = mv;
+    char *d = *(char **)(m + 0x78);
+    float tgt[4];
+    float pos[4];
+    float dir[4];
+    float k1 = 0.02f;
+    float k2 = 0.3f;
+    float yaw, pitch;
+    int have = 0;
+    if (*(short *)(d + 0x194) != 0 && *(char **)(d + 0x190) != 0) {
+        qcopy(tgt, *(char **)(d + 0x190) + 0x10);
+        have = 1;
+    } else if (*(short *)(d + 0x19C) != 0 && *(char **)(d + 0x198) != 0) {
+        qcopy(tgt, *(char **)(d + 0x198) + 0x10);
+        have = 1;
+    } else if (((unsigned char *)d)[0x19F] != 0) {
+        qcopy(tgt, d + 0x100);
+        have = 1;
+    }
+    if (have) {
+        qcopy(pos, m + 0x10);
+        pos[2] += 1.0f;
+        func_001F9BF0(dir, tgt, pos);
+        yaw = func_001FA790(func_L00_001FF860(dir[0], dir[1]), *(float *)(m + 0x48));
+        pitch = -func_L00_001FF860(func_001F9CE8(dir), dir[2]);
+        if ((unsigned int)(((unsigned char *)m)[0x20] - 0x10) < 2) {
+            if (1.5707964f < yaw) yaw = 1.5707964f;
+            else if (yaw < -1.5707964f) yaw = -1.5707964f;
+        } else {
+            if (1.0471976f < yaw) yaw = 1.0471976f;
+            else if (yaw < -1.0471976f) yaw = -1.0471976f;
+        }
+        if (0.5235988f < pitch) pitch = 0.5235988f;
+        else if (pitch < -0.5235988f) pitch = -0.5235988f;
+    } else {
+        pitch = 0.0f;
+        yaw = pitch;
+    }
+    if ((unsigned int)(((unsigned char *)m)[0x20] - 0x10) < 2) {
+        *(float *)(d + 0x288) = yaw;
+        if (1.0471976f < yaw) *(float *)(d + 0x288) = 1.0471976f;
+        else if (yaw < -1.0471976f) *(float *)(d + 0x288) = -1.0471976f;
+        *(float *)(d + 0x208) = yaw - *(float *)(d + 0x288);
+    } else {
+        *(float *)(d + 0x208) = yaw * 0.7f;
+        *(float *)(d + 0x288) = yaw * 0.3f;
+    }
+    {
+        float e = D_0015EE64;
+        *(float *)(d + 0x204) = pitch;
+        func_L00_00263950(m, d + 0x1A0, 1, k1 * e, k2 * e);
+    }
+    func_L00_00263950(m, d + 0x220, 0, k1 * D_0015EE64, k2 * D_0015EE64);
+}
 INCLUDE_ASM("asm/overlays", func_L15_0029B750);
 extern void func_L00_00264690(void *, int, float, float);
 

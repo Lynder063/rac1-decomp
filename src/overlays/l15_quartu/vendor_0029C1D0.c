@@ -66,7 +66,64 @@ void func_L15_002C7C20(char *m) {
     *(unsigned char *)(m + 0xA4) = 0xFF;
     func_L00_0025E590(m, d + 0x60);
 }
-INCLUDE_ASM("asm/overlays", func_L15_002D0500);
+extern char *D_L15_00160064 MACRO_ADDR;
+extern void func_L00_00260D30_t(void *, float *, float) __asm__("func_L00_00260D30");
+extern float func_001F9D48(void *, void *);
+extern void func_001F9BC0_t(void *) __asm__("func_001F9BC0");
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+
+/* Flocking step toward the moby's path target: separates from same-type mobys, keeps ~10 units off the
+ * target while others are closer, writes the steering point to out and returns the heading to follow. */
+float func_L15_002D0500(void *m_, void *out, float r) {
+    char *m = m_;
+    float tmp[4];
+    float tgt[4];
+    float pad[4][4]; /* unused, but retail reserves the stack space */
+    float dist;
+    float wsum = 0.0f;
+    int clear = 1;
+    float k;
+    char *o;
+    func_L00_00260D30_t(m, tgt, r);
+    dist = func_001F9D48(m + 0x10, tgt);
+    func_001F9BC0_t(out);
+    for (o = D_L15_00160064; o != 0; o = *(char **)(o + 0x28)) {
+        if (o == m) continue;
+        if (*(short *)(o + 0xA6) != *(short *)(m + 0xA6)) continue;
+        if (func_001F9D48(o + 0x10, m + 0x10) < 3.0f) {
+            wsum += 6.0f;
+            func_001F9BF0(tmp, m + 0x10, o + 0x10);
+            func_001F9C30(tmp, tmp, 6.0f);
+            func_001F9BD8(out, out, tmp);
+        }
+        if (func_001F9D48(o + 0x10, tgt) < dist) clear = 0;
+    }
+    if (clear == 0) {
+        func_001F9BF0(tmp, m + 0x10, tgt);
+        if (dist < 9.5f) {
+            k = 10.0f;
+        } else if (10.5f < dist) {
+            k = -10.0f;
+        } else {
+            k = 0.0f;
+        }
+        wsum += 10.0f;
+        func_L00_001FF4B0(tmp, tmp, k * 10.0f);
+        func_001F9BD8(out, out, tmp);
+        func_001F9C30(out, out, 1.0f / wsum);
+        func_001F9BD8(out, out, m + 0x10);
+    } else {
+        qcopy(out, tgt);
+    }
+    if (func_001F9D48(m + 0x10, out) < 1.0f) {
+        qcopy(out, m + 0x10);
+        return func_L00_001FF860(tgt[0] - *(float *)(m + 0x10), tgt[1] - *(float *)(m + 0x14));
+    }
+    return func_L00_001FF860(((float *)out)[0] - *(float *)(m + 0x10), ((float *)out)[1] - *(float *)(m + 0x14));
+}
 typedef int u128 __attribute__((mode(TI)));
 typedef union { u128 q; float f[4]; } UVec;
 typedef struct { int n; int pad[3]; UVec pt[1]; } UPath;
