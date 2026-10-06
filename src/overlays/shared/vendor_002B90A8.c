@@ -491,7 +491,7 @@ void func_L01_002E4920(char *moby, char *state) {
 INCLUDE_ASM("asm/overlays", func_L01_002E4BA8);
 INCLUDE_ASM("asm/overlays", func_L01_002E5298);
 extern char D_L01_00174340_c[] __asm__("D_L01_00174340");
-extern short D_0015EE70_gp __asm__("D_0015EE70");
+extern float D_0015EE70 MACRO_ADDR;
 extern void func_001F9BC0(void *);
 extern void func_L00_0026A7F8(void *, void *, int, int, int, int, int, int);
 extern float func_00214358(void *, int, float);
@@ -538,7 +538,7 @@ void func_L01_002EEDD8(char *m) {
         } else if (*(float *)(m + 0x18) < *(float *)(D_0013E633 + 0x10C5) + *(float *)(d + 0x18)) {
             *(int *)(d + 8) = 0;
         } else {
-            *(float *)(d + 8) -= *(float *)&D_0015EE70_gp * 10.8f;
+            *(float *)(d + 8) -= D_0015EE70 * 10.8f;
         }
         if (func_L00_001EFFF0(m + 0x10, prev, 0, *(int *)(d + 0x10), 0) != 0) {
             char *p = D_L01_00174340_c;
