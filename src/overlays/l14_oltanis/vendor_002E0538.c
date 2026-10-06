@@ -96,7 +96,91 @@ char *func_L14_002EE150(void *a, float *b, int c, int d) {
     return m;
 }
 INCLUDE_ASM("asm/overlays", func_L14_002EE260);
-INCLUDE_ASM("asm/overlays", func_L14_002EE6E0);
+extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
+extern int D_L14_0015F6A8 MACRO_ADDR;
+extern char D_0014171B_c[] __asm__("D_0014171B");
+extern char D_0013D355[];
+extern int *D_L14_001B0F30_ee[] __asm__("D_L14_001B0F30");
+extern short D_L14_00161D20;
+extern short D_L14_00161D24;
+extern short D_L14_00161D28;
+extern short D_L14_00161D2C;
+extern short D_L14_00161D30;
+extern short D_L14_00161D34;
+extern int D_L14_00161D84 MACRO_ADDR;
+extern float D_L14_00161D90[] MACRO_ADDR;
+extern float D_L14_00161DA0[] MACRO_ADDR;
+extern void func_L00_00299B68(int);
+extern void func_L00_0028FC68(void);
+extern void func_L01_002A3680(void);
+extern int func_001F9908(void *);
+extern int func_L00_00200290(void *, float);
+extern int func_002140B0(int);
+extern float func_L00_00258C80(float, float);
+extern void func_L14_002EE990(char *);
+
+/* Camera-intro controller: waits for the cutscene flag, then every few seconds moves the focus to a random
+ * visible point of its path. */
+void func_L14_002EE6E0(char *m) {
+    char *d = *(char **)(m + 0x78);
+    int idx[5];
+    float v[4];
+    int st;
+    if (((unsigned char *)m)[0x20] == 0) {
+        if (D_0015EE84_m == 0xE) *(short *)(D_0014171B_c + 0xD) = 1;
+        m[0x20] = 1;
+        ((unsigned char *)m)[0x30] = 0xFF;
+        *(int *)&D_L14_00161D28 = 0;
+        *(int *)&D_L14_00161D20 = 0;
+    }
+    st = ((unsigned char *)m)[0x20];
+    if (st == 1) {
+        unsigned char *p;
+        if (D_L14_0015F6A8 != 0) return;
+        p = (unsigned char *)D_0013D355 + 0x13B;
+        if (p[0x68] != 0) return;
+        func_L00_00299B68(0);
+        p[0x68] = st;
+        m[0x20] = 2;
+        func_L00_0028FC68();
+        return;
+    }
+    if (st == 2) {
+        if (D_L14_0015F6A8 == st) return;
+        m[0x20] = 3;
+        func_L01_002A3680();
+        return;
+    }
+    if (func_001F9908(&D_L14_00161D20) == 0) return;
+    if (*(int *)&D_L14_00161D28 == 0) {
+        int *path = D_L14_001B0F30_ee[*(int *)d];
+        int i;
+        int n = 0;
+        for (i = 0; i < path[0] && n < 5; i++) {
+            qcopy(v, (char *)path + i * 16 + 0x10);
+            v[2] += *(float *)&D_L14_00161D34;
+            v[3] = *(float *)&D_L14_00161D30;
+            if (func_L00_00200290(v, 255.0f) > 0) {
+                idx[n++] = i;
+            }
+        }
+        if (n > 0) {
+            int k = func_002140B0(n);
+            qcopy(D_L14_00161D90, (char *)path + idx[k] * 16 + 0x10);
+            D_L14_00161D90[3] = 1.0f;
+            qcopy(D_L14_00161DA0, D_L14_00161D90);
+            D_L14_00161DA0[2] = *(float *)&D_L14_00161D2C;
+            D_L14_00161DA0[0] += func_L00_00258C80(0.0f, 20.0f);
+            D_L14_00161DA0[1] += func_L00_00258C80(0.0f, 20.0f);
+            qcopy(m + 0x10, D_L14_00161D90);
+        }
+    }
+    func_L14_002EE990(m);
+    if (D_L14_00161D84 == 0) {
+        *(int *)&D_L14_00161D20 = func_001F9850(*(int *)&D_L14_00161D24);
+        *(int *)&D_L14_00161D28 = 0;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L14_002EE990);
 INCLUDE_ASM("asm/overlays", func_L14_002EF078);
 INCLUDE_ASM("asm/overlays", func_L14_002EFB10);
