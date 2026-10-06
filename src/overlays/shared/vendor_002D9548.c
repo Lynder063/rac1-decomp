@@ -1275,7 +1275,65 @@ void func_L06_002F4CF8(char *obj)
     }
 }
 INCLUDE_ASM("asm/overlays", func_L06_002F6330);
-INCLUDE_ASM("asm/overlays", func_L06_002F86B8);
+extern char D_0014171B_86b8[] __asm__("D_0014171B");
+extern char D_0014171B_aa35[] __asm__("D_0014171B");
+extern int D_0015EE84_86b8 __asm__("D_0015EE84") MACRO_ADDR;
+extern int D_L06_001BAFE0[];
+extern void func_L06_002F8978(char *);
+extern void func_L06_002F8A58(char *);
+extern void func_L00_0025AC00(void *, int, int, void *, void *, float);
+
+/* Collectible spawner: unless already collected (save bit), spawns the pickup moby; marks the bit once it is taken. */
+void func_L06_002F86B8(char *m) {
+    char *d = *(char **)(m + 0x78);
+    char *o;
+    unsigned char *q;
+    switch (((unsigned char *)m)[0x20]) {
+    case 0:
+        if ((*(int *)(D_0015EE84_86b8 * 256 + ((short)*(unsigned short *)(m + 0xB2) >> 5) * 4 + (D_0014171B_86b8 + 0xAB75))
+             >> (*(unsigned short *)(m + 0xB2) & 0x1F) & 1)
+            && (D_0015EE84_86b8 != 10 || (q = (unsigned char *)(D_0014171B_aa35 + 0xAA35), (q + ((unsigned char *)m)[0xB0]))[0xA0] == 0xFF)) {
+            m[0x20] = 2;
+            m[0xBC] = 1;
+            break;
+        }
+        o = func_0020D348_m(0x410);
+        o[0x30] = 0x40;
+        o[0x31] = 1;
+        *(short *)(o + 0x32) = 0x40;
+        *(long *)(o + 0x38) = *(long *)(m + 0x38);
+        *(unsigned short *)(o + 0x34) = *(unsigned short *)(m + 0x34) | 0x5000;
+        qcopy(o + 0x10, m + 0x10);
+        *(float *)(o + 0x40) = func_00214158();
+        *(float *)(o + 0x44) = func_00214158();
+        *(float *)(o + 0x48) = func_00214158();
+        *(float *)(o + 0x18) += 0.85f;
+        *(char **)(d + 0x40) = o;
+        m[0x20] = 1;
+        func_L06_002F8978(m);
+        *(int *)(D_0015EE84_86b8 * 256 + ((short)*(unsigned short *)(m + 0xB2) >> 5) * 4 + (D_0014171B_86b8 + 0xAB75))
+            &= ~(1 << (*(unsigned short *)(m + 0xB2) & 0x1F));
+        D_L06_001BAFE0[(short)*(unsigned short *)(m + 0xB2) >> 5] &= ~(1 << (*(unsigned short *)(m + 0xB2) & 0x1F));
+        break;
+    case 1: {
+        char *h = func_L00_0025B478(m, 0x330000, 0);
+        if (h != 0) {
+            func_L00_0025AC00(*(void **)(d + 0x40), *(int *)(h + 0x20), 0x10000, h, h + 0x10, 1.0f);
+            ((unsigned char *)m)[0xA4] = 0xFF;
+        }
+        if ((*(char **)(d + 0x40))[0x20] < 0) {
+            m[0xBC] = 1;
+            m[0x20] = 2;
+            *(int *)(D_0015EE84_86b8 * 256 + ((short)*(unsigned short *)(m + 0xB2) >> 5) * 4 + (D_0014171B_86b8 + 0xAB75))
+                |= 1 << (*(unsigned short *)(m + 0xB2) & 0x1F);
+            D_L06_001BAFE0[(short)*(unsigned short *)(m + 0xB2) >> 5] |= 1 << (*(unsigned short *)(m + 0xB2) & 0x1F);
+        } else {
+            func_L06_002F8A58(m);
+        }
+        break;
+    }
+    }
+}
 extern int func_002140B0(int);
 extern int func_001F9850(int);
 
