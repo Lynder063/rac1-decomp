@@ -395,4 +395,57 @@ void func_L12_002ED028(char *m, int flag) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L12_002ED228);
-INCLUDE_ASM("asm/overlays", func_L12_002ED550);
+extern float func_001F9D48(void *, void *);
+extern int func_L00_001FEF78(void *);
+
+/* Idle critter: waits a random time, then plays one of its fidget animations (or reacts when the hero comes close). */
+void func_L12_002ED550(unsigned char *m) {
+    float dist = func_001F9D48(m + 0x10, D_0013E633 + 0xE9D);
+    switch (m[0x20]) {
+    case 0:
+        if (m[0x53] != 0) func_00213DE0(m, 0, 0, 0);
+        m[0x20] = 1;
+        m[0xBC] = func_002140B0(func_001F9850(0xB4));
+        break;
+    case 1:
+        if (m[0x52] == 0 && dist < 9.0f && m[0xBC] < 2) m[0xBC] = 2;
+        if (dist < 12.0f && m[0x52] == m[0x53] && m[0x52] != 0) m[0xBC] = 0;
+        if (func_L00_001FEF78(m + 0xBC)) {
+            switch (m[0x52]) {
+            case 0:
+                if (func_002140B0(0x100) & 1) {
+                    if (m[0x53] != 3) func_00213DE0(m, 3, 0, 0);
+                } else {
+                    if (m[0x53] != 5) func_00213DE0(m, 5, 0, 0);
+                }
+                break;
+            case 1:
+                if (m[0x53] != 4) func_00213DE0(m, 4, 0, 0);
+                break;
+            case 2:
+                if (m[0x53] != 6) func_00213DE0(m, 6, 0, 0);
+                break;
+            }
+            m[0x20] = 2;
+        }
+        break;
+    case 2:
+        if (m[0x70] & 2) {
+            switch (m[0x52]) {
+            case 3:
+                if (m[0x53] != 1) func_00213DE0(m, 1, 0, 0);
+                break;
+            case 4:
+            case 6:
+                if (m[0x53] != 0) func_00213DE0(m, 0, 0, 0);
+                break;
+            case 5:
+                if (m[0x53] != 2) func_00213DE0(m, 2, 0, 0);
+                break;
+            }
+            m[0x20] = 1;
+            m[0xBC] = func_002140B0(func_001F9850(0xB4));
+        }
+        break;
+    }
+}
