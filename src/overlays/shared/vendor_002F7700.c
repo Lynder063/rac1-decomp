@@ -133,7 +133,71 @@ void func_L01_00309848(char *moby) {
     *(float *)(data + 0x5C) = 2.5f;
     *(float *)(data + 0x58) = 3.0f;
 }
-INCLUDE_ASM("asm/overlays", func_L01_00309928);
+extern char D_L01_001672C0[];
+extern short D_L01_00161FCC;
+extern short D_L01_00161FD0;
+extern short D_L01_00161FD8;
+extern short D_L01_00161FDC;
+extern void func_001F9C30(void *, void *, float);
+extern void func_L00_00250800(void *, int, void *);
+extern float func_0020D830_m(void *) __asm__("func_0020D830");
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern int func_001F9908(void *);
+extern float func_001FA888(int);
+extern float func_001F9B88(float);
+extern int func_001FA8A8(int, int, float);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern unsigned char *func_L00_00273E08(void *, int, unsigned char, int, int, int, int, float);
+
+/* Draws the moby's four pulsing glow rings between it and the camera, fading with distance. */
+void func_L01_00309928(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float dir[4];
+    float pos[4];
+    float step[4];
+    float scale = 1.0f;
+    int i;
+    float *ang;
+    float *spd;
+    int *tm;
+    float *sz;
+    if (((unsigned char *)m)[0x20] == 1) {
+        func_001F9C30(pos, m, 0.0009765625f);
+    } else {
+        func_L00_00250800(m, 0, pos);
+        scale = (160.0f - func_0020D830_m(m)) / 160.0f * 16.0f;
+        if (1.0f < scale) scale = 1.0f;
+    }
+    func_001F9BF0(dir, D_L01_001672C0, pos);
+    func_L00_001FF4B0(dir, dir, -0.3f);
+    func_L00_001FF4B0(step, dir, 0.1f);
+    func_001F9BD8(dir, dir, pos);
+    ang = (float *)(d + 0x20);
+    spd = (float *)(d + 0x30);
+    tm = (int *)(d + 0x40);
+    sz = (float *)(d + 0x50);
+    for (i = 0; i < 4; i++) {
+        float a = ang[i] + spd[i];
+        float t;
+        int c;
+        ang[i] = a;
+        if (255.0f <= a) {
+            ang[i] = a - 255.0f;
+        } else if (a <= 0.0f) {
+            ang[i] = a + 255.0f;
+        }
+        if (func_001F9908((int *)(d + 0x40) + i)) {
+            tm[i] = func_001F9850(0xFF);
+        }
+        t = func_001FA888(func_001F9850(0xFF) - tm[i]) / (float)func_001F9850(0xFF);
+        c = func_001FA8A8(*(int *)&D_L01_00161FCC, *(int *)&D_L01_00161FD0, func_001F9B88(0.5f - t));
+        func_L00_00273E08(dir, c, func_001FA898_r(ang[i]), *(int *)&D_L01_00161FDC,
+                          *(int *)&D_L01_00161FD8, 2, 0, sz[i] * scale);
+        func_001F9BD8(dir, dir, step);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_00309BB8);
 extern short D_L01_00161FE4;
 extern short D_L01_00161FE8;
