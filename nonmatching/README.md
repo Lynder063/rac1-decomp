@@ -139,7 +139,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L18_002D76D8`](l18_veldin2/func_L18_002D76D8.c) | l18_veldin2 | 788 | BYTES 91/788 | 88.5% |
 | [`func_L05_00263490`](shared/func_L05_00263490.c) | shared | 108 | BYTES 13/108 | 88.0% |
 | [`func_L00_00205778`](shared/func_L00_00205778.c) | shared | 8 | BYTES 1/8 | 87.5% |
-| [`func_L14_00306A88`](l14_oltanis/func_L14_00306A88.c) | l14_oltanis | 128 | BYTES 16/128 | 87.5% |
 | [`func_L05_00317B68`](l05_rilgar/func_L05_00317B68.c) | l05_rilgar | 368 | BYTES 49/368 | 86.7% |
 | [`func_L04_002CF440`](l04_eudora/func_L04_002CF440.c) | l04_eudora | 28 | BYTES 4/28 | 85.7% |
 | [`func_L13_0030B940`](l13_gemlik/func_L13_0030B940.c) | l13_gemlik | 580 | BYTES 83/580 | 85.7% |
@@ -153,7 +152,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L18_002EAB58`](l18_veldin2/func_L18_002EAB58.c) | l18_veldin2 | 1764 | BYTES 339/1764 | 80.8% |
 | [`func_L18_002D9C90`](l18_veldin2/func_L18_002D9C90.c) | l18_veldin2 | 24 | BYTES 7/24 | 70.8% |
 | [`func_L00_001EB430`](shared/func_L00_001EB430.c) | shared | 8 | SIZE ours 24 / retail 8 | - |
-| [`func_L00_001EB448`](shared/func_L00_001EB448.c) | shared | 88 | SIZE ours 92 / retail 88 | - |
 | [`func_L00_001EB890`](shared/func_L00_001EB890.c) | shared | 764 | SIZE ours 768 / retail 764 | - |
 | [`func_L00_001EC220`](shared/func_L00_001EC220.c) | shared | 592 | SIZE ours 592 / retail 596 | - |
 | [`func_L00_001ED428`](shared/func_L00_001ED428.c) | shared | 56 | SIZE ours 388 / retail 392 | - |
@@ -368,7 +366,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L14_002F03E8`](l14_oltanis/func_L14_002F03E8.c) | l14_oltanis | 496 | SIZE ours 500 / retail 496 | - |
 | [`func_L14_002F0A30`](l14_oltanis/func_L14_002F0A30.c) | l14_oltanis | 132 | SIZE ours 140 / retail 132 | - |
 | [`func_L14_002F24C8`](l14_oltanis/func_L14_002F24C8.c) | l14_oltanis | 252 | SIZE ours 248 / retail 252 | - |
-| [`func_L14_002FDE28`](l14_oltanis/func_L14_002FDE28.c) | l14_oltanis | 520 | SIZE ours 516 / retail 520 | - |
 | [`func_L14_002FFF08`](l14_oltanis/func_L14_002FFF08.c) | l14_oltanis | 424 | SIZE ours 428 / retail 424 | - |
 | [`func_L14_00303270`](shared/func_L14_00303270.c) | shared | 444 | SIZE ours 448 / retail 444 | - |
 | [`func_L14_00304E68`](shared/func_L14_00304E68.c) | shared | 336 | SIZE ours 344 / retail 336 | - |

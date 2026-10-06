@@ -70,7 +70,24 @@ void func_L14_003047F8(unsigned char *moby) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L14_00306890);
-INCLUDE_ASM("asm/overlays", func_L14_00306A88);
+extern unsigned short *D_L14_001AC2C0[];
+extern float D_L14_001EE920[];
+
+/* For each entry in a moby-id list, saves the moby's Y and lowers it by 20. */
+void func_L14_00306A88(char *moby) {
+    unsigned short *p = D_L14_001AC2C0[**(int **)(moby + 0x78)];
+    float *out;
+    if (p != 0) {
+        int base = D_L14_00160098;
+        out = D_L14_001EE920;
+        do {
+            float *f = (float *)(base + ((*p & 0x7FFF) << 8));
+            *out++ = f[6];
+            f[6] -= 20.0f;
+            *(unsigned short *)((char *)f + 0x34) |= 0x41;
+        } while (*(short *)p++ >= 0);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L14_00306B08);
 INCLUDE_ASM("asm/overlays", func_L14_00306BE0);
 extern int func_002140B0(int);
