@@ -2,7 +2,86 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L06_002B5990);
+extern int D_L06_0015F6A8 MACRO_ADDR;
+extern char *D_L06_0016016C MACRO_ADDR;
+extern char D_0013DE6E[];
+extern float D_0015EE70 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+extern float func_L00_0025CE58(float *, float *, float, float, float, float);
+extern float func_001F9D48(void *, void *);
+extern float func_001FA748(float, float);
+extern float func_001FA790(float, float);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_001F9BD8(void *, void *, void *);
+
+/* Orbiting platform: circles its anchor moby at a fixed radius; the turn direction comes from the level switch state. */
+void func_L06_002B5990(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float z;
+    float a;
+    float s;
+    char *tb;
+    if (D_L06_0015F6A8 == 6) {
+        if (*(int *)(d + 0x10) == 0) {
+            int x;
+            *(int *)(d + 0x10) = 0;
+            x = *(int *)(D_0013DE6E + 0x2E2);
+            if (x == 8) {
+                *(int *)(d + 0x10) = 1;
+                *(float *)(d + 0x18) = 0.3490658402442932f;
+                *(int *)(d + 0x14) = 0;
+            } else if (x == 3) {
+                *(int *)(d + 0x10) = 1;
+                *(float *)(d + 0x14) = 0.3490658402442932f;
+                *(int *)(d + 0x18) = 0;
+            }
+        }
+    } else {
+        *(int *)(d + 0x10) = 0;
+    }
+    if (*(float *)(d + 0x18) != *(float *)(d + 0x14)) {
+        func_L00_0025CE58((float *)(d + 0x18), (float *)(d + 8), *(float *)(d + 0x14), D_0015EE70 * 1.5707964f,
+                          D_0015EE70 * 1.5707964f, D_0015EE6C * 1.5707964f);
+    }
+    switch (((unsigned char *)m)[0x20]) {
+    case 0:
+        *(float *)(d + 0xC) = func_001F9D48(m + 0x10, D_L06_0016016C + *(int *)d * 0x80 + 0x30);
+        *(float *)(d + 4) = *(float *)(m + 0x48);
+        if (*(float *)(m + 0x44) != 0.0f) {
+            m[0x20] = 1;
+        } else {
+            m[0x20] = 2;
+        }
+        break;
+    case 1:
+        z = *(float *)(m + 0x18);
+        a = func_001FA748(*(float *)(d + 0x18), -1.5707950592041016f);
+        *(float *)(m + 0x10) = func_001F9F90(a) * *(float *)(d + 0xC);
+        s = func_001F9FA8(a) * *(float *)(d + 0xC);
+        tb = D_L06_0016016C;
+        *(float *)(m + 0x14) = s;
+        *(int *)(m + 0x18) = 0;
+        tb += *(int *)d * 0x80;
+        func_001F9BD8(m + 0x10, m + 0x10, tb + 0x30);
+        *(float *)(m + 0x18) = z;
+        *(float *)(m + 0x48) = func_001FA748(*(float *)(d + 4), *(float *)(d + 0x18));
+        break;
+    case 2:
+        z = *(float *)(m + 0x18);
+        a = func_001FA790(-1.5707950592041016f, *(float *)(d + 0x18));
+        *(float *)(m + 0x10) = func_001F9F90(a) * *(float *)(d + 0xC);
+        s = func_001F9FA8(a) * *(float *)(d + 0xC);
+        tb = D_L06_0016016C;
+        *(float *)(m + 0x14) = s;
+        *(int *)(m + 0x18) = 0;
+        tb += *(int *)d * 0x80;
+        func_001F9BD8(m + 0x10, m + 0x10, tb + 0x30);
+        *(float *)(m + 0x18) = z;
+        *(float *)(m + 0x48) = func_001FA790(*(float *)(d + 4), *(float *)(d + 0x18));
+        break;
+    }
+}
 extern void func_L00_001FF4B0(void *, void *, float);
 extern void func_001F9BD8(void *, void *, void *);
 extern float func_00214D88(float *, float *, float, float, float, float);

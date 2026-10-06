@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 57.39589653976178,
+  "fuzzy_match_percent": 57.41399604827394,
   "total_code": "3712808",
-  "matched_code": "2043836",
-  "matched_code_percent": 55.04825458251544,
+  "matched_code": "2044508",
+  "matched_code_percent": 55.0663540910276,
   "total_functions": 5109,
-  "matched_functions": 3233,
-  "matched_functions_percent": 63.28048541789,
+  "matched_functions": 3234,
+  "matched_functions_percent": 63.30005871990605,
   "complete_code": "314244",
   "complete_code_percent": 8.463782667996837,
   "total_units": 278,
@@ -42966,13 +42966,13 @@
   {
    "name": "Level 06: Blarg Station (Nebula G34)",
    "measures": {
-    "fuzzy_match_percent": 63.84375899333827,
+    "fuzzy_match_percent": 64.34116831976314,
     "total_code": "135100",
-    "matched_code": "84864",
-    "matched_code_percent": 62.81569207994078,
+    "matched_code": "85536",
+    "matched_code_percent": 63.313101406365654,
     "total_functions": 88,
-    "matched_functions": 49,
-    "matched_functions_percent": 55.68181818181818,
+    "matched_functions": 50,
+    "matched_functions_percent": 56.81818181818182,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -43090,7 +43090,7 @@
     {
      "name": "func_L06_002B5990",
      "size": "672",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "650840",
      "metadata": {
       "virtual_address": "2840976"
@@ -53263,13 +53263,13 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 56.72181025084474,
+    "fuzzy_match_percent": 56.74250558958925,
     "total_code": "3247108",
-    "matched_code": "1754844",
-    "matched_code_percent": 54.043290213938064,
+    "matched_code": "1755516",
+    "matched_code_percent": 54.063985552682574,
     "total_functions": 3429,
-    "matched_functions": 1877,
-    "matched_functions_percent": 54.7389909594634,
+    "matched_functions": 1878,
+    "matched_functions_percent": 54.76815398075241,
     "complete_code": "220900",
     "complete_code_percent": 6.802976679556085
    }
@@ -53323,13 +53323,13 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 63.76948811617998,
+    "fuzzy_match_percent": 63.802324987295265,
     "total_code": "2046480",
-    "matched_code": "1259808",
-    "matched_code_percent": 61.55975137797584,
+    "matched_code": "1260480",
+    "matched_code_percent": 61.59258824909112,
     "total_functions": 1449,
-    "matched_functions": 794,
-    "matched_functions_percent": 54.79641131815045,
+    "matched_functions": 795,
+    "matched_functions_percent": 54.86542443064182,
     "complete_code": "140672",
     "complete_code_percent": 6.873851686798796
    }
@@ -53428,13 +53428,13 @@
    "id": "level_06",
    "name": "Level 06: Blarg Station (Nebula G34)",
    "measures": {
-    "fuzzy_match_percent": 63.84375899333827,
+    "fuzzy_match_percent": 64.34116831976314,
     "total_code": "135100",
-    "matched_code": "84864",
-    "matched_code_percent": 62.81569207994078,
+    "matched_code": "85536",
+    "matched_code_percent": 63.313101406365654,
     "total_functions": 88,
-    "matched_functions": 49,
-    "matched_functions_percent": 55.68181818181818,
+    "matched_functions": 50,
+    "matched_functions_percent": 56.81818181818182,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
