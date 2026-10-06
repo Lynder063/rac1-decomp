@@ -280,7 +280,7 @@ void func_L14_00314A40(int value)
         *(float *)(again + 0xB0) = 2.0f;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L14_003162A0);
+LINKER_REMNANT("asm/overlays", func_L14_003162A0);
 INCLUDE_ASM("asm/overlays", func_L14_00316388);
 INCLUDE_ASM("asm/overlays", func_L14_00316718);
 extern int func_L10_002F6E38(void *);

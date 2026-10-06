@@ -160,7 +160,70 @@ void func_L11_00313BC0(char *moby, char *d) {
 }
 INCLUDE_ASM("asm/overlays", func_L11_00313D00);
 INCLUDE_ASM("asm/overlays", func_L11_003146E0);
-INCLUDE_ASM("asm/overlays", func_L11_003153D0);
+extern void func_001F9BF0(void *, void *, void *);
+extern float func_001F9CE8(void *);
+extern float func_L00_001FF860(float, float);
+extern float func_001FA748(float, float);
+extern float func_001FA790(float, float);
+extern char *D_L11_0016016C MACRO_ADDR;
+extern unsigned char D_0013F450[];
+
+// Clamps and blends camera inputs near the edges of the movement bounds. Adapted from Lombyte (MIT) for PAL: src/overlays/l11/gameplay_vendor_0030c788.c, FUN_L11_00313f60.
+void func_L11_003153D0(char *moby, float *a, float *b) {
+    char *d = *(char **)(moby + 0x78);
+    float v[4];
+    float zz, dist, tmp, hi, lo, f, t, r, s;
+    unsigned char *base;
+    char *e;
+    func_001F9C30(v, d + 0x10, *(float *)(d + 0x64) * (float)func_001F9850(0x3C));
+    func_001F9BD8(v, v, moby + 0x10);
+    zz = v[2];
+    func_001F9BF0(v, v, (*(int *)(d + 0x104) << 7) + D_L11_0016016C + 0x30);
+    dist = func_001F9CE8(v);
+    tmp = func_001F9CE8((*(int *)(d + 0x104) << 7) + D_L11_0016016C);
+    e = (char *)((*(int *)(d + 0x104) << 7) + (int)D_L11_0016016C);
+    hi = *(float *)(e + 0x28);
+    lo = *(float *)(e + 0x38);
+    t = hi + lo;
+    f = func_001FA748(func_L00_001FF860(v[0], v[1]), 3.141590118408203f);
+    if (tmp - 10.0f < dist) {
+        r = (dist - tmp + 10.0f) / 10.0f;
+        s = func_001FA790(f, *(float *)(d + 0x38));
+        if (r > 1.0f) r = 1.0f; else if (r < 0.0f) r = 0.0f;
+        if (s > 0.0f) {
+            *a = (-1.0f - *a) * r + *a;
+        } else {
+            *a = (1.0f - *a) * r + *a;
+        }
+        base = D_0013F450;
+        base[0x160F] |= 2;
+    }
+    if (t - 10.0f < zz) {
+        float q, w;
+        q = (zz - t + 10.0f) / 10.0f;
+        w = (0.5235987901687622f - *(float *)(d + 0x34)) / 0.5235987901687622f;
+        if (q > 1.0f) q = 1.0f; else if (q < 0.0f) q = 0.0f;
+        if (w > 1.0f) w = 1.0f; else if (w < 0.0f) w = 0.0f;
+        q = q * w;
+        *b = (-1.0f - *b) * q + *b;
+        {
+            unsigned char *p = D_0013F450;
+            p[0x160F] |= 2;
+        }
+    } else if (zz < 260.0f) {
+        float q, w;
+        q = (250.0f - zz + 10.0f) / 10.0f;
+        w = (*(float *)(d + 0x34) + 0.5235987901687622f) / 0.5235987901687622f;
+        if (q > 1.0f) q = 1.0f; else if (q < 0.0f) q = 0.0f;
+        if (w > 1.0f) w = 1.0f; else if (w < 0.0f) w = 0.0f;
+        q = q * w;
+        *b = (1.0f - *b) * q + *b;
+        {
+            unsigned char *p = D_0013F450;
+            p[0x160F] |= 2;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L11_00315788);
 INCLUDE_ASM("asm/overlays", func_L11_00316DD8);
 INCLUDE_ASM("asm/overlays", func_L11_003173C8);
@@ -294,7 +357,52 @@ void func_L11_003198F8(char *m) {
     *(float *)(d + 0x20) = random_float_between(20.0f, 60.0f) * 0.017453292f * D_0015EE6C;
     *(float *)(d + 0x24) = random_float_between(20.0f, 60.0f) * 0.017453292f * D_0015EE6C;
 }
-INCLUDE_ASM("asm/overlays", func_L11_00319FA0);
+extern void func_L11_0031A498(char *moby);
+extern float func_00214D28(float *p, float target, float maxstep);
+extern void func_0020D678(void *);
+extern void func_L11_0031A630(char *moby);
+extern int func_L00_001EFFF0(void *, void *, int, void *, void *);
+extern int func_L00_001F2BE8(float, void *, int, void *, void *);
+extern void func_L00_0025F4A8(void *, void *, void *, float, float, int, int, int, float, float, float, int, float, float, int, int, int, int);
+extern short D_L11_00162418;
+
+// Update function for a moby that eases values, then flies to a target and bursts.
+void func_L11_00319FA0(unsigned char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    float v[4];
+    float *vp;
+    func_L11_0031A498((char *)moby);
+    switch (moby[0x20]) {
+    case 1:
+        if (func_001F9908_i(data + 0x20)) {
+            float *p = *(float **)(moby + 0x24);
+            float n = (float)func_001F9850(0x14);
+            float a = p[9];
+            float b = (*(float **)(moby + 0x24))[9] / n;
+            p = (float *)(data + 0x1C);
+            func_00214D28((float *)(moby + 0x2C), a, b);
+            func_00214D28(p, *(float *)&D_L11_00162418, *(float *)&D_L11_00162418 / (float)func_001F9850(0x14));
+        }
+        if (func_001F9908_i(data + 0x28)) {
+            func_0020D678(moby);
+        }
+        break;
+    case 2: {
+        char *pos = (char *)moby + 0x10;
+        func_L11_0031A630((char *)moby);
+        vp = v;
+        qcopy(vp, pos);
+        func_001F9BD8(pos, pos, data);
+        if (func_001F9908_i(data + 0x20) ||
+            func_L00_001EFFF0(vp, (char *)moby + 0x10, 0, moby, 0) ||
+            func_L00_001F2BE8(0.333f, (char *)moby + 0x10, 0, *(void **)(data + 0x24), 0)) {
+            func_L00_0025F4A8(moby, data, (char *)moby + 0x10, 1.5f, 2.0f, 10, 3, 16, 4.0f, 2.0f, 9.0f, -1, 1.0f, 15.0f, 1, 1, -1, 0);
+            func_0020D678(moby);
+        }
+        break;
+    }
+    }
+}
 extern char *func_0020D348(int);
 extern void func_001F9BC0(void *);
 extern void func_001FA1F8(void *, void *);
@@ -709,7 +817,24 @@ char *func_L11_0031BC48(int idx) {
     } while (*p++ >= 0);
     return 0;
 }
-INCLUDE_ASM("asm/overlays", func_L11_0031BEF0);
+extern int func_L01_0026EFB8(int, int);
+extern void func_0022EE28(int, int, int);
+extern void func_L00_00264DB8(int, int);
+extern unsigned char D_0013D50F[];
+
+void func_L11_0031BEF0(char *moby) {
+    int *data = *(int **)(moby + 0x78);
+    if (data[0] == -1) {
+        func_0020D678(moby);
+    } else if (data[1] != -1 && func_L01_0026EFB8(data[1], -1) == 0) {
+        unsigned char *g = D_0013D50F + 1;
+        if (g[0x13] == 0) {
+            g[0x13] = 1;
+            func_0022EE28(1, 0, 0);
+            func_L00_00264DB8(0x53DB, -1);
+        }
+    }
+}
 extern short D_L11_00162490;
 extern short D_L11_00162494;
 extern short D_L11_00162498;

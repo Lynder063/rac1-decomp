@@ -1,13 +1,21 @@
 /* NON_MATCHING func_L00_001EE530 -- src/overlays/shared/effects_001EE2E0.c
- * Best so far: BYTES 67/356 (81.2% of the bytes match), checked 2026-10-05.
+ * Best so far: SIZE ours 368 / retail 356, checked 2026-10-05.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * What the last attempts found:
+ *   pass. Our words equal retail's (masked) except scheduling: prologue order (retail puts lui/mtc1 of 0.0625 afte
+ *   register saves, ours hoists it between them), `lw D_L00_0015F080` before `addu` (ours reverse), and `daddu $18
+ *   in the blez delay slot (ours puts `addiu $16,$17,0x10` there). Needed: `float *pv = v;` (gives the `daddu $20,
+ *   copy), proto `int func_L00_001EE698(void *, void *, float)`, `extern char D_L00_001E7C00[]` (else $gp access),
+ *   `t = s[3]` read before `d[3] = 1.0f`. For the lead: fix the size row for this function.
+ *   q28/t01: best.c fails COMPILE: the file later declares func_L00_001EE698 with typed args, so declare ours as `
+ *   Left: prologue order (retail lui/mtc1 of 0.0625 after the saves), `lw D_L00_0015F080` before the `addu`, `dadd
+ *   q29/u08: p10.c = Lombyte's FUN_L00_001ee1b0 ported verbatim in structure (V struct, tp, k loop): same scheduli
  */
 extern int func_001FA898_r(float) __asm__("func_001FA898");
 extern int func_001E9730();
 extern void func_001F9BF0(void *, void *, void *);
 extern float func_001F9CE8(void *);
-extern int func_L00_001EE698_u(void *, void *, float) __asm__("func_L00_001EE698");
 extern char D_L00_001E7C00[];
 extern int D_L00_0015F080;
 
@@ -41,7 +49,7 @@ char *func_L00_001EE530(float *pos, float r) {
         t = *(float *)(s + 0xC);
         d[3] = 1.0f;
         if (func_001F9CE8(d) < t + r) {
-            if (func_L00_001EE698_u(pv, s, r)) return s;
+            if (func_L00_001EE698(pv, s, r)) return s;
         }
         s += 0x30;
     }

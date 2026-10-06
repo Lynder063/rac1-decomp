@@ -20,7 +20,31 @@ void func_L07_003141A8(char *moby)
 }
 INCLUDE_ASM("asm/overlays", func_L07_00314250);
 INCLUDE_ASM("asm/overlays", func_L07_00314590);
-INCLUDE_ASM("asm/overlays", func_L07_00314730);
+void *func_L07_00314730(void *unused, void *dp, void *op) {
+    char *data = dp;
+    int *out = op;
+    int n = 0;
+    int a = *(int *)(data + 0x170);
+    int b, c, d, e, f;
+    if (a != -1) out[n++] = a;
+    b = *(int *)(data + 0x174);
+    if (b != -1) out[n++] = b;
+    c = *(int *)(data + 0x178);
+    if (c != -1) out[n++] = c;
+    if ((((unsigned char)data[0x19C] ^ 1) & 1)) {
+        d = *(int *)(data + 0x17C);
+        if (d != -1) out[n++] = d;
+    }
+    if (!((unsigned char)data[0x19C] & 2)) {
+        e = *(int *)(data + 0x180);
+        if (e != -1) out[n++] = e;
+    }
+    if (!((unsigned char)data[0x19C] & 4)) {
+        f = *(int *)(data + 0x184);
+        if (f != -1) out[n++] = f;
+    }
+    return (void *)n;
+}
 INCLUDE_ASM("asm/overlays", func_L07_00314800);
 extern float func_002140F8(float, float);
 

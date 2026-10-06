@@ -135,7 +135,13 @@ stop and say in NOTES.md which instructions are left.
   objects of two bytes or less go through `$gp`, so declare it
   `extern short D_x;` (or `char`) and read a word as `*(int *)&D_x`, a
   float as `*(float *)&D_x`. This is the project's convention
-  (`include/common.h`). A bare `$gp` offset (`addiu $2, $28, -0x7580`)
+  (`include/common.h`), and for most functions it matches. Where it
+  does not (a load retail has before a store through a pointer comes
+  out after it, or is repeated after it), declare the global with its
+  real type, `extern float D_x SDATA(D_x);`, and write the stores as
+  struct members: a read through a cast is not a scalar to the
+  compiler and waits behind every pointer store (`SDATA` in
+  `include/common.h`; func_L17_002EEB08). A bare `$gp` offset (`addiu $2, $28, -0x7580`)
   is the address 0x166D00 + offset: at 0x15F000 or above it is level
   data, `D_LNN_<address>` (`D_L00_0015F780`), never `D_<address>`.
 - A moby (game object) is a `char *`/struct pointer with fields at fixed
@@ -144,11 +150,14 @@ stop and say in NOTES.md which instructions are left.
 
 ## Codegen (verified on matched functions)
 
-- `lq $2, 0(a)` then `sq $2, 0(b)`: `qcopy(b, a);` from `common.h`.
+- `lq $2, 0(a)` then `sq $2, 0(b)`: `qcopy(b, a);` from `common.h`. Where retail keeps a value it read
+  before the copy in its register and uses it after (ours reloads it), `qcopy_nc(b, a);`: the same copy
+  without the "memory" clobber.
+- `sq $zero, 0(a)`: `qzero(a);` from `common.h`.
 - Any other `lq`/`sq` pair (another register, an offset, the `sq` in a
   delay slot) is a plain 128-bit copy:
   `typedef int u128 __attribute__((mode(TI)));` above the function, then
-  `*(u128 *)(a + 0x30) = *(u128 *)(b + 0x10);`. Only `sq $zero` has no C form.
+  `*(u128 *)(a + 0x30) = *(u128 *)(b + 0x10);`. A zero store through `por` is `*(u128 *)a = 0;`.
 - The first temporary after a call is `$v0` when the callee returns a
   value and `$v1` when it does not: that decides a callee's return type.
   `sltiu` is an unsigned compare, `slti` a signed one. `lbu`/`lb`,
@@ -199,7 +208,7 @@ stop and say in NOTES.md which instructions are left.
 
 ## Walls: stop at once and name the wall in NOTES.md
 
-- `sq $zero` (a 128-bit zero store), `cfc2`/`ctc2`, `$at` used as an
+- `sq $zero` at a non-zero offset (at offset 0 it is `qzero()`), `cfc2`/`ctc2`, `$at` used as an
   ordinary register, trapping `add`/`addi`: the original was assembly or
   has no C form.
 - More saved registers or a bigger frame than retail with the instructions

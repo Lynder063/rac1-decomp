@@ -30,12 +30,21 @@ with calls (func_0012E688, func_0012EC60). Three rules:
    Only branches in the compiler's noreorder blocks, whose delay slot is
    spelled out, are rewritten.
 
+   Adding explicit padding can also suppress GNU's implicit FP compare
+   hazard nop. Preserve that nop when padding a short FP loop.
+
 2. FP compare then branch. A `c.cond.fmt` immediately followed by a
    `bc1*` gets a nop between them. In retail text the pair is never
    adjacent (191 of 191 have the nop). GNU as adds one on its own in
    some contexts and not in others (not when the compiler leaves an
    unfilled bc1 in reorder mode), so the pairs are found in the
    assembled object, never guessed from the source.
+
+   GNU as can already have inserted this nop before a label between the
+   compare and branch. SN's label instead names the nop: a jump into the
+   shared branch must execute the hazard delay too. Spell the existing
+   nop out after the label in that case, replacing GNU's implicit one
+   without changing the instruction count (func_L00_002C0358).
 
 3. GPR to FPU move. An `mtc1 $x, $fN` -- written out or from an `li.s`
    expansion -- immediately followed by an instruction that reads $fN
@@ -188,6 +197,30 @@ def gnu_padding(text, start, branch, lines, j):
     return max(0, run - written)
 
 
+def implicit_loop_compare_nop(text, start, branch, lines, j):
+    """Whether explicit loop padding will replace GNU's FP hazard nop.
+
+    GNU supplies the nop between a compare and a bc1 branch, but stops
+    supplying it when we insert explicit nops there. That existing nop
+    must be spelled out along with any additional short-loop padding.
+    """
+    if not decode(text, branch).getOpcodeName().startswith("bc1"):
+        return False
+    a = branch - 4
+    if a < start or text[a:a + 4] != b"\0\0\0\0":
+        return False
+    while a >= start and text[a:a + 4] == b"\0\0\0\0":
+        a -= 4
+    if a < start or not decode(text, a).getOpcodeName().startswith("c."):
+        return False
+    for k in range(j - 1, -1, -1):
+        source = lines[k].split("#")[0].strip()
+        if not source or source.startswith(".") or source.endswith(":"):
+            continue
+        return source.startswith("c.")
+    return False
+
+
 REGS = {"$zero": 0, "$at": 1, "$gp": 28, "$sp": 29, "$fp": 30, "$ra": 31}
 # op -> (primary opcode, operands: s = rs, t = rt, a digit = REGIMM's rt code)
 BRANCHES = {
@@ -270,6 +303,31 @@ def move_sites(lines, start, end):
     return sites
 
 
+def fp_label_nop(lines, start, j, text, addr):
+    """An implicit GNU FP nop whose shared-branch label skipped the nop.
+
+    Require both the assembled hazard pair and a source label between
+    the compare and branch. An explicit source nop already fixes the
+    label placement; ordinary comparisons without labels need no change.
+    """
+    if addr < 8 or text[addr - 4:addr] != b"\0\0\0\0" \
+            or not decode(text, addr - 8).getOpcodeName().startswith("c."):
+        return False
+    labelled = False
+    for k in range(j - 1, start - 1, -1):
+        stripped = lines[k].split("#", 1)[0].strip()
+        if not stripped:
+            continue
+        if stripped.endswith(":"):
+            labelled = True
+            continue
+        if stripped.startswith("."):
+            continue
+        m = INSN_LINE.match(stripped)
+        return labelled and m is not None and m.group(1).startswith("c.")
+    return False
+
+
 def main() -> None:
     src_path, obj_path, dst_path = sys.argv[1:4]
     lines = open(src_path).readlines()
@@ -282,7 +340,7 @@ def main() -> None:
 
     inserts = {}  # line index -> number of nops to put before it
     as_words = set()  # branch lines to write as .word (GNU as over-padded them)
-    loops = fps = moves = 0
+    loops = fps = moves = fp_labels = 0
     hand_written = noreorder_ranges()
     i = 0
     while i < len(lines):
@@ -323,6 +381,9 @@ def main() -> None:
             if needs or label_before_hazard(lines, j):
                 inserts[j] = inserts.get(j, 0) + 1
                 fps += 1
+            elif fp_label_nop(lines, i, j, text, addr):
+                inserts[j] = inserts.get(j, 0) + 1
+                fp_labels += 1
         for j in src_moves:
             inserts[j] = inserts.get(j, 0) + 1
             moves += 1
@@ -336,7 +397,9 @@ def main() -> None:
                     inserts[j] = inserts.get(j, 0) + need
                     loops += 1
             elif span < MIN_SPAN:
-                inserts[j] = inserts.get(j, 0) + MIN_SPAN - span
+                replace_hazard = j not in inserts and implicit_loop_compare_nop(
+                    text, start, branch, lines, j)
+                inserts[j] = inserts.get(j, 0) + MIN_SPAN - span + int(replace_hazard)
                 loops += 1
         i = end + 1
 
@@ -366,7 +429,8 @@ def main() -> None:
         out.append(line)
     open(dst_path, "w").writelines(out)
     print(f"ps2eeas_nops: padded {loops} short loop(s), {fps} FP compare(s), "
-          f"{moves} mtc1 use(s), unpadded {len(as_words)} branch(es) {src_path} -> {dst_path}")
+          f"{moves} mtc1 use(s), placed {fp_labels} shared FP label(s), "
+          f"unpadded {len(as_words)} branch(es) {src_path} -> {dst_path}")
 
 
 if __name__ == "__main__":

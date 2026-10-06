@@ -1,17 +1,18 @@
 /* NON_MATCHING func_L16_002E4C08 -- src/overlays/l16_kalebo3/vendor_002A50F0.c
- * Best so far: SIZE ours 1652 / retail 1664, checked 2026-10-03.
+ * Best so far: SIZE ours 1868 / retail 1664, checked 2026-10-05.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
- *   Run 4 BYTES110/1664: separate zero assignment after qcopy recovers f20 and exact size. Remaining s2/s3 swap, f
- *   Run 5 BYTES107/1664: integer-first effect alias fixed argument swap; explicit speeds changed effect scheduling
- *   Run 6 COMPILE: field replacement also caught padding name and placed a declaration after assignment; fixed in 
- *   Run 7 BYTES103/1664: typed data unchanged codegen; chained reset exactly fixes all reset-store offsets.
- *   Run 8 BYTES102/1664: separate step assignment and flags-before-data retained exact size; saved registers uncha
- *   Run 9 BYTES112/1664: reused step/horizontal locals and integer-first turn did not improve scheduling; reverted
- *   Run 10 BYTES103/1664: outer step and reordered fields improve time register; separate heading assignment did n
- *   Run 11 BYTES112/1664: precomputed constants unchanged from p8; best p7 is BYTES102/1664. Saved-register s2/s3 
+ *   p7 SIZE1672: hit/path reuse fixes main data s3 and mode/path s2, but saves both hit results to s0 (two extra m
+ *   p8 BYTES198: sharing motion/path permutes moby as well and worsens allocation. Return to p5.
+ *   p9 BYTES107: cached vertical/lateral alter FP registers; separate velocity stores still schedule vx first. Try
+ *   p10 BYTES315: explicit falling variable is initialized too early; dt reuse changes FP allocation but not enoug
+ *   p11 BYTES107: short-circuit queries remove saved copies but also lose desired allocation; branch without child
+ *   p12 BYTES107: direct forward-first stores put dt in f2 and forward in f1; lateral still f0. Reuse dt after for
+ *   p13 BYTES115: reusing dt changes FP interference and worsens allocation. Best p5 BYTES106; compiler wall remai
+ *   Stopped after 14 runs; preserved complete typed candidate, no source writes.
  */
+#include "common.h"
 typedef struct { char pad[0xD0]; int counter; float timer; int path, other_path, trigger; float vx, vy, vz, turn; char *child; int unused, mode; } L16CrateData;
 typedef struct { char pad[0x80]; float position[4]; char pad90[0x1AC]; void *standing; } L16CratePlayer;
 extern L16CratePlayer D_0013E633_crate __asm__("D_0013E633");
@@ -22,14 +23,12 @@ extern void func_00213DE0(void *, int, int, int);
 extern void func_00213D28(void *, int, int);
 extern int func_001E9730();
 extern void func_L14_002FFD88(void *);
-extern void func_L00_0025D5B0(float, void *, void *, int, int, int);
-extern void func_L00_002592B0_crate(float, float, float, float, void *, void *) __asm__("func_L00_002592B0");
+extern void func_L00_0025D5B0_crate(void *, void *, int, int, int, float) __asm__("func_L00_0025D5B0");
+extern void func_L00_002592B0_crate(void *, void *, float, float, float, float) __asm__("func_L00_002592B0");
 extern char *func_L14_00300F80(void *, void *);
 extern void func_L14_003000B0(void *);
 extern void func_L14_00301090(void *);
 extern void func_L14_00300130(void *);
-extern int func_L16_002E5408(void *);
-extern float func_L00_0025C918(void *, void *, float, float, float, float);
 extern int func_L00_0025D6F0(void *, void *);
 extern void func_L00_00260108(void *, void *, int, float, float);
 extern void func_L00_0025E590(void *, void *);
@@ -55,7 +54,7 @@ void func_L16_002E4C08(unsigned char *m) {
         *(float *)(d + 0x84) = 0.0005f;
         *(float *)(d + 0x88) = step * 24.0f;
         d[0xAD] = 0;
-        func_L00_0025D5B0(func_L00_001FF860(*(float *)(m + 0x10) - ((L16CratePlayer *)((char *)&D_0013E633_crate + 0xE1D))->position[0], *(float *)(m + 0x14) - ((L16CratePlayer *)((char *)&D_0013E633_crate + 0xE1D))->position[1]), m, motion, 1, 1, 0);
+        func_L00_0025D5B0_crate(m,motion,1,1,0,func_L00_001FF860(*(float *)(m + 0x10) - ((L16CratePlayer *)((char *)&D_0013E633_crate + 0xE1D))->position[0], *(float *)(m + 0x14) - ((L16CratePlayer *)((char *)&D_0013E633_crate + 0xE1D))->position[1]));
         d[0x67] = 0x78;
         func_L00_002584A8(m, 0, -1);
         m[0x20] = 6;
@@ -101,7 +100,7 @@ void func_L16_002E4C08(unsigned char *m) {
         *(char **)(d + 0xF4) = 0;
         break;
     case 1:
-        func_L00_002592B0_crate(func_L00_001FF860(((L16CratePlayer *)((char *)&D_0013E633_crate + 0xE1D))->position[0] - *(float *)(m + 0x10), ((L16CratePlayer *)((char *)&D_0013E633_crate + 0xE1D))->position[1] - *(float *)(m + 0x14)), 0.005f, 0.2f, 0.0f, m, d + 0xF0);
+        func_L00_002592B0_crate(m,d + 0xF0,func_L00_001FF860(((L16CratePlayer *)((char *)&D_0013E633_crate + 0xE1D))->position[0] - *(float *)(m + 0x10), ((L16CratePlayer *)((char *)&D_0013E633_crate + 0xE1D))->position[1] - *(float *)(m + 0x14)),0.005f,0.2f,0.0f);
         goto animate;
     case 2:
         if (func_00215570(D_0013E633 + 0xE9D, *(int *)(d + 0xE0))) {
@@ -127,9 +126,10 @@ void func_L16_002E4C08(unsigned char *m) {
         L16CrateData *a = *(L16CrateData **)(m + 0x78);
         char *path = D_L16_001B0C30[a->path];
         float target[4];
-        float zero = 0.0f;
+        float zero;
         if (a->mode == 0) func_L14_003000B0(m);
         qcopy(target, path + *(int *)path * 16);
+        zero=0.0f;
         func_L00_0025C918(m + 0x10, &a->vx, target[0], *(float *)&D_L16_00161E54, *(float *)&D_L16_00161E58, zero);
         func_L00_0025C918(m + 0x14, &a->vy, target[1], *(float *)&D_L16_00161E54, *(float *)&D_L16_00161E58, zero);
         func_L00_0025C918(m + 0x18, &a->vz, target[2], *(float *)&D_L16_00161E54, *(float *)&D_L16_00161E58, zero);
@@ -160,10 +160,7 @@ void func_L16_002E4C08(unsigned char *m) {
             *(unsigned short *)(m + 0x34) |= 0x41;
             *(int *)(d + 0xD4) = 0;
             *(int *)(d + 0xD0) = 0;
-            *(float *)(d + 0xE4) = *(float *)(d + 0xD4);
-            *(float *)(d + 0xE8) = *(float *)(d + 0xD4);
-            *(float *)(d + 0xEC) = *(float *)(d + 0xD4);
-            *(float *)(d + 0xF0) = *(float *)(d + 0xD4);
+            *(float *)(d + 0xE4) = *(float *)(d + 0xE8) = *(float *)(d + 0xEC) = *(float *)(d + 0xF0) = *(float *)(d + 0xD4);
             path = D_L16_001B0C30[*(int *)(d + 0xD8)];
             qcopy(m + 0x10, path + 0x10);
             *(float *)(m + 0x48) = func_L00_001FF860(*(float *)(path + 0x20) - *(float *)(path + 0x10), *(float *)(path + 0x24) - *(float *)(path + 0x14));

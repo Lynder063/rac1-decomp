@@ -60,7 +60,7 @@ void func_L00_002626A8(char *moby, char *d, float a, float b) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_002629E0);
 INCLUDE_ASM("asm/overlays", func_L00_00262BC0);
-INCLUDE_ASM("asm/overlays", func_L00_00262DE8);
+LINKER_REMNANT("asm/overlays", func_L00_00262DE8);
 INCLUDE_ASM("asm/overlays", func_L00_00262DF0);
 INCLUDE_ASM("asm/overlays", func_L00_002630A8);
 INCLUDE_ASM("asm/overlays", func_L00_002633D8);

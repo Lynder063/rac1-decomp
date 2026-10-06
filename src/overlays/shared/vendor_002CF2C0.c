@@ -83,39 +83,43 @@ extern float func_00214D28(float *p, float target, float maxstep);
 extern float func_001FA748(float, float);
 extern float func_001F9FA8(float);
 extern int func_001FA8A8(int, int, float);
+extern short D_0015EE6C_s __asm__("D_0015EE6C");
+extern char D_0013E633[];
 extern short D_L05_00161980;
 extern short D_L05_00161984;
 extern short D_L05_00161988;
 extern short D_L05_0016198C;
 extern short D_L05_00161990;
 
-/* Glow colour: fades in while the hero stands on the moby, pulsing between two colour pairs. */
-void func_L05_002F95B0(void *m_) {
-    char *m = (char *)m_;
-    char *g = D_0013F450;
-    char *d = *(char **)(m + 0x78);
-    if (*(char **)(g + 0x2FC) == m) {
-        func_00214D28((float *)(d + 0x1C), 1.0f, D_0015EE6C + D_0015EE6C);
-        if (*(int *)(g + 0x1090) != 0 && *(int *)(g + 0x10B8) == 0x16) {
-            m[0xBC] = 1;
+/* eases the pulse level of the moby that holds the focus and mixes its colour from two palettes */
+void func_L05_002F95B0(void *mv) {
+    char *moby = mv;
+    char *base = D_0013E633 + 0xE1D;
+    char *data = *(char **)(moby + 0x78);
+    int r;
+    float s;
+    if (*(char **)(base + 0x2FC) == moby) {
+        func_00214D28((float *)(data + 0x1C), 1.0f, D_0015EE6C + D_0015EE6C);
+        if (*(int *)(base + 0x1090) != 0) {
+            if (*(int *)(base + 0x10B8) == 0x16) ((unsigned char *)moby)[0xBC] = 1;
+            else ((unsigned char *)moby)[0xBC] = 0;
         } else {
-            m[0xBC] = 0;
+            ((unsigned char *)moby)[0xBC] = 0;
         }
     } else {
-        func_00214D28((float *)(d + 0x1C), 0.0f, D_0015EE6C);
+        func_00214D28((float *)(data + 0x1C), 0.0f, *(float *)&D_0015EE6C_s);
     }
-    if (*(float *)(d + 0x1C) != 0.0f) {
-        int c2;
-        float a = func_001FA748(*(float *)(d + 0x18), D_0015EE6C * 6.2831855f);
-        *(float *)(d + 0x18) = a;
-        if (((unsigned char *)m)[0xBC] == 1) {
-            c2 = func_001FA8A8(*(int *)&D_L05_00161984, *(int *)&D_L05_00161988, (func_001F9FA8(a) + 1.0f) * 0.5f);
+    if (*(float *)(data + 0x1C) != 0.0f) {
+        s = func_001FA748(*(float *)(data + 0x18), D_0015EE6C * 6.2831855f);
+        *(float *)(data + 0x18) = s;
+        if (((unsigned char *)moby)[0xBC] == 1) {
+            r = func_001FA8A8(*(int *)&D_L05_00161984, *(int *)&D_L05_00161988, (func_001F9FA8(s) + 1.0f) * 0.5f);
         } else {
-            c2 = func_001FA8A8(*(int *)&D_L05_0016198C, *(int *)&D_L05_00161990, (func_001F9FA8(a) + 1.0f) * 0.5f);
+            r = func_001FA8A8(*(int *)&D_L05_0016198C, *(int *)&D_L05_00161990, (func_001F9FA8(s) + 1.0f) * 0.5f);
         }
-        *(int *)(m + 0x90) = func_001FA8A8(*(int *)&D_L05_00161980, c2, *(float *)(d + 0x1C));
+        *(int *)(moby + 0x90) = func_001FA8A8(*(int *)&D_L05_00161980, r, *(float *)(data + 0x1C));
     } else {
-        *(int *)(m + 0x90) = *(int *)&D_L05_00161980;
+        *(int *)(moby + 0x90) = *(int *)&D_L05_00161980;
     }
 }
 INCLUDE_ASM("asm/overlays", func_L05_002F9BA0);
@@ -507,10 +511,48 @@ char *func_L05_0031E670(unsigned char *a0)
     }
     return (char *)m;
 }
-INCLUDE_ASM("asm/overlays", func_L05_0032A868);
+typedef int u128 __attribute__((mode(TI)));
+extern float func_001F9D48(float *, float *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern char D_0013F6E0[];
+extern int D_0015EE84 MACRO_ADDR;
+
+/* Sets up a moby's vector from the level table and clamps its height for the current state. */
+void func_L05_0032A868(char *moby) {
+    float v[4];
+    char *d = *(char **)(moby + 0x70);
+    float *p = (float *)(d + 0x80);
+    *(u128 *)v = 0;
+    v[2] = 0.7f;
+    func_001F9EE8(v, v, D_0013F450);
+    func_001F9BD8(p, D_0013F450 + 0x80, v);
+    qcopy(d + 0x1D0, p);
+    if (D_0015EE84 == 5) {
+        float w[4];
+        *(u128 *)w = 0;
+        w[0] = 286.16f;
+        w[1] = 447.82f;
+        w[2] = 63.37f;
+        w[3] = 1.0f;
+        if (func_001F9D48(w, p) < 48.0f) {
+            if (p[2] < 62.4f) {
+                p[2] = 62.4f;
+            }
+        } else {
+            if (p[2] < 67.2f) {
+                p[2] = 67.2f;
+            }
+        }
+    } else if (D_0015EE84 == 0x10) {
+        if (p[2] < 77.5f) {
+            p[2] = 77.5f;
+        }
+    }
+    func_L00_001FF4B0(p + 8, D_0013F6E0, -1.0f);
+}
 INCLUDE_ASM("asm/overlays", func_L05_0032A9D0);
 INCLUDE_ASM("asm/overlays", func_L05_0032AA48);
-extern void func_L05_0032A868(void *);
+extern void func_L05_0032A868(char *);
 extern void func_L00_001FF4B0(void *, void *, float);
 extern void func_001F9CA0(void *, void *, void *);
 
