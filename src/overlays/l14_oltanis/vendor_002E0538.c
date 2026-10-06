@@ -364,5 +364,60 @@ void func_L14_002FDD18(char *moby) {
 INCLUDE_ASM("asm/overlays", func_L14_002FDE28);
 INCLUDE_ASM("asm/overlays", func_L14_002FE038);
 INCLUDE_ASM("asm/overlays", func_L14_002FE798);
-INCLUDE_ASM("asm/overlays", func_L14_002FEDA0);
+extern int *D_L14_001B0F30_fe[] __asm__("D_L14_001B0F30");
+extern char *D_L14_00167600;
+extern short D_L14_00162048;
+extern short D_L14_0016204C;
+extern short D_L14_00162050;
+extern short D_L14_00162054;
+extern short D_L14_00162058;
+extern void func_L13_003184A0(int);
+extern void func_L00_0028EBF0(int);
+extern void func_0020D678(void *);
+extern void func_001F9BF0(void *, void *, void *);
+extern float func_001FA790(float, float);
+extern void func_L00_002592B0(char *moby, float *vel, float target, float k, float d, float max);
+
+/* Flies the moby along its path, banking and pitching toward the next point; returns 1 once it is removed at the end. */
+int func_L14_002FEDA0(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float v[4];
+    float w[4];
+    float yaw;
+    float t;
+    int r;
+    r = func_L00_0025E860_2F05D8(D_L14_001B0F30_fe[*(int *)(d + 0x68)], v, d + 0x60, d + 0x64,
+                                 (unsigned int)*(int *)(d + 0x8C) >> 31, *(float *)&D_L14_00162048 * D_0015EE6C);
+    if (*(int *)(d + 0x8C) != 0 && (r != 0 || *(short *)(D_L14_00167600 + 0x86) != 0x13)) {
+        func_L13_003184A0(*(int *)(d + 0x90));
+        if (*(int *)(d + 0x6C) != -1) {
+            char *e = D_0013E633 + 0x1D + *(int *)(d + 0x6C) * 0x70;
+            if (*(char **)(e + 0x88) == m && ((unsigned char *)e)[0x74] != 0) {
+                func_L00_0028EBF0(*(int *)(d + 0x6C));
+            }
+        }
+        *(int *)(d + 0x6C) = -1;
+        func_0020D678(m);
+        return 1;
+    }
+    func_L00_0025C918((float *)(m + 0x10), (float *)(d + 0x70), v[0], *(float *)&D_L14_0016204C, *(float *)&D_L14_00162050, 0.0f);
+    func_L00_0025C918((float *)(m + 0x14), (float *)(d + 0x74), v[1], *(float *)&D_L14_0016204C, *(float *)&D_L14_00162050, 0.0f);
+    func_L00_0025C918((float *)(m + 0x18), (float *)(d + 0x78), v[2], *(float *)&D_L14_0016204C, *(float *)&D_L14_00162050, 0.0f);
+    func_001F9BF0(w, v, m + 0x10);
+    if (0.01f < func_001F9B88(w[0])) {
+        if (0.01f < func_001F9B88(w[1])) {
+            yaw = func_L00_001FF860(w[0], w[1]);
+            t = func_001FA790(*(float *)(m + 0x48), yaw);
+            func_L00_002592B0(m, (float *)(d + 0x88), yaw, *(float *)&D_L14_0016204C, *(float *)&D_L14_00162050, 0.0f);
+            yaw = func_L00_001FF860(func_001F9CE8(w), w[2]);
+            func_L00_0025C918((float *)(m + 0x44), (float *)(d + 0x84), -yaw,
+                              *(float *)&D_L14_0016204C, *(float *)&D_L14_00162050, 0.0f);
+            t = t / *(float *)&D_L14_00162058;
+            if (1.0f < t) t = 1.0f;
+            if (t < -1.0f) t = -1.0f;
+            func_L00_0025C918((float *)(m + 0x40), (float *)(d + 0x80), t * *(float *)&D_L14_00162054, 0.003f, *(float *)&D_L14_00162050, 0.0f);
+        }
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L14_002FF040);
