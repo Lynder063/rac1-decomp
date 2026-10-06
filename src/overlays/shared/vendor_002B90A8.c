@@ -490,7 +490,78 @@ void func_L01_002E4920(char *moby, char *state) {
 }
 INCLUDE_ASM("asm/overlays", func_L01_002E4BA8);
 INCLUDE_ASM("asm/overlays", func_L01_002E5298);
-INCLUDE_ASM("asm/overlays", func_L01_002EEDD8);
+extern char D_L01_00174340_c[] __asm__("D_L01_00174340");
+extern short D_0015EE70_gp __asm__("D_0015EE70");
+extern void func_001F9BC0(void *);
+extern void func_L00_0026A7F8(void *, void *, int, int, int, int, int, int);
+extern float func_00214358(void *, int, float);
+extern int func_L00_001EFFF0(void *, void *, int, int, int);
+extern void func_L00_0025A8C0(void *, void *, int, float, void *);
+extern void func_L00_001FF500(void *, void *, float);
+extern void func_L00_0025AAC0(void *, void *);
+extern int func_001F9908(void *);
+extern void func_L00_00260108(void *, void *, int, float, float);
+extern void func_0020D678(void *);
+
+typedef struct {
+    float v[2];
+    float f8;
+    float fC;
+    char pad10[8];
+    char b18;
+    char b19;
+    short s1A;
+    char pad1C[0x14];
+} Hit_2eedd8;
+
+/* Burning debris: flies along its velocity leaving two smoke trails, sticks to the ground, and hurts what it hits. */
+void func_L01_002EEDD8(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float prev[4];
+    float z[4];
+    Hit_2eedd8 h;
+    float gz;
+    switch (((unsigned char *)m)[0x20]) {
+    case 1:
+        qcopy(prev, m + 0x10);
+        func_001F9BD8(m + 0x10, m + 0x10, d);
+        *(float *)(m + 0x48) = func_L00_001FF860(*(float *)(d + 0), *(float *)(d + 4));
+        func_001F9BC0(z);
+        func_L00_0026A7F8(m + 0x10, z, 0x6F00AFFF, 0xFF, func_001F9850(func_L00_00258BC8(0xF, 0x16)), 0x28,
+                          func_L00_00258BC8(0x14, 0x23), 1);
+        func_L00_0026A7F8(m + 0x10, z, 0x1FFFFFFF, 0x4F4F4F, func_001F9850(func_L00_00258BC8(0x1E, 0x3C)), 0x28,
+                          func_L00_00258BC8(0x32, 0x4B), 0);
+        gz = *(float *)(m + 0x18) - func_00214358(m + 0x10, 0, 0.5f);
+        if (gz < *(float *)(d + 0x18)) {
+            *(float *)(m + 0x18) = *(float *)(m + 0x18) + (*(float *)(d + 0x18) - gz);
+            *(int *)(d + 8) = 0;
+        } else if (*(float *)(m + 0x18) < *(float *)(D_0013E633 + 0x10C5) + *(float *)(d + 0x18)) {
+            *(int *)(d + 8) = 0;
+        } else {
+            *(float *)(d + 8) -= *(float *)&D_0015EE70_gp * 10.8f;
+        }
+        if (func_L00_001EFFF0(m + 0x10, prev, 0, *(int *)(d + 0x10), 0) != 0) {
+            char *p = D_L01_00174340_c;
+            if (*(int *)(p + 0x18) != 0) {
+                func_L00_0025A8C0(&h, m, 0x10001, 1.0f, d);
+                func_L00_001FF500(&h, &h, 1.0f);
+                h.f8 = 1.0f;
+                h.fC = 5627.9248f;
+                h.b19 = 1;
+                h.s1A = *(unsigned short *)(m + 0xA6);
+                h.b18 = 0;
+                func_L00_0025AAC0(*(void **)(p + 0x18), &h);
+            }
+            m[0x20] = 2;
+        }
+        if (func_001F9908(d + 0x14) != 0) m[0x20] = 2;
+        break;
+    case 2:
+        func_L00_00260108(m, m + 0x10, -1, 0.25f, 13.0f);
+        func_0020D678(m);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_002EF078);
 INCLUDE_ASM("asm/overlays", func_L01_002F0040);
 INCLUDE_ASM("asm/overlays", func_L01_002F0728);
