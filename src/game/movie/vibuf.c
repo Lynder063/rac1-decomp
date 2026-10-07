@@ -48,7 +48,17 @@ int func_0023D988(ViBuf *vb) {
     func_00118C80(vb->sema);
     return 1;
 }
-INCLUDE_ASM("asm/nonmatchings/text", func_0023D9E0); /* viBufCount(ViBuf *) */
+extern int func_00118CB0(int);
+extern int func_00118C90(int);
+
+/* viBufCount(ViBuf *) */
+int func_0023D9E0(ViBuf *vb) {
+    int count;
+    func_00118CB0(vb->sema);
+    count = (vb->f10 << 11) + vb->f14;
+    func_00118C90(vb->sema);
+    return count;
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023DA30); /* viBufFlush(ViBuf *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023DA88); /* viBufModifyPts(ViBuf *, TimeStamp *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023DBE0); /* viBufPutTs(ViBuf *, TimeStamp *) */

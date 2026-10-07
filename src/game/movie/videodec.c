@@ -41,7 +41,15 @@ void func_0023DFE0(VideoDec *dec) {
 void func_0023E000(VideoDec *dec) {
     dec->state = 0;
 }
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E008); /* videoDecDelete(VideoDec *) */
+extern int func_0023D988(void *);
+extern int func_0012BB20(void *);
+
+/* videoDecDelete(VideoDec *) */
+int func_0023E008(VideoDec *dec) {
+    func_0023D988(dec->viBuf);
+    func_0012BB20(dec);
+    return 1;
+}
 /* videoDecAbort(VideoDec *) -- sets the decoder state to 1. */
 void func_0023E040(VideoDec *dec) {
     dec->state = 1;
@@ -63,7 +71,17 @@ int func_0023E0B0(VideoDec *dec) {
 }
 LINKER_REMNANT("asm/remnants/text", func_0023E0D0);
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E0D8); /* videoDecFlush(VideoDec *) */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E1B0); /* videoDecIsFlushed(VideoDec *) */
+extern int func_0023E0B0(VideoDec *);
+extern unsigned int func_0012BB98(void *);
+
+/* videoDecIsFlushed(VideoDec *) */
+int func_0023E1B0(VideoDec *dec) {
+    int res = 0;
+    if (func_0023E0B0(dec) == 0) {
+        res = func_0012BB98(dec) > 0;
+    }
+    return res;
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E1F8); /* videoDecMain(void *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E298); /* decBs0(VideoDec *) */
 extern void func_001E9730(char *, ...);
