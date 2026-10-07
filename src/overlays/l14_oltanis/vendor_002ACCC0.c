@@ -624,7 +624,20 @@ int func_L14_002B6980(char *moby, char *a1, int a2, int a3, float *v, float *vel
     func_L00_002592B0(moby, vel, func_L00_001FF860(v[0], v[1]), f16, f17, f18);
     return r != 0;
 }
-INCLUDE_ASM("asm/overlays", func_L14_002B6AA0);
+extern void func_L00_002592B0_2B6AA0(char *moby, float target, float *vel, float k, float d, float max) __asm__("func_L00_002592B0");
+
+/* eases a moby's position and heading toward targets while in states 4-6 or 8 */
+void func_L14_002B6AA0(char *moby, float *target, float a, float b, float c, float d, float e, float f, float g) {
+    int data;
+    int s = moby[0x20] & 0xFF;
+    if ((s >= 4 && s <= 6) || s == 8) {
+        data = *(int *)(moby + 0x78);
+        func_L00_0025C918((float *)(moby + 0x10), (float *)(data + 0xF0), target[0], b, c, d);
+        func_L00_0025C918((float *)(moby + 0x14), (float *)(data + 0xF4), target[1], b, c, d);
+        func_L00_0025C918((float *)(moby + 0x18), (float *)(data + 0xF8), target[2], b, c, d);
+        func_L00_002592B0_2B6AA0(moby, a, (float *)(data + 0xE4), e, f, g);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L14_002B6BB8);
 INCLUDE_ASM("asm/overlays", func_L14_002B6E80);
 extern char D_0013E633[];

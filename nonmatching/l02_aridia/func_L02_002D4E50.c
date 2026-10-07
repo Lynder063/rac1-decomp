@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L02_002D4E50 -- src/overlays/l02_aridia/vendor_002A59D8.c
- * Best so far: BYTES 16/580 (97.2% of the bytes match), checked 2026-10-05.
+ * Best so far: BYTES 8/580 (98.6% of the bytes match), checked 2026-10-06.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -16,7 +16,7 @@ extern void func_001F9BD8(void *, void *, void *);
 extern int func_L00_00258BC8(int, int);
 extern float func_002140F8(float, float);
 extern float func_L00_00258C80(float lo, float hi);
-extern char *func_L00_0026DEA0(void *, int, void *, int, float, float, float, float);
+extern char * func_L00_0026DEA0__s(void *, int, float, float, void *, int, float, float) __asm__("func_L00_0026DEA0");
 extern int func_002140B0(int);
 extern short D_L02_00161A64;
 extern short D_L02_00161A6C;
@@ -54,8 +54,7 @@ void func_L02_002D4E50(void *moby, void *va_, void *vb_, int d, float fa, float 
         s[0] = func_L00_00258C80(0.0f, 0.0025f);
         s[1] = func_L00_00258C80(0.0f, 0.0025f);
         s[2] = func_002140F8(*(float *)&D_L02_00161A64 * 0.1f, *(float *)&D_L02_00161A64);
-        p = func_L00_0026DEA0(tmp, r, s, (a << 24) | col, *(float *)&D_L02_00161A6C, 1.0f, sp,
-                              step + fa * 210000.0f);
+        p = func_L00_0026DEA0__s(tmp, r, *(float *)&D_L02_00161A6C, 1.0f, s, (a << 24) | col, sp, step + fa * 210000.0f);
         if (p != 0) {
             char *q = p + 0x20;
             if (func_002140B0(2) != 0) {

@@ -3,14 +3,14 @@
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
- *   needed for the two resident globals a 4-byte `MACRO_ADDR` field would
- *   itself become truly gp-relative (wrong -- retail uses `lui`/`lo` for it),
  *   so it isn't a safe thing to combine here.
  *   Best candidate: `p5.c`, run with
  *   `TRY_CFLAGS='-G8 -mno-split-addresses' python tools/try_func.py func_L00_00235FF8 build-sn/try/func_L00_00235F
  *   (a plain `p5.c` run without those flags will not reproduce this result).
  *   ## Round q30/x05
  *   No run. Retail repeats `lui` for every access of the same symbol (15 lui for 8 symbols): per-function compiler
+ *   mini9/a02: stopped without run at repeated-lui/per-function compiler-flag wall; prior NOTES confirm each same-
+ *   Existing volatile ordering candidate and extra flags are outside plain candidate rules; original per-function 
  */
 #include "common.h"
 

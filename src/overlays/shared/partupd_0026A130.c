@@ -200,7 +200,29 @@ void func_L00_0026A910(char *m) {
     *(int *)(m + 4) = DefaultVtbl_DeleteMoby(*(int *)(p + 0x14), *(int *)(p + 0x10), (float)*(short *)(m + 0xA) / func_001FA888(*(int *)(p + 0x1C)));
     if (FastDecTimer(m + 0xA)) KillPart(m);
 }
-INCLUDE_ASM("asm/overlays", func_L00_0026AA10);
+extern int D_L00_001B2414;
+
+/* spawns a type-5 particle at pos with packed color and a target */
+void func_L00_0026AA10(void *pos, unsigned char c0, unsigned char c1, unsigned char c2, int tgt, float a, float b) {
+    char *p;
+    float *q;
+    if (tgt) {
+        p = func_00218928(5);
+        if (p) {
+            qcopy(p + 0x10, pos);
+            *(int *)(p + 4) = 0x7F000000 | (c2 << 16) | (c1 << 8) | c0;
+            q = (float *)(p + 0x20);
+            p[9] = func_001FA898_r(4.0f) - 0x60;
+            p[3] = 0x48;
+            *(float *)(p + 0xC) = b;
+            p[1] = 0;
+            p[8] = 0;
+            p[2] = **(unsigned char **)&D_L00_001B2414;
+            *(int *)(p + 0x20) = tgt;
+            q[1] = a / func_001FA888(tgt);
+        }
+    }
+}
 extern int func_001F9908(void *);
 extern int func_001F9850(int);
 extern void func_L00_002688A8(void *);
