@@ -28,6 +28,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L01_0030A8C8`](shared/func_L01_0030A8C8.c) | shared | 756 | BYTES 8/756 | 98.9% |
 | [`func_L11_002F40C8`](l11_pokitaru/func_L11_002F40C8.c) | l11_pokitaru | 740 | BYTES 8/740 | 98.9% |
 | [`func_L14_00306BE0`](l14_oltanis/func_L14_00306BE0.c) | l14_oltanis | 736 | BYTES 8/736 | 98.9% |
+| [`func_L18_002EC290`](l18_veldin2/func_L18_002EC290.c) | l18_veldin2 | 2904 | BYTES 32/2904 | 98.9% |
 | [`func_L16_002E6D40`](shared/func_L16_002E6D40.c) | shared | 1012 | BYTES 12/1012 | 98.8% |
 | [`func_L18_002D6738`](l18_veldin2/func_L18_002D6738.c) | l18_veldin2 | 320 | BYTES 4/320 | 98.8% |
 | [`func_L00_0024A5C0`](shared/func_L00_0024A5C0.c) | shared | 76 | BYTES 2/152 | 98.7% |
@@ -406,7 +407,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L15_002EF030`](l15_quartu/func_L15_002EF030.c) | l15_quartu | 888 | SIZE ours 880 / retail 888 | - |
 | [`func_L16_002E4408`](shared/func_L16_002E4408.c) | shared | 172 | SIZE ours 176 / retail 172 | - |
 | [`func_L18_002D7310`](l18_veldin2/func_L18_002D7310.c) | l18_veldin2 | 484 | SIZE ours 488 / retail 484 | - |
-| [`func_L18_002EC290`](l18_veldin2/func_L18_002EC290.c) | l18_veldin2 | 2904 | SIZE ours 2896 / retail 2904 | - |
 | [`func_L18_002F1444`](l18_veldin2/func_L18_002F1444.c) | l18_veldin2 | 204 | SIZE ours 200 / retail 204 | - |
 | [`func_L18_002F1780`](l18_veldin2/func_L18_002F1780.c) | l18_veldin2 | 816 | SIZE ours 824 / retail 816 (cannot land as written) | - |
 | [`func_L18_002F7F00`](l18_veldin2/func_L18_002F7F00.c) | l18_veldin2 | 876 | SIZE ours 868 / retail 876 | - |
