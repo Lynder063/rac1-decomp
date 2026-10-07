@@ -66,7 +66,73 @@ void func_L00_001EC090(void) {
     qcopy(d + 0xB0, d + 0xD0);
 }
 INCLUDE_ASM("asm/overlays", func_L00_001EC220);
-INCLUDE_ASM("asm/overlays", func_L00_001ED2C0);
+/* func_L00_001ED2C0 is the head of one C function: its retail code runs on through
+   func_L00_001ED380 and the 8-byte piece at func_L00_001ED3D4 (288 bytes in all; the
+   beqz to 0x1ED380 and the beql to 0x1ED3D4 are branches inside it). This is the whole
+   function written out; try_func only compares the first 192 bytes, so it reports SIZE
+   until config/overlays/joined.tsv joins the pieces. Each block takes its own base
+   pointer to the hero state, as retail re-derives it per block. */
+extern char D_L00_00166F10[];
+extern float D_L00_00166EC8;
+extern int D_L00_0015F058 SDATA(D_L00_0015F058);
+extern int D_L00_0015F060 MACRO_ADDR;
+extern int D_L00_0015F05C_w __asm__("D_L00_0015F05C") MACRO_ADDR;
+extern int D_L00_0015F05C_g SDATA(D_L00_0015F05C);
+
+void func_L00_001ED2C0(void) {
+    char *d = D_L00_00166F10;
+
+    D_L00_0015F05C_g = 0x14;
+    {
+        unsigned char *g = (unsigned char *)(D_0013E633 + 0xE1D);
+        if ((unsigned int)(*(int *)(g + 0x208C) - 0x11) < 2 || *(int *)(g + 0x2084) == 0x73) {
+            D_L00_0015F05C_w = 0x34;
+        }
+    }
+    {
+        unsigned char *g = (unsigned char *)(D_0013E633 + 0xE1D);
+        if (*(int *)(g + 0x208C) != 0x11) {
+            if (*(float *)(g + 0x2F0) < D_L00_00166EC8) {
+                D_L00_0015F05C_w = 0x14;
+            }
+        }
+    }
+    {
+        int v = D_L00_0015F05C_w;
+        D_L00_0015F060 = v;
+        D_L00_0015F05C_w = v | 0x80;
+    }
+    D_L00_0015F058 = 0xB4;
+    {
+        unsigned char *g = (unsigned char *)(D_0013E633 + 0xE1D);
+        if (g[0x12E5]) {
+            *(int *)(d + 0xC0) = 0x100;
+            D_L00_0015F058 = 0x1B4;
+            return;
+        }
+        if (g[0x12EB]) {
+            *(int *)(d + 0xC0) = 0xB00;
+            D_L00_0015F058 = 0xBB4;
+            return;
+        }
+        if (g[0x12E6]) {
+            *(int *)(d + 0xC0) = 0x300;
+            D_L00_0015F058 = 0x3B4;
+            return;
+        }
+        if (g[0x12EC]) {
+            *(int *)(d + 0xC0) = 0xD00;
+            D_L00_0015F058 = 0xDB4;
+            return;
+        }
+        if (g[0x12E4] != 0) {
+            *(int *)(d + 0xC0) = 0;
+            D_L00_0015F058 = 0xB4;
+            return;
+        }
+        D_L00_0015F058 = *(int *)(d + 0xC0) | 0xB4;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_001ED380);
 INCLUDE_ASM("asm/overlays", func_L00_001ED3D4);
 INCLUDE_ASM("asm/overlays", func_L00_001ED428);

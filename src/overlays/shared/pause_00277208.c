@@ -636,7 +636,35 @@ INCLUDE_ASM("asm/overlays", func_L00_00284E5C);
 INCLUDE_ASM("asm/overlays", func_L00_00284E70);
 INCLUDE_ASM("asm/overlays", func_L00_00284EA0);
 INCLUDE_ASM("asm/overlays", func_L00_00284EB8);
-INCLUDE_ASM("asm/overlays", func_L00_00285698);
+typedef struct { int f[14]; } Rec;
+extern int D_L00_001604D0 MACRO_ADDR;
+extern Rec D_L00_001BA350[];
+
+/* appends one 13-argument record to the queue of 8 entries; returns 0, or -1 when full */
+int func_L00_00285698(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7, int s0, int s1, int s2, int s3, int s4) {
+    int n = D_L00_001604D0;
+    Rec *r;
+    if (n >= 8) {
+        return -1;
+    }
+    D_L00_001604D0 = n + 1;
+    r = &D_L00_001BA350[n];
+    r->f[1] = a0;
+    r->f[2] = a1;
+    r->f[3] = a2;
+    r->f[4] = a3;
+    r->f[5] = a4;
+    r->f[6] = a5;
+    r->f[7] = a6;
+    r->f[8] = a7;
+    r->f[9] = s0;
+    r->f[10] = s1;
+    r->f[11] = s2;
+    r->f[0] = 0;
+    r->f[12] = s3;
+    r->f[13] = s4;
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00286068);
 extern void func_L00_001FF040(int, void *, unsigned short);
 

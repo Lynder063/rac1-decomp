@@ -357,7 +357,29 @@ int func_L14_00316DA8(char *a, char *b) {
 }
 INCLUDE_ASM("asm/overlays", func_L14_00316E60);
 INCLUDE_ASM("asm/overlays", func_L14_003171D0);
-INCLUDE_ASM("asm/overlays", func_L14_00317BD0);
+/* InitCamera_21 (level 14). Sets the init flag of the camera record the
+   moby's index selects, once, while the moby at D_L14_00167600 is at height
+   0x14. Retail has this function joined with the 28-byte piece after it
+   (func_L14_00317C4C): one function of 152 bytes with the nops the build pads
+   its short backward branch with. Every "return 0" arm leaves through the one
+   shared exit at the end. */
+int func_L14_00317BD0(char *moby, char *b)
+{
+    char *rec = *(char **)(D_L14_0015F050 + *(short *)(moby + 0x84) * 32 + 0x1C);
+
+    if (*(int *)(rec + 0x20) == 0 && *(short *)(D_L14_00167600 + 0x86) == 0x14) {
+        *(int *)(rec + 0x20) = 1;
+        goto done;
+    }
+    if (*(int *)(rec + 0x20) != 1)
+        goto done;
+    if (*(short *)(D_L14_00167600 + 0x86) != 0x14)
+        return 1;
+    if (b == 0 || *(short *)(b + 0x7E) != 0)
+        return 1;
+done:
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L14_00317C4C);
 extern char D_0013E633[];
 // Sets the exit camera's state field to 3 unless the global is 0xF.

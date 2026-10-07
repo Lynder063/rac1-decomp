@@ -134,8 +134,9 @@ def joined_size(name: str, csize: int, catalogue) -> int:
     """CSIZE plus the pieces joined to NAME (docs/OVERLAYS.md, joined functions), measured from
     their places in NAME's level. A piece of kind exe is a shared fragment such as the delay slot
     that the catalogue split off the preceding jr (func_001EC030); it still counts as part of this
-    function's bytes. A piece may start one nop after the previous one ends: the compiler aligns
-    a loop's head to 8 bytes, and the catalogue leaves that nop out of both."""
+    function's bytes. A piece may start up to four nops after the previous one ends (the compiler
+    aligns a loop's head to 8 bytes, and the assembler pads a short loop): the catalogue leaves
+    those nops out of both pieces, and the check compares them with the rest."""
     pieces = load_joined().get(name, [])
     m = OVERLAY_NAME.match(name)
     level, start = int(m.group(1)), int(m.group(2), 16)
@@ -144,7 +145,7 @@ def joined_size(name: str, csize: int, catalogue) -> int:
         if piece not in catalogue:
             raise SystemExit(f"joined.tsv: {name} is joined to {piece}, which is not in the catalogue")
         _kind, size, places = catalogue[piece]
-        at = next((a for lv, a in places if lv == level and end <= a <= end + 4), None)
+        at = next((a for lv, a in places if lv == level and end <= a <= end + 16), None)
         if at is None:
             raise SystemExit(f"joined.tsv: {piece} does not follow the piece before it in level {level}")
         end = at + size

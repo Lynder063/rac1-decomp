@@ -182,7 +182,44 @@ int func_L11_002D3500(char *moby, char *other) {
     }
     return func_L01_00277FD8(buf, n, d->b[d->idx], moby + 0x10, other, d->e, 0.2f) != 0;
 }
-INCLUDE_ASM("asm/overlays", func_L11_002D3620);
+extern short D_L11_00160074;
+extern int D_L11_00160074_m __asm__("D_L11_00160074") MACRO_ADDR;
+extern short *D_L11_001AC540[];
+extern int D_L11_00160058_m __asm__("D_L11_00160058") MACRO_ADDR;
+extern int func_L11_00317598(char *);
+extern float func_001F9D10(void *,void *);
+/* tests nearby active objects in four selected class lists */
+int func_L11_002D3620(char *moby) {
+    int found = 0;
+    char *data = *(char **)(moby + 0x78);
+    char *groups;
+    int i = 0;
+    short *ids;
+    int group;
+
+    {
+        char *first = data + 0x90;
+        group = *(short *)(first + (*(int *)(data + 0x158) << 4));
+    }
+    if (group >= 0 && D_L11_00160074_m >= group) {
+        do {
+            groups = data + 0x90;
+            ids = D_L11_001AC540[group];
+            if (ids) {
+                do {
+                    unsigned int offset = (*(unsigned short *)ids & 0x7FFF) * 256;
+                    char *other = (char *)(offset + D_L11_00160058_m);
+                    if (other[0x20] >= 0 && (*(short *)(other + 0xA6) != 1246 || !func_L11_00317598(other))) {
+                        found = 1;
+                        if (func_001F9D10(moby + 0x10, (char *)D_L11_00160058_m + offset + 0x10) < 10.0f) return 2;
+                    }
+                } while (*ids++ >= 0);
+            }
+        } while (++i < 4 && (group = *(short *)(groups + (*(int *)(data + 0x158) * 16 + i * 4))) >= 0
+                 && D_L11_00160074_m >= group);
+    }
+    return found;
+}
 extern int func_00215570(void *arg0, int arg1);
 extern float func_001F9CB8(void *a);
 extern void func_L00_001FF4B0(void *, void *, float);
