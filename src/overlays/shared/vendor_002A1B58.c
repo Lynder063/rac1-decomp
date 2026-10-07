@@ -1203,7 +1203,16 @@ void func_L16_002E6B70(unsigned char *m) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L16_002E6D40);
-INCLUDE_ASM("asm/overlays", func_L16_002E7138);
+/* 1 when every moby in list IDX has its byte at 0xBC set; the list ends at the entry with the top
+ * bit set. The catalogue cuts this function in three (config/overlays/joined.tsv). */
+int func_L16_002E7138(int idx) {
+    short *p = D_L16_001ABFC0[idx];
+    if (p == 0) return 0;
+    do {
+        if (*(unsigned char *)(((*(unsigned short *)p & 0x7FFF) << 8) + (int)D_L16_00160098 + 0xBC) == 0) return 0;
+    } while (*p++ >= 0);
+    return 1;
+}
 INCLUDE_ASM("asm/overlays", func_L16_002E7160);
 extern char D_0013E633[];
 extern short *D_L16_001ABFC0[];

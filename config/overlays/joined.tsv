@@ -8,7 +8,8 @@
 # (tools/overlay_check.py) then compares the C function against the bytes of
 # all the pieces together, and the progress report counts every piece as C
 # when the first one is EXACT. The pieces must be consecutive in the catalogue
-# (each starts where the previous one ends).
+# (each starts where the previous one ends, or one nop later where the compiler
+# aligned a loop's head to 8 bytes).
 #
 # owner<TAB>pieces that follow it (space separated)
 func_L18_002D9C78	func_L18_002D9C90
@@ -105,3 +106,8 @@ func_L05_002F62E8	func_L05_002F63DC func_L05_002F63FC
 func_L00_002514B8	func_L00_00251570 func_L00_00251628 func_L00_002516C8
 func_L00_001FD1D8	func_L00_001FD428 func_L00_001FD6A8
 func_L00_00252018	func_L00_00252CEC
+func_L16_002E7138	func_L16_002E7160 func_001E97C8
+func_L00_002951A8	func_L00_002951C8
+func_L00_0028EBF0	func_L00_0028EC28
+func_L00_001EB430	func_L00_001EB438 func_L00_001EB440
+func_L05_0028AA68	func_L05_0028AADC

@@ -468,7 +468,69 @@ void func_L13_002E9F90(char *moby) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L13_002EA160);
+extern char *func_L13_002EE148(char *, int, int);
+extern int D_L13_001D3778[];
+
+/* updates attached children and creates or deletes the selected extra child */
+void func_L13_002EA160(char *m, char *data) {
+    int i, selected;
+    char *p;
+    for (i = 0; i < 10; i++) {
+        p = *(char **)(data + 0xC4 + i * 4);
+        if (p) {
+            func_L00_00250800(m, i, p + 0x10);
+            if (*(float *)(p + 0x10) < 22.0f) *(float *)(p + 0x10) = 22.0f;
+            if (*(float *)(p + 0x10) > 1001.0f) *(float *)(p + 0x10) = 1001.0f;
+            if (*(float *)(p + 0x14) < 22.0f) *(float *)(p + 0x14) = 22.0f;
+            if (*(float *)(p + 0x14) > 1001.0f) *(float *)(p + 0x14) = 1001.0f;
+            if (*(float *)(p + 0x18) < 22.0f) *(float *)(p + 0x18) = 22.0f;
+            if (*(float *)(p + 0x18) > 1001.0f) *(float *)(p + 0x18) = 1001.0f;
+            qcopy(p + 0x40, m + 0x40);
+            *(u128 *)(p + 0xC0) = *(u128 *)(m + 0xC0);
+            *(u128 *)(p + 0xD0) = *(u128 *)(m + 0xD0);
+            *(u128 *)(p + 0xE0) = *(u128 *)(m + 0xE0);
+        }
+    }
+    selected = D_L13_001D3778[(unsigned char)m[0xBC]];
+    if ((unsigned char)m[0x20] == 5) selected = -1;
+    if (selected != -1) {
+        if (*(char **)(data + 0xF0) == 0 ||
+            (unsigned char)(*(char **)(data + 0xF0))[0x20] == 0xFE ||
+            (unsigned char)(*(char **)(data + 0xF0))[0x20] == 0xFD) {
+            *(char **)(data + 0xF0) = func_L13_002EE148(m, selected, 0x191);
+        }
+        p = *(char **)(data + 0xF0);
+        if (p && (unsigned char)p[0x20] != 0xFE && (unsigned char)p[0x20] != 0xFD) {
+            func_L00_00250800(m, selected, p + 0x10);
+            if (*(float *)(p + 0x10) < 22.0f) *(float *)(p + 0x10) = 22.0f;
+            if (*(float *)(p + 0x10) > 1001.0f) *(float *)(p + 0x10) = 1001.0f;
+            if (*(float *)(p + 0x14) < 22.0f) *(float *)(p + 0x14) = 22.0f;
+            if (*(float *)(p + 0x14) > 1001.0f) *(float *)(p + 0x14) = 1001.0f;
+            if (*(float *)(p + 0x18) < 22.0f) *(float *)(p + 0x18) = 22.0f;
+            if (*(float *)(p + 0x18) > 1001.0f) *(float *)(p + 0x18) = 1001.0f;
+            qcopy(p + 0x40, m + 0x40);
+            *(u128 *)(p + 0xC0) = *(u128 *)(m + 0xC0);
+            *(u128 *)(p + 0xD0) = *(u128 *)(m + 0xD0);
+            *(u128 *)(p + 0xE0) = *(u128 *)(m + 0xE0);
+        }
+    } else {
+        char *doomed = *(char **)(data + 0xF0);
+        if (doomed && (unsigned char)doomed[0x20] != 0xFE && (unsigned char)doomed[0x20] != 0xFD) {
+            func_0020D678(doomed);
+            *(char **)(data + 0xF0) = 0;
+        }
+    }
+    {
+        char *child = *(char **)(data + 0x110);
+        if (child) {
+            qcopy(child + 0x10, m + 0x10);
+            qcopy(child + 0x40, m + 0x40);
+            *(u128 *)(child + 0xC0) = *(u128 *)(m + 0xC0);
+            *(u128 *)(child + 0xD0) = *(u128 *)(m + 0xD0);
+            *(u128 *)(child + 0xE0) = *(u128 *)(m + 0xE0);
+        }
+    }
+}
 /* springs a moby's pitch and yaw toward targets and clamps the pitch */
 void func_L13_002EA450(char *m, char *p, float a, float b) {
     float c;

@@ -354,6 +354,24 @@ address, each passing this project's own check). In parentheses, Lombyte's name.
 - `src/overlays/shared/vendor_002E1660.c`: `func_L00_002E1790` (`FUN_L00_002e02e0`)
 - `src/overlays/l13_gemlik/vendor_002C2638.c`: `func_L13_002C2638` (`FUN_L13_002c13b0`)
 
+Twelve executable functions from the same pull requests followed on 2026-10-07, proven by the full build.
+Ten went in as the tool wrote them. `func_001EC2B8` needed its file to change around it: a later
+declaration retyped to its parameter, and two typedefs it shares with `func_001ED818` kept once.
+`func_001EE858` was adapted: it writes the fog preset as the struct `src/game/draw.c` already reads.
+
+- `src/core/00119868.c`: `func_00119AA8` (`sceTtyWrite`)
+- `src/core/0012AC80.c`: `func_0012AD10` (`sceMpegDemuxPssRing`)
+- `src/game/camera.c`: `func_001EC2B8` (`switch_active_camera_record`)
+- `src/game/camera.c`: `func_001ED818` (`FUN_001ed470`)
+- `src/game/drawquad.c`: `func_001F9478` (`append_billboard_batch`)
+- `src/game/effects.c`: `func_001EE858` (`update_camera_environment_from_regions`)
+- `src/game/pause.c`: `func_0021C1B0` (`render_localized_ui_entry_list`)
+- `src/game/pause.c`: `func_0021F6A0` (`update_item_preview_transform`)
+- `src/game/pause.c`: `func_002255F8` (`load_hand_gadget`)
+- `src/game/pause.c`: `func_00228860` (`submit_graphics_setup_command_stream`)
+- `src/game/skyfunc.c`: `func_0022C188` (`update_sky_effects`)
+- `src/game/vendor.c`: `func_0023A5E0` (`render_vendor_capture_texture_overlays_pass`)
+
 Fifteen more were carried over by machine on 2026-10-05 once `include/common.h` had `qzero()`, the 128-bit
 zero store Lombyte identified as inline assembly in the original (its `include/qzero.h`; the helper here is
 written after it). Same tool, same rule; the two executable functions are proven by the full build:
