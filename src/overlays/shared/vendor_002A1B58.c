@@ -98,7 +98,7 @@ extern short D_L16_001614A8;
 extern short D_L16_001614AC;
 
 /* spawn a moby of class 0x32 thrown along a vector with random spin */
-char *func_L16_002A1F78(char *owner, char *vec, void *pos, void *vel, int c, float unused) {
+char *func_L16_002A1F78(char *owner, char *vec, void *pos, void *vel, int c) {
     char *m = (char *)func_0020D348_m(0x32);
     char *d;
     float len, x, t, y;
@@ -838,7 +838,207 @@ void func_L16_002D5CD0(char *m) {
         func_00219780(matrix+12,velocity,acceleration,color1,color2,time1,time2,time3,-1);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002E3740);
+typedef union {
+    unsigned long long q;
+    float f[4];
+} L16TransportVector;
+extern void func_L16_002E3FC8(char *);
+extern void func_L16_002E4408(void *);
+extern int func_L16_002E42F0(char *, char *);
+extern void func_L16_002E44B8(char *);
+extern int func_L00_0025A778(void *, void *, int);
+extern float func_001FA850(float, float);
+extern void *func_L00_00265050(char *, int, float *, void *, int, int, float, float *, float *, float *);
+/* Stand-in: retail passes five arguments and no float; the file's definition (line 101) has a sixth, `float unused`. */
+extern float D_0013F4D0[];
+extern unsigned char D_001414F4[];
+extern float D_L16_001D9950[4];
+extern float D_L16_0015F660[] MACRO_ADDR;
+extern short D_L16_00161E3C, D_L16_00161E40, D_L16_00161E48, D_L16_00161E4C;
+
+/* Update the armed transport: fly in, set down its four passengers, hover, track and fire; sink and burst when destroyed. */
+void func_L16_002E3740(char *m) {
+    L16TransportVector vector, rotation;
+    char *d = *(char **)(m + 0x78);
+
+    func_L16_002E3FC8(m);
+    switch (*(unsigned char *)(m + 0x20)) {
+    case 0: {
+        char *path;
+        float speed;
+
+        *(unsigned short *)(m + 0x32) = 255;
+        *(unsigned char *)(m + 0x30) = 255;
+        *(float *)(d + 0x20) = 12.0f;
+        *(short *)(d + 0x24) = 12;
+        d[0x28] = 3;
+        if (*(int *)(d + 0xD8) != -1) func_L16_002E4408(D_L16_001B0C30[*(int *)(d + 0xD8)]);
+        if (*(int *)(d + 0xDC) != -1) func_L16_002E4408(D_L16_001B0C30[*(int *)(d + 0xDC)]);
+        speed = *(float *)&D_L16_00161E40 * D_0015EE6C;
+        *(int *)(d + 0x16C) = 0;
+        *(int *)(d + 0x168) = 0;
+        *(float *)(d + 0x170) = speed;
+        *(float *)(d + 0x194) = *(float *)(m + 0x18);
+        if (*(int *)(d + 0xD8) == -1) {
+            m[0x20] = 6;
+            break;
+        }
+        path = D_L16_001B0C30[*(int *)(d + 0xD8)];
+        *(float *)(d + 0x174) = func_001F9D10_update(path + 0x10, path + 0x20);
+        qcopy(m + 0x10, path + 0x10);
+        m[0x20] = 1;
+        m[0x31] = 0;
+        *(int *)(m + 0x94) = 0;
+        *(unsigned short *)(m + 0x34) = (*(unsigned short *)(m + 0x34) | 1) & 0xEFFF;
+        break;
+    }
+    case 1: {
+        int i;
+
+        if (D_L16_0015F6A8 == 0
+            && (*(int *)(d + 0xD4) == -1
+                || func_L00_0025A778(D_0013F4D0, D_L16_001B0C30[*(int *)(d + 0xD4)] + 0x10,
+                                     *(int *)D_L16_001B0C30[*(int *)(d + 0xD4)]))) {
+            m[0x20] = 2;
+            *(unsigned short *)(m + 0x34) &= 0xFFFE;
+            m[0x31] = 1;
+            *(int *)(m + 0x94) = *(int *)(*(char **)(m + 0x24) + 0x10);
+            *(unsigned short *)(m + 0x34) |= 0x1000;
+            vector.q = 0;
+            vector.f[2] = 3.14159f;
+            for (i = 0; i < 4; i++) {
+                if (((int *)(d + 0xC0))[i] >= 0) {
+                    func_L16_002D5188(D_L16_00160098 + (((int *)(d + 0xC0))[i] << 8), m, D_L16_001D9950,
+                                      (char *)vector.f);
+                }
+            }
+        }
+        break;
+    }
+    case 2: {
+        int i, loaded = 0;
+        char *path;
+
+        for (i = 0; i < 4; i++) {
+            if (((int *)(d + 0xC0))[i] >= 0) loaded = 1;
+        }
+        path = D_L16_001B0C30[*(int *)(d + 0xD8)];
+        if (loaded && (float)(*(int *)path - *(int *)(d + 0x168)) * *(float *)(d + 0x174) < 16.0f) {
+            func_00214D88((float *)(d + 0x17C), (float *)(d + 0x180), 1.5707964f, D_0015EE70 * 12.566371f,
+                          D_0015EE70 * 12.566371f, D_0015EE6C * 6.2831855f);
+        }
+        if (func_L16_002E42F0(m, path)) {
+            if (loaded) {
+                m[0x20] = 3;
+            } else if (*(int *)(d + 0xDC) == -1) {
+                m[0x20] = 6;
+            } else {
+                m[0x20] = 4;
+            }
+        }
+        break;
+    }
+    case 3: {
+        int i, *slot;
+
+        if (!func_001F9908((int *)(d + 0x184))) break;
+        slot = (int *)(d + 0xC0);
+        for (i = 0; i < 4; i++, slot++) {
+            if (((int *)(d + 0xC0))[i] >= 0) {
+                char *passenger = D_L16_00160098 + (((int *)(d + 0xC0))[i] << 8);
+
+                func_001F9BC0(rotation.f);
+                rotation.f[2] = func_001FA748(*(float *)(m + 0x48), 3.14159f);
+                func_001F9EC0(vector.f, D_L16_001D9950, m + 0xC0);
+                func_001F9BD8(vector.f, vector.f, m + 0x10);
+                func_L16_002D51A8(passenger, func_001F9850(90));
+                *slot = -1;
+                *(int *)(d + 0x184) = func_001F9850(30);
+                break;
+            }
+            if (i == 3) {
+                if (*(int *)(d + 0xDC) != -1) {
+                    m[0x20] = 4;
+                } else {
+                    m[0x20] = 6;
+                }
+            }
+        }
+        break;
+    }
+    case 4: {
+        float heading = *(float *)(D_L16_001B0C30[*(int *)(d + 0xDC)] + 0x1C);
+
+        func_00214D88((float *)(m + 0x48), (float *)(d + 0x178), heading, D_0015EE70 * 6.2831855f,
+                      D_0015EE70 * 6.2831855f, D_0015EE6C * 6.2831855f);
+        if (func_001FA850(*(float *)(m + 0x48), heading) < 0.01f) {
+            m[0x20] = 5;
+            *(int *)(d + 0x168) = 0;
+            *(int *)(d + 0x16C) = 0;
+        }
+        break;
+    }
+    case 5:
+        func_00214D88((float *)(d + 0x17C), (float *)(d + 0x180), 0.0f, D_0015EE70 * 12.566371f,
+                      D_0015EE70 * 12.566371f, D_0015EE6C * 6.2831855f);
+        if (func_L16_002E42F0(m, D_L16_001B0C30[*(int *)(d + 0xDC)])) {
+            if (*(int *)(d + 0xD0) == -1) {
+                func_0020D678(m);
+                return;
+            }
+            m[0x20] = 6;
+        }
+        break;
+    case 6: {
+        float *yaw = (float *)(m + 0x48);
+        float bearing;
+
+        func_00214D88((float *)(d + 0x17C), (float *)(d + 0x180), 0.0f, D_0015EE70 * 12.566371f,
+                      D_0015EE70 * 12.566371f, D_0015EE6C * 6.2831855f);
+        bearing = func_L00_001FF860(*(float *)(d + 0x70) - *(float *)(m + 0x10),
+                                    *(float *)(d + 0x74) - *(float *)(m + 0x14));
+        func_00214D88(yaw, (float *)(d + 0x178), bearing, D_0015EE70 * 3.1415927f, D_0015EE70 * 3.1415927f,
+                      D_0015EE6C * 6.2831855f);
+        func_00214D88((float *)(m + 0x40), (float *)(d + 0x188), 0.0f, D_0015EE70 * 1.5707964f,
+                      D_0015EE70 * 1.5707964f, D_0015EE6C * 6.2831855f);
+        if (func_001F9908((int *)(d + 0x164)) && *(int *)(d + 0xB4) != 2) m[0x20] = 7;
+        break;
+    }
+    case 7:
+        func_L00_00250800(m, 1, vector.f);
+        func_001F9BF0(rotation.f, d + 0x70, vector.f);
+        func_L00_001FF4B0(rotation.f, rotation.f, *(float *)&D_L16_00161E3C * D_0015EE6C);
+        func_0022ED80_update(1, 0, m);
+        func_L16_002A1F78(m, (char *)rotation.f, vector.f, d + 0x70, func_001F9850(45));
+        m[0x20] = 6;
+        *(int *)(d + 0x164) = func_001F9850(180);
+        break;
+    case 8: {
+        float dt = D_0015EE6C;
+
+        *(float *)(d + 0x194) -= dt + dt;
+        *(float *)(m + 0x40) += dt * 0.2617994f;
+        if (func_001F9908((int *)(d + 0x160)) || D_001414F4[0] == 2) {
+            func_L00_0025F4A8(m, D_L16_0015F660, m + 0x10, 0.0f, 0.0f, 20, 12, 8, 4.0f, 2.5f, 9.0f, -1, 2.0f, 0.0f,
+                              0, 0, -1, 0);
+            func_L00_00265050(m, 0x634, (float *)(m + 0x10), m + 0x40, 0, 0, 0.0f, D_L16_0015F660, D_L16_0015F660,
+                              D_L16_0015F660);
+            func_L00_00265050(m, 0x635, (float *)(m + 0x10), m + 0x40, 0, 0, 0.0f, D_L16_0015F660, D_L16_0015F660,
+                              D_L16_0015F660);
+            func_L00_00265050(m, 0x636, (float *)(m + 0x10), m + 0x40, 0, 0, 0.0f, D_L16_0015F660, D_L16_0015F660,
+                              D_L16_0015F660);
+            func_L00_002584A8(m, 0, -1);
+            func_0020D678(m);
+            return;
+        }
+        break;
+    }
+    }
+    *(float *)(d + 0x18C) = func_001FA748(*(float *)(d + 0x18C),
+                                          *(float *)&D_L16_00161E48 * 0.017453292f * D_0015EE6C);
+    *(float *)(m + 0x18) = *(float *)(d + 0x194) + *(float *)&D_L16_00161E4C * func_001F9FA8(*(float *)(d + 0x18C));
+    func_L16_002E44B8(m);
+}
 extern int func_L00_0028EB98(void*,int);
 extern int func_0022ED80_6B70(int,int,void*) __asm__("func_0022ED80");
 extern void func_L00_0028EBF0(int);

@@ -10,7 +10,6 @@
 #include "common.h"
 extern int func_001160D8(void);
 extern void func_L00_00250800(void *, int, void *);
-extern void func_L13_002EB838(void *, void *, void *, float);
 extern int func_001F9850(int);
 extern int func_L13_002C2638(void *, void *, int, void *, int, float, float);
 extern char D_0013E633[];

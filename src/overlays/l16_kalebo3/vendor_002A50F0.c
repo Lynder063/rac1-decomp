@@ -712,7 +712,7 @@ extern float func_L00_0025BC48(void *, void *, void *, float, float);
 extern float func_0020D830(void *);
 extern void func_L00_002607A8(void *, float);
 extern float func_L00_0025CE58(float *, float *, float, float, float, float);
-extern int func_L00_00260FB0(float, char *, void *, int, int, void *, int);
+extern int func_L00_00260FB0(void *, void *, float, int, int, void *, int);
 extern float func_001F9F90(float);
 extern void func_L02_00265E88(void *, void *, void *, float);
 extern void func_L00_0025A8C0(void *, void *, int, float, void *);
@@ -809,7 +809,7 @@ void func_L16_002CF180(unsigned char *m) {
                 }
                 if (func_002140B0(2)) {
                     char *p = D_L16_001B0C30[d->sound_path];
-                    func_L00_00260FB0(12.0f, (char *)m, d->target, 0, 0, p + 16, *(int *)p);
+                    func_L00_00260FB0(m, d->target, 12.0f, 0, 0, p + 16, *(int *)p);
                 } else {
                     d->mode = 2;
                 }
@@ -910,7 +910,7 @@ void func_L16_002CF180(unsigned char *m) {
                 }
                 if (func_002140B0(2)) {
                     char *p = D_L16_001B0C30[d->sound_path];
-                    func_L00_00260FB0(12.0f, (char *)m, d->target, 0, 0, p + 16, *(int *)p);
+                    func_L00_00260FB0(m, d->target, 12.0f, 0, 0, p + 16, *(int *)p);
                 } else {
                     d->mode = 2;
                 }
@@ -1004,7 +1004,137 @@ void func_L16_002CF180(unsigned char *m) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002CFDB8);
+extern void func_L16_002D0238(char *);
+extern char *func_L00_0025B478(void *, int, int);
+extern int func_L00_0025B4D0(void *, void *, void *, int, int *, float *, int, int);
+extern void func_0020DAF8(char *, int, char *);
+extern void func_001FA480(void *, void *);
+/* The hero block as this function reads it (D_0013E633 + 0xE1D). */
+typedef struct {
+    char pad00[0x80];
+    float position[4];          /* 0x80 */
+} L16HitPlayer;
+struct L16HitMoby;
+/* The test dummy's data (moby + 0x78) as this function uses it; the same record as L16DummyData. */
+typedef struct {
+    char pad00[0x20];
+    float health;               /* 0x20 */
+    char pad24[10];
+    unsigned char substate;     /* 0x2E: 2 asks for a respawn */
+    char pad2F[0x31];
+    short reaction[3];          /* 0x60: record func_L00_0025E4B0 and func_L00_0025E590 take */
+    char pad66;
+    unsigned char reaction_time; /* 0x67 */
+    char pad68[0x60];
+    int lives;                  /* 0xC8 */
+    char padCC[0x14];
+    float spawn[4];             /* 0xE0 */
+    int timer;                  /* 0xF0 */
+    char padF4[0x10];
+    struct L16HitMoby *child;   /* 0x104 */
+    char pad108[4];
+    float heading;              /* 0x10C */
+    int next_state;             /* 0x110: stored here as a word */
+    int next_anim;              /* 0x114 */
+    int frame;                  /* 0x118: frame counter of the last func_L16_002D0238 */
+} L16HitData;
+typedef struct L16HitMoby {
+    char pad00[0x10];
+    float position[4];          /* 0x10 */
+    unsigned char state;        /* 0x20 */
+    char pad21[0x13];
+    unsigned short flags;       /* 0x34 */
+    char pad36[0x1D];
+    unsigned char animation;    /* 0x53 */
+    char pad54[0x24];
+    L16HitData *data;           /* 0x78 */
+    char pad7C[0x28];
+    unsigned char opacity;      /* 0xA4 */
+    char padA5[0x1B];
+    float matrix[3][4];         /* 0xC0 */
+} L16HitMoby;
+
+/* The test dummy's respawn and hit handling: respawns or deletes it, takes damage, and carries its child on a joint. */
+void func_L16_002CFDB8(void *moby) {
+    L16HitMoby *m = moby;
+    float matrix[16];
+    int status;
+    float amount;
+    L16HitData *d;
+    char *record;
+
+    if (m->state == 1) {
+        return;
+    }
+    d = m->data;
+    if (d->substate == 2) {
+        d->substate = 1;
+        d->health = 2.0f;
+        d->timer = func_001F9850(60);
+        func_L00_002584A8(m, 0, -1);
+        m->flags &= 0xEFFF;
+        d->lives--;
+        if (d->lives != -1) {
+            m->state = 11;
+            qcopy(m->position, d->spawn);
+            d->timer = func_001F9850(60);
+        } else {
+            if (d->child) {
+                func_0020D678(d->child);
+            }
+            func_0020D678(m);
+        }
+        return;
+    }
+    if (d->frame != D_L16_0015F6B0) {
+        func_L16_002D0238((char *)m);
+    }
+    amount = 0.0f;
+    record = func_L00_0025B478(m, 0x330000, 0);
+    func_L00_0025B4D0(m, record, &d->health, 0, &status, &amount, 0, 4);
+    if (status != 1 && m->state != 10 && m->state != 11) {
+        d->health -= amount;
+        if (d->health <= 0.0f) {
+            m->state = 10;
+        } else {
+            if (m->state != 9) {
+                d->next_state = m->state;
+                d->next_anim = m->animation;
+            }
+            {
+                float x = m->position[0], y = m->position[1];
+                L16HitPlayer *player = (L16HitPlayer *)(D_0013E633 + 0xE1D);
+                d->heading = func_L00_001FF860(player->position[0] - x, player->position[1] - y);
+            }
+            m->state = 9;
+            /* No pointer local for the reaction record anywhere: d->reaction is written at each call and the
+               compiler caches it itself (formed before the hit query, and formed again here with a copy after
+               the call). It only forms it again here when this place cannot be reached along one straight path
+               from the hit query, that is when the animation test has two arms while its common-subexpression
+               pass runs: the else arm below is what supplies the second one. The assignment is dead and leaves
+               no instruction; without it the function is two instructions short (see NOTES.md). */
+            if (m->animation != 8) {
+                func_00213DE0(m, 8, 2, 1);
+            } else {
+                record = 0;
+            }
+            d->reaction_time = 120;
+            func_L00_0025E4B0(m, d->reaction);
+        }
+    }
+    m->opacity = 255;
+    func_L00_0025E590(m, d->reaction);
+    if (d->child) {
+        func_L00_00250800(m, D_L16_00161A88, d->child->position);
+        func_0020DAF8((char *)m, D_L16_00161A88, (char *)matrix);
+        func_001FA480(d->child->matrix[0], matrix);
+        func_L00_001FF4B0(d->child->matrix[0], d->child->matrix[0], 1.0f);
+        func_L00_001FF4B0(d->child->matrix[1], d->child->matrix[1], 1.0f);
+        func_L00_001FF4B0(d->child->matrix[2], d->child->matrix[2], 1.0f);
+        func_L00_00251E30(d->child);
+    }
+    func_L00_0025E590(m, d->reaction);
+}
 extern int *D_L16_001ABFC0[];
 extern char *D_L16_00160098 MACRO_ADDR;
 
@@ -1075,7 +1205,76 @@ again:
         func_001F49B0(func_L16_002D0328, moby);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002D0328);
+extern void func_001F9CA0(void *, void *, void *);
+extern float D_L16_001D3400[][4];
+extern int D_L16_00161AA0 SDATA(D_L16_00161AA0);
+extern int D_L16_00161AA4 SDATA(D_L16_00161AA4);
+/* A test dummy as its beam's draw callback reads it. */
+typedef struct {
+    char pad00[0x10];
+    float position[4];
+    unsigned char state, group;
+    char pad22[0x56];
+    L16DummyData *data;
+    char pad7C[0x2A];
+    short type;
+} L16BeamMoby;
+
+/* Draw callback queued by func_L16_002D0238: one textured quad per live test dummy (class 0x21D) of the
+   group, its colour pulsing with the dummy's phase, its frame built from the direction to the target. */
+void func_L16_002D0328(L16BeamMoby *moby) {
+    L16RibbonPacket packet;
+    float a[4];
+    float b[4];
+    float c[4];
+    float pos[4];
+    short *p;
+    L16BeamMoby *other;
+    L16DummyData *data;
+    int k, id, color;
+    float wave;
+    float blend;
+
+    packet.texture = func_001F4868(11);
+    packet.mode = 0x8000000048L;
+    packet.flags = 0xFF9000000260L;
+    packet.zero = 5;
+    packet.uv[0].u = 0.0f;
+    packet.uv[0].v = 0.0f;
+    packet.uv[1].u = 0.0f;
+    packet.uv[1].v = 1.0f;
+    packet.uv[2].u = 1.0f;
+    packet.uv[2].v = 0.0f;
+    packet.uv[3].u = 1.0f;
+    packet.uv[3].v = 1.0f;
+    for (k = 0; k < 4; k++) {
+        func_001F9C30(packet.point[k], D_L16_001D3400[k], 0.2f);
+    }
+    p = (short *)D_L16_001ABFC0[moby->group];
+    do {
+        id = *p & 0x7FFF;
+        other = (L16BeamMoby *)(D_L16_00160098 + (id << 8));
+        data = other->data;
+        wave = func_001F9FA8(data->f11C);
+        blend = (wave + 1.0f) * 0.5f;
+        color = func_001FA8A8_caa18(D_L16_00161AA0, D_L16_00161AA4, blend);
+        packet.color[3] = color;
+        packet.color[2] = color;
+        packet.color[1] = color;
+        packet.color[0] = color;
+        if (other && other->type == 0x21D && other->state != 0xFE && other->state != 0xFD) {
+            qcopy(pos, other->position);
+            pos[2] += 0.2f;
+            pos[3] = 1.0f;
+            func_001F9BF0(a, D_L16_00167240, pos);
+            func_L00_001FF4B0(a, a, 1.0f);
+            func_001F9CA0(b, a, D_0013E633 + 0x10AD);
+            func_L00_001FF4B0(b, b, -1.0f);
+            func_001F9CA0(c, b, a);
+            func_L00_001FD1D8(&packet, a, 0);
+        }
+    } while (*p++ >= 0);
+}
 extern float func_00214158(void);
 extern float func_001FA748(float,float);
 extern float func_001F9FA8(float);
@@ -1245,7 +1444,50 @@ void func_L16_002D0B70(char *arg) {
         } while (*p++>=0);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002D0C18);
+extern float D_L16_001D3480[][2];
+extern float D_L16_001D3440[][4];
+extern float D_L16_00161AB8 SDATA(D_L16_00161AB8);
+extern float D_L16_00161ABC SDATA(D_L16_00161ABC);
+extern int D_L16_00161AC0 SDATA(D_L16_00161AC0);
+extern int D_L16_00161AC4 SDATA(D_L16_00161AC4);
+extern int D_L16_00161AA8 SDATA(D_L16_00161AA8);
+extern int D_L16_00161AAC SDATA(D_L16_00161AAC);
+extern int D_L16_00161AB0 SDATA(D_L16_00161AB0);
+extern int D_L16_00161AB4 SDATA(D_L16_00161AB4);
+extern void func_001F9BC0(void *);
+
+/* Draws the textured quad that links a moby to its partner, four times, each one a step higher than the last. */
+void func_L16_002D0C18(char *moby, char *partner) {
+    L16RibbonPacket packet;
+    float frame[4][4]; /* direction, side, up, origin */
+    int color;
+    int corner;
+    int pass;
+
+    func_001F9BF0(frame[0], partner + 0x10, moby + 0x10);
+    func_001F9BC0(frame[2]);
+    frame[2][2] = 1.0f;
+    func_001F9CA0(frame[1], frame[0], frame[2]);
+    qcopy(frame[3], moby + 0x10);
+    frame[3][2] += D_L16_00161AB8;
+    frame[3][3] = 1.0f;
+    packet.texture = func_001F4868(D_L16_00161AC0);
+    packet.mode = (long)D_L16_00161AA8 | ((long)D_L16_00161AAC << 2) | ((long)D_L16_00161AB0 << 4) |
+                  ((long)D_L16_00161AB4 << 6) | 0x8000000000L;
+    packet.flags = 0xFF9000000260L;
+    packet.zero = 0;
+    color = D_L16_00161AC4;
+    for (corner = 0; corner < 4; corner++) {
+        packet.uv[corner].u = D_L16_001D3480[corner][0];
+        packet.uv[corner].v = D_L16_001D3480[corner][1];
+        packet.color[corner] = color;
+        qcopy(packet.point[corner], D_L16_001D3440[corner]);
+    }
+    for (pass = 0; pass < 4; pass++) {
+        func_L00_001FD1D8(&packet, frame[0], 0);
+        frame[3][2] += D_L16_00161ABC;
+    }
+}
 typedef struct {
     char pad0[0x2C0];
     char *vectors;
@@ -1260,7 +1502,77 @@ typedef struct {
 void func_L16_002D0D98(Level16VendorVectorMoby *moby, int index, void *out) {
     qcopy(out, moby->data->vectors + index * 16 + 16);
 }
-INCLUDE_ASM("asm/overlays", func_L16_002D0DC0);
+extern int func_L01_0028C2D8(void *, void *, float);
+extern int func_L00_0025E7F8(char *, int, int, int);
+extern float func_001FA850(float, float);
+
+typedef struct {
+    int count;                  /* 0x00: number of nodes */
+    char pad04[0xC];
+    float points[1][4];         /* 0x10: position; w marks the node */
+} L16PatrolPath;
+
+typedef struct {
+    char pad0[0x260];
+    float position[4];          /* 0x260 */
+    char pad270[0x20];
+    int base_path;              /* 0x290: index into D_L16_001B0C30 */
+    int branch_path[7];         /* 0x294: indexed by a node's mark - 11 */
+    char pad2B0[0x10];
+    L16PatrolPath *path;        /* 0x2C0: the path being followed */
+    char pad2C4[0x30];
+    short node;                 /* 0x2F4: the node being steered for */
+} L16PatrolData;
+
+typedef struct {
+    char pad0[0x10];
+    float position[4];          /* 0x10 */
+    char pad20[0x28];
+    float yaw;                  /* 0x48 */
+    char pad4C[0x2C];
+    L16PatrolData *data;        /* 0x78 */
+} L16PatrolMoby;
+
+/* Choose the path node to steer for: step on while the current one is behind the moby or reached. */
+void func_L16_002D0DC0(char *m) {
+    L16PatrolMoby *moby = (L16PatrolMoby *)m;
+    L16PatrolData *d = moby->data;
+    float target[4];
+    float heading, distance;
+
+    func_L16_002D0D98((Level16VendorVectorMoby *)moby, d->node, target);
+    heading = func_L00_001FF860(target[0] - moby->position[0], target[1] - moby->position[1]);
+    for (;;) {
+        L16PatrolPath *path;
+        L16PatrolPath *base;
+
+        func_L16_002D0D98((Level16VendorVectorMoby *)moby, d->node, target);
+        distance = func_001F9D48(target, d->position);
+        if ((func_001FA850(heading, moby->yaw) < 1.5707964f || distance > 4.0f) && distance > 2.0f) {
+            break;
+        }
+        path = d->path;
+        d->node = (d->node + 1) % path->count;
+        base = (L16PatrolPath *)D_L16_001B0C30[d->base_path];
+        if (path != base) {
+            /* At the last node of a branch: back to the base path, five nodes past its nearest one. */
+            if (d->node == path->count - 1) {
+                d->path = base;
+                d->node = func_L01_0028C2D8(d->position, base, 0.0f);
+                d->node = func_L00_0025E7F8((char *)d->path, d->node, 5, 1);
+            }
+        } else if (path->points[d->node][3] > 10.0f && func_002140B0(100) >= 31) {
+            /* At a marked node of the base path: more often than not, onto the branch the mark names. */
+            int branch = func_001FA898_caa18(d->path->points[d->node][3]) - 11;
+
+            d->path = (L16PatrolPath *)D_L16_001B0C30[d->branch_path[branch]];
+            d->node = 0;
+        }
+        /* The same two statements as before the loop, written out again: the compiler merges the copies. */
+        func_L16_002D0D98((Level16VendorVectorMoby *)moby, d->node, target);
+        heading = func_L00_001FF860(target[0] - moby->position[0], target[1] - moby->position[1]);
+    }
+}
 extern char D_0013E633[];
 extern int func_001F9908(int *arg0);
 extern int func_L00_0025A208(int *, int, int, int);
@@ -3046,7 +3358,108 @@ void func_L16_002E7270(char *m) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L16_002E7670);
+extern float D_L16_00161F14 SDATA(D_L16_00161F14);
+extern float D_L16_00161F18 SDATA(D_L16_00161F18);
+extern float D_L16_00161F1C SDATA(D_L16_00161F1C);
+extern float D_L16_00161F20 SDATA(D_L16_00161F20);
+extern void func_L00_0025BBA0(void *, float *, void *, void *);
+
+typedef struct {
+    char pad0[0x110];
+    short reaction[3];          /* 0x110: record func_L00_0025E4B0 and func_L00_0025E590 take */
+    char pad116;
+    unsigned char reaction_time; /* 0x117 */
+    char pad118[8];
+    float knock[4];             /* 0x120: record func_L00_0025D5B0 fills */
+    float speed;                /* 0x130 */
+    float acceleration;         /* 0x134 */
+    float jump_speed;           /* 0x138 */
+    float turn_speed;           /* 0x13C */
+    int flags;                  /* 0x140 */
+    int kind;                   /* 0x144 */
+    float strength;             /* 0x148 */
+    char pad14C[0x11];
+    unsigned char pending;      /* 0x15D */
+    char pad15E[0xE];
+    float timer;                /* 0x16C */
+    float f170;
+    float f174;
+    char pad178[8];
+    float target[4];            /* 0x180 */
+    char pad190[0x30];
+    int i1C0;
+    int i1C4;
+    char pad1C8[8];
+    float home[4];              /* 0x1D0 */
+    char pad1E0[0x10];
+    int path;                   /* 0x1F0: index into D_L16_001B0C30 */
+} L16PursuitData;
+typedef struct {
+    char pad0[0x10];
+    float position[4];          /* 0x10 */
+    unsigned char state;        /* 0x20 */
+    char pad21[0x13];
+    unsigned short flags;       /* 0x34 */
+    char pad36[0x42];
+    L16PursuitData *data;       /* 0x78 */
+    char pad7C[0x18];
+    int i94;
+    char pad98[0xC];
+    unsigned char bA4;
+} L16PursuitMoby;
+
+/* Start the knock-back when the moby is hit, then steer it along its path and note when it strays. */
+void func_L16_002E7670(void *arg) {
+    L16PursuitMoby *m = arg;
+    L16PursuitData *d = m->data;
+    char *hit;
+    int a;                      /* the reaction kind, later the path */
+    int b;                      /* the reaction flags, later the path's slot in the table */
+    float scratch[8];           /* [0..3] where the hit came from, [4] the heading that gives */
+
+    if (m->state == 0) {
+        return;
+    }
+    hit = func_L00_0025B478(m, 0x330000, 0);
+    if (hit) {
+        b = 0x200;
+        d->flags = b;
+        d->strength = 0.5f;
+        d->speed = D_L16_00161F14 * D_0015EE70;
+        d->acceleration = D_L16_00161F18 * D_0015EE70;
+        d->jump_speed = D_L16_00161F20 * D_0015EE6C;
+        d->turn_speed = D_L16_00161F1C * D_0015EE6C;
+        a = 0x29;
+        d->kind = a;
+        d->pending = 0;
+        d->timer = D_0015EE6C * 2.0f;
+        m->flags &= ~0x1000;
+        *(u128 *)scratch = *(u128 *)(hit + 0x10);
+        func_L00_0025BBA0(scratch, scratch + 4, &d->jump_speed, &d->turn_speed);
+        func_L00_0025D5B0(m, d->knock, 5, 1, 0, scratch[4]);
+        d->f170 = 8.0f;
+        d->f174 = 16.0f;
+        m->state = 8;
+        m->i94 = 0;
+        d->reaction_time = 0x78;
+        func_L00_0025E4B0(m, d->reaction);
+    }
+    m->bA4 = 0xFF;
+    func_L00_0025E590(m, d->reaction);
+    b = (int)&D_L16_001B0C30[d->path];
+    a = *(int *)b;
+    if (func_L00_00260FB0(m, d->target, 16.0f, 0, 0, (void *)(a + 0x10), *(int *)a) != 2) {
+        if (func_001F9D48(d->home, d->target) > 16.0f ||
+            func_001F9B88(m->position[2] - d->target[2]) > 3.0f) {
+            d->i1C4 = 2;
+        }
+    }
+    if (d->i1C0 == 0) {
+        char *hero = D_0013E633 + 0xE1D;
+        d->i1C0 = *(int *)(hero + 0x2080);
+        qcopy(d->target, hero + 0x80);
+    }
+}
 extern float func_L00_0025CE58(float *, float *, float, float, float, float);
 extern float func_00214D88_7890(float *, float, float, float, float, float *) __asm__("func_00214D88");
 extern void func_L00_00259868(void *, void *, float, float, float, int);

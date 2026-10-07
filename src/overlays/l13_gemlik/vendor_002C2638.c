@@ -2,7 +2,48 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L13_002C2638);
+extern char *func_0020D348(int);
+extern void func_L00_00251E30(void *);
+extern char *func_L00_0026E940(char *, int, int, int, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_00213DE0(void *, int, int, int);
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l13/unclassified_002c13b0.c, FUN_L13_002c13b0. */
+unsigned char *func_L13_002C2638(char *src, char *pos, char *target, char *vec, int arg, float scale,
+                                float f2) {
+    unsigned char *moby = (unsigned char *)func_0020D348(0x52);
+    if (moby != 0) {
+        char *data = *(char **)(moby + 0x78);
+        moby[0x30] = 0xFF;
+        *(short *)(moby + 0x32) = 0xFF;
+        moby[0x31] = 1;
+        moby[0x20] = 0;
+        *(char **)(data + 0x24) = target;
+        *(char **)(data + 0x20) = src;
+        qcopy(moby + 0x10, pos);
+        qcopy(moby + 0x40, vec);
+        {
+            float *sp = &scale;
+            *(float *)(data + 0x2C) = *sp;
+        }
+        *(float *)(data + 0x38) = f2;
+        *(int *)(data + 0x28) = arg;
+        *(int *)(data + 0x30) = 0;
+        *(int *)(data + 0x34) = 0;
+        qcopy(data, *(char **)(src + 0x78) + 0xC0);
+        if (moby[0x53] != 1) {
+            func_00213DE0(moby, 1, 0, 10);
+        }
+        func_001F9BD8(moby + 0x10, moby + 0x10, data);
+        if (*(char **)(data + 0x24) != 0) {
+            qcopy(data + 0x10, *(char **)(data + 0x24) + 0x10);
+        }
+        *(float *)(moby + 0x2C) = *(float *)(*(char **)(moby + 0x24) + 0x24);
+        func_L00_00251E30(moby);
+        func_L00_0026E940((char *)moby, 0x60808080, arg, 0, 500000.0f);
+    }
+    return moby;
+}
 INCLUDE_ASM("asm/overlays", func_L13_002C27B0);
 extern char *func_0020D348(int);
 extern int func_001F9850(int);

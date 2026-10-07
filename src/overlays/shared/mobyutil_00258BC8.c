@@ -1332,9 +1332,16 @@ void func_L00_0025D5B0(float ang, char *o, float *s, int a, int b, int c) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_0025D6F0);
-void func_L00_0025E210(char *a) {
-    char *src = *(char **)&D_0013E633[0x2E9D];
-    *(u64 *)(a + 0x38) = *(u64 *)(src + 0x38);
+typedef struct {
+    u8 pad[0x38];
+    s64 v;
+} S;
+extern u8 D_001414D0[];
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/entities/0025d1b8.c, FUN_L00_0025d1b8. */
+void func_L00_0025E210(S *p, s64 v) {
+    v = (*(S **)&D_001414D0[0])->v;
+    p->v = v;
 }
 typedef unsigned int u128_pt __attribute__((mode(TI)));
 typedef union { u128_pt q; f32 f[4]; } V0025d238;
@@ -1609,7 +1616,58 @@ INCLUDE_ASM("asm/overlays", func_L00_0025F420);
 INCLUDE_ASM("asm/overlays", func_L00_0025F450);
 INCLUDE_ASM("asm/overlays", func_L00_0025F4A8);
 INCLUDE_ASM("asm/overlays", func_L00_00260108);
-INCLUDE_ASM("asm/overlays", func_L00_00260460);
+typedef struct { float x, y, z, w; } Vy10 __attribute__((aligned(16)));
+typedef struct { int v[6]; } S6y10;
+extern S6y10 D_L00_001E93B0;
+extern S6y10 D_L00_001E93C8;
+extern float D_L00_001B0670[] NOT_SDA;
+extern int func_002140B0(int);
+extern unsigned func_L00_0025D140(unsigned, int);
+extern void func_L00_0026B890(void *, void *, int, int, float, int, int, int, int, float);
+extern int func_L00_002ADBB0(void *, void *, void *, float, int, int, int, int, int);
+extern void func_L00_002D4CE8(void *, void *, int, int);
+
+// Spawn three bursts of coloured sparks around a point, then optional glow pieces and a flash.
+void func_L00_00260460(char *a, char *b, float sc, float fl) {
+    Vy10 m;
+    S6y10 c0;
+    S6y10 c1;
+    int r[3];
+    int i;
+    float sp, big, t1, t2;
+    func_001F9BC0(&m);
+    for (i = 2; i >= 0; i--) {
+        sp = func_002140F8(8.0f, 10.0f) * D_0015EE6C;
+        big = sc * 500000.0f;
+        c0 = D_L00_001E93B0;
+        c1 = D_L00_001E93C8;
+        func_L00_0026B890(b, &m, func_L00_0025D140(c0.v[func_002140B0(6)], 1), func_L00_0025D140(c1.v[func_002140B0(6)], 1),
+            big, func_L00_00258BC8(func_001F9850(0xF), func_001F9850(0x14)),
+            func_L00_00258BC8(func_001F9850(0x19), func_001F9850(0x1E)), 0, 0, sp * sc);
+    }
+    if (a != 0) {
+        r[0] = 0x7F; r[1] = 0x40; r[2] = 0;
+        func_L00_0025D0E0(&r[0], &r[1], &r[2], 1);
+        t1 = sc * 4.0f;
+        func_L00_002ADBB0(a, b, &m, t1, func_001F9850(0x14), *(unsigned char *)&r[0], *(unsigned char *)&r[1], *(unsigned char *)&r[2], 0x30);
+        r[0] = 0x60; r[1] = 0x20; r[2] = 0;
+        func_L00_0025D0E0(&r[0], &r[1], &r[2], 1);
+        t2 = sc * 3.0f;
+        func_L00_002ADBB0(a, b, &m, t2, func_001F9850(0x1D), *(unsigned char *)&r[0], *(unsigned char *)&r[1], *(unsigned char *)&r[2], 0x20);
+    }
+    if (fl != 0.0f) {
+        if (fl > 0.0f) {
+            D_L00_001B0670[9] = fl;
+            D_L00_001B0670[10] = fl;
+            D_L00_001B0670[8] = fl;
+        } else {
+            D_L00_001B0670[9] = 13.0f;
+            D_L00_001B0670[10] = 13.0f;
+            D_L00_001B0670[8] = 13.0f;
+        }
+        func_L00_002D4CE8(D_L00_001B0670, b, 0, 0);
+    }
+}
 extern float func_001F9CB8(void *);
 extern void func_L00_001FF4B0(void *, void *, float);
 void func_L00_002607A8(void *a, float x) {
@@ -1630,9 +1688,42 @@ void func_L00_002607F8(int a, short *list, short max) {
         list[list[0]] = k;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00260878);
+extern s32 D_L00_00160098 MACRO_ADDR;
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/math/rotations/0025d238.c, FUN_L00_0025f800. */
+void func_L00_00260878(s32 p, s16 *a) {
+    s32 i;
+    for (i = 1; i <= a[0]; i++) {
+        if (D_L00_00160098 + (a[i] << 8) == p) {
+            a[i] = a[a[0]];
+            a[0]--;
+            return;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002608D0);
-INCLUDE_ASM("asm/overlays", func_L00_002608F0);
+typedef struct {
+    u8 pad[0x18];
+    s32 id;
+} V25f878;
+typedef struct {
+    u8 pad[0x78];
+    V25f878 *p78;
+    u8 pad7c[0x100 - 0x7C];
+} M25f878;
+extern s16 D_L00_001B0AF0[];
+extern u8 * D_L00_00160098_608F0 __asm__("D_L00_00160098") MACRO_ADDR;
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/math/rotations/0025d238.c, FUN_L00_0025f878. */
+M25f878 *func_L00_002608F0(s32 id) {
+    s32 i;
+    for (i = 1; i <= D_L00_001B0AF0[0]; i++) {
+        M25f878 *o = (M25f878 *)(D_L00_001B0AF0[i] * 0x100 + (s32)D_L00_00160098_608F0);
+        if (o->p78->id == id)
+            return o;
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0026093C);
 extern float func_002140F8(float, float);
 void func_L00_00260958(float *v, float s) {

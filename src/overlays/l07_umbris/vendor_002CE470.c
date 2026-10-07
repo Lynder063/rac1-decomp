@@ -763,7 +763,31 @@ int func_L07_003108B0(void *moby, int id, float scale) {
     }
     return 0;
 }
-INCLUDE_ASM("asm/overlays", func_L07_00310920);
+extern int func_L00_0025A208(int *, int, int, int);
+extern int func_L00_0025A2F0(int *, int, int, int);
+
+/* Finds another moby whose state lies within the inclusive range. */
+int func_L07_00310920(unsigned char *moby, int lower, int upper) {
+    unsigned char *other = 0;
+    if (!func_L00_0025A208((int *)&other, moby[0x21], 0, 0)) {
+        if (other) {
+            do {
+                if (other != moby) {
+                    int state = other[0x20];
+                    if (state >= lower) {
+                        if (state <= upper) {
+                            goto found;
+                        }
+                    }
+                }
+                if (func_L00_0025A2F0((int *)&other, (int)other, 0, 0)) break;
+            } while (other);
+        }
+    }
+    return 0;
+found:
+    return 1;
+}
 INCLUDE_ASM("asm/overlays", func_L07_003109D0);
 INCLUDE_ASM("asm/overlays", func_L07_003126A8);
 extern float D_0015EE60 MACRO_ADDR;

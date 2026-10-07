@@ -78,7 +78,7 @@ void func_L14_00306A88(char *moby) {
     unsigned short *p = D_L14_001AC2C0[**(int **)(moby + 0x78)];
     float *out;
     if (p != 0) {
-        int base = *(int *)&D_L14_00160098;
+        int base = D_L14_00160098;
         out = D_L14_001EE920;
         do {
             float *f = (float *)(base + ((*p & 0x7FFF) << 8));

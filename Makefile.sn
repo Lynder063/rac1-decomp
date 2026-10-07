@@ -55,7 +55,11 @@ CFLAGS := -O2 -G2 -Iinclude -Wa,-I,.
 # target predefines (__mips__, __R5900__, ...), and longlong.h picks its
 # MIPS multiply/divide primitives off them. Without them __divdi3 and
 # __muldi3 come out wrong.
+ifeq ($(wildcard toolchain/ee-gcc-2.9-991111-01/bin/ee-gcc),)
 CC_LIBGCC := $(WINE) $(SN_114)/bin/ee-gcc.exe
+else
+CC_LIBGCC := toolchain/ee-gcc-2.9-991111-01/bin/ee-gcc
+endif
 
 # Every core_text object, in link order, from the one list that rac1.ld.sh
 # and the tools also read.
@@ -118,8 +122,8 @@ EE29_CORE := $(shell awk '!/^\#/ && $$3 == "ee29" {print $$1}' config/core_text.
 EE29_INC := -I$(SN_114)/lib/gcc-lib/ee/2.9-ee-991111/include
 $(EE29_CORE): build-sn/core/%.o: src/core/%.c config/func_cflags.txt tools/func_cflags.py tools/fix_trunc_slot.py tools/fix_volatile_slot.py tools/check_macro_slots.py
 	@mkdir -p build-sn/core
-	$(CC_LIBGCC) $(CFLAGS) $(EE29_INC) -S -o build-sn/core/$*.s $<
-	python tools/func_cflags.py $< build-sn/core/$*.s -- $(CC_LIBGCC) $(CFLAGS) $(EE29_INC)
+	$(WINE) $(SN_114)/bin/ee-gcc.exe $(CFLAGS) $(EE29_INC) -S -o build-sn/core/$*.s $<
+	python tools/func_cflags.py $< build-sn/core/$*.s -- $(WINE) $(SN_114)/bin/ee-gcc.exe $(CFLAGS) $(EE29_INC)
 	python tools/fix_trunc_slot.py build-sn/core/$*.s build-sn/core/$*_fixed.s
 	python tools/fix_volatile_slot.py build-sn/core/$*_fixed.s build-sn/core/$*_fixed.s
 	python tools/check_macro_slots.py build-sn/core/$*_fixed.s
