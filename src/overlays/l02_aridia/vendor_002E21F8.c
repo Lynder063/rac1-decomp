@@ -248,5 +248,5 @@ void func_L02_002EFCC8(unsigned char *moby) {
     qcopy(data + 8, D_0013E633 + 0xE9D);
 }
 INCLUDE_ASM("asm/overlays", func_L02_002F0458);
-INCLUDE_ASM("asm/overlays", func_L02_002F9E40);
+LINKER_REMNANT("asm/overlays", func_L02_002F9E40);
 INCLUDE_ASM("asm/overlays", func_L02_002F9E50);

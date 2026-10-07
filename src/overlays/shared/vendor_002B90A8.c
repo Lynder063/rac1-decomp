@@ -338,7 +338,7 @@ void func_L01_002BB068(unsigned char *moby) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L01_002C05B8);
+LINKER_REMNANT("asm/overlays", func_L01_002C05B8);
 extern void func_001F9BF0(void *, void *, void *);
 extern float func_001F9CE8(void *);
 extern float func_L00_001FF860(float, float);

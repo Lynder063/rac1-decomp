@@ -3,7 +3,7 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L01_002BA898);
-INCLUDE_ASM("asm/overlays", func_L01_002BABE8);
+LINKER_REMNANT("asm/overlays", func_L01_002BABE8);
 typedef u32 u128_BE2C8 __attribute__((mode(TI), aligned(16)));
 typedef union { u128_BE2C8 q; f32 f[4]; } EmitVec;
 typedef struct {

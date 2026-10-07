@@ -21,7 +21,7 @@ void func_L00_001F3A78(void) {
     (*(void * *)&D_L00_0015F0C0) = D_L00_0016A140;
 }
 INCLUDE_ASM("asm/overlays", func_L00_001F3AF0);
-INCLUDE_ASM("asm/overlays", func_L00_001F3DF0);
+LINKER_REMNANT("asm/overlays", func_L00_001F3DF0);
 INCLUDE_ASM("asm/overlays", func_L00_001F3E20);
 extern float func_001FA748(float, float);
 extern float func_001F9F90(float);

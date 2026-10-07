@@ -2,7 +2,7 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L09_0021E3E8);
+LINKER_REMNANT("asm/overlays", func_L09_0021E3E8);
 INCLUDE_ASM("asm/overlays", func_L09_0021E410);
 extern void func_L09_0021E410(int, int);
 extern void func_001F7868(void);

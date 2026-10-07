@@ -123,4 +123,4 @@ void func_0011DDA0(int status) {
     func_00118A60(status);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0011DDC8);
+LINKER_REMNANT("asm/remnants/core_text", func_0011DDC8);

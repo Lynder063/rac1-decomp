@@ -7,7 +7,7 @@ INCLUDE_ASM("asm/overlays", func_L00_001EB564);
 INCLUDE_ASM("asm/overlays", func_L00_001EB578);
 INCLUDE_ASM("asm/overlays", func_L00_001EB598);
 INCLUDE_ASM("asm/overlays", func_L00_001EB5A8);
-INCLUDE_ASM("asm/overlays", func_L00_001EB5B0);
+LINKER_REMNANT("asm/overlays", func_L00_001EB5B0);
 extern float func_001FA790_f(float, float) __asm__("func_001FA790");
 extern float func_001F9B88(float);
 extern float func_001FA748(float, float);

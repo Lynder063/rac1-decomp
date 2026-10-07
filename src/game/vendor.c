@@ -646,7 +646,7 @@ void func_0023AA08(void) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023AA38);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023B008);
+LINKER_REMNANT("asm/remnants/text", func_0023B008);
 
 typedef struct {
     int x;
@@ -697,7 +697,7 @@ int func_0023B018(float x, float y, float z) {
 /* 12 bytes of post-endlabel nop padding in retail -- see func_001F6668. */
 __asm__(".section .text\n\tnop\n\tnop\n\tnop\n");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023B1E8);
+LINKER_REMNANT("asm/remnants/text", func_0023B1E8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023B210);
 

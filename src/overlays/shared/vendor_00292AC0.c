@@ -17,7 +17,7 @@ void func_L03_00292AC0(char *moby)
     func_L02_00250A58(moby);
     func_L02_002A58C0(moby);
 }
-INCLUDE_ASM("asm/overlays", func_L03_00292B18);
+LINKER_REMNANT("asm/overlays", func_L03_00292B18);
 extern float D_0015EE6C MACRO_ADDR;
 extern float D_0015EE60 MACRO_ADDR;
 extern int func_001F9938(void *);

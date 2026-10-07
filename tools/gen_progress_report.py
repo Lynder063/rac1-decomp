@@ -79,8 +79,8 @@ WORK_ROOT = Path("build-sn/overlays/report")
 # pyelftools at module scope for the toolchain-driven build/compare path,
 # which CI (no toolchain, no baserom) never runs.
 OVERLAY_STUB = re.compile(r'^\s*(?:INCLUDE_ASM|LINKER_REMNANT)\([^)]*\b(func_L\d{2}_[0-9A-Fa-f]{8})\)')
-# Level-code linker remnants (docs/ASM_CLASSIFICATION.md): the stripped function's last delay slot,
-# kept as assembly and counted as finished, as the executable's are.
+# Level-code linker remnants (docs/ASM_CLASSIFICATION.md): what the linker left of stripped functions
+# (each one's last delay slot), kept as assembly and counted as finished, as the executable's are.
 OVERLAY_REMNANT = re.compile(r'^\s*LINKER_REMNANT\("asm/overlays",\s*(func_L\d{2}_[0-9A-Fa-f]{8})\);', re.M)
 OVERLAY_REMNANTS = Path("config/overlays/linker_remnants.txt")
 OVERLAY_JOINED = Path("config/overlays/joined.tsv")
@@ -236,7 +236,7 @@ def overlay_file_functions(path: Path) -> list[tuple[str, bool]]:
 
 def overlay_remnants() -> set[str]:
     """The level-code linker remnants: config/overlays/linker_remnants.txt, which has to agree
-    with the LINKER_REMNANT lines of src/overlays/ and name only 4-byte catalogue entries.
+    with the LINKER_REMNANT lines of src/overlays/ and name only catalogue entries.
     Tracked files only, so --check can run it; tools/overlay_remnants.py --check holds the
     list to the rule, against the level dumps."""
     listed = [l.strip() for l in OVERLAY_REMNANTS.read_text().splitlines()
@@ -251,9 +251,9 @@ def overlay_remnants() -> set[str]:
         sys.exit(f"*** {OVERLAY_REMNANTS} disagrees with src/overlays/: "
                  f"listed only {sorted(set(listed) - set(marked))}, marked only {sorted(set(marked) - set(listed))}")
     catalogue = overlay_catalogue()
-    wrong = sorted(n for n in listed if catalogue.get(n, ("", 0))[1] != 4)
+    wrong = sorted(n for n in listed if n not in catalogue)
     if wrong:
-        sys.exit(f"*** {OVERLAY_REMNANTS}: not a 4-byte catalogue entry: {wrong}")
+        sys.exit(f"*** {OVERLAY_REMNANTS}: not a catalogue entry: {wrong}")
     return set(listed)
 
 

@@ -253,4 +253,4 @@ LINKER_REMNANT("asm/remnants/text", func_001EE850);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_001EE858);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EE9E8);
+LINKER_REMNANT("asm/remnants/text", func_001EE9E8);

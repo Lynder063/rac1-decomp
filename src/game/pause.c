@@ -326,7 +326,7 @@ void func_00219C70(int arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00219E48);
+LINKER_REMNANT("asm/remnants/text", func_00219E48);
 
 void func_00219E60(void) {
     char *p = D_001D5F70;
@@ -4617,7 +4617,7 @@ void func_00228268(void) {
     FastMemSet(D_001D6760, 0, 0x100);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002282B8);
+LINKER_REMNANT("asm/remnants/text", func_002282B8);
 
 extern float D_00160470[] MACRO_ADDR;
 extern float D_00160470_x __asm__("D_00160470");

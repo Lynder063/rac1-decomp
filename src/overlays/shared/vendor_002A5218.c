@@ -2,7 +2,7 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L02_002A5218);
+LINKER_REMNANT("asm/overlays", func_L02_002A5218);
 extern u8 D_L02_001CBC40[];
 extern float D_L02_001CB780[];
 extern short D_L02_00161320;

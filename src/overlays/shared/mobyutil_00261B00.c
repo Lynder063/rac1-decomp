@@ -212,7 +212,7 @@ void func_L00_002638B8(char *o) {
         *(int *)(o + 0x13C) = 0;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00263938);
+LINKER_REMNANT("asm/overlays", func_L00_00263938);
 extern void func_0020D9D8(int, void *);
 extern void func_0020D960(int, int, void *);
 extern float func_001F9B88(float);
@@ -293,7 +293,7 @@ void func_L00_00263DB0(int a) {
     if (a > 18) a = 18;
     ShowBanner(t.v[a], scale_ticks(0x49C));
 }
-INCLUDE_ASM("asm/overlays", func_L00_00264130);
+LINKER_REMNANT("asm/overlays", func_L00_00264130);
 INCLUDE_ASM("asm/overlays", func_L00_00264140);
 typedef struct { float f[4]; } V __attribute__((aligned(16)));
 extern int D_L00_0015FD58 MACRO_ADDR;
@@ -381,7 +381,7 @@ void func_L00_00264690(float *p, int b, float s, float t) {
     }
     func_L00_001FD1D8(m, 0, 0);
 }
-INCLUDE_ASM("asm/overlays", func_L00_00264860);
+LINKER_REMNANT("asm/overlays", func_L00_00264860);
 INCLUDE_ASM("asm/overlays", func_L00_00264870);
 extern unsigned char D_0015EEB4_m[4] __asm__("D_0015EEB4") MACRO_ADDR;
 extern void func_0020D960(int, int, void *);
@@ -405,7 +405,7 @@ INCLUDE_ASM("asm/overlays", func_L00_00264BB0);
 void func_L00_00264BC8(char *arg) {
     *(float *)(arg + 0x70) = 1.0f;
 }
-INCLUDE_ASM("asm/overlays", func_L00_00264BD8);
+LINKER_REMNANT("asm/overlays", func_L00_00264BD8);
 typedef struct {
     char pad0[4];
     int w4;

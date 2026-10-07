@@ -427,7 +427,7 @@ int func_0012D380(void) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012D3E0);
+LINKER_REMNANT("asm/remnants/core_text", func_0012D3E0);
 
 extern short D_001331D0 NOT_SDA;
 

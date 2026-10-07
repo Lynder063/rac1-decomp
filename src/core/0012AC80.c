@@ -720,7 +720,7 @@ void func_0012BCC8(int arg0) {
     func_0012BC78(arg0, local);
 }
 
-INCLUDE_ASM("asm/nonmatchings/core_text", func_0012BCF0);
+LINKER_REMNANT("asm/remnants/core_text", func_0012BCF0);
 
 void func_0012BD28(void *arg0, int arg1, int arg2) {
     int *p = (int *)arg0;

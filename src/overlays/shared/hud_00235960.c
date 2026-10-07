@@ -837,7 +837,7 @@ void func_L00_0023A690(HudElem *e) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_0023A788);
-INCLUDE_ASM("asm/overlays", func_L00_0023AB88);
+LINKER_REMNANT("asm/overlays", func_L00_0023AB88);
 /* A word reached through $gp: under -G2 that takes a declaration of at
    most two bytes. */
 extern short D_L00_0015F8D0;
@@ -977,7 +977,7 @@ int func_L00_0023B140(char *m) {
     }
     return *(int *)(m + 0x58);
 }
-INCLUDE_ASM("asm/overlays", func_L00_0023B430);
+LINKER_REMNANT("asm/overlays", func_L00_0023B430);
 extern int func_002140B0(int);
 extern char *D_L00_0017E5F4;
 extern int D_L00_0015F6B0 MACRO_ADDR;

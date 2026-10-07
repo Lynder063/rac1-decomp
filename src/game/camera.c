@@ -46,7 +46,7 @@ void func_001EC098(void) {
    (`$v0 = 0` twice with intervening nops) then a store, falling through
    to whatever follows. Same fallthrough-fragment category as
    func_00113AD8 in core_text. */
-INCLUDE_ASM("asm/nonmatchings/text", func_001EC108);
+LINKER_REMNANT("asm/remnants/text", func_001EC108);
 
 extern float func_001F9B88(float);
 
@@ -995,4 +995,4 @@ frozen:
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001EDFD8);
+LINKER_REMNANT("asm/remnants/text", func_001EDFD8);

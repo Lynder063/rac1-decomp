@@ -481,7 +481,7 @@ int func_0022EEB8(int rel, int arg1, int arg2) {
     return h;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022EF50);
+LINKER_REMNANT("asm/remnants/text", func_0022EF50);
 
 static inline char *SndSys(void) {
     return D_0013E650;

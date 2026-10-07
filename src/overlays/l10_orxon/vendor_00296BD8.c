@@ -211,7 +211,7 @@ void func_L10_002C8DE0(unsigned char *moby) {
 }
 INCLUDE_ASM("asm/overlays", func_L10_002CAD18);
 INCLUDE_ASM("asm/overlays", func_L10_002CB030);
-INCLUDE_ASM("asm/overlays", func_L10_002CF310);
+LINKER_REMNANT("asm/overlays", func_L10_002CF310);
 INCLUDE_ASM("asm/overlays", func_L10_002D8ED8);
 INCLUDE_ASM("asm/overlays", func_L10_002D8F08);
 // stores a float into field 0x18

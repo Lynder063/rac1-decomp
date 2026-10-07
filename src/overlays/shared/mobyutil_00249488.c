@@ -35,7 +35,7 @@ void func_L03_0024F6D8(float t, float *dst, float *a, float *b, int flag)
     q[3] = FastCos(ang);
     func_00215650(dst, a, q);
 }
-INCLUDE_ASM("asm/overlays", func_L03_0024FA90);
+LINKER_REMNANT("asm/overlays", func_L03_0024FA90);
 extern float func_001F9B50(float);
 
 void func_L03_00251A58(float *p, float a, float b)

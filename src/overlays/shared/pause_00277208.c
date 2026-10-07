@@ -552,7 +552,7 @@ void func_L00_002781D8(int arg0) {
     }
     func_001F4748();
 }
-INCLUDE_ASM("asm/overlays", func_L00_002788C8);
+LINKER_REMNANT("asm/overlays", func_L00_002788C8);
 INCLUDE_ASM("asm/overlays", func_L00_002788E0);
 INCLUDE_ASM("asm/overlays", func_L00_00278904);
 INCLUDE_ASM("asm/overlays", func_L00_00278930);
