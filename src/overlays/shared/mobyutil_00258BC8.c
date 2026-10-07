@@ -1332,7 +1332,10 @@ void func_L00_0025D5B0(float ang, char *o, float *s, int a, int b, int c) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_0025D6F0);
-INCLUDE_ASM("asm/overlays", func_L00_0025E210);
+void func_L00_0025E210(char *a) {
+    char *src = *(char **)&D_0013E633[0x2E9D];
+    *(u64 *)(a + 0x38) = *(u64 *)(src + 0x38);
+}
 typedef unsigned int u128_pt __attribute__((mode(TI)));
 typedef union { u128_pt q; f32 f[4]; } V0025d238;
 extern void func_001F9BF0_25e290(void *, void *, void *) __asm__("func_001F9BF0");
