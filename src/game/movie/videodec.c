@@ -66,7 +66,13 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023E0D8); /* videoDecFlush(VideoDec *
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E1B0); /* videoDecIsFlushed(VideoDec *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E1F8); /* videoDecMain(void *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E298); /* decBs0(VideoDec *) */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E450); /* mpegError(sceMpeg *, sceMpegCbDataError *, void *) */
+extern void func_001E9730(char *, ...);
+extern char D_00161328[];
+/* mpegError(sceMpeg *, sceMpegCbDataError *, void *) */
+int func_0023E450(void *mpeg, int *cbdata, void *arg) {
+    func_001E9730(D_00161328, cbdata[1]);
+    return 1;
+}
 extern void func_0023BB40(void);
 extern int func_0023D340(char *);
 extern char *D_0016130C MACRO_ADDR;

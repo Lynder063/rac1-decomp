@@ -19,7 +19,11 @@ typedef struct VoBuf {
 /* voBufDelete(VoBuf *) -- nothing to free. */
 void func_0023E5B0(VoBuf *vb) {
 }
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E5B8); /* voBufReset(VoBuf *) */
+/* voBufReset(VoBuf *) */
+void func_0023E5B8(volatile int *arg0) {
+    arg0[3] = 0;
+    arg0[2] = 0;
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E5C8); /* voBufIsFull(VoBuf *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E5E0); /* voBufIncCount(VoBuf *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E658); /* voBufGetData(VoBuf *) */
