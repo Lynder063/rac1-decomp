@@ -15,10 +15,10 @@ the README). They are third-party mirrors of commercial software.
 | Binary | Mirror, as cloned | Used for |
 |---|---|---|
 | `bin/ee-gcc2953.exe`: GCC 2.95.3, **SN BUILD v1.14** | `sce_ps2_sdk_24` → `toolchain/sn-prodg-24/local/sce/ee/gcc/` | compiles all game code (`src/core/`, `src/game/`), both segments; also assembles every compiler-generated `.s` (`-c`) |
-| `bin/ee-gcc.exe`: Sony's **gcc 2.9-ee-991111** | same | compiles libgcc (`src/libgcc/`) to `.s` |
+| `bin/ee-gcc.exe`: Sony's **gcc 2.9-ee-991111** (or native Linux ELF `bin/ee-gcc` in `toolchain/ee-gcc-2.9-991111-01/`) | decompme/compilers or `sce_ps2_sdk_24` | compiles libgcc (`src/libgcc/`) and `ee29` SDK objects (`src/core/`) to `.s` |
 | `bin/ee-as.exe` | `SN-Systems-ProDG_for_PS2_3.01` → `toolchain/sn-prodg-3.01/usr/local/sce/ee/gcc/` | assembles the standalone data objects (`tools/build_sn_data.sh`) |
 | `bin/ee-ld.exe` | same | links everything at retail addresses |
-| `bin/make.exe` (GNU make 3.77) | same | runs `Makefile.sn`. Keep the repository path short: it fails with `CreateProcess ... failed` when the path is long |
+| `bin/make.exe` (GNU make 3.77) | same | runs `Makefile.sn` (on native Linux, host `make` is used directly) |
 | `bin/ee-size.exe` | same | prints object sizes at the end of `make` |
 
 The other SN sub-builds in the mirrors, v1.36 (`ee-gcc2953.exe` in
@@ -57,6 +57,31 @@ All game code is compiled with **`-O2 -G2 -Iinclude -Wa,-I,.`**.
   `__R5900__`, ...) that `longlong.h` picks its MIPS multiply and divide
   primitives from. It runs with `-O2 -G2 -S`, and v1.14's driver assembles
   the result. See `src/libgcc/README.md`.
+
+### Native Linux vs Wine / Containers
+
+- **SN Systems ProDG**: The original retail compiler suite was only ever distributed
+  as 32-bit Windows x86 PE binaries (`ee-gcc2953.exe`, `ee-as.exe`, `ee-ld.exe`). There
+  is no native Linux build of SN ProDG in existence.
+  - However, **native Linux execution without containers** is fully supported via `Wine`:
+    `tools/toolchain.sh` auto-detects `Linux` and uses host `WINE=wine` and host `make`.
+  - The container (`tools/docker/run.sh`) is provided for platforms without 32-bit Wine
+    (such as macOS Apple Silicon or immutable container hosts like Fedora CoreOS).
+- **Sony EE-GCC 2.9-991111-01**: Unlike SN ProDG, Sony's compiler exists as a native
+  32-bit Linux ELF binary (`toolchain/ee-gcc-2.9-991111-01/bin/ee-gcc`). When present,
+  `Makefile.sn` automatically runs this native Linux binary directly.
+
+### Distinguishing Sony 2.96 vs SN ProDG in SDK / newlib
+
+In retail ELF libraries and SDK code (e.g. `boot_elf`, newlib), code built with
+Sony's GCC (such as 2.96 or 2.9-ee) can be distinguished from SN Systems ProDG code
+by instruction scheduling heuristics:
+- **`div.s` / `sqrt.s` 2-nop padding**: Sony GCC / GAS inserts 2 `nop` instructions
+  after `div.s` and `sqrt.s` before the result is read, reflecting hardware pipeline
+  hazard mitigation. SN ProDG schedules independent instructions or uses different nop counts.
+- **`ee29` marker**: SDK objects compiled with Sony 2.9-ee are designated with `ee29` in
+  the 3rd column of `config/core_text.objects`.
+
 
 ## What happens to each object
 
