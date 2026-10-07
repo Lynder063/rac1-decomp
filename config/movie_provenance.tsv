@@ -38,3 +38,4 @@ func_0023C128	asm only	2026-10-05	audioDecBeginPut
 func_0023C2E8	asm only	2026-10-05	sendToSPU
 func_0023E450	asm only	2026-10-07	mpegError wrapper
 func_0023E5B8	asm only	2026-10-07	voBufReset volatile stores
+func_0023E5C8	asm only	2026-10-07	voBufIsFull count == cap
