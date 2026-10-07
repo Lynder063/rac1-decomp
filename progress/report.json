@@ -1,16 +1,16 @@
 {
  "measures": {
-  "fuzzy_match_percent": 58.96942566381025,
+  "fuzzy_match_percent": 59.089873583551814,
   "total_code": "3712808",
-  "matched_code": "2129320",
-  "matched_code_percent": 57.35066289449926,
+  "matched_code": "2133792",
+  "matched_code_percent": 57.471110814240866,
   "total_functions": 5109,
-  "matched_functions": 3428,
-  "matched_functions_percent": 67.09727931101978,
-  "complete_code": "476692",
-  "complete_code_percent": 12.839123380471062,
+  "matched_functions": 3431,
+  "matched_functions_percent": 67.15599921706792,
+  "complete_code": "481164",
+  "complete_code_percent": 12.95957130021267,
   "total_units": 278,
-  "complete_units": 82
+  "complete_units": 85
  },
  "units": [
   {
@@ -3511,23 +3511,23 @@
   {
    "name": "libgcc/moddi3",
    "measures": {
-    "fuzzy_match_percent": 0.0,
+    "fuzzy_match_percent": 100.0,
     "total_code": "1640",
-    "matched_code": "0",
-    "matched_code_percent": 0.0,
+    "matched_code": "1640",
+    "matched_code_percent": 100.0,
     "total_functions": 1,
-    "matched_functions": 0,
-    "matched_functions_percent": 0.0,
-    "complete_code": "0",
-    "complete_code_percent": 0.0,
+    "matched_functions": 1,
+    "matched_functions_percent": 100.0,
+    "complete_code": "1640",
+    "complete_code_percent": 100.0,
     "total_units": 1,
-    "complete_units": 0
+    "complete_units": 1
    },
    "functions": [
     {
      "name": "func_0011E860",
      "size": "1640",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "0",
      "metadata": {
       "virtual_address": "1173600"
@@ -3535,7 +3535,7 @@
     }
    ],
    "metadata": {
-    "complete": false,
+    "complete": true,
     "source_path": "src/libgcc/libgcc2.c",
     "progress_categories": [
      "executable",
@@ -3581,23 +3581,23 @@
   {
    "name": "libgcc/udivdi3",
    "measures": {
-    "fuzzy_match_percent": 0.0,
+    "fuzzy_match_percent": 100.0,
     "total_code": "1488",
-    "matched_code": "0",
-    "matched_code_percent": 0.0,
+    "matched_code": "1488",
+    "matched_code_percent": 100.0,
     "total_functions": 1,
-    "matched_functions": 0,
-    "matched_functions_percent": 0.0,
-    "complete_code": "0",
-    "complete_code_percent": 0.0,
+    "matched_functions": 1,
+    "matched_functions_percent": 100.0,
+    "complete_code": "1488",
+    "complete_code_percent": 100.0,
     "total_units": 1,
-    "complete_units": 0
+    "complete_units": 1
    },
    "functions": [
     {
      "name": "func_0011EF28",
      "size": "1488",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "0",
      "metadata": {
       "virtual_address": "1175336"
@@ -3605,7 +3605,7 @@
     }
    ],
    "metadata": {
-    "complete": false,
+    "complete": true,
     "source_path": "src/libgcc/libgcc2.c",
     "progress_categories": [
      "executable",
@@ -3616,23 +3616,23 @@
   {
    "name": "libgcc/umoddi3",
    "measures": {
-    "fuzzy_match_percent": 0.0,
+    "fuzzy_match_percent": 100.0,
     "total_code": "1344",
-    "matched_code": "0",
-    "matched_code_percent": 0.0,
+    "matched_code": "1344",
+    "matched_code_percent": 100.0,
     "total_functions": 1,
-    "matched_functions": 0,
-    "matched_functions_percent": 0.0,
-    "complete_code": "0",
-    "complete_code_percent": 0.0,
+    "matched_functions": 1,
+    "matched_functions_percent": 100.0,
+    "complete_code": "1344",
+    "complete_code_percent": 100.0,
     "total_units": 1,
-    "complete_units": 0
+    "complete_units": 1
    },
    "functions": [
     {
      "name": "func_0011F4F8",
      "size": "1344",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "0",
      "metadata": {
       "virtual_address": "1176824"
@@ -3640,7 +3640,7 @@
     }
    ],
    "metadata": {
-    "complete": false,
+    "complete": true,
     "source_path": "src/libgcc/libgcc2.c",
     "progress_categories": [
      "executable",
@@ -38832,7 +38832,7 @@
   {
    "name": "Shared level code/vendor_002F7700",
    "measures": {
-    "fuzzy_match_percent": 29.529426388552025,
+    "fuzzy_match_percent": 29.52942638855203,
     "total_code": "32984",
     "matched_code": "7500",
     "matched_code_percent": 22.73829735629396,
@@ -52119,7 +52119,7 @@
   {
    "name": "Level 18: Veldin (return)",
    "measures": {
-    "fuzzy_match_percent": 87.45796161396983,
+    "fuzzy_match_percent": 87.45796161396981,
     "total_code": "154848",
     "matched_code": "126764",
     "matched_code_percent": 81.86350485637529,
@@ -53248,22 +53248,22 @@
    "id": "executable",
    "name": "Executable",
    "measures": {
-    "fuzzy_match_percent": 62.34850762293322,
+    "fuzzy_match_percent": 63.30878247799012,
     "total_code": "465700",
-    "matched_code": "290168",
-    "matched_code_percent": 62.3079235559373,
+    "matched_code": "294640",
+    "matched_code_percent": 63.2681984109942,
     "total_functions": 1680,
-    "matched_functions": 1358,
-    "matched_functions_percent": 80.83333333333333,
-    "complete_code": "103644",
-    "complete_code_percent": 22.25552931071505
+    "matched_functions": 1361,
+    "matched_functions_percent": 81.01190476190476,
+    "complete_code": "108116",
+    "complete_code_percent": 23.215804165771956
    }
   },
   {
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 58.48479796791484,
+    "fuzzy_match_percent": 58.48479796791482,
     "total_code": "3247108",
     "matched_code": "1839152",
     "matched_code_percent": 56.63969292059272,
@@ -53293,22 +53293,22 @@
    "id": "libgcc",
    "name": "libgcc",
    "measures": {
-    "fuzzy_match_percent": 56.716995741385986,
+    "fuzzy_match_percent": 100.0,
     "total_code": "10332",
-    "matched_code": "5860",
-    "matched_code_percent": 56.716995741385986,
+    "matched_code": "10332",
+    "matched_code_percent": 100.0,
     "total_functions": 34,
-    "matched_functions": 31,
-    "matched_functions_percent": 91.17647058823529,
-    "complete_code": "5860",
-    "complete_code_percent": 56.716995741385986
+    "matched_functions": 34,
+    "matched_functions_percent": 100.0,
+    "complete_code": "10332",
+    "complete_code_percent": 100.0
    }
   },
   {
    "id": "common",
    "name": "Shared level code",
    "measures": {
-    "fuzzy_match_percent": 46.42154325902778,
+    "fuzzy_match_percent": 46.421543259027786,
     "total_code": "1200628",
     "matched_code": "534732",
     "matched_code_percent": 44.53769194121743,
@@ -53323,7 +53323,7 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 65.56206301551933,
+    "fuzzy_match_percent": 65.56206301551934,
     "total_code": "2046480",
     "matched_code": "1304420",
     "matched_code_percent": 63.73968961338493,
@@ -53608,7 +53608,7 @@
    "id": "level_18",
    "name": "Level 18: Veldin (return)",
    "measures": {
-    "fuzzy_match_percent": 87.45796161396983,
+    "fuzzy_match_percent": 87.45796161396981,
     "total_code": "154848",
     "matched_code": "126764",
     "matched_code_percent": 81.86350485637529,
