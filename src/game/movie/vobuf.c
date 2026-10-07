@@ -24,7 +24,10 @@ void func_0023E5B8(volatile int *arg0) {
     arg0[3] = 0;
     arg0[2] = 0;
 }
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E5C8); /* voBufIsFull(VoBuf *) */
+/* voBufIsFull(VoBuf *) */
+int func_0023E5C8(VoBuf *vb) {
+    return vb->count == vb->cap;
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E5E0); /* voBufIncCount(VoBuf *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E658); /* voBufGetData(VoBuf *) */
 /* voBufIsEmpty -- true when the entry count is zero. */
