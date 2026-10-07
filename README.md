@@ -108,6 +108,6 @@ This project builds upon years of dedicated reverse-engineering research and too
 
 ## License
 
-- Code written for this project is licensed under the [MIT License](LICENSE).
+- Code written for this project is licensed under the [GNU General Public License v3.0](LICENSE).
 - Reconstructed libraries and third-party components retain their original licenses (see [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) and [`LEGAL.md`](LEGAL.md)).
 - *Ratchet & Clank* is a registered trademark of Sony Interactive Entertainment. This project is not affiliated with or endorsed by Sony or Insomniac Games.
