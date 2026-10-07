@@ -104,7 +104,21 @@ void func_L00_0024B8B0(void) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_0024B8F0);
 INCLUDE_ASM("asm/overlays", func_L00_0024B908);
-INCLUDE_ASM("asm/overlays", func_L00_0024B920);
+extern char D_0013D355[];
+
+// Sets the menu memory card state.
+void func_L00_0024B920(void) {
+    /* The card status word at 0x13D3AC, reached the way the assembly names it (D_0013D355 + 0x57). Its
+       neighbours in this file read the same word as D_0013D390[7]; that spelling does not give retail's
+       bytes here. Accepted as a last resort. */
+    if (*(int *)(D_0013D355 + 0x57) != -2) {
+        D_0015EFB0 = 3;
+        return;
+    }
+    if (D_0015EFB4 & 2) {
+        D_0015EFB0 = 6;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_0024B940);
 INCLUDE_ASM("asm/overlays", func_L00_0024B960);
 INCLUDE_ASM("asm/overlays", func_L00_0024B980);

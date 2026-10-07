@@ -31,7 +31,30 @@ void func_L00_002E1660(char *m) {
         *(int *)(d + 4) = rand_range(scale_ticks(5), scale_ticks(0xF));
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002E1790);
+extern char D_0013F450[];
+extern u8 * D_L00_00160098_E1790 __asm__("D_L00_00160098") MACRO_ADDR;
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/vendor/002df730.c, FUN_L00_002e02e0. */
+s32 func_L00_002E1790(void) {
+    char *base;
+    u8 *tbl;
+    s32 v;
+    s32 idx;
+    u8 flags;
+    base = D_0013F450;
+    tbl = D_L00_00160098_E1790;
+    v = *(s32 *)(base + 0x2FC);
+    flags = (u8)base[0x20B0];
+    tbl += *(s32 *)*(s32 *)((u8 *)v + 0x78) << 8;
+    if (!flags) {
+        if (tbl[0xBC] & 2)
+            return 1;
+    } else {
+        if (tbl[0xBC] & 1)
+            return 1;
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E17D4);
 extern char D_0013F450[];
 extern int D_L00_0015F504 MACRO_ADDR;
@@ -231,7 +254,32 @@ s32_2e1f28 func_L00_002E33D8(s32_2e1f28 id, s32_2e1f28 a, s32_2e1f28 b) {
     }
     return 0;
 }
-INCLUDE_ASM("asm/overlays", func_L00_002E34F0);
+extern void func_L00_0023F1D0(int);
+extern int D_L00_00161CC8[];
+extern int D_L00_00161D18[];
+extern int D_L00_00161D08[];
+extern int D_L00_00161D58[];
+
+// releases the slot owning the given id and its two handles; returns 1 if found
+int func_L00_002E34F0(int id) {
+    unsigned int i;
+    for (i = 0; (int)i < 3; i++) {
+        if (D_L00_00161D58[i] == id) {
+            D_L00_00161CC8[i] = 0;
+            D_L00_00161D58[i] = 0;
+            if (D_L00_00161D08[i] != -1) {
+                func_L00_0023F1D0(D_L00_00161D08[i]);
+                D_L00_00161D08[i] = -1;
+            }
+            if (D_L00_00161D18[i] != -1) {
+                func_L00_0023F1D0(D_L00_00161D18[i]);
+                D_L00_00161D18[i] = -1;
+            }
+            return 1;
+        }
+    }
+    return 0;
+}
 extern int D_L00_00161CC8[] MACRO_ADDR;
 extern int D_L00_00161D08[] MACRO_ADDR;
 extern int D_L00_00161D18[] MACRO_ADDR;
@@ -1193,7 +1241,117 @@ void func_L00_002E6BE0(char *m, float *in) {
 INCLUDE_ASM("asm/overlays", func_L00_002E6CE0);
 INCLUDE_ASM("asm/overlays", func_L00_002E72E8);
 INCLUDE_ASM("asm/overlays", func_L00_002E74B0);
-INCLUDE_ASM("asm/overlays", func_L00_002E7B68);
+extern char D_L00_00166D80[];
+extern float D_L00_00166F40[];
+extern short D_L00_00161D98;
+extern void func_001FA480(void *, void *);
+extern void func_001F9EC0(void *, void *, void *);
+extern float func_001F9D48(void *, void *);
+extern void func_001F9CA0(void *, void *, void *);
+// camera type 0 snap: puts the camera behind the hero, pulls it in along the line of sight, then builds its axes
+void func_L00_002E7B68(int snap) {
+    char *cams = D_L00_00166D80;
+    char *cam = *(char **)(cams + 0x180);
+    char *track = cams + 0x190; /* the followed hero: position at 0, up vector at 0x30 */
+    char *data = *(char **)(cam + 0x70);
+    char *orbit = data + 0x130; /* distance at 0x2C, height at 0x30 */
+    char *target = data + 0x40; /* point looked at; eye height at 0xB0, moby at 0xC0 */
+    float up[4], rise[4], look[4], eye[4];
+    int mask;
+    float *from, *to;
+    if (snap) {
+        float offset[4], part[4], basis[12], delta[4], start[4];
+        float length;
+        char *hero = D_0013F450;
+        char *hero2, *hero3;
+        part[0] = -*(float *)(orbit + 0x2C);
+        part[1] = 0.0f;
+        part[2] = *(float *)(orbit + 0x30);
+        part[3] = 0.0f;
+        mask = 0x94;
+        func_001FA480(basis, hero);
+        func_001F9EC0(offset, part, *(char **)(target + 0xC0) + 0xC0);
+        func_001F9BD8(cam + 0x30, target, offset);
+        func_001F9C30(rise, *(char **)(target + 0xC0) + 0xE0, *(float *)(target + 0xB0));
+        func_001F9BD8(eye, target, rise);
+        if (func_L00_001EFFF0(eye, cam + 0x30, mask, *(int *)(hero + 0x2080), 0)) {
+            if (func_001F9D48(D_L00_00173F60_a, eye) < 0.001f) mask = 0x96;
+        }
+        hero2 = D_0013F450;
+        if (func_L00_001EFFF0(eye, cam + 0x30, mask, *(int *)(hero2 + 0x2080), 0)) {
+            func_001F9BF0(delta, (float *)D_L00_00173F60_a, eye);
+            length = func_001F9CB8(delta);
+            if (length == 0.0f) {
+                qcopy(cam + 0x30, target);
+            } else if (length < *(float *)&D_L00_00161D98) {
+                /* the wall is too close to the eye: lift the eye out of it and trace again */
+                float radius = 0.5f;
+                int i;
+                func_001F9C30(rise, *(char **)(target + 0xC0) + 0xE0, radius);
+                func_001F9BD8(eye, target, rise);
+                qcopy(start, eye);
+                for (i = 0; i < 3; i++) {
+                    if (func_L00_001F10E0(radius, eye, 4, 0)) {
+                        qcopy(eye, D_L00_00173F70);
+                    } else if (i == 0) {
+                        radius += 0.25f;
+                    } else {
+                        break;
+                    }
+                }
+                func_001F9BF0(delta, eye, start);
+                length = func_001F9CB8(delta);
+                if (length == 0.0f) {
+                    qcopy(cam + 0x30, target);
+                } else {
+                    func_001F9C30(delta, delta, *(float *)(orbit + 0x2C) / length);
+                    func_001F9BD8(cam + 0x30, start, delta);
+                    hero3 = D_0013F450;
+                    if (func_L00_001EFFF0(start, cam + 0x30, mask, *(int *)(hero3 + 0x2080), 0)) {
+                        func_001F9BF0(delta, (float *)D_L00_00173F60_a, eye);
+                        length = func_001F9CB8(delta);
+                        if (length == 0.0f) {
+                            qcopy(cam + 0x30, target);
+                        } else {
+                            func_001F9C30(delta, delta, (length - 0.5f) / length);
+                            func_001F9BD8(cam + 0x30, eye, delta);
+                        }
+                    }
+                }
+            } else {
+                func_001F9C30(delta, delta, (length - 0.5f) / length);
+                func_001F9BD8(cam + 0x30, eye, delta);
+            }
+        }
+        /* straight above or below the target: nudge the camera sideways */
+        func_001F9BF0(offset, (float *)(cam + 0x30), (float *)target);
+        length = func_001F9C78(offset, track + 0x30);
+        func_001F9C30(part, track + 0x30, length);
+        func_001F9BF0(offset, offset, part);
+        if (func_001F9CB8(offset) < 0.05f) {
+            if (func_002140B0(2)) *(float *)(cam + 0x30) += 0.5f;
+            else *(float *)(cam + 0x30) -= 0.5f;
+            if (func_002140B0(2)) *(float *)(cam + 0x34) += 0.5f;
+            else *(float *)(cam + 0x34) -= 0.5f;
+            *(float *)(cam + 0x38) += 0.5f;
+        }
+    }
+    from = (float *)(cam + 0x30);
+    to = (float *)(cam + 0x64);
+    to[0] = from[0];
+    to[1] = from[1];
+    to[2] = from[2];
+    qcopy(up, D_L00_00166F40);
+    func_L00_001FF4B0(rise, up, *(float *)(target + 0xB0));
+    func_001F9BD8(eye, rise, target);
+    func_001F9BF0(look, eye, (float *)(cam + 0x30));
+    func_L00_001FF4B0(cam, look, 1.0f);
+    qcopy(cam + 0x20, up);
+    func_001F9CA0(cam + 0x10, cam, cam + 0x20);
+    func_L00_001FF4B0(cam + 0x10, cam + 0x10, 1.0f);
+    func_001F9CA0(cam + 0x20, cam + 0x10, cam);
+    qcopy(cam + 0x40, cam);
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E80A8);
 INCLUDE_ASM("asm/overlays", func_L00_002E8210);
 typedef struct { unsigned char p0[0x208C]; int w208C; unsigned char p1[0x20A4 - 0x2090]; unsigned char b20A4; } G_2e7138;

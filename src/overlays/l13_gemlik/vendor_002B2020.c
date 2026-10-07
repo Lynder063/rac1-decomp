@@ -362,7 +362,21 @@ void func_L13_002B5E30(unsigned char *moby) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L13_002B60D8);
+extern void * func_L13_002811B0(void *, int, int, float, float, int, float, int);
+extern void func_L00_002688A8(void *);
+
+void func_L13_002B60D8(unsigned char *moby, char *data) {
+    float opacity = 0.2f;
+    void **handle = (void **)(data + 0x228);
+    if (moby[0x31]) {
+        if (!*handle) {
+            *handle = func_L13_002811B0(moby, 0, 0x80808080, opacity, opacity, 0x10808080, 0.8f, 0x19);
+        }
+    } else if (*handle) {
+        func_L00_002688A8(*handle);
+        *handle = 0;
+    }
+}
 typedef struct {
     char pad0[0x228];
     void *value;

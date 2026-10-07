@@ -651,7 +651,27 @@ int func_L00_002DD2D0(char *m) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_002DD3D8);
-INCLUDE_ASM("asm/overlays", func_L00_002DDDE8);
+typedef struct { int v[16]; } __attribute__((aligned(16))) Mtx2DDDE8;
+typedef struct { float v[4]; } __attribute__((aligned(16))) Q2DDDE8;
+extern void func_L00_002DD3D8(char *, char *);
+
+// Initializes an object from its template and calls its handler.
+void func_L00_002DDDE8(char *p, char *q, int flag) {
+    Mtx2DDDE8 m;
+    void (*fn)(char *);
+    if (flag) func_L00_002DD3D8(p, q);
+    *(int *)(p + 0x98) = *(int *)(q + 0x84);
+    qzero(p + 0x40);
+    func_001FA218(&m, p + 0x40);
+    func_001FA480(p + 0xC0, &m);
+    func_0020EEE8(p);
+    *(unsigned short *)(p + 0x34) &= ~4;
+    *(int *)(p + 0x98) = *(int *)(q + 0x84);
+    *(float *)(p + 0x2C) = *(float *)(*(char **)(p + 0x24) + 0x24);
+    *(short *)(q + 0x68) = 0;
+    fn = *(void (**)(char *))(*(char **)(*(char **)(p + 0x24) + 0x2C) + 0x14);
+    if (fn) fn(p); else func_0020D678(p);
+}
 INCLUDE_ASM("asm/overlays", func_L00_002DDEA0);
 INCLUDE_ASM("asm/overlays", func_L00_002DED98);
 extern short D_L00_001E6358[];

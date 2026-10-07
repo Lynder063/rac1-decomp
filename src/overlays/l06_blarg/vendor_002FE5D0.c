@@ -267,7 +267,44 @@ void func_L06_00305BF8(char *arg) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L06_00305C38);
-INCLUDE_ASM("asm/overlays", func_L06_00305C58);
+typedef struct { int v[6]; } V6;
+extern void func_001F9BC0(void *);
+extern int func_002140B0(int);
+extern int func_L00_00258BC8(int, int);
+extern void func_L00_0026B890(void *, void *, int, int, float, int, int, int, int, float);
+extern V6 D_L06_00201D38;
+extern V6 D_L06_00201D20;
+extern short D_L06_00162248;
+extern short D_L06_00162244;
+
+// Spawns a burst of particles around an object, count from a level global.
+void func_L06_00305C58(int unused, void *obj) {
+    float pos[4];
+    V6 a;
+    V6 b;
+    int i = 0;
+    func_001F9BC0(pos);
+    if (*(int *)&D_L06_00162248 > 0) {
+        do {
+            float s;
+            float f;
+            int *pa;
+            int *pb;
+            int r1;
+            int r3;
+            i++;
+            s = func_002140F8(8.0f, 10.0f);
+            a = D_L06_00201D20;
+            b = D_L06_00201D38;
+            s = s * D_0015EE6C;
+            pa = a.v + func_002140B0(6);
+            pb = b.v + func_002140B0(6);
+            f = *(float *)&D_L06_00162244 * 400000.0f;
+            r1 = func_L00_00258BC8(func_001F9850(0xF), func_001F9850(0x14));
+            func_L00_0026B890(obj, pos, *pa, *pb, f, r1, func_L00_00258BC8(func_001F9850(0x19), func_001F9850(0x1E)), 0, 0, s * *(float *)&D_L06_00162244);
+        } while (i < *(int *)&D_L06_00162248);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L06_00305E38);
 extern void func_L00_0025A890(char *a, int b, int c, float d);
 extern void func_001F9EC0(void *, void *, void *);

@@ -649,7 +649,31 @@ void func_L01_00300F00(char *self) {
         func_L00_0026DD70(&pos, &vel, 0x207F7F7F, 0x272727, size, func_001F9850(func_L00_00258BC8(0x2D, 0x3C)));
     }
 }
-INCLUDE_ASM("asm/overlays", func_L01_003010A8);
+extern float func_002140F8(float,float);
+extern void func_L00_00251E30_spawn(void *) __asm__("func_L00_00251E30");
+extern float D_0015EE70_s __asm__("D_0015EE70") MACRO_ADDR;
+/* Spawns a scaled class-0x313 drip with position and randomized motion. */
+char *func_L01_003010A8(void *position,float scale) {
+ char *m=func_0020D348(0x313);
+ if(m) {
+  char *data=*(char **)(m+0x78);
+  func_L00_0025E210(m);
+  *(int *)(m+0x40)=0;
+  *(float *)(m+0x2C)*=scale;
+  *(short *)(m+0x32)=0x40;
+  ((unsigned char *)m)[0x30]=0xFF;
+  *(float *)(m+0x48)=func_00214158();
+  qcopy(m+0x10,position);
+  qzero(data);
+  {float gravity=-D_0015EE6C;float duration=D_0015EE70_s*15.0f;
+  *(float *)(data+8)=gravity;
+  *(float *)(data+0x10)=duration;}
+  *(int *)(data+0x14)=120;
+  *(float *)(data+0x1C)=func_002140F8(0.0031415929552167654f,0.06283185631036758f);
+  func_L00_00251E30_spawn(m);
+ }
+ return m;
+}
 extern int D_L01_00161350_s __asm__("D_L01_00161350") MACRO_ADDR;
 extern int D_L01_00161358_s __asm__("D_L01_00161358") MACRO_ADDR;
 extern float D_L01_00174368_s __asm__("D_L01_00174368") NOT_SDA;

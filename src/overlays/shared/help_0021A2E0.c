@@ -3,7 +3,31 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L02_0021A2E0);
-INCLUDE_ASM("asm/overlays", func_L02_002211C0);
+extern char D_0013E633[];
+extern float D_0015EE6C MACRO_ADDR;
+extern float D_L02_0017C438[];
+extern void func_L00_00211F80(int, float);
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/ui/help/00220b80.c, FUN_L02_00220b80. */
+void func_L02_002211C0(void) {
+    char *x;
+    func_L00_00211F80(0, 1.0f);
+    x = D_0013E633 + 0xE1D;
+    if (*(int *)(x + 0x2084) == 0x3F) {
+        float two = D_0015EE6C + D_0015EE6C;
+        float v = D_0015EE6C * 3.5f * *(float *)(x + 0x190);
+        *(float *)(x + 0x190) = v;
+        if (v < two) {
+            *(float *)(x + 0x190) = two;
+        }
+    } else if (0.0f < *(float *)(x + 0x190)) {
+        if (*(float *)(x + 0x190) < D_L02_0017C438[3]) {
+            *(float *)(x + 0x190) = D_L02_0017C438[2] * D_0015EE6C;
+        } else {
+            *(float *)(x + 0x190) = D_L02_0017C438[6] * D_0015EE6C;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L02_00222D18);
 typedef int u128 __attribute__((mode(TI)));
 typedef union {

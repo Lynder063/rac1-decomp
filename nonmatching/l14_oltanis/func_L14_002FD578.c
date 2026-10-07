@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L14_002FD578 -- src/overlays/l14_oltanis/vendor_002E0538.c
- * Best so far: BYTES 46/756 (93.9% of the bytes match), checked 2026-10-06.
+ * Best so far: BYTES 44/756 (94.2% of the bytes match), checked 2026-10-06.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  */
@@ -15,7 +15,7 @@ extern void func_L00_00260108(void *, void *, int, float, float);
 extern void func_L00_0028EBF0(int);
 extern int func_001E9730_c(void *, int) __asm__("func_001E9730");
 extern void func_0020D678(void *);
-extern void func_L14_002FDD18(char *moby);
+extern int func_L14_002FDD18__s(char *moby) __asm__("func_L14_002FDD18");
 extern void func_L14_002FDE28(char *);
 extern void func_L14_002FD870(char *);
 extern int func_001F9850(int);
@@ -65,7 +65,7 @@ void func_L14_002FD578(char *m) {
             func_0020D678(m);
             return;
         }
-        func_L14_002FDD18(m);
+        func_L14_002FDD18__s(m);
         m[0x20] = 1;
         ((unsigned char *)m)[0x30] = 0xFF;
         *(short *)(m + 0x32) = 0xFF;
