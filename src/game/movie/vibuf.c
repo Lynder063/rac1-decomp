@@ -31,7 +31,13 @@ INCLUDE_ASM("asm/nonmatchings/text", func_0023CFF0); /* scTag2 */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023D018); /* viBufCreate */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023D090); /* viBufReset(ViBuf *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023D1F0); /* viBufBeginPut(ViBuf *, unsigned char **, int *, unsigned char **, int *) */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023D2E8); /* viBufEndPut(ViBuf *, int) */
+/* viBufEndPut(ViBuf *, int) */
+void func_0023D2E8(ViBuf *vb, int size) {
+    func_00118CB0(vb->sema);
+    vb->f14 += size;
+    *(long *)(vb->pad48) += size;
+    func_00118C90(vb->sema);
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023D340); /* viBufAddDMA(ViBuf *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023D540); /* viBufStopDMA(ViBuf *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023D650); /* viBufRestartDMA(ViBuf *) */
@@ -59,7 +65,12 @@ int func_0023D9E0(ViBuf *vb) {
     func_00118C90(vb->sema);
     return count;
 }
-INCLUDE_ASM("asm/nonmatchings/text", func_0023DA30); /* viBufFlush(ViBuf *) */
+/* viBufFlush(ViBuf *) */
+void func_0023DA30(ViBuf *vb) {
+    func_00118CB0(vb->sema);
+    vb->f14 = (vb->f14 + 0x7FF) / 0x800 * 0x800;
+    func_00118C90(vb->sema);
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023DA88); /* viBufModifyPts(ViBuf *, TimeStamp *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023DBE0); /* viBufPutTs(ViBuf *, TimeStamp *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023DCF0); /* viBufGetTs(ViBuf *, TimeStamp *) */

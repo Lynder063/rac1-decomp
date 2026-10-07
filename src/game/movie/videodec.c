@@ -64,7 +64,23 @@ int func_0023E058(VideoDec *dec, unsigned int state) {
     dec->state = state;
     return old;
 }
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E068); /* videoDecPutTs(VideoDec *, long, long, unsigned char *, int) */
+extern void func_0023DBE0(char *, void *);
+extern char *D_0016130C MACRO_ADDR;
+
+/* videoDecPutTs(VideoDec *, long, long, unsigned char *, int) */
+void func_0023E068(VideoDec *dec, long pts, long dts, int pos, int len) {
+    struct {
+        long pts;
+        long dts;
+        int diff;
+        int len;
+    } ts;
+    ts.pts = pts;
+    ts.dts = dts;
+    ts.diff = pos - *(int *)dec->viBuf;
+    ts.len = len;
+    func_0023DBE0(D_0016130C + 0xD9090, &ts);
+}
 /* videoDecInputCount(VideoDec *) -- viBufCount of the input buffer. */
 int func_0023E0B0(VideoDec *dec) {
     return func_0023D9E0(dec->viBuf);
