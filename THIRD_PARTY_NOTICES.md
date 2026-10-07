@@ -372,6 +372,26 @@ declaration retyped to its parameter, and two typedefs it shares with `func_001E
 - `src/game/skyfunc.c`: `func_0022C188` (`update_sky_effects`)
 - `src/game/vendor.c`: `func_0023A5E0` (`render_vendor_capture_texture_overlays_pass`)
 
+One more on 2026-10-07, written from the adapted `func_L12_00236270` above plus one state arm:
+
+- `src/overlays/shared/help_00214D60.c`: `func_L00_00214D60` (`FUN_L00_00214658`)
+
+Ten more were carried over by machine on 2026-10-07, from Lombyte's pull requests 109 to 114 and from its
+unmerged branches `decomp/twins-wave` (the first three below) and `overlay/shared-veldin-5` (the same tool,
+the same rule: identical instructions, Lombyte's C with every symbol renamed to its PAL address, each
+passing this project's own check). In parentheses, Lombyte's name.
+
+- `src/overlays/shared/help_001FFED0.c`: `func_L15_0020ADD8` (`FUN_L15_0020a7a0`)
+- `src/overlays/l02_aridia/help_0022BE40.c`: `func_L02_002368E8` (`FUN_L02_002360c8`)
+- `src/overlays/shared/help_0021D6B8.c`: `func_L06_002431A0` (`FUN_L06_00242950`)
+- `src/overlays/l02_aridia/vendor_002E21F8.c`: `func_L02_002E33F0` (`FUN_L02_002e1fb8`)
+- `src/overlays/l02_aridia/vendor_002E21F8.c`: `func_L02_002ED660` (`FUN_L02_002ec228`)
+- `src/overlays/l05_rilgar/vendor_002D28D0.c`: `func_L05_003052A8` (`FUN_L05_00303e50`)
+- `src/overlays/l05_rilgar/vendor_002D28D0.c`: `func_L05_0030D3F0` (`FUN_L05_0030bf98`)
+- `src/overlays/l08_batalia/vendor_002EAF48.c`: `func_L08_002F2838` (`FUN_L08_002f1378`)
+- `src/overlays/l14_oltanis/vendor_002FF358.c`: `func_L14_00306B08` (`FUN_L14_00305680`)
+- `src/overlays/shared/vendor_002B90A8.c`: `func_L01_002F0FD0` (`FUN_L01_002efbf8`)
+
 Fifteen more were carried over by machine on 2026-10-05 once `include/common.h` had `qzero()`, the 128-bit
 zero store Lombyte identified as inline assembly in the original (its `include/qzero.h`; the helper here is
 written after it). Same tool, same rule; the two executable functions are proven by the full build:

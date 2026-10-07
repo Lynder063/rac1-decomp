@@ -3390,7 +3390,114 @@ void func_L02_002310F0(void) {
         D_0013F450.f1A4 = 0;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L02_002368E8);
+typedef int V4q_32b90 __attribute__((mode(TI), aligned(16)));
+typedef union {
+    V4q_32b90 q;
+    f32 f[4];
+} V4_32b90;
+typedef struct {
+    char pad000[0x80];
+    V4_32b90 v80;
+    char pad090[0x50];
+    V4_32b90 vE0;
+    char pad0F0[0x180];
+    V4_32b90 v270;
+    char pad280[0x1E33];
+    u8 mode;
+} G_32b90;
+extern G_32b90 D_0013F450_368E8 __asm__("D_0013F450");
+extern u8 D_L02_00174500[];
+extern f32 D_L02_001744E0;
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9C30(void *, void *, f32);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, f32);
+extern void func_L00_0025E290(V4_32b90 *, void *);
+extern s32 func_L00_001EFFF0(void *, void *, s32, s32, s32);
+extern f32 func_L00_002345B0(void *);
+extern f32 func_L00_002342F8_368E8(void *) __asm__("func_L00_002342F8");
+extern s32 func_L00_0025A5D8(f32 *, f32 *, f32, f32, f32);
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l02/ui_help_002360c8.c, FUN_L02_002360c8. */
+f32 func_L02_002368E8(f32 a, f32 b, f32 c) {
+    f32 t[4];
+    V4_32b90 v;
+    V4_32b90 t1;
+    V4_32b90 v2;
+    f32 o[6];
+    f32 x, y, z;
+
+    switch ((&D_0013F450_368E8)->mode) {
+    case 0:
+        if (c < 0.0f) {
+            func_001F9C30(t, &(&D_0013F450_368E8)->vE0, a);
+            t[2] -= ((a * a + a) * 0.5f) * b;
+            func_001F9BD8(t, t, &(&D_0013F450_368E8)->v80);
+            v.q = (&D_0013F450_368E8)->v80.q;
+            func_L00_0025E290(&v, t);
+            qcopy(&v, &(&D_0013F450_368E8)->v80);
+            if (func_L00_001EFFF0(&v, t, 0x324, 0, 0) != 0) {
+                if (func_L00_002345B0((f32 *)D_L02_00174500) <= 0.87266463f) {
+                    c = *(f32 *)(D_L02_00174500 - 0x18);
+                }
+            }
+        }
+        if (c > 0.0f) {
+            if (func_L00_0025A5D8(&o[0], &o[1], b * -0.5f, (&D_0013F450_368E8)->vE0.f[2] - b * -0.5f,
+                                       (&D_0013F450_368E8)->v80.f[2] - c) > 0 &&
+                o[0] > 0.0f) {
+                return o[0];
+            }
+        }
+        break;
+    case 1:
+        qcopy(&v, &(&D_0013F450_368E8)->v270);
+        func_L00_001FF4B0(&v, &v, b);
+        func_001F9C30(&v, &v, -1.0f);
+        func_001F9C30(t, &(&D_0013F450_368E8)->vE0, a);
+        func_001F9C30(&t1, &v, ((a * a + a) * 0.5f) * b);
+        func_001F9BD8(t, &t1, t);
+        func_001F9BD8(t, &(&D_0013F450_368E8)->v80, t);
+        v2.q = (&D_0013F450_368E8)->v80.q;
+        func_L00_0025E290(&v2, t);
+        if (func_L00_001EFFF0(&(&D_0013F450_368E8)->v80, t, 0x324, 0, 0) != 0) {
+            f32 nb;
+            nb = b * -0.5f;
+            z = func_L00_002342F8_368E8(&(&D_0013F450_368E8)->vE0) - nb;
+            x = func_L00_002342F8_368E8(&(&D_0013F450_368E8)->v80);
+            y = func_L00_002342F8_368E8(&D_L02_001744E0);
+            if (func_L00_0025A5D8(&o[2], &o[3], nb, z, x - y) > 0 && o[2] > 0.0f) {
+                return o[2];
+            }
+        }
+        break;
+    case 2:
+        t1.f[2] = 100.0f;
+        t1.f[1] = 100.0f;
+        t1.f[0] = 100.0f;
+        func_001F9BF0(&v, &(&D_0013F450_368E8)->v80, &t1);
+        func_L00_001FF4B0(&v, &v, b);
+        func_001F9C30(&v, &v, -1.0f);
+        func_001F9C30(t, &(&D_0013F450_368E8)->vE0, a);
+        func_001F9C30(&t1, &v, ((a * a + a) * 0.5f) * b);
+        func_001F9BD8(t, &t1, t);
+        func_001F9BD8(t, &(&D_0013F450_368E8)->v80, t);
+        v2.q = (&D_0013F450_368E8)->v80.q;
+        func_L00_0025E290(&v2, t);
+        if (func_L00_001EFFF0(&(&D_0013F450_368E8)->v80, t, 0x324, 0, 0) != 0) {
+            f32 nb;
+            nb = b * -0.5f;
+            z = func_L00_002342F8_368E8(&(&D_0013F450_368E8)->vE0) - nb;
+            x = func_L00_002342F8_368E8(&(&D_0013F450_368E8)->v80);
+            y = func_L00_002342F8_368E8(&D_L02_001744E0);
+            if (func_L00_0025A5D8(&o[4], &o[5], nb, z, x - y) > 0 && o[4] > 0.0f) {
+                return o[4];
+            }
+        }
+        break;
+    }
+    return a;
+}
 extern float D_0015EE6C MACRO_ADDR;
 extern char D_0013E633[];
 

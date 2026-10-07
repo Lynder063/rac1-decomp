@@ -677,7 +677,22 @@ int func_L01_002F0F70(char *a) {
     return r;
 }
 INCLUDE_ASM("asm/overlays", func_L01_002F0FA0);
-INCLUDE_ASM("asm/overlays", func_L01_002F0FD0);
+extern s32 D_L01_0015F6B0 MACRO_ADDR;
+
+/* Search backward for the first entry below the loaded threshold.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/entities/002b8c08.c, FUN_L01_002efbf8. */
+s32 func_L01_002F0FD0(s32 *values, s32 count, s32 offset) {
+    s32 index = (s32)((u32)count - 1);
+    if (index >= 0) {
+        for (; index >= 0; index--) {
+            if (values[index] < D_L01_0015F6B0) {
+                values[index] = (s32)((u32)D_L01_0015F6B0 + (u32)offset);
+                break;
+            }
+        }
+    }
+    return index;
+}
 int func_L01_002F3050(char *a) {
     int r = func_L00_002DCDA8(a);
     if (r == 0) {
