@@ -931,7 +931,34 @@ void func_L00_002746A0(char *a) {
         *(int *)(a + 4) = (w & 0xFFFFFF) | (t << 24);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00274788);
+extern unsigned char *D_L00_001B2500;
+
+/* Spawns a type-64 particle at pos moving with vel, sprite size chosen by distance to the hero. */
+unsigned char *func_L00_00274788(void *pos, void *vel, float scale, int life, float f1, int col, float f2, int a4, int big) {
+    unsigned char *r = func_00218928(0x40);
+    unsigned char *u;
+    if (r != 0) {
+        u = r + 0x20;
+        qcopy(r + 0x10, pos);
+        if (func_001F9D48(D_0013E633 + 0xE9D, pos) < 80.0f) {
+            r[9] = func_001FA898(1.0f) + 0x30;
+        } else {
+            r[9] = func_001FA898(1.0f) + 0x20;
+        }
+        r[3] = big ? 0x48 : 0x44;
+        r[1] = 0;
+        r[2] = D_L00_001B2500[1];
+        *(int *)(r + 4) = col;
+        *(float *)(r + 0xC) = scale * 210000.0f;
+        r[8] = (int)func_002140F8(0.0f, 255.0f);
+        *(short *)(r + 0xA) = life;
+        qcopy(u, vel);
+        *(float *)(u + 0x10) = f1;
+        *(float *)(u + 0x14) = f2;
+        *(int *)(u + 0x18) = a4;
+    }
+    return r;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00274908);
 typedef struct { int a[4]; } V __attribute__((aligned(16)));
 extern float D_0015EE64 MACRO_ADDR;
