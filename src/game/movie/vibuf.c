@@ -25,9 +25,29 @@ typedef struct ViBuf {
 } ViBuf;
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0023CEC8); /* getFIFOindex(ViBuf *, void *) */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023CF10); /* setD3_CHCR(unsigned int) */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023CF80); /* setD4_CHCR(unsigned int) */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023CFF0); /* scTag2 */
+extern void func_0011D960(void);
+extern void func_0011D9A8(void);
+
+/* setD3_CHCR(unsigned int) */
+void func_0023CF10(unsigned int chcr) {
+    func_0011D960();
+    *(volatile unsigned int *)0x1000F590 = *(volatile unsigned int *)0x1000F520 | 0x10000;
+    *(volatile unsigned int *)0x1000B000 = chcr;
+    *(volatile unsigned int *)0x1000F590 = *(volatile unsigned int *)0x1000F520 & 0xFFFEFFFF;
+    func_0011D9A8();
+}
+/* setD4_CHCR(unsigned int) */
+void func_0023CF80(unsigned int chcr) {
+    func_0011D960();
+    *(volatile unsigned int *)0x1000F590 = *(volatile unsigned int *)0x1000F520 | 0x10000;
+    *(volatile unsigned int *)0x1000B400 = chcr;
+    *(volatile unsigned int *)0x1000F590 = *(volatile unsigned int *)0x1000F520 & 0xFFFEFFFF;
+    func_0011D9A8();
+}
+/* scTag2 */
+void func_0023CFF0(unsigned long *tag, unsigned int a, unsigned int b, unsigned int c) {
+    *tag = ((unsigned long)a << 32) | ((unsigned long)b << 28) | (unsigned long)c;
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023D018); /* viBufCreate */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023D090); /* viBufReset(ViBuf *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023D1F0); /* viBufBeginPut(ViBuf *, unsigned char **, int *, unsigned char **, int *) */

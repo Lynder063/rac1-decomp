@@ -140,12 +140,24 @@ INCLUDE_ASM("asm/overlays", func_L00_0024B9B4);
 INCLUDE_ASM("asm/overlays", func_L00_0024BA10);
 INCLUDE_ASM("asm/overlays", func_L00_0024BA60);
 INCLUDE_ASM("asm/overlays", func_L00_0024BA70);
-INCLUDE_ASM("asm/overlays", func_L00_0024BA8C);
+extern int D_0015EFB0;
+
+void func_L00_0024BA8C(void) {
+    register int a0 __asm__("$2");
+    if (a0 & 6) {
+        D_0015EFB0 = 10;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_0024BAE8);
 INCLUDE_ASM("asm/overlays", func_L00_0024BB5C);
 INCLUDE_ASM("asm/overlays", func_L00_0024BB90);
 INCLUDE_ASM("asm/overlays", func_L00_0024BB98);
-INCLUDE_ASM("asm/overlays", func_L00_0024BBCC);
+void func_L00_0024BBCC(void) {
+    register int a0 __asm__("$2");
+    if (a0 & 2) {
+        D_0015EFB0 = 13;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_0024BBE8);
 INCLUDE_ASM("asm/overlays", func_L00_0024BC04);
 // Stores 12 into the word global D_0015EFB0.

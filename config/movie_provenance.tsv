@@ -66,3 +66,6 @@ func_0023E1F8	asm only	2026-10-08	decoder creation, state control, timestamps an
 func_0023E298	asm only	2026-10-08	decoder creation, state control, timestamps and frame loop reconstructed from retail disassembly
 func_0023B670	asm only	2026-10-08	gpt retail disassembly: playback setup, run and teardown
 func_0023BE38	asm only	2026-10-08	gpt retail disassembly: worker and decoder shutdown, DMA enable clear
+func_0023CFF0	asm only	2026-10-08	scTag2 bitfield pack
+func_0023CF10	asm only	2026-10-08	setD3_CHCR IPU MMIO sequence
+func_0023CF80	asm only	2026-10-08	setD4_CHCR IPU MMIO sequence
