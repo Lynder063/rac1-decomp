@@ -2,7 +2,76 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L11_00312BD8);
+extern float func_001FA790(float, float);
+extern void func_001FA218(float *, float *);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9EE8(void *, void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern float func_001F9CB8(void *);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern float func_001FA888(int);
+extern int func_001F4868(int);
+extern void func_001F5800(int, int, int, int, int, int, int, int, long, long);
+extern unsigned char D_0015EEB4_m[4] __asm__("D_0015EEB4") MACRO_ADDR;
+extern unsigned char D_0013E15A[];
+
+typedef struct {
+    short tex;
+    short u;
+    short v;
+    short w;
+    short h;
+    short fA;
+    short x;
+    short y;
+} IconL11;
+extern IconL11 D_L11_001F1318[];
+
+/* Draws the icon D_L11_001F1318[icon] at a screen position derived from the offset between moby and from, turned by
+ * rot. Its alpha fades between distances 38.0 and 46.0, and nothing is drawn beyond 46.0. */
+void func_L11_00312BD8(char *rot, char *from, char *moby, int icon, long color) {
+    float turn[4];
+    float mat[16];
+    float delta[4];
+    float pos[4];
+    float len;
+    float side;
+    int x, y;
+    IconL11 *t;
+
+    qzero(turn);
+    turn[2] = *(float *)(rot + 8);
+    if (*(float *)(rot + 4) > 1.5707964f || *(float *)(rot + 4) < -1.5707964f) {
+        turn[2] = -turn[2];
+    }
+    turn[2] = func_001FA790(1.5707964f, turn[2]);
+    func_001FA218(mat, turn);
+    func_001F9BF0(delta, moby + 0x10, from);
+    delta[2] = 0.0f;
+    func_001F9EE8(pos, delta, mat);
+    func_001F9C30(pos, pos, 0.142857149f);
+    len = func_001F9CB8(pos);
+    side = 1.0f;
+    if (D_0015EEB4_m[0] != 0) {
+        side = -1.0f;
+    }
+    x = func_001FA898_r(side * pos[0]);
+    y = func_001FA898_r(-pos[1]);
+    if (len < 46.0f) {
+        if (len > 38.0f) {
+            float f;
+            len = 46.0f - len;
+            f = func_001FA888(((unsigned long)color >> 24) & 0xFF) * len;
+            color &= 0xFFFFFF;
+            color = (func_001FA898_r(f * 0.125f) << 24) | color;
+        }
+        t = &D_L11_001F1318[icon];
+        y -= 0x50;
+        y += *(int *)(D_0013E15A + 0x4AA);
+        x += 0x1B0;
+        func_001F5800(x - t->x, y - t->y, t->w, t->h, t->u, t->v, t->w, t->h, color, func_001F4868(t->tex));
+    }
+}
 extern short *D_L11_001AC540[];
 extern int D_L11_00160058_m __asm__("D_L11_00160058") MACRO_ADDR;
 extern void func_L11_003130B0(void *, void *, void *);
