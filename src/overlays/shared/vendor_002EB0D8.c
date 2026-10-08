@@ -840,7 +840,15 @@ void func_L00_002ED958(char *m) {
     func_L00_001FF4B0(m + 0x10, m + 0x10, 1.0f);
     FastVecCross(m + 0x20, m + 0x10, m);
 }
-INCLUDE_ASM("asm/overlays", func_L00_002EDB58);
+int func_L00_002EDB58(void) {
+    register int *v0 __asm__("$2");
+    register int *v1 __asm__("$3");
+    *(int *)((char *)v1 + 0xC) = 0;
+    __asm__("nop");
+    *v0 = 0;
+    __asm__("nop");
+    return 0;
+}
 extern char D_L00_00166D80_c[] __asm__("D_L00_00166D80");
 extern void func_L00_002ED088(void *);
 extern int func_001F9850(int);

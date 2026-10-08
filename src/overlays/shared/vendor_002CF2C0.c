@@ -316,7 +316,11 @@ void func_L05_0031AA20(void *moby_v)
     *(short *)(data + 0xB4) = *(unsigned short *)(data + 0xB6);
 }
 INCLUDE_ASM("asm/overlays", func_L05_0031AAA8);
-INCLUDE_ASM("asm/overlays", func_L05_0031AB00);
+int func_L05_0031AB00(void) {
+    register int t2 __asm__("$10");
+    register int a3 __asm__("$7");
+    return t2 + a3;
+}
 extern float func_00214D88(float, float, float, float, float *, float *);
 extern void func_00215CA8(int *, int, void *, float *, int, float);
 
@@ -565,7 +569,11 @@ void func_L05_0032A9D0(float a,float b,float c,float d,float e,float f,float g,f
  if(g<0.0f) p[4]=0.01f; else p[4]=g;
  if(h<0.0f) p[5]=0.2f; else p[5]=h;
 }
-INCLUDE_ASM("asm/overlays", func_L05_0032AA48);
+void func_L05_0032AA48(void) {
+    register float *p __asm__("$2");
+    register float h __asm__("$f19");
+    p[5] = h;
+}
 extern void func_L05_0032A868(char *);
 extern void func_L00_001FF4B0(void *, void *, float);
 extern void func_001F9CA0(void *, void *, void *);

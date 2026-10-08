@@ -215,7 +215,11 @@ int func_L01_0028C3A8(char *a0, List_8C3A8 *list, char *pt, char *out) {
 }
 INCLUDE_ASM("asm/overlays", func_L01_0028C578);
 INCLUDE_ASM("asm/overlays", func_L01_0028C5B8);
-INCLUDE_ASM("asm/overlays", func_L01_0028C5D0);
+void *func_L01_0028C5D0(char *base, int step) {
+    register int count __asm__("$3");
+    int offset = (step % count) * 16 + 16;
+    return base + offset;
+}
 // Computes a bounded animation index from an effect and step count.
 int func_L01_0028C5F0(char *effect, int steps) {
     int count = effect[4] < 0 ? 0 : **(int **)(effect + 0x10) - 1;

@@ -24,7 +24,10 @@ int func_L00_0024A110(int unused, int value) {
     if (value >= 257) return D_001414DC == 15;
     return D_0013D4C5 != 0;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0024A12C);
+int func_L00_0024A12C(void) {
+    register char *p __asm__("$3");
+    return *(int *)(p + 0x14DC) == 15;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0024A140);
 int func_L00_0024A170(float a, float b, float x) { return x < 29.0f; }
 /* tests the vertical menu range according to the integer selection */
@@ -111,7 +114,13 @@ void func_L00_0024B8B0(void) {
  }
 }
 INCLUDE_ASM("asm/overlays", func_L00_0024B8F0);
-INCLUDE_ASM("asm/overlays", func_L00_0024B908);
+void func_L00_0024B908(void) {
+    register int a0 __asm__("$2");
+    register int a1 __asm__("$3");
+    if (a1 == a0) {
+        *(int *)0x15EFB0 = 5;
+    }
+}
 extern char D_0013D355[];
 
 // Sets the menu memory card state.
@@ -136,9 +145,20 @@ extern int D_0015EFB0 MACRO_ADDR;
 void func_L00_0024B9A8(void) {
     *(int *)&D_0015EFB0 = 5;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0024B9B4);
+void func_L00_0024B9B4(void) {
+    register int a0 __asm__("$3");
+    if (a0 & 8) {
+        register int v0 __asm__("$2") = a0 ^ 8;
+        register int v1 __asm__("$3") = 7;
+        *(int *)0x15EFB4 = v0;
+        *(int *)0x15EFB0 = v1;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_0024BA10);
-INCLUDE_ASM("asm/overlays", func_L00_0024BA60);
+void func_L00_0024BA60(void) {
+    register int a0 __asm__("$2");
+    *(int *)0x15EFB0 = a0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0024BA70);
 extern int D_0015EFB0;
 
@@ -150,8 +170,16 @@ void func_L00_0024BA8C(void) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_0024BAE8);
 INCLUDE_ASM("asm/overlays", func_L00_0024BB5C);
-INCLUDE_ASM("asm/overlays", func_L00_0024BB90);
-INCLUDE_ASM("asm/overlays", func_L00_0024BB98);
+void func_L00_0024BB90(void) {
+    register int a0 __asm__("$2");
+    D_0015EFB0 = a0;
+}
+void func_L00_0024BB98(void) {
+    register int a0 __asm__("$2");
+    if (!a0) {
+        *(int *)0x15EFB0 = 16;
+    }
+}
 void func_L00_0024BBCC(void) {
     register int a0 __asm__("$2");
     if (a0 & 2) {
@@ -164,7 +192,15 @@ INCLUDE_ASM("asm/overlays", func_L00_0024BC04);
 void func_L00_0024BC2C(void) {
     *(int *)&D_0015EFB0 = 12;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0024BC38);
+void func_L00_0024BC38(void) {
+    register int a0 __asm__("$3");
+    if (a0 & 0x10) {
+        register int v0 __asm__("$2") = a0 ^ 0x10;
+        register int v1 __asm__("$3") = 0xE;
+        *(int *)0x15EFB4 = v0;
+        *(int *)0x15EFB0 = v1;
+    }
+}
 typedef struct { int v[60]; } MenuState;
 extern int D_0015EFB4_m __asm__("D_0015EFB4") MACRO_ADDR;
 /* advances the active menu state or requests its alternate action */
@@ -178,7 +214,28 @@ void func_L00_0024BCA0(void) {
 INCLUDE_ASM("asm/overlays", func_L00_0024BCF0);
 INCLUDE_ASM("asm/overlays", func_L00_0024BD18);
 INCLUDE_ASM("asm/overlays", func_L00_0024BD84);
-INCLUDE_ASM("asm/overlays", func_L00_0024BDB8);
+void func_L00_0024BDB8(void) {
+    register int a0 __asm__("$2");
+    if (a0) {
+        *(int *)0x15EFB0 = 1;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_0024BF30);
-INCLUDE_ASM("asm/overlays", func_L00_0024BFB8);
-INCLUDE_ASM("asm/overlays", func_L00_0024BFFC);
+void func_L00_0024BFB8(void) {
+    register int a0 __asm__("$3");
+    if (a0 & 0x20) {
+        register int v0 __asm__("$2") = a0 ^ 0x20;
+        register int v1 __asm__("$3") = 5;
+        *(int *)0x15EFB4 = v0;
+        *(int *)0x15EFB0 = v1;
+    }
+}
+void func_L00_0024BFFC(void) {
+    register int a0 __asm__("$3");
+    if (a0 & 0x20) {
+        register int v0 __asm__("$2") = a0 ^ 0x20;
+        register int v1 __asm__("$3") = 0xC;
+        *(int *)0x15EFB4 = v0;
+        *(int *)0x15EFB0 = v1;
+    }
+}

@@ -24,7 +24,14 @@ typedef struct ViBuf {
     int f5C;                /* 0x5C */
 } ViBuf;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0023CEC8); /* getFIFOindex(ViBuf *, void *) */
+/* getFIFOindex(ViBuf *, void *) */
+int func_0023CEC8(ViBuf *vb, unsigned int addr) {
+    unsigned int mask = 0x0FFFFFFF;
+    if (addr == (((vb->count << 4) + (unsigned int)vb->tags + 16) & mask)) {
+        return 0;
+    }
+    return (addr - vb->base) >> 11;
+}
 extern void func_0011D960(void);
 extern void func_0011D9A8(void);
 

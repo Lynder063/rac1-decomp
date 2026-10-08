@@ -4,7 +4,12 @@
 
 INCLUDE_ASM("asm/overlays", func_L00_00203E98);
 INCLUDE_ASM("asm/overlays", func_L00_00203ED8);
-INCLUDE_ASM("asm/overlays", func_L00_00203F08);
+void func_L00_00203F08(void) {
+    register char *a2 __asm__("$6");
+    volatile int *v1 = (volatile int *)(a2 - 0x6AF0);
+    v1[0] = 6;
+    v1[1] = 0;
+}
 extern char D_L00_00179510[] NOT_SDA;
 extern unsigned char D_0014171B[] NOT_SDA;
 extern void func_001FF560(int);
@@ -163,7 +168,10 @@ int func_L00_00205728(int mode) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_00205754);
 INCLUDE_ASM("asm/overlays", func_L00_00205768);
-INCLUDE_ASM("asm/overlays", func_L00_00205778);
+int func_L00_00205778(void) {
+    register char *p __asm__("$3");
+    return *(int *)(p + 0x4E0);
+}
 INCLUDE_ASM("asm/overlays", func_L00_00205780);
 extern char D_L00_0017A780[];
 extern void func_L00_00205780(char *p);

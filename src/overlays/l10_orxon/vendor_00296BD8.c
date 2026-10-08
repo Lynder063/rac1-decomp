@@ -149,7 +149,11 @@ INCLUDE_ASM("asm/overlays", func_L10_002BFBB8);
 INCLUDE_ASM("asm/overlays", func_L10_002C0378);
 INCLUDE_ASM("asm/overlays", func_L10_002C0388);
 INCLUDE_ASM("asm/overlays", func_L10_002C03EC);
-INCLUDE_ASM("asm/overlays", func_L10_002C04C4);
+void func_L10_002C04C4(void) {
+    register char *p __asm__("$6");
+    register float f0 __asm__("$f0");
+    *(volatile float *)(p + 0x14) = f0 + -3.75f;
+}
 extern char D_0013E633[];
 extern int func_001F9908(int *arg0);
 extern void func_001FA218(float *, float *);

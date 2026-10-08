@@ -3,7 +3,9 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L00_002670E0);
-INCLUDE_ASM("asm/overlays", func_L00_00267120);
+void func_L00_00267120(int unused, volatile char *p) {
+    *(volatile short *)(p + 0xA) = 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_00267130);
 INCLUDE_ASM("asm/overlays", func_L00_00267188);
 INCLUDE_ASM("asm/overlays", func_L00_00267290);

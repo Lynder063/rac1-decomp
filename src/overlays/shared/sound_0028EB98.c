@@ -123,7 +123,11 @@ void func_L00_0028F3E0(int value, long long address) {
         entry[4] = 0;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_0028F410);
+void func_L00_0028F410(int unused, volatile unsigned char *entry) {
+    entry[4] = 0;
+    *(volatile int *)(entry + 0x18) = 0;
+    *(volatile int *)(entry + 0x1C) = 0;
+}
 extern char D_0013A5E0[] NOT_SDA;
 extern unsigned char D_0013D355[] NOT_SDA;
 extern unsigned char D_0013D5DD[] NOT_SDA;
