@@ -153,7 +153,12 @@ says counts; only what `try_func` logged.
    - register pins, inline assembly, barriers, `volatile` added to pin an
      order (`tools/integrate.py` refuses the first three);
    - anything that looks taken from Sony SDK source or samples
-     (CONTRIBUTING.md, "Sources").
+     (CONTRIBUTING.md, "Sources");
+   - any change to the build itself that edits compiler output, or a flag
+     for one function: options go per file (`config/file_cflags.txt`), and
+     a new assembler or linker step needs evidence and a section in
+     [BUILD_FIDELITY.md](BUILD_FIDELITY.md) first.
+     `tools/check_build_fidelity.py` runs in the report's `--check`.
 
    The `extern short D_x;` read as `*(int *)&D_x` is not a hack: it is
    this project's way to get a `$gp`-relative access at `-G2`
@@ -404,7 +409,9 @@ They are in QUEUE.md, so the one-line prompt is enough:
 - compile only through `try_func`;
 - never Sony SDK source, samples or headers, or leaked material
   (CONTRIBUTING.md, "Sources");
-- never a level address as a number: the symbol the assembly names.
+- never a level address as a number: the symbol the assembly names;
+- the build is fixed: no new step that edits compiler output, no
+  per-function flags ([BUILD_FIDELITY.md](BUILD_FIDELITY.md)).
 
 ## Running it on a smaller plan
 

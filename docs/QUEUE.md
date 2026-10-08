@@ -50,6 +50,11 @@ fails on `wave.py`).
   pin an order, no read of a local that was never assigned. A match that
   needs one is not a match: stop instead. A function that reads a register
   it never sets, or branches outside itself, is a fragment: stop at once.
+- The build is fixed: no step may change what the compiler emitted, and
+  flags apply only to whole files (GCC 2.95 has no per-function options).
+  Never propose a new post-processing step or a per-function flag; a
+  function that only matches that way is not a match
+  (docs/BUILD_FIDELITY.md).
 - Sources: work from the assembly and from what the packet gives you.
   Never use Sony SDK source, sample code or headers, or any leaked
   material, from memory either (CONTRIBUTING.md, "Sources"). If a function

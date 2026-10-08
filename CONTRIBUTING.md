@@ -31,6 +31,21 @@ git clone https://github.com/matt-kempster/m2c tools/ext/m2c
 git clone https://github.com/simonlindholm/asm-differ tools/ext/asm-differ
 ```
 
+## Build fidelity
+
+The build uses retail's own compilers and assembles what they emit as it is,
+apart from a short, documented list of assembler and linker behaviours.
+[docs/BUILD_FIDELITY.md](docs/BUILD_FIDELITY.md) has the list, the evidence
+for each entry and how many matches depend on it. So:
+
+- never add a step that changes the compiler's output to make a function
+  match; a function that only matches that way is not matched;
+- options apply to whole source files (`config/file_cflags.txt`), never to
+  one function: GCC 2.95 takes them per translation unit;
+- a new assembler or linker step needs evidence from the real tool or from
+  retail first. `tools/check_build_fidelity.py` runs in
+  `tools/gen_progress_report.py --check`, so CI enforces the list.
+
 ## Sources
 
 C here is reconstructed from the retail executable's own code. Allowed
