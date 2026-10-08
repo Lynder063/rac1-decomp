@@ -5259,38 +5259,8 @@ typedef struct {
    -mno-split-addresses (config/func_cflags.txt): every global goes
    through the assembler's lui $at macro, and only D_00160480, declared
    small, uses $gp when it lands in a delay slot. The aligned struct
-   copy is schedulable where qcopy's asm is not. */
-void func_002282D0(PauseVec *dir, float scale) {
-    PauseVec d;
-    float *v = d.v;
-
-    d = *dir;
-    func_001F9DC0(D_00160470, v, 1.0f);
-    D_00160490 = D_00160470_x * scale;
-    D_00160494 = D_00160474 * scale;
-    D_00160498 = D_00160478 * scale;
-    if (v[0] < v[1]) {
-        if (v[0] < v[2]) {
-            D_00160480_x = v[0];
-            D_00160484 = v[2];
-            D_00160488 = v[1];
-        } else {
-            D_00160480_x = v[1];
-            D_00160484 = v[0];
-            D_00160488 = v[2];
-        }
-    } else if (v[1] < v[2]) {
-        D_00160480_x = v[2];
-        D_00160484 = v[1];
-        D_00160488 = v[0];
-    } else {
-        D_00160480_x = v[1];
-        D_00160484 = v[0];
-        D_00160488 = v[2];
-    }
-    FastVecCross(D_00160480, D_00160480, D_00160470);
-    func_001F9DC0(D_00160480, D_00160480, 1.0f);
-}
+/* func_002282D0: matched only with -mno-split-addresses, which the rest of pause.c does not build with (docs/BUILD_FIDELITY.md, "Removed"). */
+INCLUDE_ASM("asm/nonmatchings/text", func_002282D0);
 
 /*
  * Dispatch on a leading short: 0 and 1 each call a handler and advance

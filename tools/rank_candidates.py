@@ -201,31 +201,21 @@ def classify(name: str, body: str, seg: str, size: int) -> tuple[str, str, str]:
             return "blocked", "linker fill", "0xCDCDCDCD between objects"
         return "blocked", "dead-strip remnant", "delay slot of a stripped function"
 
-    # RESOLVED: core_text s-register spills are no longer blocked.
-    # core_text is now built with v1.14 (which reproduces retail's
-    # exact save-slot layout) and post-processed by
-    # tools/fix_core_spills.py to narrow the spills to sd/ld.
-    # Proven byte-exact on func_00116FA0. The old rule blocked ~247
-    # functions on the assumption v1.36 was the core_text compiler.
+    # core_text's sd/ld saves are Sony SDK code built with 2.9-ee (the `ee29`
+    # objects), which emits them natively; the game compiler's core objects
+    # save with sq like retail does there. No spill rewriting
+    # (docs/BUILD_FIDELITY.md).
     if "Handwritten function" in body:
         return "blocked", "handwritten asm", "spimdisasm marker"
-    # RESOLVED: tail calls are no longer blocked. GCC 2.95 still has no
-    # sibling-call optimisation (the flag does not exist in either SN
-    # sub-build and -O3 does not help), but tools/fix_tail_calls.py
-    # rewrites the compiled call-and-return into retail's bare `j target`
-    # for the functions in tools/tail_call_functions.txt. Proven
-    # byte-exact on func_0011DD98 (0/8) and func_0012CC80 (0/12).
-    #
-    # Ranked "risky" rather than plain candidate because the rewriter only
-    # fires on a strict shape: the frame instructions must be the only $sp
-    # references, the $31 spill must be at offset 0, and nothing may happen
-    # after the call returns. A tail-call function that keeps its own
-    # locals, or does work after the call, is deliberately refused -- of
-    # the 99, 47 touch $sp and 22 contain a second call, so expect a large
-    # share not to convert.
+    # A bare tail jump (`j func_X`). Sony's 2.9-ee emits one for a void
+    # function that ends in a call, so in its `ee29` objects it is ordinary
+    # C. SN's 2.95.3 has no sibling-call optimisation (no flag turns one on),
+    # and the build no longer rewrites its call-and-return into a jump
+    # (docs/BUILD_FIDELITY.md, "Removed"), so outside those objects a tail
+    # jump means another compiler or handwritten assembly: a wall.
     tail = bool(re.search(r"(?m)^j\s+func_[0-9A-Fa-f]{8}", text))
     if tail and not ee29:
-        return "risky", "tail call", "needs fix_tail_calls.py; strict shape"
+        return "blocked", "tail call", "SN 2.95.3 emits no tail jumps"
     # Must come AFTER the tail-call test: a tail-called function ends in
     # `j`, not `jr $31`, so this rule would otherwise claim every tail call
     # is a fragment. Same verdict, but the category is what tells a future
