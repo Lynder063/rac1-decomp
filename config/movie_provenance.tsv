@@ -36,3 +36,15 @@ func_0023E4B0	asm only	2026-10-05	no recovered name
 func_0023E4E0	asm only	2026-10-05	no recovered name
 func_0023C128	asm only	2026-10-05	audioDecBeginPut
 func_0023C2E8	asm only	2026-10-05	sendToSPU
+func_0023E450	asm only	2026-10-07	mpegError wrapper
+func_0023E5B8	asm only	2026-10-07	voBufReset volatile stores
+func_0023E5C8	asm only	2026-10-07	voBufIsFull count == cap
+func_0023E710	asm only	2026-10-07	voBufDecCount volatile count decrement
+func_0023E658	asm only	2026-10-07	voBufGetData ring buffer pointer
+func_0023E008	asm only	2026-10-07	videoDecDelete viBuf/sceMpegDelete calls
+func_0023C0E0	asm only	2026-10-07	audioDecReset snd reset and volatile clears
+func_0023E1B0	asm only	2026-10-07	videoDecIsFlushed videoDecInputCount and sceMpegIsFlushed calls
+func_0023D9E0	asm only	2026-10-07	viBufCount sema lock and count calculation
+func_0023E068	asm only	2026-10-07	videoDecPutTs construct TimeStamp and call viBufPutTs
+func_0023DA30	asm only	2026-10-07	viBufFlush align buffer to 0x800 with sema lock
+func_0023D2E8	asm only	2026-10-07	viBufEndPut add size to offset 0x14 and 0x48 with sema lock
