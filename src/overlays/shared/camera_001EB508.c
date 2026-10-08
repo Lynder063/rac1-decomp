@@ -42,7 +42,52 @@ void func_L00_001EB7C8(void) {
     *(*(char **)(g + 0x180) + 0x7D) = 0;
 }
 INCLUDE_ASM("asm/overlays", func_L00_001EB890);
-INCLUDE_ASM("asm/overlays", func_L00_001EBDA0);
+extern char *D_L00_00166F00;
+extern char D_L00_00167250_raw[] __asm__("D_L00_00167250");
+extern int D_L00_00169990[];
+typedef struct { int key; int pad[2]; void (*fn)(char *); int pad4; } CamEnt_EBDA0;
+extern CamEnt_EBDA0 D_L00_001EAC00_raw[] __asm__("D_L00_001EAC00");
+extern void func_001EC270(void *);
+extern int func_001EC5B8(char *, char *);
+extern void func_001EC210(char *);
+extern void func_L00_001EB890(char *);
+extern void func_L00_001EB508(void);
+
+/* UpdateAllCameras__Fi: iterates over camera slots and switches to best eligible camera */
+int func_L00_001EBDA0(void) {
+    char *best = D_L00_00166F00;
+    int i;
+    int found = 0;
+    void (*fn)(char *);
+    float *p;
+    float *q;
+
+    func_001EC270(best);
+    for (i = 0; i < 0x30; i++) {
+        if (D_L00_00169990[i] != 0) {
+            char *slot = D_L00_00167250_raw + i * 0xA0;
+            if (slot != best && func_001EC5B8(slot, best) != 0) {
+                best = slot;
+                found = 1;
+            }
+        }
+    }
+    if (found) {
+        func_L00_001EB890(best);
+    }
+    fn = D_L00_001EAC00_raw[*(short *)(best + 0x8C)].fn;
+    func_001EC210(best);
+    if (fn) {
+        fn(best);
+    }
+    p = (float *)(best + 0x30);
+    q = (float *)(best + 0x64);
+    q[0] = p[0];
+    q[1] = p[1];
+    q[2] = p[2];
+    func_L00_001EB508();
+    return -1;
+}
 extern char D_0013E633[];
 extern void func_L00_001FF4B0(void *, void *, float);
 extern void func_001EC8D8(float *out, void *p0, void *p1, void *dir0, void *dir1, void *axis);
