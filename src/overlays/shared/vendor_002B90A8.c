@@ -639,7 +639,37 @@ void func_L01_002EEDD8(char *m) {
 INCLUDE_ASM("asm/overlays", func_L01_002EF078);
 INCLUDE_ASM("asm/overlays", func_L01_002F0040);
 INCLUDE_ASM("asm/overlays", func_L01_002F0728);
-INCLUDE_ASM("asm/overlays", func_L01_002F0850);
+extern unsigned short *D_L01_001ABFC0[];
+extern int D_L01_00160058_m __asm__("D_L01_00160058") MACRO_ADDR;
+
+/* Returns the closest moby of type 0x26F with flag 0x1000 set and state below 0x7F, from the id list
+ * D_L01_001ABFC0[idx], within a 120.0 limit; 0 if there is none. */
+char *func_L01_002F0850(char *self, int idx) {
+    short *list = (short *)D_L01_001ABFC0[idx];
+    float best = 120.0f;
+    char *res = 0;
+    if (list == 0) {
+        return 0;
+    }
+    for (;;) {
+        int i = *(unsigned short *)list & 0x7FFF;
+        char *p = (char *)((i << 8) + D_L01_00160058_m);
+        if (*(unsigned short *)(p + 0x34) & 0x1000) {
+            if (*(short *)(p + 0xA6) == 0x26F) {
+                if (*(unsigned char *)(p + 0x20) < 0x7F) {
+                    float d = func_001F9D10(p + 0x10, self + 0x10);
+                    if (d < best) {
+                        best = d;
+                        res = *(char **)&D_L01_00160058_m + (i << 8);
+                    }
+                }
+            }
+        }
+        if (*list++ < 0) {
+            return res;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_002F0938);
 INCLUDE_ASM("asm/overlays", func_L01_002F0B48);
 extern int func_L00_002DCDA8(void *);

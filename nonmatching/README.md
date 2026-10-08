@@ -261,7 +261,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_002DACC0`](shared/func_L00_002DACC0.c) | shared | 1464 | SIZE ours 1460 / retail 1464 | - |
 | [`func_L00_002DED98`](shared/func_L00_002DED98.c) | shared | 948 | SIZE ours 956 / retail 948 | - |
 | [`func_L00_002DF168`](shared/func_L00_002DF168.c) | shared | 680 | SIZE ours 664 / retail 680 | - |
-| [`func_L00_002E0CB8`](shared/func_L00_002E0CB8.c) | shared | 396 | SIZE ours 388 / retail 396 | - |
 | [`func_L00_002E5238`](shared/func_L00_002E5238.c) | shared | 980 | SIZE ours 988 / retail 980 | - |
 | [`func_L00_002E6CE0`](shared/func_L00_002E6CE0.c) | shared | 1532 | SIZE ours 1536 / retail 1532 | - |
 | [`func_L00_002E72E8`](shared/func_L00_002E72E8.c) | shared | 452 | SIZE ours 448 / retail 452 | - |
@@ -397,11 +396,9 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L14_002F03E8`](l14_oltanis/func_L14_002F03E8.c) | l14_oltanis | 496 | SIZE ours 500 / retail 496 | - |
 | [`func_L14_002F0A30`](l14_oltanis/func_L14_002F0A30.c) | l14_oltanis | 132 | SIZE ours 140 / retail 132 | - |
 | [`func_L14_002F24C8`](l14_oltanis/func_L14_002F24C8.c) | l14_oltanis | 252 | SIZE ours 248 / retail 252 | - |
-| [`func_L14_002FFF08`](l14_oltanis/func_L14_002FFF08.c) | l14_oltanis | 424 | SIZE ours 428 / retail 424 | - |
 | [`func_L14_00303270`](shared/func_L14_00303270.c) | shared | 444 | SIZE ours 448 / retail 444 | - |
 | [`func_L14_00304E68`](shared/func_L14_00304E68.c) | shared | 336 | SIZE ours 344 / retail 336 | - |
 | [`func_L14_00306B08`](l14_oltanis/func_L14_00306B08.c) | l14_oltanis | 216 | SIZE ours 220 / retail 216 | - |
-| [`func_L15_001FED10`](shared/func_L15_001FED10.c) | shared | 156 | SIZE ours 152 / retail 156 | - |
 | [`func_L15_00216568`](shared/func_L15_00216568.c) | shared | 1360 | SIZE ours 1388 / retail 1360 (cannot land as written) | - |
 | [`func_L15_00248E58`](l15_quartu/func_L15_00248E58.c) | l15_quartu | 352 | SIZE ours 356 / retail 352 | - |
 | [`func_L15_0029BE10`](shared/func_L15_0029BE10.c) | shared | 484 | SIZE ours 480 / retail 484 | - |
