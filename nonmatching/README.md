@@ -41,12 +41,10 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L02_0023D6E0`](l02_aridia/func_L02_0023D6E0.c) | l02_aridia | 980 | BYTES 13/980 | 98.7% |
 | [`func_L18_002FDD20`](l18_veldin2/func_L18_002FDD20.c) | l18_veldin2 | 564 | BYTES 8/564 | 98.6% |
 | [`func_L09_00306DD8`](l09_gaspar/func_L09_00306DD8.c) | l09_gaspar | 488 | BYTES 7/488 | 98.6% |
-| [`func_L00_001EBDA0`](shared/func_L00_001EBDA0.c) | shared | 268 | BYTES 4/272 | 98.5% |
 | [`func_L01_002B9E68`](shared/func_L01_002B9E68.c) | shared | 740 | BYTES 11/740 | 98.5% |
 | [`func_L01_00277A38`](shared/func_L01_00277A38.c) | shared | 500 | BYTES 8/500 | 98.4% |
 | [`func_L07_0029C6A8`](shared/func_L07_0029C6A8.c) | shared | 376 | BYTES 6/376 | 98.4% |
 | [`func_L00_0024A490`](shared/func_L00_0024A490.c) | shared | 76 | BYTES 2/124 | 98.4% |
-| [`func_L15_002F8D30`](l15_quartu/func_L15_002F8D30.c) | l15_quartu | 108 | BYTES 2/120 | 98.3% |
 | [`func_L07_003106E8`](l07_umbris/func_L07_003106E8.c) | l07_umbris | 452 | BYTES 8/452 | 98.2% |
 | [`func_L00_002C2A80`](shared/func_L00_002C2A80.c) | shared | 432 | BYTES 8/432 | 98.2% |
 | [`func_L05_00317B68`](l05_rilgar/func_L05_00317B68.c) | l05_rilgar | 368 | BYTES 7/368 | 98.1% |
@@ -202,6 +200,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_0023AC68`](shared/func_L00_0023AC68.c) | shared | 880 | SIZE ours 888 / retail 880 | - |
 | [`func_L00_00240398`](shared/func_L00_00240398.c) | shared | 1040 | SIZE ours 1036 / retail 1040 | - |
 | [`func_L00_00242120`](shared/func_L00_00242120.c) | shared | 432 | SIZE ours 428 / retail 432 | - |
+| [`func_L00_00244AE0`](shared/func_L00_00244AE0.c) | shared | 4264 | SIZE ours 4272 / retail 4264 | - |
 | [`func_L00_00245B88`](shared/func_L00_00245B88.c) | shared | 184 | SIZE ours 180 / retail 184 | - |
 | [`func_L00_002465F8`](shared/func_L00_002465F8.c) | shared | 2248 | SIZE ours 2196 / retail 2248 | - |
 | [`func_L00_00246EC0`](shared/func_L00_00246EC0.c) | shared | 1040 | SIZE ours 1028 / retail 1040 | - |
