@@ -795,7 +795,83 @@ char *func_L13_002EE148(char *src, int arg, int id) {
     }
     return moby;
 }
-INCLUDE_ASM("asm/overlays", func_L13_002EE238);
+extern char D_L13_001741C0[];
+extern void func_001F9C30(void *, void *, float);
+extern int func_L00_001F10E0(float, void *, int, void *);
+extern void func_L00_001FF610(void *, void *, void *);
+extern void func_L00_0025F4A8(void *, void *, void *, float, float, int, int, int, float, float, float, int, float, float, int, int, int, int);
+
+/* Update for the starfighter part moby: a state machine on m->0x20 that steers and drifts the part, falling back to the dead-moby path. */
+void func_L13_002EE238(char *m) {
+    char *d = *(char **)(m + 0x78);
+    char *src = *(char **)(d + 0x3C);
+    unsigned int s;
+    char *t;
+    char *g;
+
+    if (src == 0 || *(short *)(src + 0xA6) != 0x184 || *(unsigned char *)(src + 0x20) == 0xFE || *(unsigned char *)(src + 0x20) == 0xFD) {
+        func_0020D678(m);
+        return;
+    }
+    *(unsigned short *)(m + 0x34) &= 0xFFFC;
+    s = *(unsigned char *)(m + 0x20);
+    *(unsigned short *)(m + 0x34) |= *(unsigned short *)(*(char **)(d + 0x3C) + 0x34) & 3;
+    if (s < 5) {
+        switch (s) {
+        case 0:
+            *(unsigned char *)(m + 0x20) = 1;
+            qzero(d + 0x20);
+            return;
+        case 1:
+            *(float *)(m + 0x2C) = *(float *)(*(char **)(m + 0x24) + 0x24) * *(float *)(*(char **)(d + 0x3C) + 0x2C)
+                                   / *(float *)(*(char **)(*(char **)(d + 0x3C) + 0x24) + 0x24);
+            *(long *)(m + 0x38) = *(long *)(*(char **)(d + 0x3C) + 0x38);
+            return;
+        case 2:
+            return;
+        case 3:
+            func_001F9BD8(m + 0x10, m + 0x10, d + 0x10);
+            func_001F9C30(d + 0x10, d + 0x10, 0.995f);
+            if (func_L00_001F10E0(2.0f, m + 0x10, 0, m)) {
+                g = D_L13_001741C0;
+                t = *(char **)(g + 0x18);
+                if (t == 0 || !(*(short *)(t + 0xA6) == 0x191 || *(short *)(t + 0xA6) == 0x184
+                                || *(short *)(t + 0xA6) == 0x185 || *(short *)(t + 0xA6) == 0x186
+                                || *(short *)(t + 0xA6) == 0x187 || *(short *)(t + 0xA6) == 0x188
+                                || *(short *)(t + 0xA6) == 0x189 || *(short *)(t + 0xA6) == 0x18A
+                                || *(short *)(t + 0xA6) == 0x18B || *(short *)(t + 0xA6) == 0x18C
+                                || *(short *)(t + 0xA6) == 0x18F || *(short *)(t + 0xA6) == 0x190)) {
+                    func_L00_001FF610(d + 0x10, d + 0x10, g + 0x40);
+                    m[0x20] = 4;
+                }
+            }
+            *(float *)(m + 0x40) = func_001FA748(*(float *)(m + 0x40), *(float *)(d + 0x30));
+            *(float *)(m + 0x44) = func_001FA748(*(float *)(m + 0x44), *(float *)(d + 0x34));
+            *(float *)(m + 0x48) = func_001FA748(*(float *)(m + 0x48), *(float *)(d + 0x38));
+            *(float *)(d + 0x30) = *(float *)(d + 0x30) * 0.999f;
+            *(float *)(d + 0x34) = *(float *)(d + 0x34) * 0.999f;
+            *(float *)(d + 0x38) = *(float *)(d + 0x38) * 0.999f;
+            if (*(float *)(m + 0x10) < 10.0f || 1013.0f < *(float *)(m + 0x10)
+                || *(float *)(m + 0x14) < 10.0f || 1013.0f < *(float *)(m + 0x14)
+                || *(float *)(m + 0x18) < 10.0f || 1013.0f < *(float *)(m + 0x18)) {
+                func_0020D678(m);
+                return;
+            }
+            if (func_001F9908(d + 0x40) == 0) {
+                return;
+            }
+            if (*(unsigned char *)(m + 0x31) != 0) {
+                return;
+            }
+            func_0020D678(m);
+            return;
+        case 4:
+            func_L00_0025F4A8(m, d + 0x10, 0, 2.0f, 4.0f, 10, 3, 16, 4.0f, 2.0f, 9.0f, -1, 1.0f, 15.0f, 1, 1, -1, 0);
+            func_0020D678(m);
+            return;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L13_002EE590);
 INCLUDE_ASM("asm/overlays", func_L13_002EE8E0);
 typedef struct {

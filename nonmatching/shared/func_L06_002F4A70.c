@@ -1,13 +1,14 @@
 /* NON_MATCHING func_L06_002F4A70 -- src/overlays/shared/vendor_002D9548.c
- * Best so far: SIZE ours 400 / retail 396, checked 2026-10-03.
+ * Best so far: BYTES 20/396 (95.0% of the bytes match), checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
  *   Starts a charge-up (state 9) on a moby when a target (func_L00_0025B478 class 0x330001) differs from the playe
  *   p1.c: only the first target compare differs: ours `beql` with swc1 (f store) hoisted above, retail plain `beq`
  *   Unblock: the shape of the shared 0xFF tail (retail has two entry labels, one with the addiu in the delay slot)
+ *   q28 t02: p7 compiles (void *param, drop duplicate u128 typedef: the file declares void func(void *)). 400 vs 3
+ *   hq3 s02 (5 runs, p12-p16): the || skip condition, swapped sides of the t compare, goto done with one shared 0x
  */
-typedef int u128 __attribute__((mode(TI)));
 extern char *a_find(void *, int, int) __asm__("func_L00_0025B478");
 extern float a_ang(float, float) __asm__("func_L00_001FF860");
 extern int a_rnd(int) __asm__("func_001F9850");
@@ -19,7 +20,8 @@ extern float D_0015EE6C MACRO_ADDR;
 extern char D_0013E633[];
 
 /* Starts a charge-up on a moby that has a valid target. */
-void func_L06_002F4A70(char *self) {
+void func_L06_002F4A70(void *s) {
+    char *self = s;
     float v[4];
     float f;
     char *data = *(char **)(self + 0x78);
@@ -30,9 +32,13 @@ void func_L06_002F4A70(char *self) {
             char *t;
             f = a_ang(*(float *)(o + 0x10), *(float *)(o + 0x14));
             t = *(char **)(o + 0x20);
+            if (*(short *)(t + 0xA6) == *(short *)(self + 0xA6)) {
+                goto done;
+            }
             if (t == *(char **)(D_0013E633 + 0x2E9D)) {
-            } else if (*(short *)(t + 0xA6) == *(short *)(self + 0xA6)) {
-            } else {
+                goto done;
+            }
+            {
                 char *s = data + 0x80;
                 p = a_rnd(0x50);
                 q = a_rnd(0x50);
@@ -52,5 +58,6 @@ void func_L06_002F4A70(char *self) {
             }
         }
     }
+done:
     ((unsigned char *)self)[0xA4] = 0xFF;
 }

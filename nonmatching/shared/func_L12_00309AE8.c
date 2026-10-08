@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L12_00309AE8 -- src/overlays/shared/vendor_002BD3D0.c
- * Best so far: BYTES 25/524 (95.2% of the bytes match), checked 2026-10-05.
+ * Best so far: BYTES 23/524 (95.6% of the bytes match), checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -7,7 +7,10 @@
  *   Remaining (p5.c, SIZE 532 vs 524): ours reloads D_0015EE70 for d+0x34 (extra lui/lwc1) where retail reuses the
  *   Unblock: find the wording that shares the D_0015EE70 load across the two stores (CSE) while keeping the later 
  *   Round q27/s10: p6.c is the best (25 bytes, SIZE now equal 524): constant 5627.925f (0x45AFDF66), u8 store of 0
+ *   mini67: Typed moby/data/word-union fields retain BYTES25/524, run1. Remaining saved FP constants and first res
+ *   2026-10-08 gpt: p9 splits both doublings and divisions into compound assignments. This fixes all saved-FP-regi
  */
+#include "common.h"
 extern int func_002140B0(int);
 extern void func_0022ED80(int, int, int);
 extern int func_001FA898_r(float) __asm__("func_001FA898");
@@ -47,8 +50,10 @@ void func_L12_00309AE8(int unused, char *m) {
     q = func_001F9B50(D_0015EE70 * 40.0f * 4.0f);
     s2 = D_0015EE70 * 40.0f;
     h2 = D_0015EE70 * 100.0f;
-    p = (p + p) / s2;
-    q = (q + q) / s2;
+    p *= 2.0f;
+    q *= 2.0f;
+    p /= s2;
+    q /= s2;
     *(float *)(d + 0x38) = 3.0f / p + h2 * 0.5f * q;
     *(float *)(d + 0x3C) = func_001F9B50(s2 * 4.0f);
     d[0x5D] = 0;

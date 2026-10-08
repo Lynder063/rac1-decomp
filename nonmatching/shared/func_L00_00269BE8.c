@@ -1,11 +1,14 @@
 /* NON_MATCHING func_L00_00269BE8 -- src/overlays/shared/partproc_002697A0.c
- * Best so far: SIZE ours 460 / retail 452, checked 2026-10-03.
+ * Best so far: SIZE ours 456 / retail 452, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
  *   Part update: kills part when out of range (func_L00_002688A8), else applies gravity (D_0015EE70*9.8) to vel an
  *   Left (p4.c, 460 vs 452 bytes): lui of D_L00_00160310 placed before the daddu $a0 instead of after; retail fill
  *   Would unblock: some wording that makes the L60 block begin with the gp float load so the scheduler copies it i
+ *   q30 w07: p6 (mul operand order), p7 (D_L00_00160310 as scalar with &), p8 (negated condition) all gave the sam
+ *   Left: ours has a real nop after each `mfc1 ; bnel/beq` pair (+fc, +114) where retail has none, and lui of D_L0
+ *   Round hq3/s04 (5 runs, p9-p13): p9 reuses w for the second kernel call (456 bytes); p10 operand order in s[3],
  */
 typedef int u128 __attribute__((mode(TI)));
 extern void func_001F9BD8(void *, void *, void *);
@@ -42,8 +45,7 @@ void func_L00_00269BE8(char *p) {
         if (r < D_L00_00160320) {
             lim = D_L00_00160320;
         } else {
-            x = *(u128 *)(p + 0x20);
-            lim = func_L00_002644E0(&x);
+            lim = func_L00_002644E0(&w);
         }
         if (*(float *)(p + 0x28) < lim) {
             func_L00_002688A8(p);

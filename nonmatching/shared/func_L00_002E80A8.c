@@ -1,51 +1,53 @@
 /* NON_MATCHING func_L00_002E80A8 -- src/overlays/shared/vendor_002E1660.c
- * Best so far: BYTES 30/360 (91.7% of the bytes match), checked 2026-10-05.
+ * Best so far: SIZE ours 356 / retail 360, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
- *   # func_L00_002E80A8 (360 B)
- *   Best: e1.c BYTES 30/360, size and registers exact. Retail keeps `p = a; b = a + 0x130; a += 0x40`
- *   (and the lw of p) before the first jal func_001F9C30; ours schedules them after it, and loads p after
- *   the %hi of D_0013E633+0x10AD. At lreg the insns are still before the call, so sched2 moves them.
- *   Lever found: retail's `daddu s2,s1 / addiu s1,s1,0x40` = one variable loaded, copied to p, then += 0x40.
- *   Tried: global base local (e2/e3), -fno-schedule-insns (size), -fno-schedule-insns2 (60 B).
+ *   func_L00_002E80A8: resets the state block (moby->0x70 data) of a moby from the game vector at D_0013E633+0xE9D
+ *   Best candidate p1.c: 356 vs 360 bytes, everything the same except retail has one extra `daddu $18,$17,$0` -- r
+ *   Tried: r as a local, p = data copy, reload of +0x70, float* r. A source form that makes gcc keep a copy of the
+ *   q28/t09: p6.c (r as char*: `r = lw 0x70(moby); data = r; q = r + 0x130; r += 0x40;`, vector type renamed QV16 
+ *   hq3 s10 (6 runs, p10-p15): best.c did not compile here (its VQ typedef clashes with the file's; p11 renames it
  */
-#include "common.h"
-
+typedef float VQ_E80A8[4] __attribute__((aligned(16)));
 extern char D_0013E633[];
 extern void func_001F9C30(void *, void *, float);
 extern float func_001F9C78(void *, void *);
+extern void func_001F9BC0(void *);
 extern void func_001F9BD8(void *, void *, void *);
 extern void func_001F9BF0(float *, float *, float *);
-extern void func_001F9BC0(void *);
 
-/* Resets the vendor's swing state: anchor from the hero, rope along the down axis, all speeds zero. */
-void func_L00_002E80A8(char *m) {
-    char *p;
-    char *a;
-    char *b;
-    float v[4];
-    float u[4];
-    if (*(short *)(m + 0x86) != 0) return;
-    a = *(char **)(m + 0x70);
-    p = a;
-    b = a + 0x130;
-    a += 0x40;
-    func_001F9C30(v, D_0013E633 + 0x10AD, -1.0f);
-    qcopy(a, D_0013E633 + 0xE9D);
-    qcopy(p + 0xA0, a);
-    func_001F9C30(p + 0x50, v, func_001F9C78(a, v));
-    func_001F9BC0(p + 0xB0);
-    func_001F9BC0(p + 0xC0);
-    func_001F9BC0(p + 0xE0);
-    func_001F9C30(u, v, *(float *)(b + 0x30));
-    func_001F9BD8(p + 0x90, u, a);
-    func_001F9C30(u, v, *(float *)(a + 0xB0));
-    func_001F9BD8(p + 0xD0, u, a);
-    qcopy(p + 0x80, p + 0xD0);
-    func_001F9BF0((float *)b, (float *)(m + 0x30), (float *)(p + 0x90));
-    qcopy(p + 0x140, b);
-    qcopy(p, m + 0x30);
-    func_001F9BD8(p + 0x1F0, p + 0x90, b);
-    *(int *)(p + 0x220) = 0;
+/* reset the camera-like state block of a moby from the game vector */
+void func_L00_002E80A8(char *moby) {
+    VQ_E80A8 v, w;
+    char *data;
+    char *q;
+    float *r;
+    char *s;
+    char *t;
+
+    if (*(short *)(moby + 0x86) == 0) {
+        data = *(char **)(moby + 0x70);
+        q = data + 0x130;
+        func_001F9C30(v, D_0013E633 + 0x10AD, -1.0f);
+        r = (float *)(data + 0x40);
+        qcopy(r, D_0013E633 + 0xE9D);
+        qcopy(data + 0xA0, r);
+        s = data + 0x90;
+        func_001F9C30(data + 0x50, v, func_001F9C78(r, v));
+        t = data + 0xD0;
+        func_001F9BC0(data + 0xB0);
+        func_001F9BC0(data + 0xC0);
+        func_001F9BC0(data + 0xE0);
+        func_001F9C30(w, v, *(float *)(q + 0x30));
+        func_001F9BD8(s, w, r);
+        func_001F9C30(w, v, r[44]);
+        func_001F9BD8(t, w, r);
+        qcopy(data + 0x80, t);
+        func_001F9BF0((float *)q, (float *)(moby + 0x30), (float *)s);
+        qcopy(data + 0x140, q);
+        qcopy(data, moby + 0x30);
+        func_001F9BD8(data + 0x1F0, s, q);
+        *(int *)(data + 0x220) = 0;
+    }
 }

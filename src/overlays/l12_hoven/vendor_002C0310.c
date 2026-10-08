@@ -141,7 +141,55 @@ void func_L12_002E2CB8(void *pos) {
     } while (--i >= 0);
 }
 INCLUDE_ASM("asm/overlays", func_L12_002E2EF0);
-INCLUDE_ASM("asm/overlays", func_L12_002E41C8);
+extern int func_L00_00262BC0(int, void *, void *, void *);
+extern void func_L00_002592B0(char *moby, float *vel, float target, float k, float d, float max);
+extern int func_L00_00259B88(void *, void *, void *, void *, float);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern int func_L00_0025A778(void *, void *, int);
+extern float func_001F9D10(void *, void *);
+extern char *D_L12_001B0C30[];
+
+// steers a moby along a path using its velocity and returns a status code
+int func_L12_002E41C8(char *moby, float target) {
+    float pos[4];
+    float vel[4];
+    float out[4];
+    float res[4];
+    float k = 0.05f;
+    float w[4];
+    float v[4];
+    char *d;
+    int r;
+    d = *(char **)(moby + 0x78);
+    *(u128 *)pos = *(u128 *)(moby + 0x10);
+    func_L12_002E2B88(moby);
+    func_L00_002592B0(moby, (float *)(d + 0x2A0), target, k, 0.3f, 0.2f);
+    vel[0] = func_001F9F90(*(float *)(moby + 0x48)) * 2;
+    vel[1] = func_001F9FA8(*(float *)(moby + 0x48)) * 2;
+    vel[2] = 0;
+    r = func_L00_00259B88(moby, d + 0x180, vel, (char *)out, 1.0f);
+    if (*(int *)(d + 0x2D0) != -1) {
+        float *vp = v;
+        func_001F9BF0(vp, pos, moby + 0x10);
+        func_L00_001FF4B0(vp, vp, k);
+        func_001F9BD8(w, pos, vp);
+        if (func_L00_00262BC0(*(int *)(d + 0x2D0), moby + 0x10, w, res)) {
+            int *tbl = (int *)D_L12_001B0C30[*(int *)(d + 0x2D0)];
+            if (func_L00_0025A778(moby + 0x10, tbl + 4, *tbl) == 0) {
+                *(u128 *)(moby + 0x10) = *(u128 *)res;
+            }
+            if (func_001F9D10(moby + 0x10, pos) < D_0015EE6C * 0.5f) {
+                *(int *)(d + 0x2D4) = *(int *)(d + 0x2D4) + 1;
+                if (func_001F9850(10) < *(int *)(d + 0x2D4)) r = 2;
+            } else {
+                *(int *)(d + 0x2D4) = 0;
+            }
+        }
+    }
+    return r;
+}
 INCLUDE_ASM("asm/overlays", func_L12_002E43A8);
 INCLUDE_ASM("asm/overlays", func_L12_002E4838);
 extern short D_L12_001619A0;

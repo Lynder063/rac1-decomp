@@ -86,7 +86,41 @@ void func_L11_003130B0(void *a0, void *a1, void *a2) {
         }
     } while (*p++ >= 0);
 }
-INCLUDE_ASM("asm/overlays", func_L11_00313148);
+extern char D_0013E633[];
+extern float D_L11_00167850[];
+extern short D_L11_001621F0;
+extern short D_L11_001621F4;
+extern void func_001F9908(int *arg0);
+extern char *f12e10(float, int, char *, float *, float *, float, float, char *, int) __asm__("func_L11_00312E10");
+
+/* Per-frame target tracking: drops a dead target, re-picks one and restarts the timer on change. */
+void func_L11_00313148(int a, char *moby) {
+    float v[4];
+    float ang = 0.19634955f;
+    char *r;
+    if (*(unsigned char *)(D_0013E633 + 0x2413) == 0) {
+        *(int *)(moby + 0x88) = 0;
+    } else {
+        char *cur = *(char **)(moby + 0x88);
+        if (cur != 0) {
+            unsigned char st = cur[0x20];
+            if (st == 0xFE) {
+                *(int *)(moby + 0x88) = 0;
+            } else if (st == 0xFD) {
+                *(int *)(moby + 0x88) = 0;
+            }
+        }
+        qcopy(v, D_L11_00167850);
+        r = f12e10(ang, a, moby, D_L11_00167850 - 4, v, ang, 255.0f, *(char **)(moby + 0x88), 0);
+        if (r != *(char **)(moby + 0x88)) {
+            int t = *(int *)&D_L11_001621F0 + *(int *)&D_L11_001621F4;
+            *(char **)(moby + 0x88) = r;
+            *(int *)(moby + 0x8C) = t;
+        } else if (r != 0) {
+            func_001F9908((int *)(moby + 0x8C));
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L11_00313218);
 extern void func_L11_003126D8_313a70(void *, void *, void *, int) __asm__("func_L11_003126D8");
 extern int func_001F9908_c(void *) __asm__("func_001F9908");

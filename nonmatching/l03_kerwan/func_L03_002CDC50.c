@@ -1,10 +1,12 @@
 /* NON_MATCHING func_L03_002CDC50 -- src/overlays/l03_kerwan/vendor_002CB280.c
- * Best so far: SIZE ours 364 / retail 372, checked 2026-10-03.
+ * Best so far: SIZE ours 368 / retail 372, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
  *   Spawns a class 0x273 moby (func_0020D348) copying fields from src, pos, sets data floats, calls func_L00_0025D
  *   Best p6.c (same size 372, 95 diff words): `long` for the ld/sd at 0x38, `if (m == 0) return 0;` early return g
+ *   s03 (hq3, round 2): stopped. p6, p9 and p10 (early return, `one` declared late or the call result in a local s
+ *   Left: retail keeps the stores in order with each float constant reloaded just before its store (lui/mtc1 then 
  */
 #include "common.h"
 extern struct Moby *func_0020D348_m(int) __asm__("func_0020D348");
@@ -16,11 +18,15 @@ extern float D_0015EE64 MACRO_ADDR;
 /* spawn a class 0x273 moby at pos, aimed along dir */
 char *func_L03_002CDC50(char *src, float *pos, float *dir) {
     char *m = (char *)func_0020D348_m(0x273);
-    if (m != 0) {
+    int one = 1;
+    if (m == 0) {
+        return 0;
+    }
+    {
         char *d;
         float g;
         *(unsigned short *)(m + 0x32) = *(unsigned short *)(src + 0x32);
-        m[0x31] = 1;
+        m[0x31] = one;
         m[0x30] = src[0x32];
         *(long *)(m + 0x38) = *(long *)(src + 0x38);
         qcopy(m + 0x10, pos);
@@ -38,11 +44,11 @@ char *func_L03_002CDC50(char *src, float *pos, float *dir) {
         *(float *)(d + 0x4C) = 0.01f;
         *(float *)(d + 0x1C) = dir[2];
         d[0x3D] = 0;
-        *(int *)(d + 0x24) = 1;
+        *(int *)(d + 0x24) = one;
         func_L00_0025D5B0(func_L00_001FF860(dir[0], dir[1]), m, (float *)d, 0, 1, 0);
         *(char **)(d + 0x68) = src;
         *(int *)(d + 0x6C) = 0;
-        m[0x20] = 1;
+        m[0x20] = one;
     }
     return m;
 }

@@ -1111,7 +1111,126 @@ void func_L15_0029FCB0(char *moby) {
         func_0020D678(moby);
 }
 INCLUDE_ASM("asm/overlays", func_L15_0029FF90);
-INCLUDE_ASM("asm/overlays", func_L15_002A3668);
+extern char *func_L00_0025B478(void *, int, int);
+extern void func_L00_00273F80(float *pos, char *vel, int color, unsigned char life, unsigned char b, int mode, float scale);
+extern void func_L15_002A3B98(void);
+extern void func_L00_0025A8E8_m(void *, void *, int, float, float, float, int, int, int) __asm__("func_L00_0025A8E8");
+extern int D_L15_00161B40_m __asm__("D_L15_00161B40") MACRO_ADDR;
+extern short D_L15_00161540;
+extern short D_L15_00161538;
+extern short D_L15_0016153C;
+extern short D_L15_00161544;
+extern short D_L15_00161534;
+
+/* Shared level 15/17 moby update (class 77): steers the moby toward its target and runs its state machine. */
+void func_L15_002A3668(char *moby) {
+    float va[4];
+    float pb[4];
+    char *data;
+    char *p;
+    char *c;
+    float fa;
+    float fb;
+    float g;
+    float r0;
+    float r;
+    float f20;
+    float f21;
+    float fd;
+    int state;
+    int ret;
+    int ret1;
+    int ret2;
+    int ret3;
+    unsigned char life;
+
+    data = *(char **)(moby + 0x78);
+    if (func_L00_0025B478(moby, 0x330000, 0) != 0) {
+        ((unsigned char *)moby)[0x20] = 4;
+        ((unsigned char *)moby)[0xA4] = 0xFF;
+    }
+    if (((unsigned char *)moby)[0x20] != 1) {
+        func_L00_00258DB0(va, 0.0f, D_0015EE6C + D_0015EE6C);
+        qcopy(pb, moby + 0x10);
+        pb[2] = pb[2] + *(float *)&D_L15_00161544;
+        if (D_L15_00161B40_m == 0) {
+            ((unsigned char *)moby)[0x20] = 1;
+            goto tailA;
+        }
+        ret1 = func_001F9850(*(int *)&D_L15_00161540);
+        ret2 = func_001FA898_r((float)ret1);
+        life = (unsigned char)ret2;
+        ret3 = func_002140B0(0xFF);
+        func_L00_00273F80(pb, (char *)va, *(int *)&D_L15_00161538, life, (unsigned char)ret3, 0, *(float *)&D_L15_0016153C);
+        p = *(char **)(data + 0x6C);
+        if (p == 0 || *(int *)p != D_L15_0015F6B0) {
+            if (p != 0) {
+                *(int *)p = D_L15_0015F6B0;
+            }
+            func_001F49B0(func_L15_002A3B98, moby);
+        }
+    }
+    state = ((unsigned char *)moby)[0x20];
+    if (state == 2) goto s2;
+    if (state < 3) {
+        if (state == 0) goto s0;
+        return;
+    }
+    if (state == 3) goto s3;
+    if (state == 4) goto s4;
+    return;
+
+s2:
+    *(float *)(moby + 0x18) = *(float *)(moby + 0x18) + (D_0015EE6C + D_0015EE6C);
+    if (func_001F9908(data + 0x68) == 0) return;
+    ((unsigned char *)moby)[0x20] = 3;
+    if (((unsigned char *)moby)[0x53] != 1) {
+        ret = func_001F9850(10);
+        func_00213DE0(moby, 1, 0, ret);
+    }
+    *(int *)(data + 0x68) = func_001F9850(0xF0);
+    return;
+
+s3:
+    c = (char *)D_0013E633 + 0xE1D;
+    fa = *(float *)(c + 0x80) - *(float *)(moby + 0x10);
+    fb = *(float *)(c + 0x84) - *(float *)(moby + 0x14);
+    f20 = func_001FA748(*(float *)(data + 0x64), func_L00_001FF860(fa, fb));
+    f21 = *(float *)(c + 0xC8);
+    g = func_001F9F90(f20);
+    va[0] = g * (*(float *)&D_L15_00161534 * D_0015EE6C);
+    r0 = func_001F9FA8(f20);
+    va[1] = r0 * (*(float *)&D_L15_00161534 * D_0015EE6C);
+    va[2] = 0.0f;
+    fd = *(float *)(moby + 0x18) - f21;
+    if (0.6f < fd) {
+        va[2] = -(D_0015EE6C * 3.0f);
+    } else if (fd < 0.4f) {
+        va[2] = D_0015EE6C * 3.0f;
+    }
+    func_L00_00259868((int)moby, (int)va, 0.25f, 0.25f, 0.0f, 0);
+    r = func_001F9D48((float *)((char *)D_0013E633 + 0xEED), (float *)(moby + 0x10));
+    if (r < 0.5f || func_001F9908(data + 0x68)) {
+        ((unsigned char *)moby)[0x20] = 4;
+        return;
+    }
+    if (((unsigned char *)moby)[0x53] != 1) return;
+    if ((((unsigned char *)moby)[0x70] & 2) == 0) return;
+    ret = func_001F9850(10);
+    func_00213DE0(moby, 2, 0, ret);
+    return;
+
+s4:
+    func_L00_00260108(moby, moby + 0x10, -1, 0.25f, 13.0f);
+    func_L00_0025A8E8_m(moby, moby + 0x10, 0x10001, 1.0f, 1.0f, 1.0f, 0, 1, 0);
+
+s0:
+    ((unsigned char *)moby)[0x20] = 1;
+    ((unsigned char *)moby)[0x31] = 0;
+    *(unsigned short *)(moby + 0x34) = *(unsigned short *)(moby + 0x34) | 1;
+tailA:
+    *(int *)(moby + 0x94) = 0;
+}
 extern char D_0013E633[];
 extern int D_L15_001AC140[];
 extern int D_L15_00160058_m __asm__("D_L15_00160058") MACRO_ADDR;

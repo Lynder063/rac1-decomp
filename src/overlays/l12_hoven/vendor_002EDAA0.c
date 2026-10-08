@@ -237,7 +237,44 @@ INCLUDE_ASM("asm/overlays", func_L12_00307730);
 INCLUDE_ASM("asm/overlays", func_L12_003078C8);
 INCLUDE_ASM("asm/overlays", func_L12_00307C08);
 INCLUDE_ASM("asm/overlays", func_L12_00307DB0);
-INCLUDE_ASM("asm/overlays", func_L12_00308AC0);
+extern float func_002140F8(float, float);
+extern void func_L00_0026ED30(float, void *, int);
+extern int func_L00_0025D390(char *);
+extern int D_L12_00160058_m __asm__("D_L12_00160058") MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+
+/* spawns a debris piece from the owner's slot at the owner's position, then bursts particles */
+void func_L12_00308AC0(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    char *slot = data + (*(int *)(data + 0xF0) << 2);
+    char *c = (char *)(D_L12_00160058_m + ((*(int *)(slot + 0xC0)) << 8));
+    char *t;
+    short *r;
+    int i;
+    qcopy(c + 0x10, moby + 0x10);
+    *(float *)(c + 0x18) = *(float *)(c + 0x18) - 0.35f;
+    c[0x20] = 0;
+    c[0xBC] = 0;
+    t = *(char **)(c + 0x24);
+    *(unsigned short *)(c + 0x34) = *(unsigned short *)(t + 0x44);
+    *(float *)(c + 0x2C) = *(float *)(t + 0x24);
+    ((unsigned char *)c)[0x30] = 0xFF;
+    c[0x31] = 1;
+    *(short *)(c + 0x36) = 0x7F80;
+    *(short *)(c + 0x32) = 0xFF;
+    ((unsigned char *)c)[0x71] = 0xFF;
+    ((unsigned char *)c)[0x72] = 0xFF;
+    ((unsigned char *)c)[0xA4] = 0xFF;
+    *(int *)(c + 0x94) = *(int *)(t + 0x10);
+    *(long *)(c + 0x38) = *(long *)(moby + 0x38);
+    func_L00_00251E30(c);
+    *(char **)(c + 0xB8) = moby;
+    for (i = 0; i < 14; i++) {
+        func_L00_0026ED30(func_002140F8(D_0015EE6C * 3.0f, D_0015EE6C * 5.0f), moby + 0x10, 0);
+    }
+    r = (short *)func_L00_0025D390(c);
+    if (r != 0) *(float *)r = (float)r[2];
+}
 extern int D_L12_00160058_m __asm__("D_L12_00160058") MACRO_ADDR;
 extern void func_L12_00308E98(char *m);
 extern void func_0020D678(void *);

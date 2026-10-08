@@ -639,7 +639,33 @@ void func_L01_002EEDD8(char *m) {
 INCLUDE_ASM("asm/overlays", func_L01_002EF078);
 INCLUDE_ASM("asm/overlays", func_L01_002F0040);
 INCLUDE_ASM("asm/overlays", func_L01_002F0728);
-INCLUDE_ASM("asm/overlays", func_L01_002F0850);
+extern short *D_L01_001ABFC0[];
+extern char *D_L01_00160058_m __asm__("D_L01_00160058") MACRO_ADDR;
+extern short D_L01_00160058;
+
+// Returns the nearest moby of a list within 120 units that is flagged and of the right type, or 0.
+char *func_L01_002F0850(char *a, int idx) {
+    char *best = 0;
+    float dist = 120.0f;
+    short *p = D_L01_001ABFC0[idx];
+    if (p == 0) return 0;
+    for (;;) {
+        int off = (*(unsigned short *)p & 0x7FFF) << 8;
+        char *m = (char *)(off + (int)D_L01_00160058_m);
+        if (*(unsigned short *)(m + 0x34) & 0x1000) {
+            if (*(short *)(m + 0xA6) == 0x26F) {
+                if (*(unsigned char *)(m + 0x20) < 0x7F) {
+                    float d = func_001F9D10(m + 0x10, a + 0x10);
+                    if (d < dist) {
+                        dist = d;
+                        best = (char *)(*(int *)&D_L01_00160058 + off);
+                    }
+                }
+            }
+        }
+        if (*p++ < 0) return best;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_002F0938);
 INCLUDE_ASM("asm/overlays", func_L01_002F0B48);
 extern int func_L00_002DCDA8(void *);

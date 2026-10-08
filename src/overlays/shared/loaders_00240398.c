@@ -39,7 +39,34 @@ void func_L00_00240CE0(char *out,int a,int b,u64 c,int d,int idx) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_00240D80);
 INCLUDE_ASM("asm/overlays", func_L00_00240DE0);
-INCLUDE_ASM("asm/overlays", func_L00_002420C0);
+extern int D_L00_00173F40_a[] __asm__("D_L00_00173F40");
+extern const int *D_L00_0015F6F8 SDATA(D_L00_0015F6F8);
+
+// Relocates the collision header's offsets into pointers.
+void func_L00_002420C0(char *p) {
+    const int *q;
+    int i;
+    int *e;
+    int cnt;
+
+    if (*(int *)p != 0) {
+        *D_L00_00173F40_a = (int)(p + *(int *)p);
+    }
+    if (*(int *)(p + 4) != 0) {
+        q = (const int *)(p + *(int *)(p + 4));
+        cnt = q[0];
+        D_L00_0015F6F8 = q;
+        i = 0;
+        if (cnt > 0) {
+            e = (int *)q + 7;
+            do {
+                *e = (int)q + *e;
+                e += 4;
+                i++;
+            } while (i < *q);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00242120);
 typedef struct {
     int f0;

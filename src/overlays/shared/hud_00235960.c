@@ -356,7 +356,60 @@ void func_L00_00236AB8(HudElem *e) {
     func_L00_0023B440((char *)e + 0x40);
 }
 INCLUDE_ASM("asm/overlays", func_L00_00236BF8);
-INCLUDE_ASM("asm/overlays", func_L00_00236DE8);
+extern void func_L00_00236830_v() __asm__("func_L00_00236830");
+extern int D_L00_0015F4F8 MACRO_ADDR;
+extern float D_L00_0017E760[][4];
+extern short D_L00_0015F830;
+extern short D_L00_0015F834;
+extern short D_L00_0015F838;
+
+/* bounces the drifting particles around a box that depends on their index */
+void func_L00_00236DE8(void) {
+    int i;
+    int cnt;
+    int par;
+    float *p;
+
+    func_L00_00236830_v();
+    cnt = D_L00_0015F4F8;
+    par = cnt - (cnt / 2) * 2;
+    p = D_L00_0017E760[par];
+    for (i = par; i < 100; i += 2) {
+        float lim;
+        float a, b, na, nb;
+
+        if (i < 10) {
+            lim = *(float *)&D_L00_0015F830;
+        } else if (i < 30) {
+            lim = *(float *)&D_L00_0015F834;
+        } else {
+            lim = *(float *)&D_L00_0015F838;
+        }
+        a = lim - 17.0f;
+        b = lim - 116.0f;
+        na = -a;
+        nb = -b;
+        p[0] += p[2];
+        p[1] += p[3];
+        if (p[0] < a) {
+            p[0] = a;
+            p[2] = -p[2];
+        }
+        if (na < p[0]) {
+            p[0] = na;
+            p[2] = -p[2];
+        }
+        if (p[1] < b) {
+            p[1] = b;
+            p[3] = -p[3];
+        }
+        if (nb < p[1]) {
+            p[1] = nb;
+            p[3] = -p[3];
+        }
+        p += 8;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_00236F38);
 INCLUDE_ASM("asm/overlays", func_L00_002377E0);
 void func_L00_00237B20(HudElem *e) {
