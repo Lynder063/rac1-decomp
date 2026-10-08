@@ -637,6 +637,9 @@ def generate() -> dict:
 
 
 def check() -> None:
+    # The build runs only documented assembler/linker steps, with flags per file (docs/BUILD_FIDELITY.md).
+    import check_build_fidelity
+    check_build_fidelity.main()
     if not REPORT.exists():
         sys.exit(f"*** {REPORT} missing -- run: python tools/gen_progress_report.py")
     report = json.loads(REPORT.read_text())
