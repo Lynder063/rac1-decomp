@@ -797,7 +797,76 @@ char *func_L13_002EE148(char *src, int arg, int id) {
 }
 INCLUDE_ASM("asm/overlays", func_L13_002EE238);
 INCLUDE_ASM("asm/overlays", func_L13_002EE590);
-INCLUDE_ASM("asm/overlays", func_L13_002EE8E0);
+extern void func_L00_00251328(void *, int, int, int);
+extern int func_001E9730();
+extern void func_L13_002EE590(void *, void *);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern void func_L00_0023F1D0(int);
+extern void func_0020D678(void *);
+extern void func_L00_0024FFE8(unsigned char *, int, int);
+extern unsigned char D_0014171B[] NOT_SDA;
+extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;
+extern char D_L13_001F52A0[];
+extern float D_0015EE60 MACRO_ADDR;
+extern char *D_L13_00160058_m __asm__("D_L13_00160058") MACRO_ADDR;
+
+/* UpdateMoby_404: Updates a gem-lock pickup: waits for its flag, fades out, then deletes itself; always spins. */
+void func_L13_002EE8E0(char *moby) {
+    char *d = *(char **)(moby + 0x78);
+    int v, dx, old;
+    switch (((unsigned char *)moby)[0x20]) {
+    case 0:
+        moby[0x20] = 1;
+        moby[0x23] = 0x14;
+        *(unsigned short *)(moby + 0x34) |= 0xA08;
+        *(short *)(d + 0xE) = -1;
+        *(float *)(d + 4) = 1.0f;
+        func_L00_00251328(moby, 0x80, 0x80, 0x80);
+        break;
+    case 1:
+        if (*(int *)d != -1) {
+            char *p = D_L13_00160058_m + (*(int *)d << 8);
+            if (p == 0 || (unsigned char)p[0x20] == 0xFE || (unsigned char)p[0x20] == 0xFD
+                || (*(int *)(D_0014171B + 0xAB75 + (((short)*(unsigned short *)(p + 0xB2) >> 5) * 4 + (D_0015EE84_m << 8))) >> (*(unsigned short *)(p + 0xB2) & 0x1F)) & 1) {
+                *(float *)(d + 4) = 1.0f;
+                moby[0x20] = 2;
+            }
+        } else {
+            *(float *)(d + 4) = 1.0f;
+            moby[0x20] = 2;
+            func_001E9730(D_L13_001F52A0, *(short *)(moby + 0xA6), *(short *)(moby + 0xB2));
+        }
+        func_L13_002EE590(moby, d);
+        break;
+    case 2:
+        *(float *)(d + 4) = *(float *)(d + 4) - D_0015EE60 * 0.05f;
+        if (*(float *)(d + 4) < 0.0f) {
+            moby[0x20] = 3;
+        } else {
+            moby[0x23] = func_001FA898_r(*(float *)(d + 4) * 20.0f);
+        }
+        break;
+    case 3:
+        if (*(short *)(d + 0xE) != -1) {
+            func_L00_0023F1D0(*(short *)(d + 0xE));
+            *(short *)(d + 0xE) = -1;
+        }
+        func_0020D678(moby);
+        return;
+    }
+    v = (unsigned short)*(unsigned short *)(d + 0xC);
+    dx = 0xC0;
+    *(short *)(d + 0xC) = v + 0xC0;
+    v += 0xC0;
+    if ((short)v > 0x1000) {
+        *(short *)(d + 0xC) = v - 0x1000;
+        dx = -0xF40;
+    } else if ((short)v < 0) {
+        *(short *)(d + 0xC) = v + 0x1000;
+        dx = 0x10C0;
+    }
+    func_L00_0024FFE8(*(unsigned char **)(moby + 0x24), dx, 0);
+}
 typedef struct {
     char pad0[0x34];
     unsigned short flags;

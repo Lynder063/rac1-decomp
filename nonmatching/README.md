@@ -20,7 +20,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L05_0030F9D0`](l05_rilgar/func_L05_0030F9D0.c) | l05_rilgar | 748 | BYTES 7/748 | 99.1% |
 | [`func_L06_00301848`](l06_blarg/func_L06_00301848.c) | l06_blarg | 408 | BYTES 4/408 | 99.0% |
 | [`func_L03_002ECBA8`](l03_kerwan/func_L03_002ECBA8.c) | l03_kerwan | 404 | BYTES 4/404 | 99.0% |
-| [`func_L13_002EE8E0`](l13_gemlik/func_L13_002EE8E0.c) | l13_gemlik | 588 | BYTES 6/588 | 99.0% |
 | [`func_L00_00274788`](shared/func_L00_00274788.c) | shared | 384 | BYTES 4/384 | 99.0% |
 | [`func_L05_00317CD8`](l05_rilgar/func_L05_00317CD8.c) | l05_rilgar | 384 | BYTES 4/384 | 99.0% |
 | [`func_L01_0030A8C8`](shared/func_L01_0030A8C8.c) | shared | 756 | BYTES 8/756 | 98.9% |
