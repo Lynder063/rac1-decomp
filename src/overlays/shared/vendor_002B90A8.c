@@ -639,31 +639,35 @@ void func_L01_002EEDD8(char *m) {
 INCLUDE_ASM("asm/overlays", func_L01_002EF078);
 INCLUDE_ASM("asm/overlays", func_L01_002F0040);
 INCLUDE_ASM("asm/overlays", func_L01_002F0728);
-extern short *D_L01_001ABFC0[];
-extern char *D_L01_00160058_m __asm__("D_L01_00160058") MACRO_ADDR;
-extern short D_L01_00160058;
+extern unsigned short *D_L01_001ABFC0[];
+extern int D_L01_00160058_m __asm__("D_L01_00160058") MACRO_ADDR;
 
-// Returns the nearest moby of a list within 120 units that is flagged and of the right type, or 0.
-char *func_L01_002F0850(char *a, int idx) {
-    char *best = 0;
-    float dist = 120.0f;
-    short *p = D_L01_001ABFC0[idx];
-    if (p == 0) return 0;
+/* Returns the closest moby of type 0x26F with flag 0x1000 set and state below 0x7F, from the id list
+ * D_L01_001ABFC0[idx], within a 120.0 limit; 0 if there is none. */
+char *func_L01_002F0850(char *self, int idx) {
+    short *list = (short *)D_L01_001ABFC0[idx];
+    float best = 120.0f;
+    char *res = 0;
+    if (list == 0) {
+        return 0;
+    }
     for (;;) {
-        int off = (*(unsigned short *)p & 0x7FFF) << 8;
-        char *m = (char *)(off + (int)D_L01_00160058_m);
-        if (*(unsigned short *)(m + 0x34) & 0x1000) {
-            if (*(short *)(m + 0xA6) == 0x26F) {
-                if (*(unsigned char *)(m + 0x20) < 0x7F) {
-                    float d = func_001F9D10(m + 0x10, a + 0x10);
-                    if (d < dist) {
-                        dist = d;
-                        best = (char *)(*(int *)&D_L01_00160058 + off);
+        int i = *(unsigned short *)list & 0x7FFF;
+        char *p = (char *)((i << 8) + D_L01_00160058_m);
+        if (*(unsigned short *)(p + 0x34) & 0x1000) {
+            if (*(short *)(p + 0xA6) == 0x26F) {
+                if (*(unsigned char *)(p + 0x20) < 0x7F) {
+                    float d = func_001F9D10(p + 0x10, self + 0x10);
+                    if (d < best) {
+                        best = d;
+                        res = *(char **)&D_L01_00160058_m + (i << 8);
                     }
                 }
             }
         }
-        if (*p++ < 0) return best;
+        if (*list++ < 0) {
+            return res;
+        }
     }
 }
 INCLUDE_ASM("asm/overlays", func_L01_002F0938);

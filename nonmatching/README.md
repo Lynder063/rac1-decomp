@@ -145,6 +145,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L14_002F2778`](l14_oltanis/func_L14_002F2778.c) | l14_oltanis | 104 | BYTES 9/112 | 92.0% |
 | [`func_L15_002F8D9C`](l15_quartu/func_L15_002F8D9C.c) | l15_quartu | 12 | BYTES 1/12 | 91.7% |
 | [`func_L18_002F1420`](l18_veldin2/func_L18_002F1420.c) | l18_veldin2 | 36 | BYTES 20/240 | 91.7% |
+| [`func_L03_002E99F0`](shared/func_L03_002E99F0.c) | shared | 260 | BYTES 22/260 | 91.5% |
 | [`func_L04_002D27F8`](l04_eudora/func_L04_002D27F8.c) | l04_eudora | 496 | BYTES 42/496 | 91.5% |
 | [`func_L00_002346C0`](shared/func_L00_002346C0.c) | shared | 80 | BYTES 7/80 | 91.2% |
 | [`func_L00_001EB508`](shared/func_L00_001EB508.c) | shared | 92 | BYTES 11/108 | 89.8% |
@@ -322,7 +323,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_002DDEA0`](shared/func_L00_002DDEA0.c) | shared | 3828 | SIZE ours 3784 / retail 3828 | - |
 | [`func_L00_002DED98`](shared/func_L00_002DED98.c) | shared | 948 | SIZE ours 956 / retail 948 | - |
 | [`func_L00_002DF168`](shared/func_L00_002DF168.c) | shared | 680 | SIZE ours 664 / retail 680 | - |
-| [`func_L00_002E0CB8`](shared/func_L00_002E0CB8.c) | shared | 396 | SIZE ours 388 / retail 396 | - |
 | [`func_L00_002E0E50`](shared/func_L00_002E0E50.c) | shared | 2064 | SIZE ours 2056 / retail 2064 | - |
 | [`func_L00_002E3700`](shared/func_L00_002E3700.c) | shared | 2208 | SIZE ours 2184 / retail 2208 | - |
 | [`func_L00_002E4138`](shared/func_L00_002E4138.c) | shared | 1792 | SIZE ours 1812 / retail 1792 | - |
@@ -416,7 +416,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L03_002DD840`](shared/func_L03_002DD840.c) | shared | 1304 | SIZE ours 1300 / retail 1304 | - |
 | [`func_L03_002DE088`](l03_kerwan/func_L03_002DE088.c) | l03_kerwan | 1068 | SIZE ours 1060 / retail 1068 | - |
 | [`func_L03_002E1598`](l03_kerwan/func_L03_002E1598.c) | l03_kerwan | 524 | SIZE ours 516 / retail 524 | - |
-| [`func_L03_002E99F0`](shared/func_L03_002E99F0.c) | shared | 260 | SIZE ours 264 / retail 260 | - |
 | [`func_L04_001F3010`](l04_eudora/func_L04_001F3010.c) | l04_eudora | 2456 | SIZE ours 2448 / retail 2456 | - |
 | [`func_L04_0024D4A8`](l04_eudora/func_L04_0024D4A8.c) | l04_eudora | 140 | SIZE ours 152 / retail 160 | - |
 | [`func_L04_00293578`](l04_eudora/func_L04_00293578.c) | l04_eudora | 716 | SIZE ours 712 / retail 716 | - |
@@ -690,7 +689,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L14_002FE038`](l14_oltanis/func_L14_002FE038.c) | l14_oltanis | 1888 | SIZE ours 1840 / retail 1888 | - |
 | [`func_L14_002FE798`](l14_oltanis/func_L14_002FE798.c) | l14_oltanis | 1272 | SIZE ours 1264 / retail 1272 | - |
 | [`func_L14_002FF358`](l14_oltanis/func_L14_002FF358.c) | l14_oltanis | 852 | SIZE ours 848 / retail 852 | - |
-| [`func_L14_002FFF08`](l14_oltanis/func_L14_002FFF08.c) | l14_oltanis | 424 | SIZE ours 428 / retail 424 | - |
 | [`func_L14_00300468`](l14_oltanis/func_L14_00300468.c) | l14_oltanis | 1628 | SIZE ours 1620 / retail 1628 | - |
 | [`func_L14_00302288`](l14_oltanis/func_L14_00302288.c) | l14_oltanis | 1756 | SIZE ours 1772 / retail 1756 | - |
 | [`func_L14_00303270`](shared/func_L14_00303270.c) | shared | 444 | SIZE ours 448 / retail 444 | - |
@@ -702,7 +700,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L14_00316388`](l14_oltanis/func_L14_00316388.c) | l14_oltanis | 908 | SIZE ours 892 / retail 908 | - |
 | [`func_L14_00316718`](l14_oltanis/func_L14_00316718.c) | l14_oltanis | 1676 | SIZE ours 1680 / retail 1676 | - |
 | [`func_L14_00316E60`](l14_oltanis/func_L14_00316E60.c) | l14_oltanis | 880 | SIZE ours 864 / retail 880 | - |
-| [`func_L15_001FED10`](shared/func_L15_001FED10.c) | shared | 156 | SIZE ours 152 / retail 156 | - |
 | [`func_L15_00216568`](shared/func_L15_00216568.c) | shared | 1360 | SIZE ours 1388 / retail 1360 (cannot land as written) | - |
 | [`func_L15_00248E58`](l15_quartu/func_L15_00248E58.c) | l15_quartu | 352 | SIZE ours 356 / retail 352 | - |
 | [`func_L15_0029B750`](shared/func_L15_0029B750.c) | shared | 1588 | SIZE ours 1604 / retail 1588 | - |

@@ -63,17 +63,18 @@ void func_0023C088(AudioDec *dec) {
     dec->pending = 2;
 }
 extern void func_0012F1E8(void);
-/* Resets the sound transport and clears the decoder counters and state. */
-void func_0023C0E0(AudioDec *dec) {
+
+/* audioDecReset(_AudioDec *) */
+void func_0023C0E0(volatile int *dec) {
     func_0012F1E8();
-    dec->pending = 0;
-    dec->fill = 0;
-    dec->rd = 0;
-    dec->cnt = 0;
-    dec->f44 = 0;
-    dec->bytes = 0;
-    *(int *)((char *)dec + 0x58) = 0;
-    dec->f5C = 0;
+    dec[0x5C / 4] = 0;
+    dec[0x0 / 4] = 0;
+    dec[0x30 / 4] = 0;
+    dec[0x38 / 4] = 0;
+    dec[0x3C / 4] = 0;
+    dec[0x44 / 4] = 0;
+    dec[0x50 / 4] = 0;
+    dec[0x58 / 4] = 0;
 }
 /* audioDecBeginPut(_AudioDec *, unsigned char **, int *, unsigned char **, int *) -- hands out
  * the free part of the ring as up to two (pointer, length) spans. */

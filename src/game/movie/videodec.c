@@ -59,9 +59,9 @@ void func_0023DFE0(VideoDec *dec) {
 void func_0023E000(VideoDec *dec) {
     dec->state = 0;
 }
-/* Retail-disassembly reconstruction of decoder buffer operations. */
 extern int func_0023D988(void *);
 extern int func_0012BB20(void *);
+
 /* videoDecDelete(VideoDec *) */
 int func_0023E008(VideoDec *dec) {
     func_0023D988(dec->viBuf);
@@ -82,22 +82,22 @@ int func_0023E058(VideoDec *dec, unsigned int state) {
     dec->state = state;
     return old;
 }
-/* Retail-disassembly reconstruction of decoder buffer operations. */
-typedef struct MovieInputStamp {
-    long first, second;
-    int offset, size;
-    long pad;
-} MovieInputStamp;
+extern void func_0023DBE0(char *, void *);
 extern char *D_0016130C MACRO_ADDR;
-extern void func_0023DBE0(void *, MovieInputStamp *);
+
 /* videoDecPutTs(VideoDec *, long, long, unsigned char *, int) */
-void func_0023E068(VideoDec *dec, long first, long second, unsigned char *data, int size) {
-    MovieInputStamp stamp;
-    stamp.first = first;
-    stamp.second = second;
-    stamp.offset = data - *(unsigned char **)dec->viBuf;
-    stamp.size = size;
-    func_0023DBE0(D_0016130C + 0xD9090, &stamp);
+void func_0023E068(VideoDec *dec, long pts, long dts, int pos, int len) {
+    struct {
+        long pts;
+        long dts;
+        int diff;
+        int len;
+    } ts;
+    ts.pts = pts;
+    ts.dts = dts;
+    ts.diff = pos - *(int *)dec->viBuf;
+    ts.len = len;
+    func_0023DBE0(D_0016130C + 0xD9090, &ts);
 }
 /* videoDecInputCount(VideoDec *) -- viBufCount of the input buffer. */
 int func_0023E0B0(VideoDec *dec) {
@@ -127,15 +127,16 @@ int func_0023E0D8(VideoDec *dec) {
     if (dec->state == 0) dec->state = 2;
     return 1;
 }
-/* Retail-disassembly reconstruction of decoder buffer operations. */
-extern int func_0012BB98(void *);
+extern int func_0023E0B0(VideoDec *);
+extern unsigned int func_0012BB98(void *);
+
 /* videoDecIsFlushed(VideoDec *) */
 int func_0023E1B0(VideoDec *dec) {
-    int flushed = 0;
+    int res = 0;
     if (func_0023E0B0(dec) == 0) {
-        flushed = func_0012BB98(dec) != 0;
+        res = func_0012BB98(dec) > 0;
     }
-    return flushed;
+    return res;
 }
 /* Decoder control reconstructed from retail disassembly. */
 extern void func_0023D090(void *);
@@ -206,12 +207,11 @@ int func_0023E298(VideoDec *dec) {
     func_0012BBA8(dec);
     return result;
 }
-/* Retail-disassembly reconstruction of decoder buffer operations. */
+extern void func_001E9730(char *, ...);
 extern char D_00161328[];
-typedef struct MovieErrorData { int pad0; int code; } MovieErrorData;
 /* mpegError(sceMpeg *, sceMpegCbDataError *, void *) */
-int func_0023E450(void *decoder, void *data, void *arg) {
-    func_001E9730(D_00161328, ((MovieErrorData *)data)->code);
+int func_0023E450(void *mpeg, int *cbdata, void *arg) {
+    func_001E9730(D_00161328, cbdata[1]);
     return 1;
 }
 extern void func_0023BB40(void);

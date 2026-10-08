@@ -28,12 +28,12 @@ void func_0023E560(VoBuf *vb, char *frames, char *entries, int capacity) {
 /* voBufDelete(VoBuf *) -- nothing to free. */
 void func_0023E5B0(VoBuf *vb) {
 }
-/* Updates or queries the decoded-frame ring. */
-void func_0023E5B8(VoBuf *vb) {
-    vb->count = 0;
-    vb->wr = 0;
+/* voBufReset(VoBuf *) */
+void func_0023E5B8(volatile int *arg0) {
+    arg0[3] = 0;
+    arg0[2] = 0;
 }
-/* Updates or queries the decoded-frame ring. */
+/* voBufIsFull(VoBuf *) */
 int func_0023E5C8(VoBuf *vb) {
     return vb->count == vb->cap;
 }
@@ -48,11 +48,12 @@ void func_0023E5E0(VoBuf *vb) {
     vb->wr = (vb->wr + 1) % vb->cap;
     func_0011D9A8();
 }
-extern int func_0023E5C8(VoBuf *);
-/* Returns the current ring entry when the corresponding count test permits it. */
+/* voBufGetData(VoBuf *) */
 char *func_0023E658(VoBuf *vb) {
-    if (func_0023E5C8(vb)) return 0;
-    return vb->frames + vb->wr * 0xD0000;
+    if (func_0023E5C8(vb)) {
+        return 0;
+    }
+    return *(char **)vb + vb->wr * 0xD0000;
 }
 /* voBufIsEmpty -- true when the entry count is zero. */
 int func_0023E698(VoBuf *vb) {
@@ -63,7 +64,9 @@ char *func_0023E6A8(VoBuf *vb) {
     if (func_0023E698(vb)) return 0;
     return vb->data + ((vb->wr - vb->count + vb->cap) % vb->cap) * 0x138C0;
 }
-/* Updates or queries the decoded-frame ring. */
-void func_0023E710(VoBuf *vb) {
-    if (vb->count > 0) vb->count--;
+/* voBufDecCount(VoBuf *) */
+void func_0023E710(volatile int *vb) {
+    if (vb[3] > 0) {
+        vb[3]--;
+    }
 }

@@ -277,7 +277,48 @@ void func_L14_002FF728(L14Moby *m) {
     }
     func_L00_0025E590(m, d->effect);
 }
-INCLUDE_ASM("asm/overlays", func_L14_002FFF08);
+extern float D_0015EE6C MACRO_ADDR;
+extern int D_0015EE84 MACRO_ADDR;
+extern short D_L14_00162088;
+extern short D_L14_0016208C;
+extern short D_L14_00162090;
+extern char *D_L14_001B0F30[];
+extern int func_L00_0025E860(void *, void *, int *, float *, float, int);
+extern float func_L00_0025C918(float *, float *, float, float, float, float);
+extern void func_001F9BF0(void *dst, void *a, void *b);
+extern float func_001F9B88(float);
+extern float func_L00_001FF860(float, float);
+extern void func_L00_002592B0(char *moby, float target, float *vel, float k, float d, float max);
+
+/* Samples a path table with func_L00_0025E860 and eases the moby's x, y and z toward the result;
+ * returns that call's result. */
+int func_L14_002FFF08(char *moby) {
+    float pos[4];
+    float delta[4];
+    char *data = *(char **)(moby + 0x78);
+    float t = *(float *)&D_L14_00162088 * D_0015EE6C;
+    int r;
+    char *path;
+    if (D_0015EE84 == 0x10)
+        t = D_0015EE6C * 20.0f;
+    if (*(float *)(data + 0xF8) != 0.0f)
+        t = *(float *)(data + 0xF8) * D_0015EE6C;
+    if ((unsigned char)moby[0x20] == 5)
+        path = D_L14_001B0F30[*(int *)(data + 0xDC)];
+    else
+        path = D_L14_001B0F30[*(int *)(data + 0xD8)];
+    r = func_L00_0025E860(path, pos, (int *)(data + 0xD0), (float *)(data + 0xD4), t, 0);
+    func_L00_0025C918((float *)(moby + 0x10), (float *)(data + 0xE4), pos[0], *(float *)&D_L14_0016208C, *(float *)&D_L14_00162090, 0.0f);
+    func_L00_0025C918((float *)(moby + 0x14), (float *)(data + 0xE8), pos[1], *(float *)&D_L14_0016208C, *(float *)&D_L14_00162090, 0.0f);
+    func_L00_0025C918((float *)(moby + 0x18), (float *)(data + 0xEC), pos[2], *(float *)&D_L14_0016208C, *(float *)&D_L14_00162090, 0.0f);
+    func_001F9BF0(delta, pos, moby + 0x10);
+    if (func_001F9B88(delta[0]) > 0.01f) {
+        if (func_001F9B88(delta[1]) > 0.01f) {
+            func_L00_002592B0(moby, func_L00_001FF860(delta[0], delta[1]), (float *)(data + 0xF0), *(float *)&D_L14_0016208C, *(float *)&D_L14_00162090, 0.0f);
+        }
+    }
+    return r;
+}
 INCLUDE_ASM("asm/overlays", func_L14_00300468);
 INCLUDE_ASM("asm/overlays", func_L14_00302288);
 extern char *func_0020D348(int);

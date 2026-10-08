@@ -69,9 +69,8 @@ void func_L04_002CF180(char *m) {
     func_001F9BF0(delta, m + 0x10, old);
     func_L00_002617B0(d + 0x60, delta, m + 0x40, m + 0x40);
 }
-/* updates the transport ship by forwarding to the moby handler */
 void func_L04_002CF440(void *m) {
-    char buf[80];
+    char pad[0x50];
     func_0020D678(m);
 }
 INCLUDE_ASM("asm/overlays", func_L04_002D27F8);
