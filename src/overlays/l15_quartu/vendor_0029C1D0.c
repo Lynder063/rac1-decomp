@@ -821,7 +821,77 @@ void func_L15_002EBFC8(char *moby) {
 }
 INCLUDE_ASM("asm/overlays", func_L15_002EC080);
 INCLUDE_ASM("asm/overlays", func_L15_002EC4F8);
-INCLUDE_ASM("asm/overlays", func_L15_002EC8B0);
+extern unsigned char D_0014C150[];
+extern int D_0015EE84 MACRO_ADDR;
+extern int D_L15_0015F6A8 MACRO_ADDR;
+extern short D_L15_00161B48;
+extern short D_L15_00160058;
+extern char *D_L15_0016016C MACRO_ADDR;
+extern int func_00215570(void *arg0, int arg1);
+extern void func_L00_00299B68(int);
+extern void func_L00_002512D8(int idx);
+extern void func_L00_00233868(void);
+extern void func_L00_0029A7D0(int);
+extern void func_L00_00233950(void);
+extern void func_L00_00217718(void *, void *, int, int);
+extern void func_L00_00261848(int);
+extern void func_L00_00286128(void *a0, void *a1);
+extern void func_L00_00263DB0(int a);
+extern int func_0020BFC8(int slot, int flags);
+extern void func_001F49B0(void (*)(void), void *);
+extern void func_L15_002ECAA8(void);
+
+/* UpdateMoby_1419: state machine for a timed object */
+void func_L15_002EC8B0(unsigned char *moby) {
+    int *data = *(int **)(moby + 0x78);
+    moby[0x30] = 0x80;
+    switch (moby[0x20]) {
+    case 0:
+        if (D_0014C150[moby[0xB0] + (D_0015EE84 << 4)] != 0xFF
+            && *(int *)&D_L15_00161B48 == 0
+            && func_00215570(D_0013E633 + 0xE9D, data[0])) {
+            if (*(unsigned char *)(*(char **)&D_L15_00160058 + data[2] * 256 + 0x20) == 3) {
+                func_L00_00299B68(3);
+                moby[0x20] = 2;
+                func_L00_002512D8(moby[0xB0]);
+                func_L00_00233868();
+            }
+        }
+        break;
+    case 2:
+        if (D_L15_0015F6A8 != 2) {
+            func_L00_0029A7D0(0x11);
+            moby[0x20] = 1;
+        }
+        break;
+    case 1:
+        if (D_L15_0015F6A8 != 2) {
+            func_L00_00299B68(4);
+            moby[0x20] = 3;
+            func_L00_00233950();
+            if (data[1] != -1) {
+                char *p = D_L15_0016016C + data[1] * 128;
+                func_L00_00217718(p + 0x30, p + 0x70, 0, 1);
+            }
+        }
+        break;
+    case 3:
+        if (D_L15_0015F6A8 != 2) {
+            func_L00_00261848(0x11);
+            if (data[1] != -1) {
+                char *p = D_L15_0016016C + data[1] * 128;
+                func_L00_00286128(p + 0x30, p + 0x70);
+            }
+            func_L00_00263DB0(0x11);
+            func_0020BFC8(0, -1);
+            moby[0x20] = 4;
+        }
+        break;
+    case 4:
+        break;
+    }
+    if (D_L15_0015F6A8 == 2) func_001F49B0(func_L15_002ECAA8, moby);
+}
 extern char D_L15_0016CEE0[];
 extern char D_L15_00162210[];
 extern short D_L15_00162200;
