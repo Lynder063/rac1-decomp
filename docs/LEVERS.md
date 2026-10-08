@@ -164,7 +164,8 @@ in `config/core_rodata.txt`).
 11. **Orphan `%hi`.** When loop optimisation hoists a global's `lui`
     and never pairs it with a `%lo` (retail does this too, e.g. a `%hi`
     copied to a saved register nothing reads), our linker fills that
-    `lui` wrongly while try_func, which masks relocations, says `EXACT`.
+    `lui` wrongly while try_func, which cannot resolve an unpaired `%hi`
+    and masks it, says `EXACT`.
     `tools/fix_orphan_hi.py` (run by the build and try_func) writes such
     a `%hi` of a `D_`/`func_` symbol as a constant, so this is handled;
     if the full build still disagrees on one `lui`, look here first.
@@ -220,6 +221,14 @@ in `config/core_rodata.txt`).
     - Replacing a stub whose `.s` has nops after `endlabel`: reproduce
       them with a file-scope `__asm__(".section .text\n\tnop...")`
       (func_0022F258), or the whole segment shifts.
+
+13. **From rac3-uya-decomp** (the same compiler family, working with
+    us): [RAC3_PATTERNS.md](RAC3_PATTERNS.md) has what carries over:
+    int/float order in prototypes, arguments retail never sets, float
+    constants and gcse, loop constants, stack slot order, switch tables,
+    cross-jumping. For a register tie, `bash tools/docker/run.sh python
+    tools/regalloc.py func_X CANDIDATE.c` prints the allocator's order and
+    priorities: change what outranks or overlaps the variable.
 
 ## Known walls: stop and report
 
