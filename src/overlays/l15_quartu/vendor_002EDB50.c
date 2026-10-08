@@ -7,7 +7,30 @@ INCLUDE_ASM("asm/overlays", func_L15_002EE7E8);
 INCLUDE_ASM("asm/overlays", func_L15_002EEF70);
 INCLUDE_ASM("asm/overlays", func_L15_002EF030);
 INCLUDE_ASM("asm/overlays", func_L15_002EF410);
-INCLUDE_ASM("asm/overlays", func_L15_002F8D30);
+extern char *D_L15_00167480;
+extern float D_L15_0015F4FC MACRO_ADDR;
+extern char *D_L15_0015F050 MACRO_ADDR;
+
+typedef struct {
+    char pad[0x1C];
+    char *sub;
+} Entry_F8D30;
+
+/* Tests whether the selected vendor entry is available (joined with func_L15_002F8D9C). */
+int func_L15_002F8D30(int index) {
+    char *other = D_L15_00167480;
+    Entry_F8D30 *entries;
+    char *sub;
+    char *moby;
+    char *data;
+    if (*(short *)(other + 0x86) != 0x13) return 1;
+    entries = (Entry_F8D30 *)D_L15_0015F050;
+    sub = entries[index].sub;
+    moby = *(char **)(sub + 4);
+    data = *(char **)(moby + 0x70) + 0x40;
+    if (*(short *)(data + 0x14) == 1 && D_L15_0015F4FC != 0.0f) return 1;
+    return *(short *)(data + 0x14) == 3;
+}
 INCLUDE_ASM("asm/overlays", func_L15_002F8D9C);
 extern int func_L00_00260AB0(void *p, int i);
 extern int func_00215570(void *arg0, int arg1);
