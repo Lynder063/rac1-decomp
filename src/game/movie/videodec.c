@@ -4,7 +4,7 @@
 /* Retail-disassembly reconstruction of decoder buffer operations. */
 extern int func_0012B918(void *, unsigned char *, int);
 extern int func_0012BC50(void *, int, int, void *);
-extern int func_0023E450(void *, void *, void *);
+extern int func_0023E450(void *, int *, void *);
 extern int func_0023E478(void *, void *, void *);
 extern int func_0023E4B0(void);
 extern int func_0023E4E0(void);

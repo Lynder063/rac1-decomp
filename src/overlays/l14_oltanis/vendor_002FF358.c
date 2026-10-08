@@ -105,7 +105,7 @@ extern void func_L00_002592B0(char *moby, float target, float *vel, float k, flo
 extern int func_00215570(void *arg0, int arg1);
 extern char *func_L14_00300F80(void *, void *);
 extern void func_L14_003000B0(void *);
-extern int func_L14_002FFF08(void *);
+extern int func_L14_002FFF08(char *);
 extern float func_L00_0025C918(float *, float *, float, float, float, float);
 extern void func_L14_00301090(void *);
 extern void func_L14_00300130(void *);
@@ -207,7 +207,7 @@ void func_L14_002FF728(L14Moby *m) {
     case 4:
         if (d->mode == 0)
             func_L14_003000B0(m);
-        if (func_L14_002FFF08(m)) {
+        if (func_L14_002FFF08((char *)m)) {
             m->state = 3;
             func_00213DE0(m, 3, 0, 5);
         }
@@ -246,7 +246,7 @@ void func_L14_002FF728(L14Moby *m) {
         break;
     }
     case 5:
-        if (func_L14_002FFF08(m)) {
+        if (func_L14_002FFF08((char *)m)) {
             char *path;
 
             m->state = 2;
