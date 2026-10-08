@@ -1,12 +1,12 @@
 {
  "measures": {
-  "fuzzy_match_percent": 61.16403373403633,
+  "fuzzy_match_percent": 61.164109234843274,
   "total_code": "3712808",
-  "matched_code": "2213092",
-  "matched_code_percent": 59.606960553844964,
+  "matched_code": "2213212",
+  "matched_code_percent": 59.610192608936416,
   "total_functions": 5109,
-  "matched_functions": 3623,
-  "matched_functions_percent": 70.91407320414955,
+  "matched_functions": 3625,
+  "matched_functions_percent": 70.95321980818164,
   "complete_code": "536416",
   "complete_code_percent": 14.447717199488904,
   "total_units": 280,
@@ -50209,13 +50209,13 @@
   {
    "name": "Level 15: Quartu",
    "measures": {
-    "fuzzy_match_percent": 74.99748749728201,
+    "fuzzy_match_percent": 75.0000271798217,
     "total_code": "110376",
-    "matched_code": "81988",
-    "matched_code_percent": 74.28064071899688,
+    "matched_code": "82108",
+    "matched_code_percent": 74.38936000579837,
     "total_functions": 49,
-    "matched_functions": 23,
-    "matched_functions_percent": 46.93877551020408,
+    "matched_functions": 25,
+    "matched_functions_percent": 51.02040816326531,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -50612,7 +50612,7 @@
     {
      "name": "func_L15_002F8D30",
      "size": "108",
-     "fuzzy_match_percent": 98.33,
+     "fuzzy_match_percent": 100.0,
      "address": "1000048",
      "metadata": {
       "virtual_address": "3116336"
@@ -50621,7 +50621,7 @@
     {
      "name": "func_L15_002F8D9C",
      "size": "12",
-     "fuzzy_match_percent": 91.67,
+     "fuzzy_match_percent": 100.0,
      "address": "1000156",
      "metadata": {
       "virtual_address": "3116444"
@@ -53315,13 +53315,13 @@
    "id": "level_code",
    "name": "Level code",
    "measures": {
-    "fuzzy_match_percent": 60.46374612732312,
+    "fuzzy_match_percent": 60.46383245645046,
     "total_code": "3247108",
-    "matched_code": "1905596",
-    "matched_code_percent": 58.685944538955894,
+    "matched_code": "1905716",
+    "matched_code_percent": 58.689640135160275,
     "total_functions": 3429,
-    "matched_functions": 2188,
-    "matched_functions_percent": 63.80869058034413,
+    "matched_functions": 2190,
+    "matched_functions_percent": 63.86701662292214,
     "complete_code": "387452",
     "complete_code_percent": 11.932217838150132
    }
@@ -53375,13 +53375,13 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 68.13857222157067,
+    "fuzzy_match_percent": 68.13870919823303,
     "total_code": "2046480",
-    "matched_code": "1359556",
-    "matched_code_percent": 66.43387670536727,
+    "matched_code": "1359676",
+    "matched_code_percent": 66.43974043235214,
     "total_functions": 1449,
-    "matched_functions": 908,
-    "matched_functions_percent": 62.663906142167015,
+    "matched_functions": 910,
+    "matched_functions_percent": 62.80193236714976,
     "complete_code": "281192",
     "complete_code_percent": 13.740275986083422
    }
@@ -53615,13 +53615,13 @@
    "id": "level_15",
    "name": "Level 15: Quartu",
    "measures": {
-    "fuzzy_match_percent": 74.99748749728201,
+    "fuzzy_match_percent": 75.0000271798217,
     "total_code": "110376",
-    "matched_code": "81988",
-    "matched_code_percent": 74.28064071899688,
+    "matched_code": "82108",
+    "matched_code_percent": 74.38936000579837,
     "total_functions": 49,
-    "matched_functions": 23,
-    "matched_functions_percent": 46.93877551020408,
+    "matched_functions": 25,
+    "matched_functions_percent": 51.02040816326531,
     "complete_code": "0",
     "complete_code_percent": 0.0
    }
