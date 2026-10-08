@@ -26,6 +26,8 @@ The following functions adapt source from
 - `src/core/0012AC80.c`: `func_0012C0A0` (`_decodeOrSkipField`)
 - `src/core/00113B70.c`: `func_00113B70` (`_free_r`)
 - `src/game/memcard.c`: `func_0020BBC8` (memcard_PrepData)
+- `src/game/memcard.c`: `func_00209E68` (memory-card state update; `src/storage/memory_card/memcard_update_state.c`, with PAL directory validation and request handling reconstructed from retail assembly)
+- `src/game/map.c`: `func_00205E70` (map overlay renderer; `src/assembly/textbin/ui/map/draw_map_overlay.c`, with PAL control flow, addressing and mixed argument ordering reconstructed from retail assembly)
 - `src/core/0011CCE0.c`: `func_0011CE70` (`_sceSifLoadModuleBuffer`)
 - `src/game/loaders.c`: `func_00205220` (ParseSpaceSceneChunk)
 - `src/game/draw.c`: `func_001F5368` (screen stripe fill)
@@ -44,6 +46,7 @@ The following functions adapt source from
 - `src/game/pause.c`: `func_002224A8` (draws an options menu: each item's label at left, its current value's name at right, selected one highlighted)
 - `src/game/framebuf.c`: `func_001FB908` (clears the screen through a GIF packet appended to D_00161000: a fixed header then n = w / 32 pairs of sprite corner registers stepping 0x200 per column across a w x h area centred on 0x8000)
 - `src/game/space.c`: `func_002308C8` (spawns six particles around a moby: random velocity and a position taken from the flare corner table, transformed by the moby's matrices)
+- `src/game/space.c`: `func_00230A90` (resident gameplay and cinematic state update; `src/gameplay/update_resident_gameplay_state.c`)
 - `src/core/0012CC90.c`: `func_0012D068` (sceIpuInit)
 - `src/game/loaders.c`: `func_002032D0` (load_hud_banks)
 - `src/game/pause.c`: `func_0021D4C0` (pause slot-select tick)
@@ -284,6 +287,7 @@ to its PAL address, and each passed this project's own check. In parentheses, Lo
 - `src/overlays/shared/vendor_00299AF0.c`: `func_L10_002F6E38` (`FUN_L10_002f5a78`)
 - `src/overlays/shared/vendor_002A5218.c`: `func_L02_002A5238` (`FUN_L02_002a4058`)
 - `src/core/00114518.c`: `func_00114920` (`_malloc_r`; newlib's allocator, see below)
+- `src/core/00116FA0.c`: `func_00117118` (`_vfprintf_r`; adapted from the local newlib-derived US candidate, see below)
 - `src/core/00119D88.c`: `func_0011AA90` (`_sceSifSendCmd`; its two small structs' members are named by offset here)
 
 Four more began as machine ports that came out a few bytes off and were finished by hand by the GPT agent
@@ -444,7 +448,7 @@ SOFTWARE.
 
 ## newlib, fdlibm and David M. Gay's dtoa
 
-The game's C library is newlib. Four functions here are its open sources,
+The game's C library is newlib. Five functions here are its open sources,
 as Lombyte reconstructed them for the US build and adapted above:
 
 - `src/core/00112468.c`: `func_001126D8` (`_dtoa_r`), David M. Gay's dtoa:
@@ -469,6 +473,40 @@ OF THIS SOFTWARE OR ITS FITNESS FOR ANY PARTICULAR PURPOSE.
 - `src/core/00114518.c`: `func_00114920` (`_malloc_r`), newlib's allocator, which
   is Doug Lea's malloc (dlmalloc 2.6.5), released by its author to the public
   domain.
+
+- `src/core/00116FA0.c`: `func_00117118` (`_vfprintf_r`), adapted from
+  Lombyte's newlib 1999 `vfprintf.c` reconstruction in
+  `src/assembly/runtime/newlib/vfprintf_r.c`. Its macros are expanded into
+  ordinary C; its symbols and stdio types use this checkout's PAL definitions.
+  The Berkeley notice from Lombyte's `licenses/COPYING.NEWLIB.txt` follows:
+
+```
+Copyright (c) 1981-2000 The Regents of the University of California.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * Neither the name of the University nor the names of its contributors
+      may be used to endorse or promote products derived from this software
+      without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+OF SUCH DAMAGE.
+```
 
 - `src/core/00116070.c`: `func_00116168` and `func_001161B0`, fdlibm's finite
   and NaN tests:
