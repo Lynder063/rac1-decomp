@@ -1,5 +1,7 @@
 # Decompilation progress
 
+> Historical log. `tools/fix_core_spills.py`, `tools/fix_tail_calls.py`, `tools/fix_trunc_slot.py` and `tools/func_cflags.py`, which it describes, were removed on 2026-10-07 for rewriting compiler output; see docs/BUILD_FIDELITY.md for the current build.
+
 The project's knowledge base: the levers that close near-misses, the
 toolchain questions (solved and open), the dead ends with their counts,
 and a per-function log. The step-by-step procedure lives in

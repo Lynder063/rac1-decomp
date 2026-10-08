@@ -33,11 +33,12 @@ All game code is compiled with **`-O2 -G2 -Iinclude -Wa,-I,.`**.
   two different SN sub-builds. `text` spills callee-saved registers with
   `sq`/`lq`, exactly as v1.14 does. `core_text` spills them with
   `sd`/`ld`: v1.36 emits those mnemonics but lays the save slots out
-  mirrored, while v1.14 has retail's slot layout. So `core_text` is
-  compiled with v1.14 too and then narrowed by `tools/fix_core_spills.py`.
-  No command-line flag changes either behaviour; the exhaustive flag
-  search is recorded in `docs/DECOMP_PROGRESS.md` ("SOLVED — `sq`/`lq`
-  was never a flag").
+  mirrored, while v1.14 has retail's slot layout. The `core_text` code
+  with `sd`/`ld` saves turned out to be Sony SDK code, built with the SDK's
+  own 2.9-ee (the `ee29` objects), which emits them natively; the few game
+  objects in `core_text` (crt0, boot, permcb, wad, 989snd and the one at
+  0x1207B8) are built with v1.14 like `text`. No step narrows spills any
+  more (docs/BUILD_FIDELITY.md, "Removed").
 - **`-G2`, not `-G0`.** Retail's small-data threshold is between 1 and 3:
 
   | `-G` | float constants | small globals via `$gp` |
@@ -90,9 +91,9 @@ by instruction scheduling heuristics:
 
 | Source | Steps |
 |---|---|
-| `src/core/<ADDR>.c` (`core_text`) | v1.14 `-S` → `tools/fix_core_spills.py` → `tools/fix_tail_calls.py` → `tools/fix_trunc_slot.py` → `tools/check_macro_slots.py` → assemble |
-| `src/core/<ADDR>.c` marked `ee29` in `config/core_text.objects` (the memory card library, the C library's printf, sprintf, stdio and strtol, libmpeg's bitstream reader, ...) | 2.9-ee `-S` (with its own include directory, for `stdarg.h`) → `tools/fix_trunc_slot.py` → `tools/check_macro_slots.py` → assemble; SDK code built with the SDK's own compiler, like libgcc (`EE29_CORE` in `Makefile.sn`). No spill or tail-call rewriter: 2.9-ee spills with `sd` and tail-calls a void function ending in a call by itself, but not `return f(...)` |
-| `src/game/**.c` (`text`) | v1.14 `-S` → `tools/fix_tail_calls.py` → `tools/fix_trunc_slot.py` → `tools/fix_jump_tables.py` → `tools/ps2eeas_dli.py` → `tools/check_macro_slots.py` → assemble → `tools/ps2eeas_nops.py` → assemble |
+| `src/core/<ADDR>.c` (`core_text`) | v1.14 `-S` → `tools/check_macro_slots.py` → assemble (989snd and wad also `tools/fix_macro_load_delay.py` and `tools/ps2eeas_nops.py`) |
+| `src/core/<ADDR>.c` marked `ee29` in `config/core_text.objects` (the memory card library, the C library's printf, sprintf, stdio and strtol, libmpeg's bitstream reader, ...) | 2.9-ee `-S` (with its own include directory, for `stdarg.h`) → `tools/fix_volatile_slot.py` → `tools/check_macro_slots.py` → assemble; SDK code built with the SDK's own compiler, like libgcc (`EE29_CORE` in `Makefile.sn`). 2.9-ee spills with `sd` and tail-calls a void function ending in a call by itself, but not `return f(...)` |
+| `src/game/**.c` (`text`) | v1.14 `-S` → `tools/fix_jump_tables.py` → `tools/ps2eeas_dli.py` → `tools/check_macro_slots.py` → `tools/fix_orphan_hi.py` → assemble → `tools/ps2eeas_nops.py` → assemble |
 | `src/libgcc/libgcc2.c` | 2.9-ee `-S`, one object per `L_*` module, like `libgcc.a`'s members → assemble; L__main also goes through `tools/strip_dead.py` |
 | `src/libgcc/fp-bit.c` | 2.9-ee `-S`, whole file twice (`dp-bit.o`, `fp-bit.o` with `-DFLOAT`) → assemble → `tools/strip_dead.py` → assemble |
 | `src/libgcc/nonmatching_*.c` | asm stubs for the modules that do not match yet, and for linker fill |
@@ -108,23 +109,14 @@ near-misses).
 
 ## The post-processors
 
-Each rewrites the compiler's `.s` before it is assembled, and each is
-scoped so that it cannot touch a function that does not need it.
+Each one models something retail's assembler or linker did that ours does
+not; none changes an instruction the compiler wrote.
+[BUILD_FIDELITY.md](BUILD_FIDELITY.md) is the authoritative list, with the
+evidence for each step, how many matches depend on it, and the rules for
+adding one (`tools/check_build_fidelity.py` enforces them). Every source
+file is compiled with the flags above plus any that `config/file_cflags.txt`
+gives that whole file; there are no per-function flags.
 
-- **`tools/fix_core_spills.py`**: narrows `$sp`-relative callee-saved
-  spills from `sq`/`lq` to `sd`/`ld` in `core_text` objects. The layout
-  already matches retail, so it is a pure mnemonic substitution with no
-  offset arithmetic. It keys on address: from 0x12DB18 (boot.cpp's
-  `main`) to the end of the segment retail spills with `sq`, and those
-  objects are left alone.
-- **`tools/fix_tail_calls.py`**: turns a compiled call-and-return into
-  retail's bare `j target`, since GCC 2.95 has no sibling-call
-  optimisation. It fires only for the functions listed in
-  `tools/tail_call_functions.txt`, those whose *retail* form is a bare
-  tail jump; keyed on our own output it once broke eight exact matches.
-  It deletes the frame and moves at most the last body instruction into
-  the jump's delay slot (SN's assembler fills delay slots only from after
-  a branch). It never synthesises an instruction.
 - **`tools/ps2eeas_nops.py`** (game code only): adds the nops SN's own
   assembler, `ps2eeas`, added to retail's text segment and GNU as does
   not. It pads every loop shorter than six instructions before its
