@@ -41,7 +41,15 @@ void func_0023DFE0(VideoDec *dec) {
 void func_0023E000(VideoDec *dec) {
     dec->state = 0;
 }
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E008); /* videoDecDelete(VideoDec *) */
+extern int func_0023D988(void *);
+extern int func_0012BB20(void *);
+
+/* videoDecDelete(VideoDec *) */
+int func_0023E008(VideoDec *dec) {
+    func_0023D988(dec->viBuf);
+    func_0012BB20(dec);
+    return 1;
+}
 /* videoDecAbort(VideoDec *) -- sets the decoder state to 1. */
 void func_0023E040(VideoDec *dec) {
     dec->state = 1;
@@ -56,17 +64,49 @@ int func_0023E058(VideoDec *dec, unsigned int state) {
     dec->state = state;
     return old;
 }
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E068); /* videoDecPutTs(VideoDec *, long, long, unsigned char *, int) */
+extern void func_0023DBE0(char *, void *);
+extern char *D_0016130C MACRO_ADDR;
+
+/* videoDecPutTs(VideoDec *, long, long, unsigned char *, int) */
+void func_0023E068(VideoDec *dec, long pts, long dts, int pos, int len) {
+    struct {
+        long pts;
+        long dts;
+        int diff;
+        int len;
+    } ts;
+    ts.pts = pts;
+    ts.dts = dts;
+    ts.diff = pos - *(int *)dec->viBuf;
+    ts.len = len;
+    func_0023DBE0(D_0016130C + 0xD9090, &ts);
+}
 /* videoDecInputCount(VideoDec *) -- viBufCount of the input buffer. */
 int func_0023E0B0(VideoDec *dec) {
     return func_0023D9E0(dec->viBuf);
 }
 LINKER_REMNANT("asm/remnants/text", func_0023E0D0);
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E0D8); /* videoDecFlush(VideoDec *) */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E1B0); /* videoDecIsFlushed(VideoDec *) */
+extern int func_0023E0B0(VideoDec *);
+extern unsigned int func_0012BB98(void *);
+
+/* videoDecIsFlushed(VideoDec *) */
+int func_0023E1B0(VideoDec *dec) {
+    int res = 0;
+    if (func_0023E0B0(dec) == 0) {
+        res = func_0012BB98(dec) > 0;
+    }
+    return res;
+}
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E1F8); /* videoDecMain(void *) */
 INCLUDE_ASM("asm/nonmatchings/text", func_0023E298); /* decBs0(VideoDec *) */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023E450); /* mpegError(sceMpeg *, sceMpegCbDataError *, void *) */
+extern void func_001E9730(char *, ...);
+extern char D_00161328[];
+/* mpegError(sceMpeg *, sceMpegCbDataError *, void *) */
+int func_0023E450(void *mpeg, int *cbdata, void *arg) {
+    func_001E9730(D_00161328, cbdata[1]);
+    return 1;
+}
 extern void func_0023BB40(void);
 extern int func_0023D340(char *);
 extern char *D_0016130C MACRO_ADDR;
