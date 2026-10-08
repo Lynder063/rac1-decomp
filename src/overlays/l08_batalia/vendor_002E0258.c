@@ -60,7 +60,90 @@ void *func_L08_002E3010(char *parent, int oClass, int joint, int pjoint) {
     }
     return m;
 }
-INCLUDE_ASM("asm/overlays", func_L08_002E30E8);
+extern void *func_L08_002E3010(char *parent, int oClass, int joint, int pjoint);
+
+/* Fills the data block at +0x60 to +0x1xx with objects made by func_L08_002E3010 (types 0x1B9 to 0x1C2, each
+ * with its parent and index fields), including loops of eight for type 0x1BB. */
+void func_L08_002E30E8(char *m) {
+    char *d = *(char **)(m + 0x78);
+    char *x3;
+    char *x5;
+    char *x6;
+    int i;
+    int c3 = 3;
+    char *e;
+    int *p0 = (int *)(d + 0x60);
+    int *p1 = (int *)(d + 0x64);
+    int *p2 = (int *)(d + 0x68);
+    int *p3 = (int *)(d + 0x6C);
+
+    *(char **)p0 = m;
+    *p1 = 0;
+    *p2 = 0;
+    *p3 = 0;
+    *(char **)(d + 0x90) = func_L08_002E3010(m, 0x1C1, 0, 2);
+    *(char **)(d + 0x94) = m;
+    *(int *)(d + 0x98) = 0;
+    *(int *)(d + 0x9C) = 2;
+    *(char **)(d + 0x70) = func_L08_002E3010(m, 0x1C2, 0, 3);
+    *(char **)(d + 0x74) = m;
+    *(int *)(d + 0x78) = 0;
+    *(int *)(d + 0x7C) = c3;
+    x3 = func_L08_002E3010(m, 0x1C2, 0, 4);
+    *(char **)(d + 0x80) = x3;
+    *(unsigned short *)(x3 + 0x34) |= 0x8000;
+    *(char **)(d + 0x84) = m;
+    *(int *)(d + 0x88) = 0;
+    *(int *)(d + 0x8C) = 4;
+    *(char **)(d + 0xD0) = func_L08_002E3010(m, 0x1C0, 0, 0);
+    *(char **)(d + 0xD4) = m;
+    *(int *)(d + 0xD8) = 0;
+    *(int *)(d + 0xDC) = 0;
+    x5 = func_L08_002E3010(m, 0x1C0, 1, 1);
+    *(char **)(d + 0xE0) = x5;
+    *(char **)(d + 0xE4) = m;
+    *(int *)(d + 0xE8) = 1;
+    *(int *)(d + 0xEC) = 1;
+    x6 = func_L08_002E3010(x5, 0x1C0, 1, 0);
+    *(char **)(d + 0xF0) = x6;
+    *(int *)(d + 0xF8) = 1;
+    *(int *)(d + 0xFC) = 0;
+    *(int *)(d + 0xF4) = *(int *)(d + 0xE0);
+    *(char **)(d + 0xB0) = func_L08_002E3010(x6, 0x1BD, 0, 0);
+    *(int *)(d + 0xB8) = 0;
+    *(int *)(d + 0xBC) = 0;
+    *(int *)(d + 0xB4) = *(int *)(d + 0xF0);
+    *(char **)(d + 0xC0) = func_L08_002E3010(*(char **)(d + 0xD0), 0x1BA, 1, 1);
+    *(int *)(d + 0xC8) = 1;
+    *(int *)(d + 0xCC) = 1;
+    *(int *)(d + 0xC4) = *(int *)(d + 0xD0);
+    *(char **)(d + 0xA0) = func_L08_002E3010(m, 0x1B9, 0, 0);
+    *(int *)(d + 0xA4) = *(int *)(d + 0xC0);
+    *(int *)(d + 0xA8) = 0;
+    *(int *)(d + 0xAC) = 0;
+    for (i = 0; i < 8; i++) {
+        int j = i + 2;
+        e = d + 0x10C + i * 16;
+        *(char **)(e - 0xC) = func_L08_002E3010(*(char **)(d + 0xD0), 0x1BB, 0, j);
+        *(int *)(e - 8) = *(int *)(d + 0xD0);
+        *(int *)(e - 4) = 0;
+        *(int *)e = j;
+    }
+    for (i = 0; i < 8; i++) {
+        int j = i + 2;
+        *(char **)&p0[0x48 + i * 4] = func_L08_002E3010(*(char **)(d + 0xE0), 0x1BB, 0, j);
+        p1[0x48 + i * 4] = *(int *)(d + 0xE0);
+        p2[0x48 + i * 4] = 0;
+        p3[0x48 + i * 4] = j;
+    }
+    for (i = 0; i < 8; i++) {
+        int j = i + 2;
+        *(char **)&p0[0x68 + i * 4] = func_L08_002E3010(*(char **)(d + 0xF0), 0x1BB, 0, j);
+        p1[0x68 + i * 4] = *(int *)(d + 0xF0);
+        p2[0x68 + i * 4] = 0;
+        p3[0x68 + i * 4] = j;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L08_002E33F0);
 INCLUDE_ASM("asm/overlays", func_L08_002E35C8);
 INCLUDE_ASM("asm/overlays", func_L08_002E3860);
@@ -178,7 +261,83 @@ void func_L08_002E6208(char *m, float *out, float *rot) {
     func_L00_001FF4B0(v, dir, sz);
     func_001F9BD8(out, out, v);
 }
-INCLUDE_ASM("asm/overlays", func_L08_002E6500);
+typedef int u128 __attribute__((mode(TI)));
+extern float func_001F9CB8(void *a);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9EE8(void *, void *, void *);
+extern int func_001FA898(float);
+extern float func_001FA888(int);
+extern float func_001FA748(float, float);
+extern void func_00234C98(int, long);
+extern int func_001F4868(int);
+extern void func_L02_0020BF88(void *, void *, void *, s32, s32);
+extern char D_L08_0016D2C0[];
+extern short D_L08_00161CEC;
+extern short D_L08_00161CF0;
+
+/* When the short at data + 0x6C is nonzero, projects the moby's offset position to screen space and draws a
+ * four-corner quad there, its corners rotated in 90-degree steps by the angle at data + 0x74 and scaled by distance. */
+void func_L08_002E6500(char *m) {
+    char *d = *(char **)(m + 0x78);
+    if (*(short *)(d + 0x6C) != 0) {
+        long v[4];
+        int w[4];
+        int t[4];
+        float a[4];
+        float b[4];
+        float len, s;
+        char *g;
+        int r19, r18;
+        long r16;
+        int dv;
+        qcopy(a, m + 0x10);
+        func_L00_001FF4B0(b, m + 0xE0, *(float *)&D_L08_00161CEC);
+        func_001F9BD8(a, a, b);
+        func_L00_001FF4B0(b, m + 0xC0, *(float *)&D_L08_00161CF0);
+        func_001F9BD8(a, a, b);
+        func_001F9BF0(a, a, D_L08_00167640);
+        len = func_001F9CB8(a);
+        a[3] = 1.0f;
+        func_001F9C30(a, a, 1024.0f);
+        func_001F9EE8(a, a, D_L08_00167640 - 0x100);
+        g = D_L08_0016D2C0;
+        func_001F9C30(a, a, *(float *)(g + 0x210) / a[3]);
+        r19 = func_001FA898(a[0] * 16.0f) + 0x8000;
+        r18 = (func_001FA898(a[1] * 16.0f) + 0x8000) << 16;
+        r16 = (long)func_001FA898(a[2] * 0.9997f + *(float *)(g + 0x1A8)) << 32;
+        if (len > 16.0f) len = 16.0f;
+        else if (len < 4.0f) len = 4.0f;
+        s = func_001FA888(d[0x7B] + 0x10) * 0.015625f * (50.0f - len * 2.5f);
+        {
+            float A = s * func_001F9FA8(*(float *)(d + 0x74));
+            float B = s * func_001F9F90(*(float *)(d + 0x74));
+            float C = s * func_001F9FA8(func_001FA748(*(float *)(d + 0x74), 1.5707964f));
+            float D = s * func_001F9F90(func_001FA748(*(float *)(d + 0x74), 1.5707964f));
+            float E = s * func_001F9FA8(func_001FA748(*(float *)(d + 0x74), 4.712389f));
+            float F = s * func_001F9F90(func_001FA748(*(float *)(d + 0x74), 4.712389f));
+            float G = s * func_001F9FA8(func_001FA748(*(float *)(d + 0x74), 3.1415927f));
+            float H = s * func_001F9F90(func_001FA748(*(float *)(d + 0x74), 3.1415927f));
+            t[0] = 0;
+            t[1] = 0x200;
+            t[2] = 0x2000000;
+            t[3] = 0x2000200;
+            dv = *(int *)(d + 0x78);
+            w[3] = dv; w[2] = dv; w[1] = dv; w[0] = dv;
+            v[3] = r16; v[2] = r16; v[1] = r16; v[0] = r16;
+            v[0] += (func_001FA898(B) << 20) + r18;
+            v[0] += (func_001FA898(A) << 4) + r19;
+            v[1] += (func_001FA898(D) << 20) + r18;
+            v[1] += (func_001FA898(C) << 4) + r19;
+            v[2] += (func_001FA898(F) << 20) + r18;
+            v[2] += (func_001FA898(E) << 4) + r19;
+            v[3] += (func_001FA898(H) << 20) + r18;
+            v[3] += (func_001FA898(G) << 4) + r19;
+        }
+        func_00234C98(0x42, 0x8000000048L);
+        func_L02_0020BF88(v, t, w, func_001F4868(0x13), 1);
+        func_00234C98(0x42, 0x8000000044L);
+    }
+}
 /* spawns the child mobys this object owns and fills its part table */
 void func_L08_002E9B60(char *moby) {
     char *data = *(char **)(moby + 0x78);

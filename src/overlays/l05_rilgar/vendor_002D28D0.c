@@ -3,7 +3,49 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L05_002D28D0);
-INCLUDE_ASM("asm/overlays", func_L05_002D3078);
+extern int func_001F9908_v(void *) __asm__("func_001F9908");
+extern float func_001FA748(float, float);
+extern float func_002140F8(float, float);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern unsigned char *func_L00_00272770(void *, void *, void *, float, float);
+extern int func_001F9850(int);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern float D_L05_001613A8_m __asm__("D_L05_001613A8") MACRO_ADDR;
+extern char D_L05_001613A8[] MACRO_ADDR;
+extern char D_L05_0015F660[] MACRO_ADDR;
+
+/* When func_001F9908(data + 0x84) is nonzero, makes two func_L00_00272770 calls at random points around the
+ * moby (one with +2.0, one with -2.0), then stores a random 3.0 to 5.0 value, as an int, at data + 0x84. */
+void func_L05_002D3078(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    int i;
+    float v[4];
+    unsigned char *r;
+    char *a;
+    char *b;
+    char *d;
+    float t;
+    if (func_001F9908_v(data + 0x84) != 0) {
+        i = 0;
+        a = moby + 0xD0;
+        b = moby + 0x10;
+        d = D_L05_001613A8;
+        for (; i < 2; i++) {
+            t = func_001FA748(*(float *)(moby + 0x48), 3.1415927f);
+            t = func_001FA748(t, func_002140F8(-0.78539801f, 0.78539801f));
+            func_001F9C30(v, a, func_002140F8(-0.5f, 0.5f));
+            func_001F9BD8(v, v, b);
+            v[2] = D_L05_001613A8_m + 0.05f;
+            r = func_L00_00272770(v, D_L05_0015F660, d,
+                                  func_002140F8(0.7f, 1.0f), i == 0 ? 2.0f : -2.0f);
+            if (r != 0) {
+                *(short *)(r + 0xA) = func_001F9850(0xF);
+            }
+            *(int *)(data + 0x84) = func_001FA898_r(func_002140F8(3.0f, 5.0f));
+        }
+    }
+}
 extern char *func_L00_002D9340(void *, float);
 extern float func_00214158(void);
 extern float func_002140F8(float, float);
@@ -456,7 +498,58 @@ void func_L05_00308188(char *moby, int idx, float *out) {
     out[0] = out[0] + FastCos(a) * 0.0f;
     out[1] = out[1] + FastSin(a) * 0.0f;
 }
-INCLUDE_ASM("asm/overlays", func_L05_00308268);
+extern int func_L01_0028C2D8(void *, void *, float);
+extern int func_L00_0025E7F8(char *, int, int, int);
+extern float func_001FA850(float, float);
+extern void func_L05_00308188(char *moby, int idx, float *out);
+extern char *D_L05_001B0CB0[];
+
+typedef struct {
+    int count;
+    float pad[3];
+    float points[1][4];
+} L05Path;
+
+/* Advances the path-node index at +0x258, re-aiming at each node, until the heading test and the
+ * distance limits (4.0 and 2.0) are satisfied. */
+void func_L05_00308268(char *moby) {
+    char *d = *(char **)(moby + 0x78);
+    float target[4];
+    float heading, distance;
+
+    func_L05_00308188(moby, *(short *)(d + 0x258), target);
+    heading = func_L00_001FF860(target[0] - *(float *)(moby + 0x10), target[1] - *(float *)(moby + 0x14));
+    for (;;) {
+        L05Path *path;
+        L05Path *base;
+
+        func_L05_00308188(moby, *(short *)(d + 0x258), target);
+        distance = func_001F9D48(target, d + 0x200);
+        if ((func_001FA850(heading, *(float *)(moby + 0x48)) < 1.5707964f || distance > 4.0f) && distance > 2.0f) {
+            break;
+        }
+        path = *(L05Path **)(d + 0x244);
+        *(short *)(d + 0x258) = (*(short *)(d + 0x258) + 1) % path->count;
+        base = (L05Path *)D_L05_001B0CB0[*(int *)(d + 0x220)];
+        if (path != base) {
+            if (*(short *)(d + 0x258) == path->count - 1) {
+                *(L05Path **)(d + 0x244) = base;
+                *(short *)(d + 0x258) = func_L01_0028C2D8(d + 0x200, base, 0.0f);
+                *(short *)(d + 0x258) = func_L00_0025E7F8(*(char **)(d + 0x244), *(short *)(d + 0x258), 5, 1);
+            }
+        } else if (path->points[*(short *)(d + 0x258)][3] > 0.0f && func_002140B0(100) > 0) {
+            int branch;
+            char *e;
+            branch = func_001FA898_r(((L05Path *)*(char **)(d + 0x244))->points[*(short *)(d + 0x258)][3]) - 1;
+
+            e = d + branch * 4;
+            *(char **)(d + 0x244) = D_L05_001B0CB0[*(int *)(e + 0x224)];
+            *(short *)(d + 0x258) = 0;
+        }
+        func_L05_00308188(moby, *(short *)(d + 0x258), target);
+        heading = func_L00_001FF860(target[0] - *(float *)(moby + 0x10), target[1] - *(float *)(moby + 0x14));
+    }
+}
 extern int func_L00_0025E7F8(char *, int, int, int);
 extern char *D_L05_001B0CB0[];
 
