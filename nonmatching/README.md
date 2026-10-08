@@ -156,7 +156,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_00235FF8`](shared/func_L00_00235FF8.c) | shared | 148 | BYTES 73/148 | 50.7% |
 | [`func_L05_003054B0`](l05_rilgar/func_L05_003054B0.c) | l05_rilgar | 712 | BYTES 465/712 | 34.7% |
 | [`func_L00_00257F4C`](shared/func_L00_00257F4C.c) | shared | 104 | BYTES 86/104 | 17.3% |
-| [`func_L00_001EB430`](shared/func_L00_001EB430.c) | shared | 8 | SIZE ours 24 / retail 8 | - |
 | [`func_L00_001EB890`](shared/func_L00_001EB890.c) | shared | 764 | SIZE ours 768 / retail 764 | - |
 | [`func_L00_001EC220`](shared/func_L00_001EC220.c) | shared | 592 | SIZE ours 592 / retail 596 | - |
 | [`func_L00_001ED428`](shared/func_L00_001ED428.c) | shared | 56 | SIZE ours 388 / retail 392 | - |
