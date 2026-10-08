@@ -11,7 +11,10 @@ void func_L00_001EB430(int *a) {
     a[4] = 0;
 }
 INCLUDE_ASM("asm/overlays", func_L00_001EB438);
-INCLUDE_ASM("asm/overlays", func_L00_001EB440);
+// Clears the word at offset 0xC of its argument.
+void func_L00_001EB440(int *a) {
+    a[3] = 0;
+}
 extern float func_001FA748(float, float);
 
 /* Copies a 5-float record, the first element replaced by func_001FA748(src[0], x).

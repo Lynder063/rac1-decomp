@@ -1,11 +1,14 @@
 /* NON_MATCHING func_L00_00216648 -- src/overlays/shared/help_00214D60.c
- * Best so far: SIZE ours 376 / retail 384, checked 2026-10-03.
+ * Best so far: SIZE ours 380 / retail 384, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
  *   func_L00_00216648: camera tuning per frame; when the cheat byte is set copies a float to D_L00_0017B48C, then 
  *   Best candidate p7.c: 376 bytes vs retail 384. Register allocation (f20/f21, the two addiu of D_L00_0017A780 vi
  *   Remaining difference: retail reloads *(int*)(p+0x1184) after the store to D_L00_0017B48C (gcc treats the store
+ *   (w05) Tried D_L00_0017B48C as a plain `extern float` (p9) and an explicit `o` local reloaded after the store (
+ *   2026-10-07 mini29 main-only: p11 integer hero-address math plus exact-symbol anchor alias SIZE376/384, unchang
+ *   hq3 s06: five runs (p12-p16) all 376 or 380 bytes with the same wall: the store to D_L00_0017B48C must kill th
  */
 extern char D_0013E633[];
 extern unsigned char D_0015EEB0[];
@@ -19,7 +22,7 @@ void func_L00_00216648(void) {
     char *p = D_0013E633 + 0xE1D;
     float inv, a, b, k;
 
-    if (*(int *)(p + 0x1184) != 0) {
+    if (*(volatile int *)(p + 0x1184) != 0) {
         if (D_0015EEB0[3] != 0) {
             *(float *)D_L00_0017B48C = *(float *)&D_0015EF18;
         }

@@ -6,6 +6,7 @@ The following functions adapt source from
 [Lombyte](https://github.com/mateuszklysz/Lombyte) for the PAL executable:
 
 - `src/core/00119328.c`: `func_001194C8` (`topThread`)
+- `src/game/stream.c`: `func_00217AE8` (menu entry transitions and message formatting; `src/ui/menus/fun_00216c48.c`)
 - `src/core/00119D88.c`: `func_0011C208` (`sceClose`)
 - `src/core/00119868.c`: `func_00119CC8` (`sceTtyInit`)
 - `src/game/hud.c`: `func_00201190` (HUD sprite with explicit UV corners)
@@ -558,4 +559,3 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
-

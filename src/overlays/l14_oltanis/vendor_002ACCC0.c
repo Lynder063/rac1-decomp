@@ -872,7 +872,87 @@ void func_L14_002D87A0(char *m) {
     func_001F49B0(func_L14_002D8500, m);
 }
 INCLUDE_ASM("asm/overlays", func_L14_002DF5F8);
-INCLUDE_ASM("asm/overlays", func_L14_002DF6B8);
+typedef int u128_s07 __attribute__((mode(TI)));
+extern short D_L14_00161BD4;
+extern short D_L14_00161BD0;
+extern float func_001F9B88(float);
+extern float func_001F9C78(void *a, void *b);
+extern float func_001F9FC0(float x);
+extern int func_0022EB08(void *, int, int, int, int);
+
+// Turns a moby's tail toward its target: a spring on each of its three points, with the axis-angle rotation for the tilt.
+void func_L14_002DF6B8(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    char *g = (char *)D_0013E633 + 0xE1D;
+    float v[4];
+    float up[4];
+    float d[4];
+    float ax[4];
+    float len;
+    float dt;
+    float ang;
+    float lim;
+
+    *(u128_s07 *)up = 0;
+    up[2] = 1.0f;
+    up[3] = 1.0f;
+
+    if ((*(char **)(g + 0x2FC) == moby && *(short *)(g + 0x30E) == 0) ||
+        (*(char **)(g + 0x4F8) == moby && *(int *)(g + 0x208C) == 3)) {
+        char *p = (char *)D_0013E633 + 0xE1D;
+        *(char *)(moby + 0xBC) = 1;
+        if (func_001F9B88(*(float *)(p + 0x80) - *(float *)(moby + 0x10)) < 0.1f &&
+            func_001F9B88(*(float *)(p + 0x84) - *(float *)(moby + 0x14)) < 0.1f) {
+            qcopy(v, up);
+        } else {
+            func_001F9BF0(d, (char *)D_0013E633 + 0xE9D, moby + 0x10);
+            d[2] = d[2] + *(float *)&D_L14_00161BD4;
+            len = func_001F9CB8(d);
+            if (len == 0.0f) {
+                qcopy(v, up);
+            } else {
+                dt = func_001F9C78(up, d);
+                ang = 1.5707963705f - func_001F9FC0(dt / len);
+                lim = *(float *)&D_L14_00161BD0 * 0.0174532924f;
+                if (lim < ang) {
+                    ang = lim;
+                }
+                func_001F9CA0(ax, d, up);
+                func_002156E0(v, up, ax, ang);
+                func_L00_001FF4B0(v, v, 1.0f);
+            }
+        }
+    } else {
+        qcopy(v, up);
+        *(char *)(moby + 0xBC) = 0;
+    }
+
+    if (func_001F9908(data + 0x70)) {
+        if (0.1f < func_001F9B88(*(float *)(moby + 0xE0) - v[0]) ||
+            0.1f < func_001F9B88(*(float *)(moby + 0xE4) - v[1]) ||
+            0.1f < func_001F9B88(*(float *)(moby + 0xE8) - v[2])) {
+            *(int *)(data + 0x70) = func_001F9850(60);
+            *(float *)(moby + 0x18) = *(float *)(moby + 0x18) + 2.0f;
+            func_0022EB08(*(void **)(*(char **)(moby + 0x24) + 0x28), 8, (int)moby, (int)(moby + 0x10), 0x400);
+            *(float *)(moby + 0x18) = *(float *)(moby + 0x18) - 2.0f;
+        }
+    }
+
+    func_L00_0025C918((float *)(moby + 0xE0), (float *)(data + 0x60), v[0], 0.005f, 0.2f, 0.0f);
+    func_L00_0025C918((float *)(moby + 0xE4), (float *)(data + 0x64), v[1], 0.005f, 0.2f, 0.0f);
+    func_L00_0025C918((float *)(moby + 0xE8), (float *)(data + 0x68), v[2], 0.005f, 0.2f, 0.0f);
+
+    func_L00_001FF4B0(moby + 0xE0, moby + 0xE0, 1.0f);
+    *(u128_s07 *)d = 0;
+    d[0] = 1.0f;
+    d[3] = 1.0f;
+    func_001F9CA0(moby + 0xD0, d, moby + 0xE0);
+    func_L00_001FF4B0(moby + 0xD0, moby + 0xD0, 1.0f);
+    func_001F9CA0(moby + 0xC0, moby + 0xE0, moby + 0xD0);
+    *(float *)(moby + 0xCC) = 0.0f;
+    *(float *)(moby + 0xDC) = 0.0f;
+    *(float *)(moby + 0xEC) = 0.0f;
+}
 typedef int u128 __attribute__((mode(TI)));
 extern void func_L14_002E0480(char *);
 extern float func_001F9B88(float);

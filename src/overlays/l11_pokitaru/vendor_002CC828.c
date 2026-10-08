@@ -470,7 +470,43 @@ void func_L11_0030FE40(unsigned char *m) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L11_00310058);
-INCLUDE_ASM("asm/overlays", func_L11_00310770);
+extern int func_L11_00310738(char *moby);
+extern void func_0022ED80(int, int, int);
+extern unsigned char D_0013D4EB NOT_SDA;
+extern short D_L11_0015F6B0;
+
+// Update for a moby that waits, then animates toward its target and changes state.
+void func_L11_00310770(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    int state = (unsigned char)moby[0x20];
+    switch (state) {
+    case 0:
+        ((unsigned char *)moby)[0x30] = 0xFF;
+        moby[0x20] = 1;
+        *(float *)(data + 8) = *(float *)(moby + 0x48);
+        break;
+    case 1:
+        if (func_L11_00310738((char *)(D_L11_00160058_m + (*(int *)data << 8)))) {
+            if (*(int *)&D_L11_0015F6B0 > 10) {
+                D_0013D4EB = state;
+                moby[0x20] = 2;
+                func_0022ED80(0, 0, (int)moby);
+            } else {
+                moby[0x20] = 3;
+                *(float *)(moby + 0x48) = func_001FA748(*(float *)(data + 8), 1.0471976f);
+            }
+        }
+        break;
+    case 2: {
+        float t = func_001FA748(*(float *)(data + 8), 1.0471976f);
+        if (func_L00_0025CE58((float *)(moby + 0x48), t, (float *)(data + 4),
+                              D_0015EE70 * 0.34906584f, D_0015EE70 * 0.34906584f,
+                              D_0015EE6C * 0.7853982f) == 0.0f)
+            moby[0x20] = 3;
+        break;
+    }
+    }
+}
 extern char *func_0020D348(int);
 extern float func_00214158(void);
 extern void func_L00_00251E30(void *);

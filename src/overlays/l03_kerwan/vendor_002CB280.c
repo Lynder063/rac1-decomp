@@ -259,7 +259,7 @@ void func_L03_002E3D10(char *m) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L03_002ECBA8);
-
+extern char D_0013E633[];
 typedef struct CameraSmoothECD40 {
     float position[4]; int sourceFlag; float duration;
 } CameraSmoothECD40;
@@ -293,8 +293,9 @@ extern CameraEntryECD40 *D_L03_0015F050_camera __asm__("D_L03_0015F050") MACRO_A
 
 extern int D_L03_001670F4;
 extern void func_001F9BC0(void *);
-extern int func_001F9850(int);
 extern void func_001FA1F8(void *, void *);
+extern void func_L03_002ECBA8(void *);
+extern int func_001F9850(int);
 
 /* ActivateCamera_14: seed the camera's smoothing state from the current camera table entry */
 void func_L03_002ECD40(char *m) {

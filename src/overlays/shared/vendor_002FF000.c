@@ -78,7 +78,39 @@ void func_L06_00301FE8(char *moby) {
         DeleteMoby(moby);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L06_003020B8);
+typedef int u128 __attribute__((mode(TI)));
+extern int rnd_a(float) __asm__("func_001FA898");
+extern char *mk_a(int) __asm__("func_0020D348");
+extern void upd_a(void *) __asm__("func_L00_00251E30");
+extern float D_0015EE6C MACRO_ADDR;
+
+/* Spawns a debris moby with a random class and random spin. */
+char *func_L06_003020B8(int unused, char *pa, char *pb) {
+    float a[4];
+    float b[4];
+    float *va = a;
+    float *vb = b;
+    char *m;
+    char *data;
+    *(u128 *)a = *(u128 *)pa;
+    *(u128 *)b = *(u128 *)pb;
+    m = mk_a(rnd_a(func_002140F8(1085.0f, 1089.0f)));
+    if (m != 0) {
+        *(float *)(m + 0x2C) = *(float *)(*(char **)(m + 0x24) + 0x24) * *(float *)&D_L06_00162110;
+        ((unsigned char *)m)[0x30] = 0xFF;
+        *(short *)(m + 0x32) = 0x7E;
+        m[0x31] = 1;
+        data = *(char **)(m + 0x78);
+        qcopy(m + 0x10, va);
+        qcopy(data, vb);
+        *(float *)(data + 0x10) = func_002140F8(-360.0f, 360.0f) * 0.017453292f * D_0015EE6C;
+        *(float *)(data + 0x14) = func_002140F8(-360.0f, 360.0f) * 0.017453292f * D_0015EE6C;
+        *(float *)(data + 0x18) = func_002140F8(-360.0f, 360.0f) * 0.017453292f * D_0015EE6C;
+        m[0xBC] = rnd_a(func_001F9878(func_002140F8(60.0f, 120.0f)));
+        upd_a(m);
+    }
+    return m;
+}
 extern int D_L06_0015F6B0 MACRO_ADDR;
 extern short D_L06_00162158;
 extern short D_L06_0016215C;

@@ -12,7 +12,271 @@ void func_L14_002FF6C0(char *moby) {
  if(other!=0 && other[0x20]>=0) func_0020D678(other);
  if(moby[0x20]>=0) func_0020D678(moby);
 }
-INCLUDE_ASM("asm/overlays", func_L14_002FF728);
+typedef struct L14Model {
+    char pad0[0x10];
+    int bounds;
+} L14Model;
+
+typedef struct L14Moby {
+    char pad0[0x10];
+    float position[3];
+    char pad1[4];
+    unsigned char state;
+    char pad2[3];
+    L14Model *model;
+    char pad3[8];
+    unsigned char collision;
+    char pad4[3];
+    unsigned short flags;
+    char pad5[0x0A];
+    float rotation[3];
+    char pad6[6];
+    unsigned char frame;
+    unsigned char animation;
+    char pad7[0x1C];
+    unsigned char status;
+    char pad8[7];
+    void *data;
+    char pad9[0x18];
+    int bounds;
+    char pad10[0x0C];
+    unsigned char opacity;
+    char pad11[0x0D];
+    short id;
+} L14Moby;
+
+typedef struct L14Data {
+    char pad0[0x60];
+    unsigned char effect[4];
+    char pad1[3];
+    unsigned char ticks;
+    char pad2[8];
+    unsigned char knock[16];
+    float knock_drag;
+    float knock_gravity;
+    float knock_speed;
+    float knock_rise;
+    char pad3[4];
+    int knock_flags;
+    char pad4[0x15];
+    unsigned char knock_bAD;
+    char pad5[0x22];
+    int counter;
+    float timer;
+    int path;
+    int other_path;
+    int trigger;
+    float vx;
+    float vy;
+    float vz;
+    float turn;
+    void *child;
+    char pad6[4];
+    int mode;
+} L14Data;
+
+typedef struct L14Hero {
+    char pad0[0x80];
+    float position[3];
+    char pad1[0x1B0];
+    L14Moby *standing;
+} L14Hero;
+
+extern char D_0013E633[];
+extern float D_0015EE6C MACRO_ADDR;
+extern short D_L14_0016208C;
+extern short D_L14_00162090;
+extern char *D_L14_001B0F30[];
+extern char D_L14_001FD290[];
+extern char D_L14_001FD2C8[];
+extern char D_L14_001FD310[];
+extern char D_L14_001FD348[];
+extern char D_L14_001FD390[];
+extern int func_001F9850(int);
+extern void func_00213DE0(void *, int, int, int);
+extern char *func_L00_0025B478(void *, int, int);
+extern float func_L00_001FF860(float, float);
+extern void func_L00_0025D5B0(void *, void *, int, int, int, float);
+extern void func_L00_002584A8(void *, int, int);
+extern void func_00213D28(void *, int, int);
+extern int func_001E9730();
+extern void func_L14_002FFD88(void *);
+extern void func_L00_002592B0(char *moby, float target, float *vel, float k, float d, float max);
+extern int func_00215570(void *arg0, int arg1);
+extern char *func_L14_00300F80(void *, void *);
+extern void func_L14_003000B0(void *);
+extern int func_L14_002FFF08(char *);
+extern float func_L00_0025C918(float *, float *, float, float, float, float);
+extern void func_L14_00301090(void *);
+extern void func_L14_00300130(void *);
+extern int func_L00_0025D6F0(void *, void *);
+extern void func_L00_00260108(void *, void *, int, float, float);
+extern void func_L00_0025E590(void *, void *);
+
+/* Bolt thief update (moby class 923, level 14): hit knockback, turn to the hero, walk a path, then fall back. */
+void func_L14_002FF728(L14Moby *m) {
+    L14Data *d = m->data;
+    char *hit;
+
+    if ((m->status & 2) && m->frame == m->animation && m->frame == 1)
+        func_00213DE0(m, 4, 0, func_001F9850(5));
+    if (((L14Hero *)(D_0013E633 + 0xE1D))->standing == m && m->animation != 1 && m->frame != 1)
+        func_00213DE0(m, 1, 0, func_001F9850(5));
+    hit = func_L00_0025B478(m, 0x210000, 0);
+    if (hit && m->state != 6) {
+        L14Hero *hero = (L14Hero *)(D_0013E633 + 0xE1D);
+
+        d->knock_drag = 0.008f;
+        d->knock_gravity = 0.0005f;
+        d->knock_speed = D_0015EE6C * 24.0f;
+        d->knock_rise = D_0015EE6C * 12.0f;
+        d->knock_flags = 1;
+        d->knock_bAD = 0;
+        func_L00_0025D5B0(m, d->knock, 1, 1, 0,
+                          func_L00_001FF860(m->position[0] - hero->position[0], m->position[1] - hero->position[1]));
+        d->ticks = 0x78;
+        func_L00_002584A8(m, 0, -1);
+        m->state = 6;
+    }
+    m->opacity = 0xFF;
+    switch (m->state) {
+    case 0:
+        if (d->mode == 2) {
+            m->state = 1;
+            d->turn = 0.0f;
+            func_00213D28(m, 4, 0);
+        } else {
+            if (d->path == -1) {
+                func_001E9730(D_L14_001FD290, m->id);
+                func_0020D678(m);
+                return;
+            }
+            if (*(int *)D_L14_001B0F30[d->path] == 0) {
+                func_001E9730(D_L14_001FD2C8, m->id);
+                func_0020D678(m);
+                return;
+            }
+            if (d->mode != 1) {
+                if (d->other_path == -1) {
+                    func_001E9730(D_L14_001FD310, m->id);
+                    func_0020D678(m);
+                    return;
+                }
+                if (*(int *)D_L14_001B0F30[d->other_path] == 0) {
+                    func_001E9730(D_L14_001FD348, m->id);
+                    func_0020D678(m);
+                    return;
+                }
+            }
+            if (d->trigger == -1) {
+                func_001E9730(D_L14_001FD390, m->id);
+                func_0020D678(m);
+                return;
+            }
+            func_L14_002FFD88(m);
+            m->state = 2;
+            m->collision = 0x80;
+            m->flags |= 0x41;
+            m->bounds = 0;
+        }
+        d->child = 0;
+        break;
+    case 1: {
+        L14Hero *hero = (L14Hero *)(D_0013E633 + 0xE1D);
+
+        func_L00_002592B0((char *)m,
+                          func_L00_001FF860(hero->position[0] - m->position[0], hero->position[1] - m->position[1]),
+                          &d->turn, 0.005f, 0.2f, 0.0f);
+        func_L14_00300130(m);
+        break;
+    }
+    case 2:
+        if (func_00215570(D_0013E633 + 0xE9D, d->trigger)) {
+            if (d->mode == 1) {
+                func_00213D28(m, 0, 0);
+            } else {
+                d->child = func_L14_00300F80(m, m->position);
+                func_L14_003000B0(m);
+                func_00213D28(m, 2, 0);
+            }
+            m->flags &= 0xFFBE;
+            m->bounds = m->model->bounds;
+            m->state = 4;
+        }
+        break;
+    case 4:
+        if (d->mode == 0)
+            func_L14_003000B0(m);
+        if (func_L14_002FFF08((char *)m)) {
+            m->state = 3;
+            func_00213DE0(m, 3, 0, 5);
+        }
+        func_L14_00300130(m);
+        break;
+    case 3: {
+        L14Data *a = m->data;
+        char *path = D_L14_001B0F30[a->path];
+        float target[4];
+        float zero;
+
+        if (a->mode == 0)
+            func_L14_003000B0(m);
+        qcopy(target, path + *(int *)path * 16);
+        zero = 0.0f;
+        func_L00_0025C918(m->position, &a->vx, target[0], *(float *)&D_L14_0016208C, *(float *)&D_L14_00162090, zero);
+        func_L00_0025C918(m->position + 1, &a->vy, target[1], *(float *)&D_L14_0016208C, *(float *)&D_L14_00162090, zero);
+        func_L00_0025C918(m->position + 2, &a->vz, target[2], *(float *)&D_L14_0016208C, *(float *)&D_L14_00162090, zero);
+        if ((m->status & 2) && m->frame == m->animation) {
+            if (a->mode == 1) {
+                m->state = 1;
+                a->turn = zero;
+                func_00213D28(m, 4, 0);
+            } else {
+                if (a->child) {
+                    func_L14_00301090(a->child);
+                    a->child = 0;
+                }
+                m->state = 5;
+                func_00213DE0(m, 0, 0, 20);
+                a->timer = zero;
+                a->counter = 0;
+            }
+        }
+        func_L14_00300130(m);
+        break;
+    }
+    case 5:
+        if (func_L14_002FFF08((char *)m)) {
+            char *path;
+
+            m->state = 2;
+            m->bounds = 0;
+            m->flags |= 0x41;
+            d->timer = 0.0f;
+            d->counter = 0;
+            d->turn = d->vx = d->vy = d->vz = d->timer;
+            path = D_L14_001B0F30[d->path];
+            qcopy(m->position, path + 0x10);
+            m->rotation[2] = func_L00_001FF860(*(float *)(path + 0x20) - *(float *)(path + 0x10),
+                                               *(float *)(path + 0x24) - *(float *)(path + 0x14));
+        } else {
+            func_L14_00300130(m);
+        }
+        break;
+    case 6:
+        if (func_L00_0025D6F0(m, d->knock) & 3) {
+            func_L00_00260108(m, m->position, -1, 1.0f, 13.0f);
+            func_0020D678(m);
+            return;
+        }
+        if (m->position[2] < 5.0f) {
+            func_0020D678(m);
+            return;
+        }
+        break;
+    }
+    func_L00_0025E590(m, d->effect);
+}
 extern float D_0015EE6C MACRO_ADDR;
 extern int D_0015EE84 MACRO_ADDR;
 extern short D_L14_00162088;

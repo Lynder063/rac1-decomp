@@ -12,7 +12,7 @@ flags included), with `-dlg` added to the compile step, and prints for each
 pseudo that global allocation handled, in allocation order: its reference
 count, live length, priority and the hard register it got. `-dlg` only
 makes the compiler write the allocator's dumps (to the current directory;
-they are moved into build-sn/regalloc/<func>/, so run one at a time); the
+they are moved into build-sn/regalloc/<func>/; concurrent runs wait on a lock); the
 code is the same. The verdict at the end is try_func's (overlay_check for level code).
 
 How the allocator decides (GCC 2.95 global.c):
@@ -32,6 +32,7 @@ rule on the same compiler family; that project works directly with this one.
 """
 import math
 import re
+import time
 import sys
 from pathlib import Path
 
@@ -64,12 +65,28 @@ def main() -> None:
     seg, src, first, last = try_func.find_stub(name)
     work = Path("build-sn/regalloc") / name
     try_func.run = run_with_dumps
-    obj = try_func.build(name, seg, src, first, last, Path(cand).read_text(), work)
-    # GCC writes its dumps to the current directory under the input's base name.
-    for ext in ("lreg", "greg"):
-        dump = Path(f"src.c.{ext}")
-        if dump.exists():
-            dump.replace(work / dump.name)
+    # GCC writes its dumps to the current directory under the input's base name,
+    # so concurrent runs would take each other's dumps: hold a lock until they are moved.
+    work.parent.mkdir(parents=True, exist_ok=True)
+    lock = work.parent / ".lock"            # a directory: mkdir is atomic across containers
+    while True:
+        try:
+            lock.mkdir()
+            break
+        except FileExistsError:
+            if time.time() - lock.stat().st_mtime > 600:    # a run that died holding it
+                lock.rmdir()
+            time.sleep(2)
+    try:
+        for ext in ("lreg", "greg"):
+            Path(f"src.c.{ext}").unlink(missing_ok=True)
+        obj = try_func.build(name, seg, src, first, last, Path(cand).read_text(), work)
+        for ext in ("lreg", "greg"):
+            dump = Path(f"src.c.{ext}")
+            if dump.exists():
+                dump.replace(work / dump.name)
+    finally:
+        lock.rmdir()
     if obj is None:
         sys.exit(f"{name}: COMPILE failed, see {work}/log.txt")
     lreg = section((work / "src.c.lreg").read_text(errors="replace"), name)

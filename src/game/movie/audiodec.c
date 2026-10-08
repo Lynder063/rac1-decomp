@@ -1,13 +1,30 @@
 #include "common.h"
 #include "structs.h"
 
-/*
- * movie/audiodec.cpp in the original source; text 0x23BFA0-0x23C5E0.
- * Name and boundary from the NTSC split of this game, mapped to PAL by matching function
- * sizes -- see docs/DECOMP_PROGRESS.md. Compiled as C for now.
- */
-
-INCLUDE_ASM("asm/nonmatchings/text", func_0023BFA0); /* audioDecCreate(_AudioDec *, unsigned char *, int, sceMpegStrType) */
+extern void func_001F99D8(void *, int);
+extern int func_0012F1A8(int, int, int, int, int, int);
+extern char *D_001613B8 MACRO_ADDR;
+/* Clears the header, sets buffer parameters, and acquires the sound transport handle. */
+int func_0023BFA0(char *dec, void *buffer, int size, char *staging) {
+    func_001F99D8(dec + 8, 0x20);
+    *(void **)(dec + 0x34) = buffer;
+    *(int *)(dec + 0x40) = size;
+    *(int *)(dec + 4) = 3;
+    *(int *)dec = 0;
+    *(int *)(dec + 0x30) = 0;
+    *(int *)(dec + 0x38) = 0;
+    *(int *)(dec + 0x3C) = 0;
+    *(int *)(dec + 0x44) = 0;
+    *(int *)(dec + 0x50) = 0;
+    *(int *)(dec + 0x58) = 0;
+    *(int *)(dec + 0x5C) = 0;
+    *(int *)(dec + 0x60) = 0;
+    D_001613B8 = staging;
+    *(int *)(dec + 0x4C) = 0x400;
+    *(int *)(dec + 0x48) = func_0012F1A8(0x400, 0x1000, 0x400, 0, 5, 3);
+    if (*(int *)(dec + 0x48) < 0) return 0;
+    return 1;
+}
 /* AudioDec: only the fields these functions touch are known. */
 typedef struct AudioDec {
     int pending;        /* non-zero while data waits for the SPU; audioDecStart sets it to 2 */
@@ -90,7 +107,28 @@ void func_0023C128(AudioDec *a, unsigned char **p1, int *n1, unsigned char **p2,
         return;
     }
 }
-INCLUDE_ASM("asm/nonmatchings/text", func_0023C1F8); /* audioDecEndPut(_AudioDec *, int) */
+/* Accounts for header bytes first, then advances the ring cursor and queued byte counts. */
+void func_0023C1F8(AudioDec *dec, int count) {
+    if (dec->pending == 0) {
+        if (dec->mode != 4) {
+            int used;
+            {
+                int header = 0x28 - dec->fill;
+                header = header < count ? header : count;
+                used = header;
+            }
+            dec->fill += used;
+            if (dec->fill >= 0x28) dec->pending = 1;
+            count -= used;
+        } else {
+            dec->pending = 1;
+        }
+    }
+    dec->size = dec->size / 0x400 * 0x400;
+    dec->rd = (dec->rd + count) % dec->size;
+    dec->cnt += count;
+    dec->f44 += count;
+}
 /* No recovered name. True once 0x1000 bytes or more are queued. */
 int func_0023C2B0(AudioDec *dec) {
     return dec->bytes >= 0x1000;

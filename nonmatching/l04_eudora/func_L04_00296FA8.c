@@ -1,10 +1,12 @@
 /* NON_MATCHING func_L04_00296FA8 -- src/overlays/l04_eudora/vuchain_00293490.c
- * Best so far: SIZE ours 508 / retail 500, checked 2026-10-03.
+ * Best so far: SIZE ours 496 / retail 500, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
  *   Initialises a vuchain moby's segment data (6-byte args to func_0020DB98, per-segment loop, then picks a base f
  *   Best is p5.c (SIZE 508 vs 500): ours has a loop-entry guard (retail is a do-while, sp+0x20 address computed af
+ *   Round q30/w04: do-while loop (p = arg1; do {...p += 0xB0;} while (p < lim)) and (char *)tmp inline fix the loo
+ *   hq3 s07: dropping the tp pointer and passing (char *)tmp (p11) gives 496 of 500, one instruction short: retail
  */
 extern void func_0020DB98(char *arg0, int arg1, void *arg2, char *arg3);
 extern void func_0020DAF8(char *arg0, int arg1, char *arg2);
@@ -25,7 +27,6 @@ void func_L04_00296FA8(char *arg0, char *arg1) {
     char *a;
     char *b;
     float f;
-    char *tp = (char *)tmp;
     int lim = (int)arg1 + 0x160;
     int i;
     int *q;
@@ -40,7 +41,7 @@ void func_L04_00296FA8(char *arg0, char *arg1) {
     a = arg1 + 0x160;
     b = arg1 + 0x120;
     for (p = (int)arg1; p < lim; p += 0xB0) {
-        func_0020DAF8(arg0, *(unsigned char *)(p + 0xF0), tp);
+        func_0020DAF8(arg0, *(unsigned char *)(p + 0xF0), (char *)tmp);
         *(int *)(p + 0x104) = 0;
         *(int *)(p + 0xFC) = 0;
         *(float *)(p + 0xF8) = func_L00_001FF860(tmp[4], tmp[5]);
@@ -58,9 +59,9 @@ void func_L04_00296FA8(char *arg0, char *arg1) {
         f += func_L04_00242868((unsigned char)arg0[0x22], (unsigned char)arg0[0x53]);
     }
     t = D_L04_001CABB8;
-    arg1[0xB6] = 5;
-    *(int *)(arg1 + 0xC0) = 0;
     arg1[0xB7] = 0;
+    *(int *)(arg1 + 0xC0) = 0;
+    arg1[0xB6] = 5;
     q = (int *)(arg1 + 0x70);
     for (i = 12; i >= 0; i--) {
         int *e = (int *)*q;

@@ -279,7 +279,87 @@ void func_L06_002F4F08(char *m) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L06_002F51A0);
+extern short D_L06_00161D7C;
+extern short D_L06_00161D84;
+extern short D_L06_00161D88;
+extern short D_L06_00161D8C;
+extern short D_L06_00161D90;
+extern short D_L06_00161D94;
+extern short D_L06_00161D98;
+extern short D_L06_00161D9C;
+extern short D_L06_00161DA0;
+extern short D_L06_00161DA4;
+extern short D_L06_00161DA8;
+extern short D_L06_00161DAC;
+extern short D_L06_00161DB0;
+extern float func_001F9D10(void *, void *);
+extern int func_L00_00200290(char *, float);
+extern void func_001FA218(void *, void *);
+extern void func_001F9EE8(void *, void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern float func_002140F8(float, float);
+extern float func_001F9878(float);
+extern void func_L00_00258DB0(float *, float, float);
+extern char *func_00219780(void *, void *, void *, int, int, int, int, int, int);
+
+/* Level 6 moby update: aims a vector at its target, runs the chain of distance and angle helpers, and hands the result to func_00219780. */
+void func_L06_002F51A0(char *moby)
+{
+    float v10[4];
+    float g20[4];
+    float g30[4];
+    float g40[4];
+    float v50[4];
+    float v60[4];
+    float v70[4];
+    float v80[4];
+    float v90[4];
+    float a0[4];
+    char *pos;
+    int i30;
+    int i23;
+    int i21;
+    int n;
+    int r;
+
+    pos = moby + 0x10;
+    qcopy(a0, pos);
+    a0[3] = 4.0f;
+    if (10.0f < func_001F9D10(D_0013E633 + 0xE9D, pos)) {
+        if (func_L00_00200290((char *)a0, 24.0f) == -1) return;
+    }
+    if (24.0f < func_001F9D10(D_0013E633 + 0xE9D, pos)) return;
+    qcopy(v50, pos);
+    func_001FA218(v10, moby + 0x40);
+    func_001F9BC0(v60);
+    v60[0] = *(float *)&D_L06_00161D7C * D_0015EE6C;
+    func_001F9EE8(v60, v60, v10);
+    v60[3] = *(float *)&D_L06_00161D84;
+    func_001F9C30(v70, v60, *(float *)&D_L06_00161DAC);
+    v70[2] = *(float *)&D_L06_00161DA8 * D_0015EE6C;
+    v90[3] = *(float *)&D_L06_00161D88;
+    i30 = func_001FA898(func_001F9878(func_002140F8((float)*(int *)&D_L06_00161D94, (float)*(int *)&D_L06_00161D98)));
+    i23 = func_001FA898(func_001F9878(func_002140F8((float)*(int *)&D_L06_00161D9C, (float)*(int *)&D_L06_00161DA0)));
+    n = func_001FA898(func_001F9878(func_002140F8((float)*(int *)&D_L06_00161D94, (float)*(int *)&D_L06_00161D98)));
+    if (i30 < n) i30 = n;
+    n = func_001FA898(func_001F9878(func_002140F8((float)*(int *)&D_L06_00161D9C, (float)*(int *)&D_L06_00161D98)));
+    if (i23 < n) i23 = n;
+    r = func_001F9850(*(int *)&D_L06_00161DA4);
+    i21 = func_001FA898((float)r);
+    func_001F9C30(v80, v60, func_002140F8(0.0f, 1.0f));
+    func_001F9BD8(v50, pos, v80);
+    func_L00_00258DB0(v90, 0.0f, *(float *)&D_L06_00161DB0 * D_0015EE6C);
+    func_001F9BD8(v90, v90, v70);
+    func_00219780(v50, v60, v90, *(int *)&D_L06_00161D8C, *(int *)&D_L06_00161D90, i30, i23, i21, 0x30);
+
+    i30 = func_001FA898(func_001F9878(func_002140F8((float)*(int *)&D_L06_00161D94, (float)*(int *)&D_L06_00161D98)));
+    i23 = func_001FA898(func_001F9878(func_002140F8((float)*(int *)&D_L06_00161D9C, (float)*(int *)&D_L06_00161DA0)));
+    func_001F9C30(v80, v60, func_002140F8(0.0f, 1.0f));
+    func_001F9BD8(v50, pos, v80);
+    func_L00_00258DB0(v90, 0.0f, *(float *)&D_L06_00161DB0 * D_0015EE6C);
+    func_001F9BD8(v90, v90, v70);
+    func_00219780(v50, v60, v90, *(int *)&D_L06_00161D8C, *(int *)&D_L06_00161D90, i30, i23, i21, 0x30);
+}
 extern int func_001FA898_r(float) __asm__("func_001FA898");
 extern float func_001FA790(float, float);
 extern void func_001F9BC0(void *);

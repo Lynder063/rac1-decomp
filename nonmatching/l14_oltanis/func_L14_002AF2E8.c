@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L14_002AF2E8 -- src/overlays/l14_oltanis/vendor_002ACCC0.c
- * Best so far: SIZE ours 444 / retail 440, checked 2026-10-03.
+ * Best so far: BYTES 18/440 (95.9% of the bytes match), checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -7,10 +7,11 @@
  *   Best is p3.c (SIZE 444 vs 440). Remaining: ours turns the 0x7F40407F/0x7F7F7F7F choice (lh 0x202(data)) into m
  *   so data stays live in ours (extra saved reg s4, q cannot reuse s2); also the swc1 0xF8 store/jal order and the
  *   Would unblock: a wording that keeps the branch (all if/else, ternary, default+override forms gave movn); likel
+ *   s12 (hq1), 8 runs: the vendor file now declares func_001F4868 as u64 (the old int extern gave COMPILE). Branch
  */
 extern void func_001F9C30(void *, void *, float);
 extern void func_001F9BD8(void *, void *, void *);
-extern int func_001F4868(int);
+u64 func_001F4868(s32);
 extern void func_00234C98(int, long);
 extern void func_001F9BF0(void *dst, void *a, void *b);
 extern float func_L00_001FF860(float, float);
@@ -32,7 +33,6 @@ void func_L14_002AF2E8(char *moby) {
     float f;
     int i;
     long r;
-    int col;
     qcopy(L + 0x30, data + 0xD0);
     *(float *)(L + 0x3C) = 1.0f;
     func_001F9C30(L + 0x40, data + 0xA0, *(float *)&D_L14_00161540);
@@ -54,15 +54,21 @@ void func_L14_002AF2E8(char *moby) {
     *(float *)(L + 0xA0) = 1.0f;
     *(float *)(L + 0xA4) = 1.0f;
     *(int *)(L + 0xA8) = 0;
-    *(float *)(L + 0xAC) = 1.0f;
     *(int *)(L + 0xB4) = 0;
     *(int *)(L + 0xB8) = 0;
     *(int *)(L + 0xBC) = 0;
-    col = *(short *)(data + 0x202) ? 0x7F40407F : 0x7F7F7F7F;
-    *(int *)(L + 0x90) = col;
-    *(int *)(L + 0x9C) = col;
-    *(int *)(L + 0x98) = col;
-    *(int *)(L + 0x94) = col;
+    *(float *)(L + 0xAC) = 1.0f;
+    if (*(short *)(data + 0x202) != 0) {
+        *(int *)(L + 0x9C) = 0x7F40407F;
+        *(int *)(L + 0x98) = 0x7F40407F;
+        *(int *)(L + 0x94) = 0x7F40407F;
+        *(int *)(L + 0x90) = 0x7F40407F;
+    } else {
+        *(int *)(L + 0x9C) = 0x7F7F7F7F;
+        *(int *)(L + 0x98) = 0x7F7F7F7F;
+        *(int *)(L + 0x94) = 0x7F7F7F7F;
+        *(int *)(L + 0x90) = 0x7F7F7F7F;
+    }
     v = L + 0x50;
     q = D_L14_001D8900;
     for (i = 3; i >= 0; i--) {
