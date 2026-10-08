@@ -882,5 +882,39 @@ void func_L00_002E0BE0(unsigned char *m) {
     }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002E0CB8);
+typedef int q_2adbb0 __attribute__((mode(TI)));
+typedef union { q_2adbb0 q; float f[4]; } V_2adbb0;
+extern void func_L00_00251E30(void *);
+
+/* Creates a moby of type 0x4A8 at pos with a random rotation, and fills its data block from the arguments. */
+char *func_L00_002E0CB8(void *owner, void *pos, void *vel, int life, unsigned char r, unsigned char g, unsigned char b, unsigned char a, float scale) {
+    char *m = func_0020D348(0x4A8);
+    if (m != 0) {
+        char *d = *(char **)(m + 0x78);
+        V_2adbb0 tmp;
+        V_2adbb0 rot;
+        rot.q = 0;
+        rot.f[0] = func_002140F8(-3.1415927f, 3.1415927f);
+        rot.f[1] = func_002140F8(-3.1415927f, 3.1415927f);
+        rot.f[2] = func_002140F8(-3.1415927f, 3.1415927f);
+        tmp = rot;
+        m[0x20] = 0;
+        m[0x23] = a;
+        ((unsigned char *)m)[0x30] = 0xFF;
+        *(short *)(m + 0x32) = 0xFF;
+        m[0x31] = 1;
+        func_L00_00251328(m, r, g, b);
+        *(float *)(d + 0x18) = *(float *)(m + 0x2C) * scale;
+        *(int *)(m + 0x2C) = 0;
+        *(void **)(d + 0x10) = owner;
+        qcopy(m + 0x10, pos);
+        qcopy(d, vel);
+        qcopy(m + 0x40, &tmp);
+        *(short *)(d + 0x1E) = a;
+        *(int *)(d + 0x14) = life;
+        *(short *)(d + 0x1C) = *(unsigned short *)(d + 0x14);
+        func_L00_00251E30(m);
+    }
+    return m;
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E0E50);
