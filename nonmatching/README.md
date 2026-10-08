@@ -9,6 +9,9 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L10_00299818`](l10_orxon/func_L10_00299818.c) | l10_orxon | 504 | BYTES 2/504 | 99.6% |
 | [`func_L10_002DA678`](l10_orxon/func_L10_002DA678.c) | l10_orxon | 664 | BYTES 3/664 | 99.5% |
 | [`func_L12_00304038`](l12_hoven/func_L12_00304038.c) | l12_hoven | 724 | BYTES 4/724 | 99.5% |
+| [`func_L03_002D4CE0`](l03_kerwan/func_L03_002D4CE0.c) | l03_kerwan | 804 | BYTES 5/804 | 99.4% |
+| [`func_L01_002F0B48`](shared/func_L01_002F0B48.c) | shared | 788 | BYTES 5/788 | 99.4% |
+| [`func_L06_002EB5C8`](shared/func_L06_002EB5C8.c) | shared | 768 | BYTES 5/768 | 99.3% |
 | [`func_L00_002630A8`](shared/func_L00_002630A8.c) | shared | 816 | BYTES 6/816 | 99.3% |
 | [`func_L18_002D74F8`](l18_veldin2/func_L18_002D74F8.c) | l18_veldin2 | 136 | BYTES 1/136 | 99.3% |
 | [`func_L07_0031B318`](l07_umbris/func_L07_0031B318.c) | l07_umbris | 772 | BYTES 6/772 | 99.2% |
@@ -32,7 +35,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L16_002E6D40`](shared/func_L16_002E6D40.c) | shared | 1012 | BYTES 12/1012 | 98.8% |
 | [`func_L18_002D6738`](l18_veldin2/func_L18_002D6738.c) | l18_veldin2 | 320 | BYTES 4/320 | 98.8% |
 | [`func_L00_0024A5C0`](shared/func_L00_0024A5C0.c) | shared | 76 | BYTES 2/152 | 98.7% |
-| [`func_L02_002D4E50`](l02_aridia/func_L02_002D4E50.c) | l02_aridia | 580 | BYTES 8/580 | 98.6% |
 | [`func_L18_002FDD20`](l18_veldin2/func_L18_002FDD20.c) | l18_veldin2 | 564 | BYTES 8/564 | 98.6% |
 | [`func_L09_00306DD8`](l09_gaspar/func_L09_00306DD8.c) | l09_gaspar | 488 | BYTES 7/488 | 98.6% |
 | [`func_L00_001EBDA0`](shared/func_L00_001EBDA0.c) | shared | 268 | BYTES 4/272 | 98.5% |
@@ -40,25 +42,26 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L07_0029C6A8`](shared/func_L07_0029C6A8.c) | shared | 376 | BYTES 6/376 | 98.4% |
 | [`func_L00_0024A490`](shared/func_L00_0024A490.c) | shared | 76 | BYTES 2/124 | 98.4% |
 | [`func_L15_002F8D30`](l15_quartu/func_L15_002F8D30.c) | l15_quartu | 108 | BYTES 2/120 | 98.3% |
-| [`func_L06_002EB5C8`](shared/func_L06_002EB5C8.c) | shared | 768 | BYTES 13/768 | 98.3% |
 | [`func_L12_00308AC0`](l12_hoven/func_L12_00308AC0.c) | l12_hoven | 348 | BYTES 6/348 | 98.3% |
 | [`func_L07_003106E8`](l07_umbris/func_L07_003106E8.c) | l07_umbris | 452 | BYTES 8/452 | 98.2% |
 | [`func_L00_002C2A80`](shared/func_L00_002C2A80.c) | shared | 432 | BYTES 8/432 | 98.2% |
+| [`func_L05_00317B68`](l05_rilgar/func_L05_00317B68.c) | l05_rilgar | 368 | BYTES 7/368 | 98.1% |
 | [`func_L01_00303A20`](shared/func_L01_00303A20.c) | shared | 416 | BYTES 8/416 | 98.1% |
 | [`func_L14_002AD4F8`](l14_oltanis/func_L14_002AD4F8.c) | l14_oltanis | 252 | BYTES 5/252 | 98.0% |
 | [`func_L01_002F5AE8`](l01_novalis/func_L01_002F5AE8.c) | l01_novalis | 588 | BYTES 12/588 | 98.0% |
 | [`func_L00_002D6CE0`](shared/func_L00_002D6CE0.c) | shared | 340 | BYTES 7/340 | 97.9% |
 | [`func_L00_00250478`](shared/func_L00_00250478.c) | shared | 336 | BYTES 7/336 | 97.9% |
-| [`func_L01_002F0B48`](shared/func_L01_002F0B48.c) | shared | 788 | BYTES 17/788 | 97.8% |
 | [`func_L05_0030D3F0`](l05_rilgar/func_L05_0030D3F0.c) | l05_rilgar | 272 | BYTES 6/272 | 97.8% |
 | [`func_L13_002E9910`](l13_gemlik/func_L13_002E9910.c) | l13_gemlik | 544 | BYTES 12/544 | 97.8% |
 | [`func_L05_002F6588`](shared/func_L05_002F6588.c) | shared | 496 | BYTES 11/496 | 97.8% |
 | [`func_L03_002BC038`](l03_kerwan/func_L03_002BC038.c) | l03_kerwan | 264 | BYTES 6/264 | 97.7% |
-| [`func_L08_002DD128`](l08_batalia/func_L08_002DD128.c) | l08_batalia | 788 | BYTES 19/788 | 97.6% |
 | [`func_L00_0024A798`](shared/func_L00_0024A798.c) | shared | 288 | BYTES 7/288 | 97.6% |
+| [`func_L11_002D21F0`](l11_pokitaru/func_L11_002D21F0.c) | l11_pokitaru | 780 | BYTES 19/780 | 97.6% |
+| [`func_L00_002BA608`](shared/func_L00_002BA608.c) | shared | 444 | BYTES 11/444 | 97.5% |
 | [`func_L01_00286530`](shared/func_L01_00286530.c) | shared | 316 | BYTES 8/316 | 97.5% |
 | [`func_L00_002122A0`](shared/func_L00_002122A0.c) | shared | 268 | BYTES 7/268 | 97.4% |
 | [`func_L00_0024A60C`](shared/func_L00_0024A60C.c) | shared | 76 | BYTES 2/76 | 97.4% |
+| [`func_L03_002ECD40`](l03_kerwan/func_L03_002ECD40.c) | l03_kerwan | 372 | BYTES 10/372 | 97.3% |
 | [`func_L11_00317500`](l11_pokitaru/func_L11_00317500.c) | l11_pokitaru | 24 | BYTES 4/148 | 97.3% |
 | [`func_L14_002B6BB8`](l14_oltanis/func_L14_002B6BB8.c) | l14_oltanis | 712 | BYTES 20/712 | 97.2% |
 | [`func_L07_00314590`](l07_umbris/func_L07_00314590.c) | l07_umbris | 416 | BYTES 12/416 | 97.1% |
@@ -68,6 +71,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L05_003052A8`](l05_rilgar/func_L05_003052A8.c) | l05_rilgar | 304 | BYTES 9/304 | 97.0% |
 | [`func_L11_00311318`](l11_pokitaru/func_L11_00311318.c) | l11_pokitaru | 472 | BYTES 14/472 | 97.0% |
 | [`func_L02_002E33F0`](l02_aridia/func_L02_002E33F0.c) | l02_aridia | 612 | BYTES 19/612 | 96.9% |
+| [`func_L09_00308F58`](shared/func_L09_00308F58.c) | shared | 448 | BYTES 14/448 | 96.9% |
 | [`func_L13_00306D40`](l13_gemlik/func_L13_00306D40.c) | l13_gemlik | 224 | BYTES 7/224 | 96.9% |
 | [`func_L14_00300130`](shared/func_L14_00300130.c) | shared | 588 | BYTES 20/588 | 96.6% |
 | [`func_L02_002EB480`](l02_aridia/func_L02_002EB480.c) | l02_aridia | 336 | BYTES 12/336 | 96.4% |
@@ -87,12 +91,10 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L03_00250B88`](l03_kerwan/func_L03_00250B88.c) | l03_kerwan | 312 | BYTES 13/316 | 95.9% |
 | [`func_L05_0029CA28`](l05_rilgar/func_L05_0029CA28.c) | l05_rilgar | 292 | BYTES 12/292 | 95.9% |
 | [`func_L11_0031F760`](l11_pokitaru/func_L11_0031F760.c) | l11_pokitaru | 952 | BYTES 40/952 | 95.8% |
-| [`func_L07_0031C7C0`](l07_umbris/func_L07_0031C7C0.c) | l07_umbris | 508 | BYTES 22/508 | 95.7% |
 | [`func_L00_002DCDA8`](shared/func_L00_002DCDA8.c) | shared | 548 | BYTES 24/548 | 95.6% |
 | [`func_L00_002353B8`](shared/func_L00_002353B8.c) | shared | 588 | BYTES 26/588 | 95.6% |
 | [`func_L11_00312BD8`](l11_pokitaru/func_L11_00312BD8.c) | l11_pokitaru | 564 | BYTES 25/564 | 95.6% |
 | [`func_L14_002B4128`](shared/func_L14_002B4128.c) | shared | 132 | BYTES 6/132 | 95.5% |
-| [`func_L04_002E6558`](l04_eudora/func_L04_002E6558.c) | l04_eudora | 548 | BYTES 26/548 | 95.3% |
 | [`func_L12_00309AE8`](shared/func_L12_00309AE8.c) | shared | 524 | BYTES 25/524 | 95.2% |
 | [`func_L00_002A86D8`](shared/func_L00_002A86D8.c) | shared | 836 | BYTES 40/836 | 95.2% |
 | [`func_L00_002D19E8`](shared/func_L00_002D19E8.c) | shared | 1148 | BYTES 56/1148 | 95.1% |
@@ -102,7 +104,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_002A11E8`](shared/func_L00_002A11E8.c) | shared | 852 | BYTES 45/852 | 94.7% |
 | [`func_L02_002DC2C0`](shared/func_L02_002DC2C0.c) | shared | 208 | BYTES 11/208 | 94.7% |
 | [`func_L02_002FCA80`](shared/func_L02_002FCA80.c) | shared | 316 | BYTES 17/316 | 94.6% |
-| [`func_L04_002E2BB8`](l04_eudora/func_L04_002E2BB8.c) | l04_eudora | 564 | BYTES 31/564 | 94.5% |
 | [`func_L05_003108D0`](l05_rilgar/func_L05_003108D0.c) | l05_rilgar | 444 | BYTES 25/444 | 94.4% |
 | [`func_L00_002AA998`](shared/func_L00_002AA998.c) | shared | 688 | BYTES 39/688 | 94.3% |
 | [`func_L01_002F9908`](shared/func_L01_002F9908.c) | shared | 484 | BYTES 28/484 | 94.2% |
@@ -113,7 +114,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L02_002F9E50`](l02_aridia/func_L02_002F9E50.c) | l02_aridia | 132 | BYTES 8/132 | 93.9% |
 | [`func_L01_002E4580`](shared/func_L01_002E4580.c) | shared | 160 | BYTES 10/160 | 93.8% |
 | [`func_L00_0023DB30`](shared/func_L00_0023DB30.c) | shared | 572 | BYTES 36/572 | 93.7% |
-| [`func_L03_002C0028`](shared/func_L03_002C0028.c) | shared | 772 | BYTES 50/772 | 93.5% |
 | [`func_L14_002B4C70`](shared/func_L14_002B4C70.c) | shared | 460 | BYTES 30/460 | 93.5% |
 | [`func_L18_002DD8A8`](l18_veldin2/func_L18_002DD8A8.c) | l18_veldin2 | 1116 | BYTES 74/1116 | 93.4% |
 | [`func_L01_0028C958`](shared/func_L01_0028C958.c) | shared | 672 | BYTES 45/672 | 93.3% |
@@ -134,17 +134,13 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_001EB508`](shared/func_L00_001EB508.c) | shared | 92 | BYTES 11/108 | 89.8% |
 | [`func_L18_002EBBF0`](l18_veldin2/func_L18_002EBBF0.c) | l18_veldin2 | 1236 | BYTES 129/1236 (cannot land as written) | 89.6% |
 | [`func_L06_002F8200`](l06_blarg/func_L06_002F8200.c) | l06_blarg | 560 | BYTES 59/560 | 89.5% |
-| [`func_L03_002ECD40`](l03_kerwan/func_L03_002ECD40.c) | l03_kerwan | 372 | BYTES 40/372 | 89.2% |
 | [`func_L05_0032ABF0`](shared/func_L05_0032ABF0.c) | shared | 500 | BYTES 55/500 | 89.0% |
 | [`func_L18_002EC0C8`](l18_veldin2/func_L18_002EC0C8.c) | l18_veldin2 | 452 | BYTES 51/452 | 88.7% |
 | [`func_L00_002420C0`](shared/func_L00_002420C0.c) | shared | 96 | BYTES 11/96 | 88.5% |
 | [`func_L12_00272D90`](l12_hoven/func_L12_00272D90.c) | l12_hoven | 148 | BYTES 17/148 | 88.5% |
 | [`func_L18_002D76D8`](l18_veldin2/func_L18_002D76D8.c) | l18_veldin2 | 788 | BYTES 91/788 | 88.5% |
-| [`func_L13_002CFF90`](l13_gemlik/func_L13_002CFF90.c) | l13_gemlik | 776 | BYTES 92/776 | 88.1% |
 | [`func_L05_00263490`](shared/func_L05_00263490.c) | shared | 108 | BYTES 13/108 | 88.0% |
 | [`func_L00_00205778`](shared/func_L00_00205778.c) | shared | 8 | BYTES 1/8 | 87.5% |
-| [`func_L05_00317B68`](l05_rilgar/func_L05_00317B68.c) | l05_rilgar | 368 | BYTES 49/368 | 86.7% |
-| [`func_L11_002D21F0`](l11_pokitaru/func_L11_002D21F0.c) | l11_pokitaru | 780 | BYTES 108/780 | 86.2% |
 | [`func_L04_002CF440`](l04_eudora/func_L04_002CF440.c) | l04_eudora | 28 | BYTES 4/28 | 85.7% |
 | [`func_L13_0030B940`](l13_gemlik/func_L13_0030B940.c) | l13_gemlik | 580 | BYTES 83/580 | 85.7% |
 | [`func_L14_002B6E80`](l14_oltanis/func_L14_002B6E80.c) | l14_oltanis | 100 | BYTES 15/100 | 85.0% |
@@ -235,7 +231,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_0029FD68`](shared/func_L00_0029FD68.c) | shared | 1164 | SIZE ours 1156 / retail 1164 (cannot land as written) | - |
 | [`func_L00_002A7E10`](shared/func_L00_002A7E10.c) | shared | 632 | SIZE ours 624 / retail 632 (cannot land as written) | - |
 | [`func_L00_002AAEF0`](shared/func_L00_002AAEF0.c) | shared | 640 | SIZE ours 636 / retail 640 | - |
-| [`func_L00_002B0D30`](shared/func_L00_002B0D30.c) | shared | 548 | SIZE ours 540 / retail 548 | - |
 | [`func_L00_002B30C8`](shared/func_L00_002B30C8.c) | shared | 800 | SIZE ours 804 / retail 800 | - |
 | [`func_L00_002B7EC0`](shared/func_L00_002B7EC0.c) | shared | 840 | SIZE ours 832 / retail 840 | - |
 | [`func_L00_002B9AA8`](shared/func_L00_002B9AA8.c) | shared | 48 | SIZE ours 52 / retail 48 | - |
@@ -275,7 +270,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L01_002F0938`](shared/func_L01_002F0938.c) | shared | 524 | SIZE ours 528 / retail 524 | - |
 | [`func_L01_002F0FD0`](shared/func_L01_002F0FD0.c) | shared | 104 | SIZE ours 100 / retail 104 | - |
 | [`func_L01_002F4290`](shared/func_L01_002F4290.c) | shared | 520 | SIZE ours 516 / retail 520 | - |
-| [`func_L01_002FB588`](l01_novalis/func_L01_002FB588.c) | l01_novalis | 784 | SIZE ours 752 / retail 784 | - |
+| [`func_L01_002FB588`](l01_novalis/func_L01_002FB588.c) | l01_novalis | 784 | SIZE ours 772 / retail 784 | - |
 | [`func_L01_002FFF30`](l01_novalis/func_L01_002FFF30.c) | l01_novalis | 524 | SIZE ours 520 / retail 524 | - |
 | [`func_L01_0030D380`](shared/func_L01_0030D380.c) | shared | 488 | SIZE ours 480 / retail 488 | - |
 | [`func_L01_003105E0`](l01_novalis/func_L01_003105E0.c) | l01_novalis | 304 | SIZE ours 264 / retail 304 | - |
@@ -339,7 +334,7 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L07_00319080`](l07_umbris/func_L07_00319080.c) | l07_umbris | 428 | SIZE ours 420 / retail 428 | - |
 | [`func_L08_002DB768`](l08_batalia/func_L08_002DB768.c) | l08_batalia | 972 | SIZE ours 964 / retail 972 | - |
 | [`func_L08_002DF758`](l08_batalia/func_L08_002DF758.c) | l08_batalia | 324 | SIZE ours 320 / retail 324 | - |
-| [`func_L08_002E30E8`](l08_batalia/func_L08_002E30E8.c) | l08_batalia | 776 | SIZE ours 668 / retail 776 | - |
+| [`func_L08_002E30E8`](l08_batalia/func_L08_002E30E8.c) | l08_batalia | 776 | SIZE ours 768 / retail 776 | - |
 | [`func_L08_002E33F0`](l08_batalia/func_L08_002E33F0.c) | l08_batalia | 472 | SIZE ours 476 / retail 472 | - |
 | [`func_L08_002E35C8`](l08_batalia/func_L08_002E35C8.c) | l08_batalia | 664 | SIZE ours 668 / retail 664 | - |
 | [`func_L08_002EAB30`](l08_batalia/func_L08_002EAB30.c) | l08_batalia | 700 | SIZE ours 692 / retail 700 | - |
@@ -348,7 +343,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L09_00295880`](shared/func_L09_00295880.c) | shared | 464 | SIZE ours 456 / retail 464 | - |
 | [`func_L09_002F0BB8`](l09_gaspar/func_L09_002F0BB8.c) | l09_gaspar | 324 | SIZE ours 320 / retail 324 | - |
 | [`func_L09_002F1198`](l09_gaspar/func_L09_002F1198.c) | l09_gaspar | 500 | SIZE ours 496 / retail 500 | - |
-| [`func_L09_00308F58`](shared/func_L09_00308F58.c) | shared | 448 | SIZE ours 440 / retail 448 | - |
 | [`func_L09_0030BB28`](shared/func_L09_0030BB28.c) | shared | 620 | SIZE ours 616 / retail 620 | - |
 | [`func_L10_002DE630`](l10_orxon/func_L10_002DE630.c) | l10_orxon | 360 | SIZE ours 364 / retail 360 | - |
 | [`func_L10_002E6D28`](l10_orxon/func_L10_002E6D28.c) | l10_orxon | 628 | SIZE ours 624 / retail 628 | - |

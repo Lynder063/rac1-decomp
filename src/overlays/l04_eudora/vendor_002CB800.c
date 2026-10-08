@@ -891,7 +891,59 @@ float func_L04_002E2B90(void) {
 float func_L04_002E2BA4(void) {
     return -2.05f;
 }
-INCLUDE_ASM("asm/overlays", func_L04_002E2BB8);
+typedef struct { int owner; float height; int timer; } CollectData2BB8;
+typedef struct { char pad[0x18]; float height; char pad1[4]; unsigned char state; char pad2[0x57]; CollectData2BB8 *data; char pad3[0x2a]; short oclass; char pad4[0xa]; unsigned short id; char pad5[0x4c]; } CollectMoby2BB8;
+extern int func_L00_0028EF68(int i, int a1, int v, int k);
+extern float func_L04_002E2B48(char *);
+extern int func_001F9908_i(int *arg0) __asm__("func_001F9908");
+extern void func_0022ED80(int, int, int);
+extern int D_0015EE84 MACRO_ADDR;
+extern int D_0014C290[][64] NOT_SDA;
+typedef struct { unsigned char pad[0x454]; unsigned char taken[0]; } CollectFlags2BB8;
+extern CollectFlags2BB8 D_L04_001BB6C0_flags __asm__("D_L04_001BB6C0") NOT_SDA;
+extern int D_L04_001BA960[];
+extern CollectMoby2BB8 *D_L04_00160058_pickups SDATA(D_L04_00160058);
+
+/* updates a collectable moby: arms, waits for pickup, then marks it taken */
+void func_L04_002E2BB8(CollectMoby2BB8 *m) {
+    CollectData2BB8 *d = m->data;
+    unsigned short u;
+    switch (m->state) {
+    case 0:
+        d->height = m->height;
+        m->state = 1;
+        break;
+    case 1:
+        u = m->id;
+        if (D_L04_001BB6C0_flags.taken[(short)u] == 0 && ((D_0014C290[D_0015EE84][(short)u >> 5] >> (u & 0x1F)) & 1) == 0) {
+            int o = d->owner;
+            CollectMoby2BB8 *q;
+            if (o == -1) break;
+            q = (CollectMoby2BB8 *)((o << 8) + (unsigned int)D_L04_00160058_pickups);
+            if (!((q->oclass == 0x267 && q->state == 4) ||
+                  (q->oclass == 0x4A6 && q->state == 2)))
+                break;
+        }
+        if (m->oclass == 0x44D || m->oclass == 0x5FC)
+            func_L00_0028EF68(0, 0, (int)m, 0x44D);
+        m->state = 2;
+        d->timer = func_001F9850(0x3C);
+        break;
+    case 2: {
+        unsigned short id1, id2;
+        m->height = m->height + func_L04_002E2B48((char *)m) * D_0015EE6C;
+        if (func_001F9908_i(&d->timer) != 0) {
+            id1 = m->id;
+            D_0014C290[D_0015EE84][(short)id1 >> 5] |= 1 << (id1 & 0x1F);
+            id2 = m->id;
+            D_L04_001BA960[(short)id2 >> 5] |= 1 << (id2 & 0x1F);
+            if (m->oclass == 0x44D) func_0022ED80(1, 0, (int)m);
+            m->state = 3;
+        }
+        break;
+    }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L04_002E2DF0);
 typedef struct {
     float pad0[4];
@@ -947,7 +999,66 @@ void func_L04_002E30E0(char *m) {
 }
 INCLUDE_ASM("asm/overlays", func_L04_002E4458);
 INCLUDE_ASM("asm/overlays", func_L04_002E57F8);
-INCLUDE_ASM("asm/overlays", func_L04_002E6558);
+extern char D_L04_00174080[];
+extern float D_L04_00161E08 SDATA(D_L04_00161E08);
+extern float D_L04_00161E0C SDATA(D_L04_00161E0C);
+extern int func_001F9938_bounce(void *) __asm__("func_001F9938");
+extern int func_L00_001F10E0(float, void *, int, void *);
+extern float func_001F9C78(void *a, void *b);
+extern void func_L00_001FF610(void *, void *, void *);
+extern float func_L00_00258C80(float lo, float hi);
+
+// Updates a bouncing moby: spins it, then in state 0 reflects its direction off a plane and in state 1 fades it out.
+typedef struct BounceData2E6558 {
+    char pad0[4]; float floor, radius;
+    short bounces; short timer;
+    float velocity[4]; float spin[3];
+} BounceData2E6558;
+void func_L04_002E6558(char *moby) {
+    float old[4];
+    char *pos = moby + 0x10;
+    BounceData2E6558 *data = *(BounceData2E6558 **)(moby + 0x78);
+    float *vel;
+    qcopy(old, pos);
+    vel = data->velocity;
+    data->velocity[2] = data->velocity[2] - D_0015EE70 * 20.0f;
+    func_001F9BD8(pos, pos, vel);
+    *(float *)(moby + 0x40) = func_001FA748(*(float *)(moby + 0x40), data->spin[0]);
+    *(float *)(moby + 0x44) = func_001FA748(*(float *)(moby + 0x44), data->spin[1]);
+    *(float *)(moby + 0x48) = func_001FA748(*(float *)(moby + 0x48), data->spin[2]);
+    switch ((unsigned char)moby[0x20]) {
+    case 0:
+        if (*(float *)(moby + 0x18) < data->floor - 3.0f) {
+            moby[0x20] = 1;
+        } else if (func_001F9938_bounce(&data->timer) != 0 && data->bounces != 0) {
+            if (func_L00_001F10E0(data->radius, pos, 2, 0) != 0) {
+                char *n = D_L04_00174080;
+                float zero;
+                if (func_001F9C78(vel, n) < (zero = 0.0f)) {
+                    qcopy(pos, n - 0x10);
+                    *(unsigned short *)&data->bounces = *(unsigned short *)&data->bounces - 1;
+                    func_L00_001FF610(vel, vel, n);
+                    func_001F9C30(vel, vel, 0.75f);
+                    data->spin[0] = zero;
+                    data->spin[1] = func_L00_00258C80(D_L04_00161E08, D_L04_00161E0C) * 0.017453292f * D_0015EE6C;
+                    data->spin[2] = func_L00_00258C80(D_L04_00161E08, D_L04_00161E0C) * 0.017453292f * D_0015EE6C;
+                }
+            }
+        }
+        break;
+    case 1: {
+        unsigned t;
+        *(float *)(moby + 0x2C) = *(float *)(moby + 0x2C) * 0.9f;
+        t = (unsigned char)moby[0x23];
+        if (t < 4) {
+            func_0020D678(moby);
+        } else {
+            moby[0x23] = t - 4;
+        }
+        break;
+    }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L04_002E6780);
 extern char *func_L00_0025B478(void *, int, int);
 extern void func_0022ED80(int, int, int);

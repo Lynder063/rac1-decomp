@@ -29,7 +29,65 @@ void func_L02_002A59F8(int a, int b, int c, int d, float x, float y, float z, fl
     func_L02_002A52D0(scratch);
     func_L02_002100E8(D_L02_001CB680, 0x70002800, 0xF8);
 }
-INCLUDE_ASM("asm/overlays", func_L02_002D4E50);
+typedef int u128b __attribute__((mode(TI)));
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern float func_001FA888(int);
+extern void func_001F9BD8(void *, void *, void *);
+extern int func_L00_00258BC8(int, int);
+extern float func_002140F8(float, float);
+extern float func_L00_00258C80(float lo, float hi);
+extern char * func_L00_0026DEA0__s(void *, float, float, float, int, void *, float, int) __asm__("func_L00_0026DEA0");
+extern int func_002140B0(int);
+extern float D_L02_00161A64 SDATA(D_L02_00161A64);
+extern float D_L02_00161A6C SDATA(D_L02_00161A6C);
+extern unsigned short D_L02_00161A70 SDATA(D_L02_00161A70);
+
+// Spawns a streak of d particles interpolated from va to vb.
+void func_L02_002D4E50(void *moby, void *va_, void *vb_, int d, float fa, float fb) {
+    float *va = va_;
+    float *vb = vb_;
+    float out[4];
+    float tmp[4];
+    float s[4];
+    int i;
+    float fd = d;
+    float diff;
+    float step;
+    func_001F9BF0(out, vb, va);
+    func_001F9C30(out, out, 1.0f / fd);
+    diff = fb - fa;
+    *(u128b *)s = 0;
+    s[2] = 0.01f;
+    s[3] = 1.0f;
+    step = diff / fd;
+    for (i = 0; i < d; i++) {
+        int a, c, col, r;
+        float sp;
+        char *p;
+        func_001F9C30(tmp, out, func_001FA888(i));
+        func_001F9BD8(tmp, va, tmp);
+        a = func_L00_00258BC8(0x40, 0x70);
+        c = func_L00_00258BC8(0x40, 0x7F);
+        col = c | ((c << 16) | (c << 8));
+        sp = func_002140F8(1.0f, 1.02f);
+        r = func_L00_00258BC8(-2, 2);
+        s[0] = func_L00_00258C80(0.0f, 0.0025f);
+        s[1] = func_L00_00258C80(0.0f, 0.0025f);
+        s[2] = func_002140F8(D_L02_00161A64 * 0.1f, D_L02_00161A64);
+        p = func_L00_0026DEA0__s(tmp, D_L02_00161A6C, 1.0f, sp, r, s, step + fa * 210000.0f, (a << 24) | col);
+        if (p != 0) {
+            char *q = p + 0x20;
+            if (func_002140B0(2) != 0) {
+                p[3] = 0x44;
+            }
+            *(unsigned short *)(p + 0xA) = D_L02_00161A70;
+            *(int *)(q + 4) = 2;
+            q[0xA] = a;
+            q[0xB] = *(unsigned char *)&D_L02_00161A70;
+        }
+    }
+}
 extern void func_001F9BF0(void *, void *, void *);
 extern void func_001F9EC0(void *, void *, void *);
 extern void func_001F9BD8(void *, void *, void *);
