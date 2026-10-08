@@ -414,7 +414,105 @@ INCLUDE_ASM("asm/overlays", func_L08_002DE738);
 LINKER_REMNANT("asm/overlays", func_L08_002DF750);
 INCLUDE_ASM("asm/overlays", func_L08_002DF758);
 INCLUDE_ASM("asm/overlays", func_L08_002DF8A0);
-INCLUDE_ASM("asm/overlays", func_L08_002DFBC0);
+extern float func_L00_00258C80(float lo, float hi);
+extern float func_001F9CE8(void *);
+extern int func_L00_001F10E0(float, void *, int, void *);
+extern void func_L00_0025F4A8(void *, void *, void *, float, float, int, int, int, float, float, float, float, int, float, int, int, int, int);
+extern void func_0020D678(void *);
+extern void *func_L00_0025B478(void *, int, int);
+extern int func_0022EE28(int, int, int);
+extern void func_L00_00264DB8(int, int);
+extern void func_L08_002E0008(char *m, char *pos);
+extern short D_L08_00161AD4;
+extern int D_001414D4;
+extern unsigned char D_0013D510[];
+
+/* Update function: switch on the state byte at +0x20. State 0 reads the table D_L08_001B0FB0[*data] (deleting
+ * the moby if the index is -1), 1 steps along it, 2 falls under gravity and deletes the moby below z = 10.0
+ * or on a hit. */
+void func_L08_002DFBC0(char *m) {
+    float a[4];
+    float b[4];
+    char *d = *(char **)(m + 0x78);
+    char *pos = m + 0x10;
+    int *t;
+    qcopy(a, pos);
+    t = (int *)D_L08_001B0FB0[*(int *)d];
+    switch (*(unsigned char *)(m + 0x20)) {
+    case 0:
+        if (*(int *)d == -1) {
+            func_0020D678(m);
+            return;
+        }
+        {
+            float l0 = func_001F9D10((char *)t + 0x10, (char *)t + 0x20);
+            func_001F9D10((char *)t + 0x10, (char *)t + (*t << 4));
+            *(float *)(d + 8) = *(float *)&D_L08_00161AD4 * D_0015EE6C / l0;
+            *(float *)(d + 4) = *(float *)(d + 4) * (float)*t;
+            *(float *)(d + 0xC) = func_L00_00258C80(0.0f, 5.0f);
+        }
+        m[0x20] = 1;
+        *(unsigned char *)(m + 0x30) = 0xFF;
+    case 1: {
+        float f;
+        func_00215CA8(t, 1, m + 0x10, (float *)(m + 0x40), 0, *(float *)(d + 4));
+        *(float *)(m + 0x44) = *(float *)(m + 0x44) * 0.5f;
+        *(float *)(m + 0x18) = *(float *)(m + 0x18) + *(float *)(d + 0xC);
+        *(float *)(d + 4) = *(float *)(d + 4) + *(float *)(d + 8);
+        f = (float)*t;
+        if (f < *(float *)(d + 4)) {
+            *(float *)(d + 4) = *(float *)(d + 4) - f;
+        }
+        break;
+    }
+    case 2: {
+        float c15 = 15.0f;
+        float c10 = 10.0f;
+        float dd;
+        float g;
+        char *v = d + 0x10;
+        g = D_0015EE6C * 7.3303828f;
+        *(float *)(d + 0x18) = *(float *)(d + 0x18) - D_0015EE70 * c15;
+        dd = func_001FA748(*(float *)(m + 0x40), g);
+        *(float *)(m + 0x40) = *(float *)(m + 0x40) + dd;
+        *(float *)(m + 0x44) = -func_L00_001FF860(func_001F9CE8(v), *(float *)(d + 0x18));
+        func_001F9BD8(pos, pos, v);
+        if (*(float *)(m + 0x18) < c10) {
+            func_0020D678(m);
+            return;
+        }
+        if (func_L00_001F10E0(1.25f, pos, 0, m)) {
+            func_L00_0025F4A8(m, v, pos, 0.0f, 0.0f, 0x14, 0x28, 0x10, c10, 5.0f, 9.0f, 1.0f, -1, c15, 1, 1, -1, 0);
+            func_0020D678(m);
+            return;
+        }
+        break;
+    }
+    default:
+        break;
+    }
+    if (*(float *)(m + 0x10) < 4.0f || *(float *)(m + 0x14) < 4.0f || *(float *)(m + 0x18) < 4.0f) {
+        *(int *)(m + 0x94) = 0;
+    } else {
+        *(int *)(m + 0x94) = *(int *)(*(char **)(m + 0x24) + 0x10);
+    }
+    if (func_L00_0025B478(m, 0x10000, 0) != 0 && *(unsigned char *)(m + 0x20) != 2) {
+        if (D_001414D4 == 0x32 && D_0013D510[0xC] == 0) {
+            D_0013D510[0xC] = 1;
+            func_0022EE28(1, 0, 0);
+            func_L00_00264DB8(0x53DB, -1);
+        }
+        func_001F9BF0(b, m + 0x10, a);
+        qcopy(d + 0x10, b);
+        *(float *)(d + 0x18) = *(float *)(d + 0x18) + (D_0015EE6C + D_0015EE6C);
+        func_L00_0025F4A8(m, b, m + 0x10, 0.0f, 0.0f, 0x14, 0x28, 0x10, 10.0f, 5.0f, 9.0f, 1.0f, -1, 15.0f, 1, 1, -1, 0);
+        m[0x20] = 2;
+    }
+    *(unsigned char *)(m + 0xA4) = 0xFF;
+    if (*(unsigned char *)(m + 0x31) != 0) {
+        func_L08_002E0008(m, (char *)a);
+    }
+}
 typedef int u128 __attribute__((mode(TI)));
 extern void func_001F9BF0(void *dst, void *a, void *b);
 extern void func_001F9C30(void *, void *, float);

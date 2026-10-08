@@ -42,7 +42,102 @@ void func_L08_002F2288(void) {
     VU1_addGSregister(0x42, (long)*(int *)&D_L08_00161E90 << 32 | 0x48);
     func_L08_002F21B0(0);
 }
-INCLUDE_ASM("asm/overlays", func_L08_002F2A08);
+typedef struct { int a, b; } PairA;
+typedef struct { int a, b; } Pair8;
+extern void func_L08_002F2428(void *, int, void *, float, float, float, float, int);
+extern int func_L00_00200290(char *, float);
+extern void func_001F9BF0(void *, void *, void *);
+extern float func_001F9CB8(void *);
+extern void func_L08_002F2760(int);
+extern void func_L08_002F2618(void *, float, float, float, void *);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern void func_L08_002F2838(int);
+extern void func_001F49B0(void (*)(void), void *);
+extern void func_L08_002F2288(void);
+extern int D_L08_001E85D0[];
+extern int D_L08_001E2B18[];
+extern int D_L08_001DE1E0[];
+extern int D_L08_001DB7D8[];
+extern int D_L08_001E2AE8[];
+extern int D_L08_001DE200[];
+extern PairA D_L08_001E8608[];
+extern PairA D_L08_00161EB8_p[] __asm__("D_L08_00161EB8") MACRO_ADDR;
+extern float D_L08_00161EA4[] MACRO_ADDR;
+extern Pair8 D_L08_00161EA0[] MACRO_ADDR;
+extern float D_L08_00161EB4 MACRO_ADDR;
+extern PairA D_L08_00161EB0[] MACRO_ADDR;
+extern float D_L08_00161E54 MACRO_ADDR;
+extern float D_L08_00161E58 MACRO_ADDR;
+extern float D_L08_00161E5C MACRO_ADDR;
+extern char D_L08_00167640[];
+extern int D_L08_001E8610[];
+extern short D_L08_00161E94;
+extern short D_L08_00161E50;
+
+/* Update function: state 0 sets up some global tables (running func_L08_002F2428 once), state 1 tests a point
+ * and its distance to D_L08_00167640 and sets D_L08_00161E98 to a 0 to 255 value that fades between 20.0 and 84.0. */
+void func_L08_002F2A08(unsigned char *moby) {
+    int i;
+    float v[4];
+    float w[4];
+    float d;
+
+    switch (moby[0x20]) {
+    case 0:
+        if (*(int *)&D_L08_00161E94 == 0) {
+            func_L08_002F2428(D_L08_001E85D0, 13, D_L08_001E2B18, 0.5f, 0.5f, 0.65f, 0.5f, 1);
+            func_L08_002F2428(D_L08_001DE1E0, 8, D_L08_001DB7D8, 0.5f, 0.5f, 0.5f, 1.0f, 1);
+            func_L08_002F2428(D_L08_001E2AE8, 11, D_L08_001DE200, 0.25f, 0.25f, 0.25f, 1.0f, 1);
+            *(int *)&D_L08_00161E94 = 1;
+        }
+        moby[0x20] = 1;
+        for (i = 0; i < 3; i++) {
+            D_L08_001E8608[i].a = 0;
+            D_L08_001E8608[i].b = 0;
+            D_L08_00161EB8_p[0].a = 0;
+            D_L08_00161EB8_p[0].b = 0;
+        }
+        for (i = 0; i < 2; i++) {
+            D_L08_00161EA0[i].a = 0;
+            D_L08_00161EA4[i * 2] = i * 0.4f;
+        }
+        for (i = 0; i < 1; i++) {
+            D_L08_00161EB0[i].a = 0;
+            *(float *)&D_L08_00161EB0[i].b = i * 0.4f;
+        }
+        break;
+    case 1:
+        v[0] = *(float *)&D_L08_00161E50;
+        v[1] = D_L08_00161E54;
+        v[2] = D_L08_00161E58;
+        v[3] = D_L08_00161E5C;
+        if (func_L00_00200290((char *)v, 1000.0f) >= 0) {
+            w[0] = *(float *)&D_L08_00161E50;
+            w[1] = D_L08_00161E54;
+            w[2] = D_L08_00161E58;
+            w[3] = 1.0f;
+            func_001F9BF0(w, D_L08_00167640, w);
+            d = func_001F9CB8(w);
+            if (d <= 84.0f) {
+                func_L08_002F2760(0);
+                func_L08_002F2618(D_L08_001E8610, 0.52f, 0.62f, 0.06f, D_L08_00161EB8_p);
+                func_L08_002F2760(2);
+                if (d < 20.0f) {
+                    *(unsigned char *)&D_L08_00161E98 = 0xFF;
+                } else if (d < 84.0f) {
+                    *(char *)&D_L08_00161E98 = func_001FA898_r((1.0f - (d - 20.0f) * 0.015625f) * 255.0f);
+                } else {
+                    *(char *)&D_L08_00161E98 = 0;
+                }
+            }
+            func_L08_002F2838(0);
+            func_L08_002F2838(0);
+            func_L08_002F2838(1);
+            func_001F49B0(func_L08_002F2288, moby);
+        }
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L08_002F5980);
 extern int func_001FA898_r(float) __asm__("func_001FA898");
 extern float func_001FA888(int);
@@ -132,7 +227,147 @@ void func_L08_003078B0(char *moby) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L08_00307A98);
+extern void func_L08_003078B0(char *moby);
+extern int func_L00_002676E8(void *, void *);
+extern int func_L00_00267290(void *, void *);
+extern void func_L01_00279398(float, void *);
+extern void func_L00_00286128(void *, void *);
+extern void func_L08_002E2A10(char *arg);
+extern void func_L00_0029A7D0(int);
+extern void func_L00_00211908(void);
+extern void func_L00_002512D8(int);
+extern void func_L00_002618D8(int, int);
+extern int func_0020BFC8(int, int);
+extern void func_0020D678(void *);
+extern float func_001F9D48(void *, void *);
+extern float func_L00_001FF860(float, float);
+extern float func_001FA850(float, float);
+extern int func_001F9850(int);
+extern int func_001F9908(int *arg0);
+extern float func_002140F8(float, float);
+extern float func_001F9878(float);
+extern float func_001FA748(float, float);
+extern void func_00215C00(void *, float, float, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern float func_001FA790(float, float);
+extern float func_001F9CE8(void *);
+extern void func_L00_00263950(char *, char *, int, float, float);
+extern s32 D_0015EE84 MACRO_ADDR;
+extern char D_L08_00162398[];
+extern char *D_L08_0016016C MACRO_ADDR;
+extern char *D_L08_00160058 MACRO_ADDR;
+extern float D_0015EE64 MACRO_ADDR;
+extern unsigned char D_0014171B_q[] __asm__("D_0014171B") NOT_SDA;
+extern char D_0013E633[] NOT_SDA;
+
+/* Update function: calls func_L08_003078B0, then a switch on the state byte at +0x20 (states 0, 1, 2 and 5;
+ * state 5 and one state-0 case delete the moby). Then, when the byte at +0x53 is zero, updates the countdowns at
+ * data + 0x174 and 0x178 and the vector at data + 0x160 from the moby's distance (8.0) and heading to the block
+ * at D_0013E633 + 0xE9D. */
+void func_L08_00307A98(char *m) {
+    char *d = *(char **)(m + 0x78);
+    func_L08_003078B0(m);
+    switch (*(unsigned char *)(m + 0x20)) {
+    case 0:
+        *(unsigned char *)(m + 0x30) = 0xFF;
+        if ((D_0014171B_q + 0xAA35)[*(unsigned char *)(m + 0xB0) + (D_0015EE84 << 4)] == 0xFF) goto del;
+        *(char **)(d + 0x20) = D_L08_00162398;
+        m[0x20] = 1;
+        func_L00_002676E8(m, d);
+        break;
+    case 1: {
+        int v;
+        if (func_L00_00267290(m, d) != 0) func_L01_00279398(2.7f, m);
+        v = *(short *)(d + 0x36);
+        if (v == 2) {
+            char *t = D_L08_0016016C + (*(int *)(d + 0x48) << 7);
+            func_L00_00286128(t + 0x30, t + 0x70);
+            m[0x20] = v;
+            func_L08_002E2A10(D_L08_00160058 + (*(int *)(d + 0x50) << 8));
+        }
+        if (*(short *)(d + 4) == 3) {
+            func_L00_0029A7D0(1);
+            m[0x20] = 5;
+        }
+        if (*(short *)(d + 4) == 4) {
+            func_L00_00211908();
+            *(short *)(d + 4) = -1;
+        }
+        break;
+    }
+    case 2:
+        break;
+    case 5:
+        func_L00_002512D8((unsigned char)m[0xB0]);
+        func_L00_002618D8(0x1B, 1);
+        func_0020BFC8(0, -1);
+    del:
+        func_0020D678(m);
+        return;
+    }
+    {
+        float b[4];
+        float sx = 0.02f;
+        float sy = 0.3f;
+        int doit = 0;
+        if (*(unsigned char *)(m + 0x53) == 0) {
+            char *g = D_0013E633 + 0xE9D;
+            char *a_;
+            doit = 1;
+            if (func_001F9D48(m + 0x10, g) < 8.0f
+                && func_001FA850(*(float *)(m + 0x48),
+                       func_L00_001FF860(*(float *)((a_ = g - 0x80) + 0xD0) - *(float *)(m + 0x10),
+                                         *(float *)(a_ + 0xD4) - *(float *)(m + 0x14))) < 1.5707964f) {
+                if (0.01f < func_001F9CB8(g + 0x80)) {
+                    *(int *)(d + 0x174) = func_001F9850(0x78);
+                } else {
+                    func_001F9908((int *)(d + 0x174));
+                }
+            } else if (*(int *)(d + 0x174) != 0) {
+                *(int *)(d + 0x174) = 0;
+                qcopy(d + 0x160, D_0013E633 + 0xEED);
+            }
+            if (func_001F9908((int *)(d + 0x178)) != 0) {
+                float y;
+                float z;
+                float x = func_002140F8(180.0f, 300.0f);
+                *(int *)(d + 0x178) = func_001FA898_r(func_001F9878(x));
+                y = func_001FA748(*(float *)(m + 0x48), func_002140F8(-90.0f, 90.0f) * 0.017453292f);
+                z = func_002140F8(0.0f, 30.0f) * 0.017453292f;
+                func_00215C00(d + 0x160, 6.0f, y, z);
+                func_001F9BD8(d + 0x160, d + 0x160, m + 0x10);
+            }
+            if (*(int *)(d + 0x174) != 0) {
+                qcopy(b, D_0013E633 + 0xEED);
+                sx = 0.0300000f;
+                sy = 0.3f;
+            } else {
+                qcopy(b, d + 0x160);
+            }
+        }
+        if (doit != 0) {
+            float w[4];
+            float u[4];
+            float f20;
+            float f2;
+            qcopy(w, m + 0x10);
+            w[2] = w[2] + 1.0f;
+            func_001F9BF0(u, b, w);
+            f20 = func_001FA790(func_L00_001FF860(u[0], u[1]), *(float *)(m + 0x48));
+            f2 = -func_L00_001FF860(func_001F9CE8(u), u[2]);
+            if (f20 > 1.5707964f) f20 = 1.5707964f;
+            else if (f20 < -1.5707964f) f20 = -1.5707964f;
+            if (f2 > 0.5235988f) f2 = 0.5235988f;
+            else if (f2 < -0.5235988f) f2 = -0.5235988f;
+            *(float *)(d + 0xC4) = f2;
+            *(float *)(d + 0xC8) = f20 * 0.7f;
+            *(float *)(d + 0x148) = f20 * 0.3f;
+        }
+        if (D_0015EEB0[0] != 0) *(float *)(d + 0xD0) = 2.75f;
+        func_L00_00263950(m, d + 0x60, 0, sx * D_0015EE64, sy * D_0015EE64);
+        func_L00_00263950(m, d + 0xE0, 1, sx * D_0015EE64, sy * D_0015EE64);
+    }
+}
 extern void func_L00_00211908(void);
 
 // Sets the vendor state or closes the active interaction.
