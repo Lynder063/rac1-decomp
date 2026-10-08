@@ -345,7 +345,49 @@ void func_L11_002F46C0(unsigned char *moby) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L11_0030A748);
+extern unsigned char *func_L00_0025D390(int);
+extern void func_00215C00(void *, float, float, float);
+extern void func_00213DE0(void *, int, int, int);
+extern void func_L00_00251E30(void *);
+
+/* Creates a moby of type 0x40A with func_0020D348, stores src, target, arg and scale in its data block and copies
+ * pos and vec into it; returns it, or 0 if creation failed. */
+unsigned char *func_L11_0030A748(char *src, char *pos, char *target, char *vec, int arg, float scale) {
+    unsigned char *moby = (unsigned char *)func_0020D348(0x40A);
+    if (moby != 0) {
+        char *data = *(char **)(moby + 0x78);
+        moby[0x30] = 0xFF;
+        *(short *)(moby + 0x32) = 0xFF;
+        moby[0x31] = 1;
+        moby[0x20] = 0;
+        *(char **)(data + 0x20) = src;
+        *(char **)(data + 0x24) = target;
+        qcopy(moby + 0x10, pos);
+        qcopy(moby + 0x40, vec);
+        if (target != 0) {
+            unsigned char *e = func_L00_0025D390((int)target);
+            if (e != 0) {
+                *(unsigned short *)(e + 0x1E) |= 0x80;
+            }
+        }
+        *(int *)(data + 0x28) = arg;
+        *(float *)(data + 0x2C) = scale;
+        *(int *)(data + 0x30) = 0;
+        *(int *)(data + 0x34) = 0;
+        func_00215C00(data, scale, *(float *)(vec + 8), -*(float *)(vec + 4));
+        if (moby[0x53] != 1) {
+            func_00213DE0(moby, 1, 0, 10);
+        }
+        func_001F9BD8(moby + 0x10, moby + 0x10, data);
+        if (*(char **)(data + 0x24) != 0) {
+            qcopy(data + 0x10, *(char **)(data + 0x24) + 0x10);
+        }
+        *(float *)(moby + 0x2C) = *(float *)(*(char **)(moby + 0x24) + 0x24) *
+                                  (*(float *)(src + 0x2C) / *(float *)(*(char **)(src + 0x24) + 0x24));
+        func_L00_00251E30(moby);
+    }
+    return moby;
+}
 INCLUDE_ASM("asm/overlays", func_L11_0030AE90);
 extern int func_001F9850(int);
 extern void func_00213DE0(void *, int, int, int);

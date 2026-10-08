@@ -177,4 +177,82 @@ char *func_L13_0030D600(void *a, void *b, int c, int d) {
     return (char *)m;
 }
 INCLUDE_ASM("asm/overlays", func_L13_0030D880);
-INCLUDE_ASM("asm/overlays", func_L13_0030E280);
+extern void func_L00_00260958(float *v, float s);
+extern void *func_L00_00265050(char *, int, float *, void *, int, int, float *, float *, float, float *);
+extern void func_L00_0025F4A8(void *, void *, void *, float, float, int, int, int, float, float, float, int, float, float, int, int, int, int);
+extern int D_0015EE84 MACRO_ADDR;
+extern char D_0013D50F[];
+extern int D_0014C290[][64] NOT_SDA;
+extern int D_L13_001BAAE0[];
+extern float D_L13_0015F660[] MACRO_ADDR;
+
+/* UpdateMoby_1805: deletes itself if its bit is set in D_0014C290. State 0 moves to state 1; state 1 takes a hit's value
+ * (at +0x2C) off the float at data + 0x20 and moves to state 2 when it falls short; state 2 sets the bit and spawns
+ * func_L00_00265050 effects for types 0x709 to 0x70C, twice. */
+void func_L13_0030E280(void *moby) {
+    char *m = moby;
+    char *data;
+    char *item;
+    char *p;
+    int st;
+    float tmp[4];
+    int k, n;
+
+    if ((D_0014C290[D_0015EE84][(short)*(unsigned short *)(m + 0xB2) >> 5] >> (*(unsigned short *)(m + 0xB2) & 0x1F)) & 1) {
+        func_0020D678(moby);
+        return;
+    }
+    data = *(char **)(m + 0x78);
+    item = func_L00_0025B478(moby, 0x10000, 0);
+    func_L00_0025B4D0(moby, item, data + 0x20, 0, &st, 0, 0, 4);
+    switch (((unsigned char *)m)[0x20]) {
+    case 0:
+        m[0x20] = 1;
+        break;
+    case 1:
+        p = data + 0x60;
+        if (item != 0) {
+            float a = *(float *)(data + 0x20);
+            float b = *(float *)(item + 0x2C);
+            if (a < b) {
+                m[0x20] = 2;
+            } else {
+                *(float *)(data + 0x20) = a - b;
+                ((unsigned char *)data)[0x67] = 0xFA;
+                func_L00_0025E4B0(moby, (short *)p);
+            }
+            ((unsigned char *)m)[0xA4] = 0xFF;
+        }
+        func_L00_0025E590(moby, p);
+        break;
+    case 2: {
+        if (((unsigned char *)m)[0x21] != 0xFF) {
+            int r = func_L01_0026EFB8(((unsigned char *)m)[0x21], -1);
+            if (r == 1) {
+                unsigned char *t = (unsigned char *)(D_0013D50F + 1);
+                if (t[0x16] == 0) {
+                    t[0x16] = r;
+                    func_0022EE28(1, 0, 0);
+                    func_L00_00264DB8(0x53DB, -1);
+                }
+            }
+        }
+        func_0022ED80(0, 0, (int)moby);
+        func_L01_00279790(moby);
+            D_0014C290[D_0015EE84][(short)*(unsigned short *)(m + 0xB2) >> 5] |= 1 << (*(unsigned short *)(m + 0xB2) & 0x1F);
+            D_L13_001BAAE0[(short)*(unsigned short *)(m + 0xB2) >> 5] |= 1 << (*(unsigned short *)(m + 0xB2) & 0x1F);
+        for (n = 0; n < 2; n++) {
+            for (k = 0x709; k < 0x70D; k++) {
+                qzero(tmp);
+                func_L00_00260958(tmp, 1.5f);
+                tmp[2] += 1.7f;
+                func_001F9BD8(tmp, tmp, m + 0x10);
+                func_L00_00265050(m, k, tmp, m + 0x40, 0, 0, D_L13_0015F660, D_L13_0015F660, 0.0f, D_L13_0015F660);
+            }
+        }
+        func_L00_0025F4A8(moby, m + 0x10, 0, 0.0f, 0.0f, 0xA, 3, 0x10, 6.0f, 3.0f, 9.0f, 0, 1.1f, 15.0f, 1, 3, -1, 0);
+        func_0020D678(moby);
+        break;
+    }
+    }
+}

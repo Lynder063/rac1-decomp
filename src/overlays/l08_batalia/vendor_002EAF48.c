@@ -4,7 +4,96 @@
 
 INCLUDE_ASM("asm/overlays", func_L08_002EAF48);
 INCLUDE_ASM("asm/overlays", func_L08_002EB770);
-INCLUDE_ASM("asm/overlays", func_L08_002EB980);
+typedef int u128 __attribute__((mode(TI)));
+extern float func_001FA790(float, float);
+extern float func_001FA748(float, float);
+extern float func_001FA850(float, float);
+extern int func_L00_0028EB98(void *, int);
+extern int func_0022ED80(int, int, int);
+extern int func_L00_0028F210(int, int);
+extern int func_001F9850(int);
+extern void func_L00_0028EBF0(int);
+extern void func_001FA218(void *, void *);
+extern void func_001F9EE8(void *, void *, void *);
+extern void func_001F9BD8(void *, void *, void *);
+extern char *D_L08_00160058 MACRO_ADDR;
+extern int D_L08_0015F6A8 MACRO_ADDR;
+extern char D_0013E633[];
+extern char D_0013D355[];
+
+/* UpdateMoby_468/469: sets the flag at +0x34 and the byte at +0x31 from D_L08_0015F6A8, then in state 1 eases the
+ * value at +0x44 toward one computed from the data block. For type 0x1D4 it raises or lowers a sound level through
+ * func_L00_0028F210, positions the moby at data + 0x10 plus a rotated offset, and moves to state 2 when the scale
+ * is 1.0. */
+void func_L08_002EB980(char *moby) {
+    float mat[16];
+    float x[4];
+    char *d = *(char **)(moby + 0x78);
+    float scale = **(float **)((char *)((*(int *)d << 8) + (int)D_L08_00160058) + 0x78);
+    float c;
+    float r;
+    *(u128 *)x = 0;
+    x[2] = 30.0f;
+    if (D_L08_0015F6A8 == 2) {
+        moby[0x31] = 0;
+        *(unsigned short *)(moby + 0x34) |= 1;
+    } else {
+        moby[0x31] = 1;
+        *(unsigned short *)(moby + 0x34) &= 0xFFFE;
+    }
+    if (((unsigned char *)moby)[0x20] == 0) {
+        ((unsigned char *)moby)[0x20] = 1;
+        qcopy(d + 0x10, moby + 0x10);
+        return;
+    }
+    if (((unsigned char *)moby)[0x20] != 1) return;
+    c = 0.017453292f;
+    r = func_001FA748(func_001FA790(*(float *)(d + 4) * c, *(float *)(d + 8) * c) * scale, *(float *)(d + 8) * c);
+    if (func_001FA850(*(float *)(moby + 0x44), r) != 0.0f) {
+        *(float *)(moby + 0x44) = r;
+        if (*(short *)(moby + 0xA6) == 0x1D4) {
+            if (func_L00_0028EB98(moby, *(int *)(d + 0x20)) == 0) {
+                *(int *)(d + 0x20) = func_0022ED80(0, 4, (int)moby);
+                func_L00_0028F210(*(int *)(d + 0x20), 1);
+            } else {
+                char *t = D_0013E633 + 0x1D;
+                if (*(int *)(t + *(int *)(d + 0x20) * 0x70 + 0x80) < 0x400) {
+                    int r2 = func_001F9850(0x3C);
+                    int i = *(int *)(d + 0x20);
+                    func_L00_0028F210(i, *(int *)(t + i * 0x70 + 0x80) + 0x400 / r2);
+                }
+            }
+        }
+    } else if (*(short *)(moby + 0xA6) == 0x1D4) {
+        if (func_L00_0028EB98(moby, *(int *)(d + 0x20)) != 0) {
+            char *t = D_0013E633 + 0x1D;
+            if (*(int *)(t + *(int *)(d + 0x20) * 0x70 + 0x80) < 0x100) {
+                func_L00_0028EBF0(*(int *)(d + 0x20));
+                *(int *)(d + 0x20) = -1;
+            } else {
+                int r2 = func_001F9850(0x3C);
+                int i = *(int *)(d + 0x20);
+                func_L00_0028F210(i, *(int *)(t + i * 0x70 + 0x80) - 0x400 / r2);
+            }
+        }
+    }
+    func_001FA218(mat, moby + 0x40);
+    func_001F9EE8(x, x, mat);
+    func_001F9BD8(moby + 0x10, d + 0x10, x);
+    if (scale == 1.0f) {
+        int s = *(short *)(moby + 0xA6);
+        if (s == 0x1D4) {
+            { int k = *(int *)(d + 0xC); char *p = D_0013D355 + 0x13B; p[k + 0x30] = 1; }
+            ((unsigned char *)moby)[0x20] = 2;
+            func_0022ED80(1, 0, (int)moby);
+            if (*(short *)(moby + 0xA6) == s) {
+                if (func_L00_0028EB98(moby, *(int *)(d + 0x20)) != 0) {
+                    func_L00_0028EBF0(*(int *)(d + 0x20));
+                }
+            }
+        }
+    }
+}
 extern void func_00234C98(int, long);
 extern void func_001F7868(void);
 extern int func_001F4868(int);

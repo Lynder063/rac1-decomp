@@ -92,7 +92,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_002DCDA8`](shared/func_L00_002DCDA8.c) | shared | 548 | BYTES 24/548 | 95.6% |
 | [`func_L12_00309AE8`](shared/func_L12_00309AE8.c) | shared | 524 | BYTES 23/524 | 95.6% |
 | [`func_L00_002353B8`](shared/func_L00_002353B8.c) | shared | 588 | BYTES 26/588 | 95.6% |
-| [`func_L11_00312BD8`](l11_pokitaru/func_L11_00312BD8.c) | l11_pokitaru | 564 | BYTES 25/564 | 95.6% |
 | [`func_L01_0031AD00`](shared/func_L01_0031AD00.c) | shared | 928 | BYTES 42/928 | 95.5% |
 | [`func_L14_002B4128`](shared/func_L14_002B4128.c) | shared | 132 | BYTES 6/132 | 95.5% |
 | [`func_L00_002A86D8`](shared/func_L00_002A86D8.c) | shared | 836 | BYTES 40/836 | 95.2% |
@@ -112,7 +111,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L02_002F9E50`](l02_aridia/func_L02_002F9E50.c) | l02_aridia | 132 | BYTES 8/132 | 93.9% |
 | [`func_L01_002E4580`](shared/func_L01_002E4580.c) | shared | 160 | BYTES 10/160 | 93.8% |
 | [`func_L00_0023DB30`](shared/func_L00_0023DB30.c) | shared | 572 | BYTES 36/572 | 93.7% |
-| [`func_L14_002B4C70`](shared/func_L14_002B4C70.c) | shared | 460 | BYTES 30/460 | 93.5% |
 | [`func_L18_002DD8A8`](l18_veldin2/func_L18_002DD8A8.c) | l18_veldin2 | 1116 | BYTES 74/1116 | 93.4% |
 | [`func_L01_0028C958`](shared/func_L01_0028C958.c) | shared | 672 | BYTES 45/672 | 93.3% |
 | [`func_L18_002DCE10`](l18_veldin2/func_L18_002DCE10.c) | l18_veldin2 | 1116 | BYTES 75/1116 | 93.3% |
@@ -511,7 +509,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L08_002EAB30`](l08_batalia/func_L08_002EAB30.c) | l08_batalia | 700 | SIZE ours 692 / retail 700 | - |
 | [`func_L08_002EAF48`](l08_batalia/func_L08_002EAF48.c) | l08_batalia | 2084 | SIZE ours 2068 / retail 2084 | - |
 | [`func_L08_002EB770`](l08_batalia/func_L08_002EB770.c) | l08_batalia | 524 | SIZE ours 508 / retail 524 | - |
-| [`func_L08_002EB980`](l08_batalia/func_L08_002EB980.c) | l08_batalia | 800 | SIZE ours 784 / retail 800 | - |
 | [`func_L08_002F8560`](l08_batalia/func_L08_002F8560.c) | l08_batalia | 1052 | SIZE ours 1056 / retail 1052 | - |
 | [`func_L08_00303998`](shared/func_L08_00303998.c) | shared | 1440 | SIZE ours 1456 / retail 1440 | - |
 | [`func_L08_003041A8`](l08_batalia/func_L08_003041A8.c) | l08_batalia | 1672 | SIZE ours 1664 / retail 1672 | - |
@@ -558,7 +555,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L11_002D3970`](l11_pokitaru/func_L11_002D3970.c) | l11_pokitaru | 552 | SIZE ours 548 / retail 552 | - |
 | [`func_L11_002F21B0`](l11_pokitaru/func_L11_002F21B0.c) | l11_pokitaru | 1756 | SIZE ours 1736 / retail 1756 | - |
 | [`func_L11_002F3888`](l11_pokitaru/func_L11_002F3888.c) | l11_pokitaru | 1620 | SIZE ours 1648 / retail 1620 | - |
-| [`func_L11_0030A748`](l11_pokitaru/func_L11_0030A748.c) | l11_pokitaru | 384 | SIZE ours 388 / retail 384 | - |
 | [`func_L11_0030A8C8`](shared/func_L11_0030A8C8.c) | shared | 1480 | SIZE ours 1456 / retail 1480 | - |
 | [`func_L11_0030AE90`](l11_pokitaru/func_L11_0030AE90.c) | l11_pokitaru | 2492 | SIZE ours 2488 / retail 2492 | - |
 | [`func_L11_0030C728`](shared/func_L11_0030C728.c) | shared | 1144 | SIZE ours 1140 / retail 1144 | - |
