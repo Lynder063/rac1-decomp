@@ -371,7 +371,7 @@ void func_L00_002EBEE0(char *src) {
         p = g;
     qcopy(*(char **)(p + 0x70) + 0x90, src);
 }
-INCLUDE_ASM("asm/overlays", func_L00_002EBF38);
+LINKER_REMNANT("asm/overlays", func_L00_002EBF38);
 typedef struct { f32 v[4]; } __attribute__((aligned(16))) V_2ebf50;
 extern V_2ebf50 D_L00_00166EC0_2ebf50[2] __asm__("D_L00_00166EC0") NOT_SDA;
 extern V_2ebf50 D_0013F4D0_2ebf50 __asm__("D_0013F4D0") NOT_SDA;

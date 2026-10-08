@@ -14,13 +14,18 @@ function's INCLUDE_ASM line, or, for a function already written in C (a
 near-miss being refined), its current definition. Work happens in
 build-sn/try/<func>/.
 
-The comparison masks relocated fields (a call target, a %hi/%lo half), so
-it is fast and needs no link, but it cannot see a wrong symbol addend. It
-is a filter: a function that passes here still has to pass the real build
-(bash tools/build_sn.sh) before it counts.
+For an executable function the comparison fills every relocated field (a
+call target, a %hi/%lo half, a $gp offset) with retail's address of its
+symbol (config/symbol_addrs.txt, or the address in the name), so a wrong
+symbol or addend shows; only fields it cannot resolve, references into the
+object's own .rodata or .data, stay masked. It needs no link, so it is
+still a filter: a function that passes here has to pass the real build
+(bash tools/build_sn.sh) before it counts. Level functions go through
+tools/overlay_check.py, which places and resolves everything.
 
-Verdicts: EXACT (masked), BYTES n/size (same size, n bytes differ),
-SIZE ours/retail (a size mismatch: never keep one), COMPILE (see log.txt).
+Verdicts: EXACT (or EXACT (n bytes masked)), BYTES n/size (same size, n
+bytes differ), SIZE ours/retail (a size mismatch: never keep one), COMPILE
+(see log.txt).
 
 Every run is logged to build-sn/try/<func>/runs.log. If that folder holds a
 BUDGET file (a number, written by tools/wave.py), runs stop once that many
@@ -39,6 +44,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from libgcc_units import SEGMENT_SOURCES, ee29_sources  # noqa: E402
 from toolchain import sn  # noqa: E402
+import file_cflags  # noqa: E402
 import overlay_check  # noqa: E402
 
 import rabbitizer as rz  # noqa: E402
@@ -126,16 +132,16 @@ def build(name, seg, src, first, last, candidate, work):
     c.write_text("\n".join(lines) + "\n")
     obj = work / "obj.o"
     obj.unlink(missing_ok=True)
+    # The source file's own extra flags (config/file_cflags.txt), as Makefile.sn passes them.
+    # No step between the compiler and the assembler changes what the compiler wrote, apart
+    # from the assembler behaviours listed in docs/BUILD_FIDELITY.md.
+    extra = file_cflags.flags_for(src)
     with open(work / "log.txt", "w") as log:
         s = [work / f"{n}.s" for n in "abcd"]
         if str(src) in EE29_SOURCES:
-            if not run(sn(CC29, *CFLAGS, EE29_INC, "-S", "-o", str(s[0]), str(c)), log):
+            if not run(sn(CC29, *CFLAGS, *extra, EE29_INC, "-S", "-o", str(s[0]), str(c)), log):
                 return None
-            if not run([sys.executable, "tools/func_cflags.py", str(c), str(s[0]), "--",
-                        *sn(CC29, *CFLAGS, EE29_INC)], log):
-                return None
-            if not run([sys.executable, "tools/fix_trunc_slot.py", str(s[0]), str(s[3])], log):
-                return None
+            shutil.copy(s[0], s[3])
             if not run([sys.executable, "tools/fix_volatile_slot.py", str(s[3]), str(s[3])], log):
                 return None
             if not run([sys.executable, "tools/check_macro_slots.py", str(s[3])], log):
@@ -143,21 +149,9 @@ def build(name, seg, src, first, last, candidate, work):
             if not run(sn(CC, *CFLAGS, "-c", str(s[3]), "-o", str(obj)), log):
                 return None
             return obj
-        if not run(sn(CC, *CFLAGS, "-S", "-o", str(s[0]), str(c)), log):
+        if not run(sn(CC, *CFLAGS, *extra, "-S", "-o", str(s[0]), str(c)), log):
             return None
-        # per-function flags (config/func_cflags.txt), as Makefile.sn does
-        if not run([sys.executable, "tools/func_cflags.py", str(c), str(s[0]), "--",
-                    *sn(CC, *CFLAGS)], log):
-            return None
-        if seg == "core_text":
-            if not run([sys.executable, "tools/fix_core_spills.py", str(s[0]), str(s[1])], log):
-                return None
-        else:
-            shutil.copy(s[0], s[1])
-        if not run([sys.executable, "tools/fix_tail_calls.py", str(s[1]), str(s[2])], log):
-            return None
-        if not run([sys.executable, "tools/fix_trunc_slot.py", str(s[2]), str(s[2])], log):
-            return None
+        shutil.copy(s[0], s[2])
         if src.name in ("989snd.c", "wad.c"):
             if not run([sys.executable, "tools/fix_macro_load_delay.py", str(s[2]), str(s[2])], log):
                 return None
@@ -189,6 +183,76 @@ def build(name, seg, src, first, last, candidate, work):
     return obj
 
 
+GP = 0x166D00
+_ADDRS = None
+
+
+def symbol_address(name):
+    """A symbol's retail address: config/symbol_addrs.txt, then the address a
+    func_/D_/jtbl_ name carries (an alias may add a _suffix), then _gp."""
+    global _ADDRS
+    if _ADDRS is None:
+        _ADDRS = {m.group(1): int(m.group(2), 16) for m in re.finditer(
+            r"^\s*(\w+)\s*=\s*(0x[0-9A-Fa-f]+)", Path("config/symbol_addrs.txt").read_text(), re.M)}
+    if name in _ADDRS:
+        return _ADDRS[name]
+    if name == "_gp":
+        return GP
+    m = re.match(r"^(?:D|func|jtbl)_([0-9A-Fa-f]{8})(?:_\w+)?$", name)
+    return int(m.group(1), 16) if m else None
+
+
+def resolve_relocations(elf, text, text_base):
+    """The object's relocated words filled in with retail's addresses, and the
+    byte offsets of the fields it cannot resolve (references into the object's
+    own .rodata or .data, or an unpaired %hi). Masking every relocated field
+    instead hid real differences: two $gp stores swapped with each other differ
+    only in their GPREL16 offsets (found by rac3-uya-decomp, whose try_func.py
+    this follows). TEXT_BASE is where the object's .text sits in retail."""
+    word = lambda o: int.from_bytes(text[o:o + 4], "little")
+    sext = lambda v: v - 0x10000 if v & 0x8000 else v
+    symtab = list(elf.get_section_by_name(".symtab").iter_symbols())
+    relocs = sorted((r for s in elf.iter_sections()
+                     if isinstance(s, RelocationSection) and s.name == ".rel.text"
+                     for r in s.iter_relocations()), key=lambda r: r["r_offset"])
+    resolved, masked, pending = {}, set(), []
+
+    def mask(o, t):
+        masked.update((o, o + 1) if t in (5, 6, 7) else range(o, o + 4))
+
+    for r in relocs:
+        o, t = r["r_offset"], r["r_info_type"]
+        sym = symtab[r["r_info_sym"]]
+        if sym["st_info"]["type"] == "STT_SECTION":
+            secname = elf.get_section(sym["st_shndx"]).name if isinstance(sym["st_shndx"], int) else ""
+            addr = text_base if secname == ".text" else None
+        else:
+            addr = symbol_address(sym.name)
+        key = sym.name or f"section{sym['st_shndx']}"
+        ins = word(o)
+        if addr is None or t not in (2, 4, 5, 6, 7):
+            mask(o, t)
+            continue
+        if t == 2:      # R_MIPS_32
+            resolved[o] = (addr + ins) & 0xFFFFFFFF
+        elif t == 4:    # R_MIPS_26: the target's address, with the in-place addend
+            resolved[o] = (ins & 0xFC000000) | (((addr + ((ins & 0x3FFFFFF) << 2)) >> 2) & 0x3FFFFFF)
+        elif t == 5:    # R_MIPS_HI16: resolved at the LO16 that follows it
+            pending.append((o, key, ins))
+        elif t == 6:    # R_MIPS_LO16
+            lo = sext(ins & 0xFFFF)
+            for ho, _, hins in [p for p in pending if p[1] == key]:
+                full = addr + ((hins & 0xFFFF) << 16) + lo
+                resolved[ho] = (hins & 0xFFFF0000) | (((full + 0x8000) >> 16) & 0xFFFF)
+            pending = [p for p in pending if p[1] != key]
+            resolved[o] = (ins & 0xFFFF0000) | ((addr + lo) & 0xFFFF)
+        else:           # R_MIPS_GPREL16
+            resolved[o] = (ins & 0xFFFF0000) | ((addr + sext(ins & 0xFFFF) - GP) & 0xFFFF)
+    for ho, _, _ in pending:
+        mask(ho, 5)
+    return resolved, masked
+
+
 def compare(name, seg, obj, show):
     rsize = int(SIZE.search(Path(f"asm/nonmatchings/{seg}/{name}.s").read_text()).group(2), 16)
     raw = Path(BASEROM).read_bytes()
@@ -200,23 +264,21 @@ def compare(name, seg, obj, show):
     sym = next((s for s in elf.get_section_by_name(".symtab").iter_symbols() if s.name == name), None)
     if sym is None or not sym["st_size"]:
         return f"NOSYM {name} not defined by the candidate"
-    relocated = {}
-    for sec in elf.iter_sections():
-        if isinstance(sec, RelocationSection) and sec.name == ".rel.text":
-            for rel in sec.iter_relocations():
-                o = rel["r_offset"]
-                half = rel["r_info_type"] in (5, 6, 7)
-                for b in ((o, o + 1) if half else range(o, o + 4)):
-                    relocated[b] = True
     off, osize = sym["st_value"], sym["st_size"]
     vram = int(name[5:], 16)
-    ours = text[off:off + osize]
+    resolved, masked = resolve_relocations(elf, text, vram - off)
+    filled = bytearray(text)
+    for o, w in resolved.items():
+        filled[o:o + 4] = w.to_bytes(4, "little")
+    relocated = {b: True for b in masked}
+    ours = bytes(filled[off:off + osize])
     orig = raw[vram - delta:vram - delta + rsize]
     if osize != rsize:
         verdict = f"SIZE ours {osize} / retail {rsize}"
     else:
         diff = sum(1 for i in range(rsize) if not relocated.get(off + i) and ours[i] != orig[i])
-        verdict = "EXACT (masked)" if diff == 0 else f"BYTES {diff}/{rsize}"
+        hidden = sum(1 for i in range(rsize) if relocated.get(off + i))
+        verdict = (f"EXACT ({hidden} bytes masked)" if hidden else "EXACT") if diff == 0 else f"BYTES {diff}/{rsize}"
     if show and not verdict.startswith("EXACT"):
         n = max(osize, rsize)
         for i in range(0, n, 4):

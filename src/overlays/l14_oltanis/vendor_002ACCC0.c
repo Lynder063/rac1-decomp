@@ -3,7 +3,27 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L14_002ACCC0);
-INCLUDE_ASM("asm/overlays", func_L14_002AD4F8);
+extern float func_L00_0025C918(float *p, float *v, float t, float u1, float u2, float eps);
+extern int *D_L14_001B0F30[];
+
+// Pick a keyframe vector from the moby's table and ease the moby position toward it per axis.
+void func_L14_002AD4F8(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    float v[4];
+    char *src;
+    int *tab;
+    tab = D_L14_001B0F30[*(int *)(data + 0xB4)];
+    if (*(float *)(data + 0xA4) > 0.5f) {
+        src = (char *)(tab[0] * 16 + (int)tab);
+        qcopy(v, src);
+    } else {
+        src = (char *)tab + 0x10;
+        qcopy(v, src);
+    }
+    func_L00_0025C918((float *)(moby + 0x10), (float *)(data + 0xD0), v[0], 0.005f, 0.2f, 0.0f);
+    func_L00_0025C918((float *)(moby + 0x14), (float *)(data + 0xD4), v[1], 0.005f, 0.2f, 0.0f);
+    func_L00_0025C918((float *)(moby + 0x18), (float *)(data + 0xD8), v[2], 0.005f, 0.2f, 0.0f);
+}
 INCLUDE_ASM("asm/overlays", func_L14_002AD858);
 extern char *func_L00_0025B478(void *, int, int);
 extern int func_L00_0025B4D0(void *, void *, void *, int, void *, void *, int, int);

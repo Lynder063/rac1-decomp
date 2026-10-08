@@ -296,7 +296,24 @@ void func_L08_002F2760(int a) {
     if (*(float *)&D_L08_001E8608[a].b > 1.0f) *(float *)&D_L08_001E8608[a].b = *(float *)&D_L08_001E8608[a].b - 1.0f;
     if (*(float *)&D_L08_001E8608[a].b < -1.0f) *(float *)&D_L08_001E8608[a].b = *(float *)&D_L08_001E8608[a].b + 1.0f;
 }
-INCLUDE_ASM("asm/overlays", func_L08_002F2838);
+extern short D_L08_00161E70;
+extern float D_L08_00161E74[] MACRO_ADDR;
+extern float D_L08_00161EA0_F2838[] __asm__("D_L08_00161EA0") MACRO_ADDR;
+extern float D_L08_00161EA4[] MACRO_ADDR;
+
+/* Advances the X and Y scroll offsets of entry `i` by speed * frame step, wrapping them into [-1, 1].
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/entities/002937a0.c, FUN_L08_002f1378. */
+void func_L08_002F2838(int i) {
+    float *p;
+    p = &D_L08_00161EA0_F2838[i * 2];
+    *p += (((float *)&D_L08_00161E70))[i * 2] * D_0015EE7C;
+    if (*p > 1.0f) *p -= 1.0f;
+    if (*p < -1.0f) *p += 1.0f;
+    p = &D_L08_00161EA4[i * 2];
+    *p += D_L08_00161E74[i * 2] * D_0015EE7C;
+    if (*p > 1.0f) *p -= 1.0f;
+    if (*p < -1.0f) *p += 1.0f;
+}
 extern int func_001F9908(int *);
 extern void func_001FA218(void *, void *);
 extern float func_002140F8(float, float);

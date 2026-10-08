@@ -18,7 +18,7 @@ void func_L01_0026E8E0(char *p)
     *(float *)(p + 0x28) = 1.57f;
     *(float *)(p + 0x2C) = 0.1f;
 }
-INCLUDE_ASM("asm/overlays", func_L01_0026EFA8);
+LINKER_REMNANT("asm/overlays", func_L01_0026EFA8);
 INCLUDE_ASM("asm/overlays", func_L01_0026EFB8);
 INCLUDE_ASM("asm/overlays", func_L01_0026EFDC);
 extern unsigned short *D_L01_001ABFC0[];

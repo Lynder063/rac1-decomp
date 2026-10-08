@@ -1663,13 +1663,6 @@ float func_L00_002E9B60(char *a0, float *a1, float lim) {
 }
 extern float func_L00_002E9B60(char *, float *, float);
 
-/* Exact match: needs -fno-schedule-insns (config/func_cflags.txt). */
-void func_L00_002E9D78(char *moby, int arg, float f)
-{
-    float scratch[4];
-    char *data = *(char **)(moby + 0x70);
-    func_L00_002E9B60(moby, (func_001F9BF0(scratch, (float *)arg, (float *)(data + 0x40)), scratch), f);
-}
 void func_L00_002E9DC8(void *a, float x, float y) {
     char *p = D_L00_00166F00;
     if (*(short *)(p + 0x86) == 0) {

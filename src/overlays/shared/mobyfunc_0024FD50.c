@@ -26,7 +26,7 @@ int func_L00_0024FD50(char *a, float time) {
     }
     return -1;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0024FEF8);
+LINKER_REMNANT("asm/overlays", func_L00_0024FEF8);
 extern void func_001FA4A0(void *, void *);
 extern void func_001F9BF0(void *, void *, void *);
 extern void func_001F9EE8(void *, void *, void *);

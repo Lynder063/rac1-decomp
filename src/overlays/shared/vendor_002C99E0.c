@@ -2,7 +2,7 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L11_002C99E0);
+LINKER_REMNANT("asm/overlays", func_L11_002C99E0);
 extern char D_0013F4D0[];
 extern unsigned char D_0013D491[];
 extern char D_L11_00179B98[];

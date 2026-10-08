@@ -224,8 +224,9 @@ A function that ends in a return of its own which other code also reaches has `f
 4 bytes, from a place where another entry starts in its delay slot, so the check adds the nop:
 `func_L16_002E4BD8` is 40 bytes in the catalogue and 48 in retail and in C.
 
-A 4-byte entry that follows a finished function is a different thing: the word the linker left of
-a function it stripped. Those are listed in `config/overlays/linker_remnants.txt` and marked
+An entry of single words that follows a finished function, each on an 8-byte boundary with a nop
+or fill after it, and that nothing branches to, is a different thing: what the linker left of
+functions it stripped. Those are listed in `config/overlays/linker_remnants.txt` and marked
 `LINKER_REMNANT` in the source (docs/ASM_CLASSIFICATION.md, "Level code"); `tools/overlay_remnants.py`
 tells the two apart from the bytes.
 

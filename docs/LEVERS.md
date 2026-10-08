@@ -140,27 +140,32 @@ in `config/core_rodata.txt`).
    A 128-bit zero store (`sq $zero,0(p)`) is `qzero(p)` there too:
    `*(long long *)p = 0` adds a `por` first.
 
-10. **Per-function flags.** Retail built some functions with
-    `-mno-split-addresses` ([SIBLING_DECOMPS.md](SIBLING_DECOMPS.md)),
-    next to split-address neighbours in the same file, so it is a
-    per-function setting (compiling all of pause.c with it breaks 49
-    functions). There a global is one assembler macro: every access is
-    `lui $at` + `%lo(sym)($at)` (loads, stores and FP ones alike), no
-    `%hi` survives a call, and gcc never puts such an access in a delay
-    slot. If that's what retail shows, or what's left is `%hi` values in
-    saved registers, run the candidate with
-    `TRY_CFLAGS=-mno-split-addresses`. When it matches, add the function
-    to `config/func_cflags.txt`: the build and try_func compile it with
-    those flags and splice it into the file's assembly
-    (`tools/func_cflags.py`). A small global (declared `MACRO_ADDR`) still
-    goes through `$gp` when it lands in a delay slot. First match:
-    func_002282D0. A `div` without the zero-divide trap wants
+10. **Flags for a whole file.** Retail built some code with other options,
+    for example `-mno-split-addresses` ([SIBLING_DECOMPS.md](SIBLING_DECOMPS.md)).
+    There a global is one assembler macro: every access is `lui $at` +
+    `%lo(sym)($at)` (loads, stores and FP ones alike), no `%hi` survives a
+    call, and gcc never puts such an access in a delay slot. If that's what
+    retail shows, or what's left is `%hi` values in saved registers, run the
+    candidate with `TRY_CFLAGS=-mno-split-addresses` (a diagnostic: it
+    applies to the whole file). GCC 2.95 takes options per translation unit,
+    so a match with a flag only counts when the flag can hold for a whole
+    file (docs/BUILD_FIDELITY.md, "Flags"):
+    - every C function of the file still matches with it: the file goes in
+      `config/file_cflags.txt` (`src/game/movie/disp.c` is built that way);
+    - a level file (`src/overlays/`, groupings this project chose): the
+      function can move to a file of its own that has the flag;
+    - an executable file whose neighbours break with the flag: its objects
+      follow retail's, so the flag does not make the function a match
+      (func_002282D0 and func_0011CB40 went back to assembly for this).
+    A small global (declared `MACRO_ADDR`) still goes through `$gp` when it
+    lands in a delay slot. A `div` without the zero-divide trap wants
     `-mno-check-zero-division`.
 
 11. **Orphan `%hi`.** When loop optimisation hoists a global's `lui`
     and never pairs it with a `%lo` (retail does this too, e.g. a `%hi`
     copied to a saved register nothing reads), our linker fills that
-    `lui` wrongly while try_func, which masks relocations, says `EXACT`.
+    `lui` wrongly while try_func, which cannot resolve an unpaired `%hi`
+    and masks it, says `EXACT`.
     `tools/fix_orphan_hi.py` (run by the build and try_func) writes such
     a `%hi` of a `D_`/`func_` symbol as a constant, so this is handled;
     if the full build still disagrees on one `lui`, look here first.
@@ -216,6 +221,14 @@ in `config/core_rodata.txt`).
     - Replacing a stub whose `.s` has nops after `endlabel`: reproduce
       them with a file-scope `__asm__(".section .text\n\tnop...")`
       (func_0022F258), or the whole segment shifts.
+
+13. **From rac3-uya-decomp** (the same compiler family, working with
+    us): [RAC3_PATTERNS.md](RAC3_PATTERNS.md) has what carries over:
+    int/float order in prototypes, arguments retail never sets, float
+    constants and gcse, loop constants, stack slot order, switch tables,
+    cross-jumping. For a register tie, `bash tools/docker/run.sh python
+    tools/regalloc.py func_X CANDIDATE.c` prints the allocator's order and
+    priorities: change what outranks or overlaps the variable.
 
 ## Known walls: stop and report
 

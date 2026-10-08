@@ -7,7 +7,7 @@ INCLUDE_ASM("asm/overlays", func_L00_001EB564);
 INCLUDE_ASM("asm/overlays", func_L00_001EB578);
 INCLUDE_ASM("asm/overlays", func_L00_001EB598);
 INCLUDE_ASM("asm/overlays", func_L00_001EB5A8);
-INCLUDE_ASM("asm/overlays", func_L00_001EB5B0);
+LINKER_REMNANT("asm/overlays", func_L00_001EB5B0);
 extern float func_001FA790_f(float, float) __asm__("func_001FA790");
 extern float func_001F9B88(float);
 extern float func_001FA748(float, float);
@@ -66,7 +66,73 @@ void func_L00_001EC090(void) {
     qcopy(d + 0xB0, d + 0xD0);
 }
 INCLUDE_ASM("asm/overlays", func_L00_001EC220);
-INCLUDE_ASM("asm/overlays", func_L00_001ED2C0);
+/* func_L00_001ED2C0 is the head of one C function: its retail code runs on through
+   func_L00_001ED380 and the 8-byte piece at func_L00_001ED3D4 (288 bytes in all; the
+   beqz to 0x1ED380 and the beql to 0x1ED3D4 are branches inside it). This is the whole
+   function written out; try_func only compares the first 192 bytes, so it reports SIZE
+   until config/overlays/joined.tsv joins the pieces. Each block takes its own base
+   pointer to the hero state, as retail re-derives it per block. */
+extern char D_L00_00166F10[];
+extern float D_L00_00166EC8;
+extern int D_L00_0015F058 SDATA(D_L00_0015F058);
+extern int D_L00_0015F060 MACRO_ADDR;
+extern int D_L00_0015F05C_w __asm__("D_L00_0015F05C") MACRO_ADDR;
+extern int D_L00_0015F05C_g SDATA(D_L00_0015F05C);
+
+void func_L00_001ED2C0(void) {
+    char *d = D_L00_00166F10;
+
+    D_L00_0015F05C_g = 0x14;
+    {
+        unsigned char *g = (unsigned char *)(D_0013E633 + 0xE1D);
+        if ((unsigned int)(*(int *)(g + 0x208C) - 0x11) < 2 || *(int *)(g + 0x2084) == 0x73) {
+            D_L00_0015F05C_w = 0x34;
+        }
+    }
+    {
+        unsigned char *g = (unsigned char *)(D_0013E633 + 0xE1D);
+        if (*(int *)(g + 0x208C) != 0x11) {
+            if (*(float *)(g + 0x2F0) < D_L00_00166EC8) {
+                D_L00_0015F05C_w = 0x14;
+            }
+        }
+    }
+    {
+        int v = D_L00_0015F05C_w;
+        D_L00_0015F060 = v;
+        D_L00_0015F05C_w = v | 0x80;
+    }
+    D_L00_0015F058 = 0xB4;
+    {
+        unsigned char *g = (unsigned char *)(D_0013E633 + 0xE1D);
+        if (g[0x12E5]) {
+            *(int *)(d + 0xC0) = 0x100;
+            D_L00_0015F058 = 0x1B4;
+            return;
+        }
+        if (g[0x12EB]) {
+            *(int *)(d + 0xC0) = 0xB00;
+            D_L00_0015F058 = 0xBB4;
+            return;
+        }
+        if (g[0x12E6]) {
+            *(int *)(d + 0xC0) = 0x300;
+            D_L00_0015F058 = 0x3B4;
+            return;
+        }
+        if (g[0x12EC]) {
+            *(int *)(d + 0xC0) = 0xD00;
+            D_L00_0015F058 = 0xDB4;
+            return;
+        }
+        if (g[0x12E4] != 0) {
+            *(int *)(d + 0xC0) = 0;
+            D_L00_0015F058 = 0xB4;
+            return;
+        }
+        D_L00_0015F058 = *(int *)(d + 0xC0) | 0xB4;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_001ED380);
 INCLUDE_ASM("asm/overlays", func_L00_001ED3D4);
 INCLUDE_ASM("asm/overlays", func_L00_001ED428);
@@ -144,90 +210,6 @@ extern char *D_L00_0015F050 MACRO_ADDR;
 extern void func_L00_001FF4B0(void *, void *, float);
 extern void func_001F9BC0(void *);
 
-/* Initialises the camera slot tables and the camera state from the hero's transform. */
-/* Exact match: needs -fno-force-mem (config/func_cflags.txt). */
-void func_L00_001ED6D8(void) {
-    char *g = (char *)&D_L00_00166D80;
-    char *g1;
-    char *q;
-    char *p1;
-    char *base;
-    int i;
-    int k;
-
-    *(int *)(g + 0x394) = 0;
-    *(int *)(g + 0x398) = 0;
-    *(float *)&D_L00_0015F040 = 0.75f;
-    D_L00_0015F04C = 0;
-    for (k = 0; k < 48; k++) {
-        D_L00_00167250[k].s8E = 0;
-        D_L00_00169990[k] = 0;
-    }
-    g1 = (char *)&D_L00_00166D80;
-    base = D_0013E633 + 0xE1D;
-    q = g1 + 0x190;
-    p1 = g1 + 0x1B0;
-    *(int *)(g1 + 0x184) = 0;
-    *(short *)(g1 + 0x270) = 0;
-    func_L00_001FF4B0(p1, (char *)(*(int *)(base + 0x2080) + 0xE0), 1.0f);
-    qcopy(g1 + 0x1C0, p1);
-    qcopy(g1 + 0x1D0, p1);
-    func_001F9BC0(g1 + 0x1E0);
-    qcopy(g1 + 0x1F0, base + 0x80);
-    {
-        float f0 = *(float *)(base + 0x98);
-        float f1 = *(float *)(base + 0x88);
-        *(int *)(q + 0xC4) = 0;
-        *(int *)(q + 0xCC) = 0;
-        *(int *)(q + 0xC0) = 0;
-        *(int *)(q + 0xC8) = 0;
-        *(int *)(q + 0xD0) = 0;
-        *(float *)(q + 0xBC) = f0;
-        *(float *)(q + 0xB8) = f0;
-        *(float *)(q + 0xB4) = f0;
-        *(float *)(q + 0xB0) = f0;
-        *(int *)(q + 0xD4) = 0;
-        *(int *)(q + 0xDC) = 0;
-        *(float *)(q + 0xAC) = f0;
-        *(float *)(q + 0xD8) = f1;
-    }
-    i = 0;
-    if (D_L00_0015F054 > 0) {
-        do {
-            int off = i * 32;
-            char *e = D_L00_0015F050 + off;
-            char *r = *(char **)(e + 0x1C);
-            Elem *el = &D_L00_00167250[i];
-            int h;
-            el->s84 = i;
-            *(Elem **)(r + 4) = el;
-            el->s8E = 0;
-            el->c89 = 0;
-            el->s8A = 0;
-            el->s82 = -1;
-            el->s80 = -1;
-            el->c7D = 0;
-            el->s7E = 0;
-            el->f78 = -1.0f;
-            el->c7C = r[0x1C];
-            el->i74 = (unsigned char)r[0x1F];
-            h = *(unsigned short *)(e + 0xC);
-            D_L00_00169990[i] = 1;
-            el->s86 = h;
-            el->s8C = func_L00_001ED5B0((short)h);
-            i++;
-        } while (i < D_L00_0015F054);
-    }
-    func_L00_001ED600();
-    *(short *)D_L00_00166FF0 = 0;
-    {
-        int *q = (int *)(D_L00_00166FF0 + 0x110);
-        q[0] = 0;
-        q[3] = 0;
-        q[1] = 0;
-        q[4] = 0;
-    }
-}
 extern float func_001F9F90(float);
 extern float func_001F9FA8(float);
 extern void func_001F9BD8(void *, void *, void *);

@@ -2,8 +2,8 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L05_002CF2C0);
-INCLUDE_ASM("asm/overlays", func_L05_002D5398);
+LINKER_REMNANT("asm/overlays", func_L05_002CF2C0);
+LINKER_REMNANT("asm/overlays", func_L05_002D5398);
 extern struct Moby *func_0020D348_m(int) __asm__("func_0020D348");
 extern int func_001F9850(int);
 extern float D_0015EE6C MACRO_ADDR;
@@ -31,7 +31,7 @@ char *func_L05_002D53B0(int owner, char *pos, int arg, float f0, float f1) {
     }
     return moby;
 }
-INCLUDE_ASM("asm/overlays", func_L05_002D54C0);
+LINKER_REMNANT("asm/overlays", func_L05_002D54C0);
 INCLUDE_ASM("asm/overlays", func_L05_002F62E8);
 INCLUDE_ASM("asm/overlays", func_L05_002F63DC);
 INCLUDE_ASM("asm/overlays", func_L05_002F63FC);

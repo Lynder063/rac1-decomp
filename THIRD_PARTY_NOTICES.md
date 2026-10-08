@@ -354,6 +354,44 @@ address, each passing this project's own check). In parentheses, Lombyte's name.
 - `src/overlays/shared/vendor_002E1660.c`: `func_L00_002E1790` (`FUN_L00_002e02e0`)
 - `src/overlays/l13_gemlik/vendor_002C2638.c`: `func_L13_002C2638` (`FUN_L13_002c13b0`)
 
+Twelve executable functions from the same pull requests followed on 2026-10-07, proven by the full build.
+Ten went in as the tool wrote them. `func_001EC2B8` needed its file to change around it: a later
+declaration retyped to its parameter, and two typedefs it shares with `func_001ED818` kept once.
+`func_001EE858` was adapted: it writes the fog preset as the struct `src/game/draw.c` already reads.
+
+- `src/core/00119868.c`: `func_00119AA8` (`sceTtyWrite`)
+- `src/core/0012AC80.c`: `func_0012AD10` (`sceMpegDemuxPssRing`)
+- `src/game/camera.c`: `func_001EC2B8` (`switch_active_camera_record`)
+- `src/game/camera.c`: `func_001ED818` (`FUN_001ed470`)
+- `src/game/drawquad.c`: `func_001F9478` (`append_billboard_batch`)
+- `src/game/effects.c`: `func_001EE858` (`update_camera_environment_from_regions`)
+- `src/game/pause.c`: `func_0021C1B0` (`render_localized_ui_entry_list`)
+- `src/game/pause.c`: `func_0021F6A0` (`update_item_preview_transform`)
+- `src/game/pause.c`: `func_002255F8` (`load_hand_gadget`)
+- `src/game/pause.c`: `func_00228860` (`submit_graphics_setup_command_stream`)
+- `src/game/skyfunc.c`: `func_0022C188` (`update_sky_effects`)
+- `src/game/vendor.c`: `func_0023A5E0` (`render_vendor_capture_texture_overlays_pass`)
+
+One more on 2026-10-07, written from the adapted `func_L12_00236270` above plus one state arm:
+
+- `src/overlays/shared/help_00214D60.c`: `func_L00_00214D60` (`FUN_L00_00214658`)
+
+Ten more were carried over by machine on 2026-10-07, from Lombyte's pull requests 109 to 114 and from its
+unmerged branches `decomp/twins-wave` (the first three below) and `overlay/shared-veldin-5` (the same tool,
+the same rule: identical instructions, Lombyte's C with every symbol renamed to its PAL address, each
+passing this project's own check). In parentheses, Lombyte's name.
+
+- `src/overlays/shared/help_001FFED0.c`: `func_L15_0020ADD8` (`FUN_L15_0020a7a0`)
+- `src/overlays/l02_aridia/help_0022BE40.c`: `func_L02_002368E8` (`FUN_L02_002360c8`)
+- `src/overlays/shared/help_0021D6B8.c`: `func_L06_002431A0` (`FUN_L06_00242950`)
+- `src/overlays/l02_aridia/vendor_002E21F8.c`: `func_L02_002E33F0` (`FUN_L02_002e1fb8`)
+- `src/overlays/l02_aridia/vendor_002E21F8.c`: `func_L02_002ED660` (`FUN_L02_002ec228`)
+- `src/overlays/l05_rilgar/vendor_002D28D0.c`: `func_L05_003052A8` (`FUN_L05_00303e50`)
+- `src/overlays/l05_rilgar/vendor_002D28D0.c`: `func_L05_0030D3F0` (`FUN_L05_0030bf98`)
+- `src/overlays/l08_batalia/vendor_002EAF48.c`: `func_L08_002F2838` (`FUN_L08_002f1378`)
+- `src/overlays/l14_oltanis/vendor_002FF358.c`: `func_L14_00306B08` (`FUN_L14_00305680`)
+- `src/overlays/shared/vendor_002B90A8.c`: `func_L01_002F0FD0` (`FUN_L01_002efbf8`)
+
 Fifteen more were carried over by machine on 2026-10-05 once `include/common.h` had `qzero()`, the 128-bit
 zero store Lombyte identified as inline assembly in the original (its `include/qzero.h`; the helper here is
 written after it). Same tool, same rule; the two executable functions are proven by the full build:

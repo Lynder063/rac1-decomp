@@ -114,14 +114,3 @@ INCLUDE_ASM("asm/overlays", func_L15_002F9D38);
 extern char *D_L15_00167480;
 extern void func_L15_002F9D38(void *);
 
-/* Exact match: needs -fno-force-mem (config/func_cflags.txt). */
-int func_L15_002F9FF8(char *moby)
-{
-    char *entry = D_L15_0015F050 + (*(short *)(moby + 0x84) << 5);
-    char *other = D_L15_00167480;
-    char *sub = *(char **)(entry + 0x1C);
-    if (*(short *)(other + 0x86) == 0 && *(short *)(sub + 0x20) >= 0 && (unsigned char)D_0013E633[0x2EC1] == 2) {
-        func_L15_002F9D38(moby);
-    }
-    return -1;
-}

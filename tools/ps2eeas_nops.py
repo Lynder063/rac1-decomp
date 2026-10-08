@@ -55,9 +55,12 @@ with calls (func_0012E688, func_0012EC60). Three rules:
    retail code is hand-written noreorder assembly (every mtc1 there is
    directly followed by its reader), even where our C reproduces it.
 
-ps2eeas itself cannot be used here: it recurses without end on some of
-the retail stubs that INCLUDE_ASM feeds it, and it has no -G small-data
-expansion (docs/DECOMP_PROGRESS.md).
+ps2eeas itself is not the build's assembler yet (docs/BUILD_FIDELITY.md,
+"Checked against the real ps2eeas"): it cannot read the GNU macros the
+retail-assembly stubs use, and in one pass it only uses $gp for symbols
+whose size it has seen. tools/check_ps2eeas.py runs it on the same compiler
+output and compares: this tool and its two siblings give its code for
+98.4% of the C functions.
 
 Two passes, so that nothing is guessed about macro expansion or delay
 slots: IN.o is IN.s assembled. Everything is measured in it, per compiled

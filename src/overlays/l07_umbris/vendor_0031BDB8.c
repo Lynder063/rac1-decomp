@@ -3,7 +3,77 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L07_0031BDB8);
-INCLUDE_ASM("asm/overlays", func_L07_0031C7C0);
+typedef union { int i; float f; } EaseWord1C7C0;
+typedef struct { int target; int startState; int endState; float speed; float decay; float limit; EaseWord1C7C0 value; } EaseData1C7C0;
+typedef struct { char pad[0x20]; unsigned char state; char pad1[0x23]; EaseWord1C7C0 angle; char pad2[0x30]; EaseData1C7C0 *data; char pad3[0x84]; } EaseMoby1C7C0;
+extern int func_0022ED80(int, int, int);
+extern float func_001F9F90(float);
+extern float func_001FA748(float, float);
+extern float func_001FA790(float, float);
+extern float D_0015EE6C MACRO_ADDR;
+extern EaseMoby1C7C0 *D_L07_00160058_ease __asm__("D_L07_00160058") MACRO_ADDR;
+
+// UpdateMoby_1133: state machine that eases a value toward targets while the linked moby is alive.
+void func_L07_0031C7C0(EaseMoby1C7C0 *moby) {
+    EaseData1C7C0 *d = moby->data;
+    EaseMoby1C7C0 *o;
+    float v, w;
+    if (d) {
+        switch (moby->state) {
+        case 0:
+            moby->angle.i = 0;
+            moby->state = 1;
+            d->value.i = 0;
+            break;
+        case 1:
+            if (d->target != -1 && (o = D_L07_00160058_ease + d->target) != 0 &&
+                o->state != 0xFE && o->state != 0xFD &&
+                o->state != d->startState) {
+                return;
+            }
+            {
+                float dt = D_0015EE6C;
+                v = d->speed * dt;
+            }
+            d->value.f = v;
+            moby->angle.f = v;
+            func_0022ED80(0, 0, (int)moby);
+            moby->state = 3;
+            break;
+        case 3:
+            d->value.f = func_001FA748(d->value.f, func_001F9F90(moby->angle.f) * (d->speed * D_0015EE6C));
+            moby->angle.f = func_001FA748(moby->angle.f, d->value.f);
+            o = D_L07_00160058_ease + d->target;
+            d->value.f = d->value.f * d->decay;
+            if (o != 0 && o->state != 0xFE && o->state != 0xFD) {
+                if (o->state != d->endState) {
+                    return;
+                }
+                moby->state = 4;
+            }
+            break;
+        case 4:
+            if (d->target == -1 || (o = D_L07_00160058_ease + d->target) == 0 ||
+                o->state == 0xFE || o->state == 0xFD ||
+                o->state == d->startState) {
+                func_0022ED80(0, 0, (int)moby);
+                moby->state = 2;
+            } else {
+                w = func_001FA790(moby->angle.f, d->limit);
+                moby->angle.f = w;
+                if (0.0f < w) {
+                    moby->angle.f = 0.0f;
+                    d->value.f = 0.0f;
+                    moby->state = 1;
+                }
+            }
+            break;
+        case 2:
+        case 5:
+            break;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L07_0031E6B0);
 typedef struct { char pad[0x178]; int arr[8]; } L07SparkState;
 extern void func_L00_00264870(int);

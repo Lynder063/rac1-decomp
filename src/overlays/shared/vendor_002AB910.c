@@ -1724,7 +1724,74 @@ unsigned char *func_L00_002B0B98(unsigned char *owner, void *vel, void *pos, voi
     }
     return m;
 }
-INCLUDE_ASM("asm/overlays", func_L00_002B0D30);
+extern float D_L00_00161540_float SDATA(D_L00_00161540);
+extern int D_L00_00161544_count SDATA(D_L00_00161544);
+extern unsigned char D_L00_00161544_byte SDATA(D_L00_00161544);
+extern char D_L00_00173F80[];
+extern float D_L00_00161518_float SDATA(D_L00_00161518);
+extern float D_L00_0016151C_float SDATA(D_L00_0016151C);
+extern float func_001F9C78(void *a, void *b);
+extern float func_L00_00258C80(float lo, float hi);
+
+// Updates a bouncing moby: spins it, then in state 0 reflects its direction off a plane and in state 1 fades it out.
+typedef struct DebrisData2B0D30 {
+    char pad0[4]; float floor, radius;
+    short bounces; short timer;
+    float velocity[4]; float spin[3];
+} DebrisData2B0D30;
+typedef struct DebrisMoby2B0D30 {
+    char pad0[0x10]; float position[4]; unsigned char state;
+    char pad21[2]; unsigned char opacity;
+    char pad24[8]; float scale;
+    char pad30[0x10]; float rotation[4];
+    char pad50[0x28]; DebrisData2B0D30 *data;
+} DebrisMoby2B0D30;
+void func_L00_002B0D30(char *moby) {
+    DebrisMoby2B0D30 *mob = (DebrisMoby2B0D30 *)moby;
+    float old[4];
+    char *pos = moby + 0x10;
+    DebrisData2B0D30 *data = mob->data;
+    float *vel;
+    qcopy(old, pos);
+    vel = data->velocity;
+    data->velocity[2] = data->velocity[2] - D_0015EE70 * 20.0f;
+    func_001F9BD8(pos, pos, vel);
+    mob->rotation[0] = func_001FA748(mob->rotation[0], data->spin[0]);
+    mob->rotation[1] = func_001FA748(mob->rotation[1], data->spin[1]);
+    mob->rotation[2] = func_001FA748(mob->rotation[2], data->spin[2]);
+    switch (mob->state) {
+    case 0:
+        if (mob->position[2] < data->floor - 3.0f) {
+            mob->state = 1;
+        } else if (func_001F9938(&data->timer) != 0 && data->bounces != 0) {
+            if (func_L00_001F10E0(data->radius, pos, 2, 0) != 0) {
+                char *n = D_L00_00173F80;
+                float zero;
+                if (func_001F9C78(vel, n) < (zero = 0.0f)) {
+                    qcopy(pos, n - 0x10);
+                    *(unsigned short *)&data->bounces = *(unsigned short *)&data->bounces - 1;
+                    func_L00_001FF610(vel, vel, n);
+                    func_001F9C30(vel, vel, 0.75f);
+                    data->spin[0] = zero;
+                    data->spin[1] = func_L00_00258C80(D_L00_00161518_float, D_L00_0016151C_float) * 0.017453292f * D_0015EE6C;
+                    data->spin[2] = func_L00_00258C80(D_L00_00161518_float, D_L00_0016151C_float) * 0.017453292f * D_0015EE6C;
+                }
+            }
+        }
+        break;
+    case 1: {
+        int t;
+        mob->scale = mob->scale * D_L00_00161540_float;
+        t = mob->opacity;
+        if (t < D_L00_00161544_count) {
+            func_0020D678(moby);
+        } else {
+            mob->opacity = t - D_L00_00161544_byte;
+        }
+        break;
+    }
+    }
+}
 typedef union { u128 q; float f[4]; } V4;
 extern unsigned char *func_L00_0025D390(unsigned char *);
 extern float func_001F9CB8(void *);

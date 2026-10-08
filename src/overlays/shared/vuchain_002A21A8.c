@@ -48,7 +48,7 @@ void func_L00_002A2258(int a, int b, int n) {
         D_L00_00161280 = D_L00_00161280 + 4;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002A2668);
+LINKER_REMNANT("asm/overlays", func_L00_002A2668);
 /* classifies a point against wrapped ranges and bounds; returns a bitmask. Adapted from Lombyte (MIT) for PAL: src/overlays/shared/runtime_dma_002a13d8.c, FUN_L00_002a13f0. */
 struct WalkAnim;
 int func_L00_002A2680(struct WalkAnim *anim, float v) {
@@ -853,4 +853,4 @@ void func_L00_002A2900(WalkMoby *m, WalkData *d, int flags, float speed, float a
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002A4F50);
+LINKER_REMNANT("asm/overlays", func_L00_002A4F50);

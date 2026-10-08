@@ -2,9 +2,9 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L00_002A5138);
+LINKER_REMNANT("asm/overlays", func_L00_002A5138);
 INCLUDE_ASM("asm/overlays", func_L00_002A5158);
-INCLUDE_ASM("asm/overlays", func_L00_002A5AC0);
+LINKER_REMNANT("asm/overlays", func_L00_002A5AC0);
 extern int func_001F9938(void *);
 extern float func_001FA888(int);
 extern float func_002140F8(float, float);
@@ -709,7 +709,7 @@ void *func_L00_002AAC50(int unused, void *pos, int c, float scale, float a, floa
     }
     return m;
 }
-INCLUDE_ASM("asm/overlays", func_L00_002AAD28);
+LINKER_REMNANT("asm/overlays", func_L00_002AAD28);
 typedef int u128 __attribute__((mode(TI)));
 extern int func_L00_0023EF78(float *pos, float radius, float intensity, int color);
 extern int D_L00_0015F420 MACRO_ADDR;

@@ -130,7 +130,7 @@ void func_L00_002592B0(char *moby, float *vel, float target, float k, float d, f
     }
     *(float *)(moby + 0x48) = FastAddRots(*(float *)(moby + 0x48), *vel);
 }
-INCLUDE_ASM("asm/overlays", func_L00_00259418);
+LINKER_REMNANT("asm/overlays", func_L00_00259418);
 typedef struct { float a[4]; } Vs __attribute__((aligned(16)));
 extern int D_L00_00173F40[];
 extern int func_L00_001EFFF0(void *, void *, int, int, int);
@@ -505,12 +505,12 @@ int func_L00_0025A060(char *m, char *p, float *pos, char *v) {
     }
     return flags;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0025A1D8);
+LINKER_REMNANT("asm/overlays", func_L00_0025A1D8);
 INCLUDE_ASM("asm/overlays", func_L00_0025A208);
 INCLUDE_ASM("asm/overlays", func_L00_0025A2F0);
 INCLUDE_ASM("asm/overlays", func_L00_0025A344);
 INCLUDE_ASM("asm/overlays", func_L00_0025A43C);
-INCLUDE_ASM("asm/overlays", func_L00_0025A458);
+LINKER_REMNANT("asm/overlays", func_L00_0025A458);
 int func_L00_0025A468(int *p, int b) {
     int w = *p;
     int v = (w >> 24) - b;
@@ -582,7 +582,7 @@ int func_L00_0025A778(float *p, float *v, int n) {
     }
     return r;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0025A848);
+LINKER_REMNANT("asm/overlays", func_L00_0025A848);
 /* From Lombyte (MIT), FUN_L00_00259830 (PR #66), adapted to PAL. */
 int func_L00_0025A868(char *a) {
     char *p = *(char **)(a + 0x94);
@@ -747,7 +747,7 @@ void func_L00_0025B040(unsigned char *m, float s) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_0025B168);
+LINKER_REMNANT("asm/overlays", func_L00_0025B168);
 void func_L00_0025B178(char *o) {
     float a[4];
     float b[4];
@@ -1026,7 +1026,7 @@ float func_L00_0025BC48(float *a, float *b, float *out, float speed, float g) {
     return -((a[2] - b[2]) + g * (t * t) * 0.5f) / t;
 }
 INCLUDE_ASM("asm/overlays", func_L00_0025BCF8);
-INCLUDE_ASM("asm/overlays", func_L00_0025C488);
+LINKER_REMNANT("asm/overlays", func_L00_0025C488);
 extern float func_0020D830(char *);
 extern void func_00213DE0(void *, int, int, int);
 extern float func_001F9878(float);

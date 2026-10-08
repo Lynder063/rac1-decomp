@@ -1,7 +1,9 @@
 /* NON_MATCHING func_L08_002E30E8 -- src/overlays/l08_batalia/vendor_002E0258.c
- * Best so far: SIZE ours 668 / retail 776, checked 2026-10-06.
+ * Best so far: SIZE ours 768 / retail 776, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * What the last attempts found:
+ *   mini41 main-only: staged SIZE668/776. p0 introduces separate field bases for the last two segment rows, SIZE76
  */
 typedef struct {
     char *sub;
@@ -16,10 +18,14 @@ void func_L08_002E30E8(char *m) {
     char *d = *(char **)(m + 0x78);
     Joint_2e30e8 *e = (Joint_2e30e8 *)(d + 0x60);
     int k;
-    e[0].sub = m;
-    e[0].parent = 0;
-    e[0].joint = 0;
-    e[0].pjoint = 0;
+    char *sub = (char *)&e[0].sub;
+    char *parent = (char *)&e[0].parent;
+    char *joint = (char *)&e[0].joint;
+    char *pjoint = (char *)&e[0].pjoint;
+    *(char **)sub = m;
+    *(char **)parent = 0;
+    *(int*)joint = 0;
+    *(int*)pjoint = 0;
     e[3].sub = func_L08_002E3010(m, 0x1C1, 0, 2);
     e[3].parent = m;
     e[3].joint = 0;
@@ -64,15 +70,15 @@ void func_L08_002E30E8(char *m) {
         e[10 + k].pjoint = k + 2;
     }
     for (k = 0; k < 8; k++) {
-        e[18 + k].sub = func_L08_002E3010(e[8].sub, 0x1BB, 0, k + 2);
-        e[18 + k].parent = e[8].sub;
-        e[18 + k].joint = 0;
-        e[18 + k].pjoint = k + 2;
+        *(char **)(sub + (18 + k) * sizeof(Joint_2e30e8)) = func_L08_002E3010(e[8].sub, 0x1BB, 0, k + 2);
+        *(char **)(parent + (18 + k) * sizeof(Joint_2e30e8)) = e[8].sub;
+        *(int*)(joint + (18 + k) * sizeof(Joint_2e30e8)) = 0;
+        *(int*)(pjoint + (18 + k) * sizeof(Joint_2e30e8)) = k + 2;
     }
     for (k = 0; k < 8; k++) {
-        e[26 + k].sub = func_L08_002E3010(e[9].sub, 0x1BB, 0, k + 2);
-        e[26 + k].parent = e[9].sub;
-        e[26 + k].joint = 0;
-        e[26 + k].pjoint = k + 2;
+        *(char **)(sub + (26 + k) * sizeof(Joint_2e30e8)) = func_L08_002E3010(e[9].sub, 0x1BB, 0, k + 2);
+        *(char **)(parent + (26 + k) * sizeof(Joint_2e30e8)) = e[9].sub;
+        *(int*)(joint + (26 + k) * sizeof(Joint_2e30e8)) = 0;
+        *(int*)(pjoint + (26 + k) * sizeof(Joint_2e30e8)) = k + 2;
     }
 }

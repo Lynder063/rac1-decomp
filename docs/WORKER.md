@@ -8,6 +8,7 @@ function's name, your role and your budget. Everything else is here, in
 
 - Do the work yourself. Don't start sub-agents, search the web or install
   software.
+- The build is fixed: no step may change what the compiler emitted, and flags apply only to whole files (GCC 2.95 has no per-function options). Never propose a new post-processing step or a per-function flag; a function that only matches that way is not a match (docs/BUILD_FIDELITY.md).
 - Plain C only, as upstream requires
   ([LLM_DECOMP_INSTRUCTIONS.md](LLM_DECOMP_INSTRUCTIONS.md)): no register
   pins, no inline assembly inside a function, no artificial barriers
@@ -69,7 +70,12 @@ function's name, your role and your budget. Everything else is here, in
    saved registers or a bigger frame than retail, or a `lui` retail
    repeats), spend one run on `-mno-split-addresses` (LEVERS.md lever 10)
    and report what it did.
-7. Stop at `EXACT`, when the budget runs out, or when three variants in a
+7. When only registers differ, run
+   `bash tools/docker/run.sh python tools/regalloc.py <func> build-sn/try/<func>/pN.c`
+   once (it does not count against the budget): it prints the order the
+   allocator took the variables in and their priorities, so change what
+   outranks or overlaps the one in the wrong register (LEVERS.md lever 13).
+8. Stop at `EXACT`, when the budget runs out, or when three variants in a
    row compile to the same bytes: that is an allocator or scheduler tie
    that rewording won't move. Note where it is and stop. Matches come
    early: in the waves so far, every function under 600 bytes that

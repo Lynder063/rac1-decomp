@@ -704,7 +704,69 @@ void func_L07_00310038(char *arg) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L07_00310110);
+extern void func_L07_0030FF18(char *data);
+extern int func_L07_0030FFA8(char *moby, char *data);
+extern void func_L07_00310038(char *arg);
+extern int func_001160D8(void);
+extern int func_001E9730();
+extern char *D_L07_00160058 MACRO_ADDR;
+extern int D_L07_0016016C_addr __asm__("D_L07_0016016C") MACRO_ADDR;
+extern char D_L07_00211A10[];
+extern char D_L07_00211A48[];
+extern char D_L07_00211A80[];
+extern char D_L07_00211AB0[];
+extern void qcopy(void *, void *);
+
+// Resolves the indices stored in an object's data block into pointers; logs and fails on -1.
+int func_L07_00310110(char *moby, char *d) {
+    char *p;
+    char *q;
+    int base;
+    char **t;
+    int i = *(int *)(d + 0x110);
+    int j, k, n;
+    if (i == -1) {
+        func_001E9730(D_L07_00211A10, (int)(moby - D_L07_00160058) >> 8);
+        return 1;
+    }
+    t = D_L07_001B0830;
+    p = t[i];
+    *(char **)(d + 0x128) = p;
+    func_L07_0030FF18(p);
+    j = *(int *)(d + 0x144);
+    if (j == -1) {
+        func_001E9730(D_L07_00211A48, (int)(moby - D_L07_00160058) >> 8);
+        return 1;
+    }
+    q = t[j];
+    *(char **)(d + 0x148) = q;
+    func_L07_0030FF18(q);
+    k = *(int *)(d + 0x118);
+    if (k == -1) {
+        func_001E9730(D_L07_00211A80, (int)(moby - D_L07_00160058) >> 8);
+        return 1;
+    }
+    *(char **)(d + 0x12C) = D_L07_00160058 + (k << 8) + 0x18;
+    moby[0xBC] = func_L07_0030FFA8(moby, d);
+    base = D_L07_0016016C_addr;
+    n = *(int *)(d + 0x114);
+    if (n == -1) {
+        func_001E9730(D_L07_00211AB0, (int)(moby - D_L07_00160058) >> 8);
+        return 1;
+    }
+    qcopy(d + 0xF0, (void *)((n << 7) + base + 0x30));
+    qcopy(d + 0xE0, moby + 0x10);
+    ((void (*)(char *, char *))func_L07_00310038)(moby, d);
+    *(int *)(d + 0x134) = func_001160D8() % 0x78;
+    if (func_001160D8() & 1) {
+        *(float *)(d + 0x140) = 0.34906584f;
+    } else {
+        *(float *)(d + 0x140) = -0.34906584f;
+    }
+    *(int *)(d + 0x14C) = 0;
+    d[0x29] = 1;
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L07_003102C8);
 extern float func_00214D88(float *, float *, float, float, float, float);
 extern int func_L00_00259B08(int a, int b, int g, int e, float c, float d);
