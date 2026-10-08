@@ -71,31 +71,58 @@ Together the assembler steps carry 1,078 functions, 1,710,356 bytes (46.1%
 of the code); a function usually needs more than one of them. That is most
 of the level code's long functions: almost every long function has at least one
 short loop or FP compare. The padding changes no instruction the compiler
-wrote; it adds the nops the real assembler adds. Replacing these tools with
-the real `ps2eeas` is the goal (below).
+wrote; it adds the nops the real assembler adds, and SN's real assembler,
+run on the same compiler output, gives the same code for 98.4% of the C
+functions (below). Replacing these tools with it is the goal.
 
 Steps outside the compiled code, for completeness: `tools/fix_denormal_floats.py`
 and `tools/fix_vu0_macro.py` rewrite the retail assembly that
 `tools/setup_asm.sh` generates (stubs and data) so our assembler reproduces
 it; they never touch compiled C.
 
-### Why not the real `ps2eeas`
+### Checked against the real `ps2eeas`
 
 Both versions in the toolchain mirrors (1.9.6.516 from SDK 2.4, 1.9.25.758
-from ProDG 3.01) have been tried. The first attempt (docs/DECOMP_PROGRESS.md)
-crashed on the retail assembly stubs (`INCLUDE_ASM`) of files that are not
-fully C yet, and got no `$gp` addressing for externs, so every such access
-came out as a `lui` pair (385 exact instead of 503 at the time): the
-assembler is single-pass and only uses `$gp` for a symbol whose size it has
-seen, while GCC 2.95 lists extern sizes at the end of the file. Retried on
-2026-10-07 with fully-C game files (`menu.c`, `effects.c`, `camera.c`),
-compiled with `-mgpopt` (GCC's option for exactly that problem): both
-versions stop with a stack overflow on the compiler's output, and this
-compiler ignores `-mgpopt` (the sizes stay at the end). Lombyte, the
-decompilation of the US build, assembles with ProDG 3.01's `Ps2EeAs` 1.9.25.758, patched not to pad
-divides, and has its compiler declare small-data symbols before their first
-use so the single-pass assembler can address them through `$gp`. Moving to
-the real assembler is the open item that would retire the table above.
+from ProDG 3.01) assemble this build's compiler output, once one line is
+left out. Every source file includes `include/labels.inc`, the GNU assembler
+macros the retail-assembly stubs use (`include/include_asm.h`), and ps2eeas
+cannot read them: that line, not the compiler's output, made both versions
+overflow their stack in the earlier attempts (docs/DECOMP_PROGRESS.md, and
+again on 2026-10-07 before the cause was found). rac3-uya-decomp, which
+assembles some functions with ps2eeas, never gives it those macros.
+
+`tools/check_ps2eeas.py` compiles every C file of the game code (the
+executable's and the levels') as the build does, assembles the compiler's
+output with ps2eeas itself, and compares each C function with the build's
+object (2026-10-07, 1.9.6.516):
+
+| Result | C functions |
+|---|---:|
+| Identical to the build | 2,280 |
+| Identical once ps2eeas knows each extern's size before its first use | 372 |
+| Different | 43 |
+| Total | 2,695 |
+
+So the steps above reproduce SN's own assembler on 98.4% of the C code. The
+second row is ps2eeas's one pass: it only uses `$gp` for a symbol whose size
+it has already seen, and GCC 2.95 writes extern sizes at the end of the
+file, so as it is ps2eeas reaches those globals with `lui`/`%lo` and pads
+the loads. Retail had the sizes before use (a definition earlier in the
+same file, or an `.extern SYM, SIZE` line, as rac3-uya-decomp writes them;
+Lombyte has its compiler declare small data early); the check assembles the
+same input a second time with the compiler's own `.extern` lines at the top.
+The 43 left are short-loop and FP padding in a few level files (levels 16
+to 18 mostly), and `fastfunc.o`, which retail wrote by hand; with every size
+known up front ps2eeas also uses `$gp` where retail used `lui`. ProDG 3.01's
+1.9.25.758 gives the same counts once its divide padding is turned off as
+Lombyte does (it overflows on 35 files otherwise, and retail has no padded
+divides).
+
+Moving the build to the real assembler is now concrete work rather than a
+blocker: stubs without GNU macros (ps2eeas's own directives in place of
+`glabel`/`endlabel`), the extern sizes before use for the 372, and the 43.
+Until then the table above is how the build reproduces it, and
+`check_ps2eeas.py` shows it does.
 
 ## Flags
 
@@ -173,6 +200,12 @@ they are how this compiler reaches retail's bytes from plain C.
 python3 tools/check_build_fidelity.py          # the build runs only documented steps
 python3 tools/gen_progress_report.py --check   # includes the check above
 bash tools/docker/run.sh bash tools/build_sn.sh  # from scratch, with the image audit
+```
+
+To check the assembler steps against SN's real assembler:
+
+```
+bash tools/docker/run.sh python tools/check_ps2eeas.py [--as=1.9.25|PATH] [SRC.c ...]
 ```
 
 To measure what depends on a step (rule 4), or to re-check the numbers
