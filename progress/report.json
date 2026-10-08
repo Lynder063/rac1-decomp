@@ -1,16 +1,16 @@
 {
  "measures": {
-  "fuzzy_match_percent": 62.32767885654201,
+  "fuzzy_match_percent": 62.94069197222156,
   "total_code": "3712808",
-  "matched_code": "2241484",
-  "matched_code_percent": 60.37166478848354,
+  "matched_code": "2264244",
+  "matched_code_percent": 60.9846779041631,
   "total_functions": 5109,
-  "matched_functions": 3682,
-  "matched_functions_percent": 72.0688980230965,
-  "complete_code": "542832",
-  "complete_code_percent": 14.620524411712106,
+  "matched_functions": 3686,
+  "matched_functions_percent": 72.14719123116069,
+  "complete_code": "566668",
+  "complete_code_percent": 15.26251828804506,
   "total_units": 280,
-  "complete_units": 128
+  "complete_units": 131
  },
  "units": [
   {
@@ -1053,17 +1053,17 @@
   {
    "name": "core/00116FA0",
    "measures": {
-    "fuzzy_match_percent": 16.044776119402986,
+    "fuzzy_match_percent": 100.0,
     "total_code": "6432",
-    "matched_code": "1032",
-    "matched_code_percent": 16.044776119402986,
+    "matched_code": "6432",
+    "matched_code_percent": 100.0,
     "total_functions": 7,
-    "matched_functions": 6,
-    "matched_functions_percent": 85.71428571428571,
-    "complete_code": "0",
-    "complete_code_percent": 0.0,
+    "matched_functions": 7,
+    "matched_functions_percent": 100.0,
+    "complete_code": "6432",
+    "complete_code_percent": 100.0,
     "total_units": 1,
-    "complete_units": 0
+    "complete_units": 1
    },
    "functions": [
     {
@@ -1096,7 +1096,7 @@
     {
      "name": "func_00117118",
      "size": "5400",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "376",
      "metadata": {
       "virtual_address": "1143064"
@@ -1131,7 +1131,7 @@
     }
    ],
    "metadata": {
-    "complete": false,
+    "complete": true,
     "source_path": "src/core/00116FA0.c",
     "progress_categories": [
      "executable",
@@ -11111,17 +11111,17 @@
   {
    "name": "game/map",
    "measures": {
-    "fuzzy_match_percent": 40.901594282572844,
+    "fuzzy_match_percent": 100.0,
     "total_code": "7276",
-    "matched_code": "2976",
-    "matched_code_percent": 40.901594282572844,
+    "matched_code": "7276",
+    "matched_code_percent": 100.0,
     "total_functions": 14,
-    "matched_functions": 13,
-    "matched_functions_percent": 92.85714285714286,
-    "complete_code": "0",
-    "complete_code_percent": 0.0,
+    "matched_functions": 14,
+    "matched_functions_percent": 100.0,
+    "complete_code": "7276",
+    "complete_code_percent": 100.0,
     "total_units": 1,
-    "complete_units": 0
+    "complete_units": 1
    },
    "functions": [
     {
@@ -11226,7 +11226,7 @@
     {
      "name": "func_00205E70",
      "size": "4300",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "2384",
      "metadata": {
       "virtual_address": "2121328"
@@ -11252,7 +11252,7 @@
     }
    ],
    "metadata": {
-    "complete": false,
+    "complete": true,
     "source_path": "src/game/map.c",
     "progress_categories": [
      "executable",
@@ -12117,17 +12117,17 @@
   {
    "name": "game/memcard",
    "measures": {
-    "fuzzy_match_percent": 30.252764612954188,
+    "fuzzy_match_percent": 100.0,
     "total_code": "10128",
-    "matched_code": "3064",
-    "matched_code_percent": 30.252764612954188,
+    "matched_code": "10128",
+    "matched_code_percent": 100.0,
     "total_functions": 14,
-    "matched_functions": 13,
-    "matched_functions_percent": 92.85714285714286,
-    "complete_code": "0",
-    "complete_code_percent": 0.0,
+    "matched_functions": 14,
+    "matched_functions_percent": 100.0,
+    "complete_code": "10128",
+    "complete_code_percent": 100.0,
     "total_units": 1,
-    "complete_units": 0
+    "complete_units": 1
    },
    "functions": [
     {
@@ -12169,7 +12169,7 @@
     {
      "name": "func_00209E68",
      "size": "7064",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "1032",
      "metadata": {
       "virtual_address": "2137704"
@@ -12258,7 +12258,7 @@
     }
    ],
    "metadata": {
-    "complete": false,
+    "complete": true,
     "source_path": "src/game/memcard.c",
     "progress_categories": [
      "executable",
@@ -16212,13 +16212,13 @@
   {
    "name": "game/space",
    "measures": {
-    "fuzzy_match_percent": 22.52037368316438,
+    "fuzzy_match_percent": 52.315643013317434,
     "total_code": "20124",
-    "matched_code": "4532",
-    "matched_code_percent": 22.52037368316438,
+    "matched_code": "10528",
+    "matched_code_percent": 52.315643013317434,
     "total_functions": 20,
-    "matched_functions": 11,
-    "matched_functions_percent": 55.0,
+    "matched_functions": 12,
+    "matched_functions_percent": 60.0,
     "complete_code": "0",
     "complete_code_percent": 0.0,
     "total_units": 1,
@@ -16327,7 +16327,7 @@
     {
      "name": "func_00230A90",
      "size": "5996",
-     "fuzzy_match_percent": 0.0,
+     "fuzzy_match_percent": 100.0,
      "address": "6504",
      "metadata": {
       "virtual_address": "2296464"
@@ -22941,7 +22941,7 @@
   {
    "name": "Shared level code/hud_00235960",
    "measures": {
-    "fuzzy_match_percent": 48.82312098765433,
+    "fuzzy_match_percent": 48.82312098765431,
     "total_code": "24300",
     "matched_code": "11108",
     "matched_code_percent": 45.711934156378604,
@@ -31443,7 +31443,7 @@
   {
    "name": "Shared level code/vendor_00292AC0",
    "measures": {
-    "fuzzy_match_percent": 22.147619811509923,
+    "fuzzy_match_percent": 22.147619811509927,
     "total_code": "19948",
     "matched_code": "4076",
     "matched_code_percent": 20.433126127932624,
@@ -32823,7 +32823,7 @@
   {
    "name": "Shared level code/vendor_002A5218",
    "measures": {
-    "fuzzy_match_percent": 44.47195726231032,
+    "fuzzy_match_percent": 44.471957262310305,
     "total_code": "25832",
     "matched_code": "10992",
     "matched_code_percent": 42.55187364509136,
@@ -34221,7 +34221,7 @@
   {
    "name": "Shared level code/vendor_002B90A8",
    "measures": {
-    "fuzzy_match_percent": 30.883089530332683,
+    "fuzzy_match_percent": 30.88308953033268,
     "total_code": "32704",
     "matched_code": "8260",
     "matched_code_percent": 25.256849315068493,
@@ -37404,7 +37404,7 @@
   {
    "name": "Shared level code/vendor_002D9548",
    "measures": {
-    "fuzzy_match_percent": 55.48503963455596,
+    "fuzzy_match_percent": 55.48503963455595,
     "total_code": "29772",
     "matched_code": "14468",
     "matched_code_percent": 48.59599623807605,
@@ -42307,7 +42307,7 @@
   {
    "name": "Level 05: Rilgar",
    "measures": {
-    "fuzzy_match_percent": 68.43230734913601,
+    "fuzzy_match_percent": 68.43230734913602,
     "total_code": "134492",
     "matched_code": "89888",
     "matched_code_percent": 66.83520209380484,
@@ -43837,7 +43837,7 @@
   {
    "name": "Level 07: Umbris",
    "measures": {
-    "fuzzy_match_percent": 44.72546351410935,
+    "fuzzy_match_percent": 44.72546351410934,
     "total_code": "72576",
     "matched_code": "30744",
     "matched_code_percent": 42.361111111111114,
@@ -46348,7 +46348,7 @@
   {
    "name": "Level 11: Pokitaru",
    "measures": {
-    "fuzzy_match_percent": 63.78114666831729,
+    "fuzzy_match_percent": 63.7811466683173,
     "total_code": "129244",
     "matched_code": "78152",
     "matched_code_percent": 60.46857107486615,
@@ -48967,7 +48967,7 @@
   {
    "name": "Level 14: Oltanis",
    "measures": {
-    "fuzzy_match_percent": 61.399711995328225,
+    "fuzzy_match_percent": 61.39971199532821,
     "total_code": "150692",
     "matched_code": "85004",
     "matched_code_percent": 56.40909935497571,
@@ -52171,7 +52171,7 @@
   {
    "name": "Level 18: Veldin (return)",
    "measures": {
-    "fuzzy_match_percent": 88.08960761520976,
+    "fuzzy_match_percent": 88.08960761520973,
     "total_code": "154848",
     "matched_code": "129312",
     "matched_code_percent": 83.50898946063236,
@@ -53300,15 +53300,15 @@
    "id": "executable",
    "name": "Executable",
    "measures": {
-    "fuzzy_match_percent": 66.88426025338201,
+    "fuzzy_match_percent": 71.77152673394889,
     "total_code": "465700",
-    "matched_code": "311396",
-    "matched_code_percent": 66.86622289027271,
+    "matched_code": "334156",
+    "matched_code_percent": 71.7534893708396,
     "total_functions": 1680,
-    "matched_functions": 1454,
-    "matched_functions_percent": 86.54761904761905,
-    "complete_code": "154028",
-    "complete_code_percent": 33.07451148808246
+    "matched_functions": 1458,
+    "matched_functions_percent": 86.78571428571429,
+    "complete_code": "177864",
+    "complete_code_percent": 38.192828000858924
    }
   },
   {
@@ -53330,15 +53330,15 @@
    "id": "game",
    "name": "Executable game code",
    "measures": {
-    "fuzzy_match_percent": 66.13288592962175,
+    "fuzzy_match_percent": 71.13104126772193,
     "total_code": "455368",
-    "matched_code": "301064",
-    "matched_code_percent": 66.1144393106235,
+    "matched_code": "323824",
+    "matched_code_percent": 71.11259464872367,
     "total_functions": 1646,
-    "matched_functions": 1420,
-    "matched_functions_percent": 86.26974483596598,
-    "complete_code": "143696",
-    "complete_code_percent": 31.556016233024717
+    "matched_functions": 1424,
+    "matched_functions_percent": 86.51275820170109,
+    "complete_code": "167532",
+    "complete_code_percent": 36.79046397638833
    }
   },
   {
@@ -53375,7 +53375,7 @@
    "id": "levels",
    "name": "Level-specific code",
    "measures": {
-    "fuzzy_match_percent": 69.68545674524061,
+    "fuzzy_match_percent": 69.68545674524059,
     "total_code": "2046480",
     "matched_code": "1379124",
     "matched_code_percent": 67.39005511903366,
@@ -53465,7 +53465,7 @@
    "id": "level_05",
    "name": "Level 05: Rilgar",
    "measures": {
-    "fuzzy_match_percent": 68.43230734913601,
+    "fuzzy_match_percent": 68.43230734913602,
     "total_code": "134492",
     "matched_code": "89888",
     "matched_code_percent": 66.83520209380484,
@@ -53495,7 +53495,7 @@
    "id": "level_07",
    "name": "Level 07: Umbris",
    "measures": {
-    "fuzzy_match_percent": 44.72546351410935,
+    "fuzzy_match_percent": 44.72546351410934,
     "total_code": "72576",
     "matched_code": "30744",
     "matched_code_percent": 42.361111111111114,
@@ -53555,7 +53555,7 @@
    "id": "level_11",
    "name": "Level 11: Pokitaru",
    "measures": {
-    "fuzzy_match_percent": 63.78114666831729,
+    "fuzzy_match_percent": 63.7811466683173,
     "total_code": "129244",
     "matched_code": "78152",
     "matched_code_percent": 60.46857107486615,
@@ -53600,7 +53600,7 @@
    "id": "level_14",
    "name": "Level 14: Oltanis",
    "measures": {
-    "fuzzy_match_percent": 61.399711995328225,
+    "fuzzy_match_percent": 61.39971199532821,
     "total_code": "150692",
     "matched_code": "85004",
     "matched_code_percent": 56.40909935497571,
@@ -53660,7 +53660,7 @@
    "id": "level_18",
    "name": "Level 18: Veldin (return)",
    "measures": {
-    "fuzzy_match_percent": 88.08960761520976,
+    "fuzzy_match_percent": 88.08960761520973,
     "total_code": "154848",
     "matched_code": "129312",
     "matched_code_percent": 83.50898946063236,
