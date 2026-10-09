@@ -911,7 +911,150 @@ void func_L14_00306FA0(char *p) {
         FastVecAdd(v, v, &v[4]);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L14_003071B0);
+struct Data_3071B0;
+typedef struct Moby_3071B0 {
+    char pad0[0x10];
+    float pos[4];                 /* 0x10 */
+    unsigned char state;          /* 0x20 */
+    char pad21[0x23];
+    float f44;                    /* 0x44 */
+    char pad48[0x30];
+    struct Data_3071B0 *data;     /* 0x78 */
+    char pad7C[0x44];
+    float rot[4];                 /* 0xC0 */
+    char padD0[0x10];
+    float fE0[4];                 /* 0xE0 */
+    char padF0[0x10];
+} Moby_3071B0;
+typedef struct Slots_3071B0 {
+    Moby_3071B0 *m[6];
+} Slots_3071B0;
+typedef struct Data_3071B0 {
+    Moby_3071B0 *owner;           /* 0x00 */
+    Slots_3071B0 slots;           /* 0x04 */
+    int trigger;                  /* 0x1C: index of the moby that starts it */
+    short timer;                  /* 0x20 */
+    short cur;                    /* 0x22 */
+    float rate;                   /* 0x24 */
+    int idx[6];                   /* 0x28 */
+    int voice;                    /* 0x40 */
+} Data_3071B0;
+typedef struct Snd_3071B0 {
+    char pad0[0x74];
+    unsigned char f74;
+    char pad75[0x13];
+    Moby_3071B0 *f88;
+} Snd_3071B0;
+extern Moby_3071B0 *func_L14_003075E0_3071B0(Moby_3071B0 *owner) __asm__("func_L14_003075E0");
+extern void func_001F9C30_3071B0(void *, void *, float) __asm__("func_001F9C30");
+extern void func_001F9BD8_3071B0(void *, void *, void *) __asm__("func_001F9BD8");
+extern int func_001F9850_3071B0(int) __asm__("func_001F9850");
+extern float func_001FA888_3071B0(int) __asm__("func_001FA888");
+extern int func_L00_0028EF68_3071B0(int i, int a1, Moby_3071B0 *v, int k) __asm__("func_L00_0028EF68");
+extern int func_001F9938_3071B0(void *) __asm__("func_001F9938");
+extern float func_L00_0025C7A8_3071B0(float, float, float) __asm__("func_L00_0025C7A8");
+extern int func_L00_0028EB98_3071B0(void *, int) __asm__("func_L00_0028EB98");
+extern int func_0022ED80_3071B0(int, int, Moby_3071B0 *) __asm__("func_0022ED80");
+extern float func_L00_0025C700_3071B0(float, float, float) __asm__("func_L00_0025C700");
+extern void func_L00_0028EBF0_3071B0(int) __asm__("func_L00_0028EBF0");
+extern char *D_L14_00160098_3071B0 __asm__("D_L14_00160098") MACRO_ADDR;
+extern float D_L14_001622C4_3071B0 SDATA(D_L14_001622C4);
+extern float D_L14_001622C8_3071B0 SDATA(D_L14_001622C8);
+extern float D_L14_001622CC_3071B0 SDATA(D_L14_001622CC);
+extern float D_L14_001622D0_3071B0 SDATA(D_L14_001622D0);
+extern int D_L14_001622D4_3071B0 SDATA(D_L14_001622D4);
+extern int D_L14_001622DC_3071B0 SDATA(D_L14_001622DC);
+extern char D_0013E633_3071B0[] __asm__("D_0013E633");
+
+/* Update function
+ * for moby class 1395 on level 14: fills the six-slot table of helper mobys, then lowers them one by one. */
+void func_L14_003071B0(Moby_3071B0 *moby) {
+    Data_3071B0 *data = moby->data;
+    float vec[4];
+
+    switch (moby->state) {
+    case 0: {
+        int i;
+        if (data->owner == 0) {
+            data->owner = func_L14_003075E0_3071B0(moby);
+            func_001F9C30_3071B0(vec, moby->rot, D_L14_001622C4_3071B0);
+            func_001F9BD8_3071B0(data->owner->pos, moby->pos, vec);
+        }
+        for (i = 0; i < 6; i++) {
+            if (data->slots.m[i] == 0) {
+                data->slots.m[i] = (Moby_3071B0 *)(D_L14_00160098_3071B0 + (data->idx[i] << 8));
+                func_001F9C30_3071B0(vec, moby->rot, D_L14_001622C4_3071B0);
+                func_001F9BD8_3071B0(data->slots.m[i]->pos, moby->pos, vec);
+                data->slots.m[i]->pos[2] = data->slots.m[i]->pos[2] + (D_L14_001622C8_3071B0 * (float)i + D_L14_001622CC_3071B0);
+            }
+        }
+        data->voice = -1;
+        if (data->owner != 0) {
+            moby->state = 1;
+        }
+        break;
+    }
+    case 1:
+        if (((Moby_3071B0 *)(D_L14_00160098_3071B0 + (data->trigger << 8)))->state == 2) {
+            moby->state = 2;
+            data->cur = 5;
+            data->timer = func_001F9850_3071B0(D_L14_001622D4_3071B0);
+            data->rate = 1.0f / func_001FA888_3071B0(data->timer);
+            func_L00_0028EF68_3071B0(0, 0, data->slots.m[data->cur], 0x575);
+        }
+        break;
+    case 2: {
+        Slots_3071B0 *slots = &data->slots;
+        Moby_3071B0 *o = slots->m[data->cur];
+        func_001F9938_3071B0(&data->timer);
+        o->f44 = func_L00_0025C7A8_3071B0(1.5707964f, 0.0f, func_001FA888_3071B0(data->timer) * data->rate);
+        if (data->timer == 0) {
+            data->timer = func_001F9850_3071B0(D_L14_001622D4_3071B0);
+            data->cur--;
+            if (data->cur < 0) {
+                moby->state = 3;
+                data->timer = func_001F9850_3071B0(D_L14_001622DC_3071B0);
+                data->rate = 1.0f / func_001FA888_3071B0(data->timer);
+            } else {
+                func_L00_0028EF68_3071B0(0, 0, slots->m[data->cur], 0x575);
+            }
+        }
+        break;
+    }
+    case 3: {
+        Moby_3071B0 *owner = data->owner;
+        Moby_3071B0 **slots;
+        int i;
+        float t;
+        if (!func_L00_0028EB98_3071B0(moby, data->voice)) {
+            data->voice = func_0022ED80_3071B0(0, 4, moby);
+        }
+        func_001F9938_3071B0(&data->timer);
+        slots = data->slots.m;
+        t = func_001FA888_3071B0(data->timer) * data->rate;
+        owner->f44 = func_L00_0025C700_3071B0(D_L14_001622D0_3071B0 * 0.017453292f, 0.0f, t);
+        for (i = 0; i < 6; i++) {
+            func_001F9C30_3071B0(vec, owner->fE0, D_L14_001622C8_3071B0 * (float)i + D_L14_001622CC_3071B0);
+            func_001F9BD8_3071B0(slots[i]->pos, owner->pos, vec);
+        }
+        if (data->timer == 0) {
+            int j;
+            if (data->voice != -1) {
+                Snd_3071B0 *e = (Snd_3071B0 *)(D_0013E633_3071B0 + 0x1D + data->voice * 0x70);
+                if (e->f88 == moby && e->f74) {
+                    func_L00_0028EBF0_3071B0(data->voice);
+                }
+            }
+            data->voice = -1;
+            moby->state = 4;
+            for (j = 0; j < 6; j++) {
+                slots[j]->state = 2;
+            }
+        }
+        break;
+    }
+    }
+}
 extern char *func_0020D348(int);
 extern void func_L00_00251E30(void *);
 

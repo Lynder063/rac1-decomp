@@ -2812,4 +2812,119 @@ void func_L02_002E16B8(char *moby) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L02_002E1B58);
+/* NON_MATCHING func_L02_002E1B58 -- src/overlays/l02_aridia/vendor_002A59D8.c
+ * Best so far: SIZE ours 988 / retail 992, checked 2026-10-09.
+ * Not built into anything: the retail assembly stays in the source file
+ * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * What the last attempts found:
+ *   Rock moby (class 762) update, level 02: two sampling loops (200 and 49 passes) that fill three Vec4 scratch bu
+ *   Left: retail keeps a second pointer to the scratch vector across the loop boundary (daddu $18,$20 plus nop bef
+ *   Unblock: the source's exact pointer variables for the scratch vectors. The struct copy of D_L02_00161D60_2E1B58 (ldl/
+ */
+extern unsigned char D_0013D4A5_2E1B58 __asm__("D_0013D4A5") NOT_SDA;
+extern char D_L02_00161D60_2E1B58[] __asm__("D_L02_00161D60");
+extern short D_L02_00161D54_2E1B58 SDATA(D_L02_00161D54);
+extern short D_L02_00161D58_2E1B58 SDATA(D_L02_00161D58);
+extern float D_0015EE6C_2E1B58 __asm__("D_0015EE6C") MACRO_ADDR;
+extern char *func_L00_0025B478_2E1B58(void *, int, int) __asm__("func_L00_0025B478");
+extern void func_0020D678_2E1B58(void *) __asm__("func_0020D678");
+extern int func_0022ED80_2E1B58(int, int, int) __asm__("func_0022ED80");
+extern float func_002140F8_2E1B58(float, float) __asm__("func_002140F8");
+extern float func_001F9F90_2E1B58(float) __asm__("func_001F9F90");
+extern float func_001F9FA8_2E1B58(float) __asm__("func_001F9FA8");
+extern void func_001F9BD8_2E1B58(void *, void *, void *) __asm__("func_001F9BD8");
+extern void func_L00_001FF4B0_2E1B58(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern int func_L00_00258BC8_2E1B58(int, int) __asm__("func_L00_00258BC8");
+extern int func_001F9850_2E1B58(int) __asm__("func_001F9850");
+extern void func_L00_0026DD70_2E1B58(void *, void *, int, int, float, int) __asm__("func_L00_0026DD70");
+extern int func_002140B0_2E1B58(int) __asm__("func_002140B0");
+extern void func_L01_002F9908_2E1B58(void *, void *, unsigned int, float, int, float, float, float, int) __asm__("func_L01_002F9908");
+
+typedef struct { int b[3]; } Int3;
+
+/* Rock moby (class 762) update: runs two sampling loops over random directions, feeding the result to the level's helpers. */
+void func_L02_002E1B58(unsigned char *moby)
+{
+    float C[4];
+    float A[4];
+    float B[4];
+    float D[4];
+    char *p;
+    float k;
+    float s;
+    float t;
+    float t2;
+    int i;
+    int j;
+    int r;
+    int n;
+    unsigned int *pc;
+
+    p = func_L00_0025B478_2E1B58(moby, 0x800000, 0);
+    switch (moby[0x20]) {
+    case 0:
+        if (D_0013D4A5_2E1B58 != 0) {
+            func_0020D678_2E1B58(moby);
+        } else {
+            moby[0x20] = 1;
+        }
+        return;
+    case 1:
+        break;
+    default:
+        return;
+    }
+    if (p == 0) return;
+    D_0013D4A5_2E1B58 = 1;
+    func_0022ED80_2E1B58(0, 0, (int)moby);
+    for (i = 0; i < 200; i++) {
+        *(u128 *)A = 0;
+        A[0] = func_002140F8_2E1B58(-1.0f, 1.0f);
+        A[1] = func_002140F8_2E1B58(-1.0f, 1.0f);
+        A[2] = func_002140F8_2E1B58(-1.0f, 1.0f);
+        *(u128 *)B = 0;
+        *(u128 *)C = *(u128 *)A;
+        t = func_002140F8_2E1B58(-2.0f, 2.0f);
+        t = t * func_001F9F90_2E1B58(*(float *)(moby + 0x48));
+        B[0] = t;
+        t2 = func_002140F8_2E1B58(-1.0f, 1.0f);
+        t2 = t2 * func_001F9FA8_2E1B58(*(float *)(moby + 0x48));
+        B[1] = t2;
+        B[2] = func_002140F8_2E1B58(0.0f, 4.0f);
+        *(u128 *)A = *(u128 *)B;
+        func_001F9BD8_2E1B58(A, A, moby + 0x10);
+        k = func_002140F8_2E1B58(1.5f, 3.5f) * D_0015EE6C_2E1B58;
+        func_L00_001FF4B0_2E1B58(C, C, k);
+        s = func_002140F8_2E1B58(1.5f, 3.5f) * 210000.0f;
+        r = func_001F9850_2E1B58(func_L00_00258BC8_2E1B58(120, 240));
+        func_L00_0026DD70_2E1B58(A, C, *(int *)&D_L02_00161D54_2E1B58, *(int *)&D_L02_00161D58_2E1B58, s, r);
+    }
+
+    j = 49;
+    do {
+        *(Int3 *)C = *(Int3 *)D_L02_00161D60_2E1B58;
+        *(u128 *)B = 0;
+        j--;
+        B[0] = func_002140F8_2E1B58(-1.0f, 1.0f);
+        B[1] = func_002140F8_2E1B58(-1.0f, 1.0f);
+        B[2] = func_002140F8_2E1B58(-1.0f, 1.0f);
+        *(u128 *)D = 0;
+        *(u128 *)A = *(u128 *)B;
+        t = func_002140F8_2E1B58(-2.0f, 2.0f);
+        t = t * func_001F9F90_2E1B58(*(float *)(moby + 0x48));
+        D[0] = t;
+        t2 = func_002140F8_2E1B58(-1.0f, 1.0f);
+        t2 = t2 * func_001F9FA8_2E1B58(*(float *)(moby + 0x48));
+        D[1] = t2;
+        D[2] = func_002140F8_2E1B58(1.0f, 4.0f);
+        *(u128 *)B = *(u128 *)D;
+        func_001F9BD8_2E1B58(B, B, moby + 0x10);
+        k = func_002140F8_2E1B58(1.0f, 5.0f) * D_0015EE6C_2E1B58;
+        func_L00_001FF4B0_2E1B58(A, A, k);
+        pc = (unsigned int *)C + func_002140B0_2E1B58(3);
+        s = func_002140F8_2E1B58(0.05f, 0.15f);
+        n = func_L00_00258BC8_2E1B58(60, 180);
+        func_L01_002F9908_2E1B58(B, A, *pc, s, n, 1.0f, 1.0f, 0.75f, 0);
+    } while (j >= 0);
+    func_0020D678_2E1B58(moby);
+}

@@ -1650,7 +1650,128 @@ void func_L13_0030A828(char *m) {
  }
  *(float *)(d+0x1fc)=scale_ticks(*(int *)&D_L13_00161F14);
 }
-INCLUDE_ASM("asm/overlays", func_L13_0030A9B0);
+typedef struct V4_30A9B0 {
+    float x, y, z, w;
+} __attribute__((aligned(16))) V4_30A9B0;
+typedef struct Rec_30A9B0 {
+    V4_30A9B0 v;                  /* 0x00 */
+    float p, q;                   /* 0x10 */
+    unsigned char a, b;           /* 0x18 */
+    unsigned short c;             /* 0x1A */
+} __attribute__((aligned(16))) Rec_30A9B0;
+typedef struct Vars_30A9B0 {
+    char pad0[0x1F0];
+    V4_30A9B0 f1F0;               /* 0x1F0: .w holds the timer */
+    V4_30A9B0 f200;               /* 0x200 */
+    V4_30A9B0 pt[17];             /* 0x210 */
+} Vars_30A9B0;
+typedef struct Moby_30A9B0 {
+    char pad0[0x10];
+    V4_30A9B0 pos;                /* 0x10 */
+    char pad20[0x28];
+    float rotz;                   /* 0x48 */
+    char pad4C[0x2C];
+    Vars_30A9B0 *vars;            /* 0x78 */
+    char pad7C[0x2A];
+    unsigned short oclass;        /* 0xA6 */
+} Moby_30A9B0;
+typedef struct Glob_30A9B0 {
+    char pad0[0x28];
+    float f28;                    /* 0x28 */
+} Glob_30A9B0;
+extern float D_0015EE6C_30A9B0 __asm__("D_0015EE6C") MACRO_ADDR;
+extern float D_L13_00161F0C_30A9B0 SDATA(D_L13_00161F0C);
+extern char D_L13_001741C0_30A9B0[] __asm__("D_L13_001741C0");
+extern char func_L06_00300AB0_30A9B0[] __asm__("func_L06_00300AB0");
+extern int func_001FA898_30A9B0(float) __asm__("func_001FA898");
+extern int func_001F9908_30A9B0(void *) __asm__("func_001F9908");
+extern void func_001F9BF0_30A9B0(void *, void *, void *) __asm__("func_001F9BF0");
+extern void func_L00_001FF4B0_30A9B0(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern void func_001F9BD8_30A9B0(void *, void *, void *) __asm__("func_001F9BD8");
+extern float func_001F9C78_30A9B0(void *a, void *b) __asm__("func_001F9C78");
+extern int func_L00_001EFFF0_30A9B0(void *, void *, int, void *, void *) __asm__("func_L00_001EFFF0");
+extern float func_001F9F90_30A9B0(float) __asm__("func_001F9F90");
+extern float func_001F9FA8_30A9B0(float) __asm__("func_001F9FA8");
+extern void func_L00_0025A8C0_30A9B0(void *, void *, int, void *, float) __asm__("func_L00_0025A8C0");
+extern void func_001F49B0_30A9B0(void *, void *) __asm__("func_001F49B0");
+extern void func_L13_0030B080_30A9B0(Moby_30A9B0 *moby) __asm__("func_L13_0030B080");
+extern float func_00214D28_30A9B0(float *, float, float) __asm__("func_00214D28");
+
+/* Gemlik moby update: counts its timer down, then relaxes the 16 points of its rope toward the anchor (pulled
+ * down, kept off the ground and away from the moby) and checks each segment between two settled points. */
+void func_L13_0030A9B0(Moby_30A9B0 *m) {
+    Vars_30A9B0 *d = m->vars;
+    V4_30A9B0 v0;
+    union {
+        struct {
+            V4_30A9B0 r;
+            V4_30A9B0 v20;
+        } s;
+        Rec_30A9B0 rec;
+    } u;
+    V4_30A9B0 v30;
+    V4_30A9B0 v40;
+    int A;
+    int i;
+    int j;
+    float f20;
+    float dd;
+    int flags = 0x10001;
+
+    A = func_001FA898_30A9B0(d->f1F0.w);
+    func_001F9908_30A9B0(&A);
+    d->f1F0.w = (float)A;
+    if (A == 0) {
+        return;
+    }
+    if (A == 0x14) {
+        int k;
+        for (k = 0; k < 16; k++) {
+            if (1.0f <= d->pt[k].w) {
+                d->pt[k].w = 0.98f;
+            }
+        }
+    }
+    for (i = 0; i < 16; i++) {
+        func_001F9BF0_30A9B0(&v0, &d->pt[i], &d->f1F0);
+        v0.z = 0.0f;
+        func_L00_001FF4B0_30A9B0(&v0, &v0, D_L13_00161F0C_30A9B0 * D_0015EE6C_30A9B0);
+        func_001F9BD8_30A9B0(&v0, &d->pt[i], &v0);
+        func_001F9BF0_30A9B0(&u.s.r, &v0, &m->pos);
+        dd = func_001F9C78_30A9B0(&u.s.r, &d->f200);
+        func_L00_001FF4B0_30A9B0(&u.s.v20, &d->f200, -dd + 0.35f);
+        func_001F9BD8_30A9B0(&u.s.r, &u.s.r, &u.s.v20);
+        f20 = u.s.v20.z;
+        qcopy(&v30, &d->pt[i]);
+        v30.z = v30.z + 1.0f;
+        qcopy(&v40, &d->pt[i]);
+        v40.z = v40.z - 3.0f;
+        if (func_L00_001EFFF0_30A9B0(&v30, &v40, 2, 0, 0) && f20 < v0.z) {
+            func_00214D28_30A9B0(&v0.z, ((Glob_30A9B0 *)D_L13_001741C0_30A9B0)->f28 + 0.35f, D_0015EE6C_30A9B0 * 4.0f);
+        }
+        if (1.0f <= d->pt[i].w && func_L00_001EFFF0_30A9B0(&d->pt[i], &v0, 2, 0, 0)) {
+            v0.w = 0.98f;
+        } else if (v0.w < 1.0f) {
+            func_00214D28_30A9B0(&v0.w, 0.0f, D_0015EE6C_30A9B0 + D_0015EE6C_30A9B0);
+        }
+        qcopy(&d->pt[i], &v0);
+    }
+    for (j = 0; j < 15; j++) {
+        if (0.98f <= d->pt[j].w && 0.98f <= d->pt[j + 1].w) {
+            v0.x = func_001F9F90_30A9B0(m->rotz);
+            v0.y = func_001F9FA8_30A9B0(m->rotz);
+            v0.z = 1.0f;
+            v0.w = 5627.925f;
+            func_L00_0025A8C0_30A9B0(&u.rec, m, flags, &v0, 1.0f);
+            u.rec.c = m->oclass;
+            u.rec.a = 0;
+            u.rec.b = 1;
+            func_L00_001EFFF0_30A9B0(&d->pt[j], &d->pt[j + 1], 0, m, &u.rec);
+        }
+    }
+    func_001F49B0_30A9B0(func_L06_00300AB0_30A9B0, m);
+    func_L13_0030B080_30A9B0(m);
+}
 extern float func_002140F8(float, float);
 extern float func_00214158(void);
 extern float func_001F9F90(float);

@@ -1305,7 +1305,138 @@ void func_L00_002C0BB8(unsigned char *m, unsigned char *o, void *src) {
     o[0x2F] = 0;
     F2BF(o, 0x14) = F2BF(o, 0x14) * (r / F2BF(o, 0x10));
 }
-INCLUDE_ASM("asm/overlays", func_L00_002C0CF8);
+typedef struct Cls_2C0CF8 {
+    char pad0[0x24];
+    float f24;                    /* 0x24 */
+} Cls_2C0CF8;
+typedef struct Mob_2C0CF8 {
+    char pad0[0x10];
+    float pos[4];                 /* 0x10 */
+    char pad20[4];
+    Cls_2C0CF8 *p24;              /* 0x24 */
+    char pad28[4];
+    float f2C;                    /* 0x2C */
+    char pad30[0x8C];
+    unsigned char bBC;            /* 0xBC */
+} Mob_2C0CF8;
+typedef struct Blk_2C0CF8 {
+    char pad0[0x38];
+    void *p38;                    /* 0x38 */
+    char pad3C[0x14];
+    float f50;                    /* 0x50 */
+} Blk_2C0CF8;
+extern void func_001F9BF0_2C0CF8(void *, void *, void *) __asm__("func_001F9BF0");
+extern int func_L00_001FF5B0_2C0CF8(float, void *, void *) __asm__("func_L00_001FF5B0");
+extern void func_001F9BD8_2C0CF8(void *, void *, void *) __asm__("func_001F9BD8");
+extern void func_001F9C30_2C0CF8(void *, void *, float) __asm__("func_001F9C30");
+extern float func_001F9CE8_2C0CF8(void *) __asm__("func_001F9CE8");
+extern float func_L00_002BFF88_2C0CF8(void *, void *) __asm__("func_L00_002BFF88");
+extern void func_L00_001FF4B0_2C0CF8(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern float func_001F9B88_2C0CF8(float) __asm__("func_001F9B88");
+extern int func_L00_002BFDB8_2C0CF8(void *, int, void *) __asm__("func_L00_002BFDB8");
+extern void func_L00_002BFF08_2C0CF8(void *a) __asm__("func_L00_002BFF08");
+extern void func_L00_002BFF50_2C0CF8(void *a) __asm__("func_L00_002BFF50");
+extern void func_L00_002C0BB8_2C0CF8(void *m, void *o, void *src) __asm__("func_L00_002C0BB8");
+extern float func_L00_0025A4A0_2C0CF8(void *a, void *b, int *out, float f) __asm__("func_L00_0025A4A0");
+extern void func_L00_002C0B18_2C0CF8(void *a, void *b, int n, int c, int d, int e, float g, int f) __asm__("func_L00_002C0B18");
+extern int func_L00_001EFFF0_2C0CF8(void *, void *, int, void *, int) __asm__("func_L00_001EFFF0");
+extern char D_L00_00173F80_2C0CF8[] __asm__("D_L00_00173F80");
+extern void *D_L00_00173F58_2C0CF8 __asm__("D_L00_00173F58");
+extern char D_0013E633_2C0CF8[] __asm__("D_0013E633");
+
+/* Tries a hop of the moby toward q: probes the ground at the landing point and the path to it, and sets the jump
+ * state on success. When blocked and the hop is long enough it tries again with half the distance. */
+int func_L00_002C0CF8(Mob_2C0CF8 *m, Blk_2C0CF8 *p, void *q, int flag) {
+    float d[4];
+    float land[4];
+    float from[4];
+    float to[4];
+    float half[4];
+    float mid[4];
+    float z[4];
+    int ok;
+    float len;
+    float sum;
+
+    ok = 1;
+    func_001F9BF0_2C0CF8(d, q, m->pos);
+    func_L00_001FF5B0_2C0CF8(m->f2C * 5.2f / m->p24->f24, d, d);
+    func_001F9BD8_2C0CF8(land, m->pos, d);
+    func_001F9C30_2C0CF8(half, d, 0.5f);
+    len = func_001F9CE8_2C0CF8(half);
+    func_001F9BD8_2C0CF8(half, m->pos, half);
+    if (!(0.5f < len)) {
+        ok = 0;
+    }
+    land[2] = func_L00_002BFF88_2C0CF8(land, m);
+    d[2] = land[2] - m->pos[2];
+    if (land[2] == 0.0f) {
+        if (ok) {
+            return func_L00_002C0CF8(m, p, half, 1);
+        }
+        return 0;
+    }
+    if (m->f2C * 3.0f / m->p24->f24 < d[2]) {
+        if (ok) {
+            return func_L00_002C0CF8(m, p, half, 1);
+        }
+        return 0;
+    }
+    qcopy(mid, D_L00_00173F80_2C0CF8);
+    func_L00_001FF4B0_2C0CF8(mid, mid, 1.0f);
+    sum = func_001F9B88_2C0CF8(mid[0]);
+    sum = sum + func_001F9B88_2C0CF8(mid[1]);
+    if (func_001F9B88_2C0CF8(mid[2]) < sum) {
+        if (ok) {
+            return func_L00_002C0CF8(m, p, half, 1);
+        }
+        return 0;
+    }
+    land[2] = land[2] + m->f2C * 0.025f / m->p24->f24;
+    if (func_L00_002BFDB8_2C0CF8(m, 6, land)) {
+        if (ok) {
+            return func_L00_002C0CF8(m, p, half, 1);
+        }
+        return 0;
+    }
+    land[2] = land[2] - m->f2C * 0.025f / m->p24->f24;
+    qcopy_nc(from, m->pos);
+    from[2] = from[2] + m->f2C * 0.2f / m->p24->f24;
+    qcopy_nc(to, land);
+    to[2] = to[2] + m->f2C * 0.2f / m->p24->f24;
+    if (flag) {
+        if (func_L00_001EFFF0_2C0CF8(from, to, 6, m, 0) == 0) {
+            if (ok) {
+                return func_L00_002C0CF8(m, p, half, 1);
+            }
+            return 0;
+        }
+    }
+    func_L00_002BFF08_2C0CF8(p);
+    func_L00_002C0BB8_2C0CF8(m, D_0013E633_2C0CF8 + 0x2D2D, land);
+    func_L00_002BFF50_2C0CF8(p);
+    func_001F9C30_2C0CF8(mid, d, 0.5f);
+    func_001F9BD8_2C0CF8(mid, mid, m->pos);
+    qzero(z);
+    z[2] = p->f50;
+    mid[2] = func_L00_0025A4A0_2C0CF8(m->pos, z, 0, *(float *)(D_0013E633_2C0CF8 + 0x2D49));
+    func_L00_002C0B18_2C0CF8(from, mid, 10, 0, 32, 32, 40000.0f, 60);
+    func_L00_002C0B18_2C0CF8(to, mid, 10, 0, 32, 32, 40000.0f, 60);
+    if (func_L00_001EFFF0_2C0CF8(from, mid, 6, m, 0) != 0 && D_L00_00173F58_2C0CF8 != p->p38) {
+        if (ok) {
+            return func_L00_002C0CF8(m, p, half, 1);
+        }
+        return 0;
+    }
+    if (func_L00_001EFFF0_2C0CF8(mid, to, 6, m, 0) != 0 && D_L00_00173F58_2C0CF8 != p->p38) {
+        if (ok) {
+            return func_L00_002C0CF8(m, p, half, 1);
+        }
+        return 0;
+    }
+    m->bBC = 0xD;
+    return 1;
+}
 extern void func_L00_0025E210(void *);
 
 char *func_L00_002C1110(int owner, void *pos, void *rot) {

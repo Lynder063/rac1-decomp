@@ -2474,4 +2474,205 @@ void func_L11_00311648(Moby_311648 *moby)
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L11_00311B60);
+typedef int V128_311B60 __attribute__((mode(TI)));
+typedef union {
+    V128_311B60 q;
+    float f[4];
+} UVec_311B60;
+typedef struct Cls_311B60 {
+    char pad0[0x24];
+    float f24;                    /* 0x24 */
+} Cls_311B60;
+typedef struct Moby_311B60 {
+    char pad0[0x10];
+    float pos[4];                 /* 0x10 */
+    unsigned char state;          /* 0x20 */
+    char pad21[3];
+    Cls_311B60 *cls;              /* 0x24 */
+    char pad28[4];
+    float f2C;                    /* 0x2C */
+    char pad30[4];
+    unsigned short flags;         /* 0x34 */
+    char pad36[0x42];
+    struct Data_311B60 *data;     /* 0x78 */
+    char pad7C[0x28];
+    unsigned char fA4;            /* 0xA4 */
+    char padA5[0x1B];
+    float fC0[4];                 /* 0xC0 */
+} Moby_311B60;
+typedef struct Data_311B60 {
+    char pad0[0x20];
+    float timer;                  /* 0x20 */
+    char pad24[0x3C];
+    short f60[3];                 /* 0x60 */
+    char pad66;
+    unsigned char f67;            /* 0x67 */
+    char pad68[8];
+    char f70[0x10];               /* 0x70 */
+    float f80;                    /* 0x80 */
+    float f84;                    /* 0x84 */
+    float f88;                    /* 0x88 */
+    float f8C;                    /* 0x8C */
+    int f90;                      /* 0x90 */
+    int f94;                      /* 0x94 */
+    float f98;                    /* 0x98 */
+    char pad9C[0x11];
+    unsigned char fAD;            /* 0xAD */
+    char padAE[0x12];
+    float fC0;                    /* 0xC0 */
+    float fC4;                    /* 0xC4 */
+    char padC8[8];
+    float fD0[4];                 /* 0xD0 */
+    char padE0[0x30];
+    int f110;                     /* 0x110 */
+    int f114;                     /* 0x114 */
+    char pad118[0x24];
+    int f13C;                     /* 0x13C */
+    float f140;                   /* 0x140 */
+    char pad144[0x14];
+    int f158;                     /* 0x158 */
+    char pad15C[4];
+    int f160;                     /* 0x160 */
+} Data_311B60;
+typedef struct Info_311B60 {
+    char pad0[0x10];
+    UVec_311B60 pos;              /* 0x10 */
+    Moby_311B60 *moby;            /* 0x20 */
+} Info_311B60;
+typedef struct Path_311B60 {
+    int count;
+    char pad4[0xC];
+    float pts[4];
+} Path_311B60;
+extern float D_L11_0016202C_311B60 SDATA(D_L11_0016202C);
+extern float D_L11_00162058_311B60 SDATA(D_L11_00162058);
+extern float D_L11_0016205C_311B60 SDATA(D_L11_0016205C);
+extern float D_L11_00162018_311B60 SDATA(D_L11_00162018);
+extern float D_L11_0016201C_311B60 SDATA(D_L11_0016201C);
+extern float D_L11_00162020_311B60 SDATA(D_L11_00162020);
+extern float D_L11_00162024_311B60 SDATA(D_L11_00162024);
+extern float D_L11_00162028_311B60 SDATA(D_L11_00162028);
+extern float D_0015EE70_311B60 __asm__("D_0015EE70") MACRO_ADDR;
+extern float D_0015EE6C_311B60 __asm__("D_0015EE6C") MACRO_ADDR;
+extern Path_311B60 *D_L11_001B11B0_311B60[] __asm__("D_L11_001B11B0");
+extern int D_001414D0_311B60 __asm__("D_001414D0");
+extern int func_001F9908_311B60(int *) __asm__("func_001F9908");
+extern void func_L00_001FF4B0_311B60(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern void func_001F9BD8_311B60(void *, void *, void *) __asm__("func_001F9BD8");
+extern void func_L11_0031A2E8_311B60(int, void *) __asm__("func_L11_0031A2E8");
+extern Info_311B60 *func_L00_0025B478_311B60(void *, int, int) __asm__("func_L00_0025B478");
+extern int func_L00_0025B4D0_311B60(void *, void *, void *, int, int *, float *, int, int) __asm__("func_L00_0025B4D0");
+extern int func_001FA898_311B60(float) __asm__("func_001FA898");
+extern float func_L00_001FF860_311B60(float, float) __asm__("func_L00_001FF860");
+extern void func_L00_0025BBA0_311B60(void *, float *, void *, void *) __asm__("func_L00_0025BBA0");
+extern void func_L00_0025D5B0_311B60(void *, void *, float, int, int, int) __asm__("func_L00_0025D5B0");
+extern void func_L00_00237B70_311B60(int) __asm__("func_L00_00237B70");
+extern int func_001F9850_311B60(int) __asm__("func_001F9850");
+extern void func_L00_002584A8_311B60(void *, int, int) __asm__("func_L00_002584A8");
+extern void func_L00_0025E4B0_311B60(void *m, void *p) __asm__("func_L00_0025E4B0");
+extern void func_L00_0025E590_311B60(void *, void *) __asm__("func_L00_0025E590");
+extern int func_L00_00260FB0_311B60(float, void *, void *, int, int, void *, int) __asm__("func_L00_00260FB0");
+extern float func_001F9D48_311B60(void *, void *) __asm__("func_001F9D48");
+extern float func_001F9B88_311B60(float) __asm__("func_001F9B88");
+
+/* Pokitaru psytcopus movement (called from func_L11_00311648): follows its path, picks a jump or a hop from the
+ * path helper's result and keeps the effect attached to it, then checks whether the hero is out of reach. */
+void func_L11_00311B60(Moby_311B60 *moby) {
+    Data_311B60 *data = moby->data;
+    UVec_311B60 v;
+    int a;
+    float b;
+    float d1;
+    float d2;
+    Info_311B60 *info;
+    int r;
+
+    func_001F9908_311B60(&data->f158);
+    moby->f2C = moby->cls->f24 * D_L11_0016202C_311B60;
+    if (data->f160 != 0) {
+        func_L00_001FF4B0_311B60(&v, moby->fC0, D_L11_00162058_311B60);
+        func_001F9BD8_311B60(&v, &v, moby->pos);
+        v.f[2] = v.f[2] + D_L11_0016205C_311B60;
+        func_L11_0031A2E8_311B60(data->f160, &v);
+    }
+    b = 0.0f;
+    info = func_L00_0025B478_311B60(moby, 0x330000, 0);
+    r = func_L00_0025B4D0_311B60(moby, info, &data->timer, 0, &a, &b, 0, 4);
+    if (a != 1 && moby->state != 8) {
+        data->timer = data->timer - b;
+        if (data->timer <= 0.0f) {
+            r = 1;
+        }
+        data->f90 = func_001FA898_311B60(512.0f);
+        data->f98 = 0.5f;
+        data->f80 = D_L11_00162018_311B60 * D_0015EE70_311B60;
+        data->f84 = 0.0005f;
+        data->f94 = 9;
+        data->fAD = 0;
+        switch (r) {
+        case 9:
+        case 10:
+            data->f67 = 0xFA;
+            break;
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+            data->fC0 = 3.0f;
+            data->f88 = D_L11_00162020_311B60 * D_0015EE6C_311B60;
+            data->f8C = D_L11_0016201C_311B60 * D_0015EE6C_311B60;
+            data->fC4 = 6.0f;
+            d1 = func_L00_001FF860_311B60(moby->pos[0] - info->moby->pos[0], moby->pos[1] - info->moby->pos[1]);
+            v.q = info->pos.q;
+            func_L00_0025BBA0_311B60(&v, &d1, &data->f88, &data->f8C);
+            func_L00_0025D5B0_311B60(moby, data->f70, d1, 5, 1, 0);
+            moby->state = 7;
+            data->f67 = 0x78;
+            if (data->f160 != 0) {
+                func_L00_00237B70_311B60(data->f160);
+                data->f160 = 0;
+            }
+            data->f158 = data->f158 + func_001F9850_311B60(60);
+            break;
+        case 1:
+        case 2:
+            moby->flags = moby->flags & 0xEFFF;
+            data->f80 = D_L11_00162018_311B60 * D_0015EE70_311B60;
+            data->f88 = D_L11_00162028_311B60 * D_0015EE6C_311B60;
+            data->f8C = D_L11_00162024_311B60 * D_0015EE6C_311B60;
+            data->fC0 = 4.0f;
+            data->fC4 = 10.0f;
+            d2 = func_L00_001FF860_311B60(moby->pos[0] - info->moby->pos[0], moby->pos[1] - info->moby->pos[1]);
+            v.q = info->pos.q;
+            func_L00_0025BBA0_311B60(&v, &d2, &data->f88, &data->f8C);
+            func_L00_0025D5B0_311B60(moby, data->f70, d2, 6, 1, 0);
+            moby->state = 8;
+            data->f67 = 0xF0;
+            if (data->f160 != 0) {
+                func_L00_00237B70_311B60(data->f160);
+                data->f160 = 0;
+            }
+            func_L00_002584A8_311B60(moby, 0, -1);
+            break;
+        case 0:
+        case 11:
+            break;
+        }
+        func_L00_0025E4B0_311B60(moby, data->f60);
+    }
+    moby->fA4 = 0xFF;
+    func_L00_0025E590_311B60(moby, data->f60);
+    data->f140 = 24.0f;
+    if (func_L00_00260FB0_311B60(24.0f, moby, data->fD0, 0, 0, D_L11_001B11B0_311B60[data->f13C]->pts,
+                                 D_L11_001B11B0_311B60[data->f13C]->count) != 2) {
+        if (data->f140 < func_001F9D48_311B60(moby->pos, data->fD0)
+            || 3.0f < func_001F9B88_311B60(moby->pos[2] - data->fD0[2])) {
+            data->f114 = 2;
+        }
+    }
+    if (data->f110 == 0) {
+        data->f110 = D_001414D0_311B60;
+    }
+}
