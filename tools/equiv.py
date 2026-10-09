@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Is a level function's candidate the same program as retail, apart from the
-compiler's choices? A check for the port, not for matching.
+Is a candidate the same program as retail, apart from the compiler's
+choices? A check for the port, not for matching. Level functions and the
+executable's alike.
 
   bash tools/docker/run.sh python tools/equiv.py FUNC CANDIDATE.c [--show]
   bash tools/docker/run.sh python tools/equiv.py --staged [--jobs N]   every staged near miss
@@ -95,6 +96,8 @@ def callee(level: int, address: int) -> str:
                 lv, _, addr = place.partition(":")
                 if addr:
                     _NAMES[(int(lv), int(addr, 16))] = c[0]
+    if level < 0:
+        return f"func_{address:08X}"
     return _NAMES.get((level, address), f"{address:x}")
 
 
@@ -268,8 +271,32 @@ def tokens(code: bytes, base: int, level: int = -1) -> list[str]:
     return [" ".join([t[0]] + sorted(t[1:])) for t in out]
 
 
+def executable_code(name: str, obj_path: Path) -> tuple[bytes, bytes, int]:
+    """Ours relocated as tools/try_func.py relocates it, retail's from the
+    executable: an executable function's two codes and its address."""
+    import try_func
+    rsize = int(try_func.SIZE.search(Path(f"asm/nonmatchings/text/{name}.s").read_text()).group(2), 16)
+    raw = Path(try_func.BASEROM).read_bytes()
+    relf = ELFFile(open(try_func.BASEROM, "rb"))
+    load = next(s for s in relf.iter_segments() if s["p_type"] == "PT_LOAD")
+    delta = load["p_vaddr"] - load["p_offset"]
+    elf = ELFFile(open(obj_path, "rb"))
+    text = elf.get_section_by_name(".text").data()
+    sym = next(s for s in elf.get_section_by_name(".symtab").iter_symbols() if s.name == name)
+    off, osize = sym["st_value"], sym["st_size"]
+    vram = int(name[5:], 16)
+    resolved, _masked = try_func.resolve_relocations(elf, text, vram - off)
+    filled = bytearray(text)
+    for o, w in resolved.items():
+        filled[o:o + 4] = w.to_bytes(4, "little")
+    return bytes(filled[off:off + osize]), raw[vram - delta:vram - delta + rsize], vram
+
+
 def compare(name: str, obj_path: Path) -> tuple[str, list[str], list[str]]:
     m = oc.OVERLAY_NAME.match(name)
+    if not m:
+        ours, retail, vram = executable_code(name, obj_path)
+        return judge(collections.Counter(tokens(ours, vram)), collections.Counter(tokens(retail, vram)))
     level, address = int(m.group(1)), int(m.group(2), 16)
     catalogue = oc.load_catalogue()
     _kind, csize, _places = catalogue[name]
@@ -286,6 +313,10 @@ def compare(name: str, obj_path: Path) -> tuple[str, list[str], list[str]]:
     retail = raw[address - trec["address"]: address - trec["address"] + csize]
     a = collections.Counter(tokens(bytes(ours[placer.off:placer.off + placer.size]), address, level))
     b = collections.Counter(tokens(retail, address, level))
+    return judge(a, b)
+
+
+def judge(a: collections.Counter, b: collections.Counter) -> tuple[str, list[str], list[str]]:
     missing = sorted((b - a).elements())
     extra = sorted((a - b).elements())
     if not missing and not extra:
@@ -305,7 +336,7 @@ def run(name: str, candidate: Path, work: Path) -> str:
     obj = try_func.build(name, seg, src, first, last, candidate.read_text(errors="replace"), work)
     if obj is None:
         return "COMPILE failed"
-    if oc.check(obj, name) == "EXACT":
+    if oc.OVERLAY_NAME.match(name) and oc.check(obj, name) == "EXACT":
         return "EXACT"
     try:
         verdict, missing, extra = compare(name, obj)
