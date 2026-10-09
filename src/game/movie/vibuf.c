@@ -47,7 +47,7 @@ extern void func_00118C80(int);     /* DeleteSema */
 /* viBufDelete(ViBuf *) -- stops DMA channel 4 (setD4_CHCR(5)), zeroes its MADR/QWC/TADR
  * and deletes the buffer's semaphore. Returns 1. */
 int func_0023D988(ViBuf *vb) {
-    func_0023CF80(5);
+    setD4_CHCR(5);
     *(volatile unsigned int *)0x1000B420 = 0;
     *(volatile unsigned int *)0x1000B410 = 0;
     *(volatile unsigned int *)0x1000B430 = 0;

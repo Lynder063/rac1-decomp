@@ -6,7 +6,7 @@ extern int func_0012F1A8(int, int, int, int, int, int);
 extern char *D_001613B8 MACRO_ADDR;
 /* Clears the header, sets buffer parameters, and acquires the sound transport handle. */
 int func_0023BFA0(char *dec, void *buffer, int size, char *staging) {
-    func_001F99D8(dec + 8, 0x20);
+    FastMemZero16(dec + 8, 0x20);
     *(void **)(dec + 0x34) = buffer;
     *(int *)(dec + 0x40) = size;
     *(int *)(dec + 4) = 3;
@@ -138,7 +138,7 @@ extern void func_0023C390(AudioDec *);
 /* audioDecSend -- sendADPCM while data is pending. */
 void func_0023C2C0(AudioDec *dec) {
     if (dec->pending) {
-        func_0023C390(dec);
+        sendADPCM(dec);
     }
 }
 typedef struct { int src; int dst; int size; int mode; } SpuDma;

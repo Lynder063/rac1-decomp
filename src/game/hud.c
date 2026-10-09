@@ -1101,7 +1101,7 @@ void func_00201A38(s32 x, s32 y, s32 color, s32 text) {
     }
     text_left = func_001F6FD8_01A38(x + 1, y + 1, (s64)color & (s64)(s32)0xFF000000, text, -1);
     left = text_left - 0x20;
-    func_00201960(left, y - 8, (x - left) * 2, 0x20, alpha);
+    draw_stretchable_ui_frame(left, y - 8, (x - left) * 2, 0x20, alpha);
     func_001F6FD8_01A38(x, y, color, text, -1);
 }
 

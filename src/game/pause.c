@@ -709,7 +709,7 @@ s32 func_0021C1B0(MenuDescriptor *menu) {
     }
     func_00234C98_1C1B0(0x42, 0x44);
     func_00234C98_1C1B0(0x47, 0x2004B);
-    func_001F4630(0);
+    SetupGifPaging(0);
     entry_count = 0;
     entry = menu->items;
     while (entry->text_id != 0) {
@@ -787,12 +787,12 @@ s32 func_0021C1B0(MenuDescriptor *menu) {
             }
             func_001F65A8();
             func_001F6668_1C1B0(x + (*(s32 *)&D_001602B8), y + (*(s32 *)&D_001602BC), 0x80000000L, text_id, -1,
-                       func_001F4868(font_texture_index), glyphs);
+                       GetEffectTex(font_texture_index), glyphs);
             func_001F6598();
             if (menu->flags & 0x80) {
                 func_001F65A8();
             }
-            func_001F6668_1C1B0(x, y, color, text_id, -1, func_001F4868(font_texture_index), glyphs);
+            func_001F6668_1C1B0(x, y, color, text_id, -1, GetEffectTex(font_texture_index), glyphs);
             y += row_height;
             if (menu->items[entry_index].secondary_text_id != 0) {
                 func_001F65A8();
@@ -800,13 +800,13 @@ s32 func_0021C1B0(MenuDescriptor *menu) {
                 shadow_y = y + (*(s32 *)&D_001602BC);
                 secondary_text = func_001FE540_1C1B0(menu->items[entry_index].secondary_text_id);
                 func_001F6668_1C1B0(shadow_x, shadow_y, 0x80000000L, secondary_text, -1,
-                           func_001F4868(font_texture_index), glyphs);
+                           GetEffectTex(font_texture_index), glyphs);
                 if (!(menu->flags & 0x80)) {
                     func_001F6598();
                 }
                 func_001F6668_1C1B0(x, y, color,
                            func_001FE540_1C1B0(menu->items[entry_index].secondary_text_id), -1,
-                           func_001F4868(font_texture_index), glyphs);
+                           GetEffectTex(font_texture_index), glyphs);
                 y += row_height;
             }
             if (menu->flags & 0x80) {
@@ -816,7 +816,7 @@ s32 func_0021C1B0(MenuDescriptor *menu) {
             selection_index++;
         } while (menu->items[entry_index].text_id != 0);
     }
-    func_001F4748();
+    DoGifPaging();
     return 2;
 }
 
@@ -1451,7 +1451,7 @@ int func_0021E4B0(Menu *menu) {
     }
     func_00234C98_l(0x42, 0x44);
     func_00234C98_l(0x47, 0x2004B);
-    func_001F4630(0);
+    SetupGifPaging(0);
 
     n = 0;
     p = menu->items;
@@ -1469,7 +1469,7 @@ int func_0021E4B0(Menu *menu) {
         MenuBox box = { { 4, menu->height - 4, 0, menu->width - 2, 0,
                           y - menu->scroll, 0, 0, size + 2 } };
 
-        glyphs = func_001F4868(kind);
+        glyphs = GetEffectTex(kind);
         for (i = 0; menu->items[i].text != 0; i++) {
             sel = 0;
             if (focused && menu->sel == i) {
@@ -1500,10 +1500,10 @@ int func_0021E4B0(Menu *menu) {
                 func_001F6598();
             }
             if (menu->flags & 0x200) {
-                func_002208F8(0xF, box.s[5] + 9, D_0013D510[i] != 0);
+                draw_menu_selection_marker(0xF, box.s[5] + 9, gSkillPoints[i] != 0);
             }
             if (menu->flags & 0x800) {
-                func_002208F8(0xF, box.s[5] + 9, D_0015EE88 == menu->items[i].id);
+                draw_menu_selection_marker(0xF, box.s[5] + 9, D_0015EE88 == menu->items[i].id);
             }
             box.s[5] += box.s[7];
             if (menu->items[i].subtext != 0) {
@@ -1525,7 +1525,7 @@ int func_0021E4B0(Menu *menu) {
             }
         }
     }
-    func_001F4748();
+    DoGifPaging();
     if (menu->flags & 0x8000) {
         menu->flags ^= 0x8000;
         return 1;
@@ -1616,7 +1616,7 @@ s32 func_0021E950(MenuItemGrid *grid) {
     cell = grid->cells;
     func_00234C98_1E950(0x42, 0x8000000044L);
     func_00234C98_1E950(0x47, 0xB);
-    func_001F4630(0);
+    SetupGifPaging(0);
 
     if (grid->cols >= 2) {
         start_x = grid->margin_x;
@@ -1658,7 +1658,7 @@ s32 func_0021E950(MenuItemGrid *grid) {
                 func_00201640_1E950(left - 0x30, top - 0x30, right + 0x30, bottom + 0x30, color, 1);
                 func_00201640_1E950(left - 0x10, top - 0x10, right + 0x10, bottom + 0x10, (*(s32 *)&D_001602B0), 1);
             }
-            if (cell->kind == 0 ? D_0013D5C8_1E950[cell->id] : D_0013D490[cell->id]) {
+            if (cell->kind == 0 ? D_0013D5C8_1E950[cell->id] : gSpecialItems[cell->id]) {
                 frame_offset = 0;
                 if ((u16)cell->kind == 0) {
                     id = cell->id;
@@ -1675,14 +1675,14 @@ s32 func_0021E950(MenuItemGrid *grid) {
                         frame_offset = 2;
                     }
                 }
-                func_002008B8(func_00200198(cell->icon, cell->frame + frame_offset), left, top, icon_width, icon_height, 0x80);
+                func_002008B8(GetIconFrame(cell->icon, cell->frame + frame_offset), left, top, icon_width, icon_height, 0x80);
             }
             cell++;
             x += column_step;
         }
         y += row_step;
     }
-    func_001F4748();
+    DoGifPaging();
     return 2;
 }
 
@@ -1962,9 +1962,9 @@ void func_0021F6A0(struct ItemPreviewMoby *moby) {
     moby->z = camera->z + D_001E0708[item_index].z;
     forward_offset = D_001E0708[item_index].forward_offset;
     side_offset = D_001E0708[item_index].side_offset;
-    cosine = func_001F9F90(moby->rotation_z);
+    cosine = FastCos(moby->rotation_z);
     negated_forward_offset = -forward_offset;
-    sine = func_001F9FA8(moby->rotation_z);
+    sine = FastSin(moby->rotation_z);
     moby->x += negated_forward_offset * sine + side_offset * cosine;
     moby->y += forward_offset * cosine + side_offset * sine;
 }
@@ -2815,7 +2815,7 @@ int func_002224A8(struct OptMenu *m) {
     int color;
 
     func_00234C98_l(0x47, 0x2004B);
-    func_001F4630(0);
+    SetupGifPaging(0);
     n = 0;
     for (p = m->items; p->text != 0; p++) {
         n++;
@@ -2834,7 +2834,7 @@ int func_002224A8(struct OptMenu *m) {
         func_001F6CF8_c(m->x - 0xC, y, 0x80FFA888, func_001FE540_id(it->names[*it->value]), -1);
         y += step;
     }
-    func_001F4748();
+    DoGifPaging();
     return 2;
 }
 
@@ -3966,11 +3966,11 @@ void func_002250B8(struct MenuPanelOwner *owner) {
     }
     func_00234C98_250B8(8, 0);
     func_00234C98_250B8(0x42, 0x8000000044ULL);
-    func_002008B8(func_00200198(0xE99E, 7), x << 4, y << 4, width << 4, height << 4, 0x80);
+    func_002008B8(GetIconFrame(0xE99E, 7), x << 4, y << 4, width << 4, height << 4, 0x80);
     if (panel->active) {
         panel->time += 2;
-        u = func_002140B0(200);
-        v = func_002140B0(200);
+        u = random_integer_below(200);
+        v = random_integer_below(200);
         alpha = 0x80 - func_001F9B70(panel->time - 0x80);
         func_00234C98_250B8(8, 0);
         alpha = alpha * 2;
@@ -3979,7 +3979,7 @@ void func_002250B8(struct MenuPanelOwner *owner) {
         if (panel->time >= 0x100) {
             panel->active = 0;
         }
-    } else if (func_002140B0(2000) == 0) {
+    } else if (random_integer_below(2000) == 0) {
         panel->time = 0;
         panel->active = 1;
     }
@@ -4723,7 +4723,7 @@ void func_00226410(struct AmmoPreviewMoby *moby) {
     qcopy(moby->position, source_moby->position);
     basis = moby->basis;
     func_001FA480(basis, source_moby->basis);
-    func_00214F78(basis);
+    normalize_vector_triplet(basis);
     moby->scale = moby->resource->scale;
     if (moby->slot < 3U) {
         phase_index = (moby->slot * 2) % 6;
@@ -4737,21 +4737,21 @@ void func_00226410(struct AmmoPreviewMoby *moby) {
     double_phase = (phase * 12.56636f) / func_001FA888(6);
     func_001FA7D8_26410(double_phase);
     zero = 0.0f;
-    orbit_angle = func_001FA748(orbit_angle, phase_angle);
-    bob_angle = func_001FA748(bob_angle, double_phase);
+    orbit_angle = FastAddRots(orbit_angle, phase_angle);
+    bob_angle = FastAddRots(bob_angle, double_phase);
     if (D_001D6220[moby->slot] != zero) {
         func_00214D88(&D_001D6220[moby->slot],
                                   &D_001D6238[moby->slot],
                                   zero, 1.0f, (*(f32 *)&D_0015EE70) * 6.0f, D_0015EE6C * 6.0f);
     }
-    offset[0] = func_001F9F90(orbit_angle);
-    offset[1] = func_001F9FA8(orbit_angle);
+    offset[0] = FastCos(orbit_angle);
+    offset[1] = FastSin(orbit_angle);
     offset[2] = zero;
-    offset[2] = func_001F9FA8(bob_angle) * 0.25f + 0.5f + D_001D6220[moby->slot];
+    offset[2] = FastSin(bob_angle) * 0.25f + 0.5f + D_001D6220[moby->slot];
     func_001F9EC0(offset, offset, source_moby->basis);
-    func_001F9BD8(moby->position, moby->position, offset);
-    func_001F9BC0(angles);
-    angles[2] = func_001FA748(orbit_angle, 1.5707964f);
+    FastVecAdd(moby->position, moby->position, offset);
+    clear_u64_value(angles);
+    angles[2] = FastAddRots(orbit_angle, 1.5707964f);
     func_001FA1F8(rotation_basis, angles);
     func_001FA4F0(moby->basis, rotation_basis, moby->basis);
     func_0020EEE8(moby);

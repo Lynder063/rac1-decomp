@@ -50,7 +50,7 @@ void func_0023E5E0(VoBuf *vb) {
 }
 /* voBufGetData(VoBuf *) */
 char *func_0023E658(VoBuf *vb) {
-    if (func_0023E5C8(vb)) {
+    if (voBufIsFull(vb)) {
         return 0;
     }
     return *(char **)vb + vb->wr * 0xD0000;
@@ -61,7 +61,7 @@ int func_0023E698(VoBuf *vb) {
 }
 /* Returns the current ring entry when the corresponding count test permits it. */
 char *func_0023E6A8(VoBuf *vb) {
-    if (func_0023E698(vb)) return 0;
+    if (voBufIsEmpty(vb)) return 0;
     return vb->data + ((vb->wr - vb->count + vb->cap) % vb->cap) * 0x138C0;
 }
 /* voBufDecCount(VoBuf *) */

@@ -332,8 +332,8 @@ void func_0022C188(void) {
 
     D_0016055C_2C188->relocation_state = 0;
     func_001FA190(D_001D9A70);
-    func_0022C9A8(0);
-    func_0022C9A8(1);
+    SkyDrawShell(0);
+    SkyDrawShell(1);
     if (D_0016055C_2C188->effect_count == 0) {
         D_0016055C_2C188->effect_count = 0x100;
         func_001160C8(0x3039);
@@ -355,28 +355,28 @@ void func_0022C188(void) {
                 effect->texture_index = random_color_enabled;
             } else {
                 effect->randomize_color = random_color_enabled;
-                color_delta = func_002140B0(0x100);
+                color_delta = random_integer_below(0x100);
                 effect->texture_index = random_color_enabled;
                 effect->flags = effect_flags;
                 effect->state.angles.azimuth = color_delta;
-                effect->angle = func_00214158();
+                effect->angle = random_angle_radians();
                 effect->size =
-                    func_001FA888(func_002140B0(0x18) + 0x20) * 0.00390625f;
-                azimuth = func_001FA748(-3.0f, func_00214158() * 0.2f);
-                elevation = func_00214158();
+                    func_001FA888(random_integer_below(0x18) + 0x20) * 0.00390625f;
+                azimuth = FastAddRots(-3.0f, random_angle_radians() * 0.2f);
+                elevation = random_angle_radians();
                 elevation = elevation * 0.09f;
                 elevation = elevation + 1.2f;
-                trig_product = func_001F9F90(azimuth);
-                trig_product = trig_product * func_001F9FA8(elevation);
+                trig_product = FastCos(azimuth);
+                trig_product = trig_product * FastSin(elevation);
                 trig_product = trig_product * radius;
                 effect->position_x = trig_product;
-                trig_product = func_001F9FA8(azimuth);
-                trig_product = trig_product * func_001F9FA8(elevation);
+                trig_product = FastSin(azimuth);
+                trig_product = trig_product * FastSin(elevation);
                 trig_product = trig_product * radius;
                 effect->position_y = trig_product;
-                effect->position_z = func_001F9F90(elevation) * radius;
-                color_delta = func_002140B0(0x18);
-                alpha_delta = func_002140B0(0x20) << 0x18;
+                effect->position_z = FastCos(elevation) * radius;
+                color_delta = random_integer_below(0x18);
+                alpha_delta = random_integer_below(0x20) << 0x18;
                 if ((func_001160D8() >> 0x10) & 1) {
                     effect->state.base_color = alpha_delta + ((color_delta << 0x10) + base_color);
                 } else {
@@ -395,15 +395,15 @@ void func_0022C188(void) {
             angles[1] = (u16)(angles[1] + 1);
             azimuth = func_001FA888((orbit->azimuth & 0xFFF) - 0x800) * 0.0015339808f;
             elevation = func_001FA888((angles[1] & 0xFFF) - 0x800) * 0.0015339808f;
-            trig_product = func_001F9F90(azimuth);
-            trig_product = trig_product * func_001F9FA8(elevation);
+            trig_product = FastCos(azimuth);
+            trig_product = trig_product * FastSin(elevation);
             trig_product = trig_product * 50.0f;
             effect->position_x = trig_product;
-            trig_product = func_001F9FA8(azimuth);
-            trig_product = trig_product * func_001F9FA8(elevation);
+            trig_product = FastSin(azimuth);
+            trig_product = trig_product * FastSin(elevation);
             trig_product = trig_product * 50.0f;
             effect->position_y = trig_product;
-            effect->position_z = func_001F9B88(func_001F9F90(elevation)) * 50.0f;
+            effect->position_z = FastAbsF(FastCos(elevation)) * 50.0f;
             if ((u32)(orbit->azimuth & 0x3F) < 8U) {
                 effect->color = 0x702020F0;
             } else {
@@ -420,10 +420,10 @@ void func_0022C188(void) {
             effect->color = color_value;
         }
     }
-    func_0022CEB8();
+    SkySpriteProc();
     func_00234C98_2C188(0x42, (0x8000ULL << 0x18) | 0x44);
-    func_0022C9A8(2);
-    func_0022C9A8(3);
+    SkyDrawShell(2);
+    SkyDrawShell(3);
 }
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022C5A0);

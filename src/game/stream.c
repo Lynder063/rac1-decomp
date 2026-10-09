@@ -594,7 +594,7 @@ void func_00217AE8(void *arg0, Menu *menu, s32 arg2) {
     kind = e->unk8;
     if (kind == 6) {
         sfx = D_001E89B0;
-        func_001166FC((Cfg13*)((char *)0x70000000), func_001FE540(e->unk0));
+        func_001166FC((Cfg13*)((char *)0x70000000), msg_string(e->unk0));
         p = func_00116CC0(((char *)0x70000000), D_00160188);
         if (p != 0) {
             p[1] = 's';
@@ -603,10 +603,10 @@ void func_00217AE8(void *arg0, Menu *menu, s32 arg2) {
         func_00116248(num, D_00160190, t / 1000, sfx.s[D_0015EE88 % 6], t % 1000);
         func_00116248(buf, ((char *)0x70000000), num);
     } else {
-        func_00116248(buf, func_001FE540(e->unk0));
+        func_00116248(buf, msg_string(e->unk0));
     }
     if (D_001994C0[5] != 0) {
-        func_001FFE88(buf);
+        copy_text_to_shared_buffer(buf);
     } else if (D_00160170 != -1) {
         func_001FFCB0(D_00160170);
         D_00160170 = -1;
@@ -617,7 +617,7 @@ void func_00217AE8(void *arg0, Menu *menu, s32 arg2) {
     ok = 0;
     switch (e->unk8) {
     case 1:
-        ok = !(D_0015EE98 < D_001E02B0[e->unkA].unk0);
+        ok = !(gBolts < D_001E02B0[e->unkA].unk0);
         break;
     case 2:
         ok = stream_item_flags[e->unkA] != 0;
@@ -629,13 +629,13 @@ void func_00217AE8(void *arg0, Menu *menu, s32 arg2) {
         }
         break;
     case 4:
-        ok = D_0013D490[e->unkA] != 0;
+        ok = gSpecialItems[e->unkA] != 0;
         break;
     case 5:
         ok = !(func_00216098() < e->unkA);
         break;
     case 6:
-        ok = D_0015EE98 >= D_001E02B0[e->unkA].unk14 && func_00216098() >= 4;
+        ok = gBolts >= D_001E02B0[e->unkA].unk14 && func_00216098() >= 4;
         break;
     default:
         ok = 0;

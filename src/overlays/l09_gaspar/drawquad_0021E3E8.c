@@ -38,7 +38,7 @@ void func_L09_0021E770(char *list, int count, long tex0, long tex1) {
     }
     for (i = 0; i < count; i++) {
         char *e = list + i * 64;
-        idx = func_L00_00200290(e, 256.0f);
+        idx = FastBSphereCheck(e, 256.0f);
         if (idx == -1) continue;
         for (j = 0; j < *(int *)(e + 0x1C); j++) {
             int n;

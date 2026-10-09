@@ -316,7 +316,7 @@ void func_002032D0(void) {
     d941c0 = D_001941C0;
     size24 = ALIGN64(base->bank[0].size);
     header = (HudHdr *) func_001FFAB8_d(size24, 0, fname, 0x23B);
-    func_001F9A98(header, (void *) (base->bank[0].off + (int) base), size24);
+    FastMemCopy(header, (void *) (base->bank[0].off + (int) base), size24);
 
     D_0019A4E8_arena.header = header;
     D_0019A4E8_arena.unk1C = (char *) header + header->unk04;
@@ -327,35 +327,35 @@ void func_002032D0(void) {
 
     if (header->unk54 != 0) {
         shift54 = (unsigned int) ALIGN64(base->bank[1].size) >> 4;
-        func_00203548(0, bank2);
-        D_0019A4E8_arena.header->unk94 = func_00234158(
+        LoadCompressedHudBank(0, bank2);
+        D_0019A4E8_arena.header->unk94 = Stash_SendData(
             base->bank[1].off + (int) base, shift54, shift54, (int) D_0015FC80);
-        func_001FF958(0, (void *) bank2, 1);
+        Hud_SendResidentBank(0, (void *) bank2, 1);
     }
 
     size58 = D_0019A4E8_arena.header->unk58;
     if (size58 != 0) {
         bank58 = func_001FFAB8_d(size58, 0, fname, 0x262);
-        func_00203548(1, (int) bank58);
+        LoadCompressedHudBank(1, (int) bank58);
         func_00118D80(0);
-        func_001FF7F0(1, (int) bank58);
+        LinkHudBank(1, (int) bank58);
     }
 
     if (D_0019A4E8_arena.header->unk5C != 0) {
         shift5C = (unsigned int) ALIGN64(base->bank[3].size) >> 4;
-        D_0019A4E8_arena.header->unk9C = func_00234158(
+        D_0019A4E8_arena.header->unk9C = Stash_SendData(
             base->bank[3].off + (int) base, shift5C, shift5C, (int) D_0015FC90);
     }
 
     if (D_0019A4E8_arena.header->unk60 != 0) {
         shift60 = (unsigned int) ALIGN64(base->bank[4].size) >> 4;
-        D_0019A4E8_arena.header->unkA0 = func_00234158(
+        D_0019A4E8_arena.header->unkA0 = Stash_SendData(
             base->bank[4].off + (int) base, shift60, shift60, (int) D_0015FCA0);
     }
 
     if (D_0019A4E8_arena.header->unk64 != 0) {
         shift64 = (unsigned int) ALIGN64(base->bank[5].size) >> 4;
-        D_0019A4E8_arena.header->unkA4 = func_00234158(
+        D_0019A4E8_arena.header->unkA4 = Stash_SendData(
             base->bank[5].off + (int) base, shift64, shift64, (int) D_0015FCB0);
     }
 }

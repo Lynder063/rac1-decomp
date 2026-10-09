@@ -477,9 +477,9 @@ f32 func_L00_00233410(f32 a, f32 b, f32 c) {
     switch ((&D_0013F450_33410)->mode) {
     case 0:
         if (c < 0.0f) {
-            func_001F9C30(t, &(&D_0013F450_33410)->vE0, a);
+            FastVecScale(t, &(&D_0013F450_33410)->vE0, a);
             t[2] -= ((a * a + a) * 0.5f) * b;
-            func_001F9BD8(t, t, &(&D_0013F450_33410)->v80);
+            FastVecAdd(t, t, &(&D_0013F450_33410)->v80);
             v.q = (&D_0013F450_33410)->v80.q;
             func_L00_0025E290(&v, t);
             qcopy(&v, &(&D_0013F450_33410)->v80);
@@ -499,11 +499,11 @@ f32 func_L00_00233410(f32 a, f32 b, f32 c) {
     case 1:
         qcopy(&v, &(&D_0013F450_33410)->v270);
         func_L00_001FF4B0(&v, &v, b);
-        func_001F9C30(&v, &v, -1.0f);
-        func_001F9C30(t, &(&D_0013F450_33410)->vE0, a);
-        func_001F9C30(&t1, &v, ((a * a + a) * 0.5f) * b);
-        func_001F9BD8(t, &t1, t);
-        func_001F9BD8(t, &(&D_0013F450_33410)->v80, t);
+        FastVecScale(&v, &v, -1.0f);
+        FastVecScale(t, &(&D_0013F450_33410)->vE0, a);
+        FastVecScale(&t1, &v, ((a * a + a) * 0.5f) * b);
+        FastVecAdd(t, &t1, t);
+        FastVecAdd(t, &(&D_0013F450_33410)->v80, t);
         v2.q = (&D_0013F450_33410)->v80.q;
         func_L00_0025E290(&v2, t);
         if (func_L00_001EFFF0(&(&D_0013F450_33410)->v80, t, 0x24, 0, 0) != 0) {
@@ -522,13 +522,13 @@ f32 func_L00_00233410(f32 a, f32 b, f32 c) {
         t1.f[2] = 100.0f;
         t1.f[1] = 100.0f;
         t1.f[0] = 100.0f;
-        func_001F9BF0(&v, &(&D_0013F450_33410)->v80, &t1);
+        FastVecSub(&v, &(&D_0013F450_33410)->v80, &t1);
         func_L00_001FF4B0(&v, &v, b);
-        func_001F9C30(&v, &v, -1.0f);
-        func_001F9C30(t, &(&D_0013F450_33410)->vE0, a);
-        func_001F9C30(&t1, &v, ((a * a + a) * 0.5f) * b);
-        func_001F9BD8(t, &t1, t);
-        func_001F9BD8(t, &(&D_0013F450_33410)->v80, t);
+        FastVecScale(&v, &v, -1.0f);
+        FastVecScale(t, &(&D_0013F450_33410)->vE0, a);
+        FastVecScale(&t1, &v, ((a * a + a) * 0.5f) * b);
+        FastVecAdd(t, &t1, t);
+        FastVecAdd(t, &(&D_0013F450_33410)->v80, t);
         v2.q = (&D_0013F450_33410)->v80.q;
         func_L00_0025E290(&v2, t);
         if (func_L00_001EFFF0(&(&D_0013F450_33410)->v80, t, 0x24, 0, 0) != 0) {
@@ -1139,31 +1139,31 @@ void func_L00_00235088(void) {
     f32 t;
     m0 = D_0013F450_35088.m11D0;
     if (m0) {
-        if (D_L00_0015F6A8 == 2) D_0013F450_35088.f22E8 = func_001FA748(D_0013F450_35088.f22E8, (*(f32 *)&D_0015EE6C) * 1.2217305f);
-        else D_0013F450_35088.f22E8 = func_001FA748(D_0013F450_35088.f22E8, (*(f32 *)&D_0015EE6C) * 2.0943952f);
-        *(s32 *)(m0 + 0x90) = func_001FA8A8(0xD2D2D2, 0x285050, func_001F9FA8(D_0013F450_35088.f22E8) * 0.5f + 0.5f);
+        if (D_L00_0015F6A8 == 2) D_0013F450_35088.f22E8 = FastAddRots(D_0013F450_35088.f22E8, (*(f32 *)&D_0015EE6C) * 1.2217305f);
+        else D_0013F450_35088.f22E8 = FastAddRots(D_0013F450_35088.f22E8, (*(f32 *)&D_0015EE6C) * 2.0943952f);
+        *(s32 *)(m0 + 0x90) = FastTweenColor(0xD2D2D2, 0x285050, FastSin(D_0013F450_35088.f22E8) * 0.5f + 0.5f);
     }
     m1 = D_0013F450_35088.m11D4;
     if (m1) {
         if (D_L00_0015F6A8 != 2) {
             f32 v;
-            D_0013F450_35088.f22EC = v = func_001FA748(D_0013F450_35088.f22EC, (*(f32 *)&D_0015EE6C) * 2.9670596f);
+            D_0013F450_35088.f22EC = v = FastAddRots(D_0013F450_35088.f22EC, (*(f32 *)&D_0015EE6C) * 2.9670596f);
             b = 0x1EE628;
             if (0.0f < v && v < 1.9198622f) b = 0x1E1ED2;
-            *(s32 *)(m1 + 0x90) = func_001FA8A8(*(s32 *)(m1 + 0x90), b, 0.07f);
+            *(s32 *)(m1 + 0x90) = FastTweenColor(*(s32 *)(m1 + 0x90), b, 0.07f);
         } else {
             f32 v;
-            D_0013F450_35088.f22EC = v = func_001FA748(D_0013F450_35088.f22EC, (*(f32 *)&D_0015EE6C) * 1.5707964f);
-            *(s32 *)(m1 + 0x90) = func_001FA8A8(0x1E1ED2, 0x1E1E50, func_001F9FA8(v) * 0.5f + 0.5f);
+            D_0013F450_35088.f22EC = v = FastAddRots(D_0013F450_35088.f22EC, (*(f32 *)&D_0015EE6C) * 1.5707964f);
+            *(s32 *)(m1 + 0x90) = FastTweenColor(0x1E1ED2, 0x1E1E50, FastSin(v) * 0.5f + 0.5f);
         }
     }
     m2 = D_0013F450_35088.m1220;
     if (m2) {
-        if (D_L00_0015F6A8 == 2) D_0013F450_35088.f22F0 = func_001FA748(D_0013F450_35088.f22EC, (*(f32 *)&D_0015EE6C) * 1.3962634f);
-        else D_0013F450_35088.f22F0 = func_001FA748(D_0013F450_35088.f22EC, (*(f32 *)&D_0015EE6C) * 1.9198622f);
-            *(s32 *)(m2 + 0x90) = func_001FA8A8(0xAAC8AA, 0x965050, func_001F9FA8(D_0013F450_35088.f22F0) * 0.5f + 0.5f);
+        if (D_L00_0015F6A8 == 2) D_0013F450_35088.f22F0 = FastAddRots(D_0013F450_35088.f22EC, (*(f32 *)&D_0015EE6C) * 1.3962634f);
+        else D_0013F450_35088.f22F0 = FastAddRots(D_0013F450_35088.f22EC, (*(f32 *)&D_0015EE6C) * 1.9198622f);
+            *(s32 *)(m2 + 0x90) = FastTweenColor(0xAAC8AA, 0x965050, FastSin(D_0013F450_35088.f22F0) * 0.5f + 0.5f);
         if (m2) {
-            if (!D_0013F450_35088.b1D91) func_0020D960(m2, 0, &D_0013F450_35088.b1D90);
+            if (!D_0013F450_35088.b1D91) AttachManipulator(m2, 0, &D_0013F450_35088.b1D90);
             else func_L00_001FFED8(D_0013F450_35088.v1DA0, 0, D_0013F450_35088.f22F0);
         }
     }

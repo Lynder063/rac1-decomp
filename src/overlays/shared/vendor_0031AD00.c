@@ -16,10 +16,10 @@ void func_L01_0031B2F0(char *moby) {
     float a[4];
     float b[4];
     unsigned char *data = *(unsigned char **)(moby + 8);
-    func_001F9BF0(a, D_0013E633 + 0xE9D, moby + 0x40);
+    FastVecSub(a, D_0013E633 + 0xE9D, moby + 0x40);
     a[3] = 0;
     func_001F9EC0(b, a, moby + 0x50);
-    if (func_001F9B88(b[0]) <= 1.0f && func_001F9B88(b[1]) <= 1.0f && func_001F9B88(b[2]) <= 1.0f) {
+    if (FastAbsF(b[0]) <= 1.0f && FastAbsF(b[1]) <= 1.0f && FastAbsF(b[2]) <= 1.0f) {
         float t = (b[0] + 1.0f) * 0.5f;
         int v = func_001FA898_r(func_001FA888(*(int *)(data + 4)) * t);
         int w = *(int *)(data + 4);

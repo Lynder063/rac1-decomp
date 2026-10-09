@@ -253,8 +253,8 @@ void func_001F2608(void) {
     *(int *)&g->f[0xC / 4] = 0;
     *(int *)&g->f[0x1C / 4] = 0;
     *(int *)&g->f[0x2C / 4] = 0;
-    func_001FA540(&g->f[0x40 / 4], x, g);
-    func_001FA540(&g->f[0x80 / 4], x + 0x40, g);
+    sce_vu0_mul_matrix(&g->f[0x40 / 4], x, g);
+    sce_vu0_mul_matrix(&g->f[0x80 / 4], x + 0x40, g);
     a = xf[0x1A0 / 4];
     b = xf[0x1A4 / 4];
     c = xf[0x1A8 / 4];
@@ -270,16 +270,16 @@ void func_001F2608(void) {
     g->f[0xB0 / 4] += g->f[0xBC / 4] * a;
     g->f[0xB4 / 4] += g->f[0xBC / 4] * b;
     g->f[0xB8 / 4] += g->f[0xBC / 4] * c;
-    func_001FA540(&g->f[0xC0 / 4], x + 0x80, g);
+    sce_vu0_mul_matrix(&g->f[0xC0 / 4], x + 0x80, g);
     func_001F9C48(&g->f[0x100 / 4], x + 0x80, xf[0x1C0 / 4]);
     func_001F9C48(&g->f[0x110 / 4], x + 0x90, xf[0x1C0 / 4]);
     qcopy(&g->f[0x120 / 4], x + 0xA0);
     qcopy(&g->f[0x130 / 4], x + 0xB0);
-    func_001FA540(&g->f[0x100 / 4], &g->f[0x100 / 4], g);
+    sce_vu0_mul_matrix(&g->f[0x100 / 4], &g->f[0x100 / 4], g);
     qcopy(D_0018D080, g);
     qcopy(D_0018D080 + 0x10, &g->f[0x10 / 4]);
     qcopy(D_0018D080 + 0x20, &g->f[0x20 / 4]);
-    func_001F9C30(D_0018D080 + 0x30, &g->f[0x140 / 4], 1024.0f);
+    FastVecScale(D_0018D080 + 0x30, &g->f[0x140 / 4], 1024.0f);
     *(float *)(D_0018D080 + 0x3C) = 1024.0f;
 }
 
@@ -419,47 +419,47 @@ void func_001F2BC8(void) {
     x = func_001FA898_r(D_00187040_cam.focus[0] * scale);
     y = func_001FA898_r(D_00187040_cam.focus[1] * scale);
     z = func_001FA898_r(D_00187040_cam.focus[2] * scale);
-    vis = (char *)func_001F2A38(x, y, z);
+    vis = (char *)ParseOcclGrid(x, y, z);
     if (vis != 0) {
         D_0015F72C = 0;
-        func_001F9A98(D_001940C0, vis, 0x80);
+        FastMemCopy(D_001940C0, vis, 0x80);
         D_0015F730 = vis;
     } else {
         D_0015F72C = 1;
         if (D_0015F728 == 0) {
-            gx = (char *)func_001F2B10(x - 1, y, z, x + 1, y, z,
+            gx = (char *)GetOcclGridFromPair(x - 1, y, z, x + 1, y, z,
                                        D_00187040_cam.focus[0] * scale - func_001FA888(x));
-            gy = (char *)func_001F2B10(x, y - 1, z, x, y + 1, z,
+            gy = (char *)GetOcclGridFromPair(x, y - 1, z, x, y + 1, z,
                                        D_00187040_cam.focus[1] * scale - func_001FA888(y));
-            gz = (char *)func_001F2B10(x, y, z - 1, x, y, z + 1,
+            gz = (char *)GetOcclGridFromPair(x, y, z - 1, x, y, z + 1,
                                        D_00187040_cam.focus[2] * scale - func_001FA888(z));
             if (gx != 0 || gy != 0 || gz != 0) {
-                func_001F99D8(D_00194140, 0x80);
+                FastMemZero16(D_00194140, 0x80);
                 if (gx != 0) {
-                    func_001F9AC0(D_00194140, D_00194140, gx, 0x80);
+                    FastMemOr16(D_00194140, D_00194140, gx, 0x80);
                 }
                 if (gy != 0) {
-                    func_001F9AC0(D_00194140, D_00194140, gy, 0x80);
+                    FastMemOr16(D_00194140, D_00194140, gy, 0x80);
                 }
                 if (gz != 0) {
-                    func_001F9AC0(D_00194140, D_00194140, gz, 0x80);
+                    FastMemOr16(D_00194140, D_00194140, gz, 0x80);
                 }
                 vis = D_00194140;
                 D_0015F730 = vis;
-                func_001F9A98(D_001940C0, vis, 0x80);
+                FastMemCopy(D_001940C0, vis, 0x80);
             }
         }
         if (vis == 0) {
             switch (D_0015F728) {
             case 0:
                 if (D_0018C42C == 0 && D_0015F730 != 0) {
-                    func_001F9A98(D_001940C0, D_0015F730, 0x80);
+                    FastMemCopy(D_001940C0, D_0015F730, 0x80);
                 } else {
-                    func_001F99B0(D_001940C0, -1, 0x80);
+                    FastMemSet(D_001940C0, -1, 0x80);
                 }
                 break;
             case 1:
-                func_001F99B0(D_001940C0, -1, 0x80);
+                FastMemSet(D_001940C0, -1, 0x80);
                 break;
             case 2:
                 p = D_0015F724;
@@ -467,11 +467,11 @@ void func_001F2BC8(void) {
                     bx = 0.0f < D_00187040_cam.focus[0] - p[0];
                     by = 0.0f < D_00187040_cam.focus[1] - p[1];
                     bz = 0.0f < D_00187040_cam.focus[2] - p[2];
-                    func_001F9A98(D_001940C0, (char *)p + ((bz + by * 2 + bx * 4) * 0x80 + 0x10), 0x80);
+                    FastMemCopy(D_001940C0, (char *)p + ((bz + by * 2 + bx * 4) * 0x80 + 0x10), 0x80);
                 } else if (D_0018C42C == 0 && D_0015F730 != 0) {
-                    func_001F9A98(D_001940C0, D_0015F730, 0x80);
+                    FastMemCopy(D_001940C0, D_0015F730, 0x80);
                 } else {
-                    func_001F99B0(D_001940C0, -1, 0x80);
+                    FastMemSet(D_001940C0, -1, 0x80);
                 }
                 break;
             }

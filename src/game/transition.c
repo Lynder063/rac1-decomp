@@ -175,46 +175,46 @@ void func_001EB7C0(s32 *arg0)
     s32 n;
 
     if (D_0016055C == 0 || D_0016055C->unk4 != 0) {
-        func_001FB530();
+        framebuf_appendLargeSetup();
     }
-    func_001F99B0(D_001940C0, -1, 0x80);
+    FastMemSet(D_001940C0, -1, 0x80);
     func_001EB338_EB7C0();
     func_001F2608();
     func_0020DAB0();
-    func_001F3C10();
+    ResetGsRegisters();
     D_0015F704 = -1;
     if (D_0016055C != 0) {
         func_001E9E70_EB7C0();
     }
-    func_002346C0();
-    func_00235290(0x02010000);
-    func_00236BE0();
-    func_00235290(0x02020000);
-    func_00229E50();
-    func_00235290(0x02040000);
+    DrawTfrag();
+    Vif1ChainCmd(0x02010000);
+    DrawTies_1();
+    Vif1ChainCmd(0x02020000);
+    DrawShrubs();
+    Vif1ChainCmd(0x02040000);
     if (D_0015F6E8 == 3) {
         func_0021A610();
     } else {
-        func_0020E2B0();
+        DrawMobys();
     }
-    func_00235290(0x02080000);
-    func_001F4630(0);
+    Vif1ChainCmd(0x02080000);
+    SetupGifPaging(0);
     func_00234F40();
     if (D_0015F564 != 0) {
-        func_001F4A00();
+        ExecuteDrawCallbacks();
     }
     func_00234F40();
     if (D_0018A3E8[0] != 0) {
         func_00234C98_EB7C0(8, 5);
         func_00234F40();
         func_00118D80(0);
-        func_00218B10();
+        PartProc();
         D_0015F704 = 8;
     }
-    func_001FB848();
-    func_001F3C10();
+    AA_BlurPass();
+    ResetGsRegisters();
     if (D_0015F050 != 0) {
-        func_001F5800(0xEC, 0x10, 0x100, 0x80, 0, 0, 0x100, 0x80,
+        DrawTexturedQuad(0xEC, 0x10, 0x100, 0x80, 0, 0, 0x100, 0x80,
                       (long)(D_0015F050 << 24 | 0x808080), (*(s64 *)&D_0015F048));
     }
     if (D_0015F054 != 0) {
@@ -222,33 +222,33 @@ void func_001EB7C0(s32 *arg0)
         if (n < 0) {
             n = 0;
         }
-        func_001F5800(0xA0, D_0013E604[0] - 0x50, 0xC0, 0x60, 0, 0, 0x100, 0x80,
-                      (long)(D_0015F054 << 24 | 0x808080), func_001F4868(n + 4));
+        DrawTexturedQuad(0xA0, D_0013E604[0] - 0x50, 0xC0, 0x60, 0, 0, 0x100, 0x80,
+                      (long)(D_0015F054 << 24 | 0x808080), GetEffectTex(n + 4));
     }
-    func_001F4748();
+    DoGifPaging();
     if (D_0015F53C > 0.0f) {
         if (D_0015F53C > 1.0f) {
             D_0015F53C = 1.0f;
         }
-        func_001F55C0(0, 0, 0, func_001FA898(D_0015F53C * 128.0f));
+        emit_rgba_draw_packet(0, 0, 0, truncate_float_to_s32(D_0015F53C * 128.0f));
     }
-    func_002347F0(D_00100AE0);
+    VU0_loadMicroProgram(D_00100AE0);
     func_00118D80(0);
     if (D_0015F6E8 == 4) {
         func_001FBE80();
     }
-    func_00234AC8(2);
-    func_002362B0(D_001E1600);
-    func_00234620();
-    func_00234AC8(4);
-    func_00238688(D_001E3500);
-    func_00236A98();
-    func_00234AC8(8);
-    func_0022B8F8(D_001D9240);
-    func_00229D48();
-    func_00234AC8(0x10);
-    func_0020DD48();
-    func_001F2930();
+    VU1_syncChain(2);
+    LightTfrags(D_001E1600);
+    PatchTfragGifs();
+    VU1_syncChain(4);
+    LightTies(D_001E3500);
+    PatchTieGifs();
+    VU1_syncChain(8);
+    LightShrubs(D_001D9240);
+    PatchShrubGifs();
+    VU1_syncChain(0x10);
+    PatchMobyGifs();
+    UpdateFog();
 }
 
 extern char D_0013E650[];
