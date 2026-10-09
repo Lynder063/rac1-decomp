@@ -1,16 +1,16 @@
 /* NON_MATCHING func_L04_002CB800 -- src/overlays/l04_eudora/vendor_002CB800.c
- * Best so far: SIZE ours 4976 / retail 4972, checked 2026-10-09.
+ * Best so far: BYTES 159/4972 (96.8% of the bytes match), checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
- *   p10 whole-file -fno-force-mem diagnostic SIZE4976/4972, no change; not retained. p11 normal flags: explicit sc
- *   p11 SIZE4928/4972: explicit effect pointers removed state spill and restored frame160; movement position now s
- *   p12 comparison recorded in p12.diff.txt; p13 uses ordinary float-array position/rotation fields and the plain 
- *   p12 SIZE4928; declaration order only alters initial load order. p13 float-array fields/register stop tested, v
- *   p13 SIZE4928/4972, register keyword/float fields no effect. p14 SIZE4928/4972, separate vectors share stack30 
- *   p15 whole-file -fno-gcse diagnostic SIZE4920/4972; correctly retained an FP zero but destroyed retail pointer 
- *   p16 SIZE4920/4972: a shared rate variable still propagates zero and worsens matrix scheduling; not retained. p
- *   p17 SIZE4928/4972, same as p11; changing when loop pointers are initialized does not move their merged address
+ *   More on A (2026-10-09, later): $f20 is not used again until case 4's constants, so the zero is a variable that
+ *   GCSE did not propagate. cprop records each `(set (reg) (const))` pattern once, so the same constant set in bot
+ *   is still "available" and propagated; two different patterns that only later become the same `mtc1 $0` (cross-j
+ *   from both arms into the join after reload) would explain retail, but no such pair was found.
+ *   Declarations: private typedefs suffixed _2CB800; callee aliases `vehicle_base_update_2CB800` (func_L01_002F654
+ *   `vehicle_turn_2CB800` (func_L00_002592B0), `vehicle_sound_2CB800` (func_0022ED80, pointer third argument),
+ *   `func_L00_0025F4A8_alt`; globals through MACRO_ADDR aliases. Not in alias form. The function is first in its f
+ *   Final check against the destination file as of 2026-10-09 15:30 (others had landed into these files): run 3, B
  */
 #include "common.h"
 
@@ -91,21 +91,23 @@ extern void func_L00_00265050(void *,s32,void *,void *,s32,s32,float,void *,void
 extern s32 func_001F9908(s32 *);
 extern float func_L00_001FF860(float,float);
 
+typedef float VehicleArr_2CB800[4] __attribute__((aligned(16)));
+typedef struct { char pad[0x14]; s32 path_id; } VehicleSub_2CB800;
+
 /* Moves generic vehicle mobys along triggered paths and updates their attached parts, damage effects and visibility. */
 void func_L04_002CB800(VehicleMoby_2CB800 *m) {
     VehicleVec_2CB800 old, delta;
-    union { VehicleQuery_2CB800 query; struct { VehicleVec_2CB800 offset, zero; } effect; } work;
-    VehicleQuery_2CB800 query2;
     VehicleData_2CB800 *d=m->data;
     u8 state=m->state;
+    VehicleSub_2CB800 *sub;
     VehicleTrigger_2CB800 *trigger;
-    float stopped;
+    float zero;
     qcopy(&old,&m->pos);
     if (!d) return;
+    sub=(VehicleSub_2CB800 *)d->motion;
     if (state==0) {
-        s32 id=*(s32 *)(d->motion+0x14);
-        if (id!=-1) {
-            s32 *path=D_L04_001B0930[id];
+        if (sub->path_id!=-1) {
+            s32 *path=D_L04_001B0930[sub->path_id];
             if (func_001F9D10((char *)path+0x10,(char *)path+(*path<<4))<0.5f) --*path;
         } else {
             func_001E9730(D_L04_001DC110,m->cls,func_001FA898((float)((s32)((char *)m-(char *)vehicle_mobys_2CB800)>>8)));
@@ -114,8 +116,8 @@ void func_L04_002CB800(VehicleMoby_2CB800 *m) {
         m->alpha=0xFF;
         d->start_speed=d->speed;
         d->shield=m->shield;
-        stopped=0.0f;
-    } else stopped=0.0f;
+    }
+    zero=0.0f;
     vehicle_base_update_2CB800(m);
     if (m->cls!=0x1E4) {
         func_001F9938(&d->phase_timer);
@@ -128,7 +130,14 @@ void func_L04_002CB800(VehicleMoby_2CB800 *m) {
             }
             for (i=0,trigger=d->paths;i<4;i++,trigger++) {
                 if (d->phase_timer==0 && d->paths[i].id!=-1 && func_00215570(&m->pos,d->paths[i].id)) {
-                    goto path_found;
+                    qcopy(&d->start_pos,&m->pos);
+                    d->selected=trigger->token;
+                    d->phase=1;
+                    d->start_angle=m->rot.f[2];
+                    d->turn_velocity=0;
+                    m->state=3;
+                    d->moving_timer=func_001F9850(0x8CA0);
+                    break;
                 }
             }
             break;
@@ -145,7 +154,7 @@ void func_L04_002CB800(VehicleMoby_2CB800 *m) {
             func_001F9BD8(&m->pos,&m->pos,&delta);
             break;
         case 2:
-            if (d->phase_timer==0) { *(float *)((char *)d+0x7C)=stopped; d->phase=3; }
+            if (d->phase_timer==0) { d->turn_velocity=zero; d->phase=3; }
             break;
         case 3: {
             float length,step;
@@ -153,29 +162,13 @@ void func_L04_002CB800(VehicleMoby_2CB800 *m) {
             if (func_001F9D48(&m->pos,&d->start_pos)<1.0f && func_001FA850(m->rot.f[2],d->start_angle)<0.034906585f) {
                 d->phase=0;
                 d->phase_timer=func_001F9850(600);
-                *(float *)((char *)d+0x7C)=stopped;
-                *(float *)((char *)d+0xFC)=stopped;
+                d->turn_velocity=zero;
+                d->speed=zero;
                 d->moving_timer=0;
             }
             func_001F9BF0(&delta,&d->start_pos,&m->pos);
             length=func_001F9CB8(&delta);
-            step=D_0015EE6C*3.0f;
-            if (length<step) step=length;
-            goto return_step;
-        path_found: {
-            u8 selected;
-            qcopy(&d->start_pos,&m->pos);
-            selected=trigger->token;
-            d->phase=1;
-            d->selected=selected;
-            d->turn_velocity=0;
-            d->start_angle=m->rot.f[2];
-            m->state=3;
-            d->moving_timer=func_001F9850(0x8CA0);
-            break;
-        }
-        return_step:
-            func_L00_001FF4B0(&delta,&delta,step);
+            func_L00_001FF4B0(&delta,&delta,D_0015EE6C*3.0f>length ? length : D_0015EE6C*3.0f);
             func_001F9BD8(&m->pos,&m->pos,&delta);
             break;
         }
@@ -215,13 +208,14 @@ void func_L04_002CB800(VehicleMoby_2CB800 *m) {
             func_001F9BD8(&other->pos,&m->pos,&delta);
             qcopy(&other->rot,&m->rot);
             other->rot.f[1]=func_001FA748(other->rot.f[1],1.5707964f);
-            goto attached;
+            func_L00_002514B8(other);func_L00_00251E30(other);func_0020EEE8(other);
+            other->flags|=6;
+            break;
         case 0x1EE:
             delta.quad=0;delta.f[2]=-2.0f;
             func_001F9EC0(&delta,&delta,m->matrix);
             func_001F9BD8(&other->pos,&m->pos,&delta);
             qcopy(&other->rot,&m->rot);
-        attached:
             func_L00_002514B8(other);func_L00_00251E30(other);func_0020EEE8(other);
             other->flags|=6;
             break;
@@ -233,36 +227,49 @@ void func_L04_002CB800(VehicleMoby_2CB800 *m) {
             func_0022EE28(1,0,0);func_L00_00264DB8(0x53DB,-1);
         }
         switch ((s16)((u16)m->cls-0x1D2)) {
-        case 19:case 20:
-            work.query.flags=0x810000;work.query.strength=1;work.query.owner=m;
-            func_001F9BC0(&work.query.vec);work.query.result=0;
-            func_L00_001F2BE8(&m->pos,4.0f,16,m,&work.query);
-        case 0:case 14:case 22:case 24:case 28:case 29:case 32:case 89:
-            delta.quad=0;delta.f[2]=0.75f;
-            func_001F9BC0(&work.query.vec);
-            func_001F9BD8(&delta,&delta,&m->pos);
-            func_L00_0025F4A8_alt(m,&work.query.vec,&delta,stopped,stopped,10,3,4,2,1,100000,3,-1,15,1,1,-1,0);
-            if (m->cls==0x1F2 || m->cls==0x22B) vehicle_sound_2CB800(0,0,m);
-            else if (m->cls!=0x1E6) vehicle_sound_2CB800(1,0,m);
-            d->visibility_timer=func_001F9850(600);d->visibility_active=1;
+        case 19:case 20: {
+            {
+                VehicleQuery_2CB800 query;
+                query.flags=0x810000;query.strength=1;query.owner=m;
+                func_001F9BC0(&query.vec);query.result=0;
+                func_L00_001F2BE8(&m->pos,4.0f,16,m,&query);
+            }
+        }
+        case 0:case 14:case 22:case 24:case 28:case 29:case 32:case 89: {
+            {
+                VehicleArr_2CB800 none;
+                delta.quad=0;delta.f[2]=0.75f;
+                func_001F9BC0(none);
+                func_001F9BD8(&delta,&delta,&m->pos);
+                func_L00_0025F4A8_alt(m,none,&delta,0.0f,0.0f,10,3,4,2,1,100000,3,-1,15,1,1,-1,0);
+                if (m->cls==0x1F2 || m->cls==0x22B) vehicle_sound_2CB800(0,0,m);
+                else if (m->cls!=0x1E6) vehicle_sound_2CB800(1,0,m);
+                d->visibility_timer=func_001F9850(600);d->visibility_active=1;
+            }
             break;
-        case 27:
-            work.effect.offset.quad=0;work.effect.offset.f[2]=0.75f;
-            func_001F9BC0(&work.effect.zero);
-            func_L00_00250800(m,0,&delta);
-            func_001F9BD8(&delta,&delta,&work.effect.offset);
-            func_L00_00260108(m,&delta,-1,1.0f,13.0f);
-            func_L00_00250800(m,1,&delta);
-            func_001F9BD8(&delta,&delta,&work.effect.offset);
-            func_L00_00260108(m,&delta,-1,1.0f,13.0f);
-            func_001F9BD8(&delta,&work.effect.offset,&m->pos);
-            func_L00_0025F4A8_alt(m,&work.effect.zero,&delta,stopped,stopped,20,5,4,2,1,100000,3,-1,15,1,1,-1,0);
-            vehicle_sound_2CB800(1,0,m);
-            query2.flags=0x810000;query2.strength=2;query2.owner=m;
-            func_001F9BC0(&query2.vec);query2.result=0;
-            func_L00_001F2BE8(&m->pos,6.0f,16,m,&query2);
-            d->visibility_timer=func_001F9850(600);d->visibility_active=1;
+        }
+        case 27: {
+            {
+                VehicleArr_2CB800 offset={0.0f,0.0f,0.75f};
+                VehicleArr_2CB800 none;
+                VehicleQuery_2CB800 query2;
+                func_001F9BC0(none);
+                func_L00_00250800(m,0,&delta);
+                func_001F9BD8(&delta,&delta,offset);
+                func_L00_00260108(m,&delta,-1,1.0f,13.0f);
+                func_L00_00250800(m,1,&delta);
+                func_001F9BD8(&delta,&delta,offset);
+                func_L00_00260108(m,&delta,-1,1.0f,13.0f);
+                func_001F9BD8(&delta,offset,&m->pos);
+                func_L00_0025F4A8_alt(m,none,&delta,0.0f,0.0f,20,5,4,2,1,100000,3,-1,15,1,1,-1,0);
+                vehicle_sound_2CB800(1,0,m);
+                query2.flags=0x810000;query2.strength=2;query2.owner=m;
+                func_001F9BC0(&query2.vec);query2.result=0;
+                func_L00_001F2BE8(&m->pos,6.0f,16,m,&query2);
+                d->visibility_timer=func_001F9850(600);d->visibility_active=1;
+            }
             break;
+        }
         }
         func_001F9C30(&delta,m->matrix,D_0015EE60*0.075f);
         delta.f[2]+=D_0015EE60*0.08f;
@@ -279,10 +286,9 @@ void func_L04_002CB800(VehicleMoby_2CB800 *m) {
         else if (m->cls==0x1E6) {
             s32 i;
             func_L00_00265050(m,0x645,&m->pos,&m->rot,func_001F9850(90),0,D_0015EE70*12.0f,&delta,D_L04_0015F660,D_L04_0015F660);
-            i=5;
-            do {
+            for (i=0;i<6;i++) {
             func_L00_00265050(m,0x646,&m->pos,&m->rot,func_001F9850(90),0,D_0015EE70*12.0f,&delta,D_L04_0015F660,D_L04_0015F660);
-            } while (--i>=0);
+            }
         }
         else if (m->cls==0x1EA) {
             func_L00_00265050(m,0x647,&m->pos,&m->rot,func_001F9850(90),0,D_0015EE70*12.0f,&delta,D_L04_0015F660,D_L04_0015F660);
@@ -305,17 +311,15 @@ void func_L04_002CB800(VehicleMoby_2CB800 *m) {
             func_L00_00265050(m,0x654,&m->pos,&m->rot,func_001F9850(90),0,D_0015EE70*12.0f,&delta,D_L04_0015F660,D_L04_0015F660);
         }
         else if (m->cls==0x1ED) {
-            s32 i;
+            s32 j,k;
             func_L00_00265050(m,0x793,&m->pos,&m->rot,func_001F9850(90),0,D_0015EE70*12.0f,&delta,D_L04_0015F660,D_L04_0015F660);
             func_L00_00265050(m,0x794,&m->pos,&m->rot,func_001F9850(90),0,D_0015EE70*12.0f,&delta,D_L04_0015F660,D_L04_0015F660);
-            i=2;
-            do {
+            for (j=0;j<3;j++) {
             func_L00_00265050(m,0x795,&m->pos,&m->rot,func_001F9850(90),0,D_0015EE70*12.0f,&delta,D_L04_0015F660,D_L04_0015F660);
-            } while (--i>=0);
-            i=2;
-            do {
+            }
+            for (k=0;k<3;k++) {
             func_L00_00265050(m,0x796,&m->pos,&m->rot,func_001F9850(90),0,D_0015EE70*12.0f,&delta,D_L04_0015F660,D_L04_0015F660);
-            } while (--i>=0);
+            }
         }
     }
     m->draw_alpha=0xFF;
@@ -325,12 +329,12 @@ void func_L04_002CB800(VehicleMoby_2CB800 *m) {
             m->sort=*(s32 *)(m->metadata+0x10);
             m->flags&=0xFFBE;
             d->visibility_active=0;
-            if (d->partner!=-1) vehicle_mobys_2CB800[d->partner].flags&=0xFFBE;
+            if (d->partner!=-1) { VehicleMoby_2CB800 *other=vehicle_mobys_2CB800+d->partner; other->flags&=0xFFBE; }
             m->flags|=0x1000;
         } else {
             m->sort=0;
             m->flags|=0x41;
-            if (d->partner!=-1) vehicle_mobys_2CB800[d->partner].flags|=0x41;
+            if (d->partner!=-1) { VehicleMoby_2CB800 *other=vehicle_mobys_2CB800+d->partner; other->flags|=0x41; }
             m->flags&=0xEFFF;
         }
     }
