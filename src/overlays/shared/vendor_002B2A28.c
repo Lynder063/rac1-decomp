@@ -5,7 +5,29 @@
 INCLUDE_ASM("asm/overlays", func_L14_002B2A28);
 INCLUDE_ASM("asm/overlays", func_L14_002B3850);
 INCLUDE_ASM("asm/overlays", func_L14_002B3B78);
-INCLUDE_ASM("asm/overlays", func_L14_002B4128);
+extern float func_002140F8(float, float);
+extern float func_001F9878(float);
+extern int func_001FA898(float);
+extern int func_001F9908(void *);
+extern short D_L14_0016158C;
+
+/* When the int at data + 0x38 is nonzero, stores a random value from 180.0 to 240.0 (through func_001F9878 and
+ * func_001FA898) at data + 0x238 and clears the flag. Calls func_001F9908 on data + 0x238, then sets the float at
+ * data + 0x234 to D_L14_0016158C, plus 6.0 while data + 0x238 is nonzero. */
+void func_L14_002B4128(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    float t;
+    if (*(int *)(data + 0x38) != 0) {
+        *(int *)(data + 0x238) = func_001FA898(func_001F9878(func_002140F8(180.0f, 240.0f)));
+        *(int *)(data + 0x38) = 0;
+    }
+    func_001F9908(data + 0x238);
+    if (*(int *)(data + 0x238) != 0) {
+        *(float *)(data + 0x234) = *(float *)&D_L14_0016158C + 6.0f;
+    } else {
+        *(float *)(data + 0x234) = *(float *)&D_L14_0016158C;
+    }
+}
 extern char D_0013E633_x[] __asm__("D_0013E633");
 extern float D_0015EE6C_x __asm__("D_0015EE6C") MACRO_ADDR;
 extern short D_L14_00161590;

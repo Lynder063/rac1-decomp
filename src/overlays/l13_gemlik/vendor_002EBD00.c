@@ -1193,7 +1193,31 @@ void func_L13_002F9F10(char *m) {
     }
     func_L00_0024FFE8(*(unsigned char **)(m + 0x24), step, 0);
 }
-INCLUDE_ASM("asm/overlays", func_L13_00306D40);
+/* Creates a moby of type 0x4D1 with func_0020D348, stores src and arg in its data block, places it through
+ * func_L00_00250800(src, arg, ...) and copies src's values at +0x40 and +0xC0 to +0xEF into it; returns it, or 0 if
+ * creation failed. */
+char *func_L13_00306D40(char *src, short arg) {
+    char *moby = func_0020D348_m(0x4D1);
+    if (moby != 0) {
+        char *data = *(char **)(moby + 0x78);
+        *(unsigned char *)(moby + 0x30) = 0xFF;
+        *(short *)(moby + 0x32) = 0x7F;
+        moby[0x31] = 1;
+        moby[0x20] = 1;
+        *(char **)(data + 0x20) = src;
+        *(short *)(data + 0x26) = arg;
+        *(short *)(data + 0x24) = 1;
+        func_L00_00250800(src, arg, moby + 0x10);
+        qcopy(moby + 0x40, src + 0x40);
+        *(u128 *)(moby + 0xC0) = *(u128 *)(src + 0xC0);
+        *(u128 *)(moby + 0xD0) = *(u128 *)(src + 0xD0);
+        *(u128 *)(moby + 0xE0) = *(u128 *)(src + 0xE0);
+        qcopy(data + 0x10, moby + 0x10);
+        *(int *)(moby + 0x94) = 0;
+        func_L00_00251E30(moby);
+    }
+    return moby;
+}
 typedef int u128_306E20 __attribute__((mode(TI)));
 
 /* Initializes a Gemlik moby from its data block, copying transforms and resetting state. */
