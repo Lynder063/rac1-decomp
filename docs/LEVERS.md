@@ -235,6 +235,30 @@ in `config/core_rodata.txt`).
     tools/regalloc.py func_X CANDIDATE.c` prints the allocator's order and
     priorities: change what outranks or overlaps the variable.
 
+14. **Address copies are the compiler's.** When retail copies an address
+    into a second register (`addiu $s2,$s0,0x10` ... `move $a0,$s2`), do
+    not answer with a pointer local (`float *pos = moby + 0x10;`): it
+    makes another pseudo and other registers. Global CSE inserts the
+    computation where every path needs it and a later pass turns it into
+    the copy. Write the address out at every use (`moby + 0x10`,
+    `&d->v30`, `TABLE[d->idx].field`, `d->slots[i]->field`) and drop the
+    pointer locals. Nine near misses out of nine matched on this
+    (2026-10-09). With it:
+    - The first local in the frame is never kept in a register; every
+      other stack address is, once it has been passed to a call.
+    - In a loop with calls, an invariant used once stays in the loop;
+      used twice it is hoisted (`Rec *t = TABLE;` inside the loop, used
+      twice, when retail holds the table in a saved register).
+    - A constant address is derived from a register that already holds
+      the same symbol at another offset: a block-local `h = HERO;` after
+      the call that takes `D_0013E633 + 0xE9D`. A struct symbol folds the
+      member offsets into the symbol instead.
+    - A tail retail has once after two arms is often written in both:
+      the extra references decide who gets the saved register, and
+      cross-jumping merges the copies.
+    - An 8-byte block copied with `ldl`/`ldr`/`sdl`/`sdr` is a struct of
+      two ints copied by assignment.
+
 ## Known walls: stop and report
 
 No plain-C wording has reached these. Name the one you hit in NOTES.md
