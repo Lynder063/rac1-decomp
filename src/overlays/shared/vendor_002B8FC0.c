@@ -164,7 +164,141 @@ unsigned char *func_L13_002E7E90(char *src, char *pos, char *target, char *vec, 
     }
     return moby;
 }
-INCLUDE_ASM("asm/overlays", func_L13_002E8040);
+typedef int Q_2E8040 __attribute__((mode(TI)));
+typedef struct { float x, y, z, w; } __attribute__((aligned(16))) V4_2E8040;
+typedef struct Cls_2E8040 { char pad0[0x24]; float scale; } Cls_2E8040;
+typedef struct Moby_2E8040 {
+    char pad0[0x10];
+    V4_2E8040 pos;
+    unsigned char state;
+    char pad21[3];
+    Cls_2E8040 *cls;
+    char pad28[4];
+    float scale;
+    char pad30[4];
+    unsigned short flags;
+    char pad36[0xA];
+    V4_2E8040 rot;
+    char pad50[0x28];
+    void *data;
+    char pad7C[0x18];
+    int f94;
+    char pad98[0xE];
+    short uid;
+    char padA8[0x18];
+    V4_2E8040 mat;
+} Moby_2E8040;
+typedef struct Rocket_2E8040 {
+    V4_2E8040 vel;
+    V4_2E8040 tpos;
+    Moby_2E8040 *owner;
+    Moby_2E8040 *target;
+    int timer;
+    float speed;
+    float yawv;
+    float pitchv;
+    float f38;
+    int target_uid;
+} Rocket_2E8040;
+typedef struct Tex_2E8040 { char pad0[0x5C]; unsigned char *p5C; } Tex_2E8040;
+
+extern float func_002140F8_2E8040(float, float) __asm__("func_002140F8");
+extern void func_L00_001FF4B0_2E8040(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern void func_001F9BD8_2E8040(void *, void *, void *) __asm__("func_001F9BD8");
+extern int func_001F9850_2E8040(int) __asm__("func_001F9850");
+extern unsigned char *func_L00_00272158_2E8040(void *pos, float *vec, int s, int a, int col, int n, float x, float y, float z, float w, float pw) __asm__("func_L00_00272158");
+extern void func_001F9EC0_2E8040(void *, void *, void *) __asm__("func_001F9EC0");
+extern float func_00214158_2E8040(void) __asm__("func_00214158");
+extern void func_002156E0_2E8040(void *dst, void *vec, void *axis, float angle) __asm__("func_002156E0");
+extern unsigned char *func_L00_0026DA50_2E8040(void *pos, void *dir, int c, int d, int n, int k, float f) __asm__("func_L00_0026DA50");
+extern float func_001F9D10_2E8040(void *, void *) __asm__("func_001F9D10");
+extern float func_L00_001FF860_2E8040(float, float) __asm__("func_L00_001FF860");
+extern float func_001F9D48_2E8040(void *, void *) __asm__("func_001F9D48");
+extern float func_L00_0025CE58_2E8040(float *, float, float *, float, float, float) __asm__("func_L00_0025CE58");
+extern void func_00215C00_2E8040(void *, float, float, float) __asm__("func_00215C00");
+extern void func_L00_00250800_2E8040(void *, int, void *) __asm__("func_L00_00250800");
+extern int func_L00_001EFFF0_2E8040(void *, void *, int, void *, int) __asm__("func_L00_001EFFF0");
+extern void func_L00_0025F4A8_2E8040(void *, void *, void *, float, float, int, int, int, float, float, float, float, int, float, int, int, int, int) __asm__("func_L00_0025F4A8");
+extern void func_0020D678_2E8040(void *) __asm__("func_0020D678");
+extern int func_001F9908_2E8040(void *) __asm__("func_001F9908");
+extern float D_0015EE6C_2E8040 __asm__("D_0015EE6C") MACRO_ADDR;
+extern float D_0015EE70_2E8040 __asm__("D_0015EE70") MACRO_ADDR;
+extern Tex_2E8040 D_L13_001B2680_2E8040 __asm__("D_L13_001B2680");
+extern V4_2E8040 D_L13_001741E0_2E8040 __asm__("D_L13_001741E0");
+
+/* Update for the rocket (class 295): smoke trail, steering toward its target, collision and expiry. */
+void func_L13_002E8040(Moby_2E8040 *m) {
+    Rocket_2E8040 *d = m->data;
+    V4_2E8040 old;
+    V4_2E8040 hitpos;
+    V4_2E8040 tmp;
+    V4_2E8040 vel;
+    V4_2E8040 dir;
+    unsigned char *p;
+    float t;
+
+    qcopy(&old, &m->pos);
+    m->scale += (m->cls->scale - m->scale) * 0.1f;
+    *(Q_2E8040 *)&dir = 0;
+    dir.x = func_002140F8_2E8040(-1.0f, 1.0f);
+    dir.y = func_002140F8_2E8040(-1.0f, 1.0f);
+    dir.z = func_002140F8_2E8040(-1.0f, 1.0f);
+    vel = dir;
+    func_L00_001FF4B0_2E8040(&vel, &vel, func_002140F8_2E8040(0.1f, 0.2f) * D_0015EE6C_2E8040);
+    func_L00_001FF4B0_2E8040(&tmp, d, -func_002140F8_2E8040(D_0015EE6C_2E8040 * 0.1f, D_0015EE6C_2E8040));
+    func_001F9BD8_2E8040(&vel, &vel, &tmp);
+    p = func_L00_00272158_2E8040(&m->pos, (float *)&vel, func_001F9850_2E8040(6), 0x7F, 0xB0B0B0, 3, 40000.0f, 1000.0f, 1.0f, -0.0004f, 0.0f);
+    if (p != 0) {
+        p[3] = 0x48;
+    }
+    for (t = 0.0f; t < 1.0f; t += 0.33333334f) {
+        func_L00_001FF4B0_2E8040(&tmp, d, func_002140F8_2E8040(t, t + 0.33333334f) * d->speed);
+        func_001F9BD8_2E8040(&tmp, &tmp, &m->pos);
+        p = func_L00_00272158_2E8040(&tmp, (float *)&vel, func_001F9850_2E8040(0x3C), 0x7F, 0x606060, 3, 40000.0f, 1000.0f, 1.0f, -0.0002f, 0.0f);
+        if (p != 0) {
+            Tex_2E8040 *tex = &D_L13_001B2680_2E8040;
+            p[2] = *tex->p5C;
+            p[3] = 0x48;
+        }
+        *(Q_2E8040 *)&dir = 0;
+        dir.z = 0.02f;
+        func_001F9EC0_2E8040(&dir, &dir, &m->mat);
+        func_002156E0_2E8040(&dir, &dir, &m->mat, func_00214158_2E8040());
+        p = func_L00_0026DA50_2E8040(&tmp, &dir, 0x4F007FFF, 0x1FFFFFFF, func_001F9850_2E8040(5), 1, 20000.0f);
+        if (p != 0) {
+            p[3] = 0x48;
+        }
+    }
+    if (d->target != 0 && !(d->target->flags & 0x1000) && (d->target->flags & 1) && d->target->f94 == 0) {
+        d->target = 0;
+    }
+    if (d->target != 0 && d->target->uid == d->target_uid && d->target->state != 0xFE && d->target->state != 0xFD
+        && func_001F9D10_2E8040(&d->tpos, &d->target->pos) < 3.0f) {
+        m->rot.z = func_L00_001FF860_2E8040(d->target->pos.x - m->pos.x, d->target->pos.y - m->pos.y);
+        m->rot.y = -func_L00_001FF860_2E8040(func_001F9D48_2E8040(&m->pos, &d->target->pos), d->target->pos.z - m->pos.z);
+        qcopy(&d->tpos, &d->target->pos);
+    } else {
+        func_L00_0025CE58_2E8040(&m->rot.z, m->rot.z, &d->yawv, D_0015EE70_2E8040 * 251.32741f, D_0015EE70_2E8040 * 251.32741f, D_0015EE6C_2E8040 * 2513.2742f);
+        func_L00_0025CE58_2E8040(&m->rot.y, m->rot.y, &d->pitchv, D_0015EE70_2E8040 * 251.32741f, D_0015EE70_2E8040 * 251.32741f, D_0015EE6C_2E8040 * 2513.2742f);
+        d->target = 0;
+    }
+    func_00215C00_2E8040(d, d->speed, m->rot.z, -m->rot.y);
+    func_001F9BD8_2E8040(&m->pos, &m->pos, d);
+    if (m->pos.x < 2.0f || m->pos.x > 1021.0f || m->pos.y < 2.0f || m->pos.y > 1021.0f || m->pos.z < 2.0f || m->pos.z > 1021.0f) {
+        func_0020D678_2E8040(m);
+        return;
+    }
+    func_L00_00250800_2E8040(m, 1, &hitpos);
+    if (func_L00_001EFFF0_2E8040(&old, &hitpos, 0, d->owner, 0) != 0) {
+        qcopy(&tmp, &D_L13_001741E0_2E8040);
+        func_L00_0025F4A8_2E8040(m, d, &tmp, 2.0f, 10.0f, 10, 3, 0x10, 4.0f, 2.0f, 9.0f, 1.0f, 0, 20.0f, 0, 1, -1, 0);
+        func_0020D678_2E8040(m);
+        return;
+    }
+    if (func_001F9908_2E8040(&d->timer) != 0) {
+        func_0020D678_2E8040(m);
+    }
+}
 typedef struct { char pad0[0x39]; unsigned char field39; } Level13VendorItem;
 typedef struct { char pad0[0x1C]; Level13VendorItem *item; } Level13VendorRecord;
 typedef struct { char pad0[0x86]; short class_id; } Level13VendorCurrentMoby;

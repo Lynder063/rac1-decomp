@@ -76,7 +76,192 @@ void *func_L07_00314730(void *unused, void *dp, void *op) {
     }
     return (void *)n;
 }
-INCLUDE_ASM("asm/overlays", func_L07_00314800);
+typedef struct Moby_314800 {
+    char pad0[0x20];
+    unsigned char state;
+    char pad21[0x13];
+    unsigned short flags;
+    char pad36[0x1D];
+    unsigned char f53;
+    char pad54[0x50];
+    unsigned char fA4;
+    char padA5;
+    short oclass;
+    char padA8[8];
+    unsigned char fB0;
+    char padB1[0xB];
+    unsigned char fBC;
+} Moby_314800;
+
+typedef struct Hit_314800 {
+    char pad0[0x20];
+    Moby_314800 *moby;
+    char pad24[6];
+    unsigned short type;
+    float f2C;
+} Hit_314800;
+
+typedef struct ThinkData_314800 {
+    char pad0[0x24];
+    short f24;
+    short f26;
+    char pad28[0x38];
+    char anim[7];
+    unsigned char f67;
+    char pad68[0x15D];
+    unsigned char f1C5;
+    unsigned char f1C6;
+    unsigned char f1C7;
+    float f1C8;
+    char pad1CC[0x24];
+    int f1F0;
+    char pad1F4[4];
+    int f1F8;
+    float f1FC;
+} ThinkData_314800;
+
+typedef struct Vec_314800 {
+    float f0;
+    short s4;
+} Vec_314800;
+
+typedef struct Anim_314800 {
+    char pad0[0x30];
+    float f30[4];
+    char pad40[0x30];
+    float f70[4];
+} Anim_314800;
+
+typedef struct Slot_314800 {
+    char pad0[0x74];
+    unsigned char f74;
+    char pad75[0x13];
+    Moby_314800 *f88;
+} Slot_314800;
+
+extern Hit_314800 *func_L00_0025B478_314800(void *, int, int) __asm__("func_L00_0025B478");
+extern int func_L00_0025B4D0_314800(void *, void *, void *, int, int *, float *, int, int) __asm__("func_L00_0025B4D0");
+extern void func_L00_002584A8_314800(void *, int, int) __asm__("func_L00_002584A8");
+extern void func_L00_0025E4B0_314800(void *, void *) __asm__("func_L00_0025E4B0");
+extern int func_L00_00258BC8_314800(int, int) __asm__("func_L00_00258BC8");
+extern void func_00213DE0_314800(void *, int, int, int) __asm__("func_00213DE0");
+extern void func_L00_00222B80_314800(int, int) __asm__("func_L00_00222B80");
+extern void func_L00_002676A0_314800(void *, int) __asm__("func_L00_002676A0");
+extern void func_L00_002512D8_314800(int) __asm__("func_L00_002512D8");
+extern void func_L00_00286128_314800(void *, void *) __asm__("func_L00_00286128");
+extern float func_L00_002001D8_314800(float *, float) __asm__("func_L00_002001D8");
+extern int func_001F9850_314800(int) __asm__("func_001F9850");
+extern void func_L00_0028EBF0_314800(int) __asm__("func_L00_0028EBF0");
+extern int func_0022ED80_314800(int, int, void *) __asm__("func_0022ED80");
+extern void func_L00_0025E590_314800(void *, void *) __asm__("func_L00_0025E590");
+extern Anim_314800 *D_L07_0016016C_314800 __asm__("D_L07_0016016C") MACRO_ADDR;
+extern int D_001414D4_314800 __asm__("D_001414D4");
+extern char D_0013E650_314800[] __asm__("D_0013E650");
+
+/* Umbris moby think step: homes on its target, runs its timer and state changes. */
+void func_L07_00314800_r(Moby_314800 *moby, ThinkData_314800 *data, Vec_314800 *vec) __asm__("func_L07_00314800");
+void func_L07_00314800_r(Moby_314800 *moby, ThinkData_314800 *data, Vec_314800 *vec)
+{
+    int st;
+    float fv;
+    Hit_314800 *obj;
+    float v0, f20, f23, f24;
+    unsigned char c6;
+
+    if (moby->state != 10) {
+        obj = func_L00_0025B478_314800(moby, 0x330000, 0);
+        func_L00_0025B4D0_314800(moby, obj, vec, 0, &st, 0, 0, 4);
+        if (obj != 0) {
+            if (0.0f < obj->f2C) {
+                switch (obj->type) {
+                case 0x131:
+                    obj->f2C = 0.2f;
+                    break;
+                case 0xBA:
+                case 0x79:
+                    obj->f2C = 1.0f;
+                    break;
+                }
+            }
+            if (obj->moby == 0 || obj->moby->oclass == 0x419 || obj->moby->oclass == 0x416) {
+                st = 1;
+            }
+        }
+        if (!(0.0f < data->f1C8) && data->f1C5 == 0) {
+            if (st >= 2) {
+                v0 = vec->f0;
+                if (v0 <= obj->f2C) {
+                    vec->f0 = 0.0f;
+                    moby->flags &= 0xEFFF;
+                    func_L00_002584A8_314800(moby, 0, -1);
+                    data->f67 = 0x78;
+                    func_L00_0025E4B0_314800(moby, data->anim);
+                    if (moby->f53 != 2) {
+                        func_00213DE0_314800(moby, 2, 0, func_L00_00258BC8_314800(10, 13));
+                    }
+                    if (D_001414D4_314800 == 0x78) {
+                        func_L00_00222B80_314800(0, 1);
+                    }
+                    if (data->f1F0 != -1) {
+                        func_L00_002676A0_314800(moby, 1);
+                        func_L00_002584A8_314800(moby, 0, -1);
+                        func_L00_002512D8_314800(moby->fB0);
+                        func_L00_00286128_314800(D_L07_0016016C_314800[data->f1F0].f30, D_L07_0016016C_314800[data->f1F0].f70);
+                    }
+                    moby->state = 10;
+                } else {
+                    f20 = (float)vec->s4 / 6.0f;
+                    f23 = f20 * 1.75f;
+                    f24 = f20 * 1.25f;
+                    data->f1FC = (2.0f < obj->f2C + obj->f2C) ? -2.0f : -(obj->f2C + obj->f2C);
+                    func_L00_002001D8_314800(&fv, v0 / f20);
+                    if ((float)data->f24 - 1.0f < v0) fv = 5.0f;
+                    fv = fv * f20;
+                    vec->f0 = vec->f0 - obj->f2C;
+                    data->f67 = 0xFA;
+                    data->f26 = func_001F9850_314800(0);
+                    func_L00_0025E4B0_314800(moby, data->anim);
+                    if (moby->state < 10 && vec->f0 < fv) {
+                        if (D_001414D4_314800 == 0x78) {
+                            func_L00_00222B80_314800(0, 1);
+                        }
+                        if (moby->f53 != 2) {
+                            int a = func_L00_00258BC8_314800(0, 2);
+                            func_00213DE0_314800(moby, 2, a, func_L00_00258BC8_314800(0x14, 0x16));
+                        }
+                        data->f1C8 = 0.0f;
+                        data->f1C5 = 1;
+                        if (data->f1F8 != -1) {
+                            Slot_314800 *e = (Slot_314800 *)(D_0013E650_314800 + data->f1F8 * 0x70);
+                            if (e->f88 == moby && e->f74 != 0) {
+                                func_L00_0028EBF0_314800(data->f1F8);
+                            }
+                        }
+                        data->f1F8 = -1;
+                        data->f1F8 = func_0022ED80_314800(0xF, 4, moby);
+                        moby->state = 11;
+                        moby->fBC++;
+                    }
+                    if ((f23 < v0 && vec->f0 <= f23) || (f24 < v0 && vec->f0 <= f24)) {
+                        data->f1C7 = 1;
+                    }
+                }
+            }
+        } else if (st >= 2) {
+            data->f1C6 = 0xFF;
+        }
+        c6 = data->f1C6;
+        if (c6 >= 0x15) {
+            data->f1C6 = c6 - 0x14;
+        } else {
+            data->f1C6 = 0;
+        }
+        moby->fA4 = 0xFF;
+    }
+    func_L00_0025E590_314800(moby, data->anim);
+    data->f1FC = data->f1FC + 0.3f;
+    if (0.0f < data->f1FC) data->f1FC = 0.0f;
+}
 extern float func_002140F8(float, float);
 
 void func_L07_00314D00(float *out, float value) {

@@ -35,7 +35,196 @@ void func_L02_002A5238(char *arg, int val, float scale) {
 void func_L02_002A52B0(char *arg, float scale) {
     func_L02_002A5238(arg, 0x80, scale);
 }
-INCLUDE_ASM("asm/overlays", func_L02_002A52D0);
+typedef struct Arg_2A52D0 {
+    char pad0[0x1C];
+    char *dst;
+    float f20, f24, f28, f2C;
+    unsigned char c30, c31, c32, frames;
+    char pad34[8];
+    unsigned short first;
+    unsigned char count;
+    unsigned char alpha;
+} Arg_2A52D0;
+typedef struct Cam_2A52D0 {
+    char pad0[0x190];
+    float v190[4];
+    float v1A0[4];
+    char pad1B0[0x60];
+    float f210;
+    char pad214[4];
+    float f218;
+    float f21C;
+    char pad220[8];
+    float f228;
+    float f22C;
+    int c230, c234, c238;
+} Cam_2A52D0;
+typedef struct Frame_2A52D0 { char pad0[8]; unsigned short a; unsigned short b; char padC[4]; } Frame_2A52D0;
+
+extern void func_001F3140_2A52D0(void) __asm__("func_001F3140");
+extern void func_001F2608_2A52D0(void) __asm__("func_001F2608");
+extern void func_001FA1C0_2A52D0(float *, float) __asm__("func_001FA1C0");
+extern void func_001F9C30_2A52D0(void *, void *, float) __asm__("func_001F9C30");
+extern void func_00234B48_2A52D0(void *, int) __asm__("func_00234B48");
+extern void func_001FA540_2A52D0(void *, void *, void *) __asm__("func_001FA540");
+extern void func_L02_00250C78_2A52D0(void *, void *, void *, void *, void *, int, float) __asm__("func_L02_00250C78");
+extern char D_L02_0016D0C0_2A52D0[] __asm__("D_L02_0016D0C0");
+extern int D_L02_0015F558_2A52D0 __asm__("D_L02_0015F558") MACRO_ADDR;
+extern float D_L02_00161378_2A52D0 __asm__("D_L02_00161378") MACRO_ADDR;
+extern float D_L02_0016137C_2A52D0 __asm__("D_L02_0016137C") MACRO_ADDR;
+extern float D_L02_00161380_2A52D0 __asm__("D_L02_00161380") MACRO_ADDR;
+extern float D_L02_00161384_2A52D0 __asm__("D_L02_00161384") MACRO_ADDR;
+extern char D_L02_00167440_2A52D0[] __asm__("D_L02_00167440");
+extern unsigned short D_0010E800_2A52D0 __asm__("D_0010E800") NOT_SDA;
+extern char D_0010E810_2A52D0[] __asm__("D_0010E810");
+extern int *D_L02_00161240_2A52D0 __asm__("D_L02_00161240") MACRO_ADDR;
+extern char D_L02_001CBB70_2A52D0[] __asm__("D_L02_001CBB70");
+extern Frame_2A52D0 D_L02_0016D800_2A52D0[] __asm__("D_L02_0016D800");
+extern int D_L02_0015F6B0_2A52D0 __asm__("D_L02_0015F6B0") MACRO_ADDR;
+extern char *D_L02_0015F520_2A52D0 __asm__("D_L02_0015F520") MACRO_ADDR;
+extern int D_0015EF74_2A52D0 __asm__("D_0015EF74") MACRO_ADDR;
+extern long D_L02_00161370_2A52D0 __asm__("D_L02_00161370") MACRO_ADDR;
+
+/* Builds one moby's VU1 draw packet: camera matrices and screen setup, the two interpolated vertex tables of
+ * its animation frame, then the GS register block for its texture. */
+void func_L02_002A52D0(Arg_2A52D0 *arg) {
+    float m[16];
+    int *base;
+    int *p;
+    long *c;
+    long w;
+    long sel;
+    unsigned int lim;
+
+    D_L02_00161378_2A52D0 = ((Cam_2A52D0 *)D_L02_0016D0C0_2A52D0)->f218;
+    D_L02_0016137C_2A52D0 = ((Cam_2A52D0 *)D_L02_0016D0C0_2A52D0)->f21C;
+    D_L02_00161380_2A52D0 = ((Cam_2A52D0 *)D_L02_0016D0C0_2A52D0)->f228;
+    D_L02_00161384_2A52D0 = ((Cam_2A52D0 *)D_L02_0016D0C0_2A52D0)->f22C;
+    if (D_L02_0015F558_2A52D0 != 1) {
+        ((Cam_2A52D0 *)D_L02_0016D0C0_2A52D0)->f218 = arg->f20;
+        ((Cam_2A52D0 *)D_L02_0016D0C0_2A52D0)->f21C = arg->f24;
+        ((Cam_2A52D0 *)D_L02_0016D0C0_2A52D0)->f228 = arg->f28;
+        ((Cam_2A52D0 *)D_L02_0016D0C0_2A52D0)->f22C = arg->f2C;
+    }
+    func_001F3140_2A52D0();
+    func_001F2608_2A52D0();
+    func_001FA1C0_2A52D0(m, 1024.0f);
+    func_001F9C30_2A52D0(&m[12], D_L02_00167440_2A52D0, -1024.0f);
+    m[15] = 1.0f;
+    func_00234B48_2A52D0(D_0010E810_2A52D0, D_0010E800_2A52D0);
+    D_L02_00161240_2A52D0[0] = 0x10000000;
+    D_L02_00161240_2A52D0[1] = 0;
+    D_L02_00161240_2A52D0[2] = 0x11000000;
+    D_L02_00161240_2A52D0[3] = 0x01000404;
+    base = D_L02_00161240_2A52D0;
+    base[4] = 0;
+    base[5] = 0;
+    base[6] = 0;
+    base[7] = 0x6C0C43A4;
+    p = base + 8;
+    func_001FA540_2A52D0(p, D_L02_00167440_2A52D0 - 0x100, m);
+    p = base + 0x18;
+    func_001FA540_2A52D0(p, D_L02_00167440_2A52D0 - 0x80, m);
+    base[0x28] = 0x8000;
+    base[0x29] = 0x303EC000;
+    base[0x2A] = 0x412;
+    *(float *)(base + 0x2B) = ((Cam_2A52D0 *)D_L02_0016D0C0_2A52D0)->f210;
+    p = base + 0x2C;
+    qcopy(p, ((Cam_2A52D0 *)D_L02_0016D0C0_2A52D0)->v190);
+    p = base + 0x30;
+    qcopy(p, ((Cam_2A52D0 *)D_L02_0016D0C0_2A52D0)->v1A0);
+    *(float *)(base + 0x34) = ((Cam_2A52D0 *)D_L02_0016D0C0_2A52D0)->f22C;
+    *(float *)(base + 0x35) = ((Cam_2A52D0 *)D_L02_0016D0C0_2A52D0)->f228;
+    base[0x36] = 0;
+    base[0x37] = 0;
+    base[0x38] = 0x03000000;
+    base[0x39] = 0x020001D2;
+    base[0x3A] = 0x15000000;
+    base[0x3B] = 0;
+    p = base + 0x3C;
+    D_L02_00161240_2A52D0[0] |= ((char *)p - (char *)D_L02_00161240_2A52D0 >> 4) - 1;
+    D_L02_00161240_2A52D0 = p;
+    D_L02_00161240_2A52D0[0] = 0x30000003;
+    D_L02_00161240_2A52D0[1] = (int)D_L02_001CBB70_2A52D0;
+    D_L02_00161240_2A52D0[2] = 0;
+    D_L02_00161240_2A52D0[3] = 0x50000003;
+    D_L02_00161240_2A52D0 += 4;
+    D_L02_00161240_2A52D0[0] = 0x10000009;
+    D_L02_00161240_2A52D0[1] = 0;
+    D_L02_00161240_2A52D0[2] = 0;
+    D_L02_00161240_2A52D0[3] = 0x50000009;
+    D_L02_00161240_2A52D0 += 4;
+    {
+        int t;
+        int q;
+        float frac;
+        char *dst;
+        Frame_2A52D0 *e1;
+        Frame_2A52D0 *e2;
+        char *pa, *pb, *pc, *pd;
+        t = D_L02_0015F6B0_2A52D0;
+        q = t / arg->frames;
+        frac = (float)t / (float)arg->frames - (float)q;
+        e1 = &D_L02_0016D800_2A52D0[arg->first + q % arg->count];
+        e2 = &D_L02_0016D800_2A52D0[arg->first + (q + 1) % arg->count];
+        pa = D_L02_0015F520_2A52D0 + e1->a * 16;
+        pb = D_L02_0015F520_2A52D0 + e1->b * 16;
+        pd = D_L02_0015F520_2A52D0 + e2->b * 16;
+        pc = D_L02_0015F520_2A52D0 + e2->a * 16;
+        dst = arg->dst;
+        *(long *)dst = 0x0800000000000400;
+        *(long *)(arg->dst + 8) = 0;
+        func_L02_00250C78_2A52D0(arg->dst + 0x10, pa, pb, pc, pd, 0x1000, frac);
+    }
+    D_L02_00161370_2A52D0 = (D_0015EF74_2A52D0 >> 8) | 0x18100000 | 0x580000000;
+    w = arg->c30 | arg->c31 << 8 | arg->c32 << 16;
+    if (D_L02_0015F558_2A52D0 == 1) {
+        w = ((Cam_2A52D0 *)D_L02_0016D0C0_2A52D0)->c230 | ((Cam_2A52D0 *)D_L02_0016D0C0_2A52D0)->c234 << 8
+            | ((Cam_2A52D0 *)D_L02_0016D0C0_2A52D0)->c238 << 16;
+    }
+    c = (long *)D_L02_00161240_2A52D0;
+    lim = 0x60;
+    sel = 0x5360A;
+    if (!(lim < arg->alpha)) {
+        sel = 0x5370B;
+    }
+    c[0] = 0x8000000000008001;
+    c[1] = 0xEEEEEEEE;
+    c[2] = (long)arg->alpha << 32 | 0x64;
+    c[3] = 0x42;
+    c[4] = D_L02_00161370_2A52D0;
+    c[5] = 6;
+    c[6] = w;
+    c[7] = 0x3D;
+    c[8] = (long)(D_0015EF74_2A52D0 >> 8) << 32 | 0x1000000000000;
+    c[9] = 0x50;
+    c[10] = 0;
+    c[11] = 0x51;
+    c[12] = 0x4000000040;
+    c[13] = 0x52;
+    c[14] = 0;
+    c[15] = 0x53;
+    c[16] = sel;
+    c[17] = 0x47;
+    D_L02_00161240_2A52D0 = (int *)(c + 18);
+    D_L02_00161240_2A52D0[0] = 0x30000401;
+    D_L02_00161240_2A52D0[1] = (int)arg->dst;
+    D_L02_00161240_2A52D0[2] = 0;
+    D_L02_00161240_2A52D0[3] = 0x50000401;
+    D_L02_00161240_2A52D0 += 4;
+    D_L02_00161240_2A52D0[0] = 0x10000002;
+    D_L02_00161240_2A52D0[1] = 0;
+    D_L02_00161240_2A52D0[2] = 0;
+    D_L02_00161240_2A52D0[3] = 0x50000002;
+    D_L02_00161240_2A52D0 += 4;
+    c = (long *)D_L02_00161240_2A52D0;
+    c[0] = 0x1000000000008001;
+    c[1] = 0xE;
+    c[2] = 0;
+    c[3] = 0x3F;
+    D_L02_00161240_2A52D0 = (int *)(c + 4);
+    D_0015EF74_2A52D0 += 0x4000;
+}
 extern void func_00234C50(int);
 extern void func_001F3140(void);
 extern void func_001F2608(void);

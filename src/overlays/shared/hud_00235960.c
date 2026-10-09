@@ -790,7 +790,139 @@ void func_L00_00239510(Obj *o) {
         D_L00_0015FB4C = D_L00_0015F4F8;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_00239918);
+typedef struct { int f0, f4, f8, fC, f10, f14, f18; } Ent_239918;
+typedef struct { int v[4]; } Ids_239918;
+typedef struct { char pad0[0x2C]; int f2C; } Arena_239918;
+typedef struct {
+    char pad0[0x50];
+    int x;
+    int y;
+    int ret;
+    char pad5C[0x14];
+    unsigned char cnt[4];
+    int sel;
+} Elem_239918;
+
+extern int D_L00_0015F6B0_239918 __asm__("D_L00_0015F6B0") MACRO_ADDR;
+extern int D_L00_0015FB48_239918 __asm__("D_L00_0015FB48") MACRO_ADDR;
+extern Ent_239918 **D_L00_0015FB78_239918 __asm__("D_L00_0015FB78") MACRO_ADDR;
+extern int D_L00_0015F860_239918 SDATA(D_L00_0015F860);
+extern int D_L00_0015F890_239918 SDATA(D_L00_0015F890);
+extern int D_L00_0015F7F8_239918 SDATA(D_L00_0015F7F8);
+extern int D_L00_0015F7FC_239918 SDATA(D_L00_0015F7FC);
+extern int D_L00_0015F800_239918 SDATA(D_L00_0015F800);
+extern int D_L00_0015F804_239918 SDATA(D_L00_0015F804);
+extern int D_L00_0015F80C_239918 SDATA(D_L00_0015F80C);
+extern float D_L00_0015F86C_239918 SDATA(D_L00_0015F86C);
+extern float D_L00_0015F8A0_239918 SDATA(D_L00_0015F8A0);
+extern float D_L00_0015F8A4_239918 SDATA(D_L00_0015F8A4);
+extern int D_L00_0015F8B4_239918 SDATA(D_L00_0015F8B4);
+extern int D_L00_0015F8B8_239918 SDATA(D_L00_0015F8B8);
+extern int D_L00_0015F8BC_239918 SDATA(D_L00_0015F8BC);
+extern Ids_239918 D_L00_0015F8C0_239918 __asm__("D_L00_0015F8C0");
+extern char D_L00_0017E5D8_239918[] __asm__("D_L00_0017E5D8");
+extern float func_001FA888_239918(int) __asm__("func_001FA888");
+extern float func_001F9FA8_239918(float) __asm__("func_001F9FA8");
+extern int func_001FA898_239918(float) __asm__("func_001FA898");
+extern float func_001F9F90_239918(float) __asm__("func_001F9F90");
+extern float func_001FA748_239918(float, float) __asm__("func_001FA748");
+extern int func_00200198_239918(int, int) __asm__("func_00200198");
+extern void func_00200468_239918(int, int, int, int, int, int) __asm__("func_00200468");
+extern void func_L00_0023BAB8_239918(void *, int, int, int, int, int) __asm__("func_L00_0023BAB8");
+extern int func_001FE540_239918(int) __asm__("func_001FE540");
+extern int func_00116810_239918(int) __asm__("func_00116810");
+extern int func_001FA8A8_239918(int, int, float) __asm__("func_001FA8A8");
+extern int func_001F6EA8_239918(int, int, int, int, int) __asm__("func_001F6EA8");
+extern int func_L00_00236400_239918(void *, int *, int *) __asm__("func_L00_00236400");
+
+/* Draws the radial selection HUD element: the four mirrored corners of its ring, one icon per entry on a circle
+ * (the selected one with a glow), then the selected entry's name; returns the element's word at 0x58. */
+int func_L00_00239918(Elem_239918 *e) {
+    Ids_239918 tmp;
+    int x, y;
+    int a, b, hw, hh, i, alpha, k, yy, col, shadow, str;
+    float f22, f23;
+    unsigned char *q;
+
+    q = e->cnt;
+    {
+        float t = func_001FA888_239918(e->cnt[0]);
+        f22 = t / func_001FA888_239918(D_L00_0015F860_239918);
+    }
+    if (1.0f < f22) {
+        f22 = 1.0f;
+    } else if (f22 < 0.0f) {
+        f22 = 0.0f;
+    }
+    {
+        float t = func_001FA888_239918(q[1]);
+        f23 = t / func_001FA888_239918(D_L00_0015F860_239918);
+    }
+    if (1.0f < f23) {
+        f23 = 1.0f;
+    } else if (f23 < 0.0f) {
+        f23 = 0.0f;
+    }
+    {
+        float t = func_001FA888_239918(D_L00_0015F6B0_239918 % D_L00_0015F890_239918);
+        float wave;
+        float s;
+        t = t / func_001FA888_239918(D_L00_0015F890_239918);
+        t = t * 6.2831802f;
+        wave = func_001F9FA8_239918(t - 3.1415901f);
+        s = f22 * 128.0f;
+        a = func_001FA898_239918(s);
+        wave = wave * 0.125f;
+        wave = wave + 0.875f;
+        b = func_001FA898_239918(s * wave);
+    }
+    x = e->x;
+    y = e->y;
+    func_L00_00236400_239918(e, &x, &y);
+    hw = D_L00_0015F7F8_239918 / 2;
+    hh = D_L00_0015F7FC_239918 / 2;
+    func_00200468_239918(func_00200198_239918(0xE934, 1), x, y, hw, hh, a);
+    func_00200468_239918(func_00200198_239918(0xE934, 1), x + D_L00_0015F7F8_239918, y + D_L00_0015F7FC_239918, -hw, -hh, a);
+    func_00200468_239918(func_00200198_239918(0xE934, 1), x + D_L00_0015F7F8_239918, y, -hw, hh, a);
+    func_00200468_239918(func_00200198_239918(0xE934, 1), x, y + D_L00_0015F7FC_239918, hw, -hh, a);
+    for (i = 0; i < D_L00_0015FB48_239918; i++) {
+        int X, Y;
+        float f20 = func_001FA748_239918((float)i * 2.0f * 3.1415927f / (float)D_L00_0015FB48_239918 - 3.1415927f, 1.5707964f);
+        X = x + D_L00_0015F800_239918 + (int)(D_L00_0015F86C_239918 * func_001F9F90_239918(f20) * D_L00_0015F8A4_239918);
+        Y = y + D_L00_0015F804_239918 + (int)(D_L00_0015F86C_239918 * func_001F9FA8_239918(f20));
+        if (e->sel == i && D_L00_0015FB78_239918[D_L00_0015F80C_239918][i].f0 != 0) {
+            func_00200468_239918(func_00200198_239918(0xE99C, 0), X - 0x13, Y - 0x13, 0x26, 0x26, b);
+        }
+        if (D_L00_0015FB78_239918[D_L00_0015F80C_239918][i].f0 != 0) {
+            if (i != e->sel) {
+                alpha = func_001FA898_239918((float)a * D_L00_0015F8A0_239918);
+            } else {
+                alpha = a;
+            }
+            if (((Arena_239918 *)D_L00_0017E5D8_239918)->f2C != 0) {
+                func_L00_0023BAB8_239918(e, func_00200198_239918(D_L00_0015FB78_239918[D_L00_0015F80C_239918][i].f0, D_L00_0015FB78_239918[D_L00_0015F80C_239918][i].f4), X, Y, 1, alpha);
+            } else {
+                func_L00_0023BAB8_239918(e, func_00200198_239918(D_L00_0015FB78_239918[D_L00_0015F80C_239918][i].f0, D_L00_0015FB78_239918[D_L00_0015F80C_239918][i].f4 + 4), X, Y, 1, a);
+            }
+        }
+    }
+    k = e->sel;
+    if (k >= 0 && D_L00_0015FB78_239918[D_L00_0015F80C_239918][k].f0 != 0) {
+        tmp = D_L00_0015F8C0_239918;
+        if (D_L00_0015FB78_239918[D_L00_0015F80C_239918][k].f0 != 0) {
+            str = func_001FE540_239918(tmp.v[k]);
+            if (str != 0 && func_00116810_239918(str) != 0) {
+                float f20 = f23 * f22;
+                col = func_001FA8A8_239918(D_L00_0015F8B4_239918, D_L00_0015F8B8_239918, f20);
+                shadow = func_001FA8A8_239918(0, 0x80000000, f20);
+                yy = y + D_L00_0015F8BC_239918 + D_L00_0015F804_239918;
+                func_001F6EA8_239918(x + D_L00_0015F800_239918 - 1, yy - 1, shadow, str, -1);
+                func_001F6EA8_239918(x + D_L00_0015F800_239918, yy, col, str, -1);
+            }
+        }
+    }
+    return e->ret;
+}
 typedef struct {
     short unk0;
     short unk2;

@@ -1510,7 +1510,148 @@ void func_L00_002C8680(float *pos, float *tgt, float *out, float speed, float un
         out[2] = v;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002C88A8);
+typedef struct Moby_2C88A8 {
+    char pad0[0x48];
+    float f48;
+    char pad4C[4];
+    struct Moby_2C88A8 *f50;
+    char pad54[0x24];
+    float *f78;
+} Moby_2C88A8;
+
+typedef struct Hero_2C88A8 {
+    char pad0[0x670];
+    float f670;
+    float f674;
+    char pad678[0x1A08];
+    Moby_2C88A8 *f2080;
+    char pad2084[0x28];
+    unsigned char f20AC;
+} Hero_2C88A8;
+
+typedef struct Pad_2C88A8 {
+    char pad0[0x1A0];
+    int f1A0;
+} Pad_2C88A8;
+
+typedef struct Hit_2C88A8 {
+    char pad0[0x18];
+    void *moby;
+    int pad1C;
+    float point[4];
+} Hit_2C88A8;
+
+typedef float Vec_2C88A8[4] __attribute__((aligned(16)));
+typedef float Mat_2C88A8[4][4] __attribute__((aligned(16)));
+typedef float Mat3_2C88A8[3][4] __attribute__((aligned(16)));
+
+extern char D_L00_00166D80_2C88A8[] __asm__("D_L00_00166D80");
+extern char D_L00_00166EC0_2C88A8[] __asm__("D_L00_00166EC0");
+extern char D_L00_00173F40_2C88A8[] __asm__("D_L00_00173F40");
+extern char D_0013E633_2C88A8[] __asm__("D_0013E633");
+extern char D_0013A5E0_2C88A8[] __asm__("D_0013A5E0");
+extern float D_0015EE70_2C88A8 __asm__("D_0015EE70") MACRO_ADDR;
+extern void func_001FA480_2C88A8(void *, void *) __asm__("func_001FA480");
+extern void func_001FA4A0_2C88A8(void *, void *) __asm__("func_001FA4A0");
+extern void func_001F9EC0_2C88A8(void *, void *, void *) __asm__("func_001F9EC0");
+extern float func_L00_001FF860_2C88A8(float, float) __asm__("func_L00_001FF860");
+extern float func_001FA748_2C88A8(float, float) __asm__("func_001FA748");
+extern float func_001FA790_2C88A8(float, float) __asm__("func_001FA790");
+extern float func_001F9F90_2C88A8(float) __asm__("func_001F9F90");
+extern float func_001F9FA8_2C88A8(float) __asm__("func_001F9FA8");
+extern float func_001F9B50_2C88A8(float) __asm__("func_001F9B50");
+extern void func_001F9BD8_2C88A8(void *, void *, void *) __asm__("func_001F9BD8");
+extern void func_001F9C30_2C88A8(void *, void *, float) __asm__("func_001F9C30");
+extern void func_001F9EE8_2C88A8(void *, void *, void *) __asm__("func_001F9EE8");
+extern float func_001F9CE8_2C88A8(void *) __asm__("func_001F9CE8");
+extern void func_00215C00_2C88A8(void *, float, float, float) __asm__("func_00215C00");
+extern int func_L00_001EFFF0_2C88A8(void *, void *, int, int, int) __asm__("func_L00_001EFFF0");
+extern void func_L00_002C8680_2C88A8(float *pos, float *tgt, float *out, float speed, float unused, float range) __asm__("func_L00_002C8680");
+
+/* Per-frame camera step for a moby: aims the view at its target and steps the offset. */
+void func_L00_002C88A8(int a0, Moby_2C88A8 *m, float *a2)
+{
+    Vec_2C88A8 v0;
+    Mat3_2C88A8 m10;
+    Mat_2C88A8 m40;
+    Vec_2C88A8 v80, v90, va0, vb0, vc0;
+    Moby_2C88A8 *P;
+    float *out;
+    float f20, f21, f22, f23, w, y, t;
+    int flag;
+    float s;
+    float *q0 = v0;
+
+    *(u128 *)q0 = *(u128 *)a2;
+    func_001FA480_2C88A8(m10, D_L00_00166D80_2C88A8);
+    func_001FA4A0_2C88A8(m40, m10);
+    P = m->f50;
+    if (P == 0) return;
+    out = P->f78;
+    *(u128 *)v80 = 0;
+    v80[0] = 1.0f;
+    func_001F9EC0_2C88A8(v80, v80, D_0013E633_2C88A8 + 0x145D);
+    {
+        Hero_2C88A8 *h = (Hero_2C88A8 *)(D_0013E633_2C88A8 + 0xE1D);
+        q0[0] = func_001F9F90_2C88A8(func_001FA748_2C88A8(-0.361968011f, func_L00_001FF860_2C88A8(h->f670, h->f674))) * 0.859039009f;
+        q0[1] = func_001F9FA8_2C88A8(func_001FA748_2C88A8(-0.361968011f, func_L00_001FF860_2C88A8(h->f670, h->f674))) * 0.859039009f;
+        q0[2] = 0.0f;
+        func_001F9BD8_2C88A8(q0, q0, D_0013E633_2C88A8 + 0xE9D);
+        q0[2] = q0[2] + 0.390819997f;
+        func_L00_001FF860_2C88A8(v80[0], v80[1]);
+        s = (((Pad_2C88A8 *)(D_0013A5E0_2C88A8 + 0x2460))->f1A0 & 5) ? 3.5f : 2.5f;
+        func_001F9C30_2C88A8(v90, v80, s);
+        func_001F9BD8_2C88A8(v90, v90, q0);
+        if ((((Pad_2C88A8 *)(D_0013A5E0_2C88A8 + 0x2460))->f1A0 & 5) && h->f20AC == 0) {
+            *(u128 *)va0 = 0;
+            va0[2] = 1.0f;
+            func_001F9EE8_2C88A8(va0, va0, m40);
+            flag = 0;
+            func_001FA790_2C88A8(h->f2080->f48, func_L00_001FF860_2C88A8(va0[0], va0[1]));
+            f22 = func_L00_001FF860_2C88A8(va0[0], va0[1]);
+            w = func_L00_001FF860_2C88A8(func_001F9CE8_2C88A8(va0), va0[2]);
+            if (0.593411922f < w) w = 0.593411922f;
+            if (w < -1.39626336f) w = -1.39626336f;
+            func_00215C00_2C88A8(va0, (((Pad_2C88A8 *)(D_0013A5E0_2C88A8 + 0x2460))->f1A0 & 5) ? 3.5f : 2.5f, f22, w);
+            qcopy(vb0, D_L00_00166D80_2C88A8 + 0x140);
+            y = func_001F9CE8_2C88A8(va0);
+            {
+                float z = va0[2];
+                if (y != 0.0f) {
+                    f20 = z / y;
+                } else {
+                    f20 = z / 0.00999999978f;
+                }
+            }
+            t = func_001F9B50_2C88A8(D_0015EE70_2C88A8 * 9.0f * ((((Pad_2C88A8 *)(D_0013A5E0_2C88A8 + 0x2460))->f1A0 & 5) ? 3.5f : 2.5f) * 0.5f);
+            f21 = (t + t) * t * (1.0f - f20) / (D_0015EE70_2C88A8 * 9.0f);
+            f23 = f20 * f21;
+            if (0.0f < f21) {
+                va0[0] = func_001F9F90_2C88A8(f22) * f21;
+                va0[1] = func_001F9FA8_2C88A8(f22) * f21;
+                va0[2] = f23;
+                func_001F9BD8_2C88A8(vc0, D_L00_00166EC0_2C88A8, va0);
+                if (func_L00_001EFFF0_2C88A8(D_L00_00166EC0_2C88A8, vc0, 2, a0, 0)
+                    && ((Hit_2C88A8 *)D_L00_00173F40_2C88A8)->moby != *(void **)(D_0013E633_2C88A8 + 0x2E9D)) {
+                    qcopy(v90, ((Hit_2C88A8 *)D_L00_00173F40_2C88A8)->point);
+                    flag = 1;
+                    f22 = func_L00_001FF860_2C88A8(v90[0] - q0[0], v90[1] - q0[1]);
+                }
+                if (flag == 0) {
+                    f20 = 5.0f;
+                    v90[0] = func_001F9F90_2C88A8(f22) * f21 * f20;
+                    v90[1] = func_001F9FA8_2C88A8(f22) * f21 * f20;
+                    v90[2] = f23 * f20;
+                    func_001F9BD8_2C88A8(v90, v90, D_L00_00166EC0_2C88A8);
+                }
+            }
+        } else {
+            *(int *)(D_0013E633_2C88A8 + 0x186D) = 0;
+        }
+    }
+    func_L00_002C8680_2C88A8(q0, v90, out, D_0015EE70_2C88A8 * 9.0f, 0.00000999999975f,
+                             (((Pad_2C88A8 *)(D_0013A5E0_2C88A8 + 0x2460))->f1A0 & 5) ? 3.5f : 2.5f);
+}
 typedef struct { f32 x; f32 y; f32 z; } Vec3_2C8DB8;
 typedef struct { f32 x; f32 y; f32 z; f32 w; } Vec4f_2C8DB8;
 struct MobyClass_2C8DB8 {

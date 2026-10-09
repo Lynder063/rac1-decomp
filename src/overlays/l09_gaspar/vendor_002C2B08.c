@@ -2393,6 +2393,139 @@ char *func_L09_003095D0(char *owner, int cls) {
     }
     return moby;
 }
-INCLUDE_ASM("asm/overlays", func_L09_00309688);
+typedef struct BarrierData_309688 {
+    int idx;
+} BarrierData_309688;
+
+typedef struct Moby_309688 {
+    char pad0[0x10];
+    float pos[4];
+    unsigned char state;
+    char pad21[0x57];
+    BarrierData_309688 *data;
+    char pad7C[0x28];
+    unsigned char fA4;
+    char padA5;
+    short oclass;
+    char padA8[8];
+    unsigned char fB0;
+    char padB1[0xB];
+    unsigned char fBC;
+    char padBD[3];
+    float fC0[4];
+} Moby_309688;
+
+typedef struct Hit_309688 {
+    char pad0[0x10];
+    float pos[4];
+} Hit_309688;
+
+typedef struct Flags_309688 {
+    char pad0[0x43];
+    unsigned char f43;
+} Flags_309688;
+
+extern int func_L00_001FEF78_309688(void *) __asm__("func_L00_001FEF78");
+extern void func_L00_00260108_309688(void *, void *, int, float, float) __asm__("func_L00_00260108");
+extern Hit_309688 *func_L00_0025B478_309688(void *, int, int) __asm__("func_L00_0025B478");
+extern int func_L09_003095D0_309688(void *, int) __asm__("func_L09_003095D0");
+extern int func_001F9850_309688(int) __asm__("func_001F9850");
+extern int func_0022ED80_309688(int, int, void *) __asm__("func_0022ED80");
+extern float func_002140F8_309688(float, float) __asm__("func_002140F8");
+extern float func_001F9F90_309688(float) __asm__("func_001F9F90");
+extern float func_001F9FA8_309688(float) __asm__("func_001F9FA8");
+extern void func_001F9EC0_309688(void *, void *, void *) __asm__("func_001F9EC0");
+extern void func_001F9BD8_309688(void *, void *, void *) __asm__("func_001F9BD8");
+extern void func_001F9BF0_309688(void *, void *, void *) __asm__("func_001F9BF0");
+extern float func_001F9CB8_309688(void *) __asm__("func_001F9CB8");
+extern float func_001F9B88_309688(float) __asm__("func_001F9B88");
+extern void func_L00_001FF4B0_309688(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern void func_L09_002F0BB8_309688(void *, void *, void *, int, float) __asm__("func_L09_002F0BB8");
+extern float func_001FA888_309688(int) __asm__("func_001FA888");
+extern void func_001F9C30_309688(void *, void *, float) __asm__("func_001F9C30");
+extern void func_L00_0025F4A8_309688(void *, void *, void *, float, float, int, int, int, float, float, float, float, int, float, int, int, int, int) __asm__("func_L00_0025F4A8");
+extern void func_0020D678_309688(void *) __asm__("func_0020D678");
+extern float D_L09_0015F6B4_309688 __asm__("D_L09_0015F6B4") MACRO_ADDR;
+extern float D_L09_0015F6B8_309688 __asm__("D_L09_0015F6B8") MACRO_ADDR;
+extern float D_0015EE6C_309688 __asm__("D_0015EE6C") MACRO_ADDR;
+extern int D_0015EE84_309688 SDATA(D_0015EE84);
+extern unsigned char D_0014171B_309688[] __asm__("D_0014171B");
+extern char D_0013D355_309688[] __asm__("D_0013D355");
+
+/* Moby update (barrier classes 1285-1287): bursts into pieces when hit and deletes itself; clears or sets
+   its slot in the level's flag block. */
+void func_L09_00309688(Moby_309688 *m)
+{
+    BarrierData_309688 *d = m->data;
+    float a20[4], a30[4], a40[4], a50[4], a60[4];
+    Hit_309688 *r;
+    int flag;
+    int n;
+    int i;
+    float ang;
+    float f;
+
+    if (m->state == 0) {
+        if (d->idx != -1) ((Flags_309688 *)(D_0013D355_309688 + 0x13B + d->idx))->f43 = 0;
+        m->state = 1;
+    }
+    if (m->fB0 != 0xFF) {
+        int row = D_0015EE84_309688 * 16;
+        if ((D_0014171B_309688 + 0xAA35)[m->fB0 + row] == 0xFF) {
+            if (d->idx != -1) ((Flags_309688 *)(D_0013D355_309688 + 0x13B + d->idx))->f43 = 1;
+            func_0020D678_309688(m);
+            return;
+        }
+    }
+    flag = 0;
+    r = func_L00_0025B478_309688(m, 0x40000, 0);
+    if (func_L00_001FEF78_309688(&m->fBC) == 0) return;
+    if (r == 0) return;
+    if (m->oclass < 0x508) flag = func_L09_003095D0_309688(m, m->oclass + 1) != 0;
+    m->fBC = func_001F9850_309688(10);
+    qcopy(a20, m->pos);
+    qcopy(a30, m->pos);
+    if (m->oclass < 0x508) {
+        func_0022ED80_309688(0, 0, m);
+    } else {
+        func_0022ED80_309688(0, 0, m);
+    }
+    m->fA4 = 0xFF;
+    n = 40;
+    if (0.85f < D_L09_0015F6B4_309688 || 0.85f < D_L09_0015F6B8_309688) n = 30;
+    ang = -3.1415927f;
+    for (i = 0; i < n; i++) {
+        *(u128 *)a50 = 0;
+        a50[0] = func_002140F8_309688(-0.4f, 0.4f);
+        a50[1] = func_002140F8_309688(-0.6f, 0.6f);
+        a50[2] = func_002140F8_309688(-0.4f, 0.4f);
+        *(u128 *)a40 = *(u128 *)a50;
+        f = func_002140F8_309688(0.3f, 2.6f);
+        a40[0] = a40[0] + f * func_001F9F90_309688(ang);
+        f = f * func_001F9FA8_309688(ang);
+        a40[2] = a40[2] + f;
+        func_001F9EC0_309688(a40, a40, m->fC0);
+        func_001F9BD8_309688(a40, a40, a30);
+        func_001F9BF0_309688(a50, a40, a20);
+        f = func_001F9B88_309688(6.0f - func_001F9CB8_309688(a50)) / 6.0f;
+        func_L00_001FF4B0_309688(a60, r->pos, f * f * 8.0f);
+        func_001F9BD8_309688(a50, a50, a60);
+        func_L00_001FF4B0_309688(a50, a50, f * (func_002140F8_309688(5.0f, 8.0f) * D_0015EE6C_309688));
+        if (m->oclass == 0x508) {
+            int odd = i & 1;
+            func_L09_002F0BB8_309688(m, a40, a50, odd, func_002140F8_309688(1.0f, 1.3f));
+        }
+        if (i % 3 == 0) {
+            func_L00_00260108_309688(m, a40, -1, func_002140F8_309688(0.3f, 0.6f), 0.0f);
+        }
+        ang = ang + 6.2831855f / func_001FA888_309688(n);
+    }
+    func_001F9C30_309688(a40, r->pos, 0.5f);
+    func_L00_0025F4A8_309688(m, r->pos, a20, 0.0f, 0.0f, 10, 3, 16, 3.0f, 2.0f, 1.0f, 1.0f, -1, 15.0f, 1, 1, -1, 0);
+    if (m->oclass == 0x508) {
+        if (d->idx != -1) ((Flags_309688 *)(D_0013D355_309688 + 0x13B + d->idx))->f43 = 1;
+    }
+    if (m->oclass == 0x508 || flag) func_0020D678_309688(m);
+}
 INCLUDE_ASM("asm/overlays", func_L09_0030A560);
 INCLUDE_ASM("asm/overlays", func_L09_0030AFB8);

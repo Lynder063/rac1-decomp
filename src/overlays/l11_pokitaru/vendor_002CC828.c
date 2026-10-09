@@ -2024,5 +2024,208 @@ void func_L11_003114F0(unsigned char *moby)
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L11_00311648);
+typedef struct Moby_311648 Moby_311648;
+
+typedef struct PsyData_311648 {
+    char pad0[0x20];
+    float f20;
+    short f24;
+    char pad26[2];
+    unsigned char f28;
+    char pad29;
+    unsigned char f2A;
+    char pad2B[0x2D];
+    unsigned char f58;
+    char pad59;
+    unsigned char f5A;
+    char pad5B[0x15];
+    char f70[0xA0];
+    Moby_311648 *target;
+    int f114;
+    char pad118[0x18];
+    int f130;
+    int f134;
+    char pad138[4];
+    int f13C;
+    char pad140[0xC];
+    float f14C[5];
+    void *f160;
+    char pad164[0x7C];
+    char f1E0[4];
+} PsyData_311648;
+
+struct Moby_311648 {
+    char pad0[0x10];
+    float pos[4];
+    unsigned char state;
+    char pad21[0xF];
+    char pad30;
+    unsigned char f31;
+    char pad32[0x16];
+    float f48;
+    char pad4C[7];
+    unsigned char f53;
+    char pad54[0x1C];
+    unsigned char f70;
+    char pad71[7];
+    PsyData_311648 *data;
+    char pad7C[3];
+    unsigned char f7F;
+    char pad80[0x40];
+    float fC0[4];
+};
+
+typedef struct Path_311648 {
+    int count;
+    char pad4[0xC];
+    float pts[4];
+} Path_311648;
+
+extern void func_L11_00311B60_311648(Moby_311648 *moby) __asm__("func_L11_00311B60");
+extern void func_L00_00264B40_311648(float, void *, int, void *) __asm__("func_L00_00264B40");
+extern float func_001F9D10_311648(void *, void *) __asm__("func_001F9D10");
+extern float D_L11_00167840_311648[] __asm__("D_L11_00167840");
+extern void func_L00_0025B178_311648(void *) __asm__("func_L00_0025B178");
+extern int func_001FA898_311648(float) __asm__("func_001FA898");
+extern int func_001F9850_311648(int) __asm__("func_001F9850");
+extern void func_00213DE0_311648(void *, int, int, int) __asm__("func_00213DE0");
+extern float func_L00_001FF860_311648(float, float) __asm__("func_L00_001FF860");
+extern float func_L00_0025CE58_311648(float *p, float a, float *v, float b, float c, float d) __asm__("func_L00_0025CE58");
+extern int func_00215B18_311648(void *, float) __asm__("func_00215B18");
+extern void func_L00_001FF4B0_311648(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern void func_001F9BD8_311648(void *, void *, void *) __asm__("func_001F9BD8");
+extern void *func_L11_0031A180_311648(void *src, void *pos, int ticks) __asm__("func_L11_0031A180");
+extern void func_L11_0031A308_311648(void *arg, void *src) __asm__("func_L11_0031A308");
+extern int func_L00_0025D6F0_311648(void *, void *) __asm__("func_L00_0025D6F0");
+extern int func_L00_0025A778_311648(void *, void *, int) __asm__("func_L00_0025A778");
+extern void func_L00_002584A8_311648(void *, int, int) __asm__("func_L00_002584A8");
+extern void func_L00_00260460_311648(void *, void *, int, float, float) __asm__("func_L00_00260460");
+extern void func_0020D678_311648(void *) __asm__("func_0020D678");
+extern Path_311648 *D_L11_001B11B0_311648[] __asm__("D_L11_001B11B0");
+extern Moby_311648 *D_001414D0_311648 __asm__("D_001414D0");
+extern float D_0015EE70_311648 __asm__("D_0015EE70") MACRO_ADDR;
+extern float D_0015EE6C_311648 __asm__("D_0015EE6C") MACRO_ADDR;
+extern float D_L11_00162058_311648 SDATA(D_L11_00162058);
+extern float D_L11_0016205C_311648 SDATA(D_L11_0016205C);
+
+/* Pokitaru psytcopus (class 1231) update: a state machine on moby->state. */
+void func_L11_00311648(Moby_311648 *moby)
+{
+    PsyData_311648 *data = moby->data;
+    Moby_311648 *target;
+    float v[4];
+    int r;
+
+    func_L11_00311B60_311648(moby);
+    target = data->target;
+    func_L00_00264B40_311648(2.5f, moby, 0, data->f1E0);
+    if (moby->f31 != 0 && func_001F9D10_311648(moby->pos, D_L11_00167840_311648) < 28.0f) {
+        func_L00_0025B178_311648(moby);
+        moby->f7F = 0x16;
+    }
+    switch (moby->state) {
+    case 0:
+        data->f24 = 3;
+        data->f20 = 3.0f;
+        data->f28 = 2;
+        data->f2A = 6;
+        data->f58 = func_001FA898_311648(8.0f);
+        data->f5A = func_001FA898_311648(8.0f);
+        moby->state = 3;
+        if (moby->f53 != 0) {
+            func_00213DE0_311648(moby, 0, 0, func_001F9850_311648(10));
+        }
+        if (data->f130 != 0) {
+            moby->state = 1;
+            qcopy(moby->pos, D_L11_001B11B0_311648[data->f134]->pts);
+            break;
+        }
+        moby->state = 3;
+        if (moby->f53 != 0) {
+            func_00213DE0_311648(moby, 0, 0, func_001F9850_311648(10));
+        }
+        break;
+    case 1:
+    case 2:
+        break;
+    case 3:
+        func_L00_0025CE58_311648(&moby->f48,
+            func_L00_001FF860_311648(D_001414D0_311648->pos[0] - moby->pos[0], D_001414D0_311648->pos[1] - moby->pos[1]),
+            data->f14C, D_0015EE70_311648 * 6.2831855f, D_0015EE70_311648 * 6.2831855f, D_0015EE6C_311648 * 6.2831855f);
+        if (data->f114 == 2) break;
+        moby->state = 4;
+        if (moby->f53 != 2) {
+            func_00213DE0_311648(moby, 2, 0, func_001F9850_311648(10));
+        }
+        break;
+    case 4:
+        func_L00_0025CE58_311648(&moby->f48,
+            func_L00_001FF860_311648(target->pos[0] - moby->pos[0], target->pos[1] - moby->pos[1]),
+            data->f14C, D_0015EE70_311648 * 6.2831855f, D_0015EE70_311648 * 6.2831855f, D_0015EE6C_311648 * 6.2831855f);
+        if (func_00215B18_311648(moby, 15.0f)) {
+            func_L00_001FF4B0_311648(v, moby->fC0, D_L11_00162058_311648);
+            func_001F9BD8_311648(v, v, moby->pos);
+            v[2] = v[2] + D_L11_0016205C_311648;
+            data->f160 = func_L11_0031A180_311648(moby, v, 5);
+            break;
+        }
+        if (moby->f70 & 2) {
+            moby->state = 5;
+            if (moby->f53 != 3) {
+                func_00213DE0_311648(moby, 3, 0, func_001F9850_311648(10));
+            }
+        }
+        break;
+    case 5:
+        func_L00_0025CE58_311648(&moby->f48,
+            func_L00_001FF860_311648(target->pos[0] - moby->pos[0], target->pos[1] - moby->pos[1]),
+            data->f14C, D_0015EE70_311648 * 6.2831855f, D_0015EE70_311648 * 6.2831855f, D_0015EE6C_311648 * 6.2831855f);
+        if (data->f160 != 0 && func_00215B18_311648(moby, 33.0f)) {
+            func_L00_001FF4B0_311648(v, moby->fC0, D_0015EE6C_311648 * 30.0f);
+            func_L11_0031A308_311648(data->f160, v);
+            data->f160 = 0;
+        }
+        if (moby->f70 & 2) {
+            moby->state = 6;
+            if (moby->f53 != 4) {
+                func_00213DE0_311648(moby, 4, 0, func_001F9850_311648(10));
+            }
+        }
+        break;
+    case 6:
+        if (moby->f70 & 2) {
+            moby->state = 3;
+            if (moby->f53 != 0) {
+                func_00213DE0_311648(moby, 0, 0, func_001F9850_311648(10));
+            }
+        }
+        break;
+    case 7:
+        r = func_L00_0025D6F0_311648(moby, data->f70);
+        if (r & 0x41) {
+            Path_311648 *p = D_L11_001B11B0_311648[data->f13C];
+            if (func_L00_0025A778_311648(moby->pos, p->pts, p->count)) {
+                moby->state = 3;
+                if (moby->f53 != 0) {
+                    func_00213DE0_311648(moby, 0, 0, func_001F9850_311648(10));
+                }
+                break;
+            }
+            r = 0x100;
+        }
+        if (r & 0x120) {
+            func_L00_002584A8_311648(moby, 0, -1);
+            func_L00_00260460_311648(moby, moby->pos, -1, 0.5f, 10.0f);
+            func_0020D678_311648(moby);
+        }
+        break;
+    case 8:
+        if (func_L00_0025D6F0_311648(moby, data->f70) & 0x160) {
+            func_L00_00260460_311648(moby, moby->pos, -1, 1.0f, 10.0f);
+            func_L00_002584A8_311648(moby, 0, -1);
+            func_0020D678_311648(moby);
+        }
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L11_00311B60);

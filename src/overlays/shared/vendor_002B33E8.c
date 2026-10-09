@@ -159,7 +159,154 @@ void func_L00_002B4748(char *m) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002B4918);
+typedef int Q_2B4918 __attribute__((mode(TI)));
+typedef struct { float x, y, z, w; } __attribute__((aligned(16))) V4_2B4918;
+typedef struct { float pos[4][4]; unsigned int col[4]; float uv[4][2]; unsigned long tag[4]; } Quad_2B4918;
+typedef struct { int a, b; } Ids_2B4918;
+typedef struct { float x, y, z; } P3_2B4918;
+typedef struct { float u, v; } UV_2B4918;
+typedef struct Child_2B4918 { char pad0[0xA6]; short cls; } Child_2B4918;
+typedef struct Data_2B4918 { int f0; int f4; Child_2B4918 *child; char padC[0x14]; float f20; char pad24[8]; float f2C; } Data_2B4918;
+typedef struct Moby_2B4918 { char pad0[0x10]; V4_2B4918 pos; char pad20[0x58]; Data_2B4918 *data; char pad7C[0x44]; V4_2B4918 mat[3]; } Moby_2B4918;
+
+extern Ids_2B4918 D_L00_00161558_2B4918 __asm__("D_L00_00161558");
+extern Ids_2B4918 D_L00_00161560_2B4918 __asm__("D_L00_00161560");
+extern float D_L00_001DACE0_2B4918[][4] __asm__("D_L00_001DACE0");
+extern float D_L00_001DAD60_2B4918[][2] __asm__("D_L00_001DAD60");
+extern float D_L00_001DAD20_2B4918[][4] __asm__("D_L00_001DAD20");
+extern float D_L00_00166EC0_2B4918[] __asm__("D_L00_00166EC0");
+extern UV_2B4918 D_L00_001DA3B0_2B4918[] __asm__("D_L00_001DA3B0");
+extern float D_L00_001D9770_2B4918[][4] __asm__("D_L00_001D9770");
+extern P3_2B4918 D_L00_001DAD80_2B4918[] __asm__("D_L00_001DAD80");
+extern int D_L00_001DA9D0_2B4918[] __asm__("D_L00_001DA9D0");
+extern char D_0013E633_2B4918[] __asm__("D_0013E633");
+extern void func_0020DB98_2B4918(void *, int, void *, void *) __asm__("func_0020DB98");
+extern void func_001F9BF0_2B4918(void *, void *, void *) __asm__("func_001F9BF0");
+extern void func_L00_001FF4B0_2B4918(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern void func_001F9CA0_2B4918(void *, void *, void *) __asm__("func_001F9CA0");
+extern void func_001FA190_2B4918(void *) __asm__("func_001FA190");
+extern void func_001FA540_2B4918(void *, void *, void *) __asm__("func_001FA540");
+extern long func_001F4868_2B4918(int) __asm__("func_001F4868");
+extern void func_001F9C30_2B4918(void *, void *, float) __asm__("func_001F9C30");
+extern float func_002140F8_2B4918(float, float) __asm__("func_002140F8");
+extern void func_L00_001FD1D8_2B4918(void *, void *, int) __asm__("func_L00_001FD1D8");
+extern void func_001F9BD8_2B4918(void *, void *, void *) __asm__("func_001F9BD8");
+extern void func_001F9EE8_2B4918(void *, void *, void *) __asm__("func_001F9EE8");
+extern void func_00234C98_2B4918(int, long) __asm__("func_00234C98");
+extern void func_001F7868_2B4918(void) __asm__("func_001F7868");
+extern void func_L00_001FDE48_2B4918(int, void *, void *, void *, int) __asm__("func_L00_001FDE48");
+
+/* Draws the moby's beam: orients the moby along its child's two joints, draws three quads and a ribbon of 196 points. */
+void func_L00_002B4918(Moby_2B4918 *m) {
+    Quad_2B4918 pk;
+    V4_2B4918 mtx[4];
+    V4_2B4918 out[2];
+    Ids_2B4918 ids;
+    V4_2B4918 up;
+    V4_2B4918 res[4];
+    V4_2B4918 idm[4];
+    V4_2B4918 a;
+    V4_2B4918 b;
+    V4_2B4918 c;
+    V4_2B4918 d;
+    V4_2B4918 e;
+    Data_2B4918 *data = m->data;
+    Child_2B4918 *child = data->child;
+    int i;
+
+    if (child == 0 || child->cls != 0x260) {
+        return;
+    }
+    pk.tag[2] = 0xFF9000000260;
+    pk.tag[3] = 0x8000000048;
+    pk.tag[0] = 0;
+    if (data->f4 != 0) {
+        ids = D_L00_00161558_2B4918;
+        func_0020DB98_2B4918(child, 2, &ids, out);
+    } else {
+        ids = D_L00_00161560_2B4918;
+        func_0020DB98_2B4918(child, 2, &ids, out);
+    }
+    *(Q_2B4918 *)&up = 0;
+    up.y = 1.0f;
+    func_001F9BF0_2B4918(&mtx[2], &out[0], &out[1]);
+    func_L00_001FF4B0_2B4918(&mtx[2], &mtx[2], 1.0f);
+    mtx[2].w = 0.0f;
+    func_001F9CA0_2B4918(&mtx[0], &up, &mtx[2]);
+    func_L00_001FF4B0_2B4918(&mtx[0], &mtx[0], 1.0f);
+    mtx[0].w = 0.0f;
+    func_001F9CA0_2B4918(&mtx[1], &mtx[2], &mtx[0]);
+    mtx[1].w = 0.0f;
+    qcopy(&mtx[3], &out[1]);
+    mtx[3].w = 1.0f;
+    qcopy(&m->mat[0], &mtx[0]);
+    qcopy(&m->mat[1], &mtx[1]);
+    qcopy(&m->mat[2], &mtx[2]);
+    qcopy(&m->pos, &mtx[3]);
+    func_001FA190_2B4918(idm);
+    idm[3].w = 1.0f;
+    idm[3].z = -0.075f;
+    idm[3].x = 0.0f;
+    idm[3].y = 0.0f;
+    func_001FA540_2B4918(res, mtx, idm);
+    pk.tag[1] = func_001F4868_2B4918(0xC);
+    for (i = 0; i < 4; i++) {
+        pk.col[i] = 0x80808080;
+        if (i == 0 || i == 2) {
+            func_001F9C30_2B4918(pk.pos[i], D_L00_001DACE0_2B4918[i], data->f2C);
+        } else {
+            float *v = pk.pos[i];
+            func_001F9C30_2B4918(v, D_L00_001DACE0_2B4918[i], data->f2C);
+            v[2] -= func_002140F8_2B4918(0.0f, 0.1f);
+        }
+        pk.uv[i][0] = D_L00_001DAD60_2B4918[i][0];
+        pk.uv[i][1] = D_L00_001DAD60_2B4918[i][1];
+    }
+    func_L00_001FD1D8_2B4918(&pk, res, 0);
+    for (i = 0; i < 4; i++) {
+        if (i == 0 || i == 2) {
+            func_001F9C30_2B4918(pk.pos[i], D_L00_001DAD20_2B4918[i], data->f2C);
+        } else {
+            float *v = pk.pos[i];
+            func_001F9C30_2B4918(v, D_L00_001DAD20_2B4918[i], data->f2C);
+            v[2] -= func_002140F8_2B4918(0.0f, 0.1f);
+        }
+    }
+    func_L00_001FD1D8_2B4918(&pk, res, 0);
+    pk.tag[1] = func_001F4868_2B4918(0xB);
+    func_001F9C30_2B4918(&d, &mtx[2], -0.13f);
+    func_001F9BD8_2B4918(&d, &d, &mtx[3]);
+    func_001F9BF0_2B4918(&a, D_L00_00166EC0_2B4918, &d);
+    func_L00_001FF4B0_2B4918(&a, &a, 1.0f);
+    func_001F9CA0_2B4918(&b, &a, D_0013E633_2B4918 + 0x10AD);
+    func_L00_001FF4B0_2B4918(&b, &b, -1.0f);
+    func_001F9CA0_2B4918(&c, &b, &a);
+    pk.col[0] = pk.col[1] = pk.col[2] = pk.col[3] = 0x7F2020FF;
+    for (i = 0; i < 4; i++) {
+        func_001F9C30_2B4918(pk.pos[i], D_L00_001DACE0_2B4918[i], 0.1f);
+        func_001F9EE8_2B4918(pk.pos[i], pk.pos[i], &a);
+    }
+    func_L00_001FD1D8_2B4918(&pk, 0, 0);
+    func_00234C98_2B4918(6, func_001F4868_2B4918(0xA));
+    func_00234C98_2B4918(0x42, pk.tag[3]);
+    func_00234C98_2B4918(8, 0);
+    func_00234C98_2B4918(0x14, 0xFF9000000260);
+    func_00234C98_2B4918(0x4A, 0);
+    func_001F7868_2B4918();
+    for (i = 0; i < 0xC4; i++) {
+        func_001F9C30_2B4918(&e, D_L00_001D9770_2B4918[i], data->f20);
+        func_001F9EE8_2B4918(&e, &e, mtx);
+        D_L00_001DAD80_2B4918[i].x = e.x;
+        D_L00_001DAD80_2B4918[i].y = e.y;
+        D_L00_001DAD80_2B4918[i].z = e.z;
+        D_L00_001DA3B0_2B4918[i].v -= 0.025f;
+        if (D_L00_001DA3B0_2B4918[i].v < -7.0f) {
+            D_L00_001DA3B0_2B4918[i].v += 7.0f;
+        }
+    }
+    func_L00_001FDE48_2B4918(0x94, D_L00_001DAD80_2B4918, D_L00_001DA9D0_2B4918, D_L00_001DA3B0_2B4918, 1);
+    func_L00_001FDE48_2B4918(0x32, &D_L00_001DAD80_2B4918[0x92], &D_L00_001DA9D0_2B4918[0x92], &D_L00_001DA3B0_2B4918[0x92], 1);
+}
 typedef struct { f32 f[4]; } __attribute__((aligned(16))) V4;
 typedef struct N { s32 f00; u8 p04[8]; s32 f0C; V4 v10; } N;
 typedef struct X { u8 p00[0x10]; V4 v10; u8 p20[0x58]; N *f78; u8 p7C[0x44]; V4 vC0; } X;
