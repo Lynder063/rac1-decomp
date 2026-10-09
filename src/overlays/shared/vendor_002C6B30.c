@@ -1317,7 +1317,197 @@ int func_L09_0030BEE8(int unused, char *m) {
     }
     return last;
 }
-INCLUDE_ASM("asm/overlays", func_L09_0030BF88);
+extern void func_L09_0030BD98_30BF88(char *moby, char *d) __asm__("func_L09_0030BD98");
+extern void func_0020D678_30BF88(void *) __asm__("func_0020D678");
+extern int func_L00_0025A208_30BF88(int *, int, int, int) __asm__("func_L00_0025A208");
+extern int func_001F9938_30BF88(void *) __asm__("func_001F9938");
+extern int func_002140B0_30BF88(int) __asm__("func_002140B0");
+extern int func_L00_00260FB0_30BF88(void *, void *, float, void *, int, void *, int) __asm__("func_L00_00260FB0");
+extern int func_L09_0030BEE8_30BF88(int, char *) __asm__("func_L09_0030BEE8");
+extern float func_001F9D10_30BF88(void *, void *) __asm__("func_001F9D10");
+extern void func_001F9BF0_30BF88(void *, void *, void *) __asm__("func_001F9BF0");
+extern void func_001F9C30_30BF88(void *, void *, float) __asm__("func_001F9C30");
+extern void func_L00_001FF548_30BF88(void *, void *, float) __asm__("func_L00_001FF548");
+extern float func_001F9CB8_30BF88(void *) __asm__("func_001F9CB8");
+extern void func_L00_001FF4B0_30BF88(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern int func_L00_00258BC8_30BF88(int, int) __asm__("func_L00_00258BC8");
+extern void func_L09_00278690_30BF88(float *, float) __asm__("func_L09_00278690");
+extern void func_001F9BD8_30BF88(void *, void *, void *) __asm__("func_001F9BD8");
+extern float func_002140F8_30BF88(float, float) __asm__("func_002140F8");
+extern float func_00214358_30BF88(void *, int, float) __asm__("func_00214358");
+extern void func_L00_00250800_30BF88(void *, int, void *) __asm__("func_L00_00250800");
+extern void func_L00_00260958_30BF88(float *, float) __asm__("func_L00_00260958");
+extern float func_L00_0025BC48_30BF88(void *, void *, void *, float, float) __asm__("func_L00_0025BC48");
+extern char *func_L09_0030C658_30BF88(int, void *, void *, unsigned char, unsigned char) __asm__("func_L09_0030C658");
+extern int func_001F9850_30BF88(int) __asm__("func_001F9850");
+extern void func_L00_0025F4A8_30BF88(void *, void *, void *, float, float, int, int, int, float, float, float, float, int, float, int, int, int, int) __asm__("func_L00_0025F4A8");
+extern void *func_L00_00265050_30BF88(char *, int, float *, void *, int, int, float, float *, float *, float *) __asm__("func_L00_00265050");
+extern char D_0013E633_30BF88[] __asm__("D_0013E633");
+extern char *D_L09_001B0930_30BF88[] __asm__("D_L09_001B0930");
+extern float D_0015EE6C_30BF88 __asm__("D_0015EE6C") MACRO_ADDR;
+extern float D_0015EE70_30BF88 __asm__("D_0015EE70") MACRO_ADDR;
+extern float D_L09_0015F6B8_30BF88 SDATA(D_L09_0015F6B8);
+extern float D_L09_0015F6B4_30BF88 SDATA(D_L09_0015F6B4);
+extern char * D_L09_0016016C_30BF88 SDATA(D_L09_0016016C);
+extern float D_L09_0015F660_30BF88[] __asm__("D_L09_0015F660") MACRO_ADDR;
+
+/* spawner update (moby class 1885): picks a slot target, spawns a 0x75E moby, and steers the slot */
+typedef struct {
+    char pad0[0xB0];
+    char *slots[4];
+} Sp_30BF88;
+
+/* Spawner update (moby class 1885): state 0 clears the slot list, state 1 picks a target slot and spawns a
+ * moby towards it, state 2 is the explosion. The slot index `last` is declared in a block opened at its call,
+ * and d[0x91] is read at each use: both only decide the order GCSE creates its hoisted registers in (its table
+ * has 201 buckets here and hashes by register number), which is the order of the four spill slots 0x64..0x70. */
+void func_L09_0030BF88(char *moby)
+{
+    char *d = *(char **)(moby + 0x78);
+    float v[4];
+    float rot[4];
+    float pos2[4];
+    float arr[4];
+
+    func_L09_0030BD98_30BF88(moby, d);
+    switch ((unsigned char)moby[0x20]) {
+    case 0: {
+        int h = 0;
+        while (func_L00_0025A208_30BF88(&h, *(int *)(d + 0x94), 0, 0) == 0) {
+            func_0020D678_30BF88((void *)h);
+        }
+        moby[0x20] = 1;
+        return;
+    }
+    case 1: {
+        func_L09_0030BD98_30BF88(moby, d);
+        if (!func_001F9938_30BF88(d + 0x8E))
+            return;
+        if (func_002140B0_30BF88(7) == 0) {
+            char *a6 = 0;
+            int a7 = 0;
+            char *a8 = 0;
+            int a9 = 0;
+            if (*(int *)(d + 0x84) != -1) {
+                a6 = d + 0x84;
+                a7 = 1;
+            }
+            if (*(int *)(d + 0x88) != -1) {
+                char *q = D_L09_001B0930_30BF88[*(int *)(d + 0x88)];
+                a9 = *(int *)q;
+                a8 = q + 0x10;
+            }
+            func_L00_00260FB0_30BF88(moby, d + 0x100, *(float *)(d + 0x80), a6, a7, a8, a9);
+        } else {
+            char *p = *(char **)(d + 0x140);
+            if (p != 0 && (unsigned char)p[0x20] != 0xFE && (unsigned char)p[0x20] != 0xFD) {
+                qcopy(d + 0x100, p + 0x10);
+            } else {
+                *(int *)(d + 0x140) = 0;
+                *(int *)(d + 0x144) = 2;
+            }
+        }
+        if (*(int *)(d + 0x144) == 2)
+            return;
+        {
+        int last = func_L09_0030BEE8_30BF88((int)moby, d);
+        char *sel;
+        if ((unsigned char)d[0x91] >= (unsigned char)d[0x90])
+            return;
+        if (last == -1)
+            return;
+        if ((unsigned char)d[0x91] != 0) {
+            if (!(D_L09_0015F6B8_30BF88 < 0.85f))
+                return;
+            if (!(D_L09_0015F6B4_30BF88 < 0.85f))
+                return;
+        }
+        sel = 0;
+        if (*(unsigned char *)(d + 0x92) != 0) {
+            int i;
+            float best = 100000.0f;
+            for (i = 0; i < 4; i++) {
+                int idx = *(int *)(d + 0xA0 + i * 4);
+                if (idx != -1) {
+                    char *q = D_L09_0016016C_30BF88 + (idx << 7);
+                    float f = func_001F9D10_30BF88(D_0013E633_30BF88 + 0xE9D, q + 0x30);
+                    if (f < best) {
+                        sel = q;
+                        best = f;
+                    }
+                }
+            }
+            if (sel == 0) {
+                func_001F9BF0_30BF88(v, d + 0x100, moby + 0x10);
+                func_001F9C30_30BF88(v, v, 0.5f);
+                if (3.0f < *(float *)(d + 0x80))
+                    func_L00_001FF548_30BF88(v, v, 3.0f);
+                if (func_001F9CB8_30BF88(v) < 3.0f)
+                    func_L00_001FF4B0_30BF88(v, v, 3.0f);
+                func_001F9BD8_30BF88(v, v, moby + 0x10);
+            } else {
+                qcopy(v, sel + 0x30);
+            }
+        } else {
+            int nn = func_L00_00258BC8_30BF88(0, 3);
+            int i;
+            for (i = 0; i < 4; i++) {
+                int k = (i + nn) % 4;
+                int idx = *(int *)(d + (k << 2) + 0xA0);
+                if (idx != -1) {
+                    sel = D_L09_0016016C_30BF88 + (idx << 7);
+                    break;
+                }
+            }
+            if (sel == 0) {
+                float s = *(float *)(d + 0x80);
+                if (s < 3.0f)
+                    s = 3.0f;
+                func_L09_00278690_30BF88(v, s);
+                func_001F9BD8_30BF88(v, v, moby + 0x10);
+            } else {
+                qcopy(v, sel + 0x30);
+            }
+        }
+        if (sel != 0) {
+            func_001F9C30_30BF88(rot, sel, func_002140F8_30BF88(-1.0f, 1.0f));
+            func_001F9BD8_30BF88(v, v, rot);
+            func_001F9C30_30BF88(rot, sel + 0x10, func_002140F8_30BF88(-1.0f, 1.0f));
+            func_001F9BD8_30BF88(v, v, rot);
+        }
+        {
+            float r = func_00214358_30BF88(v, 0, 0.5f);
+            if (r != 0.0f)
+                v[2] = r;
+        }
+        func_001F9BF0_30BF88(rot, v, moby + 0x10);
+        {
+            float len = func_001F9CB8_30BF88(rot);
+            float f20 = len * (D_0015EE6C_30BF88 * 0.6f);
+            func_L00_001FF4B0_30BF88(rot, rot, f20);
+            func_L00_00250800_30BF88(moby, 0, pos2);
+            func_L00_001FF4B0_30BF88(arr, rot, 0.05f);
+            func_L00_00260958_30BF88(arr, 0.025f);
+            func_001F9BD8_30BF88(pos2, pos2, arr);
+            rot[2] = func_L00_0025BC48_30BF88(pos2, v, 0, f20, -(D_0015EE70_30BF88 * 9.8f));
+        }
+        ((Sp_30BF88 *)d)->slots[last] = func_L09_0030C658_30BF88((int)moby, pos2, rot, (unsigned char)d[0x93], (unsigned char)last);
+        *(short *)(d + 0x8E) = func_001F9850_30BF88(*(short *)(d + 0x8C));
+        d[0x91] = (char)(d[0x91] + 1);
+        }
+        return;
+    }
+    case 2:
+        func_L00_0025F4A8_30BF88(moby, d + 0x70, 0, 0.0f, 0.0f, 30, 8, 20, 8.0f, 4.0f, 18.0f, 1.0f, 1, 15.0f, 1, 1, -1, 0);
+        func_L00_00265050_30BF88(moby, 0x6C5, moby + 0x10, moby + 0x40, 0, 0, 0.0f, D_L09_0015F660_30BF88, D_L09_0015F660_30BF88, D_L09_0015F660_30BF88);
+        func_L00_00265050_30BF88(moby, 0x6C6, moby + 0x10, moby + 0x40, 0, 0, 0.0f, D_L09_0015F660_30BF88, D_L09_0015F660_30BF88, D_L09_0015F660_30BF88);
+        func_L00_00265050_30BF88(moby, 0x6C7, moby + 0x10, moby + 0x40, 0, 0, 0.0f, D_L09_0015F660_30BF88, D_L09_0015F660_30BF88, D_L09_0015F660_30BF88);
+        func_0020D678_30BF88(moby);
+        return;
+    default:
+        return;
+    }
+}
 extern void *func_0020D348(int);
 extern float func_002140F8(float, float);
 extern int func_001F9850(int);
