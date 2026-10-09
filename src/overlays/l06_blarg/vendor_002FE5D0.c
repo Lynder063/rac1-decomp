@@ -1291,7 +1291,213 @@ void func_L06_00305468(char *moby)
 void func_L06_003054C8(char *arg) {
     arg[0x20] = 5;
 }
-INCLUDE_ASM("asm/overlays", func_L06_003054D8);
+typedef int u128_3054D8 __attribute__((mode(TI)));
+typedef struct { float x, y, z, w; } __attribute__((aligned(16))) V_3054D8;
+typedef struct {
+    /* 0x00 */ char pad0[0x10];
+    /* 0x10 */ V_3054D8 pos;
+    /* 0x20 */ unsigned char state;
+    /* 0x21 */ char pad21[0xF];
+    /* 0x30 */ unsigned char f30;
+    /* 0x31 */ char pad31[0xF];
+    /* 0x40 */ float rot_x;
+    /* 0x44 */ char pad44[0x34];
+    /* 0x78 */ struct Data_3054D8 *data;
+    /* 0x7C */ char pad7C[0x84];
+} Moby_3054D8;
+typedef struct Data_3054D8 {
+    /* 0x00 */ int cut;
+    /* 0x04 */ int cut2;
+    /* 0x08 */ int list[9];
+    /* 0x2C */ float t;
+    /* 0x30 */ float vel;
+    /* 0x34 */ int moby3;
+    /* 0x38 */ int moby1;
+    /* 0x3C */ int moby2;
+    /* 0x40 */ int timer;
+    /* 0x44 */ int timer2;
+    /* 0x48 */ int f48;
+} Data_3054D8;
+typedef struct {
+    /* 0x00 */ char pad0[0x30];
+    /* 0x30 */ V_3054D8 a;
+    /* 0x40 */ char pad40[0x30];
+    /* 0x70 */ V_3054D8 b;
+} Cut_3054D8;
+typedef struct { char pad0[0x160]; float f160; int pad164; int f168; } Fx_3054D8;
+extern Moby_3054D8 *D_L06_00160058_3054D8 __asm__("D_L06_00160058") MACRO_ADDR;
+extern Cut_3054D8 *D_L06_0016016C_3054D8 __asm__("D_L06_0016016C") MACRO_ADDR;
+extern char D_0013A5E0_3054D8[] __asm__("D_0013A5E0");
+extern unsigned char D_0013D4AF_3054D8[] __asm__("D_0013D4AF");
+extern char D_0013E633_3054D8[] __asm__("D_0013E633");
+extern float D_0015EE70_3054D8 __asm__("D_0015EE70") MACRO_ADDR;
+extern float D_0015EE6C_3054D8 __asm__("D_0015EE6C") MACRO_ADDR;
+extern int D_L06_0015F504_3054D8 __asm__("D_L06_0015F504") MACRO_ADDR;
+extern float D_L06_0015F4FC_3054D8 __asm__("D_L06_0015F4FC") MACRO_ADDR;
+extern char D_L06_00167500_3054D8[] __asm__("D_L06_00167500");
+extern float D_L06_00162228_3054D8 SDATA(D_L06_00162228);
+extern float D_L06_0016222C_3054D8 SDATA(D_L06_0016222C);
+extern float D_L06_00162230_3054D8 SDATA(D_L06_00162230);
+extern float D_L06_00162234_3054D8 SDATA(D_L06_00162234);
+extern float D_L06_00162238_3054D8 SDATA(D_L06_00162238);
+extern float D_L06_00162240_3054D8 SDATA(D_L06_00162240);
+extern float func_001FA790_3054D8(float, float) __asm__("func_001FA790");
+extern float func_001FA748_3054D8(float, float) __asm__("func_001FA748");
+extern void func_00214D88_3054D8(float *, float *, float, float, float, float) __asm__("func_00214D88");
+extern void func_0022ED80_3054D8(int, int, void *) __asm__("func_0022ED80");
+extern float func_001F9D48_3054D8(void *, void *) __asm__("func_001F9D48");
+extern int func_00215F80_3054D8(int, int) __asm__("func_00215F80");
+extern int func_L00_00265558_3054D8(int) __asm__("func_L00_00265558");
+extern void func_001F4E08_3054D8(int) __asm__("func_001F4E08");
+extern void func_L00_002EBF50_3054D8(void *, void *, int, int, int) __asm__("func_L00_002EBF50");
+extern void func_L02_002F9ED8_3054D8(float, float, float, float, float, float) __asm__("func_L02_002F9ED8");
+extern void func_L00_002EBE88_3054D8(void *) __asm__("func_L00_002EBE88");
+extern void func_L00_002EBEE0_3054D8(void *) __asm__("func_L00_002EBEE0");
+extern void func_L00_00217718_3054D8(void *, void *, int, int) __asm__("func_L00_00217718");
+extern void func_L00_002EC0C8_3054D8(int) __asm__("func_L00_002EC0C8");
+extern void func_L06_00304590_3054D8(void *) __asm__("func_L06_00304590");
+extern void func_L06_00305C58_3054D8(void *, void *) __asm__("func_L06_00305C58");
+extern int func_0022EEB8_3054D8(int, int, void *) __asm__("func_0022EEB8");
+extern void func_001F9BC0_3054D8(void *) __asm__("func_001F9BC0");
+extern int func_001F9908_3054D8(void *) __asm__("func_001F9908");
+extern int func_001F9850_3054D8(int) __asm__("func_001F9850");
+extern float func_001FA888_3054D8(int) __asm__("func_001FA888");
+extern void func_L00_00251E30_3054D8(void *) __asm__("func_L00_00251E30");
+
+/* Red button (moby class 1118) update on level 06: turns its two levers, waits for the hero to press it, then
+ * runs the cutscene camera along the cutscene records and fires the listed events as the camera passes them. */
+void func_L06_003054D8(Moby_3054D8 *m) {
+    Data_3054D8 *d = m->data;
+    V_3054D8 v0;
+    V_3054D8 v10;
+    V_3054D8 v20;
+    float f20;
+    float f21;
+    int i;
+    int nz;
+    int *ip;
+    int n;
+    int cur;
+
+    switch (m->state) {
+    case 0:
+        m->f30 = 0xFF;
+        m->rot_x = func_001FA790_3054D8(m->rot_x, 0.78539819f);
+        m->state = 1;
+        d->f48 = -1;
+        break;
+    case 1:
+        break;
+    case 2: {
+        float a;
+        func_00214D88_3054D8(&d->t, &d->vel, 1.0f, D_0015EE70_3054D8, D_0015EE70_3054D8, D_0015EE6C_3054D8);
+        a = d->vel * 0.78539819f;
+        m->rot_x = func_001FA748_3054D8(m->rot_x, a);
+        D_L06_00160058_3054D8[d->moby1].rot_x = func_001FA790_3054D8(D_L06_00160058_3054D8[d->moby1].rot_x, a);
+        D_L06_00160058_3054D8[d->moby2].rot_x = func_001FA790_3054D8(D_L06_00160058_3054D8[d->moby2].rot_x, a);
+        func_L00_00251E30_3054D8(&D_L06_00160058_3054D8[d->moby1]);
+        func_L00_00251E30_3054D8(&D_L06_00160058_3054D8[d->moby2]);
+        if (1.0f <= d->t) {
+            m->state = 3;
+            func_0022ED80_3054D8(1, 0, m);
+            D_0013D4AF_3054D8[3] = 1;
+        }
+        break;
+    }
+    case 3:
+        if (func_001F9D48_3054D8(D_0013E633_3054D8 + 0xE9D, &m->pos) < 3.7f) {
+            nz = func_00215F80_3054D8(4, 0x1783) != 0;
+            if ((*(int *)(D_0013A5E0_3054D8 + 0x2604) & 0x10) && nz) {
+                func_0022ED80_3054D8(2, 0, m);
+                func_L00_00265558_3054D8(4);
+                m->state = 4;
+                d->timer = func_001F9850_3054D8(0x1E);
+            }
+        }
+        break;
+    case 4:
+        if (func_001F9908_3054D8(&d->timer)) {
+            qcopy_nc(&v0, &D_L06_0016016C_3054D8[d->cut].a);
+            qcopy(&v10, &D_L06_0016016C_3054D8[d->cut].b);
+            m->state = 5;
+            d->t = 0.0f;
+            d->vel = 0.0f;
+            func_001F4E08_3054D8(func_001F9850_3054D8(0xF));
+            func_L00_002EBF50_3054D8(&v0, &v10, 2, func_001F9850_3054D8(0x12C), 0);
+            func_L02_002F9ED8_3054D8(D_L06_00162228_3054D8, D_L06_0016222C_3054D8, D_L06_00162230_3054D8,
+                                     D_L06_00162234_3054D8, D_L06_00162238_3054D8, D_L06_00162240_3054D8);
+            func_L00_002EBE88_3054D8(&v0);
+            func_L00_002EBEE0_3054D8(&v10);
+            D_L06_0015F504_3054D8 = 1;
+        }
+        if (d->timer < func_001F9850_3054D8(10)) {
+            f20 = func_001FA888_3054D8(d->timer);
+            f20 = f20 / (float)func_001F9850_3054D8(10);
+            D_L06_0015F4FC_3054D8 = 1.0f - f20;
+        }
+        break;
+    case 5:
+        n = func_001F9850_3054D8(10);
+        cur = d->timer;
+        if (cur < n) {
+            d->timer = cur + 1;
+            f20 = func_001FA888_3054D8(cur + 1);
+            f20 = f20 / (float)func_001F9850_3054D8(10);
+            D_L06_0015F4FC_3054D8 = 1.0f - f20;
+        }
+        f20 = d->t;
+        func_00214D88_3054D8(&d->t, &d->vel, 2.0f, D_0015EE70_3054D8, D_0015EE70_3054D8, D_0015EE6C_3054D8 * 0.5f);
+        qcopy(&v0, &D_L06_0016016C_3054D8[d->cut].a);
+        v0.z = v0.z + d->t * 18.0f;
+        func_L00_002EBE88_3054D8(&v0);
+        func_L00_002EBEE0_3054D8(&D_L06_0016016C_3054D8[d->cut].b);
+        f20 = f20 * 100.0f;
+        f21 = d->t * 100.0f * 0.0174532925f;
+        f20 = f20 * 0.0174532925f;
+        ip = d->list;
+        for (i = 8; i >= 0; i--, ip++) {
+            if (f20 < D_L06_0016016C_3054D8[*ip].b.z && D_L06_0016016C_3054D8[*ip].b.z < f21) {
+                func_L06_00305C58_3054D8(m, &D_L06_0016016C_3054D8[*ip].a);
+                func_0022EEB8_3054D8(0, 0, m);
+            }
+        }
+        if (1.075f <= d->t) {
+            func_L00_00217718_3054D8(&D_L06_0016016C_3054D8[d->cut2].a, &D_L06_0016016C_3054D8[d->cut2].b, 0x72, 0);
+            func_001F4E08_3054D8(func_001F9850_3054D8(10));
+            m->state = 6;
+            func_L00_002EC0C8_3054D8(3);
+            qcopy(&v20, &D_L06_0016016C_3054D8[d->cut2].a);
+            v20.z = v20.z + 1.0f;
+            v20.y = v20.y - 2.5f;
+            func_001F9BC0_3054D8(&v10);
+            v10.y = -0.2617993878f;
+            v10.z = *(float *)(D_0013E633_3054D8 + 0xEB5);
+            func_L00_002EBF50_3054D8(&v20, &v10, 2, func_001F9850_3054D8(0x12C), 0);
+            ((Fx_3054D8 *)D_L06_00167500_3054D8)->f160 = 0.3f;
+            ((Fx_3054D8 *)D_L06_00167500_3054D8)->f168 = func_001F9850_3054D8(0x2D);
+            func_0022EEB8_3054D8(0, 0, m);
+        }
+        break;
+    case 6:
+        func_00214D88_3054D8(&d->t, &d->vel, 2.0f, D_0015EE70_3054D8, D_0015EE70_3054D8, D_0015EE6C_3054D8 + D_0015EE6C_3054D8);
+        qcopy(&v10, &D_L06_0016016C_3054D8[d->cut2].a);
+        v10.z = v10.z + 1.0f;
+        v10.y = v10.y - 2.5f;
+        func_001F9BC0_3054D8(&v0);
+        v0.y = -0.2617993878f;
+        v0.z = *(float *)(D_0013E633_3054D8 + 0xEB5);
+        func_L00_002EBE88_3054D8(&v10);
+        func_L00_002EBEE0_3054D8(&v0);
+        if (2.0f <= d->t) {
+            m->state = 7;
+            d->timer2 = func_001F9850_3054D8(0xE10);
+            func_L00_00217718_3054D8(&D_L06_0016016C_3054D8[d->cut2].a, &D_L06_0016016C_3054D8[d->cut2].b, 0, 0);
+            func_L00_002EC0C8_3054D8(3);
+            func_L06_00304590_3054D8(&D_L06_00160058_3054D8[d->moby3]);
+        }
+        break;
+    }
+}
 extern void func_0022ED80(int, int, void *);
 
 void func_L06_00305BF8(char *arg) {

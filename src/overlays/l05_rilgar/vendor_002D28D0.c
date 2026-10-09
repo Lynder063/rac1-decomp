@@ -152,7 +152,201 @@ void func_L05_002D8268(char *moby) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L05_002D8388);
+typedef int u128_2D8388 __attribute__((mode(TI)));
+extern char *func_L00_0025B478_2D8388(void *, int, int) __asm__("func_L00_0025B478");
+extern float func_00214158_2D8388(void) __asm__("func_00214158");
+extern float func_L00_001FF860_2D8388(float, float) __asm__("func_L00_001FF860");
+extern float func_001FA790_2D8388(float, float) __asm__("func_001FA790");
+extern float func_001F9B88_2D8388(float input) __asm__("func_001F9B88");
+extern float func_001F9D10_2D8388(float *, float *) __asm__("func_001F9D10");
+extern float func_001FA748_2D8388(float, float) __asm__("func_001FA748");
+extern float func_001F9FA8_2D8388(float) __asm__("func_001F9FA8");
+extern int func_001FA8A8_2D8388(int, int, float) __asm__("func_001FA8A8");
+extern void func_L05_002D8AD8_2D8388(char *moby, int *path) __asm__("func_L05_002D8AD8");
+extern int func_L00_0028EB98_2D8388(void *, int) __asm__("func_L00_0028EB98");
+extern int func_0022ED80_2D8388(int, int, int) __asm__("func_0022ED80");
+extern void func_001F9EC0_2D8388(void *, void *, void *) __asm__("func_001F9EC0");
+extern void func_001F9BD8_2D8388(float *, float *, float *) __asm__("func_001F9BD8");
+extern void func_001F49B0_2D8388(void (*)(void), void *) __asm__("func_001F49B0");
+extern void func_001F9C30_2D8388(void *, void *, float) __asm__("func_001F9C30");
+extern int func_001F9850_2D8388(int) __asm__("func_001F9850");
+extern void *func_L00_00265050_2D8388(char *src, int cls, float *pos, void *mat, int a8, int a9, float *v10, float *v11, float scale, float *v12) __asm__("func_L00_00265050");
+extern void func_0020D678_2D8388(void *) __asm__("func_0020D678");
+extern void func_L05_002D8268_2D8388(char *moby) __asm__("func_L05_002D8268");
+extern void func_L05_002D8B68_2D8388(void) __asm__("func_L05_002D8B68");
+extern float D_L05_001672C8_2D8388 __asm__("D_L05_001672C8");
+extern char *D_L05_001B0CB0_2D8388[] __asm__("D_L05_001B0CB0");
+extern float D_0015EE6C_2D8388 __asm__("D_0015EE6C") MACRO_ADDR;
+extern int D_L05_0015F6B0_2D8388 __asm__("D_L05_0015F6B0") MACRO_ADDR;
+extern char D_L05_0015F660_2D8388[] __asm__("D_L05_0015F660") MACRO_ADDR;
+extern float D_0015EE60_2D8388 __asm__("D_0015EE60") MACRO_ADDR;
+extern float D_0015EE70_2D8388 __asm__("D_0015EE70") MACRO_ADDR;
+extern float D_L05_00161494_2D8388 SDATA(D_L05_00161494);
+extern int D_L05_00161498_2D8388 SDATA(D_L05_00161498);
+extern int D_L05_0016149C_2D8388 SDATA(D_L05_0016149C);
+extern float D_L05_001614A0_2D8388 SDATA(D_L05_001614A0);
+extern int D_L05_001614A4_2D8388 SDATA(D_L05_001614A4);
+extern float D_L05_001614A8_2D8388 SDATA(D_L05_001614A8);
+extern float D_L05_001614AC_2D8388 SDATA(D_L05_001614AC);
+typedef struct { float x, y, z, w; } Vec_2D8388;
+typedef union { u128_2D8388 q; float f[4]; } Buf_2D8388;
+typedef struct {
+    /* 0x000 */ int path;
+    /* 0x004 */ float f4;
+    /* 0x008 */ float f8;
+    /* 0x00C */ float fC;
+    /* 0x010 */ int pad10[3];
+    /* 0x01C */ float f1C;
+    /* 0x020 */ Vec_2D8388 trail[3][16];
+    /* 0x320 */ short f320;
+    /* 0x322 */ unsigned short f322;
+    /* 0x324 */ int *f324;
+    /* 0x328 */ int f328;
+    /* 0x32C */ int pad32C[15];
+    /* 0x368 */ float f368;
+} Data_2D8388;
+
+/* Update of the scenery ship (moby class 79) on level 05. State 0 fits the turn angles of its path (stored in
+ * each point's w, scaled so the sharpest turn is 60 degrees); state 1 moves it along the path and records
+ * three trail points per frame in the ring buffers of the data block; state 2 spawns three explosions and
+ * deletes it. */
+void func_L05_002D8388(char *moby) {
+    Data_2D8388 *d = *(Data_2D8388 **)(moby + 0x78);
+    char *r;
+    char *p;
+    char *cur;
+    char *prev;
+    char *nxt;
+    char *q;
+    int i;
+    int k;
+    int v;
+    int flag;
+    Buf_2D8388 buf;
+    Buf_2D8388 buf2;
+    Buf_2D8388 buf3;
+    float ang;
+    float a2;
+    float v2;
+    float f21v;
+    float sc;
+
+    if (D_L05_001672C8_2D8388 < 55.0f) return;
+    r = func_L00_0025B478_2D8388(moby, 0x10000, 0);
+    flag = 0;
+    switch (*(unsigned char *)(moby + 0x20)) {
+    case 0: {
+        *(unsigned char *)(moby + 0x30) = 0xFF;
+        *(short *)(moby + 0x32) = 0xFF;
+        *(float *)(moby + 0x2C) = *(float *)(*(char **)(moby + 0x24) + 0x24) * D_L05_00161494_2D8388;
+        d->f1C = func_00214158_2D8388();
+        d->f328 = -1;
+        d->f368 = func_00214158_2D8388();
+        p = D_L05_001B0CB0_2D8388[d->path];
+        if (*(float *)(p + 0x1C) == -1.0f) {
+            f21v = 0.0f;
+            q = p + ((*(int *)p - 1) << 4);
+            ang = func_L00_001FF860_2D8388(*(float *)(p + 0x10) - *(float *)(q + 0x10), *(float *)(p + 0x14) - *(float *)(q + 0x14));
+            a2 = func_L00_001FF860_2D8388(*(float *)(p + 0x20) - *(float *)(p + 0x10), *(float *)(p + 0x24) - *(float *)(p + 0x14));
+            *(float *)(p + 0x1C) = func_001FA790_2D8388(a2, ang);
+            for (i = 1; i < *(int *)p - 1; i++) {
+                cur = p + i * 16;
+                prev = p + (i - 1) * 16;
+                ang = func_L00_001FF860_2D8388(*(float *)(cur + 0x10) - *(float *)(prev + 0x10), *(float *)(cur + 0x14) - *(float *)(prev + 0x14));
+                nxt = p + (i + 1) * 16;
+                a2 = func_L00_001FF860_2D8388(*(float *)(nxt + 0x10) - *(float *)(cur + 0x10), *(float *)(nxt + 0x14) - *(float *)(cur + 0x14));
+                v2 = func_001FA790_2D8388(a2, ang);
+                *(float *)(cur + 0x1C) = v2;
+                if (f21v < func_001F9B88_2D8388(v2)) {
+                    f21v = func_001F9B88_2D8388(*(float *)(cur + 0x1C));
+                }
+            }
+            ang = func_L00_001FF860_2D8388(*(float *)(p + ((*(int *)p - 1) << 4) + 0x10) - *(float *)(p + ((*(int *)p - 2) << 4) + 0x10),
+                                    *(float *)(p + ((*(int *)p - 1) << 4) + 0x14) - *(float *)(p + ((*(int *)p - 2) << 4) + 0x14));
+            a2 = func_L00_001FF860_2D8388(*(float *)(p + 0x10) - *(float *)(p + ((*(int *)p - 1) << 4) + 0x10),
+                                   *(float *)(p + 0x14) - *(float *)(p + ((*(int *)p - 1) << 4) + 0x14));
+            *(float *)(p + ((*(int *)p - 1) << 4) + 0x1C) = func_001FA790_2D8388(a2, ang);
+            sc = 1.04719755f / f21v;
+            for (k = 0; k < *(int *)p; k++) {
+                q = p + (k << 4);
+                *(float *)(q + 0x1C) = *(float *)(q + 0x1C) * sc;
+            }
+        }
+        d->fC = func_001F9D10_2D8388((float *)(p + 0x10), (float *)(p + 0x20));
+        *(unsigned char *)(moby + 0x20) = 1;
+        d->f8 = (float)*(int *)p * d->f4;
+        break;
+    }
+    case 1: {
+        float g = func_001FA748_2D8388(d->f1C, D_0015EE6C_2D8388 * 12.566370614f);
+        float h;
+        d->f1C = g;
+        h = func_001F9FA8_2D8388(g);
+        *(int *)(moby + 0x90) = func_001FA8A8_2D8388(D_L05_00161498_2D8388, D_L05_0016149C_2D8388, (h + 1.0f) * 0.5f);
+        func_L05_002D8AD8_2D8388(moby, (int *)D_L05_001B0CB0_2D8388[d->path]);
+        if (func_L00_0028EB98_2D8388(moby, d->f328) == 0) {
+            d->f328 = func_0022ED80_2D8388(1, 4, (int)moby);
+        }
+        if ((D_L05_0015F6B0_2D8388 & 3) == 0) {
+            d->f322 = (d->f322 + 1) & 0xF;
+            if ((float)d->f320 < D_L05_001614A0_2D8388) {
+                d->f320++;
+            }
+        }
+        buf.q = 0;
+        buf.f[0] = -1.2f;
+        buf.f[1] = 0.4f;
+        buf.f[2] = 0.45f;
+        func_001F9EC0_2D8388(&buf, &buf, moby + 0xC0);
+        func_001F9BD8_2D8388((float *)&d->trail[0][(short)d->f322], buf.f, (float *)(moby + 0x10));
+        d->trail[0][(short)d->f322].w = 1.0f;
+        buf2.q = 0;
+        buf2.f[0] = -1.5f;
+        buf2.f[2] = -0.3f;
+        func_001F9EC0_2D8388(&buf2, &buf2, moby + 0xC0);
+        func_001F9BD8_2D8388((float *)&d->trail[1][(short)d->f322], buf2.f, (float *)(moby + 0x10));
+        d->trail[1][(short)d->f322].w = 1.0f;
+        buf3.q = 0;
+        buf3.f[0] = -1.2f;
+        buf3.f[1] = -0.4f;
+        buf3.f[2] = 0.45f;
+        func_001F9EC0_2D8388(&buf3, &buf3, moby + 0xC0);
+        func_001F9BD8_2D8388((float *)&d->trail[2][(short)d->f322], buf3.f, (float *)(moby + 0x10));
+        d->trail[2][(short)d->f322].w = 1.0f;
+        if (D_L05_0015F6B0_2D8388 != *d->f324) {
+            *d->f324 = D_L05_0015F6B0_2D8388;
+            func_001F49B0_2D8388(func_L05_002D8B68_2D8388, moby);
+        }
+        if (*(float *)(moby + 0x10) < 8.0f) {
+            *(int *)(moby + 0x94) = 0;
+        } else if (*(float *)(moby + 0x14) < 8.0f) {
+            *(int *)(moby + 0x94) = 0;
+        } else {
+            *(int *)(moby + 0x94) = *(int *)(*(char **)(moby + 0x24) + 0x10);
+        }
+        if (r != 0 && 0.0f < *(float *)(r + 0x2C)) flag = 1;
+        if (flag) *(unsigned char *)(moby + 0x20) = 2;
+        break;
+    }
+    case 2: {
+        func_0022ED80_2D8388(0, 0, (int)moby);
+        func_001F9C30_2D8388(&buf, moby + 0xC0, D_L05_001614A8_2D8388 * D_0015EE60_2D8388);
+        buf.f[2] = buf.f[2] + D_L05_001614AC_2D8388 * D_0015EE60_2D8388;
+        v = func_001F9850_2D8388(0x5A);
+        func_L00_00265050_2D8388(moby, 0x72E, (float *)(moby + 0x10), (float *)(moby + 0x40), v, 0, buf.f,
+                          (float *)D_L05_0015F660_2D8388, D_0015EE70_2D8388 * 12.0f, (float *)D_L05_0015F660_2D8388);
+        v = func_001F9850_2D8388(0x5A);
+        func_L00_00265050_2D8388(moby, 0x72E, (float *)(moby + 0x10), (float *)(moby + 0x40), v, 0, buf.f,
+                          (float *)D_L05_0015F660_2D8388, D_0015EE70_2D8388 * 12.0f, (float *)D_L05_0015F660_2D8388);
+        v = func_001F9850_2D8388(0x5A);
+        func_L00_00265050_2D8388(moby, 0x72E, (float *)(moby + 0x10), (float *)(moby + 0x40), v, 0, buf.f,
+                          (float *)D_L05_0015F660_2D8388, D_0015EE70_2D8388 * 12.0f, (float *)D_L05_0015F660_2D8388);
+        func_0020D678_2D8388(moby);
+        return;
+    }
+    }
+    if (D_L05_001614A4_2D8388) func_L05_002D8268_2D8388(moby);
+}
 extern float D_0015EE6C MACRO_ADDR;
 extern short D_L05_00161490;
 extern void func_00215CA8(int *, int, void *, float *, int, float);

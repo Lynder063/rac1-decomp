@@ -377,7 +377,190 @@ void func_L09_002C6B30(struct Moby_2C6B30 *moby) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L09_002C73D0);
+typedef int Q_2C73D0 __attribute__((mode(TI)));
+typedef struct { char p0[0x24]; float scale; } Cls_2C73D0;
+typedef struct Moby_2C73D0 {
+    char p0[0x10]; float pos[4]; unsigned char state; unsigned char b21; char p22[2]; Cls_2C73D0 *cls; char p28[4];
+    float f2C; char p30[4]; unsigned short h34; char p36[0x42]; struct Data_2C73D0 *data; char p7C[0x28];
+    unsigned char bA4; char pA5[0x17]; unsigned char bBC;
+} Moby_2C73D0;
+typedef struct Data_2C73D0 {
+    char p0[0x20]; float health; char p24[0x14]; int f38; char p3C[0x24];
+    char react[7]; unsigned char reactTime; char p68[8]; float f70[4];
+    float f80; float f84; float f88; float f8C; int f90; int f94; float f98; char p9C[0x11]; unsigned char bAD; char pAE[0x12];
+    float fC0; float fC4; char pC8[0x58]; float target[4]; char p130[0x30];
+    Moby_2C73D0 *f160; int f164; char p168[0x18]; int path; int timer; float reach; char p18C[4]; int retreat;
+} Data_2C73D0;
+typedef struct { char p0[0x10]; Q_2C73D0 pos; Moby_2C73D0 *owner; } Hit_2C73D0;
+typedef struct { int count; int pad[3]; float pts[1][4]; } Path_2C73D0;
+extern int func_001F9908_2C73D0(void *) __asm__("func_001F9908");
+extern int func_001F9850_2C73D0(int) __asm__("func_001F9850");
+extern void func_L00_0025E4B0_2C73D0(void *, void *) __asm__("func_L00_0025E4B0");
+extern Hit_2C73D0 *func_L00_0025B478_2C73D0(void *, int, int) __asm__("func_L00_0025B478");
+extern int func_L00_0025B4D0_2C73D0(void *, void *, void *, int, int *, float *, int, int) __asm__("func_L00_0025B4D0");
+extern int func_001FA898_2C73D0(float) __asm__("func_001FA898");
+extern int func_0022ED80_2C73D0(int, int, void *) __asm__("func_0022ED80");
+extern float func_L00_001FF860_2C73D0(float, float) __asm__("func_L00_001FF860");
+extern void func_L00_0025BBA0_2C73D0(void *, float *, void *, void *) __asm__("func_L00_0025BBA0");
+extern void func_L00_0025D5B0_2C73D0(void *, void *, float, int, int, int) __asm__("func_L00_0025D5B0");
+extern void func_L01_0026F040_2C73D0(int, int) __asm__("func_L01_0026F040");
+extern void func_L00_002584A8_2C73D0(void *, int, int) __asm__("func_L00_002584A8");
+extern void func_L00_0025E590_2C73D0(void *, void *) __asm__("func_L00_0025E590");
+extern float func_002140F8_2C73D0(float, float) __asm__("func_002140F8");
+extern float func_001F9878_2C73D0(float) __asm__("func_001F9878");
+extern int func_002140B0_2C73D0(int) __asm__("func_002140B0");
+extern int func_L00_00260D30_2C73D0(void *, void *, float) __asm__("func_L00_00260D30");
+extern int func_L00_00260FB0_2C73D0(void *, void *, float, int, int, void *, int) __asm__("func_L00_00260FB0");
+extern float func_001F9D48_2C73D0(void *, void *) __asm__("func_001F9D48");
+extern float func_001F9B88_2C73D0(float) __asm__("func_001F9B88");
+extern float D_0015EE70_2C73D0 __asm__("D_0015EE70") MACRO_ADDR;
+extern float D_0015EE6C_2C73D0 __asm__("D_0015EE6C") MACRO_ADDR;
+extern Path_2C73D0 *D_L09_001B0930_2C73D0[] __asm__("D_L09_001B0930");
+extern float D_L09_00161494_2C73D0 SDATA(D_L09_00161494);
+extern float D_L09_00161480_2C73D0 SDATA(D_L09_00161480);
+extern float D_L09_00161488_2C73D0 SDATA(D_L09_00161488);
+extern float D_L09_00161490_2C73D0 SDATA(D_L09_00161490);
+extern float D_L09_0016148C_2C73D0 SDATA(D_L09_0016148C);
+extern char D_0013E633_2C73D0[] __asm__("D_0013E633");
+
+/* Enemy update while it chases: takes hits (the result of func_L00_0025B4D0 picks the reaction),
+ * re-rolls its retreat timer and steers along its path or straight at the target.
+ * In the steering arms the goal pointer and the "lost" code (2) are set in each arm: retail loads 2 in
+ * both arms and keeps the goal in a saved register across the arm's call. */
+void func_L09_002C73D0(Moby_2C73D0 *m) {
+    char vec[16];
+    int flag;
+    float a1;
+    float ang1;
+    float ang2;
+    Data_2C73D0 *d;
+    Hit_2C73D0 *r;
+    int st;
+    int res;
+    int lost;
+
+    d = m->data;
+    if (m->state == 0) {
+        return;
+    }
+    m->f2C = m->f2C + ((m->cls->scale * D_L09_00161494_2C73D0) - m->f2C) * 0.1f;
+    if (func_001F9908_2C73D0(&d->timer) == 2) {
+        m->state = 7;
+        return;
+    }
+    if (d->timer == func_001F9850_2C73D0(0xA) || d->timer == func_001F9850_2C73D0(0x14)
+        || d->timer == func_001F9850_2C73D0(0x28) || d->timer == func_001F9850_2C73D0(0x3C)
+        || d->timer == func_001F9850_2C73D0(0x78) || d->timer == func_001F9850_2C73D0(0xB3)) {
+        d->reactTime = 0xF0;
+        func_L00_0025E4B0_2C73D0(m, d->react);
+    }
+    a1 = 0.0f;
+    r = func_L00_0025B478_2C73D0(m, 0x330000, 0);
+    st = func_L00_0025B4D0_2C73D0(m, r, &d->health, 0, &flag, &a1, 0, 4);
+    if (flag != 1 && m->state != 6) {
+        d->health = d->health - a1;
+        if (d->health <= 0.0f) {
+            st = 1;
+        }
+        d->f90 = func_001FA898_2C73D0(512.0f);
+        d->f80 = D_L09_00161480_2C73D0 * D_0015EE70_2C73D0;
+        d->f84 = D_0015EE70_2C73D0 * 30.0f;
+        d->f98 = 0.0f;
+        d->f94 = 1;
+        d->bAD = 0;
+        func_0022ED80_2C73D0(8, 0, m);
+
+        switch (st) {
+        case 9:
+        case 10:
+            d->reactTime = 0xFA;
+            break;
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+            d->fC0 = 3.0f;
+            d->fC4 = 6.0f;
+            d->f88 = D_L09_00161488_2C73D0 * D_0015EE6C_2C73D0;
+            d->f8C = 0.0f;
+            ang1 = func_L00_001FF860_2C73D0(m->pos[0] - r->owner->pos[0], m->pos[1] - r->owner->pos[1]);
+            *(Q_2C73D0 *)vec = r->pos;
+            func_L00_0025BBA0_2C73D0(vec, &ang1, &d->f88, &d->f8C);
+            func_L00_0025D5B0_2C73D0(m, d->f70, ang1, 4, 1, 0);
+            m->state = 5;
+            if (m->b21 != 0xFF) {
+                func_L01_0026F040_2C73D0(m->b21, 1);
+            }
+            d->reactTime = 0x78;
+            break;
+        case 1:
+        case 2:
+            m->h34 &= 0xEFFF;
+            d->f80 = D_L09_00161480_2C73D0 * D_0015EE70_2C73D0;
+            d->f88 = D_L09_00161490_2C73D0 * D_0015EE6C_2C73D0;
+            d->f8C = D_L09_0016148C_2C73D0 * D_0015EE6C_2C73D0;
+            d->fC0 = 14.0f;
+            d->fC4 = 28.0f;
+            ang2 = func_L00_001FF860_2C73D0(m->pos[0] - r->owner->pos[0], m->pos[1] - r->owner->pos[1]);
+            *(Q_2C73D0 *)vec = r->pos;
+            func_L00_0025BBA0_2C73D0(vec, &ang2, &d->f88, &d->f8C);
+            func_L00_0025D5B0_2C73D0(m, d->f70, ang2, 4, 1, 0);
+            func_L00_002584A8_2C73D0(m, 0, -1);
+            m->state = 6;
+            d->reactTime = 0xF0;
+            break;
+        case 0:
+        case 11:
+        default:
+            break;
+        }
+        func_L00_0025E4B0_2C73D0(m, d->react);
+    }
+    m->bA4 = 0xFF;
+    func_L00_0025E590_2C73D0(m, d->react);
+    if (d->f38 != 0 || m->bBC == 1) {
+        d->retreat = func_001FA898_2C73D0(func_001F9878_2C73D0(func_002140F8_2C73D0(180.0f, 240.0f)));
+        d->f38 = 0;
+        m->bBC = 0;
+    }
+    func_001F9908_2C73D0(&d->retreat);
+    if (func_002140B0_2C73D0(4) == 0) {
+        float *tgt;
+        if (d->retreat != 0) {
+            d->reach = 24.0f;
+            tgt = d->target;
+            res = func_L00_00260D30_2C73D0(m, tgt, 24.0f);
+            lost = 2;
+        } else {
+            Path_2C73D0 *tb;
+            d->reach = 12.0f;
+            tb = D_L09_001B0930_2C73D0[d->path];
+            tgt = d->target;
+            res = func_L00_00260FB0_2C73D0(m, tgt, 12.0f, 0, 0, tb->pts, tb->count);
+            lost = 2;
+        }
+        if (res != lost && d->retreat == 0) {
+            if (d->reach < func_001F9D48_2C73D0(m->pos, tgt)) {
+                d->f164 = lost;
+            } else if (3.0f < func_001F9B88_2C73D0(m->pos[2] - d->target[2])) {
+                d->f164 = lost;
+            }
+        }
+    } else {
+        Moby_2C73D0 *q = d->f160;
+        if (q != 0 && q->state != 0xFE && q->state != 0xFD) {
+            qcopy(d->target, q->pos);
+        } else {
+            d->f160 = 0;
+            d->f164 = 2;
+        }
+    }
+    if (d->f160 == 0) {
+        d->f160 = *(Moby_2C73D0 **)(D_0013E633_2C73D0 + 0x2E9D);
+    }
+}
 typedef struct { float x, y, z, w; } __attribute__((aligned(16))) V_2E39E0;
 typedef struct Moby_2E39E0 Moby_2E39E0;
 typedef struct {

@@ -1354,7 +1354,334 @@ void func_L00_002C7128(char *m) {
         qcopy(&quad.a[8], &quad.a[12]);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002C74B8);
+typedef unsigned int Q_2C74B8 __attribute__((mode(TI)));
+typedef union { struct { float x, y, z, w; } f; Q_2C74B8 q; } V_2C74B8 __attribute__((aligned(16)));
+typedef struct { V_2C74B8 row[3]; } M3_2C74B8;
+typedef struct Moby_2C74B8 Moby_2C74B8;
+typedef struct HookData_2C74B8 { char pad0[4]; float speed; } HookData_2C74B8;
+typedef struct Data_2C74B8 {
+    char pad0[0x14];
+    Moby_2C74B8 *hook;
+    float spin;
+    float scale;
+    float size;
+} Data_2C74B8;
+struct Moby_2C74B8 {
+    char pad0[0x10];
+    V_2C74B8 pos;
+    unsigned char state;
+    char pad21[0x32];
+    unsigned char anim_state;
+    char pad54[0x1C];
+    unsigned char anim_flags;
+    char pad71[7];
+    void *data;
+    char pad7C[0x44];
+    M3_2C74B8 rot;
+};
+typedef struct Hero_2C74B8 {
+    char pad0[0x80];
+    V_2C74B8 pos;
+    char pad90[0x108];
+    int f198;
+    char pad19C[0x140];
+    float f2DC;
+    char pad2E0[0x2E];
+    short f30E;
+    char pad310[0x264];
+    float f574;
+    char pad578[0x3C];
+    int f5B4;
+    char pad5B8[0x3AC];
+    Moby_2C74B8 *f964;
+    int f968;
+    char pad96C[0xC];
+    int f978;
+    char pad97C[0xC];
+    int f988;
+    char pad98C[4];
+    Moby_2C74B8 *f990;
+    Moby_2C74B8 *f994;
+    char pad998[4];
+    short f99C;
+    char pad99E[0x702];
+    int fire_mask;
+    char pad10A4[0xC];
+    int f10B0;
+    char pad10B4[0xFD0];
+    int camera_mode;
+    char pad2088[4];
+    int move_mode;
+    char pad2090[4];
+    int f2094;
+} Hero_2C74B8;
+typedef struct Pad_2C74B8 { char pad0[0x1A0]; int held; } Pad_2C74B8;
+
+extern char D_0013F450_2C74B8[] __asm__("D_0013F450");
+extern Pad_2C74B8 pad_2C74B8 __asm__("D_0013CA40");
+extern float D_0015EE6C_2C74B8 __asm__("D_0015EE6C") MACRO_ADDR;
+extern float D_0015EE60_2C74B8 __asm__("D_0015EE60") MACRO_ADDR;
+
+extern int func_L00_00222B80_2C74B8(int, int) __asm__("func_L00_00222B80");
+extern Moby_2C74B8 *func_L00_002C82E8_2C74B8(void *, float) __asm__("func_L00_002C82E8");
+extern void func_L00_001EE2E0_2C74B8(int, int, float, void *, int, float, int, float, int) __asm__("func_L00_001EE2E0");
+extern int func_001F9850_2C74B8(int) __asm__("func_001F9850");
+extern void func_00213DE0_2C74B8(void *, int, int, int) __asm__("func_00213DE0");
+extern void func_L00_00250800_2C74B8(void *, int, void *) __asm__("func_L00_00250800");
+extern int func_0022ED80_2C74B8(int, int, void *) __asm__("func_0022ED80");
+extern float func_001F9D10_2C74B8(void *, void *) __asm__("func_001F9D10");
+extern void func_001F49B0_2C74B8(void (*)(char *), void *) __asm__("func_001F49B0");
+extern void func_001F9BF0_2C74B8(void *, void *, void *) __asm__("func_001F9BF0");
+extern void func_L00_001FF4B0_2C74B8(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern void func_001F9BD8_2C74B8(void *, void *, void *) __asm__("func_001F9BD8");
+extern float func_001F9CB8_2C74B8(void *) __asm__("func_001F9CB8");
+extern int func_L00_001EFFF0_2C74B8(void *, void *, int, int, int) __asm__("func_L00_001EFFF0");
+extern int func_L00_00205618_2C74B8(int) __asm__("func_L00_00205618");
+extern void func_L00_00232C10_2C74B8(int, int, float) __asm__("func_L00_00232C10");
+extern void func_L00_002C7128_2C74B8(char *) __asm__("func_L00_002C7128");
+
+/* Swingshot (class 208) update: keeps the hook at the glove, shows the targets, fires the hook to the swing target
+   or the grind target, swings the hero, and reels the hook back. */
+void func_L00_002C74B8_r(Moby_2C74B8 *m) __asm__("func_L00_002C74B8");
+void func_L00_002C74B8_r(Moby_2C74B8 *m) {
+    V_2C74B8 v0;
+    V_2C74B8 v10;
+    Data_2C74B8 *d;
+    HookData_2C74B8 *hd;
+    float speed;
+    int n;
+
+    if (m == 0) return;
+    if (((Hero_2C74B8 *)D_0013F450_2C74B8)->camera_mode == 1) func_L00_00222B80_2C74B8(30, 1);
+    d = m->data;
+    if (d == 0) return;
+    hd = 0;
+    if (!d->hook) d->hook = func_L00_002C82E8_2C74B8(m, D_0015EE6C_2C74B8 * 24.0f);
+    if (d->hook) hd = d->hook->data;
+    if ((((Hero_2C74B8 *)D_0013F450_2C74B8)->camera_mode == 1 || ((Hero_2C74B8 *)D_0013F450_2C74B8)->camera_mode == 30) &&
+        ((Hero_2C74B8 *)D_0013F450_2C74B8)->f198 >= 2) {
+        func_L00_001EE2E0_2C74B8((int)m, 0xFF0000FF, 1.0f, 0, 0x24, 0.0f, -1, 90.0f, 4);
+        if (((Hero_2C74B8 *)D_0013F450_2C74B8)->f968 && ((Hero_2C74B8 *)D_0013F450_2C74B8)->f964)
+            func_L00_001EE2E0_2C74B8((int)m, 0xFF00FF00, 0.5f, &((Hero_2C74B8 *)D_0013F450_2C74B8)->f964->pos, 0x24, 0.0f, -1, 90.0f, 4);
+        else if (((Hero_2C74B8 *)D_0013F450_2C74B8)->f990)
+            func_L00_001EE2E0_2C74B8((int)m, 0xFF00FF00, 0.5f, &((Hero_2C74B8 *)D_0013F450_2C74B8)->f990->pos, 0x24, 0.0f, -1, 90.0f, 4);
+    }
+    switch (m->state) {
+    case 0:
+    case 1:
+        if (m->anim_flags & 2) {
+            if (m->anim_state != 1) func_00213DE0_2C74B8(m, 1, 0, func_001F9850_2C74B8(10));
+            m->state = 1;
+        }
+        if (d->hook) {
+            func_L00_00250800_2C74B8(m, 0, &d->hook->pos);
+            d->hook->rot = m->rot;
+        }
+        if (((Hero_2C74B8 *)D_0013F450_2C74B8)->camera_mode == 0x24 ||
+            (((Hero_2C74B8 *)D_0013F450_2C74B8)->move_mode == 0xF && ((Hero_2C74B8 *)D_0013F450_2C74B8)->f5B4)) {
+            if (hd) {
+                d->size = 0.280000001f;
+                d->scale = 1.0f;
+                d->spin = 0.0f;
+                hd->speed = D_0015EE6C_2C74B8 * 24.0f;
+                if (m->anim_state != 3) func_00213DE0_2C74B8(m, 3, 0, func_001F9850_2C74B8(10));
+                func_0022ED80_2C74B8(0, 0, m);
+                m->state = 2;
+            }
+        }
+        if (((Hero_2C74B8 *)D_0013F450_2C74B8)->camera_mode == 0x2C && hd) {
+            speed = func_001F9D10_2C74B8(&((Hero_2C74B8 *)D_0013F450_2C74B8)->f994->pos, &d->hook->pos);
+            n = func_001F9850_2C74B8(7);
+            if (((Hero_2C74B8 *)D_0013F450_2C74B8)->f10B0 < func_001F9850_2C74B8(30)) n = func_001F9850_2C74B8(5);
+            hd->speed = speed / (float)n;
+            d->size = 0.280000001f;
+            d->scale = 1.0f;
+            d->spin = 0.0f;
+            if (m->anim_state != 3) func_00213DE0_2C74B8(m, 3, 0, func_001F9850_2C74B8(10));
+            func_0022ED80_2C74B8(0, 0, m);
+            m->state = 9;
+        }
+        break;
+    case 2:
+        func_001F49B0_2C74B8(func_L00_002C7128_2C74B8, m);
+        if (m->anim_flags & 2) {
+            if (m->anim_state != 4) func_00213DE0_2C74B8(m, 4, 0, func_001F9850_2C74B8(10));
+        }
+        func_001F9BF0_2C74B8(&v0, &((Hero_2C74B8 *)D_0013F450_2C74B8)->f964->pos, &d->hook->pos);
+        speed = hd->speed;
+        if (((Hero_2C74B8 *)D_0013F450_2C74B8)->move_mode == 0xF) {
+            speed = speed + ((Hero_2C74B8 *)D_0013F450_2C74B8)->f574;
+        } else if (((Hero_2C74B8 *)D_0013F450_2C74B8)->f2094 == 4 || ((Hero_2C74B8 *)D_0013F450_2C74B8)->f2094 == 2) {
+            if (2.0f < ((Hero_2C74B8 *)D_0013F450_2C74B8)->f2DC) speed = D_0015EE6C_2C74B8 * 48.0f;
+        }
+        qcopy(&v10, D_0013F450_2C74B8 + 0x80);
+        v10.f.z += 0.5f;
+        if (func_L00_001EFFF0_2C74B8(&v10, &((Hero_2C74B8 *)D_0013F450_2C74B8)->f964->pos, 2, 0, 0)) {
+            if (0.5f < ((Hero_2C74B8 *)D_0013F450_2C74B8)->f2DC) {
+                func_L00_00222B80_2C74B8(6, 1);
+            } else {
+                func_L00_00222B80_2C74B8(0, 0);
+                func_L00_00232C10_2C74B8(func_L00_00205618_2C74B8(0), 0, (float)func_001F9850_2C74B8(14));
+            }
+            m->state = 6;
+        } else if (speed < func_001F9D10_2C74B8(&d->hook->pos, &((Hero_2C74B8 *)D_0013F450_2C74B8)->f964->pos)) {
+            func_L00_001FF4B0_2C74B8(&v0, &v0, speed);
+            func_001F9BD8_2C74B8(&d->hook->pos, &d->hook->pos, &v0);
+        } else {
+            qcopy(&d->hook->pos, &((Hero_2C74B8 *)D_0013F450_2C74B8)->f964->pos);
+            m->state = 3;
+        }
+        break;
+    case 3:
+        func_0022ED80_2C74B8(1, 0, m);
+        func_001F49B0_2C74B8(func_L00_002C7128_2C74B8, m);
+        qcopy(&d->hook->pos, &((Hero_2C74B8 *)D_0013F450_2C74B8)->f964->pos);
+        m->state = 4;
+        break;
+    case 4:
+        func_L00_00250800_2C74B8(m, 0, &v0);
+        qcopy(&v0, D_0013F450_2C74B8 + 0x80);
+        v0.f.z += 0.5f;
+        if (func_L00_001EFFF0_2C74B8(&v0, &((Hero_2C74B8 *)D_0013F450_2C74B8)->f964->pos, 2, 0, 0)) {
+            if (((Hero_2C74B8 *)D_0013F450_2C74B8)->f30E) func_L00_00222B80_2C74B8(6, 1);
+            else func_L00_00222B80_2C74B8(0, 1);
+            m->state = 6;
+            break;
+        }
+        if (m->anim_flags & 2) {
+            if (m->anim_state != 4) func_00213DE0_2C74B8(m, 4, 0, func_001F9850_2C74B8(10));
+        }
+        func_001F49B0_2C74B8(func_L00_002C7128_2C74B8, m);
+        d->spin = d->spin + 0.69813168f;
+        d->size = d->size * (D_0015EE60_2C74B8 * -0.100000024f + 1.0f);
+        if (d->size < 0.168000013f) {
+            ((Hero_2C74B8 *)D_0013F450_2C74B8)->f5B4 = 0;
+            if (d->hook && 3.5f < func_001F9D10_2C74B8(&d->hook->pos, &((Hero_2C74B8 *)D_0013F450_2C74B8)->pos)) {
+                if (!(pad_2C74B8.held & ((Hero_2C74B8 *)D_0013F450_2C74B8)->fire_mask)) {
+                    ((Hero_2C74B8 *)D_0013F450_2C74B8)->f988 = 1;
+                    func_L00_00222B80_2C74B8(0, 0);
+                    func_L00_00232C10_2C74B8(func_L00_00205618_2C74B8(0), 0, (float)func_001F9850_2C74B8(14));
+                    m->state = 6;
+                } else {
+                    func_0022ED80_2C74B8(2, 0, m);
+                    if (((Hero_2C74B8 *)D_0013F450_2C74B8)->f978) func_L00_00222B80_2C74B8(0x26, 1);
+                    else func_L00_00222B80_2C74B8(0x25, 1);
+                    m->state = 5;
+                }
+            } else {
+                func_L00_00222B80_2C74B8(0, 1);
+                m->state = 6;
+            }
+        }
+        break;
+    case 5:
+        qcopy(&d->hook->pos, &((Hero_2C74B8 *)D_0013F450_2C74B8)->f964->pos);
+        if (m->anim_flags & 2) {
+            if (m->anim_state != 4) func_00213DE0_2C74B8(m, 4, 0, func_001F9850_2C74B8(10));
+        }
+        d->size = d->size * (D_0015EE60_2C74B8 * -0.100000024f + 1.0f);
+        d->spin = d->spin + 0.69813168f;
+        func_001F49B0_2C74B8(func_L00_002C7128_2C74B8, m);
+        if ((unsigned int)(((Hero_2C74B8 *)D_0013F450_2C74B8)->camera_mode - 0x25) >= 2) m->state = 6;
+        break;
+    case 6:
+        func_001F49B0_2C74B8(func_L00_002C7128_2C74B8, m);
+        hd->speed = D_0015EE6C_2C74B8 * 80.0f;
+        m->state = 7;
+        break;
+    case 7:
+        func_L00_00250800_2C74B8(m, 0, &v10);
+        func_001F9BF0_2C74B8(&v0, &v10, &d->hook->pos);
+        if (hd->speed < func_001F9D10_2C74B8(&d->hook->pos, &v10)) {
+            func_L00_001FF4B0_2C74B8(&v0, &v0, hd->speed);
+            func_001F9BD8_2C74B8(&d->hook->pos, &d->hook->pos, &v0);
+            func_001F49B0_2C74B8(func_L00_002C7128_2C74B8, m);
+        } else {
+            qcopy(&d->hook->pos, &v10);
+            if (m->anim_state != 1) func_00213DE0_2C74B8(m, 1, 0, func_001F9850_2C74B8(10));
+            m->state = 1;
+        }
+        break;
+    case 8:
+        break;
+    case 9:
+        func_001F49B0_2C74B8(func_L00_002C7128_2C74B8, m);
+        if (m->anim_flags & 2) {
+            if (m->anim_state != 4) func_00213DE0_2C74B8(m, 4, 0, func_001F9850_2C74B8(10));
+        }
+        func_001F9BF0_2C74B8(&v0, &((Hero_2C74B8 *)D_0013F450_2C74B8)->f994->pos, &d->hook->pos);
+        if (hd->speed < func_001F9CB8_2C74B8(&v0)) {
+            func_L00_001FF4B0_2C74B8(&v0, &v0, hd->speed);
+            func_001F9BD8_2C74B8(&d->hook->pos, &d->hook->pos, &v0);
+        } else {
+            qcopy(&d->hook->pos, &((Hero_2C74B8 *)D_0013F450_2C74B8)->f994->pos);
+            m->state = 11;
+            func_0022ED80_2C74B8(1, 0, m);
+        }
+        break;
+    case 10:
+        func_001F49B0_2C74B8(func_L00_002C7128_2C74B8, m);
+        m->state = 11;
+        break;
+    case 11:
+        if (m->anim_flags & 2) {
+            if (m->anim_state != 4) func_00213DE0_2C74B8(m, 4, 0, func_001F9850_2C74B8(10));
+        }
+        func_001F49B0_2C74B8(func_L00_002C7128_2C74B8, m);
+        d->spin = d->spin + 0.69813168f;
+        d->size = d->size * (D_0015EE60_2C74B8 * -0.600000024f + 1.0f);
+        if (d->size < 0.168000013f) {
+            ((Hero_2C74B8 *)D_0013F450_2C74B8)->f99C = 1;
+            m->state = 12;
+        }
+        break;
+    case 12:
+        if (((Hero_2C74B8 *)D_0013F450_2C74B8)->f994)
+            qcopy(&d->hook->pos, &((Hero_2C74B8 *)D_0013F450_2C74B8)->f994->pos);
+        if (m->anim_flags & 2) {
+            if (m->anim_state != 4) func_00213DE0_2C74B8(m, 4, 0, func_001F9850_2C74B8(10));
+        }
+        d->size = d->size * (D_0015EE60_2C74B8 * -0.600000024f + 1.0f);
+        d->spin = d->spin + 0.69813168f;
+        func_001F49B0_2C74B8(func_L00_002C7128_2C74B8, m);
+        if (((Hero_2C74B8 *)D_0013F450_2C74B8)->camera_mode != 0x2C) m->state = 13;
+        break;
+    case 13:
+        if (m->anim_flags & 2) {
+            if (m->anim_state != 4) func_00213DE0_2C74B8(m, 4, 0, func_001F9850_2C74B8(10));
+        }
+        func_001F49B0_2C74B8(func_L00_002C7128_2C74B8, m);
+        hd->speed = D_0015EE6C_2C74B8 * 80.0f;
+        m->state = 14;
+        break;
+    case 14:
+        if (m->anim_flags & 2) {
+            if (m->anim_state != 4) func_00213DE0_2C74B8(m, 4, 0, func_001F9850_2C74B8(10));
+        }
+        func_L00_00250800_2C74B8(m, 0, &v10);
+        func_001F9BF0_2C74B8(&v0, &v10, &d->hook->pos);
+        if (hd->speed < func_001F9D10_2C74B8(&d->hook->pos, &v10)) {
+            func_L00_001FF4B0_2C74B8(&v0, &v0, hd->speed);
+            func_001F9BD8_2C74B8(&d->hook->pos, &d->hook->pos, &v0);
+            func_001F49B0_2C74B8(func_L00_002C7128_2C74B8, m);
+        } else {
+            qcopy(&d->hook->pos, &v10);
+            if (m->anim_state != 1) func_00213DE0_2C74B8(m, 1, 0, func_001F9850_2C74B8(10));
+            m->state = 1;
+        }
+        if (((Hero_2C74B8 *)D_0013F450_2C74B8)->camera_mode == 0x2C && hd) {
+            hd->speed = func_001F9D10_2C74B8(&((Hero_2C74B8 *)D_0013F450_2C74B8)->f994->pos, &d->hook->pos) / 10.0f;
+            d->scale = 1.0f;
+            d->size = 0.0f;
+            d->spin = 0.0f;
+            if (m->anim_state != 3) func_00213DE0_2C74B8(m, 3, 0, func_001F9850_2C74B8(10));
+            m->state = 9;
+        }
+        break;
+    case 15:
+        break;
+    }
+}
 typedef unsigned int u128_pt __attribute__((mode(TI)));
 extern unsigned char *func_0020D348_2c82e8(int) __asm__("func_0020D348") ;
 extern void func_L00_00251328_2c82e8(unsigned char *, int, int, int) __asm__("func_L00_00251328") ;

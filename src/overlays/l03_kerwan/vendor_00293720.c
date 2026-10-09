@@ -646,7 +646,156 @@ void func_L03_00294040(Moby_294040 *moby) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L03_00295DB0);
+typedef int Q_295DB0 __attribute__((mode(TI)));
+typedef struct { float x, y, z, w; } V_295DB0;
+typedef struct { int count; int pad[3]; V_295DB0 pts[1]; } Path_295DB0;
+typedef struct { int idx; signed char dir; char pad5[0xB]; Path_295DB0 *path; } Track_295DB0;
+typedef struct {
+    char p0[0x60]; char f60[0x40]; V_295DB0 vA0; Track_295DB0 track; char pC4[0x1C];
+    int pathIdx; float speed; int timer; float topSpeed; int wait; float brakeDist; int reverse; float scale;
+    int timer2; int voice; int stopAtEnds; int ticks; float length; float accel;
+} Data_295DB0;
+typedef struct { char p0[0x74]; unsigned char active; char p75[0x13]; char *owner; } Voice_295DB0;
+extern void func_001F9C30_295DB0(void *, void *, float) __asm__("func_001F9C30");
+extern void func_001E9768_295DB0(void *) __asm__("func_001E9768");
+extern int func_001F9908_295DB0(int *) __asm__("func_001F9908");
+extern float func_001F9D10_295DB0(void *, void *) __asm__("func_001F9D10");
+extern int func_001F9850_295DB0(int) __asm__("func_001F9850");
+extern float func_001FA888_295DB0(int) __asm__("func_001FA888");
+extern int func_L00_0028EB98_295DB0(void *, int) __asm__("func_L00_0028EB98");
+extern int func_L00_0028EF68_295DB0(int, int, void *, int) __asm__("func_L00_0028EF68");
+extern void func_001F9BF0_295DB0(void *, void *, void *) __asm__("func_001F9BF0");
+extern void func_L00_001FF4B0_295DB0(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern void func_001F9BD8_295DB0(void *, void *, void *) __asm__("func_001F9BD8");
+extern void func_L00_0028EBF0_295DB0(int) __asm__("func_L00_0028EBF0");
+extern float func_00214D28_295DB0(float *p, float target, float maxstep) __asm__("func_00214D28");
+extern void func_L00_002607A8_295DB0(void *, float) __asm__("func_L00_002607A8");
+extern void func_L00_002617B0_295DB0(char *, void *, void *, void *) __asm__("func_L00_002617B0");
+extern Path_295DB0 *D_L03_001B08B0_295DB0[] __asm__("D_L03_001B08B0");
+extern float D_0015EE6C_295DB0 __asm__("D_0015EE6C") MACRO_ADDR;
+extern float D_0015EE70_295DB0 __asm__("D_0015EE70") MACRO_ADDR;
+extern unsigned char D_0013E650_295DB0[] __asm__("D_0013E650");
+
+/* Moving platform update (level 03): eases the platform along its path (state 1 back and forth with a
+ * timed accelerate/brake, state 3 point to point) and keeps what rides on it moving with it.
+ * In state 3 the next index and the end index read p->path->count from memory (no local for it):
+ * the ternary then stays a branch through global CSE, which is what lets the compiler share n * 16
+ * with the later blocks through a copy, as retail does. */
+void func_L03_00295DB0(char *moby) {
+    Data_295DB0 *d = *(Data_295DB0 **)(moby + 0x78);
+    float v0[4];
+    float v1[4];
+    float v2[4];
+    float v3[4];
+
+    func_001F9C30_295DB0(v0, moby + 0x10, -1.0f);
+    qcopy(v1, moby + 0x40);
+    func_001E9768_295DB0(moby);
+    switch (*(unsigned char *)(moby + 0x20)) {
+    case 0: {
+        Track_295DB0 *p = &d->track;
+        char *src;
+        int dir;
+        d->track.path = D_L03_001B08B0_295DB0[d->pathIdx];
+        if (d->reverse != 0) p->dir = -1;
+        else p->dir = 1;
+        src = (char *)d->track.path + 0x10;
+        dir = p->dir;
+        if (dir >= 0) src += (p->path->count - 1) * 16;
+        qcopy(moby + 0x10, src);
+        p->idx = dir < 0 ? 0 : p->path->count - 1;
+        *(float *)(moby + 0x2C) = *(float *)(*(char **)(moby + 0x24) + 0x24) * d->scale;
+        d->voice = -1;
+        if (func_001F9908_295DB0(&d->timer2) == 0) break;
+        d->length = func_001F9D10_295DB0(p->path->pts, &p->path->pts[p->path->count - 1]);
+        {
+            int n = func_001F9850_295DB0(240);
+            float t = func_001FA888_295DB0(n * func_001F9850_295DB0(240));
+            d->ticks = 0;
+            d->accel = d->length * 4.0f / t;
+        }
+        *(unsigned char *)(moby + 0x20) = 1;
+        break;
+    }
+    case 1: {
+        Track_295DB0 *p = &d->track;
+        float a = d->accel;
+        float s = 0.0f;
+        int n;
+        short cls = *(short *)(moby + 0xA6);
+        if (cls == 0x389 || cls == 0x364) {
+            if (func_L00_0028EB98_295DB0(moby, d->voice) == 0) {
+                d->voice = func_L00_0028EF68_295DB0(0, 4, moby, 0x389);
+            }
+        }
+        n = ++d->ticks;
+        if (func_001F9850_295DB0(240) / 2 < d->ticks) {
+            a = -a;
+            n = func_001F9850_295DB0(240) - d->ticks;
+            s = d->length;
+        }
+        s = s + a * 0.5f * func_001FA888_295DB0(n * n);
+        if (p->dir < 0) s = d->length - s;
+        func_001F9BF0_295DB0(v3, &p->path->pts[p->path->count - 1], p->path->pts);
+        *(Q_295DB0 *)v2 = *(Q_295DB0 *)v3;
+        func_L00_001FF4B0_295DB0(v2, v2, s);
+        func_001F9BD8_295DB0(v3, p->path->pts, v2);
+        *(Q_295DB0 *)(moby + 0x10) = *(Q_295DB0 *)v3;
+        if (d->ticks < func_001F9850_295DB0(240)) break;
+        p->dir *= -1;
+        if (d->voice != -1) {
+            Voice_295DB0 *e = (Voice_295DB0 *)(D_0013E650_295DB0 + d->voice * 0x70);
+            if (e->owner == moby && e->active != 0) func_L00_0028EBF0_295DB0(d->voice);
+        }
+        d->voice = -1;
+        *(unsigned char *)(moby + 0x20) = 2;
+        d->timer = func_001F9850_295DB0(d->wait);
+        break;
+    }
+    case 2:
+        if (func_001F9908_295DB0(&d->timer) == 0) break;
+        d->ticks = 0;
+        *(unsigned char *)(moby + 0x20) = 1;
+        break;
+    case 3: {
+        Track_295DB0 *p = &d->track;
+        char *pos = moby + 0x10;
+        int n = (d->track.idx + p->path->count + p->dir) % p->path->count;
+        int end = p->dir < 0 ? 0 : p->path->count - 1;
+        V_295DB0 *e;
+        func_001F9BF0_295DB0(&d->vA0, &p->path->pts[n], pos);
+        e = p->path->pts;
+        if (d->stopAtEnds != 0) e += n;
+        else e += end;
+        if (func_001F9D10_295DB0(pos, e) < d->brakeDist) {
+            func_00214D28_295DB0(&d->speed, D_0015EE6C_295DB0 * 0.5f,
+                d->topSpeed * d->topSpeed / d->brakeDist * D_0015EE70_295DB0 * 0.5f);
+        } else {
+            func_00214D28_295DB0(&d->speed, d->topSpeed * D_0015EE6C_295DB0,
+                d->topSpeed * d->topSpeed / d->brakeDist * D_0015EE70_295DB0 * 0.5f);
+        }
+        func_L00_002607A8_295DB0(&d->vA0, d->speed);
+        func_001F9BD8_295DB0(moby + 0x10, moby + 0x10, &d->vA0);
+        if (!(func_001F9D10_295DB0(moby + 0x10, &p->path->pts[n]) < d->speed + d->speed)) break;
+        p->idx = n;
+        if (n != end && d->stopAtEnds == 0) break;
+        if (d->wait <= 0) break;
+        if (d->voice != -1) {
+            Voice_295DB0 *e = (Voice_295DB0 *)(D_0013E650_295DB0 + d->voice * 0x70);
+            if (e->owner == moby && e->active != 0) func_L00_0028EBF0_295DB0(d->voice);
+        }
+        d->voice = -1;
+        *(unsigned char *)(moby + 0x20) = 4;
+        d->timer = func_001F9850_295DB0(d->wait);
+        break;
+    }
+    case 4:
+        if (func_001F9908_295DB0(&d->timer) != 0) *(unsigned char *)(moby + 0x20) = 3;
+        break;
+    }
+    func_001F9BD8_295DB0(v0, v0, moby + 0x10);
+    func_L00_002617B0_295DB0(d->f60, v0, v1, moby + 0x40);
+}
 extern void func_L00_00250800(void *, int, void *);
 extern float func_001F9D10(void *, void *);
 extern void func_001F9BF0(void *, void *, void *);

@@ -319,7 +319,227 @@ int func_L00_002E3640(int id, void *src, void *v) {
     }
     return 0;
 }
-INCLUDE_ASM("asm/overlays", func_L00_002E3700);
+typedef float Vec_2E3700[4] __attribute__((aligned(16)));
+typedef struct { float x, y, z, w; } Pt_2E3700;
+typedef struct { char pad0[0x30]; float v30[4]; } Slot_2E3700;
+typedef struct { float v[4]; char pad10[0x30]; } End_2E3700;
+typedef struct { float v[4]; } Q_2E3700;
+typedef struct {
+    char pad0[0x10];
+    float f10;
+    short f14;
+    short f16;
+    int f18;
+} PartSub_2E3700;
+typedef struct {
+    char pad0[0xA];
+    short fA;
+    float fC;
+    char pad10[0x10];
+    PartSub_2E3700 sub;
+} Part_2E3700;
+typedef struct { char pad0[0x10]; float v10[3]; float f1C; } Snd_2E3700;
+typedef int u128_2E3700 __attribute__((mode(TI)));
+typedef union { u128_2E3700 q; float f[4]; } VecU_2E3700;
+extern Slot_2E3700 D_L00_001E7070_2E3700[] __asm__("D_L00_001E7070");
+extern End_2E3700 D_L00_001E70A0_2E3700[] __asm__("D_L00_001E70A0");
+extern Q_2E3700 D_L00_001E7130_2E3700[] __asm__("D_L00_001E7130");
+extern Q_2E3700 D_L00_001E7160_2E3700[] __asm__("D_L00_001E7160");
+extern Pt_2E3700 D_L00_001E7190_2E3700[][20] __asm__("D_L00_001E7190");
+extern Snd_2E3700 D_L00_001803C0_2E3700[] __asm__("D_L00_001803C0");
+extern char D_0013E633_2E3700[] __asm__("D_0013E633");
+extern char D_L00_0015F660_2E3700[] __asm__("D_L00_0015F660") MACRO_ADDR;
+extern int D_L00_00161CC8_2E3700[] __asm__("D_L00_00161CC8") MACRO_ADDR;
+extern float D_L00_00161CD8_2E3700[] __asm__("D_L00_00161CD8") MACRO_ADDR;
+extern float D_L00_00161CE8_2E3700[] __asm__("D_L00_00161CE8") MACRO_ADDR;
+extern float D_L00_00161CF8_2E3700[] __asm__("D_L00_00161CF8") MACRO_ADDR;
+extern int D_L00_00161D08_2E3700[] __asm__("D_L00_00161D08") MACRO_ADDR;
+extern int D_L00_00161D18_2E3700[] __asm__("D_L00_00161D18") MACRO_ADDR;
+extern int D_L00_00161D28_2E3700[] __asm__("D_L00_00161D28") MACRO_ADDR;
+extern int D_L00_00161D38_2E3700[] __asm__("D_L00_00161D38") MACRO_ADDR;
+extern int D_L00_00161D58_2E3700[] __asm__("D_L00_00161D58") MACRO_ADDR;
+extern float D_L00_00161CC0_2E3700 SDATA(D_L00_00161CC0);
+extern void func_001F9BF0_2E3700(void *, void *, void *) __asm__("func_001F9BF0");
+extern float func_001F9CB8_2E3700(void *) __asm__("func_001F9CB8");
+extern float func_001FA748_2E3700(float, float) __asm__("func_001FA748");
+extern float func_001FA790_2E3700(float, float) __asm__("func_001FA790");
+extern float func_001FA888_2E3700(int) __asm__("func_001FA888");
+extern float func_L00_0025F368_2E3700(float) __asm__("func_L00_0025F368");
+extern float func_001F9FA8_2E3700(float) __asm__("func_001F9FA8");
+extern float func_001F9F90_2E3700(float) __asm__("func_001F9F90");
+extern void func_L00_001FF4B0_2E3700(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern void func_001F9CA0_2E3700(void *, void *, void *) __asm__("func_001F9CA0");
+extern void func_001F9EE8_2E3700(void *, void *, void *) __asm__("func_001F9EE8");
+extern void func_001F9EC0_2E3700(void *, void *, void *) __asm__("func_001F9EC0");
+extern float func_L00_00258C80_2E3700(float, float) __asm__("func_L00_00258C80");
+extern float func_002140F8_2E3700(float, float) __asm__("func_002140F8");
+extern Part_2E3700 *func_L00_002757E8_2E3700(void *, void *, int, int) __asm__("func_L00_002757E8");
+extern int func_002140B0_2E3700(int) __asm__("func_002140B0");
+extern void func_001F9C30_2E3700(void *, void *, float) __asm__("func_001F9C30");
+extern void func_001F9BD8_2E3700(void *, void *, void *) __asm__("func_001F9BD8");
+extern int func_001F9850_2E3700(int) __asm__("func_001F9850");
+extern void func_002141A8_2E3700(void *, float, float) __asm__("func_002141A8");
+extern int func_L00_0023F0D0_2E3700(float *, float, float, float, float, float) __asm__("func_L00_0023F0D0");
+
+/* Per-frame update of one beam slot: lays out the two 20-point strips between the slot's ends
+   (a sine wave and a noisy one), spawns sparks at both ends and keeps the two looping sounds
+   at the ends. */
+void func_L00_002E3700(int unused, int idx) {
+    Vec_2E3700 d;
+    Vec_2E3700 dir;
+    Vec_2E3700 side;
+    Vec_2E3700 up;
+    Vec_2E3700 from;
+    Vec_2E3700 d2;
+    Vec_2E3700 tip;
+    VecU_2E3700 vel;
+    Vec_2E3700 pos;
+    int k = idx * 2;
+    int k1 = k + 1;
+    float step;
+    float ang;
+    float one;
+    Pt_2E3700 *p;
+    int i;
+    int j;
+    int n;
+
+    func_001F9BF0_2E3700(d, &D_L00_001E7130_2E3700[idx], &D_L00_001E70A0_2E3700[idx]);
+    step = func_001F9CB8_2E3700(d) / 20.0f;
+    if (D_L00_00161CC8_2E3700[idx] == 2) {
+        D_L00_00161CC8_2E3700[idx] = 3;
+        for (i = 0; i < 20; i++) {
+            Pt_2E3700 *a = &D_L00_001E7190_2E3700[k][i];
+            Pt_2E3700 *b = &D_L00_001E7190_2E3700[k1][i];
+
+            a->x = step * (float)i;
+            a->y = a->z = 0.0f;
+            a->w = 1.0f;
+            b->x = step * (float)i;
+            b->y = b->z = 0.0f;
+            b->w = 1.0f;
+        }
+    }
+    D_L00_00161CD8_2E3700[idx] = func_001FA748_2E3700(D_L00_00161CD8_2E3700[idx], 0.17453292f);
+    D_L00_00161CE8_2E3700[idx] = func_001FA790_2E3700(D_L00_00161CE8_2E3700[idx], 0.80285144f);
+    D_L00_00161CF8_2E3700[idx] = func_001FA748_2E3700(D_L00_00161CF8_2E3700[idx], 0.05236f);
+    ang = 360.0f / (func_001FA888_2E3700(20) * 0.5f) * 0.017453292f;
+    for (j = 0; j < 19; j++) {
+        float fj = (float)j;
+        float a = func_001FA888_2E3700(j) / func_001FA888_2E3700(20) * 0.3f + 0.1f;
+        Pt_2E3700 *p = &D_L00_001E7190_2E3700[k][j];
+
+        a = a * func_001F9FA8_2E3700(func_L00_0025F368_2E3700(D_L00_00161CD8_2E3700[idx] + fj * ang));
+        p->y = 0.0f;
+        p->w = 1.0f;
+        p->z = a;
+        p->x = step * fj;
+    }
+    qcopy_nc(from, &D_L00_001E70A0_2E3700[idx]);
+    one = 1.0f;
+    func_001F9BF0_2E3700(d2, &D_L00_001E7130_2E3700[idx], from);
+    func_L00_001FF4B0_2E3700(dir, d2, one);
+    func_001F9CA0_2E3700(side, dir, D_0013E633_2E3700 + 0x10AD);
+    func_L00_001FF4B0_2E3700(side, side, -1.0f);
+    func_001F9CA0_2E3700(up, side, dir);
+    func_001F9EE8_2E3700(tip, &D_L00_001E7190_2E3700[k][18], dir);
+    qcopy(&D_L00_001E7160_2E3700[idx], tip);
+    p = D_L00_001E7190_2E3700[k1];
+    for (n = 0; n < 19; n++) {
+        float fn = (float)n;
+        float s;
+        float t;
+        float a;
+        float b;
+        float c;
+
+        p->z = 0.0f;
+        s = func_L00_0025F368_2E3700(D_L00_00161CE8_2E3700[idx] + fn * 0.99483764f);
+        t = func_L00_0025F368_2E3700(D_L00_00161CF8_2E3700[idx] + fn * 0.20944f);
+        a = func_001F9FA8_2E3700(t) * 0.5f;
+        b = func_001F9FA8_2E3700(s);
+        c = func_L00_00258C80_2E3700(0.0f, 0.2f);
+        p->z += a * b + c;
+        p->y = func_001F9F90_2E3700(s) * 0.3f;
+        p->w = 1.0f;
+        p->x = step * fn;
+        p++;
+    }
+    {
+        float one;
+        float r = func_002140F8_2E3700(0.01f, 0.05f);
+        float a;
+
+        one = 1.0f;
+        a = func_L00_00258C80_2E3700(0.34906584f, 0.6981317f);
+        vel.q = 0;
+        vel.f[0] = one;
+        vel.f[3] = one;
+        vel.f[0] = r * func_001F9F90_2E3700(a);
+        vel.f[1] = r * func_001F9FA8_2E3700(a);
+        func_001F9EC0_2E3700(&vel, &vel, &D_L00_001E7070_2E3700[idx]);
+        func_L00_002757E8_2E3700(D_L00_001E7070_2E3700[idx].v30, &vel, 0x7F, D_L00_00161D58_2E3700[idx]);
+        if (func_002140B0_2E3700(3) == 0) {
+            Part_2E3700 *p;
+
+            func_001F9C30_2E3700(pos, &D_L00_001E7070_2E3700[idx], 0.3f);
+            func_001F9BD8_2E3700(pos, pos, D_L00_001E7070_2E3700[idx].v30);
+            p = func_L00_002757E8_2E3700(pos, D_L00_0015F660_2E3700, 0x7F, D_L00_00161D58_2E3700[idx]);
+            if (p != 0) {
+                PartSub_2E3700 *q = &p->sub;
+
+                p->fC = 120000.0f;
+                p->fA = func_001F9850_2E3700(4);
+                q->f10 = one / func_001FA888_2E3700(p->fA);
+                q->f18 = 0x7F7F7F;
+                if (D_L00_00161D38_2E3700[idx] == 1) q->f16 = 1;
+            }
+        }
+        func_002140F8_2E3700(0.01f, 0.05f);
+        func_002141A8_2E3700(&vel, 0.01f, 0.05f);
+        func_L00_002757E8_2E3700(tip, &vel, 0x7F, D_L00_00161D58_2E3700[idx]);
+        if (func_002140B0_2E3700(3) == 0) {
+            Part_2E3700 *p = func_L00_002757E8_2E3700(tip, D_L00_0015F660_2E3700, 0x7F, D_L00_00161D58_2E3700[idx]);
+
+            if (p != 0) {
+                PartSub_2E3700 *q = &p->sub;
+
+                p->fC = 120000.0f;
+                p->fA = func_001F9850_2E3700(4);
+                q->f10 = 1.0f / func_001FA888_2E3700(p->fA);
+                q->f18 = 0x7F7F7F;
+                if (D_L00_00161D38_2E3700[idx] == 1) q->f16 = 2;
+            }
+        }
+    }
+    if (D_L00_00161D28_2E3700[idx] != 0) {
+        if (D_L00_00161D28_2E3700[idx] & 1) {
+            qcopy(pos, &D_L00_001E70A0_2E3700[idx]);
+            pos[2] -= 0.25f;
+            if (D_L00_00161D08_2E3700[idx] == -1) {
+                D_L00_00161D08_2E3700[idx] = func_L00_0023F0D0_2E3700(pos, D_L00_00161CC0_2E3700, 0.0f, 1.0f, 1.0f, 2.0f);
+            }
+            if (D_L00_00161D08_2E3700[idx] >= 0) {
+                Snd_2E3700 *s = &D_L00_001803C0_2E3700[D_L00_00161D08_2E3700[idx]];
+
+                qcopy(s->v10, pos);
+                s->f1C = D_L00_00161CC0_2E3700;
+            }
+        }
+        if (D_L00_00161D28_2E3700[idx] & 2) {
+            tip[2] += 0.5f;
+            if (D_L00_00161D18_2E3700[idx] == -1) {
+                D_L00_00161D18_2E3700[idx] = func_L00_0023F0D0_2E3700(tip, D_L00_00161CC0_2E3700, 0.0f, 1.0f, 1.0f, 2.0f);
+            }
+            if (D_L00_00161D18_2E3700[idx] >= 0) {
+                Snd_2E3700 *s = &D_L00_001803C0_2E3700[D_L00_00161D18_2E3700[idx]];
+
+                qcopy(s->v10, tip);
+                s->f1C = D_L00_00161CC0_2E3700;
+            }
+        }
+    }
+}
 typedef struct { char b[0x140]; } Pane_2e3fa0;
 extern float D_L00_00161D48_f[] __asm__("D_L00_00161D48") MACRO_ADDR;
 extern float D_0015EE60 MACRO_ADDR;
