@@ -299,6 +299,15 @@ and stop, rather than spending the budget on it:
   wrong callee or global fails here.
 - Don't build the executable to check one: it doesn't include
   `src/overlays/`.
+- A candidate that is exact alone and does not compile in its file, or
+  changes a neighbour's size there, clashes with the file's declarations:
+  the same type name defined twice, a callee with another prototype, or a
+  global the file reaches another way (a plain `extern short X;` makes X
+  a `$gp` symbol for the whole file). `python3 tools/privatize.py IN.c
+  OUT.c <address> --func <FUNC>` gives every type, callee and global of
+  the candidate a name of its own, statements untouched; then check the
+  whole file (`tools/overlay_file_check.py`). Forty-odd candidates landed
+  that way on 2026-10-09.
 
 ## What to hand back
 
