@@ -18,7 +18,10 @@ SUFFIX is usually the function's address without its leading zeros (2C9820).
       extern T X MACRO_ADDR;        -> extern T X_SUFFIX __asm__("X") MACRO_ADDR;
       extern short|char|u8.. X;     -> extern short X_SUFFIX SDATA(X);   ($gp access)
       extern T X;  / extern T X[];  -> extern T X_SUFFIX __asm__("X");
-  declarations that already carry __asm__ keep their C name;
+  declarations that already carry __asm__ keep their C name, but a bare
+  alias of a small type, `extern short X_n __asm__("X");`, becomes
+  `extern short X_n SDATA(X);` and is reported: it still gives X a small
+  size for the whole file (the assembler goes by the last `.extern`);
 - --self-alias (with --func): the definition `RET FUNC(ARGS) {` becomes the
   alias form FUNC_r, for a file that declares FUNC with another prototype.
 
@@ -58,12 +61,20 @@ for l in lines:
     if m and want(m.group(1)): ren[m.group(1)] = m.group(1) + S
 
 out = []
+small_aliases = []
 depth = 0
 for l in lines:
     d0 = depth
     depth += l.count("{") - l.count("}")
     if d0 != 0 or "{" in l:
         out.append(l); continue
+    # A bare alias of a small type is not private: it still writes `.extern X, 2`,
+    # and the assembler goes by the last .extern it reads, so a 4-byte declaration
+    # of X elsewhere in the file changes with it. SDATA has a label of its own.
+    m = re.match(r'^extern\s+(.*?[\s\*])([A-Za-z_]\w*)\s*__asm__\("(\w+)"\)\s*;\s*$', l)
+    if m and m.group(1).strip() in SMALL and m.group(2) not in keep:
+        out.append(f'extern {m.group(1).strip()} {m.group(2)} SDATA({m.group(3)});')
+        small_aliases.append(m.group(3)); continue
     if "__asm__" in l or not l.rstrip().endswith(";"):
         out.append(l); continue
     # function prototype
@@ -105,6 +116,9 @@ if self_alias:
     text = text[:m.start()] + proto + f' __asm__("{func}");\n' + proto + " {" + text[m.end():]
 open(dst, "w").write(text)
 print("renamed:", ", ".join(f"{a}" for a in sorted(ren)))
+if small_aliases:
+    print("small aliases made SDATA (retail must reach these through $gp; --keep the C name otherwise):",
+          ", ".join(small_aliases))
 for a in ren:
     if re.search(r"(\.|->)\s*" + re.escape(ren[a]) + r"\b", text):
         print("WARNING: member access renamed:", a)
