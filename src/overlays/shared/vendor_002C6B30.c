@@ -2,7 +2,381 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L09_002C6B30);
+typedef struct { f32 x; f32 y; f32 z; } Vec3_2C6B30;
+typedef struct { f32 x; f32 y; f32 z; f32 w; } Vec4f_2C6B30;
+struct MobyClass_2C6B30 {
+    u8 pad_0[0xC];
+    u8 seq_count;
+    u8 pad_D[3];
+    u32 unk10;
+    u8 pad_14[0x8];
+    void *unk1C;
+    void *gifs;
+    f32 scale;
+    s32 unk28;
+    void **callbacks;
+    u8 pad_30[0x14];
+    u16 flags;
+    s16 unk46;
+    void *seqs[1];
+};
+struct Moby_2C6B30 {
+    Vec4f_2C6B30 bsphere;
+    Vec4f_2C6B30 pos;
+    u8 state;
+    u8 group;
+    u8 unk22;
+    u8 unk23;
+    struct MobyClass_2C6B30 *pclass;
+    struct Moby_2C6B30 *next;
+    f32 scale;
+    u8 unk30;
+    u8 unk31;
+    s16 unk32;
+    u16 flags;
+    u16 unk36;
+    u64 spawn_frame;
+    Vec4f_2C6B30 rot;
+    u8 frame;
+    u8 prev_frame;
+    u8 seq;
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    void *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71;
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_2C6B30 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F;
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94;
+    s32 unk98;
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0;
+    u8 padB1;
+    u16 save_id;
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8;
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_2C6B30 unkC0;
+    Vec4f_2C6B30 unkD0;
+    Vec4f_2C6B30 unkE0;
+    u8 padF0[0x10];
+};
+typedef int u128_2C6B30 __attribute__((mode(TI)));
+typedef union {
+    u128_2C6B30 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4_2C6B30;
+/* Per-instance variables of the oClass 52 moby (moby->pvars). */
+typedef struct {
+    u8 pad0[0x20];
+    f32 unk20;
+    s16 unk24;
+    u8 pad26[2];
+    u8 unk28;
+    u8 pad29[0x2F];
+    u8 unk58;
+    u8 pad59;
+    u8 unk5A;
+    u8 pad5B[0x15];
+    Vec4_2C6B30 vel;
+    u8 pad80[0x50];
+    s32 unkD0;
+    u8 padD4[4];
+    f32 unkD8;
+    f32 unkDC;
+    u8 padE0[0x14];
+    f32 speed;
+    u8 padF8[0x68];
+    struct Moby_2C6B30 *target;
+    s32 unk164;
+    u8 pad168[0x18];
+    s32 unk180;
+    s32 timer;
+    u8 pad188[4];
+    f32 heading_speed;
+    u8 pad190[4];
+    s32 voice;
+    s32 moving;
+    u8 pad19C[0xE4];
+    u8 unk280[1];
+} Moby52Vars_2C6B30;
+
+typedef struct {
+    u8 pad0[0x74];
+    u8 active;
+    u8 pad75[0x13];
+    struct Moby_2C6B30 *owner;
+} VoiceSlot_2C6B30;
+
+/* The hero block D_0013F450, cut down to the position this function reads. */
+typedef struct {
+    u8 pad0[0x80];
+    Vec4_2C6B30 pos;
+} Hero_2C6B30;
+
+extern Hero_2C6B30 D_0013F450_2C6B30 __asm__("D_0013F450");
+extern u8 D_0013E650_2C6B30[] __asm__("D_0013E650");
+extern f32 D_0015EE60_2C6B30 __asm__("D_0015EE60") MACRO_ADDR;
+extern f32 D_0015EE6C_2C6B30 __asm__("D_0015EE6C") MACRO_ADDR;
+extern f32 D_0015EE70_2C6B30 __asm__("D_0015EE70") MACRO_ADDR;
+extern s32 D_L09_0015F6A8_2C6B30 __asm__("D_L09_0015F6A8") MACRO_ADDR;
+extern Vec4f_2C6B30 D_L09_00166FC0_2C6B30 __asm__("D_L09_00166FC0");
+extern u8 D_L09_00208610_2C6B30[] __asm__("D_L09_00208610");
+
+extern void func_001E9730_2C6B30(void *, s16) __asm__("func_001E9730");
+extern s32 func_001F9850_2C6B30(s32) __asm__("func_001F9850");
+extern void func_001F9BC0_2C6B30(Vec4_2C6B30 *) __asm__("func_001F9BC0");
+extern f32 func_001F9CB8_2C6B30(Vec4_2C6B30 *) __asm__("func_001F9CB8");
+extern f32 func_001F9D10_2C6B30(void *, void *) __asm__("func_001F9D10");
+extern f32 func_001F9D48_2C6B30(void *, void *) __asm__("func_001F9D48");
+extern f32 func_001F9F90_2C6B30(f32) __asm__("func_001F9F90");
+extern f32 func_001F9FA8_2C6B30(f32) __asm__("func_001F9FA8");
+extern f32 func_L00_001FF860_2C6B30(f32, f32) __asm__("func_L00_001FF860");
+extern s32 func_001FA898_2C6B30(f32) __asm__("func_001FA898");
+extern void func_0020D678_2C6B30(struct Moby_2C6B30 *) __asm__("func_0020D678");
+extern void func_00213DE0_2C6B30(struct Moby_2C6B30 *, s32, s32, s32) __asm__("func_00213DE0");
+extern s32 func_002140B0_2C6B30(s32) __asm__("func_002140B0");
+extern f32 func_002140F8_2C6B30(f32, f32) __asm__("func_002140F8");
+extern f32 func_00214358_2C6B30(void *, s32, f32) __asm__("func_00214358");
+extern void func_L00_0028EBF0_2C6B30(s32) __asm__("func_L00_0028EBF0");
+extern s32 func_0022ED80_2C6B30(s32, s32, struct Moby_2C6B30 *) __asm__("func_0022ED80");
+extern void func_L00_002584A8_2C6B30(struct Moby_2C6B30 *, s32, s32) __asm__("func_L00_002584A8");
+extern s32 func_L00_00258BC8_2C6B30(s32, s32) __asm__("func_L00_00258BC8");
+extern void func_L00_00259868_2C6B30(struct Moby_2C6B30 *, Vec4_2C6B30 *, s32, f32, f32, f32) __asm__("func_L00_00259868");
+extern void func_L00_0025B178_2C6B30(struct Moby_2C6B30 *) __asm__("func_L00_0025B178");
+extern void func_L00_0025CE58_2C6B30(f32 *, f32, f32 *, f32, f32, f32) __asm__("func_L00_0025CE58");
+extern s32 func_L00_0025D6F0_2C6B30(struct Moby_2C6B30 *, Vec4_2C6B30 *) __asm__("func_L00_0025D6F0");
+extern void func_L00_0025F4A8_2C6B30(struct Moby_2C6B30 *, Vec4_2C6B30 *, void *, s32, f32, f32, f32, f32, f32, f32, f32, s32,
+                             s32, s32, s32, s32, s32, s32) __asm__("func_L00_0025F4A8");
+extern void func_L00_00260108_2C6B30(struct Moby_2C6B30 *, void *, s32, f32, f32) __asm__("func_L00_00260108");
+extern void func_L00_00264B40_2C6B30(struct Moby_2C6B30 *, s32, void *, f32) __asm__("func_L00_00264B40");
+extern void func_L01_0026E8E0_2C6B30(void *) __asm__("func_L01_0026E8E0");
+extern void func_L01_0026F040_2C6B30(s32, s32) __asm__("func_L01_0026F040");
+extern void func_L09_002C73D0_2C6B30(struct Moby_2C6B30 *) __asm__("func_L09_002C73D0");
+
+/* Update of the oClass 52 moby: follows its target at a hover height above the hero, with a voice while it moves,
+ * and bursts or is removed in its last states.
+ * Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay/entities/002c5990.c, FUN_L09_002c5990. */
+void func_L09_002C6B30(struct Moby_2C6B30 *moby) {
+    Moby52Vars_2C6B30 *vars = (Moby52Vars_2C6B30 *)moby->pvars;
+    struct Moby_2C6B30 *target;
+    Vec4_2C6B30 vel;
+    s32 mode;
+    s32 voice;
+    f32 dist;
+    f32 z;
+    f32 height;
+    f32 limit;
+    f32 diff;
+    VoiceSlot_2C6B30 *slot;
+
+    func_L09_002C73D0_2C6B30(moby);
+    target = vars->target;
+    func_L00_00264B40_2C6B30(moby, 0, vars->unk280, 2.7f);
+    if (moby->unk31 != 0 && func_001F9D10_2C6B30(&moby->pos, &D_L09_00166FC0_2C6B30) < 29.0f) {
+        func_L00_0025B178_2C6B30(moby);
+        moby->unk7F = 0x17;
+    }
+    mode = D_L09_0015F6A8_2C6B30;
+    if (mode == 2) {
+        return;
+    }
+    switch (moby->state) {
+    case 0:
+        vars->unk20 = 3.0f;
+        vars->unk24 = 3;
+        vars->unk28 = 2;
+        vars->unk5A = 6;
+        vars->unk58 = 8;
+        if (vars->unk180 == -1) {
+            func_001E9730_2C6B30(D_L09_00208610_2C6B30, moby->save_id);
+            func_0020D678_2C6B30(moby);
+            break;
+        }
+        func_L01_0026E8E0_2C6B30(&vars->unkD0);
+        vars->unkDC = 0.5f;
+        vars->unkD8 = 0.5f;
+        vars->unkD0 = func_001FA898_2C6B30(512.0f);
+        vars->speed = D_0015EE6C_2C6B30 * 7.75f;
+        moby->state = 1;
+        if (moby->prev_seq != 1) {
+            func_00213DE0_2C6B30(moby, 1, 0, func_001F9850_2C6B30(10));
+        }
+        vars->voice = -1;
+        break;
+    case 1:
+        moby->pos.z += (func_00214358_2C6B30(&moby->pos, 0, 0.5f) + 0.5f - moby->pos.z) * 0.1f;
+        func_L00_0025CE58_2C6B30(&moby->rot.z,
+                         func_L00_001FF860_2C6B30(target->pos.x - moby->pos.x, target->pos.y - moby->pos.y),
+                         &vars->heading_speed, D_0015EE70_2C6B30 * 8.726646f, D_0015EE70_2C6B30 * 8.726646f,
+                         D_0015EE6C_2C6B30 * 12.566371f);
+        if (moby->unk70 & 2) {
+            if (func_002140B0_2C6B30(0x13) == 0) {
+                if (moby->prev_seq != 2) {
+                    func_00213DE0_2C6B30(moby, 2, 0, func_L00_00258BC8_2C6B30(7, 12));
+                }
+            } else if (moby->prev_seq != 1) {
+                func_00213DE0_2C6B30(moby, 1, 0, func_L00_00258BC8_2C6B30(7, 14));
+            }
+            moby->unk58 = func_002140F8_2C6B30(0.95f, 1.05f);
+        }
+        if (vars->unk164 != 2) {
+            if (moby->group != 0xFF) {
+                func_L01_0026F040_2C6B30(moby->group, 1);
+            }
+            if (vars->voice == -1) {
+                vars->voice = func_0022ED80_2C6B30(1, 4, moby);
+            }
+            vars->moving = 1;
+            moby->state = 2;
+        }
+        break;
+    case 3:
+        if (moby->unk70 & 2) {
+            if (moby->group != 0xFF) {
+                func_L01_0026F040_2C6B30(moby->group, 1);
+            }
+            vars->moving = 1;
+            moby->state = 4;
+            if (vars->voice == -1) {
+                vars->voice = func_0022ED80_2C6B30(1, 4, moby);
+            }
+            if (moby->prev_seq != 4) {
+                func_00213DE0_2C6B30(moby, 4, 0, func_001F9850_2C6B30(10));
+            }
+            if (vars->timer == 0) {
+                vars->timer = func_001F9850_2C6B30(180);
+            }
+        }
+        break;
+    case 2:
+    case 4:
+        z = moby->pos.z;
+        func_L00_0025CE58_2C6B30(&moby->rot.z,
+                         func_L00_001FF860_2C6B30(target->pos.x - moby->pos.x, target->pos.y - moby->pos.y),
+                         &vars->heading_speed, D_0015EE70_2C6B30 * 8.726646f, D_0015EE70_2C6B30 * 8.726646f,
+                         D_0015EE6C_2C6B30 * 12.566371f);
+        dist = func_001F9D48_2C6B30(&moby->pos, &target->pos);
+        if (dist > 1.9f) {
+            vars->moving = 1;
+        }
+        if (dist < 1.4f) {
+            vars->moving = 0;
+        }
+        if (vars->moving != 0) {
+            vel.f[0] = func_001F9F90_2C6B30(moby->rot.z) * vars->speed;
+            vel.f[1] = func_001F9FA8_2C6B30(moby->rot.z) * vars->speed;
+            vel.f[2] = 0.0f;
+            diff = D_0013F450_2C6B30.pos.f[2] + 0.8f - z;
+            if (moby->pos.z < D_0013F450_2C6B30.pos.f[2] + 0.8f) {
+                diff *= 0.1f;
+            } else {
+                diff *= 0.05f;
+            }
+            vel.f[2] += diff;
+            limit = D_0015EE60_2C6B30 * 0.3f;
+            if (vel.f[2] > limit) {
+                vel.f[2] = limit;
+            } else {
+                limit = D_0015EE60_2C6B30 * -0.3f;
+                if (vel.f[2] < limit) {
+                    vel.f[2] = limit;
+                }
+            }
+            func_L00_00259868_2C6B30(moby, &vel, 0, 0.0f, 0.5f, 0.0f);
+        } else {
+            qzero(&vel);
+            diff = D_0013F450_2C6B30.pos.f[2] + 0.2f - z;
+            if (moby->pos.z < D_0013F450_2C6B30.pos.f[2] + 0.2f) {
+                diff *= 0.1f;
+            } else {
+                diff *= 0.05f;
+            }
+            vel.f[2] += diff;
+            limit = D_0015EE60_2C6B30 * 0.3f;
+            if (vel.f[2] > limit) {
+                vel.f[2] = limit;
+            } else {
+                limit = D_0015EE60_2C6B30 * -0.3f;
+                if (vel.f[2] < limit) {
+                    vel.f[2] = limit;
+                }
+            }
+            func_L00_00259868_2C6B30(moby, &vel, 0, 0.0f, 0.5f, 0.0f);
+        }
+        if (dist < 6.0f && moby->state == 2) {
+            moby->state = 3;
+            if (moby->prev_seq != 3) {
+                func_00213DE0_2C6B30(moby, 3, 0, func_001F9850_2C6B30(10));
+            }
+        }
+        break;
+    case 5:
+        height = moby->pos.z;
+        func_L00_0025D6F0_2C6B30(moby, &vars->vel);
+        moby->pos.z = height;
+        vars->vel.f[2] = 0.0f;
+        if (func_001F9CB8_2C6B30(&vars->vel) < D_0015EE6C_2C6B30 * 2.0f) {
+            if (vars->voice == -1) {
+                vars->voice = func_0022ED80_2C6B30(1, 4, moby);
+            }
+            vars->moving = 1;
+            moby->state = 4;
+            if (vars->timer == 0) {
+                vars->timer = func_001F9850_2C6B30(180);
+            }
+        }
+        break;
+    case 6:
+        voice = vars->voice;
+        if (voice != -1) {
+            slot = (VoiceSlot_2C6B30 *)(D_0013E650_2C6B30 + voice * 0x70);
+            if (slot->owner == moby && slot->active != 0) {
+                func_L00_0028EBF0_2C6B30(voice);
+            }
+        }
+        vars->voice = -1;
+        if (func_L00_0025D6F0_2C6B30(moby, &vars->vel) & 0x121) {
+            func_L00_00260108_2C6B30(moby, &moby->pos, 0, 0.5f, 13.0f);
+            func_0020D678_2C6B30(moby);
+        }
+        break;
+    case 7:
+        func_L00_002584A8_2C6B30(moby, 0, -1);
+        voice = vars->voice;
+        if (voice != -1) {
+            slot = (VoiceSlot_2C6B30 *)(D_0013E650_2C6B30 + voice * 0x70);
+            if (slot->owner == moby && slot->active != 0) {
+                func_L00_0028EBF0_2C6B30(voice);
+            }
+        }
+        vars->voice = -1;
+        func_001F9BC0_2C6B30(&vel);
+        func_L00_0025F4A8_2C6B30(moby, &vel, &moby->pos, 10, 2.0f, 1.0f, 4.0f, 2.0f, 9.0f, 1.0f, 15.0f, 3, 0x10,
+                         0, 0, 0, -1, 0);
+        func_0020D678_2C6B30(moby);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L09_002C73D0);
 INCLUDE_ASM("asm/overlays", func_L09_002E39E0);
 typedef int OvlQuad_08F58 __attribute__((mode(TI)));

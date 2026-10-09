@@ -2,7 +2,315 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L08_002EAF48);
+typedef struct { f32 x; f32 y; f32 z; } Vec3_2EAF48;
+typedef struct { f32 x; f32 y; f32 z; f32 w; } Vec4f_2EAF48;
+struct MobyClass_2EAF48 {
+    u8 pad_0[0xC];
+    u8 seq_count;
+    u8 pad_D[3];
+    u32 unk10;
+    u8 pad_14[0x8];
+    void *unk1C;
+    void *gifs;
+    f32 scale;
+    s32 unk28;
+    void **callbacks;
+    u8 pad_30[0x14];
+    u16 flags;
+    s16 unk46;
+    void *seqs[1];
+};
+struct Moby_2EAF48 {
+    Vec4f_2EAF48 bsphere;
+    Vec4f_2EAF48 pos;
+    u8 state;
+    u8 group;
+    u8 unk22;
+    u8 unk23;
+    struct MobyClass_2EAF48 *pclass;
+    struct Moby_2EAF48 *next;
+    f32 scale;
+    u8 unk30;
+    u8 unk31;
+    s16 unk32;
+    u16 flags;
+    u16 unk36;
+    u64 spawn_frame;
+    Vec4f_2EAF48 rot;
+    u8 frame;
+    u8 prev_frame;
+    u8 seq;
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    void *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71;
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_2EAF48 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F;
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94;
+    s32 unk98;
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0;
+    u8 padB1;
+    u16 save_id;
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8;
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_2EAF48 unkC0;
+    Vec4f_2EAF48 unkD0;
+    Vec4f_2EAF48 unkE0;
+    u8 padF0[0x10];
+};
+typedef int u128_2EAF48 __attribute__((mode(TI)));
+typedef union {
+    u128_2EAF48 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4_2EAF48;
+/* A looping waypoint path: count points, 16 bytes apart. */
+typedef struct {
+    s32 count;
+    u8 pad4[0xC];
+    Vec4_2EAF48 points[1];
+} SwarmPath_2EAF48;
+/* Position on a path: the current point, the step direction and the path. */
+typedef struct {
+    s32 point;
+    s8 direction;
+    u8 pad5[0xB];
+    SwarmPath_2EAF48 *path;
+    s32 path_id;
+    u8 pad18[0x18];
+} SwarmPathFollower_2EAF48;
+/* Child moby slot, as func_L08_002EA930 fills them. */
+typedef struct {
+    struct Moby_2EAF48 *moby;
+    struct Moby_2EAF48 *parent;
+    s32 joint;
+    s32 parent_joint;
+} SwarmPart_2EAF48;
+typedef struct {
+    SwarmPathFollower_2EAF48 follow[2];
+    SwarmPart_2EAF48 root;
+    SwarmPart_2EAF48 parts[16];
+    s32 target_index;
+    f32 turn_speed;
+    s32 fire_timer;
+    s16 pad17C;
+    s16 sound;
+} SwarmVars_2EAF48;
+/* pvars of the target: the projectiles fired at it. */
+typedef struct {
+    u8 pad0[0x60];
+    struct Moby_2EAF48 *shots[8];
+} SwarmTargetVars_2EAF48;
+
+extern s32 D_L08_00161DD0_2EAF48 SDATA(D_L08_00161DD0);
+extern f32 D_L08_00161DC4_2EAF48 SDATA(D_L08_00161DC4);
+extern float D_0015EE6C_2EAF48 __asm__("D_0015EE6C") MACRO_ADDR;
+extern s32 D_0015EE84_2EAF48 __asm__("D_0015EE84") MACRO_ADDR;
+extern u8 D_0014C150_2EAF48[] __asm__("D_0014C150");
+extern SwarmPath_2EAF48 *D_L08_001B0FB0_2EAF48[] __asm__("D_L08_001B0FB0");
+extern struct Moby_2EAF48 *D_L08_00160058_2EAF48 __asm__("D_L08_00160058") MACRO_ADDR;
+
+extern s32 func_L00_0028EB98_2EAF48(struct Moby_2EAF48 *, s32) __asm__("func_L00_0028EB98");
+extern s32 func_0022ED80_2EAF48(s32, s32, struct Moby_2EAF48 *) __asm__("func_0022ED80");
+extern void func_0020D678_2EAF48(void *) __asm__("func_0020D678");
+extern f32 func_002140F8_2EAF48(f32, f32) __asm__("func_002140F8");
+extern f32 func_00214158_2EAF48(void) __asm__("func_00214158");
+extern f32 func_001F9878_2EAF48(f32) __asm__("func_001F9878");
+extern s32 func_001FA898_2EAF48(f32) __asm__("func_001FA898");
+extern f32 func_L00_001FF860_2EAF48(f32, f32) __asm__("func_L00_001FF860");
+extern f32 func_001FA748_2EAF48(f32, f32) __asm__("func_001FA748");
+extern f32 func_001FA790_2EAF48(f32, f32) __asm__("func_001FA790");
+extern s32 func_001F9908_2EAF48(s32 *) __asm__("func_001F9908");
+extern f32 func_001F9D10_2EAF48(void *, void *) __asm__("func_001F9D10");
+extern float func_001F9CB8_2EAF48(void *) __asm__("func_001F9CB8");
+extern void func_L00_001FF4B0_2EAF48(void *, void *, f32) __asm__("func_L00_001FF4B0");
+extern void func_001F9BD8_2EAF48(void *, void *, void *) __asm__("func_001F9BD8");
+extern void func_001F9BF0_2EAF48(void *, void *, void *) __asm__("func_001F9BF0");
+extern void func_L00_00250800_2EAF48(void *, s32, void *) __asm__("func_L00_00250800");
+extern void func_L00_002592B0_2EAF48(struct Moby_2EAF48 *, f32, f32 *, f32, f32, f32) __asm__("func_L00_002592B0");
+extern void func_L00_00260108_2EAF48(void *, void *, s32, f32, f32) __asm__("func_L00_00260108");
+extern struct Moby_2EAF48 *func_L08_002DF758_2EAF48(void *, struct Moby_2EAF48 *, void *, f32, f32) __asm__("func_L08_002DF758");
+extern void func_L08_002EA930_2EAF48(struct Moby_2EAF48 *) __asm__("func_L08_002EA930");
+extern void func_L08_002EAB30_2EAF48(struct Moby_2EAF48 *) __asm__("func_L08_002EAB30");
+extern void func_L08_002EADF0_2EAF48(struct Moby_2EAF48 *) __asm__("func_L08_002EADF0");
+
+/* Swarm leader: cruises or circles along its waypoint path with its parts in tow, fires at its target, and in
+ * state 0x63 scatters the parts and removes itself.
+ * Adapted from Lombyte (MIT) for PAL: overlays/l08/gameplay/entities/002e9b70.c, FUN_L08_002e9b70. */
+void func_L08_002EAF48(struct Moby_2EAF48 *moby) {
+    SwarmVars_2EAF48 *vars = (SwarmVars_2EAF48 *)moby->pvars;
+    SwarmPathFollower_2EAF48 *follower;
+    struct Moby_2EAF48 *target;
+    struct Moby_2EAF48 *shot;
+    struct Moby_2EAF48 *bolt;
+    SwarmTargetVars_2EAF48 *target_vars;
+    Vec4_2EAF48 point;
+    Vec4_2EAF48 step;
+    Vec4_2EAF48 muzzle;
+    Vec4_2EAF48 velocity;
+    s32 waypoint;
+    s32 next;
+    s32 after;
+    s32 i;
+    s32 slot;
+    f32 distance;
+    f32 heading;
+    f32 next_heading;
+    f32 turn;
+    f32 pitch;
+    f32 yaw;
+
+    if (D_L08_00161DD0_2EAF48 != 0) {
+        return;
+    }
+    if (!func_L00_0028EB98_2EAF48(moby, vars->sound)) {
+        vars->sound = func_0022ED80_2EAF48(3, 4, moby);
+    }
+    switch (moby->state) {
+    case 0:
+        if (D_0014C150_2EAF48[moby->unkB0 + D_0015EE84_2EAF48 * 16] == 0xFF) {
+            func_0020D678_2EAF48(moby);
+            return;
+        }
+        vars->follow[0].path = D_L08_001B0FB0_2EAF48[vars->follow[0].path_id];
+        vars->follow[1].path = D_L08_001B0FB0_2EAF48[vars->follow[1].path_id];
+        vars->fire_timer = func_001FA898_2EAF48(func_001F9878_2EAF48(func_002140F8_2EAF48(300.0f, 600.0f)));
+        moby->flags |= 0x4000;
+        qcopy(&moby->pos, &vars->follow[1].path->points[0]);
+        func_L08_002EA930_2EAF48(moby);
+        moby->state = 2;
+        moby->rot.z = func_L00_001FF860_2EAF48(vars->follow[1].path->points[1].f[0] - moby->pos.x,
+                                   vars->follow[1].path->points[1].f[1] - moby->pos.y);
+        break;
+    case 1:
+        waypoint = (vars->follow[0].point + vars->follow[0].path->count + vars->follow[0].direction) % vars->follow[0].path->count;
+        target = &D_L08_00160058_2EAF48[vars->target_index];
+        func_L00_002592B0_2EAF48(moby,
+                         func_L00_001FF860_2EAF48(vars->follow[0].path->points[waypoint].f[0] - moby->pos.x,
+                                      vars->follow[0].path->points[waypoint].f[1] - moby->pos.y),
+                         &vars->turn_speed, 0.004f, 0.3f, 0.02f);
+        qcopy(&point, &vars->follow[0].path->points[waypoint]);
+        if (func_001F9D10_2EAF48(&moby->pos, &point) < 0.5f) {
+            vars->follow[0].point = waypoint;
+        }
+        func_001F9BF0_2EAF48(&step, &point, &moby->pos);
+        if (func_001F9CB8_2EAF48(&step) > D_L08_00161DC4_2EAF48 * D_0015EE6C_2EAF48) {
+            func_L00_001FF4B0_2EAF48(&step, &step, D_L08_00161DC4_2EAF48 * D_0015EE6C_2EAF48);
+        }
+        func_001F9BD8_2EAF48(&moby->pos, &moby->pos, &step);
+        func_L08_002EAB30_2EAF48(moby);
+        func_L08_002EADF0_2EAF48(moby);
+        if (moby->unkBC == 0) {
+            break;
+        }
+        moby->unkBC = 0;
+        func_L00_00250800_2EAF48(vars->parts[3].moby, 1, &muzzle);
+        pitch = func_002140F8_2EAF48(0.17453292f, 0.5235988f);
+        yaw = func_001FA748_2EAF48(func_L00_001FF860_2EAF48(target->pos.x - moby->pos.x, target->pos.y - moby->pos.y),
+                                 3.1415927f);
+        yaw = func_001FA748_2EAF48(yaw, func_002140F8_2EAF48(-0.2617994f, 0.7853982f));
+        if (yaw > 0.0f && yaw < 0.34f) {
+            yaw = 0.34f;
+        } else if (yaw <= 0.0f && yaw > -0.34f) {
+            yaw = -0.34f;
+        }
+        func_L00_001FF4B0_2EAF48(&velocity, &step, (D_L08_00161DC4_2EAF48 + D_L08_00161DC4_2EAF48) * D_0015EE6C_2EAF48);
+        shot = func_L08_002DF758_2EAF48(&muzzle, target, &velocity, pitch, yaw);
+        shot->scale = shot->pclass->scale / 5.0f;
+        target_vars = (SwarmTargetVars_2EAF48 *)target->pvars;
+        for (slot = 0; slot < 8; slot++) {
+            if (target_vars->shots[slot] == 0) {
+                target_vars->shots[slot] = shot;
+                break;
+            }
+        }
+        break;
+    case 2:
+        follower = &vars->follow[1];
+        next = (vars->follow[1].point + 1) % follower->path->count;
+        after = (vars->follow[1].point + 2) % follower->path->count;
+        heading = func_L00_001FF860_2EAF48(follower->path->points[next].f[0] - follower->path->points[vars->follow[1].point].f[0],
+                               follower->path->points[next].f[1] - follower->path->points[vars->follow[1].point].f[1]);
+        next_heading = func_L00_001FF860_2EAF48(follower->path->points[after].f[0] - follower->path->points[next].f[0],
+                                    follower->path->points[after].f[1] - follower->path->points[next].f[1]);
+        turn = func_001FA790_2EAF48(heading, next_heading);
+        distance = func_001F9D10_2EAF48(&moby->pos, &follower->path->points[next]);
+        distance /= func_001F9D10_2EAF48(&follower->path->points[vars->follow[1].point],
+                                 &follower->path->points[next]);
+        moby->rot.z = func_001FA748_2EAF48(turn * distance, next_heading);
+        qcopy(&point, &follower->path->points[next]);
+        if (func_001F9D10_2EAF48(&moby->pos, &point) < 0.5f) {
+            vars->follow[1].point = next;
+        }
+        func_001F9BF0_2EAF48(&step, &point, &moby->pos);
+        if (func_001F9CB8_2EAF48(&step) > D_L08_00161DC4_2EAF48 * D_0015EE6C_2EAF48) {
+            func_L00_001FF4B0_2EAF48(&step, &step, D_L08_00161DC4_2EAF48 * D_0015EE6C_2EAF48);
+        }
+        func_001F9BD8_2EAF48(&moby->pos, &moby->pos, &step);
+        func_L08_002EADF0_2EAF48(moby);
+        if (!func_001F9908_2EAF48(&vars->fire_timer)) {
+            break;
+        }
+        vars->fire_timer = func_001FA898_2EAF48(func_001F9878_2EAF48(func_002140F8_2EAF48(300.0f, 600.0f)));
+        func_L00_00250800_2EAF48(vars->parts[3].moby, 1, &muzzle);
+        pitch = func_002140F8_2EAF48(-0.5235988f, -0.2617994f);
+        yaw = func_00214158_2EAF48();
+        func_L00_001FF4B0_2EAF48(&velocity, &step, (D_L08_00161DC4_2EAF48 + D_L08_00161DC4_2EAF48) * D_0015EE6C_2EAF48);
+        bolt = func_L08_002DF758_2EAF48(&muzzle, 0, &velocity, pitch, yaw);
+        if (bolt != 0) {
+            bolt->rot.z = vars->parts[3].moby->rot.z;
+            bolt->state = 5;
+            bolt->rot.y = 0.0f;
+        }
+        break;
+    case 3: {
+        SwarmPath_2EAF48 *path;
+
+        moby->state = 1;
+        path = vars->follow[0].path;
+        qcopy(&moby->pos, &path->points[0]);
+        moby->rot.z = func_L00_001FF860_2EAF48(path->points[1].f[0] - moby->pos.x, path->points[1].f[1] - moby->pos.y);
+        func_L08_002EADF0_2EAF48(moby);
+        break;
+    }
+    case 0x63:
+        for (i = 0; i < 16; i++) {
+            struct Moby_2EAF48 *part = vars->parts[i].moby;
+            if (part != 0) {
+                Vec4_2EAF48 *drift = (Vec4_2EAF48 *)part->pvars;
+                func_L00_00260108_2EAF48(moby, &part->pos, -1, 3.0f, 13.0f);
+                func_001F9BF0_2EAF48(drift, &part->pos, &moby->pos);
+                func_L00_001FF4B0_2EAF48(drift, drift, D_0015EE6C_2EAF48 * 5.0f);
+                part->state = 1;
+                vars->parts[i].moby = 0;
+            }
+        }
+        func_L00_00260108_2EAF48(moby, &moby->pos, -1, 5.0f, 13.0f);
+        func_0020D678_2EAF48(moby);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L08_002EB770);
 typedef u32 u128 __attribute__((mode(TI), aligned(16)));
 typedef struct {
@@ -330,7 +638,227 @@ float func_L08_002F7258(float x, char *arg) {
     return *(float *)(t - (-(i * 4))) * (1.0f - fr) + *(float *)(t - (-(j * 4))) * fr;
 }
 INCLUDE_ASM("asm/overlays", func_L08_002F7318);
-INCLUDE_ASM("asm/overlays", func_L08_002F8560);
+typedef struct { f32 x; f32 y; f32 z; } Vec3_2F8560;
+typedef struct { f32 x; f32 y; f32 z; f32 w; } Vec4f_2F8560;
+struct MobyClass_2F8560 {
+    u8 pad_0[0xC];
+    u8 seq_count;
+    u8 pad_D[3];
+    u32 unk10;
+    u8 pad_14[0x8];
+    void *unk1C;
+    void *gifs;
+    f32 scale;
+    s32 unk28;
+    void **callbacks;
+    u8 pad_30[0x14];
+    u16 flags;
+    s16 unk46;
+    void *seqs[1];
+};
+struct Moby_2F8560 {
+    Vec4f_2F8560 bsphere;
+    Vec4f_2F8560 pos;
+    u8 state;
+    u8 group;
+    u8 unk22;
+    u8 unk23;
+    struct MobyClass_2F8560 *pclass;
+    struct Moby_2F8560 *next;
+    f32 scale;
+    u8 unk30;
+    u8 unk31;
+    s16 unk32;
+    u16 flags;
+    u16 unk36;
+    u64 spawn_frame;
+    Vec4f_2F8560 rot;
+    u8 frame;
+    u8 prev_frame;
+    u8 seq;
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    void *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71;
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_2F8560 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F;
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94;
+    s32 unk98;
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0;
+    u8 padB1;
+    u16 save_id;
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8;
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_2F8560 unkC0;
+    Vec4f_2F8560 unkD0;
+    Vec4f_2F8560 unkE0;
+    u8 padF0[0x10];
+};
+typedef int u128_2F8560 __attribute__((mode(TI)));
+typedef union {
+    u128_2F8560 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4_2F8560;
+/* Pvars of a flickering point light. */
+typedef struct {
+    f32 size_x;
+    f32 size_y;
+    u16 pad8;
+    u16 flags;
+    u8 padC[0x64];
+    f32 period_a;
+    f32 period_b;
+    u8 pad78[0x10];
+    f32 jitter;
+    u8 pad8C[4];
+    f32 levels_a[8];
+    f32 levels_b[8];
+    u8 padD0[0x23];
+    u8 unkF3;
+    u8 padF4[4];
+    s32 unkF8;
+    u8 padFC[0x38];
+    u8 red;
+    u8 green;
+    u8 blue;
+    u8 radius;
+    u8 falloff;
+    u8 pad139[2];
+    s8 light;
+    u8 pad13C[4];
+    Vec4_2F8560 light_pos;
+    f32 fade_range;
+    f32 intensity;
+} FlickerLightVars_2F8560;
+/* A point light slot, 0x20 bytes apart. */
+typedef struct {
+    f32 red;
+    f32 green;
+    f32 blue;
+    u8 padC[0x14];
+} PointLight_2F8560;
+
+extern PointLight_2F8560 D_L08_00180B40_2F8560[] __asm__("D_L08_00180B40");
+extern char D_L08_00167640_2F8560[] __asm__("D_L08_00167640");
+extern char D_L08_001FC510_2F8560[] __asm__("D_L08_001FC510");
+extern char D_L08_001FC540_2F8560[] __asm__("D_L08_001FC540");
+extern char D_L08_001FC590_2F8560[] __asm__("D_L08_001FC590");
+extern char D_L08_001FC5C0_2F8560[] __asm__("D_L08_001FC5C0");
+extern s32 func_001E9730_2F8560() __asm__("func_001E9730");
+extern int func_L00_0023F0D0_2F8560(float *, float, float, float, float, float) __asm__("func_L00_0023F0D0");
+extern void func_L00_0023F1D0_2F8560(int) __asm__("func_L00_0023F1D0");
+extern void func_L08_002F7318_2F8560(void) __asm__("func_L08_002F7318");
+extern f32 func_002140F8_2F8560(f32, f32) __asm__("func_002140F8");
+extern f32 func_001F9D10_2F8560(void *, void *) __asm__("func_001F9D10");
+extern int func_L00_00200290_2F8560(char *, float) __asm__("func_L00_00200290");
+extern void func_001F49B0_2F8560(void (*)(void), void *) __asm__("func_001F49B0");
+extern f32 func_001FA888_2F8560(s32) __asm__("func_001FA888");
+
+/* Flickering point light: state 0 checks the periods and fills the two flicker rings; then sets the draw scale,
+ * fades the intensity with the distance to the camera and creates, updates or frees its point light.
+ * Adapted from Lombyte (MIT) for PAL: overlays/l08/gameplay/entities/002e9b70.c, FUN_L08_002f70a0. */
+void func_L08_002F8560(struct Moby_2F8560 *m) {
+    FlickerLightVars_2F8560 *d;
+    Vec4_2F8560 pos;
+    f32 view, dist, fade;
+    s32 hidden;
+    PointLight_2F8560 *l;
+    Vec4f_2F8560 *at;
+    int i;
+
+    if (m == 0)
+        return;
+    d = (FlickerLightVars_2F8560 *)m->pvars;
+    if (d == 0)
+        return;
+    hidden = 0;
+    at = &m->pos;
+    if (m->state == 0) {
+        d->light = -1;
+        d->unkF8 = d->unkF3;
+        qcopy(&d->light_pos, at);
+        if (d->period_a == 0.0f) {
+            func_001E9730_2F8560(D_L08_001FC510_2F8560);
+            d->period_a = 1.0f;
+        } else if (8.0f < d->period_b) {
+            func_001E9730_2F8560(D_L08_001FC540_2F8560, d->period_b);
+        }
+        if (d->period_b == 0.0f) {
+            func_001E9730_2F8560(D_L08_001FC590_2F8560);
+            d->period_b = 1.0f;
+        } else if (8.0f < d->period_a) {
+            func_001E9730_2F8560(D_L08_001FC5C0_2F8560, d->period_a);
+        }
+        for (i = 0; i < 8; i++) {
+            d->levels_a[i] = func_002140F8_2F8560(d->jitter, 1.0f);
+            d->levels_b[i] = func_002140F8_2F8560(d->jitter, 1.0f);
+        }
+        m->state = 1;
+    }
+    m->scale = m->pclass->scale * (d->size_x > d->size_y ? d->size_x : d->size_y) * 0.25f;
+    view = func_001FA888_2F8560(m->unk32);
+    dist = func_001F9D10_2F8560(at, D_L08_00167640_2F8560);
+    fade = view - d->fade_range;
+    if (fade < 0.0f)
+        fade = 0.0f;
+    if (view < dist) {
+        d->intensity = 0.0f;
+        hidden = 1;
+    } else {
+        if (fade < dist) {
+            dist -= fade;
+            dist /= d->fade_range;
+            fade = 1.0f - dist;
+        } else
+            fade = 1.0f;
+        d->intensity = fade;
+    }
+    pos.q = *(u128_2F8560 *)at;
+    pos.f[3] = func_001FA888_2F8560(d->radius);
+    if ((m->unk31 != 0 || func_L00_00200290_2F8560((char *)&pos, 255.0f) != -1) && !hidden) {
+        func_001F49B0_2F8560(func_L08_002F7318_2F8560, m);
+        if (d->flags & 4) {
+            if (d->light == -1) {
+                d->light = func_L00_0023F0D0_2F8560(d->light_pos.f, (f32)d->radius,
+                                            func_001FA888_2F8560(d->falloff) / 100.0f,
+                                            d->intensity * func_001FA888_2F8560(d->red) / 100.0f,
+                                            d->intensity * func_001FA888_2F8560(d->green) / 100.0f,
+                                            d->intensity * func_001FA888_2F8560(d->blue) / 100.0f);
+            } else {
+                l = &D_L08_00180B40_2F8560[d->light];
+                l->red = d->intensity * func_001FA888_2F8560(d->red) / 100.0f;
+                l->green = d->intensity * func_001FA888_2F8560(d->green) / 100.0f;
+                l->blue = d->intensity * func_001FA888_2F8560(d->blue) / 100.0f;
+            }
+        }
+    } else if (d->light != -1) {
+        func_L00_0023F1D0_2F8560(d->light);
+        d->light = -1;
+    }
+    d->flags |= 2;
+}
 extern void func_L02_002E2110(void *);
 extern float func_001F9D10(void *, void *);
 extern void func_L00_0025B178(void *);

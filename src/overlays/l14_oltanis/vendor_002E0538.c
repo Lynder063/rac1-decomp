@@ -1615,4 +1615,182 @@ int func_L14_002FEDA0(char *m) {
     }
     return 0;
 }
-INCLUDE_ASM("asm/overlays", func_L14_002FF040);
+typedef struct { f32 x; f32 y; f32 z; } Vec3_2FF040;
+typedef struct { f32 x; f32 y; f32 z; f32 w; } Vec4f_2FF040;
+struct MobyClass_2FF040 {
+    u8 pad_0[0xC];
+    u8 seq_count;
+    u8 pad_D[3];
+    u32 unk10;
+    u8 pad_14[0x8];
+    void *unk1C;
+    void *gifs;
+    f32 scale;
+    s32 unk28;
+    void **callbacks;
+    u8 pad_30[0x14];
+    u16 flags;
+    s16 unk46;
+    void *seqs[1];
+};
+struct Moby_2FF040 {
+    Vec4f_2FF040 bsphere;
+    Vec4f_2FF040 pos;
+    u8 state;
+    u8 group;
+    u8 unk22;
+    u8 unk23;
+    struct MobyClass_2FF040 *pclass;
+    struct Moby_2FF040 *next;
+    f32 scale;
+    u8 unk30;
+    u8 unk31;
+    s16 unk32;
+    u16 flags;
+    u16 unk36;
+    u64 spawn_frame;
+    Vec4f_2FF040 rot;
+    u8 frame;
+    u8 prev_frame;
+    u8 seq;
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    void *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71;
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_2FF040 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F;
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94;
+    s32 unk98;
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0;
+    u8 padB1;
+    u16 save_id;
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8;
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_2FF040 unkC0;
+    Vec4f_2FF040 unkD0;
+    Vec4f_2FF040 unkE0;
+    u8 padF0[0x10];
+};
+typedef int u128_2FF040 __attribute__((mode(TI)));
+typedef union {
+    u128_2FF040 q;
+    f32 f[4];
+    s32 i[4];
+} OvlVec4_2FF040;
+/* pvars of the flyer this function moves to a path point */
+typedef struct {
+    s32 point;
+    s32 target;
+    s32 sound;
+    s32 timer;
+} FlyerVars_2FF040;
+
+extern s32 D_L14_00162080_2FF040 SDATA(D_L14_00162080);
+extern f32 D_L14_00162078_2FF040 SDATA(D_L14_00162078);
+extern f32 D_L14_0016207C_2FF040 SDATA(D_L14_0016207C);
+extern float D_0015EE6C_2FF040 __asm__("D_0015EE6C") MACRO_ADDR;
+extern char *D_L14_001601AC_2FF040 __asm__("D_L14_001601AC") MACRO_ADDR;
+extern unsigned char *D_L14_00160098_2FF040 __asm__("D_L14_00160098") MACRO_ADDR;
+extern char D_0013E650_2FF040[] __asm__("D_0013E650");
+extern void func_001F9C30_2FF040(void *, void *, float) __asm__("func_001F9C30");
+extern void func_L00_0025F4A8_2FF040(void *, void *, void *, float, float, int, int, int, float, float,
+                             float, int, float, float, int, int, int, int) __asm__("func_L00_0025F4A8");
+extern int func_L00_0028EB98_2FF040(void *, int) __asm__("func_L00_0028EB98");
+extern void func_L14_002FF358_2FF040(struct Moby_2FF040 *) __asm__("func_L14_002FF358");
+extern int func_0022ED80_2FF040(int, int, int) __asm__("func_0022ED80");
+extern void func_0020D678_2FF040(void *) __asm__("func_0020D678");
+extern s32 func_001F9850_2FF040(s32) __asm__("func_001F9850");
+extern void func_001F9BF0_2FF040(void *, void *, void *) __asm__("func_001F9BF0");
+extern float func_001F9CB8_2FF040(void *) __asm__("func_001F9CB8");
+extern int func_001F9908_2FF040(int *) __asm__("func_001F9908");
+extern void func_L00_0028EBF0_2FF040(s32) __asm__("func_L00_0028EBF0");
+extern float func_001FA748_2FF040(float, float) __asm__("func_001FA748");
+extern float func_L00_0025C7A8_2FF040(float, float, float) __asm__("func_L00_0025C7A8");
+extern float func_L00_001FF860_2FF040(float, float) __asm__("func_L00_001FF860");
+extern float func_001F9CE8_2FF040(void *) __asm__("func_001F9CE8");
+extern void func_001F9BD8_2FF040(u8 *, u8 *, u8 *) __asm__("func_001F9BD8");
+
+/* Flyer: state 0 arms it (or removes it without a path point or target); state 2 flies it to its path point,
+ * turning toward it, and on arrival removes its target and itself with a burst.
+ * Adapted from Lombyte (MIT) for PAL: overlays/l14/gameplay/entities/002df080.c, FUN_L14_002fdbb8. */
+void func_L14_002FF040(struct Moby_2FF040 *moby) {
+    FlyerVars_2FF040 *vars = (FlyerVars_2FF040 *)moby->pvars;
+    Vec4f_2FF040 diff;
+    OvlVec4_2FF040 step;
+    f32 dist;
+    f32 speed;
+    char *slot;
+    struct Moby_2FF040 *target;
+
+    switch (moby->state) {
+    case 0:
+        if (vars->point < 0 || vars->target < 0) {
+            func_0020D678_2FF040(moby);
+            return;
+        }
+        moby->state = 1;
+        moby->unk30 = 0xFF;
+        moby->pos.z += 1.5f;
+        vars->sound = -1;
+        vars->timer = func_001F9850_2FF040(D_L14_00162080_2FF040);
+        return;
+    case 1:
+        return;
+    case 2:
+        func_001F9BF0_2FF040(&diff, D_L14_001601AC_2FF040 + vars->point * 0x80 + 0x30, &moby->pos);
+        dist = func_001F9CB8_2FF040(&diff);
+        func_001F9908_2FF040(&vars->timer);
+        speed = D_L14_00162078_2FF040 * D_0015EE6C_2FF040;
+        if (dist < speed || dist <= 0.0f) {
+            if (vars->sound != -1) {
+                slot = D_0013E650_2FF040 + vars->sound * 0x70;
+                if (*(struct Moby_2FF040 **)(slot + 0x88) == moby && ((u8 *)slot)[0x74] != 0) {
+                    func_L00_0028EBF0_2FF040(vars->sound);
+                }
+            }
+            target = (struct Moby_2FF040 *)(D_L14_00160098_2FF040 + vars->target * 0x100);
+            vars->sound = -1;
+            if (target != 0) {
+                func_0020D678_2FF040(target);
+            }
+            qcopy(&moby->pos, D_L14_001601AC_2FF040 + vars->point * 0x80 + 0x30);
+            qcopy(&step, &moby->unkC0);
+            step.f[2] = 1.0f;
+            func_L00_0025F4A8_2FF040(moby, &step, &moby->pos, 0.0f, 0.0f, 0x14, 0xA, 0xC, 10.0f, 6.0f,
+                             9.0f, 0, 1.0f, 30.0f, 1, 0xA, -1, 0);
+            func_0020D678_2FF040(moby);
+            return;
+        }
+        moby->rot.x = func_001FA748_2FF040(moby->rot.x, 2.0f * 0.017453292f);
+        moby->rot.y = func_L00_0025C7A8_2FF040(moby->rot.y, -func_L00_001FF860_2FF040(func_001F9CE8_2FF040(&diff), diff.z), D_L14_0016207C_2FF040);
+        moby->rot.z = func_L00_0025C7A8_2FF040(moby->rot.z, func_L00_001FF860_2FF040(diff.x, diff.y), D_L14_0016207C_2FF040);
+        func_001F9C30_2FF040(&step, &moby->unkC0, speed);
+        func_001F9BD8_2FF040((u8 *)&moby->pos, (u8 *)&moby->pos, (u8 *)&step);
+        func_L14_002FF358_2FF040(moby);
+        if (func_L00_0028EB98_2FF040(moby, vars->sound) == 0) {
+            vars->sound = func_0022ED80_2FF040(1, 4, (int)moby);
+        }
+        return;
+    }
+}

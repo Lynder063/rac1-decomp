@@ -3,7 +3,195 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L14_002B2A28);
-INCLUDE_ASM("asm/overlays", func_L14_002B3850);
+typedef struct { f32 x; f32 y; f32 z; } Vec3_2B3850;
+typedef struct { f32 x; f32 y; f32 z; f32 w; } Vec4f_2B3850;
+struct MobyClass_2B3850 {
+    u8 pad_0[0xC];
+    u8 seq_count;
+    u8 pad_D[3];
+    u32 unk10;
+    u8 pad_14[0x8];
+    void *unk1C;
+    void *gifs;
+    f32 scale;
+    s32 unk28;
+    void **callbacks;
+    u8 pad_30[0x14];
+    u16 flags;
+    s16 unk46;
+    void *seqs[1];
+};
+struct Moby_2B3850 {
+    Vec4f_2B3850 bsphere;
+    Vec4f_2B3850 pos;
+    u8 state;
+    u8 group;
+    u8 unk22;
+    u8 unk23;
+    struct MobyClass_2B3850 *pclass;
+    struct Moby_2B3850 *next;
+    f32 scale;
+    u8 unk30;
+    u8 unk31;
+    s16 unk32;
+    u16 flags;
+    u16 unk36;
+    u64 spawn_frame;
+    Vec4f_2B3850 rot;
+    u8 frame;
+    u8 prev_frame;
+    u8 seq;
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    void *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71;
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_2B3850 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F;
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94;
+    s32 unk98;
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0;
+    u8 padB1;
+    u16 save_id;
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8;
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_2B3850 unkC0;
+    Vec4f_2B3850 unkD0;
+    Vec4f_2B3850 unkE0;
+    u8 padF0[0x10];
+};
+typedef int u128_2B3850 __attribute__((mode(TI)));
+typedef union {
+    u128_2B3850 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4_2B3850;
+typedef struct {
+    u8 pad0[0x1E0];
+    Vec4_2B3850 exhaust;
+    Vec4_2B3850 nozzle;
+    Vec4_2B3850 joint6;
+    Vec4_2B3850 beam_start;
+    Vec4_2B3850 beam_end;
+} ShipVars_2B3850;
+typedef struct {
+    u8 pad0[0x10];
+    f32 scale;
+    u8 pad14[2];
+    s16 mode;
+    s32 color;
+} ParticleFade_2B3850;
+typedef struct {
+    u8 pad0[0xA];
+    s16 frames;
+    f32 life;
+    u8 pad10[0x10];
+    ParticleFade_2B3850 fade;
+} Particle_2B3850;
+
+extern Vec4_2B3850 D_L14_001675C0_2B3850 __asm__("D_L14_001675C0");
+extern u8 D_L14_0015F660_2B3850[] __asm__("D_L14_0015F660") MACRO_ADDR;
+extern f32 D_L14_00161570_2B3850 SDATA(D_L14_00161570);
+extern f32 D_L14_00161578_2B3850 SDATA(D_L14_00161578);
+extern f32 D_L14_0016157C_2B3850 SDATA(D_L14_0016157C);
+extern f32 D_L14_00161580_2B3850 SDATA(D_L14_00161580);
+
+extern void func_L14_002B4C70_2B3850(struct Moby_2B3850 *) __asm__("func_L14_002B4C70");
+extern void func_L14_002B3B78_2B3850(struct Moby_2B3850 *) __asm__("func_L14_002B3B78");
+extern void func_001F49B0_2B3850(void (*)(struct Moby_2B3850 *), struct Moby_2B3850 *) __asm__("func_001F49B0");
+extern void func_L00_00250800_2B3850(struct Moby_2B3850 *, s32, void *) __asm__("func_L00_00250800");
+extern void func_0020DAF8_2B3850(struct Moby_2B3850 *, s32, void *) __asm__("func_0020DAF8");
+extern void func_002141A8_2B3850(void *, f32, f32) __asm__("func_002141A8");
+extern Particle_2B3850 *func_L00_002757E8_2B3850(void *, void *, s32, struct Moby_2B3850 *) __asm__("func_L00_002757E8");
+extern f32 func_002140F8_2B3850(f32, f32) __asm__("func_002140F8");
+extern s32 func_002140B0_2B3850(s32) __asm__("func_002140B0");
+extern s32 func_001F9850_2B3850(s32) __asm__("func_001F9850");
+extern f32 func_001FA888_2B3850(s32) __asm__("func_001FA888");
+extern void func_001F9BD8_2B3850(void *, void *, void *) __asm__("func_001F9BD8");
+extern void func_001F9BF0_2B3850(void *, void *, void *) __asm__("func_001F9BF0");
+extern void func_001F9C30_2B3850(void *, void *, f32) __asm__("func_001F9C30");
+extern void func_L00_001FF4B0_2B3850(void *, void *, f32) __asm__("func_L00_001FF4B0");
+
+/* Ship engine effects: puffs exhaust particles from joint 1 and places the nozzle and beam points from joints 7 and 2.
+ * Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay/entities/002b17d8.c, FUN_L14_002b2600. */
+void func_L14_002B3850(struct Moby_2B3850 *m)
+{
+    Vec4_2B3850 pos;
+    Vec4_2B3850 dir;
+    Vec4_2B3850 vel;
+    Vec4_2B3850 mat[4];
+    Vec4_2B3850 dx;
+    Vec4_2B3850 dy;
+    Vec4_2B3850 dz;
+    ShipVars_2B3850 *pv;
+    Particle_2B3850 *p;
+    ParticleFade_2B3850 *fade;
+    s32 i;
+    f32 f;
+
+    pv = (ShipVars_2B3850 *)m->pvars;
+    func_001F49B0_2B3850(func_L14_002B4C70_2B3850, m);
+    func_L00_00250800_2B3850(m, 1, &pos);
+    func_001F9BF0_2B3850(&dir, &pos, &D_L14_001675C0_2B3850);
+    func_L00_001FF4B0_2B3850(&dir, &dir, -0.5f);
+    func_001F9BD8_2B3850(&pv->exhaust, &pos, &dir);
+    func_002141A8_2B3850(&vel, 0.005f, 0.03f);
+    p = func_L00_002757E8_2B3850(&pos, &vel, 0x7F, m);
+    if (p != 0) {
+        p->life = func_002140F8_2B3850(6000.0f, 32000.0f);
+    }
+    for (i = 0; i < 3; i++) {
+        p = func_L00_002757E8_2B3850(&pos, D_L14_0015F660_2B3850, 0x7F, m);
+        if (p == 0) {
+            continue;
+        }
+        fade = &p->fade;
+        if (i == 2 && func_002140B0_2B3850(8) == 0) {
+            p->life = 180000.0f;
+        } else {
+            p->life = func_002140F8_2B3850(80000.0f, 120000.0f);
+        }
+        p->frames = func_001F9850_2B3850(2);
+        f = 1.0f / func_001FA888_2B3850(p->frames);
+        fade->mode = 3;
+        fade->color = 0x7F7F7F;
+        fade->scale = f;
+    }
+    func_L00_00250800_2B3850(m, 6, &pv->joint6);
+    func_0020DAF8_2B3850(m, 7, mat);
+    func_001F9C30_2B3850(&dx, &mat[0], D_L14_00161570_2B3850);
+    func_001F9BD8_2B3850(&pv->nozzle, &mat[3], &dx);
+    func_0020DAF8_2B3850(m, 2, mat);
+    func_001F9C30_2B3850(&dx, &mat[0], D_L14_00161578_2B3850);
+    func_001F9C30_2B3850(&dy, &mat[1], D_L14_0016157C_2B3850);
+    func_001F9C30_2B3850(&dz, &mat[2], D_L14_00161580_2B3850);
+    func_001F9BD8_2B3850(&pv->beam_start, &mat[3], &dx);
+    func_001F9BD8_2B3850(&pv->beam_start, &pv->beam_start, &dy);
+    func_001F9BD8_2B3850(&pv->beam_start, &pv->beam_start, &dz);
+    func_001F9C30_2B3850(&dy, &dy, -2.0f);
+    func_001F9BD8_2B3850(&pv->beam_end, &pv->beam_start, &dy);
+    func_001F49B0_2B3850(func_L14_002B3B78_2B3850, m);
+}
 INCLUDE_ASM("asm/overlays", func_L14_002B3B78);
 typedef struct {
     f32 x;
@@ -853,7 +1041,209 @@ void func_L14_00302A58(unsigned char *m) {
 INCLUDE_ASM("asm/overlays", func_L14_00302C80);
 INCLUDE_ASM("asm/overlays", func_L14_00303270);
 INCLUDE_ASM("asm/overlays", func_L14_00303430);
-INCLUDE_ASM("asm/overlays", func_L14_003039C0);
+typedef struct { f32 x; f32 y; f32 z; } Vec3_3039C0;
+typedef struct { f32 x; f32 y; f32 z; f32 w; } Vec4f_3039C0;
+struct MobyClass_3039C0 {
+    u8 pad_0[0xC];
+    u8 seq_count;
+    u8 pad_D[3];
+    u32 unk10;
+    u8 pad_14[0x8];
+    void *unk1C;
+    void *gifs;
+    f32 scale;
+    s32 unk28;
+    void **callbacks;
+    u8 pad_30[0x14];
+    u16 flags;
+    s16 unk46;
+    void *seqs[1];
+};
+struct Moby_3039C0 {
+    Vec4f_3039C0 bsphere;
+    Vec4f_3039C0 pos;
+    u8 state;
+    u8 group;
+    u8 unk22;
+    u8 unk23;
+    struct MobyClass_3039C0 *pclass;
+    struct Moby_3039C0 *next;
+    f32 scale;
+    u8 unk30;
+    u8 unk31;
+    s16 unk32;
+    u16 flags;
+    u16 unk36;
+    u64 spawn_frame;
+    Vec4f_3039C0 rot;
+    u8 frame;
+    u8 prev_frame;
+    u8 seq;
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    void *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71;
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_3039C0 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F;
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94;
+    s32 unk98;
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0;
+    u8 padB1;
+    u16 save_id;
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8;
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_3039C0 unkC0;
+    Vec4f_3039C0 unkD0;
+    Vec4f_3039C0 unkE0;
+    u8 padF0[0x10];
+};
+typedef int u128_3039C0 __attribute__((mode(TI)));
+typedef union {
+    u128_3039C0 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4_3039C0;
+typedef struct {
+    int w0;
+    short s4, s6, s8, sA;
+    int wC;
+    short s10, s12;
+    char pad14[8];
+    float radius;
+    char pad20[0x604];
+    float f624;
+    char pad628[8];
+    Vec4_3039C0 end_a;
+    Vec4_3039C0 end_b;
+} D1224_3039C0;
+/* A 0x80-byte transform of D_L14_001601AC: three axes and the origin. */
+typedef struct {
+    Vec4_3039C0 axis[3];
+    Vec4_3039C0 origin;
+    u8 pad40[0x40];
+} VendorBeamFrame_3039C0;
+/* Damage request passed to the collision line test (func_L00_001EFFF0). */
+typedef struct {
+    f32 v[4];
+    struct Moby_3039C0 *moby;
+    s32 flags;
+    s8 a;
+    s8 b;
+    s16 oclass;
+    f32 range;
+    s32 one;
+} VendorBeamReq_3039C0;
+
+extern char D_0013F4D0_3039C0[] __asm__("D_0013F4D0");
+extern VendorBeamFrame_3039C0 *D_L14_001601AC_3039C0 __asm__("D_L14_001601AC") MACRO_ADDR;
+extern u8 D_L14_00174660_3039C0[] __asm__("D_L14_00174660");
+extern float func_001F9CB8_3039C0(void *) __asm__("func_001F9CB8");
+extern void func_001F9BC0_3039C0(void *) __asm__("func_001F9BC0");
+extern float func_001F9F90_3039C0(float) __asm__("func_001F9F90");
+extern float func_001F9FA8_3039C0(float) __asm__("func_001F9FA8");
+extern void func_001F9BF0_3039C0(void *, void *, void *) __asm__("func_001F9BF0");
+extern void func_001F9BD8_3039C0(void *, void *, void *) __asm__("func_001F9BD8");
+extern void func_001F9C30_3039C0(void *, void *, f32) __asm__("func_001F9C30");
+extern void func_L00_001FF4B0_3039C0(void *, void *, f32) __asm__("func_L00_001FF4B0");
+extern f32 func_001F9C78_3039C0(void *, void *) __asm__("func_001F9C78");
+extern int func_L00_001EFFF0_3039C0(void *, void *, int, void *, void *) __asm__("func_L00_001EFFF0");
+
+/* Sweeps the beam's two end lines; anything they cross takes damage pushed away from the beam.
+ * Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay/vendor/003015d0.c, FUN_L14_00302538. */
+void func_L14_003039C0(char *self) {
+    struct Moby_3039C0 *m = (struct Moby_3039C0 *)self;
+    D1224_3039C0 *d = (D1224_3039C0 *)m->pvars;
+    VendorBeamReq_3039C0 req;
+    Vec4_3039C0 dir, to_hero, base, end_a, end_b, from, to, off;
+    f32 dot, len;
+
+    if (d->radius == 0.0f)
+        return;
+    req.flags = 0x10001;
+    req.range = 1.0f;
+    req.one = 1;
+    req.moby = m;
+    func_001F9BC0_3039C0(&req);
+    req.v[2] = 1.0f;
+    req.b = 1;
+    req.v[3] = 5627.925f;
+    req.a = 3;
+    req.oclass = m->oclass;
+    dir.f[0] = func_001F9F90_3039C0(m->rot.z);
+    dir.f[1] = func_001F9FA8_3039C0(m->rot.z);
+    dir.f[2] = 0.0f;
+    func_001F9BF0_3039C0(&to_hero, D_0013F4D0_3039C0, &m->pos);
+    to_hero.f[2] = 0.0f;
+    dot = func_001F9C78_3039C0(&dir, &to_hero);
+    if (func_001F9CB8_3039C0(&to_hero) != 0.0f) {
+        if (dot < 0.0f)
+            func_001F9C30_3039C0(&dir, &dir, -1.0f);
+        req.v[0] = dir.f[0];
+        req.v[1] = dir.f[1];
+    }
+    qcopy_nc(&base, &D_L14_001601AC_3039C0[d->w0].origin);
+    if (d->s8) {
+        func_001F9BD8_3039C0(&end_a, &base, &D_L14_001601AC_3039C0[d->w0].axis[1]);
+        if (func_L00_001EFFF0_3039C0(&base, &end_a, 0, m, 0)) {
+            func_001F9BF0_3039C0(&from, D_L14_00174660_3039C0, &base);
+            len = func_001F9CB8_3039C0(&from);
+            func_001F9C30_3039C0(&from, &from, len * 0.98f / len);
+            func_001F9BD8_3039C0(&d->end_a, &base, &from);
+            d->s8 = 0;
+        } else {
+            qcopy(&d->end_a, &end_a);
+        }
+    }
+    if (d->sA) {
+        func_001F9BF0_3039C0(&end_b, &base, &D_L14_001601AC_3039C0[d->w0].axis[1]);
+        if (func_L00_001EFFF0_3039C0(&base, &end_b, 0, m, 0)) {
+            func_001F9BF0_3039C0(&from, D_L14_00174660_3039C0, &base);
+            len = func_001F9CB8_3039C0(&from);
+            func_001F9C30_3039C0(&from, &from, len * 0.98f / len);
+            func_001F9BD8_3039C0(&d->end_b, &base, &from);
+            d->sA = 0;
+        } else {
+            qcopy(&d->end_b, &end_b);
+        }
+    }
+    qcopy(&end_a, &d->end_a);
+    qcopy(&end_b, &d->end_b);
+    func_L00_001FF4B0_3039C0(&off, &D_L14_001601AC_3039C0[d->w0].axis[0], d->radius);
+    func_001F9BD8_3039C0(&from, &end_a, &off);
+    func_001F9BD8_3039C0(&to, &end_b, &off);
+    func_L00_001EFFF0_3039C0(&from, &to, 1, m, &req);
+    func_001F9BF0_3039C0(&from, &end_a, &off);
+    func_001F9BF0_3039C0(&to, &end_b, &off);
+    func_L00_001EFFF0_3039C0(&from, &to, 1, m, &req);
+    func_L00_001FF4B0_3039C0(&off, &D_L14_001601AC_3039C0[d->w0].axis[2], d->radius);
+    func_001F9BD8_3039C0(&from, &end_a, &off);
+    func_001F9BD8_3039C0(&to, &end_b, &off);
+    func_L00_001EFFF0_3039C0(&from, &to, 1, m, &req);
+    func_001F9BF0_3039C0(&from, &end_a, &off);
+    func_001F9BF0_3039C0(&to, &end_b, &off);
+    func_L00_001EFFF0_3039C0(&from, &to, 1, m, &req);
+}
 extern int D_L14_001622A8[] MACRO_ADDR;
 extern int D_L14_00162218[] MACRO_ADDR;
 extern void func_L00_002E35A8(int);

@@ -1368,7 +1368,82 @@ void func_L07_00315528(unsigned char *m) {
     func_L07_00313530((char *)d);
 }
 INCLUDE_ASM("asm/overlays", func_L07_00318CE0);
-INCLUDE_ASM("asm/overlays", func_L07_00319080);
+typedef int u128_319080 __attribute__((mode(TI)));
+typedef union {
+    u128_319080 q;
+    float f[4];
+} RopeQuad_319080;
+typedef float RopeVec_319080[4] __attribute__((aligned(16)));
+typedef struct {
+    int pad[5];
+    char *moby;
+} RopeMobySlot_319080;
+extern int D_L07_00161BFC_319080 SDATA(D_L07_00161BFC);
+extern int D_L07_00161C00_319080 SDATA(D_L07_00161C00);
+extern float D_L07_00161C0C_319080 SDATA(D_L07_00161C0C);
+extern int D_L07_00161C10_319080 SDATA(D_L07_00161C10);
+extern int D_L07_00161C14_319080 SDATA(D_L07_00161C14);
+extern float D_L07_00161C40_319080 __asm__("D_L07_00161C40") MACRO_ADDR;
+extern char D_L07_00161C20_319080[] __asm__("D_L07_00161C20") MACRO_ADDR;
+extern char D_L07_00161C30_319080[] __asm__("D_L07_00161C30") MACRO_ADDR;
+extern RopeVec_319080 D_L07_0020DDB0_319080[] __asm__("D_L07_0020DDB0");
+extern RopeVec_319080 D_L07_0020DDC0_319080[] __asm__("D_L07_0020DDC0");
+extern short D_L07_0020DE88_319080[] __asm__("D_L07_0020DE88");
+extern RopeMobySlot_319080 D_L07_0020CB00_319080[] __asm__("D_L07_0020CB00");
+extern void norm_319080(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern void add_319080(void *, void *, void *) __asm__("func_001F9BD8");
+extern void clear_319080(void *) __asm__("func_001F9BC0");
+extern float rand_319080(void) __asm__("func_00214158");
+extern void look_319080(void *, void *, void *, float) __asm__("func_002156E0");
+
+/* Starts the rope when one is pending: lays nine points out from the anchor along the moby's
+ * axis, then resets the swing state and, once, clears every entry's link.
+ * Adapted from Lombyte (MIT) for PAL: overlays/l07/gameplay/entities/00312948.c, FUN_L07_00317cb0. */
+void func_L07_00319080(char *moby, void *anchor) {
+    RopeVec_319080 step;
+    RopeVec_319080 up;
+    RopeQuad_319080 c;
+    RopeQuad_319080 d;
+    float r;
+    int i;
+    int j;
+    RopeQuad_319080 *pc;
+    RopeQuad_319080 *pd;
+
+    if (D_L07_00161BFC_319080 == 0) {
+        return;
+    }
+    D_L07_00161BFC_319080 = 0;
+    norm_319080(step, moby + 0xC0, 2.8f);
+    norm_319080(up, moby + 0xE0, 1.0f);
+    qcopy(D_L07_0020DDC0_319080, anchor);
+    pc = &c;
+    pd = &d;
+    D_L07_0020DE88_319080[0] = 0;
+    for (i = 1; i < 10; i++) {
+        add_319080(D_L07_0020DDC0_319080[i], D_L07_0020DDB0_319080[i], step);
+        D_L07_0020DE88_319080[i] = 0;
+    }
+    clear_319080(D_L07_00161C20_319080);
+    c.q = 0;
+    d.q = 0;
+    c.f[2] = 0.1f;
+    c.f[3] = 1.0f;
+    d.f[0] = 1.0f;
+    d.f[3] = 1.0f;
+    r = rand_319080();
+    look_319080(D_L07_00161C30_319080, pc, pd, r);
+    D_L07_00161C40_319080 = r;
+    D_L07_00161C0C_319080 = 0.006f;
+    D_L07_00161C10_319080 = 0;
+    D_L07_00161C14_319080 = 0;
+    if (D_L07_00161C00_319080 != 0) {
+        D_L07_00161C00_319080 = 0;
+        for (j = 199; j >= 0; j--) {
+            D_L07_0020CB00_319080[j].moby = 0;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L07_00319230);
 extern int func_0022ED80(int, int, int);
 extern void func_001F9BF0(void *, void *, void *);
@@ -1439,6 +1514,438 @@ void func_L07_0031AA68(char *arg, char *other) {
     }
     DeleteMoby(arg);
 }
-INCLUDE_ASM("asm/overlays", func_L07_0031AAB0);
-INCLUDE_ASM("asm/overlays", func_L07_0031B318);
+typedef struct { f32 x; f32 y; f32 z; } Vec3_31AAB0;
+typedef struct { f32 x; f32 y; f32 z; f32 w; } Vec4f_31AAB0;
+struct MobyClass_31AAB0 {
+    u8 pad_0[0xC];
+    u8 seq_count;
+    u8 pad_D[3];
+    u32 unk10;
+    u8 pad_14[0x8];
+    void *unk1C;
+    void *gifs;
+    f32 scale;
+    s32 unk28;
+    void **callbacks;
+    u8 pad_30[0x14];
+    u16 flags;
+    s16 unk46;
+    void *seqs[1];
+};
+struct Moby_31AAB0 {
+    Vec4f_31AAB0 bsphere;
+    Vec4f_31AAB0 pos;
+    u8 state;
+    u8 group;
+    u8 unk22;
+    u8 unk23;
+    struct MobyClass_31AAB0 *pclass;
+    struct Moby_31AAB0 *next;
+    f32 scale;
+    u8 unk30;
+    u8 unk31;
+    s16 unk32;
+    u16 flags;
+    u16 unk36;
+    u64 spawn_frame;
+    Vec4f_31AAB0 rot;
+    u8 frame;
+    u8 prev_frame;
+    u8 seq;
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    void *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71;
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_31AAB0 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F;
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94;
+    s32 unk98;
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0;
+    u8 padB1;
+    u16 save_id;
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8;
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_31AAB0 unkC0;
+    Vec4f_31AAB0 unkD0;
+    Vec4f_31AAB0 unkE0;
+    u8 padF0[0x10];
+};
+typedef int u128_31AAB0 __attribute__((mode(TI)));
+typedef union {
+    u128_31AAB0 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4_31AAB0;
+typedef struct {
+    u8 pad0[0x7C];
+    f32 speed;
+    u8 pad80[4];
+    s32 linger_time;
+    f32 view_angle;
+    f32 view_range;
+} SwooperSpawnerVars_31AAB0;
+typedef struct {
+    u8 pad0[0x20];
+    u8 collision[9];
+    u8 unk29;
+    u8 pad2A[0xE];
+    struct Moby_31AAB0 *perch;
+    u8 pad3C[0x24];
+    Vec4_31AAB0 velocity;
+    Vec4_31AAB0 home;
+    Vec4_31AAB0 goal;
+    u8 pad90[8];
+    s32 life_timer;
+    f32 dive_speed;
+    struct Moby_31AAB0 *spawner;
+    f32 turn_speed;
+    f32 pitch_speed;
+    s32 bob_timer;
+} SwooperVars_31AAB0;
+typedef struct {
+    Vec4_31AAB0 pos;
+    u8 pad10[0x30];
+    s32 found;
+} SwooperSight_31AAB0;
+typedef struct {
+    u8 pad0[0x10];
+    Vec4f_31AAB0 pos;
+    struct Moby_31AAB0 *moby;
+    u8 pad24[8];
+    f32 kind;
+} MobyHit_31AAB0;
+
+extern Vec4_31AAB0 D_L07_00166EC0_31AAB0 __asm__("D_L07_00166EC0");
+extern struct Moby_31AAB0 *D_L07_00173F58_31AAB0 __asm__("D_L07_00173F58");
+extern Vec4_31AAB0 D_L07_00173F70_31AAB0 __asm__("D_L07_00173F70");
+extern f32 D_0015EE60_31AAB0 __asm__("D_0015EE60") MACRO_ADDR;
+extern f32 D_0015EE6C_31AAB0 __asm__("D_0015EE6C") MACRO_ADDR;
+extern f32 D_0015EE70_31AAB0 __asm__("D_0015EE70") MACRO_ADDR;
+
+extern s32 see_31AAB0(struct Moby_31AAB0 *, SwooperSight_31AAB0 *, f32) __asm__("func_L00_00260D30");
+extern f32 dist_31AAB0(void *, void *) __asm__("func_001F9D10");
+extern f32 distxy_31AAB0(void *, void *) __asm__("func_001F9D48");
+extern f32 fabs_31AAB0(f32) __asm__("func_001F9B88");
+extern void func_L00_0025B178_31AAB0(struct Moby_31AAB0 *) __asm__("func_L00_0025B178");
+extern MobyHit_31AAB0 *hit_31AAB0(struct Moby_31AAB0 *, s32, s32) __asm__("func_L00_0025B478");
+extern s32 func_L00_0025B4D0_31AAB0(struct Moby_31AAB0 *, MobyHit_31AAB0 *, void *, s32, s32 *, s32, s32, s32) __asm__("func_L00_0025B4D0");
+extern void debris_31AAB0(void *, void *, void *, float, float, int, int, int, float, float,
+                          float, float, int, float, int, int, int, int) __asm__("func_L00_0025F4A8");
+extern void func_L00_002584A8_31AAB0(void *, int, int) __asm__("func_L00_002584A8");
+extern void func_L00_001FF548_31AAB0(void *, void *, f32) __asm__("func_L00_001FF548");
+extern f32 func_L00_00259148_31AAB0(f32 *, f32, f32, f32, f32, f32) __asm__("func_L00_00259148");
+extern s32 tick_31AAB0(s32 *) __asm__("func_001F9908");
+extern s32 func_L00_001F10E0_31AAB0(f32, void *, s32, struct Moby_31AAB0 *) __asm__("func_L00_001F10E0");
+extern void func_L00_0025B040_31AAB0(struct Moby_31AAB0 *, f32) __asm__("func_L00_0025B040");
+extern void remove_31AAB0(struct Moby_31AAB0 *, SwooperSpawnerVars_31AAB0 *) __asm__("func_L07_0031AA68");
+extern void clear_31AAB0(void *) __asm__("func_001F9BC0");
+extern float atan2_31AAB0(float, float) __asm__("func_L00_001FF860");
+extern void sub_31AAB0(void *, void *, void *) __asm__("func_001F9BF0");
+extern void add_31AAB0(void *, void *, void *) __asm__("func_001F9BD8");
+extern void norm_31AAB0(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern void turn_31AAB0(struct Moby_31AAB0 *, f32, void *, f32, f32, f32) __asm__("func_L00_002592B0");
+extern float rotdiff_31AAB0(float, float) __asm__("func_001FA850");
+extern void blend_31AAB0(void *, int, int, int) __asm__("func_00213DE0");
+extern int ticks_31AAB0(int) __asm__("func_001F9850");
+extern void func_L00_0025A8C0_31AAB0(void *, void *, s32, f32, void *) __asm__("func_L00_0025A8C0");
+extern s32 probe_31AAB0(f32, void *, s32, void *, void *) __asm__("func_L00_001F2BE8");
+
+/* Swooper: holds at its goal, dives at the hero once it sees it and bursts on contact.
+ * Adapted from Lombyte (MIT) for PAL: overlays/l07/gameplay/entities/00312948.c, FUN_L07_003196e0. */
+void func_L07_0031AAB0(struct Moby_31AAB0 *moby) {
+    SwooperVars_31AAB0 *vars;
+    SwooperSpawnerVars_31AAB0 *spawner_vars;
+    SwooperSight_31AAB0 sight;
+    MobyHit_31AAB0 *hit;
+    u8 *collision;
+    Vec4_31AAB0 dir;
+    u8 contact[0x30];
+    Vec4_31AAB0 probe;
+    Vec4_31AAB0 push;
+    s32 touching;
+    f32 pitch;
+
+    if (moby == 0) {
+        return;
+    }
+    vars = (SwooperVars_31AAB0 *)moby->pvars;
+    if (vars == 0 || vars->spawner == 0) {
+        return;
+    }
+    collision = vars->collision;
+    spawner_vars = (SwooperSpawnerVars_31AAB0 *)vars->spawner->pvars;
+    see_31AAB0(moby, &sight, spawner_vars->view_range);
+    if (moby->unk31 && dist_31AAB0(&moby->pos, &D_L07_00166EC0_31AAB0) < 27.0f) {
+        func_L00_0025B178_31AAB0(moby);
+        moby->unk7F = 0x15;
+    }
+    hit = hit_31AAB0(moby, 0x230000, 0);
+    func_L00_0025B4D0_31AAB0(moby, hit, collision, 0, &touching, 0, 0, 4);
+    if (touching >= 2 && hit != 0 && hit->moby->oclass != 0x363 && hit->moby->oclass != 0x458 &&
+        hit->moby->oclass != 0x367) {
+        debris_31AAB0(moby, &vars->velocity, 0, 0.0f, 0.0f, 3, 3, 5, 2.0f, 1.0f, 4.0f, 1.0f, 2, 7.0f, 0, 1, -1, 0);
+        func_L00_002584A8_31AAB0(moby, 0, -1);
+        remove_31AAB0(moby, spawner_vars);
+    }
+    switch (moby->state) {
+    case 0:
+        if (spawner_vars == 0) {
+            break;
+        }
+        moby->flags |= 0x1000;
+        clear_31AAB0(&vars->velocity);
+        qcopy(&vars->home, &moby->pos);
+        moby->rot.y = 0.0f;
+        moby->rot.z = atan2_31AAB0(vars->goal.f[0] - moby->pos.x, vars->goal.f[1] - moby->pos.y);
+        vars->unk29 = 0;
+        moby->state = 1;
+        moby->unkBC = 0;
+        break;
+    case 1:
+        sub_31AAB0(&vars->velocity, &vars->goal, &moby->pos);
+        turn_31AAB0(moby, atan2_31AAB0(vars->goal.f[0] - moby->pos.x, vars->goal.f[1] - moby->pos.y),
+                    &vars->turn_speed, D_0015EE70_31AAB0 * 6.2831855f, D_0015EE6C_31AAB0 * 3.1415927f,
+                    D_0015EE6C_31AAB0 * 6.2831855f);
+        qcopy(&moby->pos, &vars->goal);
+        if ((vars->perch != 0 && distxy_31AAB0(&moby->pos, &vars->perch->pos) < 20.0f &&
+             fabs_31AAB0(moby->pos.z - vars->perch->pos.z) < 3.0f) ||
+            (sight.found != 0 && dist_31AAB0(&moby->pos, &sight.pos) < spawner_vars->view_range &&
+             distxy_31AAB0(&moby->pos, &vars->spawner->pos) > 2.0f &&
+             rotdiff_31AAB0(moby->rot.z, atan2_31AAB0(sight.pos.f[0] - moby->pos.x,
+                                                      sight.pos.f[1] - moby->pos.y)) <
+                 spawner_vars->view_angle * 0.017453292f)) {
+            if (moby->prev_seq != 1) {
+                blend_31AAB0(moby, 1, 0, 10);
+            }
+            vars->dive_speed = spawner_vars->speed * D_0015EE6C_31AAB0;
+            vars->life_timer = ticks_31AAB0(600);
+            moby->unkBC = 1;
+            vars->bob_timer = ticks_31AAB0(7);
+            moby->state = 2;
+        }
+        break;
+    case 2:
+        if ((moby->unk70 & 2) && moby->seq == 1 && moby->prev_seq != 2) {
+            blend_31AAB0(moby, 2, 0, 10);
+        }
+        if (moby->unkBC == 1) {
+            moby->pos.z += D_0015EE60_31AAB0 * 0.1f;
+            if (tick_31AAB0(&vars->bob_timer)) {
+                vars->bob_timer = ticks_31AAB0(7);
+                moby->unkBC = 2;
+            }
+        } else if (moby->unkBC == 2) {
+            moby->pos.z -= D_0015EE60_31AAB0 * 0.1f;
+            if (tick_31AAB0(&vars->bob_timer)) {
+                moby->unkBC = 0;
+            }
+        }
+        turn_31AAB0(moby, atan2_31AAB0(sight.pos.f[0] - moby->pos.x, sight.pos.f[1] - moby->pos.y),
+                    &vars->turn_speed, D_0015EE70_31AAB0 * 3.1415927f, D_0015EE6C_31AAB0 * 3.1415927f,
+                    D_0015EE6C_31AAB0 * 6.2831855f);
+        pitch = atan2_31AAB0(distxy_31AAB0(&moby->pos, &sight.pos), sight.pos.f[2] - moby->pos.z);
+        moby->rot.y = func_L00_00259148_31AAB0(&vars->pitch_speed, moby->rot.y, pitch,
+                                       D_0015EE70_31AAB0 * 3.1415927f, D_0015EE6C_31AAB0 * 3.1415927f, D_0015EE6C_31AAB0 * 6.2831855f);
+        sub_31AAB0(&dir, &sight.pos, &moby->pos);
+        if (moby->unkBC != 0) {
+            dir.f[2] = 0.0f;
+        }
+        norm_31AAB0(&dir, &dir, D_0015EE70_31AAB0 * 30.0f);
+        add_31AAB0(&vars->velocity, &vars->velocity, &dir);
+        func_L00_001FF548_31AAB0(&vars->velocity, &vars->velocity, D_0015EE6C_31AAB0 * 10.0f);
+        add_31AAB0(&moby->pos, &moby->pos, &vars->velocity);
+        if (dist_31AAB0(&moby->pos, &vars->home) > 64.0f) {
+            remove_31AAB0(moby, spawner_vars);
+        }
+        func_L00_0025A8C0_31AAB0(contact, moby, 0x10001, 1.0f, &vars->velocity);
+        qcopy(&probe, &moby->pos);
+        probe.f[2] += 0.75f;
+        if (probe_31AAB0(0.75f, &probe, 0x10, moby, contact) && D_L07_00173F58_31AAB0 != 0 &&
+            D_L07_00173F58_31AAB0->oclass != 0x363 && D_L07_00173F58_31AAB0->oclass != 0x456 &&
+            D_L07_00173F58_31AAB0->oclass != 0x458 && D_L07_00173F58_31AAB0->oclass != 0x365 &&
+            D_L07_00173F58_31AAB0->oclass != 0x367) {
+            debris_31AAB0(moby, &vars->velocity, 0, 0.0f, 0.0f, 3, 3, 5, 2.0f, 1.0f, 4.0f, 1.0f, 2, 7.0f, 0, 1, -1, 0);
+            remove_31AAB0(moby, spawner_vars);
+        }
+        qcopy(&probe, &moby->pos);
+        probe.f[2] += 0.55f;
+        if (func_L00_001F10E0_31AAB0(0.55f, &probe, 0, moby)) {
+            sub_31AAB0(&push, &D_L07_00173F70_31AAB0, &probe);
+            add_31AAB0(&moby->pos, &moby->pos, &push);
+        }
+        if (vars->life_timer == 0) {
+            remove_31AAB0(moby, spawner_vars);
+        }
+        break;
+    case 3:
+        debris_31AAB0(moby, &vars->velocity, 0, 0.0f, 0.0f, 3, 3, 5, 2.0f, 1.0f, 4.0f, 1.0f, 2, 7.0f, 0, 1, -1, 0);
+        remove_31AAB0(moby, spawner_vars);
+        break;
+    case 4:
+        break;
+    }
+    func_L00_0025B040_31AAB0(moby, 0.7f);
+}
+typedef struct { f32 x; f32 y; f32 z; } Vec3_31B318;
+typedef struct { f32 x; f32 y; f32 z; f32 w; } Vec4f_31B318;
+struct MobyClass_31B318 {
+    u8 pad_0[0xC];
+    u8 seq_count;
+    u8 pad_D[3];
+    u32 unk10;
+    u8 pad_14[0x8];
+    void *unk1C;
+    void *gifs;
+    f32 scale;
+    s32 unk28;
+    void **callbacks;
+    u8 pad_30[0x14];
+    u16 flags;
+    s16 unk46;
+    void *seqs[1];
+};
+struct Moby_31B318 {
+    Vec4f_31B318 bsphere;
+    Vec4f_31B318 pos;
+    u8 state;
+    u8 group;
+    u8 unk22;
+    u8 unk23;
+    struct MobyClass_31B318 *pclass;
+    struct Moby_31B318 *next;
+    f32 scale;
+    u8 unk30;
+    u8 unk31;
+    s16 unk32;
+    u16 flags;
+    u16 unk36;
+    u64 spawn_frame;
+    Vec4f_31B318 rot;
+    u8 frame;
+    u8 prev_frame;
+    u8 seq;
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    void *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71;
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_31B318 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F;
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94;
+    s32 unk98;
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0;
+    u8 padB1;
+    u16 save_id;
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8;
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_31B318 unkC0;
+    Vec4f_31B318 unkD0;
+    Vec4f_31B318 unkE0;
+    u8 padF0[0x10];
+};
+typedef struct {
+    s32 shards;
+    Vec3_31B318 size;
+} BreakableVars_31B318;
+typedef struct {
+    u8 pad0[0x10];
+    Vec4f_31B318 pos;
+    struct Moby_31B318 *moby;
+    u8 pad24[8];
+    f32 kind;
+} MobyHit_31B318;
+extern float D_0015EE6C_31B318 __asm__("D_0015EE6C") MACRO_ADDR;
+extern void break_rotate_31B318(void *, void *, void *) __asm__("func_001F9EC0");
+extern void break_rand_vec_31B318(void *, f32, f32) __asm__("func_L00_00258DB0");
+extern struct Moby_31B318 *break_spawn_shard_31B318(void *, void *, s32, f32, s32, f32, f32, f32, s32) __asm__("func_L01_002F9908");
+extern MobyHit_31B318 *hit_31B318(struct Moby_31B318 *, s32, s32) __asm__("func_L00_0025B478");
+extern float rand_31B318(float, float) __asm__("func_002140F8");
+extern void add_31B318(void *, void *, void *) __asm__("func_001F9BD8");
+extern int randi_31B318(int, int) __asm__("func_L00_00258BC8");
+extern void debris_31B318(void *, void *, void *, float, float, int, int, int, float, float,
+                          float, float, int, float, int, int, int, int) __asm__("func_L00_0025F4A8");
+extern void delete_31B318(void *) __asm__("func_0020D678");
+
+/* Breakable prop: when hit by moby 0x415 in state 8 or 0x452 in state 9 with hit kind 1.000123, scatters its shard
+ * count of pieces over its rotated extent, spawns debris and removes itself.
+ * Adapted from Lombyte (MIT) for PAL: overlays/l07/gameplay/entities/00312948.c, FUN_L07_00319f48. */
+void func_L07_0031B318(struct Moby_31B318 *m) {
+    BreakableVars_31B318 *v = (BreakableVars_31B318 *)m->pvars;
+    MobyHit_31B318 *h;
+    Vec4f_31B318 ext, p, vel;
+    f32 scale;
+    s32 cls;
+    s32 i;
+
+    h = hit_31B318(m, 0x30000, 0);
+    if (h != 0 && h->moby != 0
+        && ((h->moby->oclass == 0x415 && h->moby->state == 8)
+            || (h->moby->oclass == 0x452 && h->moby->state == 9))
+        && h->kind == 1.000123f) {
+        ext.x = v->size.x;
+        ext.y = v->size.y;
+        ext.z = v->size.z;
+        break_rotate_31B318(&ext, &ext, &m->unkC0);
+        for (i = 0; i < v->shards; i++) {
+            p.x = rand_31B318(-ext.x, ext.x) * 0.5f;
+            p.y = rand_31B318(-ext.y, ext.y) * 0.5f;
+            p.z = rand_31B318(1.5f, ext.z);
+            add_31B318(&p, &p, &m->pos);
+            break_rand_vec_31B318(&vel, D_0015EE6C_31B318 * 5.0f, D_0015EE6C_31B318 * 10.0f);
+            if (vel.z < 0.0f)
+                vel.z = -vel.z;
+            if (vel.z < D_0015EE6C_31B318 + D_0015EE6C_31B318)
+                vel.z = vel.z + (D_0015EE6C_31B318 + D_0015EE6C_31B318);
+            cls = i % 3 + 0x2B8;
+            scale = rand_31B318(0.41f, 0.5f);
+            break_spawn_shard_31B318(&p, &vel, cls, scale, randi_31B318(0x32, 0x50), 1.0f, 1.0f,
+                              0.75f, 0);
+        }
+        debris_31B318(m, &h->pos, h, 3.0f, 1.0f, 10, 3, 16, 4.0f, 2.0f, 9.0f, 1.0f, 0, 15.0f, 1, 1, -1, 0);
+        delete_31B318(m);
+        return;
+    }
+    m->unkA4 = 0xFF;
+}
 INCLUDE_ASM("asm/overlays", func_L07_0031B620);

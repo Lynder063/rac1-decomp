@@ -677,6 +677,32 @@ Eighteen more of the same kind followed, the last of the candidates carried over
 - `src/overlays/shared/vendor_002D9548.c`: `func_L06_002EBA10` (`FUN_L06_002ea5e0`)
 - `src/overlays/shared/vendor_002D9548.c`: `func_L06_002F4908` (`FUN_L06_002f34d8`)
 
+Twenty more level functions were adapted by a worker on 2026-10-09 from Lombyte's matched C for the same
+functions, each replacing a near miss of this project's own. Lombyte's statements stand unchanged; the
+declarations are this project's (private aliases, small data with its real type, the hero, pad and voice
+blocks under the symbols this project uses), and two are defined under an alias. In parentheses, Lombyte's name.
+
+- `src/overlays/l01_novalis/vendor_002FABE8.c`: `func_L01_002FB588` (`FUN_L01_002fa1b0`)
+- `src/overlays/l05_rilgar/vendor_0030EB68.c`: `func_L05_0030F9D0` (`FUN_L05_0030e508`)
+- `src/overlays/l05_rilgar/vendor_0030EB68.c`: `func_L05_00319F78` (`FUN_L05_00318a68`)
+- `src/overlays/l07_umbris/vendor_00313D28.c`: `func_L07_00319080` (`FUN_L07_00317cb0`)
+- `src/overlays/l07_umbris/vendor_00313D28.c`: `func_L07_0031AAB0` (`FUN_L07_003196e0`)
+- `src/overlays/l07_umbris/vendor_00313D28.c`: `func_L07_0031B318` (`FUN_L07_00319f48`)
+- `src/overlays/l08_batalia/vendor_002EAF48.c`: `func_L08_002EAF48` (`FUN_L08_002e9b70`)
+- `src/overlays/l08_batalia/vendor_002EAF48.c`: `func_L08_002F8560` (`FUN_L08_002f70a0`)
+- `src/overlays/l10_orxon/vendor_00296BD8.c`: `func_L10_002CAD18` (`FUN_L10_002c9958`)
+- `src/overlays/l13_gemlik/vendor_002C2638.c`: `func_L13_002E9910` (`FUN_L13_002e84d8`)
+- `src/overlays/l14_oltanis/vendor_002ACCC0.c`: `func_L14_002B5750` (`FUN_L14_002b4500`)
+- `src/overlays/l14_oltanis/vendor_002E0538.c`: `func_L14_002FF040` (`FUN_L14_002fdbb8`)
+- `src/overlays/l18_veldin2/vendor_002F2AE0.c`: `func_L18_002F7F00` (`FUN_L18_002f6aa0`)
+- `src/overlays/shared/vendor_0029FD68.c`: `func_L00_002A1540` (`FUN_L00_002a02b0`)
+- `src/overlays/shared/vendor_002B2A28.c`: `func_L14_002B3850` (`FUN_L14_002b2600`)
+- `src/overlays/shared/vendor_002B2A28.c`: `func_L14_003039C0` (`FUN_L14_00302538`)
+- `src/overlays/shared/vendor_002C12B0.c`: `func_L00_002C8DB8` (`FUN_L00_002c7a58`)
+- `src/overlays/shared/vendor_002C6B30.c`: `func_L09_002C6B30` (`FUN_L09_002c5990`)
+- `src/overlays/shared/vendor_002D1168.c`: `func_L00_002D4398` (`FUN_L00_002d2ee8`)
+- `src/overlays/shared/vendor_002D9548.c`: `func_L06_002EB5C8` (`FUN_L06_002ea198`)
+
 One more is this project's own port of a function it has from Lombyte: `func_L00_001EB890` in
 `src/overlays/shared/camera_001EB508.c` is the level programs' copy of `func_001EC2B8` (Lombyte's
 `switch_active_camera_record`), with the same C under the level's symbols.

@@ -1008,7 +1008,61 @@ void func_L14_002B56F8(int idx) {
         } while (*p++ >= 0);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L14_002B5750);
+extern short *D_L14_001AC2C0_2B5750[] __asm__("D_L14_001AC2C0");
+extern unsigned char *D_L14_00160098_2B5750 __asm__("D_L14_00160098") MACRO_ADDR;
+extern int D_L14_001615D4_2B5750 SDATA(D_L14_001615D4);
+extern float D_L14_001615D8_2B5750 SDATA(D_L14_001615D8);
+extern void func_00213D28_2B5750(unsigned char *, int, int) __asm__("func_00213D28");
+extern int func_001F9850_2B5750(int) __asm__("func_001F9850");
+extern float func_001FA888_2B5750(short) __asm__("func_001FA888");
+
+/* Returns 0 unless every object on the list is ready, then wakes the waiting ones and sets their timers.
+ * Adapted from Lombyte (MIT) for PAL: overlays/l14/gameplay/entities/002460f8.c, FUN_L14_002b4500. */
+int func_L14_002B5750(int index) {
+    short *p = D_L14_001AC2C0_2B5750[index];
+    unsigned char *base;
+    unsigned char *q;
+    unsigned char *o;
+    unsigned char *d;
+    int st;
+    int t;
+    float f;
+    float g;
+    if (p == 0) {
+        return 0;
+    }
+    base = D_L14_00160098_2B5750;
+    do {
+        st = *(unsigned short *)p & 0x7FFF;
+        q = base + (st << 8);
+        if ((*(unsigned char **)(q + 0x78))[0x8B] == 0) {
+            st = q[0x20];
+            if (st != 5 && st != 1) {
+                return 0;
+            }
+        }
+    } while (*p++ >= 0);
+    p = D_L14_001AC2C0_2B5750[index];
+    do {
+        t = *(unsigned short *)p & 0x7FFF;
+        o = D_L14_00160098_2B5750 + (t << 8);
+        if (o[0x20] == 3) {
+            d = *(unsigned char **)(o + 0x78);
+            func_00213D28_2B5750(o, 4, 0);
+            o[0x20] = 5;
+            t = func_001F9850_2B5750(D_L14_001615D4_2B5750);
+            *(short *)(d + 0x74) = t;
+            f = 1.0f / func_001FA888_2B5750(t);
+            g = 1.0f / (*(short *)(d + 0x74) * D_L14_001615D8_2B5750);
+            *(float *)(d + 0x78) = f;
+            *(float *)(o + 0x58) = g;
+            *(float *)(d + 0x8C) = *(float *)(o + 0x48);
+            *(short *)(d + 0x88) = 0;
+            d[0x8B] = 0;
+        }
+    } while (*p++ >= 0);
+    return 1;
+}
 // Tests whether a vendor group has no active unready objects.
 int func_L14_002B58C0(int index) {
  unsigned short *list = (unsigned short *)D_L14_001AC2C0_2B0168[index];

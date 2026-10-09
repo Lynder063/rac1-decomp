@@ -285,7 +285,177 @@ void func_L10_002C8DE0(unsigned char *moby) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L10_002CAD18);
+typedef struct { f32 x; f32 y; f32 z; } Vec3_2CAD18;
+typedef struct { f32 x; f32 y; f32 z; f32 w; } Vec4f_2CAD18;
+struct MobyClass_2CAD18 {
+    u8 pad_0[0xC];
+    u8 seq_count;
+    u8 pad_D[3];
+    u32 unk10;
+    u8 pad_14[0x8];
+    void *unk1C;
+    void *gifs;
+    f32 scale;
+    s32 unk28;
+    void **callbacks;
+    u8 pad_30[0x14];
+    u16 flags;
+    s16 unk46;
+    void *seqs[1];
+};
+struct Moby_2CAD18 {
+    Vec4f_2CAD18 bsphere;
+    Vec4f_2CAD18 pos;
+    u8 state;
+    u8 group;
+    u8 unk22;
+    u8 unk23;
+    struct MobyClass_2CAD18 *pclass;
+    struct Moby_2CAD18 *next;
+    f32 scale;
+    u8 unk30;
+    u8 unk31;
+    s16 unk32;
+    u16 flags;
+    u16 unk36;
+    u64 spawn_frame;
+    Vec4f_2CAD18 rot;
+    u8 frame;
+    u8 prev_frame;
+    u8 seq;
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    void *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71;
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_2CAD18 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F;
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94;
+    s32 unk98;
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0;
+    u8 padB1;
+    u16 save_id;
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8;
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_2CAD18 unkC0;
+    Vec4f_2CAD18 unkD0;
+    Vec4f_2CAD18 unkE0;
+    u8 padF0[0x10];
+};
+typedef int u128_2CAD18 __attribute__((mode(TI)));
+typedef union {
+    u128_2CAD18 q;
+    f32 f[4];
+    s32 i[4];
+} OvlVec4_2CAD18;
+/* Box a moby sweeps through: hits other mobys inside it. */
+typedef struct {
+    f32 width;
+    f32 depth;
+    u32 flags;
+    u8 pad0C[0x3C];
+    f32 margin_x;
+    f32 margin_z;
+    f32 strength;
+} HitBox_2CAD18;
+
+extern struct Moby_2CAD18 *D_L10_00178400_2CAD18[] __asm__("D_L10_00178400");
+extern void func_001FA1F8_2CAD18(void *, void *) __asm__("func_001FA1F8");
+extern void func_001F9EC0_2CAD18(void *, void *, void *) __asm__("func_001F9EC0");
+extern void func_001F9EE8_2CAD18(void *, void *, void *) __asm__("func_001F9EE8");
+extern void func_001F9BD8_2CAD18(void *, void *, void *) __asm__("func_001F9BD8");
+extern void func_001F9BF0_2CAD18(void *, void *, void *) __asm__("func_001F9BF0");
+extern void func_001FA4A0_2CAD18(void *, void *) __asm__("func_001FA4A0");
+extern int func_L00_001F2BE8_2CAD18(void *, float, int, void *, void *) __asm__("func_L00_001F2BE8");
+extern void *func_00115248_2CAD18(void *, const void *, u32) __asm__("func_00115248");
+extern void func_L00_0025AD38_2CAD18(unsigned char *m, int x, int y, void *p, float f) __asm__("func_L00_0025AD38");
+
+/* Hits every moby inside the box in front of this one: collects the mobys in a sphere around the box, clamps each
+ * one's position into the box and hits it when a small sphere at that point still finds it.
+ * Adapted from Lombyte (MIT) for PAL: overlays/l10/gameplay/entities/00295a38.c, FUN_L10_002c9958. */
+void func_L10_002CAD18(struct Moby_2CAD18 *moby, HitBox_2CAD18 *box) {
+    OvlVec4_2CAD18 mat[3];
+    OvlVec4_2CAD18 center;
+    OvlVec4_2CAD18 delta;
+    OvlVec4_2CAD18 local;
+    OvlVec4_2CAD18 inv[4];
+    OvlVec4_2CAD18 point;
+    f32 radius;
+    s32 count;
+    s32 i;
+    s32 j;
+    s32 n;
+
+    if (box->flags & 0x100) {
+        return;
+    }
+    func_001FA1F8_2CAD18(mat, &moby->rot);
+    if (box->width > box->depth) {
+        radius = box->width * 0.5f;
+    } else {
+        radius = box->depth * 0.5f;
+    }
+    qzero(&center);
+    center.f[2] = radius;
+    func_001F9EC0_2CAD18(&center, &center, mat);
+    func_001F9BD8_2CAD18(&center, &center, &moby->pos);
+    count = func_L00_001F2BE8_2CAD18(&center, radius, 0x10, moby, 0);
+    if (count != 0) {
+        struct Moby_2CAD18 *found[count];
+
+        func_00115248_2CAD18(found, D_L10_00178400_2CAD18, count * 4);
+        for (i = 0; i < count; i++) {
+            struct Moby_2CAD18 *other = found[i];
+
+            if (other == 0 || other->state == 0xFE || other->state == 0xFD) {
+                continue;
+            }
+            func_001F9BF0_2CAD18(&delta, &other->pos, &moby->pos);
+            func_001FA4A0_2CAD18(inv, mat);
+            func_001F9EE8_2CAD18(&local, &delta, inv);
+            qcopy(&point, &local);
+            if (point.f[0] < -(box->width * 0.5f + box->margin_x)) {
+                point.f[0] = -box->width * 0.5f;
+            } else if (box->width * 0.5f + box->margin_x < point.f[0]) {
+                point.f[0] = box->width * 0.5f;
+            }
+            if (point.f[2] < -(box->depth * 0.5f + box->margin_z)) {
+                point.f[2] = -box->depth * 0.5f;
+            } else if (box->depth * 0.5f + box->margin_z < point.f[2]) {
+                point.f[2] = box->depth * 0.5f;
+            }
+            point.f[1] = 0.0f;
+            func_001F9EC0_2CAD18(&point, &point, mat);
+            func_001F9BD8_2CAD18(&point, &point, &moby->pos);
+            n = func_L00_001F2BE8_2CAD18(&point, box->margin_x, 0x10, moby, 0);
+            for (j = 0; j < n; j++) {
+                if (D_L10_00178400_2CAD18[j] == other) {
+                    func_L00_0025AD38_2CAD18((unsigned char *)other, (int)moby, 0x10001, &point, box->strength);
+                }
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L10_002CB030);
 LINKER_REMNANT("asm/overlays", func_L10_002CF310);
 INCLUDE_ASM("asm/overlays", func_L10_002D8ED8);

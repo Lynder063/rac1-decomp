@@ -209,7 +209,170 @@ char *func_L01_002FB440(int owner, void *pos, void *target, int color) {
     }
     return m;
 }
-INCLUDE_ASM("asm/overlays", func_L01_002FB588);
+typedef struct { f32 x; f32 y; f32 z; } Vec3_2FB588;
+typedef struct { f32 x; f32 y; f32 z; f32 w; } Vec4f_2FB588;
+struct MobyClass_2FB588 {
+    u8 pad_0[0xC];
+    u8 seq_count;
+    u8 pad_D[3];
+    u32 unk10;
+    u8 pad_14[0x8];
+    void *unk1C;
+    void *gifs;
+    f32 scale;
+    s32 unk28;
+    void **callbacks;
+    u8 pad_30[0x14];
+    u16 flags;
+    s16 unk46;
+    void *seqs[1];
+};
+struct Moby_2FB588 {
+    Vec4f_2FB588 bsphere;
+    Vec4f_2FB588 pos;
+    u8 state;
+    u8 group;
+    u8 unk22;
+    u8 unk23;
+    struct MobyClass_2FB588 *pclass;
+    struct Moby_2FB588 *next;
+    f32 scale;
+    u8 unk30;
+    u8 unk31;
+    s16 unk32;
+    u16 flags;
+    u16 unk36;
+    u64 spawn_frame;
+    Vec4f_2FB588 rot;
+    u8 frame;
+    u8 prev_frame;
+    u8 seq;
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    void *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71;
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_2FB588 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F;
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94;
+    s32 unk98;
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0;
+    u8 padB1;
+    u16 save_id;
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8;
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_2FB588 unkC0;
+    Vec4f_2FB588 unkD0;
+    Vec4f_2FB588 unkE0;
+    u8 padF0[0x10];
+};
+typedef int u128_2FB588 __attribute__((mode(TI)));
+typedef union {
+    u128_2FB588 q;
+    f32 f[4];
+} BurstVec_2FB588;
+typedef struct {
+    u32 c[6];
+} BurstPalette_2FB588;
+/* Light used by the flash; func_L00_002D4CE8 places it at a position. */
+typedef struct {
+    u8 pad_00[0x20];
+    f32 r;
+    f32 g;
+    f32 b;
+} BurstLight_2FB588;
+
+extern BurstPalette_2FB588 D_L01_0020B7E0_2FB588 __asm__("D_L01_0020B7E0");
+extern BurstPalette_2FB588 D_L01_0020B7F8_2FB588 __asm__("D_L01_0020B7F8");
+extern char D_L01_001E3720_2FB588[] __asm__("D_L01_001E3720");
+extern f32 D_0015EE6C_2FB588 __asm__("D_0015EE6C") MACRO_ADDR;
+extern void func_001F9BC0_2FB588(void *) __asm__("func_001F9BC0");
+extern int func_L00_00258BC8_2FB588(int lo, int hi) __asm__("func_L00_00258BC8");
+extern void func_L00_0026B890_2FB588(void *, void *, u32, u32, f32, s32, s32, f32, s32, s32) __asm__("func_L00_0026B890");
+extern s32 func_L00_002ADBB0_2FB588(void *, void *, void *, f32, s32, s32, s32, s32, s32) __asm__("func_L00_002ADBB0");
+extern s32 func_0022ED80_2FB588(s32, s32, void *) __asm__("func_0022ED80");
+extern void func_L00_002D4CE8_2FB588(void *, void *, s32, s32) __asm__("func_L00_002D4CE8");
+extern f32 func_002140F8_2FB588(f32, f32) __asm__("func_002140F8");
+extern s32 func_002140B0_2FB588(s32) __asm__("func_002140B0");
+extern s32 func_001F9850_2FB588(s32) __asm__("func_001F9850");
+
+/* Explosion burst at `where`: three particles in random colours from two six-colour palettes, two
+ * func_L00_002ADBB0 effects on `moby`, its sound unless the moby is dying (state 0xFD/0xFE), and a light flash of
+ * brightness `light` (negative: 13).
+ * Adapted from Lombyte (MIT) for PAL: overlays/l01/gameplay/entities/002f9810.c, FUN_L01_002fa1b0. */
+void func_L01_002FB588_r(struct Moby_2FB588 *moby, u128_2FB588 *where, s32 sound, f32 scale, f32 light) __asm__("func_L01_002FB588");
+void func_L01_002FB588_r(struct Moby_2FB588 *moby, u128_2FB588 *where, s32 sound, f32 scale, f32 light) {
+    BurstVec_2FB588 pos;
+    BurstVec_2FB588 vel;
+    BurstPalette_2FB588 inner;
+    BurstPalette_2FB588 outer;
+    BurstPalette_2FB588 *inner_p;
+    BurstVec_2FB588 *pos_p;
+    f32 size;
+    f32 speed;
+    s32 i;
+
+    /* pos and inner are used through pointers, as in retail */
+    pos_p = &pos;
+    pos.q = *where;
+    func_001F9BC0_2FB588(&vel);
+    inner_p = &inner;
+    for (i = 2; i >= 0; i--) {
+        speed = func_002140F8_2FB588(8.0f, 10.0f) * D_0015EE6C_2FB588;
+        size = scale * 400000.0f;
+        inner = D_L01_0020B7E0_2FB588;
+        outer = D_L01_0020B7F8_2FB588;
+        func_L00_0026B890_2FB588(pos_p, &vel,
+                         inner_p->c[func_002140B0_2FB588(6)], outer.c[func_002140B0_2FB588(6)],
+                         size,
+                         func_L00_00258BC8_2FB588(func_001F9850_2FB588(0xF), func_001F9850_2FB588(0x14)),
+                         func_L00_00258BC8_2FB588(func_001F9850_2FB588(0x19), func_001F9850_2FB588(0x1E)),
+                         speed * scale, 0, 0);
+    }
+
+    if (moby != 0) {
+        func_L00_002ADBB0_2FB588(moby, pos_p, &vel, scale + scale, func_001F9850_2FB588(0x14), 0x7F, 0, 0x40, 0x30);
+        func_L00_002ADBB0_2FB588(moby, pos_p, &vel, scale * 1.5f, func_001F9850_2FB588(0x1D), 0x20, 0, 0x20, 0);
+        if (moby->state != 0xFE) {
+            if (moby->state != 0xFD && sound != -1) {
+                func_0022ED80_2FB588(sound, 0, moby);
+            }
+        }
+    }
+
+    if (light != 0.0f) {
+        if (light > 0.0f) {
+            ((BurstLight_2FB588 *)D_L01_001E3720_2FB588)->g = light;
+            ((BurstLight_2FB588 *)D_L01_001E3720_2FB588)->b = light;
+            ((BurstLight_2FB588 *)D_L01_001E3720_2FB588)->r = light;
+        } else {
+            ((BurstLight_2FB588 *)D_L01_001E3720_2FB588)->g = 13.0f;
+            ((BurstLight_2FB588 *)D_L01_001E3720_2FB588)->b = 13.0f;
+            ((BurstLight_2FB588 *)D_L01_001E3720_2FB588)->r = 13.0f;
+        }
+        func_L00_002D4CE8_2FB588(((BurstLight_2FB588 *)D_L01_001E3720_2FB588), pos_p, 0, 0);
+    }
+}
 typedef struct { float f[4]; } Vec4 __attribute__((aligned(16)));
 typedef struct {
     Vec4 vel;

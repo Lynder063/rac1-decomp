@@ -1511,7 +1511,228 @@ void func_L00_002C8680(float *pos, float *tgt, float *out, float speed, float un
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_002C88A8);
-INCLUDE_ASM("asm/overlays", func_L00_002C8DB8);
+typedef struct { f32 x; f32 y; f32 z; } Vec3_2C8DB8;
+typedef struct { f32 x; f32 y; f32 z; f32 w; } Vec4f_2C8DB8;
+struct MobyClass_2C8DB8 {
+    u8 pad_0[0xC];
+    u8 seq_count;
+    u8 pad_D[3];
+    u32 unk10;
+    u8 pad_14[0x8];
+    void *unk1C;
+    void *gifs;
+    f32 scale;
+    s32 unk28;
+    void **callbacks;
+    u8 pad_30[0x14];
+    u16 flags;
+    s16 unk46;
+    void *seqs[1];
+};
+struct Moby_2C8DB8 {
+    Vec4f_2C8DB8 bsphere;
+    Vec4f_2C8DB8 pos;
+    u8 state;
+    u8 group;
+    u8 unk22;
+    u8 unk23;
+    struct MobyClass_2C8DB8 *pclass;
+    struct Moby_2C8DB8 *next;
+    f32 scale;
+    u8 unk30;
+    u8 unk31;
+    s16 unk32;
+    u16 flags;
+    u16 unk36;
+    u64 spawn_frame;
+    Vec4f_2C8DB8 rot;
+    u8 frame;
+    u8 prev_frame;
+    u8 seq;
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    void *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71;
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_2C8DB8 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F;
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94;
+    s32 unk98;
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0;
+    u8 padB1;
+    u16 save_id;
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8;
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_2C8DB8 unkC0;
+    Vec4f_2C8DB8 unkD0;
+    Vec4f_2C8DB8 unkE0;
+    u8 padF0[0x10];
+};
+typedef int u128_2C8DB8 __attribute__((mode(TI)));
+typedef union {
+    u128_2C8DB8 q;
+    f32 f[4];
+    s32 i[4];
+} OvlVec4_2C8DB8;
+/* Vars of the carrier moby that picks up and holds another moby. */
+typedef struct {
+    u8 pad0[0x40];
+    OvlVec4_2C8DB8 grip;
+    struct Moby_2C8DB8 *held;
+    s32 timer;
+} CarrierVars_2C8DB8;
+/* Counters kept at D_0014171B + 0x65 for the carrier's deliveries. */
+typedef struct {
+    u8 pad0[0xA0];
+    u16 deliveries;
+    u16 unkA2;
+    u32 levels;
+} DeliveryStats_2C8DB8;
+/* The hero block D_0013F450, cut down to what this function reads. */
+typedef struct {
+    u8 pad0[0x198];
+    s32 state_timer;        /* 0x198 */
+    u8 pad19C[0x20];
+    s32 unk1BC;             /* 0x1BC */
+    u8 pad1C0[0x10A0 - 0x1C0];
+    s32 button_mask;        /* 0x10A0: items[0].button_mask */
+    u8 pad10A4[0x2084 - 0x10A4];
+    s32 state_current;      /* 0x2084 */
+    u8 pad2088[0x20];
+    u8 unk20A8;             /* 0x20A8 */
+    u8 pad20A9[3];
+    u8 unk20AC;             /* 0x20AC */
+} Hero_2C8DB8;
+
+extern char D_0013F450_2C8DB8[] __asm__("D_0013F450");
+extern char D_0014171B_2C8DB8[] __asm__("D_0014171B");
+extern u32 D_0013CBE4_2C8DB8 __asm__("D_0013CBE4");
+extern s32 D_0015EFA4_2C8DB8 __asm__("D_0015EFA4") MACRO_ADDR;
+extern s32 D_0015EE84_2C8DB8 __asm__("D_0015EE84") MACRO_ADDR;
+extern void func_L00_00250800_2C8DB8(unsigned char *, int, void *) __asm__("func_L00_00250800");
+extern void func_0020DAF8_2C8DB8(void *, int, void *) __asm__("func_0020DAF8");
+extern void func_001F9EE8_2C8DB8(void *, void *, void *) __asm__("func_001F9EE8");
+extern void func_001F9BD8_2C8DB8(void *, void *, void *) __asm__("func_001F9BD8");
+extern int func_L00_00222B80_2C8DB8(int, int) __asm__("func_L00_00222B80");
+extern s32 func_001F9908_2C8DB8(s32 *) __asm__("func_001F9908");
+extern s32 func_001F9850_2C8DB8(s32) __asm__("func_001F9850");
+extern int func_L00_00217570_2C8DB8(int, int) __asm__("func_L00_00217570");
+extern int func_L00_00234638_2C8DB8(int, int) __asm__("func_L00_00234638");
+extern int func_L00_00234718_2C8DB8(int) __asm__("func_L00_00234718");
+extern void func_L00_002C88A8_2C8DB8(struct Moby_2C8DB8 *, CarrierVars_2C8DB8 *, OvlVec4_2C8DB8 *) __asm__("func_L00_002C88A8");
+extern int func_0022ED80_2C8DB8(int, int, void *) __asm__("func_0022ED80");
+extern unsigned char *func_L00_002C9578_2C8DB8(int, u128_2C8DB8 *, u128_2C8DB8 *) __asm__("func_L00_002C9578");
+extern void func_L00_002C96D0_2C8DB8(OvlVec4_2C8DB8 *, u8 *, void *) __asm__("func_L00_002C96D0");
+
+/* Carrier: keeps its grip point in front of it, hands the held moby over when the hero asks, and
+ * picks a new one up when func_L00_00234718 allows.
+ * Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay/entities/002bffa8.c, FUN_L00_002c7a58. */
+void func_L00_002C8DB8(struct Moby_2C8DB8 *moby) {
+    OvlVec4_2C8DB8 pos;
+    OvlVec4_2C8DB8 offset;
+    OvlVec4_2C8DB8 local;
+    OvlVec4_2C8DB8 mat[4];
+    OvlVec4_2C8DB8 grip;
+    CarrierVars_2C8DB8 *vars = (CarrierVars_2C8DB8 *)moby->pvars;
+
+    offset.q = 0;
+    offset.f[0] = 0.01f;
+    offset.f[1] = -0.14f;
+    offset.f[2] = -0.05f;
+    func_L00_00250800_2C8DB8((u8 *)moby, 0, &pos);
+    func_0020DAF8_2C8DB8(moby, 0, mat);
+    func_001F9EE8_2C8DB8(&local, &offset, mat);
+    func_001F9BD8_2C8DB8(&vars->grip, &pos, &local);
+    if (vars->held != 0) {
+        vars->held->unk98 = 1;
+    }
+    if (vars->held == 0 || vars->held->state == 0xFE || vars->held->state == 0xFD) {
+        vars->held = 0;
+    }
+    if (((Hero_2C8DB8 *)D_0013F450_2C8DB8)->state_current == 1) {
+        func_L00_00222B80_2C8DB8(0x1E, 1);
+    }
+    if (func_001F9908_2C8DB8(&vars->timer) && !((Hero_2C8DB8 *)D_0013F450_2C8DB8)->unk20AC) {
+        if ((((Hero_2C8DB8 *)D_0013F450_2C8DB8)->unk20A8 && ((Hero_2C8DB8 *)D_0013F450_2C8DB8)->unk1BC == func_001F9850_2C8DB8(0x11)) ||
+            ((D_0013CBE4_2C8DB8 & ((Hero_2C8DB8 *)D_0013F450_2C8DB8)->button_mask) && ((Hero_2C8DB8 *)D_0013F450_2C8DB8)->state_current == 0x1E && func_L00_00234718_2C8DB8(-1)) ||
+            (((Hero_2C8DB8 *)D_0013F450_2C8DB8)->state_current == 0x23 && ((Hero_2C8DB8 *)D_0013F450_2C8DB8)->state_timer == func_001F9850_2C8DB8(0x10))) {
+            func_L00_00217570_2C8DB8(0x1A, 0);
+            func_L00_00234638_2C8DB8(-1, 1);
+            moby->state = 3;
+        }
+    }
+    grip.q = vars->grip.q;
+    func_L00_002C88A8_2C8DB8(moby, vars, &grip);
+    switch (moby->state) {
+    case 0:
+        vars->held = 0;
+        if (moby->unk70 & 2) {
+            moby->state = 2;
+        } else {
+            moby->state = 1;
+        }
+    case 1:
+        if (moby->unk70 & 2) {
+            moby->state = 2;
+        }
+        break;
+    case 2:
+        break;
+    case 3:
+        if (vars->held != 0) {
+            if (((DeliveryStats_2C8DB8 *)(D_0014171B_2C8DB8 + 0x65))->deliveries < 0xFFFF) {
+                ((DeliveryStats_2C8DB8 *)(D_0014171B_2C8DB8 + 0x65))->deliveries++;
+            }
+            if (func_001F9850_2C8DB8(D_0015EFA4_2C8DB8) / 600 > ((DeliveryStats_2C8DB8 *)(D_0014171B_2C8DB8 + 0x65))->unkA2) {
+                ((DeliveryStats_2C8DB8 *)(D_0014171B_2C8DB8 + 0x65))->unkA2 = func_001F9850_2C8DB8(D_0015EFA4_2C8DB8) / 600;
+            }
+            ((DeliveryStats_2C8DB8 *)(D_0014171B_2C8DB8 + 0x65))->levels = ((DeliveryStats_2C8DB8 *)(D_0014171B_2C8DB8 + 0x65))->levels | (1 << D_0015EE84_2C8DB8) | 0x80000000;
+            func_L00_002C96D0_2C8DB8((void *)&vars->grip, (u8 *)vars->held, vars->held->pvars);
+            vars->held = 0;
+        } else {
+            func_0022ED80_2C8DB8(0, 0, moby);
+        }
+        moby->state = 4;
+        vars->timer = func_001F9850_2C8DB8(0x14);
+        break;
+    case 4:
+        if (((Hero_2C8DB8 *)D_0013F450_2C8DB8)->state_current != 0x23 && !((Hero_2C8DB8 *)D_0013F450_2C8DB8)->unk20A8) {
+            moby->state = 2;
+        }
+        break;
+    case 5:
+        moby->state = 6;
+        break;
+    case 6:
+        return;
+    }
+    if (vars->held != 0) {
+        qcopy(&vars->held->pos, &vars->grip);
+    } else if (func_L00_00234718_2C8DB8(-1)) {
+        qzero(&grip);
+        vars->held = (struct Moby_2C8DB8 *)func_L00_002C9578_2C8DB8((int)moby, (void *)&vars->grip, (void *)&grip);
+    }
+}
 typedef struct { float x, y, z, w; } Vec4 __attribute__((aligned(16)));
 extern float func_002140F8(float, float);
 extern int func_001160D8(void);

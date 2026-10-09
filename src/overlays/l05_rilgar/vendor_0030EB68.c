@@ -217,7 +217,87 @@ void func_L05_0030F6C0(char *m) {
         D_L05_001612C3[0] = c >> 24;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L05_0030F9D0);
+extern float D_0015EE6C_30F9D0 __asm__("D_0015EE6C") MACRO_ADDR;
+extern float D_0015EE70_30F9D0 __asm__("D_0015EE70") MACRO_ADDR;
+extern int D_L05_001601AC_30F9D0 __asm__("D_L05_001601AC") MACRO_ADDR;
+extern unsigned char *D_L05_00160098_30F9D0 __asm__("D_L05_00160098") MACRO_ADDR;
+extern void scale_30F9D0(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern void mul_30F9D0(void *, void *, float) __asm__("func_001F9C30");
+extern void add_30F9D0(void *, void *, void *) __asm__("func_001F9BD8");
+extern void sub_30F9D0(void *, void *, void *) __asm__("func_001F9BF0");
+extern float len_30F9D0(void *) __asm__("func_001F9CB8");
+extern void clear_30F9D0(void *) __asm__("func_001F9BC0");
+extern int voice_30F9D0(int, int, void *) __asm__("func_0022ED80");
+extern float advance_30F9D0(float, float, float, float, float *, float *) __asm__("func_00214D88");
+
+/* Slides the moby out along its pose-table entry's direction: 0 places it,
+   1 waits for the trigger byte 0xBC of its D_L05_00160098 record, 2 eases
+   it toward the end point, 3 lowers it to 5.9 below the entry's height.
+   Adapted from Lombyte (MIT) for PAL: overlays/l05/gameplay/entities/0030d6a0.c, FUN_L05_0030e508. */
+void func_L05_0030F9D0(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    float v[4];
+    float pos;
+    float speed;
+    char *e;
+    float len;
+    float reach;
+
+    switch (*(u8 *)(moby + 0x20)) {
+    case 0: {
+        char *e0;
+
+        e0 = (char *)(D_L05_001601AC_30F9D0 + (*(int *)(data + 0x10) << 7));
+        qcopy(moby + 0x10, e0 + 0x30);
+        *(float *)(moby + 0x48) = *(float *)(e0 + 0x78);
+        scale_30F9D0(v, e0 + 0x10, *(float *)(data + 0x18));
+        if (*(int *)(data + 0x1C) != 0) {
+            mul_30F9D0(v, v, -1.0f);
+            *(u16 *)(moby + 0x34) |= 0x8000;
+        }
+        add_30F9D0(moby + 0x10, moby + 0x10, v);
+        *(u8 *)(moby + 0x20) = 1;
+        break;
+    }
+    case 1:
+        if (D_L05_00160098_30F9D0[*(int *)(data + 0x14) * 256 + 0xBC] != 0) {
+            voice_30F9D0(0, 0, moby);
+            *(u8 *)(moby + 0x20) = 2;
+            clear_30F9D0(data);
+        }
+        break;
+    case 2:
+        e = (char *)(D_L05_001601AC_30F9D0 + (*(int *)(data + 0x10) << 7));
+        reach = *(float *)(data + 0x18) * 3.0f;
+        pos = 0.0f;
+        scale_30F9D0(v, e + 0x10, reach);
+        if (*(int *)(data + 0x1C) != 0) {
+            mul_30F9D0(v, v, -1.0f);
+        }
+        add_30F9D0(v, e + 0x30, v);
+        sub_30F9D0(v, v, moby + 0x10);
+        len = len_30F9D0(v);
+        speed = len_30F9D0(data);
+        advance_30F9D0(len, D_0015EE70_30F9D0 * 20.0f, D_0015EE70_30F9D0 * 30.0f,
+                       D_0015EE6C_30F9D0 * 10.0f, &pos, &speed);
+        scale_30F9D0(data, v, speed);
+        add_30F9D0(moby + 0x10, moby + 0x10, data);
+        if (len_30F9D0(v) < 0.01f) {
+            *(u8 *)(moby + 0x20) = 3;
+        }
+        break;
+    case 3:
+        e = (char *)D_L05_001601AC_30F9D0;
+        e += *(int *)(data + 0x10) << 7;
+        advance_30F9D0(*(float *)(e + 0x38) - 5.9f, D_0015EE70_30F9D0 * 20.0f,
+                       D_0015EE70_30F9D0 * 40.0f, D_0015EE6C_30F9D0 * 10.0f,
+                       (float *)(moby + 0x18), (float *)(data + 8));
+        if (*(float *)(moby + 0x18) < *(float *)(e + 0x38) - 5.9f) {
+            *(u8 *)(moby + 0x20) = 4;
+        }
+        break;
+    }
+}
 typedef struct {
     char pad00[0x10];
     float pos[4];
@@ -2184,7 +2264,42 @@ void func_L05_003195B0(char *m)
     func_L00_00263950(m, d + 0x40, 0, rate * D_0015EE64, head_rate * D_0015EE64);
     func_L00_00263950(m, d + 0xC0, 1, rate * D_0015EE64, head_rate * D_0015EE64);
 }
-INCLUDE_ASM("asm/overlays", func_L05_00319F78);
+extern char D_0013E633_319F78[] __asm__("D_0013E633");
+extern int D_L05_0016139C_319F78 __asm__("D_L05_0016139C") MACRO_ADDR;
+extern float D_L05_001613A0_319F78[4] __asm__("D_L05_001613A0") MACRO_ADDR;
+extern int D_L05_0015F6B0_319F78 __asm__("D_L05_0015F6B0") MACRO_ADDR;
+extern int find_319F78(void *, int) __asm__("func_00215570");
+extern float sin_319F78(float) __asm__("func_001F9FA8");
+
+/* Two-state marker: arms the moby, then once its target is found copies the
+ * target position and sets the bob height from the frame counter.
+ * Adapted from Lombyte (MIT) for PAL: overlays/l05/gameplay/entities/0030d6a0.c, FUN_L05_00318a68. */
+void func_L05_00319F78(char *m) {
+    int state = *(unsigned char *)(m + 0x20);
+    int *v = *(int **)(m + 0x78);
+    char *t;
+
+    switch (state) {
+    case 0:
+        *(unsigned char *)(m + 0x20) = 1;
+        *(unsigned short *)(m + 0x34) |= 1;
+        *(unsigned char *)(m + 0x30) = 0xFF;
+        *(int *)(m + 0x94) = 0;
+        break;
+    case 1:
+        t = D_0013E633_319F78 + 0xE9D;
+        if (find_319F78(t, *v) != 0) {
+            D_L05_0016139C_319F78 = state;
+            qcopy(D_L05_001613A0_319F78, t);
+            *(short *)(t + 0x15E) = 5;
+            D_L05_001613A0_319F78[3] = 48.0f;
+            D_L05_001613A0_319F78[2] = sin_319F78((float)(D_L05_0015F6B0_319F78 % 360) * 0.017444444f - 3.14f) * 0.25f + 59.5f;
+        } else {
+            D_L05_0016139C_319F78 = 0;
+        }
+        break;
+    }
+}
 extern float func_00214158(void);
 extern int D_L05_0015F6A8;
 extern float D_0015EE6C MACRO_ADDR;

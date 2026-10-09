@@ -2215,7 +2215,198 @@ void func_L18_002F7DC0(char *m) {
     }
     func_L18_002F7CD8(m, t, v);
 }
-INCLUDE_ASM("asm/overlays", func_L18_002F7F00);
+typedef struct { f32 x; f32 y; f32 z; } Vec3_2F7F00;
+typedef struct { f32 x; f32 y; f32 z; f32 w; } Vec4f_2F7F00;
+struct MobyClass_2F7F00 {
+    u8 pad_0[0xC];
+    u8 seq_count;
+    u8 pad_D[3];
+    u32 unk10;
+    u8 pad_14[0x8];
+    void *unk1C;
+    void *gifs;
+    f32 scale;
+    s32 unk28;
+    void **callbacks;
+    u8 pad_30[0x14];
+    u16 flags;
+    s16 unk46;
+    void *seqs[1];
+};
+struct Moby_2F7F00 {
+    Vec4f_2F7F00 bsphere;
+    Vec4f_2F7F00 pos;
+    u8 state;
+    u8 group;
+    u8 unk22;
+    u8 unk23;
+    struct MobyClass_2F7F00 *pclass;
+    struct Moby_2F7F00 *next;
+    f32 scale;
+    u8 unk30;
+    u8 unk31;
+    s16 unk32;
+    u16 flags;
+    u16 unk36;
+    u64 spawn_frame;
+    Vec4f_2F7F00 rot;
+    u8 frame;
+    u8 prev_frame;
+    u8 seq;
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    void *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71;
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_2F7F00 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F;
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94;
+    s32 unk98;
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0;
+    u8 padB1;
+    u16 save_id;
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8;
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_2F7F00 unkC0;
+    Vec4f_2F7F00 unkD0;
+    Vec4f_2F7F00 unkE0;
+    u8 padF0[0x10];
+};
+typedef int u128_2F7F00 __attribute__((mode(TI)));
+typedef union {
+    u128_2F7F00 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4_2F7F00;
+/* Pvars of the boss while it circles its arena node. */
+typedef struct {
+    u8 pad0[0x344];
+    s32 node;
+    u8 pad348[0x78];
+    Vec4_2F7F00 pos;
+} BossCircleVars_2F7F00;
+/* One 0x80-byte arena node. */
+typedef struct {
+    u8 pad0[0x30];
+    Vec4_2F7F00 center;
+    u8 pad40[0x40];
+} ArenaNode_2F7F00;
+/* The hero block D_0013F450, cut down to what this function reads. */
+typedef struct {
+    u8 pad0[0x80];
+    Vec4_2F7F00 pos;               /* 0x80 */
+    u8 pad90[0x208C - 0x90];
+    s32 control_mode;           /* 0x208C */
+} Hero_2F7F00;
+
+extern char D_0013F450_2F7F00[] __asm__("D_0013F450");
+extern char D_0013F4D0_2F7F00[] __asm__("D_0013F4D0");
+extern char *D_L18_0016016C_2F7F00 __asm__("D_L18_0016016C") MACRO_ADDR;
+extern f32 D_0015EE6C_2F7F00 __asm__("D_0015EE6C") MACRO_ADDR;
+extern f32 D_L18_001623E0_2F7F00 SDATA(D_L18_001623E0);
+extern f32 D_L18_001623E4_2F7F00 SDATA(D_L18_001623E4);
+extern f32 D_L18_001623E8_2F7F00 SDATA(D_L18_001623E8);
+extern f32 D_L18_001623EC_2F7F00 SDATA(D_L18_001623EC);
+extern f32 D_L18_00162400_2F7F00 SDATA(D_L18_00162400);
+extern f32 D_L18_00162404_2F7F00 SDATA(D_L18_00162404);
+extern f32 func_L00_001FF860_2F7F00(f32, f32) __asm__("func_L00_001FF860");
+extern f32 func_001FA790_2F7F00(f32, f32) __asm__("func_001FA790");
+extern f32 func_001FA748_2F7F00(f32, f32) __asm__("func_001FA748");
+extern f32 func_001F9D48_2F7F00(void *, void *) __asm__("func_001F9D48");
+extern f32 func_001F9F90_2F7F00(f32) __asm__("func_001F9F90");
+extern f32 func_001F9FA8_2F7F00(f32) __asm__("func_001F9FA8");
+extern void func_001F9BD8_2F7F00(void *, void *, void *) __asm__("func_001F9BD8");
+extern int func_L18_002F7CD8_2F7F00(char *, float, void *) __asm__("func_L18_002F7CD8");
+extern f32 func_00214D28_2F7F00(f32 *, f32, f32) __asm__("func_00214D28");
+
+/* Steers the boss around its node on the far side from the hero (at most 10 degrees per step), faster the closer
+ * the hero is, and eases it to the node's height.
+ * Adapted from Lombyte (MIT) for PAL: overlays/l18/gameplay/vendor/002efb88.c, FUN_L18_002f6aa0. */
+void func_L18_002F7F00_r(struct Moby_2F7F00 *moby) __asm__("func_L18_002F7F00");
+void func_L18_002F7F00_r(struct Moby_2F7F00 *moby) {
+    BossCircleVars_2F7F00 *v = (BossCircleVars_2F7F00 *)moby->pvars;
+    Vec4_2F7F00 goal;
+    f32 ang;
+    f32 self_ang;
+    f32 near, far, slow, fast;
+    f32 speed;
+    f32 dist;
+
+    ang = func_L00_001FF860_2F7F00(((Hero_2F7F00 *)D_0013F450_2F7F00)->pos.f[0] - ((ArenaNode_2F7F00 *)D_L18_0016016C_2F7F00)[v->node].center.f[0],
+                  ((Hero_2F7F00 *)D_0013F450_2F7F00)->pos.f[1] - ((ArenaNode_2F7F00 *)D_L18_0016016C_2F7F00)[v->node].center.f[1]);
+    self_ang = func_L00_001FF860_2F7F00(v->pos.f[0] - ((ArenaNode_2F7F00 *)D_L18_0016016C_2F7F00)[v->node].center.f[0],
+                       v->pos.f[1] - ((ArenaNode_2F7F00 *)D_L18_0016016C_2F7F00)[v->node].center.f[1]);
+    if (func_001FA790_2F7F00(self_ang, ang) < 0.0f)
+        ang = func_001FA748_2F7F00(ang, -2.3561945f);
+    else
+        ang = func_001FA748_2F7F00(ang, 2.3561945f);
+    ang = func_001FA790_2F7F00(ang, self_ang);
+    if (ang > 0.17453292f)
+        ang = 0.17453292f;
+    else if (ang < -0.17453292f)
+        ang = -0.17453292f;
+    ang = func_001FA748_2F7F00(ang, self_ang);
+    if (moby->state == 2) {
+        goal.f[0] = func_001F9F90_2F7F00(ang) * D_L18_00162400_2F7F00;
+        goal.f[1] = func_001F9FA8_2F7F00(ang) * D_L18_00162400_2F7F00;
+        goal.f[2] = 0.0f;
+    } else {
+        goal.f[0] = func_001F9F90_2F7F00(ang) * D_L18_00162404_2F7F00;
+        goal.f[1] = func_001F9FA8_2F7F00(ang) * D_L18_00162404_2F7F00;
+        goal.f[2] = 0.0f;
+    }
+    func_001F9BD8_2F7F00(&goal, &goal, &((ArenaNode_2F7F00 *)D_L18_0016016C_2F7F00)[v->node].center);
+    if (func_001F9D48_2F7F00(&v->pos, &((ArenaNode_2F7F00 *)D_L18_0016016C_2F7F00)[v->node].center) > D_L18_00162404_2F7F00 + 1.0f) {
+        speed = 10.0f;
+    } else if (((Hero_2F7F00 *)D_0013F450_2F7F00)->control_mode != 0xF) {
+        near = D_L18_001623EC_2F7F00;
+        far = D_L18_001623E8_2F7F00;
+        slow = D_L18_001623E4_2F7F00;
+        fast = D_L18_001623E0_2F7F00;
+        if (moby->state == 0xD) {
+            slow = 2.0f;
+            fast = 5.5f;
+            near *= 0.5f;
+            far *= 0.5f;
+        } else if (moby->state == 0xF) {
+            slow = 6.0f;
+            near *= 1.5f;
+            fast = 10.0f;
+            far *= 1.5f;
+        }
+        dist = func_001F9D48_2F7F00(&moby->pos, D_0013F4D0_2F7F00);
+        if (far < dist)
+            dist = far;
+        else if (dist < near)
+            dist = near;
+        speed = 1.0f - (dist - near) / (far - near);
+        speed = (fast - slow) * speed + slow;
+    } else {
+        speed = 20.0f;
+    }
+    func_L18_002F7CD8_2F7F00((char *)moby, speed * D_0015EE6C_2F7F00, &goal);
+    func_00214D28_2F7F00(&v->pos.f[2], ((ArenaNode_2F7F00 *)D_L18_0016016C_2F7F00)[v->node].center.f[2], D_0015EE6C_2F7F00 * 4.0f);
+}
 extern int func_L18_002D9C48(void *obj);
 extern void func_L18_002D9C78(void *, int, int);
 extern int func_001F9850(int);

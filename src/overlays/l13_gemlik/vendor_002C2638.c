@@ -1165,7 +1165,148 @@ char *func_L13_002E9870(char *owner) {
     }
     return moby;
 }
-INCLUDE_ASM("asm/overlays", func_L13_002E9910);
+typedef struct { f32 x; f32 y; f32 z; } Vec3_2E9910;
+typedef struct { f32 x; f32 y; f32 z; f32 w; } Vec4f_2E9910;
+struct MobyClass_2E9910 {
+    u8 pad_0[0xC];
+    u8 seq_count;
+    u8 pad_D[3];
+    u32 unk10;
+    u8 pad_14[0x8];
+    void *unk1C;
+    void *gifs;
+    f32 scale;
+    s32 unk28;
+    void **callbacks;
+    u8 pad_30[0x14];
+    u16 flags;
+    s16 unk46;
+    void *seqs[1];
+};
+struct Moby_2E9910 {
+    Vec4f_2E9910 bsphere;
+    Vec4f_2E9910 pos;
+    u8 state;
+    u8 group;
+    u8 unk22;
+    u8 unk23;
+    struct MobyClass_2E9910 *pclass;
+    struct Moby_2E9910 *next;
+    f32 scale;
+    u8 unk30;
+    u8 unk31;
+    s16 unk32;
+    u16 flags;
+    u16 unk36;
+    u64 spawn_frame;
+    Vec4f_2E9910 rot;
+    u8 frame;
+    u8 prev_frame;
+    u8 seq;
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    void *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71;
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_2E9910 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F;
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94;
+    s32 unk98;
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0;
+    u8 padB1;
+    u16 save_id;
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8;
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_2E9910 unkC0;
+    Vec4f_2E9910 unkD0;
+    Vec4f_2E9910 unkE0;
+    u8 padF0[0x10];
+};
+extern float D_0015EE60_2E9910 __asm__("D_0015EE60") MACRO_ADDR;
+extern void func_L00_0024FFE8_2E9910(unsigned char *, int, int) __asm__("func_L00_0024FFE8");
+extern int func_001FA898_2E9910(float) __asm__("func_001FA898");
+extern void func_0020D678_2E9910(void *) __asm__("func_0020D678");
+
+/* Fades the moby in (state 1), holds until its owner is gone or dying (state 2), fades it out (state 3) and removes
+ * it (state 4), easing its scale toward the class scale and spinning it all the while.
+ * Adapted from Lombyte (MIT) for PAL: overlays/l13/gameplay/entities/002c13b0.c, FUN_L13_002e84d8. */
+void func_L13_002E9910(struct Moby_2E9910 *moby) {
+    int *d = (int *)moby->pvars;
+    int old;
+    int step;
+
+    switch (moby->state) {
+    case 0:
+        moby->unk94 = moby->pclass->unk10;
+        moby->state = 1;
+        break;
+    case 1: {
+        float fade = D_0015EE60_2E9910 * 0.02f;
+        moby->scale +=
+            (moby->pclass->scale * 4.0f - moby->scale) * 0.1f;
+        ((float *)d)[1] += fade;
+        if (((float *)d)[1] >= 1.0f) {
+            ((float *)d)[1] = 1.0f;
+            moby->state = 2;
+        }
+        moby->unk23 = func_001FA898_2E9910(((float *)d)[1] * 60.0f);
+        break;
+    }
+    case 2:
+        moby->scale +=
+            (moby->pclass->scale * 4.0f - moby->scale) * 0.1f;
+        if (d[0] == 0 || ((unsigned char *)d[0])[0x20] == 0xFE || ((unsigned char *)d[0])[0x20] == 0xFD) {
+            moby->state = 3;
+        }
+        break;
+    case 3: {
+        float fade = D_0015EE60_2E9910 * 0.02f;
+        moby->scale +=
+            (moby->pclass->scale - moby->scale) * 0.1f;
+        ((float *)d)[1] -= fade;
+        if (((float *)d)[1] <= 0.0f) {
+            ((float *)d)[1] = 0.0f;
+            moby->state = 4;
+        }
+        moby->unk23 = func_001FA898_2E9910(((float *)d)[1] * 60.0f);
+        break;
+    }
+    case 4:
+        func_0020D678_2E9910(moby);
+        return;
+    }
+    old = d[2];
+    step = -0x40;
+    d[2] = old + step;
+    if (d[2] > 0x1000) {
+        step = -0x1040;
+        d[2] = old + step;
+    } else if (d[2] < 0) {
+        step = 0xFC0;
+        d[2] = old + step;
+    }
+    func_L00_0024FFE8_2E9910((unsigned char *)moby->pclass, 0, step);
+}
 struct MusicStreamChannel {
     s32 handle; /* 0x00: stream handle from the start callback; -1 while starting */
     s16 track; /* 0x04 */

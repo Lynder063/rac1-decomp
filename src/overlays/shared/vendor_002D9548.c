@@ -300,7 +300,174 @@ void func_L06_002EB360(struct Moby *moby) {
     DeleteMoby(*(void **)(vars + 0x20C));
     *(int *)(vars + 0x20C) = 0;
 }
-INCLUDE_ASM("asm/overlays", func_L06_002EB5C8);
+typedef struct { f32 x; f32 y; f32 z; } Vec3_2EB5C8;
+typedef struct { f32 x; f32 y; f32 z; f32 w; } Vec4f_2EB5C8;
+struct MobyClass_2EB5C8 {
+    u8 pad_0[0xC];
+    u8 seq_count;
+    u8 pad_D[3];
+    u32 unk10;
+    u8 pad_14[0x8];
+    void *unk1C;
+    void *gifs;
+    f32 scale;
+    s32 unk28;
+    void **callbacks;
+    u8 pad_30[0x14];
+    u16 flags;
+    s16 unk46;
+    void *seqs[1];
+};
+struct Moby_2EB5C8 {
+    Vec4f_2EB5C8 bsphere;
+    Vec4f_2EB5C8 pos;
+    u8 state;
+    u8 group;
+    u8 unk22;
+    u8 unk23;
+    struct MobyClass_2EB5C8 *pclass;
+    struct Moby_2EB5C8 *next;
+    f32 scale;
+    u8 unk30;
+    u8 unk31;
+    s16 unk32;
+    u16 flags;
+    u16 unk36;
+    u64 spawn_frame;
+    Vec4f_2EB5C8 rot;
+    u8 frame;
+    u8 prev_frame;
+    u8 seq;
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    void *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71;
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_2EB5C8 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F;
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94;
+    s32 unk98;
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0;
+    u8 padB1;
+    u16 save_id;
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8;
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_2EB5C8 unkC0;
+    Vec4f_2EB5C8 unkD0;
+    Vec4f_2EB5C8 unkE0;
+    u8 padF0[0x10];
+};
+typedef int u128_2EB5C8 __attribute__((mode(TI)));
+typedef union {
+    u128_2EB5C8 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4_2EB5C8;
+extern s32 D_L06_00161CA8_2EB5C8 SDATA(D_L06_00161CA8);
+extern s32 D_L06_00161CAC_2EB5C8 SDATA(D_L06_00161CAC);
+extern f32 D_L06_00161CB0_2EB5C8 SDATA(D_L06_00161CB0);
+extern f32 D_L06_00161CB4_2EB5C8 SDATA(D_L06_00161CB4);
+extern f32 D_L06_00161CB8_2EB5C8 SDATA(D_L06_00161CB8);
+extern f32 D_L06_00161CBC_2EB5C8 SDATA(D_L06_00161CBC);
+extern f32 D_L06_00161CC0_2EB5C8 SDATA(D_L06_00161CC0);
+extern f32 D_L06_00161CC4_2EB5C8 SDATA(D_L06_00161CC4);
+extern f32 D_L06_00161CC8_2EB5C8 SDATA(D_L06_00161CC8);
+extern f32 D_L06_00161CCC_2EB5C8 SDATA(D_L06_00161CCC);
+extern f32 D_L06_00161CD0_2EB5C8 SDATA(D_L06_00161CD0);
+extern f32 D_L06_00161CD4_2EB5C8 SDATA(D_L06_00161CD4);
+extern s32 D_L06_00161CD8_2EB5C8 SDATA(D_L06_00161CD8);
+extern s32 D_L06_00161CDC_2EB5C8 SDATA(D_L06_00161CDC);
+extern s32 D_L06_00161CE0_2EB5C8 SDATA(D_L06_00161CE0);
+extern s32 D_L06_00161CE4_2EB5C8 SDATA(D_L06_00161CE4);
+extern s32 D_L06_00161CE8_2EB5C8 SDATA(D_L06_00161CE8);
+extern s32 D_L06_00161CEC_2EB5C8 SDATA(D_L06_00161CEC);
+extern s32 D_L06_00161CF0_2EB5C8 SDATA(D_L06_00161CF0);
+extern f32 D_L06_00161CF4_2EB5C8 SDATA(D_L06_00161CF4);
+extern float D_0015EE6C_2EB5C8 __asm__("D_0015EE6C") MACRO_ADDR;
+extern float D_0015EE70_2EB5C8 __asm__("D_0015EE70") MACRO_ADDR;
+extern void func_L00_00260958_2EB5C8(void *, float) __asm__("func_L00_00260958");
+extern float func_00214158_2EB5C8(void) __asm__("func_00214158");
+extern f32 func_002140F8_2EB5C8(f32, f32) __asm__("func_002140F8");
+extern void func_001F9C30_2EB5C8(void *, void *, f32) __asm__("func_001F9C30");
+extern float func_001F9F90_2EB5C8(float) __asm__("func_001F9F90");
+extern float func_001F9FA8_2EB5C8(float) __asm__("func_001F9FA8");
+extern int func_001F9850_2EB5C8(int) __asm__("func_001F9850");
+extern int func_001FA8A8_2EB5C8(int, int, float) __asm__("func_001FA8A8");
+extern f32 func_001F9878_2EB5C8(f32) __asm__("func_001F9878");
+extern s32 func_001FA898_2EB5C8(f32) __asm__("func_001FA898");
+extern char *func_00219780_2EB5C8(void *, void *, void *, int, int, int, int, int, int) __asm__("func_00219780");
+
+/* Throws D_L06_00161CA8 bursts of sparks from around the moby: each burst gets a random heading, speed and rise on
+ * top of a push along dir, and spawns D_L06_00161CAC sparks with random sizes, colours and lifetimes.
+ * Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay/entities/00297d10.c, FUN_L06_002ea198. */
+void func_L06_002EB5C8(struct Moby_2EB5C8 *moby, Vec4_2EB5C8 *dir) {
+    Vec4_2EB5C8 pos;
+    Vec4_2EB5C8 vel;
+    Vec4_2EB5C8 accel;
+    int i;
+    int j;
+
+    for (i = 0; i < D_L06_00161CA8_2EB5C8; i++) {
+        float angle;
+        float speed;
+        float rise;
+        Vec4_2EB5C8 *dst;
+        Vec4_2EB5C8 *origin;
+        origin = &moby->pos;
+        dst = &pos;
+        qcopy_nc(dst, origin);
+        func_L00_00260958_2EB5C8(&pos, D_L06_00161CB0_2EB5C8);
+        pos.f[2] += 0.25f;
+        angle = func_00214158_2EB5C8();
+        speed = func_002140F8_2EB5C8(D_L06_00161CBC_2EB5C8, D_L06_00161CC0_2EB5C8);
+        rise = func_002140F8_2EB5C8(D_L06_00161CC4_2EB5C8, D_L06_00161CC8_2EB5C8);
+        func_001F9C30_2EB5C8(&vel, dir, func_002140F8_2EB5C8(0.0f, D_L06_00161CF4_2EB5C8) * D_0015EE6C_2EB5C8);
+        vel.f[0] += func_001F9F90_2EB5C8(angle) * (speed * D_0015EE6C_2EB5C8);
+        vel.f[1] += func_001F9FA8_2EB5C8(angle) * (speed * D_0015EE6C_2EB5C8);
+        vel.f[2] += rise * D_0015EE6C_2EB5C8;
+        qcopy(&accel, &vel);
+        accel.f[2] -= D_L06_00161CCC_2EB5C8 * D_0015EE70_2EB5C8 * (float)func_001F9850_2EB5C8(D_L06_00161CEC_2EB5C8);
+        for (j = 0; j < D_L06_00161CAC_2EB5C8; j++) {
+            float size = func_002140F8_2EB5C8(0.5f, 1.5f);
+            int color0;
+            int color1;
+            int life;
+            int fade;
+            float n;
+            vel.f[3] = size * D_L06_00161CD0_2EB5C8;
+            accel.f[3] = size * D_L06_00161CD4_2EB5C8;
+            func_L00_00260958_2EB5C8(&pos, D_L06_00161CB4_2EB5C8);
+            func_L00_00260958_2EB5C8(&accel, D_L06_00161CB8_2EB5C8 * D_0015EE6C_2EB5C8);
+            color0 = func_001FA8A8_2EB5C8(D_L06_00161CD8_2EB5C8, D_L06_00161CE0_2EB5C8, func_002140F8_2EB5C8(0.0f, 1.0f));
+            color1 = func_001FA8A8_2EB5C8(D_L06_00161CDC_2EB5C8, D_L06_00161CE4_2EB5C8, func_002140F8_2EB5C8(0.0f, 1.0f));
+            life = func_001F9850_2EB5C8(D_L06_00161CE8_2EB5C8);
+            fade = func_001F9850_2EB5C8(D_L06_00161CEC_2EB5C8);
+            n = (float)D_L06_00161CF0_2EB5C8;
+            func_00219780_2EB5C8(&pos, &vel, &accel, color0, color1, life, fade,
+                        func_001FA898_2EB5C8(func_001F9878_2EB5C8(func_002140F8_2EB5C8(n * 0.5f, n * 2.5f))), -1);
+        }
+    }
+}
 extern float func_00214158(void);
 extern void func_00215C00(void *, float, float, float);
 extern void func_L00_00258DB0(float *, float, float);

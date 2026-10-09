@@ -338,7 +338,409 @@ void func_L00_002D42D8(unsigned char *moby) {
  }
 }
 INCLUDE_ASM("asm/overlays", func_L00_002D4348);
-INCLUDE_ASM("asm/overlays", func_L00_002D4398);
+typedef struct { f32 x; f32 y; f32 z; } Vec3_2D4398;
+typedef struct { f32 x; f32 y; f32 z; f32 w; } Vec4f_2D4398;
+struct MobyClass_2D4398 {
+    u8 pad_0[0xC];
+    u8 seq_count;
+    u8 pad_D[3];
+    u32 unk10;
+    u8 pad_14[0x8];
+    void *unk1C;
+    void *gifs;
+    f32 scale;
+    s32 unk28;
+    void **callbacks;
+    u8 pad_30[0x14];
+    u16 flags;
+    s16 unk46;
+    void *seqs[1];
+};
+struct Moby_2D4398 {
+    Vec4f_2D4398 bsphere;
+    Vec4f_2D4398 pos;
+    u8 state;
+    u8 group;
+    u8 unk22;
+    u8 unk23;
+    struct MobyClass_2D4398 *pclass;
+    struct Moby_2D4398 *next;
+    f32 scale;
+    u8 unk30;
+    u8 unk31;
+    s16 unk32;
+    u16 flags;
+    u16 unk36;
+    u64 spawn_frame;
+    Vec4f_2D4398 rot;
+    u8 frame;
+    u8 prev_frame;
+    u8 seq;
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    void *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71;
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_2D4398 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F;
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94;
+    s32 unk98;
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0;
+    u8 padB1;
+    u16 save_id;
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8;
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_2D4398 unkC0;
+    Vec4f_2D4398 unkD0;
+    Vec4f_2D4398 unkE0;
+    u8 padF0[0x10];
+};
+typedef int u128_2D4398 __attribute__((mode(TI)));
+typedef union {
+    u128_2D4398 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4_2D4398;
+typedef f32 Mtx_2D4398[4][4] __attribute__((aligned(16)));
+typedef f32 Vec_2D4398[4] __attribute__((aligned(16)));
+
+typedef struct Vars_2D4398 {
+    s32 voice0;
+    s32 voice1;
+    s32 unk8;
+    s32 voice2;
+    Vec4_2D4398 pos;
+    u8 unk20;
+    u8 pad21[3];
+    s32 unk24;
+    s32 unk28;
+    u8 pad2C[4];
+    Vec4_2D4398 unk30;
+} Vars_2D4398;
+
+typedef struct TargetVars_2D4398 {
+    u8 pad0[0x18];
+    s32 count;
+} TargetVars_2D4398;
+
+typedef struct VoiceSlot_2D4398 {
+    u8 pad0[0x74];
+    u8 active;
+    u8 pad75[0x13];
+    struct Moby_2D4398 *owner;
+} VoiceSlot_2D4398;
+
+/* The hero block D_0013F450, cut down to what this function reads. */
+typedef struct Hero_2D4398 {
+    u8 pad0[0x90];
+    Vec4_2D4398 rot;                /* 0x90 */
+    u8 padA0[0x10B0 - 0xA0];
+    s32 item0_unk20;                /* 0x10B0 */
+    u8 pad10B4[0x2040 - 0x10B4];
+    struct Moby_2D4398 *unk2040;    /* 0x2040: nearest oclass 0x25D moby */
+    f32 unk2044;                    /* 0x2044: distance to it */
+} Hero_2D4398;
+
+/* The pad state D_0013CA40. */
+typedef struct Pad_2D4398 {
+    u8 pad0[0x1A0];
+    s32 held;
+    s32 pressed;
+} Pad_2D4398;
+
+extern char D_0013F450_2D4398[] __asm__("D_0013F450");
+extern u8 D_0013E650_2D4398[] __asm__("D_0013E650");
+extern u8 D_0013CA40_2D4398[] __asm__("D_0013CA40");
+extern f32 D_0015EE6C_2D4398 __asm__("D_0015EE6C") MACRO_ADDR;
+extern u128_2D4398 D_L00_001E14B0_2D4398 __asm__("D_L00_001E14B0");
+extern u8 D_L00_001E14C0_2D4398[] __asm__("D_L00_001E14C0");
+extern f32 D_L00_00161A20_2D4398 SDATA(D_L00_00161A20);
+extern f32 D_L00_00161A24_2D4398 SDATA(D_L00_00161A24);
+extern s32 D_L00_001619EC_2D4398 SDATA(D_L00_001619EC);
+extern s32 D_L00_001619F0_2D4398 SDATA(D_L00_001619F0);
+extern s32 D_L00_001619F4_2D4398 SDATA(D_L00_001619F4);
+extern s32 D_L00_001619FC_2D4398 SDATA(D_L00_001619FC);
+extern s32 D_L00_00161A00_2D4398 SDATA(D_L00_00161A00);
+extern f32 D_L00_00161A10_2D4398 SDATA(D_L00_00161A10);
+
+extern void func_L00_00250800_2D4398(struct Moby_2D4398 *, s32, void *) __asm__("func_L00_00250800");
+extern void attach_2D4398(void *, s32, void *) __asm__("func_0020D960");
+extern f32 distxy_2D4398(void *, void *) __asm__("func_001F9D48");
+extern f32 atan2_2D4398(f32, f32) __asm__("func_L00_001FF860");
+extern f32 subrot_2D4398(f32, f32) __asm__("func_001FA790");
+extern f32 addrot_2D4398(f32, f32) __asm__("func_001FA748");
+extern f32 fabs_2D4398(f32) __asm__("func_001F9B88");
+extern void spherical_2D4398(void *, f32, f32, f32) __asm__("func_00215C00");
+extern void add_2D4398(void *, void *, void *) __asm__("func_001F9BD8");
+extern void func_001E9768_2D4398(void *, void *) __asm__("func_001E9768");
+extern void norm_2D4398(void *, void *, f32) __asm__("func_L00_001FF4B0");
+extern void cross_2D4398(void *, void *, void *) __asm__("func_001F9CA0");
+extern void func_0020DAF8_2D4398(void *, s32, void *) __asm__("func_0020DAF8");
+extern void func_001FA4A0_2D4398(void *, void *) __asm__("func_001FA4A0");
+extern void func_001FA540_2D4398(void *, void *, void *) __asm__("func_001FA540");
+extern void func_002150B0_2D4398(void *, void *) __asm__("func_002150B0");
+extern void func_L00_0025AFA8_2D4398(void *, void *) __asm__("func_L00_0025AFA8");
+extern void func_001FA5C8_2D4398(void *, void *, void *, f32) __asm__("func_001FA5C8");
+extern s32 func_L00_0028EB98_2D4398(struct Moby_2D4398 *, s32) __asm__("func_L00_0028EB98");
+extern s32 voice_2D4398(s32, s32, void *) __asm__("func_0022ED80");
+extern void func_L00_0028F210_2D4398(s32, s32) __asm__("func_L00_0028F210");
+extern s32 trunc_2D4398(f32) __asm__("func_001FA898");
+extern f32 rand_2D4398(f32, f32) __asm__("func_002140F8");
+extern void rotate_2D4398(void *, void *, void *) __asm__("func_001F9EC0");
+extern void func_L00_00260958_2D4398(void *, f32) __asm__("func_L00_00260958");
+extern void func_L00_002A86D8_2D4398(void *, void *, void *, s32, s32, s32) __asm__("func_L00_002A86D8");
+extern void func_L00_002D42D8_2D4398(unsigned char *) __asm__("func_L00_002D42D8");
+extern void remove_2D4398(void *) __asm__("func_0020D678");
+extern void release_2D4398(s32) __asm__("func_L00_0028EBF0");
+extern void func_L00_002D3F40_2D4398(void) __asm__("func_L00_002D3F40");
+extern s32 ticks_2D4398(s32) __asm__("func_001F9850");
+extern void enqueue_2D4398(void *, void *) __asm__("func_001F49B0");
+
+/* Update for a moby that tracks hero.unk2040, the nearest oclass 0x25D moby. It orients itself towards it within
+ * the D_L00_00161A20/24 limits (degrees), tints itself by the distance (hero.unk2044) while the 0x20 pad button is
+ * held, and at under 1.0 drains the target's count in steps of 5, then removes it.
+ * Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay/entities/002cfcb8.c, FUN_L00_002d2ee8. */
+void func_L00_002D4398(struct Moby_2D4398 *moby) {
+    Vars_2D4398 *vars;
+    struct Moby_2D4398 *t;
+    TargetVars_2D4398 *tv;
+    Vec_2D4398 u;
+    Vec_2D4398 v;
+    Vec_2D4398 w;
+    Mtx_2D4398 m;
+    Mtx_2D4398 m2;
+    Mtx_2D4398 m3;
+    Mtx_2D4398 m4;
+    f32 yaw;
+    f32 pitch;
+    f32 abs_yaw;
+    f32 abs_pitch;
+    f32 lim;
+    f32 zero;
+    f32 one;
+
+    if (moby == 0) {
+        return;
+    }
+    vars = (Vars_2D4398 *)moby->pvars;
+    if (vars == 0) {
+        return;
+    }
+    func_L00_00250800_2D4398(moby, 0, &vars->pos);
+    switch (moby->state) {
+    case 0:
+        ((Hero_2D4398 *)D_0013F450_2D4398)->unk2044 = 100000.0f;
+        ((Hero_2D4398 *)D_0013F450_2D4398)->unk2040 = 0;
+        vars->voice0 = -1;
+        vars->voice1 = -1;
+        vars->voice2 = -1;
+        vars->unk8 = 0x7FFF;
+        vars->unk20 = *(D_0013CA40_2D4398 + 0x189);
+        vars->unk24 = 0;
+        vars->unk28 = 0;
+        qzero(&D_L00_001E14B0_2D4398);
+        attach_2D4398(moby, 3, &D_L00_001E14B0_2D4398);
+        moby->state = 1;
+        break;
+    case 3:
+    case 4:
+        break;
+    case 1:
+    case 2:
+        one = 1.0f;
+        *(u128_2D4398 *)v = 0;
+        v[2] = one;
+        if (((Hero_2D4398 *)D_0013F450_2D4398)->unk2040 != 0 && ((Hero_2D4398 *)D_0013F450_2D4398)->unk2040->oclass == 0x25D && ((Hero_2D4398 *)D_0013F450_2D4398)->unk2040->state != 0xFE &&
+            ((Hero_2D4398 *)D_0013F450_2D4398)->unk2040->state != 0xFD) {
+            pitch = distxy_2D4398(&vars->pos, &((Hero_2D4398 *)D_0013F450_2D4398)->unk2040->pos);
+            pitch = atan2_2D4398(pitch, ((Hero_2D4398 *)D_0013F450_2D4398)->unk2040->pos.z - vars->pos.f[2]);
+            yaw = atan2_2D4398(((Hero_2D4398 *)D_0013F450_2D4398)->unk2040->pos.x - vars->pos.f[0], ((Hero_2D4398 *)D_0013F450_2D4398)->unk2040->pos.y - vars->pos.f[1]);
+            yaw = subrot_2D4398(yaw, ((Hero_2D4398 *)D_0013F450_2D4398)->rot.f[2]);
+            pitch = subrot_2D4398(pitch, -1.5707964f);
+            abs_yaw = fabs_2D4398(yaw);
+            abs_pitch = fabs_2D4398(pitch);
+            lim = D_L00_00161A20_2D4398 * 0.017453292f;
+            if (lim < abs_yaw) {
+                yaw /= abs_yaw;
+                yaw *= lim;
+            }
+            lim = D_L00_00161A24_2D4398 * 0.017453292f;
+            if (lim < abs_pitch) {
+                pitch /= abs_pitch;
+                pitch *= lim;
+            }
+            zero = 0.0f;
+            yaw = addrot_2D4398(yaw, ((Hero_2D4398 *)D_0013F450_2D4398)->rot.f[2]);
+            pitch = addrot_2D4398(pitch, -1.5707964f);
+            spherical_2D4398(v, -3.0f, yaw, pitch);
+            add_2D4398(w, &vars->pos, v);
+            func_001E9768_2D4398(&vars->pos, w);
+            norm_2D4398(m[D_L00_001619F0_2D4398], v, (f32)D_L00_001619FC_2D4398);
+            cross_2D4398(m[D_L00_001619F4_2D4398], m[D_L00_001619F0_2D4398], &D_L00_00161A10_2D4398);
+            norm_2D4398(m[D_L00_001619F4_2D4398], m[D_L00_001619F4_2D4398], (f32)D_L00_00161A00_2D4398);
+            cross_2D4398(m[D_L00_001619EC_2D4398], m[D_L00_001619F4_2D4398], m[D_L00_001619F0_2D4398]);
+            m[3][2] = zero;
+            m[3][1] = zero;
+            m[3][0] = zero;
+            m[3][3] = one;
+            func_0020DAF8_2D4398(moby, 2, m2);
+            norm_2D4398(m2[0], m2[0], one);
+            norm_2D4398(m2[1], m2[1], one);
+            norm_2D4398(m2[2], m2[2], one);
+            func_001FA4A0_2D4398(m3, m2);
+            m3[3][2] = zero;
+            m3[3][1] = zero;
+            m3[3][0] = zero;
+            m3[3][3] = one;
+            func_001FA540_2D4398(m4, m3, m);
+            func_002150B0_2D4398(u, m4);
+        } else {
+            *(u128_2D4398 *)w = 0;
+            func_L00_0025AFA8_2D4398(u, w);
+        }
+        qcopy(&vars->unk30, v);
+        func_001FA5C8_2D4398(D_L00_001E14C0_2D4398, D_L00_001E14C0_2D4398, u, 0.1f);
+        func_0020DAF8_2D4398(moby, 3, w);
+        qcopy(&vars->unk30, w);
+        if (((Pad_2D4398 *)D_0013CA40_2D4398)->pressed & 0x20) {
+            vars->unk24 = 0;
+            vars->unk28 = 0;
+        }
+        if ((((Pad_2D4398 *)D_0013CA40_2D4398)->held & 0x20) && ((Hero_2D4398 *)D_0013F450_2D4398)->item0_unk20 > ticks_2D4398(0xF)) {
+            if (((Hero_2D4398 *)D_0013F450_2D4398)->unk2044 < 10.0f) {
+                if (func_L00_0028EB98_2D4398(moby, vars->voice2) == 0 && vars->voice2 == -1) {
+                    vars->voice2 = voice_2D4398(1, 4, moby);
+                }
+                if (vars->voice2 != -1) {
+                    func_L00_0028F210_2D4398(vars->voice2,
+                                     trunc_2D4398((10.0f - (((Hero_2D4398 *)D_0013F450_2D4398)->unk2044 + ((Hero_2D4398 *)D_0013F450_2D4398)->unk2044)) * 32767.0f / 60.0f) - 0x1FFF);
+                }
+                {
+                    s32 c = trunc_2D4398(((Hero_2D4398 *)D_0013F450_2D4398)->unk2044 * 255.0f / 10.0f);
+                    s32 col = (c << 8) | 0xFF000000;
+
+                    moby->unk90 = ((c << 16) | col) | 0xFF;
+                }
+                t = ((Hero_2D4398 *)D_0013F450_2D4398)->unk2040;
+                if (t != 0 && t->oclass == 0x25D && t->state != 0xFE && t->state != 0xFD && ((Hero_2D4398 *)D_0013F450_2D4398)->unk2044 < 1.0f) {
+                    tv = (TargetVars_2D4398 *)t->pvars;
+                    while (tv->count > 0) {
+                        w[0] = rand_2D4398(1.0f, 10.0f) * D_0015EE6C_2D4398;
+                        w[1] = rand_2D4398(-10.0f, 10.0f) * D_0015EE6C_2D4398;
+                        w[2] = rand_2D4398(1.0f, 12.0f) * D_0015EE6C_2D4398;
+                        rotate_2D4398(w, w, (Hero_2D4398 *)D_0013F450_2D4398);
+                        {
+                            Vec4f_2D4398 *q = &((Hero_2D4398 *)D_0013F450_2D4398)->unk2040->pos;
+
+                            qcopy(q, &vars->pos);
+                            func_L00_00260958_2D4398(q, 0.2f);
+                        }
+                        t = ((Hero_2D4398 *)D_0013F450_2D4398)->unk2040;
+                        func_L00_002A86D8_2D4398(t, &t->pos, w, 0x13, 5, 0);
+                        t = ((Hero_2D4398 *)D_0013F450_2D4398)->unk2040;
+                        qcopy(&t->pos, &vars->pos);
+                        if (tv != 0) {
+                            if (tv->count > 0) {
+                                tv->count -= 5;
+                                t = ((Hero_2D4398 *)D_0013F450_2D4398)->unk2040;
+                            }
+                            func_L00_002D42D8_2D4398((u8 *)t);
+                        } else {
+                            func_L00_002D42D8_2D4398((u8 *)t);
+                        }
+                    }
+                    remove_2D4398(((Hero_2D4398 *)D_0013F450_2D4398)->unk2040);
+                    ((Hero_2D4398 *)D_0013F450_2D4398)->unk2040 = 0;
+                    ((Hero_2D4398 *)D_0013F450_2D4398)->unk2044 = 100000.0f;
+                    vars->unk8 = 0x7FFF;
+                    voice_2D4398(3, 0, moby);
+                    if (vars->voice2 != -1) {
+                        VoiceSlot_2D4398 *e = (VoiceSlot_2D4398 *)(D_0013E650_2D4398 + vars->voice2 * 0x70);
+
+                        if (e->owner == moby && e->active != 0) {
+                            release_2D4398(vars->voice2);
+                        }
+                    }
+                    vars->voice2 = -1;
+                }
+            } else {
+                moby->unk90 = 0x80808080;
+                if (vars->voice0 != -1) {
+                    VoiceSlot_2D4398 *e = (VoiceSlot_2D4398 *)(D_0013E650_2D4398 + vars->voice0 * 0x70);
+
+                    if (e->owner == moby && e->active != 0) {
+                        release_2D4398(vars->voice0);
+                    }
+                }
+                vars->voice0 = -1;
+                if (vars->voice1 != -1) {
+                    VoiceSlot_2D4398 *e = (VoiceSlot_2D4398 *)(D_0013E650_2D4398 + vars->voice1 * 0x70);
+
+                    if (e->owner == moby && e->active != 0) {
+                        release_2D4398(vars->voice1);
+                    }
+                }
+                vars->voice1 = -1;
+                if (vars->voice2 != -1) {
+                    VoiceSlot_2D4398 *e = (VoiceSlot_2D4398 *)(D_0013E650_2D4398 + vars->voice2 * 0x70);
+
+                    if (e->owner == moby && e->active != 0) {
+                        release_2D4398(vars->voice2);
+                    }
+                }
+                vars->voice2 = -1;
+            }
+            enqueue_2D4398(func_L00_002D3F40_2D4398, moby);
+            return;
+        }
+        moby->unk90 = 0x80808080;
+        if (vars->voice0 != -1) {
+            VoiceSlot_2D4398 *e = (VoiceSlot_2D4398 *)(D_0013E650_2D4398 + vars->voice0 * 0x70);
+
+            if (e->owner == moby && e->active != 0) {
+                release_2D4398(vars->voice0);
+            }
+        }
+        vars->voice0 = -1;
+        if (vars->voice1 != -1) {
+            VoiceSlot_2D4398 *e = (VoiceSlot_2D4398 *)(D_0013E650_2D4398 + vars->voice1 * 0x70);
+
+            if (e->owner == moby && e->active != 0) {
+                release_2D4398(vars->voice1);
+            }
+        }
+        vars->voice1 = -1;
+        if (vars->voice2 != -1) {
+            VoiceSlot_2D4398 *e = (VoiceSlot_2D4398 *)(D_0013E650_2D4398 + vars->voice2 * 0x70);
+
+            if (e->owner == moby && e->active != 0) {
+                release_2D4398(vars->voice2);
+            }
+        }
+        vars->voice2 = -1;
+        break;
+    }
+}
 extern char D_0013E633[] NOT_SDA;
 extern int func_001F9850(int);
 extern void func_00213DE0(void *, int, int, int);
