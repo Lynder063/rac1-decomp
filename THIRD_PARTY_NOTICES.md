@@ -730,6 +730,18 @@ statement order. Proven by the full build. In parentheses, Lombyte's name.
 - `src/game/transition.c`: `func_001EABE8` (`transition_load_wad`)
 - `src/game/transition.c`: `func_001EB458` (`update_gameplay_frame`)
 
+Six more were carried over by machine on 2026-10-09, from Lombyte's pull requests 133 to 135 (the same
+tool, the same rule: identical instructions, Lombyte's C with every symbol renamed to its PAL address, each
+passing this project's own check; `func_L04_002C2F00` is defined under an alias because its file declares
+it otherwise). In parentheses, Lombyte's name.
+
+- `src/overlays/l01_novalis/vendor_002FABE8.c`: `func_L01_002FFF30` (`FUN_L01_002feb58`)
+- `src/overlays/l04_eudora/vendor_0029FCF0.c`: `func_L04_002C2F00` (`FUN_L04_002c1b80`)
+- `src/overlays/l04_eudora/vuchain_00293490.c`: `func_L04_00296FA8` (`FUN_L04_00295de8`)
+- `src/overlays/shared/help_00203E98.c`: `func_L00_0020A320` (`FUN_L00_00209ca8`)
+- `src/overlays/shared/help_00214D60.c`: `func_L00_00217DE0` (`FUN_L00_00217658`)
+- `src/overlays/shared/mobyutil_00261B00.c`: `func_L00_00264140` (`FUN_L00_002630c8`)
+
 One more is this project's own port of a function it has from Lombyte: `func_L00_001EB890` in
 `src/overlays/shared/camera_001EB508.c` is the level programs' copy of `func_001EC2B8` (Lombyte's
 `switch_active_camera_record`), with the same C under the level's symbols.

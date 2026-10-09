@@ -732,7 +732,76 @@ void func_L01_002FFF00(void) {
     DefaultVtbl_DeleteMoby();
     func_L01_002BA898(4, D_L01_001FBF40);
 }
-INCLUDE_ASM("asm/overlays", func_L01_002FFF30);
+typedef u32 u128_FFF30 __attribute__((mode(TI), aligned(16)));
+typedef union {
+    u128_FFF30 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4_FFF30;
+typedef struct {
+    Vec4_FFF30 *verts;
+    u8 pad4[8];
+    s32 count;
+    u8 pad10[0x4C];
+    f32 glow;
+} WaterLayer;
+extern WaterLayer D_L01_001FBF40_FFF30[] __asm__("D_L01_001FBF40");
+extern short D_L01_00161D70;
+extern s32 D_L01_0015F6B0 MACRO_ADDR;
+extern f32 func_001FA888(s32);
+extern void func_L01_002FFF00(void);
+extern int func_001F49B0_FFF30(void (*)(void), void *) __asm__("func_001F49B0");
+
+/* On first use, lowers and ripples the layers' vertices; every frame, pulses their glow and queues FUN_L01_002feb28.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l01/gameplay/entities/002f9810.c, FUN_L01_002feb58. */
+void func_L01_002FFF30(void *arg) {
+    s32 i;
+    s32 g;
+    s32 j;
+    s32 k;
+    s32 n;
+    s32 m;
+    Vec4_FFF30 *v;
+    Vec4_FFF30 *w;
+    f32 s;
+
+    if ((*(s32 *)&D_L01_00161D70) == 0) {
+        (*(s32 *)&D_L01_00161D70) = 1;
+        for (i = 0; i < 4; i++) {
+            v = (D_L01_001FBF40_FFF30 + i)->verts;
+            for (j = 0; j < (D_L01_001FBF40_FFF30 + i)->count; j++) {
+                v->f[3] = v->f[2] = v->f[2] - 0.45f;
+                v++;
+            }
+        }
+        k = 1;
+        for (n = 0; n < 4; n++) {
+            k--;
+            w = (D_L01_001FBF40_FFF30 + n)->verts;
+            for (m = 0; m < (D_L01_001FBF40_FFF30 + n)->count; m += 2) {
+                if (k & 1) {
+                    w[0].f[2] += 0.05f;
+                    w[0].f[3] -= 0.05f;
+                    w[1].f[2] -= 0.05f;
+                    w[1].f[3] += 0.05f;
+                } else {
+                    w[0].f[2] -= 0.05f;
+                    w[0].f[3] += 0.05f;
+                    w[1].f[2] += 0.05f;
+                    w[1].f[3] -= 0.05f;
+                }
+                w += 2;
+                k++;
+            }
+        }
+    }
+    s = func_001F9FA8((func_001FA888(D_L01_0015F6B0 & 0x3F) - 32.0f) * 0.09817477f);
+    s = s * 0.5f + 0.5f;
+    for (g = 3; g >= 0; g--) {
+        D_L01_001FBF40_FFF30[g].glow = s;
+    }
+    func_001F49B0_FFF30(func_L01_002FFF00, arg);
+}
 typedef struct { float f[4]; } V __attribute__((aligned(16)));
 typedef struct { V home; float t; float radius; } HoverVars;
 typedef struct {

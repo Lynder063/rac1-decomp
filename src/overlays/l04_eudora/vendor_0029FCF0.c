@@ -922,7 +922,213 @@ void func_L04_002BB7B0(M_B7B0 *moby) {
         data->f424 = func_L04_002D48B8(moby, p);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L04_002C2F00);
+typedef struct {
+    char _pad00[0x10];
+    unsigned char nframes; /* 0x10 */
+} AnimSeq_C2F00_2C2F00;
+typedef u32 u128_C2F00_2C2F00 __attribute__((mode(TI), aligned(16)));
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 w;
+} Vec4f_C2F00_2C2F00;
+struct Manip_2C2F00;
+struct GifEntry_2C2F00;
+struct AnimSeq_C2F00_2C2F00;
+struct MobyClass_C2F00_2C2F00 {
+    u8 pad_0[0xC];
+    u8 seq_count; /* number of entries in seqs[] (menu previews clamp the sequence to it) */
+    u8 pad_D[3];
+    u32 unk10; /* copied into Moby.unk94 when a moby is (re)classed */
+    u8 pad_14[0x8];
+    void *unk1C; /* word table, indexed id * 4 + 4 (0024eec0) */
+    struct GifEntry_2C2F00 *gifs; /* patched by patch_moby_gifs */
+    f32 scale; /* default draw scale: copied into Moby.scale, divides it */
+    s32 unk28;
+    void **callbacks; /* function-pointer table, called with the moby */
+    u8 pad_30[0x14];
+    u16 flags; /* initial Moby.flags */
+    s16 unk46; /* class category; 5 is tested by targeting code */
+    struct AnimSeq_C2F00_2C2F00 *seqs[1]; /* animation sequences, indexed by Moby.seq */
+};
+struct Moby_C2F00_2C2F00 {
+    Vec4f_C2F00_2C2F00 bsphere;
+    Vec4f_C2F00_2C2F00 pos;
+    u8 state; /* >= 0xFE: dead, waiting to respawn */
+    u8 group; /* linked group: index into the level moby-list table D_Lxx_001ABCC0 (0xFF: none) */
+    u8 unk22; /* class slot: pclass = D_L00_00197300[unk22] (FUN_L00_002cf218) */
+    u8 unk23; /* 0x40 for the smoke trail FUN_L09_00307ba8 spawns */
+    struct MobyClass_C2F00_2C2F00 *pclass;
+    struct Moby_C2F00_2C2F00 *next;
+    f32 scale; /* draw scale (FUN_L01_002fa068 halves it, FUN_L00_00215ef8 divides by it) */
+    u8 unk30; /* set to 0xFF (0x7F for beams) by spawners */
+    u8 unk31; /* set to 1 by spawners */
+    s16 unk32; /* set to 0xFF (0x7F for beams) by spawners */
+    u16 flags;
+    u16 unk36; /* set to 0x7F80 by spawners */
+    u64 spawn_frame; /* frame count at which it may respawn */
+    Vec4f_C2F00_2C2F00 rot; /* z: yaw (FUN_L00_00266448 compares it with atan2 to the hero) */
+    u8 frame; /* animation frame */
+    u8 prev_frame; /* frame index in prev_seq */
+    u8 seq; /* animation sequence id */
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    struct Manip_2C2F00 *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71; /* set to 0xFF when a moby changes class */
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_C2F00_2C2F00 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F; /* set to 0x17 by FUN_L09_002c5990 near D_L09_00166F40 */
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94; /* set from the class header's word 0x10 */
+    s32 unk98; /* set to 1 while a carrier holds the moby (FUN_L00_002c7a58) */
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0; /* 0xB0: index into the level's D_0014C050 row (0xFF: not spawned) */
+    u8 padB1;
+    u16 save_id; /* index into the level collected[]/killed[] tables and save bits D_0014C190[level][id >> 5] */
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8; /* 0xB8: bolt source record; its byte 0xB1 is a per-level id (FUN_L00_002a6b70) */
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_C2F00_2C2F00 unkC0; /* 0xC0: first row of a matrix built from rot (FUN_001fa030) */
+    Vec4f_C2F00_2C2F00 unkD0;
+    Vec4f_C2F00_2C2F00 unkE0;
+    u8 padF0[0x10];
+};
+typedef union {
+    u128_C2F00_2C2F00 q;
+    f32 f[4];
+} VoiceVector_2C2F00;
+typedef struct {
+    u8 pad0[0x10];
+    s32 pitch_bend_min;
+    s32 pitch_bend_max;
+    u8 source_state;
+    u8 pad19;
+    u16 source_value;
+    s32 pad1C;
+} VoiceDefinition_2C2F00;
+typedef struct {
+    u8 pad0[0x10];
+    VoiceVector_2C2F00 position;
+    u8 pad20[0x86];
+    s16 class_id;
+} VoiceMoby_2C2F00;
+typedef struct {
+    u32 handle;
+    u8 state;
+    u8 flags;
+    u8 pad6[2];
+    VoiceDefinition_2C2F00 *definition;
+    u16 source_value;
+    s16 linked_index;
+    s32 volume;
+    s32 pitch_bend;
+    VoiceMoby_2C2F00 *owner;
+    s32 reserved1C;
+    VoiceVector_2C2F00 position;
+    VoiceVector_2C2F00 position_offset;
+    s32 history_position;
+    u8 history[0x2C];
+} VoiceSlot_2C2F00;
+typedef struct {
+    u8 header[0x70];
+    VoiceSlot_2C2F00 voices[30];
+} VoicePool_2C2F00;
+typedef struct {
+    u8 header[0x70];
+    VoiceSlot_2C2F00 voice;
+} VoicePoolWindow_2C2F00;
+extern VoicePool_2C2F00 D_0013E650_C2F00 __asm__("D_0013E650");
+extern float D_0015EE6C_2C2F00 __asm__("D_0015EE6C") MACRO_ADDR;
+typedef struct {
+    /* 0x000 */ u8 pad0[0x230];
+    /* 0x230 */ f32 volume;
+    /* 0x234 */ f32 pitch;
+    /* 0x238 */ s32 voice;
+} EngineSoundVars_2C2F00;
+extern s32 func_L00_0028EB98_C2F00(long moby, s32 voice) __asm__("func_L00_0028EB98");
+extern s32 func_0022ED80_C2F00(s32, s32, struct Moby_C2F00_2C2F00 *m) __asm__("func_0022ED80");
+extern void func_L00_0028EBF0_2C2F00(s32 voice) __asm__("func_L00_0028EBF0");
+extern f32 func_001FA888_2C2F00(s32) __asm__("func_001FA888");
+extern s32 func_001FA898_2C2F00(f32) __asm__("func_001FA898");
+extern f32 func_00214D28_2C2F00(f32 *value, f32 target, f32 step) __asm__("func_00214D28");
+extern void func_L00_0028F210_2C2F00(s32 voice, s32 volume) __asm__("func_L00_0028F210");
+extern void func_L00_0028F210_C2F00b(s32 voice, s32 pitch) __asm__("func_L00_0028F210");
+struct Moby_C2F00_2C2F00;
+
+/* Keeps the moby's engine voice playing, easing its volume and pitch toward the animation's levels.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l04/gameplay/entities/0029eb20.c, FUN_L04_002c1b80. */
+void func_L04_002C2F00_r(struct Moby_C2F00_2C2F00 *m) __asm__("func_L04_002C2F00");
+void func_L04_002C2F00_r(struct Moby_C2F00_2C2F00 *m) {
+    EngineSoundVars_2C2F00 *v = (EngineSoundVars_2C2F00 *)m->pvars;
+    f32 volume;
+    f32 pitch;
+
+    if (m->state != 9) {
+        if (func_L00_0028EB98_C2F00((long)m, v->voice) == 0 && m->prev_seq < 8) {
+            v->voice = func_0022ED80_C2F00(0, 4, m);
+            v->volume = func_001FA888_2C2F00(0x400);
+            v->pitch = 0;
+        }
+        switch (m->prev_seq) {
+        case 0:
+            pitch = 0.0f;
+            volume = func_001FA888_2C2F00(0x400) * 0.6f;
+            break;
+        case 1:
+            pitch = 3.0f;
+            volume = func_001FA888_2C2F00(0x400);
+            break;
+        case 2:
+            pitch = -2.0f;
+            volume = func_001FA888_2C2F00(0x400);
+            break;
+        case 3:
+        case 4:
+            pitch = 4.0f;
+            volume = func_001FA888_2C2F00(0x400);
+            break;
+        case 5:
+        case 6:
+        case 7:
+            pitch = 0.0f;
+            volume = func_001FA888_2C2F00(0x400) * 0.8f;
+            break;
+        default:
+            goto release;
+        }
+    } else {
+    release:
+        if (v->voice != -1) {
+            VoicePoolWindow_2C2F00 *w = (VoicePoolWindow_2C2F00 *)((u8 *)&D_0013E650_C2F00 + v->voice * 0x70);
+            if (w->voice.owner == (VoiceMoby_2C2F00 *)m && w->voice.state != 0)
+                func_L00_0028EBF0_2C2F00(v->voice);
+        }
+        v->voice = -1;
+        return;
+    }
+    func_00214D28_2C2F00(&v->volume, volume, func_001FA888_2C2F00(0x400) * D_0015EE6C_2C2F00 * 2.0f);
+    func_00214D28_2C2F00(&v->pitch, pitch, D_0015EE6C_2C2F00 * 8.0f);
+    func_L00_0028F210_2C2F00(v->voice, func_001FA898_2C2F00(v->volume));
+    func_L00_0028F210_C2F00b(v->voice, func_001FA898_2C2F00(v->pitch));
+}
 extern void func_L00_0028EBF0(int);
 extern void func_L00_002584A8(void *, int, int);
 extern void func_L00_0025F4A8_alt(void *, void *, void *, float, float, int, int, int,
