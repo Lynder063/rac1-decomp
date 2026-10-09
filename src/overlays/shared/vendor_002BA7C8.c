@@ -675,7 +675,301 @@ void func_L00_002BD4A8(int arg) {
     func_L00_001FD1D8(q, 0, 0);
 }
 INCLUDE_ASM("asm/overlays", func_L00_002BD6B8);
-INCLUDE_ASM("asm/overlays", func_L00_002BDAF0);
+typedef int u128_2BDAF0 __attribute__((mode(TI)));
+typedef struct Vq_2BDAF0 { float x, y, z, w; } __attribute__((aligned(16))) Vq_2BDAF0;
+typedef struct Moby_2BDAF0 {
+    char pp[0x10];
+    float pos[4];
+    unsigned char state;
+    char p0[0x53 - 0x21];
+    unsigned char b53;
+    char p1[0x78 - 0x54];
+    struct Ray_2BDAF0 *pd;
+    char p2[0xA6 - 0x7C];
+    short oclass;
+    char p3[0xD0 - 0xA8];
+    float fD0[4];
+} Moby_2BDAF0;
+typedef struct Ray_2BDAF0 {
+    float pos[4];
+    Moby_2BDAF0 *target;
+    float total;
+    float left;
+    short timer;
+    short seen;
+    char p0[0x34 - 0x20];
+    int snd;
+    char p1[0x44 - 0x38];
+    int delay;
+    float yaw;
+    float pitch;
+} Ray_2BDAF0;
+typedef struct Hero_2BDAF0 {
+    char p0[0x640];
+    float m640[4];
+    char p1[0x10A0 - 0x650];
+    int mask;
+    char p2[0x10B4 - 0x10A4];
+    int f10B4;
+    char p3[0x2080 - 0x10B8];
+    Moby_2BDAF0 *moby;
+    int f2084;
+    int f2088;
+    int mode;
+    char p4[0x20A8 - 0x2090];
+    unsigned char f20A8;
+    char p5[0x22C8 - 0x20A9];
+    short f22C8;
+} Hero_2BDAF0;
+typedef struct Stats_2BDAF0 {
+    char p0[0xA8];
+    unsigned short kills;
+    unsigned short best;
+    int levels;
+} Stats_2BDAF0;
+typedef struct Skill_2BDAF0 {
+    char p0[8];
+    unsigned char f8;
+} Skill_2BDAF0;
+typedef struct Light_2BDAF0 {
+    float col[4];
+    float pos[3];
+    float radius;
+} Light_2BDAF0;
+typedef struct Voice_2BDAF0 {
+    char p0[0x74];
+    unsigned char on;
+    char p1[0x88 - 0x75];
+    Moby_2BDAF0 *owner;
+} Voice_2BDAF0;
+
+extern char D_0013F450_2BDAF0[] __asm__("D_0013F450");
+extern char D_0013A5E0_2BDAF0[] __asm__("D_0013A5E0");
+extern char D_0014171B_2BDAF0[] __asm__("D_0014171B");
+extern char D_0013D510_2BDAF0[] __asm__("D_0013D510");
+extern unsigned char D_0013E633_2BDAF0[] __asm__("D_0013E633");
+extern char D_0013E650_2BDAF0[] __asm__("D_0013E650");
+extern char D_L00_001803C0_2BDAF0[] __asm__("D_L00_001803C0");
+extern char D_L00_00166D80_2BDAF0[] __asm__("D_L00_00166D80");
+extern float D_L00_001617B0_2BDAF0 SDATA(D_L00_001617B0);
+extern int D_L00_001617BC_2BDAF0 SDATA(D_L00_001617BC);
+extern int D_L00_0016188C_2BDAF0 SDATA(D_L00_0016188C);
+extern int D_L00_00161890_2BDAF0 __asm__("D_L00_00161890") MACRO_ADDR;
+extern int D_L00_00161894_2BDAF0 __asm__("D_L00_00161894") MACRO_ADDR;
+extern int D_L00_00161898_2BDAF0 __asm__("D_L00_00161898") MACRO_ADDR;
+extern int D_0015EFA4_2BDAF0 __asm__("D_0015EFA4") MACRO_ADDR;
+extern int D_0015EE84_2BDAF0 __asm__("D_0015EE84") MACRO_ADDR;
+extern float D_0015EE6C_2BDAF0 __asm__("D_0015EE6C") MACRO_ADDR;
+extern float func_0020D830_2BDAF0(void *) __asm__("func_0020D830");
+extern int func_001F9938_2BDAF0(void *) __asm__("func_001F9938");
+extern void func_L00_0020EB60_2BDAF0(void) __asm__("func_L00_0020EB60");
+extern int func_001F9850_2BDAF0(int) __asm__("func_001F9850");
+extern void func_L00_00250800_2BDAF0(void *, int, void *) __asm__("func_L00_00250800");
+extern void func_L00_00222B80_2BDAF0(int, int) __asm__("func_L00_00222B80");
+extern void func_001FA480_2BDAF0(void *, void *) __asm__("func_001FA480");
+extern void func_001FA4A0_2BDAF0(void *, void *) __asm__("func_001FA4A0");
+extern void func_001F9EE8_2BDAF0(void *, void *, void *) __asm__("func_001F9EE8");
+extern void func_001F9C30_2BDAF0(void *, void *, float) __asm__("func_001F9C30");
+extern void func_001F9EC0_2BDAF0(void *, void *, void *) __asm__("func_001F9EC0");
+extern float func_L00_001FF860_2BDAF0(float, float) __asm__("func_L00_001FF860");
+extern float func_001F9CE8_2BDAF0(void *) __asm__("func_001F9CE8");
+extern Moby_2BDAF0 *func_L00_002BD6B8_2BDAF0(void *, void *, void *, void *) __asm__("func_L00_002BD6B8");
+extern int func_001F9908_2BDAF0(void *) __asm__("func_001F9908");
+extern float *func_L00_0025D390_2BDAF0(Moby_2BDAF0 *) __asm__("func_L00_0025D390");
+extern float func_001FA888_2BDAF0(int) __asm__("func_001FA888");
+extern int func_001FFB38_2BDAF0(int, int, void *, void *, void *, int *, int) __asm__("func_001FFB38");
+extern int func_001FA898_2BDAF0(float) __asm__("func_001FA898");
+extern int func_0022EE28_2BDAF0(int, int, int) __asm__("func_0022EE28");
+extern void func_L00_00264DB8_2BDAF0(int, int) __asm__("func_L00_00264DB8");
+extern void func_L00_002CA728_2BDAF0(void *) __asm__("func_L00_002CA728");
+extern void func_L00_002BE3A8_2BDAF0(void *) __asm__("func_L00_002BE3A8");
+extern int func_L00_0023EF78_2BDAF0(float *pos, float radius, float intensity, int color) __asm__("func_L00_0023EF78");
+extern void func_L00_001FF4B0_2BDAF0(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern void func_001F9BD8_2BDAF0(void *, void *, void *) __asm__("func_001F9BD8");
+extern int func_L00_0028EB98_2BDAF0(void *, int) __asm__("func_L00_0028EB98");
+extern int func_0022ED80_2BDAF0(int, int, void *) __asm__("func_0022ED80");
+extern int func_001FFCB0_2BDAF0(int) __asm__("func_001FFCB0");
+extern void func_L00_0023F1D0_2BDAF0(int) __asm__("func_L00_0023F1D0");
+extern void func_L00_0028EBF0_2BDAF0(int) __asm__("func_L00_0028EBF0");
+extern void func_L00_0020ED30_2BDAF0(void) __asm__("func_L00_0020ED30");
+extern void func_L00_00236BF8_2BDAF0(void) __asm__("func_L00_00236BF8");
+extern void func_L00_00236DE8_2BDAF0(void) __asm__("func_L00_00236DE8");
+extern void func_L00_002377E0_2BDAF0(void) __asm__("func_L00_002377E0");
+
+// Morphoray (moby class 185) update: aims the hero's morph-o-ray, transforms what it hits over time,
+// and keeps its glow light and sound going while the gadget is held.
+void func_L00_002BDAF0(Moby_2BDAF0 *m) {
+    Vq_2BDAF0 v0;
+    Vq_2BDAF0 v[3];
+    Vq_2BDAF0 mt[4];
+    Ray_2BDAF0 *p;
+    int flag;
+    int near;
+    Moby_2BDAF0 *hit;
+    int r;
+
+    flag = 0;
+    if (((Hero_2BDAF0 *)D_0013F450_2BDAF0)->f10B4 == 3) {
+        flag = 1;
+    }
+    p = m->pd;
+    if (m->state == 0) {
+        m->state = 1;
+        D_L00_00161890_2BDAF0 = -1;
+        D_L00_00161898_2BDAF0 = -1;
+        D_L00_00161894_2BDAF0 = 0;
+    }
+    near = 1;
+    if (m->b53 == 0 && func_0020D830_2BDAF0(m) < 6.0f) {
+        near = 0;
+    }
+    func_001F9938_2BDAF0(&p->timer);
+    if ((((unsigned int)((Hero_2BDAF0 *)D_0013F450_2BDAF0)->mode < 2 || ((Hero_2BDAF0 *)D_0013F450_2BDAF0)->mode == 12
+          || ((Hero_2BDAF0 *)D_0013F450_2BDAF0)->mode == 4 || ((Hero_2BDAF0 *)D_0013F450_2BDAF0)->mode == 5))
+        && (*(int *)(D_0013A5E0_2BDAF0 + 0x2600) & ((Hero_2BDAF0 *)D_0013F450_2BDAF0)->mask) != 0
+        && !flag && near) {
+        if (((Hero_2BDAF0 *)D_0013F450_2BDAF0)->f20A8 == 0) {
+            func_L00_0020EB60_2BDAF0();
+        }
+        if (p->seen == 0) {
+            p->seen = 1;
+            if (((Stats_2BDAF0 *)(D_0014171B_2BDAF0 + 0x65))->kills <= 0xFFFE) {
+                ((Stats_2BDAF0 *)(D_0014171B_2BDAF0 + 0x65))->kills++;
+            }
+            r = func_001F9850_2BDAF0(D_0015EFA4_2BDAF0) / 600;
+            if (((Stats_2BDAF0 *)(D_0014171B_2BDAF0 + 0x65))->best < r) {
+                ((Stats_2BDAF0 *)(D_0014171B_2BDAF0 + 0x65))->best = func_001F9850_2BDAF0(D_0015EFA4_2BDAF0) / 600;
+            }
+            ((Stats_2BDAF0 *)(D_0014171B_2BDAF0 + 0x65))->levels = ((Stats_2BDAF0 *)(D_0014171B_2BDAF0 + 0x65))->levels | (1 << D_0015EE84_2BDAF0) | 0x80000000;
+        }
+        if (p->timer == 0) {
+            p->timer = func_001F9850_2BDAF0(15);
+        }
+        func_L00_00250800_2BDAF0(m, 0, p);
+        if (((Hero_2BDAF0 *)D_0013F450_2BDAF0)->f2084 == 1) {
+            func_L00_00222B80_2BDAF0(30, 1);
+        }
+        *(u128_2BDAF0 *)&v0 = 0;
+        if (((Hero_2BDAF0 *)D_0013F450_2BDAF0)->f2084 == 30
+            && (*(unsigned short *)((char *)((Hero_2BDAF0 *)D_0013F450_2BDAF0)->moby + 0x34) & 1)) {
+            func_001FA480_2BDAF0(v, D_L00_00166D80_2BDAF0);
+            func_001FA4A0_2BDAF0(mt, v);
+            v0.z = 1.0f;
+            func_001F9EE8_2BDAF0(&v0, &v0, mt);
+        } else if (((Hero_2BDAF0 *)D_0013F450_2BDAF0)->f22C8 == 1) {
+            func_001F9C30_2BDAF0(&v0, m->fD0, -1.0f);
+        } else {
+            v0.x = 1.0f;
+            func_001F9EC0_2BDAF0(&v0, &v0, ((Hero_2BDAF0 *)D_0013F450_2BDAF0)->m640);
+        }
+        p->yaw = func_L00_001FF860_2BDAF0(v0.x, v0.y);
+        p->pitch = func_L00_001FF860_2BDAF0(func_001F9CE8_2BDAF0(&v0), v0.z);
+        *(u128_2BDAF0 *)&v[0] = *(u128_2BDAF0 *)p->pos;
+        hit = func_L00_002BD6B8_2BDAF0(m, &v[0], &p->yaw, &p->pitch);
+        func_001F9908_2BDAF0(&p->delay);
+        if (p->target != 0) {
+            if (p->target->state == 0xFE) {
+                p->target = 0;
+                p->delay = 0;
+            } else if (p->target->state == 0xFD) {
+                p->target = 0;
+                p->delay = 0;
+            }
+        }
+        if (hit != 0 || p->delay != 0) {
+        if (hit != 0) {
+            float *s = func_L00_0025D390_2BDAF0(hit);
+            if (hit != p->target && p->delay == 0) {
+                p->target = hit;
+                p->total = func_001FA888_2BDAF0(((short *)s)[2]);
+                p->left = s[0];
+                p->delay = func_001F9850_2BDAF0(30);
+                if (p->total <= 1.0f) {
+                    p->left = 0.0f;
+                }
+                p->snd = func_001FFB38_2BDAF0(4, 0x7533, func_L00_00236BF8_2BDAF0, func_L00_00236DE8_2BDAF0,
+                                              func_L00_002377E0_2BDAF0, &D_L00_001617BC_2BDAF0, 10000);
+            }
+        }
+            {
+                float a = func_001FA888_2BDAF0(D_0013E633_2BDAF0[2]) * 0.33f + 1.0f;
+                float d = p->left - D_L00_001617B0_2BDAF0 * D_0015EE6C_2BDAF0 * a;
+                p->left = d;
+                if (d < 0.0f) {
+                    p->left = 0.0f;
+                }
+            }
+            D_L00_001617BC_2BDAF0 = 10000 - func_001FA898_2BDAF0(p->left * 10000.0f / p->total);
+        }
+        if (p->target != 0 && p->left <= 0.0f) {
+            if (D_0015EE84_2BDAF0 == 5 && p->target->oclass == 0x271 && ((Skill_2BDAF0 *)D_0013D510_2BDAF0)->f8 == 0) {
+                ((Skill_2BDAF0 *)D_0013D510_2BDAF0)->f8 = 1;
+                func_0022EE28_2BDAF0(1, 0, 0);
+                func_L00_00264DB8_2BDAF0(0x53DB, -1);
+            }
+            func_L00_002CA728_2BDAF0(p->target);
+            p->target = 0;
+        }
+        func_L00_002BE3A8_2BDAF0(m);
+        if (D_L00_00161890_2BDAF0 == -1) {
+            D_L00_00161890_2BDAF0 = func_L00_0023EF78_2BDAF0(m->pos, 7.5f, 0.0f, 0x207F7F);
+        }
+        if (D_L00_00161890_2BDAF0 >= 0) {
+            D_L00_00161894_2BDAF0 = func_001F9850_2BDAF0(20);
+            func_L00_001FF4B0_2BDAF0(&v[0], m->fD0, -0.5f);
+            func_001F9BD8_2BDAF0(&v[1], p, &v[0]);
+            ((Light_2BDAF0 *)D_L00_001803C0_2BDAF0)[D_L00_00161890_2BDAF0].pos[0] = v[1].x;
+            ((Light_2BDAF0 *)D_L00_001803C0_2BDAF0)[D_L00_00161890_2BDAF0].pos[1] = v[1].y;
+            ((Light_2BDAF0 *)D_L00_001803C0_2BDAF0)[D_L00_00161890_2BDAF0].pos[2] = v[1].z;
+            ((Light_2BDAF0 *)D_L00_001803C0_2BDAF0)[D_L00_00161890_2BDAF0].radius = 7.5f;
+        }
+        if (func_L00_0028EB98_2BDAF0(m, D_L00_00161898_2BDAF0) == 0) {
+            D_L00_00161898_2BDAF0 = func_0022ED80_2BDAF0(0, 4, m);
+        }
+    } else {
+        p->target = 0;
+        p->seen = 0;
+        p->delay = 0;
+        if (p->snd != -1) {
+            func_001FFCB0_2BDAF0(p->snd);
+            p->snd = -1;
+        }
+        D_L00_0016188C_2BDAF0 = 1;
+        if (D_L00_00161890_2BDAF0 >= 0) {
+            float f;
+            func_L00_001FF4B0_2BDAF0(&v0, m->fD0, -0.5f);
+            func_001F9BD8_2BDAF0(&v[0], p, &v0);
+            ((Light_2BDAF0 *)D_L00_001803C0_2BDAF0)[D_L00_00161890_2BDAF0].pos[0] = v[0].x;
+            ((Light_2BDAF0 *)D_L00_001803C0_2BDAF0)[D_L00_00161890_2BDAF0].pos[1] = v[0].y;
+            ((Light_2BDAF0 *)D_L00_001803C0_2BDAF0)[D_L00_00161890_2BDAF0].pos[2] = v[0].z;
+            ((Light_2BDAF0 *)D_L00_001803C0_2BDAF0)[D_L00_00161890_2BDAF0].radius = 7.5f;
+            f = func_001FA888_2BDAF0(D_L00_00161894_2BDAF0) * 0.05f;
+            ((Light_2BDAF0 *)D_L00_001803C0_2BDAF0)[D_L00_00161890_2BDAF0].col[0] = f;
+            ((Light_2BDAF0 *)D_L00_001803C0_2BDAF0)[D_L00_00161890_2BDAF0].col[1] = f;
+            ((Light_2BDAF0 *)D_L00_001803C0_2BDAF0)[D_L00_00161890_2BDAF0].col[2] = f * 0.25f;
+            if (func_001F9908_2BDAF0(&D_L00_00161894_2BDAF0) != 0) {
+                func_L00_0023F1D0_2BDAF0(D_L00_00161890_2BDAF0);
+                D_L00_00161890_2BDAF0 = -1;
+            }
+        }
+        if (D_L00_00161890_2BDAF0 >= 0 && D_L00_00161894_2BDAF0 == 0) {
+            func_L00_0023F1D0_2BDAF0(D_L00_00161890_2BDAF0);
+            D_L00_00161890_2BDAF0 = -1;
+        }
+        if (D_L00_00161898_2BDAF0 >= 0) {
+            if (D_L00_00161898_2BDAF0 != -1 && ((Voice_2BDAF0 *)(D_0013E650_2BDAF0 + D_L00_00161898_2BDAF0 * 0x70))->owner == m
+                && ((Voice_2BDAF0 *)(D_0013E650_2BDAF0 + D_L00_00161898_2BDAF0 * 0x70))->on != 0) {
+                func_L00_0028EBF0_2BDAF0(D_L00_00161898_2BDAF0);
+            }
+            D_L00_00161898_2BDAF0 = -1;
+        }
+        func_L00_0020ED30_2BDAF0();
+    }
+    if (flag && D_L00_00161890_2BDAF0 >= 0) {
+        func_L00_0023F1D0_2BDAF0(D_L00_00161890_2BDAF0);
+        D_L00_00161890_2BDAF0 = -1;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002BE2A0);
 typedef struct { float x, y, z, w; } __attribute__((aligned(16))) Vec_2BE3A8;
 typedef struct Moby_2BE3A8 Moby_2BE3A8;

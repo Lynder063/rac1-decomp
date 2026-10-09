@@ -872,7 +872,211 @@ void func_L00_00208650(void *vec, int a, float f0, float f1) {
     func_L00_00208318();
     d->n++;
 }
-INCLUDE_ASM("asm/overlays", func_L00_002086C8);
+typedef int u128_2086C8 __attribute__((mode(TI)));
+typedef union { u128_2086C8 q; float f[4]; } Vec4_2086C8 __attribute__((aligned(16)));
+typedef struct Moby_2086C8 {
+    char p0[0x10];
+    float pos[4];
+    char p1[0x34 - 0x20];
+    unsigned short h34;
+    char p2[0x90 - 0x36];
+    union { int col; unsigned char b[4]; } c90;
+    char p3[0xC0 - 0x94];
+    float mC0[4];
+} Moby_2086C8;
+typedef struct Hero_2086C8 {
+    char p0[0x1090];
+    Moby_2086C8 *m1090;
+    char p1[0x10B0 - 0x1094];
+    int f10B0;
+    int f10B4;
+    int f10B8;
+    float f10BC;
+    char p2[0x1130 - 0x10C0];
+    Moby_2086C8 *w1130;
+    char p3[0x1158 - 0x1134];
+    int f1158;
+    char p4[0x1628 - 0x115C];
+    float f1628;
+    char p5[0x2080 - 0x162C];
+    Moby_2086C8 *m2080;
+    char p6[0x20A8 - 0x2084];
+    unsigned char b20A8;
+} Hero_2086C8;
+extern void func_L00_00250800_2086C8(void *, int, void *) __asm__("func_L00_00250800");
+extern void func_L00_00208650_2086C8(void *vec, int a, float f0, float f1) __asm__("func_L00_00208650");
+extern float func_001FA748_2086C8(float, float) __asm__("func_001FA748");
+extern float func_001F9FA8_2086C8(float) __asm__("func_001F9FA8");
+extern int func_001FA8A8_2086C8(int, int, float) __asm__("func_001FA8A8");
+extern void func_001F9EC0_2086C8(void *, void *, void *) __asm__("func_001F9EC0");
+extern void func_001F9BD8_2086C8(void *, void *, void *) __asm__("func_001F9BD8");
+extern int func_001FA898_2086C8(float) __asm__("func_001FA898");
+extern int func_001F9850_2086C8(int) __asm__("func_001F9850");
+extern int D_L00_0015F6A8_2086C8 __asm__("D_L00_0015F6A8") MACRO_ADDR;
+extern float D_0015EE6C_2086C8 __asm__("D_0015EE6C") MACRO_ADDR;
+extern float D_0015EE60_2086C8 __asm__("D_0015EE60") MACRO_ADDR;
+extern int D_L00_00179510_2086C8[] __asm__("D_L00_00179510");
+extern char D_0013F450_2086C8[] __asm__("D_0013F450");
+
+// Hero gadget glow: pulses the colour of the hero's gadget moby (hero state 13, 16, 17, 19, 20) and
+// queues its glow sprites. c and g are shared by cases 17 and 20 (one pseudo each, retail's $s0/$s1).
+void func_L00_002086C8(void) {
+    Vec4_2086C8 v;
+    Moby_2086C8 *m;
+    int i;
+    int c, g;
+
+    if (((Hero_2086C8 *)D_0013F450_2086C8)->f1158 == 5) {
+        Moby_2086C8 *w = ((Hero_2086C8 *)D_0013F450_2086C8)->w1130;
+        if (w != 0 && ((w->h34 ^ 1) & 1)) {
+            for (i = 0; i < 2; i++) {
+                func_L00_00250800_2086C8(w, i, &v);
+                func_L00_00208650_2086C8(&v, 0x301EAA1E, 0.057f, 0.15f);
+            }
+        }
+    }
+
+    if (D_L00_0015F6A8_2086C8 == 0) {
+        int c18 = 0x806E8C6E;
+        int c17 = 0x805A3232;
+        float t = func_001FA748_2086C8(((Hero_2086C8 *)D_0013F450_2086C8)->f1628, D_0015EE6C_2086C8 * 2.26892805f);
+        ((Hero_2086C8 *)D_0013F450_2086C8)->f1628 = t;
+        if (D_L00_00179510_2086C8[0] != 0 && D_L00_00179510_2086C8[0] != 8) {
+            c18 = 0x806EAAFA;
+            c17 = 0x80326E5A;
+            ((Hero_2086C8 *)D_0013F450_2086C8)->f1628 = func_001FA748_2086C8(t, D_0015EE6C_2086C8 * 5.58505344f);
+        }
+        ((Hero_2086C8 *)D_0013F450_2086C8)->m2080->c90.col = func_001FA8A8_2086C8(c18, c17, func_001F9FA8_2086C8(((Hero_2086C8 *)D_0013F450_2086C8)->f1628) * 0.5f + 0.5f);
+    }
+
+    m = ((Hero_2086C8 *)D_0013F450_2086C8)->m1090;
+    if (m == 0) return;
+    if (!((m->h34 ^ 1) & 1)) return;
+
+    switch (((Hero_2086C8 *)D_0013F450_2086C8)->f10B8) {
+    case 17: {
+        int c5;
+        int x1, x2, col;
+        float fr;
+        float f = func_001FA748_2086C8(((Hero_2086C8 *)D_0013F450_2086C8)->f10BC, D_0015EE6C_2086C8 * 4.36332321f);
+        c5 = 0x28C8C8C8;
+        ((Hero_2086C8 *)D_0013F450_2086C8)->f10BC = f;
+        if (0.0f < f && f < 2.26892805f) c5 = 0x280A0A0A;
+        m->c90.col = func_001FA8A8_2086C8(m->c90.col, c5, 0.07f);
+        v.q = 0;
+        v.f[0] = 0.0173452497f;
+        v.f[1] = -0.0391772911f;
+        v.f[2] = 0.0962345004f;
+        func_001F9EC0_2086C8(&v, &v, m->mC0);
+        func_001F9BD8_2086C8(&v, &v, m->pos);
+        c = m->c90.b[0];
+        g = m->c90.b[1];
+        fr = (float)c;
+        c = m->c90.b[2];
+        x1 = func_001FA898_2086C8(fr * 0.2f);
+        x2 = func_001FA898_2086C8((float)c * 0.2f);
+        col = ((g << 5) / 200) << 24;
+        col |= x2 << 16;
+        g <<= 8;
+        col |= g;
+        col |= x1;
+        func_L00_00208650_2086C8(&v, col, 0.15f, 0.1f);
+        break;
+    }
+    case 16:
+        if (func_001F9850_2086C8(50) < ((Hero_2086C8 *)D_0013F450_2086C8)->f10B0) {
+            float k, f;
+            int r, g, b, a, col, col1, bs, gs;
+            k = D_0015EE6C_2086C8 * 3.14159274f;
+            if (((Hero_2086C8 *)D_0013F450_2086C8)->b20A8 != 0) k = D_0015EE6C_2086C8 * 4.71238899f;
+            f = func_001FA748_2086C8(((Hero_2086C8 *)D_0013F450_2086C8)->f10BC, k);
+            ((Hero_2086C8 *)D_0013F450_2086C8)->f10BC = f;
+            r = func_001FA898_2086C8(func_001F9FA8_2086C8(f) * 20.0f) + 30;
+            g = func_001FA898_2086C8(func_001F9FA8_2086C8(f) * 90.0f) + 150;
+            b = func_001FA898_2086C8(func_001F9FA8_2086C8(f) * 20.0f) + 30;
+            if (((Hero_2086C8 *)D_0013F450_2086C8)->b20A8 != 0) {
+                int tmp = r;
+                r = g;
+                g = tmp;
+            }
+            bs = b << 16;
+            col1 = bs | 0x20000000;
+            gs = g << 8;
+            col1 |= gs;
+            col1 |= r;
+            m->c90.col = func_001FA8A8_2086C8(m->c90.col, col1, 0.13f);
+            a = ((Hero_2086C8 *)D_0013F450_2086C8)->f10B0 - func_001F9850_2086C8(50);
+            if (a > 32) a = 32;
+            col = (a << 24) | bs | gs | r;
+            func_L00_00250800_2086C8(m, 1, &v);
+            func_L00_00208650_2086C8(&v, col, 0.15f, 0.04f);
+        }
+        break;
+    case 19: {
+        float k, f;
+        int r, g, b, col;
+        k = D_0015EE6C_2086C8 * 2.26892805f;
+        if (((Hero_2086C8 *)D_0013F450_2086C8)->b20A8 != 0) k = D_0015EE6C_2086C8 * 7.33038282f;
+        f = func_001FA748_2086C8(((Hero_2086C8 *)D_0013F450_2086C8)->f10BC, k);
+        ((Hero_2086C8 *)D_0013F450_2086C8)->f10BC = f;
+        if (((Hero_2086C8 *)D_0013F450_2086C8)->b20A8 != 0) {
+            r = func_001FA898_2086C8(func_001F9FA8_2086C8(f) * 30.0f) + 50;
+            g = func_001FA898_2086C8(func_001F9FA8_2086C8(f) * 30.0f) + 50;
+            b = func_001FA898_2086C8(func_001F9FA8_2086C8(f) * 90.0f) + 170;
+        } else {
+            r = func_001FA898_2086C8(func_001F9FA8_2086C8(f) * 70.0f) + 100;
+            g = func_001FA898_2086C8(func_001F9FA8_2086C8(f) * 40.0f) + 70;
+            b = func_001FA898_2086C8(func_001F9FA8_2086C8(f) * 40.0f) + 70;
+        }
+        col = b << 16;
+        col |= 0x80000000;
+        col |= g << 8;
+        col |= r;
+        m->c90.col = func_001FA8A8_2086C8(m->c90.col, col, 0.15f);
+        break;
+    }
+    case 20: {
+        int c5;
+        int x1, x2, col;
+        float fr;
+        float f = func_001FA748_2086C8(((Hero_2086C8 *)D_0013F450_2086C8)->f10BC, D_0015EE6C_2086C8 * 4.36332321f);
+        c5 = 0xDCDCDC;
+        ((Hero_2086C8 *)D_0013F450_2086C8)->f10BC = f;
+        if (0.0f < f && f < 2.44346094f) c5 = 0xA0A0A;
+        m->c90.col = func_001FA8A8_2086C8(m->c90.col, c5, 0.07f);
+        v.q = 0;
+        v.f[0] = 0.0171042103f;
+        v.f[1] = -0.0939194188f;
+        v.f[2] = 0.140954122f;
+        func_001F9EC0_2086C8(&v, &v, m->mC0);
+        func_001F9BD8_2086C8(&v, &v, m->pos);
+        c = m->c90.b[0];
+        g = m->c90.b[1];
+        fr = (float)c;
+        c = m->c90.b[2];
+        x1 = func_001FA898_2086C8(fr * 0.2f);
+        x2 = func_001FA898_2086C8((float)c * 0.2f);
+        col = ((g << 5) / 200) << 24;
+        col |= x2 << 16;
+        g <<= 8;
+        col |= g;
+        col |= x1;
+        func_L00_00208650_2086C8(&v, col, 0.17f, 0.1f);
+        break;
+    }
+    case 13: {
+        int c5;
+        float f = func_001FA748_2086C8(((Hero_2086C8 *)D_0013F450_2086C8)->f10BC, D_0015EE6C_2086C8 * 4.71238899f);
+        c5 = 0x2814D214;
+        ((Hero_2086C8 *)D_0013F450_2086C8)->f10BC = f;
+        if (0.0f < f && f < 2.09439516f) c5 = 0x281414D2;
+        m->c90.col = func_001FA8A8_2086C8(m->c90.col, c5, D_0015EE60_2086C8 * 0.05f);
+        func_L00_00250800_2086C8(m, 0, &v);
+        func_L00_00208650_2086C8(&v, m->c90.col, 0.1f, 0.03f);
+        break;
+    }
+    }
+}
 typedef struct { int a[4]; } Vq4 __attribute__((aligned(16)));
 extern unsigned char D_0015EEB4_m[4] __asm__("D_0015EEB4") MACRO_ADDR;
 extern void func_L00_00233868(void);

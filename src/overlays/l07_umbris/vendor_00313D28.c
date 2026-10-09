@@ -2133,4 +2133,270 @@ void func_L07_0031B318(struct Moby_31B318 *m) {
     }
     m->unkA4 = 0xFF;
 }
-INCLUDE_ASM("asm/overlays", func_L07_0031B620);
+typedef struct Moby_31B620 {
+    char p0[0x10];
+    float pos[4];
+    unsigned char state;
+    char p1[0x31 - 0x21];
+    unsigned char b31;
+    char p2[0x34 - 0x32];
+    unsigned short flags;
+    char p3[0x48 - 0x36];
+    float rotz;
+    char p4[0x52 - 0x4C];
+    unsigned char anim;
+    unsigned char next;
+    char p5[0x70 - 0x54];
+    unsigned char b70;
+    char p6[0x78 - 0x71];
+    struct Gun_31B620 *pd;
+    char p7[0xA4 - 0x7C];
+    unsigned char bA4;
+    char p8[0xBC - 0xA5];
+    unsigned char firing;
+    char p9[0x100 - 0xBD];
+} Moby_31B620;
+typedef struct Gun_31B620 {
+    char p0[0x20];
+    char hit[6];
+    short h26;
+    char p1;
+    unsigned char b29;
+    char p2[0x60 - 0x2A];
+    char path[7];
+    unsigned char b67;
+    char p3[0x70 - 0x68];
+    int from;
+    int to;
+    float speed;
+    short timer;
+    short back;
+    float start;
+    float end;
+    float angle;
+    float range;
+    float height;
+    int pause;
+    int burst;
+    short shot;
+    unsigned char kind;
+} Gun_31B620;
+
+extern void *func_L00_0025B478_31B620(void *, int, int) __asm__("func_L00_0025B478");
+extern int func_L00_0025B4D0_31B620(void *, void *, void *, int, int *, float *, int, int) __asm__("func_L00_0025B4D0");
+extern int func_0022ED80_31B620(int, int, void *) __asm__("func_0022ED80");
+extern void func_L00_002584A8_31B620(void *, int, int) __asm__("func_L00_002584A8");
+extern int func_001F9850_31B620(int) __asm__("func_001F9850");
+extern void func_L00_0025E4B0_31B620(void *, void *) __asm__("func_L00_0025E4B0");
+extern void func_00213DE0_31B620(void *, int, int, int) __asm__("func_00213DE0");
+extern void func_L00_0025E590_31B620(void *, void *) __asm__("func_L00_0025E590");
+extern float func_L00_001FF860_31B620(float, float) __asm__("func_L00_001FF860");
+extern float func_L00_0025F368_31B620(float) __asm__("func_L00_0025F368");
+extern int func_001F9938_31B620(void *) __asm__("func_001F9938");
+extern void func_L00_00250800_31B620(void *, int, void *) __asm__("func_L00_00250800");
+extern float func_001F9F90_31B620(float) __asm__("func_001F9F90");
+extern float func_001F9FA8_31B620(float) __asm__("func_001F9FA8");
+extern void *func_L07_0030C918_31B620(void *, void *, void *, int) __asm__("func_L07_0030C918");
+extern float func_001F9D48_31B620(void *, void *) __asm__("func_001F9D48");
+extern float func_001FA748_31B620(float, float) __asm__("func_001FA748");
+extern float func_001FA850_31B620(float, float) __asm__("func_001FA850");
+extern float D_0015EE6C_31B620 __asm__("D_0015EE6C") MACRO_ADDR;
+extern Moby_31B620 *D_L07_00160058_31B620 __asm__("D_L07_00160058") MACRO_ADDR;
+extern char D_0013F4D0_31B620[] __asm__("D_0013F4D0");
+
+/* Machine-gun turret update (moby class 1126): wakes when hit, sweeps between its two marker mobys
+   and fires bursts, then sinks and rises again. */
+void func_L07_0031B620(Moby_31B620 *moby)
+{
+    float pos[4];
+    float vel[4];
+    int cnt;
+    Gun_31B620 *data;
+    char *hit;
+
+    if (moby == 0) {
+        return;
+    }
+    data = moby->pd;
+    if (data == 0) {
+        return;
+    }
+    hit = data->hit;
+    func_L00_0025B4D0_31B620(moby, func_L00_0025B478_31B620(moby, 0x230000, 0), hit, 0, &cnt, 0, 0, 4);
+    if (moby->state < 2 && cnt >= 2) {
+        func_0022ED80_31B620(1, 0, moby);
+        func_L00_002584A8_31B620(moby, 0, -1);
+        moby->flags &= 0xEFFF;
+        data->b67 = 0xFA;
+        data->h26 = func_001F9850_31B620(60);
+        func_L00_0025E4B0_31B620(moby, data->path);
+        data->timer = func_001F9850_31B620(60);
+        if (moby->next != 2) {
+            func_00213DE0_31B620(moby, 2, 0, 5);
+        }
+        moby->state = 2;
+    }
+    moby->bA4 = 0xFF;
+    func_L00_0025E590_31B620(moby, data->path);
+
+    switch (moby->state) {
+    case 0:
+        if (data->from != -1) {
+            float a = func_L00_001FF860_31B620(D_L07_00160058_31B620[data->from].pos[0] - moby->pos[0],
+                                         D_L07_00160058_31B620[data->from].pos[1] - moby->pos[1]);
+            data->start = a;
+            if (a < 0.0f) {
+                data->start = a + 6.2831855f;
+            }
+        }
+        if (data->to != -1) {
+            float b = func_L00_001FF860_31B620(D_L07_00160058_31B620[data->to].pos[0] - moby->pos[0],
+                                         D_L07_00160058_31B620[data->to].pos[1] - moby->pos[1]);
+            data->end = b;
+            if (b < 0.0f) {
+                data->end = b + 6.2831855f;
+            }
+            if (data->end < data->start) {
+                data->end = data->end + 6.2831855f;
+            }
+        } else {
+            data->end = data->start + 6.2831855f;
+        }
+        {
+            float st = data->start;
+            data->angle = 0.0f;
+            data->range = data->end - st;
+            moby->rotz = func_L00_0025F368_31B620(st);
+        }
+        data->height = moby->pos[2];
+        data->b29 = 0;
+        moby->firing = 0;
+        data->shot = data->pause;
+        if (moby->next != 1) {
+            func_00213DE0_31B620(moby, 1, 0, 0);
+        }
+        moby->state = 1;
+        break;
+
+    case 1:
+        if (moby->anim != 1 && (moby->b70 & 2) && moby->next != 1) {
+            func_00213DE0_31B620(moby, 1, 0, 1);
+        }
+        if (data->back != 0) {
+            float a = data->angle - data->speed * 0.017453292f * D_0015EE6C_31B620;
+            data->angle = a;
+            if (a < 0.0f) {
+                data->angle = 0.0f;
+                data->back = 0;
+            }
+        } else {
+            float a = data->angle + data->speed * 0.017453292f * D_0015EE6C_31B620;
+            data->angle = a;
+            if (data->range < a) {
+                data->angle = data->range;
+                data->back = 1;
+            }
+        }
+        moby->rotz = func_L00_0025F368_31B620(data->start + data->angle);
+        if (func_001F9938_31B620(&data->timer) == 0) {
+            break;
+        }
+        if (moby->firing == 0) {
+            if (data->burst == 0 || (data->shot & 1) != 0) {
+                func_L00_00250800_31B620(moby, 0, pos);
+                vel[0] = func_001F9F90_31B620(moby->rotz) * (D_0015EE6C_31B620 * 15.0f);
+                vel[1] = func_001F9FA8_31B620(moby->rotz) * (D_0015EE6C_31B620 * 15.0f);
+                vel[2] = 0.0f;
+                func_0022ED80_31B620(0, 0, moby);
+                func_L07_0030C918_31B620(pos, vel, moby, data->kind);
+            }
+            if (data->burst != 0) {
+                if (func_001F9938_31B620(&data->shot)) {
+                    moby->firing = 1;
+                    data->shot = data->burst;
+                }
+            } else {
+                data->shot = data->shot ^ 1;
+            }
+        } else if (func_001F9938_31B620(&data->shot)) {
+            moby->firing = 0;
+            data->shot = data->pause;
+        }
+        data->timer = func_001F9850_31B620(6);
+        {
+            float dist = func_001F9D48_31B620(moby->pos, D_0013F4D0_31B620);
+            if (55.0f < dist || (35.0f < dist && moby->b31 == 0)) {
+            if (80.0f < dist) {
+                data->timer = data->timer * 3;
+            } else if (120.0f < dist) {
+                data->timer = data->timer * 4;
+            } else {
+                data->timer = data->timer * 2;
+            }
+            }
+        }
+        break;
+
+    case 2:
+        if (moby->anim != 4 && (moby->b70 & 2) && moby->next != 4) {
+            func_00213DE0_31B620(moby, 4, 0, 1);
+        }
+        moby->rotz = func_001FA748_31B620(moby->rotz, D_0015EE6C_31B620 * 12.566371f);
+        if (func_001F9938_31B620(&data->timer) == 0) {
+            break;
+        }
+        data->timer = func_001F9850_31B620(180);
+        moby->state = 3;
+        break;
+
+    case 3:
+        if (moby->anim != 4 && (moby->b70 & 2) && moby->next != 4) {
+            func_00213DE0_31B620(moby, 4, 0, 0);
+        }
+        {
+            float low = data->height - 0.7f;
+            float z = moby->pos[2];
+            if (low < z) {
+                moby->pos[2] = z - D_0015EE6C_31B620 * 5.0f;
+            } else {
+                moby->pos[2] = low;
+            }
+        }
+        {
+            float diff = func_001FA850_31B620(moby->rotz, func_L00_0025F368_31B620(data->start + data->angle));
+            float turn = D_0015EE6C_31B620 * 12.566371f;
+            if (turn < diff) {
+                moby->rotz = func_001FA748_31B620(moby->rotz, turn);
+            } else {
+                moby->rotz = func_L00_0025F368_31B620(data->start + data->angle);
+            }
+        }
+        if (func_001F9938_31B620(&data->timer) == 0) {
+            break;
+        }
+        func_0022ED80_31B620(2, 0, moby);
+        if (moby->next != 3) {
+            func_00213DE0_31B620(moby, 3, 0, 5);
+        }
+        moby->state = 4;
+        break;
+
+    case 4: {
+        float top = data->height;
+        float z = moby->pos[2];
+        if (z < top) {
+            moby->pos[2] = z + D_0015EE6C_31B620 * 5.0f;
+            break;
+        }
+        moby->pos[2] = top;
+        moby->flags |= 0x1000;
+        if (moby->next != 1) {
+            func_00213DE0_31B620(moby, 1, 0, 5);
+        }
+        moby->state = 1;
+        break;
+    }
+    case 5:
+        break;
+    }
+}

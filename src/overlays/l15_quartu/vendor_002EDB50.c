@@ -3,7 +3,224 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L15_002EDB50);
-INCLUDE_ASM("asm/overlays", func_L15_002EE7E8);
+typedef struct Moby_2EE7E8 {
+    char p0[0x20];
+    unsigned char state;
+    char p1[0x30 - 0x21];
+    unsigned char b30;
+    char p2[0x52 - 0x31];
+    unsigned char anim;
+    char p3[0x78 - 0x53];
+    struct Talk_2EE7E8 *pd;
+    char p4[0xA6 - 0x7C];
+    short oclass;
+} Moby_2EE7E8;
+typedef struct Talk_2EE7E8 {
+    int zone[4];
+    int npc[3];
+    int vol1C;
+    int vol20[3];
+    int vol2C;
+    int pad30;
+    int wait;
+    int hold38;
+    int hold3C;
+    int last;
+    char pad44[0x54 - 0x44];
+    int vol54;
+} Talk_2EE7E8;
+typedef struct Hero_2EE7E8 {
+    char p0[0x2080];
+    Moby_2EE7E8 *moby;
+    int f2084;
+    int f2088;
+    int mode;
+    char p1[0x20A4 - 0x2090];
+    unsigned char f20A4;
+    char p2[0x22E0 - 0x20A5];
+    short f22E0;
+} Hero_2EE7E8;
+typedef struct Help_2EE7E8 {
+    int busy;
+    char p0[0x24 - 4];
+    int cur;
+} Help_2EE7E8;
+typedef struct Stats_2EE7E8 {
+    char p0[0x3DA];
+    unsigned short t3DA;
+    char p1[0x3E0 - 0x3DC];
+    unsigned short n3E0;
+    unsigned short t3E2;
+    int lv3E4;
+} Stats_2EE7E8;
+typedef struct Items_2EE7E8 {
+    char p0[0x6E];
+    unsigned char f6E;
+    unsigned char f6F;
+} Items_2EE7E8;
+
+extern int func_001F9850_2EE7E8(int) __asm__("func_001F9850");
+extern int func_00215570_2EE7E8(void *, int) __asm__("func_00215570");
+extern int func_L00_00203F20_2EE7E8(int, int) __asm__("func_L00_00203F20");
+extern int func_L00_0020DC00_2EE7E8(void) __asm__("func_L00_0020DC00");
+extern unsigned char D_0013D5E7_2EE7E8[] __asm__("D_0013D5E7");
+extern int D_0015EFA4_2EE7E8 __asm__("D_0015EFA4") MACRO_ADDR;
+extern int D_0015EE84_2EE7E8 __asm__("D_0015EE84") MACRO_ADDR;
+extern int D_L15_0015F684_2EE7E8 __asm__("D_L15_0015F684") MACRO_ADDR;
+extern int D_L15_00161B48_2EE7E8 __asm__("D_L15_00161B48") MACRO_ADDR;
+extern char *D_L15_00160058_2EE7E8 __asm__("D_L15_00160058") MACRO_ADDR;
+extern char D_L15_00179A90_2EE7E8[] __asm__("D_L15_00179A90");
+extern char D_0013E633_2EE7E8[] __asm__("D_0013E633");
+extern char D_0014171B_2EE7E8[] __asm__("D_0014171B");
+extern char D_00141A68_2EE7E8[] __asm__("D_00141A68");
+extern char D_0013D490_2EE7E8[] __asm__("D_0013D490");
+extern unsigned char D_0013D5CA_2EE7E8[] __asm__("D_0013D5CA");
+
+/* Quartu moby update (class 1469): hint and dialogue triggers from the hero's zones, with the play-time
+   records of the two hint messages. */
+void func_L15_002EE7E8(Moby_2EE7E8 *m) {
+    Talk_2EE7E8 *t = m->pd;
+    int st = m->state;
+    Moby_2EE7E8 *e;
+    int i, j, found, npc, pick;
+
+    switch (st) {
+    case 0:
+        m->b30 = 0xFF;
+        t->wait = func_001F9850_2EE7E8(0x4B0);
+        m->state = 1;
+        break;
+    case 1:
+        if (t->npc[0] != -1) {
+            e = (Moby_2EE7E8 *)(D_L15_00160058_2EE7E8 + (t->npc[0] << 8));
+            if (e != 0 && e->oclass == 0x4E && e->state != 0xFE && e->state != 0xFD && e->state != 3
+                && func_00215570_2EE7E8(D_0013E633_2EE7E8 + 0xE9D, t->zone[3]) != 0
+                && (((Hero_2EE7E8 *)(D_0013E633_2EE7E8 + 0xE1D))->mode < 2u || ((Hero_2EE7E8 *)(D_0013E633_2EE7E8 + 0xE1D))->mode == 9)
+                && ((Help_2EE7E8 *)D_L15_00179A90_2EE7E8)->busy == 0 && ((Help_2EE7E8 *)D_L15_00179A90_2EE7E8)->cur == -1) {
+                if (D_0013D5E7_2EE7E8[0] == 0) {
+                    int lim, now;
+                    now = func_001F9850_2EE7E8(D_0015EFA4_2EE7E8);
+                    lim = now - ((Stats_2EE7E8 *)D_00141A68_2EE7E8)->t3DA * 600;
+                    if ((int)((float)func_001F9850_2EE7E8(0x12) * 60.0f) < lim || ((Stats_2EE7E8 *)D_00141A68_2EE7E8)->t3DA * 600 == 0) {
+                        func_L00_00203F20_2EE7E8(0x3A98, 0x7B);
+                    } else {
+                        now = func_001F9850_2EE7E8(D_0015EFA4_2EE7E8);
+                        if (now / 600 > ((Stats_2EE7E8 *)D_00141A68_2EE7E8)->t3DA) {
+                            ((Stats_2EE7E8 *)D_00141A68_2EE7E8)->t3DA = func_001F9850_2EE7E8(D_0015EFA4_2EE7E8) / 600;
+                        }
+                    }
+                } else if (((Stats_2EE7E8 *)D_00141A68_2EE7E8)->n3E0 != 0) {
+                    int lim, now;
+                    now = func_001F9850_2EE7E8(D_0015EFA4_2EE7E8);
+                    lim = now - ((Stats_2EE7E8 *)D_00141A68_2EE7E8)->t3E2 * 600;
+                    if ((int)((float)func_001F9850_2EE7E8(0x12) * 60.0f) < lim || ((Stats_2EE7E8 *)D_00141A68_2EE7E8)->t3E2 * 600 == 0) {
+                        func_L00_00203F20_2EE7E8(0x3A99, 0x7C);
+                    } else {
+                        now = func_001F9850_2EE7E8(D_0015EFA4_2EE7E8);
+                        if (now / 600 > ((Stats_2EE7E8 *)D_00141A68_2EE7E8)->t3E2) {
+                            ((Stats_2EE7E8 *)D_00141A68_2EE7E8)->t3E2 = func_001F9850_2EE7E8(D_0015EFA4_2EE7E8) / 600;
+                        }
+                    }
+                } else {
+                    int now;
+                    ((Stats_2EE7E8 *)D_00141A68_2EE7E8)->n3E0++;
+                    now = func_001F9850_2EE7E8(D_0015EFA4_2EE7E8);
+                    if (now / 600 > ((Stats_2EE7E8 *)D_00141A68_2EE7E8)->t3E2) {
+                        ((Stats_2EE7E8 *)D_00141A68_2EE7E8)->t3E2 = func_001F9850_2EE7E8(D_0015EFA4_2EE7E8) / 600;
+                    }
+                    ((Stats_2EE7E8 *)D_00141A68_2EE7E8)->lv3E4 = ((Stats_2EE7E8 *)D_00141A68_2EE7E8)->lv3E4 | (1 << D_0015EE84_2EE7E8) | 0x80000000;
+                }
+            }
+        }
+        if (D_L15_0015F684_2EE7E8 != 0 && ((Help_2EE7E8 *)D_L15_00179A90_2EE7E8)->busy == 0
+            && ((Help_2EE7E8 *)D_L15_00179A90_2EE7E8)->cur == -1 && *(unsigned short *)(D_0014171B_2EE7E8 + 0x795) == 0) {
+            func_L00_00203F20_2EE7E8(0x3A9F, 0x89);
+            D_L15_0015F684_2EE7E8 = 0;
+        }
+        if (func_00215570_2EE7E8(D_0013E633_2EE7E8 + 0xE9D, t->vol54) != 0
+            && ((Hero_2EE7E8 *)(D_0013E633_2EE7E8 + 0xE1D))->f20A4 == 3 && ((Hero_2EE7E8 *)(D_0013E633_2EE7E8 + 0xE1D))->f22E0 == 0
+            && D_L15_00161B48_2EE7E8 == 0 && *(unsigned short *)(D_0014171B_2EE7E8 + 0x78D) == 0) {
+            func_L00_00203F20_2EE7E8(0x3A9E, 0x88);
+        }
+        pick = -1;
+        npc = -1;
+        found = 0;
+        for (i = 0; i < 1; i++) {
+            if (func_00215570_2EE7E8(D_0013E633_2EE7E8 + 0xE9D, t->zone[i]) != 0) {
+                pick = t->zone[i];
+                npc = t->npc[i];
+                found = 1;
+                break;
+            }
+        }
+        if (found != 0) {
+            t->hold3C = t->hold3C + 1;
+        } else {
+            t->hold3C = 0;
+            t->last = -1;
+        }
+        if (npc != -1) {
+            e = (Moby_2EE7E8 *)(D_L15_00160058_2EE7E8 + (npc << 8));
+            if (e != 0 && e->oclass == 0x4E && e->state != 0xFE && e->state != 0xFD && e->state != 3
+                && t->hold3C > t->wait && pick != -1 && pick != t->last
+                && (((Hero_2EE7E8 *)(D_0013E633_2EE7E8 + 0xE1D))->mode < 2u || ((Hero_2EE7E8 *)(D_0013E633_2EE7E8 + 0xE1D))->mode == 9)
+                && ((Help_2EE7E8 *)D_L15_00179A90_2EE7E8)->busy == 0 && ((Help_2EE7E8 *)D_L15_00179A90_2EE7E8)->cur == -1
+                && D_0013D5E7_2EE7E8[0] != 0) {
+                t->wait = func_001F9850_2EE7E8(0x708);
+                if (*(int *)(D_0014171B_2EE7E8 + 0x739) >= 0) {
+                    func_L00_00203F20_2EE7E8(0x3A9A, 0x7D);
+                }
+                t->last = pick;
+                t->hold3C = 0;
+            }
+        }
+        if (((Hero_2EE7E8 *)(D_0013E633_2EE7E8 + 0xE1D))->moby->anim == 0xC && ((Hero_2EE7E8 *)(D_0013E633_2EE7E8 + 0xE1D))->f20A4 == 2) {
+            ((Items_2EE7E8 *)D_0013D490_2EE7E8)->f6F = 1;
+        }
+        if (func_00215570_2EE7E8(D_0013E633_2EE7E8 + 0xE9D, t->vol1C) != 0 && ((Hero_2EE7E8 *)(D_0013E633_2EE7E8 + 0xE1D))->f20A4 == 2
+            && ((Items_2EE7E8 *)D_0013D490_2EE7E8)->f6F == 0 && ((Help_2EE7E8 *)D_L15_00179A90_2EE7E8)->busy == 0
+            && ((Help_2EE7E8 *)D_L15_00179A90_2EE7E8)->cur == -1 && *(int *)(D_0014171B_2EE7E8 + 0x751) >= 0) {
+            func_L00_00203F20_2EE7E8(0x3A9C, 0x80);
+        }
+        if (func_00215570_2EE7E8(D_0013E633_2EE7E8 + 0xE9D, t->vol20[0]) != 0 && ((Help_2EE7E8 *)D_L15_00179A90_2EE7E8)->busy == 0
+            && ((Help_2EE7E8 *)D_L15_00179A90_2EE7E8)->cur == -1 && D_0013D5CA_2EE7E8[2] == 0
+            && !(*(unsigned int *)(D_0014171B_2EE7E8 + 0x761) & (1 << D_0015EE84_2EE7E8))) {
+            func_L00_00203F20_2EE7E8(0x3A9D, 0x82);
+        }
+        pick = -1;
+        found = 0;
+        for (j = 0; j < 3; j++) {
+            if (func_00215570_2EE7E8(D_0013E633_2EE7E8 + 0xE9D, t->vol20[j]) != 0) {
+                found = 1;
+                if (t->last != t->vol20[j]) {
+                    pick = t->vol20[j];
+                }
+                break;
+            }
+        }
+        if (found == 0) {
+            t->hold38 = 0;
+            t->last = -1;
+        } else {
+            t->hold38 = t->hold38 + 1;
+            if (((Hero_2EE7E8 *)(D_0013E633_2EE7E8 + 0xE1D))->f2084 == 0x35) {
+                t->hold38 = 0;
+                t->last = -1;
+            }
+        }
+        if (func_001F9850_2EE7E8(0xE10) < t->hold38 && pick != -1 && func_L00_0020DC00_2EE7E8() != 0
+            && ((Help_2EE7E8 *)D_L15_00179A90_2EE7E8)->busy == 0 && ((Help_2EE7E8 *)D_L15_00179A90_2EE7E8)->cur == -1
+            && D_0013D5CA_2EE7E8[2] != 0) {
+            func_L00_00203F20_2EE7E8(0x4E2E, 0x78);
+            t->last = pick;
+            t->hold38 = 0;
+        }
+        if (((Items_2EE7E8 *)D_0013D490_2EE7E8)->f6E == 0 && func_00215570_2EE7E8(D_0013E633_2EE7E8 + 0xE9D, t->vol2C) != 0) {
+            ((Items_2EE7E8 *)D_0013D490_2EE7E8)->f6E = 1;
+        }
+        break;
+    }
+}
 typedef struct {
     f32 x;
     f32 y;
