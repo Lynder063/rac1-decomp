@@ -25,14 +25,14 @@ void func_L00_002D9438(char *self) {
     o = d->o;
     if (o == 0 || *(short *)(o + 0xA6) != 0xB9 || *(unsigned char *)(o + 0x20) == 0xFE || *(unsigned char *)(o + 0x20) == 0xFD) {
 kill:
-        func_0020D678(self);
+        DeleteMoby(self);
         return;
     }
     m = *(void **)(o + 0x78);
-    func_001F9BC0(self + 0x10);
+    clear_u64_value(self + 0x10);
     *(float *)(self + 0x14) = -d->f4;
     func_001F9EC0(self + 0x10, self + 0x10, (char *)d->o + 0xC0);
-    func_001F9BD8(self + 0x10, self + 0x10, m);
+    FastVecAdd(self + 0x10, self + 0x10, m);
     qcopy(self + 0x40, (char *)d->o + 0x40);
     if (d->f4 > D_L00_001617AC_m) {
         self[0x23] = func_001FA898_r((1.0f - (d->f4 - D_L00_001617AC_m) * 10.0f) * 127.0f);
@@ -211,31 +211,31 @@ s32 func_L00_002D99C0(M_2d8510 *m) {
     f32 z, t, f;
     u8 *p;
     o = m->p78;
-    func_001F9BF0(&a, &D_L00_00166EC0_D99C0, &m->v10);
+    FastVecSub(&a, &D_L00_00166EC0_D99C0, &m->v10);
     ret = 0;
     func_L00_001FF4B0(&a, &a, -0.3f);
     func_L00_001FF4B0(&b, &a, 0.1f);
-    func_001F9BD8(&a, &a, &m->v10);
+    FastVecAdd(&a, &a, &m->v10);
     z = a.z;
     for (i = 0; i < 4; i++) {
-        if (func_001F9938(&o->h58[i])) continue;
-        if (o->h58[i] > func_001F9850(0x30)) ret = 1;
+        if (FastDecTimer(&o->h58[i])) continue;
+        if (o->h58[i] > scale_ticks(0x30)) ret = 1;
         f = o->f60[i] += (((f32 *)&D_L00_00161B60))[i];
         if (255.0f <= f) o->f60[i] = f - 255.0f;
         else if (f <= 0.0f) o->f60[i] = f + 255.0f;
-        t = func_001FA888(func_001F9850(0xFF) - o->h58[i]);
-        t = t / (f32)func_001F9850(0xFF);
-        c = func_001FA8A8((*(s32 *)&D_L00_00161B4C), (*(s32 *)&D_L00_00161B50), func_001F9B88(0.5f - t));
+        t = func_001FA888(scale_ticks(0xFF) - o->h58[i]);
+        t = t / (f32)scale_ticks(0xFF);
+        c = FastTweenColor((*(s32 *)&D_L00_00161B4C), (*(s32 *)&D_L00_00161B50), FastAbsF(0.5f - t));
         hi = c >> 24;
-        t = 1.0f - o->h58[i] / func_001FA888(func_001F9850((*(s32 *)&D_L00_00161B28)));
-        al = func_001FA898(func_001FA888(hi) * (1.0f - t)) << 24;
+        t = 1.0f - o->h58[i] / func_001FA888(scale_ticks((*(s32 *)&D_L00_00161B28)));
+        al = truncate_float_to_s32(func_001FA888(hi) * (1.0f - t)) << 24;
         c = al | (c & 0xFFFFFF);
         a.z = z + (((f32 *)&D_L00_00161B80))[i];
-        p = func_L00_00273E08(&a, c, func_001FA898(o->f60[i]), (*(s32 *)&D_L00_00161B58), 0, 2, 1, (((f32 *)&D_L00_00161B70))[i] * t);
+        p = func_L00_00273E08(&a, c, truncate_float_to_s32(o->f60[i]), (*(s32 *)&D_L00_00161B58), 0, 2, 1, (((f32 *)&D_L00_00161B70))[i] * t);
         if (p) p[2] = *D_L00_001B2400.pF8;
-        p = func_L00_00273E08(&a, al | 0xFFFFFF, func_001FA898(o->f60[i]), (*(s32 *)&D_L00_00161B58), (*(s32 *)&D_L00_00161B54), 2, 1, (((f32 *)&D_L00_00161B70))[i] * (t * 0.7f));
+        p = func_L00_00273E08(&a, al | 0xFFFFFF, truncate_float_to_s32(o->f60[i]), (*(s32 *)&D_L00_00161B58), (*(s32 *)&D_L00_00161B54), 2, 1, (((f32 *)&D_L00_00161B70))[i] * (t * 0.7f));
         if (p) p[2] = *D_L00_001B2400.pF8;
-        func_001F9BD8(&a, &a, &b);
+        FastVecAdd(&a, &a, &b);
     }
     return ret;
 }
@@ -345,7 +345,7 @@ int func_L00_002DB508(u8 *p, void *q, void *m_, void *r_, void *buf) {
             if (D_0013E629_2db508 == 0 ? n < 5 : n < 10) {
                 x = *(char **)(r + 0x70);
                 if (((unsigned char *)m)[0x53] != (unsigned char)x[3]) {
-                    func_00213DE0(m, (unsigned char)x[3], 0, func_001F9850(10));
+                    func_00213DE0(m, (unsigned char)x[3], 0, scale_ticks(10));
                 }
                 *(short *)(r + 0x68) = 3;
                 *(int *)(r + 0x6C) = 0;
@@ -460,10 +460,10 @@ void func_L00_002DB810(u8 *p, void *q)
                         r->h6a = -1;
                         qcopy(&v, &m->pos);
                         v.z += 0.4f;
-                        t = func_001FA850(a, func_L00_001FF860(v.x - *(f32 *)(p + 0x10), v.y - *(f32 *)(p + 0x14)));
+                        t = FastDiffRots(a, func_L00_001FF860(v.x - *(f32 *)(p + 0x10), v.y - *(f32 *)(p + 0x14)));
                         if (t * t < thr) {
                             t = func_L00_001FF860(d, v.z - *(f32 *)(p + 0x18));
-                            t = func_001FA850(b, t);
+                            t = FastDiffRots(b, t);
                             if (t * t < thr) {
                                 if (!func_L00_001EFFF0_DB810(buf, &v, 2, m, 0)) goto hit;
                                 if (r->h68 > 0) func_L00_002DB690_DB810(m);
@@ -508,7 +508,448 @@ void func_L00_002DBB10(void) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002DBC40);
+typedef unsigned int Q40 __attribute__((mode(TI)));
+typedef union { struct { float x,y,z,w; } f; Q40 q; } V40 __attribute__((aligned(16)));
+typedef struct { V40 row[3]; } Matrix40;
+typedef struct { V40 row[4]; } Matrix4_40;
+/* Aiming and firing use the same stack workspace, with different matrix slots. */
+typedef union {
+    struct { V40 velocity,end; Matrix40 rotation; Matrix4_40 inverse; V40 point,tmp; } aim;
+    struct { V40 velocity; Matrix40 rotation; Matrix4_40 inverse; V40 launch,point,tmp; } fire;
+} Work40;
+typedef struct M40 M40;
+typedef struct { u8 pad[8]; void (*fire)(M40 *, V40 *, M40 *, float); } Handlers40;
+typedef struct Class40 {
+    u8 pad0[0x2C];
+    Handlers40 * handlers;
+    u8 pad30[0x16];
+    s16 category;
+} Class40;
+typedef struct Suck40 {
+    s32 unused;
+    s32 sound;
+    s32 cooldown;
+    s32 blocked;
+    M40 * target;
+    s32 target_timer;
+    float target_height;
+} Suck40;
+struct M40 {
+    u8 pad0[0xC]; float radius; V40 pos;
+    s8 state; u8 pad21[3]; Class40 *cls; M40 *next;
+    u8 pad2C[8]; u16 flags; u8 pad36[0x1D];
+    u8 anim_state; u8 pad54[0x1C]; u8 anim_flags; u8 pad71[7];
+    Suck40 *data; u8 pad7C[0x18]; s32 collision;
+};
+typedef struct Hero40 {
+    u8 pad0[0x80];
+    V40 pos;
+    u8 pad90[0x70];
+    V40 origin;
+    u8 pad110[0x530];
+    Matrix40 matrix;
+    u8 pad670[0x14];
+    float pitch;
+    float yaw;
+    u8 pad68C[0xA14];
+    s32 fire_mask;
+    u8 pad10A4[0x8];
+    u8 firing;
+    u8 pad10AD[0x3];
+    s32 cooldown;
+    s32 weapon_mode;
+    u8 pad10B8[0x1F8];
+    s32 aim_locked;
+    u8 pad12B4[0x4];
+    M40 * aim_target;
+    float aim_yaw;
+    u8 pad12C0[0xD90];
+    M40 * stored[10];
+    s32 count;
+    s32 sucking;
+    M40 * moby;
+    s32 camera_mode;
+    u8 pad2088[0x4];
+    s32 move_mode;
+    u8 pad2090[0x17];
+    u8 locked;
+    u8 pad20A8[0x4];
+    u8 disabled;
+} Hero40;
+typedef struct Input40 {
+    u8 pad0[0x1A0];
+    s32 held;
+    u8 pad1A4[0x4];
+    s32 used;
+} Input40;
+typedef struct Sound40 {
+    u8 pad0[0x4];
+    u8 active;
+    u8 pad5[0x13];
+    M40 * owner;
+    u8 pad1C[0x54];
+} Sound40;
+typedef struct Stats40 {
+    u8 pad0[0x48];
+    u16 uses;
+    u16 longest;
+    s32 levels;
+} Stats40;
+typedef struct Hit40 {
+    u8 pad0[0x18];
+    M40 * moby;
+    u8 pad1C[0x4];
+    V40 pos;
+} Hit40;
+extern Hero40 hero40 __asm__("D_0013F450");
+typedef struct { u8 pad[9]; u8 gold; } Order40;
+extern Order40 order40 __asm__("D_0013E620");
+extern Input40 input40 __asm__("D_0013CA40");
+extern u8 D_0014171B[];
+extern M40 *moby_head40 __asm__("D_L00_001600A4") MACRO_ADDR;
+extern s32 D_0015EE84 MACRO_ADDR;
+extern s32 D_0015EFA4 MACRO_ADDR;
+extern float D_0015EE60 MACRO_ADDR;
+extern float frame_scale40 SDATA(D_0015EE60);
+extern char fire_tuning40[1] SDATA(D_L00_00161C00);
+/* Retail registers the copy at 0x238128, one of several identical delete callbacks. */
+extern void delete_callback40(void) __asm__("func_L00_00238128");
+extern void func_L00_00238148(void);
+extern void func_L00_002381D0(void);
+extern int func_001FFB38(int,int,int,int,int,int,int);
+extern void func_L00_002E0490(int);
+extern void func_L00_002DBB10(void);
+extern s32 func_001F9850(s32);
+extern void func_00213DE0(void *,int,int,int);
+extern void reset_suck40(M40 *) __asm__("func_L00_002DF150");
+extern void func_L00_0020ED30(void);
+extern int func_L00_002DB428(void);
+extern void func_L00_0020EB60(void);
+extern int func_0022ED80(int,int,int);
+extern void func_L00_0028EBF0(int);
+extern void func_L00_002E04F8(int);
+extern void func_L00_002DB810(u8 *,void *);
+extern void func_L00_00222B80(int,int);
+extern void func_001FA480(void *,void *);
+extern void func_001FA4A0(void *,void *);
+extern void func_001F9EE8(void *,void *,void *);
+extern void func_001F9BD8(void *,void *,void *);
+extern int func_L00_001EFFF0(void *,void *,int,int,int);
+extern void reticle40(int,int,float,float,int,int,int,float,int) __asm__("func_L00_001EE2E0");
+extern float func_0020D830(M40 *);
+extern void func_001F9EC0(void *,void *,void *);
+extern void func_L00_00250800(void *,int,void *);
+extern float func_L00_001FF860(float,float);
+extern float func_001F9CE8(void *);
+typedef struct { u8 pad[0x10]; float height; } AimHeight40;
+extern AimHeight40 *get_aim40(void *) __asm__("func_L00_0025D390");
+extern float func_001F9D48(void *,void *);
+extern float func_001FA850(float,float);
+extern float func_001F9D10(void *,void *);
+extern float func_001F9B88(float);
+extern void func_00215C00(void *,float,float,float);
+extern float func_001F9FC0(float);
+extern float func_001F9B50(float);
+extern void func_L00_002DB480(char *,char *,void *);
+
+/* Update the Suck Cannon's suction, aiming and firing state, stored mobys,
+   target selection, usage statistics and cancellation input. */
+void func_L00_002DBC40(M40 *self) {
+    Work40 work;
+    Suck40 *data;
+    Stats40 *stats;
+    int special, i, sound, next_state;
+    M40 *stored;
+
+    queue_animation_update(4, 0x753F, (int)delete_callback40, (int)func_L00_00238148,
+                 (int)func_L00_002381D0, (int)&hero40.count, 5);
+    data = self->data;
+    special = hero40.weapon_mode == 3;
+    if ((u8)self->state != 3 && (u8)self->state != 0) func_L00_002E0490((int)self);
+    func_L00_002DBB10();
+    switch ((u8)self->state) {
+    case 0:
+        for (i=0; i<(order40.gold == 0 ? 5 : 10); ++i) {
+            if (hero40.stored[i]) {
+                hero40.stored[i]->collision = 0;
+                hero40.stored[i]->flags &= ~0x1000;
+            }
+        }
+        hero40.firing = 0;
+        if (hero40.count > 0) {
+            data->blocked = 1;
+            func_00213DE0(self, 6, 0, scale_ticks(4));
+            self->state = 4;
+        } else {
+            data->cooldown = 0;
+            self->state = 1;
+        }
+        reset_suck40(self);
+        break;
+    case 1:
+        if (self->anim_flags & 2) func_00213DE0(self,1,0,scale_ticks(0));
+        func_001F9908_r(&data->cooldown);
+        if (data->cooldown == 0) func_L00_0020ED30();
+        if (hero40.count > 0) {
+            func_00213DE0(self,6,0,scale_ticks(4));
+            self->state = 4;
+            break;
+        }
+        if ((input40.held & hero40.fire_mask) && data->cooldown==0 && hero40.locked==0 &&
+            hero40.disabled==0 && scale_ticks(15) < hero40.cooldown && func_L00_002DB428()==0) {
+            func_L00_0020EB60();
+            data->sound = func_0022ED80(2,4,(int)self);
+            data->cooldown = scale_ticks(10);
+            stats = (Stats40 *)(D_0014171B + 0x65);
+            if (stats->uses < 65535) stats->uses++;
+            if (scale_ticks(D_0015EFA4)/600 > stats->longest)
+                stats->longest = scale_ticks(D_0015EFA4)/600;
+            stats->levels = (stats->levels | (1 << D_0015EE84)) | 0x80000000;
+            self->state = 2;
+        }
+        break;
+    case 2:
+        if (self->anim_flags & 2) func_00213DE0(self,3,0,scale_ticks(5));
+        if (func_L00_002DB428()!=0 || hero40.disabled || hero40.locked) {
+            sound = data->sound;
+            if (sound!=-1) {
+                Sound40 *s=(Sound40 *)(D_0013E633+0x1D)+sound;
+                if (s[1].owner==self && s[1].active) func_L00_0028EBF0(sound);
+            }
+            data->sound=-1;
+            func_L00_0020ED30();
+            hero40.firing=0;
+            if (hero40.count>0) {
+                func_00213DE0(self,6,0,scale_ticks(4));
+                next_state=4;
+                goto changed;
+            } else {
+                data->cooldown=0;
+                func_00213DE0(self,1,0,scale_ticks(4));
+                next_state=1;
+                goto changed;
+            }
+        } else if (func_001F9908_r(&data->cooldown)) {
+            data->cooldown=scale_ticks(20);
+            next_state=3;
+            goto changed;
+        }
+        break;
+    case 3:
+        if (self->anim_state!=3 && (self->anim_state!=0 || (self->anim_flags&2)))
+            func_00213DE0(self,3,0,scale_ticks(5));
+        func_001F9908_r(&data->cooldown);
+        if (!(hero40.sucking || (hero40.count < (order40.gold==0?5:10) &&
+            func_L00_002DB428()==0 && ((input40.held&hero40.fire_mask) || data->cooldown) &&
+            !hero40.disabled && !hero40.locked))) {
+            func_L00_0020ED30();
+            sound=data->sound;
+            if(sound!=-1) {
+                Sound40 *s=(Sound40 *)(D_0013E633+0x1D)+sound;
+                if(s[1].owner==self && s[1].active) func_L00_0028EBF0(sound);
+            }
+            data->sound=-1;
+            func_L00_002E04F8((int)self);
+            hero40.firing=0;
+            if(hero40.count>0) {
+                func_00213DE0(self,6,0,scale_ticks(4));
+                data->cooldown=0;
+                data->blocked=1;
+                self->state=4;
+                goto done;
+            } else {
+                data->cooldown=0;
+                func_00213DE0(self,1,0,scale_ticks(4));
+                self->state=1;
+                goto done;
+            }
+        } else {
+            if (self->anim_flags&2) func_00213DE0(self,3,0,scale_ticks(2));
+            func_L00_002DB810((u8 *)self,data);
+        }
+        break;
+    case 4:
+        func_001F9908_r(&data->cooldown);
+        if (!data->cooldown) func_L00_0020ED30();
+        if (self->anim_flags&2) {
+            func_00213DE0(self,6,0,scale_ticks(0));
+            func_L00_0020ED30();
+        }
+        if (!(input40.held&hero40.fire_mask)) data->blocked=0;
+        if (func_001F9908_r(&data->target_timer) ||
+            (data->target && ((u8)data->target->state&0x80))) data->target=0;
+        if (hero40.camera_mode==1) func_L00_00222B80(30,1);
+        if (hero40.camera_mode==30 && (hero40.moby->flags&1) && !hero40.disabled) {
+            char *camera=D_L00_00166D80;
+            V40 *eye;
+            Hit40 *hit;
+            work.aim.velocity.q=0;
+            work.aim.velocity.f.z=50.0f;
+            func_001FA480(&work.aim.rotation,camera);
+            eye=(V40 *)(camera+0x140);
+            func_001FA4A0(&work.aim.inverse,&work.aim.rotation);
+            func_001F9EE8(&work.aim.velocity,&work.aim.velocity,&work.aim.inverse);
+            FastVecAdd(&work.aim.end,eye,&work.aim.velocity);
+            if(func_L00_001EFFF0(eye,&work.aim.end,0,(int)self,0)) {
+                hit=(Hit40 *)D_L00_00173F40;
+                if(hit->moby && (hit->moby->flags&0x1000)) {
+                    data->target=hit->moby;
+                    data->target_timer=scale_ticks(20);
+                    data->target_height=hit->pos.f.z-data->target->pos.f.z;
+                }
+            }
+            if(data->target && !data->cooldown) {
+                qcopy(&work.aim.point,&data->target->pos);
+                work.aim.point.f.z+=data->target_height;
+                reticle40((int)self,0xFF0FFF0F,1.0f,0.0f,0,0x21,-1,90.0f,4);
+            } else {
+                reticle40((int)self,0xFF0F0FFF,1.0f,0.0f,0,0x21,-1,90.0f,4);
+            }
+        }
+        if(hero40.aim_locked) {
+            data->target=hero40.aim_target;
+            data->target_timer=scale_ticks(20);
+            data->target_height=D_L00_00173F68-data->target->pos.f.z;
+        }
+        if(!data->blocked && hero40.count>0 && !data->cooldown &&
+            (input40.held&hero40.fire_mask) && hero40.move_mode!=7 && hero40.move_mode!=3 &&
+            hero40.move_mode!=18 && hero40.move_mode!=17 && !hero40.disabled && !hero40.locked &&
+            scale_ticks(22)<hero40.cooldown) {
+            func_L00_0020EB60();
+            func_00213DE0(self,5,0,scale_ticks(2));
+            hero40.firing=2;
+            data->cooldown=scale_ticks(25);
+            stats=(Stats40 *)(D_0014171B+0x65);
+            if(stats->uses<65535) stats->uses++;
+            if(scale_ticks(D_0015EFA4)/600>stats->longest)
+                stats->longest=scale_ticks(D_0015EFA4)/600;
+            stats->levels = (stats->levels | (1 << D_0015EE84)) | 0x80000000;
+            self->state=5;
+        }
+        break;
+    case 6:
+        break;
+    case 5:
+        stored=0;
+        if (!(0.0f <= func_0020D830(self))) break;
+        for(i=0; i<(order40.gold==0?5:10);i++) {
+            if(hero40.stored[i]) {
+                stored=hero40.stored[i];
+                hero40.stored[i]=0;
+                break;
+            }
+        }
+        if(stored) {
+            M40 *best,*m;
+            float yaw,pitch,limit;
+            work.fire.velocity.q=0;
+            func_001FA480(&work.fire.rotation,D_L00_00166D80);
+            func_001FA4A0(&work.fire.inverse,&work.fire.rotation);
+            if(hero40.camera_mode==30 && (hero40.moby->flags&1)) {
+                work.fire.tmp.q=0;
+                work.fire.tmp.f.z=D_0015EE60*0.4462f;
+                work.fire.point=work.fire.tmp;
+                func_001F9EE8(&work.fire.velocity,&work.fire.point,&work.fire.inverse);
+                work.fire.tmp.q=0;
+                work.fire.tmp.f.x=0.15f;
+                work.fire.tmp.f.y=0.3f;
+                work.fire.tmp.f.z=1.0f;
+                func_001F9EE8(&work.fire.launch,&work.fire.tmp,&work.fire.inverse);
+                FastVecAdd(&work.fire.launch,&work.fire.launch,D_L00_00166D80+0x140);
+            } else {
+                work.fire.tmp.q=0;
+                work.fire.tmp.f.x=frame_scale40*0.4462f;
+                work.fire.point=work.fire.tmp;
+                func_001F9EC0(&work.fire.velocity,&work.fire.point,&hero40.matrix);
+                func_L00_00250800(self,0,&work.fire.launch);
+            }
+            qcopy(&stored->pos,&work.fire.launch);
+            func_0020EEE8(stored);
+            FastVecAdd(&work.fire.velocity,&work.fire.velocity,&hero40.origin);
+            if(hero40.camera_mode!=30 || !(hero40.moby->flags&1)) {
+                limit=10000.0f;
+                best=0;
+                if(hero40.aim_locked) yaw=hero40.aim_yaw;
+                else yaw=func_L00_001FF860(work.fire.velocity.f.x,work.fire.velocity.f.y);
+                pitch=-func_L00_001FF860(func_001F9CE8(&work.fire.velocity),work.fire.velocity.f.z);
+                m=moby_head40;
+                while(m) {
+                    if(m->state>=0 && m!=stored) {
+                        float tyaw,tpitch,dyaw,distance,offangle;
+                        AimHeight40 *r;
+                        qcopy(&work.fire.point,&m->pos);
+                        r=get_aim40(m);
+                        if(r) work.fire.point.f.z+=r->height;
+                        else work.fire.point.f.z+=0.5f;
+                        if((m->flags&0x1000) && m && m->cls && m->cls->category==5) {
+                            tyaw=func_L00_001FF860(work.fire.point.f.x-work.fire.launch.f.x,work.fire.point.f.y-work.fire.launch.f.y);
+                            tpitch=func_L00_001FF860(func_001F9D48(&work.fire.launch,&work.fire.point),work.fire.point.f.z-work.fire.launch.f.z);
+                            dyaw=FastDiffRots(yaw,tyaw);
+                            distance=FastVecDist(&work.fire.launch,&work.fire.point);
+                            if(distance<2.5f && FastDiffRots(hero40.yaw,
+                                func_L00_001FF860(m->pos.f.x-hero40.pos.f.x,m->pos.f.y-hero40.pos.f.y))<1.0471976f &&
+                                FastAbsF(tpitch)<0.7853982f) {
+                                best=m;
+                                break;
+                            }
+                            if(!(limit<distance)) {
+                                float delta;
+                                func_00215C00(&work.fire.tmp,distance,yaw,pitch);
+                                FastVecAdd(&work.fire.tmp,&work.fire.tmp,&work.fire.launch);
+                                delta=FastVecDist(&work.fire.tmp,&work.fire.point);
+                                offangle=1.5707964f-FastArcSin(1.0f-delta*delta/((distance+distance)*distance));
+                                if(0.4537856f<offangle) {
+                                    float radius=m->radius*0.0009765625f;
+                                    float adjustment=1.5707964f-FastArcSin(distance/func_001F9B50(distance*distance+radius*radius));
+                                    if(radius<distance) offangle-=adjustment;
+                                }
+                                if(offangle<0.4537856f) {
+                                    if(func_L00_001EFFF0(D_L00_00166EC0,&work.fire.point,6,(int)self,0)) break;
+                                    limit=distance;
+                                    pitch=-tpitch;
+                                    if(dyaw<0.17453292f) {
+                                        yaw=tyaw;
+                                        best=m;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    m=m->next;
+                }
+                if(best) data->target=best;
+            }
+            func_L00_002DB480((char *)self,(char *)stored,fire_tuning40);
+            if(stored->cls->handlers->fire) stored->cls->handlers->fire(stored,&work.fire.velocity,data->target,data->target_height);
+            hero40.count--;
+            if(hero40.count>0) {
+                hero40.firing=0;
+                self->state=4;
+                goto done;
+            } else {
+                data->cooldown=scale_ticks(20);
+                next_state=1;
+                hero40.firing=0;
+                self->state=next_state;
+                goto done;
+            }
+        }
+        break;
+    }
+    goto done;
+changed:
+    self->state=next_state;
+done:
+    if(special) {
+        sound=data->sound;
+        if(sound!=-1) {
+            Sound40 *s=(Sound40 *)(D_0013E633+0x1D)+sound;
+            if(s[1].owner==self && s[1].active) func_L00_0028EBF0(sound);
+        }
+        data->sound=-1;
+        if(input40.held&5) input40.used |=5;
+    }
+}
 /* From Lombyte (MIT), FUN_L00_002db890 (PR #66), adapted to PAL. */
 typedef int (*Fn2DCD40)(void *);
 typedef struct { char pad[0x10]; Fn2DCD40 f10; } Cb2DCD40;
@@ -549,7 +990,7 @@ int func_L00_002DCFD0(unsigned char *m, void *v) {
         *(short *)(o + 0x68) = 4;
         if (m[0x53] != *(unsigned char *)(*(unsigned char **)(o + 0x70) + 4)) {
             unsigned char c = *(unsigned char *)(*(unsigned char **)(o + 0x70) + 4);
-            func_00213DE0(m, c, 0, func_001F9850(10));
+            func_00213DE0(m, c, 0, scale_ticks(10));
         }
         *(int *)(m + 0x2C) = 0;
         return 1;
@@ -633,7 +1074,7 @@ int func_L00_002DD2D0(char *m) {
     case 2: {
         if (*(unsigned char *)(m + 0x53) != *(unsigned char *)(*(char **)(s + 0x70) + 7)) {
             unsigned char c = *(unsigned char *)(*(char **)(s + 0x70) + 7);
-            func_00213DE0(m, c, 0, func_001F9850(10));
+            func_00213DE0(m, c, 0, scale_ticks(10));
         }
         *(short *)(s + 0x68) = 7;
         return 0;
@@ -670,7 +1111,7 @@ void func_L00_002DDDE8(char *p, char *q, int flag) {
     *(float *)(p + 0x2C) = *(float *)(*(char **)(p + 0x24) + 0x24);
     *(short *)(q + 0x68) = 0;
     fn = *(void (**)(char *))(*(char **)(*(char **)(p + 0x24) + 0x2C) + 0x14);
-    if (fn) fn(p); else func_0020D678(p);
+    if (fn) fn(p); else DeleteMoby(p);
 }
 INCLUDE_ASM("asm/overlays", func_L00_002DDEA0);
 INCLUDE_ASM("asm/overlays", func_L00_002DED98);
@@ -888,15 +1329,15 @@ extern void func_L00_00251E30(void *);
 
 /* Creates a moby of type 0x4A8 at pos with a random rotation, and fills its data block from the arguments. */
 char *func_L00_002E0CB8(void *owner, void *pos, void *vel, int life, unsigned char r, unsigned char g, unsigned char b, unsigned char a, float scale) {
-    char *m = func_0020D348(0x4A8);
+    char *m = CreateMoby(0x4A8);
     if (m != 0) {
         char *d = *(char **)(m + 0x78);
         V_2adbb0 tmp;
         V_2adbb0 rot;
         rot.q = 0;
-        rot.f[0] = func_002140F8(-3.1415927f, 3.1415927f);
-        rot.f[1] = func_002140F8(-3.1415927f, 3.1415927f);
-        rot.f[2] = func_002140F8(-3.1415927f, 3.1415927f);
+        rot.f[0] = random_float_between(-3.1415927f, 3.1415927f);
+        rot.f[1] = random_float_between(-3.1415927f, 3.1415927f);
+        rot.f[2] = random_float_between(-3.1415927f, 3.1415927f);
         tmp = rot;
         m[0x20] = 0;
         m[0x23] = a;
