@@ -3,7 +3,6 @@
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
- *   Stop reason: three or more variants in a row compile to the same bytes
  *   (p3-p5, then p6/p8). That is a scheduler tie at the head, which wording did
  *   not move. Known wall in LEVERS terms: none of the listed walls. The
  *   scheduler and register choice are the open question. A later idea would be
@@ -11,6 +10,7 @@
  *   first use of g, but that was not tried.
  *   Not run: `-mno-split-addresses` (WORKER step 6). The difference is the
  *   schedule, not `%hi` handling, so it doesn't apply here.
+ *   p0: EXACT. Lombyte matched its US counterpart FUN_L01_00316030 (PAL address less 0x13D8); ported with typed st
  */
 /* ExitCamera_3: when the camera record matches, sets the moby's state short to 3 or 5.
  * The early exits and the store-3 path share one trailing return (retail's func_001E9768 piece). */
