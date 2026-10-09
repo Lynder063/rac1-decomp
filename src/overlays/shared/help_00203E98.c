@@ -2222,22 +2222,22 @@ void func_L00_0020A320(s32 puffs, s32 debris, s32 flash) {
         func_L00_002D9340(&v, 2.25f);
     }
     for (j = 0; j < puffs; j++) {
-        v.f[0] = D_0013F450_0A320.motion.pos.f[0] + func_002140F8(-0.3f, 0.3f);
-        v.f[1] = D_0013F450_0A320.motion.pos.f[1] + func_002140F8(-0.3f, 0.3f);
+        v.f[0] = D_0013F450_0A320.motion.pos.f[0] + random_float_between(-0.3f, 0.3f);
+        v.f[1] = D_0013F450_0A320.motion.pos.f[1] + random_float_between(-0.3f, 0.3f);
         v.f[2] = D_0013F450_0A320.height_threshold;
-        func_L00_00272488_0A320(&v, &D_0013F450_0A320.height_threshold, -1, func_002140F8(0.3f, 0.6f), 5250.0f);
+        func_L00_00272488_0A320(&v, &D_0013F450_0A320.height_threshold, -1, random_float_between(0.3f, 0.6f), 5250.0f);
     }
     for (i = 0; i < debris; i++) {
-        ang = func_00214158();
-        speed = func_002140F8(D_0015EE6C * 0.0f, D_0015EE6C * 3.0f);
-        v.f[0] = func_001F9F90(ang) * speed;
-        v.f[1] = func_001F9FA8(ang) * speed;
-        v.f[2] = func_002140F8(D_0015EE6C * 3.0f, D_0015EE6C * 8.0f);
+        ang = random_angle_radians();
+        speed = random_float_between(D_0015EE6C * 0.0f, D_0015EE6C * 3.0f);
+        v.f[0] = FastCos(ang) * speed;
+        v.f[1] = FastSin(ang) * speed;
+        v.f[2] = random_float_between(D_0015EE6C * 3.0f, D_0015EE6C * 8.0f);
         start.f[0] = D_0013F450_0A320.motion.pos.f[0] + v.f[0] * 8.0f;
         start.f[1] = D_0013F450_0A320.motion.pos.f[1] + v.f[0] * 8.0f;
-        start.f[2] = D_0013F450_0A320.height_threshold - func_002140F8(0.0f, 0.2f);
-        color = func_002140B0(2);
-        life = func_L00_00258BC8(0x5A, 0x78);
+        start.f[2] = D_0013F450_0A320.height_threshold - random_float_between(0.0f, 0.2f);
+        color = random_integer_below(2);
+        life = rand_range(0x5A, 0x78);
         func_L00_002703E8_0A320(&start, &v, color, life);
     }
 }

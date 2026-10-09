@@ -1149,12 +1149,12 @@ struct Moby *func_L00_00264140(void *ignore, Vec4_64140 *pos_in, Vec4_64140 *dir
             continue;
         t_yaw = func_L00_001FF860(target.f[0] - pp->f[0], target.f[1] - pp->f[1]);
         t_pitch = func_L00_001FF860(func_001F9D48(pp, &target), target.f[2] - pp->f[2]);
-        dist = func_001F9D10(pp, &target);
+        dist = FastVecDist(pp, &target);
         if (dist < 7.5f &&
-            func_001FA850(D_0013F450.moby->rot.z,
+            FastDiffRots(D_0013F450.moby->rot.z,
                          func_L00_001FF860(m->pos.x - D_0013F450.motion.pos.f[0],
                                       m->pos.y - D_0013F450.motion.pos.f[1])) < 1.0471976f &&
-            func_001F9B88(t_pitch) < 1.0471976f) {
+            FastAbsF(t_pitch) < 1.0471976f) {
             *pitch = -t_pitch;
             *yaw = t_yaw;
             return m;
@@ -1162,12 +1162,12 @@ struct Moby *func_L00_00264140(void *ignore, Vec4_64140 *pos_in, Vec4_64140 *dir
         if (best_dist < dist)
             continue;
         func_00215C00_64140(&probe, dist, *yaw, *pitch + D_0013F450.unk2E4.f * 0.5f);
-        func_001F9BD8(&probe, &probe, pp);
-        ang = func_001F9FC0(func_001F9D10(&probe, &target) / (dist + dist));
+        FastVecAdd(&probe, &probe, pp);
+        ang = FastArcSin(FastVecDist(&probe, &target) / (dist + dist));
         ang = ang + ang;
         if (max_angle < ang && b) {
             f32 radius = func_001FA888(b->size << 3) * 0.125f;
-            f32 shrink = func_001F9FC0(radius / dist);
+            f32 shrink = FastArcSin(radius / dist);
             if (radius < dist)
                 ang -= shrink;
         }

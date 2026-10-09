@@ -2111,23 +2111,23 @@ void func_L00_002B1688(M910 *m) {
     target=d->target;
     if(D_L00_0015F6B4>0.9f || D_L00_0015F6B8>0.9f) reduced=1;
     d->speed=d->speed+(d->desired_speed-d->speed)/10.0f*D_0015EE64;
-    func_001F9938(&d->turn_time);
+    FastDecTimer(&d->turn_time);
     {
         float turn=func_001FA888(d->turn_time);
         turn=turn/func_001FA888(d->turn_period);
-        func_001F9BD8(phase.collision.dir,&hero_motion1688.current,&hero_motion1688.previous);
+        FastVecAdd(phase.collision.dir,&hero_motion1688.current,&hero_motion1688.previous);
         hero_velocity=phase.vectors.direction;
-        func_001F9C30(&hero_velocity,&hero_velocity,turn);
+        FastVecScale(&hero_velocity,&hero_velocity,turn);
     }
     size=func_001FA888(D_0013E620.bB)+1.0f;
-    if(target && d->life<func_001F9850(300)-func_001F9850(5) && (signed char)target->state>=0) {
+    if(target && d->life<scale_ticks(300)-scale_ticks(5) && (signed char)target->state>=0) {
         float time=0.0f;
         qcopy(&phase.vectors.target,&target->pos);
         phase.vectors.target.f[2]+=d->target_height;
-        func_001F9BF0(phase.collision.dir,&phase.vectors.target,(&m->pos));
+        FastVecSub(phase.collision.dir,&phase.vectors.target,(&m->pos));
         if(d->track_velocity) {
             float b,a,root,t1,t2,denominator,negative_b;
-            func_001F9BF0(&phase.vectors.relative,&phase.vectors.target,&d->previous_target);
+            FastVecSub(&phase.vectors.relative,&phase.vectors.target,&d->previous_target);
             cross1688(&predicted,&phase.vectors.relative,&hero_velocity);
             qcopy(&d->previous_target,&phase.vectors.target);
             a=dot1688(&phase.vectors.relative);
@@ -2149,9 +2149,9 @@ void func_L00_002B1688(M910 *m) {
                 }
             }
         }
-        if(time>0.0f && time<(float)func_001F9850(300)) {
-                func_001F9C30(&predicted,&phase.vectors.relative,time);
-                func_001F9BD8(&predicted,&predicted,phase.collision.dir);
+        if(time>0.0f && time<(float)scale_ticks(300)) {
+                FastVecScale(&predicted,&phase.vectors.relative,time);
+                FastVecAdd(&predicted,&predicted,phase.collision.dir);
                 yaw=func_L00_001FF860(predicted.f[0],predicted.f[1]);
                 pitch=-func_L00_001FF860(horizontal1688(&predicted),predicted.f[2]);
         } else {
@@ -2159,7 +2159,7 @@ void func_L00_002B1688(M910 *m) {
             pitch=-func_L00_001FF860(horizontal1688(phase.collision.dir),phase.collision.dir[2]);
         }
     } else {
-        if(d->life<func_001F9850(300)-func_001F9850(5)) {
+        if(d->life<scale_ticks(300)-scale_ticks(5)) {
             yaw=d->yaw;
             pitch=d->pitch;
         } else {
@@ -2176,37 +2176,37 @@ void func_L00_002B1688(M910 *m) {
     }
     func_00215C00(&motion,d->speed,m->rz,-m->ry);
     func_L00_001FF4B0(&impact1688.normal,&motion,1.0f);
-    func_001F9C30(&impact1688.normal,&impact1688.normal,-1.0f);
+    FastVecScale(&impact1688.normal,&impact1688.normal,-1.0f);
     if(!reduced || !(D_L00_0015F6B0&1)) {
         unsigned char *p;
         phase.vectors.relative.q=0;
-        phase.vectors.relative.f[0]=func_002140F8(-1.0f,1.0f);
-        phase.vectors.relative.f[1]=func_002140F8(-1.0f,1.0f);
-        phase.vectors.relative.f[2]=func_002140F8(-1.0f,1.0f);
+        phase.vectors.relative.f[0]=random_float_between(-1.0f,1.0f);
+        phase.vectors.relative.f[1]=random_float_between(-1.0f,1.0f);
+        phase.vectors.relative.f[2]=random_float_between(-1.0f,1.0f);
         phase.vectors.direction=phase.vectors.relative;
-        func_L00_001FF4B0(phase.collision.dir,phase.collision.dir,func_002140F8(0.1f,0.2f)*D_0015EE6C);
-        func_L00_001FF4B0(&smoke_position,&motion,-func_002140F8(D_0015EE6C*0.1f,D_0015EE6C));
-        func_001F9BD8(phase.collision.dir,phase.collision.dir,&smoke_position);
-        func_L00_001FF4B0(&smoke_position,&motion,func_002140F8(0.0f,1.0f)*d->speed);
-        func_001F9BD8(&smoke_position,&smoke_position,(&m->pos));
-        p=smoke1688(&smoke_position,phase.collision.dir,func_001F9850(40),50,0x505050,3,40000.0f,1000.0f,1.0f,-0.0002f,0.0f);
+        func_L00_001FF4B0(phase.collision.dir,phase.collision.dir,random_float_between(0.1f,0.2f)*D_0015EE6C);
+        func_L00_001FF4B0(&smoke_position,&motion,-random_float_between(D_0015EE6C*0.1f,D_0015EE6C));
+        FastVecAdd(phase.collision.dir,phase.collision.dir,&smoke_position);
+        func_L00_001FF4B0(&smoke_position,&motion,random_float_between(0.0f,1.0f)*d->speed);
+        FastVecAdd(&smoke_position,&smoke_position,(&m->pos));
+        p=smoke1688(&smoke_position,phase.collision.dir,scale_ticks(40),50,0x505050,3,40000.0f,1000.0f,1.0f,-0.0002f,0.0f);
         if(p) { unsigned char texture=*D_L00_001B245C; p[3]=0x44; p[2]=texture; }
-        smoke1688((&m->pos),phase.collision.dir,func_001F9850(7),127,0xB0B0B0,3,40000.0f,1000.0f,1.0f,-0.0004f,0.0f);
+        smoke1688((&m->pos),phase.collision.dir,scale_ticks(7),127,0xB0B0B0,3,40000.0f,1000.0f,1.0f,-0.0004f,0.0f);
         phase.vectors.relative.q=0;
         phase.vectors.relative.f[2]=0.02f;
         rotate1688(&phase.vectors.relative,&phase.vectors.relative,m->mtx);
         axis_rotate1688(&phase.vectors.relative,&phase.vectors.relative,m->mtx,random_angle1688());
         {
             int color=func_L00_0025D140(0x4F007FFF,D_0013E620.bB);
-            spark1688(&smoke_position,&phase.vectors.relative,color,0x1FFFFFFF,func_001F9850(15),1,25000.0f);
+            spark1688(&smoke_position,&phase.vectors.relative,color,0x1FFFFFFF,scale_ticks(15),1,25000.0f);
         }
     }
     qcopy(&previous,(&m->pos));
     combine_velocity1688(phase.collision.dir,&motion,&hero_velocity);
-    func_001F9BD8((&m->pos),(&m->pos),&motion);
+    FastVecAdd((&m->pos),(&m->pos),&motion);
     if(m->pos.f[0]<0.0f || m->pos.f[1]<0.0f || m->pos.f[2]<0.0f) {
         func_L00_00260878(m,D_L00_001B0AF0);
-        func_0020D678(m);
+        DeleteMoby(m);
         return;
     }
     phase.collision.moby=m;
@@ -2227,7 +2227,7 @@ void func_L00_002B1688(M910 *m) {
             if(hit->moby!=(M910 *)D_0013F450.cam && hit->moby!=d->owner) {
                 m->bBC=2;
                 qcopy((&m->pos),&hit->position);
-                func_001F9BF0(&surface_motion,&hit->velocity_end,&hit->velocity_start);
+                FastVecSub(&surface_motion,&hit->velocity_end,&hit->velocity_start);
                 hit_normal=&hit->normal;
                 skip=m;
                 func_L00_001FF4B0(&surface_motion,&surface_motion,1.0f);
@@ -2238,7 +2238,7 @@ void func_L00_002B1688(M910 *m) {
         } else if(hit->kind>0) {
             m->bBC=1;
             qcopy((&m->pos),&hit->position);
-            func_001F9BF0(&surface_motion,&hit->velocity_end,&hit->velocity_start);
+            FastVecSub(&surface_motion,&hit->velocity_end,&hit->velocity_start);
             hit_normal=&hit->normal;
             func_L00_001FF4B0(&surface_motion,&surface_motion,1.0f);
             reflect1688(&blast_velocity,&motion,hit_normal);
@@ -2252,18 +2252,18 @@ void func_L00_002B1688(M910 *m) {
         rotate1688(&normal,&normal,m->mtx);
         if(!D_0013E620.bB) {
             func_L00_00260878(m,D_L00_001B0AF0);
-            func_0020D678(m);
+            DeleteMoby(m);
             return;
         }
         m->bBC=1;
-        func_001F9BD8(&blast_velocity,&blast_velocity,&motion);
+        FastVecAdd(&blast_velocity,&blast_velocity,&motion);
     }
     if(m->bBC) {
         float distance, near_adjust;
         int particles;
         int particle_reduction;
         int i,j;
-        int hit=func_L00_001F2BE8((&m->pos),16,m,0,(size+size));
+        int hit=coll_sphere_mobys((&m->pos),16,m,0,(size+size));
         particles=10;
         predicted.q=m->pos.q;
         func_L00_0025BA50(m,&predicted,D_L00_00178000,hit,(int)skip,0x830000,3,1,3.0f,1.0f,1.0f);
@@ -2284,70 +2284,70 @@ void func_L00_002B1688(M910 *m) {
         basis[1][3]=0.0f;
         basis[2][3]=0.0f;
         basis[3][3]=0.0f;
-        func_001FA540(basis_squared,basis,basis);
+        sce_vu0_mul_matrix(basis_squared,basis,basis);
         if(reduced) { particle_reduction=1; particles/=3; }
         { int remaining;
         for(remaining=0;remaining<particles;remaining++) {
             if(m->bBC==1) {
                 float a=random_angle1688();
-                matrix_scale1688(rotation_part,basis_squared,1.0f-func_001F9F90(a));
-                matrix_scale1688(diagonal,basis,func_001F9FA8(a));
+                matrix_scale1688(rotation_part,basis_squared,1.0f-FastCos(a));
+                matrix_scale1688(diagonal,basis,FastSin(a));
                 matrix_add1688(diagonal,diagonal,rotation_part);
                 identity1688(rotation_part);
                 matrix_add1688(rotation,diagonal,rotation_part);
                 transform1688(&predicted,&surface_motion,rotation);
-                func_L00_001FF4B0(&predicted,&predicted,func_002140F8(8.5f,16.5f)*D_0015EE6C*size);
+                func_L00_001FF4B0(&predicted,&predicted,random_float_between(8.5f,16.5f)*D_0015EE6C*size);
             } else {
-                float speed=func_002140F8(8.5f,16.5f)*D_0015EE6C*size;
+                float speed=random_float_between(8.5f,16.5f)*D_0015EE6C*size;
                 float a=random_angle1688();
                 func_00215C00(&predicted,speed,a,random_angle1688());
             }
             predicted.f[2]+=D_0015EE6C*5.0f;
-            func_001F9BD8(&predicted,&predicted,&blast_velocity);
+            FastVecAdd(&predicted,&predicted,&blast_velocity);
             {
                 int color=func_L00_0025D140(0x4F007FFF,D_0013E620.bB);
                 int fade=func_L00_0025D140(0x1F00007F,D_0013E620.bB);
                 int life;
                 float particle_scale;
-                if(func_001F9CB8(&predicted)>1.0f) func_L00_001FF4B0(&predicted,&predicted,D_0015EE6C*8.0f);
+                if(FastVecLength(&predicted)>1.0f) func_L00_001FF4B0(&predicted,&predicted,D_0015EE6C*8.0f);
                 particle_scale=size*40000.0f;
-                life=func_L00_00258BC8(func_001F9850(60),func_001F9850(120))-particle_reduction*35;
+                life=rand_range(scale_ticks(60),scale_ticks(120))-particle_reduction*35;
                 func_L00_0026CA10((&m->pos),&predicted,color,fade,particle_scale,life,1,-1,-1);
             }
         }
         }
         { VU random;
             random.q=0;
-            random.f[0]=func_002140F8(-1.0f,1.0f);
-            random.f[1]=func_002140F8(-1.0f,1.0f);
-            random.f[2]=func_002140F8(-1.0f,1.0f);
+            random.f[0]=random_float_between(-1.0f,1.0f);
+            random.f[1]=random_float_between(-1.0f,1.0f);
+            random.f[2]=random_float_between(-1.0f,1.0f);
             predicted=random;
         }
-        func_001F9BF0(&camera_delta,D_L00_00166EC0,(&m->pos));
-        distance=func_001F9CB8(&camera_delta);
+        FastVecSub(&camera_delta,D_L00_00166EC0,(&m->pos));
+        distance=FastVecLength(&camera_delta);
         camera_delta.f[2]+=distance*0.5f;
         func_L00_001FF4B0(&predicted,&predicted,distance/5.0f*D_0015EE6C*size);
         func_L00_001FF4B0(&camera_delta,&camera_delta,(distance+distance)*D_0015EE6C);
-        func_001F9BD8(&predicted,&predicted,&camera_delta);
+        FastVecAdd(&predicted,&predicted,&camera_delta);
         func_L00_001FF548(&predicted,&predicted,D_0015EE6C*10.0f);
-        func_L00_002B0738((char *)(&m->pos),(char *)&predicted,func_L00_00258BC8(func_001F9850(60),func_001F9850(90)),0,0);
-        if(distance<6.0f) j=func_001FA898(distance)/2;
+        func_L00_002B0738((char *)(&m->pos),(char *)&predicted,rand_range(scale_ticks(60),scale_ticks(90)),0,0);
+        if(distance<6.0f) j=truncate_float_to_s32(distance)/2;
         else j=3;
         near_adjust=0.0f;
         if(distance<7.0f) near_adjust=7.0f-distance;
         if(reduced) j/=2;
         for(i=0;i<j;i++) {
-            float speed=func_002140F8(8.0f,10.0f)*size*D_0015EE6C-near_adjust*D_0015EE6C;
+            float speed=random_float_between(8.0f,10.0f)*size*D_0015EE6C-near_adjust*D_0015EE6C;
             Colors1688 color=D_L00_001E9D70;
             Colors1688 fade=D_L00_001E9D88;
-            int c=func_L00_0025D140(color.colors[func_002140B0(6)],D_0013E620.bB);
-            int f=func_L00_0025D140(fade.colors[func_002140B0(6)],D_0013E620.bB);
-            int life=func_L00_00258BC8(func_001F9850(15),func_001F9850(20))-particle_reduction*7;
-            int end=func_L00_00258BC8(func_001F9850(25),func_001F9850(30))-particle_reduction*10;
+            int c=func_L00_0025D140(color.colors[random_integer_below(6)],D_0013E620.bB);
+            int f=func_L00_0025D140(fade.colors[random_integer_below(6)],D_0013E620.bB);
+            int life=rand_range(scale_ticks(15),scale_ticks(20))-particle_reduction*7;
+            int end=rand_range(scale_ticks(25),scale_ticks(30))-particle_reduction*10;
             int white_life, white_end;
             rings1688((&m->pos),&blast_velocity,c,f,400000.0f,life,end,0,0,speed);
-            white_life=func_L00_00258BC8(func_001F9850(5),func_001F9850(10))-particle_reduction*5;
-            white_end=func_L00_00258BC8(func_001F9850(15),func_001F9850(20))-particle_reduction*7;
+            white_life=rand_range(scale_ticks(5),scale_ticks(10))-particle_reduction*5;
+            white_end=rand_range(scale_ticks(15),scale_ticks(20))-particle_reduction*7;
             rings1688((&m->pos),&blast_velocity,0x7FFFFFFF,0xFFFFFF,400000.0f,white_life,white_end,0,0,speed*0.5f);
         }
         for(i=0;i<particles;i++) {
@@ -2358,36 +2358,36 @@ void func_L00_002B1688(M910 *m) {
             float debris_scale;
             { VU random;
             random.q=0;
-            random.f[0]=func_002140F8(-1.0f,1.0f);
-            random.f[1]=func_002140F8(-1.0f,1.0f);
-            random.f[2]=func_002140F8(-1.0f,1.0f);
+            random.f[0]=random_float_between(-1.0f,1.0f);
+            random.f[1]=random_float_between(-1.0f,1.0f);
+            random.f[2]=random_float_between(-1.0f,1.0f);
                 v=random;
             }
-            func_L00_001FF4B0(&v,&v,func_002140F8(0.0f,3.0f)*D_0015EE6C*size);
-            c=func_L00_0025D140(color.colors[func_002140B0(6)],D_0013E620.bB);
-            f=func_L00_0025D140(fade.colors[func_002140B0(6)],D_0013E620.bB);
+            func_L00_001FF4B0(&v,&v,random_float_between(0.0f,3.0f)*D_0015EE6C*size);
+            c=func_L00_0025D140(color.colors[random_integer_below(6)],D_0013E620.bB);
+            f=func_L00_0025D140(fade.colors[random_integer_below(6)],D_0013E620.bB);
             debris_scale=size*200000.0f;
-            life=func_L00_00258BC8(func_001F9850(20),func_001F9850(35))-particle_reduction*10;
+            life=rand_range(scale_ticks(20),scale_ticks(35))-particle_reduction*10;
             debris1688((&m->pos),&v,c,f,debris_scale,life);
         }
         if(D_L00_0015F6B4<0.95f && distance>9.0f) {
             int c=127,f=127;
             if(D_0013E620.bB) { c=60; f=60; }
-            func_L00_002ADBB0(m,(&m->pos),&blast_velocity,size*4.0f,func_001F9850(15),c,127,f,32);
-            func_L00_002ADBB0(m,(&m->pos),&blast_velocity,size*4.0f,func_001F9850(24),c,127,f,32);
+            func_L00_002ADBB0(m,(&m->pos),&blast_velocity,size*4.0f,scale_ticks(15),c,127,f,32);
+            func_L00_002ADBB0(m,(&m->pos),&blast_velocity,size*4.0f,scale_ticks(24),c,127,f,32);
         }
         { unsigned char color=127;
           int life;
           float flash_scale=size*4.0f;
           if(D_0013E620.bB) color=32;
-          life=func_001F9850(20);
+          life=scale_ticks(20);
           func_L00_002ADBB0(m,(&m->pos),&blast_velocity,flash_scale,life,color,127,0,48);
         }
-        if(!reduced) func_L00_002ADBB0(m,(&m->pos),&blast_velocity,(size+size),func_001F9850(19),255,255,255,32);
+        if(!reduced) func_L00_002ADBB0(m,(&m->pos),&blast_velocity,(size+size),scale_ticks(19),255,255,255,32);
         motion.f[0]=0.0f;
         m->bBC=0;
         D_L00_00166D80.f160=distance<20.0f ? 0.4f-distance*0.0175f : 0.4f-20.0f*0.0175f;
-        D_L00_00166D80.i168=func_001F9850(25);
+        D_L00_00166D80.i168=scale_ticks(25);
         func_0022ED80(0,0,(int)m);
         if(!reduced) {
             if(D_0013E620.bB) func_L00_002D4CE8((char *)&gold_effect,(char *)(&m->pos),0,0);
@@ -2396,7 +2396,7 @@ void func_L00_002B1688(M910 *m) {
         d->bounce_count++;
         if(!D_0013E620.bB || d->bounce_count==3) {
             func_L00_00260878(m,D_L00_001B0AF0);
-            func_0020D678(m);
+            DeleteMoby(m);
             return;
         }
         { VU bounce[2];
@@ -2408,9 +2408,9 @@ void func_L00_002B1688(M910 *m) {
         m->ry=-func_L00_001FF860(horizontal1688(&bounce[0]),bounce[0].f[2]);
         d->yaw_velocity=0.0f; d->pitch_velocity=0.0f;
         func_L00_001FF4B0(&bounce[1],&impact1688.normal,0.05f);
-        func_001F9BD8((&m->pos),(&m->pos),&bounce[1]);
+        FastVecAdd((&m->pos),(&m->pos),&bounce[1]);
         if(impact1688.moby) d->owner=impact1688.moby;
-        if(!d->bounce_timer) d->bounce_timer=func_001F9850(90);
+        if(!d->bounce_timer) d->bounce_timer=scale_ticks(90);
         func_L00_002B1290((char *)m,(O *)d,(char *)impact1688.moby);
         func_0022ED80(1,0,(int)m);
             }

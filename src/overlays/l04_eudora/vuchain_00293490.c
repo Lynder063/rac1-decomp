@@ -369,9 +369,9 @@ void func_L04_00296FA8(struct Moby *m, LegRig *rig) {
         rig->legs[i].unkC = 0;
         rig->legs[i].yaw = func_L00_001FF860(mtx[1][0], mtx[1][1]);
         if (rig->legs[i].manip_b.attached == 0)
-            func_0020D960(m, rig->legs[i].slot_b, &rig->legs[i].manip_b);
+            AttachManipulator(m, rig->legs[i].slot_b, &rig->legs[i].manip_b);
         if (rig->legs[i].manip_a.attached == 0)
-            func_0020D960(m, rig->legs[i].slot_a, &rig->legs[i].manip_a);
+            AttachManipulator(m, rig->legs[i].slot_a, &rig->legs[i].manip_a);
     }
     if (m->seq != 0xFF) {
         t = func_0020D830(m);
@@ -385,7 +385,7 @@ void func_L04_00296FA8(struct Moby *m, LegRig *rig) {
     e = rig->anims;
     for (j = 12; j >= 0; j--, e++) {
         if ((*e)->id == m->prev_seq) {
-            rig->speed = func_001F9B88(m->unk58 * (*e)->rate);
+            rig->speed = FastAbsF(m->unk58 * (*e)->rate);
             rig->unkB7 = D_L04_001CABB8[12 - j][0];
         }
     }

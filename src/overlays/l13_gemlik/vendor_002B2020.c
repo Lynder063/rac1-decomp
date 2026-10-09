@@ -2426,24 +2426,24 @@ void func_L13_002BC2D8(Jet47 *m) {
                 if (hit->source && (unsigned int)(hit->source->class_id-0x52)<2) d->hit_class=(short)hit->source->class_id;
                 if (hit->flags&1) {
                     float weight,yaw_delta,pitch_delta;
-                    jet_camera47.flash=1.0f; jet_camera47.ticks=func_001F9850(4);
+                    jet_camera47.flash=1.0f; jet_camera47.ticks=scale_ticks(4);
                     weight=hit->damage*0.05f;
                     func_00215C00(impulse,d->speed,d->angles[2],-d->angles[1]);
                     func_L00_001FF548(hit->velocity,hit->velocity,D_0015EE6C*3.0f);
-                    func_001F9BD8(m->position,m->position,hit->velocity);
+                    FastVecAdd(m->position,m->position,hit->velocity);
                     func_L00_001FF610(impulse,impulse,hit->velocity);
-                    yaw_delta=func_001FA790(func_L00_001FF860(impulse[0],impulse[1]),d->angles[2]);
-                    d->angles[2]=func_001FA748(d->angles[2],yaw_delta*(D_0015EE60*0.1f)*weight);
-                    pitch_delta=func_001FA790(func_L00_001FF860(func_001F9CE8(impulse),impulse[2]),d->angles[1]);
-                    d->angles[1]=func_001FA748(d->angles[1],pitch_delta*(D_0015EE60*0.1f)*weight);
+                    yaw_delta=FastSubRots(func_L00_001FF860(impulse[0],impulse[1]),d->angles[2]);
+                    d->angles[2]=FastAddRots(d->angles[2],yaw_delta*(D_0015EE60*0.1f)*weight);
+                    pitch_delta=FastSubRots(func_L00_001FF860(func_001F9CE8(impulse),impulse[2]),d->angles[1]);
+                    d->angles[1]=FastAddRots(d->angles[1],pitch_delta*(D_0015EE60*0.1f)*weight);
                 }
             } else {
                 func_00215C00(impulse,d->speed,d->angles[2],-d->angles[1]);
                 if (hit->source && (unsigned int)(hit->source->class_id-0x52)<2) d->hit_class=(short)hit->source->class_id+10000;
-                jet_camera47.flash=0.2f; jet_camera47.ticks=func_001F9850(5);
+                jet_camera47.flash=0.2f; jet_camera47.ticks=scale_ticks(5);
                 ((JetPlayer47*)(D_0013E633+0xE1D))->health=0.0f; m->flags|=0x41;
                 func_L00_0025F4A8(m,impulse,0,0.0f,0.0f,10,3,16,4.0f,2.0f,9.0f,6,1.0f,15.0f,1,1,-1,0);
-                m->animation=0; d->death_timer=func_001F9850(240); m->state=6;
+                m->animation=0; d->death_timer=scale_ticks(240); m->state=6;
             }
         }
     }
@@ -2475,15 +2475,15 @@ void func_L13_002BC2D8(Jet47 *m) {
         if (d->group_a>0) func_L13_00266060(d->group_a,0,0,0);
         if (d->group_b>0) func_L13_00266060(d->group_b,0,0,0);
         func_L13_00266180(D_L13_001CC068,1,1,-1); func_L13_00266180(&D_L13_001614D0,1,-1,-1); func_L13_00266128(0x102,0);
-        d->lock_index=-1; d->start_timer=func_001F9850(575);
+        d->lock_index=-1; d->start_timer=scale_ticks(575);
         break;
     }
     case 1: {
         short enter=0;
         if (m->persistent!=0xFF && (D_0014171B+0xAA35)[m->persistent+(D_0015EE84<<4)]==0xFF) m->state=9;
-        else if (d->trigger!=-1 && func_00215570(D_0013E633+0xE9D,d->trigger)) { d->blend=0.99f; D_L13_0015F4FC=0.99f; enter=1; }
+        else if (d->trigger!=-1 && is_point_inside_clip_volume(D_0013E633+0xE9D,d->trigger)) { d->blend=0.99f; D_L13_0015F4FC=0.99f; enter=1; }
         else if (func_L00_00251468(m,((JetPlayer47*)(D_0013E633+0xE1D))->moby)<2.0f && ((JetPlayer47*)(D_0013E633+0xE1D))->state!=50 && ((JetPlayer47*)(D_0013E633+0xE1D))->state!=29 && !((JetPlayer47*)(D_0013E633+0xE1D))->busy) {
-            int pressed=func_00215F80(7,0x53E9)!=0;
+            int pressed=try_set_help_message(7,0x53E9)!=0;
             if (*(int*)(D_0013A5E0+0x2604)&0x10) enter=pressed;
         }
         if (enter) {
@@ -2526,12 +2526,12 @@ void func_L13_002BC2D8(Jet47 *m) {
     case 4: {
         unsigned char *audio;
         if (d->blend!=0.0f) { func_00214D28(&d->blend,0.0f,D_0015EE6C*4.0f); D_L13_0015F4FC=d->blend; }
-        func_00216028(6,0); D_L13_0015F6E8=2;
+        force_help_message(6,0); D_L13_0015F6E8=2;
         audio=D_0013E633+0x1D+d->engine_sound*0x70;
         if (*(Jet47**)(audio+0x88)!=m || !audio[0x74]) { d->engine_sound=-1; d->engine_sound=func_0022ED80(0,4,(int)m); }
         func_L13_002BB3E8(m,d);
         if (((JetPlayer47*)(D_0013E633+0xE1D))->pad160F&1) m->state=5;
-        if (d->energy<=0) { d->wait_timer=func_001F9850(1200); m->state=8; }
+        if (d->energy<=0) { d->wait_timer=scale_ticks(1200); m->state=8; }
         break;
     }
     case 5:
@@ -2570,7 +2570,7 @@ void func_L13_002BC2D8(Jet47 *m) {
     case 7: {
         JetTransition47 *transition;
         D_L13_0015F6E8=2;
-        if (func_001F9938(&d->death_timer)) {
+        if (FastDecTimer(&d->death_timer)) {
             transition=(JetTransition47*)(D_0014171B+0x100B5);
             if (!transition->pending) {
             int active=transition->active;
@@ -2594,10 +2594,10 @@ void func_L13_002BC2D8(Jet47 *m) {
     }
     case 8:
         ((JetPlayer47*)(D_0013E633+0xE1D))->in_craft=0; *(int*)((char*)((JetPlayer47*)(D_0013E633+0xE1D))->moby+0x98)=0; func_L00_00222B80(0,1); func_L00_002EC0C8(0);
-        if (d->escape_path==-1) { func_001E9730(D_L13_001F4760); qcopy(m->position,d->spawn_position); qcopy(m->rotation,d->spawn_rotation); }
+        if (d->escape_path==-1) { STUB_printf(D_L13_001F4760); qcopy(m->position,d->spawn_position); qcopy(m->rotation,d->spawn_rotation); }
         else { int index=d->escape_path; JetPath47 *paths=D_L13_0016016C; qcopy(m->position,paths[index].position); qcopy(m->rotation,paths[index].rotation); m->position[2]+=0.57318f; }
         m->scale=m->model->scale; func_0020EEE8(m);
-        if (d->destination_path==-1) func_001E9730(D_L13_001F4798);
+        if (d->destination_path==-1) STUB_printf(D_L13_001F4798);
         else {
             JetPath47 *path;
             if (d->group_a>0) func_L13_00266060(d->group_a,0,0,0);
@@ -2617,7 +2617,7 @@ void func_L13_002BC2D8(Jet47 *m) {
         }
         func_L00_00286128(D_0013E633+0xE9D,D_0013E633+0xEAD); m->state=9;
         break;
-    case 9: func_0020D678(m); return;
+    case 9: DeleteMoby(m); return;
     case 10: break;
     default: break;
     }

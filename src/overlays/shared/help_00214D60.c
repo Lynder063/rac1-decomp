@@ -2491,7 +2491,7 @@ void func_L00_00217DE0(void) {
     s32 state;
 
     state = D_0013F450_17DE0.state.current;
-    aimed = (state == 1 || state == 0x1E) && func_001F9850(0x14) < D_0013F450_17DE0.state_timer;
+    aimed = (state == 1 || state == 0x1E) && scale_ticks(0x14) < D_0013F450_17DE0.state_timer;
     if (aimed) {
         target = D_0013F450_17DE0.items[0].moby;
         has_target = 0;
@@ -2507,7 +2507,7 @@ void func_L00_00217DE0(void) {
         }
         if (!has_target) {
             D_0013F450_17DE0.aim_yaw = D_L00_00166D80[0x158 / 4];
-            D_0013F450_17DE0.aim_pitch = func_001FA748(-D_L00_00166D80[0x154 / 4], 0.12217305f);
+            D_0013F450_17DE0.aim_pitch = FastAddRots(-D_L00_00166D80[0x154 / 4], 0.12217305f);
         }
     }
     item = D_0013F450_17DE0.items[0].moby;
@@ -2523,13 +2523,13 @@ void func_L00_00217DE0(void) {
     if (D_0013F450_17DE0.unk248 < 1.2f && 0.6632251f < D_0013F450_17DE0.unk250 && !D_0013F450_17DE0.unk254) {
         pv->unk76 = 1;
     }
-    func_001F9BC0(pv->unk40);
+    clear_u64_value(pv->unk40);
     if (!aimed) {
         func_L00_00233F88(pv->unk40, pv->unk40, 1.0f);
     } else {
         func_00215C00(pv->unk40, 1.0f, D_0013F450_17DE0.aim_yaw, D_0013F450_17DE0.aim_pitch);
     }
-    func_001F9BC0(dir);
+    clear_u64_value(dir);
     func_001FA1F8(mat, dir);
     if (aimed) {
         dir[0] = D_L00_00166D80[0x150 / 4];
@@ -2547,5 +2547,5 @@ void func_L00_00217DE0(void) {
     func_L00_00263578(item, D_00140C00);
     func_L00_002635A0(D_00140C00, 0x30, 3);
     func_L00_002635A0(D_00140C00, 0x17, 5);
-    func_00213DE0(item, 6, 0, func_001F9850(5));
+    func_00213DE0(item, 6, 0, scale_ticks(5));
 }

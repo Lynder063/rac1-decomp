@@ -1558,35 +1558,35 @@ void func_L00_002A9768(Wrench48 *m) {
                 reticle48((int)m,0xFF917267,1.0f,0.0f,0,0x25,-1,90.0f,4);
             d->aim_hit=0;
             func_00215C00(work.v[0],10.0f,wrench_camera48.yaw,-wrench_camera48.pitch);
-            func_001F9BD8(work.v[0],work.v[0],wrench_camera48.position);
+            FastVecAdd(work.v[0],work.v[0],wrench_camera48.position);
             if (func_L00_001EFFF0(wrench_camera48.position,work.v[0],4,(int)initial_player->moby,0)) {
                 d->aim_hit=player_state; qcopy(d->target,D_L00_00173F60);
             }
         }
-        func_001F49B0(func_L00_002A8A20,m);
+        AddDrawCallback(func_L00_002A8A20,m);
         anim=m->current_animation;
         if ((unsigned char)anim!=0) {
             if ((unsigned char)anim==14) {
-                if (m->animation_flags&2) func_00213DE0(m,1,0,func_001F9850(5));
+                if (m->animation_flags&2) func_00213DE0(m,1,0,scale_ticks(5));
                 return;
             } else if (wplayer48()->alternate) {
-                if (wdelta48(anim)>=2U) func_00213DE0(m,15,0,func_001F9850(4));
+                if (wdelta48(anim)>=2U) func_00213DE0(m,15,0,scale_ticks(4));
                 else if ((m->animation_flags&2) && (unsigned char)anim==15)
-                    func_00213DE0(m,16,0,func_001F9850(5));
+                    func_00213DE0(m,16,0,scale_ticks(5));
                 return;
             } else if (wdelta48(anim)<2U) {
-                func_00213DE0(m,14,0,func_001F9850(2)); return;
+                func_00213DE0(m,14,0,scale_ticks(2)); return;
             }
         }
         if ((m->animation_flags&2) && wplayer48()->state!=0x3B && m->current_animation!=1)
-            func_00213DE0(m,1,0,func_001F9850(5));
+            func_00213DE0(m,1,0,scale_ticks(5));
         func_L00_002A8F10((char*)m);
         {
         int current_state=wplayer48()->state;
         if (current_state!=19 && current_state!=33 && current_state!=43 && current_state!=112 && current_state!=20) {
             int current=m->current_animation;
             if ((unsigned int)current>=3 && m->current_animation<6)
-                func_00213DE0(m,1,0,func_001F9850(4));
+                func_00213DE0(m,1,0,scale_ticks(4));
         }
         }
         player_moby=wplayer48()->moby;
@@ -1619,29 +1619,29 @@ void func_L00_002A9768(Wrench48 *m) {
         if (wplayer48()->state==19 || wplayer48()->state==112 || wplayer48()->state==43) {
             yaw=func_L00_001FF860(wplayer48()->sweep_end[0]-wplayer48()->position[0],wplayer48()->sweep_end[1]-wplayer48()->position[1]);
             if (D_L00_0017BD28[wplayer48()->attack_index].side==1)
-                yaw=func_001FA748(yaw,-1.5707964f);
-            else yaw=func_001FA748(yaw,1.5707964f);
+                yaw=FastAddRots(yaw,-1.5707964f);
+            else yaw=FastAddRots(yaw,1.5707964f);
         }
-        func_001F9BF0(work.v[0],wend48(),(wend48()-4));
-        func_L00_001FF4B0(work.v[0],work.v[0],func_001F9CB8(work.v[0])+0.17f);
+        FastVecSub(work.v[0],wend48(),(wend48()-4));
+        func_L00_001FF4B0(work.v[0],work.v[0],FastVecLength(work.v[0])+0.17f);
         if (sweepp48()->move_mode!=15 && sweepp48()->state!=112 && sweepp48()->state!=20) {
-            difference=func_001FA850(sweepp48()->yaw,func_L00_001FF860(sweepp48()->sweep_end[0]-sweepp48()->position[0],sweepp48()->sweep_end[1]-sweepp48()->position[1]));
+            difference=FastDiffRots(sweepp48()->yaw,func_L00_001FF860(sweepp48()->sweep_end[0]-sweepp48()->position[0],sweepp48()->sweep_end[1]-sweepp48()->position[1]));
             if (difference>1.5707964f) active=0;
             func_L00_002A96B8(work.v[0]);
         }
-        func_001F9BD8(wend48(),(wend48()-4),work.v[0]);
-        if (sweepp48()->state!=43 && sweepp48()->state!=112 && difference<1.2217305f && func_001F9850(10)<sweepp48()->state_timer) {
+        FastVecAdd(wend48(),(wend48()-4),work.v[0]);
+        if (sweepp48()->state!=43 && sweepp48()->state!=112 && difference<1.2217305f && scale_ticks(10)<sweepp48()->state_timer) {
             float angle;
             qcopy(work.v[0],sweepp48()->position); work.v[0][2]+=0.5f;
             angle=func_L00_001FF860(sweepp48()->sweep_end[0]-sweepp48()->position[0],sweepp48()->sweep_end[1]-sweepp48()->position[1]);
             qcopy(work.v[1],sweepp48()->position); work.v[1][2]+=0.5f;
-            work.v[2][0]=func_001F9F90(angle)*1.4f; work.v[2][1]=func_001F9FA8(angle)*1.4f; work.v[2][2]=0.0f;
-            func_L00_002A96B8(work.v[2]); func_001F9BD8(work.v[1],work.v[1],work.v[2]);
-            if (!sweepp48()->attack_cooldown && func_L00_001EFFF0(work.v[0],work.v[1],2,0,0) && func_L00_001F3958()) {
+            work.v[2][0]=FastCos(angle)*1.4f; work.v[2][1]=FastSin(angle)*1.4f; work.v[2][2]=0.0f;
+            func_L00_002A96B8(work.v[2]); FastVecAdd(work.v[1],work.v[1],work.v[2]);
+            if (!sweepp48()->attack_cooldown && func_L00_001EFFF0(work.v[0],work.v[1],2,0,0) && CollType()) {
                 if (!wrench_hit48.moby || func_L00_0025F3C0((char*)wrench_hit48.moby)) {
                     sweepp48()->attack_cooldown=1; func_0022ED80(2,0,(int)m); func_L00_002A92C8((char*)m);
                     if (wrench_hit48.moby) {
-                        work.v[3][0]=func_001F9F90(yaw); work.v[3][1]=func_001F9FA8(yaw); work.v[3][2]=0.0f;
+                        work.v[3][0]=FastCos(yaw); work.v[3][1]=FastSin(yaw); work.v[3][2]=0.0f;
                         func_L00_0025AC00(wrench_hit48.moby,(int)m,0x10000,wrench_hit48.position,work.v[3],1.0f);
                     }
                 }
@@ -1657,7 +1657,7 @@ void func_L00_002A9768(Wrench48 *m) {
             int count=1;
             float scale=1.0f,radius;
             if (wplayer48()->state==20) { scale=1.55f; count=2; }
-            work.v[3][0]=func_001F9F90(yaw); work.v[3][1]=func_001F9FA8(yaw); work.v[3][2]=0.0f;
+            work.v[3][0]=FastCos(yaw); work.v[3][1]=FastSin(yaw); work.v[3][2]=0.0f;
             func_L00_0025A8C0(work.v[0],m,0x10000,(float)count,work.v[3]); func_L00_001FF500(work.v[0],work.v[0],scale);
             work.query.force=1.0f; work.query.range=5627.925f; work.query.enabled=1; work.query.class_id=m->class_id; work.query.flags=0;
             if (func_L00_0025AD60(wplayer48()->sweep_start,wplayer48()->sweep_end,wplayer48()->previous_start,wplayer48()->previous_end,wplayer48()->moby,&work,5) && wrench_hit48.moby) {
@@ -1668,9 +1668,9 @@ void func_L00_002A9768(Wrench48 *m) {
                     }
                 }
             }
-            func_001F9BF0(work.v[5],wend48(),(wend48()-4));
-            func_L00_001FF4B0(work.v[5],work.v[5],func_001F9CB8(work.v[5])-0.085f);
-            func_001F9BD8(work.v[4],work.v[5],(wend48()-4));
+            FastVecSub(work.v[5],wend48(),(wend48()-4));
+            func_L00_001FF4B0(work.v[5],work.v[5],FastVecLength(work.v[5])-0.085f);
+            FastVecAdd(work.v[4],work.v[5],(wend48()-4));
             radius=0.35f;
             if (sweepp48()->move_mode==15) radius=0.7f;
             if (sweepp48()->state==20) radius=0.47f;
@@ -1684,7 +1684,7 @@ void func_L00_002A9768(Wrench48 *m) {
             if (D_L00_00173F58) {
                 Wrench48 *target=(Wrench48*)D_L00_00173F58;
                 wplayer48()->reaction_yaw=func_L00_001FF860(wplayer48()->position[0]-target->position[0],wplayer48()->position[1]-target->position[1]);
-            } else wplayer48()->reaction_yaw=func_001FA748(wplayer48()->yaw,3.1415927f);
+            } else wplayer48()->reaction_yaw=FastAddRots(wplayer48()->yaw,3.1415927f);
         }
         break;
     }
@@ -1713,9 +1713,9 @@ void func_L00_002A9768(Wrench48 *m) {
         qcopy(work.v[0],position);
         if (m->state==10) {
             qcopy(work.v[1],wvelocity48());
-            func_001F9C30(work.v[1],work.v[1],0.7f);
-            func_001F9BD8(position,position,work.v[1]);
-            func_L00_001FF4B0(work.v[1],d->direction,d->speed); func_001F9BD8(position,position,work.v[1]);
+            FastVecScale(work.v[1],work.v[1],0.7f);
+            FastVecAdd(position,position,work.v[1]);
+            func_L00_001FF4B0(work.v[1],d->direction,d->speed); FastVecAdd(position,position,work.v[1]);
             d->acceleration+=D_0015EE74*170.0f;
             func_00214D28(&d->speed,0.0f,d->acceleration);
             if (d->speed==0.0f) m->state=11;
@@ -1723,13 +1723,13 @@ void func_L00_002A9768(Wrench48 *m) {
             int arrived=0;
             float length,steps;
             func_L00_002A9560((char*)m);
-            func_001F9BF0(work.v[1],D_0013E633+0x1E8D,position);
+            FastVecSub(work.v[1],D_0013E633+0x1E8D,position);
             d->acceleration+=D_0015EE70*0.9f; d->speed+=d->acceleration;
-            length=func_001F9CB8(work.v[1]); steps=d->speed; steps=length/steps;
-            if (steps<(float)func_001F9850(5) && m->current_animation!=1) func_00213DE0(m,1,0,func_001F9850(5));
+            length=FastVecLength(work.v[1]); steps=d->speed; steps=length/steps;
+            if (steps<(float)scale_ticks(5) && m->current_animation!=1) func_00213DE0(m,1,0,scale_ticks(5));
             if (length<=d->speed) { d->speed=length; arrived=1; }
-            func_L00_001FF4B0(work.v[1],work.v[1],d->speed); func_001F9BD8(position,position,work.v[1]);
-            if (length/d->speed<(float)func_001F9850(4) && wplayer48()->selected_weapon!=-1) {
+            func_L00_001FF4B0(work.v[1],work.v[1],d->speed); FastVecAdd(position,position,work.v[1]);
+            if (length/d->speed<(float)scale_ticks(4) && wplayer48()->selected_weapon!=-1) {
                 int sound;
                 func_L00_00232EC0(2); wplayer48()->weapon_animation=26;
                 sound=wplayer48()->thrown_sound;
@@ -1745,10 +1745,10 @@ void func_L00_002A9768(Wrench48 *m) {
             }
         }
         collided=0;
-        if (func_L00_001EFFF0(work.v[0],position,2,0,0) && func_L00_001F3958() && (!wrench_hit48.moby || !func_L00_0025F410((int)wrench_hit48.moby))) collided=wrench_hit48.surface!=0;
+        if (func_L00_001EFFF0(work.v[0],position,2,0,0) && CollType() && (!wrench_hit48.moby || !func_L00_0025F410((int)wrench_hit48.moby))) collided=wrench_hit48.surface!=0;
         if (collided || d->collision) {
             d->collision=0;
-            if (!wplayer48()->attack_cooldown) { d->timer=func_001F9850(30); wplayer48()->attack_cooldown=1; func_0022ED80(2,0,(int)m); }
+            if (!wplayer48()->attack_cooldown) { d->timer=scale_ticks(30); wplayer48()->attack_cooldown=1; func_0022ED80(2,0,(int)m); }
             if (m->state==10) { func_L00_002A92C8((char*)m); d->speed*=0.5f; m->state=11; }
         }
         radius=1.2f; if (m->state==11) radius=-0.37f;
@@ -1763,7 +1763,7 @@ void func_L00_002A9768(Wrench48 *m) {
                 if (!hit || hit->hit_count<2 || hit->hit_index!=work.shifted.query.class_id) {
                     work.q[7]=*(WQuad48*)wrench_hit48.moby->position;
                     func_L00_0025C710(work.v[6],work.v[5],work.v[7],0.5f); func_L00_002A90C0(work.v[6],5);
-                    d->timer=func_001F9850(30); wplayer48()->attack_cooldown=1; func_0022ED80(func_L00_002A9030(),0,(int)m);
+                    d->timer=scale_ticks(30); wplayer48()->attack_cooldown=1; func_0022ED80(func_L00_002A9030(),0,(int)m);
                 }
             }
         }

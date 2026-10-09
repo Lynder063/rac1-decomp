@@ -1078,7 +1078,7 @@ void func_L01_002FFF30(void *arg) {
             }
         }
     }
-    s = func_001F9FA8((func_001FA888(D_L01_0015F6B0 & 0x3F) - 32.0f) * 0.09817477f);
+    s = FastSin((func_001FA888(D_L01_0015F6B0 & 0x3F) - 32.0f) * 0.09817477f);
     s = s * 0.5f + 0.5f;
     for (g = 3; g >= 0; g--) {
         D_L01_001FBF40_FFF30[g].glow = s;
