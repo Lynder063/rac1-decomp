@@ -581,6 +581,20 @@ In parentheses, Lombyte's name.
 `func_L00_0025B478` in `src/overlays/shared/mobyutil_00258BC8.c` takes one form from Lombyte's match of the
 same function: the byte read through a small inline accessor.
 
+Nine functions of the executable were carried over by machine on 2026-10-09, from the same pull requests of
+Lombyte and by the same rule (identical instructions, Lombyte's C with every symbol renamed to its PAL
+address, each passing this project's check and the full build):
+
+- `src/game/draw.c`: `func_001F5E60` (`append_rotated_sprite_quad`)
+- `src/game/music.c`: `func_00217130` (`music_update`)
+- `src/game/pause.c`: `func_0021F238` (`update_item_preview_binding`)
+- `src/game/pause.c`: `func_0021FB28` (`draw_items_menu`)
+- `src/game/pause.c`: `func_00222070` (`draw_cheats_menu`)
+- `src/game/pause.c`: `func_002260A8` (`update_menu_preview_pose_and_attachments`)
+- `src/game/pause.c`: `func_002282D0` (`FUN_00226fb8`)
+- `src/game/space.c`: `func_00233AB8` (`render_environment_mapped_object`)
+- `src/game/vendor.c`: `func_0023B210` (`sample_surface_height_map`)
+
 One more is this project's own port of a function it has from Lombyte: `func_L00_001EB890` in
 `src/overlays/shared/camera_001EB508.c` is the level programs' copy of `func_001EC2B8` (Lombyte's
 `switch_active_camera_record`), with the same C under the level's symbols.

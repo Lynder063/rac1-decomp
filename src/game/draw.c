@@ -1440,7 +1440,140 @@ void func_001F5BB8(float x, float y, float w, float h, int u, int v, int uw, int
     D_00161000 = (int *)((char *)D_00161000 + 0x70);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_001F5E60);
+struct Screen {
+    s32 width; /* 0x0: display width (D_00151780 +0x150) */
+    s32 height; /* 0x4: display height (D_00151780 +0x152) */
+    s32 half_width; /* 0x8: width >> 1 */
+    s32 half_height; /* 0xC: height >> 1 */
+    s32 left; /* 0x10: (0x800 - half_width) << 4 */
+    s32 top; /* 0x14: (0x800 - half_height) << 4 */
+    s32 right; /* 0x18: (0x800 + half_width) << 4 */
+    s32 bottom; /* 0x1C: (0x800 + half_height) << 4 */
+};
+extern struct Screen D_0013E600_F5E60 __asm__("D_0013E600");
+struct DmaTag {
+    u32 tag;
+    u32 addr;
+    u32 vif0;
+    u32 vif1;
+};
+struct GifTag;
+union PacketCursor {
+    struct DmaTag *tag;
+    struct GifTag *gif;
+    s32 *words;
+    u8 *bytes;
+    s32 addr;
+};
+extern union PacketCursor D_00161000_F5E60 __asm__("D_00161000") MACRO_ADDR;
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 w;
+} Vec4f;
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9C30(void *, void *, f32);
+extern f32 func_001F9F90(f32);
+extern f32 func_001F9FA8(f32);
+extern s32 func_001FA898(f32);
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/rendering/append_rotated_sprite_quad.c, append_rotated_sprite_quad. */
+void func_001F5E60(f32 center_x, f32 center_y, f32 quad_width, f32 quad_height,
+                                f32 angle, s32 texture_width, s32 texture_height,
+                                s64 texture_tex0, s64 z_and_fog, s32 color, u8 flip_u, u8 flip_v,
+                                f32 pivot_u, f32 pivot_v) {
+    Vec4f vertical_edge;
+    Vec4f horizontal_edge;
+    Vec4f center;
+    Vec4f temporary;
+    Vec4f top_left;
+    Vec4f top_right;
+    Vec4f bottom_left;
+    Vec4f bottom_right;
+    struct DmaTag *tag;
+    u64 *packet_words;
+    s32 texture_left;
+    s32 texture_right;
+    s32 texture_top;
+    s32 texture_bottom;
+    f32 inverse_pivot_u;
+    f32 inverse_pivot_v;
+
+    if (flip_u != 0) {
+        texture_left = ((u32)texture_width << 4);
+        texture_right = 0x10;
+    } else {
+        texture_right = ((u32)texture_width << 4);
+        texture_left = 0x10;
+    }
+    if (flip_v != 0) {
+        texture_top = ((u32)texture_height << 20);
+        texture_bottom = 0x100000;
+    } else {
+        texture_bottom = ((u32)texture_height << 20);
+        texture_top = 0x100000;
+    }
+    center.x = center_x;
+    center.y = center_y;
+    inverse_pivot_v = 1.0f - pivot_v;
+    vertical_edge.x = quad_height * func_001F9FA8(angle);
+    vertical_edge.y = quad_height * func_001F9F90(angle);
+    horizontal_edge.x = quad_width * func_001F9F90(angle);
+    horizontal_edge.y = -quad_width * func_001F9FA8(angle);
+    inverse_pivot_u = 1.0f - pivot_u;
+    func_001F9C30(&temporary, &vertical_edge, inverse_pivot_v);
+    func_001F9BD8(&top_left, &center, &temporary);
+    func_001F9C30(&temporary, &horizontal_edge, inverse_pivot_u);
+    func_001F9BF0(&top_left, &top_left, &temporary);
+    func_001F9C30(&temporary, &vertical_edge, inverse_pivot_v);
+    func_001F9BD8(&top_right, &center, &temporary);
+    func_001F9C30(&temporary, &horizontal_edge, pivot_u);
+    func_001F9BD8(&top_right, &top_right, &temporary);
+    func_001F9C30(&temporary, &vertical_edge, pivot_v);
+    func_001F9BF0(&bottom_left, &center, &temporary);
+    func_001F9C30(&temporary, &horizontal_edge, inverse_pivot_u);
+    func_001F9BF0(&bottom_left, &bottom_left, &temporary);
+    func_001F9C30(&temporary, &vertical_edge, pivot_v);
+    func_001F9BF0(&bottom_right, &center, &temporary);
+    func_001F9C30(&temporary, &horizontal_edge, pivot_u);
+    func_001F9BD8(&bottom_right, &bottom_right, &temporary);
+    D_00161000_F5E60.tag->tag = 0x10000007;
+    D_00161000_F5E60.tag->addr = 0;
+    D_00161000_F5E60.tag->vif0 = 0;
+    D_00161000_F5E60.tag->vif1 = 0x50000007;
+    tag = D_00161000_F5E60.tag;
+    packet_words = (u64 *)(tag + 1);
+    D_00161000_F5E60.tag = tag + 1;
+    packet_words[0] = 0xB400000000008001;
+    packet_words[1] = 0x53535353106;
+    packet_words[2] = texture_tex0;
+    packet_words[3] = 0x154;
+    packet_words[4] = color;
+    packet_words[5] = texture_left | texture_top;
+    packet_words[6] =
+        (func_001FA898(top_left.x * 16.0f) + D_0013E600_F5E60.left - 8) |
+        ((u64)(func_001FA898(top_left.y * 16.0f) + D_0013E600_F5E60.top - 8) << 16) |
+        ((u64)z_and_fog << 32);
+    packet_words[7] = texture_right | texture_top;
+    packet_words[8] =
+        (func_001FA898(top_right.x * 16.0f) + D_0013E600_F5E60.left - 8) |
+        ((u64)(func_001FA898(top_right.y * 16.0f) + D_0013E600_F5E60.top - 8) << 16) |
+        ((u64)z_and_fog << 32);
+    packet_words[9] = texture_left | texture_bottom;
+    packet_words[10] =
+        (func_001FA898(bottom_left.x * 16.0f) + D_0013E600_F5E60.left - 8) |
+        ((u64)(func_001FA898(bottom_left.y * 16.0f) + D_0013E600_F5E60.top - 8) << 16) |
+        ((u64)z_and_fog << 32);
+    packet_words[11] = texture_right | texture_bottom;
+    packet_words[12] =
+        (func_001FA898(bottom_right.x * 16.0f) + D_0013E600_F5E60.left - 8) |
+        ((u64)(func_001FA898(bottom_right.y * 16.0f) + D_0013E600_F5E60.top - 8) << 16) |
+        ((u64)z_and_fog << 32);
+    packet_words[13] = 0;
+    D_00161000_F5E60.tag = (struct DmaTag *)((u8 *)D_00161000_F5E60.tag + 0x70);
+}
 
 LINKER_REMNANT("asm/remnants/text", func_001F62C0);
 

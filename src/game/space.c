@@ -1715,4 +1715,165 @@ void func_00233308(void) {
     DMAC_VIF1_Disable();
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00233AB8);
+typedef u32 u128_33AB8 __attribute__((mode(TI), aligned(16)));
+typedef union {
+    u128_33AB8 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4;
+typedef float FloatVector4[4] __attribute__((aligned(16)));
+typedef struct {
+    s16 vertex_index;
+    s16 pad;
+} QuadCornerIndex;
+typedef struct {
+    QuadCornerIndex corners[4];
+} IndexedQuad;
+typedef struct {
+    u8 pad0[0x10];
+    float position_x;
+    float position_y;
+    u8 pad18[0x8E];
+    s16 class_id;
+} EnvironmentMappedObject;
+typedef struct {
+    u8 pad0[0x140];
+    float position_x;
+    float position_y;
+} EnvironmentCameraState;
+extern s32 D_0013E150_33AB8[] __asm__("D_0013E150");
+extern s32 D_0015F6E8 MACRO_ADDR;
+extern short D_001605A4;
+extern short D_001605A8;
+extern short D_001605AC;
+extern short D_00160620;
+extern short D_00160630;
+extern short D_00160640;
+extern short D_00160650;
+extern short D_00160660;
+extern short D_00160670;
+extern EnvironmentCameraState D_00187040_33AB8 __asm__("D_00187040");
+extern FloatVector4 D_00187180_33AB8 __asm__("D_00187180");
+extern Vec4 D_001DC870[];
+extern float D_001DCED0[][2];
+extern float D_001DD200[][2];
+extern u64 func_001F4868_33AB8(int) __asm__("func_001F4868");
+extern void func_001F9908(s32 *);
+extern float func_001F9B50(float);
+extern float func_001F9B88(float);
+extern float func_001F9C78(void *, void *);
+extern float func_001FA888(int);
+extern void func_0020DAF8(EnvironmentMappedObject *, int, void *);
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/rendering/render_environment_mapped_object.c, render_environment_mapped_object. */
+void func_00233AB8(EnvironmentMappedObject *object) {
+    Vec4 quad_positions[4];
+    int colors[4];
+    float texture_coordinates[4][2];
+    u64 quad_state[4];
+    FloatVector4 object_transform[4];
+    FloatVector4 normal;
+    FloatVector4 reflection;
+    FloatVector4 view_direction;
+    IndexedQuad *indexed_quads;
+    Vec4 *positions;
+    Vec4 *normals;
+    int quad_count;
+    int vertex_count;
+    int class_index;
+    int color;
+    int mapping_enabled;
+    float transition_fraction;
+    float sphere_denominator;
+    float coordinate;
+    int element_index;
+    int corner_index;
+
+    class_index = object->class_id - 0x212;
+    positions = (((Vec4 * *)&D_00160660))[class_index];
+    normals = (((Vec4 * *)&D_00160650))[class_index];
+    indexed_quads = (((IndexedQuad * *)&D_00160670))[class_index];
+    quad_count = (((s32 *)&D_00160640))[class_index];
+    vertex_count = (((s32 *)&D_00160630))[class_index];
+    if (D_0015F6E8 == 6 && D_0013E150_33AB8[0] == 4) {
+        quad_state[1] = func_001F4868_33AB8(1);
+    } else {
+        quad_state[1] = func_001F4868_33AB8(0x15);
+    }
+    mapping_enabled = 0;
+    color = (((s32 *)&D_00160620))[class_index];
+    quad_state[2] = 0xFF9000000260;
+    quad_state[3] = 0x8000000044;
+    quad_state[0] = 0;
+    colors[3] = color;
+    colors[2] = color;
+    colors[1] = color;
+    colors[0] = color;
+    func_0020DAF8(object, 0, object_transform);
+    if (D_0015F6E8 != 0 || (func_001F9B88(D_00187040_33AB8.position_x - object->position_x) < 16.0f &&
+                            func_001F9B88(D_00187040_33AB8.position_y - object->position_y) < 16.0f)) {
+        mapping_enabled = 1;
+    }
+    if (D_0015F6E8 == 6 && D_0013E150_33AB8[0] == 4) {
+        mapping_enabled = 0;
+    }
+    if (mapping_enabled != 0 || (*(s32 *)&D_001605A4) == 1) {
+        (*(s32 *)&D_001605A8) = 1;
+        func_001F9908(&(*(s32 *)&D_001605AC));
+        transition_fraction =
+            func_001FA888((*(s32 *)&D_001605AC)) / func_001FA888(func_001F98C0(0x3C));
+        for (element_index = 0; element_index < vertex_count; element_index++) {
+            func_001F9EE8(&D_001DC870[element_index], &positions[element_index],
+                             object_transform);
+            func_001F9BF0(view_direction, &D_001DC870[element_index], D_00187180_33AB8);
+            func_001F9DC0(view_direction, view_direction, 1.0f);
+            func_001F9EE8(normal, &normals[element_index], object_transform);
+            func_001F9DC0(normal, normal, 0.1f);
+            func_001F9C30(reflection, normal, func_001F9C78(normal, view_direction) * 2.0f);
+            func_001F9BF0(reflection, view_direction, reflection);
+            func_001F9DC0(reflection, reflection, 1.0f);
+            reflection[2] += 1.0f;
+            sphere_denominator = func_001F9B50(reflection[2] * 2.0f) * 2.0f;
+            if ((*(s32 *)&D_001605A4) == 1 || (*(s32 *)&D_001605AC) == 0) {
+                D_001DCED0[element_index][0] = reflection[0] / sphere_denominator + 0.5f;
+                D_001DCED0[element_index][1] = reflection[1] / sphere_denominator + 0.5f;
+            } else {
+                coordinate = reflection[0] / sphere_denominator + 0.5f;
+                D_001DCED0[element_index][0] =
+                    coordinate + (D_001DD200[element_index][0] - coordinate) * transition_fraction;
+                coordinate = reflection[1] / sphere_denominator + 0.5f;
+                D_001DCED0[element_index][1] =
+                    coordinate + (D_001DD200[element_index][1] - coordinate) * transition_fraction;
+            }
+        }
+        if ((*(s32 *)&D_001605A4) == 1) {
+            (*(s32 *)&D_001605A4) = 2;
+        }
+    } else {
+        if ((*(s32 *)&D_001605A8) == 1) {
+            (*(s32 *)&D_001605A8) = 0;
+            for (element_index = 0; element_index < vertex_count; element_index++) {
+                D_001DD200[element_index][0] = D_001DCED0[element_index][0];
+                D_001DD200[element_index][1] = D_001DCED0[element_index][1];
+                func_001F9EE8(&D_001DC870[element_index], &positions[element_index],
+                                 object_transform);
+            }
+        } else {
+            for (element_index = 0; element_index < vertex_count; element_index++) {
+                func_001F9EE8(&D_001DC870[element_index], &positions[element_index],
+                                 object_transform);
+            }
+        }
+        (*(s32 *)&D_001605AC) = func_001F98C0(0x3C);
+    }
+    for (element_index = 0; element_index < quad_count; element_index++) {
+        for (corner_index = 0; corner_index < 4; corner_index++) {
+            int vertex_index = indexed_quads[element_index].corners[corner_index].vertex_index;
+
+            qcopy(&quad_positions[corner_index], &D_001DC870[vertex_index]);
+            texture_coordinates[corner_index][0] = D_001DCED0[vertex_index][0];
+            texture_coordinates[corner_index][1] = D_001DCED0[vertex_index][1];
+        }
+        func_001F7EF8(quad_positions, 0, 0);
+    }
+}
