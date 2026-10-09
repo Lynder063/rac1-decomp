@@ -259,6 +259,28 @@ in `config/core_rodata.txt`).
     - An 8-byte block copied with `ldl`/`ldr`/`sdl`/`sdr` is a struct of
       two ints copied by assignment.
 
+15. **How an address is spelled.** Twenty near misses matched on this
+    alone (2026-10-09), no statement changed:
+    - A struct symbol folds the member offset into the symbol
+      (`%hi(sym+off)`). Where retail keeps the base in a register and
+      the offsets in the accesses, write `((T *)D_sym)->field` at every
+      use with `D_sym` a `char []` alias. Choose per block of data.
+    - Separate blocks get separate symbols (`D_0013F450` hero,
+      `D_0013E650` voice slots, `D_0013CA40` pad, `D_0013F4D0` hero
+      position). As offsets of one symbol, CSE derives one address from
+      the other (`addiu $a0,$s0,-0xE00`), which moves registers, can stop
+      a cross-jump and move a delay slot.
+    - On a `MACRO_ADDR` symbol, symbol+offset counts as two instructions
+      and never fills a delay slot; the bare symbol counts as one and
+      can. A `float[4] MACRO_ADDR` with stores to `[3]` and `[2]` keeps
+      both out of the slot.
+    - A plain extern pointer (no `MACRO_ADDR`) where retail has
+      `beqz` / `lui` in the slot / `lw` on one register.
+    - `extern short X_n __asm__("X");` is not private: it writes
+      `.extern X, 2`, and the assembler goes by the last `.extern` it
+      reads, so the file's `lui` accesses to X can turn `$gp`-relative.
+      Use `SDATA(X)` with the real type (lever 2).
+
 ## Known walls: stop and report
 
 No plain-C wording has reached these. Name the one you hit in NOTES.md
