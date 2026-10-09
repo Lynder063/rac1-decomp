@@ -467,7 +467,116 @@ void func_L01_002FB898(DropMoby *m) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L01_002FBBD8);
+typedef int QW128_2FBBD8 __attribute__((mode(TI)));
+typedef union { QW128_2FBBD8 q; float f[4]; int i[4]; } QuadW_2FBBD8;
+typedef struct { float f[3]; } V3_2FBBD8;
+typedef struct { unsigned char pad0[0x454]; unsigned char collected[1]; } LvState_2FBBD8;
+extern void func_0020D678_2FBBD8(void *) __asm__("func_0020D678");
+extern void *func_L00_0025B478_2FBBD8(void *, int, int) __asm__("func_L00_0025B478");
+extern int func_0022ED80_2FBBD8(int, int, int) __asm__("func_0022ED80");
+extern float func_002140F8_2FBBD8(float, float) __asm__("func_002140F8");
+extern float func_001F9F90_2FBBD8(float) __asm__("func_001F9F90");
+extern float func_001F9FA8_2FBBD8(float) __asm__("func_001F9FA8");
+extern void func_001F9BD8_2FBBD8(void *, void *, void *) __asm__("func_001F9BD8");
+extern void func_L00_001FF4B0_2FBBD8(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern int func_L00_00258BC8_2FBBD8(int lo, int hi) __asm__("func_L00_00258BC8");
+extern int func_001F9850_2FBBD8(int) __asm__("func_001F9850");
+extern void func_L00_0026DD70_2FBBD8(void *, void *, int, int, float, int) __asm__("func_L00_0026DD70");
+extern int func_002140B0_2FBBD8(int) __asm__("func_002140B0");
+extern void func_L01_002F9908_2FBBD8(void *, void *, unsigned int, float, int, float, float, float, int) __asm__("func_L01_002F9908");
+extern unsigned char D_0014171B_2FBBD8[] __asm__("D_0014171B");
+extern int D_L01_001BAC60_2FBBD8[] __asm__("D_L01_001BAC60");
+extern int D_0015EE84_2FBBD8 __asm__("D_0015EE84") MACRO_ADDR;
+extern float D_0015EE6C_2FBBD8 __asm__("D_0015EE6C") MACRO_ADDR;
+extern unsigned char D_0013D355_2FBBD8[] __asm__("D_0013D355");
+extern V3_2FBBD8 D_L01_00161D00_2FBBD8 __asm__("D_L01_00161D00");
+extern LvState_2FBBD8 D_L01_001BB9C0_2FBBD8 __asm__("D_L01_001BB9C0");
+
+/* BreakableWallUpdate: update for the cave wall moby (class 729) on level 01; a wall already burst is deleted, else it spawns its debris. */
+void func_L01_002FBBD8(char *moby) {
+    QuadW_2FBBD8 tab;
+    QuadW_2FBBD8 a;
+    QuadW_2FBBD8 b;
+    QuadW_2FBBD8 c;
+    unsigned char *p;
+    int *pi;
+    float x, t, u1;
+    int n;
+    int m;
+    int r;
+    unsigned short uid;
+    short id;
+
+    uid = *(unsigned short *)(moby + 0xB2);
+    id = uid;
+    if (D_L01_001BB9C0_2FBBD8.collected[id] != 0) {
+        func_0020D678_2FBBD8(moby);
+        return;
+    }
+    if ((*(int *)(D_0014171B_2FBBD8 + 0xAB75 + ((id >> 5) * 4 + (D_0015EE84_2FBBD8 << 8))) >> (uid & 0x1F)) & 1) {
+        func_0020D678_2FBBD8(moby);
+        return;
+    }
+    if (func_L00_0025B478_2FBBD8(moby, 0x800000, 0) == 0) {
+        return;
+    }
+    func_0022ED80_2FBBD8(0, 0, (int)moby);
+    for (n = 0; n < 500; n++) {
+        a.q = 0;
+        a.f[0] = func_002140F8_2FBBD8(-1.0f, 1.0f);
+        a.f[1] = func_002140F8_2FBBD8(-1.0f, 1.0f);
+        a.f[2] = func_002140F8_2FBBD8(-1.0f, 1.0f);
+        tab.q = a.q;
+        b.q = 0;
+        t = func_002140F8_2FBBD8(-4.0f, 4.0f);
+        t = t * func_001F9F90_2FBBD8(*(float *)(moby + 0x48));
+        b.f[0] = t;
+        u1 = func_002140F8_2FBBD8(-1.0f, 1.0f);
+        u1 = u1 * func_001F9FA8_2FBBD8(*(float *)(moby + 0x48));
+        b.f[1] = u1;
+        b.f[2] = func_002140F8_2FBBD8(0.0f, 8.0f);
+        a.q = b.q;
+        func_001F9BD8_2FBBD8(&a, &a, moby + 0x10);
+        x = func_002140F8_2FBBD8(1.5f, 3.5f);
+        func_L00_001FF4B0_2FBBD8(&tab, &tab, x * D_0015EE6C_2FBBD8);
+        x = func_002140F8_2FBBD8(1.5f, 3.5f);
+        t = x * 210000.0f;
+        r = func_L00_00258BC8_2FBBD8(0x78, 0xF0);
+        func_L00_0026DD70_2FBBD8(&a, &tab, 0x5F787878, 0x181818, t, func_001F9850_2FBBD8(r));
+    }
+
+    for (m = 0; m < 100; m++) {
+        *(V3_2FBBD8 *)&tab = D_L01_00161D00_2FBBD8;
+        b.q = 0;
+        b.f[0] = func_002140F8_2FBBD8(-1.0f, 1.0f);
+        b.f[1] = func_002140F8_2FBBD8(-1.0f, 1.0f);
+        b.f[2] = func_002140F8_2FBBD8(-1.0f, 1.0f);
+        c.q = 0;
+        a.q = b.q;
+        t = func_002140F8_2FBBD8(-4.0f, 4.0f);
+        t = t * func_001F9F90_2FBBD8(*(float *)(moby + 0x48));
+        c.f[0] = t;
+        u1 = func_002140F8_2FBBD8(-1.0f, 1.0f);
+        u1 = u1 * func_001F9FA8_2FBBD8(*(float *)(moby + 0x48));
+        c.f[1] = u1;
+        c.f[2] = func_002140F8_2FBBD8(1.0f, 8.0f);
+        b.q = c.q;
+        func_001F9BD8_2FBBD8(&b, &b, moby + 0x10);
+        x = func_002140F8_2FBBD8(1.0f, 5.0f);
+        func_L00_001FF4B0_2FBBD8(&a, &a, x * D_0015EE6C_2FBBD8);
+        r = func_002140B0_2FBBD8(3);
+        pi = &tab.i[r];
+        x = func_002140F8_2FBBD8(0.05f, 0.15f);
+        r = func_L00_00258BC8_2FBBD8(0x3C, 0xB4);
+        func_L01_002F9908_2FBBD8(&b, &a, *pi, x, r, 1.0f, 1.0f, 0.75f, 0);
+    }
+
+    *(int *)(D_0014171B_2FBBD8 + 0xAB75 + (((short)*(unsigned short *)(moby + 0xB2) >> 5) * 4 + (D_0015EE84_2FBBD8 << 8))) |= 1 << (*(unsigned short *)(moby + 0xB2) & 0x1F);
+    D_L01_001BAC60_2FBBD8[(short)*(unsigned short *)(moby + 0xB2) >> 5] |= 1 << (*(unsigned short *)(moby + 0xB2) & 0x1F);
+    p = (unsigned char *)D_0013D355_2FBBD8 + 0x13B;
+    p[0xE] = 1;
+    func_0020D678_2FBBD8(moby);
+}
 typedef struct {
     char pad0[0x44];
     short n;

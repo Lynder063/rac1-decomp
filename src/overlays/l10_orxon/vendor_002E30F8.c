@@ -1002,7 +1002,128 @@ void func_L10_002E9978(Moby_2E9978 *m)
 }
 INCLUDE_ASM("asm/overlays", func_L10_002E9E70);
 INCLUDE_ASM("asm/overlays", func_L10_002EAA08);
-INCLUDE_ASM("asm/overlays", func_L10_002EAD50);
+typedef struct { float x, y, z, w; } __attribute__((aligned(16))) Vec_2EAD50;
+
+typedef struct {
+    Vec_2EAD50 home;        /* 0x00 */
+    int sound;              /* 0x10 */
+    int timer;              /* 0x14 */
+    char pad18[0x4];
+    int door;               /* 0x1C: index of the linked moby */
+} GateVars_2EAD50;
+
+typedef struct {
+    char pad00[0x10];
+    Vec_2EAD50 pos;         /* 0x10 */
+    unsigned char state;    /* 0x20 */
+    char pad21[0xF];
+    unsigned char f30;      /* 0x30 */
+    char pad31[0x3];
+    unsigned short flags;   /* 0x34 */
+    char pad36[0x12];
+    float rotz;             /* 0x48 */
+    char pad4C[0x2C];
+    GateVars_2EAD50 *vars;  /* 0x78 */
+    char pad7C[0x36];
+    unsigned short uid;     /* 0xB2 */
+    char padB4[0x4C];
+} GateMoby_2EAD50;
+
+typedef struct { char pad0[0x454]; unsigned char collected[1]; } L10State_2EAD50;
+
+extern unsigned char D_0013E633_2EAD50[] __asm__("D_0013E633");
+extern unsigned char D_0014171B_2EAD50[] __asm__("D_0014171B");
+extern unsigned char D_0013DE4B_2EAD50[] __asm__("D_0013DE4B");
+extern int D_0015EE84_2EAD50 __asm__("D_0015EE84") MACRO_ADDR;
+extern GateMoby_2EAD50 *D_L10_00160058_2EAD50 __asm__("D_L10_00160058") MACRO_ADDR;
+extern int D_L10_001BAC60_2EAD50[] __asm__("D_L10_001BAC60");
+extern L10State_2EAD50 D_L10_001BB9C0_2EAD50 __asm__("D_L10_001BB9C0");
+extern void func_L10_002F6E10_2EAD50(int) __asm__("func_L10_002F6E10");
+extern float func_001FA748_2EAD50(float, float) __asm__("func_001FA748");
+extern float func_001F9F90_2EAD50(float) __asm__("func_001F9F90");
+extern float func_001F9FA8_2EAD50(float) __asm__("func_001F9FA8");
+extern void func_001F9BD8_2EAD50(void *, void *, void *) __asm__("func_001F9BD8");
+extern float func_001F9878_2EAD50(float) __asm__("func_001F9878");
+extern int func_001FA898_2EAD50(float) __asm__("func_001FA898");
+extern float func_001FA888_2EAD50(int) __asm__("func_001FA888");
+extern int func_001F9908_2EAD50(int *) __asm__("func_001F9908");
+
+// Level 10 gate_2 update: four-state machine on m[0x20], moby class 1424.
+void func_L10_002EAD50(GateMoby_2EAD50 *m)
+{
+    GateVars_2EAD50 *d = m->vars;
+    float v[3];
+    Vec_2EAD50 out;
+    unsigned char st = m->state;
+
+    switch (st) {
+    case 0:
+        m->f30 = 0xFF;
+        d->home = m->pos;
+        if (D_0013E633_2EAD50[0x2EC1] != 0 ||
+            D_L10_001BB9C0_2EAD50.collected[(short)m->uid] != 0 ||
+            ((*(int *)(D_0014171B_2EAD50 + 0xAB75 + ((((short)m->uid >> 5) * 4) + (D_0015EE84_2EAD50 << 8))) >> (m->uid & 0x1F)) & 1) != 0) {
+            v[0] = func_001F9F90_2EAD50(func_001FA748_2EAD50(m->rotz, 3.14159265f)) * 1.5f;
+            v[1] = func_001F9FA8_2EAD50(func_001FA748_2EAD50(m->rotz, 3.14159265f)) * 1.5f;
+            v[2] = 0.0f;
+            func_001F9BD8_2EAD50(&out, &d->home, v);
+            m->state = 3;
+            m->pos = out;
+        } else {
+            if (d->door > 0) {
+                D_L10_00160058_2EAD50[d->door].flags |= 2;
+            }
+            m->state = 1;
+        }
+        break;
+    case 1: {
+        unsigned char *bits;
+        if (D_0013E633_2EAD50[0x2EC1] != 0 ||
+            D_L10_001BB9C0_2EAD50.collected[(short)m->uid] != 0 ||
+            ((*(int *)((bits = D_0014171B_2EAD50 + 0xAB75) + ((((short)m->uid >> 5) * 4) + (D_0015EE84_2EAD50 << 8))) >> (m->uid & 0x1F)) & 1) != 0) {
+            m->pos = d->home;
+            m->state = 3;
+            if (d->door > 0) {
+                D_L10_00160058_2EAD50[d->door].flags &= 0xFFFD;
+            }
+        } else if (D_0013DE4B_2EAD50[9] != 0) {
+            if (d->door > 0) {
+                D_L10_00160058_2EAD50[d->door].flags &= 0xFFFD;
+            }
+            *(int *)(bits + ((((short)m->uid >> 5) * 4) + (D_0015EE84_2EAD50 << 8))) |= st << (m->uid & 0x1F);
+            D_L10_001BAC60_2EAD50[(short)m->uid >> 5] |= st << (m->uid & 0x1F);
+            if (d->sound > 0) {
+                func_L10_002F6E10_2EAD50(d->sound);
+            }
+            d->timer = func_001FA898_2EAD50(func_001F9878_2EAD50(90.0f));
+            m->state = 2;
+        }
+        break;
+    }
+    case 2:
+        v[0] = func_001F9F90_2EAD50(func_001FA748_2EAD50(m->rotz, 3.14159265f)) * 1.5f *
+               func_001FA888_2EAD50(func_001FA898_2EAD50(func_001F9878_2EAD50(90.0f)) - d->timer) /
+               func_001F9878_2EAD50(90.0f);
+        v[1] = func_001F9FA8_2EAD50(func_001FA748_2EAD50(m->rotz, 3.14159265f)) * 1.5f *
+               func_001FA888_2EAD50(func_001FA898_2EAD50(func_001F9878_2EAD50(90.0f)) - d->timer) /
+               func_001F9878_2EAD50(90.0f);
+        v[2] = 0.0f;
+        func_001F9BD8_2EAD50(&out, &d->home, v);
+        m->pos = out;
+        if (func_001F9908_2EAD50(&d->timer)) {
+            m->state = 3;
+        }
+        break;
+    case 3:
+        if (D_0013E633_2EAD50[0x2EC1] == 0 &&
+            D_L10_001BB9C0_2EAD50.collected[(short)m->uid] == 0 &&
+            (((*(int *)(D_0014171B_2EAD50 + 0xAB75 + ((((short)m->uid >> 5) * 4) + (D_0015EE84_2EAD50 << 8))) >> (m->uid & 0x1F)) ^ 1) & 1)) {
+            m->pos = d->home;
+            m->state = 0;
+        }
+        break;
+    }
+}
 extern float func_00214358(void *,int,float);
 extern void func_L10_002EB8A8(void *,short *,short *);
 extern void func_L10_002EBDC8_a01(float,void *,short *,short *) __asm__("func_L10_002EBDC8");

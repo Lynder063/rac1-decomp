@@ -769,7 +769,145 @@ void func_L13_002C56B0(Moby_2C56B0 *moby) {
         moby->pos.z = 1003.0f;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L13_002C9208);
+typedef struct {
+    float home[3];          /* 0x00: rotation at rest */
+    float t;                /* 0x0C: 0..1 progress */
+    int link;               /* 0x10: linked moby index */
+    int closedState;        /* 0x14 */
+    int openState;          /* 0x18 */
+    float speed[3];         /* 0x1C: degrees */
+    float f28;
+    float seconds;          /* 0x2C */
+    int sndOpen;            /* 0x30 */
+    int sndClose;           /* 0x34 */
+    float f38;              /* 0x38 */
+    int startOpen;          /* 0x3C */
+} RotVars_2C9208;
+
+typedef struct {
+    char pad00[0x20];
+    unsigned char state;    /* 0x20 */
+    char pad21[0x3];
+    char *f24;              /* 0x24 */
+    char pad28[0x4];
+    float f2C;              /* 0x2C */
+    char pad30[0x10];
+    float rot[4];           /* 0x40 */
+    char pad50[0x28];
+    RotVars_2C9208 *vars;   /* 0x78 */
+    char pad7C[0x34];
+    unsigned char bB0;      /* 0xB0 */
+    char padB1[0x4F];
+} RotMoby_2C9208;
+
+extern int D_0015EE84_2C9208 __asm__("D_0015EE84") MACRO_ADDR;
+extern unsigned char D_0014171B_2C9208[] __asm__("D_0014171B");
+extern RotMoby_2C9208 *D_L13_00160058_2C9208 __asm__("D_L13_00160058") MACRO_ADDR;
+extern void func_0022ED80_2C9208(int, int, void *) __asm__("func_0022ED80");
+extern float func_001FA748_2C9208(float, float) __asm__("func_001FA748");
+extern float func_001FA790_2C9208(float, float) __asm__("func_001FA790");
+
+/* Level 13 moby update (classes 127, 128, 159): six-state machine that turns the moby open and shut with its link. */
+void func_L13_002C9208(RotMoby_2C9208 *m)
+{
+    RotVars_2C9208 *d = m->vars;
+    RotMoby_2C9208 *g;
+
+    if (m->bB0 != 0xFF) {
+        if ((D_0014171B_2C9208 + 0xAA35)[m->bB0 + (D_0015EE84_2C9208 << 4)] != 0xFF) {
+        } else {
+            d->link = -1;
+        }
+    }
+    switch (m->state) {
+    case 0:
+        qcopy(d, m->rot);
+        m->state = d->startOpen == 0 ? 1 : 2;
+        d->t = 0.0f;
+        if (d->t < d->f38) {
+            m->f2C = *(float *)(m->f24 + 0x24) * d->f38;
+        }
+        break;
+    case 1:
+        if (d->link != -1 && (g = &D_L13_00160058_2C9208[d->link]) != 0 &&
+            g->state != 0xFE && g->state != 0xFD && g->state != d->closedState) {
+            return;
+        }
+        if (d->sndOpen != -1) {
+            func_0022ED80_2C9208(d->sndOpen, 0, m);
+        }
+        d->t = 0.0f;
+        m->state = 2;
+        break;
+    case 2:
+        if (d->link != -1 && (g = &D_L13_00160058_2C9208[d->link]) != 0 &&
+            g->state != 0xFE && g->state != 0xFD && g->state == d->openState) {
+            if (d->sndOpen != -1) {
+                func_0022ED80_2C9208(d->sndOpen, 0, m);
+            }
+            m->state = 4;
+        } else {
+            float step = d->seconds * 60.0f;
+            float one = 1.0f;
+            float deg = 0.017453292f;
+            step = one / step;
+            d->t = d->t + step;
+            m->rot[0] = func_001FA748_2C9208(m->rot[0], d->speed[0] * deg * step);
+            m->rot[1] = func_001FA748_2C9208(m->rot[1], d->speed[1] * deg * step);
+            m->rot[2] = func_001FA748_2C9208(m->rot[2], d->speed[2] * deg * step);
+            if (one <= d->t) {
+                m->rot[0] = func_001FA748_2C9208(d->home[0], d->speed[0] * deg);
+                m->rot[1] = func_001FA748_2C9208(d->home[1], d->speed[1] * deg);
+                m->rot[2] = func_001FA748_2C9208(d->home[2], d->speed[2] * deg);
+                d->t = one;
+                m->state = 3;
+                if (d->sndClose != -1) {
+                    func_0022ED80_2C9208(d->sndOpen, 0, m);
+                }
+            }
+        }
+        break;
+    case 3:
+        if (d->link == -1 || (g = &D_L13_00160058_2C9208[d->link]) == 0 ||
+            g->state == 0xFE || g->state == 0xFD || g->state != d->openState) {
+            return;
+        }
+        d->t = 1.0f;
+        if (d->sndOpen != -1) {
+            func_0022ED80_2C9208(d->sndOpen, 0, m);
+        }
+        m->state = 4;
+        break;
+    case 4:
+        if (d->link == -1 || (g = &D_L13_00160058_2C9208[d->link]) == 0 ||
+            g->state == 0xFE || g->state == 0xFD || g->state == d->closedState) {
+            if (d->sndOpen != -1) {
+                func_0022ED80_2C9208(d->sndOpen, 0, m);
+            }
+            m->state = 2;
+        } else {
+            float step = 1.0f / (d->seconds * 60.0f);
+            float deg = 0.017453292f;
+            d->t = d->t - step;
+            m->rot[0] = func_001FA790_2C9208(m->rot[0], d->speed[0] * deg * step);
+            m->rot[1] = func_001FA790_2C9208(m->rot[1], d->speed[1] * deg * step);
+            m->rot[2] = func_001FA790_2C9208(m->rot[2], d->speed[2] * deg * step);
+            if (d->t <= 0.0f) {
+                m->rot[0] = d->home[0];
+                m->rot[1] = d->home[1];
+                m->rot[2] = d->home[2];
+                d->t = 0.0f;
+                if (d->sndOpen != -1) {
+                    func_0022ED80_2C9208(d->sndClose, 0, m);
+                }
+                m->state = 1;
+            }
+        }
+        break;
+    case 5:
+        break;
+    }
+}
 typedef int u128z __attribute__((mode(TI)));
 typedef struct { unsigned char b[24]; } Blk24;
 extern unsigned char *func_L00_0026C630(void *pos, int spin, int col, float range, float f1, float f2, float f3, float scale);

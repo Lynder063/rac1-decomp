@@ -1590,7 +1590,159 @@ void func_L09_002F1390(char *moby)
         DeleteMoby(moby);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L09_002F9A50);
+typedef struct { float x, y, z, w; } __attribute__((aligned(16))) Vec_2F9A50;
+
+typedef struct {
+    char pad00[0x20];
+    char f20[0x40];         /* 0x20: passed to func_L00_002617B0 */
+    Vec_2F9A50 ang;         /* 0x60: tilt x, y */
+    Vec_2F9A50 angvel;      /* 0x70 */
+    int init;               /* 0x80 */
+    float baseZ;            /* 0x84 */
+    int timer;              /* 0x88 */
+    int pad8C;
+    float f90;              /* 0x90 */
+    float f94;              /* 0x94 */
+    float f98;              /* 0x98 */
+    float f9C;              /* 0x9C */
+} PlatVars_2F9A50;
+
+typedef struct {
+    char pad00[0x10];
+    Vec_2F9A50 pos;         /* 0x10 */
+    char pad20[0x20];
+    Vec_2F9A50 rot;         /* 0x40 */
+    char pad50[0x28];
+    PlatVars_2F9A50 *vars;  /* 0x78 */
+    char pad7C[0x44];
+    Vec_2F9A50 fC0;         /* 0xC0 */
+    Vec_2F9A50 fD0;         /* 0xD0 */
+} PlatMoby_2F9A50;
+
+typedef struct {
+    char pad000[0xF8];
+    float fF8;              /* 0xF8 */
+    char pad0FC[0x200];
+    int f2FC;               /* 0x2FC */
+    char pad300[0xE];
+    short f30E;             /* 0x30E */
+} Hero_2F9A50;
+
+extern void func_001F9C30_2F9A50(void *, void *, float) __asm__("func_001F9C30");
+extern int func_001F9850_2F9A50(int) __asm__("func_001F9850");
+extern int func_001F9908_2F9A50(int *) __asm__("func_001F9908");
+extern void func_001F9BF0_2F9A50(void *, void *, void *) __asm__("func_001F9BF0");
+extern float func_001F9C78_2F9A50(void *a, void *b) __asm__("func_001F9C78");
+extern float func_L00_0025CCF0_2F9A50(void *, float, void *, int, float, float, float) __asm__("func_L00_0025CCF0");
+extern void func_L07_00289960_2F9A50(void *a0, void *a1, void *a2, void *a3, void *a4) __asm__("func_L07_00289960");
+extern void func_L00_00263B78_2F9A50(float, float, void *, float *, float *) __asm__("func_L00_00263B78");
+extern void func_L00_00263BF8_2F9A50(void *, float *, float *, float, float, float) __asm__("func_L00_00263BF8");
+extern float func_001FA748_2F9A50(float, float) __asm__("func_001FA748");
+extern void func_001F9BD8_2F9A50(void *, void *, void *) __asm__("func_001F9BD8");
+extern void func_L00_002617B0_2F9A50(void *, void *, void *, void *) __asm__("func_L00_002617B0");
+extern int func_0022ED80_2F9A50(int, int, void *) __asm__("func_0022ED80");
+extern float D_0015EE70_2F9A50 __asm__("D_0015EE70") MACRO_ADDR;
+extern float D_0015EE64_2F9A50 __asm__("D_0015EE64") MACRO_ADDR;
+extern float D_0015EE6C_2F9A50 __asm__("D_0015EE6C") MACRO_ADDR;
+extern unsigned char D_0013E633_2F9A50[] __asm__("D_0013E633");
+extern float D_L09_00161A74_2F9A50 SDATA(D_L09_00161A74);
+extern float D_L09_00161A78_2F9A50 SDATA(D_L09_00161A78);
+extern float D_L09_00161A7C_2F9A50 SDATA(D_L09_00161A7C);
+extern float D_L09_00161A84_2F9A50 SDATA(D_L09_00161A84);
+extern float D_L09_00161A88_2F9A50 SDATA(D_L09_00161A88);
+extern float D_L09_00161A8C_2F9A50 SDATA(D_L09_00161A8C);
+extern float D_L09_00161A90_2F9A50 SDATA(D_L09_00161A90);
+extern float D_L09_00161A94_2F9A50 SDATA(D_L09_00161A94);
+extern float D_L09_00161A98_2F9A50 SDATA(D_L09_00161A98);
+
+// Platform moby (class 664) update on level 9: steers its height and tilt from the hero standing on it.
+void func_L09_002F9A50(PlatMoby_2F9A50 *moby)
+{
+    PlatVars_2F9A50 *data = moby->vars;
+    Vec_2F9A50 m0;
+    Vec_2F9A50 rot;
+    Vec_2F9A50 rel;
+    Vec_2F9A50 ang;
+    Vec_2F9A50 pos;
+    Vec_2F9A50 out;
+    float low;
+    float z0;
+    float k;
+
+    func_001F9C30_2F9A50(&m0, &moby->pos, -1.0f);
+    qcopy(&rot, &moby->rot);
+    low = data->baseZ - 0.25f;
+    z0 = moby->pos.z;
+    if (data->init == 0) {
+        qcopy(&data->ang, &moby->rot);
+        qzero(&data->angvel);
+        moby->pos.z = moby->pos.z - 0.3f;
+        data->init = 1;
+        data->baseZ = moby->pos.z;
+    }
+    if (((Hero_2F9A50 *)(D_0013E633_2F9A50 + 0xE1D))->f30E == 0 &&
+        ((Hero_2F9A50 *)(D_0013E633_2F9A50 + 0xE1D))->f2FC == (int)moby) {
+        if (data->timer == 0) {
+            func_0022ED80_2F9A50(0, 0, moby);
+        }
+        if (data->timer < func_001F9850_2F9A50(30)) {
+            data->timer = func_001F9850_2F9A50(30);
+        }
+    }
+    if (data->timer != 0) {
+        float a, b, y;
+        float deg;
+        func_001F9908_2F9A50(&data->timer);
+        func_001F9BF0_2F9A50(&rel, D_0013E633_2F9A50 + 0xE9D, &moby->pos);
+        deg = 0.01745329238474369f;
+        a = func_001F9C78_2F9A50(&rel, &moby->fC0);
+        b = func_001F9C78_2F9A50(&rel, &moby->fD0);
+        k = D_L09_00161A74_2F9A50;
+        y = k * a;
+        ang = data->ang;
+        pos = moby->pos;
+        func_L00_0025CCF0_2F9A50(&data->ang.x, -k * b, &data->angvel.x, 0,
+            D_L09_00161A84_2F9A50 * deg * D_0015EE70_2F9A50,
+            D_L09_00161A88_2F9A50 * D_0015EE64_2F9A50,
+            D_L09_00161A8C_2F9A50 * deg * D_0015EE6C_2F9A50);
+        func_L00_0025CCF0_2F9A50(&data->ang.y, y, &data->angvel.y, 0,
+            D_L09_00161A84_2F9A50 * deg * D_0015EE70_2F9A50,
+            D_L09_00161A88_2F9A50 * D_0015EE64_2F9A50,
+            D_L09_00161A8C_2F9A50 * deg * D_0015EE6C_2F9A50);
+        moby->pos.z = moby->pos.z - D_L09_00161A78_2F9A50 * D_0015EE6C_2F9A50;
+        if (low < z0 && moby->pos.z <= low) {
+            func_0022ED80_2F9A50(1, 0, moby);
+        }
+        func_L07_00289960_2F9A50(D_0013E633_2F9A50 + 0xE9D, &out, &moby->pos, &ang, &data->ang);
+        func_001F9BF0_2F9A50(D_0013E633_2F9A50 + 0xE9D + 0x70, &out, D_0013E633_2F9A50 + 0xE9D);
+        ((Hero_2F9A50 *)(D_0013E633_2F9A50 + 0xE1D))->fF8 =
+            ((Hero_2F9A50 *)(D_0013E633_2F9A50 + 0xE1D))->fF8 + (moby->pos.z - pos.z);
+    } else {
+        float deg = 0.01745329238474369f;
+        func_L00_0025CCF0_2F9A50(&data->ang.x, 0.0f, &data->angvel.x, 0,
+            D_L09_00161A90_2F9A50 * deg * D_0015EE70_2F9A50,
+            D_L09_00161A94_2F9A50 * D_0015EE64_2F9A50,
+            D_L09_00161A98_2F9A50 * deg * D_0015EE6C_2F9A50);
+        func_L00_0025CCF0_2F9A50(&data->ang.y, 0.0f, &data->angvel.y, 0,
+            D_L09_00161A90_2F9A50 * deg * D_0015EE70_2F9A50,
+            D_L09_00161A94_2F9A50 * D_0015EE64_2F9A50,
+            D_L09_00161A98_2F9A50 * deg * D_0015EE6C_2F9A50);
+        moby->pos.z = moby->pos.z + D_L09_00161A7C_2F9A50 * D_0015EE6C_2F9A50 * (data->baseZ - moby->pos.z);
+        if (data->baseZ < moby->pos.z) {
+            moby->pos.z = data->baseZ;
+        }
+        if (z0 < low && low <= moby->pos.z) {
+            func_0022ED80_2F9A50(2, 0, moby);
+        }
+    }
+    func_L00_00263B78_2F9A50(0.14f, D_0015EE6C_2F9A50 * 0.5235987901687622f, moby, &data->f98, &data->f9C);
+    func_L00_00263BF8_2F9A50(moby, &data->f90, &data->f94, 0.0872664600610733f,
+        D_0015EE6C_2F9A50 * 0.3141592741012573f, D_0015EE6C_2F9A50 * 0.48869219422340393f);
+    moby->rot.x = func_001FA748_2F9A50(data->ang.x, moby->rot.x);
+    moby->rot.y = func_001FA748_2F9A50(data->ang.y, moby->rot.y);
+    func_001F9BD8_2F9A50(&m0, &m0, &moby->pos);
+    func_L00_002617B0_2F9A50(data->f20, &m0, &rot, &moby->rot);
+}
 extern int func_0022EE28(int, int, int);
 extern void func_L00_00264DB8(int arg0, int arg1);
 extern int func_00215570(void *arg0, int arg1);

@@ -38,7 +38,152 @@ int func_L04_00293990(char *arg0, char *arg1) {
     if (found == 0) return (unsigned char)arg1[0xB6];
     return func_L00_002A2680(found, arg1);
 }
-INCLUDE_ASM("asm/overlays", func_L04_002939E8);
+typedef struct { float x, y, z, w; } Vec_2939E8;
+
+typedef struct {
+    Vec_2939E8 pts[6];      /* 0x00: probe points */
+    char pad60[0x2C];
+    float *f8C;             /* 0x8C */
+    char pad90[0x26];
+    unsigned char mask;     /* 0xB6 */
+    unsigned char kind;     /* 0xB7 */
+    float tilt;             /* 0xB8 */
+    char padBC[0x1C];
+    float vel;              /* 0xD8 */
+    float accel;            /* 0xDC */
+    char padE0[0x4];
+    float ground;           /* 0xE4 */
+    char padE8[0x6];
+    unsigned short flags;   /* 0xEE */
+} Steer_2939E8;
+
+typedef struct {
+    char pad00[0x10];
+    Vec_2939E8 pos;         /* 0x10 */
+    char pad20[0x28];
+    float rotz;             /* 0x48 */
+} StMoby_2939E8;
+
+typedef struct {
+    char pad00[0x40];
+    Vec_2939E8 v40;         /* 0x40 */
+} StTab_2939E8;
+
+extern float func_00214358_2939E8(void *, int, float) __asm__("func_00214358");
+extern void func_001F9BC0_2939E8(float *) __asm__("func_001F9BC0");
+extern float func_001F9B88_2939E8(float) __asm__("func_001F9B88");
+extern void func_001F9BD8_2939E8(void *, void *, void *) __asm__("func_001F9BD8");
+extern float func_001F9F90_2939E8(float) __asm__("func_001F9F90");
+extern float func_001F9FA8_2939E8(float) __asm__("func_001F9FA8");
+extern void func_001F9CA0_2939E8(void *, void *, void *) __asm__("func_001F9CA0");
+extern float func_001F9CE8_2939E8(void *) __asm__("func_001F9CE8");
+extern float func_L00_001FF860_2939E8(float, float) __asm__("func_L00_001FF860");
+extern char D_L04_00174040_2939E8[] __asm__("D_L04_00174040");
+
+/* Steers a moby from the arg block: height and push terms, returns 2 when the tilt is past pi/4. */
+int func_L04_002939E8(StMoby_2939E8 *m, Steer_2939E8 *a)
+{
+    float push[4];
+    float dir[4];
+    int ret = 0;
+    int pinned = 0;
+    int bit = 1;
+    int j;
+    float dz;
+    float n;
+    float h;
+    float sum;
+    float t;
+
+    dz = 0.0f;
+    n = dz;
+    if (a->flags & 4) {
+        h = func_00214358_2939E8(&m->pos, 0, 0.5f);
+        if (m->pos.z < h - 0.05f) {
+            dz = m->pos.z - h;
+        } else {
+            if (a->vel < dz && m->pos.z < h + 0.1f - a->vel) {
+                dz = h - m->pos.z;
+            } else {
+                dz = -1.0f;
+            }
+        }
+        a->tilt = 0.0f;
+    } else {
+        func_001F9BC0_2939E8(push);
+        sum = 0.0f;
+        for (j = 0; j < 4; j++) {
+            Vec_2939E8 *e = &a->pts[j];
+            if (a->mask & bit) {
+                h = func_L04_00293490((float *)e);
+                sum += h;
+                if (0.0f < h) {
+                    t = func_001F9B88_2939E8(((StTab_2939E8 *)D_L04_00174040_2939E8)->v40.x);
+                    t = t + func_001F9B88_2939E8(((StTab_2939E8 *)D_L04_00174040_2939E8)->v40.y);
+                    if (t < func_001F9B88_2939E8(((StTab_2939E8 *)D_L04_00174040_2939E8)->v40.z)) {
+                        func_001F9BD8_2939E8(push, push, &((StTab_2939E8 *)D_L04_00174040_2939E8)->v40);
+                        n += 4.0f;
+                        dz += h - e->z;
+                    }
+                }
+            }
+            j++;
+            bit <<= 2;
+        }
+        if (sum == 0.0f) {
+            h = func_00214358_2939E8(&m->pos, 0, 0.5f);
+            if (0.0f < h) {
+                n += 4.0f;
+                dz += h - m->pos.z;
+            }
+        }
+        if (push[0] != 0.0f || push[1] != 0.0f || push[2] != 0.0f) {
+            dir[0] = func_001F9F90_2939E8(m->rotz);
+            dir[1] = func_001F9FA8_2939E8(m->rotz);
+            dir[2] = 0.0f;
+            func_001F9CA0_2939E8(dir, dir, push);
+            func_001F9CA0_2939E8(dir, dir, push);
+            a->tilt = func_L00_001FF860_2939E8(func_001F9CE8_2939E8(dir), dir[2]);
+        } else {
+            a->tilt = 0.0f;
+        }
+        if (0.785398f < func_001F9B88_2939E8(a->tilt)) {
+            ret = 2;
+        }
+        if (a->kind == 0xD && 0.0f < a->ground && (a->mask & 0xF) == 0) {
+            t = -func_L00_001FF860_2939E8(a->f8C[1], a->ground - m->pos.z);
+            if (func_001F9B88_2939E8(t) < 0.5235988f) {
+                pinned = 1;
+                dz += a->ground - m->pos.z;
+                a->tilt = t;
+                n += 4.0f;
+            }
+        }
+    }
+    if (n != 0.0f) {
+        dz = dz / n;
+    }
+    if (a->flags & 8) {
+        if (dz < -0.025f) {
+            dz = 0.0f;
+        }
+        a->vel = 0.0f;
+    } else if (-0.025f < dz) {
+        if (0.025f < dz && pinned == 0) {
+            dz = 0.0f;
+        }
+        a->vel = 0.0f;
+    } else {
+        a->vel = a->vel - a->accel;
+        dz = a->vel;
+    }
+    for (j = 0; j < 6; j++) {
+        Vec_2939E8 *p = &a->pts[j];
+        p->z += dz;
+    }
+    m->pos.z = m->pos.z + dz;
+    return ret;
+}
 INCLUDE_ASM("asm/overlays", func_L04_00293F08);
 INCLUDE_ASM("asm/overlays", func_L04_00296938);
 INCLUDE_ASM("asm/overlays", func_L04_00296FA8);

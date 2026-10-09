@@ -742,7 +742,212 @@ void func_L06_002F8430(struct Moby_F8430 *moby) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L06_002F91A8);
-INCLUDE_ASM("asm/overlays", func_L06_002FA618);
+typedef struct {
+    char pad00[0x10];
+    float x;                /* 0x10 */
+    float y;                /* 0x14 */
+    float z;                /* 0x18 */
+    char pad1C[0x4];
+    struct Moby_2FA618 *owner; /* 0x20 */
+} Target_2FA618;
+
+typedef struct Moby_2FA618 {
+    char pad00[0x10];
+    float x;                /* 0x10 */
+    float y;                /* 0x14 */
+    float z;                /* 0x18 */
+    char pad1C[0x4];
+    unsigned char state;    /* 0x20 */
+    unsigned char f21;      /* 0x21 */
+    char pad22[0x12];
+    unsigned short flags;   /* 0x34 */
+    char pad36[0x42];
+    struct BlargVars_2FA618 *vars; /* 0x78 */
+    char pad7C[0x14];
+    int f90;                /* 0x90 */
+    char pad94[0x10];
+    unsigned char fA4;      /* 0xA4 */
+    char padA5;
+    short fA6;              /* 0xA6 */
+} Moby_2FA618;
+
+typedef struct BlargVars_2FA618 {
+    char pad00[0x20];
+    float health;           /* 0x20 */
+    char pad24[0x14];
+    int f38;                /* 0x38 */
+    char pad3C[0x24];
+    char f60[0x7];          /* 0x60 */
+    unsigned char f67;      /* 0x67 */
+    char pad68[0x8];
+    char f70[0x18];         /* 0x70 */
+    float f88;              /* 0x88 */
+    float f8C;              /* 0x8C */
+    char pad90[0x30];
+    float fC0;              /* 0xC0 */
+    float fC4;              /* 0xC4 */
+    char padC8[0x58];
+    char f120[0x8];         /* 0x120 */
+    float f128;             /* 0x128 */
+    char pad12C[0x34];
+    int f160;               /* 0x160 */
+    int f164;               /* 0x164 */
+    char pad168[0x8];
+    char f170[0x30];        /* 0x170 */
+    float f1A0;             /* 0x1A0 */
+    char pad1A4[0x8];
+    int f1AC;               /* 0x1AC */
+    int f1B0;               /* 0x1B0 */
+    char pad1B4[0x14];
+    float f1C8;             /* 0x1C8 */
+    int f1CC;               /* 0x1CC */
+} BlargVars_2FA618;
+
+typedef struct {
+    char pad000[0x23C];
+    Moby_2FA618 *f23C;      /* 0x23C */
+    Moby_2FA618 *f240;      /* 0x240 */
+} Hero_2FA618;
+
+extern float func_002140F8_2FA618(float, float) __asm__("func_002140F8");
+extern float func_001F9878_2FA618(float) __asm__("func_001F9878");
+extern int func_001FA898_2FA618(float) __asm__("func_001FA898");
+extern int func_001F9908_2FA618(int *) __asm__("func_001F9908");
+extern Target_2FA618 *func_L00_0025B478_2FA618(void *, int, int) __asm__("func_L00_0025B478");
+extern int func_L00_0025B4D0_2FA618(void *, void *, void *, int, int *, float *, int, int) __asm__("func_L00_0025B4D0");
+extern void func_L06_002FAAC8_2FA618(void *) __asm__("func_L06_002FAAC8");
+extern float func_L00_001FF860_2FA618(float, float) __asm__("func_L00_001FF860");
+extern void func_L00_0025D5B0_2FA618(void *, void *, int, int, int, float) __asm__("func_L00_0025D5B0");
+extern void func_L00_002584A8_2FA618(void *, int, int) __asm__("func_L00_002584A8");
+extern void func_L00_0025E4B0_2FA618(void *, void *) __asm__("func_L00_0025E4B0");
+extern void func_L00_0025E590_2FA618(void *, void *) __asm__("func_L00_0025E590");
+extern void func_L00_0025A8E8_2FA618(void *, float, void *, int, float, float, int, int, int) __asm__("func_L00_0025A8E8");
+extern float func_001FA748_2FA618(float, float) __asm__("func_001FA748");
+extern float func_001F9FA8_2FA618(float) __asm__("func_001F9FA8");
+extern int func_001FA8A8_2FA618(int, int, float) __asm__("func_001FA8A8");
+extern int func_L00_00260FB0_2FA618(float, void *, void *, int, int, void *, int) __asm__("func_L00_00260FB0");
+extern float func_001F9D48_2FA618(void *, void *) __asm__("func_001F9D48");
+extern float func_001F9B88_2FA618(float) __asm__("func_001F9B88");
+extern float D_0015EE6C_2FA618 __asm__("D_0015EE6C") MACRO_ADDR;
+extern int *D_L06_001B0FB0_2FA618[] __asm__("D_L06_001B0FB0");
+extern unsigned char D_0013E633_2FA618[] __asm__("D_0013E633");
+extern int D_L06_0015F6B0_2FA618 SDATA(D_L06_0015F6B0);
+extern float D_L06_00161F74_2FA618 SDATA(D_L06_00161F74);
+extern int D_L06_00161F78_2FA618 SDATA(D_L06_00161F78);
+extern int D_L06_00161F7C_2FA618 SDATA(D_L06_00161F7C);
+extern float D_L06_00161F60_2FA618 SDATA(D_L06_00161F60);
+
+// Per-frame update for a Blarg moby: its data block (at 0x78) runs a state machine on the state byte at 0x20.
+void func_L06_002FA618(Moby_2FA618 *moby)
+{
+    BlargVars_2FA618 *data = moby->vars;
+    int hit;
+    float dmg;
+    Target_2FA618 *target;
+    int r;
+
+    if (data->f38 != 0) {
+        data->f1AC = func_001FA898_2FA618(func_001F9878_2FA618(func_002140F8_2FA618(180.0f, 240.0f)));
+        data->f38 = 0;
+    }
+    func_001F9908_2FA618(&data->f1AC);
+    dmg = 0.0f;
+    target = func_L00_0025B478_2FA618(moby, 0x330000, 0);
+    if (target != 0 && target->owner != 0 &&
+        target->owner->fA6 == 0x418) {
+        target = 0;
+    }
+    r = func_L00_0025B4D0_2FA618(moby, target, &data->health, 0, &hit, &dmg, 0, 4);
+
+    if (hit != 1 && moby->state != 0x11 && moby->state != 3) {
+        data->health = data->health - dmg;
+        if (moby->f21 != 0xFF) {
+            func_L06_002FAAC8_2FA618(moby);
+        }
+        if (data->health <= 0.0f) {
+            r = 1;
+        } else if (data->f1CC != 0) {
+            r = 0xB;
+            data->f67 = 0xFA;
+        }
+
+        switch (r) {
+        case 0:
+            break;
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+            moby->state = 14;
+            data->f88 = D_0015EE6C_2FA618 + D_0015EE6C_2FA618;
+            data->f8C = D_0015EE6C_2FA618;
+            data->fC0 = 5.0f;
+            data->fC4 = 8.5f;
+            func_L00_0025D5B0_2FA618(moby, data->f70, 9, 1, 0, func_L00_001FF860_2FA618(target->x, target->y));
+            data->f67 = 0xFA;
+            break;
+        case 1:
+        case 2:
+            moby->state = 0x11;
+            moby->flags &= 0xEFFF;
+            data->f88 = D_0015EE6C_2FA618 * 8.0f;
+            data->f8C = D_0015EE6C_2FA618 * 5.0f;
+            data->fC0 = 7.5f;
+            data->fC4 = 14.5f;
+            func_L00_0025D5B0_2FA618(moby, data->f70, 10, 1, 0, func_L00_001FF860_2FA618(target->x, target->y));
+            data->f67 = 0xFA;
+            func_L00_002584A8_2FA618(moby, 0, -1);
+            break;
+        case 11:
+            break;
+        }
+        func_L00_0025E4B0_2FA618(moby, data->f60);
+    }
+
+    moby->fA4 = 0xFF;
+    func_L00_0025E590_2FA618(moby, data->f60);
+    switch (moby->state) {
+    case 8:
+    case 9:
+    case 12:
+    case 13:
+        if (D_L06_0015F6B0_2FA618 % 4 == (((int)moby >> 8) & 3)) {
+            func_L00_0025A8E8_2FA618(moby, 0.7f, &moby->x, 0x10000, 0.9f, 1.0f, 0, 1, 0);
+        }
+        break;
+    }
+    data->f1C8 = func_001FA748_2FA618(data->f1C8, D_L06_00161F74_2FA618 * 0.017453292f * D_0015EE6C_2FA618);
+    moby->f90 = func_001FA8A8_2FA618(D_L06_00161F78_2FA618, D_L06_00161F7C_2FA618,
+                                     (func_001F9FA8_2FA618(data->f1C8) + 1.0f) * 0.5f);
+
+    if (data->f1AC != 0) {
+        data->f1A0 = D_L06_00161F60_2FA618 + 6.0f;
+    } else if (moby->state == 1) {
+        if (moby == ((Hero_2FA618 *)(D_0013E633_2FA618 + 0xE1D))->f240 ||
+            moby == ((Hero_2FA618 *)(D_0013E633_2FA618 + 0xE1D))->f23C) {
+            data->f1A0 = 6.0f;
+        } else {
+            data->f1A0 = 0.0f;
+        }
+    } else {
+        data->f1A0 = D_L06_00161F60_2FA618;
+    }
+
+    if (func_L00_00260FB0_2FA618(data->f1A0, moby, data->f120, 0, 0,
+                                 D_L06_001B0FB0_2FA618[data->f1B0] + 4, *D_L06_001B0FB0_2FA618[data->f1B0]) != 2) {
+        if (data->f1A0 < func_001F9D48_2FA618(data->f170, data->f120) ||
+            3.0f < func_001F9B88_2FA618(moby->z - data->f128)) {
+            data->f164 = 2;
+        }
+    }
+    if (data->f160 == 0) {
+        data->f160 = *(int *)(D_0013E633_2FA618 + 0x2E9D);
+    }
+}
 void func_L06_002FAAC8(char *arg)
 {
     short *table = D_L06_001AC340[(unsigned char)arg[0x21]];
