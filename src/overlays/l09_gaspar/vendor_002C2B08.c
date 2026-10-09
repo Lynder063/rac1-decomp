@@ -987,40 +987,40 @@ void func_L09_002ECC50(Moby_2ECC50 *m) {
         if (d->path >= 0) {
             Path_2ECC50 *ring = D_L09_001B0930_2ECC50[d->path];
             for (i = 0; i < ring->n; i++) {
-                func_001F9BD8(d->centre, d->centre, ring->pts[i]);
+                FastVecAdd(d->centre, d->centre, ring->pts[i]);
             }
-            func_001F9C30(d->centre, d->centre, 1.0f / (float)ring->n);
+            FastVecScale(d->centre, d->centre, 1.0f / (float)ring->n);
             d->centre[2] = ring->pts[0][2] - 10.0f;
             for (i = 0; i < 23; i++) {
                 Moby_2ECC50 *q = func_L09_002EBA58_2ECC50();
                 if (q != 0) {
                     Data_2ECC50 *e = q->data;
-                    func_001F9BF0(v0, e->target, e);
-                    func_L00_001FF4B0(v0, v0, func_002140F8(0.0f, func_001F9CB8(v0) - 32.0f));
-                    func_001F9BD8(e, e, v0);
+                    FastVecSub(v0, e->target, e);
+                    func_L00_001FF4B0(v0, v0, random_float_between(0.0f, FastVecLength(v0) - 32.0f));
+                    FastVecAdd(e, e, v0);
                 }
             }
             for (i = 0; i < 50; i++) {
                 Moby_2ECC50 *q = func_L09_002EBD30_2ECC50(m);
                 if (q != 0) {
                     Data_2ECC50 *e = q->data;
-                    int n = func_002140B0(ring->n - 2);
-                    float t = func_002140F8(0.0f, 1.0f);
+                    int n = random_integer_below(ring->n - 2);
+                    float t = random_float_between(0.0f, 1.0f);
                     e->node = n;
-                    func_001F9BF0(v0, ring->pts[n + 1], ring->pts[n]);
-                    func_001F9C30(v0, v0, t);
-                    func_001F9BD8(e->target, v0, ring->pts[n]);
+                    FastVecSub(v0, ring->pts[n + 1], ring->pts[n]);
+                    FastVecScale(v0, v0, t);
+                    FastVecAdd(e->target, v0, ring->pts[n]);
                     qcopy(q->pos, e->target);
-                    func_001F9BD8(q->pos, ring->pts[0], e);
-                    func_001F9BD8(q->pos, q->pos, D_L09_00166FC0);
-                    func_001F9BF0(q->pos, q->pos, e->centre);
+                    FastVecAdd(q->pos, ring->pts[0], e);
+                    FastVecAdd(q->pos, q->pos, D_L09_00166FC0);
+                    FastVecSub(q->pos, q->pos, e->centre);
                 }
             }
         }
         d->init = 1;
     }
     if (m->sub == 0) {
-        if (func_002140B0(func_001F9850(40)) == 0) {
+        if (random_integer_below(scale_ticks(40)) == 0) {
             func_L09_002EBA58_2ECC50();
         }
     }
@@ -1032,26 +1032,26 @@ void func_L09_002ECC50(Moby_2ECC50 *m) {
     qcopy_nc(m->pos, d->target);
     path = D_L09_001B0930_2ECC50[d->path];
     if (m->sub == 0 && d->count < 50 && func_001F9908_2ECC50(&d->timer)) {
-        d->timer = func_001F9850(15) + func_002140B0(func_001F9850(30));
+        d->timer = scale_ticks(15) + random_integer_below(scale_ticks(30));
         func_L09_002EBD30_2ECC50(m);
     }
-    m->rot[0] = func_001FA748(m->rot[0], d->f40);
-    m->rot[1] = func_001FA748(m->rot[1], d->f44);
+    m->rot[0] = FastAddRots(m->rot[0], d->f40);
+    m->rot[1] = FastAddRots(m->rot[1], d->f44);
     d->node = func_L09_00295880_2ECC50(m, path, m->pos, d->node, 1, d->speed);
     if (d->node == path->n - 1) {
         if (m->sub != 0) {
             m->data->owner->data->count--;
-            func_0020D678(m);
+            DeleteMoby(m);
         } else {
             d->node = 0;
             qcopy(m->pos, path->pts[0]);
         }
     }
     if (d->node == 0) {
-        func_001F9BF0(v0, path->pts[1], path->pts[0]);
-        len = func_001F9CB8(v0);
+        FastVecSub(v0, path->pts[1], path->pts[0]);
+        len = FastVecLength(v0);
         func_L00_001FF4B0(v0, v0, 1.0f);
-        func_001F9BF0(v1, m->pos, path->pts[0]);
+        FastVecSub(v1, m->pos, path->pts[0]);
         dot = func_001F9C78_2ECC50(v1, v0);
         if (dot < 0.0f) {
             dot = 0.0f;
@@ -1061,10 +1061,10 @@ void func_L09_002ECC50(Moby_2ECC50 *m) {
             m->alpha = 0x80;
         }
     } else if (d->node == path->n - 2) {
-        func_001F9BF0(v0, path->pts[path->n - 2], path->pts[path->n - 1]);
-        len = func_001F9CB8(v0);
+        FastVecSub(v0, path->pts[path->n - 2], path->pts[path->n - 1]);
+        len = FastVecLength(v0);
         func_L00_001FF4B0(v0, v0, 1.0f);
-        func_001F9BF0(v1, m->pos, path->pts[path->n - 1]);
+        FastVecSub(v1, m->pos, path->pts[path->n - 1]);
         dot = func_001F9C78_2ECC50(v1, v0);
         if (dot < 0.0f) {
             dot = 0.0f;
@@ -1077,9 +1077,9 @@ void func_L09_002ECC50(Moby_2ECC50 *m) {
         m->alpha = 0x80;
     }
     qcopy(d->target, m->pos);
-    func_001F9BD8(m->pos, m->pos, d);
-    func_001F9BD8(m->pos, m->pos, D_L09_00166FC0);
-    func_001F9BF0(m->pos, m->pos, d->centre);
+    FastVecAdd(m->pos, m->pos, d);
+    FastVecAdd(m->pos, m->pos, D_L09_00166FC0);
+    FastVecSub(m->pos, m->pos, d->centre);
 }
 extern char *func_0020D348(int);
 extern int func_001F9850(int);
@@ -2237,7 +2237,7 @@ void func_L09_00305710(Moby_305710 *m) {
     switch (m->state) {
     case 0:
         if (d->flag != -1 && ((Flags_305710 *)(D_0013D355 + 0x13B + d->flag))->b39 != 0) {
-            func_0020D678(m);
+            DeleteMoby(m);
             return;
         }
         if (d->hull == -1) {
@@ -2246,7 +2246,7 @@ void func_L09_00305710(Moby_305710 *m) {
             if (r != 0) {
                 d->hull = r - D_L09_00160058_305710;
             } else {
-                func_001E9730(D_L09_00209340, m->hB2);
+                STUB_printf(D_L09_00209340, m->hB2);
             }
         }
         if (d->next == -1) {
@@ -2255,13 +2255,13 @@ void func_L09_00305710(Moby_305710 *m) {
             if (r != 0) {
                 d->next = r - D_L09_00160058_305710;
             } else {
-                func_001E9730(D_L09_00209370, m->hB2);
+                STUB_printf(D_L09_00209370, m->hB2);
             }
         }
         m->state = 1;
         break;
     case 1:
-        if (m->f31 == 0 || func_001F9D10(m->pos, D_L09_00166FC0) > 32.0f) {
+        if (m->f31 == 0 || FastVecDist(m->pos, D_L09_00166FC0) > 32.0f) {
             if (D_L09_0015F6B0 % 8 != (short)(m->hB2 % 8)) {
                 return;
             }
@@ -2286,23 +2286,23 @@ void func_L09_00305710(Moby_305710 *m) {
         if (d->loose == 0 && hull != 0 && next != 0 && next->oclass == 0x49D) {
             if (next->data->loose != 0) {
                 dist = func_001F9D48(m->pos, hull->pos);
-                m->rot[1] = func_001FA748(m->rot[1], func_001FA790(-func_L00_001FF860(dist, hull->pos[2] - m->pos[2]), m->rot[1]) * 0.1f);
-                m->rot[2] = func_001FA748(m->rot[2], func_001FA790(func_L00_001FF860(hull->pos[0] - m->pos[0], hull->pos[1] - m->pos[1]), m->rot[2]) * 0.1f);
+                m->rot[1] = FastAddRots(m->rot[1], FastSubRots(-func_L00_001FF860(dist, hull->pos[2] - m->pos[2]), m->rot[1]) * 0.1f);
+                m->rot[2] = FastAddRots(m->rot[2], FastSubRots(func_L00_001FF860(hull->pos[0] - m->pos[0], hull->pos[1] - m->pos[1]), m->rot[2]) * 0.1f);
             } else {
-                func_001F9BF0(v20, hull->pos, m->pos);
-                func_L00_001FF4B0(v20, v20, (func_001F9CB8(v20) - 1.3f) * 0.7f);
+                FastVecSub(v20, hull->pos, m->pos);
+                func_L00_001FF4B0(v20, v20, (FastVecLength(v20) - 1.3f) * 0.7f);
                 if (next->oclass == 0x49D && next->state != 0xFE && next->state != 0xFD) {
-                    func_001F9BF0(v30, next->pos, m->pos);
-                    func_L00_001FF4B0(v30, v30, (func_001F9CB8(v30) - 1.3f) * 0.7f);
-                    func_001F9BD8(v40, v20, v30);
+                    FastVecSub(v30, next->pos, m->pos);
+                    func_L00_001FF4B0(v30, v30, (FastVecLength(v30) - 1.3f) * 0.7f);
+                    FastVecAdd(v40, v20, v30);
                 } else {
                     qcopy(v40, v20);
                 }
                 v40[2] -= D_0015EE70 * 9.8f;
-                func_001F9BD8(m->pos, m->pos, v40);
+                FastVecAdd(m->pos, m->pos, v40);
                 dist = func_001F9D48(m->pos, hull->pos);
-                m->rot[1] = func_001FA748(m->rot[1], func_001FA790(-func_L00_001FF860(dist, hull->pos[2] - m->pos[2]), m->rot[1]) * 0.1f);
-                m->rot[2] = func_001FA748(m->rot[2], func_001FA790(func_L00_001FF860(hull->pos[0] - m->pos[0], hull->pos[1] - m->pos[1]), m->rot[2]) * 0.1f);
+                m->rot[1] = FastAddRots(m->rot[1], FastSubRots(-func_L00_001FF860(dist, hull->pos[2] - m->pos[2]), m->rot[1]) * 0.1f);
+                m->rot[2] = FastAddRots(m->rot[2], FastSubRots(func_L00_001FF860(hull->pos[0] - m->pos[0], hull->pos[1] - m->pos[1]), m->rot[2]) * 0.1f);
             }
         } else {
             d->loose = 1;
@@ -2314,7 +2314,7 @@ void func_L09_00305710(Moby_305710 *m) {
                     o->sub = o->state;
                 }
             }
-            d->timer = func_001F9850(10);
+            d->timer = scale_ticks(10);
             m->f30 = 0xFF;
             m->state = 2;
         }
@@ -2329,18 +2329,18 @@ void func_L09_00305710(Moby_305710 *m) {
             }
         }
         if (hull != 0) {
-            func_001F9BF0(v20, hull->pos, m->pos);
-            func_L00_001FF4B0(v20, v20, func_001F9CB8(v20) - 1.3f);
+            FastVecSub(v20, hull->pos, m->pos);
+            func_L00_001FF4B0(v20, v20, FastVecLength(v20) - 1.3f);
             qcopy(v30, v20);
-            n = func_001F9850(10);
+            n = scale_ticks(10);
             t = d->timer - 3;
             v30[2] -= D_0015EE70 * 9.8f * 2.0f * func_001FA888(n - t);
-            func_001F9BD8(m->pos, m->pos, v30);
+            FastVecAdd(m->pos, m->pos, v30);
             dist = func_001F9D48(m->pos, hull->pos);
-            m->rot[1] = func_001FA748(m->rot[1], func_001FA790(-func_L00_001FF860(dist, hull->pos[2] - m->pos[2]), m->rot[1]) * 0.5f);
-            m->rot[2] = func_001FA748(m->rot[2], func_001FA790(func_L00_001FF860(hull->pos[0] - m->pos[0], hull->pos[1] - m->pos[1]), m->rot[2]) * 0.5f);
+            m->rot[1] = FastAddRots(m->rot[1], FastSubRots(-func_L00_001FF860(dist, hull->pos[2] - m->pos[2]), m->rot[1]) * 0.5f);
+            m->rot[2] = FastAddRots(m->rot[2], FastSubRots(func_L00_001FF860(hull->pos[0] - m->pos[0], hull->pos[1] - m->pos[1]), m->rot[2]) * 0.5f);
         }
-        if (func_001F9938(&d->timer)) {
+        if (FastDecTimer(&d->timer)) {
             if (d->hull != -1) {
                 Moby_305710 *o = &D_L09_00160058_305710[d->hull];
                 if (o != 0 && o->state != 0xFE && o->state != 0xFD
@@ -2361,9 +2361,9 @@ void func_L09_00305710(Moby_305710 *m) {
         }
         break;
     case 3:
-        func_001F9BF0(v20, D_L09_00166FC0, m->pos);
+        FastVecSub(v20, D_L09_00166FC0, m->pos);
         func_L00_0025F4A8_alt(m, v20, 0, 0.0f, 0.0f, 10, 5, 8, 2.0f, 1.0f, 10.0f, 1.0f, 0, 10.0f, 0, 1, -1, 0);
-        func_0020D678(m);
+        DeleteMoby(m);
         break;
     }
 }

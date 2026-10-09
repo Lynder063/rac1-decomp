@@ -2599,7 +2599,7 @@ void func_L06_002F6330(Moby_2F6330 *m) {
             d->slots[i]->flags = m->flags;
             qcopy_nc(d->slots[i]->pos, m->pos);
             qcopy_nc(d->slots[i]->rot, m->rot);
-            d->slots[i]->rot[0] = func_001FA748(d->slots[i]->rot[0], (float)((i + 1) * 45) * 0.017453292f);
+            d->slots[i]->rot[0] = FastAddRots(d->slots[i]->rot[0], (float)((i + 1) * 45) * 0.017453292f);
             d->slots[i]->state = 1;
             func_001FA1F8(d->slots[i]->fC0, d->slots[i]->rot);
         }
@@ -2609,7 +2609,7 @@ void func_L06_002F6330(Moby_2F6330 *m) {
         qcopy(d->pos, m->pos);
         m->state = 3;
         func_L00_001FF4B0(tmp, m->fE0, D_L06_00161DD8);
-        func_001F9BD8(m->pos, tmp, d);
+        FastVecAdd(m->pos, tmp, d);
         break;
     case 2:
         if (m->sub == 0) {
@@ -2648,7 +2648,7 @@ void func_L06_002F6330(Moby_2F6330 *m) {
         }
     case 3:
         func_L00_001FF4B0(tmp, m->fE0, D_L06_00161DD8);
-        func_001F9BD8(m->pos, tmp, d);
+        FastVecAdd(m->pos, tmp, d);
         break;
     case 4:
     case 5:
@@ -2656,7 +2656,7 @@ void func_L06_002F6330(Moby_2F6330 *m) {
                           D_L06_00161DC8 * 0.017453292f * D_0015EE70,
                           D_L06_00161DCC * 0.017453292f * D_0015EE70,
                           D_L06_00161DD0 * 0.017453292f * D_0015EE6C);
-        m->rot[0] = func_001FA790(d->f10, d->f14);
+        m->rot[0] = FastSubRots(d->f10, d->f14);
         if (d->f14 >= 1.0471976f) {
             m->flags |= 1;
             m->f31 = 0;
@@ -2673,7 +2673,7 @@ void func_L06_002F6330(Moby_2F6330 *m) {
                           D_L06_00161DC8 * 0.017453292f * D_0015EE70,
                           D_L06_00161DCC * 0.017453292f * D_0015EE70,
                           D_L06_00161DD0 * 0.017453292f * D_0015EE6C);
-        m->rot[0] = func_001FA790(d->f10, d->f14);
+        m->rot[0] = FastSubRots(d->f10, d->f14);
         if (d->f14 <= 0.0f) {
             if (m->state == 8) {
                 m->state = 2;

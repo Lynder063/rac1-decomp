@@ -45,9 +45,9 @@ void func_L00_00269BE8(FallingParticle *p)
 
     cell_x = p->probe.f[0];
     cell_y = p->probe.f[1];
-    func_001F9BD8(&step, vel, &D_L00_00160310);
-    func_001F9BD8(&p->probe, &p->probe, &step);
-    func_001F9BD8(&p->pos, &p->pos, &step);
+    FastVecAdd(&step, vel, &D_L00_00160310);
+    FastVecAdd(&p->probe, &p->probe, &step);
+    FastVecAdd(&p->pos, &p->pos, &step);
     if (p->unk0A != 2) {
         if (cell_x != (s32)p->probe.f[0] || cell_y != (s32)p->probe.f[1]) {
             tmp1.q = p->probe.q;

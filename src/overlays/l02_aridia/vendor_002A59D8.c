@@ -373,7 +373,7 @@ void func_L02_002D70C0(unsigned char *moby) {
             (*(Vars_2D70C0 **)((d->i288 << 8) + D_L02_00160058_2D70C0 + 0x78))->i14C -= 1;
         }
         if ((d->i27C = func_L02_002D6A90(moby)) == 0) {
-            func_0020D678(moby);
+            DeleteMoby(moby);
             return;
         }
         moby[0x20] = 0x1A;
@@ -382,11 +382,11 @@ void func_L02_002D70C0(unsigned char *moby) {
         *(float *)(moby + 0x18) -= 10.0f;
     }
     if (d->i38 != 0 ||
-        (!func_001F9938(&d->t25C) && func_001F9D48(moby + 0x10, D_0013E633_2D70C0 + 0xE9D) < 10.0f)) {
-        d->t25E = func_001FA898_r(func_001F9878(func_002140F8(180.0f, 240.0f)));
+        (!FastDecTimer(&d->t25C) && func_001F9D48(moby + 0x10, D_0013E633_2D70C0 + 0xE9D) < 10.0f)) {
+        d->t25E = func_001FA898_r(func_001F9878(random_float_between(180.0f, 240.0f)));
     }
     d->i38 = 0;
-    if (func_001F9938(&d->t25E)) {
+    if (FastDecTimer(&d->t25E)) {
         d->f250 = d->f24C;
     } else {
         d->f250 = d->f24C + 5.0f;
@@ -440,7 +440,7 @@ void func_L02_002D70C0(unsigned char *moby) {
     path = D_L02_001B0DB0_2D70C0[d->i290];
     if (func_L00_00260FB0(d->f250, moby, d->tgt, 0, 0, path + 4, *path) != 2 &&
         (d->f250 < func_001F9D48(d->home, d->tgt) ||
-         func_001F9B88(*(float *)(moby + 0x18) - d->tgt[2]) > 3.0f)) {
+         FastAbsF(*(float *)(moby + 0x18) - d->tgt[2]) > 3.0f)) {
         d->i214 = 2;
     }
     if (d->i210 == 0) {

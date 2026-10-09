@@ -95,58 +95,58 @@ void func_L08_002E2A38(Moby_2E2A38 *m) {
 
     switch (m->state) {
     case 1:
-        d->spin_x = func_002140F8(-(D_0015EE6C * 1.5707964f), D_0015EE6C * 1.5707964f);
-        d->spin_y = func_002140F8(-(D_0015EE6C * 1.5707964f), D_0015EE6C * 1.5707964f);
-        d->life = (int)func_002140F8((float)func_001F9850(0x5A), (float)func_001F9850(0x96));
+        d->spin_x = random_float_between(-(D_0015EE6C * 1.5707964f), D_0015EE6C * 1.5707964f);
+        d->spin_y = random_float_between(-(D_0015EE6C * 1.5707964f), D_0015EE6C * 1.5707964f);
+        d->life = (int)random_float_between((float)scale_ticks(0x5A), (float)scale_ticks(0x96));
         m->state = 2;
     case 2:
         d->vel[2] -= D_0015EE70 * 10.8f * 0.5f;
-        func_001F9BD8(m->pos, m->pos, d);
-        m->rot[0] = func_001FA748(m->rot[0], d->spin_x);
-        m->rot[1] = func_001FA748(m->rot[1], d->spin_y);
+        FastVecAdd(m->pos, m->pos, d);
+        m->rot[0] = FastAddRots(m->rot[0], d->spin_x);
+        m->rot[1] = FastAddRots(m->rot[1], d->spin_y);
         if (m->pos[0] < 8.0f || m->pos[1] < 8.0f || m->pos[0] > 500.0f || m->pos[1] > 500.0f ||
             m->pos[2] > 500.0f) {
-            func_0020D678(m);
+            DeleteMoby(m);
             return;
         }
-        if (func_002140B0(3) == 0) {
+        if (random_integer_below(3) == 0) {
             int *q;
             int a;
             int b;
-            func_001F9BC0(v10);
+            clear_u64_value(v10);
             tab = D_L08_00161CC0;
-            q = &tab.v[func_002140B0(2)];
+            q = &tab.v[random_integer_below(2)];
             {
-                int lo = func_001F9850(15), hi = func_001F9850(20);
-                a = func_L00_00258BC8(lo, hi);
+                int lo = scale_ticks(15), hi = scale_ticks(20);
+                a = rand_range(lo, hi);
             }
             {
-                int lo = func_001F9850(25);
-                b = func_L00_00258BC8(lo, func_001F9850(30));
+                int lo = scale_ticks(25);
+                b = rand_range(lo, scale_ticks(30));
             }
             func_L00_0026B890_2E2A38(m->pos, v10, 0x2F3F3F7F, *q, a, b, 0, 0, 400000.0f,
-                                     func_002140F8(8.0f, 16.0f) * D_0015EE6C);
+                                     random_float_between(8.0f, 16.0f) * D_0015EE6C);
         }
         if (m->pos[2] < 15.2f) {
             for (i = 0; i < D_L08_00161C90; i++) {
-                float ang = func_00214158();
+                float ang = random_angle_radians();
                 int c1;
                 int c2;
                 int c3;
                 qcopy(a40, m->pos);
-                a40[0] += func_002140F8(-3.0f, 3.0f);
-                a40[1] += func_002140F8(-3.0f, 3.0f);
+                a40[0] += random_float_between(-3.0f, 3.0f);
+                a40[1] += random_float_between(-3.0f, 3.0f);
                 v10[2] = D_L08_00161C9C * D_0015EE6C;
-                v10[0] += func_001F9F90(ang) * D_L08_00161CA4;
-                v10[1] += func_001F9FA8(ang) * D_L08_00161CA4;
+                v10[0] += FastCos(ang) * D_L08_00161CA4;
+                v10[1] += FastSin(ang) * D_L08_00161CA4;
                 v30[2] = D_L08_00161CA0 * D_0015EE6C;
-                v30[0] += func_001F9F90(ang) * D_L08_00161CA8;
-                v30[1] += func_001F9FA8(ang) * D_L08_00161CA8;
+                v30[0] += FastCos(ang) * D_L08_00161CA8;
+                v30[1] += FastSin(ang) * D_L08_00161CA8;
                 v10[3] = D_L08_00161CB8;
                 v30[3] = D_L08_00161CBC;
-                c1 = func_001FA898(func_001F9878(func_002140F8((float)D_L08_00161CAC, (float)(D_L08_00161CAC * 2))));
-                c2 = func_001FA898(func_001F9878(func_002140F8((float)D_L08_00161CB0, (float)(D_L08_00161CB0 * 2))));
-                c3 = func_001FA898(func_001F9878(func_002140F8((float)D_L08_00161CB4, (float)(D_L08_00161CB4 * 2))));
+                c1 = truncate_float_to_s32(func_001F9878(random_float_between((float)D_L08_00161CAC, (float)(D_L08_00161CAC * 2))));
+                c2 = truncate_float_to_s32(func_001F9878(random_float_between((float)D_L08_00161CB0, (float)(D_L08_00161CB0 * 2))));
+                c3 = truncate_float_to_s32(func_001F9878(random_float_between((float)D_L08_00161CB4, (float)(D_L08_00161CB4 * 2))));
                 func_00219780_2E2A38(a40, v10, v30, D_L08_00161C94, D_L08_00161C98, c1, c2, c3, -1);
             }
             m->state = 3;
@@ -154,12 +154,12 @@ void func_L08_002E2A38(Moby_2E2A38 *m) {
         break;
     case 3:
         d->vel[2] -= D_0015EE70 * 10.8f * 0.5f;
-        func_001F9BD8(m->pos, m->pos, d);
-        m->rot[0] = func_001FA748(m->rot[0], d->spin_x);
-        m->rot[1] = func_001FA748(m->rot[1], d->spin_y);
+        FastVecAdd(m->pos, m->pos, d);
+        m->rot[0] = FastAddRots(m->rot[0], d->spin_x);
+        m->rot[1] = FastAddRots(m->rot[1], d->spin_y);
         if (m->pos[0] < 8.0f || m->pos[1] < 8.0f || m->pos[2] < 8.0f || m->pos[0] > 500.0f ||
             m->pos[1] > 500.0f) {
-            func_0020D678(m);
+            DeleteMoby(m);
         }
         break;
     }

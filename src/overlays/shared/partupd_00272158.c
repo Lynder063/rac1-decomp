@@ -1536,21 +1536,21 @@ void func_L00_002761C0(O_275320 *o) {
 
     h = vel->f[3];
     if (o->pos.f[0] < 0.0f || o->pos.f[1] < 0.0f || 512.0f < o->pos.f[0] || 512.0f < o->pos.f[1]) {
-        func_L00_002688A8(o);
+        KillPart(o);
         return;
     }
     if (o->pos.f[2] < h) {
         tmp.q = o->pos.q;
         func_L00_00264570(&tmp);
-        func_L00_002688A8(o);
+        KillPart(o);
         return;
     }
     tmp.q = o->vel.q;
     ix = o->pos.f[0];
     iy = o->pos.f[1];
     tmp.f[3] = 0.0f;
-    func_001F9BD8(&o->pos, &o->pos, &tmp);
-    func_001F9BD8(&o->pos, &o->pos, D_L00_00160310);
+    FastVecAdd(&o->pos, &o->pos, &tmp);
+    FastVecAdd(&o->pos, &o->pos, D_L00_00160310);
     if (ix != (int)o->pos.f[0] || iy != (int)o->pos.f[1]) {
         t2.q = o->pos.q;
         h = func_L00_002644E0(&t2);
@@ -1563,7 +1563,7 @@ void func_L00_002761C0(O_275320 *o) {
         if (o->pos.f[2] < h) {
             t2.q = o->pos.q;
             func_L00_00264570(&t2);
-            func_L00_002688A8(o);
+            KillPart(o);
             return;
         }
     }
@@ -1571,7 +1571,7 @@ void func_L00_002761C0(O_275320 *o) {
     tmp.f[1] = 0.0f;
     tmp.f[3] = 0.0f;
     tmp.f[2] = -(D_0015EE70 * 0.5f);
-    func_001F9BD8(vel, &tmp, vel);
+    FastVecAdd(vel, &tmp, vel);
     vel->f[3] = h + D_L00_00160318;
 }
 extern void func_001F9EC0(void *, void *, void *);
