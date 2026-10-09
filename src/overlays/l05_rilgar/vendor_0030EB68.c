@@ -268,7 +268,47 @@ void func_L05_003106E0(char *obj, float a, float b) {
         func_L05_0029CA28(u, w, v, k, m, n);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L05_003108D0);
+extern float func_001F9C78(void *a, void *b);
+extern float func_001FA748(float, float);
+extern float func_L00_0025CE58(float *, float, float *, float, float, float);
+extern float D_0015EE70 MACRO_ADDR;
+extern short D_L05_00161E98;
+extern short D_L05_00161E9C;
+extern short D_L05_00161EA0;
+extern short D_L05_00161EA4;
+
+/* When the block at D_0013E633 + 0xE1D points back at this moby and its short at +0x30E is zero, derives two values
+ * from the vector between them; otherwise both are 0. Eases the values at data + 0x98 and 0x9C toward those at 0xA0 and
+ * 0xA4, then calls func_L00_0025CE58 on the moby's values at +0x40 and +0x44 with the results. */
+void func_L05_003108D0(char *moby, float k, float m) {
+    char *g = D_0013E633 + 0xE1D;
+    char *data = *(char **)(moby + 0x78);
+    float v[4];
+    float x, y;
+    float s, x2, y2, d;
+    if (*(char **)(g + 0x2FC) == moby && *(short *)(g + 0x30E) == 0) {
+        func_001F9BF0(v, g + 0x80, moby + 0x10);
+        d = func_001F9C78(v, moby + 0xC0);
+        x = -k * func_001F9C78(v, moby + 0xD0);
+        y = k * d;
+    } else {
+        y = 0.0f;
+        x = y;
+    }
+    s = 0.017453292f;
+    *(float *)(data + 0x98) = func_001FA748(*(float *)(data + 0x98), *(float *)(data + 0xA0));
+    *(float *)(data + 0x9C) = func_001FA748(*(float *)(data + 0x9C), *(float *)(data + 0xA4));
+    x2 = func_001FA748(x, func_001F9FA8(*(float *)(data + 0x98)) * k * *(float *)&D_L05_00161E98);
+    y2 = func_001FA748(y, func_001F9FA8(*(float *)(data + 0x9C)) * k * *(float *)&D_L05_00161E98);
+    func_L00_0025CE58((float *)(moby + 0x40), x2, (float *)(data + 0x90),
+                      *(float *)&D_L05_00161E9C * m * s * D_0015EE70,
+                      *(float *)&D_L05_00161EA0 * m * s * D_0015EE70,
+                      *(float *)&D_L05_00161EA4 * s * D_0015EE6C);
+    func_L00_0025CE58((float *)(moby + 0x44), y2, (float *)(data + 0x94),
+                      *(float *)&D_L05_00161E9C * m * s * D_0015EE70,
+                      *(float *)&D_L05_00161EA0 * m * s * D_0015EE70,
+                      *(float *)&D_L05_00161EA4 * s * D_0015EE6C);
+}
 INCLUDE_ASM("asm/overlays", func_L05_00310A90);
 INCLUDE_ASM("asm/overlays", func_L05_00316378);
 INCLUDE_ASM("asm/overlays", func_L05_003165B8);

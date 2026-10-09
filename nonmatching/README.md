@@ -68,7 +68,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L11_00311318`](l11_pokitaru/func_L11_00311318.c) | l11_pokitaru | 472 | BYTES 14/472 | 97.0% |
 | [`func_L00_00267290`](shared/func_L00_00267290.c) | shared | 904 | BYTES 28/904 | 96.9% |
 | [`func_L09_00308F58`](shared/func_L09_00308F58.c) | shared | 448 | BYTES 14/448 | 96.9% |
-| [`func_L13_00306D40`](l13_gemlik/func_L13_00306D40.c) | l13_gemlik | 224 | BYTES 7/224 | 96.9% |
 | [`func_L13_002CF960`](l13_gemlik/func_L13_002CF960.c) | l13_gemlik | 1580 | BYTES 50/1580 | 96.8% |
 | [`func_L10_002D9530`](l10_orxon/func_L10_002D9530.c) | l10_orxon | 1108 | BYTES 36/1108 | 96.8% |
 | [`func_L14_00300130`](shared/func_L14_00300130.c) | shared | 588 | BYTES 20/588 | 96.6% |
@@ -93,7 +92,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L12_00309AE8`](shared/func_L12_00309AE8.c) | shared | 524 | BYTES 23/524 | 95.6% |
 | [`func_L00_002353B8`](shared/func_L00_002353B8.c) | shared | 588 | BYTES 26/588 | 95.6% |
 | [`func_L01_0031AD00`](shared/func_L01_0031AD00.c) | shared | 928 | BYTES 42/928 | 95.5% |
-| [`func_L14_002B4128`](shared/func_L14_002B4128.c) | shared | 132 | BYTES 6/132 | 95.5% |
 | [`func_L00_002A86D8`](shared/func_L00_002A86D8.c) | shared | 836 | BYTES 40/836 | 95.2% |
 | [`func_L00_002D19E8`](shared/func_L00_002D19E8.c) | shared | 1148 | BYTES 56/1148 | 95.1% |
 | [`func_L06_002F4A70`](shared/func_L06_002F4A70.c) | shared | 396 | BYTES 20/396 | 95.0% |
@@ -104,7 +102,6 @@ Each file is the best attempt so far at a level function that isn't exact yet.
 | [`func_L00_002A11E8`](shared/func_L00_002A11E8.c) | shared | 852 | BYTES 45/852 | 94.7% |
 | [`func_L02_002DC2C0`](shared/func_L02_002DC2C0.c) | shared | 208 | BYTES 11/208 | 94.7% |
 | [`func_L02_002FCA80`](shared/func_L02_002FCA80.c) | shared | 316 | BYTES 17/316 | 94.6% |
-| [`func_L05_003108D0`](l05_rilgar/func_L05_003108D0.c) | l05_rilgar | 444 | BYTES 25/444 | 94.4% |
 | [`func_L14_002FD578`](l14_oltanis/func_L14_002FD578.c) | l14_oltanis | 756 | BYTES 44/756 | 94.2% |
 | [`func_L14_002FF040`](l14_oltanis/func_L14_002FF040.c) | l14_oltanis | 788 | BYTES 46/788 | 94.2% |
 | [`func_L10_002EB5B0`](l10_orxon/func_L10_002EB5B0.c) | l10_orxon | 756 | BYTES 45/756 | 94.0% |
