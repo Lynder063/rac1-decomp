@@ -1294,7 +1294,48 @@ float func_L06_002F3578(char *a, char *b, int c) {
 INCLUDE_ASM("asm/overlays", func_L06_002F3680);
 INCLUDE_ASM("asm/overlays", func_L06_002F3D40);
 INCLUDE_ASM("asm/overlays", func_L06_002F4058);
-INCLUDE_ASM("asm/overlays", func_L06_002F4720);
+extern int func_L00_0025A208(int *, int, int, int);
+extern int func_L00_0025A2F0(int *, int, int, int);
+extern int func_L06_002F4058_2F4720(char *, char *, int, int, int *) __asm__("func_L06_002F4058");
+extern int D_L06_001AC500_2F4720[] __asm__("D_L06_001AC500");
+typedef struct {
+    int list;
+    int out;
+} Iter_2F4720;
+int func_L06_002F4720_r(char *moby, int flag) __asm__("func_L06_002F4720");
+
+/* Runs the candidate check func_L06_002F4058 over the moby's candidate list (or the global default list when it has none); returns the output of the first accepted candidate.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/entities/00297d10.c, FUN_L06_002f32f0. */
+int func_L06_002F4720_r(char *moby, int flag)
+{
+    char **moby_ref;
+    Iter_2F4720 iter;
+    char *state;
+    int list_id;
+    int *cursor;
+    int entry;
+
+    state = *(char **)(moby + 0x78);
+    iter.out = 0;
+    list_id = *(int *)(state + 0x30C);
+    if (list_id != -1) {
+        func_L00_0025A208(&iter.list, list_id, 0, 0);
+        while (iter.list != 0) {
+            if (func_L06_002F4058_2F4720(moby, state, iter.list, flag, &iter.out)) return iter.out;
+            func_L00_0025A2F0(&iter.list, iter.list, 0, 0);
+        }
+    } else {
+        cursor = D_L06_001AC500_2F4720;
+        entry = *cursor;
+        while (entry != 0) {
+            moby_ref = &moby;
+            if (func_L06_002F4058_2F4720(*moby_ref, state, entry, flag, &iter.out)) return iter.out;
+            cursor++;
+            entry = *cursor;
+        }
+    }
+    return iter.out;
+}
 extern float func_001F9D48(void *, void *);
 extern float func_L00_001FF860(float, float);
 extern float func_001FA850(float, float);
@@ -1316,7 +1357,54 @@ void func_L06_002F4818(char *a, char *b, char *c, int *out, float *best, float t
     }
 }
 INCLUDE_ASM("asm/overlays", func_L06_002F4908);
-INCLUDE_ASM("asm/overlays", func_L06_002F4A70);
+extern char *func_L00_0025B478_2F4A70(void *, int, int) __asm__("func_L00_0025B478");
+extern float D_0015EE6C_2F4A70 __asm__("D_0015EE6C") MACRO_ADDR;
+extern int func_001F9850_2F4A70(int) __asm__("func_001F9850");
+extern float func_L00_001FF860_2F4A70(float, float) __asm__("func_L00_001FF860");
+typedef unsigned int Q_2F4A70 __attribute__((mode(TI), aligned(16)));
+extern char * D_001414D0_2F4A70 __asm__("D_001414D0");
+extern void func_L03_00251A58_2F4A70(void *, float, float) __asm__("func_L03_00251A58");
+extern void func_L00_0025BBA0_2F4A70(void *, float *, void *, void *) __asm__("func_L00_0025BBA0");
+extern void func_L00_0025D5B0_2F4A70(void *, void *, int, int, int, float) __asm__("func_L00_0025D5B0");
+extern void func_0022ED80_F4A70(int, int, void *) __asm__("func_0022ED80");
+
+void func_L06_002F4A70_r(unsigned char *moby) __asm__("func_L06_002F4A70");
+
+/* Looks for a target (query 0x330001); if its owner is a different hostile, sets up the aim/attack data and enters state 9.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/entities/00297d10.c, FUN_L06_002f3640. */
+void func_L06_002F4A70_r(unsigned char *moby) {
+    char *state = *(char **)(moby + 0x78);
+    if (moby[0x20] != 9 && moby[0x52] != 2 && moby[0x53] != 2) {
+        char *target = func_L00_0025B478_2F4A70(moby, 0x330001, 0);
+        if (target != 0) {
+            Q_2F4A70 pos;
+            float base_angle = func_L00_001FF860_2F4A70(*(float *)(target + 0x10), *(float *)(target + 0x14));
+            char *owner = *(char **)(target + 0x20);
+            float ang;
+            ang = base_angle;
+            if (owner != D_001414D0_2F4A70 && *(short *)(owner + 0xA6) != *(short *)(moby + 0xA6)) {
+                int frames_sq = func_001F9850_2F4A70(0x50);
+                frames_sq *= func_001F9850_2F4A70(0x50);
+                state[0xBD] = 0;
+                *(int *)(state + 0xA4) = 9;
+                *(float *)(state + 0x90) = 4.0f / (float)frames_sq;
+                func_L03_00251A58_2F4A70(state + 0x80, 2.0f, 0.5f);
+                pos = *(Q_2F4A70 *)(target + 0x10);
+                func_L00_0025BBA0_2F4A70(&pos, &ang, state + 0x98, state + 0x9C);
+                func_L00_0025D5B0_2F4A70(moby, state + 0x80, 4, 5, 2, ang);
+                {
+                    float v = D_0015EE6C_2F4A70 + D_0015EE6C_2F4A70;
+                    *(float *)(state + 0xD0) = 10.0f;
+                    *(float *)(state + 0xD4) = 20.0f;
+                    *(float *)(state + 0xCC) = v;
+                }
+                func_0022ED80_F4A70(2, 0, moby);
+                moby[0x20] = 9;
+            }
+        }
+    }
+    moby[0xA4] = 0xFF;
+}
 extern unsigned char D_0015EEB0[] MACRO_ADDR;
 extern int func_L00_0025A208(int *, int, int, int);
 extern int func_L00_0025A2F0(int *, int, int, int);

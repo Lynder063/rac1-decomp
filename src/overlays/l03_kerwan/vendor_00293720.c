@@ -1099,7 +1099,55 @@ void func_L03_0029ED60(char *moby) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L03_002BC038);
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 w;
+} Vec4f_2BC038;
+typedef struct {
+    Vec4f_2BC038 bsphere;
+    Vec4f_2BC038 pos;
+    u8 pad20[0x20];
+    Vec4f_2BC038 rot;
+    u8 pad50[0x28];
+    u8 *pvars;
+} Moby_2BC038;
+typedef int OvlQuad_2BC038 __attribute__((mode(TI)));
+char *func_0020D348_2BC038(int) __asm__("func_0020D348");
+float func_00214158_2BC038(void) __asm__("func_00214158");
+void func_L00_00251328_2BC038(char *, int, int, int) __asm__("func_L00_00251328");
+void func_L00_00251E30_2BC038(char *) __asm__("func_L00_00251E30");
+char *func_L03_002BC038_r(Moby_2BC038 *parent, int unused, int color, int a3, int a4, float f, float scale) __asm__("func_L03_002BC038");
+
+/* Spawns a child effect (moby 0xEB) on the parent: copies its position and rotation, then sets the colour, timers and scale.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l03/gameplay/entities/00292578.c, FUN_L03_002bad40. */
+char *func_L03_002BC038_r(Moby_2BC038 *parent, int unused, int color, int a3, int a4, float f, float scale) {
+    char *m = func_0020D348_2BC038(0xEB);
+    if (m) {
+        char *d = *(char **)(m + 0x78);
+        int r, g, b;
+        *(unsigned char *)(m + 0x30) = 0xFF;
+        *(short *)(m + 0x32) = 0x7F;
+        m[0x31] = 1;
+        *(float *)(m + 0x2C) *= scale;
+        *(char **)d = (char *)parent;
+        qcopy(m + 0x10, (char *)parent->pvars + 0xF0);
+        *(OvlQuad_2BC038 *)(m + 0x40) = *(OvlQuad_2BC038 *)&parent->rot;
+        *(float *)(m + 0x40) = func_00214158_2BC038();
+        *(short *)(d + 0xC) = a4;
+        b = (color >> 16) & 0xFF;
+        g = (color >> 8) & 0xFF;
+        r = color & 0xFF;
+        *(short *)(d + 0xE) = a4;
+        *(float *)(d + 0x14) = f;
+        *(int *)(d + 0x4) = color;
+        *(int *)(d + 0x8) = a3;
+        func_L00_00251328_2BC038(m, r, g, b);
+        func_L00_00251E30_2BC038(m);
+    }
+    return m;
+}
 int func_L03_002C6F40(unsigned char *moby) {
     if (moby && moby[0x20] != 0xFE && moby[0x20] != 0xFD && *(short *)(moby + 0xA6) == 0x23D && moby[0x20] == 5) {
         return 1;
@@ -2170,5 +2218,508 @@ void func_L03_002C8398(Moby2C8398 *m) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L03_002CA970);
-INCLUDE_ASM("asm/overlays", func_L03_002CB068);
+struct Hero_2CA970 {
+    u8 pad_0[0x80];
+    struct { struct { f32 f[4]; } pos; } motion; /* 0x80: world position */
+    u8 pad_90[0x1000];
+    struct { void *moby; } items[1]; /* 0x1090: slot 0 is the equipped gadget */
+};
+extern int func_001F9850_2CA970(int) __asm__("func_001F9850");
+extern int func_001F9938_2CA970(void *) __asm__("func_001F9938");
+extern int func_0022ED80_2CA970(int, int, int) __asm__("func_0022ED80");
+typedef int OvlQuad_2CA970 __attribute__((mode(TI)));
+extern float func_L00_001FF860_2CA970(float, float) __asm__("func_L00_001FF860");
+extern struct Hero_2CA970 D_0013F450_2CA970 __asm__("D_0013F450");
+extern float D_0015EE6C_2CA970 __asm__("D_0015EE6C") MACRO_ADDR;
+extern float D_0015EE70_2CA970 __asm__("D_0015EE70") MACRO_ADDR;
+extern void *func_L00_0025B478_2CA970(void *, int, int) __asm__("func_L00_0025B478");
+extern void func_L00_0025BBA0_2CA970(void *, float *, void *, void *) __asm__("func_L00_0025BBA0");
+extern void func_L00_0025D5B0_2CA970(float, void *, void *, int, int, int) __asm__("func_L00_0025D5B0");
+extern void func_L00_0025E4B0_2CA970(void *, short *) __asm__("func_L00_0025E4B0");
+typedef struct {
+    char p0[8];
+    float f8;
+    char pC[4];
+    float f10;
+    float f14;
+    float f18;
+    float f1C;
+    int i20;
+    int i24;
+    float f28;
+    char p2C[0x11];
+    unsigned char b3D;
+    short s3E;
+    char p40[0xC];
+    float f4C;
+    float f50;
+    float f54;
+    char p58[8];
+} Jump2C8398_2CA970;
+typedef struct {
+    char p0[8];
+    float f8;
+    float fC;
+    char p10[8];
+    float f18;
+    char p1C[8];
+    float f24;
+    float f28;
+    float f2C;
+    char p30[8];
+    int i38;
+    float f3C;
+    float f40;
+    float f44;
+    char p48[8];
+} Mover2C8398_2CA970;
+typedef struct {
+    int idx;
+    signed char step;
+    char p5[0xB];
+    char *path;
+    int id;
+} PathF2C8398_2CA970;
+typedef struct {
+    char p0[0x68];
+    float f68;
+    char p6C[0x14];
+} Look2C8398_2CA970;
+typedef struct Data2C8398_2CA970 {
+    char p00[0x20];
+    float f20;
+    short s24;
+    char p26[2];
+    unsigned char b28;
+    unsigned char b29;
+    char p2A[6];
+    float f30;
+    char p34[4];
+    int i38;
+    char p3C[4];
+    float v40[4];
+    char p50[8];
+    unsigned char b58;
+    char p59;
+    unsigned char b5A;
+    char p5B[0xC];
+    unsigned char b67;
+    char p68[8];
+    Jump2C8398_2CA970 q;
+    Mover2C8398_2CA970 mv;
+    PathF2C8398_2CA970 pf;
+    char p138[0x18];
+    Look2C8398_2CA970 look0;
+    Look2C8398_2CA970 look1;
+    short s250;
+    short s252;
+    unsigned char b254;
+    unsigned char b255;
+    short s256;
+    float f258;
+    char p25C[6];
+    unsigned char b262;
+    unsigned char b263;
+    int i264;
+    char p268[4];
+    float f26C;
+    float f270;
+    int i274;
+    float f278;
+    float f27C;
+    int i280;
+    int i284;
+    short s288;
+    short s28A;
+    float f28C;
+    int i290;
+    float f294;
+    int i298;
+    int i29C;
+} Data2C8398_2CA970;
+typedef struct Moby2C8398_2CA970 {
+    char p00[0x10];
+    float pos[4];
+    unsigned char state;
+    unsigned char b21;
+    char p22[2];
+    char *p24;
+    char p28[9];
+    unsigned char b31;
+    unsigned short s32;
+    unsigned short flags;
+    char p36[2];
+    long l38;
+    float rot[4];
+    char p50[2];
+    unsigned char b52;
+    unsigned char anim;
+    char p54[4];
+    float f58;
+    char p5C[0x14];
+    unsigned char b70;
+    char p71[7];
+    Data2C8398_2CA970 *data;
+    char p7C[3];
+    unsigned char b7F;
+    char p80[0x14];
+    int i94;
+    char p98[0xC];
+    unsigned char bA4;
+    char pA5;
+    unsigned short cls;
+    char pA8[8];
+    unsigned char bB0;
+    char pB1[0xB];
+    unsigned char bBC;
+    char pBD[0x43];
+} Moby2C8398_2CA970;
+extern f32 D_L03_00161960_2CA970 SDATA(D_L03_00161960);
+extern f32 D_L03_00161964_2CA970 SDATA(D_L03_00161964);
+extern f32 D_L03_00161968_2CA970 SDATA(D_L03_00161968);
+extern float func_001F9B50_2CA970(float) __asm__("func_001F9B50");
+extern int func_L00_0025B4D0_2CA970(void *, void *, void *, int, int *, float *, int, int) __asm__("func_L00_0025B4D0");
+extern float func_001FA850_2CA970(float, float) __asm__("func_001FA850");
+extern float func_001FA748_2CA970(float, float) __asm__("func_001FA748");
+extern void func_00213D28_2CA970(void *, int, int) __asm__("func_00213D28");
+extern void func_00213DE0_2CA970(void *, int, int, int) __asm__("func_00213DE0");
+extern void func_L00_0025E590_2CA970(void *, void *) __asm__("func_L00_0025E590");
+
+void func_L03_002CA970_r(Moby2C8398_2CA970 *m) __asm__("func_L03_002CA970");
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l03/gameplay/entities/00292578.c, FUN_L03_002c95a8. */
+void func_L03_002CA970_r(Moby2C8398_2CA970 *m) {
+    float vec[4];
+    int kind;
+    float damage;
+    float angle;
+    Data2C8398_2CA970 *d;
+    char *hit;
+    char *other;
+    int result;
+
+    damage = 0.0f;
+    d = m->data;
+    if (d->i38 != 0) {
+        d->i38 = 0;
+        d->s252 = func_001F9850_2CA970(240);
+    }
+    if (func_001F9938_2CA970(&d->s252)) {
+        d->f270 = d->f26C;
+    } else {
+        d->f270 = d->f26C + 5.0f;
+    }
+    hit = func_L00_0025B478_2CA970(m, 0x330000, 0);
+    result = func_L00_0025B4D0_2CA970(m, hit, &d->f20, 0, &kind, &damage, 0, 4);
+    if (hit != 0 && kind != 1 && m->state != 0xD) {
+        other = *(char **)(hit + 0x20);
+        if (other != 0) {
+            if (other != (char *)D_0013F450_2CA970.items[0].moby) {
+                angle = func_L00_001FF860_2CA970(m->pos[0] - *(float *)(other + 0x10), m->pos[1] - *(float *)(other + 0x14));
+            } else {
+                angle = func_L00_001FF860_2CA970(m->pos[0] - D_0013F450_2CA970.motion.pos.f[0], m->pos[1] - D_0013F450_2CA970.motion.pos.f[1]);
+            }
+        } else {
+            angle = func_L00_001FF860_2CA970(m->pos[0] - D_0013F450_2CA970.motion.pos.f[0], m->pos[1] - D_0013F450_2CA970.motion.pos.f[1]);
+        }
+        d->f20 -= damage;
+        if (d->f20 <= 0.0f) {
+            result = 1;
+        }
+        switch (result) {
+        case 12:
+        case 13:
+            d->b67 = 0x78;
+            break;
+        case 6:
+            d->b67 = 0x78;
+            d->q.f10 = D_0015EE70_2CA970 * 80.0f;
+            d->q.f18 = (D_L03_00161964_2CA970 / (2.0f * func_001F9B50_2CA970(2.0f * D_L03_00161960_2CA970 * d->q.f10) / (D_0015EE70_2CA970 * 80.0f)) +
+                        D_L03_00161968_2CA970 * D_0015EE70_2CA970 * 0.5f *
+                            (2.0f * func_001F9B50_2CA970(2.0f * (D_L03_00161960_2CA970) * (D_0015EE70_2CA970 * (80.0f))) / (D_0015EE70_2CA970 * 80.0f))) *
+                       0.5f;
+            d->q.f1C = func_001F9B50_2CA970(2.0f * (D_L03_00161960_2CA970) * (D_0015EE70_2CA970 * (80.0f)));
+            d->q.i24 = 9;
+            d->q.b3D = 0;
+            *(OvlQuad_2CA970 *)vec = *(OvlQuad_2CA970 *)(hit + 0x10);
+            func_L00_0025BBA0_2CA970(vec, &angle, &d->q.f18, &d->q.f1C);
+            if (func_001FA850_2CA970(m->rot[2], angle) < 1.0471976f) {
+                m->rot[2] = func_001FA748_2CA970(angle, 3.1415927f);
+            }
+            func_L00_0025D5B0_2CA970(angle, m, (char *)d + 0x70, 5, 5, 0);
+            func_00213D28_2CA970(m, 5, 5);
+            d->q.f50 = 14.0f;
+            d->q.f54 = 28.0f;
+            m->state = 10;
+            func_0022ED80_2CA970(1, 0, (int)m);
+            break;
+        case 3:
+        case 7:
+        case 8:
+            d->b67 = 0x78;
+            d->q.f10 = D_0015EE70_2CA970 * 80.0f;
+            d->q.f14 = D_L03_00161968_2CA970 * D_0015EE70_2CA970;
+            d->q.f18 = D_L03_00161964_2CA970 / (2.0f * func_001F9B50_2CA970(2.0f * D_L03_00161960_2CA970 * d->q.f10) / (D_0015EE70_2CA970 * 80.0f)) +
+                       D_L03_00161968_2CA970 * D_0015EE70_2CA970 * 0.5f *
+                           (2.0f * func_001F9B50_2CA970(2.0f * (D_L03_00161960_2CA970) * (D_0015EE70_2CA970 * (80.0f))) / (D_0015EE70_2CA970 * 80.0f));
+            d->q.f1C = func_001F9B50_2CA970(2.0f * (D_L03_00161960_2CA970) * (D_0015EE70_2CA970 * (80.0f)));
+            d->q.i24 = 9;
+            d->q.b3D = 0;
+            *(OvlQuad_2CA970 *)vec = *(OvlQuad_2CA970 *)(hit + 0x10);
+            func_L00_0025BBA0_2CA970(vec, &angle, &d->q.f18, &d->q.f1C);
+            func_L00_0025D5B0_2CA970(angle, m, (char *)d + 0x70, 5, 5, 0);
+            d->q.f50 = 6.0f;
+            d->q.f54 = 13.0f;
+            m->state = 10;
+            func_0022ED80_2CA970(1, 0, (int)m);
+            break;
+        case 4:
+        case 5:
+            d->b67 = 0x78;
+            d->q.f10 = D_0015EE70_2CA970 * 80.0f;
+            d->q.f14 = D_L03_00161968_2CA970 * D_0015EE70_2CA970;
+            d->q.f18 = D_L03_00161964_2CA970 / (2.0f * func_001F9B50_2CA970(2.0f * D_L03_00161960_2CA970 * d->q.f10) / (D_0015EE70_2CA970 * 80.0f)) +
+                       D_L03_00161968_2CA970 * D_0015EE70_2CA970 * 0.5f *
+                           (2.0f * func_001F9B50_2CA970(2.0f * (D_L03_00161960_2CA970) * (D_0015EE70_2CA970 * (80.0f))) / (D_0015EE70_2CA970 * 80.0f));
+            d->q.f1C = func_001F9B50_2CA970(2.0f * (D_L03_00161960_2CA970) * (D_0015EE70_2CA970 * (80.0f)));
+            d->q.i24 = 9;
+            d->q.b3D = 0;
+            *(OvlQuad_2CA970 *)vec = *(OvlQuad_2CA970 *)(hit + 0x10);
+            func_L00_0025BBA0_2CA970(vec, &angle, &d->q.f18, &d->q.f1C);
+            func_L00_0025D5B0_2CA970(angle, m, (char *)d + 0x70, 6, 5, 2);
+            d->q.f50 = 5.0f;
+            d->q.f54 = 10.0f;
+            m->state = 10;
+            func_0022ED80_2CA970(1, 0, (int)m);
+            break;
+        case 1:
+            d->q.f10 = D_0015EE70_2CA970 * 40.0f;
+            d->q.f14 = D_L03_00161968_2CA970 * D_0015EE70_2CA970;
+            d->q.f18 = 3.0f / (2.0f * func_001F9B50_2CA970(2.0f * 2.0f * d->q.f10) / (D_0015EE70_2CA970 * 40.0f)) +
+                       D_L03_00161968_2CA970 * D_0015EE70_2CA970 * 0.5f *
+                           (2.0f * func_001F9B50_2CA970(2.0f * (2.0f) * (D_0015EE70_2CA970 * (40.0f))) / (D_0015EE70_2CA970 * 40.0f));
+            d->q.f1C = func_001F9B50_2CA970(2.0f * (2.0f) * (D_0015EE70_2CA970 * (40.0f)));
+            d->q.i24 = 9;
+            d->q.b3D = 0;
+            *(OvlQuad_2CA970 *)vec = *(OvlQuad_2CA970 *)(hit + 0x10);
+            func_L00_0025BBA0_2CA970(vec, &angle, &d->q.f18, &d->q.f1C);
+            func_L00_0025D5B0_2CA970(angle, m, (char *)d + 0x70, 7, 5, 2);
+            d->q.f50 = 10.0f;
+            d->q.f54 = 20.0f;
+            d->q.f4C = 2.0f * D_0015EE6C_2CA970;
+            d->b255 = 0;
+            m->flags &= 0xEFFF;
+            d->b67 = 0xFA;
+            m->state = 0xD;
+            func_0022ED80_2CA970(3, 0, (int)m);
+            if (m->anim != 7) {
+                func_00213DE0_2CA970(m, 7, 0, func_001F9850_2CA970(6));
+            }
+            break;
+        }
+        func_L00_0025E4B0_2CA970(m, (short *)((char *)d + 0x60));
+    }
+    m->bA4 = 0xFF;
+    func_L00_0025E590_2CA970(m, (char *)d + 0x60);
+}
+extern float func_001F9D10_2CB068(void *, void *) __asm__("func_001F9D10");
+extern float func_L00_001FF860_2CB068(float, float) __asm__("func_L00_001FF860");
+extern int func_L00_0025EFC0_2CB068(void *, void *, void *, int *, float *, int, float, float, float) __asm__("func_L00_0025EFC0");
+typedef struct {
+    float pos[4];
+    float v10[4];
+    float dir[4];
+    float v30[4];
+    void *obj;
+    int pad[3];
+} Tgt2C8398_2CB068;
+typedef struct {
+    char p0[8];
+    float f8;
+    char pC[4];
+    float f10;
+    float f14;
+    float f18;
+    float f1C;
+    int i20;
+    int i24;
+    float f28;
+    char p2C[0x11];
+    unsigned char b3D;
+    short s3E;
+    char p40[0xC];
+    float f4C;
+    float f50;
+    float f54;
+    char p58[8];
+} Jump2C8398_2CB068;
+typedef struct {
+    char p0[8];
+    float f8;
+    float fC;
+    char p10[8];
+    float f18;
+    char p1C[8];
+    float f24;
+    float f28;
+    float f2C;
+    char p30[8];
+    int i38;
+    float f3C;
+    float f40;
+    float f44;
+    char p48[8];
+} Mover2C8398_2CB068;
+typedef struct {
+    int idx;
+    signed char step;
+    char p5[0xB];
+    char *path;
+    int id;
+} PathF2C8398_2CB068;
+typedef struct {
+    char p0[0x68];
+    float f68;
+    char p6C[0x14];
+} Look2C8398_2CB068;
+typedef struct Data2C8398_2CB068 {
+    char p00[0x20];
+    float f20;
+    short s24;
+    char p26[2];
+    unsigned char b28;
+    unsigned char b29;
+    char p2A[6];
+    float f30;
+    char p34[4];
+    int i38;
+    char p3C[4];
+    float v40[4];
+    char p50[8];
+    unsigned char b58;
+    char p59;
+    unsigned char b5A;
+    char p5B[0xC];
+    unsigned char b67;
+    char p68[8];
+    Jump2C8398_2CB068 q;
+    Mover2C8398_2CB068 mv;
+    PathF2C8398_2CB068 pf;
+    char p138[0x18];
+    Look2C8398_2CB068 look0;
+    Look2C8398_2CB068 look1;
+    short s250;
+    short s252;
+    unsigned char b254;
+    unsigned char b255;
+    short s256;
+    float f258;
+    char p25C[6];
+    unsigned char b262;
+    unsigned char b263;
+    int i264;
+    char p268[4];
+    float f26C;
+    float f270;
+    int i274;
+    float f278;
+    float f27C;
+    int i280;
+    int i284;
+    short s288;
+    short s28A;
+    float f28C;
+    int i290;
+    float f294;
+    int i298;
+    int i29C;
+} Data2C8398_2CB068;
+typedef struct Moby2C8398_2CB068 {
+    char p00[0x10];
+    float pos[4];
+    unsigned char state;
+    unsigned char b21;
+    char p22[2];
+    char *p24;
+    char p28[9];
+    unsigned char b31;
+    unsigned short s32;
+    unsigned short flags;
+    char p36[2];
+    long l38;
+    float rot[4];
+    char p50[2];
+    unsigned char b52;
+    unsigned char anim;
+    char p54[4];
+    float f58;
+    char p5C[0x14];
+    unsigned char b70;
+    char p71[7];
+    Data2C8398_2CB068 *data;
+    char p7C[3];
+    unsigned char b7F;
+    char p80[0x14];
+    int i94;
+    char p98[0xC];
+    unsigned char bA4;
+    char pA5;
+    unsigned short cls;
+    char pA8[8];
+    unsigned char bB0;
+    char pB1[0xB];
+    unsigned char bBC;
+    char pBD[0x43];
+} Moby2C8398_2CB068;
+extern float func_001FA850_2CB068(float, float) __asm__("func_001FA850");
+extern int func_L00_00260D30_2CB068(char *, char *, float) __asm__("func_L00_00260D30");
+
+void func_L03_002CB068_r(Moby2C8398_2CB068 *m) __asm__("func_L03_002CB068");
+
+/* Picks the path node to head for next: walks the path ring from the start and keeps the node best aligned with the target direction, else the one nearest the target (but at least 16 units away).
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l03/gameplay/entities/00292578.c, FUN_L03_002c9ca0. */
+void func_L03_002CB068_r(Moby2C8398_2CB068 *m) {
+    Tgt2C8398_2CB068 target;
+    float near[4];
+    float pt[4];
+    int seg;
+    float dist;
+    Data2C8398_2CB068 *d;
+    PathF2C8398_2CB068 *pf;
+    int best;
+    float best_ang;
+    float best_dist;
+    float ang;
+
+    d = m->data;
+    best = 0;
+    best_ang = 0.0f;
+    pf = &d->pf;
+    best_dist = best_ang;
+    func_L00_00260D30_2CB068((char *)m, (char *)&target, d->f270);
+    seg = pf->idx;
+    func_L00_0025EFC0_2CB068(pf->path, m->pos, near, &seg, &dist, 0, 999.0f, 5.0f, 0.0f);
+    pf->idx = 0;
+    do {
+        if (pf->idx != seg) {
+            qcopy(pt, pf->path + 0x10 + pf->idx * 0x10);
+            ang = func_L00_001FF860_2CB068(pt[0] - m->pos[0], pt[1] - m->pos[1]);
+            ang = func_001FA850_2CB068(
+                ang, func_L00_001FF860_2CB068(target.pos[0] - m->pos[0], target.pos[1] - m->pos[1]));
+            dist = func_001F9D10_2CB068(&target, pt);
+            if (ang < 1.5707964f) {
+                if (best_ang < ang) {
+                    best = pf->idx;
+                    best_dist = dist;
+                    best_ang = ang;
+                }
+            } else if ((dist >= 16.0f && (dist < best_dist || best_dist < 16.0f)) ||
+                       (dist < 16.0f && best_dist < dist)) {
+                best = pf->idx;
+                best_dist = dist;
+                best_ang = ang;
+            }
+        }
+    } while ((pf->idx = (pf->idx + *(int *)pf->path + pf->step) % *(int *)pf->path) != 0);
+    pf->idx = best;
+}

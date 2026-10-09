@@ -620,7 +620,68 @@ int func_L00_002D6C80(char *a) {
     return r;
 }
 INCLUDE_ASM("asm/overlays", func_L00_002D6CB0);
-INCLUDE_ASM("asm/overlays", func_L00_002D6CE0);
+typedef struct {
+    u8 pad00[0x20];
+    u8 state;
+    u8 pad21[0x57];
+    u8 *pvars;
+    u8 pad7C[0x14];
+    s32 unk90;
+    u8 pad94[0x1C];
+    u8 unkB0;
+    u8 padB1;
+    u16 save_id;
+    u8 padB4[8];
+    u8 unkBC;
+} Moby_2D6CE0;
+extern u8 *D_L00_001B0830_2D6CE0[] __asm__("D_L00_001B0830");
+extern s32 func_0022ED80_2D6CE0(s32, s32, void *) __asm__("func_0022ED80");
+extern s32 D_0015EE84_2D6CE0 __asm__("D_0015EE84") MACRO_ADDR;
+typedef struct {
+    u8 pad[0x454];
+    u8 killed[1]; /* per spawn id: spawn slot + 2 */
+} KillFlags_2D6CE0;
+typedef struct {
+    s32 count;
+    u8 pad04[8];
+    f32 key;
+} KeyRow_2D6CE0;
+typedef struct {
+    s32 table; /* -1, or an index into D_L00_001B0830 */
+    f32 key;
+} KeyVars_2D6CE0;
+extern KillFlags_2D6CE0 D_L00_001BA960_2D6CE0 __asm__("D_L00_001BA960");
+extern KillFlags_2D6CE0 D_L00_001BB5C0_2D6CE0 __asm__("D_L00_001BB5C0");
+extern u8 D_L00_0015FD48_2D6CE0[] __asm__("D_L00_0015FD48") MACRO_ADDR;
+extern u8 D_0014C150_2D6CE0[][16] __asm__("D_0014C150");
+void func_L00_002D6CE0_r(Moby_2D6CE0 *m) __asm__("func_L00_002D6CE0");
+
+/* Kills a live moby: marks it in the level's spawn tables, starts its death sound and clears its key out of the shared key table.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/entities/002cfcb8.c, FUN_L00_002d5830. */
+void func_L00_002D6CE0_r(Moby_2D6CE0 *m) {
+    KeyVars_2D6CE0 *v = (KeyVars_2D6CE0 *)m->pvars;
+    s32 i;
+    if (m->state != 1) {
+        return;
+    }
+    D_L00_001BA960_2D6CE0.killed[(s16)m->save_id] = m->unkB0 + 2;
+    if (m->unkB0 == 0xFF || (D_L00_0015FD48_2D6CE0[m->unkB0] != 0xFF && D_0014C150_2D6CE0[D_0015EE84_2D6CE0][m->unkB0] == 0xFF)) {
+        D_L00_001BB5C0_2D6CE0.killed[(s16)m->save_id] = m->unkB0 + 2;
+    }
+    m->state = 2;
+    m->unkBC = 1;
+    m->unk90 = 0x80208020;
+    func_0022ED80_2D6CE0(0, 0, m);
+    if (v->table == -1) {
+        return;
+    }
+    for (i = 0; i < ((KeyRow_2D6CE0 *)D_L00_001B0830_2D6CE0[v->table])[0].count; i++) {
+        KeyRow_2D6CE0 *row = &((KeyRow_2D6CE0 *)D_L00_001B0830_2D6CE0[v->table])[i];
+        if (row[1].key == v->key) {
+            row[1].key = 0;
+        }
+    }
+}
 typedef unsigned int u128_6e38 __attribute__((mode(TI), aligned(16)));
 typedef union { u128_6e38 q; float f[4]; } Vec4_6e38;
 
@@ -952,7 +1013,70 @@ void func_L00_002D83D8(P *p) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_002D8898);
-INCLUDE_ASM("asm/overlays", func_L00_002D90A0);
+extern f32 func_002140F8_2D90A0(f32, f32) __asm__("func_002140F8");
+typedef struct {
+    float x, y, z, w;
+} V_2D90A0;
+typedef struct {
+    s16 start; /* 00 */
+    s16 count; /* 02 */
+    int idx; /* 04 */
+    char pad08[0x18];
+    float f20, f24, f28; /* 20 24 28 */
+    s16 h2C, h2E; /* 2C 2E */
+    int x30, x34; /* 30 34 */
+    int col; /* 38 */
+    u8 c0, c1, c2; /* 3C 3D 3E */
+    u8 pad3F;
+    s16 extra; /* 40 */
+    s16 flag42; /* 42 */
+    float f44, f48, pad4C, f50;
+} Q_2D90A0;
+typedef struct {
+    u8 pad[0x10];
+    V_2D90A0 pos;
+    u8 state;
+    u8 pad21[0xF];
+    u8 b30;
+    u8 pad31[0x47];
+    Q_2D90A0 *q;
+} P_2D90A0;
+extern V_2D90A0 D_L00_001CBAE0_2D90A0[] __asm__("D_L00_001CBAE0");
+extern s16 D_L00_001D5A40_2D90A0[] __asm__("D_L00_001D5A40");
+float func_L00_00258C80_2D90A0(float, float) __asm__("func_L00_00258C80");
+extern float D_L00_001D05E0_2D90A0[] __asm__("D_L00_001D05E0");
+extern float D_L00_001D18A0_2D90A0[] __asm__("D_L00_001D18A0");
+extern float D_L00_001D34C0_2D90A0[] __asm__("D_L00_001D34C0");
+extern float D_L00_001D4780_2D90A0[] __asm__("D_L00_001D4780");
+extern s16 D_L00_001D63A0_2D90A0[] __asm__("D_L00_001D63A0");
+extern u8 D_L00_001D3010_2D90A0[] __asm__("D_L00_001D3010");
+extern s16 D_L00_001D6D00_2D90A0[] __asm__("D_L00_001D6D00");
+extern u16 D_L00_00161448_2D90A0[] __asm__("D_L00_00161448") MACRO_ADDR;
+extern int D_L00_00161444_2D90A0 __asm__("D_L00_00161444") MACRO_ADDR;
+
+void func_L00_002D90A0_r(P_2D90A0 *m, int i) __asm__("func_L00_002D90A0");
+
+/* Resets particle i of the emitter: random direction, random speeds from the emitter's ranges, and a start delay staggered by index.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/entities/002cfcb8.c, FUN_L00_002d7bf0. */
+void func_L00_002D90A0_r(P_2D90A0 *m, int i) {
+    char *v = (char *)m->q;
+    V_2D90A0 *p;
+    int t;
+    float f = func_L00_00258C80_2D90A0(0.0f, 1.0f);
+    p = &D_L00_001CBAE0_2D90A0[i];
+    p->x = f;
+    p->y = func_L00_00258C80_2D90A0(0.0f, 1.0f);
+    p->z = func_L00_00258C80_2D90A0(0.0f, 1.0f);
+    D_L00_001D05E0_2D90A0[i] = func_002140F8_2D90A0(*(float *)(v + 0x10), *(float *)(v + 0x14));
+    D_L00_001D18A0_2D90A0[i] = func_002140F8_2D90A0(*(float *)(v + 0x18), *(float *)(v + 0x1C));
+    D_L00_001D34C0_2D90A0[i] = 0.0f;
+    D_L00_001D4780_2D90A0[i] = func_002140F8_2D90A0(*(float *)(v + 0x8), *(float *)(v + 0xC));
+    D_L00_001D5A40_2D90A0[i] = *D_L00_00161448_2D90A0;
+    D_L00_001D63A0_2D90A0[i] = 0;
+    t = i - *(s16 *)v;
+    D_L00_001D6D00_2D90A0[i] = (t + 1) * D_L00_00161444_2D90A0;
+    D_L00_001D3010_2D90A0[i] = 0;
+}
 extern float func_L00_00258C80(float, float);
 extern float func_002140F8(float, float);
 extern float D_L00_001CBAE0[][4];

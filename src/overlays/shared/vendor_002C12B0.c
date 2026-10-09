@@ -15,7 +15,66 @@ void func_L00_002C2A20(char *m) {
         m[0xBC] = 0;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002C2A80);
+extern float D_L00_001618F8_C2A80 SDATA(D_L00_001618F8);
+extern short D_L00_00161900;
+extern float D_L00_00173F68;
+extern int D_L00_0015F6B0_C2A80 __asm__("D_L00_0015F6B0") MACRO_ADDR;
+extern unsigned char D_0013F450_C2A80[] __asm__("D_0013F450");
+void func_00214358_C2A80(void *, int, float) __asm__("func_00214358");
+float func_001FA748(float, float);
+float func_001F9D48(void *, void *);
+float func_001F9B88(float);
+void func_L00_002618D8(int, int);
+float func_00214D28(void *, float, float);
+void func_0020D678(void *);
+
+typedef struct {
+    char pad0[0x10];
+    float pos[4];
+    unsigned char state;
+    char pad21[0x1F];
+    float rot[4];
+} Moby_C2A80;
+typedef struct {
+    char pad0[0x28];
+    float f28;
+} Cam_C2A80;
+extern Cam_C2A80 D_L00_00173F40_C2A80 __asm__("D_L00_00173F40");
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/entities/002bffa8.c, FUN_L00_002c1778. */
+void func_L00_002C2A80(void *mv) {
+    unsigned char *m = mv;
+    unsigned char *P;
+    switch (m[0x20]) {
+    case 0:
+        func_00214358_C2A80(m + 0x10, 0, 0.5f);
+        ((Moby_C2A80 *)m)->rot[0] = 1.5707964f;
+        ((Moby_C2A80 *)m)->rot[1] = 3.1415927f;
+        ((Moby_C2A80 *)m)->pos[2] = D_L00_00173F40_C2A80.f28 + D_L00_001618F8_C2A80;
+        m[0x20] = 1;
+        break;
+    case 1: {
+        float r = FastAddRots(*(float *)(m + 0x48), (*(float *)&D_L00_00161900));
+        int t = D_L00_0015F6B0_C2A80;
+        *(float *)(m + 0x48) = r;
+        if (t % 10 == 0) {
+            P = D_0013F450_C2A80;
+            if (*(int *)(P + 0x22A8)) {
+                if (func_001F9D48(m + 0x10, P + 0x80) < 1.0f) {
+                    if (FastAbsF(*(float *)(m + 0x18) - *(float *)(P + 0x88)) < 2.0f) {
+                        func_L00_002618D8(0x1A, 1);
+                        m[0x20] = 2;
+                    }
+                }
+            }
+        }
+    } break;
+    case 2:
+        func_00214D28(m + 0x2C, 0.0f, *(float *)(*(char **)(m + 0x24) + 0x24) * 0.02f);
+        if (*(float *)(m + 0x2C) == 0.0f)
+            DeleteMoby(m);
+        break;
+    }
+}
 extern float func_001F9D10(void *, void *);
 extern void func_001F9BF0(void *, void *, void *);
 extern void func_L00_001FF4B0(void *, void *, float);

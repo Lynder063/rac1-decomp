@@ -213,7 +213,38 @@ void func_L18_002D6440(char *moby) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L18_002D6738);
+extern void *func_0020D348_D6738() __asm__("func_0020D348");
+extern short D_L18_001619F0;
+extern void func_L00_00251328(void *, int, int, int);
+extern void func_0022ED80(int, int, int);
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l18/gameplay/entities/002a7220.c, FUN_L18_002d5348. */
+char *func_L18_002D6738(float *pos, float *dir, float *target, float a, float b, int frames, int kind) {
+    char *moby = func_0020D348_D6738(0x234);
+    if (moby != 0) {
+        char *data;
+        ((unsigned char *)moby)[0x30] = 0xFF;
+        *(short *)(moby + 0x32) = 0xFF;
+        moby[0x31] = 1;
+        moby[0x20] = 0;
+        func_L00_00251328(moby, 0xC0, 0xC0, 0xC0);
+        *(float *)(moby + 0x2C) = *(float *)(moby + 0x2C) * (*(float *)&D_L18_001619F0);
+        qcopy(moby + 0x10, pos);
+        data = *(char **)(moby + 0x78);
+        qcopy(data, dir);
+        qcopy(data + 0x10, target);
+        *(float *)(data + 0x24) = a;
+        *(float *)(data + 0x28) = b;
+        *(int *)(data + 0x2C) = 0;
+        *(int *)(data + 0x34) = frames;
+        *(int *)(data + 0x30) = frames >> 1;
+        *(int *)(data + 0x38) = kind;
+        *(float *)(moby + 0x48) = func_L00_001FF860(dir[0], dir[1]);
+        *(float *)(moby + 0x44) = -func_L00_001FF860(func_001F9CE8(dir), dir[2]);
+        func_0022ED80(0, 0, (int)moby);
+    }
+    return moby;
+}
 extern unsigned char *D_L18_001B2DDC;
 extern void func_L00_00258DB0(float *, float, float);
 extern float func_002140F8(float, float);
@@ -524,7 +555,49 @@ char *func_L18_002D70E8(float f, int a0, int idx, float *p6, float *p7, int a8) 
     }
     return moby;
 }
-INCLUDE_ASM("asm/overlays", func_L18_002D7310);
+extern char D_0013F450_2D7310[] __asm__("D_0013F450");
+extern float D_L18_0015F660_2D7310[] __asm__("D_L18_0015F660") MACRO_ADDR;
+extern int func_L00_0025B478_2D7310(void *, int, int) __asm__("func_L00_0025B478");
+extern int func_001F9908_2D7310(int *) __asm__("func_001F9908");
+extern float func_001F9D48_2D7310(void *, void *) __asm__("func_001F9D48");
+extern void func_L00_0025F4A8_2D7310(void *, void *, void *, float, float, int, int, int, float, float, float, float, int, float, int, int, int, int) __asm__("func_L00_0025F4A8");
+
+void func_L18_002D7310_r(unsigned char *m) __asm__("func_L18_002D7310");
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l18/gameplay/entities/002a7220.c, FUN_L18_002d5f20. */
+void func_L18_002D7310_r(unsigned char *m) {
+    char *d = *(char **)(m + 0x78);
+    char *g;
+    int hit;
+    if (m[0x20] == 5 || m[0x20] == 0 || m[0x20] == 4)
+        return;
+    g = D_0013F450_2D7310;
+    if (*(int *)(g + 0x2084) == 0x72) {
+        m[0x20] = 5;
+        *(short *)(m + 0x34) = (*(short *)(m + 0x34) | 0x41) & ~0x1000;
+        *(int *)(m + 0x94) = 0;
+        return;
+    }
+    hit = func_L00_0025B478_2D7310(m, 0x330000, 0);
+    m[0xA4] = 0xFF;
+    if (*(unsigned char **)(g + 0x23C) == m || *(unsigned char **)(g + 0x240) == m || *(int *)(d + 0x19C) != 0) {
+        func_L00_0025F4A8_2D7310(m, D_L18_0015F660_2D7310, 0, 1.5f, 1.0f, 0x14, 6, 0x20, 3.0f, 1.5f, 9.0f, 1.5f, 1, 0.0f, 1, 0, -1, 0);
+        m[0x20] = 5;
+        *(short *)(m + 0x34) = (*(short *)(m + 0x34) | 0x41) & ~0x1000;
+        *(int *)(m + 0x94) = 0;
+        return;
+    }
+    if (func_001F9908_2D7310((int *)(d + 0x194)) == 0 && hit == 0) {
+        if (m[0x20] != 1)
+            return;
+        if (!(func_001F9D48_2D7310(m + 0x10, g + 0x80) < 2.0f))
+            return;
+    }
+    func_L00_0025F4A8_2D7310(m, D_L18_0015F660_2D7310, 0, 0.0f, 0.0f, 5, 2, 8, 1.0f, 0.5f, 9.0f, 0.5f, 1, 0.0f, 0, 0, -1, 0);
+    m[0x20] = 5;
+    *(short *)(m + 0x34) = (*(short *)(m + 0x34) | 0x41) & ~0x1000;
+    *(int *)(m + 0x94) = 0;
+}
 INCLUDE_ASM("asm/overlays", func_L18_002D74F8);
 typedef struct {
     char pad0[0x20];
@@ -2433,7 +2506,85 @@ void func_L18_002EB988(char *moby) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L18_002EBBF0);
-INCLUDE_ASM("asm/overlays", func_L18_002EC0C8);
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 w;
+} Vec4f_2EC0C8;
+struct Moby_2EC0C8 {
+    Vec4f_2EC0C8 bsphere;
+    Vec4f_2EC0C8 pos;
+    u8 pad20[0x58];
+    u8 *pvars;
+};
+extern short D_L18_0016207C_2EC0C8 __asm__("D_L18_0016207C");
+extern short D_L18_00162080_2EC0C8 __asm__("D_L18_00162080");
+extern short D_L18_00162098_2EC0C8 __asm__("D_L18_00162098");
+extern short D_L18_001620A0_2EC0C8 __asm__("D_L18_001620A0");
+extern short D_L18_001620B4_2EC0C8 __asm__("D_L18_001620B4");
+extern short D_L18_001620E4_2EC0C8 __asm__("D_L18_001620E4");
+extern short D_L18_00162110_2EC0C8 __asm__("D_L18_00162110");
+extern short D_L18_00162158_2EC0C8[] __asm__("D_L18_00162158") MACRO_ADDR;
+extern short D_L18_0016215A_2EC0C8[] __asm__("D_L18_0016215A") MACRO_ADDR;
+extern short D_L18_0016215C_2EC0C8[] __asm__("D_L18_0016215C") MACRO_ADDR;
+extern short D_L18_0016215E_2EC0C8[] __asm__("D_L18_0016215E") MACRO_ADDR;
+extern short D_L18_00162160_2EC0C8[] __asm__("D_L18_00162160") MACRO_ADDR;
+extern short D_L18_00162162_2EC0C8[] __asm__("D_L18_00162162") MACRO_ADDR;
+extern short D_L18_00162164_2EC0C8[] __asm__("D_L18_00162164") MACRO_ADDR;
+extern short D_L18_00162166_2EC0C8[] __asm__("D_L18_00162166") MACRO_ADDR;
+extern short D_L18_00162148_2EC0C8[4] __asm__("D_L18_00162148") MACRO_ADDR;
+extern int D_L18_00162168_2EC0C8 __asm__("D_L18_00162168") MACRO_ADDR;
+extern short D_L18_0016216C_2EC0C8 __asm__("D_L18_0016216C");
+extern float D_L18_001D9FC0_2EC0C8[][4] __asm__("D_L18_001D9FC0");
+extern float D_L18_001D9FD0_2EC0C8[][4] __asm__("D_L18_001D9FD0");
+extern int D_L18_001DA250_2EC0C8[] __asm__("D_L18_001DA250");
+extern float D_L18_001DA2A0_2EC0C8[][4] __asm__("D_L18_001DA2A0");
+extern int D_L18_001DA3E0_2EC0C8[] __asm__("D_L18_001DA3E0");
+extern int func_001F9850_2EC0C8(int) __asm__("func_001F9850");
+extern void func_001F9BF0_2EC0C8(void *, void *, void *) __asm__("func_001F9BF0");
+extern void func_L00_001FF4B0_2EC0C8(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern void func_001F9BD8_2EC0C8(void *, void *, void *) __asm__("func_001F9BD8");
+extern void func_001F9BC0_2EC0C8(void *) __asm__("func_001F9BC0");
+
+void func_L18_002EC0C8_r(struct Moby_2EC0C8 *m) __asm__("func_L18_002EC0C8");
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l18/gameplay/entities/002a7220.c, FUN_L18_002eacd8. */
+void func_L18_002EC0C8_r(struct Moby_2EC0C8 *m) {
+    char *d = (char *)m->pvars;
+    float v[4];
+    float step[4];
+    int i;
+    int j;
+    if ((*(int *)&D_L18_0016207C_2EC0C8) != 0) {
+        (*(int *)&D_L18_0016207C_2EC0C8) = 0;
+        (*(int *)&D_L18_0016216C_2EC0C8) = 0;
+        D_L18_00162168_2EC0C8 = func_001F9850_2EC0C8((*(int *)&D_L18_00162110_2EC0C8));
+        (*(int *)&D_L18_001620E4_2EC0C8) = 0x7F2020;
+        func_001F9BF0_2EC0C8(v, d + 0x10, &m->pos);
+        func_L00_001FF4B0_2EC0C8(step, v, (*(float *)&D_L18_00162080_2EC0C8) / 20.0f);
+        qcopy(D_L18_001D9FD0_2EC0C8, &m->pos);
+        for (i = 1; i < 20; i++) {
+            func_001F9BD8_2EC0C8(D_L18_001D9FD0_2EC0C8[i], D_L18_001D9FC0_2EC0C8[i], step);
+            D_L18_001DA250_2EC0C8[i] = 0;
+            func_001F9BC0_2EC0C8(D_L18_001DA2A0_2EC0C8[i]);
+            D_L18_001DA3E0_2EC0C8[i] = 0;
+        }
+        for (j = 0; j < 4; j++)
+            D_L18_00162148_2EC0C8[j] = -1;
+        *D_L18_00162158_2EC0C8 = 8;
+        *D_L18_00162160_2EC0C8 = 4;
+        *D_L18_0016215A_2EC0C8 = 4;
+        *D_L18_00162162_2EC0C8 = 2;
+        *D_L18_00162164_2EC0C8 = 4;
+        *D_L18_0016215C_2EC0C8 = 8;
+        *D_L18_0016215E_2EC0C8 = 4;
+        *D_L18_00162166_2EC0C8 = 2;
+        (*(int *)&D_L18_00162098_2EC0C8) = 0;
+        (*(int *)&D_L18_001620A0_2EC0C8) = 0;
+        (*(int *)&D_L18_001620B4_2EC0C8) = 0;
+    }
+}
 typedef struct { float f[4]; } __attribute__((aligned(16))) V_ec290;
 typedef struct { V_ec290 p[5]; } P_ec290;
 

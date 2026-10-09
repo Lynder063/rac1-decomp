@@ -1335,7 +1335,98 @@ void func_L09_00304750(unsigned char *moby) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L09_00304EE0);
+struct Moby_304EE0 {
+    u8 pad00[0x20];
+    u8 state; /* 0x20 */
+    u8 pad21[0x13];
+    u16 flags; /* 0x34 */
+    u8 pad36[0x6E];
+    u8 unkA4; /* 0xA4 */
+    u8 padA5;
+    s16 oclass; /* 0xA6 */
+    u8 padA8[0x14];
+    u8 unkBC; /* 0xBC */
+    u8 padBD[0x43];
+}; /* 0x100 */
+typedef struct {
+    u8 pad0[0x2C];
+    f32 damage;
+} VendorHitSource_304EE0;
+typedef struct {
+    u8 pad0[0x26];
+    s16 hurt_timer;
+    u8 pad28[0x38];
+    u8 anim[8];
+    u8 pad68[8];
+    s32 link;
+} VendorVars_304EE0;
+extern short D_L09_00160058_304EE0 __asm__("D_L09_00160058");
+extern char D_L09_00209280_304EE0[] __asm__("D_L09_00209280");
+extern VendorHitSource_304EE0 *func_L00_0025B478_304EE0(struct Moby_304EE0 *, s32, s32) __asm__("func_L00_0025B478");
+extern s32 func_00120778_304EE0(f32) __asm__("func_00120778");
+extern void func_001E9730_304EE0(char *, s32, s32) __asm__("func_001E9730");
+extern s32 func_L00_0025B4D0_304EE0(struct Moby_304EE0 *, VendorHitSource_304EE0 *, f32 *, s32, s32 *, s32, s32, s32) __asm__("func_L00_0025B4D0");
+extern void func_L00_002584A8_304EE0(struct Moby_304EE0 *, s32, s32) __asm__("func_L00_002584A8");
+extern void func_L00_0025E4B0_304EE0(struct Moby_304EE0 *, u8 *) __asm__("func_L00_0025E4B0");
+extern void func_L00_0025E590_304EE0(struct Moby_304EE0 *, u8 *) __asm__("func_L00_0025E590");
+extern s32 func_001F9850_304EE0(s32) __asm__("func_001F9850");
+
+void func_L09_00304EE0_r(struct Moby_304EE0 *moby, VendorVars_304EE0 *vars, f32 *health) __asm__("func_L09_00304EE0");
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l09/gameplay/vendor/003033a0.c, FUN_L09_00303b30. */
+void func_L09_00304EE0_r(struct Moby_304EE0 *moby, VendorVars_304EE0 *vars, f32 *health) {
+    VendorHitSource_304EE0 *src;
+    struct Moby_304EE0 *link;
+    s32 hit;
+
+    if (moby->state != 3) {
+        src = func_L00_0025B478_304EE0(moby, 0x330000, 0);
+        if (src != 0) {
+            func_001E9730_304EE0(D_L09_00209280_304EE0, moby->oclass, func_00120778_304EE0(src->damage));
+        }
+        switch (func_L00_0025B4D0_304EE0(moby, src, health, 0, &hit, 0, 0, 4)) {
+        case 1:
+        case 2:
+            *health = 0.0f;
+            break;
+        case 0:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+        case 11:
+            break;
+        }
+        if (hit >= 2) {
+            if (*health <= src->damage) {
+                *health = 0.0f;
+                moby->flags &= ~0x1000;
+                if (vars->link != -1) {
+                    link = &(*(struct Moby_304EE0 * *)&D_L09_00160058_304EE0)[vars->link];
+                    if (link != 0 && link->state != 0xFE && link->state != 0xFD
+                        && (link->oclass == 0x494 || link->oclass == 0x49D || link->oclass == 0x4A0)) {
+                        link->unkBC = 1;
+                    }
+                }
+                func_L00_002584A8_304EE0(moby, 0, -1);
+                vars->anim[7] = 0x78;
+                func_L00_0025E4B0_304EE0(moby, vars->anim);
+                moby->state = 3;
+            } else {
+                *health -= src->damage;
+                vars->anim[7] = 0xFA;
+                vars->hurt_timer = func_001F9850_304EE0(60);
+                func_L00_0025E4B0_304EE0(moby, vars->anim);
+            }
+        }
+        moby->unkA4 = 0xFF;
+    }
+    func_L00_0025E590_304EE0(moby, vars->anim);
+}
 extern void func_L09_00304EE0(char *, char *, char *);
 extern char D_0013D355[];
 extern int D_L09_00160058_m __asm__("D_L09_00160058") MACRO_ADDR;

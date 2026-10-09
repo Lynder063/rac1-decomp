@@ -506,7 +506,42 @@ int func_L00_0025A060(char *m, char *p, float *pos, char *v) {
     return flags;
 }
 LINKER_REMNANT("asm/overlays", func_L00_0025A1D8);
-INCLUDE_ASM("asm/overlays", func_L00_0025A208);
+extern int D_L00_001600B4 MACRO_ADDR;
+extern unsigned short * D_L00_001ABBC0[];
+extern char * D_L00_001601D4 MACRO_ADDR;
+extern char * D_L00_001601D4_5A208 __asm__("D_L00_001601D4") MACRO_ADDR;
+extern unsigned short * D_L00_001601CC_5A208 __asm__("D_L00_001601CC") MACRO_ADDR;
+extern short D_L00_001601D0_5A208[] __asm__("D_L00_001601D0") MACRO_ADDR;
+extern char * D_L00_00160098_5A208 __asm__("D_L00_00160098") MACRO_ADDR;
+int func_L00_0025A2F0(char **, char *);
+
+/* Looks up table entry idx and makes it current; the flag test reads the current entry back, as the original did.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/math/interpolation/00257ef0.c, FUN_L00_002591d0. */
+int func_L00_0025A208(char **out, int idx, int a, int b) {
+    unsigned short *v;
+    char *e;
+    int c;
+    int h;
+    if (idx < 0 || D_L00_001600B4 < idx) {
+        *out = 0;
+        return -1;
+    }
+    *out = 0;
+    D_L00_001601D4 = 0;
+    v = D_L00_001ABBC0[idx];
+    D_L00_001601CC_5A208 = v;
+    if (v == 0) return -1;
+    h = *v & 0x7FFF;
+    D_L00_001601D0_5A208[0] = h;
+    e = D_L00_00160098_5A208 + (h << 8);
+    D_L00_001601D4 = e;
+    *out = e;
+    c = (unsigned)D_L00_001601D4[0x20] >> 31;
+    if (!a) {
+        if (b || c) return func_L00_0025A2F0(out, D_L00_001601D4_5A208);
+    } else if (b && !c) return func_L00_0025A2F0(out, D_L00_001601D4_5A208);
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025A2F0);
 INCLUDE_ASM("asm/overlays", func_L00_0025A344);
 INCLUDE_ASM("asm/overlays", func_L00_0025A43C);
@@ -768,7 +803,25 @@ void func_L00_0025B178(char *o) {
         *(int *)(o + 0x88) = 0;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_0025B478);
+static inline unsigned char load_u8_0025B478(unsigned char *p) {
+    return *p;
+}
+/* Returns the hit record linked from the moby's byte 0xA4 when its flags match mask; unlinks it otherwise unless keep is set. Adapted from Lombyte (MIT) for PAL: overlays/shared/gameplay/entities/00259710.c, FUN_L00_0025a420. */
+T_t *func_L00_0025B478(unsigned char *m, int mask, int keep) {
+    T_t *e;
+    unsigned char *a = m + 0xA4;
+    unsigned char i = load_u8_0025B478(a);
+    if (load_u8_0025B478(a) == 0xFF)
+        return 0;
+    e = &D_T_00178200[i];
+    if (e->owner != m)
+        return 0;
+    if (e->y & mask)
+        return e;
+    if (!keep)
+        ((unsigned char *)e->owner)[0xA4] = 0xFF;
+    return 0;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025B4AC);
 typedef unsigned int u128_25a478 __attribute__((mode(TI), aligned(16)));
 typedef union { u128_25a478 q; float f[4]; } V_25a478;
@@ -1260,7 +1313,16 @@ void func_L00_0025D308(void *a, void *b, void *c, float s) {
     FastVecScale(&t0, &t1, FastVecDot(&t1, b) * s);
     FastVecSub(a, b, &t0);
 }
-INCLUDE_ASM("asm/overlays", func_L00_0025D390);
+/* Returns the first word of the moby's data block (the pointer at 0x78) when flag 0x20 of the word at 0x34 is set, else 0. */
+int func_L00_0025D390(char *m) {
+    if (m == 0) {
+    none:
+        return 0;
+    }
+    if ((*(unsigned short *)(m + 0x34) & 0x20) == 0)
+        goto none;
+    return *(int *)(*(char **)(m + 0x78));
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025D3A0);
 INCLUDE_ASM("asm/overlays", func_L00_0025D3D0);
 extern int func_L00_0025BCF8(void *, int, void *, void *, float);

@@ -404,7 +404,87 @@ int func_L15_002F9AE8(char *moby, float a, float b) {
     }
     return 0;
 }
-INCLUDE_ASM("asm/overlays", func_L15_002F9D38);
+extern char * D_L15_0015F050_2F9D38 __asm__("D_L15_0015F050") MACRO_ADDR;
+int func_L15_002F99F8_2F9D38(char *moby) __asm__("func_L15_002F99F8");
+extern char * D_L15_0016016C_2F9D38 __asm__("D_L15_0016016C") MACRO_ADDR;
+int func_L15_002F9AE8_2F9D38(char *moby, float a, float b) __asm__("func_L15_002F9AE8");
+extern char * D_L15_00167480_2F9D38 __asm__("D_L15_00167480");
+typedef struct { char pad[0x100]; float x; float y; } G_88e8_2F9D38;
+extern G_88e8_2F9D38 D_0013CA40_2F9D38 __asm__("D_0013CA40");
+extern int func_L00_002E9870_2F9D38(char *) __asm__("func_L00_002E9870");
+extern void func_L00_002E9838_2F9D38(char *) __asm__("func_L00_002E9838");
+extern int func_001F9850_2F9D38(int) __asm__("func_001F9850");
+extern void func_L02_002F79D0_2F9D38(float, float, float) __asm__("func_L02_002F79D0");
+extern float func_001FA888_2F9D38(int) __asm__("func_001FA888");
+extern void func_L00_002E9E20_2F9D38(void *, float, float) __asm__("func_L00_002E9E20");
+extern void func_L00_002E9900_2F9D38(int, float, float) __asm__("func_L00_002E9900");
+extern void func_L00_002E9AD0_2F9D38(void) __asm__("func_L00_002E9AD0");
+extern void func_L00_002E9968_2F9D38(float, float) __asm__("func_L00_002E9968");
+extern void func_L00_002E99A0_2F9D38(int, float, float) __asm__("func_L00_002E99A0");
+
+void func_L15_002F9D38_r(char *m) __asm__("func_L15_002F9D38");
+
+/* Runs the aim timer while the player holds the target in view; spins the target once aimed.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l15/gameplay/vendor/002e73c0.c, FUN_L15_002f88e8. */
+void func_L15_002F9D38_r(char *m) {
+    char *s = *(char **)(D_L15_0015F050_2F9D38 + *(short *)(m + 0x84) * 32 + 0x1C);
+    char *o = D_L15_0016016C_2F9D38 + (*(int *)(s + 0x48) << 7);
+    int done;
+    int t1;
+    int t2;
+    int t3;
+    int t4;
+    float r;
+    float a;
+    if (func_L00_002E9870_2F9D38(m) <= 0) {
+        *(short *)(s + 0x20) = 0;
+        return;
+    }
+    if (func_L15_002F99F8_2F9D38(m) == 0) {
+        *(short *)(s + 0x20) = 0;
+        func_L00_002E9838_2F9D38(m);
+        return;
+    }
+    *(int *)(*(char **)(D_L15_00167480_2F9D38 + 0x70) + 0x230) = 2;
+    done = 1;
+    (*(short *)(s + 0x20))++;
+    t1 = func_001F9850_2F9D38(300);
+    t2 = func_001F9850_2F9D38(400);
+    t3 = func_001F9850_2F9D38(560);
+    t4 = func_001F9850_2F9D38(200);
+    func_L02_002F79D0_2F9D38(1.0f, 12.0f, 0.11f);
+    if (D_0013CA40_2F9D38.x != 0.0f)
+        *(short *)(s + 0x20) = t1;
+    else if (D_0013CA40_2F9D38.y != 0.0f)
+        *(short *)(s + 0x20) = t1;
+    if (*(short *)(s + 0x20) >= t1) {
+        if (++*(int *)(s + 0x3C) >= t2 && func_L15_002F9AE8_2F9D38(m, 30.0f, 0.0f))
+            *(short *)(s + 0x20) = t3;
+        else
+            done = 0;
+    }
+    if (*(short *)(s + 0x20) >= t3) {
+        done = 1;
+        *(int *)(s + 0x3C) = 0;
+        *(short *)(s + 0x20) = 1;
+    }
+    if (t4 < *(short *)(s + 0x20) && *(short *)(s + 0x20) < t1) {
+        *(int *)(s + 0x3C) = t1;
+        *(short *)(s + 0x20) = t4;
+    }
+    r = func_001FA888_2F9D38(*(short *)(s + 0x20)) / func_001FA888_2F9D38(t4);
+    a = *(float *)s * 0.017453292f * r;
+    if (done)
+        func_L00_002E9E20_2F9D38(o + 0x30, a, 0.0f);
+    if (*(float *)(s + 0x34) != 0.0f) {
+        func_L00_002E9900_2F9D38(0, *(float *)(s + 0x34), 0.003f);
+        func_L00_002E9AD0_2F9D38();
+    }
+    if (*(float *)(s + 0x38) != 0.0f)
+        func_L00_002E9968_2F9D38(*(float *)(s + 0x38), 0.003f);
+    if (*(float *)(s + 0x44) != 0.0f)
+        func_L00_002E99A0_2F9D38(0, *(float *)(s + 0x44), 0.005f);
+}
 extern char *D_L15_00167480;
 extern void func_L15_002F9D38(void *);
 

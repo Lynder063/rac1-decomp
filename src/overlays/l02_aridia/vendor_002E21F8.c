@@ -1362,7 +1362,47 @@ void func_L02_002E3660(struct Moby *moby) {
     FastVecAdd(&delta, &delta, &moby->pos);
     func_L00_002617B0(data + 0x60, &delta, &old_rot, &moby->rot);
 }
-INCLUDE_ASM("asm/overlays", func_L02_002EB480);
+typedef struct {
+    u8 pad00[0x78];
+    u8 *pvars;
+} Moby_2EB480;
+extern int D_L02_0015F6E8_2EB480 __asm__("D_L02_0015F6E8") MACRO_ADDR;
+extern char D_L02_00167440[];
+extern char D_L02_001F3EC0[];
+extern char D_L02_001F3F20[];
+extern char D_L02_001F3F90[];
+extern char D_L02_001F3FF0[];
+extern char D_L02_001F4050[];
+extern char D_L02_001F4090[];
+extern char D_L02_001F40D0[];
+extern char D_L02_001F4140[];
+extern void func_L02_002A59F8_2EB480(float, float, float, float, int, int, int, int, int, int, void *) __asm__("func_L02_002A59F8");
+extern void func_L02_002A59D8_2EB480(void) __asm__("func_L02_002A59D8");
+extern int func_00215570_2EB480(void *, int) __asm__("func_00215570");
+extern void func_00202790_2EB480(void *) __asm__("func_00202790");
+void func_L02_002EB480_r(Moby_2EB480 *m) __asm__("func_L02_002EB480");
+
+/* Draws the parts whose clip volumes contain the camera (all of them when the override flag is set).
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l02/gameplay/entities/002e0dc0.c, FUN_L02_002ea048. */
+void func_L02_002EB480_r(Moby_2EB480 *m) {
+    int *d = (int *)m->pvars;
+
+    func_L02_002A59F8_2EB480(0.0f, 260080.0f, 255.0f, 0.0f, 15, 15, 25, 30, 40, 64, D_L02_001F4140);
+    if (D_L02_0015F6E8_2EB480 != 0 || (d[0] != -1 && func_00215570_2EB480(D_L02_00167440, d[0]))) {
+        func_00202790_2EB480(D_L02_001F3EC0);
+    }
+    if (D_L02_0015F6E8_2EB480 != 0 || (d[1] != -1 && func_00215570_2EB480(D_L02_00167440, d[1]))) {
+        func_00202790_2EB480(D_L02_001F3F90);
+        func_00202790_2EB480(D_L02_001F3FF0);
+        func_00202790_2EB480(D_L02_001F4050);
+        func_00202790_2EB480(D_L02_001F4090);
+        func_00202790_2EB480(D_L02_001F40D0);
+    }
+    if (D_L02_0015F6E8_2EB480 != 0 || (d[2] != -1 && func_00215570_2EB480(D_L02_00167440, d[2]))) {
+        func_00202790_2EB480(D_L02_001F3F20);
+    }
+    func_L02_002A59D8_2EB480();
+}
 extern void func_L02_002A59D8(float);
 extern void func_L02_002EB480(void);
 extern void func_001F49B0(void (*)(void), void *);

@@ -1197,4 +1197,71 @@ void func_L00_002B9A90(ListSlots8 *list, s32 val) {
 }
 INCLUDE_ASM("asm/overlays", func_L00_002B9AA8);
 INCLUDE_ASM("asm/overlays", func_L00_002B9AD8);
-INCLUDE_ASM("asm/overlays", func_L00_002BA608);
+typedef struct {
+    float f[4];
+} __attribute__((aligned(16))) V2b9310;
+extern short D_L00_00161660;
+extern short D_L00_0016174C;
+extern short D_L00_001616F4;
+extern int D_L00_00161748 MACRO_ADDR;
+extern short D_L00_001616C8;
+extern short D_L00_00161664;
+extern short D_L00_0016167C;
+extern short D_L00_00161684;
+extern short D_L00_00161698;
+extern short D_L00_00161728[] MACRO_ADDR;
+extern short D_L00_00161738[] MACRO_ADDR;
+extern short D_L00_0016173A[] MACRO_ADDR;
+extern short D_L00_0016173C[] MACRO_ADDR;
+extern short D_L00_0016173E[] MACRO_ADDR;
+extern short D_L00_00161740[] MACRO_ADDR;
+extern short D_L00_00161742[] MACRO_ADDR;
+extern short D_L00_00161744[] MACRO_ADDR;
+extern short D_L00_00161746[] MACRO_ADDR;
+extern V2b9310 D_L00_001DB8B0[];
+extern V2b9310 D_L00_001DB8C0[];
+extern int D_L00_001DBB40[];
+extern V2b9310 D_L00_001DBB90[];
+extern int D_L00_001DBCD0[];
+
+/* Starts the beam when one is pending: lays 19 points from the moby toward its target and resets the segment state.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/entities/002b2100.c, FUN_L00_002b9310. */
+void func_L00_002BA608(char *moby) {
+    V2b9310 d;
+    V2b9310 step;
+    char *data;
+    int i;
+    int j;
+
+    data = *(char **)(moby + 0x78);
+    if ((*(int *)&D_L00_00161660) == 0) {
+        return;
+    }
+    (*(int *)&D_L00_00161660) = 0;
+    (*(int *)&D_L00_0016174C) = 0;
+    D_L00_00161748 = scale_ticks((*(int *)&D_L00_001616F4));
+    (*(int *)&D_L00_001616C8) = 0x7F2020;
+    FastVecSub(&d, data + 0x10, data);
+    func_L00_001FF4B0(&step, &d, (*(float *)&D_L00_00161664) / 20.0f);
+    qcopy(D_L00_001DB8C0, data);
+    for (i = 1; i < 20; i++) {
+        FastVecAdd(&D_L00_001DB8C0[i], &D_L00_001DB8B0[i], &step);
+        D_L00_001DBB40[i] = 0;
+        clear_u64_value(&D_L00_001DBB90[i]);
+        D_L00_001DBCD0[i] = 0;
+    }
+    for (j = 0; j < 4; j++) {
+        D_L00_00161728[j] = -1;
+    }
+    D_L00_00161738[0] = 8;
+    D_L00_0016173C[0] = 8;
+    D_L00_00161740[0] = 4;
+    D_L00_0016173A[0] = 4;
+    D_L00_00161742[0] = 2;
+    D_L00_00161744[0] = 4;
+    D_L00_0016173E[0] = 4;
+    D_L00_00161746[0] = 2;
+    (*(int *)&D_L00_0016167C) = 0;
+    (*(int *)&D_L00_00161684) = 0;
+    (*(int *)&D_L00_00161698) = 0;
+}

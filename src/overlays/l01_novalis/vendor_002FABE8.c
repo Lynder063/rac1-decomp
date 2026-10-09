@@ -991,4 +991,42 @@ void func_L01_003104B8(void) {
         func_L00_001FDE48(D_L01_00203160[4 - i], (int)D_L01_002083C8[4 - i], D_L01_00208410[4 - i], D_L01_00208430, 1);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L01_003105E0);
+void func_001F49B0(void *fn, void *arg);
+extern f32 D_L01_001621A0_105E0[2] __asm__("D_L01_001621A0") MACRO_ADDR;
+void func_L01_003104B8(void);
+typedef struct {
+    u8 pad0[0x20];
+    u8 state;
+} ScrollMoby;
+extern f32 D_0015EE7C MACRO_ADDR;
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l01/gameplay/vendor/00309bf8.c, FUN_L01_0030f208. */
+void func_L01_003105E0(ScrollMoby *m) {
+    f32 d;
+
+    switch (m->state) {
+    case 0:
+        D_L01_001621A0_105E0[0] = 0.0f;
+        D_L01_001621A0_105E0[1] = 0.0f;
+        m->state = 1;
+        break;
+    case 1:
+        d = D_0015EE7C * 0.025f;
+        D_L01_001621A0_105E0[0] += d;
+        D_L01_001621A0_105E0[1] += d;
+        if (D_L01_001621A0_105E0[0] > 1.0f) {
+            D_L01_001621A0_105E0[0] -= 1.0f;
+        }
+        if (D_L01_001621A0_105E0[0] < -1.0f) {
+            D_L01_001621A0_105E0[0] += 1.0f;
+        }
+        if (D_L01_001621A0_105E0[1] > 1.0f) {
+            D_L01_001621A0_105E0[1] -= 1.0f;
+        }
+        if (D_L01_001621A0_105E0[1] < -1.0f) {
+            D_L01_001621A0_105E0[1] += 1.0f;
+        }
+        AddDrawCallback(func_L01_003104B8, m);
+        break;
+    }
+}

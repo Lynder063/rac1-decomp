@@ -2,7 +2,114 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L01_002BA898);
+struct DmaTag_2BA898 {
+    u32 tag;
+    u32 addr;
+    u32 vif0;
+    u32 vif1;
+};
+struct GifTag_2BA898;
+union PacketCursor_2BA898 {
+    struct DmaTag_2BA898 *tag;
+    struct GifTag_2BA898 *gif;
+    s32 *words;
+    u8 *bytes;
+    s32 addr;
+};
+typedef struct {
+    u8 pad0[8];
+    void *bounds; /* 0x08: sphere tested against the view */
+    s32 shape; /* 0x0C: what FUN_L01_0021fa98 draws */
+    f32 rate0; /* 0x10 */
+    f32 rate1; /* 0x14 */
+    u8 pad18[4];
+    s32 frame_step; /* 0x1C */
+    f32 du0; /* 0x20 */
+    f32 dv0; /* 0x24 */
+    f32 du1; /* 0x28 */
+    f32 dv1; /* 0x2C */
+    u8 pad30[4];
+    s32 tex0; /* 0x34 */
+    s32 tex1; /* 0x38 */
+    u8 alpha0; /* 0x3C */
+    u8 alpha1; /* 0x3D */
+    u8 pad3E[2];
+    f32 u0; /* 0x40 */
+    f32 v0; /* 0x44 */
+    f32 u1; /* 0x48 */
+    f32 v1; /* 0x4C */
+    s32 frame; /* 0x50 */
+    u8 pad54[0xC];
+} ScrollLayer_2BA898;
+extern union PacketCursor_2BA898 D_L01_00161240_2BA898 __asm__("D_L01_00161240") MACRO_ADDR;
+extern u8 D_L01_001CAF00_2BA898[] __asm__("D_L01_001CAF00");
+extern s32 func_L00_00200290_2BA898(void *, f32) __asm__("func_L00_00200290");
+extern u64 func_001F4868_2BA898(s32) __asm__("func_001F4868");
+extern void func_L01_002635C8_2BA898(ScrollLayer_2BA898 *) __asm__("func_L01_002635C8");
+extern void func_L01_0021F9C8_2BA898(s32, s32, s32, s32, s32, s32) __asm__("func_L01_0021F9C8");
+
+void func_L01_002BA898_r(s32 count, ScrollLayer_2BA898 *l) __asm__("func_L01_002BA898");
+
+/* Scrolls the UV offsets of count overlay layers (wrapping into [-1, 1]) and, for each one in view, queues its two-texture GS setup and draws it.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l01/gameplay/entities/002b96e0.c, FUN_L01_002b96e0. */
+void func_L01_002BA898_r(s32 count, ScrollLayer_2BA898 *l) {
+    struct DmaTag_2BA898 *tag;
+    u64 *q;
+    s32 vis;
+    s32 i;
+
+    for (i = 0; i < count; i++, l++) {
+        l->u0 += l->du0 * l->rate0;
+        l->v0 += l->dv0 * l->rate0;
+        if (l->u0 > 1.0f)
+            l->u0 -= 1.0f;
+        else if (l->u0 < -1.0f)
+            l->u0 += 1.0f;
+        if (l->v0 > 1.0f)
+            l->v0 -= 1.0f;
+        else if (l->v0 < -1.0f)
+            l->v0 += 1.0f;
+        l->u1 += l->du1 * l->rate1;
+        l->v1 += l->dv1 * l->rate1;
+        if (l->u1 > 1.0f)
+            l->u1 -= 1.0f;
+        else if (l->u1 < -1.0f)
+            l->u1 += 1.0f;
+        if (l->v1 > 1.0f)
+            l->v1 -= 1.0f;
+        else if (l->v1 < -1.0f)
+            l->v1 += 1.0f;
+        l->frame = (l->frame + l->frame_step) & 0xFFFFFF;
+        vis = func_L00_00200290_2BA898(l->bounds, 400.0f);
+        if (vis == -1)
+            continue;
+        D_L01_00161240_2BA898.tag->tag = 0x30000007;
+        D_L01_00161240_2BA898.tag->addr = (u32)D_L01_001CAF00_2BA898;
+        D_L01_00161240_2BA898.tag->vif0 = 0;
+        D_L01_00161240_2BA898.tag->vif1 = 0x50000007;
+        D_L01_00161240_2BA898.tag++;
+        D_L01_00161240_2BA898.tag->tag = 0x10000005;
+        D_L01_00161240_2BA898.tag->addr = 0;
+        D_L01_00161240_2BA898.tag->vif0 = 0;
+        D_L01_00161240_2BA898.tag->vif1 = 0x50000005;
+        tag = D_L01_00161240_2BA898.tag;
+        q = (u64 *)(tag + 1);
+        D_L01_00161240_2BA898.tag = tag + 1;
+        q[0] = 0x4000000000008001;
+        q[1] = 0xEEEE;
+        q[2] = ((u64)l->alpha0 << 32) | 100;
+        q[3] = 0x42;
+        q[4] = ((u64)l->alpha1 << 32) | 100;
+        q[5] = 0x43;
+        q[6] = func_001F4868_2BA898(l->tex0);
+        q[7] = 6;
+        q[8] = func_001F4868_2BA898(l->tex1);
+        q[9] = 7;
+        D_L01_00161240_2BA898.tag = tag + 6;
+        func_L01_002635C8_2BA898(l);
+        func_L01_0021F9C8_2BA898(l->shape, 0x70000000, 0x70003000, 0x70001000, 0x70002000, 1 - vis);
+    }
+}
 LINKER_REMNANT("asm/overlays", func_L01_002BABE8);
 typedef u32 u128_BE2C8 __attribute__((mode(TI), aligned(16)));
 typedef union { u128_BE2C8 q; f32 f[4]; } EmitVec;

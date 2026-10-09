@@ -1033,7 +1033,50 @@ void func_L15_0029BD88(char *m) {
         p += 0x10;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L15_0029BE10);
+extern char D_L15_00167440_9BE10[] __asm__("D_L15_00167440");
+extern int D_L15_001744D8[];
+extern unsigned char D_001414F4[];
+extern int func_L00_0028EF68(int, int, void *, int);
+extern void func_001F9C30(void *, void *, float);
+extern void func_L00_0025A8C0(void *, void *, int, float, void *);
+void func_L15_0029BFF8(char *moby);
+void func_L15_0029C168(char *moby);
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/entities/00278fd8.c, FUN_L15_0029ac30. */
+void func_L15_0029BE10(unsigned char *m) {
+    char *d = *(char **)(m + 0x78);
+    float next[4];
+    float back[4];
+    char col[0x30];
+    float s;
+    if (*(int *)(d + 0x10) == 0) {
+        if (FastVecDist(m + 0x10, D_L15_00167440_9BE10) < 15.0f) {
+            func_L00_0028EF68(9, 0, m, 0x27E);
+            *(int *)(d + 0x10) = 1;
+        }
+    }
+    if (m[0x20] != 0)
+        return;
+    s = 1.0f;
+    *(float *)(m + 0x40) = FastAddRots(*(float *)(m + 0x40), D_0015EE6C * 6.2831855f);
+    FastVecAdd(next, m + 0x10, d);
+    FastVecScale(back, d, -2.0f);
+    FastVecAdd(back, back, m + 0x10);
+    if (D_001414F4[0] == 2 && random_integer_below(5) != 0)
+        s = 0.0f;
+    func_L00_0025A8C0(col, m, 0x10003, s, d);
+    *(short *)(col + 0x1A) = *(short *)(m + 0xA6);
+    if (func_L00_001EFFF0(back, next, 0x10, m, col) != 0 || func_001F9908(d + 0x14) != 0) {
+        if (D_L15_001744D8[0] != *(int *)(d + 0x18)) {
+            func_L00_0028EF68(8, 0, m, 0x27E);
+            func_L15_0029C168((char *)m);
+            DeleteMoby(m);
+            return;
+        }
+    }
+    qcopy(m + 0x10, next);
+    func_L15_0029BFF8((char *)m);
+}
 extern void func_001F9C30(void *, void *, float);
 extern void func_L00_00258DB0(float *, float, float);
 extern void func_001F9BD8(void *, void *, void *);

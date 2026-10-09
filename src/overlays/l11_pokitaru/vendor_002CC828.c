@@ -703,7 +703,97 @@ int func_L11_002D37A8(char *m, float *out) {
     }
     return 0;
 }
-INCLUDE_ASM("asm/overlays", func_L11_002D3970);
+typedef struct {
+    char pad00[0x10];
+    float position[4];
+    unsigned char state;
+    char pad21[0x27];
+    float yaw;
+    char pad4C[7];
+    unsigned char animation;
+    char pad54[0x24];
+    char *data;
+} WM11_2D3970;
+typedef struct {
+    float target[4];
+    float eye[4];
+    float delta[4];
+} WS11_2D3970;
+extern float func_L00_001FF860_2D3970(float, float) __asm__("func_L00_001FF860");
+extern float func_001FA790_2D3970(float, float) __asm__("func_001FA790");
+extern float func_001F9CE8_2D3970(void *) __asm__("func_001F9CE8");
+extern void func_001F9BF0_2D3970(void *, void *, void *) __asm__("func_001F9BF0");
+extern unsigned char D_0015EEB0_2D3970[] __asm__("D_0015EEB0") MACRO_ADDR;
+extern float D_0015EE64_2D3970 __asm__("D_0015EE64") MACRO_ADDR;
+extern void func_L00_00263950_2D3970(float, float, void *, void *, int) __asm__("func_L00_00263950");
+typedef struct {
+    char pad000[0x160];
+    char body[0x64];
+    float pitch;
+    float yaw;
+    char pad1CC[4];
+    float height;
+    char pad1D4[0xC];
+    char head[0x68];
+    float head_yaw;
+} WD11b_2D3970;
+extern char D_0013F4D0_2D3970[] __asm__("D_0013F4D0");
+
+void func_L11_002D3970_r(WM11_2D3970 *m) __asm__("func_L11_002D3970");
+
+/* Guard head update: in its watching states it turns its body and head toward the hero.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l11/gameplay/entities/002cb668.c, FUN_L11_002d27b0. */
+void func_L11_002D3970_r(WM11_2D3970 *m) {
+    WS11_2D3970 scratch;
+    WD11b_2D3970 *d = (WD11b_2D3970 *)m->data;
+    float rate;
+    float head_rate;
+    int tracking;
+    rate = 0.02f;
+    head_rate = 0.3f;
+    switch (m->state) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 11:
+    case 12:
+    case 14:
+    case 16:
+        tracking = 1;
+        qcopy(scratch.target, D_0013F4D0_2D3970);
+        break;
+    default:
+        tracking = 0;
+        break;
+    }
+    if (tracking) {
+        float yaw;
+        float pitch;
+        qcopy(scratch.eye, m->position);
+        scratch.eye[2] += 1.0f;
+        func_001F9BF0_2D3970(scratch.delta, scratch.target, scratch.eye);
+        yaw = func_001FA790_2D3970(func_L00_001FF860_2D3970(scratch.delta[0], scratch.delta[1]), m->yaw);
+        pitch = -func_L00_001FF860_2D3970(func_001F9CE8_2D3970(scratch.delta), scratch.delta[2]);
+        if (yaw > 1.2217305f)
+            yaw = 1.2217305f;
+        else if (yaw < -1.2217305f)
+            yaw = -1.2217305f;
+        if (pitch > 0.2617994f)
+            pitch = 0.2617994f;
+        else if (pitch < -0.5235988f)
+            pitch = -0.5235988f;
+        d->pitch = pitch;
+        d->yaw = yaw * 0.7f;
+        d->head_yaw = yaw * 0.3f;
+    }
+    if (*D_0015EEB0_2D3970)
+        d->height = 2.75f;
+    func_L00_00263950_2D3970(rate * D_0015EE64_2D3970, head_rate * D_0015EE64_2D3970, m, d->body, 0);
+    func_L00_00263950_2D3970(rate * D_0015EE64_2D3970, head_rate * D_0015EE64_2D3970, m, d->head, 1);
+}
 extern void func_00213DE0(void *, int, int, int);
 extern void func_L00_00264DB8(int, int);
 typedef struct { char pad[0x432]; unsigned short f432; } Stats_2F21B0;
@@ -1815,7 +1905,79 @@ char *func_L11_00311260(char *owner) {
     }
     return moby;
 }
-INCLUDE_ASM("asm/overlays", func_L11_00311318);
+struct Moby_311318 {
+    u8 pad00[0x20];
+    u8 state; /* 0x20 */
+    u8 pad21[0x13];
+    u16 flags; /* 0x34 */
+    u8 pad36[0x1D];
+    u8 prev_seq; /* 0x53 */
+    u8 pad54[0x50];
+    u8 unkA4; /* 0xA4 */
+    u8 padA5;
+    s16 oclass; /* 0xA6 */
+};
+extern char *func_L00_0025B478_311318(void *, int, int) __asm__("func_L00_0025B478");
+extern int func_00120778_311318(float) __asm__("func_00120778");
+extern void func_001E9730_311318(char *, int, int) __asm__("func_001E9730");
+extern int func_L00_0025B4D0_311318(void *, void *, float *, int, int *, int, int, int) __asm__("func_L00_0025B4D0");
+extern void func_L00_0025E4B0_311318(void *, void *) __asm__("func_L00_0025E4B0");
+extern void func_00213DE0_311318(void *, int, int, int) __asm__("func_00213DE0");
+extern int func_001F9850_311318(int) __asm__("func_001F9850");
+extern void func_L00_0025E590_311318(void *, void *) __asm__("func_L00_0025E590");
+extern char D_L11_0021B820_311318[] __asm__("D_L11_0021B820");
+
+void func_L11_00311318_r(struct Moby_311318 *m, unsigned char *d, float *t) __asm__("func_L11_00311318");
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l11/gameplay/vendor/0030c788.c, FUN_L11_0030fe50. */
+void func_L11_00311318_r(struct Moby_311318 *m, unsigned char *d, float *t) {
+    int out;
+    char *info;
+    if (m->state != 4) {
+        info = func_L00_0025B478_311318(m, 0x330000, 0);
+        if (info != 0) {
+            func_001E9730_311318(D_L11_0021B820_311318, m->oclass, func_00120778_311318(*(float *)(info + 0x2C)));
+        }
+        switch (func_L00_0025B4D0_311318(m, info, t, 0, &out, 0, 0, 4)) {
+        case 1:
+        case 2:
+            *t = 0.0f;
+            break;
+        case 0:
+        case 3:
+        case 4:
+        case 11:
+            break;
+        }
+        if (out >= 2) {
+            if (*t <= *(float *)(info + 0x2C)) {
+                unsigned char *s;
+                *t = 0.0f;
+                m->flags &= 0xEFFF;
+                d[0x67] = 0x78;
+                func_L00_0025E4B0_311318(m, d + 0x60);
+                if (m->prev_seq != 2) {
+                    func_00213DE0_311318(m, 2, 0, 3);
+                }
+                s = *(unsigned char **)(d + 0x70);
+                if (s != 0 && s[0x20] != 0xFE && s[0x20] != 0xFD) {
+                    s[0x20] = 3;
+                }
+                m->state = 3;
+            } else {
+                *t -= *(float *)(info + 0x2C);
+                d[0x67] = 0xFA;
+                *(short *)(d + 0x26) = func_001F9850_311318(0x3C);
+                func_L00_0025E4B0_311318(m, d + 0x60);
+                if (m->prev_seq != 4) {
+                    func_00213DE0_311318(m, 4, 0, 3);
+                }
+            }
+        }
+        m->unkA4 = 0xFF;
+    }
+    func_L00_0025E590_311318(m, d + 0x60);
+}
 extern void func_L11_00311318(void *, void *, void *);
 extern float func_0020D830(void *);
 

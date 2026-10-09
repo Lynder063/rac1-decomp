@@ -158,7 +158,29 @@ int func_L07_00314ED0(char *m, char *a, void *p6, float *p7, float thr) {
     }
     return r;
 }
-INCLUDE_ASM("asm/overlays", func_L07_00315108);
+extern f32 D_0015EE60_315108 __asm__("D_0015EE60") MACRO_ADDR;
+struct ChaserSpeed_315108 { u8 pad0[0x80]; f32 base; u8 pad84[0x10]; f32 rate; u8 pad98[0x124]; f32 rate2; };
+struct ChaserAnim_315108 { u8 pad0[0x58]; f32 speed; };
+float func_L07_00315108_r(struct ChaserAnim_315108 *a, struct ChaserSpeed_315108 *s, float x, float y, float k) __asm__("func_L07_00315108");
+
+/* Sets the chaser's speed from how far x is past y (eased over 50 units, between 0.06 and 0.1 of the frame step) and scales its animation speed to match. Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l07/gameplay/entities/00312948.c, FUN_L07_00313d30. */
+float func_L07_00315108_r(struct ChaserAnim_315108 *a, struct ChaserSpeed_315108 *s, float x, float y, float k)
+{
+    float r = D_0015EE60_315108 * 0.06f;
+    if (y < x) {
+        r = x - y;
+        if (50.0f < r) r = 50.0f;
+        if (r < 0.0f) r = 0.0f;
+        r = r / 50.0f;
+        r = r * r;
+        r = r * (D_0015EE60_315108 * 0.1f - D_0015EE60_315108 * 0.06f);
+        r = r + D_0015EE60_315108 * 0.06f;
+    }
+    s->rate2 = r;
+    s->rate = r;
+    a->speed = s->base / (D_0015EE60_315108 * 0.06f) * k;
+    return r;
+}
 extern float func_L00_001FF860(float, float);
 extern float func_001FA850(float, float);
 extern int func_L00_00258BC8(int, int);

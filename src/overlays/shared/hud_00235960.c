@@ -1594,7 +1594,47 @@ void func_L00_0023C458(int tex, int x, int y, int w, int h, int alpha) {
     p[13] = 0;
     D_L00_00161280 = (int *)((char *)D_L00_00161280 + 0x70);
 }
-INCLUDE_ASM("asm/overlays", func_L00_0023D750);
+typedef struct O23D750 {
+    u8 pad0[0x8];
+    s32 max;
+    s32 *src;
+    u8 pad10[0x5C];
+    s32 f6C;
+    u8 c[4];
+    s32 val;
+    u8 pad78[4];
+    s32 timer;
+} O23D750;
+extern s32 D_L00_0015F9F4_23D750 SDATA(D_L00_0015F9F4);
+extern s32 D_L00_0015F9F8_23D750 SDATA(D_L00_0015F9F8);
+extern int func_001F9850(int);
+void func_L00_0023D750_r(O23D750 *p) __asm__("func_L00_0023D750");
+
+/* Steps a HUD element: clamps the shown value to 0..max, then on a random timer ramps its two-stage counter up to the limits or back down. Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/ui/hud/0023b120.c, FUN_L00_0023cdb8. */
+void func_L00_0023D750_r(O23D750 *p) {
+    u8 *c = p->c;
+    s32 v = *p->src;
+    p->val = v;
+    if (p->max < v)
+        p->val = p->max;
+    else if (v < 0)
+        p->val = 0;
+    if (p->timer >= scale_ticks(5)) {
+        p->timer = scale_ticks(5);
+        if (c[0] < D_L00_0015F9F4_23D750)
+            c[0]++;
+        else if (c[1] < D_L00_0015F9F8_23D750)
+            c[1]++;
+    } else {
+        p->f6C = 1;
+        if (c[1] != 0)
+            c[1]--;
+        else if (c[0] != 0)
+            c[0]--;
+        else
+            p->f6C = -6;
+    }
+}
 LINKER_REMNANT("asm/overlays", func_L00_0023D838);
 extern int D_0015EF8C MACRO_ADDR;
 extern int D_0015EF78 MACRO_ADDR;

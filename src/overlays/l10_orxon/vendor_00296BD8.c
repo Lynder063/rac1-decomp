@@ -718,7 +718,50 @@ void func_L10_002DB278(char *moby) {
 INCLUDE_ASM("asm/overlays", func_L10_002DB688);
 INCLUDE_ASM("asm/overlays", func_L10_002DBA50);
 INCLUDE_ASM("asm/overlays", func_L10_002DE018);
-INCLUDE_ASM("asm/overlays", func_L10_002DE630);
+typedef int OvlQuad_2DE630 __attribute__((mode(TI)));
+typedef struct {
+    int b;
+    float x;
+    float y;
+    float z;
+    int a;
+    int life;
+    float f18;
+} Data_2DE630;
+extern float D_0015EE6C_2DE630 __asm__("D_0015EE6C") MACRO_ADDR;
+extern unsigned char *func_0020D348_2DE630(int) __asm__("func_0020D348");
+extern void func_L00_00251328_2DE630(unsigned char *, int, int, int) __asm__("func_L00_00251328");
+extern int func_001FA898_2DE630(float) __asm__("func_001FA898");
+extern float func_002140F8_2DE630(float, float) __asm__("func_002140F8");
+extern void func_L00_0026E940_2DE630(unsigned char *, int, int, int, float) __asm__("func_L00_0026E940");
+unsigned char *func_L10_002DE630_r(int a, void *pos, int b, float x, float y, float z) __asm__("func_L10_002DE630");
+
+/* Spawns moby 0x442 at pos, sets its colour, stores the caller's parameters and a lifetime in its data and starts its sound. Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l10/gameplay/entities/00295a38.c, FUN_L10_002dd270. */
+unsigned char *func_L10_002DE630_r(int a, void *pos, int b, float x, float y, float z) {
+    unsigned char *o = func_0020D348_2DE630(0x442);
+    Data_2DE630 *d;
+    float f;
+    if (o != 0) {
+        o[0x30] = 0xFF;
+        *(short *)(o + 0x32) = 0xFF;
+        o[0x31] = 1;
+        o[0x23] = 0x40;
+        o[0x20] = 0;
+        d = *(Data_2DE630 **)(o + 0x78);
+        *(OvlQuad_2DE630 *)(o + 0x10) = *(OvlQuad_2DE630 *)pos;
+        func_L00_00251328_2DE630(o, 0x7F, 0x40, 0);
+        f = 10.0f / (D_0015EE6C_2DE630 * 5.0f);
+        d->b = b;
+        d->x = x;
+        d->y = y;
+        d->z = z;
+        d->a = a;
+        d->life = func_001FA898_2DE630(f);
+        d->f18 = func_002140F8_2DE630(0.999f, 0.97f);
+        func_L00_0026E940_2DE630(o, 0x1F4F7F7F, func_001FA898_2DE630(10.0f / (D_0015EE6C_2DE630 * 5.0f)), -1, 126000.008f);
+    }
+    return o;
+}
 typedef int Effect128 __attribute__((mode(TI)));
 extern void func_L00_002633D8(int,float *,float *,void *,float,float);
 extern s32 func_001FA898(f32);

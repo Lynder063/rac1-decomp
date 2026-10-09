@@ -594,7 +594,153 @@ INCLUDE_ASM("asm/overlays", func_L06_002F69D0);
 INCLUDE_ASM("asm/overlays", func_L06_002F71A8);
 INCLUDE_ASM("asm/overlays", func_L06_002F78A0);
 INCLUDE_ASM("asm/overlays", func_L06_002F8200);
-INCLUDE_ASM("asm/overlays", func_L06_002F8430);
+typedef u32 u128_F8430 __attribute__((mode(TI), aligned(16)));
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 w;
+} Vec4f_F8430;
+typedef union {
+    u128_F8430 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4_F8430;
+extern void func_001F9C30(void *, void *, f32);
+extern void func_L00_00258DB0_F8430(void *, f32, f32) __asm__("func_L00_00258DB0");
+struct Manip;
+struct GifEntry;
+struct AnimSeq;
+struct MobyClass_F8430 {
+    u8 pad_0[0xC];
+    u8 seq_count; /* number of entries in seqs[] (menu previews clamp the sequence to it) */
+    u8 pad_D[3];
+    u32 unk10; /* copied into Moby_F8430.unk94 when a moby is (re)classed */
+    u8 pad_14[0x8];
+    void *unk1C; /* word table, indexed id * 4 + 4 (0024eec0) */
+    struct GifEntry *gifs; /* patched by patch_moby_gifs */
+    f32 scale; /* default draw scale: copied into Moby_F8430.scale, divides it */
+    s32 unk28;
+    void **callbacks; /* function-pointer table, called with the moby */
+    u8 pad_30[0x14];
+    u16 flags; /* initial Moby_F8430.flags */
+    s16 unk46; /* class category; 5 is tested by targeting code */
+    struct AnimSeq *seqs[1]; /* animation sequences, indexed by Moby_F8430.seq */
+};
+struct Moby_F8430 {
+    Vec4f_F8430 bsphere;
+    Vec4f_F8430 pos;
+    u8 state; /* >= 0xFE: dead, waiting to respawn */
+    u8 group; /* linked group: index into the level moby-list table D_Lxx_001ABCC0 (0xFF: none) */
+    u8 unk22; /* class slot: pclass = D_L00_00197300[unk22] (FUN_L00_002cf218) */
+    u8 unk23; /* 0x40 for the smoke trail FUN_L09_00307ba8 spawns */
+    struct MobyClass_F8430 *pclass;
+    struct Moby_F8430 *next;
+    f32 scale; /* draw scale (FUN_L01_002fa068 halves it, FUN_L00_00215ef8 divides by it) */
+    u8 unk30; /* set to 0xFF (0x7F for beams) by spawners */
+    u8 unk31; /* set to 1 by spawners */
+    s16 unk32; /* set to 0xFF (0x7F for beams) by spawners */
+    u16 flags;
+    u16 unk36; /* set to 0x7F80 by spawners */
+    u64 spawn_frame; /* frame count at which it may respawn */
+    Vec4f_F8430 rot; /* z: yaw (FUN_L00_00266448 compares it with atan2 to the hero) */
+    u8 frame; /* animation frame */
+    u8 prev_frame; /* frame index in prev_seq */
+    u8 seq; /* animation sequence id */
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    struct Manip *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71; /* set to 0xFF when a moby changes class */
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_F8430 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F; /* set to 0x17 by FUN_L09_002c5990 near D_L09_00166F40 */
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94; /* set from the class header's word 0x10 */
+    s32 unk98; /* set to 1 while a carrier holds the moby (FUN_L00_002c7a58) */
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0; /* 0xB0: index into the level's D_0014C050 row (0xFF: not spawned) */
+    u8 padB1;
+    u16 save_id; /* index into the level collected[]/killed[] tables and save bits D_0014C190[level][id >> 5] */
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8; /* 0xB8: bolt source record; its byte 0xB1 is a per-level id (FUN_L00_002a6b70) */
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_F8430 unkC0; /* 0xC0: first row of a matrix built from rot (FUN_001fa030) */
+    Vec4f_F8430 unkD0;
+    Vec4f_F8430 unkE0;
+    u8 padF0[0x10];
+};
+extern f32 D_L06_00161EA0_F8430 SDATA(D_L06_00161EA0);
+extern f32 D_L06_00161E90_F8430 SDATA(D_L06_00161E90);
+extern f32 D_L06_00161E8C_F8430 SDATA(D_L06_00161E8C);
+extern f32 D_L06_00161EA4_F8430 SDATA(D_L06_00161EA4);
+extern f32 D_L06_00161E98_F8430 SDATA(D_L06_00161E98);
+extern f32 D_L06_00161E94_F8430 SDATA(D_L06_00161E94);
+extern int D_L06_00161ED0[4] MACRO_ADDR;
+extern int D_L06_00161EE0 MACRO_ADDR;
+extern Vec4_F8430 D_L06_001DB440[4][30];
+extern Vec4_F8430 D_L06_001DBBC0[4][30];
+extern void func_L06_002172B0(void *);
+struct Moby_F8430;
+
+/* Spins the moby and animates four 30-point strands: a strand whose timer ran out is rebuilt with a smoothed random drift (each point averages three jitters) and its timer reset; otherwise every inner point moves by its drift.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l06/gameplay/entities/002b4770.c, FUN_L06_002f7000. */
+void func_L06_002F8430(struct Moby_F8430 *moby) {
+    Vec4_F8430 jitter[30];
+    float y;
+    float step;
+    float phase;
+    int i;
+    int j;
+    int k;
+
+    moby->rot.x = FastAddRots(moby->rot.x, D_L06_00161EA0_F8430 * 0.017453292f * D_0015EE6C);
+    phase = D_L06_00161E8C_F8430 + D_L06_00161E90_F8430 * D_0015EE6C;
+    moby->scale = *(f32 *)((char *)moby->pclass + 0x24) * D_L06_00161EA4_F8430;
+    D_L06_00161E8C_F8430 = phase;
+    if (phase > 1.0f) {
+        D_L06_00161E8C_F8430 = phase - 1.0f;
+    }
+    step = D_L06_00161E98_F8430 / 30.0f;
+    y = -(D_L06_00161E98_F8430 * 0.5f);
+    for (i = 0; i < 4; i++) {
+        if (D_L06_00161ED0[i] == 0) {
+            for (k = 0; k < 30; k++) {
+                func_L06_002172B0(&D_L06_001DB440[i][k]);
+                D_L06_001DB440[i][k].f[1] = y;
+                func_L00_00258DB0_F8430(&jitter[k], 0.0f, D_L06_00161E94_F8430 * D_0015EE6C);
+                y += step;
+            }
+            for (k = 1; k < 29; k++) {
+                FastVecAdd(&D_L06_001DBBC0[i][k], &jitter[k - 1], &jitter[k]);
+                FastVecAdd(&D_L06_001DBBC0[i][k], &D_L06_001DBBC0[i][k], &jitter[k + 1]);
+                FastVecScale(&D_L06_001DBBC0[i][k], &D_L06_001DBBC0[i][k], 0.333f);
+            }
+            D_L06_00161ED0[i] = D_L06_00161EE0;
+        } else {
+            for (j = 1; j < 29; j++) {
+                FastVecAdd(&D_L06_001DB440[i][j], &D_L06_001DB440[i][j], &D_L06_001DBBC0[i][j]);
+            }
+            D_L06_00161ED0[i]--;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L06_002F91A8);
 INCLUDE_ASM("asm/overlays", func_L06_002FA618);
 void func_L06_002FAAC8(char *arg)

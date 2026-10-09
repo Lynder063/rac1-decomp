@@ -236,7 +236,234 @@ int func_L12_002E41C8(char *moby, float target) {
     return r;
 }
 INCLUDE_ASM("asm/overlays", func_L12_002E43A8);
-INCLUDE_ASM("asm/overlays", func_L12_002E4838);
+typedef u32 u128_E4838 __attribute__((mode(TI), aligned(16)));
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 w;
+} Vec4f_E4838;
+typedef union {
+    u128_E4838 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4_E4838;
+struct Manip;
+struct GifEntry;
+struct AnimSeq;
+struct MobyClass_E4838 {
+    u8 pad_0[0xC];
+    u8 seq_count; /* number of entries in seqs[] (menu previews clamp the sequence to it) */
+    u8 pad_D[3];
+    u32 unk10; /* copied into Moby_E4838.unk94 when a moby is (re)classed */
+    u8 pad_14[0x8];
+    void *unk1C; /* word table, indexed id * 4 + 4 (0024eec0) */
+    struct GifEntry *gifs; /* patched by patch_moby_gifs */
+    f32 scale; /* default draw scale: copied into Moby_E4838.scale, divides it */
+    s32 unk28;
+    void **callbacks; /* function-pointer table, called with the moby */
+    u8 pad_30[0x14];
+    u16 flags; /* initial Moby_E4838.flags */
+    s16 unk46; /* class category; 5 is tested by targeting code */
+    struct AnimSeq *seqs[1]; /* animation sequences, indexed by Moby_E4838.seq */
+};
+struct Moby_E4838 {
+    Vec4f_E4838 bsphere;
+    Vec4f_E4838 pos;
+    u8 state; /* >= 0xFE: dead, waiting to respawn */
+    u8 group; /* linked group: index into the level moby-list table D_Lxx_001ABCC0 (0xFF: none) */
+    u8 unk22; /* class slot: pclass = D_L00_00197300[unk22] (FUN_L00_002cf218) */
+    u8 unk23; /* 0x40 for the smoke trail FUN_L09_00307ba8 spawns */
+    struct MobyClass_E4838 *pclass;
+    struct Moby_E4838 *next;
+    f32 scale; /* draw scale (FUN_L01_002fa068 halves it, FUN_L00_00215ef8 divides by it) */
+    u8 unk30; /* set to 0xFF (0x7F for beams) by spawners */
+    u8 unk31; /* set to 1 by spawners */
+    s16 unk32; /* set to 0xFF (0x7F for beams) by spawners */
+    u16 flags;
+    u16 unk36; /* set to 0x7F80 by spawners */
+    u64 spawn_frame; /* frame count at which it may respawn */
+    Vec4f_E4838 rot; /* z: yaw (FUN_L00_00266448 compares it with atan2 to the hero) */
+    u8 frame; /* animation frame */
+    u8 prev_frame; /* frame index in prev_seq */
+    u8 seq; /* animation sequence id */
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    struct Manip *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71; /* set to 0xFF when a moby changes class */
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_E4838 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F; /* set to 0x17 by FUN_L09_002c5990 near D_L09_00166F40 */
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94; /* set from the class header's word 0x10 */
+    s32 unk98; /* set to 1 while a carrier holds the moby (FUN_L00_002c7a58) */
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0; /* 0xB0: index into the level's D_0014C050 row (0xFF: not spawned) */
+    u8 padB1;
+    u16 save_id; /* index into the level collected[]/killed[] tables and save bits D_0014C190[level][id >> 5] */
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8; /* 0xB8: bolt source record; its byte 0xB1 is a per-level id (FUN_L00_002a6b70) */
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_E4838 unkC0; /* 0xC0: first row of a matrix built from rot (FUN_001fa030) */
+    Vec4f_E4838 unkD0;
+    Vec4f_E4838 unkE0;
+    u8 padF0[0x10];
+};
+typedef struct {
+    u8 pad0[0x20];
+    f32 health; /* 0x20 */
+    u8 pad24[2];
+    s16 stun_timer; /* 0x26 */
+    u8 pad28[0x10];
+    s32 reset_alert; /* 0x38 */
+    u8 pad3C[0xD4];
+    u8 anim[7]; /* 0x110: animation blend state */
+    u8 unk117; /* 0x117 */
+    u8 pad118[8];
+    u8 fall[0x10]; /* 0x120 */
+    f32 unk130; /* 0x130 */
+    f32 unk134; /* 0x134 */
+    f32 unk138; /* 0x138 */
+    f32 unk13C; /* 0x13C */
+    u8 pad140[4];
+    s32 unk144; /* 0x144 */
+    u8 pad148[8];
+    f32 unk150; /* 0x150 */
+    f32 unk154; /* 0x154 */
+    f32 unk158; /* 0x158 */
+    u8 pad15C;
+    u8 unk15D; /* 0x15D */
+    u8 pad15E[0x12];
+    f32 unk170; /* 0x170 */
+    f32 unk174; /* 0x174 */
+    u8 pad178[0x134];
+    f32 speed; /* 0x2AC */
+    u8 pad2B0[0x14];
+    s32 alert_timer; /* 0x2C4 */
+    u8 pad2C8[0x20];
+    s16 call_enabled; /* 0x2E8 */
+    s16 call_timer; /* 0x2EA */
+} TrollVars_e3528;
+typedef struct {
+    u8 pad0[0x10];
+    Vec4_E4838 pos;
+} TrollHit_e3528;
+extern f32 D_L12_00161950_E4838 SDATA(D_L12_00161950);
+extern f32 D_L12_00161954_E4838 SDATA(D_L12_00161954);
+extern f32 D_0015EE6C MACRO_ADDR;
+extern s32 D_001414D0;
+extern s32 func_001F9850(s32);
+extern s32 func_001F9908(s32 *);
+extern s32 func_002140B0(s32);
+extern f32 func_001FA748(f32, f32);
+extern f32 func_001F9F90(f32);
+extern f32 func_001F9FA8(f32);
+extern s32 func_L01_0026EFB8(s32, s32);
+extern void func_L01_0026F040(s32, s32);
+extern void func_L00_0025AC00_E4838(struct Moby_E4838 *, s32, s32, Vec4f_E4838 *, f32 *, f32) __asm__("func_L00_0025AC00");
+extern TrollHit_e3528 *func_L00_0025B478_E4838(struct Moby_E4838 *, s32, s32) __asm__("func_L00_0025B478");
+extern void func_L00_0025B4D0_E4838(struct Moby_E4838 *, TrollHit_e3528 *, f32 *, s32, s32 *, f32 *, s32, s32) __asm__("func_L00_0025B4D0");
+extern void func_L00_0025BBA0_E4838(void *, f32 *, f32 *, f32 *) __asm__("func_L00_0025BBA0");
+extern void func_L00_0025D5B0_E4838(struct Moby_E4838 *, void *, s32, s32, s32, f32) __asm__("func_L00_0025D5B0");
+extern void func_L00_0025E4B0_E4838(struct Moby_E4838 *, void *) __asm__("func_L00_0025E4B0");
+extern void func_L00_0025E590_E4838(struct Moby_E4838 *, void *) __asm__("func_L00_0025E590");
+extern void func_L12_002E43A8(struct Moby_E4838 *);
+
+/* Damage and alert step of the l12 troll: refreshes its speed while alerted, now and then calls for help behind itself, and takes hits (dying, or staggering back).
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l12/gameplay/entities/002bf140.c, FUN_L12_002e3528. */
+void func_L12_002E4838(struct Moby_E4838 *moby) {
+    TrollVars_e3528 *vars = (TrollVars_e3528 *)moby->pvars;
+    Vec4_E4838 v;
+    s32 hit;
+    f32 dmg;
+    f32 angle;
+    f32 unused;
+    TrollHit_e3528 *coll;
+
+    if (vars->reset_alert != 0) {
+        vars->reset_alert = 0;
+        vars->alert_timer = scale_ticks(0xF0);
+    }
+    if (moby->state != 9 && moby->state != 0xB && moby->state != 0) {
+        if (func_001F9908(&vars->alert_timer)) {
+            vars->speed = 12.0f;
+        } else {
+            vars->speed = 20.0f;
+        }
+    }
+    if (vars->call_enabled != 0 && moby->state != 9) {
+        s16 n = ++vars->call_timer;
+        if (scale_ticks(0x3C) * 15 < n && moby->unk31 == 0 && moby->group < 0xFF &&
+            func_L01_0026EFB8(moby->group, -1) >= 4 && random_integer_below(0x45) == 0) {
+            v.f[0] = FastCos(FastAddRots(moby->rot.z, 3.1415927f));
+            v.f[1] = FastSin(FastAddRots(moby->rot.z, 3.1415927f));
+            v.f[2] = 0.0f;
+            func_L00_0025AC00_E4838(moby, D_001414D0, 0x10000, &moby->pos, v.f, 1.0f);
+        }
+    }
+    coll = func_L00_0025B478_E4838(moby, 0x330000, 0);
+    dmg = 0.0f;
+    func_L00_0025B4D0_E4838(moby, coll, &vars->health, 0, &hit, &dmg, 0, 4);
+    if (coll != 0 && moby->state != 0x63 && moby->state != 8) {
+        if (moby->group != 0xFF) {
+            func_L01_0026F040(moby->group, 7);
+        }
+        if (dmg != 0.0f) {
+            vars->health -= dmg;
+            vars->unk130 = 0.008f;
+            vars->unk134 = 0.0005f;
+            vars->unk138 = D_L12_00161954_E4838 * D_0015EE6C;
+            vars->unk13C = D_L12_00161950_E4838 * D_0015EE6C;
+            vars->unk15D = 0;
+            vars->unk144 = 9;
+            vars->unk150 = 1.0f;
+            vars->unk154 = 1.0f;
+            vars->unk158 = 1.0f;
+            if (vars->health <= 0.0f) {
+                moby->flags &= ~0x1000;
+                vars->unk138 = D_0015EE6C * 8.0f;
+                vars->unk13C = D_0015EE6C * 10.0f;
+                v.q = coll->pos.q;
+                func_L00_0025BBA0_E4838(&v, &angle, &vars->unk138, &vars->unk13C);
+                func_L00_0025D5B0_E4838(moby, vars->fall, 6, 1, 0, angle);
+                vars->unk170 = 11.0f;
+                vars->unk174 = 18.0f;
+                moby->state = 0x63;
+                vars->unk117 = 0x78;
+                func_L00_0025E4B0_E4838(moby, vars->anim);
+            } else {
+                v.q = coll->pos.q;
+                func_L00_0025BBA0_E4838(&v, &unused, &vars->unk138, &vars->unk13C);
+                func_L00_0025D5B0_E4838(moby, vars->fall, 0xE, 1, 0, unused);
+                vars->unk174 = vars->unk170 = -1.0f;
+                moby->state = 7;
+                vars->unk117 = 0xFA;
+                vars->stun_timer = scale_ticks(0x3C);
+                func_L00_0025E4B0_E4838(moby, vars->anim);
+            }
+            func_L12_002E43A8(moby);
+        }
+    }
+    moby->unkA4 = 0xFF;
+    func_L00_0025E590_E4838(moby, vars->anim);
+}
 extern short D_L12_001619A0;
 extern void func_001F9BD8(void *, void *, void *);
 extern char *func_L00_0026DA50(void *pos, void *dir, int c, int d, int n, int k, float f);

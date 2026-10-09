@@ -507,6 +507,80 @@ symbol or one statement form was changed until this project's own check passed. 
 - `src/overlays/shared/vendor_002A5138.c`: `func_L00_002A86D8` (`FUN_L00_002a7438`)
 - `src/overlays/shared/vendor_002E1660.c`: `func_L00_002E87C8` (`FUN_L00_002e7318`)
 
+Six more of the same pull requests' functions were carried over by machine later on 2026-10-09, once the
+files they go into were free:
+
+- `src/overlays/l18_veldin2/vendor_002A8400.c`: `func_L18_002D6738` (`FUN_L18_002d5348`)
+- `src/overlays/shared/help_0020CDF0.c`: `func_L00_0020CDF0` (`FUN_L00_0020c758`)
+- `src/overlays/shared/partupd_00280428.c`: `func_L01_00286530` (`FUN_L01_00285768`)
+- `src/overlays/shared/vendor_00298BB8.c`: `func_L15_0029BE10` (`FUN_L15_0029ac30`)
+- `src/overlays/shared/vendor_002C96D0.c`: `func_L00_002D06C8` (`FUN_L00_002cf218`)
+- `src/overlays/shared/vendor_002E1660.c`: `func_L00_002E80A8` (`FUN_L00_002e6bf8`)
+
+Fifty-four more were adapted by workers the same day from the candidates the tool carried over, which did not
+pass this project's check as written. The logic is Lombyte's; what changed is declarations (the function
+defined under an alias where its file declares it otherwise, type names suffixed, a `$gp` global given its
+real type, a table declared unsized), a renamed symbol, or a displacement that differs between US and PAL.
+In parentheses, Lombyte's name.
+
+- `src/overlays/l01_novalis/vendor_002BA898.c`: `func_L01_002BA898` (`FUN_L01_002b96e0`)
+- `src/overlays/l01_novalis/vendor_002FABE8.c`: `func_L01_003105E0` (`FUN_L01_0030f208`)
+- `src/overlays/l02_aridia/vendor_002A59D8.c`: `func_L02_002D99F0` (`FUN_L02_002d85b8`)
+- `src/overlays/l02_aridia/vendor_002E21F8.c`: `func_L02_002EB480` (`FUN_L02_002ea048`)
+- `src/overlays/l03_kerwan/vendor_00293720.c`: `func_L03_002BC038` (`FUN_L03_002bad40`)
+- `src/overlays/l03_kerwan/vendor_00293720.c`: `func_L03_002CA970` (`FUN_L03_002c95a8`)
+- `src/overlays/l03_kerwan/vendor_00293720.c`: `func_L03_002CB068` (`FUN_L03_002c9ca0`)
+- `src/overlays/l03_kerwan/vendor_002CB280.c`: `func_L03_002CB280` (`FUN_L03_002c9eb8`)
+- `src/overlays/l03_kerwan/vendor_002CB280.c`: `func_L03_002CBBD0` (`FUN_L03_002ca808`)
+- `src/overlays/l03_kerwan/vendor_002CB280.c`: `func_L03_002D4560` (`FUN_L03_002d3198`)
+- `src/overlays/l03_kerwan/vendor_002CB280.c`: `func_L03_002DC648` (`FUN_L03_002db280`)
+- `src/overlays/l03_kerwan/vendor_002CB280.c`: `func_L03_002ECBA8` (`FUN_L03_002eb7e0`)
+- `src/overlays/l05_rilgar/vendor_0030EB68.c`: `func_L05_00316378` (`FUN_L05_00314eb0`)
+- `src/overlays/l06_blarg/vendor_002B5990.c`: `func_L06_002F8430` (`FUN_L06_002f7000`)
+- `src/overlays/l07_umbris/vendor_002CE470.c`: `func_L07_0030CFA8` (`FUN_L07_0030bbc8`)
+- `src/overlays/l07_umbris/vendor_002CE470.c`: `func_L07_0030FB00` (`FUN_L07_0030e720`)
+- `src/overlays/l07_umbris/vendor_002CE470.c`: `func_L07_0030FC38` (`FUN_L07_0030e858`)
+- `src/overlays/l07_umbris/vendor_00313D28.c`: `func_L07_00315108` (`FUN_L07_00313d30`)
+- `src/overlays/l09_gaspar/vendor_002C2B08.c`: `func_L09_00304EE0` (`FUN_L09_00303b30`)
+- `src/overlays/l10_orxon/vendor_00296BD8.c`: `func_L10_002DE630` (`FUN_L10_002dd270`)
+- `src/overlays/l11_pokitaru/vendor_002CC828.c`: `func_L11_002D3970` (`FUN_L11_002d27b0`)
+- `src/overlays/l11_pokitaru/vendor_002CC828.c`: `func_L11_00311318` (`FUN_L11_0030fe50`)
+- `src/overlays/l11_pokitaru/vendor_00312BD8.c`: `func_L11_0031BBC8` (`FUN_L11_0031a758`)
+- `src/overlays/l12_hoven/vendor_002C0310.c`: `func_L12_002E4838` (`FUN_L12_002e3528`)
+- `src/overlays/l12_hoven/vendor_002EDAA0.c`: `func_L12_00309590` (`FUN_L12_003081b0`)
+- `src/overlays/l12_hoven/vendor_002EDAA0.c`: `func_L12_0030D3D0` (`FUN_L12_0030bff0`)
+- `src/overlays/l14_oltanis/vendor_002ACCC0.c`: `func_L14_002B6E80` (`FUN_L14_002b5c30`)
+- `src/overlays/l14_oltanis/vendor_002ACCC0.c`: `func_L14_002B6F68` (`FUN_L14_002b5d18`)
+- `src/overlays/l14_oltanis/vendor_002ACCC0.c`: `func_L14_002B7028` (`FUN_L14_002b5dd8`)
+- `src/overlays/l14_oltanis/vendor_002ACCC0.c`: `func_L14_002D7250` (`FUN_L14_002d5f40`)
+- `src/overlays/l14_oltanis/vendor_002ACCC0.c`: `func_L14_002D7880` (`FUN_L14_002d6570`)
+- `src/overlays/l14_oltanis/vendor_002E0538.c`: `func_L14_002EC7E8` (`FUN_L14_002eb388`)
+- `src/overlays/l14_oltanis/vendor_002E0538.c`: `func_L14_002F0A30` (`FUN_L14_002ef5a8`)
+- `src/overlays/l15_quartu/vendor_0029C1D0.c`: `func_L15_002A4D88` (`FUN_L15_002a3ba8`)
+- `src/overlays/l15_quartu/vendor_0029C1D0.c`: `func_L15_002ED318` (`FUN_L15_002ebf28`)
+- `src/overlays/l15_quartu/vendor_002EDB50.c`: `func_L15_002F9D38` (`FUN_L15_002f88e8`)
+- `src/overlays/l18_veldin2/vendor_002A8400.c`: `func_L18_002D7310` (`FUN_L18_002d5f20`)
+- `src/overlays/l18_veldin2/vendor_002A8400.c`: `func_L18_002EC0C8` (`FUN_L18_002eacd8`)
+- `src/overlays/l18_veldin2/vendor_002F9D48.c`: `func_L18_002FB080` (`FUN_L18_002f9c20`)
+- `src/overlays/l18_veldin2/vendor_002F9D48.c`: `func_L18_002FDD20` (`FUN_L18_002fc860`)
+- `src/overlays/shared/hud_00235960.c`: `func_L00_0023D750` (`FUN_L00_0023cdb8`)
+- `src/overlays/shared/mobyutil_00258BC8.c`: `func_L00_0025A208` (`FUN_L00_002591d0`)
+- `src/overlays/shared/vendor_002A5138.c`: `func_L00_002A7E10` (`FUN_L00_002a6b70`)
+- `src/overlays/shared/vendor_002B33E8.c`: `func_L00_002BA608` (`FUN_L00_002b9310`)
+- `src/overlays/shared/vendor_002C12B0.c`: `func_L00_002C2A80` (`FUN_L00_002c1778`)
+- `src/overlays/shared/vendor_002C96D0.c`: `func_L00_002CF6A0` (`FUN_L00_002ce1f0`)
+- `src/overlays/shared/vendor_002CF2C0.c`: `func_L05_0032ABF0` (`FUN_L05_003296e0`)
+- `src/overlays/shared/vendor_002D1168.c`: `func_L00_002D6CE0` (`FUN_L00_002d5830`)
+- `src/overlays/shared/vendor_002D1168.c`: `func_L00_002D90A0` (`FUN_L00_002d7bf0`)
+- `src/overlays/shared/vendor_002D7C00.c`: `func_L15_002D8DD8` (`FUN_L15_002d79e8`)
+- `src/overlays/shared/vendor_002D9548.c`: `func_L06_002F4720` (`FUN_L06_002f32f0`)
+- `src/overlays/shared/vendor_002D9548.c`: `func_L06_002F4A70` (`FUN_L06_002f3640`)
+- `src/overlays/shared/vendor_002E1660.c`: `func_L00_002E9E60` (`FUN_L00_002e89b0`)
+- `src/overlays/shared/vendor_002FF000.c`: `func_L06_002FF000` (`FUN_L06_002fdbd0`)
+
+`func_L00_0025B478` in `src/overlays/shared/mobyutil_00258BC8.c` takes one form from Lombyte's match of the
+same function: the byte read through a small inline accessor.
+
 One more is this project's own port of a function it has from Lombyte: `func_L00_001EB890` in
 `src/overlays/shared/camera_001EB508.c` is the level programs' copy of `func_001EC2B8` (Lombyte's
 `switch_active_camera_record`), with the same C under the level's symbols.

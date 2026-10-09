@@ -1640,7 +1640,24 @@ void func_L11_0031ACA8(unsigned char *moby) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L11_0031BBC8);
+extern short *D_L11_001AC540[];
+extern char *D_L11_00160058_31BBC8 __asm__("D_L11_00160058") MACRO_ADDR;
+short func_L11_0031BBC8_r(int idx) __asm__("func_L11_0031BBC8");
+
+/* Counts the mobys of class 0x527 in state 5 on id list idx. Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l11/gameplay/vendor/00315968.c, FUN_L11_0031a758. */
+short func_L11_0031BBC8_r(int idx) {
+    short *p = D_L11_001AC540[idx];
+    short found = 0;
+    short n = 0;
+    char *base = D_L11_00160058_31BBC8;
+    do {
+        unsigned char *moby = (unsigned char *)(((p[0] & 0x7FFF) << 8) + (int)base);
+        if (*(short *)(moby + 0xA6) == 0x527 && moby[0x20] == 5) {
+            found = ++n;
+        }
+    } while (*p++ >= 0);
+    return found;
+}
 extern int func_002140B0(int);
 extern void func_001FA1F8(void *, void *);
 extern float func_001FA748(float, float);

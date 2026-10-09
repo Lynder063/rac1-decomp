@@ -88,7 +88,7 @@ typedef struct { u8 pad[0x454]; u8 arr[1]; } T_2e03a0_2e03a0;
 extern T_2e03a0_2e03a0 D_L00_001BA960;
 extern T_2e03a0_2e03a0 D_L00_001BB5C0;
 extern u8 D_L00_0015FD48[] MACRO_ADDR;
-extern short D_0015EE84;
+extern short D_0015EE84 SDATA(D_0015EE84);
 extern u8 D_0014C150[];
 extern s32 D_00141510[];
 extern u8 D_0013D5C8[];
@@ -1443,7 +1443,44 @@ void func_L00_002E7B68(int snap) {
     FastVecCross(cam + 0x20, cam + 0x10, cam);
     qcopy(cam + 0x40, cam);
 }
-INCLUDE_ASM("asm/overlays", func_L00_002E80A8);
+extern char D_0013F6E0_E80A8[] __asm__("D_0013F6E0");
+extern void func_001F9BF0_E80A8(void *, void *, void *) __asm__("func_001F9BF0");
+
+/* Resets the camera rig state from the moby position when idle.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/vendor/002e5e38.c, FUN_L00_002e6bf8. */
+void func_L00_002E80A8(char *m) {
+    float dn[4];
+    float t[4];
+    char *d;
+    char *b;
+    char *c;
+    char *e;
+
+    if (*(short *)(m + 0x86) == 0) {
+        b = *(char **)(m + 0x70);
+        d = b;
+        c = b + 0x130;
+        b += 0x40;
+        e = b;
+        FastVecScale(dn, D_0013F6E0_E80A8, -1.0f);
+        qcopy(e, D_0013F6E0_E80A8 - 0x210);
+        qcopy(d + 0xA0, b);
+        FastVecScale(d + 0x50, dn, FastVecDot(b, dn));
+        clear_u64_value(d + 0xB0);
+        clear_u64_value(d + 0xC0);
+        clear_u64_value(d + 0xE0);
+        FastVecScale(t, dn, *(float *)(c + 0x30));
+        FastVecAdd(d + 0x90, t, e);
+        FastVecScale(t, dn, *(float *)(b + 0xB0));
+        FastVecAdd(d + 0xD0, t, e);
+        qcopy(d + 0x80, d + 0xD0);
+        func_001F9BF0_E80A8(c, m + 0x30, d + 0x90);
+        qcopy(d + 0x140, c);
+        qcopy(d, m + 0x30);
+        FastVecAdd(d + 0x1F0, d + 0x90, c);
+        *(int *)(d + 0x220) = 0;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L00_002E8210);
 typedef struct { unsigned char p0[0x208C]; int w208C; unsigned char p1[0x20A4 - 0x2090]; unsigned char b20A4; } G_2e7138;
 extern G_2e7138 D_0013F450_E85E8 __asm__("D_0013F450");
@@ -1862,7 +1899,84 @@ void func_L00_002E9E20(int a, float x, float y) {
         func_L00_002E9D78(p, a, y);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002E9E60);
+extern s32 D_0015EE84_2E9E60 __asm__("D_0015EE84") MACRO_ADDR;
+typedef struct {
+    unsigned char pad0[0x10];
+    int flags;
+    float f14;
+    unsigned char pad18[4];
+    float f1C;
+    unsigned char pad20[4];
+    float f24;
+} S_2E9E60;
+typedef struct {
+    unsigned char pad0[0x40];
+    unsigned short u40;
+    unsigned short u42;
+    int i44;
+} G_2E9E60;
+extern float D_0013CB40_2E9E60[] __asm__("D_0013CB40");
+extern int D_0015EEE0_2E9E60 __asm__("D_0015EEE0") MACRO_ADDR;
+extern int D_0015EEDC_2E9E60 __asm__("D_0015EEDC") MACRO_ADDR;
+extern int D_0015EFA4_2E9E60 __asm__("D_0015EFA4") MACRO_ADDR;
+extern f32 D_L00_0015F044_2E9E60 SDATA(D_L00_0015F044);
+extern s32 D_L00_00161E5C_2E9E60 SDATA(D_L00_00161E5C);
+extern s32 D_L00_00161E60_2E9E60 SDATA(D_L00_00161E60);
+extern G_2E9E60 D_00141948_2E9E60 __asm__("D_00141948");
+extern int func_001F9850_2E9E60(int) __asm__("func_001F9850");
+
+void func_L00_002E9E60_r(char *o, float *a, float *b) __asm__("func_L00_002E9E60");
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/vendor/002e89b0.c, FUN_L00_002e89b0. */
+void func_L00_002E9E60_r(char *o, float *a, float *b) {
+    S_2E9E60 *s = (S_2E9E60 *)(*(char **)(o + 0x70) + 0x1A8);
+    G_2E9E60 *g;
+
+    if (s->flags & 1) {
+        *a = 0.0f;
+    } else {
+        *a = D_0013CB40_2E9E60[0];
+        if (D_0015EEE0_2E9E60 == 0) {
+            *a = -*a;
+        }
+    }
+    if (*a == 0.0f) {
+        D_L00_00161E5C_2E9E60 = 0;
+        D_L00_00161E60_2E9E60 = 0;
+        if (s->f1C != 0.0f) {
+            *a = s->f1C;
+        }
+    } else {
+        s->f14 = D_L00_0015F044_2E9E60;
+        g = &D_00141948_2E9E60;
+        if (g->u40 < 3) {
+            D_L00_00161E5C_2E9E60++;
+            if (D_L00_00161E60_2E9E60 == 0 && func_001F9850_2E9E60(0x3C) < D_L00_00161E5C_2E9E60) {
+                if (g->u40 <= 0xFFFE) {
+                    g->u40++;
+                }
+                if (func_001F9850_2E9E60(D_0015EFA4_2E9E60) / 600 > g->u42) {
+                    g->u42 = func_001F9850_2E9E60(D_0015EFA4_2E9E60) / 600;
+                }
+                D_L00_00161E60_2E9E60 = 1;
+                g->i44 = g->i44 | (1 << D_0015EE84_2E9E60) | 0x80000000;
+            }
+        }
+    }
+    if (s->flags & 2) {
+        *b = 0.0f;
+        *b = s->f24 / 0.6981317f;
+    } else {
+        float t = D_0013CB40_2E9E60[1];
+        *b = -t;
+        if (D_0015EEDC_2E9E60 == 0) {
+            *b = t;
+        }
+        if (*b == 0.0f) {
+            *b = s->f24 / 0.6981317f;
+        }
+    }
+}
 extern void func_002156E0(void *dst, void *vec, void *axis, float angle);
 extern float func_L00_001FF860(float, float);
 extern float func_001FA748(float, float);

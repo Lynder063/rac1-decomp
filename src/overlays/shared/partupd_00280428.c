@@ -66,7 +66,39 @@ char *func_L01_00281738(int a, char *b) {
     }
     return p;
 }
-INCLUDE_ASM("asm/overlays", func_L01_00286530);
+extern char * D_L01_001B28A4[];
+extern char *func_00218928_86530(int) __asm__("func_00218928");
+extern int func_001FA898(float);
+
+/* Allocates a type 0x29 particle and fills it from the arguments; kind 0xFF derives the frame from flags and picks one of two blend modes.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/rendering/0027f660.c, FUN_L01_00285768. */
+char *func_L01_00286530(float scale, void *pos, int a, int idx, int b, unsigned char flags, short h, unsigned char kind) {
+    char *r = func_00218928_86530(0x29);
+    if (r != 0) {
+        int *tail = (int *)(r + 0x20);
+        qcopy(r + 0x10, pos);
+        *(int *)(r + 4) = b;
+        if (kind == 0xFF) {
+            r[9] = (flags >> 5) * 16 + truncate_float_to_s32(4.0f);
+            if (flags & 1) {
+                r[3] = 0x48;
+            } else {
+                r[3] = 0x44;
+            }
+        } else {
+            r[9] = flags;
+            r[3] = kind;
+        }
+        r[1] = 0;
+        r[2] = D_L01_001B28A4[0][idx];
+        *(float *)(r + 0xC) = scale * 210000.0f;
+        *(short *)(r + 0xA) = h;
+        ((unsigned char *)r)[8] = 0xA0;
+        /* taking the address changes register allocation to match */
+        *tail = *&a;
+    }
+    return r;
+}
 extern int func_001FA898(float);
 extern int func_002140B0(int);
 extern float func_001FA888(int);

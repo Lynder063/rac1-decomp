@@ -49,7 +49,70 @@ void func_L15_002D8BB0(char *moby) {
     buf[7] = func_001FA898_r((float)random_integer_below(10)) + 0x30;
     FontPrintCenterLarge(W(D_L15_00161C54), W(D_L15_00161C58), col, (int)buf, 8);
 }
-INCLUDE_ASM("asm/overlays", func_L15_002D8DD8);
+extern short D_L15_00161C78;
+extern short D_L15_00161C7C;
+extern short D_L15_00161C94;
+extern short D_L15_00161C9C;
+extern short D_L15_00161CB0;
+extern short D_L15_00161CE0;
+extern short D_L15_00161D0C;
+extern short D_L15_00161D50_D8DD8[] __asm__("D_L15_00161D50") MACRO_ADDR;
+extern short D_L15_00161D52[] MACRO_ADDR;
+extern short D_L15_00161D54[] MACRO_ADDR;
+extern short D_L15_00161D56[] MACRO_ADDR;
+extern short D_L15_00161D58_D8DD8[] __asm__("D_L15_00161D58") MACRO_ADDR;
+extern short D_L15_00161D5A[] MACRO_ADDR;
+extern short D_L15_00161D5C[] MACRO_ADDR;
+extern short D_L15_00161D5E[] MACRO_ADDR;
+extern short D_L15_00161D40[] MACRO_ADDR;
+extern int D_L15_00161D60 MACRO_ADDR;
+extern short D_L15_00161D64;
+extern float D_L15_001D3A10_D8DD8[][4] __asm__("D_L15_001D3A10");
+extern float D_L15_001D3A20_D8DD8[][4] __asm__("D_L15_001D3A20");
+extern int D_L15_001D3CA0_D8DD8[] __asm__("D_L15_001D3CA0");
+extern float D_L15_001D3CF0_D8DD8[][4] __asm__("D_L15_001D3CF0");
+extern int D_L15_001D3E30_D8DD8[] __asm__("D_L15_001D3E30");
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_001F9BC0(void *);
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/entities/002d6810.c, FUN_L15_002d79e8. */
+void func_L15_002D8DD8(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float v[4];
+    float step[4];
+    int i;
+    int j;
+    if ((*(int *)&D_L15_00161C78) != 0) {
+        (*(int *)&D_L15_00161C78) = 0;
+        (*(int *)&D_L15_00161D64) = 0;
+        D_L15_00161D60 = scale_ticks((*(int *)&D_L15_00161D0C));
+        (*(int *)&D_L15_00161CE0) = 0x7F2020;
+        FastVecSub(v, d + 0x100, d + 0xF0);
+        func_L00_001FF4B0(step, v, (*(float *)&D_L15_00161C7C) / 20.0f);
+        qcopy(D_L15_001D3A20_D8DD8, d + 0xF0);
+        for (i = 1; i < 20; i++) {
+            FastVecAdd(D_L15_001D3A20_D8DD8[i], D_L15_001D3A10_D8DD8[i], step);
+            D_L15_001D3CA0_D8DD8[i] = 0;
+            clear_u64_value(D_L15_001D3CF0_D8DD8[i]);
+            D_L15_001D3E30_D8DD8[i] = 0;
+        }
+        for (j = 0; j < 4; j++)
+            D_L15_00161D40[j] = -1;
+        D_L15_00161D50_D8DD8[0] = 8;
+        D_L15_00161D58_D8DD8[0] = 4;
+        D_L15_00161D52[0] = 4;
+        D_L15_00161D5A[0] = 2;
+        D_L15_00161D5C[0] = 4;
+        D_L15_00161D54[0] = 8;
+        D_L15_00161D56[0] = 4;
+        D_L15_00161D5E[0] = 2;
+        (*(int *)&D_L15_00161C94) = 0;
+        (*(int *)&D_L15_00161C9C) = 0;
+        (*(int *)&D_L15_00161CB0) = 0;
+    }
+}
 typedef struct { float f[4]; } __attribute__((aligned(16))) V_2d8fa0;
 typedef struct { V_2d8fa0 p[5]; } P_2d8fa0;
 typedef struct { V_2d8fa0 hdr; V_2d8fa0 p[4]; } H_2d8fa0;

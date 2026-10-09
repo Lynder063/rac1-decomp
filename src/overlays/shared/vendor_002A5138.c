@@ -370,7 +370,175 @@ void func_L00_002A6A38(char *moby) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_002A7078);
-INCLUDE_ASM("asm/overlays", func_L00_002A7E10);
+typedef u32 u128_A7E10 __attribute__((mode(TI), aligned(16)));
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 w;
+} Vec4f_A7E10;
+typedef union {
+    u128_A7E10 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4_A7E10;
+struct Manip;
+struct GifEntry;
+struct AnimSeq;
+struct MobyClass_A7E10 {
+    u8 pad_0[0xC];
+    u8 seq_count; /* number of entries in seqs[] (menu previews clamp the sequence to it) */
+    u8 pad_D[3];
+    u32 unk10; /* copied into Moby_A7E10.unk94 when a moby is (re)classed */
+    u8 pad_14[0x8];
+    void *unk1C; /* word table, indexed id * 4 + 4 (0024eec0) */
+    struct GifEntry *gifs; /* patched by patch_moby_gifs */
+    f32 scale; /* default draw scale: copied into Moby_A7E10.scale, divides it */
+    s32 unk28;
+    void **callbacks; /* function-pointer table, called with the moby */
+    u8 pad_30[0x14];
+    u16 flags; /* initial Moby_A7E10.flags */
+    s16 unk46; /* class category; 5 is tested by targeting code */
+    struct AnimSeq *seqs[1]; /* animation sequences, indexed by Moby_A7E10.seq */
+};
+struct Moby_A7E10 {
+    Vec4f_A7E10 bsphere;
+    Vec4f_A7E10 pos;
+    u8 state; /* >= 0xFE: dead, waiting to respawn */
+    u8 group; /* linked group: index into the level moby-list table D_Lxx_001ABCC0 (0xFF: none) */
+    u8 unk22; /* class slot: pclass = D_L00_00197300[unk22] (FUN_L00_002cf218) */
+    u8 unk23; /* 0x40 for the smoke trail FUN_L09_00307ba8 spawns */
+    struct MobyClass_A7E10 *pclass;
+    struct Moby_A7E10 *next;
+    f32 scale; /* draw scale (FUN_L01_002fa068 halves it, FUN_L00_00215ef8 divides by it) */
+    u8 unk30; /* set to 0xFF (0x7F for beams) by spawners */
+    u8 unk31; /* set to 1 by spawners */
+    s16 unk32; /* set to 0xFF (0x7F for beams) by spawners */
+    u16 flags;
+    u16 unk36; /* set to 0x7F80 by spawners */
+    u64 spawn_frame; /* frame count at which it may respawn */
+    Vec4f_A7E10 rot; /* z: yaw (FUN_L00_00266448 compares it with atan2 to the hero) */
+    u8 frame; /* animation frame */
+    u8 prev_frame; /* frame index in prev_seq */
+    u8 seq; /* animation sequence id */
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    struct Manip *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71; /* set to 0xFF when a moby changes class */
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_A7E10 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F; /* set to 0x17 by FUN_L09_002c5990 near D_L09_00166F40 */
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94; /* set from the class header's word 0x10 */
+    s32 unk98; /* set to 1 while a carrier holds the moby (FUN_L00_002c7a58) */
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0; /* 0xB0: index into the level's D_0014C050 row (0xFF: not spawned) */
+    u8 padB1;
+    u16 save_id; /* index into the level collected[]/killed[] tables and save bits D_0014C190[level][id >> 5] */
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8; /* 0xB8: bolt source record; its byte 0xB1 is a per-level id (FUN_L00_002a6b70) */
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_A7E10 unkC0; /* 0xC0: first row of a matrix built from rot (FUN_001fa030) */
+    Vec4f_A7E10 unkD0;
+    Vec4f_A7E10 unkE0;
+    u8 padF0[0x10];
+};
+int func_001F9850(int);
+typedef struct {
+    u8 pad_00[0xB1];
+    u8 id; /* 0x80 set: no id */
+} BoltSource_A7E10;
+typedef struct {
+    u16 unk0;
+    u16 bolts;
+} BoltSourceStats_A7E10;
+extern s32 D_0015EE98 MACRO_ADDR;
+extern s32 D_0015EF2C MACRO_ADDR;
+extern s32 D_0015EE84 MACRO_ADDR;
+extern s32 D_0015EE84_A7E10b __asm__("D_0015EE84") MACRO_ADDR;
+extern BoltSourceStats_A7E10 D_0014D690[][64];
+extern s32 D_0013E040[];
+extern s32 D_L00_0015F678 MACRO_ADDR;
+extern short D_L00_0016009C;
+extern void func_L00_0023A658(void);
+extern void func_L00_0023A690(void);
+extern void func_L00_0023A788(void);
+extern void func_001FFB38(s32, s32, void *, void *, void *, void *, s32);
+extern void func_L00_00258DB0(void *, f32, f32);
+extern void func_001F9C30(void *, void *, f32);
+extern s32 func_002140B0(s32);
+extern f32 func_002140F8(f32, f32);
+extern u8 *func_L00_00272F00_A7E10(void *pos, s32 life, f32 size0, f32 size1, s32 color, s32 mode, s32 spin, void *vel, f32 f2) __asm__("func_L00_00272F00");
+
+/* CollectBolt: adds the bolt moby's value (1, or 5 / 20 / 50 for classes 0xE / 0xF / 0x10) to the bolt count, the level's total and its source's stats, shows the bolt counter and spawns two sparkles at the bolt.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/entities/002a4830.c, FUN_L00_002a6b70. */
+void func_L00_002A7E10(struct Moby_A7E10 *bolt)
+{
+    Vec4_A7E10 vel;
+    Vec4_A7E10 pos;
+    s32 value;
+    s32 spin;
+    f32 k;
+    f32 size;
+    BoltSource_A7E10 *src;
+
+    switch (bolt->oclass) {
+    default:
+    case 0:
+        value = 1;
+        break;
+    case 0xE:
+        value = 5;
+        break;
+    case 0xF:
+        value = 20;
+        break;
+    case 0x10:
+        value = 50;
+        break;
+    }
+
+    src = bolt->unkB8;
+    if (src && !(src->id & 0x80))
+        D_0014D690[D_0015EE84][src->id].bolts += value;
+    gBolts += value;
+    if (bolt->pvars[0x40] || (D_L00_0015F678 && (void *)bolt < (*(void * *)&D_L00_0016009C)))
+        D_0015EF2C += value;
+    D_0013E040[D_0015EE84_A7E10b] += value;
+
+    k = 0.7f;
+    queue_animation_update(2, 0x754E, func_L00_0023A658, func_L00_0023A690, func_L00_0023A788,
+                           &gBolts, 9999999);
+
+    /* two sparkles 10 units out along a random direction, spinning opposite ways */
+    rand_vec(&vel, D_0015EE6C * k, D_0015EE6C);
+    FastVecScale(&pos, &vel, 10.0f);
+    FastVecAdd(&pos, &pos, &bolt->pos);
+    spin = random_integer_below(2);
+    if (spin == 0)
+        spin--;
+    size = random_float_between(0.4f, 0.5f);
+    func_L00_00272F00_A7E10(&pos, scale_ticks(0x19), size * 0.2f, size, 0x7F207F7F, 0, spin, &vel, 0.0f);
+    spin = -spin;
+    func_L00_00272F00_A7E10(&pos, scale_ticks(0x19), size * 0.14f, size * k, 0x7F7F7F7F, 1, spin, &vel, 0.0f);
+}
 extern int func_L00_00261568(int x, char *o, float *p, float *q, float *r, float *s);
 extern float func_001FA748(float, float);
 extern float func_001FA790(float, float);

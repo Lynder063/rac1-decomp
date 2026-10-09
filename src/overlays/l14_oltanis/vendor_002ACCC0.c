@@ -872,13 +872,12 @@ void func_L14_002B5590(unsigned char *m) {
     func_L00_0025E590(m, d + 0x60);
 }
 extern int *D_L14_001AC2C0[];
-extern short D_L14_00160098;
 
 // Marks each listed moby whose state is 1 by writing 1 into its data's field 0x88.
 void func_L14_002B56F8(int idx) {
     short *p = (short *)D_L14_001AC2C0[idx];
     if (p != 0) {
-        char *base = *(char **)&D_L14_00160098;
+        char *base = D_L14_00160098_2B0168;
         do {
             unsigned char *moby = (unsigned char *)base + ((*p & 0x7FFF) << 8);
             int s = moby[0x20];
@@ -1534,7 +1533,42 @@ void func_L14_002B6BB8(char *m, float *input, float angle) {
     }
     func_L00_002D4CE8(D_L14_001D8BD0, saved, 0, 0);
 }
-INCLUDE_ASM("asm/overlays", func_L14_002B6E80);
+typedef struct {
+    char pad00[0x78];
+    char *pvars;
+} Moby_2B6E80;
+extern int *D_L14_001B0F30[];
+typedef struct {
+    char pad00[0xD0];
+    int pathA;
+    char padD4[0xE4 - 0xD4];
+    int t;
+    int node;
+    float w;
+    float off[4];
+    char pad100[0x10C - 0x100];
+    int alt;
+    char pad110[0x150 - 0x110];
+    int pathB;
+} Mover_2B6E80;
+extern void func_001F9BC0(void *);
+void func_L14_002B6E80_r(Moby_2B6E80 *moby) __asm__("func_L14_002B6E80");
+
+/* Picks the mover's active path, puts it on the path's last segment (node, weight, t = 0) and clears its offset vector. Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l14/gameplay/entities/002460f8.c, FUN_L14_002b5c30. */
+void func_L14_002B6E80_r(Moby_2B6E80 *moby) {
+    Mover_2B6E80 *d = (Mover_2B6E80 *)moby->pvars;
+    int *p;
+    int n;
+    if (d->alt == 0)
+        p = D_L14_001B0F30[d->pathA];
+    else
+        p = D_L14_001B0F30[d->pathB];
+    n = *p - 2;
+    d->node = n;
+    d->w = *(float *)((n << 4) + (char *)p + 0x1C);
+    d->t = 0;
+    clear_u64_value(d->off);
+}
 extern char D_0013E633[];
 extern void func_L00_0028EBF0(int);
 
@@ -1554,8 +1588,136 @@ void func_L14_002B6EE8(char *moby)
     }
     *(int *)(data + 0x108) = -1;
 }
-INCLUDE_ASM("asm/overlays", func_L14_002B6F68);
-INCLUDE_ASM("asm/overlays", func_L14_002B7028);
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 w;
+} Vec4f_2B6F68;
+typedef struct {
+    Vec4f_2B6F68 bsphere;
+    Vec4f_2B6F68 pos;
+    u8 pad20[0x20];
+    Vec4f_2B6F68 rot;
+    u8 pad50[0x28];
+    u8 *pvars;
+} Moby_2B6F68;
+extern int *D_L14_001B0F30[];
+extern float func_L00_001FF860(float, float);
+extern void func_001F9BC0(void *);
+extern short D_L14_00161608;
+extern void func_001F9BF0(void *, void *, void *);
+void func_L14_002B6F68_r(Moby_2B6F68 *moby) __asm__("func_L14_002B6F68");
+
+/* Resets the mover's path state, puts the moby on the first node of its active path facing the second, and clears its offset vector. Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l14/gameplay/entities/002460f8.c, FUN_L14_002b5d18. */
+void func_L14_002B6F68_r(Moby_2B6F68 *moby) {
+    float f = (*(float *)&D_L14_00161608) * 1.5f;
+    char *d = (char *)moby->pvars;
+    char *p;
+    float v[4] __attribute__((aligned(16)));
+    *(int *)(d + 0xE8) = 0;
+    *(float *)(d + 0x160) = f;
+    *(int *)(d + 0xEC) = 0;
+    *(int *)(d + 0x164) = 0;
+    *(int *)(d + 0x168) = 0;
+    *(int *)(d + 0x16C) = 0;
+    *(int *)(d + 0xC0) = 0;
+    *(int *)(d + 0xC4) = 0;
+    if (*(int *)(d + 0x10C) == 0)
+        p = (char *)D_L14_001B0F30[*(int *)(d + 0xD0)];
+    else
+        p = (char *)D_L14_001B0F30[*(int *)(d + 0x150)];
+    qcopy(&moby->pos, p + 0x10);
+    FastVecSub(v, p + 0x20, &moby->pos);
+    moby->rot.z = func_L00_001FF860(v[0], v[1]);
+    *(int *)(d + 0xE4) = 0;
+    clear_u64_value(d + 0xF0);
+}
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 w;
+} Vec4f_2B7028;
+struct Moby_2B7028 {
+    Vec4f_2B7028 bsphere;
+    Vec4f_2B7028 pos; /* 0x10 */
+    u8 state; /* 0x20 */
+    u8 pad21[0x9F];
+    Vec4f_2B7028 unkC0; /* 0xC0 */
+};
+typedef struct {
+    unsigned char pad0[4];
+    int w4;
+    unsigned char pad8[2];
+    unsigned char bA;
+    unsigned char bB;
+} T_2B7028;
+typedef struct {
+    unsigned char pad0[8];
+    unsigned char b8;
+    unsigned char b9;
+    short hA;
+    unsigned char padC[0x14];
+    T_2B7028 tail;
+} P_2B7028;
+extern int func_002140B0_2B7028(int) __asm__("func_002140B0");
+extern int func_001F9850_2B7028(int) __asm__("func_001F9850");
+extern void func_001F9C30_2B7028(void *, void *, float) __asm__("func_001F9C30");
+extern void func_001F9BD8_2B7028(void *, void *, void *) __asm__("func_001F9BD8");
+extern P_2B7028 *func_L00_0026DEA0_2B7028(void *, float, float, float, int, void *, float, int) __asm__("func_L00_0026DEA0");
+extern float D_L14_0015F660_2B7028[] __asm__("D_L14_0015F660") MACRO_ADDR;
+
+void func_L14_002B7028_r(struct Moby_2B7028 *m) __asm__("func_L14_002B7028");
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l14/gameplay/entities/002460f8.c, FUN_L14_002b5dd8. */
+void func_L14_002B7028_r(struct Moby_2B7028 *m) {
+    float off[4];
+    float pos[4];
+    int i;
+    int j;
+    int n;
+    int life;
+    float size;
+    if (m->state < 2 || m->state == 9)
+        return;
+    func_001F9C30_2B7028(off, &m->unkC0, -1.25f);
+    func_001F9BD8_2B7028(pos, &m->pos, off);
+    for (i = 0; i < 2; i++) {
+        P_2B7028 *part;
+        T_2B7028 *tail;
+        n = func_002140B0_2B7028(0x10);
+        part = func_L00_0026DEA0_2B7028(pos, 0.2f, 1.0f, 0.75f, func_002140B0_2B7028(2) == 0 ? n : -n, D_L14_0015F660_2B7028, 160000.0f, 0x7F3030FF);
+        if (part) {
+            tail = &part->tail;
+            part->hA = func_001F9850_2B7028(6);
+            tail->w4 = 2;
+            tail->bA = 0x7F;
+            tail->bB = part->hA;
+        }
+    }
+    func_001F9C30_2B7028(off, &m->unkC0, -1.0f);
+    func_001F9BD8_2B7028(pos, &m->pos, off);
+    n = 0x10;
+    life = func_001F9850_2B7028(2);
+    size = 100000.0f;
+    for (j = 0; j < 3; j++) {
+        P_2B7028 *part;
+        T_2B7028 *tail;
+        part = func_L00_0026DEA0_2B7028(pos, 0.05f, 1.0f, 1.0f, n, D_L14_0015F660_2B7028, size, 0x7FFFFFFF);
+        if (part) {
+            tail = &part->tail;
+            part->hA = life;
+            part->b8 = func_002140B0_2B7028(0xFF);
+            tail->w4 = 2;
+            tail->bA = 0x7F;
+            tail->bB = part->hA;
+        }
+        n = -n;
+        life *= 2;
+        size -= 20000.0f;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L14_002BBEC8);
 typedef int u128_2BC560 __attribute__((mode(TI)));
 extern float D_0015EE60 MACRO_ADDR;
@@ -1615,7 +1777,170 @@ void func_L14_002BC728(char *moby)
     }
     DeleteMoby(moby);
 }
-INCLUDE_ASM("asm/overlays", func_L14_002D7250);
+typedef u32 u128_D7250 __attribute__((mode(TI), aligned(16)));
+typedef union {
+    u128_D7250 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4;
+struct Manip;
+struct GifEntry;
+typedef struct {
+    char _pad00[0x48];
+    AnimSeq *seqs[1]; /* 0x48 */
+} AnimClass;
+typedef struct {
+    char _pad00[0x24];
+    AnimClass *pClass; /* 0x24 */
+    char _pad28[0x50 - 0x28];
+    unsigned char frame; /* 0x50 */
+    unsigned char nextFrame; /* 0x51 */
+    unsigned char seq; /* 0x52 */
+    unsigned char prevSeq; /* 0x53 */
+    char _pad54[0x5C - 0x54];
+    float unk5C; /* 0x5C */
+    char _pad60[0x68 - 0x60];
+    float *frameData; /* 0x68 */
+    char _pad6C[4];
+    unsigned char unk70; /* 0x70 */
+} MobyAnim;
+extern int func_00215570(void *, int);
+extern f32 func_001FA888(s32);
+void func_00213DE0_D7250(MobyAnim *arg0, int arg1, int arg2, int arg3) __asm__("func_00213DE0");
+extern s32 func_001F9850(s32);
+struct L14PathRec {
+    u8 pad0[0x10];
+    s32 *points; /* 0x10: first word is the point count */
+    u8 pad14[0xC];
+};
+struct L14RacerVars {
+    u8 pad0[0x40];
+    Vec4 trail; /* 0x40: effect state (FUN_L00_0025e450) */
+    u8 pad50[0x10];
+    s32 path; /* 0x60: index into D_L14_0015F70C (-1: none) */
+    u8 pad64[8];
+    s32 timer; /* 0x6C */
+    f32 inv_time; /* 0x70: 1 / timer at the start of the run */
+    u8 pad74[0xC];
+    s32 delay; /* 0x80: frames to wait once the race starts */
+    s32 end_point; /* 0x84: D_L14_001B0BB0 entry the run ends at */
+    s32 start_point; /* 0x88: D_L14_001B0BB0 entry the run starts from (-1: none) */
+    u8 pad8C[0x64];
+    s32 unkF0;
+    s32 unkF4;
+    u8 padF8[8];
+    u8 manips[3][0x40]; /* 0x100: attached as manipulators 2..4 */
+    u8 pad1C0[0xC];
+    s32 volume; /* 0x1CC: clip volume where the racer leaves (-1: none) */
+};
+struct L14RaceState {
+    u8 pad0[0x86];
+    s16 phase; /* 0x86 */
+};
+extern short D_L14_0015F7EC_D7250 __asm__("D_L14_0015F7EC");
+extern struct L14RaceState * D_L14_00167600;
+extern s32 D_L14_00161AFC_D7250 SDATA(D_L14_00161AFC);
+extern short D_L14_00161B04;
+extern short D_L14_00161B2C;
+extern void func_0020D960(void *arg0, s32 arg1, void *arg2);
+extern int func_001F9908_D7250(s32 *) __asm__("func_001F9908");
+extern void func_00213D28_D7250(struct Moby *, s32, s32) __asm__("func_00213D28");
+extern f32 func_0020D830(struct Moby *);
+extern unsigned char *func_L14_002DFE98(char *owner, char *pos);
+extern void func_L14_002E1570(struct Moby *, s32 *, int);
+extern void func_L00_0025F4A8(void *, void *, void *, float, float, int, int, int, float, float, float, int, float, float, int, int, int, int);
+void func_L14_002D7668_D7250(struct Moby *m) __asm__("func_L14_002D7668");
+int func_L14_002D77E0_D7250(struct Moby *m) __asm__("func_L14_002D77E0");
+void func_L14_002D7AF8(struct Moby *m);
+void func_L14_002D84A8_D7250(struct Moby *m) __asm__("func_L14_002D84A8");
+void func_L14_002D87A0_D7250(struct Moby *m) __asm__("func_L14_002D87A0");
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l14/gameplay/entities/002460f8.c, FUN_L14_002d5f40. */
+void func_L14_002D7250(struct Moby *m) {
+    struct L14RacerVars *d = (struct L14RacerVars *)m->pvars;
+    u8 pos[16];
+    f32 vel[3];
+    unsigned char *spark;
+    f32 *sv;
+
+    switch (m->state) {
+    case 0:
+        if (d->path == -1 || *(*(struct L14PathRec * *)&D_L14_0015F7EC_D7250)[d->path].points == 0 || d->start_point == -1 ||
+            *D_L14_001B0F30[d->start_point] != 3 || d->volume == -1) {
+            DeleteMoby(m);
+            return;
+        }
+        func_L14_002D7668_D7250(m);
+        m->state = 1;
+        m->flags = (m->flags & 0xEFFF) | 0x41;
+        m->unk94 = 0;
+        d->unkF4 = -1;
+        d->unkF0 = -1;
+        FastMemSet(d->manips[0], 0, 0x40);
+        AttachManipulator(m, 2, d->manips[0]);
+        FastMemSet(d->manips[1], 0, 0x40);
+        AttachManipulator(m, 3, d->manips[1]);
+        FastMemSet(d->manips[2], 0, 0x40);
+        AttachManipulator(m, 4, d->manips[2]);
+        return;
+    case 1:
+        if (D_L14_00167600->phase == 0x14) {
+            d->timer = scale_ticks(d->delay);
+            m->state = 2;
+        }
+        return;
+    case 2:
+        if (!func_001F9908_D7250(&d->timer))
+            return;
+        m->flags = (m->flags | 0x1000) & 0xFFBE;
+        m->unk94 = m->pclass->unk10;
+        m->state = 3;
+        func_00213D28_D7250(m, 2, 0);
+        m->unk58 = 0.5f;
+        d->timer = scale_ticks(D_L14_00161AFC_D7250);
+        d->inv_time = 1.0f / func_001FA888(d->timer);
+        qcopy(&m->pos, (char *)D_L14_001B0F30[d->end_point] + 0x10);
+    case 3:
+        if (func_0020D830(m) >= 3.0f)
+            func_L14_002D77E0_D7250(m);
+        if ((m->unk70 & 2) && m->seq == m->prev_seq) {
+            m->state = 4;
+            func_00213DE0_D7250((MobyAnim *)m, 0, 0, 10);
+            m->unk58 = 1.0f;
+        }
+        break;
+    case 4:
+        if (func_L14_002D77E0_D7250(m)) {
+            m->state = 5;
+            d->timer = scale_ticks((*(s32 *)&D_L14_00161B04));
+        }
+        break;
+    case 5:
+        func_L14_002D84A8_D7250(m);
+        break;
+    case 6:
+        func_L14_002D7AF8(m);
+        if (is_point_inside_clip_volume(&m->pos, d->volume)) {
+            func_L00_00250800(m, 2, pos);
+            spark = func_L14_002DFE98((char *)m, (char *)pos);
+            if (spark) {
+                sv = *(f32 **)(spark + 0x78);
+                vel[0] = FastCos(m->rot.z) * (D_0015EE60 * 0.4f);
+                vel[1] = FastSin(m->rot.z) * (D_0015EE60 * 0.4f);
+                vel[2] = 0.0f;
+                sv[0] = vel[0];
+                sv[1] = vel[1];
+            }
+            func_L14_002E1570(m, &(*(s32 *)&D_L14_00161B2C), 0);
+            func_L00_0025F4A8(m, &d->trail, &m->pos, 0.0f, 0.0f, 5, 2, 4, 4.0f, 2.0f, 9.0f, 1, 1.0f,
+                             15.0f, 1, 5, -1, 0);
+            DeleteMoby(m);
+            return;
+        }
+        break;
+    }
+    func_L14_002D87A0_D7250(m);
+}
 extern char *D_L14_0015F7EC_p __asm__("D_L14_0015F7EC") MACRO_ADDR;
 extern short D_L14_00161B08;
 extern int func_L00_0025EFC0(void *, void *, float *, int *, float *, int, float, float, float);
@@ -1673,7 +1998,82 @@ int func_L14_002D77E0(char *m) {
     func_001F9C08(m + 0x10, ent + 0x10, D_L14_001B0F30_a[*(int *)(d + 0x84)] + 0x10, t * *(float *)(d + 0x70));
     return ok;
 }
-INCLUDE_ASM("asm/overlays", func_L14_002D7880);
+struct Manip;
+struct GifEntry;
+extern unsigned short * D_L14_001AC2C0_D7880[] __asm__("D_L14_001AC2C0");
+extern char * D_L14_00160098_D7880 __asm__("D_L14_00160098") MACRO_ADDR;
+extern char * D_L14_0015F7EC_D7880 __asm__("D_L14_0015F7EC") MACRO_ADDR;
+extern char * D_L14_001B0F30_D7880[] __asm__("D_L14_001B0F30");
+extern float D_L14_00161B08_D7880 SDATA(D_L14_00161B08);
+typedef struct { char p[0x48]; float f48; } M_6570;
+typedef struct {
+    char p0[0x80];
+    float f80;
+    float f84;
+    char p1[0x560 - 0x88];
+    char *f560;
+    int f564;
+    float f568;
+} G_6570;
+extern G_6570 D_0013F450;
+extern int func_L00_0025EFC0_D7880(void *, void *, void *, int *, float *, int, float, float, float) __asm__("func_L00_0025EFC0");
+extern void func_L00_00217718(void *, void *, int, int);
+extern void func_L00_0025E860_D7880(void *, void *, void *, void *, int, float) __asm__("func_L00_0025E860");
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l14/gameplay/entities/002d6358.c, FUN_L14_002d6570. */
+void func_L14_002D7880(struct Moby *m) {
+    char *list[4];
+    float near[4];
+    float v[4];
+    float rot[4];
+    int idx;
+    float t;
+    unsigned short *p = D_L14_001AC2C0_D7880[m->group];
+    char **out;
+    int i;
+    float s;
+    if (p == 0) {
+        return;
+    }
+    out = list;
+    do {
+        char *o = D_L14_00160098_D7880 + ((*p & 0x7FFF) << 8);
+        char *od = *(char **)(o + 0x78);
+        char *path = D_0013F450.f560;
+        if (path == *(char **)(D_L14_0015F7EC_D7880 + *(int *)(od + 0x60) * 32 + 0x10)) {
+            char *tp = D_L14_001B0F30_D7880[*(int *)(od + 0x88)];
+            t = 0.0f;
+            func_L00_0025EFC0_D7880(path, tp + 0x10, near, &idx, &t, 0, 20.0f, 5.0f, 0.0f);
+            FastVecSub(v, path + (idx * 16 + 0x40), path + (idx * 16 + 0x10));
+            rot[0] = 0.0f;
+            rot[1] = 0.0f;
+            rot[2] = FastAddRots(func_L00_001FF860(v[0], v[1]), -1.5707964f);
+            rot[3] = 0.0f;
+            D_0013F450.f564 = idx;
+            D_0013F450.f568 = 0.0f;
+            func_L00_00217718(path + (idx * 16 + 0x10), rot, 0x28, 0);
+        }
+        *out++ = o;
+    } while ((short)*p++ >= 0);
+    for (i = 0; i < 3; i++) {
+        char *o = list[i];
+        char *od = *(char **)(o + 0x78);
+        char *path = *(char **)(D_L14_0015F7EC_D7880 + *(int *)(od + 0x60) * 32 + 0x10);
+        o[0x20] = 6;
+        ((M_6570 *)o)->f48 = func_L00_001FF860(D_0013F450.f80 - m->pos.x, D_0013F450.f84 - m->pos.y);
+        s = -D_L14_00161B08_D7880;
+        *(int *)(od + 0x64) = D_0013F450.f564;
+        *(float *)(od + 0x68) = D_0013F450.f568;
+        func_L00_0025E860_D7880(path, o + 0x10, od + 0x64, od + 0x68, 0, s);
+        clear_u64_value(od + 0x90);
+        *(int *)(od + 0xF8) = i * 2;
+        *(int *)(od + 0xFC) = i * 2 + 1;
+        if (*(int *)(od + 0xF0) != -1) {
+            func_L00_0023F1D0(*(int *)(od + 0xF0));
+            *(int *)(od + 0xF0) = -1;
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L14_002D7AF8);
 extern int D_L14_0015F7EC MACRO_ADDR;
 extern short D_L14_00161B00;
