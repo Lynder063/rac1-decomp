@@ -590,7 +590,243 @@ void func_L06_002F68D0(char *a) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L06_002F69D0);
+typedef struct {
+    float x, y, z, w;
+} __attribute__((aligned(16))) Vec_2F69D0;
+typedef struct Moby_2F69D0 {
+    char p0[0x10];
+    Vec_2F69D0 pos;
+    unsigned char state;
+    char p21[0x10];
+    unsigned char b31;
+    short h32;
+    unsigned short h34;
+    char p36[2];
+    long d38;
+    Vec_2F69D0 v40;
+    char p50[0x28];
+    struct Data_2F69D0 *pvar;
+    char p7C[0x34];
+    unsigned char bB0;
+    char pB1[0xB];
+    unsigned char bBC;
+} Moby_2F69D0;
+typedef struct Data_2F69D0 {
+    char p0[0x60];
+    int i60;
+    int i64;
+    int i68;
+    float f6C;
+    Moby_2F69D0 *a[20];
+    Moby_2F69D0 *b[20];
+    Moby_2F69D0 *c[10];
+    Moby_2F69D0 *d[10];
+} Data_2F69D0;
+typedef struct {
+    char p0[0x30];
+    Vec_2F69D0 v30;
+    char p40[0x30];
+    Vec_2F69D0 v70;
+} Node_2F69D0;
+typedef struct {
+    char p0[0x74];
+    unsigned char b74;
+    char p75[0x13];
+    struct Moby_2F69D0 *p88;
+} Slot_2F69D0;
+typedef struct {
+    char p0[0x2080];
+    Moby_2F69D0 *p2080;
+} Hero_2F69D0;
+extern unsigned char D_0013E633_2F69D0[] __asm__("D_0013E633");
+extern char D_0013E650_2F69D0[] __asm__("D_0013E650");
+extern unsigned char D_0013D5DD_2F69D0[] __asm__("D_0013D5DD");
+extern unsigned char D_0014C150_2F69D0[] __asm__("D_0014C150");
+extern int D_0015EE84_2F69D0 __asm__("D_0015EE84") MACRO_ADDR;
+extern char *D_L06_0016016C_2F69D0 __asm__("D_L06_0016016C") MACRO_ADDR;
+extern float D_0015EE70_2F69D0 __asm__("D_0015EE70") MACRO_ADDR;
+extern float D_0015EE6C_2F69D0 __asm__("D_0015EE6C") MACRO_ADDR;
+extern int D_L06_0015F6A8_2F69D0 __asm__("D_L06_0015F6A8") MACRO_ADDR;
+extern float D_L06_0015F4FC_2F69D0 __asm__("D_L06_0015F4FC") MACRO_ADDR;
+extern float D_L06_00161E08_2F69D0 SDATA(D_L06_00161E08);
+extern float D_L06_00161E0C_2F69D0 SDATA(D_L06_00161E0C);
+extern float D_L06_00161E10_2F69D0 SDATA(D_L06_00161E10);
+extern float D_L06_00161E14_2F69D0 SDATA(D_L06_00161E14);
+extern float D_L06_00161E18_2F69D0 SDATA(D_L06_00161E18);
+extern float D_L06_00161E1C_2F69D0 SDATA(D_L06_00161E1C);
+extern float D_L06_00161E20_2F69D0 SDATA(D_L06_00161E20);
+extern float D_L06_00161E24_2F69D0 SDATA(D_L06_00161E24);
+extern float D_L06_00161E28_2F69D0 SDATA(D_L06_00161E28);
+extern float D_L06_00161E2C_2F69D0 SDATA(D_L06_00161E2C);
+extern float D_L06_00161E30_2F69D0 SDATA(D_L06_00161E30);
+extern float D_L06_00161E34_2F69D0 SDATA(D_L06_00161E34);
+extern float D_L06_00161E3C_2F69D0 SDATA(D_L06_00161E3C);
+extern float D_L06_00161E40_2F69D0 SDATA(D_L06_00161E40);
+extern Moby_2F69D0 *func_0020D348_2F69D0(int) __asm__("func_0020D348");
+extern void func_L06_002F71A8_2F69D0(Moby_2F69D0 *) __asm__("func_L06_002F71A8");
+extern int func_001F9850_2F69D0(int) __asm__("func_001F9850");
+extern float func_00214D28_2F69D0(float *, float, float) __asm__("func_00214D28");
+extern float func_001F9B88_2F69D0(float) __asm__("func_001F9B88");
+extern void func_L00_00217718_2F69D0(void *, void *, int, int) __asm__("func_L00_00217718");
+extern void func_L00_002EBF50_2F69D0(void *, void *, int, int, int) __asm__("func_L00_002EBF50");
+extern int func_0022ED80_2F69D0(int, int, Moby_2F69D0 *) __asm__("func_0022ED80");
+extern void func_L00_002512D8_2F69D0(int) __asm__("func_L00_002512D8");
+extern float func_00214D88_2F69D0(float *, float *, float, float, float, float) __asm__("func_00214D88");
+extern int func_L00_0028EB98_2F69D0(Moby_2F69D0 *, int) __asm__("func_L00_0028EB98");
+extern void func_L00_0028EBF0_2F69D0(int) __asm__("func_L00_0028EBF0");
+extern void func_001F9C08_2F69D0(void *, void *, void *, float) __asm__("func_001F9C08");
+extern float func_001FA790_2F69D0(float, float) __asm__("func_001FA790");
+extern float func_001FA748_2F69D0(float, float) __asm__("func_001FA748");
+extern void func_L00_002EBE88_2F69D0(void *) __asm__("func_L00_002EBE88");
+extern void func_L00_002EBEE0_2F69D0(void *) __asm__("func_L00_002EBEE0");
+extern void func_L06_00239CD0_2F69D0(void) __asm__("func_L06_00239CD0");
+extern void func_L00_002EC0C8_2F69D0(int) __asm__("func_L00_002EC0C8");
+extern int func_L00_00203F20_2F69D0(int, int) __asm__("func_L00_00203F20");
+extern void func_L00_00264DB8_2F69D0(int, int) __asm__("func_L00_00264DB8");
+extern int func_0020BFC8_2F69D0(int, int) __asm__("func_0020BFC8");
+
+/* Level 6 drawbridge (class 1028): spawns its two rows of deck pieces, waits for the hero's switch, then
+   lowers through three hinge stages (D_L06_00161E08/0C/10) while the camera follows the path nodes. */
+void func_L06_002F69D0(Moby_2F69D0 *m) {
+    Vec_2F69D0 v0, v10, v20, v30, v40, v50;
+    Data_2F69D0 *s = m->pvar;
+    float old, t;
+    int i, j, k;
+
+    switch (m->state) {
+    case 0: {
+        int t = D_0014C150_2F69D0[m->bB0 + (D_0015EE84_2F69D0 << 4)];
+        if (t == 0xFF) {
+            m->state = 6;
+            D_L06_00161E08_2F69D0 = 20.0f;
+            D_L06_00161E0C_2F69D0 = 1000.0f;
+            D_L06_00161E10_2F69D0 = 1000.0f;
+        } else {
+            m->state = 1;
+        }
+        for (i = 0; i < 20; i++) {
+            s->a[i] = func_0020D348_2F69D0(0x405);
+            s->a[i]->h32 = 0x40;
+            s->a[i]->b31 = 1;
+            s->a[i]->d38 = ((Hero_2F69D0 *)(D_0013E633_2F69D0 + 0xE1D))->p2080->d38;
+            s->a[i]->h34 = m->h34;
+            qcopy_nc(&s->a[i]->pos, &m->pos);
+            qcopy_nc(&s->a[i]->v40, &m->v40);
+            s->b[i] = func_0020D348_2F69D0(0x405);
+            s->b[i]->h32 = 0x40;
+            s->b[i]->b31 = 1;
+            s->b[i]->d38 = m->d38;
+            s->b[i]->h34 = m->h34;
+            qcopy_nc(&s->b[i]->pos, &m->pos);
+            qcopy_nc(&s->b[i]->v40, &m->v40);
+        }
+        for (j = 0; j < 10; j++) {
+            s->c[j] = func_0020D348_2F69D0(0x406);
+            s->c[j]->h32 = 0x40;
+            s->c[j]->b31 = 1;
+            s->c[j]->d38 = ((Hero_2F69D0 *)(D_0013E633_2F69D0 + 0xE1D))->p2080->d38;
+            s->c[j]->h34 = m->h34;
+            qcopy_nc(&s->c[j]->pos, &m->pos);
+            qcopy_nc(&s->c[j]->v40, &m->v40);
+            s->d[j] = func_0020D348_2F69D0(0x406);
+            s->d[j]->h32 = 0x40;
+            s->d[j]->b31 = 1;
+            s->d[j]->d38 = m->d38;
+            s->d[j]->h34 = m->h34;
+            qcopy_nc(&s->d[j]->pos, &m->pos);
+            qcopy_nc(&s->d[j]->v40, &m->v40);
+        }
+        func_L06_002F71A8_2F69D0(m);
+        break;
+    }
+    case 1:
+        if (D_0013E633_2F69D0[0x2EC1] == 1 && D_0013D5DD_2F69D0[1] != 0 && D_L06_0015F6A8_2F69D0 == 0) {
+            D_L06_0015F4FC_2F69D0 = 1.0f;
+            m->state = 3;
+            s->f6C = -0.01f;
+        }
+        break;
+    case 2:
+        break;
+    case 3:
+        old = s->f6C;
+        func_00214D28_2F69D0(&s->f6C, 1.0f, 1.0f / func_001F9850_2F69D0(20));
+        D_L06_0015F4FC_2F69D0 = 1.0f - func_001F9B88_2F69D0(s->f6C);
+        if (old < 0.0f && 0.0f <= s->f6C) {
+            func_L00_00217718_2F69D0(D_0013E633_2F69D0 + 0xE9D, D_0013E633_2F69D0 + 0xEAD, 0x72, 1);
+            func_L00_002EBF50_2F69D0(D_L06_0016016C_2F69D0 + (s->i60 << 7) + 0x30, D_L06_0016016C_2F69D0 + (s->i60 << 7) + 0x70, 1, 0, 0);
+        } else if (1.0f <= s->f6C) {
+            m->state = 4;
+            m->bBC = func_0022ED80_2F69D0(0, 4, s->c[9]);
+        }
+        break;
+    case 4:
+        func_L00_002512D8_2F69D0(m->bB0);
+        if (D_L06_00161E08_2F69D0 < 20.0f) {
+            func_00214D88_2F69D0(&D_L06_00161E08_2F69D0, &D_L06_00161E2C_2F69D0, 20.0f, D_L06_00161E20_2F69D0 * D_0015EE70_2F69D0, D_L06_00161E20_2F69D0 * D_0015EE70_2F69D0, D_L06_00161E14_2F69D0 * D_0015EE6C_2F69D0);
+        }
+        if (D_L06_00161E08_2F69D0 > D_L06_00161E3C_2F69D0 && D_L06_00161E0C_2F69D0 < 1000.0f) {
+            func_00214D88_2F69D0(&D_L06_00161E0C_2F69D0, &D_L06_00161E30_2F69D0, 1000.0f, D_L06_00161E24_2F69D0 * D_0015EE70_2F69D0, D_L06_00161E24_2F69D0 * D_0015EE70_2F69D0, D_L06_00161E18_2F69D0 * D_0015EE6C_2F69D0);
+        }
+        if (D_L06_00161E0C_2F69D0 > D_L06_00161E40_2F69D0 && D_L06_00161E10_2F69D0 < 1000.0f) {
+            func_00214D88_2F69D0(&D_L06_00161E10_2F69D0, &D_L06_00161E34_2F69D0, 1000.0f, D_L06_00161E28_2F69D0 * D_0015EE70_2F69D0, D_L06_00161E28_2F69D0 * D_0015EE70_2F69D0, D_L06_00161E1C_2F69D0 * D_0015EE6C_2F69D0);
+        }
+        if (1000.0f <= D_L06_00161E10_2F69D0) {
+            m->state = 5;
+            s->f6C = -1.0f;
+        }
+        k = m->bBC;
+        if (20.0f <= D_L06_00161E08_2F69D0) {
+            if (func_L00_0028EB98_2F69D0(s->c[9], k) != 0) {
+                if (k != -1 && ((Slot_2F69D0 *)(D_0013E650_2F69D0 + k * 0x70))->p88 == s->c[9] && ((Slot_2F69D0 *)(D_0013E650_2F69D0 + k * 0x70))->b74 != 0) {
+                    func_L00_0028EBF0_2F69D0(k);
+                }
+                k = -1;
+                m->bBC = k;
+            }
+        }
+        func_L06_002F71A8_2F69D0(m);
+        if (D_L06_00161E08_2F69D0 < 20.0f) {
+            t = D_L06_00161E08_2F69D0 / 20.0f;
+            qcopy_nc(&v20, &((Node_2F69D0 *)D_L06_0016016C_2F69D0)[s->i60].v30);
+            qcopy_nc(&v40, &((Node_2F69D0 *)D_L06_0016016C_2F69D0)[s->i64].v30);
+            qcopy_nc(&v30, &((Node_2F69D0 *)D_L06_0016016C_2F69D0)[s->i60].v70);
+            qcopy_nc(&v50, &((Node_2F69D0 *)D_L06_0016016C_2F69D0)[s->i64].v70);
+        } else {
+            t = D_L06_00161E10_2F69D0 / 1000.0f;
+            qcopy_nc(&v20, &((Node_2F69D0 *)D_L06_0016016C_2F69D0)[s->i64].v30);
+            qcopy_nc(&v40, &((Node_2F69D0 *)D_L06_0016016C_2F69D0)[s->i68].v30);
+            qcopy_nc(&v30, &((Node_2F69D0 *)D_L06_0016016C_2F69D0)[s->i64].v70);
+            qcopy_nc(&v50, &((Node_2F69D0 *)D_L06_0016016C_2F69D0)[s->i68].v70);
+        }
+        func_001F9C08_2F69D0(&v0, &v20, &v40, t);
+        v10.x = func_001FA790_2F69D0(v50.x, v30.x) * t;
+        v10.x = func_001FA748_2F69D0(v30.x, v10.x);
+        v10.y = func_001FA790_2F69D0(v50.y, v30.y) * t;
+        v10.y = func_001FA748_2F69D0(v30.y, v10.y);
+        v10.z = func_001FA790_2F69D0(v50.z, v30.z) * t;
+        v10.z = func_001FA748_2F69D0(v30.z, v10.z);
+        func_L00_002EBE88_2F69D0(&v0);
+        func_L00_002EBEE0_2F69D0(&v10);
+        break;
+    case 5:
+        old = s->f6C;
+        func_00214D28_2F69D0(&s->f6C, 1.0f, 1.0f / func_001F9850_2F69D0(20));
+        D_L06_0015F4FC_2F69D0 = 1.0f - func_001F9B88_2F69D0(s->f6C);
+        if (old < 0.0f && 0.0f <= s->f6C) {
+            func_L06_00239CD0_2F69D0();
+            func_L00_002EC0C8_2F69D0(3);
+        } else if (1.0f <= s->f6C) {
+            m->state = 6;
+            func_L00_00203F20_2F69D0(0x1776, 0x2D);
+            func_L00_00264DB8_2F69D0(0x177C, -1);
+            func_0020BFC8_2F69D0(0, -1);
+        }
+        break;
+    case 6:
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L06_002F71A8);
 INCLUDE_ASM("asm/overlays", func_L06_002F78A0);
 INCLUDE_ASM("asm/overlays", func_L06_002F8200);

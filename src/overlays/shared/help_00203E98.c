@@ -2730,4 +2730,213 @@ void func_L00_0020BFD8(void) {
     }
     return;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0020C568);
+typedef struct {
+    char p0[0x80];
+    float pos[4];
+    char p90[8];
+    float f98;
+    char p9C[0x4C];
+    float fE8;
+    char pEC[0x24];
+    float v110[4];
+    char p120[0x90];
+    short h1B0;
+    char p1B2[0x82];
+    float f234;
+    char p238[0xA0];
+    float f2D8;
+    char p2DC[0x2C];
+    short h308;
+    char p30A[0x114];
+    short h41E;
+    char p420[0x80];
+    float f4A0;
+    char p4A4[0x2C];
+    float v4D0[4];
+    float f4E0;
+    float f4E4;
+    int i4E8;
+    char p4EC[8];
+    unsigned int i4F4;
+    char *m4F8;
+    char p4FC[0x444];
+    float f940;
+    char p944[0x164];
+    float fAA8;
+    char pAAC[0x15D4];
+    int i2080;
+    int i2084;
+    char p2088[4];
+    int i208C;
+    char p2090[0x14];
+    unsigned char b20A4;
+} Hero_20C568;
+typedef struct {
+    char p0[0x18];
+    char *m18;
+    char p1C[4];
+    float v20[4];
+    char p30[0x10];
+    float v40[4];
+} Hit_20C568;
+typedef struct {
+    char p0[0x1E];
+    unsigned short h1E;
+    char p20[0x1C];
+    int i3C;
+} Obj_20C568;
+extern char D_0013F450_20C568[] __asm__("D_0013F450");
+extern char D_L00_00173F40_20C568[] __asm__("D_L00_00173F40");
+extern float D_0015EE6C_20C568 __asm__("D_0015EE6C") MACRO_ADDR;
+extern int func_001F9850_20C568(int) __asm__("func_001F9850");
+extern void func_L00_0025A540_20C568(void *a, void *b, void *c, int d, float f) __asm__("func_L00_0025A540");
+extern float func_001F9F90_20C568(float) __asm__("func_001F9F90");
+extern float func_001F9FA8_20C568(float) __asm__("func_001F9FA8");
+extern int func_L00_001EFFF0_20C568(void *, void *, int, int, int) __asm__("func_L00_001EFFF0");
+extern int func_L00_001F3958_20C568(void) __asm__("func_L00_001F3958");
+extern float func_001F9CE8_20C568(void *) __asm__("func_001F9CE8");
+extern float func_L00_001FF860_20C568(float, float) __asm__("func_L00_001FF860");
+extern Obj_20C568 *func_L00_0025D390_20C568(char *) __asm__("func_L00_0025D390");
+extern int func_L00_001F1D20_20C568(float, float, void *, int, int) __asm__("func_L00_001F1D20");
+extern float func_001FA748_20C568(float, float) __asm__("func_001FA748");
+extern float func_001FA850_20C568(float, float) __asm__("func_001FA850");
+
+/* the ledge probe of the hero: looks for an edge ahead to grab, and where it finds one stores the grab point and direction */
+void func_L00_0020C568(void) {
+    float v0[4], v10[4], v20[4], v30[4], v40[4], v50[4], v60[4], v70[4];
+    float down, fwd, up, top, drop, rise, back;
+    float speed, ang, d;
+    int go, found, edge, i, j, hit, ok, r;
+    Obj_20C568 *a;
+    Obj_20C568 *b;
+
+    if (((Hero_20C568 *)D_0013F450_20C568)->h308 == 2) return;
+    ((Hero_20C568 *)D_0013F450_20C568)->i4E8 = 0;
+    if (((Hero_20C568 *)D_0013F450_20C568)->h1B0 != 0) return;
+    go = 0;
+    if (((Hero_20C568 *)D_0013F450_20C568)->b20A4 == 0) {
+        if ((((Hero_20C568 *)D_0013F450_20C568)->i208C == 4 && (((Hero_20C568 *)D_0013F450_20C568)->h41E != 0 || ((Hero_20C568 *)D_0013F450_20C568)->fE8 < D_0015EE6C_20C568 * 3.5f)) || ((Hero_20C568 *)D_0013F450_20C568)->i208C == 2 || ((Hero_20C568 *)D_0013F450_20C568)->i2084 == 8 || ((Hero_20C568 *)D_0013F450_20C568)->i2084 == 0x1A || ((Hero_20C568 *)D_0013F450_20C568)->i2084 == 0x1B) go = 1;
+        if (((Hero_20C568 *)D_0013F450_20C568)->i2084 == 0xE && ((Hero_20C568 *)D_0013F450_20C568)->fAA8 < 37.0f) go = 0;
+    }
+    if (((Hero_20C568 *)D_0013F450_20C568)->b20A4 == 1) {
+        if ((((Hero_20C568 *)D_0013F450_20C568)->i208C == 4 && (((Hero_20C568 *)D_0013F450_20C568)->h41E != 0 || ((Hero_20C568 *)D_0013F450_20C568)->fE8 < D_0015EE6C_20C568 * 2.5f)) || ((Hero_20C568 *)D_0013F450_20C568)->i208C == 2 || ((Hero_20C568 *)D_0013F450_20C568)->i2084 == 0x4F || ((Hero_20C568 *)D_0013F450_20C568)->i2084 == 0x4D || ((Hero_20C568 *)D_0013F450_20C568)->i2084 == 0x4E) go = 1;
+    }
+    if (!go) return;
+
+    down = -0.7f;
+    fwd = 0.3f;
+    up = 1.5f;
+    top = 1.15f;
+    drop = -1.43f;
+    rise = 1.8f;
+    back = 0.45f;
+    if (((Hero_20C568 *)D_0013F450_20C568)->b20A4 == 1) {
+        down = -0.4f;
+        fwd = 0.25f;
+        up = 0.725f;
+        top = 0.7f;
+        drop = -0.71f;
+        rise = 0.7f;
+        back = 0.32f;
+    }
+    speed = ((Hero_20C568 *)D_0013F450_20C568)->f940;
+    if (((Hero_20C568 *)D_0013F450_20C568)->i208C == 4) speed = ((Hero_20C568 *)D_0013F450_20C568)->f4A0;
+    r = func_001F9850_20C568(2);
+    func_L00_0025A540_20C568(v0, ((Hero_20C568 *)D_0013F450_20C568)->pos, ((Hero_20C568 *)D_0013F450_20C568)->v110, r, speed);
+    found = 0;
+    v0[0] += func_001F9F90_20C568(((Hero_20C568 *)D_0013F450_20C568)->f98) * ((Hero_20C568 *)D_0013F450_20C568)->f234;
+    v0[1] += func_001F9FA8_20C568(((Hero_20C568 *)D_0013F450_20C568)->f98) * ((Hero_20C568 *)D_0013F450_20C568)->f234;
+    for (i = 0; !found && i < 4; i++) {
+        v0[0] += func_001F9F90_20C568(((Hero_20C568 *)D_0013F450_20C568)->f98) * fwd * 0.25f;
+        v0[1] += func_001F9FA8_20C568(((Hero_20C568 *)D_0013F450_20C568)->f98) * fwd * 0.25f;
+        qcopy(v10, v0);
+        v10[2] += up + 0.15f;
+        qcopy(v20, v0);
+        v20[2] += top;
+        if (func_L00_001EFFF0_20C568(v10, v20, 4, ((Hero_20C568 *)D_0013F450_20C568)->i2080, 0)) {
+            hit = func_L00_001F3958_20C568();
+            if (hit != 9 && hit != 12 && hit != 0) {
+                if (func_L00_001FF860_20C568(((Hit_20C568 *)D_L00_00173F40_20C568)->v40[2], func_001F9CE8_20C568(((Hit_20C568 *)D_L00_00173F40_20C568)->v40)) < 0.3490658402442932f) found = 1;
+            }
+        }
+    }
+    if (!found) return;
+
+    if (((Hit_20C568 *)D_L00_00173F40_20C568)->m18 != 0) {
+        ok = 0;
+        a = func_L00_0025D390_20C568(((Hit_20C568 *)D_L00_00173F40_20C568)->m18);
+        b = func_L00_0025D390_20C568(((Hit_20C568 *)D_L00_00173F40_20C568)->m18);
+        if (a != 0 && (a->h1E & 1)) {
+            ok = 1;
+        } else if (b != 0) {
+            ok = b->i3C & 1;
+        }
+        if (!ok) return;
+    }
+    ((Hero_20C568 *)D_0013F450_20C568)->m4F8 = ((Hit_20C568 *)D_L00_00173F40_20C568)->m18;
+    if (((Hero_20C568 *)D_0013F450_20C568)->pos[2] + up < ((Hit_20C568 *)D_L00_00173F40_20C568)->v20[2]) return;
+    qcopy(v10, ((Hit_20C568 *)D_L00_00173F40_20C568)->v20);
+    qcopy(v20, ((Hit_20C568 *)D_L00_00173F40_20C568)->v20);
+    v20[2] += 0.05f;
+    qcopy_nc(v30, ((Hero_20C568 *)D_0013F450_20C568)->pos);
+    v30[2] = v20[2];
+    if (func_L00_001EFFF0_20C568(v30, v20, 4, ((Hero_20C568 *)D_0013F450_20C568)->i2080, 0)) return;
+    qcopy(v40, ((Hit_20C568 *)D_L00_00173F40_20C568)->v20);
+    v40[2] += 0.6f;
+    if (func_L00_001F1D20_20C568(0.45f, 0.6f, v40, 4, ((Hero_20C568 *)D_0013F450_20C568)->i2080)) {
+        ((Hero_20C568 *)D_0013F450_20C568)->i4F4 |= 1;
+    } else {
+        ((Hero_20C568 *)D_0013F450_20C568)->i4F4 &= 0xFFFFFFFE;
+    }
+    ang = func_L00_001FF860_20C568(v10[0] - ((Hero_20C568 *)D_0013F450_20C568)->pos[0], v10[1] - ((Hero_20C568 *)D_0013F450_20C568)->pos[1]);
+    ((Hero_20C568 *)D_0013F450_20C568)->f4E0 = v10[2];
+    if (v10[2] - ((Hero_20C568 *)D_0013F450_20C568)->f2D8 < rise) return;
+
+    edge = 0;
+    for (j = 0; j < 5; j++) {
+        float len;
+
+        qcopy(v50, ((Hero_20C568 *)D_0013F450_20C568)->pos);
+        qcopy(v60, v10);
+        len = ((Hero_20C568 *)D_0013F450_20C568)->f234 * 2.0f;
+        v60[0] += func_001F9F90_20C568(ang) * len;
+        v60[1] += func_001F9FA8_20C568(ang) * len;
+        v60[2] += down * (1.0f - (float)j / 5.0f);
+        v50[2] = v60[2];
+        if (func_L00_001EFFF0_20C568(v50, v60, 2, 0, 0)) {
+            edge = 1;
+            ((Hero_20C568 *)D_0013F450_20C568)->f4E4 = func_L00_001FF860_20C568(((Hit_20C568 *)D_L00_00173F40_20C568)->v40[0], ((Hit_20C568 *)D_L00_00173F40_20C568)->v40[1]);
+            break;
+        }
+    }
+    if (!edge) return;
+    if (!(func_001FA850_20C568(((Hero_20C568 *)D_0013F450_20C568)->f98, func_001FA748_20C568(((Hero_20C568 *)D_0013F450_20C568)->f4E4, 3.1415927f)) < 1.1344640f)) return;
+    {
+        float max = 2.4f;
+        float step = 0.03f;
+
+        for (d = 0.0f; d < max; d += step) {
+            qcopy(v60, v10);
+            v60[2] = v10[2];
+            v60[0] += func_001F9F90_20C568(((Hero_20C568 *)D_0013F450_20C568)->f4E4) * d;
+            v60[1] += func_001F9FA8_20C568(((Hero_20C568 *)D_0013F450_20C568)->f4E4) * d;
+            qcopy(v50, v60);
+            v60[2] += 0.5f;
+            v50[2] -= 0.5f;
+            if (!func_L00_001EFFF0_20C568(v60, v50, 4, ((Hero_20C568 *)D_0013F450_20C568)->i2080, 0)) {
+                qcopy(v70, v60);
+                d = step * 0.5f;
+                d = -d;
+                v70[2] = v10[2];
+                v70[0] += func_001F9F90_20C568(((Hero_20C568 *)D_0013F450_20C568)->f4E4) * d;
+                v70[1] += func_001F9FA8_20C568(((Hero_20C568 *)D_0013F450_20C568)->f4E4) * d;
+                qcopy(((Hero_20C568 *)D_0013F450_20C568)->v4D0, v70);
+                ((Hero_20C568 *)D_0013F450_20C568)->v4D0[0] += func_001F9F90_20C568(((Hero_20C568 *)D_0013F450_20C568)->f4E4) * back;
+                ((Hero_20C568 *)D_0013F450_20C568)->v4D0[1] += func_001F9FA8_20C568(((Hero_20C568 *)D_0013F450_20C568)->f4E4) * back;
+                ((Hero_20C568 *)D_0013F450_20C568)->i4E8 = 1;
+                ((Hero_20C568 *)D_0013F450_20C568)->v4D0[2] += drop;
+                return;
+            }
+        }
+    }
+}
