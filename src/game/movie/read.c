@@ -32,4 +32,28 @@ int func_0023C9C0(void *unused, char *entry, char *buffer) {
     return copied > 0;
 }
 INCLUDE_ASM("asm/nonmatchings/text", func_0023CAF8); /* pcmCallback(sceMpeg *, sceMpegCbDataStr *, void *) */
-INCLUDE_ASM("asm/nonmatchings/text", func_0023CBE0); /* cpy2area(unsigned char *, int, unsigned char *, int, unsigned char *, int, unsigned char *, int) */
+extern void *func_00115248(void *dest, const void *src, int n);
+
+/* cpy2area(unsigned char *, int, unsigned char *, int, unsigned char *, int, unsigned char *, int) */
+int func_0023CBE0(char *dst1, int size1, char *dst2, int size2,
+                  char *src1, int len1, char *src2, int len2) {
+    if (size1 + size2 < len1 + len2) {
+        return 0;
+    }
+    if (len1 >= size1) {
+        func_00115248(dst1, src1, size1);
+        func_00115248(dst2, src1 + size1, len1 - size1);
+        func_00115248(dst2 + len1 - size1, src2, len2);
+    } else {
+        int rem = size1 - len1;
+        if (len2 >= rem) {
+            func_00115248(dst1, src1, len1);
+            func_00115248(dst1 + len1, src2, rem);
+            func_00115248(dst2, src2 + size1 - len1, len2 - rem);
+        } else {
+            func_00115248(dst1, src1, len1);
+            func_00115248(dst1 + len1, src2, len2);
+        }
+    }
+    return len1 + len2;
+}
