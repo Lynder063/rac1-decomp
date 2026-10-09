@@ -108,7 +108,7 @@ ALL_LEVELS = 19  # docs/OVERLAYS.md: how many levels there are in total
 
 OVERLAY_NAME = re.compile(r"^func_L\d{2}_[0-9A-Fa-f]{8}$")
 OVERLAY_STUB_LINE = re.compile(r"^\s*INCLUDE_ASM\([^)]*\bfunc_L\d{2}_[0-9A-Fa-f]{8}\)")
-OVERLAY_DEF_LINE = re.compile(r"^(?!extern\b)[A-Za-z_].*?\bfunc_L\d{2}_[0-9A-Fa-f]{8}\s*\(")
+OVERLAY_DEF_LINE = re.compile(r"^(?!extern\b)[A-Za-z_].*?\bfunc_L\d{2}_[0-9A-Fa-f]{8}(?:_r)?\s*\(")
 # The same trailing-comment convention exe stubs use for a known real name
 # (tools/triage.py's NAME_COMMENT); overlay stubs don't have one yet, but a
 # worker or a future generator may leave one the same way.

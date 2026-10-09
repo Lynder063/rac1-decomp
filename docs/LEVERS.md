@@ -46,7 +46,12 @@ go in `$f12`, `$f13`, `$f14`... `long` is 64-bit, `long long` 128-bit.
   the function with another type (boilerplate like
   `extern int func_X(void *);`, or a `void (void)` update-pointer type),
   define it as `T name(args) __asm__("func_X")` and say so in NOTES.md;
-  the file's prototype gets fixed when it lands.
+  the file's prototype gets fixed when it lands. When fixing it would
+  change the callers (a callback type, another parameter order that
+  matched code relies on), the definition may stay under the alias,
+  named `func_X_r`: `T func_X_r(args) __asm__("func_X");` on one line,
+  then `T func_X_r(args) { ... }`. The report, the file check and
+  `tools/apply_candidate.py` read a definition of `func_X_r` as `func_X`.
 - `CONTEXT.md` is written when the wave is planned. A neighbour may have
   landed since: check the file for declarations it doesn't list.
 - Read the note above a stub, but don't trust it: many were wrong.
