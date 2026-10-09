@@ -703,6 +703,33 @@ blocks under the symbols this project uses), and two are defined under an alias.
 - `src/overlays/shared/vendor_002D1168.c`: `func_L00_002D4398` (`FUN_L00_002d2ee8`)
 - `src/overlays/shared/vendor_002D9548.c`: `func_L06_002EB5C8` (`FUN_L06_002ea198`)
 
+Nineteen more functions of the executable were adapted by a worker on 2026-10-09 from Lombyte's matched C
+for their US counterparts. Three are the same code and three the same instructions with other constants;
+in the other thirteen the PAL version differs (the menu and memory card structures have more fields, the
+loading screen and the pad code have extra steps), and those parts were written from the PAL assembly.
+Lombyte's `volatile` declarations, one `do {} while (0)` and one `#define` are replaced by declarations and
+statement order. Proven by the full build. In parentheses, Lombyte's name.
+
+- `src/game/bmain.c`: `func_001E99D8` (`startlevel`)
+- `src/game/loaders.c`: `func_00204C60` (`service_level_archive_load`)
+- `src/game/missionfunc.c`: `func_0020CDE0` (`update_map_icons`)
+- `src/game/pad.c`: `func_002181F0` (`process_pad_input`)
+- `src/game/pause.c`: `func_00219E90` (`FUN_00218f98`)
+- `src/game/pause.c`: `func_0021A1A0` (`FUN_002192a8`)
+- `src/game/pause.c`: `func_0021BB90` (`update_menu_entry_actions`)
+- `src/game/pause.c`: `func_0021CE60` (`draw_map_screen`)
+- `src/game/pause.c`: `func_0021DB30` (`sound_options_menu`)
+- `src/game/pause.c`: `func_0021DE08` (`draw_sound_menu`)
+- `src/game/pause.c`: `func_002209A0` (`FUN_0021f990`)
+- `src/game/pause.c`: `func_00220DF0` (`update_menu_resource_stream`)
+- `src/game/pause.c`: `func_00223B40` (`draw_localized_three_option_menu`)
+- `src/game/pause.c`: `func_00224C30` (`draw_save_slot_list`)
+- `src/game/pause.c`: `func_00227B00` (`load_preview_resource_bindings`)
+- `src/game/pause.c`: `func_00227DB0` (`FUN_00226b08`)
+- `src/game/sound.c`: `func_0022EB08` (`allocate_voice_slot`)
+- `src/game/transition.c`: `func_001EABE8` (`transition_load_wad`)
+- `src/game/transition.c`: `func_001EB458` (`update_gameplay_frame`)
+
 One more is this project's own port of a function it has from Lombyte: `func_L00_001EB890` in
 `src/overlays/shared/camera_001EB508.c` is the level programs' copy of `func_001EC2B8` (Lombyte's
 `switch_active_camera_record`), with the same C under the level's symbols.

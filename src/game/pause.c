@@ -337,7 +337,180 @@ void func_00219E60(void) {
     *(int *)(p + 0x110) = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00219E90);
+extern s32 D_0015EF78_19E90 __asm__("D_0015EF78") MACRO_ADDR;
+
+struct MenuScreen_19E90;
+
+struct MenuPage_19E90 {
+    s32 moby_anims[14];
+    struct MenuPage_19E90 *back;
+    s32 state;
+    struct MenuScreen_19E90 *focus;
+    struct MenuScreen_19E90 *screens[14];
+    u8 pad_7C[0x4];
+    struct MenuScreen_19E90 *pending_focus;
+    s32 confirmed;
+};
+
+struct MenuSystem_19E90 {
+
+    s32 state;
+    struct MenuPage_19E90 *current;
+    struct MenuPage_19E90 *next;
+    s32 close_request;
+    s32 unk10;
+    s32 timer;
+    s32 saved_texture_start;
+    s32 current_gadget;
+    u8 pad_20[0x10];
+    s32 equipped[4];
+    u8 pad_40[0x60];
+
+    s32 stream_buffer[2];
+    s32 unkA8;
+    s32 unkAC;
+    s32 unkB0[3];
+    s32 read_offset;
+    s32 unkC0;
+    u8 pad_C4[0x4];
+    u8 loaded_animation[2];
+    u8 read_buffer_index;
+    u8 pending_buffer;
+    u32 streamed_animation_base;
+
+    struct MenuPage_19E90 *previous;
+    s32 unkD4;
+    s32 unkD8;
+    s32 unkDC;
+    s32 unkE0;
+    s32 unkE4;
+    u8 pad_E8[0x4];
+    s32 unkEC;
+    struct MenuPage_19E90 *unkF0;
+    s32 unkF4;
+    s32 unkF8;
+
+    s32 unkFC;
+    s32 unk100;
+    s32 unk104;
+    s32 help_text_buffer;
+    s32 unk10C;
+
+    s32 update_count;
+    u8 pad_114[0x4];
+
+    s32 resource_table_toggle;
+    s32 unk11C;
+    s32 unk120;
+
+    s32 close_locked;
+    s32 card_op_pending;
+    s32 card_op_text;
+    u8 pad_130[0x4];
+    s32 unk134;
+    s32 unk138;
+    s32 unk13C;
+    s32 unk140;
+    s32 last_resource_table_toggle;
+};
+
+extern struct MenuSystem_19E90 D_001D5F70_19E90 __asm__("D_001D5F70");
+
+struct S_19E90 {
+    u8 pad_0[0x140];
+    float f140, f144, f148;
+};
+struct P_19E90 {
+    u8 pad_0[0x10];
+    u8 f10;
+};
+struct T_19E90 {
+    u8 pad_0[0x48];
+    struct P_19E90 *tbl[1];
+};
+struct O2_19E90 {
+    u8 pad_0[0x10];
+    float f10, f14, f18;
+    u8 pad_1C[8];
+    struct T_19E90 *f24;
+    u8 pad_28[0xC];
+    u16 f34;
+    u8 pad_36[0xA];
+    s32 f40, f44, f48;
+    u8 pad_4C[0x28];
+    s32 *f74;
+};
+extern struct MenuPage_19E90 D_001D4948_19E90 __asm__("D_001D4948"); /* page made current and next at init */
+extern u8 D_0019C250_19E90[] __asm__("D_0019C250");
+extern u8 D_0019C260_19E90[] __asm__("D_0019C260");
+extern s32 D_001941C0_19E90[] __asm__("D_001941C0");
+extern s32 D_0015F538_19E90 __asm__("D_0015F538") MACRO_ADDR;
+extern s32 D_0016100C_19E90 __asm__("D_0016100C") MACRO_ADDR;
+extern void D_0023B578_19E90() __asm__("D_0023B578");
+extern struct S_19E90 D_00187040_19E90 __asm__("D_00187040");
+extern struct O2_19E90 *D_001D6120_19E90[] __asm__("D_001D6120");
+extern u8 D_001602C0_19E90 __asm__("D_001602C0") MACRO_ADDR;
+extern u8 D_001602D0_19E90 __asm__("D_001602D0") MACRO_ADDR;
+extern s32 func_001F9C30_19E90(s32, s32, f32) __asm__("func_001F9C30");
+extern void func_00234AC8_19E90(s32) __asm__("func_00234AC8");
+extern s32 func_00122598_19E90(s32) __asm__("func_00122598");
+extern void func_002348E8_19E90(void) __asm__("func_002348E8");
+extern struct O2_19E90 *func_00226720_19E90() __asm__("func_00226720");
+extern s32 func_00213D28_19E90() __asm__("func_00213D28");
+
+void func_00226D50_19E90() __asm__("func_00226D50");
+/* Opens the pause menu: makes the start page current, sets up the menu camera vectors and the
+   texture and help text buffers behind the two stream buffers, then creates the fourteen menu
+   mobys and starts each on its page animation.
+   Adapted from Lombyte (MIT) for PAL: src/rendering/fun_00218f98.c, FUN_00218f98. */
+void func_00219E90(void) {
+    s32 i;
+    s32 a, b, c, d;
+    D_001D5F70_19E90.state = 2;
+    D_001D5F70_19E90.current = &D_001D4948_19E90;
+    D_001D5F70_19E90.next = &D_001D4948_19E90;
+    D_001D5F70_19E90.close_locked = 0;
+    func_001F9C30_19E90((s32)D_0019C250_19E90, (s32)&D_001602C0_19E90, 1.0f);
+    qcopy(D_0019C250_19E90 - 0x10, &D_001602D0_19E90);
+    qzero(D_0019C250_19E90 + 0x20);
+    qzero(D_0019C260_19E90);
+    func_00234AC8_19E90(1);
+    func_00122598_19E90(0);
+    a = D_001941C0_19E90[1] + 0xA0000;
+    b = D_001941C0_19E90[2] + 0xA0000;
+    c = a + 0x30000;
+    d = b + 0xE0000;
+    D_001D5F70_19E90.unkFC = c + 0xC1000;
+    D_0015F538_19E90++;
+    D_001D5F70_19E90.unk100 = d + 0x11800;
+    D_0016100C_19E90 = 0xA0000;
+    D_001D5F70_19E90.unk104 = a;
+    D_001D5F70_19E90.unk10 = b;
+    D_001D5F70_19E90.help_text_buffer = c;
+    D_001D5F70_19E90.unk10C = d;
+    func_00226D50_19E90(1);
+    func_002348E8_19E90();
+    D_001D5F70_19E90.saved_texture_start = D_0015EF78_19E90;
+    if (D_001D5F70_19E90.current != 0) {
+        for (i = 0; i < 14; i++) {
+            struct O2_19E90 *o = (struct O2_19E90 *)func_00226720_19E90(0x472);
+            D_001D6120_19E90[i] = o;
+            if (o != 0) {
+                s32 k;
+                o->f34 &= 0xFFFD;
+                D_001D6120_19E90[i]->f74 = D_0023B578_19E90;
+                D_001D6120_19E90[i]->f10 = D_00187040_19E90.f140;
+                D_001D6120_19E90[i]->f14 = D_00187040_19E90.f144;
+                D_001D6120_19E90[i]->f18 = D_00187040_19E90.f148;
+                D_001D6120_19E90[i]->f40 = 0;
+                D_001D6120_19E90[i]->f44 = 0;
+                D_001D6120_19E90[i]->f48 = 0;
+                k = D_001D5F70_19E90.current->moby_anims[i];
+                func_00213D28_19E90(D_001D6120_19E90[i], k, D_001D6120_19E90[i]->f24->tbl[k]->f10 - 1);
+            }
+        }
+    }
+}
 
 extern int D_0015EF78 MACRO_ADDR;
 extern int func_002267C0(int);
@@ -386,7 +559,288 @@ void func_0021A0B0(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021A1A0);
+extern s32 D_0015F6E8_1A1A0 __asm__("D_0015F6E8") MACRO_ADDR;
+
+extern s32 D_0015EFB4_1A1A0 __asm__("D_0015EFB4") MACRO_ADDR;
+
+struct MenuScreen_1A1A0;
+
+struct MenuPage_1A1A0 {
+    s32 moby_anims[14];
+    struct MenuPage_1A1A0 *back;
+    s32 state;
+    struct MenuScreen_1A1A0 *focus;
+    struct MenuScreen_1A1A0 *screens[14];
+    u8 pad_7C[0x4];
+    struct MenuScreen_1A1A0 *pending_focus;
+    s32 confirmed;
+};
+
+struct MenuSystem_1A1A0 {
+
+    s32 state;
+    struct MenuPage_1A1A0 *current;
+    struct MenuPage_1A1A0 *next;
+    s32 close_request;
+    s32 unk10;
+    s32 timer;
+    s32 saved_texture_start;
+    s32 current_gadget;
+    u8 pad_20[0x10];
+    s32 equipped[4];
+    u8 pad_40[0x60];
+
+    s32 stream_buffer[2];
+    s32 unkA8;
+    s32 unkAC;
+    s32 unkB0[3];
+    s32 read_offset;
+    s32 unkC0;
+    u8 pad_C4[0x4];
+    u8 loaded_animation[2];
+    u8 read_buffer_index;
+    u8 pending_buffer;
+    u32 streamed_animation_base;
+
+    struct MenuPage_1A1A0 *previous;
+    s32 unkD4;
+    s32 unkD8;
+    s32 unkDC;
+    s32 unkE0;
+    s32 unkE4;
+    u8 pad_E8[0x4];
+    s32 unkEC;
+    struct MenuPage_1A1A0 *unkF0;
+    s32 unkF4;
+    s32 unkF8;
+
+    s32 unkFC;
+    s32 unk100;
+    s32 unk104;
+    s32 help_text_buffer;
+    s32 unk10C;
+
+    s32 update_count;
+    u8 pad_114[0x4];
+
+    s32 resource_table_toggle;
+    s32 unk11C;
+    s32 unk120;
+
+    s32 close_locked;
+    s32 card_op_pending;
+    s32 card_op_text;
+    u8 pad_130[0x4];
+    s32 unk134;
+    s32 unk138;
+    s32 unk13C;
+    s32 unk140;
+    s32 last_resource_table_toggle;
+    s32 unk148;               /* 0x148: PAL only, counts down to 0 */
+    u8 pad_14C[0x8];
+    s32 unk154;               /* 0x154: PAL only, updates since the memory card went idle */
+};
+
+/* Memory card state at D_0013D390, as far as this function reads it (PAL offsets). */
+struct MemoryCardState_1A1A0 {
+    u8 pad_0[0xDC];
+    s32 state;                /* 0xDC */
+    s32 sub;
+    s32 pending_state;        /* 0xE4 */
+};
+extern struct MemoryCardState_1A1A0 D_0013D390_1A1A0 __asm__("D_0013D390");
+
+extern struct MenuSystem_1A1A0 D_001D5F70_1A1A0 __asm__("D_001D5F70");
+
+struct MenuScreenWords_1A1A0 {
+    u8 pad_30[0x4];
+    s32 unk34;
+    s32 unk38;
+    s32 unk3C;
+    u8 pad_40[0x10];
+    s32 unk50;
+    s32 unk54;
+    u8 pad_58[0x8];
+};
+
+struct MenuScreen_1A1A0 {
+    s32 (*update)(struct MenuScreen_1A1A0 *);
+    u8 pad_4[0x4];
+    void (*enter)(struct MenuScreen_1A1A0 *, s32);
+    void (*leave)(struct MenuScreen_1A1A0 *, s32);
+    s32 unk10;
+    s32 moby;
+    s32 x;
+    s32 y;
+    s32 width;
+    s32 height;
+    u8 pad_28[0x8];
+    union {
+        struct MenuScreenWords_1A1A0 raw;
+    } data;
+};
+
+struct Ent3_1A1A0 {
+    u8 pad0[0x10];
+    u8 unk10;
+};
+
+struct Ent2_1A1A0 {
+    u8 pad0[0x48];
+    struct Ent3_1A1A0 *unk48[1];
+};
+
+struct Ent_1A1A0 {
+    u8 pad0[0x24];
+    struct Ent2_1A1A0 *unk24;
+    u8 pad28[0x30];
+    f32 unk58;
+};
+
+extern s16 D_001517D8_1A1A0[] __asm__("D_001517D8");
+extern s32 D_0015F698_1A1A0 __asm__("D_0015F698") MACRO_ADDR;
+extern s32 D_0015F6FC_1A1A0 __asm__("D_0015F6FC") MACRO_ADDR;
+extern struct Ent_1A1A0 *D_001D6120_1A1A0[] __asm__("D_001D6120");
+
+extern void func_00219C08_1A1A0(void) __asm__("func_00219C08");
+extern void func_00219E90_1A1A0(void) __asm__("func_00219E90");
+extern void func_00213C78_1A1A0() __asm__("func_00213C78");
+extern s32 func_0022ED80_1A1A0(s32, s32, struct Ent_1A1A0 *) __asm__("func_0022ED80");
+extern void func_001FBC80_1A1A0(s32, struct MenuPage_1A1A0 *, s32) __asm__("func_001FBC80");
+extern void func_002348B8_1A1A0(void) __asm__("func_002348B8");
+extern void func_001F2930_1A1A0(void) __asm__("func_001F2930");
+extern void func_00213D28_1A1A0(struct Ent_1A1A0 *, s32, s32) __asm__("func_00213D28");
+extern void func_0021A0B0_1A1A0(void) __asm__("func_0021A0B0");
+
+/* Pause menu update: counts the update, closes down in state 0x14, opens the menu in
+   states 0 and 0x2D, then runs the page switch (leave handlers, the mobys' page animations,
+   enter handlers after the timer), every screen's update and the focus hand-over.
+   Adapted from Lombyte (MIT) for PAL: src/ui/menus/fun_002192a8.c, FUN_002192a8. */
+void func_0021A1A0(void) {
+    s32 i;
+    s32 j;
+    s32 k;
+    s32 flag;
+    struct MenuScreen_1A1A0 *obj;
+    struct MenuScreen_1A1A0 **objs;
+    struct MenuScreen_1A1A0 *m;
+
+    D_001D5F70_1A1A0.update_count = D_001D5F70_1A1A0.update_count + 1;
+    if (D_001D5F70_1A1A0.update_count > 0x7D00) {
+        D_001D5F70_1A1A0.update_count = 0x7D00;
+    }
+    func_00219C08_1A1A0();
+    if (D_001D5F70_1A1A0.unk148 != 0) {
+        D_001D5F70_1A1A0.unk148 = D_001D5F70_1A1A0.unk148 - 1;
+    }
+    if (D_0013D390_1A1A0.state < 3 && D_0013D390_1A1A0.pending_state < 0) {
+        D_001D5F70_1A1A0.unk154 = D_001D5F70_1A1A0.unk154 + 1;
+    } else {
+        D_001D5F70_1A1A0.unk154 = 0;
+    }
+    if (D_001D5F70_1A1A0.state == 0x14) {
+        if (D_001D5F70_1A1A0.timer != 0) {
+            D_001D5F70_1A1A0.timer = D_001D5F70_1A1A0.timer - 1;
+            if (D_001D5F70_1A1A0.timer != 0) {
+                return;
+            }
+        }
+        if (D_001517D8_1A1A0[0] != 0) {
+            return;
+        }
+        D_0015F698_1A1A0 = 0x1E000;
+        func_002348B8_1A1A0();
+        func_001F2930_1A1A0();
+        D_0015F6FC_1A1A0 = 1;
+        D_001D5F70_1A1A0.help_text_buffer = 0;
+        D_001D5F70_1A1A0.unk10C = 0;
+        D_001D5F70_1A1A0.unk104 = 0;
+        D_001D5F70_1A1A0.unk10 = 0;
+        D_0015F6E8_1A1A0 = 0;
+        return;
+    }
+    if (D_001D5F70_1A1A0.state == 0 || D_001D5F70_1A1A0.state == 0x2D) {
+        func_00219E90_1A1A0();
+    }
+    if (D_0015EFB4_1A1A0 & 1) {
+        func_001FBC80_1A1A0(3, D_001D5F70_1A1A0.current, 0);
+        return;
+    }
+    if (D_001D5F70_1A1A0.state == 1) {
+        D_001D5F70_1A1A0.timer = (D_001D5F70_1A1A0.timer < 1) ? 0 : D_001D5F70_1A1A0.timer - 1;
+        if (D_001D5F70_1A1A0.timer == 0) {
+            struct MenuPage_1A1A0 *o8 = D_001D5F70_1A1A0.next;
+            D_001D5F70_1A1A0.next = 0;
+            D_001D5F70_1A1A0.current = o8;
+            D_001D5F70_1A1A0.state = o8->state;
+            for (i = 0; i < 14; i++) {
+                obj = D_001D5F70_1A1A0.current->screens[i];
+                if (obj != 0 && obj->enter != 0) {
+                    obj->enter(obj, 0);
+                }
+            }
+        }
+    } else if (D_001D5F70_1A1A0.next != 0) {
+        if (D_001D5F70_1A1A0.current == D_001D5F70_1A1A0.next) {
+            func_0022ED80_1A1A0(3, 0x11, D_001D6120_1A1A0[0]);
+        } else {
+            func_0022ED80_1A1A0(4, 0x11, D_001D6120_1A1A0[0]);
+        }
+        for (i = 0; i < 14; i++) {
+            obj = D_001D5F70_1A1A0.current->screens[i];
+            if (obj != 0 && obj->leave != 0) {
+                obj->leave(obj, 0);
+            }
+        }
+        flag = (D_001D5F70_1A1A0.next == D_001D5F70_1A1A0.current->back);
+        if (D_001D5F70_1A1A0.current == D_001D5F70_1A1A0.next) {
+            flag = flag ^ 1;
+        }
+        for (j = 0; j < 14; j++) {
+            if (D_001D5F70_1A1A0.next->screens[j] != 0) {
+                D_001D5F70_1A1A0.next->screens[j]->moby = (s32)D_001D6120_1A1A0[j];
+            }
+            if (flag) {
+                s32 n = D_001D5F70_1A1A0.current->moby_anims[j];
+                func_00213D28_1A1A0(D_001D6120_1A1A0[j], n, D_001D6120_1A1A0[j]->unk24->unk48[n]->unk10 - 1);
+                D_001D6120_1A1A0[j]->unk58 = -1.0f;
+            } else {
+                func_00213D28_1A1A0(D_001D6120_1A1A0[j], D_001D5F70_1A1A0.next->moby_anims[j], 0);
+                D_001D6120_1A1A0[j]->unk58 = 1.0f;
+            }
+        }
+        D_001D5F70_1A1A0.state = 1;
+        D_001D5F70_1A1A0.timer = 12;
+        D_001D5F70_1A1A0.previous = D_001D5F70_1A1A0.current;
+        D_001D5F70_1A1A0.current = 0;
+    }
+    if (D_001D5F70_1A1A0.current != 0) {
+        objs = D_001D5F70_1A1A0.current->screens;
+        for (k = 0; k < 14; k++) {
+            if (objs != 0 && objs[k] != 0 && objs[k]->update != 0) {
+                if (objs[k]->update(objs[k]) != 0) {
+                    D_001D5F70_1A1A0.close_request = 1;
+                }
+            }
+        }
+        if (D_001D5F70_1A1A0.current != 0 && D_001D5F70_1A1A0.current->pending_focus != 0) {
+            m = D_001D5F70_1A1A0.current->focus;
+            if (m->leave != 0) {
+                m->leave(m, 1);
+            }
+            D_001D5F70_1A1A0.current->focus = D_001D5F70_1A1A0.current->pending_focus;
+            D_001D5F70_1A1A0.current->pending_focus = 0;
+            m = D_001D5F70_1A1A0.current->focus;
+            if (m->enter != 0) {
+                m->enter(m, 1);
+            }
+        }
+    }
+    func_00213C78_1A1A0();
+    if (D_001D5F70_1A1A0.close_request != 0) {
+        func_0021A0B0_1A1A0();
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021A610);
 
@@ -627,7 +1081,337 @@ int func_0021B288(void *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0021B298);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021BB90);
+struct PadState_1BB90 {
+    u8 pad_0[0x100] __attribute__((aligned(16)));
+    f32 analog[16];
+    f32 analog_prev[16];
+    u8 pad_180[0x9];
+    u8 unk189;
+    u8 pad_18A[0xA];
+    s32 socket;
+    s32 profile_state;
+    s32 device_state;
+    s32 held;
+    s32 pressed;
+    s32 released;
+    s32 prev_held;
+    s32 raw_held;
+    s32 raw_pressed;
+    s32 raw_released;
+    s32 prev_raw_held;
+    u32 held_unmasked;
+    u32 pressed_unmasked;
+    u32 released_unmasked;
+    s32 mode;
+    s32 no_buttons;
+    s32 no_direction;
+    s32 stick_moved;
+    s32 unk1DC;
+};
+
+struct MenuTextItem_1BB90 {
+    s16 text;
+    s16 action;
+    union {
+        s32 value;
+        struct {
+            u16 lo;
+            s16 hi;
+        } half;
+    } param;
+    s16 subtext;
+    s16 fade_timer;
+};
+
+struct MenuTextListData_1BB90 {
+    s32 flags;
+    struct MenuTextItem_1BB90 *items;
+    struct MenuScreen_1BB90 *up;
+    struct MenuScreen_1BB90 *down;
+    s32 selected;
+    s32 scroll;
+};
+
+struct MenuScreen_1BB90 {
+    s32 (*update)(struct MenuScreen_1BB90 *);
+    u8 pad_4[0x4];
+    void (*enter)(struct MenuScreen_1BB90 *, s32);
+    void (*leave)(struct MenuScreen_1BB90 *, s32);
+    s32 unk10;
+    s32 moby;
+    s32 x;
+    s32 y;
+    s32 width;
+    s32 height;
+    u8 pad_28[0x8];
+    union {
+        struct MenuTextListData_1BB90 list;
+    } data;
+};
+
+struct MenuScreen_1BB90;
+
+struct MenuPage_1BB90 {
+    s32 moby_anims[14];
+    struct MenuPage_1BB90 *back;
+    s32 state;
+    struct MenuScreen_1BB90 *focus;
+    struct MenuScreen_1BB90 *screens[14];
+    u8 pad_7C[0x4];
+    struct MenuScreen_1BB90 *pending_focus;
+    s32 confirmed;
+};
+
+struct MenuSystem_1BB90 {
+
+    s32 state;
+    struct MenuPage_1BB90 *current;
+    struct MenuPage_1BB90 *next;
+    s32 close_request;
+    s32 unk10;
+    s32 timer;
+    s32 saved_texture_start;
+    s32 current_gadget;
+    u8 pad_20[0x10];
+    s32 equipped[4];
+    u8 pad_40[0x60];
+
+    s32 stream_buffer[2];
+    s32 unkA8;
+    s32 unkAC;
+    s32 unkB0[3];
+    s32 read_offset;
+    s32 unkC0;
+    u8 pad_C4[0x4];
+    u8 loaded_animation[2];
+    u8 read_buffer_index;
+    u8 pending_buffer;
+    u32 streamed_animation_base;
+
+    struct MenuPage_1BB90 *previous;
+    s32 unkD4;
+    s32 unkD8;
+    s32 unkDC;
+    s32 unkE0;
+    s32 unkE4;
+    u8 pad_E8[0x4];
+    s32 unkEC;
+    struct MenuPage_1BB90 *unkF0;
+    s32 unkF4;
+    s32 unkF8;
+
+    s32 unkFC;
+    s32 unk100;
+    s32 unk104;
+    s32 help_text_buffer;
+    s32 unk10C;
+
+    s32 update_count;
+    u8 pad_114[0x4];
+
+    s32 resource_table_toggle;
+    s32 unk11C;
+    s32 unk120;
+
+    s32 close_locked;
+    s32 card_op_pending;
+    s32 card_op_text;
+    u8 pad_130[0x4];
+    s32 unk134;
+    s32 unk138;
+    s32 unk13C;
+    s32 unk140;
+    s32 last_resource_table_toggle;
+    u8 pad_148[0x8];
+    s32 unk150;               /* 0x150: PAL only: 0 after action 4, 1 after action 5 */
+    s32 unk154;               /* 0x154: PAL only */
+};
+
+extern struct MenuSystem_1BB90 D_001D5F70_1BB90 __asm__("D_001D5F70");
+
+extern struct PadState_1BB90 D_0013CA40_1BB90 __asm__("D_0013CA40");
+/* gp-relative here, so not the plain rnc/globals.h spellings. */
+extern s32 D_0015EE84_1BB90 __asm__("D_0015EE84") MACRO_ADDR;
+extern s32 D_0015EE88_1BB90 __asm__("D_0015EE88") MACRO_ADDR;
+extern s32 D_0015EFB4_1BB90 __asm__("D_0015EFB4") MACRO_ADDR;
+extern s32 D_001602B4_1BB90 SDATA(D_001602B4);
+extern s32 *D_001602E0_1BB90 SDATA(D_001602E0);
+extern s32 D_00199578_1BB90[] __asm__("D_00199578");
+extern s32 D_001A0414_1BB90[] __asm__("D_001A0414");
+
+extern s32 func_001F98C0_1BB90(s32) __asm__("func_001F98C0");
+extern void func_001FBC80_1BB90(s32, s32, s32) __asm__("func_001FBC80");
+extern s32 func_0022ED80_1BB90(s32, s32, s32) __asm__("func_0022ED80");
+
+/*
+ * Per-frame update of a menu list: fades the entry highlights, handles
+ * cancel/back, runs the selected entry's action on accept, and moves the
+ * selection up/down (with wrap or hand-off to the neighbouring list).
+ */
+
+/* Text list screen update: runs each entry's highlight fade timer, then for the focused
+   list the pad: close, back, confirm (the selected entry's action: open a page, freeze the
+   game for a prompt, close with a value, pick a level or language) and up/down selection.
+   Adapted from Lombyte (MIT) for PAL: src/ui/menus/fun_0021abf8.c, update_menu_entry_actions. */
+s32 func_0021BB90(struct MenuScreen_1BB90 *menu) {
+    s32 focused;
+    s32 entry_index;
+    s32 entry_count;
+    s32 previous_selection;
+    s32 flags;
+    s32 buttons;
+    s16 fade_timer;
+    s16 message_index;
+
+    focused = D_001D5F70_1BB90.current->focus == menu;
+    for (entry_index = 0; menu->data.list.items[entry_index].text != 0; entry_index++) {
+        if (focused && menu->data.list.selected == entry_index) {
+            menu->data.list.items[entry_index].fade_timer =
+                menu->data.list.items[entry_index].fade_timer + 1;
+            if (menu->data.list.items[entry_index].fade_timer > 0x7D00) {
+                menu->data.list.items[entry_index].fade_timer = 0x7D00;
+            }
+        } else {
+            fade_timer = menu->data.list.items[entry_index].fade_timer;
+            if (func_001F98C0_1BB90(D_001602B4_1BB90) < fade_timer) {
+                menu->data.list.items[entry_index].fade_timer =
+                    func_001F98C0_1BB90(D_001602B4_1BB90);
+            }
+            menu->data.list.items[entry_index].fade_timer =
+                menu->data.list.items[entry_index].fade_timer > 0
+                    ? menu->data.list.items[entry_index].fade_timer - 1
+                    : 0;
+        }
+    }
+    if (!focused) {
+        return 0;
+    }
+    if (D_0013CA40_1BB90.pressed_unmasked & 0xD00) {
+        if (menu->data.list.flags & 0x20) {
+            D_001A0414_1BB90[0] = D_0015EE84_1BB90;
+        }
+        return -1;
+    }
+    if (D_0013CA40_1BB90.pressed_unmasked & 0x10) {
+        if (menu->data.list.flags & 0x20) {
+            D_001A0414_1BB90[0] = D_0015EE84_1BB90;
+        }
+        if (D_001D5F70_1BB90.current->back != 0) {
+            D_001D5F70_1BB90.next = D_001D5F70_1BB90.current->back;
+            return 0;
+        } else if (D_001D5F70_1BB90.close_locked == 0) {
+            return -1;
+        }
+    }
+    if ((D_0013CA40_1BB90.pressed_unmasked & 0x40) && ((D_0015EFB4_1BB90 ^ 1) & 1)) {
+        /* Index through menu-> directly: locals for items/selected change
+           which register keeps the copy of selected that actions 6 and 9 reuse. */
+        switch (menu->data.list.items[menu->data.list.selected].action) {
+        case 0:
+            break;
+        /* No case 1 in PAL: retail's table sends action 1 to the default. */
+        case 3:
+            D_001D5F70_1BB90.next =
+                (struct MenuPage_1BB90 *)menu->data.list.items[menu->data.list.selected].param.value;
+            break;
+        case 4:
+            func_0022ED80_1BB90(0, 0x11, menu->moby);
+            D_001D5F70_1BB90.unk150 = 0;
+            D_0015EFB4_1BB90 = (D_0015EFB4_1BB90 | 2) & ~4;
+            func_001FBC80_1BB90(3, menu->data.list.items[menu->data.list.selected].param.value, 0);
+            break;
+        case 5:
+            func_0022ED80_1BB90(0, 0x11, menu->moby);
+            D_0015EFB4_1BB90 = (D_0015EFB4_1BB90 | 4) & ~2;
+            func_001FBC80_1BB90(3, menu->data.list.items[menu->data.list.selected].param.value, 0);
+            D_001D5F70_1BB90.unk150 = 1;
+            break;
+        case 6:
+            /* This action passes the low halfword; the other indexed actions pass the full word. */
+            message_index = menu->data.list.items[menu->data.list.selected].param.half.hi;
+            if (message_index != 0) {
+                D_001D5F70_1BB90.unkEC = D_00199578_1BB90[message_index];
+            }
+            D_001D5F70_1BB90.close_request = 5;
+            D_001D5F70_1BB90.unkF0 = D_001D5F70_1BB90.current;
+            D_001D5F70_1BB90.unkF4 = 0;
+            D_001D5F70_1BB90.unkE4 =
+                menu->data.list.items[menu->data.list.selected].param.half.lo;
+            func_0022ED80_1BB90(0, 0x11, menu->moby);
+            return 0;
+        case 7:
+            D_001D5F70_1BB90.unkF4 = 2;
+            D_001D5F70_1BB90.unkF0 = D_001D5F70_1BB90.current;
+            D_001D5F70_1BB90.close_request = 3;
+            D_001D5F70_1BB90.unkE4 = menu->data.list.items[menu->data.list.selected].param.value;
+            func_0022ED80_1BB90(0, 0x11, menu->moby);
+            return 0;
+        case 8:
+            D_001D5F70_1BB90.unkF4 = 2;
+            D_001D5F70_1BB90.unkF0 = D_001D5F70_1BB90.current;
+            D_001D5F70_1BB90.close_request = 4;
+            D_001D5F70_1BB90.unkE4 = menu->data.list.items[menu->data.list.selected].param.value;
+            func_0022ED80_1BB90(0, 0x11, menu->moby);
+            return 0;
+        case 10:
+            D_001D5F70_1BB90.unkF4 = 2;
+            D_001D5F70_1BB90.unkF0 = D_001D5F70_1BB90.current;
+            D_001D5F70_1BB90.close_request = 6;
+            D_001D5F70_1BB90.unkE4 = menu->data.list.items[menu->data.list.selected].param.value;
+            func_0022ED80_1BB90(0, 0x11, menu->moby);
+            return 0;
+        case 11:
+            D_001D5F70_1BB90.unkF0 = D_001D5F70_1BB90.current;
+            D_001D5F70_1BB90.unkF4 = 2;
+            D_001D5F70_1BB90.close_request = 7;
+            func_0022ED80_1BB90(0, 0x11, menu->moby);
+            return 0;
+        case 9:
+            D_0015EE88_1BB90 = menu->data.list.items[menu->data.list.selected].param.value;
+            return 0;
+        case 2:
+            func_0022ED80_1BB90(2, 0x11, menu->moby);
+            break;
+        }
+    }
+    /* Count first, then read selected/flags: in the other order (or as a
+       do-while) the allocator shifts every register of the tail. */
+    for (entry_count = 0; menu->data.list.items[entry_count].text != 0; entry_count++) {
+    }
+    previous_selection = menu->data.list.selected;
+    flags = menu->data.list.flags;
+    if (flags & 1) {
+        buttons = D_0013CA40_1BB90.raw_pressed;
+    } else {
+        buttons = D_0013CA40_1BB90.pressed_unmasked;
+    }
+    if ((buttons & 0x1000) || ((flags & 0x100) && (buttons & 4))) {
+        if (menu->data.list.selected != 0) {
+            menu->data.list.selected--;
+        } else if (flags & 0x1000) {
+            menu->data.list.selected = entry_count - 1;
+        } else {
+            D_001D5F70_1BB90.current->pending_focus = menu->data.list.up;
+        }
+    }
+    if ((buttons & 0x4000) || ((menu->data.list.flags & 0x100) && (buttons & 8))) {
+        if (menu->data.list.items[menu->data.list.selected + 1].text != 0 &&
+            menu->data.list.items[menu->data.list.selected + 1].action != 0) {
+            menu->data.list.selected++;
+        } else if (menu->data.list.flags & 0x1000) {
+            menu->data.list.selected = 0;
+        } else {
+            D_001D5F70_1BB90.current->pending_focus = menu->data.list.down;
+        }
+    }
+    if (menu->data.list.selected != previous_selection || D_001D5F70_1BB90.current->pending_focus != 0) {
+        func_0022ED80_1BB90(1, 0x11, menu->moby);
+        if (menu->data.list.flags & 0x20) {
+            D_001A0414_1BB90[0] = D_001602E0_1BB90[menu->data.list.selected];
+        }
+    }
+    return 0;
+}
 
 typedef struct {
     s16 text_id;
@@ -956,7 +1740,392 @@ int func_0021CDA0(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021CE60); /* DrawMapScreen */
+struct MapIcon_1CE60;
+struct MapMarker_1CE60;
+struct MapHdr_1CE60;
+
+struct MapState_1CE60 {
+    u8 pad0[0x8];
+    s32 unk8;
+    u8 *mask;
+    u8 pad10[0x4];
+    s32 unk14;
+    s32 z;
+    struct MapMarker_1CE60 *markers;
+    struct MapIcon_1CE60 *icons;
+    s32 unk24;
+    s32 unk28;
+    s32 unk2C;
+    struct {
+        s32 unk0;
+        u8 pad4[0xC];
+    } unk30[8];
+    s32 marker_count;
+    f32 zoom[20];
+    s32 pan_x[20];
+    s32 pan_y[20];
+    u8 pad1A4[0x80];
+    s32 level;
+    s32 loaded;
+    s32 unk22C;
+    s32 unk230;
+    s32 unk234;
+    u8 pad238[0x4];
+    struct MapHdr_1CE60 *hdr;
+    s32 map_image_vram;
+    s32 tex_clut_vram;
+    s32 tex0_vram;
+    s32 tex1_vram;
+    s32 tex2_vram;
+    u8 pad254[0x4];
+    s64 tex0;
+    s64 tex1;
+    s64 tex2;
+    u8 pad270[0x8];
+    s32 slot[5];
+    s32 slot_id[5];
+    s32 sel;
+    s32 slot_size[5];
+};
+
+extern struct MapState_1CE60 D_001A01F0_1CE60 __asm__("D_001A01F0");
+
+extern s32 D_0015EE84_1CE60 __asm__("D_0015EE84") MACRO_ADDR;
+
+struct MenuScreen_1CE60;
+
+struct MenuPage_1CE60 {
+    s32 moby_anims[14];
+    struct MenuPage_1CE60 *back;
+    s32 state;
+    struct MenuScreen_1CE60 *focus;
+    struct MenuScreen_1CE60 *screens[14];
+    u8 pad_7C[0x4];
+    struct MenuScreen_1CE60 *pending_focus;
+    s32 confirmed;
+};
+
+struct MenuSystem_1CE60 {
+
+    s32 state;
+    struct MenuPage_1CE60 *current;
+    struct MenuPage_1CE60 *next;
+    s32 close_request;
+    s32 unk10;
+    s32 timer;
+    s32 saved_texture_start;
+    s32 current_gadget;
+    u8 pad_20[0x10];
+    s32 equipped[4];
+    u8 pad_40[0x60];
+
+    s32 stream_buffer[2];
+    s32 unkA8;
+    s32 unkAC;
+    s32 unkB0[3];
+    s32 read_offset;
+    s32 unkC0;
+    u8 pad_C4[0x4];
+    u8 loaded_animation[2];
+    u8 read_buffer_index;
+    u8 pending_buffer;
+    u32 streamed_animation_base;
+
+    struct MenuPage_1CE60 *previous;
+    s32 unkD4;
+    s32 unkD8;
+    s32 unkDC;
+    s32 unkE0;
+    s32 unkE4;
+    u8 pad_E8[0x4];
+    s32 unkEC;
+    struct MenuPage_1CE60 *unkF0;
+    s32 unkF4;
+    s32 unkF8;
+
+    s32 unkFC;
+    s32 unk100;
+    s32 unk104;
+    s32 help_text_buffer;
+    s32 unk10C;
+
+    s32 update_count;
+    u8 pad_114[0x4];
+
+    s32 resource_table_toggle;
+    s32 unk11C;
+    s32 unk120;
+
+    s32 close_locked;
+    s32 card_op_pending;
+    s32 card_op_text;
+    u8 pad_130[0x4];
+    s32 unk134;
+    s32 unk138;
+    s32 unk13C;
+    s32 unk140;
+    s32 last_resource_table_toggle;
+};
+
+extern struct MenuSystem_1CE60 D_001D5F70_1CE60 __asm__("D_001D5F70");
+
+struct MenuScreenWords_1CE60 {
+    u8 pad_30[0x4];
+    s32 unk34;
+    s32 unk38;
+    s32 unk3C;
+    u8 pad_40[0x10];
+    s32 unk50;
+    s32 unk54;
+    u8 pad_58[0x8];
+};
+
+struct MenuScreen_1CE60 {
+    s32 (*update)(struct MenuScreen_1CE60 *);
+    u8 pad_4[0x4];
+    void (*enter)(struct MenuScreen_1CE60 *, s32);
+    void (*leave)(struct MenuScreen_1CE60 *, s32);
+    s32 unk10;
+    s32 moby;
+    s32 x;
+    s32 y;
+    s32 width;
+    s32 height;
+    u8 pad_28[0x8];
+    union {
+        struct MenuScreenWords_1CE60 raw;
+    } data_1CE60;
+};
+
+struct Pad_1CE60 {
+    u8 pad0[0x1C4];
+    u32 pressed;
+};
+
+struct MapHdr_1CE60 {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+    s32 unkC;
+    s32 unk10;
+    s32 unk14;
+    s32 unk18;
+};
+
+struct MapEntry_1CE60 {
+    s32 a;
+    s32 b;
+};
+
+struct Hdr16_1CE60 {
+    u8 pad0[0x8];
+    s16 unk8;
+};
+
+extern struct Pad_1CE60 D_0013CA40_1CE60 __asm__("D_0013CA40");
+extern struct Hdr16_1CE60 D_001517D0_1CE60 __asm__("D_001517D0");
+extern u8 D_001CF9F8_1CE60[] __asm__("D_001CF9F8");
+extern u8 D_001CF798_1CE60[] __asm__("D_001CF798");
+extern s32 *D_001602E0_1CE60 __asm__("D_001602E0") MACRO_ADDR;
+extern u8 D_0013D5E9_1CE60[] __asm__("D_0013D5E9");
+extern u8 D_0013DE60_1CE60[] __asm__("D_0013DE60");
+extern u8 D_00141FC0_1CE60[] __asm__("D_00141FC0");
+extern struct MapEntry_1CE60 D_001384A0_1CE60[] __asm__("D_001384A0");
+extern struct MapEntry_1CE60 D_00138538_1CE60[] __asm__("D_00138538");
+
+extern s32 func_00205C70_1CE60() __asm__("func_00205C70");
+extern s32 func_00205A50_1CE60(s32 id) __asm__("func_00205A50");
+extern s32 func_002058D0_1CE60() __asm__("func_002058D0");
+extern s32 func_00205AA8_1CE60() __asm__("func_00205AA8");
+extern void func_00205830_1CE60() __asm__("func_00205830");
+extern s32 func_00205790_1CE60() __asm__("func_00205790");
+extern s32 func_00205918_1CE60() __asm__("func_00205918");
+extern void func_00205C08_1CE60() __asm__("func_00205C08");
+extern void func_00206F40_1CE60() __asm__("func_00206F40");
+extern s32 func_0020C7A0_1CE60() __asm__("func_0020C7A0");
+extern s32 func_00226EA8_1CE60() __asm__("func_00226EA8");
+extern s32 func_00226F68_1CE60() __asm__("func_00226F68");
+extern s32 func_00217628_1CE60() __asm__("func_00217628");
+extern s32 func_00234238_1CE60() __asm__("func_00234238");
+extern s32 func_0020C468_1CE60() __asm__("func_0020C468");
+extern s64 func_00205660_1CE60() __asm__("func_00205660");
+extern void func_002083E0_1CE60() __asm__("func_002083E0");
+extern void func_0020C2F8_1CE60() __asm__("func_0020C2F8");
+extern void func_0020CDE0_1CE60() __asm__("func_0020CDE0");
+extern void func_0022ED80_1CE60() __asm__("func_0022ED80");
+
+/* Map screen of the pause menu: pad input (close, back, the mission page, warp to the shown
+   level, previous/next visited level), then decodes the shown level's map into its textures
+   when it changed and keeps the next map streaming into a free slot.
+   Adapted from Lombyte (MIT) for PAL: src/ui/map/draw_map_screen.c, draw_map_screen. */
+s32 func_0021CE60(struct MenuScreen_1CE60 *screen) {
+    s32 prev;
+    s32 idx;
+    s32 t;
+    s32 id;
+    s32 slot;
+    s32 n;
+    struct MapHdr_1CE60 *hdr;
+    u8 *pal;
+    u8 *pix;
+    s32 buf;
+    u8 *base;
+    u8 *a;
+    u8 *tex;
+    u8 *tbase;
+    u8 *b;
+    u8 *c;
+    s32 pick;
+    s32 next;
+    s32 k;
+    struct MapEntry_1CE60 *e;
+
+    func_00205C70_1CE60();
+    if (!(screen->data_1CE60.raw.unk34 & 0x40)) {
+        prev = D_001A01F0_1CE60.level;
+        if (D_0013CA40_1CE60.pressed & 0xD00) {
+            if (D_001D5F70_1CE60.close_locked == 0) {
+                return 1;
+            }
+        }
+        if (D_0013CA40_1CE60.pressed & 0x10) {
+            if (D_001D5F70_1CE60.current->back != 0) {
+                D_001D5F70_1CE60.next = D_001D5F70_1CE60.current->back;
+                return 0;
+            } else if (D_001D5F70_1CE60.close_locked == 0) {
+                return -1;
+            }
+        }
+        if (D_0013CA40_1CE60.pressed & 0x40) {
+            D_001D5F70_1CE60.next = (struct MenuPage_1CE60 *)D_001CF9F8_1CE60;
+        }
+        if ((D_0013CA40_1CE60.pressed & 0x20) && D_001A01F0_1CE60.level != 0) {
+            D_001D5F70_1CE60.unkF0 = (struct MenuPage_1CE60 *)D_001CF798_1CE60;
+            D_001D5F70_1CE60.unkF4 = 0xB;
+            D_001D5F70_1CE60.close_request = 3;
+            D_001D5F70_1CE60.unkE4 = D_001A01F0_1CE60.level;
+            func_0022ED80_1CE60(0, 0x11, screen->moby);
+            return 0;
+        }
+        idx = func_00205A50_1CE60(D_001A01F0_1CE60.level);
+        if (idx >= 0) {
+            if (D_0013CA40_1CE60.pressed & 8) {
+                if (idx < 0x13) {
+                    t = D_001602E0_1CE60[idx + 1];
+                    if (t != 0) {
+                        D_001A01F0_1CE60.level = t;
+                    }
+                }
+            }
+            if ((D_0013CA40_1CE60.pressed & 4) && idx != 0) {
+                if (D_001602E0_1CE60[idx - 1] != 0) {
+                    D_001A01F0_1CE60.level = D_001602E0_1CE60[idx - 1];
+                }
+            }
+        }
+        if (D_001A01F0_1CE60.level != prev) {
+            func_0022ED80_1CE60(1, 0x11, screen->moby);
+            func_0020C7A0_1CE60();
+        }
+    }
+
+    id = D_001A01F0_1CE60.level;
+    if (D_0013D5E9_1CE60[0] != 0) {
+        id += 0x100;
+    }
+    slot = func_002058D0_1CE60(id);
+    if (D_001A01F0_1CE60.level != D_001A01F0_1CE60.loaded && slot != -1) {
+        n = func_00205AA8_1CE60();
+        if (D_001A01F0_1CE60.slot[0] != 0 && n > 0) {
+            func_00205830_1CE60(n, 0);
+            if (slot == 0) {
+                slot = n;
+            }
+        }
+        func_0020C468_1CE60(D_001A01F0_1CE60.slot[slot], D_001A01F0_1CE60.hdr);
+        hdr = D_001A01F0_1CE60.hdr;
+        pix = (u8 *)hdr + hdr->unk8;
+        pal = (u8 *)hdr + hdr->unkC;
+        buf = func_00226EA8_1CE60(0);
+        if (buf != 0) {
+            base = (u8 *)D_001A01F0_1CE60.hdr;
+            a = base + hdr->unk0 + 8;
+            if (D_001A01F0_1CE60.level == D_0015EE84_1CE60) {
+                func_00205C08_1CE60(pal, pix, pal, D_001A01F0_1CE60.mask);
+            } else {
+                if (D_0013DE60_1CE60[D_001A01F0_1CE60.level] != 0) {
+                    func_002083E0_1CE60(buf, D_00141FC0_1CE60 + (D_001A01F0_1CE60.level << 11), base + hdr->unk4);
+                } else {
+                    func_00206F40_1CE60(buf, a, a, base);
+                }
+                func_00205C08_1CE60(pal, pix, pal, buf);
+            }
+        }
+        if (!(screen->data_1CE60.raw.unk34 & 0x80)) {
+            tbase = (u8 *)D_001A01F0_1CE60.hdr;
+            tex = tbase + hdr->unk10;
+            b = tbase + hdr->unk14 + 0x420;
+            c = tbase + hdr->unk18 + 0x420;
+            D_001A01F0_1CE60.tex0 =
+                func_00205660_1CE60(7, 7, tex + 0x20, tex + 0x420, D_001A01F0_1CE60.tex_clut_vram, D_001A01F0_1CE60.tex0_vram);
+            D_001A01F0_1CE60.tex1 =
+                func_00205660_1CE60(7, 7, tex + 0x20, b, D_001A01F0_1CE60.tex_clut_vram, D_001A01F0_1CE60.tex1_vram);
+            D_001A01F0_1CE60.tex2 =
+                func_00205660_1CE60(7, 7, tex + 0x20, c, D_001A01F0_1CE60.tex_clut_vram, D_001A01F0_1CE60.tex2_vram);
+            if (buf != 0) {
+                func_00205660_1CE60(9, 9, pal, pal, 0x3FF000, D_001A01F0_1CE60.map_image_vram);
+            }
+            func_0020C2F8_1CE60();
+        }
+        if (buf != 0) {
+            func_00226F68_1CE60(buf);
+        }
+        D_001A01F0_1CE60.slot[0] = (s32)pix;
+        D_001A01F0_1CE60.loaded = D_001A01F0_1CE60.level;
+        func_0020CDE0_1CE60(D_001A01F0_1CE60.level, 0);
+    }
+
+    if (D_001517D0_1CE60.unk8 == 0) {
+        if (D_001A01F0_1CE60.sel != -1) {
+            D_001D5F70_1CE60.pending_buffer = 0;
+            D_001A01F0_1CE60.slot_id[D_001A01F0_1CE60.sel] ^= 0x1000;
+            D_001A01F0_1CE60.sel = -1;
+        }
+    }
+    pick = -1;
+    if (D_001517D0_1CE60.unk8 == 0) {
+        pick = func_00205790_1CE60();
+        if (pick != -1) {
+            next = func_00205918_1CE60();
+            if (next != -1) {
+                k = (D_0015EE84_1CE60 + D_001A01F0_1CE60.unk230 == 0) ? 0 : 0x100;
+                if (k == next) {
+                    func_00234238_1CE60(D_001A01F0_1CE60.slot[pick], D_001A01F0_1CE60.unk22C, 0,
+                                       D_001A01F0_1CE60.unk234, 0);
+                    D_001A01F0_1CE60.slot_size[pick] = D_001A01F0_1CE60.unk234;
+                } else {
+                    if (next & 0x100) {
+                        e = &D_00138538_1CE60[next ^ 0x100];
+                    } else {
+                        e = &D_001384A0_1CE60[next];
+                    }
+                    func_00217628_1CE60(D_001A01F0_1CE60.slot[pick], e->a, e->b);
+                    D_001D5F70_1CE60.pending_buffer = 1;
+                    D_001A01F0_1CE60.slot_size[pick] = (e->b << 11) >> 4;
+                }
+                D_001A01F0_1CE60.slot_id[pick] = next | 0x1000;
+                D_001A01F0_1CE60.sel = pick;
+            }
+        }
+    }
+    slot = func_002058D0_1CE60(id);
+    if (D_001A01F0_1CE60.level != D_001A01F0_1CE60.loaded) {
+        if (D_001517D0_1CE60.unk8 == 0 && slot == -1 && pick == slot) {
+            func_00205AA8_1CE60(D_001A01F0_1CE60.loaded);
+        }
+    }
+    return 0;
+}
 
 extern int D_001A0414;
 extern int D_001CFBF4;
@@ -1223,9 +2392,271 @@ int func_0021DB00(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021DB30);
+struct MenuScreen_1DB30;
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0021DE08); /* DrawSoundMenu */
+struct MenuPage_1DB30 {
+    s32 moby_anims[14];
+    struct MenuPage_1DB30 *back;
+    s32 state;
+    struct MenuScreen_1DB30 *focus;
+    struct MenuScreen_1DB30 *screens[14];
+    u8 pad_7C[0x4];
+    struct MenuScreen_1DB30 *pending_focus;
+    s32 confirmed;
+};
+
+struct MenuSystem_1DB30 {
+
+    s32 state;
+    struct MenuPage_1DB30 *current;
+    struct MenuPage_1DB30 *next;
+    s32 close_request;
+    s32 unk10;
+    s32 timer;
+    s32 saved_texture_start;
+    s32 current_gadget;
+    u8 pad_20[0x10];
+    s32 equipped[4];
+    u8 pad_40[0x60];
+
+    s32 stream_buffer[2];
+    s32 unkA8;
+    s32 unkAC;
+    s32 unkB0[3];
+    s32 read_offset;
+    s32 unkC0;
+    u8 pad_C4[0x4];
+    u8 loaded_animation[2];
+    u8 read_buffer_index;
+    u8 pending_buffer;
+    u32 streamed_animation_base;
+
+    struct MenuPage_1DB30 *previous;
+    s32 unkD4;
+    s32 unkD8;
+    s32 unkDC;
+    s32 unkE0;
+    s32 unkE4;
+    u8 pad_E8[0x4];
+    s32 unkEC;
+    struct MenuPage_1DB30 *unkF0;
+    s32 unkF4;
+    s32 unkF8;
+
+    s32 unkFC;
+    s32 unk100;
+    s32 unk104;
+    s32 help_text_buffer;
+    s32 unk10C;
+
+    s32 update_count;
+    u8 pad_114[0x4];
+
+    s32 resource_table_toggle;
+    s32 unk11C;
+    s32 unk120;
+
+    s32 close_locked;
+    s32 card_op_pending;
+    s32 card_op_text;
+    u8 pad_130[0x4];
+    s32 unk134;
+    s32 unk138;
+    s32 unk13C;
+    s32 unk140;
+    s32 last_resource_table_toggle;
+};
+
+extern struct MenuSystem_1DB30 D_001D5F70_1DB30 __asm__("D_001D5F70");
+
+struct SoundMenuInput_1DB30 {
+    u8 pad_0[0x1C0];
+    s32 held_buttons;
+    s32 pressed_buttons;
+};
+
+struct SoundMenuMixer_1DB30 {
+    u8 pad_0[0x48];
+    s32 group_0_volume;
+    s32 group_1_volume;
+    s32 group_2_volume;
+    s32 group_3_volume;
+    s32 group_4_volume;
+    s32 group_5_volume;
+};
+
+struct SoundMenu_1DB30 {
+    u8 pad_0[0x14];
+    s32 sound_owner;
+    u8 pad_18[0x18];
+    s32 flags;
+    u8 pad_34[0xC];
+    s32 selected_option;
+};
+
+extern struct SoundMenuInput_1DB30 D_0013CA40_1DB30 __asm__("D_0013CA40");
+extern struct SoundMenuMixer_1DB30 D_0013E650_1DB30 __asm__("D_0013E650");
+extern s32 D_001D6094_1DB30 __asm__("D_001D6094") NOT_SDA;
+extern s32 D_0015EEEC_1DB30 __asm__("D_0015EEEC") MACRO_ADDR;
+extern s32 D_0015EEF0_1DB30 __asm__("D_0015EEF0") MACRO_ADDR;
+extern s32 D_0015EEE8_1DB30 __asm__("D_0015EEE8") MACRO_ADDR;
+extern s32 D_001A0414_1DB30 __asm__("D_001A0414") NOT_SDA;
+extern s32 *D_001602E0_1DB30 __asm__("D_001602E0") MACRO_ADDR;
+extern s32 func_0022ED80_1DB30(s32 flags, s32 sound_index,
+                                           s32 sound_owner) __asm__("func_0022ED80");
+void func_0012E380_1DB30(s32 menu) __asm__("func_0012E380");
+
+/* Sound options page input: close and back, up/down over the three rows, left/right change
+   the sound or music volume by 3 (0..0x400) and push the new levels to the mixer groups,
+   confirm on the third row toggles mono/stereo.
+   Adapted from Lombyte (MIT) for PAL: src/textbin/ui/menus/audio/sound_options_menu.c, sound_options_menu. */
+s32 func_0021DB30(struct SoundMenu_1DB30 *menu) {
+    s32 previous_selection;
+    s32 *sound_volume_ptr;
+    s32 previous_music_volume;
+    s32 previous_sound_volume;
+    s32 scaled_sound_volume;
+
+    if ((D_0013CA40_1DB30.pressed_buttons & 0xD00) && (D_001D6094_1DB30 == 0)) {
+        return 1;
+    }
+    if (D_0013CA40_1DB30.pressed_buttons & 0x10) {
+        struct MenuPage_1DB30 *back_page = D_001D5F70_1DB30.current->back;
+
+        if (back_page != 0) {
+            D_001D5F70_1DB30.next = back_page;
+            return 0;
+        } else if (D_001D5F70_1DB30.close_locked == 0) {
+            return -1;
+        }
+    }
+    previous_selection = menu->selected_option;
+    if (D_0013CA40_1DB30.pressed_buttons & 0x1000) {
+        menu->selected_option = (previous_selection + 2) % 3;
+    }
+    if (D_0013CA40_1DB30.pressed_buttons & 0x4000) {
+        menu->selected_option = (menu->selected_option + 1) % 3;
+    }
+    if ((menu->selected_option != previous_selection) || (D_001D5F70_1DB30.current->pending_focus != 0)) {
+        func_0022ED80_1DB30(1, 0x11, menu->sound_owner);
+        if (menu->flags & 0x20) {
+            D_001A0414_1DB30 = D_001602E0_1DB30[menu->selected_option];
+        }
+    }
+    previous_music_volume = D_0015EEEC_1DB30;
+    previous_sound_volume = D_0015EEF0_1DB30;
+    sound_volume_ptr = &D_0015EEF0_1DB30;
+    if (D_0013CA40_1DB30.held_buttons & 0x2000) {
+        if (menu->selected_option == 0) {
+            D_0015EEF0_1DB30 = (previous_sound_volume + 3 < 0x401) ? previous_sound_volume + 3 : 0x400;
+        }
+        if (menu->selected_option == 1) {
+            D_0015EEEC_1DB30 = (previous_music_volume + 3 < 0x401) ? previous_music_volume + 3 : 0x400;
+        }
+    }
+    if (D_0013CA40_1DB30.held_buttons & 0x8000) {
+        if (menu->selected_option == 0) {
+            D_0015EEF0_1DB30 = (D_0015EEF0_1DB30 - 3 <= 0) ? 0 : D_0015EEF0_1DB30 - 3;
+        }
+        if (menu->selected_option == 1) {
+            D_0015EEEC_1DB30 = (D_0015EEEC_1DB30 - 3 <= 0) ? 0 : D_0015EEEC_1DB30 - 3;
+        }
+    }
+    if ((previous_music_volume != D_0015EEEC_1DB30) || (previous_sound_volume != *sound_volume_ptr)) {
+        D_0013E650_1DB30.group_0_volume = *sound_volume_ptr * 8 / 10;
+        D_0013E650_1DB30.group_2_volume = D_0013E650_1DB30.group_1_volume = D_0015EEEC_1DB30;
+        D_0013E650_1DB30.group_3_volume = *sound_volume_ptr * 7 / 10;
+        scaled_sound_volume = *sound_volume_ptr * 7 / 10;
+        D_0013E650_1DB30.group_4_volume = scaled_sound_volume;
+        D_0013E650_1DB30.group_5_volume = *sound_volume_ptr;
+    }
+    if (D_0013CA40_1DB30.pressed_buttons & 0x40) {
+        if (menu->selected_option == 2) {
+            D_0015EEE8_1DB30 = !D_0015EEE8_1DB30;
+        }
+        func_0012E380_1DB30(!D_0015EEE8_1DB30);
+        func_0022ED80_1DB30(0, 0x11, menu->sound_owner);
+    }
+    return 0;
+}
+
+typedef struct {
+    u8 pad0[0x20];
+    s32 width;
+    s32 height;
+    u8 pad28[0x18];
+    s32 selected_option;
+} SoundMenu_1DE08;
+
+extern s32 D_0015EEE8_1DE08 __asm__("D_0015EEE8") MACRO_ADDR;
+extern s32 D_0015EEEC_1DE08 __asm__("D_0015EEEC") MACRO_ADDR;
+extern s32 D_0015EEF0_1DE08 __asm__("D_0015EEF0") MACRO_ADDR;
+
+extern void func_001F4630_1DE08(s32) __asm__("func_001F4630");
+extern void func_001F4748_1DE08(void) __asm__("func_001F4748");
+extern void *func_001FE540_1DE08(s32) __asm__("func_001FE540");
+extern void func_001F6CF8_1DE08(s32, s32, u64, void *, s32) __asm__("func_001F6CF8");
+extern void func_001F68E8_1DE08(s32, s32, u64, void *, s32) __asm__("func_001F68E8");
+extern s32 func_00200198_1DE08(s32, s32) __asm__("func_00200198");
+extern void func_00201190_1DE08(s32, s32, s32, s32, s32, s32, s32, s32, s32,
+                                s32) __asm__("func_00201190");
+extern void func_00201640_1DE08(s32, s32, s32, s32, u64, s32) __asm__("func_00201640");
+
+/* Draws the sound options page: the sound and music volume rows, each a right-aligned label
+   and a slider bar, then the playback mode row; the selected row's label is yellow.
+   Adapted from Lombyte (MIT) for PAL: src/textbin/ui/menus/audio/draw_sound_menu.c, draw_sound_menu. */
+s32 func_0021DE08(SoundMenu_1DE08 *menu) {
+    s32 center_x;
+    s32 row_height;
+    s32 label_right;
+    s32 border_left;
+    s32 slider_left;
+    s32 slider_padding;
+    s32 slider_length;
+    s32 second_row;
+
+    row_height = menu->height >> 2;
+    center_x = menu->width >> 1;
+    func_001F4630_1DE08(0);
+    label_right = center_x - 8;
+    border_left = center_x + 7;
+    slider_left = center_x + 9;
+    slider_padding = center_x + 0x4A;
+
+    func_001F6CF8_1DE08(label_right, row_height - 8,
+                        menu->selected_option == 0 ? 0x8020FFFF : 0x80FFA888,
+                        func_001FE540_1DE08(0x5217), -1);
+    func_00201640_1DE08(border_left, row_height - 8, menu->width - 0x3F, row_height + 8,
+                        0x80696969, 0);
+    func_00201640_1DE08(slider_left, row_height - 6, menu->width - 0x41, row_height + 6,
+                        0x80383838, 0);
+    slider_length = (menu->width - slider_padding) * D_0015EEF0_1DE08 / 1024;
+    func_00201190_1DE08(func_00200198_1DE08(0xE99E, 8), slider_left << 4,
+                        (row_height - 6) << 4, (center_x + 8 + slider_length) << 4,
+                        (row_height + 5) << 4, 0, 0xA0, 0x1F0, 0x150, 0x80);
+
+    second_row = row_height + row_height;
+    func_001F6CF8_1DE08(label_right, second_row - 8,
+                        menu->selected_option == 1 ? 0x8020FFFF : 0x80FFA888,
+                        func_001FE540_1DE08(0x5218), -1);
+    func_00201640_1DE08(border_left, second_row - 8, menu->width - 0x3F, second_row + 8,
+                        0x80696969, 0);
+    func_00201640_1DE08(slider_left, second_row - 6, menu->width - 0x41, second_row + 6,
+                        0x80383838, 0);
+    slider_length = (menu->width - slider_padding) * D_0015EEEC_1DE08 / 1024;
+    func_00201190_1DE08(func_00200198_1DE08(0xE99E, 9), slider_left << 4,
+                        (second_row - 6) << 4, (center_x + 8 + slider_length) << 4,
+                        (second_row + 5) << 4, 0, 0xA0, 0x1F0, 0x150, 0x80);
+
+    second_row += row_height;
+    func_001F6CF8_1DE08(label_right, second_row - 8,
+                        menu->selected_option == 2 ? 0x8020FFFF : 0x80FFA888,
+                        func_001FE540_1DE08(0x5219), -1);
+    func_001F68E8_1DE08(center_x + 8, second_row - 8, 0x80FFA888,
+                        func_001FE540_1DE08(D_0015EEE8_1DE08 != 0 ? 0x521B : 0x521A), -1);
+    func_001F4748_1DE08();
+    return 2;
+}
 
 typedef struct {
     unsigned short v;
@@ -3003,7 +4434,371 @@ void func_002208F8(int x, int y, int flag) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002209A0);
+struct MenuScreen_209A0;
+
+struct MenuPage_209A0 {
+    s32 moby_anims[14];
+    struct MenuPage_209A0 *back;
+    s32 state;
+    struct MenuScreen_209A0 *focus;
+    struct MenuScreen_209A0 *screens[14];
+    u8 pad_7C[0x4];
+    struct MenuScreen_209A0 *pending_focus;
+    s32 confirmed;
+};
+
+struct MenuSystem_209A0 {
+
+    s32 state;
+    struct MenuPage_209A0 *current;
+    struct MenuPage_209A0 *next;
+    s32 close_request;
+    s32 unk10;
+    s32 timer;
+    s32 saved_texture_start;
+    s32 current_gadget;
+    u8 pad_20[0x10];
+    s32 equipped[4];
+    u8 pad_40[0x60];
+
+    s32 stream_buffer[2];
+    s32 unkA8;
+    s32 unkAC;
+    s32 unkB0[3];
+    s32 read_offset;
+    s32 unkC0;
+    u8 pad_C4[0x4];
+    u8 loaded_animation[2];
+    u8 read_buffer_index;
+    u8 pending_buffer;
+    u32 streamed_animation_base;
+
+    struct MenuPage_209A0 *previous;
+    s32 unkD4;
+    s32 unkD8;
+    s32 unkDC;
+    s32 unkE0;
+    s32 unkE4;
+    u8 pad_E8[0x4];
+    s32 unkEC;
+    struct MenuPage_209A0 *unkF0;
+    s32 unkF4;
+    s32 unkF8;
+
+    s32 unkFC;
+    s32 unk100;
+    s32 unk104;
+    s32 help_text_buffer;
+    s32 unk10C;
+
+    s32 update_count;
+    u8 pad_114[0x4];
+
+    s32 resource_table_toggle;
+    s32 unk11C;
+    s32 unk120;
+
+    s32 close_locked;
+    s32 card_op_pending;
+    s32 card_op_text;
+    u8 pad_130[0x4];
+    s32 unk134;
+    s32 unk138;
+    s32 unk13C;
+    s32 unk140;
+    s32 last_resource_table_toggle;
+    u8 pad_148[0xC];
+    s32 unk154;               /* 0x154: PAL only */
+};
+
+extern struct MenuSystem_209A0 D_001D5F70_209A0 __asm__("D_001D5F70");
+
+struct MenuGridCell_209A0 {
+    u16 icon;
+    s16 frame;
+    s16 kind;
+    s16 id;
+    s16 stream_entry;
+};
+
+struct MenuItemGridData_209A0 {
+    s32 flags;
+    f32 margin_x;
+    f32 margin_y;
+    s32 selected_cell;
+    s32 rows;
+    s32 cols;
+    struct MenuGridCell_209A0 *cells;
+    struct MenuScreen_209A0 *up;
+    struct MenuScreen_209A0 *down;
+    struct MenuScreen_209A0 *left;
+    struct MenuScreen_209A0 *right;
+};
+
+struct MenuSaveSlotData_209A0 {
+    s32 flags;
+    u8 pad_34[0xC];
+    s32 slot;
+    u8 pad_44[0x4];
+    s32 save_data;
+    s32 step;
+};
+
+struct MenuTextItem_209A0 {
+    s16 text;
+    s16 action;
+    union {
+        s32 value;
+        struct {
+            u16 lo;
+            s16 hi;
+        } half;
+    } param;
+    s16 subtext;
+    s16 fade_timer;
+};
+
+struct MenuTextListData_209A0 {
+    s32 flags;
+    struct MenuTextItem_209A0 *items;
+    struct MenuScreen_209A0 *up;
+    struct MenuScreen_209A0 *down;
+    s32 selected;
+    s32 scroll;
+};
+
+struct MenuStreamEntry_209A0 {
+    s32 sector;
+    s32 sector_count;
+};
+
+struct MenuStreamData_209A0 {
+    struct MenuStreamEntry_209A0 *entries;
+    s32 flags;
+    s32 texture_width;
+    s32 texture_height;
+    s32 *language_base;
+    s32 state;
+    s32 buffer[2];
+    s32 loaded_entry[2];
+    s32 fixed_entry;
+    s32 elapsed_frames;
+    s32 read_offset;
+};
+
+struct MenuScreen_209A0 {
+    s32 (*update)(struct MenuScreen_209A0 *);
+    u8 pad_4[0x4];
+    void (*enter)(struct MenuScreen_209A0 *, s32);
+    void (*leave)(struct MenuScreen_209A0 *, s32);
+    s32 unk10;
+    s32 moby;
+    s32 x;
+    s32 y;
+    s32 width;
+    s32 height;
+    u8 pad_28[0x8];
+    union {
+        struct MenuItemGridData_209A0 grid;
+        struct MenuSaveSlotData_209A0 save;
+        struct MenuTextListData_209A0 list;
+        struct MenuStreamData_209A0 stream;
+    } data;
+};
+
+struct MapIcon_209A0;
+struct MapMarker_209A0;
+struct MapHdr_209A0;
+
+struct MapState_209A0 {
+    u8 pad0[0x8];
+    s32 unk8;
+    u8 *mask;
+    u8 pad10[0x4];
+    s32 unk14;
+    s32 z;
+    struct MapMarker_209A0 *markers;
+    struct MapIcon_209A0 *icons;
+    s32 unk24;
+    s32 unk28;
+    s32 unk2C;
+    struct {
+        s32 unk0;
+        u8 pad4[0xC];
+    } unk30[8];
+    s32 marker_count;
+    f32 zoom[20];
+    s32 pan_x[20];
+    s32 pan_y[20];
+    u8 pad1A4[0x80];
+    s32 level;
+    s32 loaded;
+    s32 unk22C;
+    s32 unk230;
+    s32 unk234;
+    u8 pad238[0x4];
+    struct MapHdr_209A0 *hdr;
+    s32 map_image_vram;
+    s32 tex_clut_vram;
+    s32 tex0_vram;
+    s32 tex1_vram;
+    s32 tex2_vram;
+    u8 pad254[0x4];
+    s64 tex0;
+    s64 tex1;
+    s64 tex2;
+    u8 pad270[0x8];
+    s32 slot[5];
+    s32 slot_id[5];
+    s32 sel;
+    s32 slot_size[5];
+};
+
+extern struct MapState_209A0 D_001A01F0_209A0 __asm__("D_001A01F0");
+
+struct ClutImage_209A0 {
+    u8 pad0[0x8];
+    s32 width;
+    s32 height;
+    u8 pad10[0x10];
+    u8 clut[0x400];
+    u8 pixels[1];
+};
+
+/* Memory card state at D_0013D390, as far as this function reads it (PAL offsets). */
+struct MemoryCardState_209A0 {
+    u8 pad_0[0x20];
+    struct {
+        s32 unk0;             /* resource of the save in this slot, -1 none */
+        u8 pad_4[0x18];
+    } entries[5];             /* 0x20 */
+    u8 pad_AC[0x30];
+    s32 state;                /* 0xDC */
+    s32 sub;
+    s32 pending_state;        /* 0xE4 */
+};
+
+extern struct MemoryCardState_209A0 D_0013D390_209A0 __asm__("D_0013D390");
+
+extern s16 D_001517D8_209A0[] __asm__("D_001517D8");
+extern s32 D_001A0414_209A0[] __asm__("D_001A0414");
+
+extern s32 func_001F9968_209A0(s32) __asm__("func_001F9968");
+extern s64 func_00205660_209A0(s32, s32, u8 *, u8 *, s32, s32) __asm__("func_00205660");
+extern void func_0020C2F8_209A0(void) __asm__("func_0020C2F8");
+extern void func_0020C468_209A0(u8 *, s32) __asm__("func_0020C468");
+extern s32 func_00217628_209A0(u8 *, s32, s32) __asm__("func_00217628");
+extern s32 func_00227018_209A0(s32) __asm__("func_00227018");
+extern s32 func_00227068_209A0(s32) __asm__("func_00227068");
+extern s32 func_002270B0_209A0(s32) __asm__("func_002270B0");
+
+/* Resource stream screen update for a single buffer: picks the entry from the screen's flags,
+   streams it in, unpacks it and binds the image it holds as the map screen's first texture.
+   Adapted from Lombyte (MIT) for PAL: src/ui/menus/fun_0021f990.c, FUN_0021f990. */
+s32 func_002209A0(struct MenuScreen_209A0 *stream) {
+    s32 flags;
+    s32 idx;
+    s32 r;
+    s32 x;
+    s32 y;
+    u8 *p;
+    struct ClutImage_209A0 *b;
+    u8 *p20;
+    u8 *p420;
+
+    flags = stream->data.stream.flags;
+    if (flags & 1) {
+        idx = stream->data.stream.fixed_entry;
+        if (idx == -1) {
+            return 0;
+        }
+    } else if (flags & 2) {
+        idx = D_001A0414_209A0[0];
+    } else if (flags & 4) {
+        idx = D_001D5F70_209A0.current->focus->data.grid.selected_cell;
+    } else if (flags & 0x100) {
+        idx = D_001D5F70_209A0.current->focus->data.save.slot;
+        if (idx <= -1) {
+            idx = 0;
+        }
+        if (idx >= 5) {
+            idx = 4;
+        }
+        if (D_0013D390_209A0.state < 3 && D_0013D390_209A0.pending_state < 0 && D_001D5F70_209A0.unk154 >= 0xB) {
+            if (stream->data.stream.state == -1) {
+                stream->data.stream.state = 0;
+            }
+            idx = D_0013D390_209A0.entries[idx].unk0;
+        } else {
+            stream->data.stream.state = -1;
+        }
+    } else {
+        idx = D_001D5F70_209A0.current->focus->data.list.selected;
+        if (idx <= -1) {
+            idx = 0;
+        }
+    }
+
+    switch (stream->data.stream.state) {
+    case 0:
+    case 2:
+        if (idx == stream->data.stream.loaded_entry[0]) {
+            break;
+        }
+        if (stream->data.stream.buffer[0] == 0) {
+            break;
+        }
+        if (D_001517D8_209A0[0] != 0) {
+            break;
+        }
+        if (stream->data.stream.entries[idx].sector_count == 0) {
+            break;
+        }
+        p = (u8 *)stream->data.stream.buffer[0];
+        if (stream->data.stream.flags & 0x20) {
+            r = func_00227018_209A0(stream->data.stream.buffer[0]) -
+                (stream->data.stream.entries[idx].sector_count << 11);
+            stream->data.stream.read_offset = r;
+            p += r;
+        }
+        if (stream->data.stream.flags & 0x10) {
+            r = func_00217628_209A0(p, stream->data.stream.entries[idx].sector,
+                                        stream->data.stream.entries[idx].sector_count);
+        } else {
+            r = func_00217628_209A0(p, stream->data.stream.entries[idx].sector,
+                                        stream->data.stream.entries[idx].sector_count);
+        }
+        if (r != 0) {
+            func_00227068_209A0(stream->data.stream.buffer[0]);
+            stream->data.stream.loaded_entry[0] = idx;
+            stream->data.stream.state++;
+        } else {
+            stream->data.stream.state = -1;
+        }
+        break;
+    case 1:
+    case 3:
+        if (D_001517D8_209A0[0] != 0) {
+            break;
+        }
+        func_002270B0_209A0(stream->data.stream.buffer[0]);
+        if (stream->data.stream.flags & 0x20) {
+            func_0020C468_209A0((u8 *)stream->data.stream.buffer[0] + stream->data.stream.read_offset,
+                         stream->data.stream.buffer[0]);
+            stream->data.stream.read_offset = 0;
+        }
+        b = (struct ClutImage_209A0 *)stream->data.stream.buffer[0];
+        p20 = b->clut;
+        p420 = b->pixels;
+        x = func_001F9968_209A0(b->width);
+        y = func_001F9968_209A0(b->height);
+        D_001A01F0_209A0.tex0 = func_00205660_209A0(x, y, p20, p420, D_001A01F0_209A0.tex_clut_vram, D_001A01F0_209A0.tex0_vram);
+        func_0020C2F8_209A0();
+        stream->data.stream.state = 2;
+        break;
+    }
+    return 0;
+}
 
 extern void func_001F5800(int, int, int, int, int, int, int, int, long,
                           long);
@@ -3060,7 +4855,492 @@ int func_00220DA0(void *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00220DF0);
+struct MenuScreen_20DF0;
+
+struct MenuPage_20DF0 {
+    s32 moby_anims[14];
+    struct MenuPage_20DF0 *back;
+    s32 state;
+    struct MenuScreen_20DF0 *focus;
+    struct MenuScreen_20DF0 *screens[14];
+    u8 pad_7C[0x4];
+    struct MenuScreen_20DF0 *pending_focus;
+    s32 confirmed;
+};
+
+struct MenuSystem_20DF0 {
+
+    s32 state;
+    struct MenuPage_20DF0 *current;
+    struct MenuPage_20DF0 *next;
+    s32 close_request;
+    s32 unk10;
+    s32 timer;
+    s32 saved_texture_start;
+    s32 current_gadget;
+    u8 pad_20[0x10];
+    s32 equipped[4];
+    u8 pad_40[0x60];
+
+    s32 stream_buffer[2];
+    s32 unkA8;
+    s32 unkAC;
+    s32 unkB0[3];
+    s32 read_offset;
+    s32 unkC0;
+    u8 pad_C4[0x4];
+    u8 loaded_animation[2];
+    u8 read_buffer_index;
+    u8 pending_buffer;
+    u32 streamed_animation_base;
+
+    struct MenuPage_20DF0 *previous;
+    s32 unkD4;
+    s32 unkD8;
+    s32 unkDC;
+    s32 unkE0;
+    s32 unkE4;
+    u8 pad_E8[0x4];
+    s32 unkEC;
+    struct MenuPage_20DF0 *unkF0;
+    s32 unkF4;
+    s32 unkF8;
+
+    s32 unkFC;
+    s32 unk100;
+    s32 unk104;
+    s32 help_text_buffer;
+    s32 unk10C;
+
+    s32 update_count;
+    u8 pad_114[0x4];
+
+    s32 resource_table_toggle;
+    s32 unk11C;
+    s32 unk120;
+
+    s32 close_locked;
+    s32 card_op_pending;
+    s32 card_op_text;
+    u8 pad_130[0x4];
+    s32 unk134;
+    s32 unk138;
+    s32 unk13C;
+    s32 unk140;
+    s32 last_resource_table_toggle;
+    u8 pad_148[0xC];
+    s32 unk154;               /* 0x154: PAL only */
+};
+
+extern struct MenuSystem_20DF0 D_001D5F70_20DF0 __asm__("D_001D5F70");
+
+struct MenuGridCell_20DF0 {
+    u16 icon;
+    s16 frame;
+    s16 kind;
+    s16 id;
+    s16 stream_entry;
+};
+
+struct MenuItemGridData_20DF0 {
+    s32 flags;
+    f32 margin_x;
+    f32 margin_y;
+    s32 selected_cell;
+    s32 rows;
+    s32 cols;
+    struct MenuGridCell_20DF0 *cells;
+    struct MenuScreen_20DF0 *up;
+    struct MenuScreen_20DF0 *down;
+    struct MenuScreen_20DF0 *left;
+    struct MenuScreen_20DF0 *right;
+};
+
+struct MenuSaveSlotData_20DF0 {
+    s32 flags;
+    u8 pad_34[0xC];
+    s32 slot;
+    u8 pad_44[0x4];
+    s32 save_data;
+    s32 step;
+};
+
+struct MenuTextItem_20DF0 {
+    s16 text;
+    s16 action;
+    union {
+        s32 value;
+        struct {
+            u16 lo;
+            s16 hi;
+        } half;
+    } param;
+    s16 subtext;
+    s16 fade_timer;
+};
+
+struct MenuTextListData_20DF0 {
+    s32 flags;
+    struct MenuTextItem_20DF0 *items;
+    struct MenuScreen_20DF0 *up;
+    struct MenuScreen_20DF0 *down;
+    s32 selected;
+    s32 scroll;
+};
+
+struct MenuStreamEntry_20DF0 {
+    s32 sector;
+    s32 sector_count;
+};
+
+struct MenuStreamData_20DF0 {
+    struct MenuStreamEntry_20DF0 *entries;
+    s32 flags;
+    s32 texture_width;
+    s32 texture_height;
+    s32 *language_base;
+    s32 state;
+    s32 buffer[2];
+    s32 loaded_entry[2];
+    s32 fixed_entry;
+    s32 elapsed_frames;
+    s32 read_offset;
+};
+
+struct MenuScreen_20DF0 {
+    s32 (*update)(struct MenuScreen_20DF0 *);
+    u8 pad_4[0x4];
+    void (*enter)(struct MenuScreen_20DF0 *, s32);
+    void (*leave)(struct MenuScreen_20DF0 *, s32);
+    s32 unk10;
+    s32 moby;
+    s32 x;
+    s32 y;
+    s32 width;
+    s32 height;
+    u8 pad_28[0x8];
+    union {
+        struct MenuItemGridData_20DF0 grid;
+        struct MenuSaveSlotData_20DF0 save;
+        struct MenuTextListData_20DF0 list;
+        struct MenuStreamData_20DF0 stream;
+    } data;
+};
+
+/* Memory card state at D_0013D390, as far as this function reads it (PAL offsets). */
+struct MemoryCardState_20DF0 {
+    u8 pad_0[0x8];
+    s32 type;                 /* 0x08: card 0's type, 2 = a PS2 card */
+    u8 pad_C[0x14];
+    struct {
+        s32 unk0;             /* resource of the save in this slot, -1 none */
+        u8 pad_4[0x18];
+    } entries[5];             /* 0x20 */
+    u8 pad_AC[0x30];
+    s32 state;                /* 0xDC */
+    s32 sub;
+    s32 pending_state;        /* 0xE4 */
+};
+
+extern struct MemoryCardState_20DF0 D_0013D390_20DF0 __asm__("D_0013D390");
+
+typedef struct {
+    s32 values[6];
+} LanguageResourceOffsets_20DF0;
+extern LanguageResourceOffsets_20DF0 D_001E8B00_20DF0 __asm__("D_001E8B00");
+
+extern u8 D_0013D510_20DF0[] __asm__("D_0013D510");
+extern s16 D_001517D8_20DF0[] __asm__("D_001517D8");
+extern s32 D_0015EE88_20DF0 __asm__("D_0015EE88") MACRO_ADDR;
+extern s32 D_001A0414_20DF0[] __asm__("D_001A0414");
+extern s32 func_001F98C0_20DF0() __asm__("func_001F98C0");
+extern s32 func_0020C468_20DF0() __asm__("func_0020C468");
+extern s32 func_00217628_20DF0() __asm__("func_00217628");
+/* Retail keeps both flag-selected call sites of this read helper; a second C name for
+   the same function keeps the two calls from being cross-jumped. */
+extern s32 func_00217628_20DF0b() __asm__("func_00217628");
+extern s32 func_00227018_20DF0() __asm__("func_00227018");
+extern s32 func_00227068_20DF0() __asm__("func_00227068");
+extern s32 func_002270B0_20DF0() __asm__("func_002270B0");
+
+/* Resource stream screen update: picks the entry to show from the screen's flags (fixed, the
+   focus list or grid selection, the save slot's level, a timed cycle, the language), then runs
+   the two-buffer read state machine that streams it in and unpacks it.
+   Adapted from Lombyte (MIT) for PAL: src/textbin/fun_0021fdc8.c, update_menu_resource_stream. */
+s32 func_00220DF0(struct MenuScreen_20DF0 *stream) {
+    LanguageResourceOffsets_20DF0 language_offsets;
+    s32 *completed_buffer_slot;
+    s32 primary_entry_offset;
+    s32 secondary_entry_offset;
+    s32 replacement_entry_offset;
+    s32 stream_flags;
+    s32 slot_index;
+    s32 primary_read_offset;
+    s32 secondary_read_offset;
+    s32 replacement_read_offset;
+    s32 stream_state;
+    s32 primary_buffer;
+    s32 completed_buffer;
+    s32 secondary_buffer;
+    s32 replacement_buffer;
+    s32 selection_flags;
+    s32 resource_index;
+    s32 primary_read_address;
+    s32 secondary_read_address;
+    s32 replacement_read_address;
+    s32 primary_read_started;
+    s32 secondary_read_started;
+    s32 replacement_read_started;
+    struct MenuStreamEntry_20DF0 *primary_entry;
+    struct MenuStreamEntry_20DF0 *primary_entry_alternate;
+    struct MenuStreamEntry_20DF0 *secondary_entry;
+    struct MenuStreamEntry_20DF0 *secondary_entry_alternate;
+    struct MenuStreamEntry_20DF0 *replacement_entry;
+    struct MenuStreamEntry_20DF0 *replacement_entry_alternate;
+    struct MenuScreen_20DF0 *item_selection;
+    struct MenuScreen_20DF0 *group_selection;
+    u8 *item_table_entry;
+
+    selection_flags = stream->data.stream.flags;
+    stream->data.stream.elapsed_frames = (s32)(stream->data.stream.elapsed_frames + 1);
+    if (selection_flags & 1) {
+        resource_index = stream->data.stream.fixed_entry;
+        if (resource_index == -1) {
+            return 0;
+        }
+        goto process_stream_state;
+    } else {
+        if (selection_flags & 2) {
+            resource_index = D_001A0414_20DF0[0];
+        } else if (selection_flags & 4) {
+            resource_index = D_001D5F70_20DF0.current->focus->data.grid.selected_cell;
+        } else if (selection_flags & 0x100) {
+            resource_index = D_001D5F70_20DF0.current->focus->data.save.slot;
+            if (resource_index < 0) {
+                resource_index = 0;
+            }
+            if (resource_index >= 5) {
+                resource_index = 4;
+            }
+            if (D_0013D390_20DF0.state < 3) {
+                if (D_0013D390_20DF0.pending_state < 0 && D_001D5F70_20DF0.unk154 >= 0xB) {
+                    if (stream->data.stream.state == -1) {
+                        stream->data.stream.state = 0;
+                    }
+                    resource_index =
+                        *(s32 *)((u8 *)&D_0013D390_20DF0 + resource_index * 0x1C + 0x20);
+                    if (resource_index == -1) {
+                        stream->data.stream.state = resource_index;
+                    }
+                    if (D_0013D390_20DF0.type != 2) {
+                        stream->data.stream.state = -1;
+                    }
+                } else {
+                    goto disable_stream;
+                }
+            } else {
+                goto disable_stream;
+            }
+        } else if (selection_flags & 8) {
+            group_selection = D_001D5F70_20DF0.current->focus;
+            resource_index = (s32) * (s16 *)((u8 *)((group_selection->data.grid.selected_cell * 0xA) +
+                                                    (s32)group_selection->data.grid.cells) +
+                                             0x8);
+            if (group_selection->data.grid.rows == 0) {
+            disable_stream:
+                stream->data.stream.state = -1;
+            }
+        } else if (selection_flags & 0x400) {
+            resource_index = (s32)((s32)stream->data.stream.elapsed_frames / func_001F98C0_20DF0(0x12C)) % 19;
+        } else if (selection_flags & 0x1000) {
+            language_offsets = D_001E8B00_20DF0;
+            resource_index = *stream->data.stream.language_base +
+                             language_offsets.values[D_0015EE88_20DF0];
+        } else {
+            item_selection = D_001D5F70_20DF0.current->focus;
+            resource_index = item_selection->data.list.selected;
+            if (resource_index < 0) {
+                resource_index = 0;
+            }
+            if (selection_flags & 0x4000) {
+                item_table_entry = (u8 *)item_selection->data.list.items;
+                item_table_entry += resource_index * 0xC;
+                resource_index = (*(s16 *)(item_table_entry + 2) == 2) ? 9 : resource_index;
+            }
+        }
+    process_stream_state:
+        if (stream->data.stream.flags & 0x2000) {
+            resource_index = (D_0013D510_20DF0[resource_index] == 0) ? 0x1E : resource_index;
+        }
+        stream_state = stream->data.stream.state;
+        switch (stream_state) {
+        case 0:
+            primary_buffer = stream->data.stream.buffer[0];
+            if (primary_buffer != 0 && D_001517D8_20DF0[0] == 0) {
+                primary_entry_offset = resource_index * 8;
+                if (*(s32 *)((u8 *)(primary_entry_offset + (s32)stream->data.stream.entries) + 0x4) !=
+                    0) {
+                    primary_read_address = primary_buffer;
+                    if (stream->data.stream.flags & 0x20) {
+                        primary_read_offset =
+                            func_00227018_20DF0(primary_buffer) -
+                            (*(s32 *)((u8 *)(primary_entry_offset + (s32)stream->data.stream.entries) +
+                                      0x4)
+                             << 0xB);
+                        stream->data.stream.read_offset = primary_read_offset;
+                        primary_read_address += primary_read_offset;
+                    }
+                    if (stream->data.stream.flags & 0x10) {
+                        primary_entry = (struct MenuStreamEntry_20DF0 *)(primary_entry_offset +
+                                                                     (s32)stream->data.stream.entries);
+                        primary_read_started = func_00217628_20DF0(
+                            primary_read_address, primary_entry->sector, primary_entry->sector_count);
+                    } else {
+                        primary_entry_alternate =
+                            (struct MenuStreamEntry_20DF0 *)(primary_entry_offset +
+                                                         (s32)stream->data.stream.entries);
+                        primary_read_started = func_00217628_20DF0b(
+                            primary_read_address, primary_entry_alternate->sector,
+                            primary_entry_alternate->sector_count);
+                    }
+                    if (primary_read_started != 0) {
+                        func_00227068_20DF0(stream->data.stream.buffer[0]);
+                        stream->data.stream.loaded_entry[0] = resource_index;
+                        stream->data.stream.state = stream->data.stream.state + 1;
+                    } else {
+                        stream->data.stream.state = -1;
+                    }
+                }
+            }
+            break;
+        case 1:
+        case 3:
+        case 5:
+            if (D_001517D8_20DF0[0] == 0) {
+                stream_flags = stream->data.stream.flags;
+                if (stream_flags & 0x20) {
+                    completed_buffer_slot = &stream->data.stream.buffer[0];
+                    slot_index = stream->data.stream.state == 3;
+                    completed_buffer_slot += slot_index;
+                    func_002270B0_20DF0(*completed_buffer_slot);
+                    completed_buffer = *completed_buffer_slot;
+                    func_0020C468_20DF0(completed_buffer + stream->data.stream.read_offset, completed_buffer);
+                    stream->data.stream.read_offset = 0;
+                }
+                stream->data.stream.state = stream->data.stream.state + 1;
+            }
+            break;
+        case 6:
+            stream->data.stream.state = 2;
+            /* fallthrough */
+        case 2:
+            if (resource_index != stream->data.stream.loaded_entry[0]) {
+                if (resource_index == stream->data.stream.loaded_entry[1]) {
+                    stream->data.stream.state = 4;
+                } else {
+                    secondary_buffer = stream->data.stream.buffer[1];
+                    if (secondary_buffer == 0) {
+                        stream->data.stream.state = 0;
+                    } else if (D_001517D8_20DF0[0] == 0) {
+                        secondary_entry_offset = resource_index * 8;
+                        if (*(s32 *)((u8 *)(secondary_entry_offset + (s32)stream->data.stream.entries) +
+                                     0x4) != 0) {
+                            secondary_read_address = secondary_buffer;
+                            if (stream->data.stream.flags & 0x20) {
+                                secondary_read_offset =
+                                    func_00227018_20DF0(secondary_buffer) -
+                                    (*(s32 *)((u8 *)(secondary_entry_offset +
+                                                     (s32)stream->data.stream.entries) +
+                                              0x4)
+                                     << 0xB);
+                                stream->data.stream.read_offset = secondary_read_offset;
+                                secondary_read_address += secondary_read_offset;
+                            }
+                            if (stream->data.stream.flags & 0x10) {
+                                secondary_entry =
+                                    (struct MenuStreamEntry_20DF0 *)(secondary_entry_offset +
+                                                                 (s32)stream->data.stream.entries);
+                                secondary_read_started = func_00217628_20DF0(
+                                    secondary_read_address, secondary_entry->sector,
+                                    secondary_entry->sector_count);
+                            } else {
+                                secondary_entry_alternate =
+                                    (struct MenuStreamEntry_20DF0 *)(secondary_entry_offset +
+                                                                 (s32)stream->data.stream.entries);
+                                secondary_read_started = func_00217628_20DF0b(
+                                    secondary_read_address, secondary_entry_alternate->sector,
+                                    secondary_entry_alternate->sector_count);
+                            }
+                            if (secondary_read_started != 0) {
+                                func_00227068_20DF0(stream->data.stream.buffer[1]);
+                                stream->data.stream.loaded_entry[1] = resource_index;
+                                stream->data.stream.state = stream->data.stream.state + 1;
+                            } else {
+                                stream->data.stream.state = -1;
+                            }
+                        }
+                    }
+                }
+            }
+            break;
+        case 4:
+            if (resource_index != stream->data.stream.loaded_entry[1]) {
+                if (resource_index == stream->data.stream.loaded_entry[0]) {
+                    stream->data.stream.state = 2;
+                } else {
+                    replacement_buffer = stream->data.stream.buffer[0];
+                    if (replacement_buffer == 0) {
+                        stream->data.stream.state = -1;
+                    } else if (D_001517D8_20DF0[0] == 0) {
+                        replacement_entry_offset = resource_index * 8;
+                        if (*(s32 *)((u8 *)(replacement_entry_offset +
+                                            (s32)stream->data.stream.entries) +
+                                     0x4) != 0) {
+                            replacement_read_address = replacement_buffer;
+                            if (stream->data.stream.flags & 0x20) {
+                                replacement_read_offset =
+                                    func_00227018_20DF0(replacement_buffer) -
+                                    (*(s32 *)((u8 *)(replacement_entry_offset +
+                                                     (s32)stream->data.stream.entries) +
+                                              0x4)
+                                     << 0xB);
+                                stream->data.stream.read_offset = replacement_read_offset;
+                                replacement_read_address += replacement_read_offset;
+                            }
+                            if (stream->data.stream.flags & 0x10) {
+                                replacement_entry =
+                                    (struct MenuStreamEntry_20DF0 *)(replacement_entry_offset +
+                                                                 (s32)stream->data.stream.entries);
+                                replacement_read_started = func_00217628_20DF0(
+                                    replacement_read_address, replacement_entry->sector,
+                                    replacement_entry->sector_count);
+                            } else {
+                                replacement_entry_alternate =
+                                    (struct MenuStreamEntry_20DF0 *)(replacement_entry_offset +
+                                                                 (s32)stream->data.stream.entries);
+                                replacement_read_started = func_00217628_20DF0b(
+                                    replacement_read_address,
+                                    replacement_entry_alternate->sector,
+                                    replacement_entry_alternate->sector_count);
+                            }
+                            if (replacement_read_started != 0) {
+                                func_00227068_20DF0(stream->data.stream.buffer[0]);
+                                stream->data.stream.loaded_entry[0] = resource_index;
+                                stream->data.stream.state = stream->data.stream.state + 1;
+                            } else {
+                                stream->data.stream.state = -1;
+                            }
+                        }
+                    }
+                }
+            }
+            break;
+        default:
+            break;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00221380);
 
@@ -4436,7 +6716,89 @@ int func_002239F0(char *arg0) {
     return 2;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00223B40); /* DrawEndScreenMenuMaybe */
+struct ThreeOptionMenu_23B40 {
+    u8 pad0[0x20];
+    s32 menu_width;
+    s32 height;
+    s32 spacing_divisor;
+};
+
+extern u8 D_001DF3D0_23B40[] __asm__("D_001DF3D0");
+extern u8 D_001DF770_23B40[] __asm__("D_001DF770");
+extern void func_001F4630_23B40(s32) __asm__("func_001F4630");
+extern void func_001F4748_23B40(void) __asm__("func_001F4748");
+extern char *func_001FE540_23B40(s32) __asm__("func_001FE540");
+extern s32 func_002160E0_23B40(void) __asm__("func_002160E0");
+extern s32 func_00216150_23B40(void) __asm__("func_00216150");
+extern s32 func_00216198_23B40(void) __asm__("func_00216198");
+extern s32 func_00116248_23B40(char *, const char *, ...) __asm__("func_00116248");
+extern s32 func_001F6600_23B40(char *, s32) __asm__("func_001F6600");
+extern void func_001F65A8_23B40(void) __asm__("func_001F65A8");
+extern void func_001F6598_23B40(void) __asm__("func_001F6598");
+extern void func_001F6EA8_23B40(s32, s32, u64, char *, s32) __asm__("func_001F6EA8");
+extern void func_002208F8_23B40(s32, s32, s32) __asm__("func_002208F8");
+extern u64 func_001F4868_23B40(s32) __asm__("func_001F4868");
+extern void func_001F6668_23B40(s32, s32, u64, char *, s32, s64, u8 *) __asm__("func_001F6668");
+
+/* Draws the three completion counters page (n of 40, n of 10, n of 30): measures the three
+   lines to pick the regular or the narrow font, then a centred title and each line with its
+   tick mark when complete.
+   Adapted from Lombyte (MIT) for PAL: src/textbin/ui/menus/draw_localized_three_option_menu.c, draw_localized_three_option_menu. */
+s32 func_00223B40(struct ThreeOptionMenu_23B40 *menu) {
+    char text_buffer[0x50];
+    s32 font_texture_index;
+    u8 *glyphs;
+    s32 maximum_text_width;
+    s32 measured_width;
+    s32 line_spacing;
+    s32 draw_y;
+
+    font_texture_index = 1;
+    func_001F4630_23B40(0);
+    line_spacing = menu->height / 5;
+    draw_y = menu->height / 5 - 8;
+    maximum_text_width = 0;
+    func_00116248_23B40(text_buffer, func_001FE540_23B40(0x5234), func_002160E0_23B40(), 0x28);
+    measured_width = func_001F6600_23B40(text_buffer, -1);
+    if (maximum_text_width < measured_width) {
+        maximum_text_width = measured_width;
+    }
+    func_00116248_23B40(text_buffer, func_001FE540_23B40(0x5235), func_00216150_23B40(), 10);
+    measured_width = func_001F6600_23B40(text_buffer, -1);
+    if (maximum_text_width < measured_width) {
+        maximum_text_width = measured_width;
+    }
+    func_00116248_23B40(text_buffer, func_001FE540_23B40(0x5236), func_00216198_23B40(), 0x1E);
+    measured_width = func_001F6600_23B40(text_buffer, -1);
+    if (maximum_text_width < measured_width) {
+        maximum_text_width = measured_width;
+    }
+    glyphs = D_001DF3D0_23B40;
+    if (menu->menu_width < maximum_text_width + 0x18) {
+        font_texture_index = 2;
+        glyphs = D_001DF770_23B40;
+    }
+    func_001F65A8_23B40();
+    func_001F6EA8_23B40(menu->menu_width >> 1, draw_y, 0x80FFA888, func_001FE540_23B40(0x5233), -1);
+    draw_y += line_spacing;
+    func_002208F8_23B40(0xB, draw_y + 9, func_002160E0_23B40() == 0x28);
+    func_00116248_23B40(text_buffer, func_001FE540_23B40(0x5234), func_002160E0_23B40(), 0x28);
+    func_001F6668_23B40(0x14, draw_y, 0x80FFA888, text_buffer, -1, func_001F4868_23B40(font_texture_index),
+                        glyphs);
+    draw_y += line_spacing;
+    func_002208F8_23B40(0xB, draw_y + 9, func_00216150_23B40() == 10);
+    func_00116248_23B40(text_buffer, func_001FE540_23B40(0x5235), func_00216150_23B40(), 10);
+    func_001F6668_23B40(0x14, draw_y, 0x80FFA888, text_buffer, -1, func_001F4868_23B40(font_texture_index),
+                        glyphs);
+    draw_y += line_spacing;
+    func_002208F8_23B40(0xB, draw_y + 9, func_00216198_23B40() == 0x1E);
+    func_00116248_23B40(text_buffer, func_001FE540_23B40(0x5236), func_00216198_23B40(), 0x1E);
+    func_001F6668_23B40(0x14, draw_y, 0x80FFA888, text_buffer, -1, func_001F4868_23B40(font_texture_index),
+                        glyphs);
+    func_001F6598_23B40();
+    func_001F4748_23B40();
+    return 2;
+}
 
 /* Page records in D_0013D390: stride 0x1C from +0x20. */
 typedef struct { int row; char pad[0x18]; } PageRec;
@@ -4662,7 +7024,159 @@ INCLUDE_ASM("asm/nonmatchings/text", func_002243E8);
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00224728);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00224C30);
+typedef struct {
+    u8 pad_0[0x20];
+    s32 width;
+    u8 pad_24[0x1C];
+    s32 selected_slot;
+} SaveMenu_24C30;
+
+typedef struct {
+    s32 id;
+    s32 bolts;
+    s32 count;
+    s32 time;
+    u8 pad_10[5];
+    u8 b15;
+    u8 b16;
+    u8 b17;
+    u8 pad_18[4];
+} SaveSlot_24C30;
+
+typedef struct {
+    u8 pad_0[8];
+    s32 state;
+    u8 pad_C[0x14];
+    SaveSlot_24C30 slots[5];
+    u8 pad_AC[0x30];
+    s32 xDC;
+    s32 pad_E0;
+    s32 xE4;
+} SaveInfo_24C30;
+
+/* Menu system state at D_001D5F70, as far as this function reads it. */
+struct MenuSystem_24C30 {
+    u8 pad_0[0x154];
+    s32 unk154;               /* 0x154: PAL only, updates since the memory card went idle */
+};
+extern struct MenuSystem_24C30 D_001D5F70_24C30 __asm__("D_001D5F70");
+
+extern SaveInfo_24C30 D_0013D390_24C30 __asm__("D_0013D390");
+extern s32 D_0015EE80_24C30 __asm__("D_0015EE80") MACRO_ADDR;
+extern s32 D_001602B0_24C30 __asm__("D_001602B0") MACRO_ADDR;
+extern char D_001603A0_24C30[] __asm__("D_001603A0");
+extern char D_001603D0_24C30[] __asm__("D_001603D0");
+extern char D_00160400_24C30[] __asm__("D_00160400");
+extern char D_00160410_24C30[] __asm__("D_00160410");
+extern char D_00160420_24C30[] __asm__("D_00160420");
+
+extern void func_001F4630_24C30(s32) __asm__("func_001F4630");
+extern void func_001F4748_24C30(void) __asm__("func_001F4748");
+extern void func_001F6968_24C30(s32, s32, u64, char *, s32) __asm__("func_001F6968");
+extern void func_001F6F40_24C30(s32, s32, u64, char *, s32) __asm__("func_001F6F40");
+extern char *func_001FE540_24C30(s32) __asm__("func_001FE540");
+extern s32 func_00200198_24C30(s32, s32) __asm__("func_00200198");
+extern void func_00200468_24C30(s32, s32, s32, s32, s32, s32) __asm__("func_00200468");
+extern void func_00201640_24C30(s32, s32, s32, s32, u64, s32) __asm__("func_00201640");
+extern s32 func_00116248_24C30(char *, const char *, ...) __asm__("func_00116248");
+
+/* Draws the five save slots of the memory card page: the cursor frame around the selected
+   one once the card is idle, then per slot "empty" or play time, gold bolts, bolts and date.
+   Adapted from Lombyte (MIT) for PAL: src/ui/menus/draw_save_slot_list.c, draw_save_slot_list. */
+s32 func_00224C30(SaveMenu_24C30 *menu) {
+    char text[0x50];
+    SaveSlot_24C30 *slot;
+    s32 color;
+    s32 width;
+    s32 inner_right;
+    s32 highlight_top;
+    s32 highlight_bottom;
+    s32 inner_top;
+    s32 inner_bottom;
+    s32 i;
+    s32 y;
+    s32 play_ticks;
+    s32 hours;
+    s32 bolts;
+    s32 minutes;
+
+    y = 4;
+    func_001F4630_24C30(0);
+    for (i = 0; i < 5; i++) {
+        width = menu->width;
+        highlight_top = y - 4;
+        highlight_bottom = y + 0x34;
+        inner_right = width - 3;
+        inner_top = y - 1;
+        inner_bottom = y + 0x31;
+        if (D_0013D390_24C30.xDC < 3 && D_0013D390_24C30.xE4 < 0 && D_001D5F70_24C30.unk154 >= 0xB &&
+            menu->selected_slot == i) {
+            func_00201640_24C30(0, highlight_top, width, highlight_bottom, 0x8020FFFF, 0);
+            func_00201640_24C30(3, inner_top, inner_right, inner_bottom, D_001602B0_24C30, 0);
+        }
+        func_00201640_24C30(3, inner_top, inner_right, inner_bottom, 0x80303030, 0);
+        slot = &D_0013D390_24C30.slots[i];
+        if (D_0013D390_24C30.xDC >= 3 || D_0013D390_24C30.xE4 >= 0 || D_001D5F70_24C30.unk154 < 0xB ||
+            D_0013D390_24C30.state != 2) {
+            y += 0x30;
+        } else {
+            if (slot->id == -1) {
+                y += 0x10;
+                func_001F6F40_24C30(menu->width / 2, y, 0x80FFA888,
+                                        func_001FE540_24C30(0x521C), -1);
+                y += 0x20;
+            } else {
+                play_ticks = slot->time;
+                hours = play_ticks / 216000;
+                minutes = play_ticks / 3600 - hours * 60;
+                color = menu->selected_slot == i ? (s32)0x8020FFFF : (s32)0x80FFA888;
+                if (hours > 99) {
+                    hours = 99;
+                    minutes = 59;
+                }
+                func_00116248_24C30(text, D_00160400_24C30, hours, minutes);
+                func_00200468_24C30(func_00200198_24C30(0xE99E, 3), 4, y, 0x10, 0x10,
+                                0x80);
+                func_001F6968_24C30(0x16, y, color, text, -1);
+                if (slot->count != 0) {
+                    func_00200468_24C30(func_00200198_24C30(0xE99E, 4), 0x4E, y, 0x10,
+                                    0x10, 0x80);
+                    func_00116248_24C30(text, D_001603A0_24C30, slot->count < 100 ? slot->count : 99);
+                    func_001F6968_24C30(0x60, y, color, text, -1);
+                }
+                bolts = slot->bolts;
+                if (bolts > 9999999) {
+                    bolts = 9999999;
+                }
+                y += 0x10;
+                if (bolts < 1000) {
+                    func_00116248_24C30(text, D_001603A0_24C30, bolts);
+                } else if (bolts < 1000000) {
+                    func_00116248_24C30(text, D_001603D0_24C30, bolts / 1000, bolts % 1000);
+                } else {
+                    func_00116248_24C30(text, D_00160410_24C30, bolts / 1000000, bolts % 1000000 / 1000,
+                            bolts % 1000);
+                }
+                func_00200468_24C30(func_00200198_24C30(0x754F, 0xF), 4, y, 0x10, 0x10,
+                                0x80);
+                func_001F6968_24C30(0x16, y, color, text, -1);
+                y += 0x10;
+                func_00116248_24C30(text, D_00160420_24C30, slot->b16, slot->b15, slot->b17);
+                func_00200468_24C30(func_00200198_24C30(0xE99E, 2), 4, y, 0x10, 0x10,
+                                0x80);
+                func_001F6968_24C30(0x16, y, color, text, -1);
+                y += 0x10;
+            }
+        }
+        if (D_0015EE80_24C30 != 0) {
+            y += 0x24;
+        } else {
+            y += 0x1B;
+        }
+    }
+    func_001F4748_24C30();
+    return 2;
+}
 
 struct MenuFlashingPanel {
     u8 pad0[0x48];
@@ -5928,7 +8442,75 @@ void func_00227A70(void) {
     D_001D5F70_27A70.resource_count = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00227B00);
+extern u8 D_001D60C8_27B00[] __asm__("D_001D60C8");
+extern u8 D_001B3E40_27B00[] __asm__("D_001B3E40") MACRO_ADDR;
+extern s32 func_00234350_27B00() __asm__("func_00234350");
+extern void func_00203B18_27B00() __asm__("func_00203B18");
+extern s32 func_0020C468_27B00() __asm__("func_0020C468");
+extern s32 func_00227018_27B00() __asm__("func_00227018");
+extern s32 func_00234238_27B00() __asm__("func_00234238");
+
+/* Streams each resource of the preview's bindings into its buffer (with two bindings the
+   second goes to buffer 2), unpacks it and points the class's animation slot at it.
+   The class slot table's address is one `la` in retail (lui/addiu back to back), hence its
+   MACRO_ADDR declaration; it is also what orders the loop index before the binding pointer.
+   The guard tests the index (zero there): with `count > 0` the index lives twice as long.
+   Adapted from Lombyte (MIT) for PAL: src/ui/menus/fun_00226848.c, load_preview_resource_bindings. */
+void func_00227B00(s32 first_resource, s32 resource_count) {
+    s32 count;
+    s32 *class_resource_slot;
+    s32 read_address;
+    s32 buffer_address;
+    s32 compressed_size;
+    s32 resource_id;
+    s32 animation_index;
+    s32 buffer_offset;
+    s32 buffer_skip;
+    s32 resource_offset;
+    u8 class_slot;
+    PreviewResourceBinding *binding;
+    s32 resource_index;
+
+    count = resource_count;
+    resource_index = 0;
+    D_001D5F70_27A70.resource_first = first_resource;
+    D_001D5F70_27A70.resource_count = count;
+    if (resource_index < count) {
+        resource_offset = first_resource * 4;
+        binding = ((PreviewResourceBinding *)D_001D5D58_27A70) + first_resource;
+        do {
+            buffer_skip = 0;
+            class_slot = D_001B3E40_27B00[binding->class_id];
+            animation_index = binding->animation_index;
+            if (count == 2) {
+                if (resource_index == 1) {
+                    buffer_skip = 1;
+                } else {
+                    buffer_skip = 0;
+                }
+            }
+            binding += 1;
+            resource_id = *((s32 *)(D_001D60C8_27B00 + resource_offset));
+            resource_offset += 4;
+            compressed_size = func_00234350_27B00(resource_id) * 0x10;
+            buffer_offset = (resource_index + buffer_skip) * 4;
+            resource_index += 1;
+            buffer_address = *((s32 *)((u8 *)D_001D5F70_27A70.resource_buffer_address +
+                                       buffer_offset));
+            read_address =
+                (buffer_address + func_00227018_27B00(buffer_address)) - compressed_size;
+            func_00234238_27B00(read_address, resource_id, 0, -1, 0);
+            func_0020C468_27B00(read_address, buffer_address);
+            {
+                s32 animation_offset = animation_index * 4;
+                class_resource_slot = (s32 *)((class_slot * 4) + D_001B3580_27A70);
+                *((s32 *)(((u8 *)((*class_resource_slot) + animation_offset)) + 0x48)) =
+                    buffer_address;
+            }
+            func_00203B18_27B00(*class_resource_slot, animation_index);
+        } while (resource_index < count);
+    }
+}
 
 extern char D_0015EF98[] MACRO_ADDR;
 extern char D_00141FC0[];
@@ -5980,7 +8562,126 @@ void func_00227D20(int arg0, int arg1) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00227DB0);
+/* Menu system state at D_001D5F70, as far as this function reads it. */
+struct MenuSystem_27DB0 {
+    u8 pad_0[0xE0];
+    s32 unkE0;
+};
+
+extern struct MenuSystem_27DB0 D_001D5F70_27DB0 __asm__("D_001D5F70");
+typedef struct {
+    u8 pad0[0x14];
+    s32 slot;
+    u8 pad18[8];
+    struct {
+        s32 unk0;
+        u8 pad4[0x18];
+    } entries[5];
+    u8 pad[0xC8 - 0x20 - 5 * 0x1C];
+    s32 unkC8;
+    u8 padCC[0x18];
+    s32 unkE4;
+    s32 unkE8;
+    u8 padEC[8];
+    s32 unkF4;
+} Checkpoints_27DB0;
+
+extern Checkpoints_27DB0 D_0013D390_27DB0 __asm__("D_0013D390");
+extern u8 D_0013D490_27DB0[] __asm__("D_0013D490");
+extern u8 D_0013D510_27DB0[] __asm__("D_0013D510");
+extern s32 D_0013D530_27DB0[] __asm__("D_0013D530");
+extern u8 D_0013D5C8_27DB0[] __asm__("D_0013D5C8");
+extern u8 D_0013E620_27DB0[] __asm__("D_0013E620");
+extern u8 D_0014BFC0_27DB0[] __asm__("D_0014BFC0");
+extern s32 D_00141FA0_27DB0[] __asm__("D_00141FA0");
+extern u8 D_0015EED0_27DB0[] __asm__("D_0015EED0") MACRO_ADDR;
+extern s32 D_0015EEA0_27DB0 __asm__("D_0015EEA0") MACRO_ADDR;
+extern u8 D_0015EEB0_27DB0[] __asm__("D_0015EEB0") MACRO_ADDR;
+extern u8 D_0015EEC0_27DB0[] __asm__("D_0015EEC0") MACRO_ADDR;
+extern s32 D_0015EE98_27DB0 __asm__("D_0015EE98") MACRO_ADDR;
+extern u8 D_0015EF1C_27DB0[] __asm__("D_0015EF1C") MACRO_ADDR;
+extern u8 D_0015EF1D_27DB0[] __asm__("D_0015EF1D") MACRO_ADDR;
+extern s32 D_0015EF20_27DB0 __asm__("D_0015EF20") MACRO_ADDR;
+extern u8 D_0015EF98_27DB0[] __asm__("D_0015EF98") MACRO_ADDR;
+extern s32 D_001D5F20_27DB0[] __asm__("D_001D5F20");
+
+extern void func_001F9A00_27DB0(void *dst, void *src, s32 size) __asm__("func_001F9A00");
+extern void func_00209DC0_27DB0(void) __asm__("func_00209DC0");
+extern void func_0020BA00_27DB0(s32) __asm__("func_0020BA00");
+extern s32 func_00121A80_27DB0(u8 *clock) __asm__("func_00121A80");
+extern void func_0012D818_27DB0(u8 *clock) __asm__("func_0012D818");
+
+/* Resets the game state (func_00209DC0) while keeping what carries over: copies the kept
+   blocks to the scratchpad, resets, copies them back (of D_0013D5C8 only the bytes listed in
+   D_001D5F20; a quick-select entry is cleared when its item is gone), restores two flags and
+   the counter + 1, re-reads the clock, and for slot >= 0 records the slot in the card state.
+   PAL keeps two more 12-byte blocks (D_0015EEB0, D_0015EEC0).
+   Adapted from Lombyte (MIT) for PAL: src/textbin/fun_00226b08.c, FUN_00226b08. */
+void func_00227DB0(s32 slot) {
+    s32 saved;
+    u32 count;
+    u8 flag4;
+    u8 flag5;
+    s32 *items = (s32 *)0x70000150;
+    u8 *bytes;
+    s32 i;
+    s32 j;
+
+    func_001F9A00_27DB0((void *)0x70000000, D_0013E620_27DB0, 0x28);
+    func_001F9A00_27DB0((void *)0x70000030, D_0013D5C8_27DB0, 0x25);
+    func_001F9A00_27DB0((void *)0x70000060, D_0013D530_27DB0, 0x94);
+    func_001F9A00_27DB0((void *)0x70000100, D_0014BFC0_27DB0, 0x50);
+    func_001F9A00_27DB0((void *)0x70000150, D_00141FA0_27DB0, 0x20);
+    func_001F9A00_27DB0((void *)0x70000170, D_0015EED0_27DB0, 0xC);
+    func_001F9A00_27DB0((void *)0x70000180, D_0013D510_27DB0, 0x20);
+    func_001F9A00_27DB0((void *)0x700001A0, D_0015EEB0_27DB0, 0xC);
+    func_001F9A00_27DB0((void *)0x700001B0, D_0015EEC0_27DB0, 0xC);
+    saved = D_0015EE98_27DB0;
+    count = D_0015EF20_27DB0;
+    flag4 = D_0013D490_27DB0[4] != 0;
+    flag5 = D_0013D490_27DB0[5] != 0;
+    bytes = (u8 *)0x70000030;
+    func_00209DC0_27DB0();
+    func_001F9A00_27DB0(D_0013E620_27DB0, (void *)0x70000000, 0x28);
+    for (j = 0; D_001D5F20_27DB0[j] != -1; j++) {
+        D_0013D5C8_27DB0[D_001D5F20_27DB0[j]] = bytes[D_001D5F20_27DB0[j]];
+    }
+    func_001F9A00_27DB0(D_0013D530_27DB0, (void *)0x70000060, 0x94);
+    func_001F9A00_27DB0(D_0014BFC0_27DB0, (void *)0x70000100, 0x50);
+    for (i = 0; i < 8; i++) {
+        s32 item = items[i];
+        D_00141FA0_27DB0[i] = D_0013D5C8_27DB0[item] ? item : 0;
+    }
+    func_001F9A00_27DB0(D_0015EED0_27DB0, (void *)0x70000170, 0xC);
+    func_001F9A00_27DB0(D_0013D510_27DB0, (void *)0x70000180, 0x20);
+    func_001F9A00_27DB0(D_0015EEB0_27DB0, (void *)0x700001A0, 0xC);
+    func_001F9A00_27DB0(D_0015EEC0_27DB0, (void *)0x700001B0, 0xC);
+    D_0015EE98_27DB0 = saved;
+    if (flag4) {
+        D_0013D490_27DB0[4] = 1;
+        D_0015EEA0_27DB0 = 5;
+    }
+    if (flag5) {
+        D_0013D490_27DB0[5] = 1;
+        D_0015EEA0_27DB0 = 8;
+    }
+    D_0015EF20_27DB0 = count + 1;
+    D_0015EF1C_27DB0[0] = 0;
+    D_0015EF1D_27DB0[0] = 0;
+    func_00121A80_27DB0(D_0015EF98_27DB0);
+    func_0012D818_27DB0(D_0015EF98_27DB0);
+    if (slot >= 0) {
+        D_0013D390_27DB0.slot = slot;
+        D_0013D390_27DB0.entries[slot].unk0 = 0;
+        func_0020BA00_27DB0(D_001D5F70_27DB0.unkE0);
+        D_0013D390_27DB0.unkF4 = D_001D5F70_27DB0.unkE0;
+        D_0013D390_27DB0.unkC8 = 0;
+        if (D_0013D390_27DB0.unkE4 < 0) {
+            D_0013D390_27DB0.unkE8 = 0;
+            D_0013D390_27DB0.unkE4 = 0x13;
+        }
+    }
+}
 
 extern int D_0015F6D0 MACRO_ADDR;
 extern int D_0015EF24 MACRO_ADDR;
