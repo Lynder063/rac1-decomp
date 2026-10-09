@@ -746,6 +746,10 @@ One more is this project's own port of a function it has from Lombyte: `func_L00
 `src/overlays/shared/camera_001EB508.c` is the level programs' copy of `func_001EC2B8` (Lombyte's
 `switch_active_camera_record`), with the same C under the level's symbols.
 
+`include/moby.h`, the shared definition of the moby (the game's 0x100-byte object), its class header and
+the vector type, is adapted from Lombyte's `include/rnc/gameplay/entities/moby.h` at 88c78925, whose layout
+and field names come from the matched code it cites.
+
 Data taken from Lombyte:
 
 - `tools/extract/moby_classes.tsv`: the moby class names the level editor
