@@ -466,7 +466,7 @@ void func_L02_002D7550(unsigned char *moby, void *position, float *direction) {
     func_L00_00251E30(moby);
 }
 extern void *func_L00_002DCFD0(void *);
-extern char D_L02_00160058;
+extern int D_L02_00160058_g SDATA(D_L02_00160058);
 
 // Checks a moby's associated object; sets state 9 and decrements a counter, or restores state 1.
 void *func_L02_002D7648(char *moby) {
@@ -476,7 +476,7 @@ void *func_L02_002D7648(char *moby) {
         moby[0x20] = 9;
         idx = *(int *)(*(char **)(moby + 0x78) + 0x288);
         if (idx >= 0) {
-            char *o = *(char **)(*(int *)&D_L02_00160058 + idx * 256 + 0x78);
+            char *o = *(char **)(D_L02_00160058_g + idx * 256 + 0x78);
             (*(int *)(o + 0x14C))--;
         }
     } else if (((unsigned char *)moby)[0x20] == 9) {
@@ -2142,7 +2142,7 @@ void func_L02_002DDF70(char *m)
             return;
         }
         if (*(int *)(d + 0xE0) >= 0) {
-            char *p = *(char **)((*(int *)(d + 0xE0) << 8) + *(int *)&D_L02_00160058 + 0x78);
+            char *p = *(char **)((*(int *)(d + 0xE0) << 8) + D_L02_00160058_g + 0x78);
             *(int *)(p + 0x150) -= 1;
         }
         qcopy(b, m + 0x10);
@@ -2708,7 +2708,7 @@ void func_L02_002E1400(unsigned char *moby) {
         break;
     case 1:
         if (*(int *)(d + 0x10) >= 0) {
-            unsigned char *o = (unsigned char *)((*(int *)(d + 0x10) << 8) + *(int *)&D_L02_00160058);
+            unsigned char *o = (unsigned char *)((*(int *)(d + 0x10) << 8) + D_L02_00160058_g);
             short c = *(short *)(o + 0xA6);
             if (c == 0x267 || c == 0x23F) {
                 if (o[0x20] == 4) {
@@ -2742,7 +2742,7 @@ void func_L02_002E1570(char *moby) {
     case 1: {
         int id = *(int *)(data + 0x10);
         if (id >= 0) {
-            char *m = (char *)((id << 8) + *(int *)&D_L02_00160058);
+            char *m = (char *)((id << 8) + D_L02_00160058_g);
             int t = *(short *)(m + 0xA6);
             if (t == 0x267 || t == 0x23F) {
                 if (((unsigned char *)m)[0x20] == 4) moby[0x20] = 2;
