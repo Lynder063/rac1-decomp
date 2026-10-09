@@ -185,7 +185,149 @@ void func_L03_00293A38(char *moby) {
     }
     *(unsigned short *)(other + 0x34) |= 6;
 }
-INCLUDE_ASM("asm/overlays", func_L03_00293EB8);
+typedef struct {
+    char _pad00[0x10];
+    unsigned char nframes; /* 0x10 */
+} AnimSeq_293EB8;
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 w;
+} Vec4f_293EB8;
+struct Manip_293EB8;
+struct GifEntry_293EB8;
+struct AnimSeq_293EB8;
+struct MobyClass_293EB8 {
+    u8 pad_0[0xC];
+    u8 seq_count; /* number of entries in seqs[] (menu previews clamp the sequence to it) */
+    u8 pad_D[3];
+    u32 unk10; /* copied into Moby_293EB8.unk94 when a moby is (re)classed */
+    u8 pad_14[0x8];
+    void *unk1C; /* word table, indexed id * 4 + 4 (0024eec0) */
+    struct GifEntry_293EB8 *gifs; /* patched by patch_moby_gifs */
+    f32 scale; /* default draw scale: copied into Moby_293EB8.scale, divides it */
+    s32 unk28;
+    void **callbacks; /* function-pointer table, called with the moby */
+    u8 pad_30[0x14];
+    u16 flags; /* initial Moby_293EB8.flags */
+    s16 unk46; /* class category; 5 is tested by targeting code */
+    struct AnimSeq_293EB8 *seqs[1]; /* animation sequences, indexed by Moby_293EB8.seq */
+};
+struct Moby_293EB8 {
+    Vec4f_293EB8 bsphere;
+    Vec4f_293EB8 pos;
+    u8 state; /* >= 0xFE: dead, waiting to respawn */
+    u8 group; /* linked group: index into the level moby-list table D_Lxx_001ABCC0 (0xFF: none) */
+    u8 unk22; /* class slot: pclass = D_L00_00197300[unk22] (FUN_L00_002cf218) */
+    u8 unk23; /* 0x40 for the smoke trail FUN_L09_00307ba8 spawns */
+    struct MobyClass_293EB8 *pclass;
+    struct Moby_293EB8 *next;
+    f32 scale; /* draw scale (FUN_L01_002fa068 halves it, FUN_L00_00215ef8 divides by it) */
+    u8 unk30; /* set to 0xFF (0x7F for beams) by spawners */
+    u8 unk31; /* set to 1 by spawners */
+    s16 unk32; /* set to 0xFF (0x7F for beams) by spawners */
+    u16 flags;
+    u16 unk36; /* set to 0x7F80 by spawners */
+    u64 spawn_frame; /* frame count at which it may respawn */
+    Vec4f_293EB8 rot; /* z: yaw (FUN_L00_00266448 compares it with atan2 to the hero) */
+    u8 frame; /* animation frame */
+    u8 prev_frame; /* frame index in prev_seq */
+    u8 seq; /* animation sequence id */
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    struct Manip_293EB8 *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71; /* set to 0xFF when a moby changes class */
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_293EB8 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F; /* set to 0x17 by FUN_L09_002c5990 near D_L09_00166F40 */
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94; /* set from the class header's word 0x10 */
+    s32 unk98; /* set to 1 while a carrier holds the moby (FUN_L00_002c7a58) */
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0; /* 0xB0: index into the level's D_0014C050 row (0xFF: not spawned) */
+    u8 padB1;
+    u16 save_id; /* index into the level collected[]/killed[] tables and save bits D_0014C190[level][id >> 5] */
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8; /* 0xB8: bolt source record; its byte 0xB1 is a per-level id (FUN_L00_002a6b70) */
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_293EB8 unkC0; /* 0xC0: first row of a matrix built from rot (FUN_001fa030) */
+    Vec4f_293EB8 unkD0;
+    Vec4f_293EB8 unkE0;
+    u8 padF0[0x10];
+};
+extern void func_L00_002617B0_293EB8(char *, void *, void *, void *) __asm__("func_L00_002617B0");
+extern void func_001F9BF0_293EB8(void *, void *, void *) __asm__("func_001F9BF0");
+extern char * D_L03_00160058_293EB8 __asm__("D_L03_00160058") MACRO_ADDR;
+extern char D_L03_001E2700_293EB8[] __asm__("D_L03_001E2700");
+extern void func_001E9730_93EB8(void *, int) __asm__("func_001E9730");
+extern void func_0020D678_293EB8(void *) __asm__("func_0020D678");
+struct Moby_293EB8;
+struct Moby_293EB8;
+
+/* Drags each linked car to follow the train after it moved, then flags the coupling moby; with no cars it reports and deletes the train.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l03/gameplay/entities/00292578.c, FUN_L03_00292d10. */
+void func_L03_00293EB8(struct Moby_293EB8 *moby) {
+    float old_pos[4];
+    float old_rot[4];
+    float delta[4];
+    char *data;
+    char *car;
+    char *car_data;
+    char *p;
+    char *q;
+    int next_id;
+    int id;
+    float *dp;
+    char *motion;
+
+    data = (char *)moby->pvars;
+    moby->unk72 = 0x40;
+    p = &moby->pos;
+    qcopy(old_pos, p);
+    q = &moby->rot;
+    qcopy(old_rot, q);
+    next_id = *(int *)(data + 0xA0);
+    if (next_id != -1) {
+        id = next_id;
+        dp = delta;
+        motion = data + 0x60;
+        do {
+            car = D_L03_00160058_293EB8 + (id << 8);
+            car_data = *(char **)(car + 0x78);
+            car[0x72] = 0x40;
+            func_001F9BF0_293EB8(delta, car + 0x10, car_data + 0xA0);
+            func_L00_002617B0_293EB8(car_data + 0x20, delta, car_data + 0xB0, car + 0x40);
+            qcopy(car_data + 0xA0, car + 0x10);
+            qcopy(car_data + 0xB0, car + 0x40);
+            id = *(int *)(car_data + 0xC0);
+        } while (id != -1);
+        func_001F9BF0_293EB8(dp, &moby->pos, old_pos);
+        func_L00_002617B0_293EB8(motion, dp, old_rot, &moby->rot);
+    } else {
+        func_001E9730_93EB8(D_L03_001E2700_293EB8, *(int *)(data + 0xB8));
+        func_0020D678_293EB8(moby);
+        return;
+    }
+    *(unsigned short *)(D_L03_00160058_293EB8 + (*(int *)(data + 0xC4) << 8) + 0x34) |= 6;
+}
 typedef int Q_294040 __attribute__((mode(TI)));
 typedef struct { float x, y, z, w; } Vec_294040;
 typedef struct Path_294040 { int count; int pad[3]; Vec_294040 n[2]; } Path_294040;

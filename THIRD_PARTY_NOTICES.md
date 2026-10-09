@@ -626,6 +626,36 @@ the same function:
 - `src/overlays/l02_aridia/vendor_002A59D8.c`: `func_L02_002D70C0` (`FUN_L02_002d5c88`)
 - `src/overlays/l07_umbris/vendor_002CE470.c`: `func_L07_0030CA88` (`FUN_L07_0030b6a8`)
 
+Twenty-two more of the functions the tool carried over from Lombyte's pull requests 109 to 132 landed later on
+2026-10-09. They are Lombyte's C with every symbol renamed, unchanged in their statements; what kept them out
+was their destination files, which by then defined the same type names and declared the same globals another
+way. Every type, callee and global of each function now has a name private to it. Three of them needed the
+build tools first: `func_L00_00269BE8` and `func_L00_002761C0` the assembler model's rule for `mfc1`, and
+`func_L00_002C9820` the level check's handling of a shared `%lo`. In parentheses, Lombyte's name.
+
+- `src/overlays/l02_aridia/vendor_002E21F8.c`: `func_L02_002ED358` (`FUN_L02_002ebf20`)
+- `src/overlays/l02_aridia/vendor_002E21F8.c`: `func_L02_002F9E50` (`FUN_L02_002f8a18`)
+- `src/overlays/l03_kerwan/vendor_00293720.c`: `func_L03_00293EB8` (`FUN_L03_00292d10`)
+- `src/overlays/l03_kerwan/vendor_002CB280.c`: `func_L03_002D5220` (`FUN_L03_002d3e58`)
+- `src/overlays/l03_kerwan/vendor_002CB280.c`: `func_L03_002D5790` (`FUN_L03_002d43c8`)
+- `src/overlays/l03_kerwan/vendor_002CB280.c`: `func_L03_002DC3E8` (`FUN_L03_002db020`)
+- `src/overlays/l03_kerwan/vendor_002CB280.c`: `func_L03_002DC560` (`FUN_L03_002db198`)
+- `src/overlays/l03_kerwan/vendor_002CB280.c`: `func_L03_002DE088` (`FUN_L03_002dccc0`)
+- `src/overlays/l07_umbris/vendor_002CE470.c`: `func_L07_0030C320` (`FUN_L07_0030af40`)
+- `src/overlays/l08_batalia/vendor_002B9438.c`: `func_L08_002DB468` (`FUN_L08_002da0f0`)
+- `src/overlays/l13_gemlik/vendor_002C2638.c`: `func_L13_002E9D58` (`FUN_L13_002e8920`)
+- `src/overlays/l13_gemlik/vendor_002C2638.c`: `func_L13_002EB978` (`FUN_L13_002ea540`)
+- `src/overlays/l13_gemlik/vendor_002EBD00.c`: `func_L13_00306D40` (`FUN_L13_003058a8`)
+- `src/overlays/l14_oltanis/vendor_002ACCC0.c`: `func_L14_002B0068` (`FUN_L14_002aee28`)
+- `src/overlays/l18_veldin2/vendor_002A8400.c`: `func_L18_002D74F8` (`FUN_L18_002d6108`)
+- `src/overlays/shared/partproc_002697A0.c`: `func_L00_00269BE8` (`FUN_L00_00268d48`)
+- `src/overlays/shared/partupd_00272158.c`: `func_L00_002761C0` (`FUN_L00_00275320`)
+- `src/overlays/shared/vendor_002B90A8.c`: `func_L01_002E4580` (`FUN_L01_002e3208`)
+- `src/overlays/shared/vendor_002B90A8.c`: `func_L01_002F4290` (`FUN_L01_002f2eb8`)
+- `src/overlays/shared/vendor_002C96D0.c`: `func_L00_002C9820` (`FUN_L00_002c8440`)
+- `src/overlays/shared/vendor_002D9548.c`: `func_L06_002EBA10` (`FUN_L06_002ea5e0`)
+- `src/overlays/shared/vendor_002D9548.c`: `func_L06_002F4908` (`FUN_L06_002f34d8`)
+
 One more is this project's own port of a function it has from Lombyte: `func_L00_001EB890` in
 `src/overlays/shared/camera_001EB508.c` is the level programs' copy of `func_001EC2B8` (Lombyte's
 `switch_active_camera_record`), with the same C under the level's symbols.

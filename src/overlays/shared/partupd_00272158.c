@@ -1507,7 +1507,73 @@ void func_L00_00276180(char *a) {
         KillPart(a);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L00_002761C0);
+typedef int OvlQuad __attribute__((mode(TI)));
+typedef union {
+    OvlQuad q;
+    float f[4];
+} V_275320;
+typedef struct {
+    unsigned char pad0[0x10];
+    V_275320 pos;
+    V_275320 vel;
+} O_275320;
+extern float D_L00_00160310[];
+extern float D_L00_00160318 MACRO_ADDR;
+extern float D_L00_00160320 MACRO_ADDR;
+extern float func_L00_002644E0(void *);
+extern void func_L00_00264570(void *);
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/rendering/002712b8.c, FUN_L00_00275320. */
+void func_L00_002761C0(O_275320 *o) {
+    V_275320 tmp;
+    V_275320 t2;
+    V_275320 t3;
+    V_275320 *vel = &o->vel;
+    float h;
+    int ix;
+    int iy;
+    V_275320 *p;
+
+    h = vel->f[3];
+    if (o->pos.f[0] < 0.0f || o->pos.f[1] < 0.0f || 512.0f < o->pos.f[0] || 512.0f < o->pos.f[1]) {
+        func_L00_002688A8(o);
+        return;
+    }
+    if (o->pos.f[2] < h) {
+        tmp.q = o->pos.q;
+        func_L00_00264570(&tmp);
+        func_L00_002688A8(o);
+        return;
+    }
+    tmp.q = o->vel.q;
+    ix = o->pos.f[0];
+    iy = o->pos.f[1];
+    tmp.f[3] = 0.0f;
+    func_001F9BD8(&o->pos, &o->pos, &tmp);
+    func_001F9BD8(&o->pos, &o->pos, D_L00_00160310);
+    if (ix != (int)o->pos.f[0] || iy != (int)o->pos.f[1]) {
+        t2.q = o->pos.q;
+        h = func_L00_002644E0(&t2);
+        if (h < D_L00_00160320) {
+            h = D_L00_00160320;
+        } else {
+            t3.q = o->pos.q;
+            h = func_L00_002644E0(&t3);
+        }
+        if (o->pos.f[2] < h) {
+            t2.q = o->pos.q;
+            func_L00_00264570(&t2);
+            func_L00_002688A8(o);
+            return;
+        }
+    }
+    tmp.f[0] = 0.0f;
+    tmp.f[1] = 0.0f;
+    tmp.f[3] = 0.0f;
+    tmp.f[2] = -(D_0015EE70 * 0.5f);
+    func_001F9BD8(vel, &tmp, vel);
+    vel->f[3] = h + D_L00_00160318;
+}
 extern void func_001F9EC0(void *, void *, void *);
 extern int func_L00_00237B70(float, int, int);
 extern float D_0015EE60 MACRO_ADDR;

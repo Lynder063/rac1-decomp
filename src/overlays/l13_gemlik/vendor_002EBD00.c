@@ -1417,7 +1417,125 @@ void func_L13_002F9F10(char *m) {
     }
     func_L00_0024FFE8(*(unsigned char **)(m + 0x24), step, 0);
 }
-INCLUDE_ASM("asm/overlays", func_L13_00306D40);
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 w;
+} Vec4f_306D40;
+struct Manip_306D40;
+struct GifEntry_306D40;
+struct AnimSeq_306D40;
+struct MobyClass_306D40 {
+    u8 pad_0[0xC];
+    u8 seq_count; /* number of entries in seqs[] (menu previews clamp the sequence to it) */
+    u8 pad_D[3];
+    u32 unk10; /* copied into Moby_306D40.unk94 when a moby is (re)classed */
+    u8 pad_14[0x8];
+    void *unk1C; /* word table, indexed id * 4 + 4 (0024eec0) */
+    struct GifEntry_306D40 *gifs; /* patched by patch_moby_gifs */
+    f32 scale; /* default draw scale: copied into Moby_306D40.scale, divides it */
+    s32 unk28;
+    void **callbacks; /* function-pointer table, called with the moby */
+    u8 pad_30[0x14];
+    u16 flags; /* initial Moby_306D40.flags */
+    s16 unk46; /* class category; 5 is tested by targeting code */
+    struct AnimSeq_306D40 *seqs[1]; /* animation sequences, indexed by Moby_306D40.seq */
+};
+struct Moby_306D40 {
+    Vec4f_306D40 bsphere;
+    Vec4f_306D40 pos;
+    u8 state; /* >= 0xFE: dead, waiting to respawn */
+    u8 group; /* linked group: index into the level moby-list table D_Lxx_001ABCC0 (0xFF: none) */
+    u8 unk22; /* class slot: pclass = D_L00_00197300[unk22] (FUN_L00_002cf218) */
+    u8 unk23; /* 0x40 for the smoke trail FUN_L09_00307ba8 spawns */
+    struct MobyClass_306D40 *pclass;
+    struct Moby_306D40 *next;
+    f32 scale; /* draw scale (FUN_L01_002fa068 halves it, FUN_L00_00215ef8 divides by it) */
+    u8 unk30; /* set to 0xFF (0x7F for beams) by spawners */
+    u8 unk31; /* set to 1 by spawners */
+    s16 unk32; /* set to 0xFF (0x7F for beams) by spawners */
+    u16 flags;
+    u16 unk36; /* set to 0x7F80 by spawners */
+    u64 spawn_frame; /* frame count at which it may respawn */
+    Vec4f_306D40 rot; /* z: yaw (FUN_L00_00266448 compares it with atan2 to the hero) */
+    u8 frame; /* animation frame */
+    u8 prev_frame; /* frame index in prev_seq */
+    u8 seq; /* animation sequence id */
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    struct Manip_306D40 *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71; /* set to 0xFF when a moby changes class */
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_306D40 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F; /* set to 0x17 by FUN_L09_002c5990 near D_L09_00166F40 */
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94; /* set from the class header's word 0x10 */
+    s32 unk98; /* set to 1 while a carrier holds the moby (FUN_L00_002c7a58) */
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0; /* 0xB0: index into the level's D_0014C050 row (0xFF: not spawned) */
+    u8 padB1;
+    u16 save_id; /* index into the level collected[]/killed[] tables and save bits D_0014C190[level][id >> 5] */
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8; /* 0xB8: bolt source record; its byte 0xB1 is a per-level id (FUN_L00_002a6b70) */
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_306D40 unkC0; /* 0xC0: first row of a matrix built from rot (FUN_001fa030) */
+    Vec4f_306D40 unkD0;
+    Vec4f_306D40 unkE0;
+    u8 padF0[0x10];
+};
+typedef struct {
+    char _pad00[0x10];
+    unsigned char nframes; /* 0x10 */
+} AnimSeq_306D40;
+typedef int OvlQuad_306D40 __attribute__((mode(TI)));
+extern char *func_0020D348_306D40(int) __asm__("func_0020D348");
+extern void func_L00_00250800_306D40(void *, int, void *) __asm__("func_L00_00250800");
+extern void func_L00_00251E30_306D40(void *) __asm__("func_L00_00251E30");
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l13/gameplay/vendor/003058a8.c, FUN_L13_003058a8. */
+char *func_L13_00306D40(struct Moby_306D40 *src, short cls) {
+    char *m = func_0020D348_306D40(0x4D1);
+    char *d;
+    char *pos;
+    if (m != 0) {
+        d = *(char **)(m + 0x78);
+        m[0x31] = 1;
+        ((unsigned char *)m)[0x30] = 0xFF;
+        *(short *)(m + 0x32) = 0x7F;
+        m[0x20] = 1;
+        *(char **)(d + 0x20) = src;
+        *(short *)(d + 0x26) = cls;
+        *(short *)(d + 0x24) = 1;
+        pos = m + 0x10;
+        func_L00_00250800_306D40(src, cls, pos);
+        qcopy(m + 0x40, &src->rot);
+        *(OvlQuad_306D40 *)(m + 0xC0) = *(OvlQuad_306D40 *)&src->unkC0;
+        *(OvlQuad_306D40 *)(m + 0xD0) = *(OvlQuad_306D40 *)&src->unkD0;
+        *(OvlQuad_306D40 *)(m + 0xE0) = *(OvlQuad_306D40 *)&src->unkE0;
+        qcopy(d + 0x10, pos);
+        *(int *)(m + 0x94) = 0;
+        func_L00_00251E30_306D40(m);
+    }
+    return m;
+}
 typedef int u128_306E20 __attribute__((mode(TI)));
 
 /* Initializes a Gemlik moby from its data block, copying transforms and resetting state. */

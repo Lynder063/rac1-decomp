@@ -3,7 +3,71 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L00_002697A0);
-INCLUDE_ASM("asm/overlays", func_L00_00269BE8);
+typedef u32 u128 __attribute__((mode(TI), aligned(16)));
+typedef union {
+    u128 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4;
+typedef struct {
+    u8 pad_00[0xA];
+    s16 unk0A; /* 2 skips the ground test (a timer in sibling kinds) */
+    u8 pad_0C[4];
+    Vec4 pos; /* 0x10: drawn position */
+    Vec4 probe; /* 0x20: point tested against the ground */
+    Vec4 vel; /* 0x30: w = ground height + clearance */
+} FallingParticle;
+extern short D_0015EE70;
+extern Vec4 D_L00_00160310 MACRO_ADDR;
+typedef struct {
+    f32 value;
+} ParticleClearance;
+extern ParticleClearance D_L00_00160318 MACRO_ADDR;
+extern f32 D_L00_00160320 MACRO_ADDR;
+extern void func_001F9BD8(void *, void *, void *);
+extern f32 func_L00_002644E0(Vec4 *);
+extern void func_L00_002688A8_69BE8(FallingParticle *) __asm__("func_L00_002688A8");
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/rendering/effects/00268900.c, FUN_L00_00268d48. */
+void func_L00_00269BE8(FallingParticle *p)
+{
+    Vec4 step;
+    Vec4 tmp1;
+    Vec4 tmp2;
+    Vec4 *vel = &p->vel;
+    f32 ground = vel->f[3];
+    s32 cell_x;
+    s32 cell_y;
+
+    if (p->pos.f[2] < ground || p->pos.f[0] < 0.0f || p->pos.f[1] < 0.0f
+        || 512.0f < p->pos.f[0] || 512.0f < p->pos.f[1])
+        goto die;
+
+    cell_x = p->probe.f[0];
+    cell_y = p->probe.f[1];
+    func_001F9BD8(&step, vel, &D_L00_00160310);
+    func_001F9BD8(&p->probe, &p->probe, &step);
+    func_001F9BD8(&p->pos, &p->pos, &step);
+    if (p->unk0A != 2) {
+        if (cell_x != (s32)p->probe.f[0] || cell_y != (s32)p->probe.f[1]) {
+            tmp1.q = p->probe.q;
+            if (func_L00_002644E0(&tmp1) < D_L00_00160320) {
+                ground = D_L00_00160320;
+            } else {
+                tmp2.q = p->probe.q;
+                ground = func_L00_002644E0(&tmp2);
+            }
+            if (p->probe.f[2] < ground) {
+                /* shared exit; retail has one call site for all kill paths */
+            die:
+                func_L00_002688A8_69BE8(p);
+                return;
+            }
+        }
+    }
+    vel->f[2] -= (*(f32 *)&D_0015EE70) * 9.8f;
+    vel->f[3] = ground + D_L00_00160318.value;
+}
 extern void *func_00218928(int);
 extern int func_001FA898_r(float) __asm__("func_001FA898");
 extern int func_001F9850(int);

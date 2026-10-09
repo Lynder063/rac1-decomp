@@ -542,7 +542,72 @@ int func_L00_0025A208(char **out, int idx, int a, int b) {
     } else if (b && !c) return func_L00_0025A2F0(out, D_L00_001601D4_5A208);
     return 0;
 }
-INCLUDE_ASM("asm/overlays", func_L00_0025A2F0);
+extern unsigned char *D_L00_001601D4_5A2F0 __asm__("D_L00_001601D4") MACRO_ADDR;
+extern short *D_L00_001601CC_5A2F0 __asm__("D_L00_001601CC") MACRO_ADDR;
+extern short D_L00_001601D0_5A2F0[] __asm__("D_L00_001601D0") MACRO_ADDR;
+extern int D_L00_001600B4_5A2F0 __asm__("D_L00_001600B4") MACRO_ADDR;
+extern int D_L00_001ABBC0_5A2F0[] __asm__("D_L00_001ABBC0");
+extern int D_L00_00160098_5A2F0 __asm__("D_L00_00160098") MACRO_ADDR;
+
+/* Steps the per-class moby iterator past m: finds m in its class list unless it is the current entry, then advances to the next entry the state filter accepts. Returns 0 with *out set, or -1 at the end of the list. */
+int func_L00_0025A2F0_r(int *out, unsigned char *m, int a2, int a3) __asm__("func_L00_0025A2F0");
+int func_L00_0025A2F0_r(int *out, unsigned char *m, int a2, int a3) {
+    short *p;
+    int neg;
+
+    *out = 0;
+    if (m != D_L00_001601D4_5A2F0) {
+        if (D_L00_001600B4_5A2F0 < m[0x21]) {
+            return -1;
+        }
+        D_L00_001601D4_5A2F0 = 0;
+        D_L00_001601CC_5A2F0 = (short *)D_L00_001ABBC0_5A2F0[m[0x21]];
+        if (D_L00_001601CC_5A2F0 == 0) {
+            return -1;
+        }
+        D_L00_001601CC_5A2F0--;
+        {
+            short k;
+
+            do {
+                D_L00_001601CC_5A2F0++;
+                p = D_L00_001601CC_5A2F0;
+                D_L00_001601D0_5A2F0[0] = *(unsigned short *)p & 0x7FFF;
+                D_L00_001601D4_5A2F0 = (unsigned char *)(D_L00_00160098_5A2F0 + (D_L00_001601D0_5A2F0[0] << 8));
+                k = *p;
+            } while (k >= 0 && m != D_L00_001601D4_5A2F0);
+            if (k < 0) {
+                return -1;
+            }
+        }
+    } else {
+        short n = *D_L00_001601CC_5A2F0;
+
+        p = D_L00_001601CC_5A2F0;
+        if (n < 0) {
+            return -1;
+        }
+    }
+    for (;;) {
+        short n;
+
+        D_L00_001601CC_5A2F0 = p + 1;
+        D_L00_001601D0_5A2F0[0] = *(unsigned short *)D_L00_001601CC_5A2F0 & 0x7FFF;
+        D_L00_001601D4_5A2F0 = (unsigned char *)(D_L00_00160098_5A2F0 + (D_L00_001601D0_5A2F0[0] << 8));
+        *out = (int)D_L00_001601D4_5A2F0;
+        neg = (signed char)D_L00_001601D4_5A2F0[0x20] < 0;
+        if ((a2 == 0 && a3 == 0 && !neg) || (a2 != 0 && (a3 == 0 || neg))) {
+            return 0;
+        }
+        n = *D_L00_001601CC_5A2F0;
+        p = D_L00_001601CC_5A2F0;
+        if (n < 0) {
+            break;
+        }
+    }
+    *out = 0;
+    return -1;
+}
 INCLUDE_ASM("asm/overlays", func_L00_0025A344);
 INCLUDE_ASM("asm/overlays", func_L00_0025A43C);
 LINKER_REMNANT("asm/overlays", func_L00_0025A458);
