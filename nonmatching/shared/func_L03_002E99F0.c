@@ -1,42 +1,48 @@
 /* NON_MATCHING func_L03_002E99F0 -- src/overlays/shared/vendor_00292AC0.c
- * Best so far: BYTES 22/260 (91.5% of the bytes match), checked 2026-10-05.
+ * Best so far: SIZE ours 264 / retail 260, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * What the last attempts found:
+ *   Moby init: resets the data block (0x5C=1.5, 0x50=0, +0x80/+4/+8/+0xC), picks a 32-byte table entry by short at
+ *   Remaining diff (p2.c, 46 words): retail hoists the 0.02f/0.1f constant loads before the 1.5f store (f0,f2,f1 l
+ *   Constants/stores reordering and local-float wordings all compile to the same bytes; needs a different source s
+ *   mini13 a01: initializer p8 reaches260 bytes by sharing the data pointer for final three stores; floating const
+ *   Verified mapping wall: config/overlays/functions.tsv maps func_001F9978 to both03:001F88A0 and03:002405A0; equ
+ *   Stopped under lead mapping rule; unblock needs a distinct valid existing symbol/mapping repair. No numeric fun
+ *   hq3 s07: p11 (the 0x70 reloads split into two groups, as retail) brings the size to 260 (48/260). Left: the ja
  */
-extern int D_L03_0015F050_i __asm__("D_L03_0015F050") MACRO_ADDR;
-extern void func_001F9978_u(void) __asm__("func_001F9978");
-extern void func_001FA218_u(void *, void *) __asm__("func_001FA218");
+extern void func_001F9978(void);
+extern void func_001FA218(void *, void *);
+extern int D_L03_0015F050 MACRO_ADDR;
 
-void func_L03_002E99F0(char *cam) {
-    float v[4] __attribute__((aligned(16)));
-    float mat[16] __attribute__((aligned(16)));
-    char *tbl = (char *)D_L03_0015F050_i;
-    char *a = *(char **)(cam + 0x70) + 0x10;
+// Initialise a moby from a table entry: reset its data block, then build its matrix.
+void func_L03_002E99F0(char *moby) {
+    char *tab = (char *)D_L03_0015F050;
+    char *q = *(char **)(moby + 0x70) + 0x10;
+    char *e;
     char *d;
-    char *ent;
-    int idx;
-    char *p;
-    *(float *)(a + 0x4C) = 1.5f;
-    *(int *)(a + 0x40) = 0;
-    *(int *)(*(char **)(cam + 0x70) + 0x80) = 0;
-    d = *(char **)(cam + 0x70);
+    float a[4];
+    float b[16];
+    e = tab + *(short *)(moby + 0x84) * 32;
+    *(float *)(q + 0x4C) = 1.5f;
+    *(int *)(q + 0x40) = 0;
+    d = *(char **)(moby + 0x70);
+    *(int *)(d + 0x80) = 0;
+    d = *(char **)(moby + 0x70);
     *(float *)(d + 4) = 0.02f;
     *(float *)(d + 8) = 0.1f;
     *(int *)(d + 0xC) = 0;
-    idx = *(short *)(cam + 0x84);
-    ent = tbl + (idx << 5);
-    p = *(char **)(ent + 0x1C);
-    if (idx < 0) {
-        func_001F9978_u();
+    if (*(short *)(moby + 0x84) < 0) {
+        func_001F9978();
     } else {
-        *(float *)(a + 0x4C) = *(float *)(p + 0x18);
+        *(float *)(q + 0x4C) = *(float *)(*(char **)(e + 0x1C) + 0x18);
     }
-    qcopy(cam + 0x30, ent);
-    qcopy(v, ent + 0x10);
-    func_001FA218_u(mat, v);
-    qcopy(cam, mat);
-    qcopy(cam + 0x10, mat + 4);
-    qcopy(cam + 0x20, mat + 8);
-    qcopy(cam + 0x40, cam);
-    *(short *)(cam + 0x7E) = 0;
+    qcopy(moby + 0x30, e);
+    qcopy(a, e + 0x10);
+    func_001FA218(b, a);
+    qcopy(moby, b);
+    qcopy(moby + 0x10, b + 4);
+    qcopy(moby + 0x20, b + 8);
+    qcopy(moby + 0x40, moby);
+    *(short *)(moby + 0x7E) = 0;
 }

@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L01_00317408 -- src/overlays/shared/vendor_002F7700.c
- * Best so far: BYTES 32/132 (75.8% of the bytes match), checked 2026-10-08.
+ * Best so far: BYTES 26/132 (80.3% of the bytes match), checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -14,8 +14,6 @@
  */
 /* ExitCamera_3: when the camera record matches, sets the moby's state short to 3 or 5.
  * The early exits and the store-3 path share one trailing return (retail's func_001E9768 piece). */
-extern char *D_L01_0015F050 MACRO_ADDR;
-extern char *D_L01_0015F7EC MACRO_ADDR;
 
 void func_L01_00317408(char *m) {
     char *g = D_0013E633 + 0xE1D;

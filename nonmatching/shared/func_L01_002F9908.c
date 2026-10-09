@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L01_002F9908 -- src/overlays/shared/vendor_002F7700.c
- * Best so far: BYTES 21/484 (95.7% of the bytes match), checked 2026-10-08.
+ * Best so far: BYTES 4/484 (99.2% of the bytes match), checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -7,6 +7,7 @@
  *   p7.c is 28/484 bytes different: stores at 0x154–0x160 and gravity setup/store scheduling and f0/f1 allocation 
  *   Stopped at budget 8; store-order and gravity expression wording could unblock the remaining scheduling/allocat
  *   hq1 s04 (p9-p12): best 21/484 (p11: the 0x28 store first, then 0x10, 0x14, 0x18). Spawn debris moby. What rema
+ *   hq12/s07: best 21 -> 4 bytes (p21.c). Gravity term: `float grav = gravity * 9.8f` after the func_001FA898 call
  */
 extern char *func_0020D348(int);
 extern void func_L00_0025E210(void *);
@@ -35,12 +36,14 @@ char *func_L01_002F9908(void *position, void *velocity, int cls, int mode, int f
   if (func_001160D8() & 1) angular=-speed*spin;
   else angular=speed*spin;
   *(int *)(d+0x10)=mode; *(int *)(d+0x28)=mode; *(float *)(d+0x14)=scale; *(float *)(d+0x18)=angular;
-  *(int *)(d+0x1c)=func_001FA898_r(func_001F9878(life*60.0f));
-  *(int *)(d+0x20)=flag;
   {
+   int r = func_001FA898_r(func_001F9878(life*60.0f));
+   float k = D_0015EE70;
    float grav = gravity * 9.8f;
-   *(float *)(d+0x24)=grav*D_0015EE70;
-  }
+  *(int *)(d+0x20)=flag;
+  *(int *)(d+0x1c)=r;
+  *(float *)(d+0x24)=k*grav;
+ }
   func_L00_00251E30(m);
  }
  return m;

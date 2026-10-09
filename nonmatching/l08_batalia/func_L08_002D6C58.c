@@ -1,10 +1,11 @@
 /* NON_MATCHING func_L08_002D6C58 -- src/overlays/l08_batalia/vendor_002B9438.c
- * Best so far: SIZE ours 944 / retail 952, checked 2026-10-08.
+ * Best so far: SIZE ours 956 / retail 952, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
  *   Best candidate p5.c (944 of 952 bytes; p4 is the same with dd kept as a local). Function: jitters a 16-byte ve
  *   Left: register ties. count and i come out $23/$22 (retail $22/$21); the five float constants are permuted (ret
+ *   hq13 s01 (2 runs, p8-p9): best.c's jitter constants were -0.1f/0.1f; retail's are 0xBD4CCCCD and 0x3D4CCCCD, i
  */
 extern void func_L00_00250800(void *, int, void *);
 extern void func_0020DAF8(char *, int, char *);
@@ -43,17 +44,20 @@ void func_L08_002D6C58(char *moby, int a1, int count) {
     char *vp;
     int i;
     int x1, x2, x3;
+    float kneg, kpos;
     float s, t, r, r2, r3, r4, r5, r6, c1, c2, c3, k;
 
     func_L00_00250800(moby, a1, t50);
     func_0020DAF8(moby, a1, t10);
     vp = (char *)v90;
+    kneg = -0.05f;
+    kpos = 0.05f;
     for (i = 0; i < count; i++) {
         s = func_00214158();
         qcopy(vp, t50);
-        v90[0] += func_002140F8(-0.1f, 0.1f);
-        v90[1] += func_002140F8(-0.1f, 0.1f);
-        v90[2] += func_002140F8(-0.1f, 0.1f);
+        v90[0] += func_002140F8(kneg, kpos);
+        v90[1] += func_002140F8(kneg, kpos);
+        v90[2] += func_002140F8(kneg, kpos);
         qcopy(t60, d + 0x40);
         qcopy(t70, d + 0x40);
         if (count / 3 < i) {

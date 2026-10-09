@@ -1,9 +1,10 @@
 /* NON_MATCHING func_L11_002D21F0 -- src/overlays/l11_pokitaru/vendor_002CC828.c
- * Best so far: BYTES 19/780 (97.6% of the bytes match), checked 2026-10-08.
+ * Best so far: BYTES 13/780 (98.3% of the bytes match), checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
  *   mini35 main-only: started from staged108/780, updated current turning-helper prototype. Typed BossMoby/BossMov
+ *   hq12 s10 (5 runs, p7-p11): p10 (the rail index read inline as d->rail[k], no arr local) takes the case 9 block
  */
 typedef struct {
     char pad0[0x10]; float position[4]; unsigned char state;
@@ -82,8 +83,7 @@ void func_L11_002D21F0(char *m) {
     }
     case 9: {
         int k = (unsigned int)d->railSelect > 0;
-        int *arr = d->rail;
-        char *o = (char *)(D_L11_00160058_d + (arr[k] << 8));
+        char *o = (char *)(D_L11_00160058_d + (d->rail[k] << 8));
         func_L00_00261568_c(m, o, &D_L11_00161470, &D_L11_00161480, m + 0x10, m + 0x40);
         if (func_L11_0030B850((unsigned char *)o) && boss->animation != 5) {
             func_00213DE0(m, 5, 0, func_001F9850(0x14));

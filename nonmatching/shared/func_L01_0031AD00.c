@@ -1,11 +1,12 @@
 /* NON_MATCHING func_L01_0031AD00 -- src/overlays/shared/vendor_0031AD00.c
- * Best so far: BYTES 42/928 (95.5% of the bytes match), checked 2026-10-08.
+ * Best so far: BYTES 39/928 (95.8% of the bytes match), checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
  *   Sound instance box-volume update: builds three listener vectors, clamps them to +-1 on a failed test, then eit
  *   Left: the calls to func_001F9BD8 (retail 0x2210B8) and func_0022DA10 (retail 0x2A14E0) are L01's own copies of
  *   2026-10-08 gpt p5-p9: old p3 behavior wrong: retail retains return from func0022DA10, not input table pointer!
+ *   hq12 s15 (5 runs, p11-p15): the V10 initial stores in source order V10[0], V10[1], V10[2] (the last source sto
  */
 extern void func_001F9BF0(void *, void *, void *);
 extern void func_001F9EC0(void *, void *, void *);
@@ -28,13 +29,13 @@ void func_L01_0031AD00(char *m) {
     struct { float A[4],V10[4],B[4],C[4]; } w;
     char *P, *E, *Q, *base;
     float f21, f22, x, s, tf, t2;
-    int r, v16, n, t, u, v;
+    int r, v16, n, t, u, v, idx;
 
     P = *(char **)(m + 0x8);
     s = *(float *)(m + 0xC);
-    w.V10[2] = s;
     w.V10[0] = s;
     w.V10[1] = s;
+    w.V10[2] = s;
     func_001F9BF0(w.A, D_L01_001672C0, m + 0x40);
     *(int *)&w.A[3] = 0;
     func_001F9EC0(w.B, w.A, m + 0x50);
@@ -51,7 +52,8 @@ void func_L01_0031AD00(char *m) {
     if (!(tf <= 1.0f)) goto ae1c;
     tf = func_001F9B88(w.B[2]);
     if (!(tf <= 1.0f)) goto ae18;
-    v16 = *(int *)(D_L01_0015F6D4 + (*(int *)P << 5) + 0xC);
+    idx = *(int *)P << 5;
+    v16 = *(int *)(D_L01_0015F6D4 + idx + 0xC);
     goto af04;
 ae18:
     x = w.B[0];
@@ -77,7 +79,7 @@ ae1c:
     goto af04;
 af04:
     n = *(int *)(P + 0x10);
-    Q = (char *)(D_0013E633 + 0x1D) + n * 0x70;
+    Q = (char *)(D_0013E633 + 0x1D) + 0x70 * n;
     E = D_L01_0015F6D4 + (*(int *)P << 5);
     if (*(unsigned char *)(E + 0x18)) r = 0x14;
     if (*(int *)(Q + 0x8C) != (int)m) goto af50;

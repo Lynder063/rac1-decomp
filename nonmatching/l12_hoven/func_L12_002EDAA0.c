@@ -1,9 +1,10 @@
 /* NON_MATCHING func_L12_002EDAA0 -- src/overlays/l12_hoven/vendor_002EDAA0.c
- * Best so far: SIZE ours 916 / retail 924, checked 2026-10-08.
+ * Best so far: SIZE ours 928 / retail 924, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
  *   Stopped (5 of 10 runs used): best p3.c, 912 bytes against retail's 924 (p2.c is the same size). The function i
+ *   hq13 n03 (p4-p11, budget spent; best p11.c, 924 bytes = retail size, 64 bytes differ): the state byte at 0x20 
  */
 extern float D_0015EE6C MACRO_ADDR;
 extern float D_L12_0015F4FC MACRO_ADDR;
@@ -34,7 +35,6 @@ extern void func_001F9C30(void *, void *, float);
 extern void func_001F9BD8(void *, void *, void *);
 extern char *func_00219780(void *, void *, void *, int, int, int, int, int, int);
 extern float func_00214D28(float *, float, float);
-extern void func_001F49B0(void (*)(void), void *);
 extern void func_L12_002EDE40(char *);
 
 /* Water reservoir update: steers the surface height and draws the ring of strips. */
@@ -51,30 +51,29 @@ void func_L12_002EDAA0(char *moby) {
     float f21;
     float t;
     int bc;
+    int bc2;
     int r2;
 
-    if (mu[0x20] != 0) {
-        if (mu[0x20] == 1) {
-            bc = mu[0xBC];
-            if (bc & 8) {
-                mu[0xBC] = 1;
-                *(int *)(data + 4) = func_001F9850(*(int *)&D_L12_00161A50);
-            } else if (bc & 4) {
-                mu[0xBC] = 2;
-                *(int *)(data + 4) = func_001F9850(*(int *)&D_L12_00161A50);
-            }
-            *(float *)data = func_001FA748(*(float *)data, *(float *)&D_L12_00161A4C * 0.0174532924f * D_0015EE6C);
-            f1 = D_L12_0015F4FC;
-        } else {
-            f1 = D_L12_0015F4FC;
-        }
-    } else {
+    switch (mu[0x20]) {
+    case 0:
         mu[0x20] = 1;
         mu[0xBC] = 2;
         *(float *)data = func_00214158();
         *(float *)(data + 8) = 5.0f;
-        f1 = D_L12_0015F4FC;
+        break;
+    case 1:
+        bc = mu[0xBC];
+        if (bc & 8) {
+            mu[0xBC] = 1;
+            *(int *)(data + 4) = func_001F9850(*(int *)&D_L12_00161A50);
+        } else if (bc & 4) {
+            mu[0xBC] = 2;
+            *(int *)(data + 4) = func_001F9850(*(int *)&D_L12_00161A50);
+        }
+        *(float *)data = func_001FA748(*(float *)data, *(float *)&D_L12_00161A4C * 0.0174532924f * D_0015EE6C);
+        break;
     }
+    f1 = D_L12_0015F4FC;
 
     if (f1 == 0.0f) {
         if (func_001F9908((int *)(data + 4)) == 0) {
@@ -91,7 +90,8 @@ void func_L12_002EDAA0(char *moby) {
                 func_001F9BF0(v40, v10, v20);
                 v40[2] = v40[2] + (*(float *)&D_L12_00161A80 - *(float *)&D_L12_00161A7C);
                 func_001F9BF0(v50, v20, v30);
-                f20 = 2.0f / (float)*(int *)&D_L12_00161A6C;
+                t = (float)*(int *)&D_L12_00161A6C;
+                f20 = 2.0f / t;
                 v50[2] = v50[2] + (*(float *)&D_L12_00161A84 - *(float *)&D_L12_00161A80);
                 func_001F9C30(v40, v40, f20);
                 func_001F9C30(v50, v50, f20);
@@ -112,10 +112,10 @@ void func_L12_002EDAA0(char *moby) {
                               *(int *)&D_L12_00161A68, r2, *(int *)&D_L12_00161A70, *(int *)&D_L12_00161A78);
             }
         }
-        bc = mu[0xBC];
-        if ((bc & 1) && *(int *)(data + 4) == 0) {
+        bc2 = mu[0xBC];
+        if ((bc2 & 1) && *(int *)(data + 4) == 0) {
             func_00214D28((float *)(data + 8), -1.0f, *(float *)&D_L12_00161A88 * D_0015EE6C);
-        } else if (bc & 2) {
+        } else if (bc2 & 2) {
             func_00214D28((float *)(data + 8), 3.0f, *(float *)&D_L12_00161A88 * D_0015EE6C);
         }
     }

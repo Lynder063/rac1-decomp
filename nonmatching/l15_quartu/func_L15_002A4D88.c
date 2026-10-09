@@ -1,13 +1,16 @@
 /* NON_MATCHING func_L15_002A4D88 -- src/overlays/l15_quartu/vendor_0029C1D0.c
- * Best so far: BYTES 41/796 (94.8% of the bytes match), checked 2026-10-08.
+ * Best so far: BYTES 30/796 (96.2% of the bytes match), checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
- *   - What it does: update function of moby class 93 (gate) on level 15. It walks the list at D_L15_00160064 with 
- *   - Best candidate p5: 804 of 796 bytes. Differences left: in case 0, retail loads D_L15_0016157C and builds the
- *   - Unblock: a way to order the level-constant loads in case 0 relative to the state-flag store, and the operand
- *   - Note: the diff shows the call in case 0 as `jal func_000000` on our side (retail `jal func_1F9790` in the di
- *   - Runs: 8 used. Run 1 and 2 failed to compile (a `D_0013E633` declaration clashed with the header's `unsigned 
+ *   Outline: gate update. Trigger scan (volumes or a trigger moby), then a five-state jump table on moby->state;
+ *   states 0/2/4 call func_001FA748 with the level floats D_L15_0016157C and D_L15_00161580 ($gp) and D_0015EE6C.
+ *   - c0 (carried-over file unchanged): COMPILE. The destination file defines Vec4f, struct MobyClass and
+ *   struct Moby below this stub now.
+ *   - c1: those three names suffixed _A4D88: BYTES 25, case 2: the read of D_L15_0016157C through a cast waits
+ *   behind the store to vars->swing (retail loads it first and puts the store in the branch's delay slot).
+ *   - c2: both $gp floats as `extern f32 X_A4D88 SDATA(X);` used plainly: EXACT.
+ *   - run 1, p0.c (= c2.c): EXACT.
  */
 extern int func_00215570(void *arg0, int arg1);
 extern unsigned char *func_L00_0025D390(int);
@@ -35,6 +38,7 @@ void func_L15_002A4D88(char *moby)
     float lim;
     float r;
     float f;
+    float k3 = 0.017453292f;
 
     if (*(int *)(data + 0x14) == -1) {
         if (((unsigned char *)moby)[0x20] != 0) {
@@ -72,24 +76,23 @@ void func_L15_002A4D88(char *moby)
 
     st = ((unsigned char *)moby)[0x20];
     switch (st) {
-    case 0:
-        f = *(float *)&D_L15_0016157C;
+    case 0: {
+        float g = *(float *)&D_L15_0016157C;
         if (*(int *)(data + 0x10) != 0) {
             *(unsigned short *)(moby + 0x34) |= 0x8000;
+            g = *(float *)&D_L15_0016157C;
         }
-        {
-            float k3 = 0.017453292f;
-            r = f * k3;
-            if (*(int *)(data + 0x10) == 0) {
-                r = -r;
-            }
+        r = g * k3;
+        if (*(int *)(data + 0x10) == 0) {
+            r = -r;
         }
         r = func_001FA748(*(float *)(moby + 0x48), r);
         *(int *)(data + 0xC) = 0;
-        moby[0x20] = 1;
         *(float *)data = r;
+        moby[0x20] = 1;
         *(float *)(moby + 0x48) = r;
         break;
+    }
     case 1:
         r = *(float *)data;
         *(int *)(data + 0xC) = 0;

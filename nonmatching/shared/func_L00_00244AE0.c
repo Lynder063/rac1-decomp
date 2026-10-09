@@ -1,11 +1,13 @@
 /* NON_MATCHING func_L00_00244AE0 -- src/overlays/shared/loaders_00240398.c
- * Best so far: SIZE ours 4272 / retail 4264, checked 2026-10-08.
+ * Best so far: SIZE ours 4268 / retail 4264, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
  *   4264-byte LoadLevelCoreData. FrameC0; all integer savedregs and FP20/21, stackarguments0/4, nextfree8. First p
  *   Trials: p0 COMPILE (leftover m2c temp); p1 SIZE4216/4264 typed reconstruction; p2 SIZE4224 reassociated textur
  *   p9 SIZE4272 real packed access plus reset counter and logger delta pseudo; p10 SIZE4244 natural logging OR con
+ *   ## Main-agent continuation
+ *   Runs p15/p16 SIZE4244: void logger and integer class-address table. p17 SIZE4252: macro address on moby offset
  */
 #include "common.h"
 
@@ -22,16 +24,17 @@ typedef struct { char pad[0x1A]; s16 texture; s32 stamp; } TexturePacket_244AE0;
 typedef struct { char pad[12]; u8 class_count, texture_count; char padE[0x1A]; TexturePacket_244AE0 *packets; char pad2C[0x1C]; s32 bindings[1]; } ClassHeader_244AE0;
 typedef struct { u64 value[3]; } TextureSetup_244AE0;
 typedef struct { char pad[16]; } __attribute__((aligned(16))) Vec_244AE0;
-typedef struct { s32 f0; char pad4[4]; s32 f8,fC; s32 f10; } UpdateState_244AE0;
+typedef struct { s32 f0; char pad4[4]; s32 f8,fC; s32 f10; } __attribute__((packed)) UpdateState_244AE0;
 typedef struct { s32 value; } __attribute__((packed)) UnalignedWord_244AE0;
 extern char update_bytes_244AE0[] __asm__("D_L00_00179200");
 
 extern LevelMemory_244AE0 mem_244AE0 __asm__("D_L00_00173F00");
-extern PackedHeader_244AE0 *packed_244AE0[] __asm__("D_0015EF4C") MACRO_ADDR;
+extern PackedHeader_244AE0 *volatile packed_244AE0 __asm__("D_0015EF4C") MACRO_ADDR;
 extern TextureSetup_244AE0 setup1_244AE0 __asm__("D_L00_001828C0");
 extern TextureSetup_244AE0 setup2_244AE0 __asm__("D_L00_001828D8");
 extern TextureSetup_244AE0 setup3_244AE0 __asm__("D_L00_001828F0");
 extern ClassHeader_244AE0 *classes_244AE0[] __asm__("D_L00_00197680");
+extern s32 root_address_244AE0 __asm__("D_L00_00197680") NOT_SDA;
 extern s32 class_ids_244AE0[] __asm__("D_L00_001AFF40");
 extern s32 class_bases_244AE0[] __asm__("D_L00_001AFFA0");
 extern s32 class_flags_244AE0[] __asm__("D_L00_001B0000");
@@ -45,7 +48,7 @@ extern s32 tfrag_classes_244AE0[] __asm__("D_L00_001C4D00");
 extern s32 moby_classes_244AE0[] __asm__("D_L00_00199E00");
 extern s32 tie_classes_244AE0[] __asm__("D_L00_001C6A00");
 extern s32 shrub_classes_244AE0[] __asm__("D_L00_001BC940");
-extern ClassOffset_244AE0 moby_offsets_244AE0[] __asm__("D_L00_001AEF40");
+extern ClassOffset_244AE0 moby_offsets_244AE0[] __asm__("D_L00_001AEF40") MACRO_ADDR;
 extern TexturePacket_244AE0 *packets_244AE0 __asm__("D_L00_0015F6D4") MACRO_ADDR;
 extern UpdateState_244AE0 update_244AE0 __asm__("D_L00_00179200");
 extern char module_end_244AE0[] __asm__("D_L00_002F2298");
@@ -54,6 +57,7 @@ extern s32 collision_244AE0[] __asm__("D_L00_00173F40");
 extern s32 data_base_244AE0[] __asm__("D_L00_001B1E00");
 extern char mission_flags_244AE0[] __asm__("D_L00_0015FD48");
 extern char newline_244AE0[] __asm__("D_L00_0015FD40");
+extern s32 count_small_244AE0 SDATA(D_L00_00160088);
 extern s32 f6e0_small_244AE0 SDATA(D_L00_0015F6E0);
 extern s32 f6e4_small_244AE0 SDATA(D_L00_0015F6E4);
 
@@ -81,7 +85,7 @@ extern s32 core_finish_244AE0(s32,CoreHeader_244AE0 *) __asm__("func_L00_0024039
 extern s32 entities_244AE0(s32) __asm__("func_L00_002422D8");
 extern float int_float_244AE0(s32) __asm__("func_001FA888");
 extern f64 float_int_244AE0(float) __asm__("func_00120778");
-extern s32 print_244AE0(const char *,...) __asm__("func_001E9730");
+extern void print_244AE0(const char *,...) __asm__("func_001E9730");
 extern void clear_244AE0(void *,s32,s32) __asm__("func_001F99B0");
 extern void game_load_244AE0(void) __asm__("func_00228268");
 extern void checkpoint_load_244AE0(void) __asm__("func_L00_002862E0");
@@ -154,8 +158,7 @@ extern const char S_001E8DC8[] __asm__("D_L00_001E8DC8");
 /* Loads and relocates level-core sections, then reports memory use. */
 s32 func_L00_00244AE0(s32 load_core, s32 checkpoint) {
     CoreHeader_244AE0 *h = mem_244AE0.f4;
-    PackedHeader_244AE0 *packed = packed_244AE0[0];
-    ClassHeader_244AE0 **root_slot=classes_244AE0;
+    PackedHeader_244AE0 *packed = packed_244AE0;
     s32 base;
     s32 decoded, next, count, i, j, mode;
     ClassOffset_244AE0 *entry, *moby_offsets, *offset_list;
@@ -163,11 +166,12 @@ s32 func_L00_00244AE0(s32 load_core, s32 checkpoint) {
     char *vector_record;
     s32 *binding_record;
     s16 *map_header, *maps, *map_source, *class_map;
-    s32 packet_bytes;
+    s32 packet_bytes, packet_base, next_free;
     TexturePacket_244AE0 *packet;
     ClassHeader_244AE0 **class_ptr;
     s32 class_slot;
     s32 var_v0,var_v0_2;
+    u32 code_end;
     LevelMemory_244AE0 *memory;
     s32 i1,i2,i3,i4,i5,i6,i7,i8,i9,i10;
     s64 tex_low1,tex_high1,tex_low2,tex_high2,tex_low3,tex_high3;
@@ -185,41 +189,51 @@ s32 func_L00_00244AE0(s32 load_core, s32 checkpoint) {
         decoded=decode_244AE0((char *)packed+*(s32 *)((char *)packed+0x50),base);
         gs_base=G_0015EF8C;
         resource_base=base+h->f60;
-                tex_high1=(s64)((s32)(gs_base+h->f94)>>8)<<37;
-        tex_low1=((s32)(gs_base+h->f90)>>8)|0x1D308000;
-        tex_high1 |= (s64)0xB800<<19;
+                tex_high1=(s32)(gs_base+h->f94)>>8;
+        tex_low1=(s32)(gs_base+h->f90)>>8;
+        tex_high1<<=37;
+        tex_high1|=(s64)0xB800<<19;
+        tex_low1|=0x1D308000;
         setup1_244AE0.value[0]=tex_low1|tex_high1|((u64)1<<63);
         setup1_244AE0.value[1]=0x0000FFA0000000E0ULL;
         setup1_244AE0.value[2]=0x40000400004000ULL;
-        tex_high2=(s64)((s32)(gs_base+h->f9C)>>8)<<37;
-        tex_low2=((s32)(gs_base+h->f98)>>8)|0x19304000;
-        tex_high2 |= (s64)0xB000<<19;
-        setup2_244AE0.value[0]=tex_low2|tex_high2|((u64)1<<63);
+        tex_high2=(s32)(gs_base+h->f9C)>>8;
+        tex_low2=(s32)(gs_base+h->f98)>>8;
+        tex_high2<<=37;
+        tex_high2|=(s64)0xB000<<19;
+        tex_low2|=0x19304000;
+        tex_high2|=tex_low2;
+        tex_high2|=((u64)1<<63);
+        setup2_244AE0.value[0]=tex_high2;
         setup2_244AE0.value[1]=0x0000FFA0000000E0ULL;
         setup2_244AE0.value[2]=0x40000400004000ULL;
         
-        tex_high3=(s64)((s32)(gs_base+h->fC4)>>8)<<37;
-        tex_low3=((s32)(gs_base+h->fC0)>>8)|0x1D308000;
-        tex_high3 |= (s64)0xB800<<19;
+        tex_high3=(s32)(gs_base+h->fC4)>>8;
+        tex_low3=(s32)(gs_base+h->fC0)>>8;
+        tex_high3<<=37;
+        tex_high3|=(s64)0xB800<<19;
+        tex_low3|=0x1D308000;
         G_L00_0015F50C=resource_base;
-        setup3_244AE0.value[0]=tex_low3|tex_high3|((u64)1<<63);
+        tex_high3|=tex_low3;
+        tex_high3|=((u64)1<<63);
+        setup3_244AE0.value[0]=tex_high3;
         setup3_244AE0.value[1]=0x0000FFA0000000E0ULL;
         setup3_244AE0.value[2]=0x40000400004000ULL;
         offset_list=(ClassOffset_244AE0 *)((char *)h+h->f34);
         G_L00_00161014=h->f30;
-        for(;i<G_L00_00161014;i++) { entry=&offset_list[i]; mode=texture_mode_244AE0(entry->mode); tfrag_classes_244AE0[i]=G_L00_0015F50C+entry->offset+(mode<<28); }
+        if(G_L00_00161014>0) { entry=offset_list; do { mode=texture_mode_244AE0(entry->mode); tfrag_classes_244AE0[i]=G_L00_0015F50C+entry->offset+(mode<<28); i++; entry++; } while(i<G_L00_00161014); }
         next=base+decoded;
         moby_offsets=(ClassOffset_244AE0 *)((char *)h+h->f3C);
-        G_L00_00160088=h->f38;
+        count_small_244AE0=h->f38;
         offset_list=moby_offsets;
-        for(i1=0;i1<G_L00_00160088;i1++) { entry=&offset_list[i1]; mode=texture_mode_244AE0(entry->mode); moby_classes_244AE0[i1]=G_L00_0015F50C+entry->offset+(mode<<28); }
+        i1=0; if(G_L00_00160088>0) { entry=moby_offsets; do { mode=texture_mode_244AE0(entry->mode); moby_classes_244AE0[i1]=G_L00_0015F50C+entry->offset+(mode<<28); entry++; i1++; } while(i1<G_L00_00160088); }
         copy_244AE0(moby_offsets_244AE0,moby_offsets,G_L00_00160088*16);
         offset_list=(ClassOffset_244AE0 *)((char *)h+h->f44);
         G_L00_00161094=h->f40;
-        for(i2=0;i2<G_L00_00161094;i2++) { entry=&offset_list[i2]; mode=texture_mode_244AE0(entry->mode); tie_classes_244AE0[i2]=G_L00_0015F50C+entry->offset+(mode<<28); }
+        i2=0; if(G_L00_00161094>0) { entry=offset_list; do { mode=texture_mode_244AE0(entry->mode); tie_classes_244AE0[i2]=G_L00_0015F50C+entry->offset+(mode<<28); i2++; entry++; } while(i2<G_L00_00161094); }
         offset_list=(ClassOffset_244AE0 *)((char *)h+h->f4C);
         G_L00_0016056C=h->f48;
-        for(i3=0;i3<G_L00_0016056C;i3++) { entry=&offset_list[i3]; mode=texture_mode_244AE0(entry->mode); shrub_classes_244AE0[i3]=G_L00_0015F50C+entry->offset+(mode<<28); }
+        i3=0; if(G_L00_0016056C>0) { entry=offset_list; do { mode=texture_mode_244AE0(entry->mode); shrub_classes_244AE0[i3]=G_L00_0015F50C+entry->offset+(mode<<28); i3++; entry++; } while(i3<G_L00_0016056C); }
         tfrag_load_244AE0(base+h->f8,(char *)h+h->f34);
         if(h->fC) f6e0_small_244AE0=base+h->fC; else G_L00_0015F6E0=0;
         if(h->f10) sky_load_244AE0(base+h->f10); else G_L00_001605DC=0;
@@ -228,7 +242,7 @@ s32 func_L00_00244AE0(s32 load_core, s32 checkpoint) {
         for(i4=0;i4<h->f18;i4++,record+=32) { s32 offset=*(s32 *)record; moby_load_244AE0(offset?base+offset:0,(char *)h+h->f3C,record+16,*(s32 *)(record+4)); }
         moby_fix_244AE0((char *)h+h->f1C,h->f1C);
         binding_record=(s32 *)((char *)h+h->f78);
-        for(i5=0;i5<(*root_slot)->class_count;i5++,binding_record++) { if(*binding_record) { (*root_slot)->bindings[i5]=base+*binding_record; class_fix_244AE0((*root_slot),i5); } }
+        for(i5=0;i5<((ClassHeader_244AE0 *)root_address_244AE0)->class_count;i5++,binding_record++) { if(*binding_record) { *(s32 *)((char *)((ClassHeader_244AE0 *)root_address_244AE0)+0x48+i5*4)=base+*binding_record; class_fix_244AE0((ClassHeader_244AE0 *)root_address_244AE0,i5); } }
         vector_record=(char *)h+h->f84;
         G_L00_001600CC=-1; G_L00_001600D0=0; G_L00_001600C8=h->f80;
         for(i6=0;i6<h->f80;i6++,vector_record+=16) { class_ids_244AE0[i6]=*(s32 *)(vector_record+4); class_bases_244AE0[i6]=base+*(s32 *)vector_record; class_flags_244AE0[i6]=*(s32 *)(vector_record+8); qcopy(&class_vectors_244AE0[i6],(char *)h+h->f1C+((texture_ids_244AE0[*(s32 *)(vector_record+4)]<<5)+16)); }
@@ -245,15 +259,15 @@ s32 func_L00_00244AE0(s32 load_core, s32 checkpoint) {
         i9=0;
         poly_load_244AE0((char *)h+h->f6C,base+h->f64,(char *)h+h->f54,h->f50);
         maps=(s16 *)((char *)h+h->f70);
-        next=(next+63)&0xFFFFFFC0U;
+        packet_base=(next+63)&0xFFFFFFC0U;
         count=maps[1];
         map_header=maps;
-        packets_244AE0=(TexturePacket_244AE0 *)next;
+        packets_244AE0=(TexturePacket_244AE0 *)packet_base;
         G_L00_0015F6D0=count;
         packet_bytes=count*32;
-        copy_short_244AE0((void *)next,(char *)maps+maps[0],packet_bytes);
+        copy_short_244AE0((void *)packet_base,(char *)maps+maps[0],packet_bytes);
         maps+=2;
-        next+=packet_bytes;
+        packet_base+=packet_bytes;
         map_source=(s16 *)((char *)map_header+maps[0]);
         for(;i9<G_L00_0015F6D0;i9++) {
             packet=packets_244AE0+i9;
@@ -261,7 +275,7 @@ s32 func_L00_00244AE0(s32 load_core, s32 checkpoint) {
             else packet->texture=*(u16 *)((char *)map_source+packet->texture*4);
             packets_244AE0[i9].stamp=G_0015EE5C;
         }
-        next=next+63;
+        next_free=packet_base+63;
         maps+=2;
         for(i10=0;i10<G_L00_00160080;i10++,maps+=2) {
             class_ptr=&classes_244AE0[i10];
@@ -278,7 +292,7 @@ s32 func_L00_00244AE0(s32 load_core, s32 checkpoint) {
                 for(j=0;j<(*class_ptr)->texture_count;j++,class_map+=2) {(*class_ptr)->packets[j].texture=*(u16 *)class_map; (*class_ptr)->packets[j].stamp=G_0015EE5C;}
             }
         }
-        mem_244AE0.f18=core_finish_244AE0(next&0xFFFFFFC0U,h);
+        mem_244AE0.f18=core_finish_244AE0(next_free&0xFFFFFFC0U,h);
     }
     memory=&mem_244AE0;
     memory->f1C=entities_244AE0(load_core);
@@ -286,9 +300,10 @@ s32 func_L00_00244AE0(s32 load_core, s32 checkpoint) {
         print_244AE0(S_001E8B50);
         var_v0=0x100000;
         print_244AE0(S_001E8B68, float_int_244AE0(int_float_244AE0(var_v0) * 0.0009765625f));
-        var_v0=(s32)((u64)module_end_244AE0 - 0x100000);
+        code_end=(u32)module_end_244AE0;
+        var_v0=code_end+0xFFF00000U;
         print_244AE0(S_001E8B80, float_int_244AE0(int_float_244AE0(var_v0) * 0.0009765625f));
-        var_v0=mem_244AE0.f0 - (s32)module_end_244AE0;
+        var_v0=mem_244AE0.f0 - code_end;
         print_244AE0(S_001E8B98, float_int_244AE0(int_float_244AE0(var_v0) * 0.0009765625f));
         var_v0=memory->fC - mem_244AE0.f0;
         print_244AE0(S_001E8BB0, float_int_244AE0(int_float_244AE0(var_v0) * 0.0009765625f));
@@ -296,20 +311,13 @@ s32 func_L00_00244AE0(s32 load_core, s32 checkpoint) {
         print_244AE0(S_001E8BC8, float_int_244AE0(int_float_244AE0(var_v0) * 0.0009765625f));
         var_v0=memory->f14 - memory->f10;
         print_244AE0(S_001E8BE0, float_int_244AE0(int_float_244AE0(var_v0) * 0.0009765625f));
-        var_v0 = G_L00_0015F6E0;
-        if (var_v0 == 0) {
-            var_v0 = G_L00_001605DC;
-            if (var_v0 == 0) {
-                print_244AE0(S_001E8C10);
-                var_v0_2 = G_L00_0015F6E0;
-            } else {
-                goto block_72;
-            }
+        var_v0=G_L00_0015F6E0;
+        if(var_v0!=0 || (var_v0=G_L00_001605DC)!=0) {
+            print_244AE0(S_001E8BF8,float_int_244AE0(int_float_244AE0(var_v0-memory->f14)*0.0009765625f));
+            var_v0_2=f6e0_small_244AE0;
         } else {
-block_72:
-            var_v0=var_v0 - memory->f14;
-        print_244AE0(S_001E8BF8, float_int_244AE0(int_float_244AE0(var_v0) * 0.0009765625f));
-            var_v0_2 = f6e0_small_244AE0;
+            print_244AE0(S_001E8C10);
+            var_v0_2=G_L00_0015F6E0;
         }
         if (var_v0_2 != 0) {
             if (G_L00_001605DC != 0) {
@@ -330,9 +338,9 @@ block_72:
         print_244AE0(S_001E8C78, float_int_244AE0(int_float_244AE0(var_v0) * 0.0009765625f));
         var_v0=G_L00_0015F520 - ((s32) data_base_244AE0[1] >> 4);
         print_244AE0(S_001E8C90, float_int_244AE0(int_float_244AE0(var_v0) * 0.0009765625f));
-        var_v0=(s32)(*root_slot) - G_L00_0015F520;
+        var_v0=(s32)((ClassHeader_244AE0 *)root_address_244AE0) - G_L00_0015F520;
         print_244AE0(S_001E8CA8, float_int_244AE0(int_float_244AE0(var_v0) * 0.0009765625f));
-        var_v0=tie_bases_244AE0[0] - (s32)(*root_slot);
+        var_v0=tie_bases_244AE0[0] - (s32)((ClassHeader_244AE0 *)root_address_244AE0);
         print_244AE0(S_001E8CC0, float_int_244AE0(int_float_244AE0(var_v0) * 0.0009765625f));
         if (h->f28 != 0) {
             var_v0=shrub_bases_244AE0[0] - tie_bases_244AE0[0];
@@ -342,10 +350,10 @@ block_72:
         print_244AE0(S_001E8CD8, float_int_244AE0(int_float_244AE0(var_v0) * 0.0009765625f));
         }
         if (h->f28 != 0) {
-            var_v0=(*root_slot)->bindings[0] - shrub_bases_244AE0[0];
+            var_v0=((ClassHeader_244AE0 *)root_address_244AE0)->bindings[0] - shrub_bases_244AE0[0];
         print_244AE0(S_001E8CF0, float_int_244AE0(int_float_244AE0(var_v0) * 0.0009765625f));
         }
-        var_v0=G_L00_00161080 - (*root_slot)->bindings[0];
+        var_v0=G_L00_00161080 - ((ClassHeader_244AE0 *)root_address_244AE0)->bindings[0];
         print_244AE0(S_001E8D08, float_int_244AE0(int_float_244AE0(var_v0) * 0.0009765625f));
         var_v0=G_L00_00160554 - G_L00_00161080;
         print_244AE0(S_001E8D20, float_int_244AE0(int_float_244AE0(var_v0) * 0.0009765625f));
@@ -362,13 +370,13 @@ block_72:
         var_v0=G_L00_0016022C + 0x20000;
         print_244AE0(S_001E8DB0, float_int_244AE0(int_float_244AE0(var_v0) * 0.0000009536743f));
         print_244AE0(newline_244AE0);
-        var_v0=memory->f1C - (mem_244AE0.f0 + 0xFFD30000);
+        var_v0=memory->f1C - (mem_244AE0.f0 + (s32)0xFFD30000);
         print_244AE0(S_001E8DC8, float_int_244AE0(int_float_244AE0(var_v0) * 0.0000009536743f));
         print_244AE0(newline_244AE0);
     }
 
     if(checkpoint) checkpoint_load_244AE0(); else {game_load_244AE0();{s32 reset_i; for(reset_i=15;reset_i>=0;reset_i--) reset_ids_244AE0[reset_i]=0;}}
-    ((UnalignedWord_244AE0 *)(update_bytes_244AE0+16))->value=0;update_244AE0.fC=0;update_244AE0.f8=0;
+    update_244AE0.f10=0;*(s32 *)&update_244AE0.fC=0;*(s32 *)&update_244AE0.f8=0;
     update_init_244AE0(&update_244AE0);
     G_L00_0015F6B0++;
     return 0;
