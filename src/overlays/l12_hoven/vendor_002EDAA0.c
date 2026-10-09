@@ -2,7 +2,125 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L12_002EDAA0);
+typedef struct Data_2EDAA0 {
+    float angle;
+    int timer;
+    float level;
+} Data_2EDAA0;
+typedef struct Moby_2EDAA0 {
+    char pad0[0x10];
+    float pos[4]; /* 0x10 */
+    unsigned char state; /* 0x20 */
+    char pad21[0x57];
+    Data_2EDAA0 *data; /* 0x78 */
+    char pad7C[0x40];
+    unsigned char bBC;
+} Moby_2EDAA0;
+extern float D_0015EE6C_2EDAA0 __asm__("D_0015EE6C") MACRO_ADDR;
+extern float D_L12_0015F4FC_2EDAA0 __asm__("D_L12_0015F4FC") MACRO_ADDR;
+extern float D_L12_00161A4C_2EDAA0 SDATA(D_L12_00161A4C);
+extern int D_L12_00161A50_2EDAA0 SDATA(D_L12_00161A50);
+extern float D_L12_00161A54_2EDAA0 SDATA(D_L12_00161A54);
+extern float D_L12_00161A60_2EDAA0 SDATA(D_L12_00161A60);
+extern float D_L12_00161A64_2EDAA0 SDATA(D_L12_00161A64);
+extern int D_L12_00161A68_2EDAA0 SDATA(D_L12_00161A68);
+extern int D_L12_00161A6C_2EDAA0 SDATA(D_L12_00161A6C);
+extern int D_L12_00161A70_2EDAA0 SDATA(D_L12_00161A70);
+extern int D_L12_00161A74_2EDAA0 SDATA(D_L12_00161A74);
+extern int D_L12_00161A78_2EDAA0 SDATA(D_L12_00161A78);
+extern float D_L12_00161A7C_2EDAA0 SDATA(D_L12_00161A7C);
+extern float D_L12_00161A80_2EDAA0 SDATA(D_L12_00161A80);
+extern float D_L12_00161A84_2EDAA0 SDATA(D_L12_00161A84);
+extern float D_L12_00161A88_2EDAA0 SDATA(D_L12_00161A88);
+
+extern float func_00214158_2EDAA0(void) __asm__("func_00214158");
+extern int func_001F9850_2EDAA0(int) __asm__("func_001F9850");
+extern float func_001FA748_2EDAA0(float, float) __asm__("func_001FA748");
+extern int func_001F9908_2EDAA0(int *) __asm__("func_001F9908");
+extern float func_001FA888_2EDAA0(int) __asm__("func_001FA888");
+extern float func_002140F8_2EDAA0(float, float) __asm__("func_002140F8");
+extern void func_L00_00258DB0_2EDAA0(float *, float, float) __asm__("func_L00_00258DB0");
+extern void func_001F9BF0_2EDAA0(void *, void *, void *) __asm__("func_001F9BF0");
+extern void func_001F9C30_2EDAA0(void *, void *, float) __asm__("func_001F9C30");
+extern void func_001F9BD8_2EDAA0(void *, void *, void *) __asm__("func_001F9BD8");
+extern char *func_00219780_2EDAA0(void *, void *, void *, int, int, int, int, int, int) __asm__("func_00219780");
+extern float func_00214D28_2EDAA0(float *, float, float) __asm__("func_00214D28");
+extern void func_L12_002EDE40_2EDAA0(char *) __asm__("func_L12_002EDE40");
+
+extern void func_001F49B0_2EDAA0(void *, void *) __asm__("func_001F49B0");
+
+/* Water reservoir update: steers the surface height and draws the ring of strips. */
+void func_L12_002EDAA0(Moby_2EDAA0 *moby) {
+    Data_2EDAA0 *data = moby->data;
+    float v10[4];
+    float v20[4];
+    float v30[4];
+    float v40[4];
+    float v50[4];
+    float f20;
+
+    switch (moby->state) {
+    case 0:
+        moby->state = 1;
+        moby->bBC = 2;
+        data->angle = func_00214158_2EDAA0();
+        data->level = 5.0f;
+        break;
+    case 1:
+        if (moby->bBC & 8) {
+            moby->bBC = 1;
+            data->timer = func_001F9850_2EDAA0(D_L12_00161A50_2EDAA0);
+        } else if (moby->bBC & 4) {
+            moby->bBC = 2;
+            data->timer = func_001F9850_2EDAA0(D_L12_00161A50_2EDAA0);
+        }
+        data->angle = func_001FA748_2EDAA0(data->angle, D_L12_00161A4C_2EDAA0 * 0.0174532924f * D_0015EE6C_2EDAA0);
+        break;
+    }
+
+    if (D_L12_0015F4FC_2EDAA0 == 0.0f) {
+        if (func_001F9908_2EDAA0(&data->timer) == 0) {
+            if (moby->bBC & 1) {
+                f20 = func_001FA888_2EDAA0(data->timer) / func_001FA888_2EDAA0(D_L12_00161A50_2EDAA0);
+                f20 = 1.0f - f20;
+            } else {
+                f20 = func_001FA888_2EDAA0(data->timer) / func_001FA888_2EDAA0(D_L12_00161A50_2EDAA0);
+            }
+            if (func_002140F8_2EDAA0(0.0f, 1.0f) < f20) {
+                float k;
+
+                func_L00_00258DB0_2EDAA0(v10, 0.0f, D_L12_00161A54_2EDAA0);
+                func_L00_00258DB0_2EDAA0(v20, 0.0f, D_L12_00161A54_2EDAA0);
+                func_L00_00258DB0_2EDAA0(v30, 0.0f, D_L12_00161A54_2EDAA0);
+                func_001F9BF0_2EDAA0(v40, v10, v20);
+                v40[2] = v40[2] + (D_L12_00161A80_2EDAA0 - D_L12_00161A7C_2EDAA0);
+                func_001F9BF0_2EDAA0(v50, v20, v30);
+                v50[2] = v50[2] + (D_L12_00161A84_2EDAA0 - D_L12_00161A80_2EDAA0);
+                k = 2.0f / (float)D_L12_00161A6C_2EDAA0;
+                func_001F9C30_2EDAA0(v40, v40, k);
+                func_001F9C30_2EDAA0(v50, v50, k);
+                func_001F9BD8_2EDAA0(v10, v10, moby->pos);
+                if (moby->bBC & 1) {
+                    v10[2] = v10[2] + D_L12_00161A84_2EDAA0;
+                    v40[2] = -v40[2];
+                    v50[2] = -v50[2];
+                } else {
+                    v10[2] = v10[2] + D_L12_00161A7C_2EDAA0;
+                }
+                v40[3] = func_002140F8_2EDAA0(D_L12_00161A60_2EDAA0, D_L12_00161A64_2EDAA0);
+                v50[3] = func_002140F8_2EDAA0(D_L12_00161A60_2EDAA0, D_L12_00161A64_2EDAA0);
+                func_00219780_2EDAA0(v10, v40, v50, D_L12_00161A74_2EDAA0, D_L12_00161A74_2EDAA0, D_L12_00161A68_2EDAA0,
+                                     func_001F9850_2EDAA0(D_L12_00161A6C_2EDAA0), D_L12_00161A70_2EDAA0, D_L12_00161A78_2EDAA0);
+            }
+        }
+        if ((moby->bBC & 1) && data->timer == 0) {
+            func_00214D28_2EDAA0(&data->level, -1.0f, D_L12_00161A88_2EDAA0 * D_0015EE6C_2EDAA0);
+        } else if (moby->bBC & 2) {
+            func_00214D28_2EDAA0(&data->level, 3.0f, D_L12_00161A88_2EDAA0 * D_0015EE6C_2EDAA0);
+        }
+    }
+    func_001F49B0_2EDAA0(func_L12_002EDE40_2EDAA0, moby);
+}
 extern void func_001FA460(void *, void *);
 extern int func_001F4868(int);
 extern float func_001F9FA8(float);
@@ -182,9 +300,263 @@ void func_L12_002EE600(char *m) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L12_00303CA8);
+typedef struct Quad_303CA8 {
+    float v[16];
+    int c[4];
+    float uv[8];
+    long g[4];
+} Quad_303CA8;
+typedef struct Data_303CA8 {
+    float ring[8][70][4];
+    int phase[4]; /* 0x2300 */
+    int row; /* 0x2310 */
+    int target; /* 0x2314 */
+    float angle; /* 0x2318 */
+    int f231C;
+    int f2320;
+    float dist; /* 0x2324 */
+    float turn; /* 0x2328 */
+    int count; /* 0x232C */
+    int f2330;
+} Data_303CA8;
+typedef struct Moby_303CA8 {
+    char pad0[0x10];
+    float pos[4]; /* 0x10 */
+    char pad20[0x20];
+    float f40[4]; /* 0x40 */
+    char pad50[0x28];
+    Data_303CA8 *data; /* 0x78 */
+    char pad7C[0x84];
+} Moby_303CA8;
+extern void func_001FA218_303CA8(void *, void *) __asm__("func_001FA218");
+extern void func_001FA540_303CA8(void *, void *, void *) __asm__("func_001FA540");
+extern void func_001F9BD8_303CA8(void *, void *, void *) __asm__("func_001F9BD8");
+extern int func_001F4868_303CA8(int) __asm__("func_001F4868");
+extern float func_001FA888_303CA8(int) __asm__("func_001FA888");
+extern int func_001FA8A8_303CA8(int, int, float) __asm__("func_001FA8A8");
+extern void func_L00_001FD1D8_303CA8(void *, void *, int) __asm__("func_L00_001FD1D8");
+extern Moby_303CA8 *D_L12_00160058_303CA8 __asm__("D_L12_00160058") MACRO_ADDR;
+extern float D_L12_001FB870_303CA8[][4] __asm__("D_L12_001FB870");
+extern float D_L12_001FB7D0_303CA8[] __asm__("D_L12_001FB7D0");
+extern float D_L12_001FB7F0_303CA8[][4] __asm__("D_L12_001FB7F0");
+extern int D_L12_00161E84_303CA8 __asm__("D_L12_00161E84") MACRO_ADDR;
+extern int D_L12_00161E88_303CA8 __asm__("D_L12_00161E88") MACRO_ADDR;
+extern int D_L12_00161E4C_303CA8 SDATA(D_L12_00161E4C);
+extern int D_L12_00161E50_303CA8 SDATA(D_L12_00161E50);
+extern int D_L12_00161E54_303CA8 SDATA(D_L12_00161E54);
+extern int D_L12_00161E58_303CA8 SDATA(D_L12_00161E58);
+extern int D_L12_00161E6C_303CA8 SDATA(D_L12_00161E6C);
+extern int D_L12_00161E70_303CA8 SDATA(D_L12_00161E70);
+extern float D_L12_00161E74_303CA8 SDATA(D_L12_00161E74);
+extern float D_L12_00161E78_303CA8 SDATA(D_L12_00161E78);
+
+/* Hoven vendor draw: builds the two strip matrices, then draws the four rings as quads lit by their phase. */
+void func_L12_00303CA8(Moby_303CA8 *moby) {
+    Quad_303CA8 quad[2];
+    float m[16];
+    float mats[5][16];
+    float vec[4];
+    Data_303CA8 *data;
+    float *pos;
+    float *row;
+    float t;
+    float u;
+    int i, j, k, n, d, idx;
+
+    data = moby->data;
+    func_001FA218_303CA8(m, moby->f40);
+    pos = moby->pos;
+    row = &mats[0][12];
+    for (i = 0; i < 2; i++) {
+        float *cp = mats[i];
+
+        func_001FA218_303CA8(cp, D_L12_001FB870_303CA8[i]);
+        func_001FA540_303CA8(cp, m, cp);
+        if (!(i & 1) && data->target != -1) {
+            qcopy(vec, D_L12_00160058_303CA8[data->target].pos);
+        } else {
+            qcopy(vec, pos);
+        }
+        func_001F9BD8_303CA8(row, row, vec);
+        row += 16;
+        cp[15] = 1.0f;
+    }
+    quad[1].g[1] = func_001F4868_303CA8(0xE);
+    quad[1].g[3] = (long)D_L12_00161E4C_303CA8 | ((long)D_L12_00161E50_303CA8 << 2) | ((long)D_L12_00161E54_303CA8 << 4) | ((long)D_L12_00161E58_303CA8 << 6) | (0x8000L << 24);
+    quad[1].g[2] = 0xFF9000000260UL;
+    quad[1].g[0] = 0;
+    {
+        float *uv = &quad[1].uv[1];
+        int c;
+
+        for (c = 0; c < 4; c++) {
+            *uv = D_L12_001FB7D0_303CA8[c * 2 + 1];
+            uv += 2;
+        }
+    }
+    for (idx = 0; idx < 4; idx++) {
+        if (D_L12_00161E88_303CA8 < data->phase[idx]) {
+            t = func_001FA888_303CA8(data->phase[idx] - D_L12_00161E88_303CA8) / func_001FA888_303CA8(D_L12_00161E84_303CA8 - D_L12_00161E88_303CA8);
+        } else {
+            t = 1.0f - func_001FA888_303CA8(data->phase[idx]) / func_001FA888_303CA8(D_L12_00161E88_303CA8);
+        }
+        quad[1].c[0] = quad[1].c[1] = quad[1].c[2] = quad[1].c[3] = func_001FA8A8_303CA8(D_L12_00161E6C_303CA8, D_L12_00161E70_303CA8, t);
+        u = 0.0f;
+        for (j = 0; j < data->count - 1; j++) {
+            u = u + D_L12_00161E74_303CA8;
+            if (1.0f < u) {
+                u = u - 1.0f;
+            }
+            for (k = 0; k < 4; k++) {
+                quad[1].uv[k * 2] = D_L12_001FB7D0_303CA8[k * 2] + u + D_L12_00161E78_303CA8;
+            }
+            for (n = 0; n < 4; n++) {
+                func_001F9BD8_303CA8(&quad[1].v[n * 4], D_L12_001FB7F0_303CA8[n], data->ring[idx][j + (n >> 1)]);
+            }
+            for (d = 0; d < 2; d++) {
+                func_L00_001FD1D8_303CA8(&quad[1], mats[d], 0);
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L12_00304038);
-INCLUDE_ASM("asm/overlays", func_L12_00304310);
+typedef union Vec_304310 {
+    u128 q;
+    float f[4];
+} Vec_304310;
+typedef struct Data_304310 {
+    char pad0[0x2300];
+    int f2300;
+    int f2304;
+    int f2308;
+    int f230C;
+    int row; /* 0x2310 */
+    int target; /* 0x2314 */
+    float angle; /* 0x2318 */
+    int f231C;
+    int f2320;
+    float dist; /* 0x2324 */
+    float turn; /* 0x2328 */
+    int f232C;
+    int f2330;
+} Data_304310;
+typedef struct Moby_304310 {
+    char pad0[0x10];
+    float pos[4]; /* 0x10 */
+    unsigned char state; /* 0x20 */
+    char pad21[0x10];
+    unsigned char b31;
+    char pad32[0x16];
+    float f48;
+    char pad4C[0x2C];
+    Data_304310 *data; /* 0x78 */
+    char pad7C[0x84];
+} Moby_304310;
+typedef struct Row_304310 {
+    u128 v0;
+    u128 v10;
+    u128 v20;
+} Row_304310;
+extern float func_L00_001FF860_304310(float, float) __asm__("func_L00_001FF860");
+extern float func_001F9D10_304310(void *, void *) __asm__("func_001F9D10");
+extern float func_001FA748_304310(float, float) __asm__("func_001FA748");
+extern float func_001F9FA8_304310(float) __asm__("func_001F9FA8");
+extern float func_001F9B88_304310(float) __asm__("func_001F9B88");
+extern void func_L00_0025C710_304310(void *, void *, void *, float) __asm__("func_L00_0025C710");
+extern float func_001F9D48_304310(void *, void *) __asm__("func_001F9D48");
+extern void func_001F9BD8_304310(void *, void *, void *) __asm__("func_001F9BD8");
+extern void func_001F9C30_304310(void *, void *, float) __asm__("func_001F9C30");
+extern int func_L00_00200290_304310(void *, float) __asm__("func_L00_00200290");
+extern int func_00215570_304310(void *, int) __asm__("func_00215570");
+extern void func_L12_00304038_304310(void *) __asm__("func_L12_00304038");
+extern void func_L00_0025A8C0_304310(void *, void *, int, float, void *) __asm__("func_L00_0025A8C0");
+extern int func_L00_001EFFF0_304310(void *, void *, int, void *, void *) __asm__("func_L00_001EFFF0");
+extern int D_L12_00161E84_304310 __asm__("D_L12_00161E84") MACRO_ADDR;
+extern int D_L12_00161E88_304310 __asm__("D_L12_00161E88") MACRO_ADDR;
+extern Moby_304310 *D_L12_00160058_304310 __asm__("D_L12_00160058") MACRO_ADDR;
+extern float D_0015EE6C_304310 __asm__("D_0015EE6C") MACRO_ADDR;
+extern Row_304310 *D_L12_001B0C30_304310[] __asm__("D_L12_001B0C30");
+extern char D_L12_001672C0_304310[] __asm__("D_L12_001672C0");
+extern float D_L12_0015F660_304310[] __asm__("D_L12_0015F660") MACRO_ADDR;
+extern float D_0013F4D0_304310[] __asm__("D_0013F4D0");
+
+/* Level 12 vendor moby update: steers toward its target, then calls the vendor helpers. */
+void func_L12_00304310(Moby_304310 *moby) {
+    Vec_304310 tmp0;
+    Vec_304310 tmp1;
+    char tmp2[0x30];
+    Data_304310 *data = moby->data;
+    Row_304310 *row;
+    float a;
+    float half;
+    int idx;
+
+    if (data->target == -1) {
+        return;
+    }
+    switch (moby->state) {
+    case 0:
+        D_L12_00161E88_304310 = 0x16;
+        D_L12_00161E84_304310 = 0x2D;
+        data->f231C = -1;
+        data->f2304 = 0xB;
+        data->f2308 = 0x17;
+        data->f230C = 0x22;
+        data->f2300 = 0;
+        moby->state = 1;
+        break;
+    case 1:
+        moby->f48 = func_L00_001FF860_304310(D_L12_00160058_304310[data->target].pos[0] - moby->pos[0],
+                                             D_L12_00160058_304310[data->target].pos[1] - moby->pos[1]);
+        data->dist = func_001F9D10_304310(moby->pos, (char *)D_L12_00160058_304310 + (data->target << 8) + 0x10);
+        data->angle = func_001FA748_304310(data->angle, data->turn * 0.017453292f * D_0015EE6C_304310);
+        row = D_L12_001B0C30_304310[data->row];
+        a = func_001F9FA8_304310(data->angle);
+        if (1.5707964f < data->angle && data->angle < 3.1415927f) {
+            a = 2.0f - a;
+        }
+        if (-3.1415927f < data->angle && data->angle < -1.5707964f) {
+            a = 2.0f - a;
+        }
+        half = 0.5f;
+        a = a * half;
+        a = a + half;
+        if (1.0f < a) {
+            a = a - 2.0f;
+        }
+        a = func_001F9B88_304310(a);
+        tmp0.q = row->v10;
+        tmp1.q = row->v20;
+        func_L00_0025C710_304310(moby->pos, &tmp0, &tmp1, a);
+        if (func_001F9D48_304310(moby->pos, D_0013F4D0_304310) > 64.0f) {
+            return;
+        }
+        if (moby->b31 == 0 && D_L12_00160058_304310[data->target].b31 == 0) {
+            func_001F9BD8_304310(&tmp0, moby->pos, D_L12_00160058_304310[data->target].pos);
+            func_001F9C30_304310(&tmp0, &tmp0, half);
+            tmp0.f[3] = 16.0f;
+            if (func_L00_00200290_304310(&tmp0, 32.0f) == -1) {
+                return;
+            }
+        }
+        if (data->f2330 != -1 && func_00215570_304310(D_L12_001672C0_304310, data->f2330) != 0) {
+            return;
+        }
+        if (data->f2320 == 0) {
+            return;
+        }
+        func_L12_00304038_304310(moby);
+        idx = data->target;
+        if (idx == -1) {
+            return;
+        }
+        qcopy(&tmp0, &moby->pos[2]);
+        qcopy(&tmp1, D_L12_00160058_304310[idx].pos);
+        func_L00_0025A8C0_304310(tmp2, moby, 0x10001, 1.0f, D_L12_0015F660_304310);
+        func_L00_001EFFF0_304310(&tmp0, &tmp1, 0, 0, tmp2);
+        break;
+    }
+}
 extern void func_L08_00315068(void *);
 extern void func_001F9EC0(void *, void *, void *);
 extern void func_001F9BD8(void *, void *, void *);

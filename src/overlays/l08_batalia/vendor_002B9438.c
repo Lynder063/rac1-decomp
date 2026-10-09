@@ -461,7 +461,87 @@ void func_L08_002D5FA8(Moby_2D5FA8 *m) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L08_002D68D0);
-INCLUDE_ASM("asm/overlays", func_L08_002D6C58);
+extern void func_L00_00250800_2D6C58(void *, int, void *) __asm__("func_L00_00250800");
+extern void func_0020DAF8_2D6C58(char *, int, char *) __asm__("func_0020DAF8");
+extern float func_00214158_2D6C58(void) __asm__("func_00214158");
+extern float func_002140F8_2D6C58(float, float) __asm__("func_002140F8");
+extern void func_L00_001FF4B0_2D6C58(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern void func_001F9BD8_2D6C58(void *, void *, void *) __asm__("func_001F9BD8");
+extern void func_001F9C30_2D6C58(void *, void *, float) __asm__("func_001F9C30");
+extern float func_001F9F90_2D6C58(float) __asm__("func_001F9F90");
+extern float func_001F9FA8_2D6C58(float) __asm__("func_001F9FA8");
+extern float func_001F9878_2D6C58(float) __asm__("func_001F9878");
+extern int func_001FA898_2D6C58(float) __asm__("func_001FA898");
+extern char *func_00219780_2D6C58(void *, void *, void *, int, int, int, int, int, int) __asm__("func_00219780");
+extern float D_0015EE6C_2D6C58 __asm__("D_0015EE6C") MACRO_ADDR;
+extern int D_L08_00161964_2D6C58 SDATA(D_L08_00161964);
+extern int D_L08_00161968_2D6C58 SDATA(D_L08_00161968);
+extern float D_L08_0016196C_2D6C58 SDATA(D_L08_0016196C);
+extern float D_L08_00161970_2D6C58 SDATA(D_L08_00161970);
+extern float D_L08_00161978_2D6C58 SDATA(D_L08_00161978);
+extern int D_L08_0016197C_2D6C58 SDATA(D_L08_0016197C);
+extern int D_L08_00161980_2D6C58 SDATA(D_L08_00161980);
+extern int D_L08_00161984_2D6C58 SDATA(D_L08_00161984);
+extern float D_L08_00161988_2D6C58 SDATA(D_L08_00161988);
+extern float D_L08_0016198C_2D6C58 SDATA(D_L08_0016198C);
+
+// Jitters the moby's vector, then spawns the effect groups for each of the count steps.
+void func_L08_002D6C58(char *moby, int a1, int count) {
+    char *d = *(char **)(moby + 0x78);
+    char t10[32];
+    float t30[8];
+    float t50[4];
+    float t60[4];
+    float t70[4];
+    float t80[4];
+    float v90[4];
+    int i;
+    int x1, x2, x3;
+    float s, t;
+
+    func_L00_00250800_2D6C58(moby, a1, t50);
+    func_0020DAF8_2D6C58(moby, a1, t10);
+    for (i = 0; i < count; i++) {
+        float *vp = v90;
+
+        s = func_00214158_2D6C58();
+        qcopy(vp, t50);
+        v90[0] += func_002140F8_2D6C58(-0.05f, 0.05f);
+        v90[1] += func_002140F8_2D6C58(-0.05f, 0.05f);
+        v90[2] += func_002140F8_2D6C58(-0.05f, 0.05f);
+        qcopy(t60, d + 0x40);
+        qcopy(t70, d + 0x40);
+        if (count / 3 < i) {
+            func_L00_001FF4B0_2D6C58(t80, t30, func_002140F8_2D6C58(D_L08_0016196C_2D6C58, D_L08_0016196C_2D6C58 * 1.2f) * D_0015EE6C_2D6C58);
+            func_001F9BD8_2D6C58(t60, t60, t80);
+            func_001F9C30_2D6C58(t70, t70, 0.5f);
+            t = func_001F9F90_2D6C58(s);
+            t = t * (func_002140F8_2D6C58(0.0f, D_L08_00161978_2D6C58) * D_0015EE6C_2D6C58);
+            t70[0] = t70[0] + t;
+            t = func_001F9FA8_2D6C58(s);
+            t = t * (func_002140F8_2D6C58(0.0f, D_L08_00161978_2D6C58) * D_0015EE6C_2D6C58);
+            t70[1] = t70[1] + t;
+            t70[2] = D_L08_00161970_2D6C58 * D_0015EE6C_2D6C58;
+        } else {
+            func_L00_001FF4B0_2D6C58(t80, t30, func_002140F8_2D6C58(0.0f, D_L08_0016196C_2D6C58) * D_0015EE6C_2D6C58);
+            func_001F9BD8_2D6C58(t60, t60, t80);
+            func_001F9C30_2D6C58(t70, t70, 0.5f);
+            t = func_001F9F90_2D6C58(s);
+            t = t * (func_002140F8_2D6C58(0.0f, D_L08_00161978_2D6C58 * 0.25f) * D_0015EE6C_2D6C58);
+            t70[0] = t70[0] + t;
+            t = func_001F9FA8_2D6C58(s);
+            t = t * (func_002140F8_2D6C58(0.0f, D_L08_00161978_2D6C58 * 0.25f) * D_0015EE6C_2D6C58);
+            t70[1] = t70[1] + t;
+            t70[2] = D_L08_00161970_2D6C58 * D_0015EE6C_2D6C58;
+        }
+        t60[3] = D_L08_00161988_2D6C58;
+        t70[3] = D_L08_0016198C_2D6C58;
+        x1 = func_001FA898_2D6C58(func_001F9878_2D6C58(func_002140F8_2D6C58((float)D_L08_0016197C_2D6C58, (float)D_L08_0016197C_2D6C58 * 1.2f)));
+        x2 = func_001FA898_2D6C58(func_001F9878_2D6C58(func_002140F8_2D6C58((float)D_L08_00161980_2D6C58, (float)D_L08_00161980_2D6C58 * 1.2f)));
+        x3 = func_001FA898_2D6C58(func_001F9878_2D6C58(func_002140F8_2D6C58((float)D_L08_00161984_2D6C58, (float)D_L08_00161984_2D6C58 * 1.5f)));
+        func_00219780_2D6C58(t50, t60, t70, D_L08_00161964_2D6C58, D_L08_00161968_2D6C58, x1, x2, x3, -1);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L08_002D7010);
 INCLUDE_ASM("asm/overlays", func_L08_002D7758);
 INCLUDE_ASM("asm/overlays", func_L08_002DB438);

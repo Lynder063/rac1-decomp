@@ -2,7 +2,119 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L14_002FF358);
+typedef float Vec_2FF358[4] __attribute__((aligned(16)));
+typedef struct Moby_2FF358 {
+    char pad0[0x10];
+    Vec_2FF358 pos; /* 0x10 */
+    char pad20[0xA0];
+    Vec_2FF358 right; /* 0xC0 */
+    Vec_2FF358 fwd; /* 0xD0 */
+    Vec_2FF358 up; /* 0xE0 */
+} Moby_2FF358;
+typedef struct Part_2FF358 {
+    char pad0[3];
+    unsigned char b3;
+    char pad4[4];
+    unsigned char b8;
+    char pad9;
+    short life; /* 0xA */
+    char padC[0x14];
+    struct PartSub_2FF358 {
+        int f0;
+        int f4;
+        char pad8[2];
+        unsigned char bA;
+        unsigned char bB;
+    } sub; /* 0x20 */
+} Part_2FF358;
+extern float D_L14_0015F660_2FF358[] __asm__("D_L14_0015F660") MACRO_ADDR;
+extern float D_L14_00162060_2FF358 SDATA(D_L14_00162060);
+extern float D_L14_00162064_2FF358 SDATA(D_L14_00162064);
+extern float D_L14_00162068_2FF358 SDATA(D_L14_00162068);
+extern float D_L14_0016206C_2FF358 SDATA(D_L14_0016206C);
+extern float D_L14_00162070_2FF358 SDATA(D_L14_00162070);
+extern int D_L14_00162074_2FF358 SDATA(D_L14_00162074);
+extern Part_2FF358 *func_L00_0026DEA0_2FF358(void *, float, float, float, int, void *, float, int) __asm__("func_L00_0026DEA0");
+extern void func_001F9C30_2FF358(void *, void *, float) __asm__("func_001F9C30");
+extern void func_001F9BD8_2FF358(void *, void *, void *) __asm__("func_001F9BD8");
+extern int func_002140B0_2FF358(int) __asm__("func_002140B0");
+extern int func_001F9850_2FF358(int) __asm__("func_001F9850");
+extern int func_L00_00258BC8_2FF358(int, int) __asm__("func_L00_00258BC8");
+
+/* Spawns the effect pieces for a moby: two sparks, the ring of three and a final coloured one. */
+void func_L14_002FF358(Moby_2FF358 *p) {
+    Vec_2FF358 A;
+    Vec_2FF358 B;
+    Vec_2FF358 C;
+    Part_2FF358 *e;
+    int i, j, n, m, k, col;
+    float s;
+
+    func_001F9C30_2FF358(A, p->right, D_L14_00162060_2FF358);
+    func_001F9BD8_2FF358(B, p->pos, A);
+    func_001F9C30_2FF358(A, p->up, D_L14_00162068_2FF358);
+    func_001F9BD8_2FF358(B, B, A);
+    qcopy(C, B);
+    func_001F9C30_2FF358(A, p->fwd, D_L14_00162064_2FF358);
+    func_001F9BD8_2FF358(B, B, A);
+    for (i = 1; i >= 0; i--) {
+        n = func_002140B0_2FF358(0x10);
+        k = func_002140B0_2FF358(2) == 0 ? n : -n;
+        e = func_L00_0026DEA0_2FF358(B, 0.2f, 1.0f, 0.9f, k, D_L14_0015F660_2FF358, 200000.0f, D_L14_00162074_2FF358);
+        if (e != 0) {
+            struct PartSub_2FF358 *f = &e->sub;
+
+            e->life = func_001F9850_2FF358(0xC);
+            f->f4 = 2;
+            f->bA = 0x7F;
+            f->bB = e->life;
+        }
+    }
+    func_001F9C30_2FF358(A, p->right, D_L14_0016206C_2FF358);
+    s = 100000.0f;
+    func_001F9BD8_2FF358(B, B, A);
+    n = 0x10;
+    m = func_001F9850_2FF358(2);
+    for (j = 0; j < 3; j++) {
+        e = func_L00_0026DEA0_2FF358(B, 0.05f, 1.0f, 1.0f, n, D_L14_0015F660_2FF358, s, 0x7FFFFFFF);
+        if (e != 0) {
+            struct PartSub_2FF358 *f = &e->sub;
+
+            e->life = m;
+            e->b8 = func_002140B0_2FF358(0xFF);
+            f->f4 = 2;
+            f->bA = 0x7F;
+            f->bB = e->life;
+        }
+        n = -n;
+        m = m << 1;
+        s = s - 20000.0f;
+    }
+    s = 300000.0f;
+    func_001F9C30_2FF358(A, p->right, D_L14_00162070_2FF358);
+    func_001F9BD8_2FF358(B, C, A);
+    col = func_L00_00258BC8_2FF358(0x40, 0x80);
+    k = (col << 8) | 0x7F000000;
+    col = col | ((col << 16) | k);
+    if (func_002140B0_2FF358(3)) {
+        Part_2FF358 *g;
+
+        n = func_002140B0_2FF358(4);
+        k = func_002140B0_2FF358(2) == 0 ? n : -n;
+        g = func_L00_0026DEA0_2FF358(B, 0.05f, 1.0f, 1.0f, k, D_L14_0015F660_2FF358, s, col);
+        if (g != 0) {
+            struct PartSub_2FF358 *f = &g->sub;
+
+            g->life = func_001F9850_2FF358(0x3C);
+            if (func_002140B0_2FF358(2)) {
+                g->b3 = 0x44;
+            }
+            f->bA = 0x40;
+            f->f4 = 2;
+            f->bB = func_001F9850_2FF358(0x3C);
+        }
+    }
+}
 extern char *D_L14_00160098 MACRO_ADDR;
 extern void func_0020D678(void *);
 /* deletes the linked moby and then the owner if still active */

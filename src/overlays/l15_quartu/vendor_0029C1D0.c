@@ -1297,7 +1297,145 @@ char *func_L15_002E92C8(void *unused, void *vector) {
     }
     return moby;
 }
-INCLUDE_ASM("asm/overlays", func_L15_002E9358);
+typedef union Vec_2E9358 {
+    u128 q;
+    float f[4];
+} Vec_2E9358;
+typedef struct Data_2E9358 {
+    float f0;
+    float f4;
+    float f8;
+    float fC;
+    struct Moby_2E9358 *target; /* 0x10 */
+} Data_2E9358;
+typedef struct Moby_2E9358 {
+    char pad0[0x10];
+    u128 pos; /* 0x10 */
+    unsigned char state; /* 0x20 */
+    char pad21[0x1F];
+    u128 v40; /* 0x40 */
+    char pad50[0x28];
+    Data_2E9358 *data; /* 0x78 */
+    char pad7C[0x28];
+    unsigned char bA4;
+    char padA5;
+    short hA6;
+    char padA8[0x14];
+    unsigned char bBC;
+} Moby_2E9358;
+typedef struct Res_2E9358 {
+    char pad0[0x20];
+    Moby_2E9358 *owner; /* 0x20 */
+} Res_2E9358;
+typedef struct Tb_2E9358 {
+    char pad0[0x18];
+    int f18;
+    int f1C;
+    u128 v20;
+    u128 v30;
+    u128 v40;
+} Tb_2E9358;
+extern char D_L15_001744C0_2E9358[] __asm__("D_L15_001744C0");
+extern int D_L15_001744D8_2E9358 __asm__("D_L15_001744D8");
+extern int D_001414D0_2E9358 __asm__("D_001414D0");
+extern float D_0015EE6C_2E9358 __asm__("D_0015EE6C") MACRO_ADDR;
+extern float D_0015EE70_2E9358 __asm__("D_0015EE70") MACRO_ADDR;
+extern float D_L15_0016203C_2E9358 SDATA(D_L15_0016203C);
+extern char *D_L15_00178580_2E9358[] __asm__("D_L15_00178580");
+extern int func_L00_001F10E0_2E9358(float, void *, int, void *) __asm__("func_L00_001F10E0");
+extern Res_2E9358 *func_L00_0025B478_2E9358(void *, int, int) __asm__("func_L00_0025B478");
+extern char *func_L00_0025D390_2E9358(int) __asm__("func_L00_0025D390");
+extern void func_L00_001FF240_2E9358(void *, void *, void *) __asm__("func_L00_001FF240");
+extern int func_L00_001EFFF0_2E9358(void *, void *, int, void *, void *) __asm__("func_L00_001EFFF0");
+extern void func_L00_001FF610_2E9358(void *, void *, void *) __asm__("func_L00_001FF610");
+extern void func_L00_001FF4B0_2E9358(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern float func_00214358_2E9358(void *, int, float) __asm__("func_00214358");
+extern int func_L00_00261478_2E9358(void *, void *, void *, void *, void *, void *) __asm__("func_L00_00261478");
+extern void func_001F9BF0_2E9358(void *, void *, void *) __asm__("func_001F9BF0");
+extern void func_L00_0025F4A8_2E9358(void *, void *, void *, float, float, int, int, int, float, float, float, float, int, float, int, int, int, int) __asm__("func_L00_0025F4A8");
+extern int func_L00_0028EF68_2E9358(int, int, void *, int) __asm__("func_L00_0028EF68");
+extern int func_L00_001F2BE8_2E9358(void *, int, void *, void *, float) __asm__("func_L00_001F2BE8");
+extern void func_L00_0025BA50_2E9358(void *, void *, void *, int, int, int, int, int, float, float, float) __asm__("func_L00_0025BA50");
+extern void func_0020D678_2E9358(void *) __asm__("func_0020D678");
+extern void func_001F9BC0_2E9358(void *) __asm__("func_001F9BC0");
+
+/* Poison vessel update (moby class 1257): tracks its target and fires its effect. */
+void func_L15_002E9358(Moby_2E9358 *moby) {
+    Vec_2E9358 s20;
+    Vec_2E9358 s30;
+    Vec_2E9358 s40;
+    Data_2E9358 *data = moby->data;
+    char *p20 = 0;
+    unsigned char state;
+    int ret;
+    Res_2E9358 *r;
+
+    s20.q = moby->pos;
+    func_001F9BC0_2E9358(&s30);
+    if (func_L00_001F10E0_2E9358(0.5f, &moby->pos, 1, moby)) {
+        if (D_L15_001744D8_2E9358 == 0 || func_L00_0025D390_2E9358(D_L15_001744D8_2E9358) == 0) {
+            moby->bBC = 1;
+        }
+    }
+    r = func_L00_0025B478_2E9358(moby, 0x830000, 0);
+    if (r != 0 && r->owner != 0 && r->owner->hA6 != moby->hA6) {
+        moby->bBC = 1;
+    }
+    moby->bA4 = 0xFF;
+
+    state = moby->state;
+    switch (state) {
+    case 0:
+        data->f8 = data->f8 - D_L15_0016203C_2E9358 * D_0015EE70_2E9358;
+        func_L00_001FF240_2E9358(&s40, &moby->pos, data);
+        if (func_L00_001EFFF0_2E9358(&s20, &moby->pos, 0x10, moby, 0)) {
+            if (((Tb_2E9358 *)D_L15_001744C0_2E9358)->f18 != 0 && func_L00_0025D390_2E9358(((Tb_2E9358 *)D_L15_001744C0_2E9358)->f18) != 0) {
+                data->target = (Moby_2E9358 *)((Tb_2E9358 *)D_L15_001744C0_2E9358)->f18;
+                moby->state = 1;
+                data->f8 = 0.0f;
+                moby->pos = ((Tb_2E9358 *)D_L15_001744C0_2E9358)->v20;
+            } else if (((Tb_2E9358 *)D_L15_001744C0_2E9358)->f18 == D_001414D0_2E9358 || data->f8 < D_0015EE6C_2E9358 * -9.8f) {
+                moby->bBC = 1;
+                qcopy(&moby->pos, &((Tb_2E9358 *)D_L15_001744C0_2E9358)->v20);
+                func_L00_001FF610_2E9358(&s30, data, &((Tb_2E9358 *)D_L15_001744C0_2E9358)->v40);
+                func_L00_001FF4B0_2E9358(&s30, &s30, D_0015EE6C_2E9358 + D_0015EE6C_2E9358);
+            }
+        }
+        break;
+    case 1:
+        func_00214358_2E9358(&moby->pos, 0, 0.5f);
+        if (data->target != 0) {
+            Moby_2E9358 *t = data->target;
+
+            if (t->state == 0xFE || data->target->state == 0xFD) {
+                moby->bBC = state;
+                data->target = 0;
+            } else if (D_L15_001744D8_2E9358 != 0) {
+                p20 = func_L00_0025D390_2E9358(D_L15_001744D8_2E9358);
+                if (p20 != 0) {
+                    func_L00_00261478_2E9358(moby, data->target, &moby->pos, &moby->v40, &moby->pos, &moby->v40);
+                    func_001F9BF0_2E9358(&s40, &moby->pos, &s20);
+                    *(u128 *)data = s40.q;
+                }
+            }
+        }
+        if (p20 == 0) {
+            moby->state = 0;
+            data->f8 = 0.0f;
+            data->target = 0;
+        }
+        break;
+    }
+
+    if (moby->bBC != 0) {
+        func_L00_0025F4A8_2E9358(moby, data, 0, 0.0f, 0.0f, 3, 3, 5, 2.0f, 1.0f, 4.0f, 1.0f, -1, 7.0f, 0, 1, -1, 0);
+        func_L00_0028EF68_2E9358(0, 0, moby, 0x79);
+        ret = func_L00_001F2BE8_2E9358(&moby->pos, 0x10, moby, 0, 2.0f);
+        s40.q = moby->pos;
+        func_L00_0025BA50_2E9358(moby, &s40, D_L15_00178580_2E9358, ret, 0, 0x830001, 2, 1, 1.0f, 1.0f, 1.0f);
+        func_0020D678_2E9358(moby);
+    }
+}
 extern void func_L00_002D80A0(char *);
 extern void func_0020D678(void *);
 extern void func_L10_00299AF0(char *);
