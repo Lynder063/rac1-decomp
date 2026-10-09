@@ -1179,7 +1179,265 @@ void func_L00_002CD660(char *m) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L00_002CD7B0);
-INCLUDE_ASM("asm/overlays", func_L00_002CDAB8);
+typedef int u128_2CDAB8 __attribute__((mode(TI)));
+typedef union { u128_2CDAB8 q; float f[4]; } Vec_2CDAB8;
+typedef struct { float m[3][4]; } __attribute__((aligned(16))) Mat3_2CDAB8;
+typedef struct { float m[4][4]; } __attribute__((aligned(16))) Mat4_2CDAB8;
+typedef struct Moby_2CDAB8 Moby_2CDAB8;
+typedef struct {
+    Moby_2CDAB8 *target;
+    unsigned char shots;
+    unsigned char slot;
+    short shot_timer;
+    int lock_timer;
+    float height;
+    short track_timer;
+    short count;
+    float life;
+    Moby_2CDAB8 *recent[7];
+} Ryno_2CDAB8;
+struct Moby_2CDAB8 {
+    char pad0[0x10];
+    float pos[4];
+    unsigned char state;
+    char pad21[0x10];
+    unsigned char visible;
+    char pad32[0x3E];
+    unsigned char flags70;
+    char pad71[7];
+    Ryno_2CDAB8 *data;
+};
+typedef struct { float radius; char pad4[0xC]; float height; } Bounds_2CDAB8;
+typedef struct {
+    char pad0[0x640];
+    float v640[4];
+    char pad650[0xA50];
+    int buttons;
+    char pad10A4[8];
+    unsigned char mode10AC;
+    char pad10AD[0x203];
+    int lock12B0;
+    char pad12B4[8];
+    float yaw12BC;
+    char pad12C0[0xDC4];
+    int weapon;
+    char pad2088[0x24];
+    unsigned char busy;
+} Hero_2CDAB8;
+typedef struct { char pad0[0x1A0]; int held; int pressed; } Pad_2CDAB8;
+typedef struct { char pad0[0xB8]; unsigned short uses; unsigned short best; unsigned int levels; } Stats_2CDAB8;
+
+extern char D_L00_00166D80_2CDAB8[] __asm__("D_L00_00166D80");
+extern Vec_2CDAB8 D_L00_00166ED0_2CDAB8 __asm__("D_L00_00166ED0");
+extern float D_L00_00166EC0_2CDAB8[] __asm__("D_L00_00166EC0");
+extern int D_0015EFA4_2CDAB8 __asm__("D_0015EFA4") MACRO_ADDR;
+extern int D_0015EE84_2CDAB8 __asm__("D_0015EE84") MACRO_ADDR;
+extern char D_0013E633_2CDAB8[] __asm__("D_0013E633");
+extern char D_0013A5E0_2CDAB8[] __asm__("D_0013A5E0");
+extern char D_0014171B_2CDAB8[] __asm__("D_0014171B");
+extern void matcopy_2CDAB8(void *, void *) __asm__("func_001FA480");
+extern void transpose_2CDAB8(void *, void *) __asm__("func_001FA4A0");
+extern int timer32_2CDAB8(int *) __asm__("func_001F9908");
+extern int timer16_2CDAB8(short *) __asm__("func_001F9938");
+extern void muzzle_2CDAB8(Moby_2CDAB8 *, int, float *) __asm__("func_L00_00250800");
+extern Moby_2CDAB8 *find_target_2CDAB8(float *, float *, Moby_2CDAB8 **, float, float, float) __asm__("func_L00_002CD7B0");
+extern int ticks_2CDAB8(int) __asm__("func_001F9850");
+extern Bounds_2CDAB8 *bounds_2CDAB8(Moby_2CDAB8 *) __asm__("func_L00_0025D390");
+extern int has_ammo_2CDAB8(int) __asm__("func_L00_00234718");
+extern int use_ammo_2CDAB8(int, int) __asm__("func_L00_00234638");
+extern float distance_2CDAB8(void *, void *) __asm__("func_001F9D10");
+extern float fabs_2CDAB8(float) __asm__("func_001F9B88");
+extern void reticle_2CDAB8(Moby_2CDAB8 *, int, float, float, float *, int, int, float, int) __asm__("func_L00_001EE2E0");
+extern void hud_2CDAB8(int, int) __asm__("func_L00_00222B80");
+extern void fire_start_2CDAB8(void) __asm__("func_L00_0020EB60");
+extern void fire_end_2CDAB8(void) __asm__("func_L00_0020ED30");
+extern void apply_mat4_2CDAB8(float *, float *, void *) __asm__("func_001F9EE8");
+extern void apply_mat3_2CDAB8(float *, float *, void *) __asm__("func_001F9EC0");
+extern void add_2CDAB8(float *, void *, void *) __asm__("func_001F9BD8");
+extern void scale_2CDAB8(float *, float *, float) __asm__("func_001F9C30");
+extern float angle_2CDAB8(float, float) __asm__("func_L00_001FF860");
+extern float length_2CDAB8(float *) __asm__("func_001F9CE8");
+extern unsigned char *missile_2CDAB8(Moby_2CDAB8 *, float *, Moby_2CDAB8 *, float, float, float) __asm__("func_L00_002CE390");
+extern int rand_2CDAB8(void) __asm__("func_001160D8");
+
+/* Ryno (class 454) update: target lock and reticle while held, then the eight-missile salvo state machine. */
+void func_L00_002CDAB8(Moby_2CDAB8 *m) {
+    Mat3_2CDAB8 cam;
+    Mat4_2CDAB8 view;
+    Vec_2CDAB8 aim;
+    Vec_2CDAB8 dir;
+    Vec_2CDAB8 ofs;
+    Ryno_2CDAB8 *d = m->data;
+    Moby_2CDAB8 *r;
+    Bounds_2CDAB8 *b;
+    float yaw, pitch;
+    int i;
+
+    matcopy_2CDAB8(&cam, D_L00_00166D80_2CDAB8);
+    transpose_2CDAB8(&view, &cam);
+    if ((unsigned int)(m->state - 2) < 2) {
+        if (timer32_2CDAB8(&d->lock_timer) || d->target == 0 || d->target->state == 0xFE || d->target->state == 0xFD) {
+            d->target = 0;
+            d->height = 0;
+        }
+        qcopy(aim.f, D_L00_00166ED0_2CDAB8.f);
+        aim.f[1] = -aim.f[1];
+        muzzle_2CDAB8(m, d->slot, dir.f);
+        r = find_target_2CDAB8(dir.f, aim.f, 0, 1.6981583f, 1.6981583f, 80.0f);
+        if ((r != 0 && d->target == 0) || d->target == 0 || d->target->state == 0xFE || d->target->state == 0xFD || d->target->visible == 0) {
+            d->height = 0;
+            d->target = r;
+            d->lock_timer = ticks_2CDAB8(20);
+            d->life = 1.0f;
+            b = bounds_2CDAB8(d->target);
+            if (b != 0) {
+                d->height = b->height;
+                d->life = b->radius;
+            }
+        }
+        if (d->target != 0 && timer16_2CDAB8(&d->track_timer) && has_ammo_2CDAB8(-1)) {
+            if (d->target == 0 || d->target->state == 0xFE || d->target->state == 0xFD) {
+                d->target = 0;
+                d->height = 0;
+            } else {
+                float f = distance_2CDAB8(D_L00_00166EC0_2CDAB8, d->target->pos) / 150.0f;
+                qcopy(aim.f, d->target->pos);
+                f = f * 0.65f;
+                aim.f[2] = aim.f[2] + d->height;
+                reticle_2CDAB8(m, 0xFF0FFF0F, fabs_2CDAB8(0.9f - f), 0.0f, aim.f, 0x23, -1, 90.0f, 4);
+            }
+        }
+    }
+    switch (m->state) {
+    case 0:
+        d->target = 0;
+        D_0013E633_2CDAB8[0x1EC9] = 0;
+        m->state = 1;
+        d->track_timer = 0;
+        break;
+    case 1:
+        if (m->flags70 & 2) m->state = 2;
+        break;
+    case 2:
+        if (((Hero_2CDAB8 *)(D_0013E633_2CDAB8 + 0xE1D))->weapon == 1) hud_2CDAB8(0x1E, 1);
+        if ((((Pad_2CDAB8 *)(D_0013A5E0_2CDAB8 + 0x2460))->pressed & ((Hero_2CDAB8 *)(D_0013E633_2CDAB8 + 0xE1D))->buttons) == 0) return;
+        if (((Hero_2CDAB8 *)(D_0013E633_2CDAB8 + 0xE1D))->busy != 0) return;
+        if (use_ammo_2CDAB8(-1, 1) == 0) return;
+        {
+            int per;
+            Stats_2CDAB8 *s = (Stats_2CDAB8 *)(D_0014171B_2CDAB8 + 0x65);
+            if (s->uses <= 0xFFFE) s->uses++;
+            per = 600;
+            if (ticks_2CDAB8(D_0015EFA4_2CDAB8) / per > s->best) s->best = ticks_2CDAB8(D_0015EFA4_2CDAB8) / 600;
+            s->levels = s->levels | (1 << D_0015EE84_2CDAB8) | 0x80000000;
+        }
+        ((Hero_2CDAB8 *)(D_0013E633_2CDAB8 + 0xE1D))->mode10AC = 2;
+        m->state = 4;
+        d->shot_timer = 0;
+        d->slot = 0;
+        d->shots = 0;
+        fire_start_2CDAB8();
+        {
+            int k;
+            for (k = 6; k >= 0; k--) d->recent[k] = 0;
+        }
+        d->count = 0;
+        break;
+    case 3:
+        reticle_2CDAB8(m, 0xFF0F0FFF, 1.0f, 0.0f, 0, 0x23, -1, 90.0f, 4);
+        if ((((Pad_2CDAB8 *)(D_0013A5E0_2CDAB8 + 0x2460))->held & 5) == 0) {
+            m->state = 2;
+            return;
+        }
+        if ((((Pad_2CDAB8 *)(D_0013A5E0_2CDAB8 + 0x2460))->pressed & ((Hero_2CDAB8 *)(D_0013E633_2CDAB8 + 0xE1D))->buttons) == 0) return;
+        if (((Hero_2CDAB8 *)(D_0013E633_2CDAB8 + 0xE1D))->busy != 0) return;
+        if (use_ammo_2CDAB8(-1, 1) == 0) return;
+        {
+            int per;
+            Stats_2CDAB8 *s = (Stats_2CDAB8 *)(D_0014171B_2CDAB8 + 0x65);
+            if (s->uses <= 0xFFFE) s->uses++;
+            per = 600;
+            if (ticks_2CDAB8(D_0015EFA4_2CDAB8) / per > s->best) s->best = ticks_2CDAB8(D_0015EFA4_2CDAB8) / 600;
+            s->levels = s->levels | (1 << D_0015EE84_2CDAB8) | 0x80000000;
+        }
+        ((Hero_2CDAB8 *)(D_0013E633_2CDAB8 + 0xE1D))->mode10AC = 2;
+        m->state = 4;
+        d->shot_timer = 0;
+        d->slot = 0;
+        d->shots = 0;
+        fire_start_2CDAB8();
+        {
+            int k;
+            for (k = 6; k >= 0; k--) d->recent[k] = 0;
+        }
+        d->count = 0;
+        break;
+    case 4:
+        if (timer16_2CDAB8(&d->shot_timer) == 0) return;
+        d->shot_timer = ticks_2CDAB8(9);
+        d->slot++;
+        d->slot = d->slot % 9;
+        d->shots++;
+        dir.q = 0;
+        if (((Hero_2CDAB8 *)(D_0013E633_2CDAB8 + 0xE1D))->weapon == 30) {
+            dir.f[2] = 1.0f;
+            apply_mat4_2CDAB8(dir.f, dir.f, &view);
+        } else {
+            dir.f[0] = 1.0f;
+            apply_mat3_2CDAB8(dir.f, dir.f, ((Hero_2CDAB8 *)(D_0013E633_2CDAB8 + 0xE1D))->v640);
+        }
+        add_2CDAB8(ofs.f, D_0013E633_2CDAB8 + 0xF1D, D_0013E633_2CDAB8 + 0xF5D);
+        scale_2CDAB8(ofs.f, ofs.f, 3.0f);
+        add_2CDAB8(dir.f, dir.f, ofs.f);
+        if (((Hero_2CDAB8 *)(D_0013E633_2CDAB8 + 0xE1D))->lock12B0 != 0) {
+            yaw = ((Hero_2CDAB8 *)(D_0013E633_2CDAB8 + 0xE1D))->yaw12BC;
+        } else {
+            yaw = angle_2CDAB8(dir.f[0], dir.f[1]);
+        }
+        pitch = -angle_2CDAB8(length_2CDAB8(dir.f), dir.f[2]);
+        muzzle_2CDAB8(m, d->slot, aim.f);
+        fire_start_2CDAB8();
+        missile_2CDAB8(m, aim.f, d->target, d->height, yaw, pitch);
+        if (d->shots >= 7) {
+            ((Hero_2CDAB8 *)(D_0013E633_2CDAB8 + 0xE1D))->mode10AC = 0;
+            fire_end_2CDAB8();
+            m->state = 5;
+            d->shot_timer = ticks_2CDAB8(60);
+            d->track_timer = ticks_2CDAB8(60);
+        }
+        d->life = d->life - 1.0f;
+        if (d->life <= 0.0f || d->target == 0 || d->target->state == 0xFE || d->target->state == 0xFD) {
+            d->recent[d->count] = d->target;
+            d->count++;
+            d->count = d->count % 7;
+            qcopy(aim.f, D_L00_00166ED0_2CDAB8.f);
+            aim.f[1] = -aim.f[1];
+            d->target = find_target_2CDAB8(m->pos, aim.f, d->recent, 3.1415927f, 3.1415927f, 100.0f);
+            if (d->target == 0 && d->count > 0 && (rand_2CDAB8() & (d->count + 1)) == 0) {
+                d->target = d->recent[rand_2CDAB8() % d->count];
+            }
+            d->height = 0;
+            d->lock_timer = ticks_2CDAB8(20);
+            d->life = 1.0f;
+            b = bounds_2CDAB8(d->target);
+            if (b != 0) {
+                d->height = b->height;
+                d->life = b->radius;
+            }
+        }
+        break;
+    case 5:
+        if (timer16_2CDAB8(&d->shot_timer) == 0) return;
+        d->shots = 0;
+        d->target = 0;
+        m->state = 2;
+        break;
+    case 6:
+    case 7:
+    case 8:
+        break;
+    }
+}
 typedef int u128 __attribute__((mode(TI)));
 typedef struct { float f[4]; } __attribute__((aligned(16))) V4;
 extern unsigned char *func_0020D348(int);

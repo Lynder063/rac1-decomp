@@ -378,7 +378,526 @@ void func_L09_002C6B30(struct Moby_2C6B30 *moby) {
     }
 }
 INCLUDE_ASM("asm/overlays", func_L09_002C73D0);
-INCLUDE_ASM("asm/overlays", func_L09_002E39E0);
+typedef struct { float x, y, z, w; } __attribute__((aligned(16))) V_2E39E0;
+typedef struct Moby_2E39E0 Moby_2E39E0;
+typedef struct {
+    char pad0[0x20];
+    float health;
+    short f24;
+    short cooldown;
+    char pad28[1];
+    unsigned char f29;
+    char pad2A[0xE];
+    int hurt;
+    char pad3C[0x1C];
+    unsigned char f58;
+    char pad59[1];
+    unsigned char f5A;
+    char pad5B[0x6D];
+    short fC8;
+    char padCA[6];
+    unsigned char *settings;
+    char padD4[0x3C];
+    char effects[7];
+    unsigned char f117;
+    char pad118[8];
+    char motion[0x10];
+    float f130;
+    float f134;
+    float up;
+    float back;
+    char pad140[4];
+    int f144;
+    char pad148[0x15];
+    unsigned char f15D;
+    char pad15E[0x12];
+    float f170;
+    float f174;
+    char pad178[8];
+    int steer;
+    char pad184[4];
+    float f188;
+    float f18C;
+    float f190;
+    char pad194[4];
+    float fall;
+    char pad19C[8];
+    float f1A4;
+    char pad1A8[0x28];
+    V_2E39E0 home;
+    char pad1E0[0x10];
+    char turn[4];
+    float side;
+    float side_deg;
+    float range;
+    char pad200[4];
+    float speed;
+    int f208;
+    char pad20C[4];
+    int side_timer;
+    short alert;
+    short leash;
+    Moby_2E39E0 *anchor;
+    int path;
+    char pad220[4];
+    int home_timer;
+    int hidden;
+    char pad22C[4];
+    char sound[4];
+} Data_2E39E0;
+struct Moby_2E39E0 {
+    char pad0[0x10];
+    V_2E39E0 pos;
+    unsigned char state;
+    unsigned char event;
+    char pad22[2];
+    char *cls;
+    Moby_2E39E0 *next;
+    char pad2C[4];
+    unsigned char alpha;
+    unsigned char f31;
+    char pad32[2];
+    unsigned short flags;
+    char pad36[0x12];
+    float yaw;
+    char pad4C[6];
+    unsigned char anim_cur;
+    unsigned char anim;
+    char pad54[0x1C];
+    unsigned char f70;
+    char pad71[7];
+    Data_2E39E0 *data;
+    char pad7C[3];
+    unsigned char f7F;
+    char pad80[0x14];
+    int f94;
+    char pad98[0xC];
+    unsigned char fA4;
+    char padA5[1];
+    short oclass;
+    char padA8[0x14];
+    unsigned char fBC;
+};
+typedef struct { char pad0[0x20]; Moby_2E39E0 *moby; char pad24[6]; unsigned short kind; float damage; } Hit_2E39E0;
+typedef struct { float x, y, z; char padC[0x34]; Moby_2E39E0 *who; char pad44[0xC]; } __attribute__((aligned(16))) Target_2E39E0;
+typedef struct { char pad0[0x2024]; unsigned char mode; } Hero_2E39E0;
+
+extern char D_0013E633_2E39E0[] __asm__("D_0013E633");
+extern float D_0015EE6C_2E39E0 __asm__("D_0015EE6C") MACRO_ADDR;
+extern float D_0015EE70_2E39E0 __asm__("D_0015EE70") MACRO_ADDR;
+extern float D_L09_00166FC0_2E39E0[] __asm__("D_L09_00166FC0");
+extern char *D_L09_001B0930_2E39E0[] __asm__("D_L09_001B0930");
+extern Moby_2E39E0 *D_L09_00160064_2E39E0 __asm__("D_L09_00160064") MACRO_ADDR;
+extern float impulse_2E39E0 SDATA(D_L09_00161948);
+extern float lift_2E39E0 SDATA(D_L09_0016194C);
+extern unsigned char settings_2E39E0 SDATA(D_L09_00161958);
+extern Hit_2E39E0 *hit_query_2E39E0(Moby_2E39E0 *, int, int) __asm__("func_L00_0025B478");
+extern int hit_check_2E39E0(Moby_2E39E0 *, Hit_2E39E0 *, float *, int, int *, float *, int, int) __asm__("func_L00_0025B4D0");
+extern int timer16_2E39E0(short *) __asm__("func_001F9938");
+extern int timer32_2E39E0(int *) __asm__("func_001F9908");
+extern int ticks_2E39E0(int) __asm__("func_001F9850");
+extern void event_2E39E0(int, int) __asm__("func_L01_0026F040");
+extern float angle_2E39E0(float, float) __asm__("func_L00_001FF860");
+extern void knock_2E39E0(Moby_2E39E0 *, void *, float, int, int, int) __asm__("func_L00_0025D5B0");
+extern void explode_2E39E0(Moby_2E39E0 *, int, int) __asm__("func_L00_002584A8");
+extern void effects_start_2E39E0(Moby_2E39E0 *, void *) __asm__("func_L00_0025E4B0");
+extern void sound_2E39E0(float, Moby_2E39E0 *, int, void *) __asm__("func_L00_00264B40");
+extern float distance_2E39E0(void *, void *) __asm__("func_001F9D10");
+extern float fast_distance_2E39E0(void *, void *) __asm__("func_001F9D48");
+extern void wake_2E39E0(Moby_2E39E0 *) __asm__("func_L00_0025B178");
+extern int target_2E39E0(Moby_2E39E0 *, Target_2E39E0 *, float) __asm__("func_L00_00260D30");
+extern void steer_init_2E39E0(int *) __asm__("func_L01_0026E8E0");
+extern int rand_2E39E0(void) __asm__("func_001160D8");
+extern int range_2E39E0(int, int) __asm__("func_L00_00258BC8");
+extern void animate_2E39E0(Moby_2E39E0 *, int, int, int) __asm__("func_00213DE0");
+extern float ground_2E39E0(void *, int, float) __asm__("func_00214358");
+extern void vec_sub_2E39E0(void *, void *, void *) __asm__("func_001F9BF0");
+extern void vec_add_2E39E0(void *, void *, void *) __asm__("func_001F9BD8");
+extern float length_2E39E0(void *) __asm__("func_001F9CB8");
+extern float fabs_2E39E0(float) __asm__("func_001F9B88");
+extern int status_2E39E0(int) __asm__("func_002140B0");
+extern float range_float_2E39E0(float, float) __asm__("func_002140F8");
+extern void turn_2E39E0(Moby_2E39E0 *, float, void *, float, float, float) __asm__("func_L00_002592B0");
+extern void project_2E39E0(Moby_2E39E0 *, char *, void *, void *) __asm__("func_L01_0028C3A8");
+extern float sine_2E39E0(float) __asm__("func_001F9F90");
+extern float cosine_2E39E0(float) __asm__("func_001F9FA8");
+extern int move_2E39E0(Moby_2E39E0 *, int *, void *, void *, float) __asm__("func_L00_00259B88");
+extern float frame_2E39E0(Moby_2E39E0 *) __asm__("func_0020D830");
+extern float angle_dist_2E39E0(float, float) __asm__("func_001FA850");
+extern void hurt_2E39E0(Moby_2E39E0 *, Moby_2E39E0 *, int, void *, void *, float) __asm__("func_L00_0025AC00");
+extern int knock_update_2E39E0(Moby_2E39E0 *, void *) __asm__("func_L00_0025D6F0");
+extern int recover_2E39E0(Moby_2E39E0 *, void *) __asm__("func_L00_002DDEA0");
+extern void zero_2E39E0(void *) __asm__("func_001F9BC0");
+extern float angle_delta_2E39E0(float, float) __asm__("func_001FA790");
+extern float angle_add_2E39E0(float, float) __asm__("func_001FA748");
+extern void vec_scale_2E39E0(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern float fixed_2E39E0(short) __asm__("func_001FA888");
+extern int hazard_2E39E0(void) __asm__("func_L00_001F3958");
+extern void splash_2E39E0(Moby_2E39E0 *, void *, int, float, float) __asm__("func_L00_00260108");
+extern void delete_2E39E0(Moby_2E39E0 *) __asm__("func_0020D678");
+extern void effects_update_2E39E0(Moby_2E39E0 *, void *) __asm__("func_L00_0025E590");
+
+/* Ground enemy update: damage reaction, leash and wake checks, then its chase / attack / return state machine. */
+void func_L09_002E39E0(Moby_2E39E0 *m) {
+    V_2E39E0 previous;
+    Target_2E39E0 query;
+    V_2E39E0 step;
+    V_2E39E0 goal;
+    V_2E39E0 away;
+    int hit_index;
+    float damage;
+    Data_2E39E0 *d = m->data;
+    int kind = 2;
+    int expired;
+    float ground;
+
+    if (m->state != 99 && m->state != 7) {
+        Hit_2E39E0 *hit;
+        damage = 0.0f;
+        hit = hit_query_2E39E0(m, 0x330000, 0);
+        hit_check_2E39E0(m, hit, &d->health, 0, &hit_index, &damage, 0, 4);
+        timer16_2E39E0(&d->cooldown);
+        if (d->cooldown < ticks_2E39E0(45) && hit != 0) {
+            if ((unsigned short)(hit->moby->oclass - 0xB0) < 2) {
+                if (d->cooldown != 0) hit->damage = 0.0f;
+                else hit->damage = 1.0f;
+            }
+            if (m->event != 0xFF) event_2E39E0(m->event, 1);
+            if (hit->damage != 0.0f) {
+                float health = d->health - hit->damage;
+                float up = lift_2E39E0 * D_0015EE6C_2E39E0;
+                float back = impulse_2E39E0 * D_0015EE6C_2E39E0;
+                d->f144 = 9;
+                d->f130 = 0.008f;
+                d->f134 = 0.0005f;
+                d->health = health;
+                d->up = up;
+                d->back = back;
+                d->f15D = 0;
+                if (health <= 0.0f) {
+                    float up_die = D_0015EE6C_2E39E0 * 8.0f;
+                    float back_die = D_0015EE6C_2E39E0 * 10.0f;
+                    m->flags &= 0xEFFF;
+                    d->up = up_die;
+                    d->back = back_die;
+                    if (hit->kind == 180) {
+                        d->up = up_die * 1.35f;
+                        d->back = back_die * 1.35f;
+                    }
+                    knock_2E39E0(m, d->motion, angle_2E39E0(m->pos.x - query.x, m->pos.y - query.y), 5, 1, 0);
+                    d->f170 = 11.0f;
+                    d->f174 = 18.0f;
+                    if (*(unsigned char *)(D_0013E633_2E39E0 + 0x2EC1) == 2) explode_2E39E0(m, 0x200, -1);
+                    else explode_2E39E0(m, 0, -1);
+                    m->f94 = 0;
+                    m->state = 99;
+                    d->f117 = 120;
+                    effects_start_2E39E0(m, d->effects);
+                } else {
+                    if (hit->kind == 180) {
+                        d->up = up * 1.35f;
+                        d->back = back * 1.35f;
+                    }
+                    knock_2E39E0(m, d->motion, angle_2E39E0(m->pos.x - query.x, m->pos.y - query.y), 6, 1, 0);
+                    d->f170 = 5.0f;
+                    d->f174 = 10.0f;
+                    m->state = 6;
+                    d->f117 = 250;
+                    d->cooldown = ticks_2E39E0(60);
+                    effects_start_2E39E0(m, d->effects);
+                }
+            }
+        }
+        m->fA4 = 0xFF;
+        sound_2E39E0(2.1f, m, 0, d->sound);
+        if (m->f31 != 0 && distance_2E39E0(&m->pos, D_L09_00166FC0_2E39E0) < 38.0f) {
+            wake_2E39E0(m);
+            m->f7F = 30;
+        }
+        if (fast_distance_2E39E0(&m->pos, D_0013E633_2E39E0 + 0xE9D) > 40.0f) return;
+        if (d->hidden != 0) {
+            if (((Hero_2E39E0 *)(D_0013E633_2E39E0 + 0xE9D))->mode != 2) {
+                m->alpha = 0xFF;
+                m->f94 = 0;
+                m->flags = (m->flags | 0x41) & 0xEFFF;
+                return;
+            }
+            m->flags &= 0xFFBE;
+            m->f94 = *(int *)(m->cls + 0x10);
+            m->alpha = 0x40;
+            m->flags |= 0x1000;
+        }
+        if (d->hurt != 0) d->alert = ticks_2E39E0(240);
+        d->hurt = 0;
+        timer32_2E39E0(&d->f208);
+        if (timer16_2E39E0(&d->alert)) d->range = 12.0f;
+        else d->range = 20.0f;
+        kind = target_2E39E0(m, &query, d->range);
+    }
+    qcopy(&previous, &m->pos);
+    expired = timer32_2E39E0(&d->home_timer) != 0;
+    ground = -1.0f;
+    switch (m->state) {
+    case 0:
+        qcopy(&d->home, &m->pos);
+        m->state = 1;
+        d->f29 = 0;
+        d->health = 1.0f;
+        d->f24 = 1;
+        d->f5A = 2;
+        d->f58 = 8;
+        d->alert = 0;
+        d->f208 = 0;
+        steer_init_2E39E0(&d->steer);
+        d->steer = 0x38D;
+        d->f188 = d->f18C = 2.0f;
+        d->f1A4 = d->speed * D_0015EE6C_2E39E0;
+        if (rand_2E39E0() & 1) m->flags |= 0x8000;
+        d->settings = &settings_2E39E0;
+        if (m->anim != 2) animate_2E39E0(m, 2, 0, ticks_2E39E0(range_2E39E0(10, 13)));
+        ground = m->pos.z = ground_2E39E0(&m->pos, 0, 0.5f);
+        break;
+    case 1:
+        vec_sub_2E39E0(&step, &query, &m->pos);
+        if ((kind < 2 || length_2E39E0(&step) < d->range + 4.0f) && fabs_2E39E0(m->pos.z - query.z) < 8.0f && !status_2E39E0(19)) {
+            m->state = 2;
+            if (m->anim != 4) animate_2E39E0(m, 4, 0, ticks_2E39E0(range_2E39E0(10, 13)));
+        } else if (m->fBC == 1 && !status_2E39E0(19)) {
+            if (status_2E39E0(0x100) & 1) d->side_deg = -d->side_deg;
+            d->side = d->side_deg * 0.017453292f;
+            d->side_timer = ticks_2E39E0((int)range_float_2E39E0(30.0f, 90.0f));
+            m->state = 3;
+            if (m->anim != 0) animate_2E39E0(m, 0, 0, ticks_2E39E0(range_2E39E0(10, 13)));
+            m->fBC = 0;
+        }
+        break;
+    case 2:
+    case 8:
+    case 10:
+    case 11:
+        turn_2E39E0(m, angle_2E39E0(query.x - m->pos.x, query.y - m->pos.y), d->turn, 0.02f, 0.3f, 0.1f);
+        vec_sub_2E39E0(&step, &query, &m->pos);
+        if ((kind < 2 || length_2E39E0(&step) < d->range) && fabs_2E39E0(m->pos.z - query.z) < 8.0f && !status_2E39E0(19)) {
+            if (m->event != 0xFF) event_2E39E0(m->event, 1);
+            if (status_2E39E0(0x100) & 1) d->side_deg = -d->side_deg;
+            d->side = d->side_deg * 0.017453292f;
+            d->side_timer = ticks_2E39E0((int)range_float_2E39E0(30.0f, 90.0f));
+            m->state = 3;
+            if (m->anim != 0) animate_2E39E0(m, 0, 0, ticks_2E39E0(range_2E39E0(10, 13)));
+            m->fBC = 0;
+        } else if (m->fBC == 1 && !status_2E39E0(19)) {
+            if (status_2E39E0(0x100) & 1) d->side_deg = -d->side_deg;
+            d->side = d->side_deg * 0.017453292f;
+            d->side_timer = ticks_2E39E0((int)range_float_2E39E0(30.0f, 90.0f));
+            m->state = 3;
+            if (m->anim != 0) animate_2E39E0(m, 0, 0, ticks_2E39E0(range_2E39E0(10, 13)));
+            m->fBC = 0;
+        }
+        if (m->anim == 4 && (m->f70 & 2)) animate_2E39E0(m, 2, 0, ticks_2E39E0(range_2E39E0(10, 13)));
+        break;
+    case 3: {
+        int flags;
+        float steep;
+        steep = fabs_2E39E0(m->pos.z - query.z);
+        steep /= fast_distance_2E39E0(&m->pos, &query);
+        if (d->path != -1) project_2E39E0(m, D_L09_001B0930_2E39E0[d->path], &query, &goal);
+        else qcopy(&goal, &query);
+        turn_2E39E0(m, angle_2E39E0(goal.x - m->pos.x, goal.y - m->pos.y) + d->side, d->turn, 0.05f, 0.3f, 0.2f);
+        step.x = 2.0f * sine_2E39E0(m->yaw);
+        step.y = 2.0f * cosine_2E39E0(m->yaw);
+        step.z = 0.0f;
+        vec_add_2E39E0(&goal, &m->pos, &step);
+        flags = move_2E39E0(m, &d->steer, &goal, &step, 1.0f);
+        if (timer32_2E39E0(&d->side_timer)) {
+            d->side_timer = ticks_2E39E0((int)range_float_2E39E0(30.0f, 90.0f));
+            d->side = -d->side;
+        }
+        vec_sub_2E39E0(&away, &query, &d->home);
+        if ((flags & 4) || (fast_distance_2E39E0(&m->pos, &query) < 1.5f && !(flags & 2))) {
+            m->state = 4;
+            if (m->anim != 1) animate_2E39E0(m, 1, 0, ticks_2E39E0(range_2E39E0(10, 13)));
+        } else if (d->f190 < D_0015EE6C_2E39E0 || 1.0f < steep || (flags & 2)) {
+            d->home_timer = ticks_2E39E0(50);
+            m->state = 5;
+        } else if (length_2E39E0(&away) < d->range + 4.0f && fabs_2E39E0(m->pos.z - query.z) < 8.0f) {
+            if (m->event != 0xFF) event_2E39E0(m->event, 1);
+        } else if (m->fBC != 1) {
+            m->state = 5;
+        }
+        m->fBC = 0;
+        break;
+    }
+    case 4:
+        turn_2E39E0(m, angle_2E39E0(query.x - m->pos.x, query.y - m->pos.y), d->turn, 0.05f, 0.3f, 0.2f);
+        if (m->anim_cur == m->anim && frame_2E39E0(m) == 13.0f && fabs_2E39E0(m->pos.z - query.z) < 0.5f
+            && fast_distance_2E39E0(&m->pos, &query) < 2.0f
+            && angle_dist_2E39E0(angle_2E39E0(query.x - m->pos.x, query.y - m->pos.y), m->yaw) < 0.2617994f) {
+            step.x = sine_2E39E0(m->yaw) * 0.2f;
+            step.y = cosine_2E39E0(m->yaw) * 0.2f;
+            step.z = 0.0f;
+            qcopy(&goal, &query);
+            goal.z += 0.75f;
+            hurt_2E39E0(query.who, m, 1, &goal, &step, 1.0f);
+        }
+        if ((m->f70 & 2) && fast_distance_2E39E0(&m->pos, &query) > 1.5f) {
+            m->state = 3;
+            if (m->anim != 0) animate_2E39E0(m, 0, 0, ticks_2E39E0(range_2E39E0(10, 13)));
+        }
+        ground = ground_2E39E0(&m->pos, 0, 0.5f);
+        d->fall = d->fall - D_0015EE70_2E39E0 * 9.8f;
+        m->pos.z = m->pos.z + d->fall;
+        if (m->pos.z < ground) {
+            d->fall = 0.0f;
+            m->pos.z = ground;
+        }
+        break;
+    case 5: {
+        int flags;
+        if (d->path != -1) project_2E39E0(m, D_L09_001B0930_2E39E0[d->path], &d->home, &goal);
+        else qcopy(&goal, &d->home);
+        turn_2E39E0(m, angle_2E39E0(goal.x - m->pos.x, goal.y - m->pos.y), d->turn, 0.02f, 0.3f, 0.1f);
+        step.x = 2.0f * sine_2E39E0(m->yaw);
+        step.y = 2.0f * cosine_2E39E0(m->yaw);
+        step.z = 0.0f;
+        vec_add_2E39E0(&goal, &m->pos, &step);
+        flags = move_2E39E0(m, &d->steer, &goal, &step, 1.0f);
+        if (fast_distance_2E39E0(&m->pos, &d->home) < 2.0f) {
+            m->state = 1;
+            if (m->anim != 2) animate_2E39E0(m, 2, 0, ticks_2E39E0(range_2E39E0(10, 13)));
+        }
+        vec_sub_2E39E0(&away, &query, &d->home);
+        if (expired && length_2E39E0(&away) < d->range) {
+            if (m->event != 0xFF) event_2E39E0(m->event, 1);
+            m->state = 3;
+            if (m->anim != 0) animate_2E39E0(m, 0, 0, ticks_2E39E0(range_2E39E0(10, 13)));
+        } else if (expired && m->fBC == 1) {
+            m->state = 3;
+            if (m->anim != 0) animate_2E39E0(m, 0, 0, ticks_2E39E0(range_2E39E0(10, 13)));
+        } else if (flags & 2) {
+            m->pos.x = previous.x;
+            m->pos.y = previous.y;
+            m->state = 12;
+            if (m->anim != 4) animate_2E39E0(m, 4, 0, ticks_2E39E0(range_2E39E0(10, 13)));
+        }
+        m->fBC = 0;
+        break;
+    }
+    case 6:
+        if (knock_update_2E39E0(m, d->motion) & 1) {
+            m->state = 9;
+            if (m->anim != 3) animate_2E39E0(m, 3, 0, ticks_2E39E0(range_2E39E0(10, 13)));
+            return;
+        }
+        if (m->pos.z < 0.0f) {
+            delete_2E39E0(m);
+            return;
+        }
+        break;
+    case 7:
+        if (recover_2E39E0(m, d->motion)) {
+            m->state = 1;
+            if (m->anim != 2) animate_2E39E0(m, 2, 0, 0);
+            d->fC8 = 0;
+        }
+        break;
+    case 9:
+        if (frame_2E39E0(m) > 29.0f) {
+            m->state = 3;
+            if (m->anim != 0) animate_2E39E0(m, 0, 0, ticks_2E39E0(range_2E39E0(10, 13)));
+            return;
+        }
+        break;
+    case 99:
+        if (knock_update_2E39E0(m, d->motion) & 0x40) {
+            zero_2E39E0(&step);
+            splash_2E39E0(m, &m->pos, 6, 0.5f, 13.0f);
+            delete_2E39E0(m);
+            return;
+        }
+        if (m->pos.z < 0.0f) {
+            delete_2E39E0(m);
+            return;
+        }
+        break;
+    case 12: {
+        int flags;
+        float steep;
+        steep = fabs_2E39E0(m->pos.z - query.z);
+        steep /= fast_distance_2E39E0(&m->pos, &query);
+        if (d->path != -1) project_2E39E0(m, D_L09_001B0930_2E39E0[d->path], &d->home, &goal);
+        else qcopy(&goal, &d->home);
+        turn_2E39E0(m, angle_2E39E0(goal.x - m->pos.x, goal.y - m->pos.y), d->turn, 0.05f, 0.3f, 0.2f);
+        step.x = 2.0f * sine_2E39E0(m->yaw);
+        step.y = 2.0f * cosine_2E39E0(m->yaw);
+        step.z = 0.0f;
+        vec_add_2E39E0(&goal, &m->pos, &step);
+        flags = move_2E39E0(m, &d->steer, &goal, &step, 1.0f);
+        vec_sub_2E39E0(&away, &query, &d->home);
+        if ((flags & 4) || (fast_distance_2E39E0(&m->pos, &query) < 1.5f && steep <= 1.0f)) {
+            m->state = 4;
+            if (m->anim != 1) animate_2E39E0(m, 1, 0, ticks_2E39E0(range_2E39E0(10, 13)));
+        } else if (steep <= 1.0f && !(flags & 2)) {
+            m->state = 5;
+            if (m->anim != 0) animate_2E39E0(m, 0, 0, ticks_2E39E0(range_2E39E0(10, 13)));
+        } else if ((flags & 2) && expired) {
+            m->state = 1;
+            if (m->anim != 2) animate_2E39E0(m, 2, 0, ticks_2E39E0(range_2E39E0(10, 13)));
+        } else if (m->f70 & 2) {
+            int a;
+            status_2E39E0(4);
+            a = status_2E39E0(4) ? 2 : 4;
+            animate_2E39E0(m, a, 0, ticks_2E39E0(range_2E39E0(10, 13)));
+        }
+        m->fBC = 0;
+        break;
+    }
+    case 13: {
+        Moby_2E39E0 *o;
+        if (m->anim_cur != 0 && m->anim != 0) animate_2E39E0(m, 0, 0, ticks_2E39E0(range_2E39E0(10, 13)));
+        step.x = sine_2E39E0(m->yaw) * (d->speed * D_0015EE6C_2E39E0);
+        step.y = cosine_2E39E0(m->yaw) * (d->speed * D_0015EE6C_2E39E0);
+        step.z = 0.0f;
+        vec_add_2E39E0(&goal, &m->pos, &step);
+        for (o = D_L09_00160064_2E39E0; o != 0; o = o->next) {
+            if (o != m && (signed char)o->state >= 0 && (o->oclass == 0 || o->oclass == 193)) {
+                if (fast_distance_2E39E0(&goal, &o->pos) < 2.0f) {
+                    float z = m->pos.z;
+                    float a = angle_2E39E0(o->pos.x - m->pos.x, o->pos.y - m->pos.y);
+                    float dl = angle_delta_2E39E0(m->yaw, a);
+                    float t = D_0015EE6C_2E39E0 * 1.5707964f;
+                    if (!(dl > 0.0f)) t = -t;
+                    m->yaw = angle_add_2E39E0(m->yaw, t);
+                    vec_sub_2E39E0(&goal, &m->pos, &o->pos);
+                    vec_scale_2E39E0(&goal, &goal, 2.0f);
+                    vec_add_2E39E0(&goal, &goal, &o->pos);
+                    goal.z = z;
+                }
+            }
+        }
+        qcopy(&m->pos, &goal);
+        ground = ground_2E39E0(&m->pos, 0, 0.5f);
+        d->fall = d->fall - D_0015EE70_2E39E0 * 9.8f;
+        m->pos.z = m->pos.z + d->fall;
+        if (m->pos.z < ground) {
+            d->fall = 0.0f;
+            m->pos.z = ground;
+        }
+        if (d->anchor == 0 || fast_distance_2E39E0(&m->pos, &d->anchor->pos) > fixed_2E39E0(d->leash)) {
+            m->state = 5;
+            if (m->anim != 0) animate_2E39E0(m, 0, 0, ticks_2E39E0(range_2E39E0(10, 13)));
+        }
+        m->fBC = 0;
+        break;
+    }
+    }
+    if (ground == -1.0f) ground = ground_2E39E0(&m->pos, 0, 0.5f);
+    if (ground != 0.0f && m->pos.z - ground < 0.1f && hazard_2E39E0() == 1) {
+        splash_2E39E0(m, &m->pos, 6, 0.5f, 13.0f);
+        delete_2E39E0(m);
+        return;
+    }
+    effects_update_2E39E0(m, d->effects);
+}
 typedef int OvlQuad_08F58 __attribute__((mode(TI)));
 typedef union {
     OvlQuad_08F58 q;

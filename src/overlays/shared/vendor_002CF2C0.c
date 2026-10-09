@@ -1707,7 +1707,224 @@ void func_L05_0032ADE8(char *moby) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L05_0032B1F8);
+typedef struct { float x, y, z, w; } __attribute__((aligned(16))) V_32B1F8;
+typedef struct {
+    V_32B1F8 pos;
+    char pad10[0x10];
+    V_32B1F8 axis;
+    char pad30[0x1C];
+    float dist;
+} Focus_32B1F8;
+typedef struct {
+    float dist;
+    char pad4[0xC];
+    float height;
+} Spring_32B1F8;
+typedef struct {
+    V_32B1F8 vel;
+    char pad10[0x10];
+    float state[4];
+    char pad30[4];
+    float k34, k38, k3C;
+    float blend;
+} Track_32B1F8;
+typedef struct {
+    float vel[4];
+    float k10, k14, k18;
+    short mode;
+    char pad1E[0x62];
+    Focus_32B1F8 focus;
+    char padD0[0x10];
+    Spring_32B1F8 spring;
+    char padF4[0xC];
+    Track_32B1F8 track;
+    char pad150[0x30];
+    float dist;
+    float spring_dist;
+    float spring_height;
+    float focus_dist;
+    float spring_dist2;
+    float spring_height2;
+    char pad198[8];
+    V_32B1F8 aim;
+    V_32B1F8 bias;
+    float bias_vel[4];
+    V_32B1F8 next;
+} Orbit_32B1F8;
+typedef struct {
+    V_32B1F8 fwd;
+    V_32B1F8 up;
+    V_32B1F8 side;
+    V_32B1F8 pos;
+    char pad40[0x24];
+    float vel[3];
+    Orbit_32B1F8 *orbit;
+    char pad74[0x10];
+    short preset;
+} Camera_32B1F8;
+typedef struct { char pad0[0x48]; float vel; } Preset_32B1F8;
+typedef struct { char pad0[0x1C]; Preset_32B1F8 *preset; } Row_32B1F8;
+typedef struct {
+    char pad0[0x2DC];
+    float speed;
+    char pad2E0[0x2E];
+    short moving;
+    char pad310[0x57D];
+    unsigned char locked;
+    char pad88E[0x17F2];
+    char *body;
+} Hero_32B1F8;
+
+extern char D_0013E633_32B1F8[] __asm__("D_0013E633");
+extern Row_32B1F8 *D_L05_0015F050_32B1F8 __asm__("D_L05_0015F050") MACRO_ADDR;
+extern float D_L05_00174378_32B1F8 __asm__("D_L05_00174378");
+extern float D_L05_00162268_32B1F8 SDATA(D_L05_00162268);
+extern void vec_scale_32B1F8(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern void vec_sub_32B1F8(void *, void *, void *) __asm__("func_001F9BF0");
+extern float vec_dot_32B1F8(void *, void *) __asm__("func_001F9C78");
+extern void vec_add_32B1F8(void *, void *, void *) __asm__("func_001F9BD8");
+extern float spring_32B1F8(float, float, float *, float, float, float) __asm__("func_001EC120");
+extern void vec_mul_32B1F8(void *, void *, float) __asm__("func_001F9C30");
+extern int collide_32B1F8(float, void *, int, void *) __asm__("func_L00_001F10E0");
+extern float fabs_32B1F8(float) __asm__("func_001F9B88");
+extern void vec_cross_32B1F8(void *, void *, void *) __asm__("func_001F9CA0");
+extern void orbit_32B1F8(Camera_32B1F8 *) __asm__("func_L05_0032ADE8");
+
+/* Camera follow: springs the position toward the focus, keeps clear of walls, eases distance and height, then rebuilds the basis. */
+void func_L05_0032B1F8(Camera_32B1F8 *m) {
+    V_32B1F8 down;
+    V_32B1F8 focus;
+    V_32B1F8 rel;
+    V_32B1F8 lat;
+    V_32B1F8 off;
+    V_32B1F8 base;
+    V_32B1F8 goal;
+    V_32B1F8 tmp;
+    V_32B1F8 probe;
+    V_32B1F8 step;
+    Orbit_32B1F8 *d = m->orbit;
+    char *g = D_0013E633_32B1F8 + 0x10AD;
+    Preset_32B1F8 *cur;
+    Focus_32B1F8 *q;
+    Track_32B1F8 *tr;
+    float dist;
+    Spring_32B1F8 *e;
+    float *v;
+    float dd;
+    V_32B1F8 *pos;
+    int n;
+    int fl = 0;
+
+    cur = D_L05_0015F050_32B1F8[m->preset].preset;
+    tr = &d->track;
+    dist = d->dist;
+    q = &d->focus;
+    e = &d->spring;
+    vec_scale_32B1F8(&down, g, -1.0f);
+    qcopy(&focus, &q->pos);
+    if (d->mode == 0) {
+        vec_sub_32B1F8(&rel, pos = &m->pos, &focus);
+        n = 0;
+        dd = vec_dot_32B1F8(&rel, &q->axis);
+        vec_scale_32B1F8(&tmp, &q->axis, dd);
+        vec_sub_32B1F8(&lat, &rel, &tmp);
+        vec_scale_32B1F8(&off, &lat, e->dist);
+        vec_add_32B1F8(&base, &focus, &off);
+        vec_scale_32B1F8(&tmp, &q->axis, e->height);
+        vec_add_32B1F8(&goal, &base, &tmp);
+        vec_add_32B1F8(&goal, &goal, &d->bias);
+        m->pos.x = spring_32B1F8(m->pos.x, goal.x, &d->vel[0], d->k10, d->k14, d->k18);
+        m->pos.y = spring_32B1F8(m->pos.y, goal.y, &d->vel[1], d->k10, d->k14, d->k18);
+        m->pos.z = spring_32B1F8(m->pos.z, goal.z, &d->vel[2], d->k10, d->k14, d->k18);
+        v = m->vel;
+        probe.x = v[0];
+        probe.y = v[1];
+        probe.z = v[2];
+        *(int *)&probe.w = 0;
+        vec_sub_32B1F8(&step, pos, &probe);
+        vec_mul_32B1F8(&step, &step, 0.16666667f);
+        while (n < 6) {
+            if (collide_32B1F8(0.5f, &probe, 18, 0) != 0) {
+                e->height = spring_32B1F8(e->height, D_L05_00174378_32B1F8 - focus.z, &cur->vel, 0.05f, 0.2f, 0.0f);
+                break;
+            }
+            n++;
+            vec_add_32B1F8(&probe, &probe, &step);
+        }
+        if (n == 6) {
+            d->bias.x = spring_32B1F8(d->bias.x, 0.0f, &d->bias_vel[0], 0.02f, 0.2f, 0.05f);
+            d->bias.y = spring_32B1F8(d->bias.y, 0.0f, &d->bias_vel[1], 0.02f, 0.2f, 0.05f);
+            d->bias.z = spring_32B1F8(d->bias.z, 0.0f, &d->bias_vel[2], 0.02f, 0.2f, 0.05f);
+            e->height = spring_32B1F8(e->height, d->spring_height, &cur->vel, 0.005f, 0.2f, 0.0f);
+        }
+        if (((Hero_32B1F8 *)(D_0013E633_32B1F8 + 0xE1D))->moving != 0 && 2.0f < ((Hero_32B1F8 *)(D_0013E633_32B1F8 + 0xE1D))->speed) {
+            if (fabs_32B1F8(e->dist - d->spring_dist2) < 0.015f) e->dist = d->spring_dist2;
+            else if (e->dist < d->spring_dist2) e->dist = e->dist + 0.015f;
+            else e->dist = e->dist - 0.015f;
+            if (n == 6) {
+                if (fabs_32B1F8(e->height - d->spring_height2) < 0.05f) e->height = d->spring_height2;
+                else if (e->height < d->spring_height2) e->height = e->height + 0.05f;
+                else e->height = e->height - 0.05f;
+            }
+            if (fabs_32B1F8(q->dist - d->focus_dist) < 0.02f) q->dist = d->focus_dist;
+            else if (q->dist < d->focus_dist) q->dist = q->dist + 0.02f;
+            else q->dist = q->dist - 0.02f;
+        } else {
+            if (fabs_32B1F8(e->dist - d->spring_dist) < 0.03f) e->dist = d->spring_dist;
+            else if (e->dist < d->spring_dist) e->dist = e->dist + 0.03f;
+            else e->dist = e->dist - 0.03f;
+            if (fabs_32B1F8(e->height - d->spring_height) < 0.1f) e->height = d->spring_height;
+            else if (e->height < d->spring_height) e->height = e->height + 0.1f;
+            else e->height = e->height - 0.1f;
+            if (fabs_32B1F8(q->dist - dist) < 0.04f) q->dist = dist;
+            else if (q->dist < dist) q->dist = q->dist + 0.04f;
+            else q->dist = q->dist - 0.04f;
+        }
+        fl = 1;
+    } else {
+        qcopy(&d->aim, *(char **)(g + 0x1DF0) + 0xE0);
+        if (fabs_32B1F8(e->dist - d->spring_dist) < 0.015f) e->dist = d->spring_dist;
+        else if (e->dist < d->spring_dist) e->dist = e->dist + 0.015f;
+        else e->dist = e->dist - 0.015f;
+        if (fabs_32B1F8(e->height - d->spring_height) < 0.05f) e->height = d->spring_height;
+        else if (e->height < d->spring_height) e->height = e->height + 0.05f;
+        else e->height = e->height - 0.05f;
+        if (fabs_32B1F8(q->dist - dist) < 0.02f) q->dist = dist;
+        else if (q->dist < dist) q->dist = q->dist + 0.02f;
+        else q->dist = q->dist - 0.02f;
+    }
+    orbit_32B1F8(m);
+    qcopy(&q->pos, &d->next);
+    qcopy(&focus, &q->pos);
+    vec_scale_32B1F8(&tmp, &q->axis, q->dist);
+    vec_add_32B1F8(&goal, &focus, &tmp);
+    vec_sub_32B1F8(&rel, &goal, &m->pos);
+    vec_scale_32B1F8(&rel, &rel, 1.0f);
+    dd = vec_dot_32B1F8(&m->fwd, &rel);
+    vec_cross_32B1F8(&m->up, &rel, &down);
+    vec_scale_32B1F8(&m->up, &m->up, 1.0f);
+    vec_cross_32B1F8(&m->side, &m->up, &rel);
+    if (fl == 0 || fabs_32B1F8(dd) < 0.5f || (v = (float *)(D_0013E633_32B1F8 + 0xE1D), ((Hero_32B1F8 *)v)->locked != 0)) {
+        tr->blend = spring_32B1F8(tr->blend, 0.0f, tr->state, tr->k34, tr->k38, tr->k3C);
+    } else {
+        float t;
+        vec_scale_32B1F8(&probe, ((Hero_32B1F8 *)v)->body + 0xC0, 1.0f);
+        t = vec_dot_32B1F8(&probe, &m->side);
+        vec_scale_32B1F8(&step, &m->side, t);
+        vec_sub_32B1F8(&probe, &probe, &step);
+        t = vec_dot_32B1F8(&probe, &m->up);
+        tr->blend = spring_32B1F8(tr->blend, t * D_L05_00162268_32B1F8, tr->state, tr->k34, tr->k38, tr->k3C);
+    }
+    if (0.00001f < fabs_32B1F8(tr->blend)) {
+        vec_scale_32B1F8(&probe, &m->up, tr->blend);
+        vec_add_32B1F8(&goal, &goal, &probe);
+    }
+    vec_sub_32B1F8(&rel, &goal, &m->pos);
+    vec_scale_32B1F8(&m->fwd, &rel, 1.0f);
+    vec_cross_32B1F8(&m->up, &m->fwd, &down);
+    vec_scale_32B1F8(&m->up, &m->up, 1.0f);
+    vec_cross_32B1F8(&m->side, &m->up, &m->fwd);
+}
 extern char *D_L05_00167304;
 extern void func_00215328(void *, void *);
 extern void func_L05_0032ABF0(void *);
