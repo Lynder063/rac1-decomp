@@ -996,7 +996,37 @@ void func_L11_003153D0(char *moby, float *a, float *b) {
 }
 INCLUDE_ASM("asm/overlays", func_L11_00315788);
 INCLUDE_ASM("asm/overlays", func_L11_00316DD8);
-INCLUDE_ASM("asm/overlays", func_L11_003173C8);
+extern float func_L00_0025CE58(float *p, float *v, float a, float b, float c, float d);
+extern float func_0020D830(char *);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern int func_L00_00259B88(char *, char *, float *, char *, float);
+extern float D_0015EE70 MACRO_ADDR;
+extern float D_0015EE6C_m __asm__("D_0015EE6C") MACRO_ADDR;
+extern short D_0015EE6C_s __asm__("D_0015EE6C");
+extern short D_L11_0016238C;
+
+/* turns a moby toward a point and, while in range, spawns a puff */
+void func_L11_003173C8(char *m, float *p) {
+    char *data = *(char **)(m + 0x78);
+    float v[3];
+    char tmp[16];
+    float ang = func_L00_001FF860(p[0] - *(float *)(m + 0x10), p[1] - *(float *)(m + 0x14));
+    float t = func_001FA748(ang, *(float *)(data + 0x24C));
+    float dist;
+    float b = D_0015EE70 * 8.726646f;
+    func_L00_0025CE58((float *)(m + 0x48), (float *)(data + 0x250), t, b, b, D_0015EE6C_m * 12.566371f);
+    dist = func_0020D830(m);
+    if (*(unsigned char *)(m + 0x52) == *(unsigned char *)(m + 0x53)) {
+        if (8.0f < dist && dist < 22.0f) {
+            *(float *)(data + 0x1A4) = *(float *)&D_L11_0016238C * *(float *)&D_0015EE6C_s;
+            v[0] = func_001F9F90(*(float *)(m + 0x48)) * 2;
+            v[1] = func_001F9FA8(*(float *)(m + 0x48)) * 2;
+            v[2] = 0;
+            func_L00_00259B88(m, data + 0x180, v, tmp, 1.0f);
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L11_00317500);
 INCLUDE_ASM("asm/overlays", func_L11_00317518);
 INCLUDE_ASM("asm/overlays", func_L11_00317598);

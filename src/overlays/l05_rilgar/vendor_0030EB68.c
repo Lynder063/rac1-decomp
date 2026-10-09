@@ -654,7 +654,251 @@ void func_L05_00316378(struct Moby_16378 *m) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L05_003165B8);
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 w;
+} Vec4f_165B8;
+struct Manip_165B8;
+struct GifEntry_165B8;
+struct AnimSeq_165B8;
+struct MobyClass_165B8 {
+    u8 pad_0[0xC];
+    u8 seq_count; /* number of entries in seqs[] (menu previews clamp the sequence to it) */
+    u8 pad_D[3];
+    u32 unk10; /* copied into Moby.unk94 when a moby is (re)classed */
+    u8 pad_14[0x8];
+    void *unk1C; /* word table, indexed id * 4 + 4 (0024eec0) */
+    struct GifEntry_165B8 *gifs; /* patched by patch_moby_gifs */
+    f32 scale; /* default draw scale: copied into Moby.scale, divides it */
+    s32 unk28;
+    void **callbacks; /* function-pointer table, called with the moby */
+    u8 pad_30[0x14];
+    u16 flags; /* initial Moby.flags */
+    s16 unk46; /* class category; 5 is tested by targeting code */
+    struct AnimSeq_165B8 *seqs[1]; /* animation sequences, indexed by Moby.seq */
+};
+struct Moby_165B8 {
+    Vec4f_165B8 bsphere;
+    Vec4f_165B8 pos;
+    u8 state; /* >= 0xFE: dead, waiting to respawn */
+    u8 group; /* linked group: index into the level moby-list table D_Lxx_001ABCC0 (0xFF: none) */
+    u8 unk22; /* class slot: pclass = D_L00_00197300[unk22] (FUN_L00_002cf218) */
+    u8 unk23; /* 0x40 for the smoke trail FUN_L09_00307ba8 spawns */
+    struct MobyClass_165B8 *pclass;
+    struct Moby_165B8 *next;
+    f32 scale; /* draw scale (FUN_L01_002fa068 halves it, FUN_L00_00215ef8 divides by it) */
+    u8 unk30; /* set to 0xFF (0x7F for beams) by spawners */
+    u8 unk31; /* set to 1 by spawners */
+    s16 unk32; /* set to 0xFF (0x7F for beams) by spawners */
+    u16 flags;
+    u16 unk36; /* set to 0x7F80 by spawners */
+    u64 spawn_frame; /* frame count at which it may respawn */
+    Vec4f_165B8 rot; /* z: yaw (FUN_L00_00266448 compares it with atan2 to the hero) */
+    u8 frame; /* animation frame */
+    u8 prev_frame; /* frame index in prev_seq */
+    u8 seq; /* animation sequence id */
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    struct Manip_165B8 *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71; /* set to 0xFF when a moby changes class */
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_165B8 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F; /* set to 0x17 by FUN_L09_002c5990 near D_L09_00166F40 */
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94; /* set from the class header's word 0x10 */
+    s32 unk98; /* set to 1 while a carrier holds the moby (FUN_L00_002c7a58) */
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0; /* 0xB0: index into the level's D_0014C050 row (0xFF: not spawned) */
+    u8 padB1;
+    u16 save_id; /* index into the level collected[]/killed[] tables and save bits D_0014C190[level][id >> 5] */
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8; /* 0xB8: bolt source record; its byte 0xB1 is a per-level id (FUN_L00_002a6b70) */
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_165B8 unkC0; /* 0xC0: first row of a matrix built from rot (FUN_001fa030) */
+    Vec4f_165B8 unkD0;
+    Vec4f_165B8 unkE0;
+    u8 padF0[0x10];
+};
+struct Moby_165B8;
+extern char D_0013E650_165B8[] __asm__("D_0013E650");
+extern char D_L05_001672C0_165B8[] __asm__("D_L05_001672C0");
+extern float func_001F9D10_165B8(void *, void *) __asm__("func_001F9D10");
+extern int func_0022ED80_165B8() __asm__("func_0022ED80");
+extern float D_0015EE6C_165B8 __asm__("D_0015EE6C") MACRO_ADDR;
+extern float D_0015EE70_165B8 __asm__("D_0015EE70") MACRO_ADDR;
+extern void func_L00_001FF4B0_165B8(void *, void *, float) __asm__("func_L00_001FF4B0");
+extern void func_001F9C30_165B8(void *, void *, float) __asm__("func_001F9C30");
+extern void func_001F9BD8_165B8(void *, void *, void *) __asm__("func_001F9BD8");
+extern float func_00214158_165B8(void) __asm__("func_00214158");
+struct EmitterVars_165B8 {
+    s32 unk0;
+    s32 floor; /* row of D_L05_001612D0 */
+    s32 trigger; /* D_L05_0015FFD8 index of the moby whose byte 0xBC wakes it, -1: none */
+    s32 *voice; /* voice slot shared by the emitters, -1: none */
+    s32 age; /* frames since it started spraying */
+};
+struct VoiceSlot_165B8 {
+    u8 pad0[0x88];
+    struct Moby_165B8 *owner;
+    u8 pad8C[4];
+    Vec4f_165B8 pos;
+};
+struct FloorRow_165B8 {
+    u8 pad0[8];
+    f32 z;
+    u8 padC[0x1190 - 0xC];
+};
+extern float func_001F9B50_165B8(float) __asm__("func_001F9B50");
+extern float func_001F9F90_165B8(float) __asm__("func_001F9F90");
+extern float func_001F9FA8_165B8(float) __asm__("func_001F9FA8");
+extern float func_002140F8_165B8(float, float) __asm__("func_002140F8");
+extern s32 func_002140B0_165B8(s32) __asm__("func_002140B0");
+extern void func_L01_0026F090_165B8(int, int) __asm__("func_L01_0026F090");
+extern void func_L05_0029CCB8_165B8(float, float, float, void *, void *, int, int) __asm__("func_L05_0029CCB8");
+extern void func_L00_00272770_165B8(float, float, void *, void *, void *) __asm__("func_L00_00272770");
+extern unsigned char D_0014C150_165B8[][16] __asm__("D_0014C150");
+extern short D_0015EE84_165B8 SDATA(D_0015EE84);
+extern short D_L05_00160098_165B8 SDATA(D_L05_00160098);
+extern struct FloorRow_165B8 * D_L05_00161390_165B8 __asm__("D_L05_00161390") MACRO_ADDR;
+extern char D_L05_0015F660_165B8[] __asm__("D_L05_0015F660") MACRO_ADDR;
+extern short D_L05_00161F58_165B8 SDATA(D_L05_00161F58);
+extern short D_L05_00161F5C_165B8 SDATA(D_L05_00161F5C);
+extern short D_L05_00161F60_165B8 SDATA(D_L05_00161F60);
+extern short D_L05_00161F64_165B8 SDATA(D_L05_00161F64);
+extern short D_L05_00161F68_165B8 SDATA(D_L05_00161F68);
+extern short D_L05_00161F6C_165B8 SDATA(D_L05_00161F6C);
+extern short D_L05_00161F70_165B8 SDATA(D_L05_00161F70);
+extern short D_L05_00161F74_165B8 SDATA(D_L05_00161F74);
+extern short D_L05_00161F78_165B8 SDATA(D_L05_00161F78);
+extern short D_L05_00161F7C_165B8 SDATA(D_L05_00161F7C);
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l05/gameplay/entities/0030d6a0.c, FUN_L05_003150f0. */
+void func_L05_003165B8(struct Moby_165B8 *m) {
+    float v[4];
+    float w[4];
+    float u[4];
+    struct EmitterVars_165B8 *d = (struct EmitterVars_165B8 *)m->pvars;
+    float floor;
+    float lim;
+    float a, b, c;
+    float scale;
+    int kind;
+    int big;
+    int i;
+    unsigned char state;
+
+    if (d == 0) {
+        return;
+    }
+    switch (state = m->state) {
+    case 0:
+        if (D_0014C150_165B8[(*(int *)&D_0015EE84_165B8)][m->unkB0] != 0xFF) {
+            m->state = 1;
+        } else {
+            m->state = 3;
+        }
+        break;
+    case 1:
+        if (d->trigger >= 0 && (*(struct Moby_165B8 * *)&D_L05_00160098_165B8)[d->trigger].unkBC != 0) {
+            func_L01_0026F090_165B8(m->group, 2);
+        }
+        break;
+    case 2:
+        d->age++;
+        if (func_001F9D10_165B8(&m->pos, D_L05_001672C0_165B8) < 64.0f) {
+            struct Moby_165B8 *o;
+            if (*d->voice >= 0 && (o = ((struct VoiceSlot_165B8 *)(D_0013E650_165B8 + *d->voice * 0x70))->owner) != 0 &&
+                o->oclass == 0x357) {
+                if (o != m && (o->state != state || func_001F9D10_165B8(&m->pos, D_L05_001672C0_165B8) <
+                                                         func_001F9D10_165B8(&o->pos, D_L05_001672C0_165B8))) {
+                    func_L00_001FF4B0_165B8(v, &m->unkC0, 2.5f);
+                    func_001F9BD8_165B8(&((struct VoiceSlot_165B8 *)(D_0013E650_165B8 + *d->voice * 0x70))->pos, v, &m->pos);
+                    ((struct VoiceSlot_165B8 *)(D_0013E650_165B8 + *d->voice * 0x70))->owner = m;
+                }
+            } else {
+                *d->voice = func_0022ED80_165B8(0, 0xD, m);
+                if (*d->voice >= 0) {
+                    func_L00_001FF4B0_165B8(v, &m->unkC0, 2.5f);
+                    func_001F9BD8_165B8(&((struct VoiceSlot_165B8 *)(D_0013E650_165B8 + *d->voice * 0x70))->pos, v, &m->pos);
+                }
+            }
+        }
+        floor = D_L05_00161390_165B8[d->floor].z;
+        if (m->pos.z < floor) {
+            m->state = 3;
+        }
+        for (i = 0; (float)i < (*(float *)&D_L05_00161F78_165B8); i++) {
+            big = 1;
+            if ((*(float *)&D_L05_00161F7C_165B8) < func_002140F8_165B8(0.0f, 100.0f)) {
+                big = 0;
+            }
+            lim = (*(float *)&D_L05_00161F6C_165B8);
+            if (!big) {
+                lim = (*(float *)&D_L05_00161F70_165B8);
+            }
+            qcopy(v, &m->pos);
+            func_L00_001FF4B0_165B8(u, &m->unkD0, func_002140F8_165B8(-(*(float *)&D_L05_00161F74_165B8), (*(float *)&D_L05_00161F74_165B8)));
+            func_001F9BD8_165B8(v, v, u);
+            a = func_002140F8_165B8(lim, (*(float *)&D_L05_00161F68_165B8));
+            b = func_002140F8_165B8(lim, (*(float *)&D_L05_00161F68_165B8));
+            c = func_002140F8_165B8(lim, (*(float *)&D_L05_00161F68_165B8));
+            if (a < b) {
+                a = b;
+            }
+            if (a < c) {
+                a = c;
+            }
+            func_L00_001FF4B0_165B8(w, &m->unkC0, a * D_0015EE6C_165B8);
+            if (big) {
+                scale = (*(float *)&D_L05_00161F60_165B8);
+                kind = (*(int *)&D_L05_00161F58_165B8);
+                v[2] += (*(float *)&D_L05_00161F74_165B8) - scale + func_002140F8_165B8(-0.4f, 0.4f);
+            } else {
+                scale = (*(float *)&D_L05_00161F64_165B8);
+                kind = (*(int *)&D_L05_00161F5C_165B8);
+                v[2] += (*(float *)&D_L05_00161F74_165B8) - scale + 0.4f;
+            }
+            func_L05_0029CCB8_165B8(scale * func_002140F8_165B8(0.8f, 1.2f), floor, D_0015EE70_165B8 * 10.0f, v, w, kind,
+                             big);
+            if (func_002140B0_165B8(2)) {
+                /* fall time from the emitter to the floor */
+                float t = func_001F9B50_165B8(2.0f * (m->pos.z - floor) / (D_0015EE70_165B8 * 10.0f));
+                if (t < (float)d->age) {
+                    float s = t * (D_0015EE6C_165B8 * 4.0f);
+                    float ang = func_00214158_165B8();
+                    float r = func_002140F8_165B8(0.0f, 1.25f);
+                    func_001F9C30_165B8(v, &m->unkC0, s);
+                    func_001F9BD8_165B8(v, v, &m->pos);
+                    v[0] += func_001F9F90_165B8(ang) * r;
+                    v[1] += func_001F9FA8_165B8(ang) * r;
+                    v[2] = floor + 0.05f;
+                    func_L00_00272770_165B8(func_002140F8_165B8(1.0f, 1.5f), func_002140B0_165B8(2) ? 2.0f : -2.0f, v,
+                                     D_L05_0015F660_165B8, &D_L05_00161390_165B8[d->floor].z);
+                }
+            }
+        }
+        break;
+    }
+}
 typedef u32 u128 __attribute__((mode(TI), aligned(16)));
 typedef struct {
     f32 x;

@@ -2,7 +2,146 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L04_0029FCF0);
+typedef struct {
+    char _pad00[0x10];
+    unsigned char nframes; /* 0x10 */
+} AnimSeq_9FCF0;
+typedef u32 u128_9FCF0 __attribute__((mode(TI), aligned(16)));
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 w;
+} Vec4f_9FCF0;
+typedef union {
+    u128_9FCF0 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4_9FCF0;
+struct Manip_9FCF0;
+struct GifEntry_9FCF0;
+struct AnimSeq_9FCF0;
+struct MobyClass_9FCF0 {
+    u8 pad_0[0xC];
+    u8 seq_count; /* number of entries in seqs[] (menu previews clamp the sequence to it) */
+    u8 pad_D[3];
+    u32 unk10; /* copied into Moby.unk94 when a moby is (re)classed */
+    u8 pad_14[0x8];
+    void *unk1C; /* word table, indexed id * 4 + 4 (0024eec0) */
+    struct GifEntry_9FCF0 *gifs; /* patched by patch_moby_gifs */
+    f32 scale; /* default draw scale: copied into Moby.scale, divides it */
+    s32 unk28;
+    void **callbacks; /* function-pointer table, called with the moby */
+    u8 pad_30[0x14];
+    u16 flags; /* initial Moby.flags */
+    s16 unk46; /* class category; 5 is tested by targeting code */
+    struct AnimSeq_9FCF0 *seqs[1]; /* animation sequences, indexed by Moby.seq */
+};
+struct Moby_9FCF0 {
+    Vec4f_9FCF0 bsphere;
+    Vec4f_9FCF0 pos;
+    u8 state; /* >= 0xFE: dead, waiting to respawn */
+    u8 group; /* linked group: index into the level moby-list table D_Lxx_001ABCC0 (0xFF: none) */
+    u8 unk22; /* class slot: pclass = D_L00_00197300[unk22] (FUN_L00_002cf218) */
+    u8 unk23; /* 0x40 for the smoke trail FUN_L09_00307ba8 spawns */
+    struct MobyClass_9FCF0 *pclass;
+    struct Moby_9FCF0 *next;
+    f32 scale; /* draw scale (FUN_L01_002fa068 halves it, FUN_L00_00215ef8 divides by it) */
+    u8 unk30; /* set to 0xFF (0x7F for beams) by spawners */
+    u8 unk31; /* set to 1 by spawners */
+    s16 unk32; /* set to 0xFF (0x7F for beams) by spawners */
+    u16 flags;
+    u16 unk36; /* set to 0x7F80 by spawners */
+    u64 spawn_frame; /* frame count at which it may respawn */
+    Vec4f_9FCF0 rot; /* z: yaw (FUN_L00_00266448 compares it with atan2 to the hero) */
+    u8 frame; /* animation frame */
+    u8 prev_frame; /* frame index in prev_seq */
+    u8 seq; /* animation sequence id */
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    struct Manip_9FCF0 *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71; /* set to 0xFF when a moby changes class */
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_9FCF0 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F; /* set to 0x17 by FUN_L09_002c5990 near D_L09_00166F40 */
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94; /* set from the class header's word 0x10 */
+    s32 unk98; /* set to 1 while a carrier holds the moby (FUN_L00_002c7a58) */
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0; /* 0xB0: index into the level's D_0014C050 row (0xFF: not spawned) */
+    u8 padB1;
+    u16 save_id; /* index into the level collected[]/killed[] tables and save bits D_0014C190[level][id >> 5] */
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8; /* 0xB8: bolt source record; its byte 0xB1 is a per-level id (FUN_L00_002a6b70) */
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_9FCF0 unkC0; /* 0xC0: first row of a matrix built from rot (FUN_001fa030) */
+    Vec4f_9FCF0 unkD0;
+    Vec4f_9FCF0 unkE0;
+    u8 padF0[0x10];
+};
+typedef struct {
+    s32 count;
+    u8 pad4[0xC];
+    Vec4_9FCF0 point[1];
+} PathPoints_eb20_9FCF0;
+extern void func_001F9BF0_9FCF0(Vec4_9FCF0 *out, void *a, void *b) __asm__("func_001F9BF0");
+extern f32 func_001F9CB8_9FCF0(Vec4_9FCF0 *v) __asm__("func_001F9CB8");
+extern void func_L00_001FF4B0_9FCF0(Vec4_9FCF0 *out, Vec4_9FCF0 *v, f32 len) __asm__("func_L00_001FF4B0");
+extern f32 func_001F9C78_9FCF0(Vec4_9FCF0 *a, Vec4_9FCF0 *b) __asm__("func_001F9C78");
+extern void func_001F9BD8_9FCF0(Vec4_9FCF0 *out, Vec4_9FCF0 *a, Vec4_9FCF0 *b) __asm__("func_001F9BD8");
+static inline s32 path_next_eb20_9FCF0(PathPoints_eb20_9FCF0 *path, s32 i, s32 dir) {
+    if (i == path->count - 1) {
+        return dir > 0 ? 0 : path->count - 2;
+    }
+    if (i == 0) {
+        return dir > 0 ? i + 1 : path->count - 1;
+    }
+    return i + dir;
+}
+struct Moby_9FCF0;
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l04/gameplay/entities/0029eb20.c, FUN_L04_0029eb20. */
+s32 func_L04_0029FCF0(struct Moby_9FCF0 *m, PathPoints_eb20_9FCF0 *path, s32 i, s32 dir, f32 dist) {
+    Vec4_9FCF0 seg;
+    Vec4_9FCF0 rel;
+    s32 next;
+    f32 len;
+    f32 along;
+
+    next = path_next_eb20_9FCF0(path, i, dir);
+    func_001F9BF0_9FCF0(&seg, &path->point[next], &path->point[i]);
+    len = func_001F9CB8_9FCF0(&seg);
+    func_L00_001FF4B0_9FCF0(&seg, &seg, 1.0f);
+    func_001F9BF0_9FCF0(&rel, &m->pos, &path->point[i]);
+    along = func_001F9C78_9FCF0(&rel, &seg) + dist;
+    if (len < along) {
+        i = next;
+        next = path_next_eb20_9FCF0(path, i, dir);
+        func_001F9BF0_9FCF0(&seg, &path->point[next], &path->point[i]);
+        along = along - len;
+        func_L00_001FF4B0_9FCF0(&seg, &seg, 1.0f);
+    }
+    func_L00_001FF4B0_9FCF0(&seg, &seg, along);
+    func_001F9BD8_9FCF0(&m->pos, &seg, &path->point[i]);
+    return i;
+}
 INCLUDE_ASM("asm/overlays", func_L04_0029FEC8);
 extern int func_001F9850(int);
 extern void func_00213DE0(void *, void *, void *, void *);
@@ -2403,7 +2542,212 @@ void func_L04_002C5BD0(char *moby) {
     }
     *(float *)(data + 0xD8) = alive;
 }
-INCLUDE_ASM("asm/overlays", func_L04_002C7BD8);
+typedef struct {
+    char _pad00[0x10];
+    unsigned char nframes; /* 0x10 */
+} AnimSeq_C7BD8;
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 w;
+} Vec4f_C7BD8;
+struct Manip_C7BD8;
+struct GifEntry_C7BD8;
+struct AnimSeq_C7BD8;
+struct MobyClass_C7BD8 {
+    u8 pad_0[0xC];
+    u8 seq_count; /* number of entries in seqs[] (menu previews clamp the sequence to it) */
+    u8 pad_D[3];
+    u32 unk10; /* copied into Moby.unk94 when a moby is (re)classed */
+    u8 pad_14[0x8];
+    void *unk1C; /* word table, indexed id * 4 + 4 (0024eec0) */
+    struct GifEntry_C7BD8 *gifs; /* patched by patch_moby_gifs */
+    f32 scale; /* default draw scale: copied into Moby.scale, divides it */
+    s32 unk28;
+    void **callbacks; /* function-pointer table, called with the moby */
+    u8 pad_30[0x14];
+    u16 flags; /* initial Moby.flags */
+    s16 unk46; /* class category; 5 is tested by targeting code */
+    struct AnimSeq_C7BD8 *seqs[1]; /* animation sequences, indexed by Moby.seq */
+};
+struct Moby_C7BD8 {
+    Vec4f_C7BD8 bsphere;
+    Vec4f_C7BD8 pos;
+    u8 state; /* >= 0xFE: dead, waiting to respawn */
+    u8 group; /* linked group: index into the level moby-list table D_Lxx_001ABCC0 (0xFF: none) */
+    u8 unk22; /* class slot: pclass = D_L00_00197300[unk22] (FUN_L00_002cf218) */
+    u8 unk23; /* 0x40 for the smoke trail FUN_L09_00307ba8 spawns */
+    struct MobyClass_C7BD8 *pclass;
+    struct Moby_C7BD8 *next;
+    f32 scale; /* draw scale (FUN_L01_002fa068 halves it, FUN_L00_00215ef8 divides by it) */
+    u8 unk30; /* set to 0xFF (0x7F for beams) by spawners */
+    u8 unk31; /* set to 1 by spawners */
+    s16 unk32; /* set to 0xFF (0x7F for beams) by spawners */
+    u16 flags;
+    u16 unk36; /* set to 0x7F80 by spawners */
+    u64 spawn_frame; /* frame count at which it may respawn */
+    Vec4f_C7BD8 rot; /* z: yaw (FUN_L00_00266448 compares it with atan2 to the hero) */
+    u8 frame; /* animation frame */
+    u8 prev_frame; /* frame index in prev_seq */
+    u8 seq; /* animation sequence id */
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    struct Manip_C7BD8 *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71; /* set to 0xFF when a moby changes class */
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_C7BD8 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F; /* set to 0x17 by FUN_L09_002c5990 near D_L09_00166F40 */
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94; /* set from the class header's word 0x10 */
+    s32 unk98; /* set to 1 while a carrier holds the moby (FUN_L00_002c7a58) */
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0; /* 0xB0: index into the level's D_0014C050 row (0xFF: not spawned) */
+    u8 padB1;
+    u16 save_id; /* index into the level collected[]/killed[] tables and save bits D_0014C190[level][id >> 5] */
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8; /* 0xB8: bolt source record; its byte 0xB1 is a per-level id (FUN_L00_002a6b70) */
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_C7BD8 unkC0; /* 0xC0: first row of a matrix built from rot (FUN_001fa030) */
+    Vec4f_C7BD8 unkD0;
+    Vec4f_C7BD8 unkE0;
+    u8 padF0[0x10];
+};
+extern int func_001F9850_C7BD8(int) __asm__("func_001F9850");
+extern void func_0020EEE8_C7BD8(void *) __asm__("func_0020EEE8");
+extern unsigned char D_0013E650_C7BD8[] __asm__("D_0013E650");
+extern void func_L00_0028EBF0_C7BD8(s32) __asm__("func_L00_0028EBF0");
+typedef struct {
+    s32 link; /* index of the linked moby in the moby array, -1 for none */
+    s32 voice; /* playing loop sound, -1 for none */
+} SwitchFollowerVars_C7BD8;
+typedef struct {
+    u8 pad0[0xE];
+    u8 unkE;
+    u8 padF;
+    u32 unk10;
+    u8 pad14[0x10];
+    f32 scale; /* 0x24 */
+} MobyClassHeader_C7BD8;
+extern char * D_L04_00160058_C7BD8 __asm__("D_L04_00160058") MACRO_ADDR;
+extern u8 D_L04_00198040_C7BD8[] __asm__("D_L04_00198040");
+extern struct MobyClass_C7BD8 * D_L04_00197780_C7BD8[] __asm__("D_L04_00197780");
+extern void func_0020D678_C7BD8(struct Moby_C7BD8 *) __asm__("func_0020D678");
+extern void func_00213DE0_C7BD8(struct Moby_C7BD8 *, s32, s32, s32) __asm__("func_00213DE0");
+extern void func_0020D6D0_C7BD8(struct Moby_C7BD8 *) __asm__("func_0020D6D0");
+extern s32 func_L00_0028EB98_C7BD8(struct Moby_C7BD8 *, s32) __asm__("func_L00_0028EB98");
+extern s32 func_0022ED80_C7BD8(s32, s32, struct Moby_C7BD8 *) __asm__("func_0022ED80");
+struct Moby_C7BD8;
+
+/* Follows a linked switch moby (class 0x118): mirrors its position value, loops a sound while it moves, plays a click at either end and swaps class 0x41C back to 0x1B0 when it reaches 1.0.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l04/gameplay/entities/0029eb20.c, FUN_L04_002c6858. */
+void func_L04_002C7BD8(struct Moby_C7BD8 *m) {
+    SwitchFollowerVars_C7BD8 *v = (SwitchFollowerVars_C7BD8 *)m->pvars;
+    f32 last = m->unk54;
+    struct Moby_C7BD8 *other;
+    f32 *pos;
+    f32 cur;
+
+    if (v == 0) {
+        func_0020D678_C7BD8(m);
+        return;
+    }
+    switch (m->state) {
+    case 0:
+        func_00213DE0_C7BD8(m, 1, 0, func_001F9850_C7BD8(300));
+        m->state = 1;
+        m->unk58 = 0;
+        v->voice = -1;
+        if (m->oclass == 0x1B0) {
+            m->oclass = 0x41C;
+            m->unk22 = D_L04_00198040_C7BD8[0x41C];
+            m->pclass = D_L04_00197780_C7BD8[m->unk22];
+            m->unk71 = 0xFF;
+            m->scale = ((MobyClassHeader_C7BD8 *)m->pclass)->scale;
+            func_0020D6D0_C7BD8(m);
+            m->unk72 = ((MobyClassHeader_C7BD8 *)m->pclass)->unkE;
+            m->unk94 = ((MobyClassHeader_C7BD8 *)m->pclass)->unk10;
+            func_0020EEE8_C7BD8(m);
+        }
+        break;
+    case 1:
+        if (v->link == -1)
+            break;
+        other = (struct Moby_C7BD8 *)(D_L04_00160058_C7BD8 + (v->link << 8));
+        if (other->oclass != 0x118)
+            break;
+        pos = (f32 *)other->pvars;
+        cur = *pos;
+        m->unk54 = cur;
+        if (cur != last) {
+            if (*pos == 1.0f || *pos == 0.0f) {
+                if (func_L00_0028EB98_C7BD8(m, v->voice)) {
+                    s32 h = v->voice;
+                    if (h != -1) {
+                        char *e = (char *)D_0013E650_C7BD8 + h * 0x70;
+                        if (*(struct Moby_C7BD8 **)(e + 0x88) == m && *(u8 *)(e + 0x74) != 0)
+                            func_L00_0028EBF0_C7BD8(h);
+                    }
+                    v->voice = -1;
+                }
+                func_0022ED80_C7BD8(1, 0, m);
+                if (m->oclass == 0x41C && *pos == 1.0f) {
+                    m->oclass = 0x1B0;
+                    m->unk22 = D_L04_00198040_C7BD8[0x1B0];
+                    m->pclass = D_L04_00197780_C7BD8[m->unk22];
+                    m->unk71 = 0xFF;
+                    m->scale = ((MobyClassHeader_C7BD8 *)m->pclass)->scale;
+                    func_0020D6D0_C7BD8(m);
+                    m->unk72 = ((MobyClassHeader_C7BD8 *)m->pclass)->unkE;
+                    m->unk94 = ((MobyClassHeader_C7BD8 *)m->pclass)->unk10;
+                    func_0020EEE8_C7BD8(m);
+                    m->state = 2;
+                }
+            } else if (!func_L00_0028EB98_C7BD8(m, v->voice)) {
+                v->voice = func_0022ED80_C7BD8(0, 4, m);
+            }
+        } else {
+            if (func_L00_0028EB98_C7BD8(m, v->voice)) {
+                s32 h = v->voice;
+                if (h != -1) {
+                    char *e = (char *)D_0013E650_C7BD8 + h * 0x70;
+                    if (*(struct Moby_C7BD8 **)(e + 0x88) == m && *(u8 *)(e + 0x74) != 0)
+                        func_L00_0028EBF0_C7BD8(h);
+                }
+                v->voice = -1;
+            }
+        }
+        break;
+    case 2:
+        if (func_L00_0028EB98_C7BD8(m, v->voice)) {
+            s32 h = v->voice;
+            if (h != -1) {
+                char *e = (char *)D_0013E650_C7BD8 + h * 0x70;
+                if (*(struct Moby_C7BD8 **)(e + 0x88) == m && *(u8 *)(e + 0x74) != 0)
+                    func_L00_0028EBF0_C7BD8(h);
+            }
+            v->voice = -1;
+        }
+        break;
+    }
+}
 typedef struct {
     char _pad00[0x10];
     unsigned char nframes; /* 0x10 */

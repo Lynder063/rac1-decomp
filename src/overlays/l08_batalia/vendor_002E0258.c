@@ -1249,7 +1249,324 @@ void func_L08_002E9F78(char *a) {
         if (m != 0) func_L00_00251E30(m);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L08_002EA0A8);
+typedef u32 u128_EA0A8 __attribute__((mode(TI), aligned(16)));
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 w;
+} Vec4f_EA0A8;
+typedef union {
+    u128_EA0A8 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4_EA0A8;
+struct Manip_EA0A8;
+struct GifEntry_EA0A8;
+struct AnimSeq_EA0A8;
+struct MobyClass_EA0A8 {
+    u8 pad_0[0xC];
+    u8 seq_count; /* number of entries in seqs[] (menu previews clamp the sequence to it) */
+    u8 pad_D[3];
+    u32 unk10; /* copied into Moby.unk94 when a moby is (re)classed */
+    u8 pad_14[0x8];
+    void *unk1C; /* word table, indexed id * 4 + 4 (0024eec0) */
+    struct GifEntry_EA0A8 *gifs; /* patched by patch_moby_gifs */
+    f32 scale; /* default draw scale: copied into Moby.scale, divides it */
+    s32 unk28;
+    void **callbacks; /* function-pointer table, called with the moby */
+    u8 pad_30[0x14];
+    u16 flags; /* initial Moby.flags */
+    s16 unk46; /* class category; 5 is tested by targeting code */
+    struct AnimSeq_EA0A8 *seqs[1]; /* animation sequences, indexed by Moby.seq */
+};
+struct Moby_EA0A8 {
+    Vec4f_EA0A8 bsphere;
+    Vec4f_EA0A8 pos;
+    u8 state; /* >= 0xFE: dead, waiting to respawn */
+    u8 group; /* linked group: index into the level moby-list table D_Lxx_001ABCC0 (0xFF: none) */
+    u8 unk22; /* class slot: pclass = D_L00_00197300[unk22] (FUN_L00_002cf218) */
+    u8 unk23; /* 0x40 for the smoke trail FUN_L09_00307ba8 spawns */
+    struct MobyClass_EA0A8 *pclass;
+    struct Moby_EA0A8 *next;
+    f32 scale; /* draw scale (FUN_L01_002fa068 halves it, FUN_L00_00215ef8 divides by it) */
+    u8 unk30; /* set to 0xFF (0x7F for beams) by spawners */
+    u8 unk31; /* set to 1 by spawners */
+    s16 unk32; /* set to 0xFF (0x7F for beams) by spawners */
+    u16 flags;
+    u16 unk36; /* set to 0x7F80 by spawners */
+    u64 spawn_frame; /* frame count at which it may respawn */
+    Vec4f_EA0A8 rot; /* z: yaw (FUN_L00_00266448 compares it with atan2 to the hero) */
+    u8 frame; /* animation frame */
+    u8 prev_frame; /* frame index in prev_seq */
+    u8 seq; /* animation sequence id */
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    struct Manip_EA0A8 *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71; /* set to 0xFF when a moby changes class */
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby_EA0A8 *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F; /* set to 0x17 by FUN_L09_002c5990 near D_L09_00166F40 */
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94; /* set from the class header's word 0x10 */
+    s32 unk98; /* set to 1 while a carrier holds the moby (FUN_L00_002c7a58) */
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0; /* 0xB0: index into the level's D_0014C050 row (0xFF: not spawned) */
+    u8 padB1;
+    u16 save_id; /* index into the level collected[]/killed[] tables and save bits D_0014C190[level][id >> 5] */
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8; /* 0xB8: bolt source record; its byte 0xB1 is a per-level id (FUN_L00_002a6b70) */
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f_EA0A8 unkC0; /* 0xC0: first row of a matrix built from rot (FUN_001fa030) */
+    Vec4f_EA0A8 unkD0;
+    Vec4f_EA0A8 unkE0;
+    u8 padF0[0x10];
+};
+extern void func_L00_00250800_EA0A8(void *, int, void *) __asm__("func_L00_00250800");
+void func_L08_002E9B60_EA0A8(char *moby) __asm__("func_L08_002E9B60");
+extern float func_001FA748_EA0A8(float, float) __asm__("func_001FA748");
+void func_L08_002E9F78_EA0A8(struct Moby_EA0A8 *a) __asm__("func_L08_002E9F78");
+struct Moby_EA0A8;
+extern f32 func_L00_001FF860_EA0A8(f32, f32) __asm__("func_L00_001FF860");
+typedef struct {
+    s32 count;
+    u8 pad4[0xC];
+    Vec4_EA0A8 points[1];
+} SwarmPath_EA0A8;
+typedef struct {
+    s32 point;
+    s8 direction;
+    u8 pad5[0xB];
+    SwarmPath_EA0A8 *path;
+    s32 path_id; /* index into D_L08_001B0CB0 */
+    u8 pad18[0x18];
+} SwarmPathFollower_EA0A8;
+typedef struct {
+    u8 pad0[0x60];
+    struct Moby_EA0A8 *shots[8];
+} SwarmTargetVars_EA0A8;
+extern float D_0015EE6C_EA0A8 __asm__("D_0015EE6C") MACRO_ADDR;
+extern s32 D_0015EE84_EA0A8 __asm__("D_0015EE84") MACRO_ADDR;
+extern u8 D_0014C150_EA0A8[] __asm__("D_0014C150");
+extern SwarmPath_EA0A8 * D_L08_001B0FB0_EA0A8[] __asm__("D_L08_001B0FB0");
+extern struct Moby_EA0A8 * D_L08_00160058_EA0A8 __asm__("D_L08_00160058") MACRO_ADDR;
+extern s32 func_L00_0028EB98_EA0A8(struct Moby_EA0A8 *, s32) __asm__("func_L00_0028EB98");
+extern s32 func_0022ED80_EA0A8(s32, s32, struct Moby_EA0A8 *) __asm__("func_0022ED80");
+extern void func_0020D678_EA0A8(void *) __asm__("func_0020D678");
+extern f32 func_002140F8_EA0A8(f32, f32) __asm__("func_002140F8");
+extern f32 func_00214158_EA0A8(void) __asm__("func_00214158");
+extern f32 func_001F9878_EA0A8(f32) __asm__("func_001F9878");
+extern s32 func_001FA898_EA0A8(f32) __asm__("func_001FA898");
+extern f32 func_001FA790_EA0A8(f32, f32) __asm__("func_001FA790");
+extern f32 func_001F9D10_EA0A8(void *, void *) __asm__("func_001F9D10");
+extern f32 func_001F9CB8_EA0A8(void *) __asm__("func_001F9CB8");
+extern void func_L00_001FF4B0_EA0A8(void *, void *, f32) __asm__("func_L00_001FF4B0");
+extern void func_001F9BD8_EA0A8(void *, void *, void *) __asm__("func_001F9BD8");
+extern void func_001F9BF0_EA0A8(void *, void *, void *) __asm__("func_001F9BF0");
+extern void func_L00_002592B0_EA0A8(struct Moby_EA0A8 *, f32, f32 *, f32, f32, f32) __asm__("func_L00_002592B0");
+extern void func_L00_00260108_EA0A8(void *, void *, s32, f32, f32) __asm__("func_L00_00260108");
+extern struct Moby_EA0A8 *func_L08_002DF758_EA0A8(void *, struct Moby_EA0A8 *, void *, f32, f32) __asm__("func_L08_002DF758");
+typedef struct {
+    struct Moby_EA0A8 *moby;
+    struct Moby_EA0A8 *parent;
+    s32 joint;
+    s32 parent_joint;
+} SwarmPart_EA0A8;
+typedef struct {
+    SwarmPathFollower_EA0A8 follow[2]; /* 0x00: [0] cruising (state 1), [1] circling (state 2) */
+    SwarmPart_EA0A8 root; /* 0x60 */
+    SwarmPart_EA0A8 parts[12]; /* 0x70 */
+    s32 target_index; /* 0x130: moby slot of the target */
+    f32 turn_speed; /* 0x134 */
+    s16 can_skip; /* 0x138: non-zero lets the circling jump ahead (see state 2) */
+    s16 fire_timer; /* 0x13A */
+    s16 pad13C;
+    s16 sound; /* 0x13E */
+} SwarmVars_EA0A8;
+extern short D_L08_00161DC0_EA0A8 SDATA(D_L08_00161DC0);
+extern short D_L08_00161DB4_EA0A8 SDATA(D_L08_00161DB4);
+extern s32 D_L08_0015F6A8_EA0A8 __asm__("D_L08_0015F6A8") MACRO_ADDR;
+extern s64 D_L08_0016D110_EA0A8 __asm__("D_L08_0016D110");
+extern s32 func_001F9938_EA0A8(s16 *) __asm__("func_001F9938");
+extern void func_L08_002E9CB0_EA0A8(struct Moby_EA0A8 *) __asm__("func_L08_002E9CB0");
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l08/gameplay/entities/002deee0.c, FUN_L08_002e8cd0. */
+void func_L08_002EA0A8(struct Moby_EA0A8 *moby) {
+    SwarmVars_EA0A8 *vars = (SwarmVars_EA0A8 *)moby->pvars;
+    SwarmPathFollower_EA0A8 *follower;
+    struct Moby_EA0A8 *target;
+    struct Moby_EA0A8 *shot;
+    struct Moby_EA0A8 *bolt;
+    SwarmTargetVars_EA0A8 *target_vars;
+    Vec4_EA0A8 point;
+    Vec4_EA0A8 step;
+    Vec4_EA0A8 muzzle;
+    Vec4_EA0A8 velocity;
+    s32 waypoint;
+    s32 next;
+    s32 after;
+    s32 i;
+    s32 slot;
+    f32 distance;
+    f32 heading;
+    f32 next_heading;
+    f32 turn;
+    f32 pitch;
+    f32 yaw;
+
+    if ((*(s32 *)&D_L08_00161DC0_EA0A8) != 0) {
+        return;
+    }
+    if (!func_L00_0028EB98_EA0A8(moby, vars->sound)) {
+        vars->sound = func_0022ED80_EA0A8(3, 4, moby);
+    }
+    switch (moby->state) {
+    case 0:
+        if (D_0014C150_EA0A8[moby->unkB0 + D_0015EE84_EA0A8 * 16] == 0xFF) {
+            func_0020D678_EA0A8(moby);
+            return;
+        }
+        vars->follow[0].path = D_L08_001B0FB0_EA0A8[vars->follow[0].path_id];
+        vars->follow[1].path = D_L08_001B0FB0_EA0A8[vars->follow[1].path_id];
+        vars->fire_timer = func_001FA898_EA0A8(func_001F9878_EA0A8(func_002140F8_EA0A8(300.0f, 600.0f)));
+        moby->flags |= 0x4000;
+        qcopy(&moby->pos, &vars->follow[1].path->points[0]);
+        func_L08_002E9B60_EA0A8((char *)moby);
+        moby->state = 2;
+        moby->rot.z = func_L00_001FF860_EA0A8(vars->follow[1].path->points[1].f[0] - moby->pos.x,
+                                   vars->follow[1].path->points[1].f[1] - moby->pos.y);
+        break;
+    case 1:
+        waypoint = (vars->follow[0].point + vars->follow[0].path->count + vars->follow[0].direction) % vars->follow[0].path->count;
+        target = &D_L08_00160058_EA0A8[vars->target_index];
+        func_L00_002592B0_EA0A8(moby,
+                         func_L00_001FF860_EA0A8(vars->follow[0].path->points[waypoint].f[0] - moby->pos.x,
+                                      vars->follow[0].path->points[waypoint].f[1] - moby->pos.y),
+                         &vars->turn_speed, 0.004f, 0.3f, 0.02f);
+        func_L08_002E9CB0_EA0A8(moby);
+        func_L08_002E9F78_EA0A8((char *)moby);
+        qcopy(&point, &vars->follow[0].path->points[waypoint]);
+        if (func_001F9D10_EA0A8(&moby->pos, &point) < 0.5f) {
+            vars->follow[0].point = waypoint;
+        }
+        func_001F9BF0_EA0A8(&step, &point, &moby->pos);
+        if (func_001F9CB8_EA0A8(&step) > (*(f32 *)&D_L08_00161DB4_EA0A8) * D_0015EE6C_EA0A8) {
+            func_L00_001FF4B0_EA0A8(&step, &step, (*(f32 *)&D_L08_00161DB4_EA0A8) * D_0015EE6C_EA0A8);
+        }
+        func_001F9BD8_EA0A8(&moby->pos, &moby->pos, &step);
+        if (moby->unkBC == 0) {
+            break;
+        }
+        moby->unkBC = 0;
+        func_L00_00250800_EA0A8(vars->parts[3].moby, 1, &muzzle);
+        pitch = func_002140F8_EA0A8(0.17453292f, 0.5235988f);
+        yaw = func_001FA748_EA0A8(func_L00_001FF860_EA0A8(target->pos.x - moby->pos.x, target->pos.y - moby->pos.y),
+                                 3.1415927f);
+        yaw = func_001FA748_EA0A8(yaw, func_002140F8_EA0A8(-0.2617994f, 0.7853982f));
+        if (yaw > 0.0f && yaw < 0.34f) {
+            yaw = 0.34f;
+        } else if (yaw <= 0.0f && yaw > -0.34f) {
+            yaw = -0.34f;
+        }
+        func_L00_001FF4B0_EA0A8(&velocity, &step, ((*(f32 *)&D_L08_00161DB4_EA0A8) + (*(f32 *)&D_L08_00161DB4_EA0A8)) * D_0015EE6C_EA0A8);
+        shot = func_L08_002DF758_EA0A8(&muzzle, target, &velocity, pitch, yaw);
+        shot->scale = shot->pclass->scale / 5.0f;
+        target_vars = (SwarmTargetVars_EA0A8 *)target->pvars;
+        for (slot = 0; slot < 8; slot++) {
+            if (target_vars->shots[slot] == 0) {
+                target_vars->shots[slot] = shot;
+                break;
+            }
+        }
+        break;
+    case 2:
+        follower = &vars->follow[1];
+        if (D_L08_0015F6A8_EA0A8 == 2 && vars->can_skip != 0 && D_L08_0016D110_EA0A8 == 0x200000000) {
+            qcopy(&moby->pos, &follower->path->points[15]);
+            follower->point = 15;
+            moby->rot.z = func_L00_001FF860_EA0A8(follower->path->points[11].f[0] - moby->pos.x,
+                                       follower->path->points[11].f[1] - moby->pos.y);
+        }
+        next = (follower->point + 1) % follower->path->count;
+        after = (follower->point + 2) % follower->path->count;
+        heading = func_L00_001FF860_EA0A8(follower->path->points[next].f[0] - follower->path->points[follower->point].f[0],
+                               follower->path->points[next].f[1] - follower->path->points[follower->point].f[1]);
+        next_heading = func_L00_001FF860_EA0A8(follower->path->points[after].f[0] - follower->path->points[next].f[0],
+                                    follower->path->points[after].f[1] - follower->path->points[next].f[1]);
+        turn = func_001FA790_EA0A8(heading, next_heading);
+        distance = func_001F9D10_EA0A8(&moby->pos, &follower->path->points[next]);
+        distance /= func_001F9D10_EA0A8(&follower->path->points[follower->point],
+                                 &follower->path->points[next]);
+        moby->rot.z = func_001FA748_EA0A8(turn * distance, next_heading);
+        qcopy(&point, &follower->path->points[next]);
+        if (func_001F9D10_EA0A8(&moby->pos, &point) < 0.5f) {
+            follower->point = next;
+        }
+        func_001F9BF0_EA0A8(&step, &point, &moby->pos);
+        if (func_001F9CB8_EA0A8(&step) > (*(f32 *)&D_L08_00161DB4_EA0A8) * D_0015EE6C_EA0A8) {
+            func_L00_001FF4B0_EA0A8(&step, &step, (*(f32 *)&D_L08_00161DB4_EA0A8) * D_0015EE6C_EA0A8);
+        }
+        func_001F9BD8_EA0A8(&moby->pos, &moby->pos, &step);
+        func_L08_002E9F78_EA0A8((char *)moby);
+        if (!func_001F9938_EA0A8(&vars->fire_timer)) {
+            break;
+        }
+        vars->fire_timer = func_001FA898_EA0A8(func_001F9878_EA0A8(func_002140F8_EA0A8(300.0f, 600.0f)));
+        func_L00_00250800_EA0A8(vars->parts[3].moby, 1, &muzzle);
+        pitch = func_002140F8_EA0A8(-0.5235988f, -0.2617994f);
+        yaw = func_00214158_EA0A8();
+        func_L00_001FF4B0_EA0A8(&velocity, &step, ((*(f32 *)&D_L08_00161DB4_EA0A8) + (*(f32 *)&D_L08_00161DB4_EA0A8)) * D_0015EE6C_EA0A8);
+        bolt = func_L08_002DF758_EA0A8(&muzzle, 0, &velocity, pitch, yaw);
+        if (bolt != 0) {
+            bolt->rot.z = vars->parts[3].moby->rot.z;
+            bolt->state = 5;
+            bolt->rot.y = 0.0f;
+        }
+        break;
+    case 3: {
+        SwarmPath_EA0A8 *path;
+
+        moby->state = 1;
+        path = vars->follow[0].path;
+        qcopy(&moby->pos, &path->points[0]);
+        moby->rot.z = func_L00_001FF860_EA0A8(path->points[1].f[0] - moby->pos.x, path->points[1].f[1] - moby->pos.y);
+        func_L08_002E9F78_EA0A8((char *)moby);
+        break;
+    }
+    case 0x63:
+        for (i = 0; i < 12; i++) {
+            struct Moby_EA0A8 *part = vars->parts[i].moby;
+            if (part != 0) {
+                Vec4_EA0A8 *drift = (Vec4_EA0A8 *)part->pvars;
+                func_L00_00260108_EA0A8(moby, &part->pos, -1, 3.0f, 13.0f);
+                func_001F9BF0_EA0A8(drift, &part->pos, &moby->pos);
+                func_L00_001FF4B0_EA0A8(drift, drift, D_0015EE6C_EA0A8 * 5.0f);
+                part->state = 1;
+                vars->parts[i].moby = 0;
+            }
+        }
+        func_L00_00260108_EA0A8(moby, &moby->pos, -1, 5.0f, 13.0f);
+        func_0020D678_EA0A8(moby);
+        break;
+    }
+}
 /* Builds the moby's part hierarchy: body, head, arms and eight trailing segments. */
 void func_L08_002EA930(char *moby) {
     char *data = *(char **)(moby + 0x78);

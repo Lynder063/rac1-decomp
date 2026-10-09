@@ -653,6 +653,27 @@ build tools first: `func_L00_00269BE8` and `func_L00_002761C0` the assembler mod
 - `src/overlays/shared/vendor_002B90A8.c`: `func_L01_002E4580` (`FUN_L01_002e3208`)
 - `src/overlays/shared/vendor_002B90A8.c`: `func_L01_002F4290` (`FUN_L01_002f2eb8`)
 - `src/overlays/shared/vendor_002C96D0.c`: `func_L00_002C9820` (`FUN_L00_002c8440`)
+
+Eighteen more of the same kind followed, the last of the candidates carried over from those pull requests:
+
+- `src/overlays/l04_eudora/vendor_0029FCF0.c`: `func_L04_0029FCF0` (`FUN_L04_0029eb20`)
+- `src/overlays/l04_eudora/vendor_0029FCF0.c`: `func_L04_002C7BD8` (`FUN_L04_002c6858`)
+- `src/overlays/l05_rilgar/vendor_0030EB68.c`: `func_L05_003165B8` (`FUN_L05_003150f0`)
+- `src/overlays/l08_batalia/vendor_002E0258.c`: `func_L08_002EA0A8` (`FUN_L08_002e8cd0`)
+- `src/overlays/l09_gaspar/vendor_002C2B08.c`: `func_L09_002EBD30` (`FUN_L09_002eaa50`)
+- `src/overlays/l09_gaspar/vendor_002C2B08.c`: `func_L09_002F0780` (`FUN_L09_002ef430`)
+- `src/overlays/l09_gaspar/vendor_002C2B08.c`: `func_L09_00305378` (`FUN_L09_00303fc8`)
+- `src/overlays/shared/help_00221A98.c`: `func_L00_00221D50` (`FUN_L00_002215c8`)
+- `src/overlays/shared/help_002274A8.c`: `func_L01_002293D0` (`FUN_L01_00228e38`)
+- `src/overlays/shared/help_002274A8.c`: `func_L01_0022DE30` (`FUN_L01_0022d838`)
+- `src/overlays/shared/vendor_002B0068.c`: `func_L04_002B0068` (`FUN_L04_002aee30`)
+- `src/overlays/shared/vendor_002C6B30.c`: `func_L09_00308F58` (`FUN_L09_00307ba8`)
+- `src/overlays/shared/vendor_002C6B30.c`: `func_L09_00309118` (`FUN_L09_00307d68`)
+- `src/overlays/shared/vendor_002D1168.c`: `func_L00_002D19E8` (`FUN_L00_002d0538`)
+- `src/overlays/shared/vendor_002F7700.c`: `func_L01_002F7700` (`FUN_L01_002f6328`)
+- `src/overlays/shared/vendor_002F7700.c`: `func_L01_002F9908` (`FUN_L01_002f8530`)
+- `src/overlays/shared/vendor_002F7700.c`: `func_L01_003015F8` (`FUN_L01_00300220`)
+- `src/overlays/shared/vendor_002F7700.c`: `func_L01_0030EC58` (`FUN_L01_0030d880`)
 - `src/overlays/shared/vendor_002D9548.c`: `func_L06_002EBA10` (`FUN_L06_002ea5e0`)
 - `src/overlays/shared/vendor_002D9548.c`: `func_L06_002F4908` (`FUN_L06_002f34d8`)
 
