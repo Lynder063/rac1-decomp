@@ -22,13 +22,7 @@ INCLUDE_ASM("asm/overlays", func_L00_00257E18);
 INCLUDE_ASM("asm/overlays", func_L00_00257EBC);
 INCLUDE_ASM("asm/overlays", func_L00_00257F4C);
 INCLUDE_ASM("asm/overlays", func_L00_00257FB4);
-int func_L00_0025804C(int unused, int *out) {
-    register int t3 __asm__("$11");
-    register int t1 __asm__("$9");
-    *out = t3;
-    __asm__("nop");
-    return t1;
-}
+INCLUDE_ASM("asm/overlays", func_L00_0025804C);
 INCLUDE_ASM("asm/overlays", func_L00_0025805C);
 INCLUDE_ASM("asm/overlays", func_L00_00258250);
 extern int D_0015EE84 MACRO_ADDR;

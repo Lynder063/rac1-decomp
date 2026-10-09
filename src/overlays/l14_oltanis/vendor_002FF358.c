@@ -532,11 +532,7 @@ void func_L14_00307680(int unused, char *moby) {
     *(short *)(d + 0x3E) = 0;
     moby[0x20] = 1;
 }
-void func_L14_003076A4(int unused, char *moby) {
-    register char *d __asm__("$2");
-    *(short *)(d + 0x3E) = 5;
-    moby[0x20] = 3;
-}
+INCLUDE_ASM("asm/overlays", func_L14_003076A4);
 INCLUDE_ASM("asm/overlays", func_L14_00308000);
 INCLUDE_ASM("asm/overlays", func_L14_00308368);
 extern float func_001F9D10(void *, void *);

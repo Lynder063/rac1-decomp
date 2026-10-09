@@ -14,14 +14,5 @@ void func_L00_002EFC90(int *s,int *a,int *n,int *b,int *m) {
   else { *a=s[13]+off; *n=s[16]-s[14]; *b=s[13]; *m=len-(s[16]-s[14]); }
  }
 }
-void func_L00_002EFCE4(int *unused, int *a, int *n, int *b, int *m) {
-    register int v0 __asm__("$2");
-    register int v1 __asm__("$3");
-    register int *s __asm__("$9");
-    *a = v0;
-    v1 = s[16];
-    *n = v1;
-    *b = 0;
-    *m = 0;
-}
+INCLUDE_ASM("asm/overlays", func_L00_002EFCE4);
 INCLUDE_ASM("asm/overlays", func_L00_002EFCFC);

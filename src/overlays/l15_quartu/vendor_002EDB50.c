@@ -31,10 +31,7 @@ int func_L15_002F8D30(int index) {
     if (*(short *)(data + 0x14) == 1 && D_L15_0015F4FC != 0.0f) return 1;
     return *(short *)(data + 0x14) == 3;
 }
-int func_L15_002F8D9C(void) {
-    register int a __asm__("$2");
-    return ((unsigned)(a ^ 3)) < 1u;
-}
+INCLUDE_ASM("asm/overlays", func_L15_002F8D9C);
 extern int func_L00_00260AB0(void *p, int i);
 extern int func_00215570(void *arg0, int arg1);
 extern int func_L00_00260B68(float *p, int idx);

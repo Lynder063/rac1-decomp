@@ -381,11 +381,7 @@ void func_L03_002DDD78(unsigned char *moby) {
 }
 INCLUDE_ASM("asm/overlays", func_L03_002DDDF8);
 INCLUDE_ASM("asm/overlays", func_L03_002DDE28);
-void func_L03_002DDED8(void) {
-    register char *p __asm__("$6");
-    register float f0 __asm__("$f0");
-    *(volatile float *)(p + 0x18) = f0 + 4.0f;
-}
+INCLUDE_ASM("asm/overlays", func_L03_002DDED8);
 extern float D_0015EE70 MACRO_ADDR;
 extern void func_L00_001FF240(void *, void *, void *);
 extern float func_001FA748(float, float);
