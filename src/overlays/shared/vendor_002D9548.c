@@ -1499,7 +1499,162 @@ void func_L06_002F4CF8(char *obj)
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L06_002F6330);
+typedef struct Moby_2F6330 {
+    char p0[0x10];
+    float pos[4];              /* 0x10 */
+    unsigned char state;       /* 0x20 */
+    char p21[0xF];
+    char f30;                  /* 0x30 */
+    char f31;                  /* 0x31 */
+    short f32;                 /* 0x32 */
+    unsigned short flags;      /* 0x34 */
+    char p36[2];
+    long f38;                  /* 0x38 */
+    float rot[4];              /* 0x40 */
+    char p50[0x28];
+    void *vars;                /* 0x78 */
+    char p7C[0x2A];
+    short cls_id;              /* 0xA6 */
+    char pA8[0x14];
+    unsigned char sub;         /* 0xBC */
+    char pBD[3];
+    float fC0[4];              /* 0xC0 */
+    char pD0[0x10];
+    float fE0[4];              /* 0xE0 */
+    char pF0[0x10];
+} Moby_2F6330;
+
+typedef struct {
+    float pos[4];              /* 0x00 */
+    float f10;                 /* 0x10 */
+    float f14;                 /* 0x14 */
+    int f18;                   /* 0x18 */
+    int idx;                   /* 0x1C */
+    float f20;                 /* 0x20 */
+    Moby_2F6330 *slots[7];     /* 0x24 */
+} Vars_2F6330;
+
+extern Moby_2F6330 *D_L06_00160058_2F6330 __asm__("D_L06_00160058") MACRO_ADDR;
+extern float D_L06_00161DC8 SDATA(D_L06_00161DC8);
+extern float D_L06_00161DCC SDATA(D_L06_00161DCC);
+extern float D_L06_00161DD0 SDATA(D_L06_00161DD0);
+extern float D_L06_00161DD4 SDATA(D_L06_00161DD4);
+extern float D_L06_00161DD8 SDATA(D_L06_00161DD8);
+extern char D_0013E633[];
+extern Moby_2F6330 *func_0020D348_2F6330(int) __asm__("func_0020D348");
+extern void func_001FA1F8(void *, void *);
+extern int func_0022ED80_2F6330(int, int, void *) __asm__("func_0022ED80");
+extern float func_L00_0025CE58(float *, float *, float, float, float, float);
+extern float func_001FA790(float, float);
+
+/* Moby class 1021 update (levels 6, 17, 18): a door ring of seven petals; opens when its trigger fires, eases its angle open and shut. */
+void func_L06_002F6330(Moby_2F6330 *m) {
+    Vars_2F6330 *d = (Vars_2F6330 *)m->vars;
+    float tmp[4];
+    int i;
+    int j;
+    int k;
+    int flag;
+
+    switch (m->state) {
+    case 0:
+        d->f10 = m->rot[0];
+        qcopy(d->pos, m->pos);
+        m->state = 2;
+        for (i = 0; i < 7; i++) {
+            d->slots[i] = func_0020D348_2F6330(0x3FD);
+            d->slots[i]->f30 = 0x40;
+            d->slots[i]->f32 = 0x40;
+            d->slots[i]->f31 = 1;
+            d->slots[i]->f38 = m->f38;
+            d->slots[i]->flags = m->flags;
+            qcopy_nc(d->slots[i]->pos, m->pos);
+            qcopy_nc(d->slots[i]->rot, m->rot);
+            d->slots[i]->rot[0] = func_001FA748(d->slots[i]->rot[0], (float)((i + 1) * 45) * 0.017453292f);
+            d->slots[i]->state = 1;
+            func_001FA1F8(d->slots[i]->fC0, d->slots[i]->rot);
+        }
+        break;
+    case 1:
+        d->f10 = m->rot[0];
+        qcopy(d->pos, m->pos);
+        m->state = 3;
+        func_L00_001FF4B0(tmp, m->fE0, D_L06_00161DD8);
+        func_001F9BD8(m->pos, tmp, d);
+        break;
+    case 2:
+        if (m->sub == 0) {
+            flag = 0;
+            if (d->idx >= 0) {
+                                if (D_L06_00160058_2F6330[d->idx].cls_id == 0x5A8) {
+                    if (func_001F9D48(D_0013E633 + 0xE9D, D_L06_00160058_2F6330[d->idx].pos) < 20.0f) {
+                        flag = 1;
+                    }
+                } else if (D_L06_00160058_2F6330[d->idx].cls_id == 0x24A) {
+                    flag = D_L06_00160058_2F6330[d->idx].sub != 0;
+                } else {
+                    flag = D_L06_00160058_2F6330[d->idx].state >= 3;
+                }
+            } else {
+                if (func_001F9D48(m->pos, D_0013E633 + 0xE9D) < 6.0f && D_L06_00161DD4 == 0.0f) {
+                    flag = 1;
+                }
+            }
+            if (flag) {
+                for (j = 0; j < 7; j++) {
+                    if (d->slots[j]->state != 3) {
+                        flag = 0;
+                    }
+                }
+                if (flag) {
+                    func_0022ED80_2F6330(0, 0, m);
+                    m->state = 4;
+                    d->f18 = 0;
+                    d->f14 = 0.0f;
+                    for (k = 0; k < 7; k++) {
+                        d->slots[k]->state = 5;
+                    }
+                }
+            }
+        }
+    case 3:
+        func_L00_001FF4B0(tmp, m->fE0, D_L06_00161DD8);
+        func_001F9BD8(m->pos, tmp, d);
+        break;
+    case 4:
+    case 5:
+        func_L00_0025CE58(&d->f14, &d->f20, 1.0471976f,
+                          D_L06_00161DC8 * 0.017453292f * D_0015EE70,
+                          D_L06_00161DCC * 0.017453292f * D_0015EE70,
+                          D_L06_00161DD0 * 0.017453292f * D_0015EE6C);
+        m->rot[0] = func_001FA790(d->f10, d->f14);
+        if (d->f14 >= 1.0471976f) {
+            m->flags |= 1;
+            m->f31 = 0;
+            if (m->state == 4) {
+                m->state = 6;
+            } else {
+                m->state = 7;
+            }
+        }
+        break;
+    case 8:
+    case 9:
+        func_L00_0025CE58(&d->f14, &d->f20, 0.0f,
+                          D_L06_00161DC8 * 0.017453292f * D_0015EE70,
+                          D_L06_00161DCC * 0.017453292f * D_0015EE70,
+                          D_L06_00161DD0 * 0.017453292f * D_0015EE6C);
+        m->rot[0] = func_001FA790(d->f10, d->f14);
+        if (d->f14 <= 0.0f) {
+            if (m->state == 8) {
+                m->state = 2;
+            } else {
+                m->state = 3;
+            }
+        }
+        break;
+    }
+}
 extern char D_0014171B_86b8[] __asm__("D_0014171B");
 extern char D_0014171B_aa35[] __asm__("D_0014171B");
 extern int D_0015EE84_86b8 __asm__("D_0015EE84") MACRO_ADDR;

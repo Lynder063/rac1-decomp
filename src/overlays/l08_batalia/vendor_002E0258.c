@@ -35,7 +35,135 @@ void func_L08_002E2A10(char *arg) {
     arg[0xBC] = 1;
     func_L08_00231228(0x32, 1);
 }
-INCLUDE_ASM("asm/overlays", func_L08_002E2A38);
+typedef struct {
+    float vel[4];              /* 0x00 */
+    float spin_x;              /* 0x10 */
+    float spin_y;              /* 0x14 */
+    int life;                  /* 0x18 */
+} Data_2E2A38;
+typedef struct {
+    char pad0[0x10];
+    float pos[4];              /* 0x10 */
+    unsigned char state;       /* 0x20 */
+    char pad21[0x1F];
+    float rot[4];              /* 0x40 */
+    char pad50[0x28];
+    Data_2E2A38 *data;         /* 0x78 */
+} Moby_2E2A38;
+typedef struct {
+    int v[2];
+} Pair_2E2A38;
+
+extern float func_002140F8(float, float);
+extern int func_001F9850(int);
+extern void func_001F9BD8(void *, void *, void *);
+extern float func_001FA748(float, float);
+extern void func_0020D678(void *);
+extern int func_002140B0(int);
+extern void func_001F9BC0(void *);
+extern int func_L00_00258BC8(int, int);
+extern void func_L00_0026B890_2E2A38(void *, void *, int, int, int, int, int, int, float, float) __asm__("func_L00_0026B890");
+extern float func_00214158(void);
+extern float func_001F9FA8(float);
+extern float func_001F9878(float);
+extern int func_001FA898(float);
+extern char *func_00219780_2E2A38(void *, void *, void *, int, int, int, int, int, int) __asm__("func_00219780");
+extern float D_0015EE6C MACRO_ADDR;
+extern float D_0015EE70 MACRO_ADDR;
+extern Pair_2E2A38 D_L08_00161CC0;
+extern int D_L08_00161C90 SDATA(D_L08_00161C90);
+extern int D_L08_00161C94 SDATA(D_L08_00161C94);
+extern int D_L08_00161C98 SDATA(D_L08_00161C98);
+extern float D_L08_00161C9C SDATA(D_L08_00161C9C);
+extern float D_L08_00161CA0 SDATA(D_L08_00161CA0);
+extern float D_L08_00161CA4 SDATA(D_L08_00161CA4);
+extern float D_L08_00161CA8 SDATA(D_L08_00161CA8);
+extern int D_L08_00161CAC SDATA(D_L08_00161CAC);
+extern int D_L08_00161CB0 SDATA(D_L08_00161CB0);
+extern int D_L08_00161CB4 SDATA(D_L08_00161CB4);
+extern float D_L08_00161CB8 SDATA(D_L08_00161CB8);
+extern float D_L08_00161CBC SDATA(D_L08_00161CBC);
+
+/* Update function for moby classes 441-443 on level 08 (falling debris): picks its spin, falls with a smoke trail, bursts into particles near the ground, then falls on until out of bounds. */
+void func_L08_002E2A38(Moby_2E2A38 *m) {
+    Data_2E2A38 *d = m->data;
+    float v10[4];
+    Pair_2E2A38 tab;
+    float v30[4];
+    float a40[4];
+    int i;
+
+    switch (m->state) {
+    case 1:
+        d->spin_x = func_002140F8(-(D_0015EE6C * 1.5707964f), D_0015EE6C * 1.5707964f);
+        d->spin_y = func_002140F8(-(D_0015EE6C * 1.5707964f), D_0015EE6C * 1.5707964f);
+        d->life = (int)func_002140F8((float)func_001F9850(0x5A), (float)func_001F9850(0x96));
+        m->state = 2;
+    case 2:
+        d->vel[2] -= D_0015EE70 * 10.8f * 0.5f;
+        func_001F9BD8(m->pos, m->pos, d);
+        m->rot[0] = func_001FA748(m->rot[0], d->spin_x);
+        m->rot[1] = func_001FA748(m->rot[1], d->spin_y);
+        if (m->pos[0] < 8.0f || m->pos[1] < 8.0f || m->pos[0] > 500.0f || m->pos[1] > 500.0f ||
+            m->pos[2] > 500.0f) {
+            func_0020D678(m);
+            return;
+        }
+        if (func_002140B0(3) == 0) {
+            int *q;
+            int a;
+            int b;
+            func_001F9BC0(v10);
+            tab = D_L08_00161CC0;
+            q = &tab.v[func_002140B0(2)];
+            {
+                int lo = func_001F9850(15), hi = func_001F9850(20);
+                a = func_L00_00258BC8(lo, hi);
+            }
+            {
+                int lo = func_001F9850(25);
+                b = func_L00_00258BC8(lo, func_001F9850(30));
+            }
+            func_L00_0026B890_2E2A38(m->pos, v10, 0x2F3F3F7F, *q, a, b, 0, 0, 400000.0f,
+                                     func_002140F8(8.0f, 16.0f) * D_0015EE6C);
+        }
+        if (m->pos[2] < 15.2f) {
+            for (i = 0; i < D_L08_00161C90; i++) {
+                float ang = func_00214158();
+                int c1;
+                int c2;
+                int c3;
+                qcopy(a40, m->pos);
+                a40[0] += func_002140F8(-3.0f, 3.0f);
+                a40[1] += func_002140F8(-3.0f, 3.0f);
+                v10[2] = D_L08_00161C9C * D_0015EE6C;
+                v10[0] += func_001F9F90(ang) * D_L08_00161CA4;
+                v10[1] += func_001F9FA8(ang) * D_L08_00161CA4;
+                v30[2] = D_L08_00161CA0 * D_0015EE6C;
+                v30[0] += func_001F9F90(ang) * D_L08_00161CA8;
+                v30[1] += func_001F9FA8(ang) * D_L08_00161CA8;
+                v10[3] = D_L08_00161CB8;
+                v30[3] = D_L08_00161CBC;
+                c1 = func_001FA898(func_001F9878(func_002140F8((float)D_L08_00161CAC, (float)(D_L08_00161CAC * 2))));
+                c2 = func_001FA898(func_001F9878(func_002140F8((float)D_L08_00161CB0, (float)(D_L08_00161CB0 * 2))));
+                c3 = func_001FA898(func_001F9878(func_002140F8((float)D_L08_00161CB4, (float)(D_L08_00161CB4 * 2))));
+                func_00219780_2E2A38(a40, v10, v30, D_L08_00161C94, D_L08_00161C98, c1, c2, c3, -1);
+            }
+            m->state = 3;
+        }
+        break;
+    case 3:
+        d->vel[2] -= D_0015EE70 * 10.8f * 0.5f;
+        func_001F9BD8(m->pos, m->pos, d);
+        m->rot[0] = func_001FA748(m->rot[0], d->spin_x);
+        m->rot[1] = func_001FA748(m->rot[1], d->spin_y);
+        if (m->pos[0] < 8.0f || m->pos[1] < 8.0f || m->pos[2] < 8.0f || m->pos[0] > 500.0f ||
+            m->pos[1] > 500.0f) {
+            func_0020D678(m);
+        }
+        break;
+    }
+}
 extern void *func_0020D348(int);
 extern void func_L00_00250800(void *, int, void *);
 extern void func_001F9BF0(void *, void *, void *);

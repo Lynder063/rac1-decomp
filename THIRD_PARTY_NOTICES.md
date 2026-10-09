@@ -620,6 +620,12 @@ full build. In parentheses, Lombyte's name.
 - `src/overlays/shared/vendor_002F7700.c`: `func_L01_00309078` (`FUN_L01_00307ca0`)
 - `src/overlays/shared/vendor_002F7700.c`: `func_L01_00317408` (`FUN_L01_00316030`)
 
+Two more were adapted the same day, each replacing a near miss of this project's own with Lombyte's logic for
+the same function:
+
+- `src/overlays/l02_aridia/vendor_002A59D8.c`: `func_L02_002D70C0` (`FUN_L02_002d5c88`)
+- `src/overlays/l07_umbris/vendor_002CE470.c`: `func_L07_0030CA88` (`FUN_L07_0030b6a8`)
+
 One more is this project's own port of a function it has from Lombyte: `func_L00_001EB890` in
 `src/overlays/shared/camera_001EB508.c` is the level programs' copy of `func_001EC2B8` (Lombyte's
 `switch_active_camera_record`), with the same C under the level's symbols.

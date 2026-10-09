@@ -376,7 +376,104 @@ unsigned char *func_L07_0030C918(void *pos, float *dir, int a, int b) {
     }
     return m;
 }
-INCLUDE_ASM("asm/overlays", func_L07_0030CA88);
+typedef int u128_30CA88 __attribute__((mode(TI)));
+typedef union {
+    u128_30CA88 q;
+    float f[4];
+} Vec4_30CA88;
+typedef struct {
+    float x, y, z, w;
+} Vec4f_30CA88;
+typedef struct {
+    unsigned char pad0[0x10];
+    Vec4f_30CA88 pos;          /* 0x10 */
+    unsigned char pad20[0x11];
+    unsigned char unk31;       /* 0x31 */
+    unsigned char pad32[0x46];
+    void *pvars;               /* 0x78 */
+} Moby_30CA88;
+/* Pvars of a flying bolt. */
+typedef struct {
+    unsigned char pad0[0x30];
+    Vec4_30CA88 vel;           /* 0x30 */
+    Vec4_30CA88 origin;        /* 0x40 */
+    void *ignore;              /* 0x50: collision owner to skip */
+    int solid;                 /* 0x54 */
+} BoltVars_30CA88;
+
+extern float func_001F9CB8(void *);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern float func_002140F8(float, float);
+extern int func_L00_00258BC8(int, int);
+extern int func_L00_001EFFF0_30CA88(void *, void *, int, void *, void *) __asm__("func_L00_001EFFF0");
+extern void func_L07_0029B070_30CA88(void *, void *) __asm__("func_L07_0029B070");
+extern void func_L00_001FF610(void *, void *, void *);
+extern char *func_L00_0026EBC0(char *, char *, int c, int d, float f);
+extern int func_0022ED80_30CA88(int, int, void *) __asm__("func_0022ED80");
+extern void func_0020D678(void *);
+extern Vec4_30CA88 D_L07_00173F60;
+extern char D_L07_00173F80[];
+
+/* Bolt update: flies on, sparks out at the end of its range, bursts on impact, removes it out of bounds. Adapted from Lombyte (MIT) for PAL: src/overlays/l07/gameplay/entities/002cd2b0.c, FUN_L07_0030b6a8. */
+void func_L07_0030CA88(Moby_30CA88 *m) {
+    BoltVars_30CA88 *v = (BoltVars_30CA88 *)m->pvars;
+    Vec4_30CA88 old;
+    Vec4_30CA88 dir;
+    Vec4_30CA88 spark;
+    int pass;
+    int i;
+    int j;
+
+    qcopy(&old, &m->pos);
+    func_001F9BD8(&m->pos, &m->pos, &v->vel);
+    pass = v->solid == 0;
+    if (func_001F9D48(&m->pos, &v->origin) > 30.0f) {
+        if (m->unk31 != 0) {
+            for (i = 0; i < 3; i++) {
+                spark.q = 0;
+                spark.f[0] = func_002140F8(-1.0f, 1.0f);
+                spark.f[1] = func_002140F8(-1.0f, 1.0f);
+                spark.f[2] = func_002140F8(-1.0f, 1.0f);
+                dir.q = spark.q;
+                func_L00_001FF4B0(&dir, &dir, func_001F9CB8(&spark) * 0.1f);
+                func_001F9BD8(&dir, &spark, &dir);
+                func_L00_001FF4B0(&dir, &dir,
+                                  func_002140F8(D_0015EE6C + D_0015EE6C, D_0015EE6C * 4.0f));
+                func_L07_0029B070_30CA88(&m->pos, &dir);
+            }
+        }
+        func_0020D678(m);
+        return;
+    }
+    if ((m->unk31 != 0 || func_001F9D48(&m->pos, D_0013E633 + 0xE9D) < 30.0f) &&
+        func_L00_001EFFF0_30CA88(&old, &m->pos, pass, v->ignore, v) != 0) {
+        qcopy(&m->pos, &D_L07_00173F60);
+        if (m->unk31 != 0) {
+            for (j = 0; j < 5; j++) {
+                spark.q = 0;
+                spark.f[0] = func_002140F8(-1.0f, 1.0f);
+                spark.f[1] = func_002140F8(-1.0f, 1.0f);
+                spark.f[2] = func_002140F8(-1.0f, 1.0f);
+                dir.q = spark.q;
+                func_L00_001FF610(&spark, &v->vel, D_L07_00173F80);
+                func_L00_001FF4B0(&dir, &dir, func_001F9CB8(&spark) * 0.5f);
+                func_001F9BD8(&dir, &spark, &dir);
+                func_L00_001FF4B0(&dir, &dir,
+                                  func_002140F8(D_0015EE6C * 3.0f, D_0015EE6C * 6.0f));
+                func_L00_0026EBC0((char *)&m->pos, (char *)&dir, 0x7F2F4F6F,
+                                  func_L00_00258BC8(func_001F9850(10), func_001F9850(15)),
+                                  30000.0f);
+            }
+        }
+        func_0022ED80_30CA88(0, 0, m);
+        func_0020D678(m);
+        return;
+    }
+    if (m->pos.x < 2.0f || m->pos.x > 1021.0f || m->pos.y < 2.0f || m->pos.y > 1021.0f ||
+        m->pos.z < 2.0f || m->pos.z > 1021.0f) {
+        func_0020D678(m);
+    }
+}
 extern char *func_0020D348_m(int) __asm__("func_0020D348");
 extern float func_00214158(void);
 extern float func_L00_00258C80(float lo, float hi);
@@ -565,7 +662,275 @@ void func_L07_0030CFA8(struct Moby_0CFA8 *m) {
         DeleteMoby(m);
     }
 }
-INCLUDE_ASM("asm/overlays", func_L07_0030D8E8);
+typedef struct {
+    float x;                   /* 0x00 */
+    float y;                   /* 0x04 */
+    float z;                   /* 0x08 */
+    char padC[0x10];
+    unsigned char b1C;         /* 0x1C */
+    unsigned char b1D;         /* 0x1D */
+    short h1E;                 /* 0x1E */
+    char rest[0x1170];
+} Rec_30D8E8;
+typedef struct {
+    float f0;                  /* 0x00 */
+    float f4;
+    float f8;
+    float fC;
+    float f10;                 /* 0x10 */
+    float f14;
+    float f18;
+    float f1C;
+    float f20;                 /* 0x20 */
+    float f24;
+    int i28;                   /* 0x28 */
+    int i2C;
+    float f30;                 /* 0x30 */
+    float f34;
+    float f38;
+    unsigned char b3C;         /* 0x3C */
+    unsigned char b3D;
+} Cab_30D8E8;
+typedef struct {
+    char pad0[0x10];
+    float f10;
+    float f14;
+} Dir_30D8E8;
+typedef struct {
+    float hi;                  /* 0x00 */
+    float lo;                  /* 0x04 */
+    int f8;                    /* 0x08 */
+    int fC;                    /* 0x0C */
+    int volume;                /* 0x10 */
+    int idx;                   /* 0x14 */
+    int timer;                 /* 0x18 */
+    int f1C;                   /* 0x1C */
+} Data_30D8E8;
+typedef struct {
+    char pad0[0x10];
+    float pos[4];              /* 0x10 */
+    unsigned char state;       /* 0x20 */
+    unsigned char f21;         /* 0x21 */
+    char pad22[0x12];
+    unsigned short flags;      /* 0x34 */
+    char pad36[0x42];
+    Data_30D8E8 *data;         /* 0x78 */
+    char pad7C[0x18];
+    int f94;                   /* 0x94 */
+    char pad98[0x24];
+    unsigned char sub;         /* 0xBC */
+} Moby_30D8E8;
+
+extern Rec_30D8E8 D_L07_001DD100_30D8E8[] __asm__("D_L07_001DD100");
+extern Dir_30D8E8 D_L07_0017FFC0;
+extern Cab_30D8E8 D_L07_001CAB80;
+extern int D_L07_002049C0[][4];
+extern unsigned short D_L07_00204940[];
+extern int D_L07_00161358 MACRO_ADDR;
+extern float D_L07_0016128C MACRO_ADDR;
+extern float D_L07_00161290 MACRO_ADDR;
+extern float D_L07_00161294 MACRO_ADDR;
+extern Rec_30D8E8 *D_L07_00161350 MACRO_ADDR;
+extern int (*D_L07_00161354)[4] MACRO_ADDR;
+extern int D_L07_00161288 MACRO_ADDR;
+extern int D_L07_00161BC8 SDATA(D_L07_00161BC8);
+extern int D_L07_00161BC0 SDATA(D_L07_00161BC0);
+extern unsigned short D_L07_00161BC4 SDATA(D_L07_00161BC4);
+extern char D_0013D5CA[];
+extern char D_0013D5EB[];
+extern void func_L01_002B8C00_30D8E8(void *, int) __asm__("func_L01_002B8C00");
+extern void func_L01_002B90A8_30D8E8(float) __asm__("func_L01_002B90A8");
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_L01_002B8E20_30D8E8(void *, void *) __asm__("func_L01_002B8E20");
+extern void func_L01_002B9440_30D8E8(void *, int, float, float, float, float) __asm__("func_L01_002B9440");
+extern void func_L07_0030E128_30D8E8(int) __asm__("func_L07_0030E128");
+extern void func_L01_0026F090_30D8E8(int, int) __asm__("func_L01_0026F090");
+extern int func_L07_00282EB0_30D8E8(void *, int, int, int) __asm__("func_L07_00282EB0");
+extern float func_00214D28_30D8E8(float *, float, float) __asm__("func_00214D28");
+extern void func_L01_0026F040_30D8E8(int, int) __asm__("func_L01_0026F040");
+extern int func_002140B0(int);
+extern void func_L00_002A5158_30D8E8(void *, int, int, float, float, float, float) __asm__("func_L00_002A5158");
+extern int func_00215570_30D8E8(void *, int) __asm__("func_00215570");
+extern int func_001F9908_30D8E8(int *) __asm__("func_001F9908");
+extern int func_L01_00276680_30D8E8(void *, float) __asm__("func_L01_00276680");
+extern void func_L01_002B9198_30D8E8(void *, int) __asm__("func_L01_002B9198");
+extern void func_L07_0030E100_30D8E8(void) __asm__("func_L07_0030E100");
+
+/* Water plate update: the first plate sets up the 36-plate wave grid; each plate rises and sinks with its switch, splashes at random, floods on its volume trigger, and feeds its height and tint to its grid record. */
+void func_L07_0030D8E8(Moby_30D8E8 *m) {
+    Data_30D8E8 *d = m->data;
+    int i;
+    int j;
+    int k;
+    int n;
+    float ang;
+    float on;
+
+    if (d == 0) {
+        return;
+    }
+    if (D_L07_00161BC8 != 0) {
+        D_0013D5CA[2] = 0;
+        D_0013D5EB[9] = 0;
+    }
+    switch (m->state) {
+    case 0:
+        m->flags |= 0x81;
+        if (d->idx == 0) {
+            Cab_30D8E8 *cab;
+            Dir_30D8E8 *dir;
+            int (*p)[4];
+            func_L01_002B8C00_30D8E8(D_L07_001DD100_30D8E8, 0x24);
+            func_L01_002B90A8_30D8E8(1.0f);
+            cab = &D_L07_001CAB80;
+            dir = &D_L07_0017FFC0;
+            cab->f0 = 16.0f;
+            cab->f4 = 16.0f;
+            cab->f8 = -8.0f;
+            cab->fC = -8.0f;
+            cab->f10 = 1.0f;
+            cab->f14 = 1.0f;
+            cab->f18 = 0.9f;
+            cab->f20 = 0.1f;
+            ang = func_L00_001FF860(dir->f10, dir->f14);
+            cab->f30 = func_001F9F90(ang) * 0.57735f;
+            cab->f34 = func_001F9FA8(ang) * 0.57735f;
+            cab->f38 = -0.57735f;
+            cab->i28 = 0x28;
+            cab->i2C = 0x29;
+            p = D_L07_002049C0;
+            D_L07_00161358 = 0x24;
+            D_L07_0016128C = 32768.0f;
+            D_L07_00161290 = 255.0f;
+            D_L07_00161294 = 48.0f;
+            cab->b3C = 0x40;
+            cab->b3D = 0x40;
+            D_L07_00161350 = D_L07_001DD100_30D8E8;
+            D_L07_00161354 = D_L07_002049C0;
+            D_L07_00161288 = 0;
+            for (i = 0; i < 0x24; i++) {
+                func_L01_002B8E20_30D8E8(&D_L07_001DD100_30D8E8[i], p[i]);
+                D_L07_001DD100_30D8E8[d->idx].h1E = D_L07_00204940[d->idx];
+            }
+            for (k = 0; k < 0x24; k++) {
+                Rec_30D8E8 *t = D_L07_001DD100_30D8E8;
+                Rec_30D8E8 *r = &t[k];
+                for (j = 0; j < 2; j++) {
+                    float x = r->x + func_002140F8(-6.0f, 6.0f);
+                    float y = r->y + func_002140F8(-6.0f, 6.0f);
+                    func_L01_002B9440_30D8E8(t, 0x24, x, y, 2.0f, 0.2f);
+                }
+            }
+            for (n = 0; n < 0x24; n++) {
+                func_L07_0030E128_30D8E8(n);
+            }
+        }
+        if (d->fC != 0) {
+            m->state = 3;
+            d->timer = func_001F9850(0x3C);
+            if (m->pos[2] < d->lo) {
+                D_L07_001DD100_30D8E8[d->idx].h1E = 0;
+            }
+        } else if (d->f8 != 0) {
+            m->state = 1;
+        } else {
+            m->state = 2;
+        }
+        break;
+    case 2:
+        if (m->sub & 4) {
+            func_L01_0026F090_30D8E8(m->f21, 1);
+        } else if (func_L07_00282EB0_30D8E8(m, m->f21, 1, 0) && m->sub != 1) {
+            func_00214D28_30D8E8(&m->pos[2], d->lo, D_0015EE6C * 4.0f);
+            func_L01_0026F040_30D8E8(m->f21, 1);
+        } else if (m->sub == 1) {
+            func_00214D28_30D8E8(&m->pos[2], d->lo, D_0015EE6C * 4.0f);
+        }
+        if (func_002140B0(200) == 0) {
+            float x = D_L07_001DD100_30D8E8[d->idx].x + func_002140F8(-4.0f, 4.0f);
+            float y = func_002140F8(-4.0f, 4.0f);
+            Rec_30D8E8 *r = &D_L07_001DD100_30D8E8[d->idx];
+            func_L00_002A5158_30D8E8(r, 1, 1, x, r->y + y, 1.0f, -0.05f);
+        }
+        break;
+    case 1:
+        if (m->sub & 8) {
+            func_L01_0026F090_30D8E8(m->f21, 2);
+        } else if (func_L07_00282EB0_30D8E8(m, m->f21, 1, 0) && m->sub != 2) {
+            func_00214D28_30D8E8(&m->pos[2], d->hi, D_0015EE6C * 4.0f);
+            func_L01_0026F040_30D8E8(m->f21, 2);
+        } else if (m->sub == 2) {
+            func_00214D28_30D8E8(&m->pos[2], d->hi, D_0015EE6C * 4.0f);
+        }
+        if (func_002140B0(200) == 0) {
+            float x = D_L07_001DD100_30D8E8[d->idx].x + func_002140F8(-4.0f, 4.0f);
+            float y = func_002140F8(-4.0f, 4.0f);
+            Rec_30D8E8 *r = &D_L07_001DD100_30D8E8[d->idx];
+            func_L00_002A5158_30D8E8(r, 1, 1, x, r->y + y, 1.0f, -0.05f);
+        }
+        break;
+    case 3:
+        if (d->volume >= 0 && func_00215570_30D8E8(D_0013E633 + 0xE9D, d->volume)) {
+            d->f1C = 0;
+            func_L01_0026F090_30D8E8(m->f21, 4);
+        }
+        break;
+    case 4:
+        if (func_001F9908_30D8E8(&d->timer)) {
+            d->timer = func_001F9850(0x708);
+            m->state = 5;
+        }
+        break;
+    case 5:
+        m->pos[2] += D_0015EE6C * 0.32f;
+        if (func_001F9908_30D8E8(&d->timer)) {
+            m->state = 6;
+        }
+        break;
+    case 6:
+        m->pos[2] += D_0015EE6C * 0.42f;
+        if (m->pos[2] >= 54.0f) {
+            m->state = 7;
+        }
+        break;
+    case 7:
+        if (d->hi < m->pos[2]) {
+            D_L07_001DD100_30D8E8[d->idx].h1E = 0;
+            func_0020D678(m);
+            return;
+        }
+        break;
+    }
+    if (d->idx < 0) {
+        return;
+    }
+    {
+        Cab_30D8E8 *cab = &D_L07_001CAB80;
+        D_L07_001DD100_30D8E8[d->idx].b1C = cab->b3C;
+        D_L07_001DD100_30D8E8[d->idx].b1D = cab->b3D;
+    }
+    D_L07_001DD100_30D8E8[d->idx].z = m->pos[2];
+    on = 0.0f;
+    if (m->f94 != 0 && func_L01_00276680_30D8E8(m, 48.0f) != -1) {
+        if (!(m->state >= 3 && m->state <= 7) || (m->pos[2] > d->lo && m->pos[2] < d->hi)) {
+            on = 1.0f;
+        }
+    }
+    if (on == 0.0f) {
+        D_L07_001DD100_30D8E8[d->idx].h1E = 0;
+    } else {
+        D_L07_001DD100_30D8E8[d->idx].h1E = D_L07_00204940[d->idx];
+    }
+    if (d->idx == 0) {
+        func_L01_002B9198_30D8E8(D_L07_001DD100_30D8E8, 0x24);
+        func_001F49B0(func_L07_0030E100_30D8E8, m);
+    }
+    if (d->idx == D_L07_00161BC0) {
+        D_L07_001DD100_30D8E8[d->idx].h1E = D_L07_00161BC4;
+        D_L07_00204940[d->idx] = D_L07_00161BC4;
+    }
+}
 extern void func_L01_002BA380(char *, int);
 extern char D_L07_001DD100[];
 void func_L07_0030E100(void) {
