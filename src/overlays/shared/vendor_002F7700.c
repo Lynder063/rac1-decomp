@@ -3,9 +3,453 @@
 #include "include_asm.h"
 
 INCLUDE_ASM("asm/overlays", func_L01_002F7700);
-INCLUDE_ASM("asm/overlays", func_L01_002F7E08);
+typedef struct { float x, y, z, w; } Vec_2F7E08 __attribute__((aligned(16)));
+typedef struct { int c[6]; } Cols_2F7E08;
+typedef struct Moby_2F7E08 Moby_2F7E08;
+typedef struct {
+    Vec_2F7E08 vel;
+    Vec_2F7E08 target;
+    int ids[4];
+    int f30;
+    int f34;
+    float f38;
+} Data_2F7E08;
+typedef struct {
+    int timer;
+    short h4;
+    int vol;
+} Tgt_2F7E08;
+struct Moby_2F7E08 {
+    char pad0[0x10];
+    Vec_2F7E08 pos;
+    unsigned char state;
+    char pad21[0x57];
+    void *data;
+    char pad7C[0x2A];
+    short oclass;
+    char padA8[0x58];
+};
+typedef struct {
+    Vec_2F7E08 dir;
+    Moby_2F7E08 *owner;
+    int flags;
+    unsigned char b28;
+    unsigned char b29;
+    short id;
+    float scale;
+    int count;
+} Dmg_2F7E08;
+typedef struct {
+    char pad0[0x2080];
+    void *f2080;
+} Hero_2F7E08;
+extern int D_L01_0015F504 MACRO_ADDR;
+extern float D_0015EE6C MACRO_ADDR;
+extern float D_L01_0015F6B4 MACRO_ADDR;
+extern char *D_L01_00160058 MACRO_ADDR;
+extern char D_L01_001672C0[];
+extern char D_0013E633[];
+extern Moby_2F7E08 *D_L01_00174358;
+extern Cols_2F7E08 D_L01_0020B760;
+extern Cols_2F7E08 D_L01_0020B778;
+extern void func_001F9BD8(void *, void *, void *);
+extern float func_001F9CB8(void *a);
+extern float func_002140F8(float, float);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern int func_L00_00258BC8(int, int);
+extern int func_001F9850(int);
+extern void func_L00_0026A7F8(void *, void *, int, int, int, int, int, int);
+extern void func_0020D678(void *);
+extern float func_001F9D10(void *, void *);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BC0(void *);
+extern int func_L00_001F2BE8(float, void *, int, void *, void *);
+extern int func_0022ED80(int, int, int);
+extern float func_001FA888(int);
+extern int func_001FA898_r(float) __asm__("func_001FA898");
+extern int func_002140B0(int);
+extern void func_L00_0026B890(void *, void *, int, int, float, int, int, int, int, float);
+extern void func_L00_0026B368(void *, void *, int, int, int, float);
+extern int func_L00_002ADBB0(void *, void *, void *, float, int, int, int, int, int);
+extern void func_L00_0026CA10(void *, void *, int, int, float, int, int, int, int);
+extern int func_00215570(void *, int);
+
+/* Update of moby class 686, a flying burst: drifts and trails smoke; on reaching its target it damages around it, sprays particles, arms nearby class 0x2BC targets and deletes itself. */
+void func_L01_002F7E08(Moby_2F7E08 *moby) {
+    Vec_2F7E08 old;
+    Vec_2F7E08 a;
+    Data_2F7E08 *d;
+    int div;
+    int i;
+    int j;
+    int m;
+    int q;
+    int r;
+    int k;
+    int n;
+    float len;
+    float s;
+    float camdist;
+    float dist;
+    float fade;
+
+    div = 2;
+    if (D_L01_0015F504 != 0) {
+        div = 4;
+    }
+    d = moby->data;
+    qcopy(&old, &moby->pos);
+    FastVecAdd(&moby->pos, &moby->pos, d);
+    len = FastVecLength(d);
+    for (i = 0; D_L01_0015F504 != 0 ? i < 2 : i < 4; i++) {
+        Vec_2F7E08 b = { random_float_between(-1.0f, 1.0f), random_float_between(-1.0f, 1.0f), random_float_between(-1.0f, 1.0f) };
+        {
+            func_L00_001FF4B0(&b, &b, random_float_between(0.5f, 1.0f) * D_0015EE6C);
+            func_L00_001FF4B0(&a, d, -random_float_between(D_0015EE6C * 0.1f, D_0015EE6C));
+            FastVecAdd(&b, &b, &a);
+            func_L00_001FF4B0(&a, d, random_float_between(0.0f, 1.0f) * len);
+            FastVecAdd(&a, &a, &moby->pos);
+            func_L00_0026A7F8(&a, &b, 0x6F00AFFF, 0xFF, scale_ticks(rand_range(0x1E, 0x2D)) / div, 0x50,
+                              rand_range(0x50, 0x8C) / div, 1);
+            func_L00_001FF4B0(&a, d, random_float_between(0.0f, 1.0f) * len);
+            FastVecAdd(&a, &a, &moby->pos);
+            func_L00_0026A7F8(&a, &b, 0x1FFFFFFF, 0x4F4F4F, scale_ticks(rand_range(0x3C, 0x78)) / div, 0x50,
+                              rand_range(0xC8, 0x12C) / div, 0);
+        }
+    }
+    if (moby->pos.x < 0.0f || moby->pos.y < 0.0f || moby->pos.z < 0.0f) {
+        DeleteMoby(moby);
+        return;
+    }
+    if (FastVecDist(&d->target, &moby->pos) < d->f38) {
+        qcopy(&moby->pos, &d->target);
+        moby->state = 1;
+    }
+    if (moby->state != 0) {
+        s = 8.0f;
+        camdist = FastVecDist(D_L01_001672C0, &moby->pos);
+        if (D_L01_0015F504 != 0) {
+            s = 4.0f;
+        }
+        FastVecScale(d, d, -0.55f);
+        if (D_L01_0015F504 != 0) {
+            Dmg_2F7E08 dmg;
+            {
+                dmg.owner = moby;
+                dmg.flags = 0x810001;
+                dmg.scale = 0.0f;
+                clear_u64_value(&dmg);
+                dmg.count = 0;
+                coll_sphere_mobys(1.0f, &moby->pos, 9, ((Hero_2F7E08 *)(D_0013E633 + 0xE1D))->f2080, &dmg);
+                if (D_L01_00174358 != 0 && D_L01_00174358->oclass >= 0x2C5 && D_L01_00174358->oclass < 0x2C8) {
+                    func_0022ED80(2, 0, (int)moby);
+                } else {
+                    func_0022ED80(1, 0, (int)moby);
+                }
+            }
+        }
+        dist = FastVecDist(&moby->pos, D_L01_001672C0);
+        k = 5;
+        if (D_L01_0015F504 != 0) {
+            k = 2;
+        }
+        if (dist < func_001FA888(k) * 2.0f) {
+            n = func_001FA898_r(dist) / 2;
+        } else {
+            n = k;
+        }
+        fade = 0.0f;
+        if (dist < 7.0f) {
+            fade = 7.0f - dist;
+        }
+        for (j = 0; j < n; j++) {
+            float spd = random_float_between(8.0f, 10.0f) * D_0015EE6C - fade * D_0015EE6C;
+            Cols_2F7E08 c1 = D_L01_0020B760;
+            Cols_2F7E08 c2 = D_L01_0020B778;
+            spd = spd * s;
+            func_L00_0026B890(&moby->pos, d, c1.c[random_integer_below(6)], c2.c[random_integer_below(6)], s * 400000.0f,
+                              rand_range(scale_ticks(0x1E), scale_ticks(0x28)) / div,
+                              rand_range(scale_ticks(0x3C), scale_ticks(0x5A)) / div, 0, 8, spd);
+            func_L00_0026B890(&moby->pos, d, 0x7FFFFFFF, 0xFFFFFF, s * 400000.0f,
+                              rand_range(scale_ticks(0xA), scale_ticks(0x14)) / div,
+                              rand_range(scale_ticks(0x1E), scale_ticks(0x28)) / div, 0, 8, spd * 0.5f);
+        }
+        for (m = 0; m < 5; m++) {
+            Cols_2F7E08 c1 = D_L01_0020B760;
+            Cols_2F7E08 c2 = D_L01_0020B778;
+            Vec_2F7E08 vel = { random_float_between(-1.0f, 1.0f), random_float_between(-1.0f, 1.0f), random_float_between(-1.0f, 1.0f) };
+            {
+                func_L00_001FF4B0(&vel, &vel, s * (random_float_between(0.0f, 3.0f) * D_0015EE6C));
+                func_L00_0026B368(&moby->pos, &vel, c1.c[random_integer_below(6)], c2.c[random_integer_below(6)],
+                                  rand_range(scale_ticks(0xF), scale_ticks(0x14)) / div, 200000.0f);
+            }
+        }
+        if (D_L01_0015F6B4 < 0.95f && dist > 9.0f) {
+            func_L00_002ADBB0(moby, &moby->pos, d, s * 4.0f, scale_ticks(0xF), 0x7F, 0x7F, 0x7F, 0x20);
+            func_L00_002ADBB0(moby, &moby->pos, d, s * 4.0f, scale_ticks(0x18), 0x7F, 0x7F, 0x7F, 0x20);
+        }
+        func_L00_002ADBB0(moby, &moby->pos, d, s * 4.0f, scale_ticks(0x14), 0x7F, 0x7F, 0, 0x30);
+        func_L00_002ADBB0(moby, &moby->pos, d, s * 2.0f, scale_ticks(0x13), 0xFF, 0xFF, 0xFF, 0x20);
+        if (camdist > 100.0f) {
+            if (D_L01_0015F6B4 < 0.95f && dist > 9.0f) {
+                func_L00_002ADBB0(moby, &moby->pos, d, 30.0f, scale_ticks(0xF), 0x7F, 0x7F, 0x7F, 0x20);
+                func_L00_002ADBB0(moby, &moby->pos, d, 30.0f, scale_ticks(0x18), 0x7F, 0x7F, 0x7F, 0x20);
+            }
+            func_L00_002ADBB0(moby, &moby->pos, d, 30.0f, scale_ticks(0x14), 0x7F, 0x7F, 0, 0x30);
+            func_L00_002ADBB0(moby, &moby->pos, d, 15.0f, scale_ticks(0x13), 0xFF, 0xFF, 0xFF, 0x20);
+        }
+        for (q = 0; D_L01_0015F504 != 0 ? q < 10 : q < 40; q++) {
+            Vec_2F7E08 b = { random_float_between(-1.0f, 1.0f), random_float_between(-1.0f, 1.0f), random_float_between(-1.0f, 1.0f) };
+                float sp = random_float_between(10.0f, 40.0f) * D_0015EE6C;
+                float sz;
+                func_L00_001FF4B0(&b, &b, D_L01_0015F504 != 0 ? sp * 0.2f : sp);
+                sz = 105000.0f;
+                FastVecAdd(&b, &b, d);
+                if (D_L01_0015F504 != 0) {
+                    sz = 21000.0f;
+                }
+                func_L00_0026CA10(&moby->pos, &b, 0x4F007FFF, 0x1F00007F, sz,
+                                  rand_range(scale_ticks(0x5A), scale_ticks(0x96)) / div, 1, -1, -1);
+        }
+        s = (200.0f - camdist) / 200.0f;
+        if (d->f34 == 0) {
+            if (s < 0.1f) {
+                s = 0.1f;
+            }
+            /* Never used again: the compiler drops this second test, but only after it has kept the first one. */
+            if (s > 1.0f) {
+                s = 1.0f;
+            }
+        }
+        for (r = 0; r < 4; r++) {
+            if (D_L01_0015F504 == 0 && d->ids[r] != -1) {
+                if (((Moby_2F7E08 *)D_L01_00160058)[d->ids[r]].oclass == 0x2BC) {
+                    Tgt_2F7E08 *e = ((Moby_2F7E08 *)D_L01_00160058)[d->ids[r]].data;
+                    if (e->h4 == 0 && e->timer == 0 && is_point_inside_clip_volume(D_0013E633 + 0xE9D, e->vol) != 0
+                        && is_point_inside_clip_volume(D_L01_001672C0, e->vol) != 0) {
+                        e->timer = scale_ticks(rand_range(0x3C, 0xB4));
+                    }
+                }
+            }
+        }
+        DeleteMoby(moby);
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_002F9908);
-INCLUDE_ASM("asm/overlays", func_L01_002F9AF0);
+typedef u32 u128_F9AF0 __attribute__((mode(TI), aligned(16)));
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 w;
+} Vec4f;
+typedef union {
+    u128_F9AF0 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4;
+struct Manip;
+struct GifEntry;
+struct AnimSeq;
+struct MobyClass {
+    u8 pad_0[0xC];
+    u8 seq_count; /* number of entries in seqs[] (menu previews clamp the sequence to it) */
+    u8 pad_D[3];
+    u32 unk10; /* copied into Moby.unk94 when a moby is (re)classed */
+    u8 pad_14[0x8];
+    void *unk1C; /* word table, indexed id * 4 + 4 (0024eec0) */
+    struct GifEntry *gifs; /* patched by patch_moby_gifs */
+    f32 scale; /* default draw scale: copied into Moby.scale, divides it */
+    s32 unk28;
+    void **callbacks; /* function-pointer table, called with the moby */
+    u8 pad_30[0x14];
+    u16 flags; /* initial Moby.flags */
+    s16 unk46; /* class category; 5 is tested by targeting code */
+    struct AnimSeq *seqs[1]; /* animation sequences, indexed by Moby.seq */
+};
+struct Moby {
+    Vec4f bsphere;
+    Vec4f pos;
+    u8 state; /* >= 0xFE: dead, waiting to respawn */
+    u8 group; /* linked group: index into the level moby-list table D_Lxx_001ABCC0 (0xFF: none) */
+    u8 unk22; /* class slot: pclass = D_L00_00197300[unk22] (FUN_L00_002cf218) */
+    u8 unk23; /* 0x40 for the smoke trail FUN_L09_00307ba8 spawns */
+    struct MobyClass *pclass;
+    struct Moby *next;
+    f32 scale; /* draw scale (FUN_L01_002fa068 halves it, FUN_L00_00215ef8 divides by it) */
+    u8 unk30; /* set to 0xFF (0x7F for beams) by spawners */
+    u8 unk31; /* set to 1 by spawners */
+    s16 unk32; /* set to 0xFF (0x7F for beams) by spawners */
+    u16 flags;
+    u16 unk36; /* set to 0x7F80 by spawners */
+    u64 spawn_frame; /* frame count at which it may respawn */
+    Vec4f rot; /* z: yaw (FUN_L00_00266448 compares it with atan2 to the hero) */
+    u8 frame; /* animation frame */
+    u8 prev_frame; /* frame index in prev_seq */
+    u8 seq; /* animation sequence id */
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    struct Manip *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71; /* set to 0xFF when a moby changes class */
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F; /* set to 0x17 by FUN_L09_002c5990 near D_L09_00166F40 */
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94; /* set from the class header's word 0x10 */
+    s32 unk98; /* set to 1 while a carrier holds the moby (FUN_L00_002c7a58) */
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0; /* 0xB0: index into the level's D_0014C050 row (0xFF: not spawned) */
+    u8 padB1;
+    u16 save_id; /* index into the level collected[]/killed[] tables and save bits D_0014C190[level][id >> 5] */
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8; /* 0xB8: bolt source record; its byte 0xB1 is a per-level id (FUN_L00_002a6b70) */
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f unkC0; /* 0xC0: first row of a matrix built from rot (FUN_001fa030) */
+    Vec4f unkD0;
+    Vec4f unkE0;
+    u8 padF0[0x10];
+};
+struct Moby;
+extern f32 D_0015EE6C MACRO_ADDR;
+extern f32 func_001F9CB8(void *);
+extern f32 func_L00_001FF860(f32, f32);
+extern void func_001F9C30(void *, void *, f32);
+extern void func_L00_001FF4B0(void *, void *, f32);
+extern s32 func_001F9850(s32);
+typedef struct {
+    Vec4f vel; /* 0x00 */
+    s32 unk10; /* 0x10 */
+    f32 scale; /* 0x14 */
+    f32 spin; /* 0x18: random spin, random sign */
+    s32 life; /* 0x1C: frames */
+    s32 unk20; /* 0x20 */
+    f32 gravity; /* 0x24 */
+    s32 unk28; /* 0x28 */
+} DebrisVars_2f8530;
+typedef int OvlQuad __attribute__((mode(TI)));
+typedef struct {
+    u8 pad0[0x18];
+    s32 moby; /* 0x18: passed to FUN_002141f8 (reads moby+0x34, moby+0x78); 0 when no moby was hit */
+    s32 unk1C; /* 0x1C: > 0 gates copying point and the normal into the hero (shared/ui/help/00226f10.c) */
+    union {
+        OvlQuad q;
+        f32 f[4];
+    } point; /* 0x20: f[2] is read as the ground height */
+    u8 pad30[0x10]; /* 0x30: position after push-out (copied into hero.motion.pos) */
+    f32 normal_x; /* 0x40: start of the surface normal; its angle is tested against 50 degrees (0.87266463) */
+    f32 normal_y; /* 0x44: FUN_001f9e90 (atan2) of normal_x, normal_y is stored in the hero */
+    f32 normal_z; /* 0x48: ledge probes compare atan2(normal_z, xy length) with 20 degrees */
+} CollisionHit;
+extern CollisionHit D_L01_00174340;
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern float func_001FA748(float, float);
+extern int func_001F9908(void *);
+extern s32 func_L00_001EFFF0(void *, void *, s32, void *, s32);
+extern s32 func_L00_001F10E0(f32, void *, s32, void *);
+extern void func_L00_001FF610(void *, void *, void *);
+extern s32 func_L00_00258BC8(s32, s32);
+extern void func_L00_0026DD70(void *, void *, s32, s32, f32, s32);
+typedef struct {
+    u8 pad0[0xA6];
+    s16 type;
+} Moby;
+
+/* Debris update: falls and spins, bounces off what it hits with a random kick, bursts into 40 sparks once it comes to rest (or its unk10 timer runs out), or fades out over unk28 frames when unk20 is set.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/entities/002f6328.c, FUN_L01_002f8718. */
+void func_L01_002F9AF0(struct Moby *m) {
+    DebrisVars_2f8530 *d = (DebrisVars_2f8530 *)m->pvars;
+    Vec4 old;
+    Vec4 v;
+    Vec4 p;
+    Vec4 t;
+    f32 ang;
+    f32 spin;
+    s32 i;
+
+    qcopy(&old, &m->pos);
+    d->vel.z -= d->gravity;
+    FastVecAdd(&m->pos, &m->pos, &d->vel);
+    m->rot.z = FastAddRots(m->rot.z, d->spin);
+    if (m->pos.x < 2.0f || 1021.0f < m->pos.x || m->pos.y < 2.0f || 1021.0f < m->pos.y || m->pos.z < 2.0f ||
+        1021.0f < m->pos.z) {
+        DeleteMoby(m);
+        return;
+    }
+    if (func_001F9908(&d->life)) {
+        if (func_L00_001EFFF0(&old, &m->pos, 0, m, 0) != 0 || coll_sphere(d->scale, &m->pos, 0, m) != 0) {
+            ang = func_L00_001FF860(d->vel.x, d->vel.y);
+            v.f[0] = FastCos(FastAddRots(ang, random_float_between(-3.1415927f, 3.1415927f))) *
+                     random_float_between(0.0f, d->vel.z * 0.35f);
+            v.f[1] = FastSin(FastAddRots(ang, random_float_between(-3.1415927f, 3.1415927f))) *
+                     random_float_between(0.0f, d->vel.z * 0.35f);
+            v.f[2] = 0.0f;
+            m->rot.x = random_float_between(-3.1415927f, 3.1415927f);
+            m->rot.y = random_float_between(-3.1415927f, 3.1415927f);
+            m->rot.z = random_float_between(-3.1415927f, 3.1415927f);
+            func_L00_001FF610(&d->vel, &d->vel, &D_L01_00174340.normal_x);
+            FastVecScale(&d->vel, &d->vel, random_float_between(0.07f, 0.13f));
+            FastVecAdd(&d->vel, &d->vel, &v);
+            func_L00_001FF4B0(&D_L01_00174340.normal_x, &D_L01_00174340.normal_x, 0.1f);
+            FastVecAdd(&m->pos, &D_L01_00174340.normal_x, &D_L01_00174340.point);
+            spin = random_float_between(D_0015EE6C * 1.5707964f, D_0015EE6C * 6.2831855f);
+            if (0.0f < d->spin) {
+                spin = -spin;
+            }
+            d->spin = spin;
+        }
+    }
+    if (d->unk20 == 0) {
+        if (func_001F9908(&d->unk10) == 0) {
+            if (!(FastVecLength(&d->vel) < D_0015EE6C * 0.5f)) {
+                return;
+            }
+            if (d->life != 0) {
+                return;
+            }
+        }
+        for (i = 0; i < 40; i++) {
+            p.q = 0;
+            p.f[0] = random_float_between(-1.0f, 1.0f);
+            p.f[1] = random_float_between(-1.0f, 1.0f);
+            p.f[2] = random_float_between(-1.0f, 1.0f);
+            t.q = 0;
+            v.q = p.q;
+            t.f[0] = random_float_between(-1.0f, 1.0f);
+            t.f[1] = random_float_between(-1.0f, 1.0f);
+            t.f[2] = random_float_between(-1.0f, 1.0f);
+            p.q = t.q;
+            func_L00_001FF4B0(&p, &p, random_float_between(0.0f, 0.5f));
+            FastVecAdd(&p, &p, &m->pos);
+            func_L00_001FF4B0(&v, &v, random_float_between(0.0f, 0.5f) * D_0015EE6C);
+            FastVecAdd(&v, &v, &d->vel);
+            func_L00_0026DD70(&p, &v, 0x1F0C1820, 0x81020, random_float_between(70000.0f, 140000.0f),
+                             scale_ticks(rand_range(20, 60)));
+        }
+        DeleteMoby(m);
+    } else if (func_001F9908(&d->unk10) != 0) {
+        DeleteMoby(m);
+    } else {
+        m->unk23 = d->unk10 * 127 / d->unk28;
+    }
+}
 typedef struct {
     char pad0[0x44];
     short n;
@@ -68,10 +512,10 @@ void func_L01_002FC988(char *m) {
     case 0:
         if (*(int *)(d + 0x24) == -1) {
             func_001E9730_c(D_L01_0020B840, *(short *)(m + 0xA6), *(unsigned short *)(m + 0xA8));
-            func_0020D678(m);
+            DeleteMoby(m);
             return;
         }
-        *(int *)(d + 0x2C) = func_001F9850(*(int *)(d + 0x2C));
+        *(int *)(d + 0x2C) = scale_ticks(*(int *)(d + 0x2C));
         m[0x20] = 1;
         {
             int ff = 0xFF;
@@ -91,7 +535,7 @@ void func_L01_002FC988(char *m) {
             break;
         }
         g = D_0013E633_c + 0xE9D;
-        if (func_00215570(g, *(int *)(d + 0x20)) == 0 && ((unsigned char *)m)[0xBC] != 1) break;
+        if (is_point_inside_clip_volume(g, *(int *)(d + 0x20)) == 0 && ((unsigned char *)m)[0xBC] != 1) break;
         qcopy(a, D_L01_001672C0_c);
         qcopy(b, D_L01_001672C0_c + 0x10);
         if (*(int *)(d + 0x28) == -1) {
@@ -166,10 +610,244 @@ void func_L01_00300400(char *a) {
         }
     }
 }
-INCLUDE_ASM("asm/overlays", func_L01_003004F0);
+extern void func_L01_00300400(char *);
+extern void func_L00_0025B178(void *);
+extern int func_L00_002676E8(void *, void *);
+extern int func_L00_00267290(void *, void *);
+extern void func_L01_00279398(float, void *);
+extern void func_L00_002512D8(int);
+extern void func_L00_00286128(void *, void *);
+extern void func_L00_00261848(int);
+extern void func_L00_00263DB0(int);
+extern void func_L01_0029C2A0(char *, int, char *, int, void *);
+extern int func_0020BFC8(int, int);
+extern float func_001F9878(float);
+extern float func_001F9D48(void *, void *);
+extern float func_L00_001FF860(float, float);
+extern float func_001FA850(float, float);
+extern float func_001FA748(float, float);
+extern void func_00215C00(void *, float, float, float);
+extern void func_001F9BF0(void *, void *, void *);
+extern float func_001FA790(float, float);
+extern float func_001F9CE8(void *);
+extern void func_L00_00263950(char *, char *, int, float, float);
+extern char D_L01_0020B8F0[];
+extern char D_L01_00161DC8[];
+extern char D_L01_00161DD8[];
+extern char D_L01_001BADB0[];
+extern unsigned char D_0014C150[];
+extern float D_0015EE64 MACRO_ADDR;
+extern unsigned char D_0013D605[];
+
+/* Talking NPC update: seven conversation states, aims at the player and sets the body and head poses. */
+void func_L01_003004F0(char *m)
+{
+    char *d;
+    char *p;
+    char *pl;
+    float rate;
+    float head_rate;
+    int tracking;
+    float s_target[4];
+    float s_eye[4];
+    float s_delta[4];
+
+    d = *(char **)(m + 0x78);
+    if (d == 0) return;
+    func_L01_00300400(m);
+    if (*(unsigned char *)(m + 0x31) != 0) {
+        if (FastVecDist(m + 0x10, D_L01_001672C0) < 32.0f) {
+            func_L00_0025B178(m);
+            *(unsigned char *)(m + 0x7F) = 0x1A;
+        }
+    }
+    switch (*(unsigned char *)(m + 0x20)) {
+    case 0:
+        *(unsigned char *)(m + 0x30) = 0xFF;
+        *(int *)(d + 0x44) = 0;
+        if (D_0015EE84_c == 1) {
+            if (D_0013D605[0x845] != 0) {
+                DeleteMoby(m);
+                return;
+            }
+            *(char **)(d + 0x20) = D_L01_0020B8F0;
+            *(unsigned char *)(m + 0x20) = 1;
+        } else if (D_0015EE84_c == 8) {
+            *(char **)(d + 0x20) = D_L01_00161DC8;
+            *(unsigned char *)(m + 0x20) = 4;
+        } else {
+            *(char **)(d + 0x20) = D_L01_00161DD8;
+            *(unsigned char *)(m + 0x20) = 7;
+        }
+        func_L00_002676E8(m, d);
+        break;
+    case 1:
+        if (func_L00_00267290(m, d)) {
+            func_L01_00279398(2.2f, m);
+            *(unsigned char *)(m + 0x20) = 2;
+        }
+        break;
+    case 2:
+        if (D_L01_0015F6A8 != 2) {
+            if (*(unsigned char *)(*(unsigned char *)(m + 0xB0) + (D_0015EE84_c << 4) + (int)D_0014C150) != 0xFF) {
+                func_L00_002512D8(*(unsigned char *)(m + 0xB0));
+                if (*(int *)(d + 0x4C) != -1) {
+                    char *t = D_L01_0016016C_c + (*(int *)(d + 0x4C) << 7);
+                    func_L00_00286128(t + 0x30, t + 0x70);
+                }
+            }
+            *(unsigned char *)(m + 0x20) = 1;
+            if (*(short *)(d + 4) == 4) {
+                func_L00_00261848(2);
+                func_L00_00263DB0(2);
+                *(unsigned char *)(m + 0x20) = 3;
+                func_L01_0029C2A0(m + 0x20, 1, m, 1, D_L01_001BADB0);
+                memcard_Save(0, -1);
+            }
+        }
+        break;
+    case 3:
+        DeleteMoby(m);
+        return;
+    case 4:
+        if (func_L00_00267290(m, d)) {
+            *(unsigned char *)(m + 0x20) = 5;
+            *(unsigned char *)(d + 8) = 0;
+        }
+        break;
+    case 5:
+        if (D_L01_0015F6A8 != 2) {
+            if (*(short *)(d + 6) == 2) {
+                char *h = (char *)&D_0013E633 + 0xE1D;
+                *(float *)(h + 0x80) = 130.5f;
+                *(float *)(h + 0x84) = 299.5f;
+                *(float *)(h + 0x88) = 46.0f;
+                *(unsigned char *)(m + 0x20) = 6;
+            } else {
+                *(unsigned char *)(m + 0x20) = 4;
+            }
+        }
+        break;
+    case 6:
+        break;
+    }
+    rate = 0.02f;
+    head_rate = 0.3f;
+    tracking = 0;
+    if (*(unsigned char *)(m + 0x53) == 0) {
+        p = (char *)&D_0013E633 + 0xE9D;
+        tracking = 1;
+        if (func_001F9D48(m + 0x10, p) < 8.0f &&
+            FastDiffRots(*(float *)(m + 0x48),
+                func_L00_001FF860(*(float *)((pl = p - 0x80) + 0xD0) - *(float *)(m + 0x10),
+                    *(float *)(pl + 0xD4) - *(float *)(m + 0x14))) < 1.5707964f) {
+            if (FastVecLength(p + 0x80) > 0.01f)
+                *(int *)(d + 0x164) = scale_ticks(120);
+            else
+                func_001F9908_c((int *)(d + 0x164));
+        } else if (*(int *)(d + 0x164) != 0) {
+            *(int *)(d + 0x164) = 0;
+            qcopy(d + 0x150, (char *)&D_0013E633 + 0xEED);
+        }
+        if (func_001F9908_c((int *)(d + 0x168))) {
+            float heading;
+            *(int *)(d + 0x168) = func_001FA898_r(func_001F9878(random_float_between(180.0f, 300.0f)));
+            heading = FastAddRots(*(float *)(m + 0x48), random_float_between(-90.0f, 90.0f) * 0.017453292f);
+            func_00215C00(d + 0x150, 6.0f, heading, random_float_between(0.0f, 30.0f) * 0.017453292f);
+            FastVecAdd(d + 0x150, d + 0x150, m + 0x10);
+        }
+        if (*(int *)(d + 0x164) != 0) {
+            qcopy(s_target, (char *)&D_0013E633 + 0xEED);
+            rate = 0.04f;
+            head_rate = 0.3f;
+        } else {
+            qcopy(s_target, d + 0x150);
+        }
+    }
+    if (tracking) {
+        float yaw;
+        float pitch;
+        qcopy(s_eye, m + 0x10);
+        s_eye[2] += 1.0f;
+        FastVecSub(s_delta, s_target, s_eye);
+        yaw = FastSubRots(func_L00_001FF860(s_delta[0], s_delta[1]), *(float *)(m + 0x48));
+        pitch = -func_L00_001FF860(func_001F9CE8(s_delta), s_delta[2]);
+        if (yaw > 1.5707964f) yaw = 1.5707964f;
+        else if (yaw < -1.5707964f) yaw = -1.5707964f;
+        if (pitch > 0.5235988f) pitch = 0.5235988f;
+        else if (pitch < -0.5235988f) pitch = -0.5235988f;
+        *(float *)(d + 0xB8) = yaw * 0.5f;
+        *(float *)(d + 0x138) = yaw * 0.5f;
+        *(float *)(d + 0xB4) = pitch * 1.25f;
+    }
+    if (gCheats[0] != 0) *(float *)(d + 0xC0) = 2.75f;
+    func_L00_00263950(m, d + 0x50, 0, rate * D_0015EE64, head_rate * D_0015EE64);
+    func_L00_00263950(m, d + 0xD0, 1, rate * D_0015EE64, head_rate * D_0015EE64);
+}
 INCLUDE_ASM("asm/overlays", func_L01_003015F8);
 INCLUDE_ASM("asm/overlays", func_L01_00303810);
-INCLUDE_ASM("asm/overlays", func_L01_00303A20);
+extern char D_0013E633[];
+extern char *D_L01_00160064 MACRO_ADDR;
+extern char *D_L01_001B0C30[];
+extern short D_L01_0015F40C;
+extern void func_L01_00303810(char *);
+extern int func_L00_0025A778(void *, void *, int);
+extern void func_001F49B0(void (*)(char *), char *);
+extern void func_L00_002B6E10(void *, void *);
+
+typedef struct { int zone; float lo; float hi; int vol; } Zone_303a20;
+
+/* Counts how long the type-0xAC moby has stood clear of the 20 zones; after 90 ticks hands it on. */
+void func_L01_00303A20(char *m) {
+    Zone_303a20 *d = *(Zone_303a20 **)(m + 0x78);
+    char *t = 0;
+    Zone_303a20 *e;
+    char *tp;
+    ((unsigned char *)m)[0x30] = 0xFF;
+    if (*(int *)(D_0013E633 + 0x2EA1) != 0x1D) goto fail;
+    {
+        char *o;
+        for (o = D_L01_00160064; o != 0; o = *(char **)(o + 0x28)) {
+            if (*(short *)(o + 0xA6) == 0xAC) {
+                t = o;
+                break;
+            }
+        }
+    }
+    if (t == 0 || *(short *)(t + 0xA6) != 0xAC) {
+    fail:
+        *(int *)((char *)d + 0x140) = 0;
+        return;
+    }
+    *(int *)((char *)d + 0x140) += 1;
+    tp = t + 0x10;
+    {
+        int none = -1;
+        e = d;
+        do {
+        if (e->zone != none && *(float *)(t + 0x18) > e->lo && *(float *)(t + 0x18) < e->hi) {
+            char *z = D_L01_001B0C30[e->zone];
+            if (func_L00_0025A778(tp, z + 0x10, *(int *)z)) {
+                *(int *)((char *)d + 0x140) = 0;
+                break;
+            }
+        }
+        if (is_point_inside_clip_volume(tp, e->vol)) {
+            *(int *)((char *)d + 0x140) = 0;
+            break;
+        }
+        e++;
+        } while ((int)e < (int)(d + 20));
+    }
+    if (*(int *)((char *)d + 0x140) > 0) {
+        if (*(int *)&D_L01_0015F40C != 0) {
+            AddDrawCallback(func_L01_00303810, m);
+        }
+        if (scale_ticks(0x5A) < *(int *)((char *)d + 0x140)) {
+            func_L00_002B6E10(t, *(void **)(t + 0x78));
+        }
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L01_00309078);
 extern float func_001F9FA8(float);
 extern float func_001FA748(float, float);
@@ -264,16 +942,16 @@ void func_L01_00309928(char *m) {
     int *tm;
     float *sz;
     if (((unsigned char *)m)[0x20] == 1) {
-        func_001F9C30(pos, m, 0.0009765625f);
+        FastVecScale(pos, m, 0.0009765625f);
     } else {
         func_L00_00250800(m, 0, pos);
         scale = (160.0f - func_0020D830_m(m)) / 160.0f * 16.0f;
         if (1.0f < scale) scale = 1.0f;
     }
-    func_001F9BF0(dir, D_L01_001672C0, pos);
+    FastVecSub(dir, D_L01_001672C0, pos);
     func_L00_001FF4B0(dir, dir, -0.3f);
     func_L00_001FF4B0(step, dir, 0.1f);
-    func_001F9BD8(dir, dir, pos);
+    FastVecAdd(dir, dir, pos);
     ang = (float *)(d + 0x20);
     spd = (float *)(d + 0x30);
     tm = (int *)(d + 0x40);
@@ -289,13 +967,13 @@ void func_L01_00309928(char *m) {
             ang[i] = a + 255.0f;
         }
         if (func_001F9908((int *)(d + 0x40) + i)) {
-            tm[i] = func_001F9850(0xFF);
+            tm[i] = scale_ticks(0xFF);
         }
-        t = func_001FA888(func_001F9850(0xFF) - tm[i]) / (float)func_001F9850(0xFF);
-        c = func_001FA8A8(*(int *)&D_L01_00161FCC, *(int *)&D_L01_00161FD0, func_001F9B88(0.5f - t));
+        t = func_001FA888(scale_ticks(0xFF) - tm[i]) / (float)scale_ticks(0xFF);
+        c = FastTweenColor(*(int *)&D_L01_00161FCC, *(int *)&D_L01_00161FD0, FastAbsF(0.5f - t));
         func_L00_00273E08(dir, c, func_001FA898_r(ang[i]), *(int *)&D_L01_00161FDC,
                           *(int *)&D_L01_00161FD8, 2, 0, sz[i] * scale);
-        func_001F9BD8(dir, dir, step);
+        FastVecAdd(dir, dir, step);
     }
 }
 typedef int u128_309BB8 __attribute__((mode(TI)));
@@ -330,14 +1008,14 @@ void func_L01_00309BB8(char *m) {
     if (*(int *)(d + 4) == -1 || *(int *)(d + 8) == -1) {
         float ang;
         g = D_0013E633 + 0xE1D;
-        ang = func_001FA748(k * 0.6981317f - 0.34906585f, *(float *)(g + 0x98));
-        out[0] = func_001F9F90(ang) * 5.0f;
-        out[1] = func_001F9FA8(ang) * 5.0f;
+        ang = FastAddRots(k * 0.6981317f - 0.34906585f, *(float *)(g + 0x98));
+        out[0] = FastCos(ang) * 5.0f;
+        out[1] = FastSin(ang) * 5.0f;
         out[2] = 0;
-        func_001F9BD8(out, out, g + 0x80);
+        FastVecAdd(out, out, g + 0x80);
         out[2] = out[2] + 1.0f;
-        func_001F9BC0(v);
-        v[2] = func_001FA748(ang, 3.14159f);
+        clear_u64_value(v);
+        v[2] = FastAddRots(ang, 3.14159f);
         v[1] = k * -0.17f;
     } else {
         func_001F9C08(out, D_L01_0016016C + *(int *)(d + 4) * 128 + 0x30,
@@ -345,9 +1023,9 @@ void func_L01_00309BB8(char *m) {
         t = D_L01_0016016C;
         qcopy(a, t + *(int *)(d + 4) * 128 + 0x70);
         qcopy(b, t + *(int *)(d + 8) * 128 + 0x70);
-        v[2] = func_001FA748(func_001FA790(b[2], a[2]) * k, a[2]);
-        v[1] = func_001FA748(func_001FA790(b[1], a[1]) * k, a[1]);
-        v[0] = func_001FA748(func_001FA790(b[0], a[0]) * k, a[0]);
+        v[2] = FastAddRots(FastSubRots(b[2], a[2]) * k, a[2]);
+        v[1] = FastAddRots(FastSubRots(b[1], a[1]) * k, a[1]);
+        v[0] = FastAddRots(FastSubRots(b[0], a[0]) * k, a[0]);
     }
     func_L00_002EBE88(out);
     func_L00_002EBEE0(v);
@@ -448,7 +1126,7 @@ void func_L01_00309FB0(char *moby) {
     }
     active = active != 0;
     if (*(unsigned char *)(moby + 0x20) != 0 && *(int *)(data + 4) != -1 && !active
-        && func_00215570(D_0013E633 + 0xE9D, *(int *)(data + 4)) != 0) {
+        && is_point_inside_clip_volume(D_0013E633 + 0xE9D, *(int *)(data + 4)) != 0) {
         active = 1;
         func_L01_00309F00(moby);
         func_L01_0030AC10(moby);
@@ -471,7 +1149,7 @@ void func_L01_00309FB0(char *moby) {
         for (i = 0; i < 3; i++) {
             char *g = D_0013E633 + 0xE1D;
             char *c;
-            slots[i] = func_0020D348(0x13B);
+            slots[i] = CreateMoby(0x13B);
             *(short *)(slots[i] + 0x32) = 0x40;
             slots[i][0x31] = 1;
             *(long *)(slots[i] + 0x38) = *(long *)(*(char **)(g + 0x2080) + 0x38);
@@ -479,7 +1157,7 @@ void func_L01_00309FB0(char *moby) {
             c = slots[i];
             qcopy(c + 0x10, moby + 0x10);
             qcopy(c + 0x40, moby + 0x40);
-            *(float *)(slots[i] + 0x48) = func_001FA748(*(float *)(c + 0x48), (float)i * 2.0943952f);
+            *(float *)(slots[i] + 0x48) = FastAddRots(*(float *)(c + 0x48), (float)i * 2.0943952f);
         }
         if (*(int *)(data + 0x38) != 0 || active) {
             moby[0x20] = 6;
@@ -554,7 +1232,7 @@ void func_L01_00309FB0(char *moby) {
     }
     case 3:
         if (*(float *)(data + 0x34) != 0.0f) {
-            func_001F49B0(func_L01_0030A8C8, moby);
+            AddDrawCallback(func_L01_0030A8C8, moby);
             func_00214D28((float *)(data + 0x34), 0.0f, D_0015EE6C * 4.0f);
         } else {
             char *t = D_L01_00160058 + (*(int *)data << 8);
@@ -586,7 +1264,7 @@ void func_L01_00309FB0(char *moby) {
     case 4:
     case 8:
         if (*(float *)(data + 0x34) < 1.95f) {
-            func_001F49B0(func_L01_0030A8C8, moby);
+            AddDrawCallback(func_L01_0030A8C8, moby);
             func_00214D28((float *)(data + 0x34), 1.95f, D_0015EE6C * 4.0f);
         } else if (0.0f < *(float *)(data + 0x24)) {
             func_00214D88((float *)(data + 0x24), (float *)(data + 0x28), 0.0f,
@@ -667,7 +1345,80 @@ void func_L01_0030A808(char *moby) {
         break;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L01_0030A8C8);
+typedef struct {
+    float v[16];
+    int c[4];
+    float uv[8];
+    long g[4];
+} Quad_30a8c8;
+extern short D_L01_00162048, D_L01_0016204C, D_L01_00162050, D_L01_00162054, D_L01_00162058, D_L01_0016205C;
+extern short D_L01_00162060;
+extern float D_L01_002018F0[];
+extern unsigned char D_001414F5_q __asm__("D_001414F5") NOT_SDA;
+extern void func_001FA460(void *, void *);
+extern long func_001F4868(int);
+extern void func_L00_001FD1D8(void *, void *, int);
+
+/* Draws the moby's shimmering ring (Novalis variant; the flag isn't touched in states 7 and 8) as 32 four-vertex strips around its radius, thicker as the ring
+ * shrinks below 1.15, and flags when it gets below 0.65. */
+void func_L01_0030A8C8(char *moby) {
+    Quad_30a8c8 q;
+    float m[12];
+    float pos[4];
+    char *d;
+    float h;
+    int i, j, nj;
+    d = *(char **)(moby + 0x78);
+    func_001FA460(m, moby + 0xC0);
+    qcopy(pos, moby + 0x10);
+    q.g[1] = GetEffectTex(*(int *)&D_L01_00162058);
+    q.g[3] = (long)*(int *)&D_L01_00162048 | ((long)*(int *)&D_L01_0016204C << 2) | ((long)*(int *)&D_L01_00162050 << 4) | ((long)*(int *)&D_L01_00162054 << 6) | (0x8000L << 24);
+    q.g[2] = 0xFF9000000260UL;
+    q.g[0] = 0;
+    for (i = 0; i < 4; i++) {
+        q.uv[i * 2] = D_L01_002018F0[i * 2];
+        *(&q.uv[i * 2] + 1) = D_L01_002018F0[i * 2 + 1];
+        q.c[i] = *(int *)&D_L01_0016205C;
+    }
+    h = 0.1f;
+    if (*(float *)(d + 0x34) < 1.15f) {
+        float t = (1.15f - *(float *)(d + 0x34)) * 2.0f;
+        if (1.0f < t) {
+            t = 1.0f;
+        } else if (t < 0.0f) {
+            t = 0.0f;
+        }
+        h = t + 0.1f;
+        if (((unsigned char *)moby)[0x20] != 7 && ((unsigned char *)moby)[0x20] != 8) {
+            if (*(float *)(d + 0x34) < 0.65f) {
+                D_001414F5_q = 1;
+            } else {
+                D_001414F5_q = 0;
+            }
+        }
+    }
+    for (j = 0; j < 32; j = nj) {
+        int k;
+        float *p;
+        k = 0;
+        nj = j + 1;
+        p = q.v;
+        for (; k < 4;) {
+            float a = (float)(j + k / 2) * 6.28318f * 0.03125f - 3.14159f;
+            p[0] = FastCos(a) * *(float *)(d + 0x34);
+            p[1] = FastSin(a) * *(float *)(d + 0x34);
+            p[2] = 0.0f;
+            if (k++ & 1) {
+                p[2] = *(float *)&D_L01_00162060 + h + p[2];
+            } else {
+                p[2] = *(float *)&D_L01_00162060 - h + p[2];
+            }
+            p[3] = 1.0f;
+            p += 4;
+        }
+        func_L00_001FD1D8(&q, m, 0);
+    }
+}
 typedef struct L01Moby L01Moby;
 typedef struct {
     char pad[0x14];
@@ -728,7 +1479,7 @@ char *func_L01_0030DC70(char *owner, char *pos, float a, float b, float c, float
     char *cp = (char *)&p;
     char *m;
     p = *(uq *)pos;
-    m = func_0020D348(0x661);
+    m = CreateMoby(0x661);
     if (m) {
         char *e = *(char **)(m + 0x78);
         int t;
@@ -745,7 +1496,7 @@ char *func_L01_0030DC70(char *owner, char *pos, float a, float b, float c, float
         *(float *)(e + 0xC) = b;
         *(int *)e = 0;
         *(int *)(e + 4) = 0;
-        t = func_001F9850(0x23);
+        t = scale_ticks(0x23);
         *(short *)(e + 0x14) = t;
         *(short *)(e + 0x16) = t;
         m[0x23] = 0x40;
@@ -770,7 +1521,62 @@ void func_L01_0030E638(void *unused, float *p) {
     FastVecAdd(p, p, g + 0x80);
     p[2] = p[2] + 1.0f;
 }
-INCLUDE_ASM("asm/overlays", func_L01_0030E6E0);
+extern char *D_L01_001AC180_30E6E0[] __asm__("D_L01_001AC180");
+extern char D_L01_00174340_30E6E0[] __asm__("D_L01_00174340");
+extern float *func_L00_0025D390_30E6E0(void *) __asm__("func_L00_0025D390");
+extern float func_001F9B50(float);
+extern int func_L00_001EFFF0_30E6E0(void *, void *, int, void *, void *) __asm__("func_L00_001EFFF0");
+
+/* Picks the best lock-on target for moby from the target table: a drawn class-5 enemy with health, within range, whose direction from `from`
+ * is inside the yaw/pitch cone (or the wider near cone when close), scored by angle error and distance,
+ * with a clear line of sight (or the blocker is the same kind of enemy). */
+void *func_L01_0030E6E0(void *moby, void *from, void *ang, float yawMax, float pitchMax, float range, float near,
+                        float nearYaw, float nearPitch) {
+    float tp[4];
+    char *best = 0;
+    float bestScore = 1.0e9f;
+    char *t;
+    int i;
+    for (i = 0; (t = D_L01_001AC180_30E6E0[i]) != 0; i++) {
+        char *hs = D_L01_00174340_30E6E0;
+        char *pl = D_0013E633 + 0xE1D;
+        float *hp;
+        int cls;
+        float dist, score, p2;
+        if (*(short *)(t + 0x32) == 0) continue;
+        hp = func_L00_0025D390_30E6E0(t);
+        if (t == 0 || *(char **)(t + 0x24) == 0) continue;
+        cls = *(short *)(*(char **)(t + 0x24) + 0x46);
+        if (cls != 5 || hp == 0 || !(0.0f < *hp)) continue;
+        dist = FastVecDist(from, t + 0x10);
+        if (!(dist < range)) continue;
+        qcopy(tp, t + 0x10);
+        tp[2] += 0.4f;
+        score = FastDiffRots(((float *)ang)[2], func_L00_001FF860(tp[0] - ((float *)from)[0], tp[1] - ((float *)from)[1]));
+        score = score * score;
+        if (!(score < yawMax * yawMax)) {
+            if (!(dist < near) || !(score < nearYaw * nearYaw)) continue;
+        }
+        p2 = FastDiffRots(((float *)ang)[1], func_L00_001FF860(dist, tp[2] - ((float *)from)[2]));
+        p2 = p2 * p2;
+        if (!(p2 < pitchMax * pitchMax)) {
+            if (!(dist < near) || !(p2 < nearPitch * nearPitch)) continue;
+        }
+        score *= p2;
+        score *= func_001F9B50(FastVecDist(from, tp));
+        if (!(score < bestScore)) continue;
+        if (func_L00_001EFFF0_30E6E0(from, tp, 0, moby, 0)) {
+            char *hit = *(char **)(hs + 0x18);
+            if (hit == 0 || hit == *(char **)(pl + 0x2080) || hit == 0 || *(char **)(hit + 0x24) == 0
+                || *(short *)(*(char **)(hit + 0x24) + 0x46) != cls) {
+                continue;
+            }
+        }
+        bestScore = score;
+        best = t;
+    }
+    return best;
+}
 typedef int u128_w22c __attribute__((mode(TI)));
 extern int func_001F9938(void *);
 extern void func_001F9BF0(void *, void *, void *);
@@ -801,7 +1607,7 @@ void func_L01_0030E9C8(char *moby, char *state) {
     char *e;
     float a, b, c, d, t, dist;
 
-    if (func_001F9938(state + 0x54) == 0) return;
+    if (FastDecTimer(state + 0x54) == 0) return;
     func_L00_00250800_0E9C8c(moby, (state[0x56] & 1) + 1, &v);
     state[0x56] = state[0x56] ^ 1;
     e = func_L01_0030E6E0(moby, &v, moby + 0x40,
@@ -810,19 +1616,19 @@ void func_L01_0030E9C8(char *moby, char *state) {
                          (*(float *)&D_L01_00162114), 2.0f, 3.1415927f, 3.1415927f);
     if (e != 0) {
         *(char **)(state + 0x60) = e;
-        if (D_0013F4D0.f[2] + 1.1f < *(float *)(moby + 0x18)) {
+        if (gHeroPos.f[2] + 1.1f < *(float *)(moby + 0x18)) {
             t = func_L00_001FF860(*(float *)(e + 0x10) - *(float *)(moby + 0x10),
                              *(float *)(e + 0x14) - *(float *)(moby + 0x14));
-            if (func_001FA850(*(float *)(moby + 0x48), t) < 0.5235988f) {
+            if (FastDiffRots(*(float *)(moby + 0x48), t) < 0.5235988f) {
                 if ((*(int *)&D_L01_0015F6A8_0E9C8) != 2) {
                     char *r;
                     qcopy(&q, e + 0x10);
                     r = func_L00_0025D390(e);
                     if (r != 0) q.f[2] = q.f[2] + *(float *)(r + 0x10);
                     else q.f[2] = q.f[2] + (*(float *)&D_L01_00162124);
-                    func_001F9BF0(&p, &q, &v);
+                    FastVecSub(&p, &q, &v);
                     func_L00_001FF4B0(&p, &p, (*(float *)&D_L01_00162120));
-                    func_001F9BD8(&v, &v, &p);
+                    FastVecAdd(&v, &v, &p);
                     a = func_L00_001FF860(q.f[0] - v.f[0], q.f[1] - v.f[1]);
                     dist = func_001F9D48(&v, &q);
                     b = -func_L00_001FF860(dist, q.f[2] - v.f[2]);
@@ -831,7 +1637,7 @@ void func_L01_0030E9C8(char *moby, char *state) {
                     d = -func_L00_001FF860(dist, q.f[2] - v.f[2]);
                     func_L01_0030DC70_0E9C8(moby, &v, a, b, c, d);
                     func_0022ED80_0E9C8(0, 0, moby);
-                    *(short *)(state + 0x54) = func_001F9850((*(int *)&D_L01_00162110));
+                    *(short *)(state + 0x54) = scale_ticks((*(int *)&D_L01_00162110));
                     *(int *)(state + 0x5C) = *(int *)(state + 0x5C) + 1;
                 }
             }
@@ -853,7 +1659,7 @@ void func_L01_0030F178(char *m) {
         float v[4];
         float z[4];
         *(u128 *)z = 0;
-        z[2] = -(func_002140F8(1.0f, 2.0f) * D_0015EE6C);
+        z[2] = -(random_float_between(1.0f, 2.0f) * D_0015EE6C);
         *(u128 *)v = *(u128 *)z;
         func_L00_00250800(m, 0, buf);
         func_L01_0028B570(m, buf, v, &D_L01_00162170, 1);
@@ -888,8 +1694,508 @@ void func_L01_0030F2A8(char *moby) {
     AddDrawCallback(func_L01_0030F240, moby);
 }
 INCLUDE_ASM("asm/overlays", func_L01_0030F318);
-INCLUDE_ASM("asm/overlays", func_L01_00316270);
-INCLUDE_ASM("asm/overlays", func_L01_00316730);
+typedef u32 u128_16270 __attribute__((mode(TI), aligned(16)));
+typedef union {
+    u128_16270 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4_316270;
+typedef struct {
+    Vec4_316270 pos; /* 0x00 */
+    u8 pad10[0x30];
+    s32 state; /* 0x40 */
+    u8 pad44[4];
+    f32 max_angle; /* 0x48 */
+    f32 dist; /* 0x4C */
+    u8 pad50[0x10];
+} CameraFocus;
+typedef struct {
+    Vec4_316270 vel; /* 0x00 */
+    u8 pad10[0x10];
+    f32 unk20; /* 0x20 */
+    f32 unk24; /* 0x24 */
+    f32 unk28; /* 0x28 */
+    s16 unk2C; /* 0x2C */
+    u8 pad2E[0x22];
+} CameraView;
+typedef struct {
+    f32 dist; /* 0x00 */
+    f32 unk4; /* 0x04 */
+    u8 pad8[8];
+    f32 height; /* 0x10 */
+    u8 pad14[0xC];
+} CameraSpring;
+typedef struct {
+    Vec4_316270 vel; /* 0x00 */
+    u8 pad10[0x10];
+    Vec4_316270 accel; /* 0x20 */
+    f32 unk30; /* 0x30 */
+    f32 unk34; /* 0x34 */
+    f32 unk38; /* 0x38 */
+    s32 unk3C; /* 0x3C */
+    f32 unk40; /* 0x40 */
+    u8 pad44[0xC];
+} CameraTrack;
+typedef struct {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+    s32 unkC;
+    s32 unk10;
+} CameraBlend;
+typedef struct {
+    Vec4_316270 axis; /* 0x00 */
+    f32 unk10; /* 0x10 */
+    f32 unk14; /* 0x14 */
+    s32 unk18; /* 0x18 */
+    s16 mode; /* 0x1C */
+    u8 pad1E[2];
+    f32 unk20; /* 0x20 */
+    s32 unk24; /* 0x24 */
+    u8 pad28[8];
+    CameraView view; /* 0x30 */
+    CameraFocus focus; /* 0x80 */
+    CameraSpring spring; /* 0xE0 */
+    CameraTrack track; /* 0x100 */
+    CameraBlend blend; /* 0x150 */
+} CameraOrbit;
+typedef struct {
+    u8 padA[0xA];
+    s16 mode; /* 0x7E */
+} CameraControl;
+typedef struct {
+    u8 pad0[0x70];
+    CameraOrbit *orbit; /* 0x70 */
+    CameraControl control; /* 0x74 */
+    u8 pad80[4];
+    s16 preset; /* 0x84: row of D_L01_0015EF50 */
+} Camera;
+typedef struct {
+    s32 count;
+    u8 pad4[0xC];
+    Vec4_316270 pts[1]; /* 0x10 */
+} CameraPath;
+typedef struct {
+    u8 pad0[0x20];
+    s32 track_path; /* 0x20: D_L01_001B0930 path the first path is measured along */
+    s32 target; /* 0x24: row of D_L01_0015F70C */
+    s32 path; /* 0x28: D_L01_001B0930 path */
+    s32 look_path; /* 0x2C: D_L01_001B0930 path measured along the target's path */
+    s32 kind; /* 0x30 */
+    s16 ready; /* 0x34: paths prepared */
+} CameraPreset;
+typedef struct {
+    u8 pad0[0x1C];
+    CameraPreset *preset; /* 0x1C */
+} CameraPresetRow;
+typedef struct {
+    u8 pad0[0x10];
+    CameraPath *path; /* 0x10 */
+    u8 pad14[0xC];
+} CameraTarget;
+extern CameraPresetRow * D_L01_0015F050_16270 __asm__("D_L01_0015F050") MACRO_ADDR;
+extern CameraTarget * D_L01_0015F7EC_16270 __asm__("D_L01_0015F7EC") MACRO_ADDR;
+extern CameraPath * D_L01_001B0C30_16270[] __asm__("D_L01_001B0C30");
+extern s32 func_001FA898(f32);
+extern s32 func_L00_0025EFC0(void *, void *, void *, s32 *, f32 *, s32, f32, f32, f32);
+
+/* Resets the camera's orbit, focus, spring, view and track from fixed values; for a kind 2 preset it also prepares its two paths once, measuring each point against the path it follows.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/vendor/0030b618.c, FUN_L01_00314e98. */
+void func_L01_00316270(Camera *cam) {
+    Vec4_316270 at;
+    s32 seg;
+    f32 t;
+    CameraPreset *s = D_L01_0015F050_16270[cam->preset].preset;
+    CameraControl *control;
+    CameraFocus *focus;
+    CameraSpring *spring;
+    CameraOrbit *orbit;
+    CameraView *view;
+    CameraTrack *track;
+    CameraBlend *blend;
+    CameraPath *a, *b, *c, *d;
+    s32 i, j, k, n, prev;
+
+    focus = &cam->orbit->focus;
+    focus->dist = 1.5f;
+    focus->state = 0;
+    if (s->kind == 3) {
+        focus->dist = 0.5f;
+    }
+    control = &cam->control;
+    focus->max_angle = 0.20943952f;
+    spring = &cam->orbit->spring;
+    spring->dist = 6.0f;
+    spring->unk4 = 0.5f;
+    spring->height = 2.0f;
+    orbit = cam->orbit;
+    orbit->unk10 = 0.01f;
+    orbit->unk14 = 0.175f;
+    orbit->unk18 = 0;
+    orbit->mode = 0;
+    orbit->unk20 = 0.0005f;
+    orbit->unk24 = 0;
+    clear_u64_value(orbit);
+    view = &cam->orbit->view;
+    view->unk20 = 0.01f;
+    view->unk24 = 0.3f;
+    view->unk28 = 0.2f;
+    view->unk2C = 0;
+    clear_u64_value(view);
+    track = &cam->orbit->track;
+    clear_u64_value(track);
+    clear_u64_value(&track->accel);
+    track->unk40 = 3.0f;
+    track->unk30 = 0.003f;
+    track->unk34 = 0.1f;
+    track->unk38 = 0.2f;
+    track->unk3C = 0;
+    blend = &cam->orbit->blend;
+    blend->unk0 = 0;
+    blend->unk4 = 0;
+    blend->unk8 = 0;
+    blend->unkC = 0;
+    blend->unk10 = 1;
+    if (s->kind == 2 && s->ready == 0) {
+        b = D_L01_001B0C30_16270[s->track_path];
+        d = D_L01_0015F7EC_16270[s->target].path;
+        a = D_L01_001B0C30_16270[s->path];
+        c = D_L01_001B0C30_16270[s->look_path];
+        s->ready = 1;
+        for (i = 0; i < a->count; i++) {
+            func_L00_0025EFC0(b, &a->pts[i], &at, &seg, &t, 0, 20.0f, 5.0f, 0.0f);
+            a->pts[i].f[0] = a->pts[i].f[3];
+            a->pts[i].f[3] = seg;
+        }
+        prev = a->count - 1;
+        for (i = 0; i < a->count; i++) {
+            j = truncate_float_to_s32(a->pts[prev].f[3]);
+            n = truncate_float_to_s32(a->pts[i].f[3]) - j;
+            if (n < 0) {
+                n += b->count;
+            }
+            t = 0.0f;
+            for (k = 0; k < n; k++) {
+                t += b->pts[(j + i) % b->count].f[3];
+            }
+            a->pts[i].f[1] = t;
+            prev = i;
+        }
+        for (i = 0; i < c->count; i++) {
+            func_L00_0025EFC0(d, &c->pts[i], &at, &seg, &t, 0, 20.0f, 5.0f, 0.0f);
+            c->pts[i].f[0] = c->pts[i].f[3];
+            c->pts[i].f[3] = seg;
+        }
+        prev = c->count - 1;
+        for (i = 0; i < c->count; i++) {
+            j = truncate_float_to_s32(c->pts[prev].f[3]);
+            n = truncate_float_to_s32(c->pts[i].f[3]) - j;
+            if (n < 0) {
+                n += d->count;
+            }
+            t = 0.0f;
+            for (k = 0; k < n; k++) {
+                t += d->pts[(j + i) % d->count].f[3];
+            }
+            c->pts[i].f[1] = t;
+            prev = i;
+        }
+    }
+    control->mode = 0;
+}
+typedef struct {
+    float x;
+    float y;
+    float z;
+    float w;
+} __attribute__((aligned(16))) Node_316730;
+
+typedef struct {
+    int n;
+    int pad[3];
+    Node_316730 nodes[1];
+} Path_316730;
+
+typedef struct {
+    char p00[0x20];
+    float f20;
+    char p24[0x10];
+    float f34;
+    char p38[0x18];
+} SubA_316730;
+
+typedef struct {
+    float pos[4];
+    char p10[0x3C];
+    float f4C;
+    char p50[0x80];
+} SubB_316730;
+
+typedef struct {
+    int idx;
+    float t;
+    int p08[2];
+    int f10;
+} SubC_316730;
+
+typedef struct {
+    float vel[3];
+    float f0C;
+    float f10;
+    char p14[0x1C];
+    SubA_316730 a;
+    SubB_316730 b;
+    SubC_316730 c;
+} Data_316730;
+
+typedef struct {
+    float f0;
+    char p04[0x1C];
+    int f20;
+    int f24;
+    int f28;
+    int f2C;
+    int f30;
+    short f34;
+    short f36;
+    float f38;
+} Parm_316730;
+
+typedef struct {
+    char p00[0x1C];
+    Parm_316730 *f1C;
+} Ent50_316730;
+
+typedef struct {
+    char p00[0x10];
+    Path_316730 *f10;
+    char p14[0xC];
+} Ent7EC_316730;
+
+typedef struct {
+    float f0[4];
+    float f10[4];
+    float f20[4];
+    float pos[4];
+    float f40[4];
+    char p50[0x20];
+    Data_316730 *data;
+    char p74[0x10];
+    short f84;
+} Cam_316730;
+
+typedef struct {
+    char p000[0x80];
+    float pos[4];
+    char p090[0x4D0];
+    Path_316730 *f560;
+    int f564;
+    float f568;
+} Hero_316730;
+
+extern Ent50_316730 *D_L01_0015F050 MACRO_ADDR;
+extern Ent7EC_316730 *D_L01_0015F7EC MACRO_ADDR;
+extern Path_316730 *D_L01_001B0C30_316730[] __asm__("D_L01_001B0C30");
+extern float D_L01_00167330[];
+extern int func_L00_0025E860(void *, void *, int *, float *, float, int);
+extern int func_L00_0025EFC0(void *, void *, void *, int *, float *, int, float, float, float);
+extern float func_001EC120(float a, float b, float *p, float c, float d, float e);
+extern float func_001F9CB8(void *a);
+extern float func_001F9C78(void *a, void *b);
+extern float func_001F9FC0(float x);
+extern float func_L00_001EB6A8(void *, float, float, float, float, float);
+extern void func_001F9CA0(void *, void *, void *);
+extern void func_002156E0(void *dst, void *vec, void *axis, float angle);
+
+/* Update function of camera 3: follows a path beside the hero's and turns toward a look-at point on it.
+   The four `= 0` initialisers in the mode 2 block are dead and leave no code: they make up for the insns
+   qcopy()'s parameters add, which decide the size of gcse's hash table and so the order of the spill slots. */
+void func_L01_00316730(Cam_316730 *cam) {
+    float v0[4];
+    float v10[4];
+    float v20[4];
+    float v30[4];
+    float v40[4];
+    float v50[4];
+    float v60[4];
+    int seg;
+    float frac;
+    Data_316730 *d = cam->data;
+    SubA_316730 *a = &d->a;
+    SubB_316730 *b = &d->b;
+    SubC_316730 *c = &d->c;
+    Parm_316730 *p = D_L01_0015F050[cam->f84].f1C;
+    float k = 0.01f;
+    int mode = p->f30;
+    int pi = p->f20;
+    float spd = p->f0;
+    float ang;
+    float len;
+    float rot;
+
+    if (mode == 0) {
+        Path_316730 *path;
+        float dist;
+
+        seg = ((Hero_316730 *)(D_0013E633 + 0xE1D))->f564;
+        frac = ((Hero_316730 *)(D_0013E633 + 0xE1D))->f568;
+        c->t = frac;
+        c->idx = seg;
+        func_L00_0025E860(D_L01_001B0C30_316730[pi], v0, &c->idx, &c->t, 1.0f, 0);
+        qcopy(b->pos, v0);
+        path = D_L01_001B0C30_316730[pi];
+        dist = path->nodes[seg].w * (frac / ((Hero_316730 *)(D_0013E633 + 0xE1D))->f560->nodes[seg].w);
+        FastVecSub(v50, &path->nodes[seg + 1], &path->nodes[seg]);
+        func_L00_001FF4B0(v40, v50, dist);
+        FastVecAdd(v60, &path->nodes[seg], v40);
+        cam->pos[0] = Cam_InterpValues(cam->pos[0], v60[0], &d->vel[0], k, 0.175f, 0.0f);
+        cam->pos[1] = Cam_InterpValues(cam->pos[1], v60[1], &d->vel[1], k, 0.175f, 0.0f);
+        cam->pos[2] = Cam_InterpValues(cam->pos[2], v60[2], &d->vel[2], k, 0.175f, 0.0f);
+    } else if (mode == 2) {
+        Path_316730 *pathA = D_L01_001B0C30_316730[pi];
+        Path_316730 *pathD = D_L01_0015F7EC[p->f24].f10;
+        Path_316730 *pathC = D_L01_001B0C30_316730[p->f28];
+        Path_316730 *pathB = D_L01_001B0C30_316730[p->f2C];
+        int i;
+        int prev = 0;
+        int lo = 0;
+        int hi = 0;
+        int j = 0;
+        int cnt;
+        int base;
+        int ix;
+        float fx;
+        float sum;
+        float lenB;
+        float lenC;
+        float x;
+        float dist;
+
+        prev = pathB->n - 1;
+        for (i = 0; i < pathB->n; i++) {
+            lo = func_001FA898_r(pathB->nodes[prev].w);
+            hi = func_001FA898_r(pathB->nodes[i].w);
+            if (hi < lo) {
+                if (((Hero_316730 *)(D_0013E633 + 0xE1D))->f564 >= lo || ((Hero_316730 *)(D_0013E633 + 0xE1D))->f564 < hi) {
+                    break;
+                }
+            } else {
+                if (((Hero_316730 *)(D_0013E633 + 0xE1D))->f564 >= lo && ((Hero_316730 *)(D_0013E633 + 0xE1D))->f564 < hi) {
+                    break;
+                }
+            }
+            prev = i;
+        }
+        c->f10 = i;
+        sum = 0.0f;
+        j = (i - 1 + pathB->n) % pathB->n;
+        lenB = pathB->nodes[i].y;
+        lenC = pathC->nodes[i].y;
+        if (pathB->nodes[j].x != 0.0f) {
+            spd = pathB->nodes[j].x;
+        }
+        base = func_001FA898_r(pathB->nodes[j].w);
+        cnt = ((Hero_316730 *)(D_0013E633 + 0xE1D))->f564 - base;
+        if (cnt < 0) {
+            cnt += pathD->n;
+        }
+        for (i = 0; i < cnt; i++) {
+            sum += pathD->nodes[(base + i) % pathD->n].w;
+        }
+        sum += ((Hero_316730 *)(D_0013E633 + 0xE1D))->f568;
+        dist = lenC * (sum / lenB);
+        ix = func_001FA898_r(pathC->nodes[j].w);
+        fx = 0.0f;
+        func_L00_0025E860(pathA, v40, &ix, &fx, dist, 1);
+        x = pathC->nodes[j].x;
+        if (x <= 0.0f) {
+            x = 0.01f;
+        } else {
+            k *= x;
+            x *= 0.01f;
+        }
+        if (FastAbsF(d->f10 - x) < 0.00015f) {
+            d->f10 = x;
+        } else if (d->f10 < x) {
+            d->f10 = d->f10 + 0.00015f;
+        } else {
+            d->f10 = d->f10 - 0.00015f;
+        }
+        cam->pos[0] = Cam_InterpValues(cam->pos[0], v40[0], &d->vel[0], d->f10, 0.175f, 0.0f);
+        cam->pos[1] = Cam_InterpValues(cam->pos[1], v40[1], &d->vel[1], d->f10, 0.175f, 0.0f);
+        cam->pos[2] = Cam_InterpValues(cam->pos[2], v40[2], &d->vel[2], d->f10, 0.175f, 0.0f);
+    } else {
+        Path_316730 *path = D_L01_001B0C30_316730[pi];
+
+        if (p->f24 < 0) {
+            float off;
+
+            func_L00_0025EFC0(path, ((Hero_316730 *)(D_0013E633 + 0xE1D))->pos, v30, &seg, &frac, 0, 20.0f, 1.0f, 0.0f);
+            if (p->f36 == 1) {
+                off = -(p->f38 * 4.0f);
+            } else {
+                off = p->f38;
+            }
+            func_L00_0025E860(path, v30, &seg, &frac, off, 1);
+            qcopy(v0, v30);
+        } else {
+            int hseg;
+            float hfrac;
+
+            hseg = ((Hero_316730 *)(D_0013E633 + 0xE1D))->f564;
+            hfrac = ((Hero_316730 *)(D_0013E633 + 0xE1D))->f568;
+            func_L00_0025E860(((Hero_316730 *)(D_0013E633 + 0xE1D))->f560, v30, &hseg, &hfrac, p->f38, 1);
+            func_L00_0025EFC0(path, v30, v0, &seg, &frac, 0, 20.0f, 1.0f, 0.0f);
+        }
+        cam->pos[0] = Cam_InterpValues(cam->pos[0], v0[0], &d->vel[0], k, 0.175f, 0.0f);
+        cam->pos[1] = Cam_InterpValues(cam->pos[1], v0[1], &d->vel[1], k, 0.175f, 0.0f);
+        cam->pos[2] = Cam_InterpValues(cam->pos[2], v0[2], &d->vel[2], k, 0.175f, 0.0f);
+    }
+    if (p->f24 < 0) {
+        Path_316730 *path = D_L01_001B0C30_316730[p->f20];
+
+        func_L00_0025EFC0(path, ((Hero_316730 *)(D_0013E633 + 0xE1D))->pos, v40, &seg, &frac, 0, 20.0f, 1.0f, 0.0f);
+        if (D_0015EE84_c == 0xE && p->f30 == 0) {
+            func_L00_0025E860(path, v50, &seg, &frac, spd, 0);
+        } else {
+            func_L00_0025E860(path, v50, &seg, &frac, spd, 1);
+        }
+        FastVecSub(v50, v50, v40);
+        FastVecAdd(v40, ((Hero_316730 *)(D_0013E633 + 0xE1D))->pos, v50);
+    } else {
+        int hseg;
+        float hfrac;
+
+        hseg = ((Hero_316730 *)(D_0013E633 + 0xE1D))->f564;
+        hfrac = ((Hero_316730 *)(D_0013E633 + 0xE1D))->f568;
+        func_L00_0025E860(((Hero_316730 *)(D_0013E633 + 0xE1D))->f560, v40, &hseg, &hfrac, spd, 1);
+    }
+    func_L00_001FF4B0(v10, D_L01_00167330, b->f4C);
+    FastVecAdd(v30, v10, v40);
+    FastVecSub(v20, v30, cam->pos);
+    len = FastVecLength(v20);
+    if (len != 0.0f) {
+        FastVecScale(v20, v20, 1.0f / len);
+        ang = 1.5707964f - FastArcSin(FastVecDot(v20, cam->f0));
+    } else {
+        ang = 0.0f;
+    }
+    if (FastAbsF(a->f20 - k) < 0.00015f) {
+        a->f20 = k;
+    } else if (a->f20 < k) {
+        a->f20 = a->f20 + 0.00015f;
+    } else {
+        a->f20 = a->f20 - 0.00015f;
+    }
+    rot = func_L00_001EB6A8(&a->f34, 0.0f, ang, a->f20, 0.175f, 0.0f);
+    FastVecCross(v50, v20, cam->f40);
+    build_look_at_matrix(cam->f0, cam->f40, v50, rot);
+    func_L00_001FF4B0(cam->f40, cam->f0, 1.0f);
+    func_L00_001FF4B0(cam->f0, cam->f0, 1.0f);
+    FastVecCross(cam->f10, cam->f0, D_L01_00167330);
+    func_L00_001FF4B0(cam->f10, cam->f10, 1.0f);
+    FastVecCross(cam->f20, cam->f10, cam->f0);
+}
 INCLUDE_ASM("asm/overlays", func_L01_003171B8);
 INCLUDE_ASM("asm/overlays", func_L01_00317408);
 extern char *func_L00_001EB578(int);

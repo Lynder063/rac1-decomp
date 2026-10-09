@@ -47,7 +47,135 @@ void func_L00_002BBC78(char *m) {
         *(float *)&D_L00_001616DC, *(float *)&D_L00_001616E0, 0.2f);
     func_L00_002BC3B8(m);
 }
-INCLUDE_ASM("asm/overlays", func_L00_002BBDE8);
+extern int func_001F4868(int);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9CA0(void *, void *, void *);
+extern float func_001F9CB8(void *);
+extern void func_001F9C30(void *, void *, float);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_L00_001FD1D8(void *, void *, int);
+extern void func_00234C98(int, long);
+extern float D_L00_00166EC0[];
+extern short D_L00_00161708;
+extern short D_L00_001616C4;
+extern short D_L00_0016170C;
+extern short D_L00_001616C8;
+typedef float RW_2BBDE8[4] __attribute__((aligned(16)));
+typedef struct { float v[4]; } P_2BBDE8;
+typedef struct {
+    int c[4];
+    float f[8];
+    long z4, q0, q1, q2;
+} RT_2BBDE8;
+
+// Draws a ribbon of quads along a polyline, in two passes with edge colouring and a scrolled texture (colours from globals).
+void func_L00_002BBDE8(void *m, int a, int b, int n, float sx, float sy, float sz) {
+    RW_2BBDE8 q[4];
+    RT_2BBDE8 t;
+    RW_2BBDE8 q2[4];
+    RT_2BBDE8 u;
+    RW_2BBDE8 w120, w130, w140, w150, r160, r170, a180, b190, s1A0, s1B0;
+    int i, col0, col1;
+    float len, len0, len2, l0, l1;
+    t.q0 = GetEffectTex(*(int *)&D_L00_00161708);
+    col0 = *(int *)&D_L00_001616C4 | (a << 24);
+    t.q2 = 0x8000000048L;
+    t.q1 = 0xFF9000000260L;
+    t.z4 = 0;
+    t.c[3] = col0;
+    t.c[2] = col0;
+    t.c[1] = col0;
+    t.c[0] = col0;
+    u.q0 = GetEffectTex(*(int *)&D_L00_0016170C);
+    col1 = *(int *)&D_L00_001616C8 | (b << 24);
+    u.q2 = t.q2;
+    u.q1 = t.q1;
+    u.z4 = t.z4;
+    u.c[3] = col1;
+    u.c[2] = col1;
+    u.c[1] = col1;
+    u.c[0] = col1;
+    u.f[0] = 0; u.f[1] = 0; u.f[2] = 0; u.f[3] = 1.0f; u.f[4] = 1.0f; u.f[5] = 0; u.f[6] = 1.0f; u.f[7] = 1.0f;
+    t.f[0] = u.f[0] + *(float *)&D_L00_001616BC;
+    t.f[1] = u.f[1];
+    t.f[2] = u.f[2] + *(float *)&D_L00_001616BC;
+    t.f[3] = u.f[3];
+    t.f[4] = u.f[4] + *(float *)&D_L00_001616BC;
+    t.f[5] = u.f[5];
+    t.f[6] = u.f[6] + *(float *)&D_L00_001616BC;
+    t.f[7] = u.f[7];
+    FastVecSub(w140, m, D_L00_00166EC0);
+    FastVecSub(w150, &((P_2BBDE8 *)m)[1], m);
+    FastVecCross(w120, w150, w140);
+    len0 = FastVecLength(w120);
+    if (len0 != 0) len0 = 1.0f / len0;
+    FastVecScale(w120, w120, *(float *)&D_L00_001616CC * len0);
+    FastVecAdd(q[0], m, w120);
+    FastVecSub(q[1], m, w120);
+    for (i = 1; i < n - 1; i++) {
+        FastVecSub(w140, &((P_2BBDE8 *)m)[i], D_L00_00166EC0);
+        FastVecSub(w150, &((P_2BBDE8 *)m)[i + 1], &((P_2BBDE8 *)m)[i]);
+        FastVecCross(w120, w150, w140);
+        len = FastVecLength(w120);
+        if (len != 0) len = 1.0f / len;
+        FastVecScale(w120, w120, *(float *)&D_L00_001616CC * len);
+        FastVecAdd(q[2], &((P_2BBDE8 *)m)[i], w120);
+        FastVecSub(q[3], &((P_2BBDE8 *)m)[i], w120);
+        if (i == 1) {
+            t.c[1] = *(int *)&D_L00_001616C4;
+            t.c[0] = *(int *)&D_L00_001616C4;
+        } else if (i == n - 2) {
+            t.c[3] = *(int *)&D_L00_001616C4;
+            t.c[2] = *(int *)&D_L00_001616C4;
+        } else if (i == 2) {
+            t.c[1] = col0;
+            t.c[0] = col0;
+        }
+        func_L00_001FD1D8(q, 0, 0);
+        qcopy(q[0], q[2]);
+        qcopy(q[1], q[3]);
+    }
+    for (i = 0; i < n - 1; i++) {
+        FastVecSub(a180, &((P_2BBDE8 *)m)[i], D_L00_00166EC0);
+        FastVecSub(b190, &((P_2BBDE8 *)m)[i + 1], D_L00_00166EC0);
+        l0 = FastVecLength(a180);
+        l1 = FastVecLength(b190);
+        if (l1 < l0) {
+            if (l1 == 0) qcopy(b190, a180);
+            else FastVecScale(b190, b190, l0 / l1);
+        } else {
+            if (l0 == 0) qcopy(a180, b190);
+            else FastVecScale(a180, a180, l1 / l0);
+        }
+        FastVecAdd(r160, D_L00_00166EC0, a180);
+        FastVecAdd(r170, D_L00_00166EC0, b190);
+        FastVecSub(w150, r170, r160);
+        FastVecScale(s1B0, w150, sz);
+        FastVecSub(r160, r160, s1B0);
+        FastVecAdd(r170, r170, s1B0);
+        FastVecSub(s1A0, D_L00_00166EC0, r160);
+        FastVecCross(w120, s1A0, w150);
+        len2 = FastVecLength(w120);
+        if (len2 != 0) len2 = 1.0f / len2;
+        FastVecScale(w130, w120, sy * len2);
+        FastVecAdd(q2[0], r160, w130);
+        FastVecSub(q2[1], r160, w130);
+        FastVecAdd(q2[2], r170, w130);
+        FastVecSub(q2[3], r170, w130);
+        if (i == 0) {
+            u.c[1] = *(int *)&D_L00_001616C8;
+            u.c[0] = *(int *)&D_L00_001616C8;
+        } else if (i == n - 2) {
+            u.c[3] = *(int *)&D_L00_001616C8;
+            u.c[2] = *(int *)&D_L00_001616C8;
+        } else if (i == 1) {
+            u.c[1] = col1;
+            u.c[0] = col1;
+        }
+        func_L00_001FD1D8(q2, 0, 0);
+    }
+    VU1_addGSregister(0x47, 0x5360B);
+}
 typedef struct { float f[4]; } __attribute__((aligned(16))) V_2bb0b0;
 typedef struct { float u, v; } UV_2bb0b0;
 typedef struct {
@@ -82,27 +210,27 @@ void func_L00_002BC3B8(void *mv) {
     unsigned int c;
     float s;
     int i;
-    quad.tex = func_001F4868(0xB);
+    quad.tex = GetEffectTex(0xB);
     quad.unk88 = 0x8000000048L;
     quad.unk80 = 0xFF9000000260L;
     quad.unk70 = 0;
-    func_001F9BF0(&mat[3], D_L00_00166EC0, pos);
+    FastVecSub(&mat[3], D_L00_00166EC0, pos);
     func_L00_001FF4B0(&mat[3], &mat[3], 0.3f);
-    func_001F9BD8(&mat[3], &mat[3], pos);
+    FastVecAdd(&mat[3], &mat[3], pos);
     mat[3].f[3] = 1.0f;
-    func_001F9BF0(&mat[0], D_L00_00166EC0, &mat[3]);
+    FastVecSub(&mat[0], D_L00_00166EC0, &mat[3]);
     func_L00_001FF4B0(&mat[0], &mat[0], 1.0f);
-    func_001F9CA0(&mat[1], &mat[0], D_0013E633 + 0x10AD);
+    FastVecCross(&mat[1], &mat[0], D_0013E633 + 0x10AD);
     func_L00_001FF4B0(&mat[1], &mat[1], -1.0f);
-    func_001F9CA0(&mat[2], &mat[1], &mat[0]);
+    FastVecCross(&mat[2], &mat[1], &mat[0]);
     c = *(int *)&D_L00_00161710;
     quad.color[3] = c;
     quad.color[2] = c;
     quad.color[1] = c;
     quad.color[0] = c;
-    s = *(float *)&D_L00_00161718 + func_L00_00258C80(0.0f, 0.025f);
+    s = *(float *)&D_L00_00161718 + randf_sym(0.0f, 0.025f);
     for (i = 0; i < 4; i++) {
-        func_001F9C30(&quad.corner[i], &D_L00_001DB860[i], s);
+        FastVecScale(&quad.corner[i], &D_L00_001DB860[i], s);
         func_001F9EE8(&quad.corner[i], &quad.corner[i], &mat[0]);
         quad.uv[i].u = D_L00_001DB8A0[i].u;
         quad.uv[i].v = D_L00_001DB8A0[i].v;
@@ -113,9 +241,9 @@ void func_L00_002BC3B8(void *mv) {
     quad.color[2] = c;
     quad.color[1] = c;
     quad.color[0] = c;
-    s = *(float *)&D_L00_0016171C + func_L00_00258C80(0.0f, 0.05f);
+    s = *(float *)&D_L00_0016171C + randf_sym(0.0f, 0.05f);
     for (i = 0; i < 4; i++) {
-        func_001F9C30(&quad.corner[i], &D_L00_001DB860[i], s);
+        FastVecScale(&quad.corner[i], &D_L00_001DB860[i], s);
         func_001F9EE8(&quad.corner[i], &quad.corner[i], &mat[0]);
         quad.uv[i].u = D_L00_001DB8A0[i].u;
         quad.uv[i].v = D_L00_001DB8A0[i].v;
@@ -239,8 +367,8 @@ void func_L00_002BC860(char *m) {
             D_L00_001DC1F0[q] = 2;
             D_L00_001DC208[q] = 1;
         }
-        D_L00_0016179C = func_001F9850(*(int *)&D_L00_00161778);
-        D_L00_001617A0 = func_001F9850(*(int *)&D_L00_0016177C);
+        D_L00_0016179C = scale_ticks(*(int *)&D_L00_00161778);
+        D_L00_001617A0 = scale_ticks(*(int *)&D_L00_0016177C);
         break;
     case 2:
         if (*(int *)(g + 0x2084) == 0x20) {
@@ -249,12 +377,12 @@ void func_L00_002BC860(char *m) {
                 flag = 1;
                 if (func_001F9908_r(&D_L00_0016179C) == 0) {
                     float a = func_001FA888(D_L00_0016179C);
-                    a = a / func_001FA888(func_001F9850(*(int *)&D_L00_00161778));
+                    a = a / func_001FA888(scale_ticks(*(int *)&D_L00_00161778));
                     D_L00_001617A4 = 1.0f - a;
                 } else if (12.0f <= f) {
                     if (func_001F9908_r(&D_L00_001617A0) == 0) {
                         float a = func_001FA888(D_L00_001617A0);
-                        a = a / func_001FA888(func_001F9850(*(int *)&D_L00_0016177C));
+                        a = a / func_001FA888(scale_ticks(*(int *)&D_L00_0016177C));
                         D_L00_001617A4 = a;
                     } else {
                         D_L00_001617A4 = 0.0f;
@@ -264,13 +392,13 @@ void func_L00_002BC860(char *m) {
                 }
             }
         } else {
-            D_L00_0016179C = func_001F9850(*(int *)&D_L00_00161778);
-            D_L00_001617A0 = func_001F9850(*(int *)&D_L00_0016177C);
-            func_00213DE0(m, 1, 0, func_001F9850(12));
+            D_L00_0016179C = scale_ticks(*(int *)&D_L00_00161778);
+            D_L00_001617A0 = scale_ticks(*(int *)&D_L00_0016177C);
+            func_00213DE0(m, 1, 0, scale_ticks(12));
         }
     }
-    func_001F9C30(vec0, m + 0xD0, -0.5f);
-    func_001F9BD8(vec0, vec0, m + 0x10);
+    FastVecScale(vec0, m + 0xD0, -0.5f);
+    FastVecAdd(vec0, vec0, m + 0x10);
     any = 0;
     for (j = 0; j < 10; j++) {
         if (D_L00_001DC1C0[j] != 0) {
@@ -294,11 +422,11 @@ void func_L00_002BC860(char *m) {
                 sign = 1.0f;
                 for (k = 1; k < 5; k++) {
                     float ang;
-                    func_001F9BF0(t, D_L00_001DBE90_rows[i].point[k - 1], D_L00_00166EC0);
-                    ang = func_002140F8(0.17453292f, 0.7853982f) * sign;
+                    FastVecSub(t, D_L00_001DBE90_rows[i].point[k - 1], D_L00_00166EC0);
+                    ang = random_float_between(0.17453292f, 0.7853982f) * sign;
                     sign = -sign;
-                    func_002156E0(vec1, vec1, t, ang);
-                    func_001F9BD8(((float (*)[4])(D_L00_001DBEA0+i*0x50))[k], D_L00_001DBE90_rows[i].point[k - 1], vec1);
+                    build_look_at_matrix(vec1, vec1, t, ang);
+                    FastVecAdd(((float (*)[4])(D_L00_001DBEA0+i*0x50))[k], D_L00_001DBE90_rows[i].point[k - 1], vec1);
                 }
             } else {
                 n = i + 1;
@@ -308,21 +436,21 @@ void func_L00_002BC860(char *m) {
             float (*workspace)[4] = w;
             for (k = 1; k < 5; k++) {
                 float *v = workspace[k];
-                func_001F9BF0(v, ((float (*)[4])(D_L00_001DBEA0+i*0x50))[k], D_L00_001DBE90_rows[i].point[k - 1]);
-                v[0] += func_L00_00258C80(0.0f, 0.1f);
-                v[1] += func_L00_00258C80(0.0f, 0.1f);
-                v[2] += func_L00_00258C80(0.0f, 0.1f);
+                FastVecSub(v, ((float (*)[4])(D_L00_001DBEA0+i*0x50))[k], D_L00_001DBE90_rows[i].point[k - 1]);
+                v[0] += randf_sym(0.0f, 0.1f);
+                v[1] += randf_sym(0.0f, 0.1f);
+                v[2] += randf_sym(0.0f, 0.1f);
             }
             n = i + 1;
             qcopy(D_L00_001DBEA0 + i * 0x50, vec0);
             for (k = 1; k < 5; k++) {
-                func_001F9BD8(((float (*)[4])(D_L00_001DBEA0+i*0x50))[k], D_L00_001DBE90_rows[i].point[k - 1], workspace[k]);
+                FastVecAdd(((float (*)[4])(D_L00_001DBEA0+i*0x50))[k], D_L00_001DBE90_rows[i].point[k - 1], workspace[k]);
             }
             if (D_L00_001DC1C0[i] > 0) D_L00_001DC1D8[i] = 0x20;
             else D_L00_001DC1D8[i] = 0;
         }
     }
-    func_001F49B0(func_L00_002BCE08, m);
+    AddDrawCallback(func_L00_002BCE08, m);
 }
 extern float func_001FA888(int);
 extern int func_001FA898_r(float) __asm__("func_001FA898");
@@ -550,8 +678,250 @@ INCLUDE_ASM("asm/overlays", func_L00_002BD6B8);
 INCLUDE_ASM("asm/overlays", func_L00_002BDAF0);
 INCLUDE_ASM("asm/overlays", func_L00_002BE2A0);
 INCLUDE_ASM("asm/overlays", func_L00_002BE3A8);
-INCLUDE_ASM("asm/overlays", func_L00_002BEF58);
-INCLUDE_ASM("asm/overlays", func_L00_002BF380);
+extern f32 D_0015EE60 MACRO_ADDR;
+typedef int OvlQuad __attribute__((mode(TI)));
+typedef union {
+    OvlQuad q;
+    f32 f[4];
+    s32 i[4];
+} OvlVec4;
+typedef struct {
+    OvlQuad corner[4];
+    int color[4];
+    float uv[8];
+    long unk70, tex, unk80, unk88;
+} Quad;
+extern u8 D_0013E635 NOT_SDA;
+extern short D_L00_001617E0;
+extern short D_L00_001617E4;
+extern short D_L00_001617E8;
+extern short D_L00_001617EC;
+extern short D_L00_001617F0;
+extern short D_L00_001617F4;
+extern short D_L00_001617F8;
+extern short D_L00_0016183C;
+extern short D_L00_00161840;
+extern short D_L00_00161844;
+extern short D_L00_00161848;
+extern short D_L00_0016184C;
+extern short D_L00_00161854;
+extern short D_L00_00161858;
+extern short D_L00_0016185C;
+extern short D_L00_00161860;
+extern short D_L00_00161864;
+extern short D_L00_00161868;
+extern short D_L00_0016186C;
+extern OvlVec4 D_L00_00166EC0_BEF58 __asm__("D_L00_00166EC0");
+extern OvlVec4 D_L00_001DC320[];
+extern OvlVec4 D_L00_001DC3E0[];
+extern OvlQuad D_L00_001DC360[][20];
+extern OvlQuad D_L00_001DC4A0[][20];
+void func_L00_002BF380_BEF58(void *, int, int, int, float, float, float, int) __asm__("func_L00_002BF380");
+void func_L00_002BF958(void *);
+void func_L00_002BFB98(void *);
+long func_001F4868_BEF58(int) __asm__("func_001F4868");
+void func_001F9BF0(void *, void *, void *);
+void func_001F9CA0(void *, void *, void *);
+float func_001F9C78(void *, void *);
+void func_L00_001FD1D8(void *, void *, int);
+
+/* scrolls the two texture-offset accumulators and draws the 10x20 band of textured quads between the D_L00_001DC060/001DC1A0 rings, skipping back-facing ones.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/entities/002b94d0.c, FUN_L00_002bdc50. */
+void func_L00_002BEF58(void *o) {
+    Quad quad;
+    OvlVec4 d1, d2, n, e;
+    float y, a, b, t;
+    int c, i, j, k, off, jo;
+
+    (*(float *)&D_L00_0016185C) = (*(float *)&D_L00_0016185C) - (*(float *)&D_L00_00161860) * D_0015EE60;
+    if ((*(float *)&D_L00_0016185C) <= -8.0f) (*(float *)&D_L00_0016185C) += 8.0f;
+    func_L00_002BF380_BEF58(D_L00_001DC320, (*(int *)&D_L00_0016183C), (*(int *)&D_L00_00161840), 12, (*(float *)&D_L00_00161844), (*(float *)&D_L00_00161848), (*(float *)&D_L00_0016184C), (*(int *)&D_L00_00161854));
+    func_L00_002BF380_BEF58(D_L00_001DC3E0, (*(int *)&D_L00_0016183C), (*(int *)&D_L00_00161840), 12, (*(float *)&D_L00_00161844), (*(float *)&D_L00_00161848), (*(float *)&D_L00_0016184C), (*(int *)&D_L00_00161858));
+    func_L00_002BF958(o);
+    func_L00_002BFB98(o);
+    k = D_0013E635;
+    c = k ? (*(int *)&D_L00_00161868) : (*(int *)&D_L00_00161864);
+    quad.tex = func_001F4868_BEF58((*(int *)&D_L00_0016186C));
+    quad.unk80 = 0xFF9000000260L;
+    quad.unk88 = 0x8000000048L;
+    quad.unk70 = 0;
+    quad.color[3] = c;
+    quad.color[2] = c;
+    quad.color[1] = c;
+    quad.color[0] = c;
+    y = (*(float *)&D_L00_001617E8);
+    (*(float *)&D_L00_001617E8) = y - (*(float *)&D_L00_001617EC) * D_0015EE60;
+    if ((*(float *)&D_L00_001617E8) <= -8.0f) (*(float *)&D_L00_001617E8) += 8.0f;
+    t = (*(float *)&D_L00_001617F8) * D_0015EE60;
+    (*(float *)&D_L00_001617F0) = (*(float *)&D_L00_001617F0) - t;
+    if ((*(float *)&D_L00_001617F0) <= -7.0f) (*(float *)&D_L00_001617F0) += 7.0f;
+    (*(float *)&D_L00_001617F4) = (*(float *)&D_L00_001617F4) + t;
+    if ((*(float *)&D_L00_001617F4) >= 5.0f) (*(float *)&D_L00_001617F4) -= 5.0f;
+    for (i = 2; i < 12; i++) {
+        a = (*(float *)&D_L00_001617F0);
+        b = (*(float *)&D_L00_001617F4);
+        for (j = 0; j < 20; j++) {
+            qcopy(&quad.corner[0], &D_L00_001DC4A0[i][j]);
+            qcopy(&quad.corner[1], &D_L00_001DC4A0[i][(j + 1) % 20]);
+            qcopy(&quad.corner[2], &D_L00_001DC360[i][j]);
+            qcopy(&quad.corner[3], &D_L00_001DC360[i][(j + 1) % 20]);
+            FastVecSub(&d1, &quad.corner[0], &quad.corner[1]);
+            FastVecSub(&d2, &quad.corner[2], &quad.corner[1]);
+            FastVecCross(&n, &d2, &d1);
+            FastVecSub(&e, &quad.corner[1], &D_L00_00166EC0_BEF58);
+            if (FastVecDot(&n, &e) >= 0.0f) {
+                a += (*(float *)&D_L00_001617E4);
+                b += (*(float *)&D_L00_001617E4);
+            } else {
+                if (i == 11) {
+                    quad.color[0] = quad.color[1] = (*(int *)&D_L00_00161864) & 0xFFFFFF;
+                }
+                quad.uv[5] = a;
+                quad.uv[1] = a;
+                quad.uv[3] = a + (*(float *)&D_L00_001617E4);
+                quad.uv[4] = y - (*(float *)&D_L00_001617E0);
+                quad.uv[0] = y;
+                quad.uv[2] = y;
+                quad.uv[7] = a + (*(float *)&D_L00_001617E4);
+                quad.uv[6] = y - (*(float *)&D_L00_001617E0);
+                a = a + (*(float *)&D_L00_001617E4);
+                func_L00_001FD1D8(&quad, 0, 0);
+                quad.uv[0] = y;
+                quad.uv[1] = b;
+                quad.uv[2] = y;
+                quad.uv[3] = b + (*(float *)&D_L00_001617E4);
+                quad.uv[5] = b;
+                quad.uv[4] = y - (*(float *)&D_L00_001617E0);
+                quad.uv[6] = y - (*(float *)&D_L00_001617E0);
+                quad.uv[7] = b + (*(float *)&D_L00_001617E4);
+                b = b + (*(float *)&D_L00_001617E4);
+                func_L00_001FD1D8(&quad, 0, 0);
+            }
+        }
+        y += (*(float *)&D_L00_001617E0);
+    }
+}
+extern short D_L00_00161874;
+extern short D_L00_00161850;
+extern short D_L00_00161878;
+extern short D_L00_0016185C;
+extern short D_L00_00161844;
+typedef float RW_2BF380[4] __attribute__((aligned(16)));
+typedef struct { float v[4]; } P_2BF380;
+typedef struct {
+    int c[4];
+    float f[8];
+    long z4, q0, q1, q2;
+} RT_2BF380;
+
+// Draws a ribbon of quads along a polyline, in two passes with edge colouring and a scrolled texture.
+void func_L00_002BF380(P_2BF380 *m, int a, int b, float sx, float sy, float sz, int n, int col) {
+    RW_2BF380 q[4];
+    RT_2BF380 t;
+    RW_2BF380 q2[4];
+    RT_2BF380 u;
+    RW_2BF380 w120, w130, w140, w150, r160, r170, a180, b190, s1A0, s1B0;
+    int i, col0, col1;
+    float len, len0, len2, l0, l1;
+    t.q0 = GetEffectTex(*(int *)&D_L00_00161874);
+    col0 = *(int *)&D_L00_00161850 | (a << 24);
+    t.q2 = 0x8000000048L;
+    t.q1 = 0xFF9000000260L;
+    t.z4 = 0;
+    t.c[3] = col0;
+    t.c[2] = col0;
+    t.c[1] = col0;
+    t.c[0] = col0;
+    u.q0 = GetEffectTex(*(int *)&D_L00_00161878);
+    col1 = col | (b << 24);
+    u.q2 = t.q2;
+    u.q1 = t.q1;
+    u.z4 = t.z4;
+    u.c[3] = col1;
+    u.c[2] = col1;
+    u.c[1] = col1;
+    u.c[0] = col1;
+    u.f[0] = 0; u.f[1] = 0; u.f[2] = 0; u.f[3] = 1.0f; u.f[4] = 1.0f; u.f[5] = 0; u.f[6] = 1.0f; u.f[7] = 1.0f;
+    t.f[0] = u.f[0] + *(float *)&D_L00_0016185C;
+    t.f[1] = u.f[1];
+    t.f[2] = u.f[2] + *(float *)&D_L00_0016185C;
+    t.f[3] = u.f[3];
+    t.f[4] = u.f[4] + *(float *)&D_L00_0016185C;
+    t.f[5] = u.f[5];
+    t.f[6] = u.f[6] + *(float *)&D_L00_0016185C;
+    t.f[7] = u.f[7];
+    FastVecSub(w140, m, D_L00_00166EC0);
+    FastVecSub(w150, &m[1], m);
+    FastVecCross(w120, w150, w140);
+    len0 = FastVecLength(w120);
+    if (len0 != 0) len0 = 1.0f / len0;
+    FastVecScale(w120, w120, *(float *)&D_L00_00161844 * len0);
+    FastVecAdd(q[0], m, w120);
+    FastVecSub(q[1], m, w120);
+    for (i = 1; i < n - 1; i++) {
+        FastVecSub(w140, &m[i], D_L00_00166EC0);
+        FastVecSub(w150, &m[i + 1], &m[i]);
+        FastVecCross(w120, w150, w140);
+        len = FastVecLength(w120);
+        if (len != 0) len = 1.0f / len;
+        FastVecScale(w120, w120, *(float *)&D_L00_00161844 * len);
+        FastVecAdd(q[2], &m[i], w120);
+        FastVecSub(q[3], &m[i], w120);
+        if (i == 1) {
+            t.c[1] = *(int *)&D_L00_00161850;
+            t.c[0] = *(int *)&D_L00_00161850;
+        } else if (i == n - 2) {
+            t.c[3] = *(int *)&D_L00_00161850;
+            t.c[2] = *(int *)&D_L00_00161850;
+        } else if (i == 2) {
+            t.c[1] = col0;
+            t.c[0] = col0;
+        }
+        func_L00_001FD1D8(q, 0, 0);
+        qcopy(q[0], q[2]);
+        qcopy(q[1], q[3]);
+    }
+    for (i = 0; i < n - 1; i++) {
+        FastVecSub(a180, &m[i], D_L00_00166EC0);
+        FastVecSub(b190, &m[i + 1], D_L00_00166EC0);
+        l0 = FastVecLength(a180);
+        l1 = FastVecLength(b190);
+        if (l1 < l0) {
+            if (l1 == 0) qcopy(b190, a180);
+            else FastVecScale(b190, b190, l0 / l1);
+        } else {
+            if (l0 == 0) qcopy(a180, b190);
+            else FastVecScale(a180, a180, l1 / l0);
+        }
+        FastVecAdd(r160, D_L00_00166EC0, a180);
+        FastVecAdd(r170, D_L00_00166EC0, b190);
+        FastVecSub(w150, r170, r160);
+        FastVecScale(s1B0, w150, sz);
+        FastVecSub(r160, r160, s1B0);
+        FastVecAdd(r170, r170, s1B0);
+        FastVecSub(s1A0, D_L00_00166EC0, r160);
+        FastVecCross(w120, s1A0, w150);
+        len2 = FastVecLength(w120);
+        if (len2 != 0) len2 = 1.0f / len2;
+        FastVecScale(w130, w120, sy * len2);
+        FastVecAdd(q2[0], r160, w130);
+        FastVecSub(q2[1], r160, w130);
+        FastVecAdd(q2[2], r170, w130);
+        FastVecSub(q2[3], r170, w130);
+        if (i == 0) {
+            u.c[1] = col;
+            u.c[0] = col;
+        } else if (i == n - 2) {
+            u.c[3] = col;
+            u.c[2] = col;
+        } else if (i == 1) {
+            u.c[1] = col1;
+            u.c[0] = col1;
+        }
+        func_L00_001FD1D8(q2, 0, 0);
+    }
+    VU1_addGSregister(0x47, 0x5360B);
+}
 INCLUDE_ASM("asm/overlays", func_L00_002BF958);
 extern short D_L00_00161888;
 extern short D_L00_00161884;
@@ -580,7 +950,7 @@ void func_L00_002BFB98(void *mv) {
     V_t e;
     int c;
     int i, j;
-    quad.tex = func_001F4868(11);
+    quad.tex = GetEffectTex(11);
     c = *(int *)&D_L00_00161888;
     quad.unk88 = 0x8000000048L;
     quad.unk80 = 0xFF9000000260L;
@@ -598,14 +968,14 @@ void func_L00_002BFB98(void *mv) {
     quad.unk68 = 1.0f;
     quad.unk6C = 1.0f;
     func_L00_001FF4B0(&e, m + 0xD0, *(float *)&D_L00_00161884);
-    func_001F9BD8(&mat[3], &D_L00_001DC260, &e);
-    func_001F9BF0(&e, D_L00_00166EC0, &mat[3]);
+    FastVecAdd(&mat[3], &D_L00_001DC260, &e);
+    FastVecSub(&e, D_L00_00166EC0, &mat[3]);
     func_L00_001FF4B0(&mat[0], &e, 1.0f);
-    func_001F9CA0(&mat[1], &mat[0], D_0013E633 + 0x10AD);
+    FastVecCross(&mat[1], &mat[0], D_0013E633 + 0x10AD);
     func_L00_001FF4B0(&mat[1], &mat[1], -1.0f);
-    func_001F9CA0(&mat[2], &mat[1], &mat[0]);
+    FastVecCross(&mat[2], &mat[1], &mat[0]);
     for (i = 3; i >= 0; i--) {
-        func_001F9C30(&t, &D_L00_001DC220[3 - i], *(float *)&D_L00_0016187C);
+        FastVecScale(&t, &D_L00_001DC220[3 - i], *(float *)&D_L00_0016187C);
         func_001F9EE8(&quad.corner[3 - i], &t, &mat[0]);
     }
     func_L00_001FD1D8(&quad, 0, 0);
@@ -614,7 +984,7 @@ void func_L00_002BFB98(void *mv) {
     quad.color[1] = -1;
     quad.color[0] = -1;
     for (j = 3; j >= 0; j--) {
-        func_001F9C30(&t, &D_L00_001DC220[3 - j], *(float *)&D_L00_00161880);
+        FastVecScale(&t, &D_L00_001DC220[3 - j], *(float *)&D_L00_00161880);
         func_001F9EE8(&quad.corner[3 - j], &t, &mat[0]);
     }
     func_L00_001FD1D8(&quad, 0, 0);
@@ -702,7 +1072,7 @@ float func_L00_002BFF88(Vx *a, void *b) {
         if (p != 0 && p->sub != 0 && p->sub->f46 == 5) {
             return D_L00_00173F40_s.f28;
         }
-        switch (func_L00_001F3958()) {
+        switch (CollType()) {
         case 0:
         case 1:
         case 3:
@@ -767,7 +1137,7 @@ f32 func_L00_002C0358(Mob *m, VU *pos, f32 *tgt, f32 *out, f32 ang, f32 arc, f32
 
     da = arc / step;
     best = ang;
-    n = func_001FA898(step);
+    n = truncate_float_to_s32(step);
     bestDist = 0.0f;
     x = m->p78;
     bestDiff = 6.2831855f;
@@ -778,16 +1148,16 @@ f32 func_L00_002C0358(Mob *m, VU *pos, f32 *tgt, f32 *out, f32 ang, f32 arc, f32
         cur = ang;
     }
     arc *= 0.5f;
-    func_001FA748(ang, arc);
-    arc = func_001FA790(ang, arc);
+    FastAddRots(ang, arc);
+    arc = FastSubRots(ang, arc);
 
     qcopy(&v0, pos);
-    v0.f[1] += func_001F9FA8(cur) * r1;
-    v0.f[0] += func_001F9F90(cur) * r1;
+    v0.f[1] += FastSin(cur) * r1;
+    v0.f[0] += FastCos(cur) * r1;
     v0.f[2] += h;
     qcopy(&v1, pos);
-    v1.f[1] += func_001F9FA8(cur) * r2;
-    v1.f[0] += func_001F9F90(cur) * r2;
+    v1.f[1] += FastSin(cur) * r2;
+    v1.f[0] += FastCos(cur) * r2;
     v1.f[2] += h + h;
     if (func_L00_001EFFF0_C0358(&v0, &v1, 4, m, 0) == 0) {
         if (func_L00_002BFF88_C0358(&v1, m) != 0.0f) {
@@ -801,7 +1171,7 @@ f32 func_L00_002C0358(Mob *m, VU *pos, f32 *tgt, f32 *out, f32 ang, f32 arc, f32
             return cur;
         }
         best = cur;
-        bestDist = func_001F9D10(&v0, &D_L00_00173F60);
+        bestDist = FastVecDist(&v0, &D_L00_00173F60);
         bestDiff = 0.0f;
         if (*out < bestDist) {
             *out = bestDist;
@@ -810,16 +1180,16 @@ f32 func_L00_002C0358(Mob *m, VU *pos, f32 *tgt, f32 *out, f32 ang, f32 arc, f32
 
     for (i = 0; i < n; i++) {
         qcopy(&v0, pos);
-        v0.f[1] += func_001F9FA8(arc) * r1;
-        v0.f[0] += func_001F9F90(arc) * r1;
+        v0.f[1] += FastSin(arc) * r1;
+        v0.f[0] += FastCos(arc) * r1;
         v0.f[2] += h;
         qcopy(&v1, pos);
-        v1.f[1] += func_001F9FA8(arc) * r2;
-        v1.f[0] += func_001F9F90(arc) * r2;
+        v1.f[1] += FastSin(arc) * r2;
+        v1.f[0] += FastCos(arc) * r2;
         v1.f[2] += h + h;
         if (func_L00_001EFFF0_C0358(&v0, &v1, 4, m, 0) == 0) {
             if (func_L00_002BFF88_C0358(&v1, m) != 0.0f) {
-                diff = func_001FA850(arc, cur);
+                diff = FastDiffRots(arc, cur);
                 if (diff < bestDiff || bestDist < r2) {
                     bestDiff = diff;
                     best = arc;
@@ -834,16 +1204,16 @@ f32 func_L00_002C0358(Mob *m, VU *pos, f32 *tgt, f32 *out, f32 ang, f32 arc, f32
                 *out = 100.0f;
                 return arc;
             }
-            d = func_001F9D10(&v0, &D_L00_00173F60);
+            d = FastVecDist(&v0, &D_L00_00173F60);
             if (bestDist < d) {
                 best = arc;
                 bestDist = d;
-                bestDiff = func_001FA850(best, cur);
+                bestDiff = FastDiffRots(best, cur);
                 if (*out < d) {
                     *out = d;
                 }
             } else if (d == bestDist) {
-                diff = func_001FA850(arc, cur);
+                diff = FastDiffRots(arc, cur);
                 if (diff < bestDiff) {
                     bestDiff = diff;
                     best = arc;
@@ -854,41 +1224,41 @@ f32 func_L00_002C0358(Mob *m, VU *pos, f32 *tgt, f32 *out, f32 ang, f32 arc, f32
                 }
             }
         }
-        arc = func_001FA748(arc, da);
+        arc = FastAddRots(arc, da);
     }
 
-    ang = func_001FA790(best, 1.5707964f);
+    ang = FastSubRots(best, 1.5707964f);
     qcopy(&v0, pos);
-    v0.f[1] += func_001F9FA8(ang) * r1;
-    v0.f[0] += func_001F9F90(ang) * r1;
+    v0.f[1] += FastSin(ang) * r1;
+    v0.f[0] += FastCos(ang) * r1;
     v0.f[2] += h * 0.125f;
     qcopy(&v1, &v0);
-    v1.f[1] += func_001F9FA8(best) * r2;
-    v1.f[0] += func_001F9F90(best) * r2;
+    v1.f[1] += FastSin(best) * r2;
+    v1.f[0] += FastCos(best) * r2;
     v1.f[2] += 0.12f;
     if (func_L00_001EFFF0_C0358(&v0, &v1, 4, m, 0) != 0) {
         if (D_L00_00173F58_C0358 != x->p38 && !(D_L00_00173F58_C0358 != 0 && D_L00_00173F58_C0358->p24 != 0 && D_L00_00173F58_C0358->p24->h46 == 5)) {
-            d = func_001F9D10(&v0, &D_L00_00173F60);
-            best = func_001FA748(best, (r2 - d) * 3.1415927f / (r2 * 3.0f));
+            d = FastVecDist(&v0, &D_L00_00173F60);
+            best = FastAddRots(best, (r2 - d) * 3.1415927f / (r2 * 3.0f));
         }
     }
-    ang = func_001FA748(ang, 3.1415927f);
+    ang = FastAddRots(ang, 3.1415927f);
     qcopy(&v0, pos);
-    v0.f[1] += func_001F9FA8(ang) * r1;
-    v0.f[0] += func_001F9F90(ang) * r1;
+    v0.f[1] += FastSin(ang) * r1;
+    v0.f[0] += FastCos(ang) * r1;
     v0.f[2] += h * 0.125f;
     qcopy(&v1, &v0);
-    v1.f[1] += func_001F9FA8(best) * r2;
-    v1.f[0] += func_001F9F90(best) * r2;
+    v1.f[1] += FastSin(best) * r2;
+    v1.f[0] += FastCos(best) * r2;
     v1.f[2] += 0.12f;
     if (func_L00_001EFFF0_C0358(&v0, &v1, 4, m, 0) != 0) {
         if (D_L00_00173F58_C0358 != x->p38 && !(D_L00_00173F58_C0358 != 0 && D_L00_00173F58_C0358->p24 != 0 && D_L00_00173F58_C0358->p24->h46 == 5)) {
-            d = func_001F9D10(&v0, &D_L00_00173F60);
-            best = func_001FA790(best, (r2 - d) * 3.1415927f / (r2 * 3.0f));
+            d = FastVecDist(&v0, &D_L00_00173F60);
+            best = FastSubRots(best, (r2 - d) * 3.1415927f / (r2 * 3.0f));
         }
     }
-    if (2.5132742f < func_001FA850(best, m->f48)) {
-        best = func_001FA748(m->f48, func_001FA790(best, m->f48) * 0.5f);
+    if (2.5132742f < FastDiffRots(best, m->f48)) {
+        best = FastAddRots(m->f48, FastSubRots(best, m->f48) * 0.5f);
     }
     return best;
 }
@@ -924,7 +1294,7 @@ void func_L00_002C0BB8(unsigned char *m, unsigned char *o, void *src) {
     qcopy(o, src);
     s = func_001F9D48(m + 0x10, o);
     s = s * s;
-    t = F2BF(o, 0x1C) * 35.0f * F2BF(o, 0x20) / (func_001F9B88(F2BF(o, 8) - F2BF(m, 0x18)) + 1.0f) * (s + 0.25f);
+    t = F2BF(o, 0x1C) * 35.0f * F2BF(o, 0x20) / (FastAbsF(F2BF(o, 8) - F2BF(m, 0x18)) + 1.0f) * (s + 0.25f);
     F2BF(o, 0x14) = t;
     if (F2BF(o, 0x20) < t) F2BF(o, 0x14) = F2BF(o, 0x20);
     F2BF(o, 0x18) = func_L00_001FF860(F2BF(o, 0) - F2BF(m, 0x10), F2BF(o, 4) - F2BF(m, 0x14));

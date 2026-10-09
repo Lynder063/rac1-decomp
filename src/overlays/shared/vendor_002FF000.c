@@ -4,9 +4,138 @@
 
 INCLUDE_ASM("asm/overlays", func_L06_002FF000);
 INCLUDE_ASM("asm/overlays", func_L06_002FFF70);
-INCLUDE_ASM("asm/overlays", func_L06_00300530);
+extern float func_00214358(void *, int, float);
+extern void func_L00_001FF4B0(void *, void *, float);
+extern void func_L00_00250800(void *, int, void *);
+extern float func_001FA888(int);
+extern float func_001FA748(float, float);
+extern float func_001F9F90(float);
+extern float func_001F9FA8(float);
+extern void func_001F9BD8(float *, float *, float *);
+extern int func_001F9850(int);
+extern char D_L06_00174700[];
+extern short D_L06_00162064;
+extern short D_L06_00162068;
+// Builds the sixteen-segment fan of data vectors for a moby from its yaw.
+void func_L06_00300530(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float v[4];
+    int i;
+    func_00214358(m + 0x10, 0, 0.5f);
+    func_L00_001FF4B0(d + 0x220, D_L06_00174700, 1.0f);
+    func_L00_00250800(m, 0, d + 0x210);
+    *(float *)(d + 0x218) = *(float *)(m + 0x18);
+    for (i = 0; i < 16; i++) {
+        float f = func_001FA888(i) * 0.0625f - 0.5f;
+        f = f * (*(float *)&D_L06_00162064 * 0.017453292f);
+        v[0] = FastCos(FastAddRots(f, *(float *)(m + 0x48))) * 0.2f;
+        v[1] = FastSin(FastAddRots(f, *(float *)(m + 0x48))) * 0.2f;
+        v[2] = 0.15f;
+        FastVecAdd((float *)(d + 0x230 + i * 16), (float *)(d + 0x210), v);
+        if (i == 0 || i == 15) {
+            float *w = (float *)(d + 0x23C + i * 16);
+            *w = *w = 0.0f;
+        } else {
+            *(float *)(d + 0x23C + i * 16) = 1.0f;
+        }
+    }
+    *(float *)(d + 0x21C) = (float)scale_ticks(*(int *)&D_L06_00162068);
+}
 INCLUDE_ASM("asm/overlays", func_L06_003006F8);
-INCLUDE_ASM("asm/overlays", func_L06_00300AB0);
+typedef struct {
+    f32 pos[4][4];
+    u32 col[4];
+    f32 uv[4][2];
+    u64 tag[4];
+} QuadPacket_f680;
+extern short D_L06_0016206C;
+extern short D_L06_00162070;
+extern short D_L06_00162074;
+extern short D_L06_00162078;
+extern short D_L06_0016207C;
+extern short D_L06_00162080;
+extern short D_L06_00162084;
+extern short D_L06_00162088;
+extern short D_L06_0016208C;
+extern short D_L06_00162090;
+extern f32 D_L06_001F31E0[4][2];
+extern void func_00234C98(s32, s64);
+extern u64 func_001F4868(s32);
+extern void func_001FA190(void *);
+extern float func_002140F8(float, float);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_L00_001FF4B0(void *, void *, f32);
+extern u32 func_001FA8A8_00AB0(f32, s32, s32) __asm__("func_001FA8A8");
+extern void func_L00_001FD1D8(void *, void *, s32);
+
+/* Draws the beam as 15 textured quads between consecutive points of the moby's point list (data + 0x230), each twice: once with the odd corners pulled toward the centre (data + 0x210) and once raised by 0.25.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/entities/002fdbd0.c, FUN_L06_002ff680. */
+void func_L06_00300AB0(char *moby) {
+    char *data = *(char **)(moby + 0x78);
+    QuadPacket_f680 pk[2];
+    f32 mat[4][4];
+    f32 tmp[4];
+    s32 i;
+    s32 j;
+    s32 off;
+    f32 *v;
+    u64 regs;
+
+    VU1_addGSregister(0x47, 0x5380B);
+    i = 0;
+    pk[0].tag[1] = GetEffectTex((*(s32 *)&D_L06_00162080));
+    pk[1].tag[1] = GetEffectTex((*(s32 *)&D_L06_00162080));
+    regs = (*(s32 *)&D_L06_0016206C);
+    regs |= (u64)(*(s32 *)&D_L06_00162070) << 2;
+    regs |= (u64)(*(s32 *)&D_L06_00162074) << 4;
+    regs |= (u64)(*(s32 *)&D_L06_00162078) << 6;
+    regs |= (u64)(*(s32 *)&D_L06_0016207C) << 32;
+    /* Store order is load-bearing: it sets which register keeps regs. */
+    pk[1].tag[2] = 0x0000FF9000000260ULL;
+    pk[0].tag[2] = 0x0000FF9000000260ULL;
+    pk[1].tag[0] = 0;
+    pk[0].tag[0] = 0;
+    pk[1].tag[3] = regs;
+    pk[0].tag[3] = regs;
+    func_001FA190(mat);
+    do {
+        D_L06_001F31E0[1][1] = D_L06_001F31E0[3][1];
+        D_L06_001F31E0[3][1] = random_float_between(0.0f, 0.2f);
+        for (j = 0; j < 4; j++) {
+            v = pk[0].pos[j];
+            off = (i + j / 2) * 16;
+            /* &data[...] (not data + off + ...) keeps retail's off + data add. */
+            qcopy(v, &data[off + 0x230]);
+            /* The colour call in both arms: retail merges the two calls and
+               leaves the address add in each arm. */
+            if (j & 1) {
+                FastVecSub(tmp, v, data + 0x210);
+                func_L00_001FF4B0(tmp, tmp, 0.5f);
+                FastVecSub(v, v, tmp);
+                v[2] -= 0.125f;
+                pk[0].col[j] = func_001FA8A8_00AB0(*(f32 *)(data + off + 0x23C), (*(s32 *)&D_L06_0016208C),
+                                                (*(s32 *)&D_L06_00162090));
+            } else {
+                pk[0].col[j] = func_001FA8A8_00AB0(*(f32 *)(data + off + 0x23C), (*(s32 *)&D_L06_00162084),
+                                                (*(s32 *)&D_L06_00162088));
+            }
+            pk[0].uv[j][0] = D_L06_001F31E0[j][0];
+            pk[0].uv[j][1] = D_L06_001F31E0[j][1];
+            pk[1].uv[j][0] = D_L06_001F31E0[j][0];
+            pk[1].uv[j][1] = D_L06_001F31E0[j][1];
+        }
+        func_L00_001FD1D8(pk, mat, 0);
+        for (j = 0; j < 4; j++) {
+            v = pk[0].pos[j];
+            if (j & 1) {
+                v[2] += 0.25f;
+            }
+        }
+        i++;
+        func_L00_001FD1D8(pk, mat, 0);
+    } while (i < 15);
+    VU1_addGSregister(0x47, 0x5360B);
+}
 extern float func_002140F8(float, float);
 extern float func_00214158(void);
 extern float func_001F9F90(float);
@@ -94,7 +223,7 @@ char *func_L06_003020B8(int unused, char *pa, char *pb) {
     char *data;
     *(u128 *)a = *(u128 *)pa;
     *(u128 *)b = *(u128 *)pb;
-    m = mk_a(rnd_a(func_002140F8(1085.0f, 1089.0f)));
+    m = mk_a(rnd_a(random_float_between(1085.0f, 1089.0f)));
     if (m != 0) {
         *(float *)(m + 0x2C) = *(float *)(*(char **)(m + 0x24) + 0x24) * *(float *)&D_L06_00162110;
         ((unsigned char *)m)[0x30] = 0xFF;
@@ -103,10 +232,10 @@ char *func_L06_003020B8(int unused, char *pa, char *pb) {
         data = *(char **)(m + 0x78);
         qcopy(m + 0x10, va);
         qcopy(data, vb);
-        *(float *)(data + 0x10) = func_002140F8(-360.0f, 360.0f) * 0.017453292f * D_0015EE6C;
-        *(float *)(data + 0x14) = func_002140F8(-360.0f, 360.0f) * 0.017453292f * D_0015EE6C;
-        *(float *)(data + 0x18) = func_002140F8(-360.0f, 360.0f) * 0.017453292f * D_0015EE6C;
-        m[0xBC] = rnd_a(func_001F9878(func_002140F8(60.0f, 120.0f)));
+        *(float *)(data + 0x10) = random_float_between(-360.0f, 360.0f) * 0.017453292f * D_0015EE6C;
+        *(float *)(data + 0x14) = random_float_between(-360.0f, 360.0f) * 0.017453292f * D_0015EE6C;
+        *(float *)(data + 0x18) = random_float_between(-360.0f, 360.0f) * 0.017453292f * D_0015EE6C;
+        m[0xBC] = rnd_a(func_001F9878(random_float_between(60.0f, 120.0f)));
         upd_a(m);
     }
     return m;
@@ -229,7 +358,7 @@ void func_L06_0030ACA0(char *moby) {
         func_L00_00265050(moby, 0x679, a, b, 0, 0, z, d, d, d);
         func_L00_00265050(moby, 0x67A, a, b, 0, 0, z, d, d, d);
         func_L00_00265050(moby, 0x67B, a, b, 0, 0, z, d, d, d);
-        m = func_0020D348(0x678);
+        m = CreateMoby(0x678);
         if (m != 0) {
             m[0x31] = 1;
             *(short *)(m + 0x32) = 0xFF;
@@ -238,7 +367,7 @@ void func_L06_0030ACA0(char *moby) {
             *(long *)(m + 0x38) = *(long *)(moby + 0x38);
             func_L00_00251E30(m);
         }
-        func_0020D678(moby);
+        DeleteMoby(moby);
         break;
     }
 }
@@ -270,7 +399,7 @@ void func_L06_0030D338(char *src, int a1, int a2, int a3) {
     char *vp = (char *)&v;
     unsigned char *m;
     v = *(uq_b *)src;
-    m = (unsigned char *)func_0020D348(0x76A);
+    m = (unsigned char *)CreateMoby(0x76A);
     if (m) {
         char *e = *(char **)(m + 0x78);
         float f;
