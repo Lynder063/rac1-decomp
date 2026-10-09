@@ -539,7 +539,183 @@ void func_00203B18(char *arg0, int idx) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00203B70);
+typedef u32 u128_03B70 __attribute__((mode(TI), aligned(16)));
+typedef union MaterialMap_03B70 {
+    u128_03B70 q;
+    u8 b[16];
+} MaterialMap_03B70;
+typedef struct {
+    s32 draw_high;
+    s32 draw_shift;
+    u8 pad8[0x8];
+    s32 material_base;
+    s32 material_shift;
+    u8 pad18[0x8];
+    s32 material_index;
+    u8 pad24[0x1C];
+} ResidentRenderPacket_03B70;
+typedef struct {
+    s32 blocks;
+    s32 count;
+    s32 auxiliary_data;
+    s32 unused_C;
+} ResidentRenderGroup_03B70;
+typedef struct {
+    u8 first_selector;
+    u8 pad1[0xB];
+    s32 target;
+} MaterialRun_03B70;
+typedef struct {
+    u8 pad0[0x10];
+    u8 count;
+    u8 pad11[3];
+    s32 optional_data_14;
+    u8 pad18[4];
+    s32 entry_offsets[1];
+} NestedRenderTable_03B70;
+typedef struct {
+    s32 groups;
+    u8 group_count_0;
+    u8 group_count_1;
+    u8 group_count_2;
+    u8 pad7[5];
+    u8 nested_table_count;
+    u8 padD[3];
+    s32 optional_table_10;
+    s32 optional_data_14;
+    s32 optional_table_18;
+    s32 *counted_pointers;
+    s32 material_runs;
+    u8 pad24[4];
+    s32 runtime_table;
+    u8 pad2C[0x1C];
+    s32 nested_tables[1];
+} ResidentClassRenderHeader_03B70;
+extern u8 D_001B3E40_03B70[] __asm__("D_001B3E40");
+extern MaterialMap_03B70 D_001B6C00_03B70[] __asm__("D_001B6C00");
+extern void func_002035B0_03B70(ResidentRenderPacket_03B70 *, void *, s32, s32, s32, s32, s32) __asm__("func_002035B0");
+extern void func_00203808_03B70(ResidentRenderPacket_03B70 *packet, s32 draw_high, s32 draw_shift, s32 material_base, s32 material_shift, s32 material_index) __asm__("func_00203808");
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/textbin/prepare_resident_class_render_data.c, prepare_resident_class_render_data. */
+void func_00203B70_r(ResidentClassRenderHeader_03B70 *header, u8 *textures, u8 *material_map, s32 class_id)
+    __asm__("func_00203B70");
+void func_00203B70_r(ResidentClassRenderHeader_03B70 *header, u8 *textures, u8 *material_map, s32 class_id) {
+    s32 group_count;
+    s32 class_slot;
+    s32 group_index;
+    s32 packet_quadword;
+    s32 groups_remaining;
+    s32 packet_extent;
+    ResidentRenderGroup_03B70 *group;
+    ResidentRenderGroup_03B70 *relocation_group;
+    MaterialRun_03B70 *material_run;
+    u8 *selector;
+    NestedRenderTable_03B70 *nested_table;
+    s32 *entry_offset;
+    MaterialMap_03B70 *slot_materials;
+    ResidentRenderPacket_03B70 *packet;
+    s32 packed_extent;
+    s32 packet_start;
+    s32 material_index;
+    s32 pointer_count;
+    s32 pointer_index;
+    s32 nested_table_index;
+    s32 nested_entry_index;
+
+    /* Serialized pointers are relative to the entire class blob. */
+    group_count = header->group_count_0 + header->group_count_1 + header->group_count_2;
+    if (header->groups != 0) {
+        header->groups = (s32)header + header->groups;
+        relocation_group = (ResidentRenderGroup_03B70 *)header->groups;
+        if (group_count != 0) {
+            groups_remaining = group_count;
+            do {
+                relocation_group->blocks += (s32)header;
+                relocation_group->auxiliary_data += (s32)header;
+                groups_remaining--;
+                relocation_group++;
+            } while (groups_remaining != 0);
+        }
+    }
+    if (header->optional_table_10 != 0) {
+        header->optional_table_10 = (s32)header + header->optional_table_10;
+    }
+    if (header->optional_data_14 != 0) {
+        header->optional_data_14 = (s32)header + header->optional_data_14;
+    }
+    if (header->optional_table_18 != 0) {
+        header->optional_table_18 = (s32)header + header->optional_table_18;
+    }
+    if (header->counted_pointers != 0) {
+        header->counted_pointers = (s32 *)((u8 *)header + (s32)header->counted_pointers);
+        pointer_count = header->counted_pointers[0];
+        for (pointer_index = 0; pointer_index < pointer_count; pointer_index++) {
+            header->counted_pointers[pointer_index + 1] += (s32)header;
+        }
+    }
+    if (header->material_runs != 0) {
+        header->material_runs = (s32)header + header->material_runs;
+        material_run = (MaterialRun_03B70 *)header->material_runs;
+        do {
+            material_run->target += (s32)header;
+            selector = &material_run->first_selector;
+            if (material_run->first_selector != 0xFF) {
+                do {
+                    *selector = material_map[*selector];
+                    selector++;
+                } while (*selector != 0xFF);
+            }
+        } while (material_run->target >= 0 && (material_run++, 1));
+    }
+    if (header->runtime_table != 0) {
+        header->runtime_table = (s32)header + header->runtime_table;
+    }
+    for (nested_table_index = 0; nested_table_index < header->nested_table_count;
+         nested_table_index++) {
+        if (header->nested_tables[nested_table_index] != 0) {
+            nested_table =
+                (NestedRenderTable_03B70 *)((u8 *)header + header->nested_tables[nested_table_index]);
+            header->nested_tables[nested_table_index] = (s32)nested_table;
+            if (nested_table->optional_data_14 != 0) {
+                nested_table->optional_data_14 = (s32)header + nested_table->optional_data_14;
+            }
+            for (nested_entry_index = 0; nested_entry_index < nested_table->count;
+                 nested_entry_index++) {
+                nested_table->entry_offsets[nested_entry_index] =
+                    (s32)header + nested_table->entry_offsets[nested_entry_index];
+            }
+        }
+    }
+
+    class_slot = D_001B3E40_03B70[class_id];
+    slot_materials = &D_001B6C00_03B70[class_slot];
+    qcopy(slot_materials, material_map);
+    group = (ResidentRenderGroup_03B70 *)header->groups;
+    for (group_index = 0; group_index < group_count; group_index++, group++) {
+        /* High half counts encoded quadwords; low half locates the packet end. */
+        packed_extent = group->count;
+        packet_extent = packed_extent >> 16;
+        packet_start = packed_extent & 0xFFFF;
+        group->count = packet_start;
+        packet = (ResidentRenderPacket_03B70 *)(group->blocks + (packet_start - packet_extent) * 16);
+        for (packet_quadword = 0; packet_quadword < packet_extent; packet_quadword += 4) {
+            material_index = packet->material_index;
+            if (material_index >= 0) {
+                material_index = slot_materials->b[material_index];
+            }
+            if (textures != 0) {
+                func_002035B0_03B70(
+                    packet, textures + material_index * 16, packet->draw_high, packet->draw_shift,
+                    packet->material_base, packet->material_shift, material_index);
+            } else {
+                func_00203808_03B70(packet, packet->draw_high, packet->draw_shift,
+                                                      packet->material_base, packet->material_shift,
+                                                      material_index);
+            }
+            packet++;
+        }
+    }
+}
 
 extern int D_00160000 MACRO_ADDR;
 extern unsigned char D_001B3E40[] NOT_SDA;

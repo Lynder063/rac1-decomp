@@ -595,6 +595,31 @@ address, each passing this project's check and the full build):
 - `src/game/space.c`: `func_00233AB8` (`render_environment_mapped_object`)
 - `src/game/vendor.c`: `func_0023B210` (`sample_surface_height_map`)
 
+Eighteen more were adapted by workers on 2026-10-09 from Lombyte's matched C for the same functions, where the
+candidate the tool carried over did not pass this project's check as written. The logic is Lombyte's; what
+changed is declarations (private aliases for globals and callees, the function defined under an alias where
+its file declares it otherwise) and single statement forms. The twelve executable functions are proven by the
+full build. In parentheses, Lombyte's name.
+
+- `src/core/989snd.c`: `func_0012E820` (`snd_send_iop_command_no_wait`)
+- `src/game/draw.c`: `func_001F3D78` (`draw_debug_profiler`)
+- `src/game/draw.c`: `func_001F6668` (`font_print`)
+- `src/game/hud.c`: `func_00200248` (`get_frame_texture`)
+- `src/game/loaders.c`: `func_00203B70` (`prepare_resident_class_render_data`)
+- `src/game/pause.c`: `func_00228690` (`append_fullscreen_clear_strips`)
+- `src/game/skyfunc.c`: `func_0022C5A0` (`draw_sky_shells`)
+- `src/game/skyfunc.c`: `func_0022CA00` (`sky_draw_shell_textured`)
+- `src/game/skyfunc.c`: `func_0022CC40` (`sky_draw_shell_gouraud`)
+- `src/game/space.c`: `func_002305A0` (`render_level_frame`)
+- `src/game/space.c`: `func_00232EF0` (`play_level_loading_slides`)
+- `src/game/update.c`: `func_002391E8` (`FUN_00237ed0`)
+- `src/overlays/l03_kerwan/vendor_00293720.c`: `func_L03_0029E498` (`FUN_L03_0029d2e0`)
+- `src/overlays/l04_eudora/vendor_002CB800.c`: `func_L04_002E2DF0` (`FUN_L04_002e1a10`)
+- `src/overlays/l10_orxon/vendor_00296BD8.c`: `func_L10_00299818` (`FUN_L10_00298668`)
+- `src/overlays/shared/hud_00263490.c`: `func_L05_002670A0` (`FUN_L05_00266710`)
+- `src/overlays/shared/vendor_002F7700.c`: `func_L01_00309078` (`FUN_L01_00307ca0`)
+- `src/overlays/shared/vendor_002F7700.c`: `func_L01_00317408` (`FUN_L01_00316030`)
+
 One more is this project's own port of a function it has from Lombyte: `func_L00_001EB890` in
 `src/overlays/shared/camera_001EB508.c` is the level programs' copy of `func_001EC2B8` (Lombyte's
 `switch_active_camera_record`), with the same C under the level's symbols.

@@ -886,7 +886,7 @@ s32 func_0023B210(f32 *height, f32 *normal, f32 x, f32 y, f32 z) {
         y_tangent[1] = D_001E69E0_3B210.cell_height;
         y_tangent[2] = h01 - h00;
         y_tangent[3] = 1.0f;
-        func_001F9CA0(normal, x_tangent, y_tangent);
+        FastVecCross(normal, x_tangent, y_tangent);
         func_001F9DC0_3B210(normal, normal, 1.0f);
     }
     return 1;

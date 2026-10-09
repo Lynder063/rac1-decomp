@@ -479,7 +479,128 @@ void func_0022FD20(int arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_0022FDC0);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_002305A0);
+extern s32 D_0015EE84_305A0 __asm__("D_0015EE84") MACRO_ADDR;
+struct LevelRenderState_305A0 {
+    u8 pad_0[0x58];
+    s32 mode;
+};
+struct LevelDisplayState_305A0 {
+    u8 pad_0[0x4];
+    s32 screen_height;
+};
+struct LevelProjectionState_305A0 {
+    u8 pad_0[0xB0];
+    f32 projection_scale;
+};
+/* PAL: the two fields tested sit 8 bytes further than in the US build. */
+struct MemoryCardState_305A0 {
+    u8 pad_0[0xDC];
+    s32 state; /* 0xDC */
+    s32 pad_E0;
+    s32 pending_state; /* 0xE4 */
+};
+extern struct MemoryCardState_305A0 D_0013D390_305A0 __asm__("D_0013D390");
+extern u8 D_0013DE4B[];
+extern struct LevelRenderState_305A0 D_0013E130_305A0 __asm__("D_0013E130");
+extern s32 D_0015F538 MACRO_ADDR;
+extern f32 D_0015F53C MACRO_ADDR;
+extern s32 D_0015F704_305A0 SDATA(D_0015F704);
+extern s32 D_0018CC54[];
+extern s32 D_0018CD98[];
+extern struct LevelProjectionState_305A0 D_0018CE00;
+extern void func_00235290(u32);
+extern void func_001F2608();
+extern void func_001F3140();
+extern void func_001F3C10();
+extern void func_001F4630(s32);
+extern void func_001F4748();
+extern s64 func_001F4868_305A0(s32) __asm__("func_001F4868");
+extern void func_001F55C0(s32, s32, s32, s32);
+extern void func_001F5800(s32, s32, s32, s32, s32, s32, s32, s32, s64, s64);
+extern s32 func_001FA898_305A0(f32) __asm__("func_001FA898");
+extern void func_001FB530();
+extern void func_00200E38(f32, f32, f32, f32, s32, s32, s64, f32);
+extern void func_0020DAB0(void);
+extern void func_0020DD48();
+extern void func_0020E2B0(void);
+extern void func_0022C5A0();
+extern void func_0022F738(s32);
+extern void func_0022FBE0();
+extern void func_0022FD20(s32);
+extern void func_00233AB8_305A0(s32) __asm__("func_00233AB8");
+extern void func_00234AC8(s32);
+extern void func_00234C98_305A0(s32, s64) __asm__("func_00234C98");
+extern struct LevelDisplayState_305A0 D_0013E600_305A0 __asm__("D_0013E600");
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/textbin/render_level_frame.c, render_level_frame. */
+void func_002305A0(void) {
+    f32 rotation_angle;
+    f32 screen_y;
+    f32 quad_extent;
+    s32 overlay_alpha;
+    f32 saved_projection_scale;
+    struct LevelDisplayState_305A0 *display_state;
+    s64 texture;
+    framebuf_appendLargeSetup();
+    func_001F2608();
+    func_0020DAB0();
+    ResetGsRegisters();
+    saved_projection_scale = D_0018CE00.projection_scale;
+    D_0015F704_305A0 = -1;
+    if (saved_projection_scale < 0.63f) {
+        D_0018CE00.projection_scale = 0.63f;
+    }
+    UpdateViewContext();
+    func_001F2608();
+    func_0022C5A0();
+    D_0018CE00.projection_scale = saved_projection_scale;
+    UpdateViewContext();
+    func_001F2608();
+    if (D_0013E130_305A0.mode == 4) {
+        SetupGifPaging(1);
+        func_0022FBE0();
+        DoGifPaging();
+    }
+    DrawMobys();
+    Vif1ChainCmd(0x02080000);
+    SetupGifPaging(1);
+    if ((D_0015EE84_305A0 != 0) && ((D_0015EE84_305A0 != 1) || (D_0013DE4B[0] != 0))) {
+        func_0022F738(D_0018CD98[0]);
+    }
+    if ((D_0013E130_305A0.mode == 4) && (D_0018CC54[0] >= 0x3D)) {
+        overlay_alpha = (D_0018CC54[0] - 0x3C) * 2;
+        if (overlay_alpha >= 0x81) {
+            overlay_alpha = 0x80;
+        }
+        func_0022FD20(overlay_alpha);
+    }
+    if ((D_0015EE84_305A0 != 0) && ((D_0015EE84_305A0 != 1) || (D_0013DE4B[0] != 0))) {
+        func_00233AB8_305A0(D_0018CD98[0]);
+    }
+    if ((D_0013D390_305A0.state >= 3) || (D_0013D390_305A0.pending_state >= 0)) {
+        func_00234C98_305A0(0x47, 0x3004B);
+        quad_extent = 272.0f;
+        texture = func_001F4868_305A0(2);
+        display_state = &D_0013E600_305A0;
+        DrawTexturedQuad(0x2C, display_state->screen_height - 0x60, 0x40, 0x40, 0, 0, 0x40, 0x40,
+                           0x80808080, texture);
+        screen_y = (f32)((display_state->screen_height - 0x40) * 16);
+        rotation_angle = ((D_0015F538 % 55) * (-6.2831855f)) / 55.0f;
+        /* The frame counter contributes only the sprite angle modulo 55. */
+        /* Retail passes the full texture value in a2 and the five floats in f12-f16. */
+        func_00200E38(1216.0f, screen_y, quad_extent, 272.0f, 0x40, 0x40,
+                            func_001F4868_305A0(3), rotation_angle);
+    }
+    DoGifPaging();
+    if (D_0015F53C > 0.0f) {
+        if (D_0015F53C > 1.0f) {
+            D_0015F53C = 1.0f;
+        }
+        emit_rgba_draw_packet(0, 0, 0, func_001FA898_305A0(D_0015F53C * 128.0f));
+    }
+    VU1_syncChain(0x10);
+    PatchMobyGifs();
+}
 
 extern float D_001D9EF0[][6][4];
 extern float D_0015EE6C MACRO_ADDR;
@@ -1483,7 +1604,143 @@ void func_00232A00(int x, int y, int w, int h, unsigned long rgba,
 
 INCLUDE_ASM("asm/nonmatchings/text", func_00232B90);
 
-INCLUDE_ASM("asm/nonmatchings/text", func_00232EF0);
+typedef struct {
+    u8 pad_0[0xC];
+    s32 half_height;
+} ScreenOfs_32EF0;
+extern u8 D_0013CED0[];
+/* The memory card state: only the two words the loop tests (PAL offsets, 8 further than the US build). */
+struct MemoryCardState_32EF0 {
+    u8 pad_0[0xDC];
+    s32 state; /* 0xDC */
+    s32 pad_E0;
+    s32 pending_state; /* 0xE4 */
+};
+extern struct MemoryCardState_32EF0 D_0013D390_32EF0 __asm__("D_0013D390");
+struct DmaTag_32EF0 {
+    u32 tag;
+    u32 addr;
+    u32 vif0;
+    u32 vif1;
+};
+struct GifTag_32EF0;
+union PacketCursor_32EF0 {
+    struct DmaTag_32EF0 *tag;
+    struct GifTag_32EF0 *gif;
+    s32 *words;
+    u8 *bytes;
+    s32 addr;
+};
+extern union PacketCursor_32EF0 D_00161000_32EF0 __asm__("D_00161000") MACRO_ADDR;
+extern ScreenOfs_32EF0 D_0013E600_32EF0 __asm__("D_0013E600");
+/* Retail stores both with `lui $at`: unsized, or the two-byte size makes them small data. */
+extern s16 D_0015EF48_32EF0[] __asm__("D_0015EF48") MACRO_ADDR;
+extern s16 D_0015EF4A_32EF0[] __asm__("D_0015EF4A") MACRO_ADDR;
+extern void func_0012F4A8_32EF0(s32) __asm__("func_0012F4A8");
+extern void func_001F3C10(void);
+extern void func_001F3D00(void);
+extern void func_001F4E08(s32);
+extern void func_001F5800_32EF0(s32, s32, s32, s32, s32, s32, s32, s32, u64, u64) __asm__("func_001F5800");
+extern f32 func_001FA888(s32);
+extern void func_001FB598(void);
+extern s32 func_00204C60(void);
+extern void func_00209070(void);
+extern void func_00209E68(void);
+extern void func_00232A00_32EF0(s32, s32, s32, s32, u64, u64, f32, f32, f32, f32) __asm__("func_00232A00");
+extern void func_00232B90(s32, s32, s32, u64 *, u64 *, u64 *);
+extern void func_002348E8(void);
+extern void func_00234948(void);
+extern void func_002349B8(void);
+extern void func_00234AC8(s32);
+extern void func_00234C98_32EF0(s32, u64) __asm__("func_00234C98");
+extern void func_00122598(s32);
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/textbin/play_level_loading_slides.c, play_level_loading_slides. */
+void func_00232EF0(s32 language_index, s32 first_slide, s32 second_slide,
+                               s32 duration_ticks, s32 preload_level) {
+    u64 shared_texture;
+    u64 first_texture;
+    u64 second_texture;
+    s32 frame;
+    s32 alpha;
+    s32 fade_in_alpha;
+    f32 scroll_phase;
+    f32 scroll_start;
+    f32 scroll_end;
+
+    func_00232B90(language_index, first_slide, second_slide, &shared_texture,
+                                   &first_texture, &second_texture);
+    if (preload_level != 0) {
+        func_0012F4A8_32EF0((*(s32 *)&D_0015EE84));
+        D_0015EF48_32EF0[0] = 0;
+        D_0015EF4A_32EF0[0] = 0;
+    }
+    func_00122598(0);
+    VU1_initChain();
+    for (frame = 0; frame < duration_ticks && D_0013D390_32EF0.state < 3 && D_0013D390_32EF0.pending_state < 0;
+         frame++) {
+        alpha = 0x80;
+        ResetGsRegisters();
+        PutDrawBufferSmall();
+        func_00234C98_32EF0(1, (u64)0x8000 << 16);
+        func_00234C98_32EF0(8, 0);
+        D_00161000_32EF0.words[0] = 0x30000014;
+        fade_in_alpha = frame * 4;
+        if (frame <= 0x1F) {
+            alpha = fade_in_alpha;
+        }
+        D_00161000_32EF0.words[1] = (s32)D_0013CED0;
+        D_00161000_32EF0.words[2] = 0;
+        D_00161000_32EF0.words[3] = 0x50000014;
+        D_00161000_32EF0.words += 4;
+        if (duration_ticks - 0x10 < frame) {
+            alpha = (duration_ticks - frame) * 8;
+        }
+        scroll_phase = func_001FA888(frame % 600) * 0.0016666667f;
+        if (first_slide == second_slide) {
+            func_00232A00_32EF0(0, D_0013E600_32EF0.half_height - 0x20, 0x200, 0x40,
+                                           (alpha << 24) | 0x808080, shared_texture, 0.0f, 4.0f,
+                                           scroll_phase + 0.0f, scroll_phase + 0.4f);
+            func_001F5800_32EF0(0, D_0013E600_32EF0.half_height - 0x20, 0x200, 0x40, 0, 0, 0x200, 0x40,
+                               0x80808080, first_texture);
+        } else {
+            scroll_start = scroll_phase + 0.0f;
+            scroll_end = scroll_phase + 0.4f;
+            func_00232A00_32EF0(0, D_0013E600_32EF0.half_height - 0x2E, 0x200, 0x40,
+                                           (alpha << 24) | 0x808080, shared_texture, 0.0f, 4.0f,
+                                           scroll_start, scroll_end);
+            func_001F5800_32EF0(0, D_0013E600_32EF0.half_height - 0x2E, 0x200, 0x40, 0, 0, 0x200, 0x40,
+                               0x80808080, first_texture);
+            if (frame > 0x40) {
+                if (frame < 0x60) {
+                    alpha = (frame - 0x40) * 4;
+                }
+                func_00232A00_32EF0(0, D_0013E600_32EF0.half_height, 0x200, 0x40,
+                                               (alpha << 24) | 0x808080, shared_texture, 0.0f, 4.0f,
+                                               scroll_start, scroll_end);
+                func_001F5800_32EF0(0, D_0013E600_32EF0.half_height, 0x200, 0x40, 0, 0, 0x200, 0x40,
+                                   0x80808080, second_texture);
+            }
+        }
+        func_00209E68();
+        func_00209070();
+        VU1_syncChain(1);
+        func_00122598(0);
+        ResetGsRegistersPr();
+        VU1_sendChain();
+        VU1_swapChain();
+        if (preload_level != 0) {
+            if (func_00204C60() == 0) {
+                if (duration_ticks < frame + 0x14) {
+                    duration_ticks = frame + 0x14;
+                }
+            } else {
+                preload_level = 0;
+            }
+        }
+    }
+    FadeToBlack(2);
+}
 
 typedef struct {
     int pad0[4];
@@ -1527,7 +1784,7 @@ extern Blk3D390 D_0013D390_b __asm__("D_0013D390");
 extern char *D_0015F714 MACRO_ADDR;
 extern int D_0015F538 MACRO_ADDR;
 extern int D_0015EE5C_m __asm__("D_0015EE5C") MACRO_ADDR;
-extern short D_0015EF48_m __asm__("D_0015EF48");
+extern short D_0015EF48_m SDATA(D_0015EF48);
 extern int D_0015EF4A_i __asm__("D_0015EF4A") MACRO_ADDR;
 extern char D_001E8CB8[];
 extern int func_00122598_i(int) __asm__("func_00122598");
@@ -1810,8 +2067,8 @@ void func_00233AB8(EnvironmentMappedObject *object) {
     colors[1] = color;
     colors[0] = color;
     func_0020DAF8(object, 0, object_transform);
-    if (D_0015F6E8 != 0 || (func_001F9B88(D_00187040_33AB8.position_x - object->position_x) < 16.0f &&
-                            func_001F9B88(D_00187040_33AB8.position_y - object->position_y) < 16.0f)) {
+    if (D_0015F6E8 != 0 || (FastAbsF(D_00187040_33AB8.position_x - object->position_x) < 16.0f &&
+                            FastAbsF(D_00187040_33AB8.position_y - object->position_y) < 16.0f)) {
         mapping_enabled = 1;
     }
     if (D_0015F6E8 == 6 && D_0013E150_33AB8[0] == 4) {
@@ -1825,12 +2082,12 @@ void func_00233AB8(EnvironmentMappedObject *object) {
         for (element_index = 0; element_index < vertex_count; element_index++) {
             func_001F9EE8(&D_001DC870[element_index], &positions[element_index],
                              object_transform);
-            func_001F9BF0(view_direction, &D_001DC870[element_index], D_00187180_33AB8);
+            FastVecSub(view_direction, &D_001DC870[element_index], D_00187180_33AB8);
             func_001F9DC0(view_direction, view_direction, 1.0f);
             func_001F9EE8(normal, &normals[element_index], object_transform);
             func_001F9DC0(normal, normal, 0.1f);
-            func_001F9C30(reflection, normal, func_001F9C78(normal, view_direction) * 2.0f);
-            func_001F9BF0(reflection, view_direction, reflection);
+            FastVecScale(reflection, normal, FastVecDot(normal, view_direction) * 2.0f);
+            FastVecSub(reflection, view_direction, reflection);
             func_001F9DC0(reflection, reflection, 1.0f);
             reflection[2] += 1.0f;
             sphere_denominator = func_001F9B50(reflection[2] * 2.0f) * 2.0f;

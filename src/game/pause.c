@@ -2298,7 +2298,7 @@ s32 func_0021F238(struct ItemPreviewBinding_1F238 *preview) {
     if (item_index == 0x18) {
         oclass = 0x1DF;
     }
-    preview->rotation_angle = func_001FA748(preview->rotation_angle, 0.01f);
+    preview->rotation_angle = FastAddRots(preview->rotation_angle, 0.01f);
     item_type = D_001864D0_1F238[item_index].item_type;
     is_type2 = item_type == 2;
     has_secondary_moby = item_type == 3;
@@ -2694,9 +2694,9 @@ s32 func_0021FB28(ItemsMenu *menu) {
     s32 y;
     s32 collected_count;
     if (menu->help_tip != 0) {
-        func_0020E180(menu->help_tip, 1);
+        DrawMobyList(menu->help_tip, 1);
     }
-    func_001F4630(0);
+    SetupGifPaging(0);
     column_divisor = 3;
     {
         /* Retail clears the 24-byte text window, fills the height, left (8), signed
@@ -2737,34 +2737,34 @@ s32 func_0021FB28(ItemsMenu *menu) {
     }
     x = add_offset((*(s32 *)&D_001602B8), 0xC8);
     y = add_offset((*(s32 *)&D_001602BC), 0x1D);
-    func_001F6CF8(x, y, 0x80000000L, func_001FE540_1FB28(0x4F4F), -1);
+    font_print_right(x, y, 0x80000000L, func_001FE540_1FB28(0x4F4F), -1);
     x = add_offset((*(s32 *)&D_001602B8), 0xC8);
     y = add_offset((*(s32 *)&D_001602BC), 0x36);
-    func_001F6CF8(x, y, 0x80000000L, func_001FE540_1FB28(0x4F50), -1);
+    font_print_right(x, y, 0x80000000L, func_001FE540_1FB28(0x4F50), -1);
     x = add_offset((*(s32 *)&D_001602B8), 0xC8);
     y = add_offset((*(s32 *)&D_001602BC), 0x54);
-    func_001F6CF8(x, y, 0x80000000L, func_001FE540_1FB28(0x4F51), -1);
-    func_001F6CF8(0xC8, 0x1D, 0x80FFA888L, func_001FE540_1FB28(0x4F4F), -1);
-    func_001F6CF8(0xC8, 0x36, 0x80FFA888L, func_001FE540_1FB28(0x4F50), -1);
-    func_001F6CF8(0xC8, 0x54, 0x80FFA888L, func_001FE540_1FB28(0x4F51), -1);
-    collected_count = func_002160E0();
+    font_print_right(x, y, 0x80000000L, func_001FE540_1FB28(0x4F51), -1);
+    font_print_right(0xC8, 0x1D, 0x80FFA888L, func_001FE540_1FB28(0x4F4F), -1);
+    font_print_right(0xC8, 0x36, 0x80FFA888L, func_001FE540_1FB28(0x4F50), -1);
+    font_print_right(0xC8, 0x54, 0x80FFA888L, func_001FE540_1FB28(0x4F51), -1);
+    collected_count = count_nonzero_entries_up_to_40();
     func_00116248(text_buffer, D_001603A0, collected_count);
-    func_001F6E18(add_offset((*(s32 *)&D_001602B8), 0xF0), add_offset((*(s32 *)&D_001602BC), 0x1D), 0x80000000L,
+    font_print_right_large(add_offset((*(s32 *)&D_001602B8), 0xF0), add_offset((*(s32 *)&D_001602BC), 0x1D), 0x80000000L,
                     text_buffer, -1);
-    func_001F6E18(0xF0, 0x1D, 0x80FFA888L, text_buffer, -1);
-    func_00116248(text_buffer, D_001603A0, func_00216150() * 4);
-    func_001F6E18(add_offset((*(s32 *)&D_001602B8), 0xF0), add_offset((*(s32 *)&D_001602BC), 0x36), 0x80000000L,
+    font_print_right_large(0xF0, 0x1D, 0x80FFA888L, text_buffer, -1);
+    func_00116248(text_buffer, D_001603A0, count_nonzero_entries_up_to_10() * 4);
+    font_print_right_large(add_offset((*(s32 *)&D_001602B8), 0xF0), add_offset((*(s32 *)&D_001602BC), 0x36), 0x80000000L,
                     text_buffer, -1);
-    func_001F6E18(0xF0, 0x36, 0x80FFA888L, text_buffer, -1);
+    font_print_right_large(0xF0, 0x36, 0x80FFA888L, text_buffer, -1);
     func_00116248(text_buffer, D_001603A0, func_00216098());
-    func_001F6E18(add_offset((*(s32 *)&D_001602B8), 0xF0), add_offset((*(s32 *)&D_001602BC), 0x54), 0x80000000L,
+    font_print_right_large(add_offset((*(s32 *)&D_001602B8), 0xF0), add_offset((*(s32 *)&D_001602BC), 0x54), 0x80000000L,
                     text_buffer, -1);
-    func_001F6E18(0xF0, 0x54, 0x80FFA888L, text_buffer, -1);
+    font_print_right_large(0xF0, 0x54, 0x80FFA888L, text_buffer, -1);
     func_00201640_1FB28(add_offset((*(s32 *)&D_001602B8), 0xD0), add_offset((*(s32 *)&D_001602BC), 0x4D),
                               add_offset((*(s32 *)&D_001602B8), 0xF2), add_offset((*(s32 *)&D_001602BC), 0x50),
                               0x80000000L, 0);
     func_00201640_1FB28(0xD0, 0x4D, 0xF2, 0x50, 0x80FFA888L, 0);
-    func_001F4748();
+    DoGifPaging();
     return 8;
 }
 
@@ -3418,7 +3418,7 @@ s32 func_00222070(struct CheatsMenu *menu) {
     s32 enabled;
 
     func_00234C98_22070(0x47, 0x2004B);
-    func_001F4630(0);
+    SetupGifPaging(0);
     if ((menu->flags & 1) && menu->entries->text_id == 0) {
         func_001153FC_22070(window_fields, 0, sizeof(window_fields));
         window_fields[1] = menu->height + 1;
@@ -3451,7 +3451,7 @@ s32 func_00222070(struct CheatsMenu *menu) {
                 enabled = *entry->enabled_flag;
             }
             func_001F68E8_22070(0xC, draw_y, color, func_001FE540_22070(entry->text_id), -1);
-            func_001F6CF8(
+            font_print_right(
                 menu->width - 0xC, draw_y, 0x80FFA888,
                 func_001FE540_22070(enabled ? entry->enabled_text_id : entry->disabled_text_id),
                 -1);
@@ -3460,7 +3460,7 @@ s32 func_00222070(struct CheatsMenu *menu) {
             entry_index++;
         } while (menu->entries[entry_index].text_id != 0);
     }
-    func_001F4748();
+    DoGifPaging();
     return 2;
 }
 
@@ -5395,17 +5395,17 @@ void func_002260A8(void *preview) {
     func_0020DAF8(source_moby_address, is_second_preview_moby ? 3 : 2, transform);
     qcopy(moby->pos, &transform[12]);
     func_001FA480(moby->basis, transform);
-    func_00214F78(moby->basis);
+    normalize_vector_triplet(moby->basis);
     func_0020EEE8(moby);
     first_attachment_active = 0;
     second_attachment_active = 0;
     if ((unsigned char)D_001D61E0[1] != 0) {
         first_attachment_active = 1;
-        func_0020D9D8(source_moby_address, D_001D61E0);
+        DetachManipulator(source_moby_address, D_001D61E0);
     }
     if ((unsigned char)D_001D61A0[1] != 0) {
         second_attachment_active = 1;
-        func_0020D9D8(source_moby_address, D_001D61A0);
+        DetachManipulator(source_moby_address, D_001D61A0);
     }
     if (!is_second_preview_moby) {
         func_001E9800(D_001864D0_260A8b, D_001864D0,
@@ -5419,13 +5419,13 @@ void func_002260A8(void *preview) {
         moby->secondary_binding = D_001864D0_260A8b;
     }
     if (first_attachment_active) {
-        func_0020D960(source_moby_address, 0x17, D_001D61E0);
+        AttachManipulator(source_moby_address, 0x17, D_001D61E0);
         *(int *)(D_001D61E0 + 0x20) = 0;
         *(int *)(D_001D61E0 + 0x24) = 0;
         *(int *)(D_001D61E0 + 0x28) = 0;
     }
     if (second_attachment_active) {
-        func_0020D960(source_moby_address, 0x16, D_001D61A0);
+        AttachManipulator(source_moby_address, 0x16, D_001D61A0);
         *(int *)(D_001D61A0 + 0x20) = 0;
         *(int *)(D_001D61A0 + 0x24) = 0;
         *(int *)(D_001D61A0 + 0x28) = 0;
@@ -6119,7 +6119,7 @@ void func_002282D0(PauseVec_282D0 *dir, f32 scale) {
         D_00160480[1] = v[0];
         D_00160480[2] = v[2];
     }
-    func_001F9CA0(D_00160480, D_00160480, D_00160470);
+    FastVecCross(D_00160480, D_00160480, D_00160470);
     func_001F9DC0_282D0(D_00160480, D_00160480, 1.0f);
 }
 
@@ -6171,94 +6171,90 @@ void func_00228458(int arg0, int idx, int n) {
 
 INCLUDE_ASM("asm/nonmatchings/text", func_002284E8);
 
-/*
- * REVERTED (size mismatch: 452 vs retail's 460 -- 8 bytes short, after
- * closing an initial 28-byte gap). Semantics recovered with confidence --
- * builds a texture-paging GIF/DMA packet: a tag header, a fixed 10-field
- * 0x50-byte block (the field at hdr+0x48 is easy to miss -- it isn't
- * adjacent to the others), then (if the tile count n=w/32 is positive) a
- * per-tile table of packed TRXPOS-style coordinates built from the
- * screen width/height at D_00151880[0xA8]/[0xA9]:
- *
- *   void func_00228690(unsigned long arg0) {
- *       int w, h, n, i;
- *       long ypack_a, ypack_b, xbase_a, xbase_b;
- *       char *hdr, *table, *newptr;
- *
- *       w = D_00151880[0xA8];
- *       h = D_00151880[0xA9];
- *       n = w / 32;
- *
- *       D_00161000[0] = (n + 5) | 0x10000000;
- *       D_00161000[1] = 0;
- *       D_00161000[2] = 0;
- *       D_00161000[3] = (n + 5) | 0x50000000;
- *       D_00161000 += 4;
- *
- *       hdr = (char *)D_00161000;
- *
- *       *(unsigned long *)(hdr + 0x00) = ((unsigned long)0x8000 << 45) | 1;
- *       *(unsigned long *)(hdr + 0x48) = 0x44;
- *       *(unsigned long *)(hdr + 0x08) = 0xE;
- *       *(unsigned long *)(hdr + 0x10) = 0x3D801;
- *       *(unsigned long *)(hdr + 0x18) = 0x47;
- *       *(unsigned long *)(hdr + 0x20) = ((unsigned long)0x9000 << 46) | 1;
- *       *(unsigned long *)(hdr + 0x28) = 0x10;
- *       *(unsigned long *)(hdr + 0x30) = 0x146;
- *       *(unsigned long *)(hdr + 0x38) = arg0;
- *       *(long *)(hdr + 0x40) = (long)(n | 0x8000) | ((long)0x9000 << 46);
- *
- *       if (n > 0) {
- *           long v0, v1;
- *
- *           ypack_a = (long)(0x8000 - h * 8) << 16;
- *           ypack_b = (long)(h * 8 + 0x7FF0) << 16;
- *           xbase_a = -(w * 8) + 0x8000;
- *           xbase_b = -(w * 8) + 0x8200;
- *
- *           table = hdr + 0x50;
- *           i = 0;
- *           do {
- *               v0 = xbase_a | ypack_a;
- *               v1 = xbase_b | ypack_b;
- *               *(long *)table = v0;
- *               i++;
- *               table += 8;
- *               xbase_b += 0x200;
- *               *(long *)table = v1;
- *               xbase_a += 0x200;
- *               table += 8;
- *           } while (i < n);
- *       }
- *
- *       newptr = hdr + 0x50 + n * 0x10;
- *       D_00161000 = (int *)newptr;
- *
- *       D_00161000[0] = 0x10000000;
- *       D_00161000[1] = 0;
- *       D_00161000[2] = 0x13000000;
- *       D_00161000[3] = 0;
- *       D_00161000 += 4;
- *   }
- *
- * (needs D_00161000 MACRO_ADDR). The per-tile loop is instruction-for-
- * instruction exact against retail (confirmed via diff -- this took
- * writing it as an incrementing-pointer do-while with both store values
- * precomputed up front, matching retail's exact interleaving of the
- * pointer bump between the two stores; a straightforward for-loop with
- * offset-indexed stores compiled to a different, larger schedule).
- * Residual: retail keeps BOTH w and h live in callee-saved registers
- * ($16/$17) across the whole function, needing a 0x20-byte frame; this
- * compiler only needs one saved register for the pair (keeping the other
- * in an ordinary temporary that happens to survive the header stores
- * unclobbered), needing a smaller frame -- 8 bytes under. Also builds a
- * few of the header's 64-bit constants via a different (same-length)
- * instruction encoding (`lui`+`dsll32` vs retail's `ori`+`dsll32`) for
- * the same value. Tried hoisting `i=0` earlier (made it worse: forced a
- * THIRD saved register instead of one); tried reordering the hdr+0x48
- * statement (no effect on size). Not reached further this pass.
- */
-INCLUDE_ASM("asm/nonmatchings/text", func_00228690);
+/* The display mode block: only the two sizes this function reads. */
+struct DisplayDims_28690 {
+    u8 pad_0[0x150];
+    s16 display_width; /* 0x150 */
+    s16 display_height; /* 0x152 */
+};
+extern struct DisplayDims_28690 D_00151880_28690 __asm__("D_00151880");
+extern s32 *D_00161000_28690 __asm__("D_00161000") MACRO_ADDR;
+
+/* Appends a DMA packet that clears the screen in 32-pixel-wide sprite strips of the given colour.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/textbin/fun_00227378.c, append_fullscreen_clear_strips. */
+void func_00228690(s64 color) {
+    s32 *base;
+    s64 *commands;
+    s64 *vertices;
+    struct DisplayDims_28690 *dimensions;
+    s32 strip_count;
+    s32 display_height;
+    s32 display_width;
+    s32 strip_index;
+    s32 left_x;
+    s32 top_y;
+    s32 right_x;
+    s32 bottom_y;
+    s32 negative_half_width;
+    s32 dividend;
+    s64 packed_top_y;
+    s64 packed_bottom_y;
+    s64 first;
+    s64 second;
+
+    dimensions = &D_00151880_28690;
+    display_width = dimensions->display_width;
+    display_height = dimensions->display_height;
+    /* Retail truncates signed display width toward zero before packing strips. */
+    dividend = (display_width > -1) ? display_width : (display_width + 0x1F);
+    strip_count = dividend >> 5;
+    strip_index = 0;
+    D_00161000_28690[0] = (strip_count + 5) | 0x10000000;
+    D_00161000_28690[1] = 0;
+    D_00161000_28690[2] = 0;
+    D_00161000_28690[3] = (strip_count + 5) | 0x50000000;
+    base = D_00161000_28690;
+    commands = (s64 *)(base + 4);
+    D_00161000_28690 = (s32 *)commands;
+    ((s64 *)base)[2] = 0x1000000000000001;
+    commands[1] = 0xE;
+    commands[2] = 0x3D801;
+    commands[3] = 0x47;
+    commands[4] = 0x2400000000000001;
+    commands[5] = 0x10;
+    commands[6] = 0x146;
+    commands[7] = color;
+    commands[8] = (s64)(strip_count | 0x8000) | 0x2400000000000000;
+    commands[9] = 0x44;
+    if (strip_index < strip_count) {
+        bottom_y = display_height * 8 + 0x7FF0;
+        top_y = 0x8000 - display_height * 8;
+        negative_half_width = -(display_width * 8);
+        packed_top_y = (s64)top_y << 16;
+        left_x = negative_half_width + 0x8000;
+        right_x = negative_half_width + 0x8200;
+        packed_bottom_y = (s64)bottom_y << 16;
+        vertices = (s64 *)(base + 0x18);
+        do {
+            first = (s64)left_x | packed_top_y;
+            second = (s64)right_x | packed_bottom_y;
+            *vertices = first;
+            strip_index++;
+            vertices++;
+            right_x += 0x200;
+            *vertices = second;
+            left_x += 0x200;
+            vertices++;
+        } while (strip_index < strip_count);
+    }
+    D_00161000_28690 = (s32 *)((u8 *)D_00161000_28690 + (strip_count * 0x10 + 0x50));
+    D_00161000_28690[0] = 0x10000000;
+    D_00161000_28690[1] = 0;
+    D_00161000_28690[2] = 0x13000000;
+    D_00161000_28690[3] = 0;
+    D_00161000_28690 += 4;
+}
+__asm__(".section .text\n\tnop\n");
 
 typedef u32 u128 __attribute__((mode(TI), aligned(16)));
 struct GraphicsSetupRecord {

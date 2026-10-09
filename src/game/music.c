@@ -892,11 +892,11 @@ void func_00217130(void) {
     if (!(D_001517D0_17130.primary.fade_flags & 0x8000) && !(D_001517D0_17130.primary.state & 0x8000)) {
         if (D_001517D0_17130.primary.handle == 0 && (D_001517D0_17130.primary.flags & 1) &&
             D_001517D0_17130.requested_track == -1) {
-            func_00216A90(D_001517D0_17130.primary.track, (s16)D_001517D0_17130.primary.flags,
+            music_StartTrack(D_001517D0_17130.primary.track, (s16)D_001517D0_17130.primary.flags,
                               D_001517D0_17130.primary.volume);
         } else if (D_001517D0_17130.primary.state != 9 && D_001517D0_17130.primary.handle != 0) {
             if (D_001517D0_17130.primary.handle != 0xFFFFFFFF && D_001517D0_17130.primary.state == 8) {
-                func_00216B68(D_001517D0_17130.primary.track, D_001517D0_17130.primary.flags,
+                music_StartTrackBody(D_001517D0_17130.primary.track, D_001517D0_17130.primary.flags,
                                        D_001517D0_17130.primary.volume);
             }
         }
@@ -906,7 +906,7 @@ void func_00217130(void) {
         if (requested_track != -1 && D_001517D0_17130.crossfade_state == 0) {
             if (D_001517D0_17130.primary.track != requested_track) {
                 if (D_001517D0_17130.requested_transition_track == -1 ||
-                    func_00216C50(requested_track, D_001517D0_17130.requested_transition_track,
+                    music_Transition(requested_track, D_001517D0_17130.requested_transition_track,
                                      D_001517D0_17130.primary.flags, D_001517D0_17130.primary.volume) != 0) {
                     D_001517D0_17130.retry_timer = func_001F98C0(7) * 60.0f;
                 }
@@ -921,7 +921,7 @@ void func_00217130(void) {
                 D_001517D0_17130.secondary.state = 5;
             }
         } else {
-            func_002167C0(D_001517D0_17130.queued_secondary_track, 0, 0x400);
+            music_start_track_by_id(D_001517D0_17130.queued_secondary_track, 0, 0x400);
             D_001517D0_17130.queued_secondary_track = -1;
         }
     }
@@ -953,7 +953,7 @@ void func_00217130(void) {
         case 3:
             if (D_001517D0_17130.primary.state == 0 && (D_001517D0_17130.transition.crossfade_enabled != 0 ||
                                                    D_001517D0_17130.transition.handle == 0)) {
-                func_002169B8(D_001517D0_17130.requested_track, D_001517D0_17130.primary.flags,
+                music_PreseekTrack(D_001517D0_17130.requested_track, D_001517D0_17130.primary.flags,
                                     D_001517D0_17130.primary.volume);
                 D_001517D0_17130.requested_track = -1;
                 D_001517D0_17130.crossfade_state = 4;
@@ -991,7 +991,7 @@ void func_00217130(void) {
         pending_state = D_001517D0_17130.read_state;
         if (pending_state == 2) {
             D_001517D0_17130.read_state = 0;
-            func_00217628(D_001517D0_17130.read_dst, D_001517D0_17130.read_sector,
+            start_audio_stream_read(D_001517D0_17130.read_dst, D_001517D0_17130.read_sector,
                                     D_001517D0_17130.read_sector_count);
             if (D_001517D0_17130.read_state == 0) {
                 D_001517D0_17130.read_state = pending_state;

@@ -426,7 +426,88 @@ void func_0022C188(void) {
     SkyDrawShell(3);
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022C5A0);
+struct SkyShellSet_2C5A0 {
+    u8 pad_0[4];
+    u16 relocation_state;
+    s16 shell_count;
+};
+struct SkyTransform_2C5A0 {
+    u8 pad[0x30];
+    u64 translation;
+};
+extern f32 D_00160504_2C5A0 SDATA(D_00160504);
+extern struct SkyShellSet_2C5A0 * D_0016055C_2C5A0 __asm__("D_0016055C") MACRO_ADDR;
+extern u8 D_00160560_2C5A0[] __asm__("D_00160560") MACRO_ADDR;
+extern struct SkyTransform_2C5A0 D_001D9A70_2C5A0 __asm__("D_001D9A70");
+extern s32 D_0015EF88_2C5A0 __asm__("D_0015EF88") MACRO_ADDR;
+extern void func_001F9BC0(f32 *);
+extern void func_001F9C48(void *, void *, f32);
+extern void func_001FA190_2C5A0(void *) __asm__("func_001FA190");
+extern void func_001FA238(void *, f32 *);
+extern void func_0022C7E0(void);
+extern void func_0022C870(void);
+extern void func_00234C98_2C5A0(s32, s64) __asm__("func_00234C98");
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/rendering/sky/draw_sky_shells.c, draw_sky_shells. */
+void func_0022C5A0(void) {
+    f32 rotation_angles[4];
+    f32 shell_scale;
+    u8 *transform_row;
+    s32 shell_index;
+
+    shell_index = 0;
+    SetupSkyGifPaging();
+    D_0016055C_2C5A0->relocation_state = 0;
+    func_001FA190_2C5A0(&D_001D9A70_2C5A0);
+    clear_u64_value(rotation_angles);
+    if (D_0016055C_2C5A0->shell_count > 0) {
+        do {
+            shell_scale = 1.0f;
+            switch (shell_index) {
+            case 0:
+                *(s32 *)&rotation_angles[1] = 0;
+                rotation_angles[2] = D_00160504_2C5A0;
+            case 1:
+                *(s32 *)&rotation_angles[1] = 0;
+                rotation_angles[2] = FastAddRots(D_00160504_2C5A0, rotation_angles[1]);
+                shell_scale = 1.0f;
+                break;
+            case 2:
+                rotation_angles[1] = -0.075f;
+                rotation_angles[2] = FastAddRots(D_00160504_2C5A0, -0.15f);
+                shell_scale = 1.25f;
+                break;
+            case 3:
+                rotation_angles[1] = 0.05f;
+                rotation_angles[2] = FastAddRots(D_00160504_2C5A0, 0.125f);
+                shell_scale = 1.5f;
+                break;
+            case 4:
+                rotation_angles[1] = 0.1f;
+                rotation_angles[2] = FastAddRots(D_00160504_2C5A0, -0.05f);
+                shell_scale = 1.75f;
+                break;
+            case 5:
+                rotation_angles[1] = -0.15f;
+                rotation_angles[2] = FastAddRots(D_00160504_2C5A0, 0.1f);
+                shell_scale = 2.0f;
+                break;
+            }
+            func_001FA238(&D_001D9A70_2C5A0, rotation_angles);
+            transform_row = (u8 *)&D_001D9A70_2C5A0;
+            func_001F9C48(transform_row, transform_row, shell_scale);
+            func_001F9C48(transform_row + 0x10, transform_row + 0x10, shell_scale);
+            func_001F9C48(transform_row + 0x20, transform_row + 0x20, shell_scale);
+            transform_row += 0x30;
+            qcopy(transform_row, D_00160560_2C5A0);
+            SkyDrawShell(shell_index);
+            shell_index++;
+        } while (shell_index < D_0016055C_2C5A0->shell_count);
+    }
+    DoSkyGifPaging();
+    func_00234C98_2C5A0(0x47, 0x5360B);
+    func_00234C98_2C5A0(0x4E, 0x1000000 | (D_0015EF88_2C5A0 >> 13));
+}
 
 extern int D_00161000 MACRO_ADDR;
 extern int D_00160570 MACRO_ADDR;
@@ -539,6 +620,192 @@ void func_0022C9A8(int idx) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022CA00); /* SkyDrawShellTextured */
+typedef u32 u128_2CA00 __attribute__((mode(TI), aligned(16)));
+struct DmaTag_2CA00 {
+    u32 tag;
+    u32 addr;
+    u32 vif0;
+    u32 vif1;
+};
+struct GifTag_2CA00;
+union PacketCursor_2CA00 {
+    struct DmaTag_2CA00 *tag;
+    struct GifTag_2CA00 *gif;
+    s32 *words;
+    u8 *bytes;
+    s32 addr;
+};
+extern union PacketCursor_2CA00 D_00161000_2CA00 __asm__("D_00161000") MACRO_ADDR;
+struct SkyTile_2CA00 {
+    u128_2CA00 bounds; /* 16-byte aligned: tile fields are addressed from the tile base */
+    s32 address;
+    s16 unk4;
+    s16 unk6;
+    s16 unk8;
+    s16 unkA;
+    s16 unkC;
+    s16 unkE;
+};
+struct Shell_2CA00 {
+    s32 count;
+    u8 pad4[0xC];
+    struct SkyTile_2CA00 tiles[1];
+};
+extern short D_00160508;
+extern s32 D_00160510_2CA00 SDATA(D_00160510);
+extern u8 D_0013D260[];
+extern void func_0022D7E0_2CA00(struct SkyTile_2CA00 *tiles, s32 count, u8 *visibility) __asm__("func_0022D7E0");
+extern void func_0020C210_2CA00(s32 address, s32 qwc, s32 destination) __asm__("func_0020C210");
+extern void func_0020C230_2CA00(void) __asm__("func_0020C230");
+extern s32 func_0022D2AC_2CA00(s32, s32, s32, s32) __asm__("func_0022D2AC");
+extern void func_0022D520_2CA00(s32, s32, s32, s32) __asm__("func_0022D520");
 
-INCLUDE_ASM("asm/nonmatchings/text", func_0022CC40); /* SkyDrawShellGouraud */
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/rendering/sky/sky_draw_shell_textured.c, sky_draw_shell_textured. */
+void func_0022CA00_r(struct Shell_2CA00 *shell) __asm__("func_0022CA00");
+/* SkyDrawShellTextured */
+void func_0022CA00_r(struct Shell_2CA00 *shell) {
+    u8 visibility[shell->count];
+    s32 i;
+    s32 dest;
+    s32 c_dest;
+    s32 a_dest;
+    s32 next;
+
+    if (shell->count == 0) {
+        return;
+    }
+
+    func_0022D7E0_2CA00(shell->tiles, shell->count, visibility);
+
+    D_00161000_2CA00.words[0] = 0x30000007;
+    *(s32 *)((u32)D_00161000_2CA00.words + 4) = (s32)D_0013D260;
+    *(s32 *)((u32)D_00161000_2CA00.words + 8) = 0;
+    *(s32 *)((u32)D_00161000_2CA00.words + 12) = 0x50000007;
+    D_00161000_2CA00.words += 4;
+
+    D_00160510_2CA00 = 1 - D_00160510_2CA00;
+    if (visibility[0] == 1) {
+        func_0020C210_2CA00(shell->tiles[0].address, shell->tiles[0].unkE >> 4,
+                                 (((s32 *)&D_00160508))[D_00160510_2CA00]);
+    }
+
+    for (i = 0; i < shell->count; i++) {
+        if (visibility[i] == 1) {
+            func_0020C230_2CA00();
+        }
+
+        next = i + 1;
+        D_00160510_2CA00 = 1 - D_00160510_2CA00;
+        if (next < shell->count && visibility[next] == 1) {
+            func_0020C210_2CA00(shell->tiles[next].address, shell->tiles[next].unkE >> 4,
+                                     (((s32 *)&D_00160508))[D_00160510_2CA00]);
+        }
+
+        if (visibility[i] == 1) {
+            dest = (((s32 *)&D_00160508))[1 - D_00160510_2CA00];
+            c_dest = dest + shell->tiles[i].unkC;
+            a_dest = dest + shell->tiles[i].unkA;
+            if (func_0022D2AC_2CA00(dest + shell->tiles[i].unk8, 0x70002000, shell->tiles[i].unk4,
+                             (&shell->tiles[i])->unkC) == 0) {
+                func_0022D520_2CA00(shell->tiles[i].unk6, c_dest, a_dest, 0x70002000);
+            }
+        }
+    }
+}
+
+typedef u32 u128_2CC40 __attribute__((mode(TI), aligned(16)));
+struct DmaTag_2CC40 {
+    u32 tag;
+    u32 addr;
+    u32 vif0;
+    u32 vif1;
+};
+struct GifTag_2CC40;
+union PacketCursor_2CC40 {
+    struct DmaTag_2CC40 *tag;
+    struct GifTag_2CC40 *gif;
+    s32 *words;
+    u8 *bytes;
+    s32 addr;
+};
+extern union PacketCursor_2CC40 D_00161000_2CC40 __asm__("D_00161000") MACRO_ADDR;
+struct SkyTile_2CC40 {
+    u128_2CC40 bounds; /* 16-byte aligned: tile fields are addressed from the tile base */
+    s32 address;
+    s16 unk4;
+    s16 unk6;
+    s16 unk8;
+    s16 unkA;
+    s16 unkC;
+    s16 unkE;
+};
+struct Shell_2CC40 {
+    s32 count;
+    u8 pad4[0xC];
+    struct SkyTile_2CC40 tiles[1];
+};
+extern s32 D_00160510_2CC40 SDATA(D_00160510);
+extern u8 D_0013D1F0[];
+extern s32 D_0015EF88_2CC40 __asm__("D_0015EF88") MACRO_ADDR;
+extern void func_0022D7E0_2CC40(struct SkyTile_2CC40 *tiles, s32 count, u8 *visibility) __asm__("func_0022D7E0");
+extern void func_0020C210_2CC40(s32 address, s32 qwc, s32 destination) __asm__("func_0020C210");
+extern void func_0020C230_2CC40(void) __asm__("func_0020C230");
+extern s32 func_0022D2AC_2CC40(s32, s32, s32, s32) __asm__("func_0022D2AC");
+extern void func_0022D3F8_2CC40(s32, s32, s32, s32) __asm__("func_0022D3F8");
+extern s32 func_00234C98_2CC40(s32, s64) __asm__("func_00234C98");
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/rendering/sky/sky_draw_shell_gouraud.c, sky_draw_shell_gouraud. */
+void func_0022CC40_r(struct Shell_2CC40 *shell) __asm__("func_0022CC40");
+/* SkyDrawShellGouraud */
+void func_0022CC40_r(struct Shell_2CC40 *shell) {
+    u8 visibility[shell->count];
+    s32 i;
+    s32 dest;
+    s32 c_dest;
+    s32 a_dest;
+    s32 next;
+
+    if (shell->count == 0) {
+        return;
+    }
+
+    func_0022D7E0_2CC40(shell->tiles, shell->count, visibility);
+
+    D_00161000_2CC40.words[0] = 0x30000007;
+    *(s32 *)((u32)D_00161000_2CC40.words + 4) = (s32)D_0013D1F0;
+    *(s32 *)((u32)D_00161000_2CC40.words + 8) = 0;
+    *(s32 *)((u32)D_00161000_2CC40.words + 12) = 0x50000007;
+    D_00161000_2CC40.words += 4;
+
+    D_00160510_2CC40 = 1 - D_00160510_2CC40;
+    if (visibility[0] == 1) {
+        func_0020C210_2CC40(shell->tiles[0].address, shell->tiles[0].unkE >> 4,
+                                 (((s32 *)&D_00160508))[D_00160510_2CC40]);
+    }
+
+    for (i = 0; i < shell->count; i++) {
+        if (visibility[i] == 1) {
+            func_0020C230_2CC40();
+        }
+
+        next = i + 1;
+        D_00160510_2CC40 = 1 - D_00160510_2CC40;
+        if (next < shell->count && visibility[next] == 1) {
+            func_0020C210_2CC40(shell->tiles[next].address, shell->tiles[next].unkE >> 4,
+                                     (((s32 *)&D_00160508))[D_00160510_2CC40]);
+        }
+
+        if (visibility[i] == 1) {
+            dest = (((s32 *)&D_00160508))[1 - D_00160510_2CC40];
+            c_dest = dest + shell->tiles[i].unkC;
+            a_dest = dest + shell->tiles[i].unkA;
+            if (func_0022D2AC_2CC40(dest + shell->tiles[i].unk8, 0x70002000, shell->tiles[i].unk4,
+                             (&shell->tiles[i])->unkC) == 0) {
+                func_0022D3F8_2CC40(shell->tiles[i].unk6, c_dest, a_dest, 0x70002000);
+            }
+        }
+    }
+
+    func_00234C98_2CC40(0x47, 0x3180B);
+    func_00234C98_2CC40(0x4E, (D_0015EF88_2CC40 >> 13) | 0x1000000 | ((s64)1 << 32));
+}
