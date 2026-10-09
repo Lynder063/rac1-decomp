@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L10_002E52B0 -- src/overlays/l10_orxon/vendor_002E30F8.c
- * Best so far: SIZE ours 2268 / retail 2280, checked 2026-10-08.
+ * Best so far: SIZE ours 2276 / retail 2280, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -32,7 +32,6 @@ extern void func_L00_0025E4B0(void *m, short *p);
 extern void func_L00_0025E590(void *, void *);
 extern void func_L00_00260D30(void *, void *, float);
 extern float func_001F9D48(void *, void *);
-extern int func_L00_00260FB0(void *, void *, float, int, int, void *, int);
 extern float func_001F9D10(void *, void *);
 extern void func_00213DE0(void *, int, int, int);
 extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;

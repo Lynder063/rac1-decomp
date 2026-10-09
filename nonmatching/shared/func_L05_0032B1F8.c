@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L05_0032B1F8 -- src/overlays/shared/vendor_002CF2C0.c
- * Best so far: SIZE ours 2556 / retail 2544, checked 2026-10-08.
+ * Best so far: SIZE ours 2556 / retail 2544, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -21,7 +21,6 @@ extern float func_001EC120(void *, float, float, float, float, float);
 extern void func_001F9C30(void *, void *, float);
 extern int func_L00_001F10E0(float, void *, int, void *);
 extern float func_001F9B88(float);
-extern void func_L05_0032ADE8(void *);
 extern void func_001F9CA0(void *, void *, void *);
 
 // Steers a level moby's smoothed state toward the current level entry's targets and updates its orientation vectors.

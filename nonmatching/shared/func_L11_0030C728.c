@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 1140 / retail 1144, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Ocean update (moby class 1111): state-0 init path, then a 2-step wave update (f49 call at the end). Best so fa
  *   Left: the first 2-step loop is counted down (bgez) where retail counts up (slti $18,2), the stores of the tide
@@ -12,8 +13,6 @@ extern int func_001FA898_r(float) __asm__("func_001FA898");
 extern float func_001FA888(int);
 extern float func_001F9FA8(float);
 extern void f49(void *, void *) __asm__("func_001F49B0");
-extern void func_L11_0030BCD8(void);
-extern char D_L11_00161E98[];
 extern char D_L11_00161E9C[];
 extern float D_L11_00167840[];
 extern char D_L11_00167700[];
@@ -34,7 +33,6 @@ extern char D_L11_00161364[];
 extern char D_L11_0016136C[];
 extern char D_L11_00161360[];
 extern char D_L11_00161368[];
-extern char D_L11_00161EA8[] MACRO_ADDR;
 extern int D_L11_0015F6B0 MACRO_ADDR;
 extern float D_0015EE7C MACRO_ADDR;
 

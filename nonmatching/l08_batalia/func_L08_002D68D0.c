@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L08_002D68D0 -- src/overlays/l08_batalia/vendor_002B9438.c
- * Best so far: SIZE ours 892 / retail 900, checked 2026-10-08.
+ * Best so far: SIZE ours 892 / retail 900, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -21,7 +21,6 @@ extern float func_00214358(void *, int, float);
 extern float func_001F9D48(void *, void *);
 extern float func_001F9CB8(void *a);
 extern int func_L00_0028EB98(void *, int);
-extern int func_0022ED80(int, int, int);
 extern int func_L00_0028F210(int, int);
 extern int func_001F9850(int);
 extern void func_L00_0028EBF0(int);

@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 1632 / retail 1612, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Level 8 moby update (class 1349): reads the hero checks (state 0/1 at d+0x10), then four per-channel timers in
  *   Best so far p2.c (block-local k and table pointer per timer block): size 1636 against retail 1612 (24 bytes ov
@@ -25,7 +26,6 @@ typedef struct L08Dat {
 extern char D_0013E633[];
 extern char D_0013D50F[];
 extern char D_0013D355[];
-extern char D_0013DE4B[];
 extern char D_0014171B[];
 extern int D_0015EFA4 MACRO_ADDR;
 extern int D_0015EE84 MACRO_ADDR;

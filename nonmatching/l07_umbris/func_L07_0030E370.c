@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 1152 / retail 1168, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Umbris state machine (jump table on moby[0x20], 0..4 plus end): best p1.c is 1152 bytes against retail 1168, a
  *   Left: the table-name constant D_0014171B + 0xAA35 comes out as an immediate offset (retail keeps the symbol ex

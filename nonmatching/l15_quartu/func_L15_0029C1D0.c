@@ -2,12 +2,12 @@
  * Best so far: SIZE ours 1200 / retail 1184, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Level-15 moby class 67 update: a five-case state machine (jump table on moby[0x20]), with a func_00215570 test
  *   Runs: 7 of 10 spent (p2 at 1204 is the last try of the block-local form).
  */
 extern char *D_L15_00160058_m __asm__("D_L15_00160058") MACRO_ADDR;
-extern float D_L15_00167440[];
 extern unsigned char D_0014171B[] NOT_SDA;
 extern unsigned char D_0013E633[];
 extern char D_L15_001BBB40_c[] __asm__("D_L15_001BBB40");

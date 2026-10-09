@@ -2,12 +2,12 @@
  * Best so far: SIZE ours 1868 / retail 1860, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Gemlik vendor moby (1860 B): builds a 3-vector frame, runs three spread loops (10, 4 and a counted third over 
  *   Best so far p5.c: 1868 B (ours 8 B long), 9 runs used; EXACT not reached. Left: retail keeps 1.0, -1.0, 1.5 an
  */
 extern float D_0015EE6C MACRO_ADDR;
-extern float D_L13_00167140[];
 extern char D_L13_001F5850[];
 extern char D_L13_001F5868[];
 extern void func_001F9C30(void *, void *, float);

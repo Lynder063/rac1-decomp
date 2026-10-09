@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L11_003102C8 -- src/overlays/shared/vendor_002C99E0.c
- * Best so far: SIZE ours 1132 / retail 1136, checked 2026-10-08.
+ * Best so far: SIZE ours 1132 / retail 1136, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

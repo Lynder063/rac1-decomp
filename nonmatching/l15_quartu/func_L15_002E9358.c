@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L15_002E9358 -- src/overlays/l15_quartu/vendor_0029C1D0.c
- * Best so far: SIZE ours 944 / retail 948, checked 2026-10-08.
+ * Best so far: SIZE ours 944 / retail 948, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -14,7 +14,6 @@ extern float D_0015EE70 MACRO_ADDR;
 extern float D_L15_0016203C SDATA(D_L15_0016203C);
 extern char *D_L15_00178580[];
 extern int func_L00_001F10E0(float, void *, int, void *);
-extern unsigned char *func_L00_0025D390(int);
 extern char *func_L00_0025B478(void *, int, int);
 extern void func_L00_001FF240(void *, void *, void *);
 extern int func_L00_001EFFF0(void *, void *, int, void *, void *);

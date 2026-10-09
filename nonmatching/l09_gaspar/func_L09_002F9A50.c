@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L09_002F9A50 -- src/overlays/l09_gaspar/vendor_002C2B08.c
- * Best so far: SIZE ours 1240 / retail 1236, checked 2026-10-08.
+ * Best so far: SIZE ours 1240 / retail 1236, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -8,7 +8,6 @@
  */
 extern void func_001F9C30(void *, void *, float);
 extern int func_001F9850(int);
-extern void func_001F9908(int *arg0);
 extern void func_001F9BF0(void *, void *, void *);
 extern float func_001F9C78(void *a, void *b);
 extern float func_L00_0025CCF0(void *, float, void *, int, float, float, float);

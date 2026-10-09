@@ -2,11 +2,11 @@
  * Best so far: SIZE ours 1348 / retail 1352, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Shared class-78 moby update: state 0 (flags at 0x34/0x31, bit test on the 0xAB75 table), state 2 (counter at d
  *   Left: retail keeps -5.0, 5.0 and 1.0 in saved float registers ($f20, $f21, $f23; swc1 in the prologue) while o
  */
-extern char D_L15_001BBB40[];
 extern char D_0014171B[];
 extern char D_0013E633[];
 extern int D_0015EE84_m __asm__("D_0015EE84") MACRO_ADDR;

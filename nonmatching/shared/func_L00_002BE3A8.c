@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 2984 / retail 2992, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Stopped after 7 of 14 runs (best p2.c: SIZE 2984 vs 2992, the flipped zero test in p3.c gave 2976). It is a pe
  *   Differences left: the store of D_L00_001618A0 sits early where retail fills the jal delay slot of 00215C00; &s
@@ -23,7 +24,6 @@ extern unsigned char *func_L00_0025D390(int);
 extern void func_001F9C08(void *, void *, void *, float);
 extern unsigned char *func_L00_00272F00(float *, int, float, float, int, int, int, float *, float);
 extern unsigned char *func_L00_002767B0(void *, int, int, int, int, float *, int, float, float);
-extern void func_L00_002BEF58(void);
 typedef struct { int v[5]; } I5tbl;
 extern float D_L00_001618A0 MACRO_ADDR;
 extern float D_L00_001618A0_s SDATA(D_L00_001618A0);
@@ -36,10 +36,7 @@ extern float D_L00_001618B8[3] MACRO_ADDR;
 extern Vu D_L00_001DD3A0[3] MACRO_ADDR;
 extern Vu D_L00_001DC270[12] MACRO_ADDR;
 extern Vu D_L00_001DD3D0[3] MACRO_ADDR;
-extern Vu D_L00_001DC320[12] MACRO_ADDR;
-extern Vu D_L00_001DC3E0[12] MACRO_ADDR;
 extern Vu D_L00_001DC250[12] MACRO_ADDR;
-extern Vu D_L00_001DC4A0[1] MACRO_ADDR;
 extern float D_L00_0015F660[] MACRO_ADDR;
 extern I5tbl D_L00_001E9E30 MACRO_ADDR;
 extern int D_L00_001618F4 MACRO_ADDR;

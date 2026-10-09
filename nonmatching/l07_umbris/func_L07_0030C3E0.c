@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L07_0030C3E0 -- src/overlays/l07_umbris/vendor_002CE470.c
- * Best so far: SIZE ours 1344 / retail 1336, checked 2026-10-08.
+ * Best so far: SIZE ours 1344 / retail 1336, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -25,7 +25,6 @@ extern int func_L00_0025E860(void *, void *, int *, float *, float, int);
 extern void func_L00_0025B040(unsigned char *, float);
 extern void func_001F9BF0(void *, void *, void *);
 extern int func_001F9908(int *arg0);
-extern void func_L07_0030C320(void *);
 extern float func_001F9D10(void *, void *);
 extern char *D_L07_001B0830[];
 extern float D_0015EE6C MACRO_ADDR;

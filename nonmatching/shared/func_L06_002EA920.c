@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L06_002EA920 -- src/overlays/shared/vendor_002D9548.c
- * Best so far: SIZE ours 1188 / retail 1192, checked 2026-10-08.
+ * Best so far: SIZE ours 1200 / retail 1192, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -8,8 +8,6 @@
  *   - Remaining differences (run 10 budget spent): `lw $6,0x204` read before the `addiu $2,-1` in retail (ours aft
  */
 extern char *func_L00_0025B478(void *, int, int);
-extern void func_L06_002EB5C8(void *, void *);
-extern void func_L06_002EB360(void *);
 extern void func_L00_002584A8(void *, int, int);
 extern int func_L00_0025B4D0(void *, void *, void *, int, int *, float *, int, int);
 extern void func_L06_002EB8C8(char *m);
@@ -22,7 +20,6 @@ extern float func_002140F8(float, float);
 extern float func_001F9878(float);
 extern int func_001FA898(float);
 extern int func_001F9938(void *);
-extern void func_L06_002F4908(float, void *, void *);
 extern int func_L00_0025A778(void *, void *, int);
 extern float func_001F9D48(void *, void *);
 extern int func_L00_00260FB0(float, char *, void *, int, int, void *, int);

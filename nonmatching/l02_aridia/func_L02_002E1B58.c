@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L02_002E1B58 -- src/overlays/l02_aridia/vendor_002A59D8.c
- * Best so far: SIZE ours 988 / retail 992, checked 2026-10-08.
+ * Best so far: SIZE ours 988 / retail 992, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

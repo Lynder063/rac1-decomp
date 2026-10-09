@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L11_0030EC70 -- src/overlays/l11_pokitaru/vendor_002CC828.c
- * Best so far: SIZE ours 1292 / retail 1300, checked 2026-10-08.
+ * Best so far: SIZE ours 1292 / retail 1300, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -31,7 +31,6 @@ extern short D_L11_00161FE4;
 extern short D_L11_00161FE8;
 extern short D_L11_00161FEC;
 extern short D_L11_00161FF0;
-extern short D_L11_0015F4FC;
 extern char D_0013E633[];
 typedef struct { char *slot[4][6]; int w60; int w64; int w68; float f6C; float f70; float f74; float f78; } EcData;
 

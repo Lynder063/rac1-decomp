@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 1244 / retail 1240, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Claimed by mistake in worker s13 (a repeated claim call took it); no attempt was made. Needs a release or a fr
  *   Gate update (moby class 92, level 15): six-state machine; the states share the travel tail (sb 5; sub.s; swc1 
@@ -14,9 +15,7 @@ extern unsigned char D_0013DE55[] NOT_SDA;
 extern unsigned char D_0013E633[];
 extern short D_L15_00161578;
 extern short D_L15_00160058;
-extern int D_L15_00161B48 MACRO_ADDR;
 extern float D_0015EE6C MACRO_ADDR;
-extern float D_L15_00167440[4];
 extern int D_L15_00184B28;
 
 typedef int u128_2A48B0 __attribute__((mode(TI)));

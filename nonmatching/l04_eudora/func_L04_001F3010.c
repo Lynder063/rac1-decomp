@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L04_001F3010 -- src/overlays/l04_eudora/fastfunc_001F2F68.c
- * Best so far: SIZE ours 2448 / retail 2456, checked 2026-10-08.
+ * Best so far: SIZE ours 2448 / retail 2456, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

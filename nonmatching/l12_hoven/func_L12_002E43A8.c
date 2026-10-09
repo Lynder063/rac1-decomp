@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 924 / retail 900, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Level 12 hoven entry update: a count from D_L12_001618BC (scaled by 1.5 when state 15), then per entry a 3-vec
  *   Best candidates p0.c and p2.c: 924 bytes against retail 900, every call and branch shape is in place. Differen

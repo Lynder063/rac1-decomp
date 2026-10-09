@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 1396 / retail 1392, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Moby update (class 83, level 13): steering toward a target with calls to the shared helpers; range checks, an 
  *   Best is p4.c (1396 bytes vs 1392, frame and constants now right). Left: the `if (q != 0)` block copies q to $v
@@ -16,12 +17,10 @@ extern int func_001F9850(int);
 extern void func_001F9C30(void *, void *, float);
 extern void func_L00_0025A8C0(void *, void *, int, float, void *);
 extern int func_L00_001F2BE8_2FB898(float, void *, int, void *, void *) __asm__("func_L00_001F2BE8");
-extern int func_L00_001F10E0(void *, float, int, void *);
 extern char *func_L00_0025B478(void *, int, int);
 extern void func_L00_0025F4A8_alt(void *, void *, void *, float, float, int, int, int, float, float, float, float, int, float, int, int, int, int) __asm__("func_L00_0025F4A8");
 extern void func_L00_0025F4A8_s(void *, void *, void *, float, float, int, int, int, float, float, float, float, int, float, int, int, int, int) __asm__("func_L00_0025F4A8");
 extern void func_0020D678(void *);
-extern int func_001F9908(int *arg0);
 extern float D_0015EE60 MACRO_ADDR;
 extern float D_0015EE6C MACRO_ADDR;
 extern char D_0013E633[];

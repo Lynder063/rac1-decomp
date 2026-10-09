@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 1144 / retail 1152, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   What it does: rocket moby update (class 409). State 1 gets a target (func_L00_0025B478), sets the moby's aim v
  *   Stopped at the budget (10 runs). Left: the global D_L12_00174340 (lui %hi kept in $s1 with addiu %lo at each u
@@ -30,7 +31,6 @@ extern float D_0015EE6C MACRO_ADDR;
 extern char D_L12_001672C0[];
 extern char D_L12_00174340[];
 extern char D_0013E633[];
-extern short D_L12_00161FA0;
 extern float D_L12_0015F660[] MACRO_ADDR;
 
 struct Pk {

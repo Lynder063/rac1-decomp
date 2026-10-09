@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L09_00309688 -- src/overlays/l09_gaspar/vendor_002C2B08.c
- * Best so far: SIZE ours 1320 / retail 1332, checked 2026-10-08.
+ * Best so far: SIZE ours 1336 / retail 1332, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -7,7 +7,6 @@
  *   Remaining differences: retail saves $fp (3 kept there for the modulus) and so has one more saved register; the
  */
 extern int func_L00_001FEF78(void *);
-extern void func_L09_002F0BB8(void *, void *, void *, float, int);
 extern void func_L00_00260108(void *, void *, int, float, float);
 extern float D_L09_0015F6B4 MACRO_ADDR;
 extern float D_L09_0015F6B8 MACRO_ADDR;

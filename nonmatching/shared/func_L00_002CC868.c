@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L00_002CC868 -- src/overlays/shared/vendor_002C96D0.c
- * Best so far: SIZE ours 2204 / retail 2212, checked 2026-10-08.
+ * Best so far: SIZE ours 2204 / retail 2212, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -8,7 +8,6 @@
  *   Unblock: a source form that keeps the -1.0f/1.0f constants live in saved FP regs across calls, and an exit sha
  */
 extern char D_0013E633[];
-extern char D_0013E15A[];
 extern char D_L00_00173F60[];
 extern char D_L00_00173F80[];
 extern char D_L00_001670F0[];

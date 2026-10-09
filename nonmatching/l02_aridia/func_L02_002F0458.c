@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L02_002F0458 -- src/overlays/l02_aridia/vendor_002E21F8.c
- * Best so far: SIZE ours 2512 / retail 2516, checked 2026-10-08.
+ * Best so far: SIZE ours 2512 / retail 2516, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * Cannot land as written (#define in a candidate): rewrite that in plain C first.
@@ -81,7 +81,6 @@ extern short D_L02_001621F4;
 extern float D_0015EE6C MACRO_ADDR;
 extern void func_001FA1F8(void *, void *);
 extern int func_L00_00200290(void *, float);
-extern int func_001F9908(int *);
 extern float func_002140F8(float, float);
 extern float func_001F9878(float);
 extern int func_001FA898(float);

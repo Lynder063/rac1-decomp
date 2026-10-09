@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 2316 / retail 2344, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   func_L05_00317F80 (2344 bytes, level 05 hoverboard_girl update): a state machine on moby[0x20] (states 0-3) th
  *   Where it differs: the frame. Retail saves $f20-$f23 and six GP registers; ours saves $f20-$f22 and one more GP
@@ -12,7 +13,6 @@ extern char D_L05_00161F98[];
 extern char *D_L05_001B1E78[];
 extern char D_L05_00215F00[];
 extern char D_L05_00215F20[];
-extern char D_0013D605[];
 extern char D_0013D355[];
 extern char D_0013D50F[];
 extern char D_0013E633[];
@@ -32,7 +32,6 @@ extern int func_L00_00267290(void *, void *);
 extern void func_L01_00279398(float, void *);
 extern void func_L00_00217718(void *, void *, int, int);
 extern void func_L00_002664B0(int, int);
-extern int func_001F9908(int *arg0);
 extern float func_002140F8(float, float);
 extern float func_001F9878(float);
 extern int func_001FA898_r(float) __asm__("func_001FA898");

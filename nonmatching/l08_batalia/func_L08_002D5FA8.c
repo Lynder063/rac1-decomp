@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L08_002D5FA8 -- src/overlays/l08_batalia/vendor_002B9438.c
- * Best so far: SIZE ours 2328 / retail 2340, checked 2026-10-08.
+ * Best so far: SIZE ours 2328 / retail 2340, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -20,10 +20,8 @@ extern float D_L08_0015F660[] MACRO_ADDR;
 extern int D_L08_001B0FB0[];
 extern char D_0013E633[] NOT_SDA;
 extern unsigned char D_0013D50F[] NOT_SDA;
-extern char *func_L00_0025B478(void *, int, int);
 extern char *func_L05_0028AA68(char *, char *, char *, int);
 extern int func_L00_0025B4D0(void *, void *, void *, int, int *, float *, int, int);
-extern int func_0022ED80(int, int, int);
 extern int func_001F9850(int);
 extern void func_00213DE0(void *, int, int, int);
 extern void func_001F9BC0(void *);

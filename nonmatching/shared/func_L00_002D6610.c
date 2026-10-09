@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 876 / retail 868, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Per-frame vendor-path update (state machine on m[0x20], calls into 0025B478/0025B4D0/0025BBA0/0025D5B0/00260FB
  *   Differences: register permutation (retail $16=d+0x70 pointer, $17=d, $18=m; ours $16=d, $17=m, $18=pointer); t

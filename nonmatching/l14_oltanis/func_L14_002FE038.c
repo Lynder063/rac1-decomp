@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L14_002FE038 -- src/overlays/l14_oltanis/vendor_002E0538.c
- * Best so far: SIZE ours 1840 / retail 1888, checked 2026-10-08.
+ * Best so far: SIZE ours 1844 / retail 1888, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -42,7 +42,6 @@ extern int D_0015EF08_m __asm__("D_0015EF08") MACRO_ADDR;
 extern int D_L14_0016205C_m __asm__("D_L14_0016205C") MACRO_ADDR;
 extern char D_L14_001FD208[];
 extern char D_L14_001FD240[];
-extern char D_L14_001BAF60[];
 extern char D_L14_00167480[];
 extern unsigned char D_0013D50F[];
 

@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L01_002FC140 -- src/overlays/l01_novalis/vendor_002FABE8.c
- * Best so far: SIZE ours 1860 / retail 1868, checked 2026-10-08.
+ * Best so far: SIZE ours 1860 / retail 1868, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

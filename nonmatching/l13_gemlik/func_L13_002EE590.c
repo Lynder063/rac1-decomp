@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 824 / retail 848, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Level 13 function (848 bytes): a moby walk with a variable-length array (VLA: the frame is extended with subu 
  *   Unblock: the source's local declaration order that gives retail's frame (vectors at 0x00/0x30/0x40/0x50/0x60/0

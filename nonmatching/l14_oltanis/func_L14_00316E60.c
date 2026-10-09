@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 864 / retail 880, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Camera 21 activate on level 14: three keyframe tables summed from records at cam+0x34/0x38/0x3C, a view setup 
  *   Left: retail re-materialises the float table base (lui/addiu) after each of the three summing loops and reload
@@ -9,8 +10,6 @@
  */
 extern char *D_L14_0015F050 MACRO_ADDR;
 extern char *D_L14_0015F7EC_p __asm__("D_L14_0015F7EC") MACRO_ADDR;
-extern float D_L14_001F6FC0[];
-extern float D_L14_001F67C8[];
 extern short D_L14_00162578;
 extern char D_0013E633[];
 extern float func_L00_001FF860(float, float);

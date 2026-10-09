@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 2184 / retail 2208, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Per-slot sample builder (2208 bytes): fills two 20-entry tables when the counter is 2, runs the 19-step spark 
  *   Left: float saves (ours spills an extra $f30 copy of the loop-3 r2 value, retail keeps it in $f21), and a few 
@@ -13,7 +14,6 @@ extern char D_L00_001E7190_a[] __asm__("D_L00_001E7190");
 extern char D_L00_001E7160_a[] __asm__("D_L00_001E7160");
 extern char D_L00_001E72B0_a[] __asm__("D_L00_001E72B0");
 extern unsigned char D_L00_001803C0_a[] __asm__("D_L00_001803C0");
-extern float D_L00_0015F660[] MACRO_ADDR;
 extern short D_L00_00161CC0;
 extern float func_001F9CB8(void *);
 extern float func_001FA790(float, float);

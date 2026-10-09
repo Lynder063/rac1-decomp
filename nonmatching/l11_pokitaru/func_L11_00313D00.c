@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 2512 / retail 2524, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   - func_L11_00313D00 (2524 bytes, level 11): per-frame moby update. Timer and position steps at 0x64/0x68, spri
  *   - Wall: the block gated on (o+0xDC)==0 reads and writes an absolute resident address built as `lui 0x140000>>1
@@ -33,8 +34,6 @@ extern short D_L11_001620A4;
 extern short D_L11_001620A8;
 extern short D_L11_001620AC;
 extern short D_L11_001620B0;
-extern short D_L11_001620B4;
-extern short D_L11_001620B8;
 extern short D_L11_001620C4;
 extern short D_L11_001620C8;
 extern short D_L11_001620CC;
@@ -43,7 +42,6 @@ extern short D_L11_001620E0;
 extern short D_L11_001621DC;
 extern short D_L11_0016210C;
 extern short D_L11_00162110;
-extern short D_L11_0016211C;
 extern short D_L11_00162134;
 extern short D_L11_00162138;
 extern short D_L11_00162144;
@@ -106,7 +104,6 @@ extern float func_001F9CE8(void *);
 extern void func_001F9BF0(void *, void *, void *);
 extern int func_L00_00203F20(int a, int b);
 extern void func_001F49B0(void (*)(void), void *);
-extern void func_L11_00313218(void);
 extern void func_L11_00313BC0(char *, char *);
 extern void func_L11_00313A70(char *, char *, float, float);
 

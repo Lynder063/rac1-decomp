@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 488 / retail 492, checked 2026-10-03.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Per-mode smoothing of two values (switch on byte 0x53, cases 0..7), else releases its slot. p0.c matches every
  */

@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 912 / retail 908, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Hoven vendor moby update: seeds three vector tables from data+0x2300 and the gp globals, then for four rings (
  */
@@ -12,7 +13,6 @@ extern int func_001F4868(int);
 extern float func_001FA888(int);
 extern int func_001FA8A8(int, int, float);
 extern void func_L00_001FD1D8(void *, void *, int);
-extern int D_L12_00160058 MACRO_ADDR;
 extern char D_L12_001FB870[] MACRO_ADDR;
 extern float D_L12_001FB7D0[] MACRO_ADDR;
 extern float D_L12_001FB7F0[] MACRO_ADDR;

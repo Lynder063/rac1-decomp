@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 860 / retail 868, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Builds a 2x5 array of 0x90-byte entries from the float tables D_L05_0020BA80/BAA0/BAE0 (rows get r1/r2 from fu
  *   Best: p7.c, SIZE 860/868, frame 0x6A0 and one spill as retail. Left: retail hoists tmp+0x30 into $22 before th

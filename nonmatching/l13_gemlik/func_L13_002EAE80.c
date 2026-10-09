@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L13_002EAE80 -- src/overlays/l13_gemlik/vendor_002C2638.c
- * Best so far: SIZE ours 2232 / retail 2280, checked 2026-10-08.
+ * Best so far: SIZE ours 2232 / retail 2280, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -16,7 +16,6 @@ extern void func_L00_0025E4B0(void *m, short *p);
 extern void func_0022ED80(int, int, int);
 extern void func_L13_002EAAB8(void *unused, char *p, int idx);
 extern void func_L00_0028EBF0(int);
-extern int func_L13_002E9B30(void *, void *, int, int);
 extern void func_L00_0025E590(void *, void *);
 extern int D_L13_001D3748[];
 extern char D_0013E633[];

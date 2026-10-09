@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 860 / retail 872, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Button moby update (class 1416, level 14): state 0 calls func_00214158 and checks level flags, then a table lo
  *   Left: one short-lived pseudo (regalloc.py pseudo 198, 4 refs) is pushed into saved $18 because it crosses a ca
@@ -11,12 +12,10 @@ extern float func_001FA748(float, float);
 extern float func_001F9FA8(float);
 extern int func_001FA898_r(float) __asm__("func_001FA898");
 extern int func_0022ED80(int, int, int);
-extern unsigned char D_L14_001BBCC0[];
 extern char *D_L14_001B0F30[];
 extern int D_L14_001BAF60[];
 extern float D_0015EE6C MACRO_ADDR;
 extern int D_0015EE84 MACRO_ADDR;
-extern char D_0014171B[];
 extern char D_0013E633[];
 
 // Button moby update (class 1416, level 14): aims at its target, tests the level flags, runs the list loop.

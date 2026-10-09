@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L13_002B5368 -- src/overlays/l13_gemlik/vendor_002B2020.c
- * Best so far: SIZE ours 1508 / retail 1512, checked 2026-10-08.
+ * Best so far: SIZE ours 1508 / retail 1512, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -9,7 +9,6 @@
  */
 extern void func_L13_002B5A88(unsigned char *moby);
 extern void func_L00_00264B40(float, int, int, unsigned char *);
-extern void *func_L13_002B5B08(unsigned char *moby);
 extern void func_00213DE0(void *, int, int, int);
 extern float func_L00_001FF860(float, float);
 extern float func_001FA850(float, float);

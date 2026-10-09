@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 1648 / retail 1664, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Bot door lock update (class 1302): a block that aims the lock (func_001FA748, func_001F9F90, func_001FA8A8 sto
  *   Best candidate p4.c: 1640 bytes against 1664 (24 bytes, six instructions short). Our compile uses $gp-relative
@@ -20,7 +21,6 @@ extern void func_L00_001FF240(void *, void *, void *);
 extern void func_L06_00309088(unsigned char *a, unsigned char *m);
 extern void func_L01_00286530(void *, void *, float, int, int, int, int, int);
 extern void func_L06_003089B8(void);
-extern char D_L06_00167640[];
 extern unsigned char D_0013E633[];
 extern unsigned char D_0015EEB4_m[4] __asm__("D_0015EEB4") MACRO_ADDR;
 extern float D_0015EE6C MACRO_ADDR;

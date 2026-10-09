@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 1316 / retail 1312, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Stopped at budget (10 runs). Best candidate p5.c, 1292 bytes against retail 1312 (20 short). The function buil
  *   Remaining differences: retail spills the four output pointers (sp+0xB0..0xE0) and p+0x150 to 0x148..0x154 and 
@@ -24,7 +25,6 @@ extern unsigned char *func_L00_00273868(float *pos, unsigned char a1, unsigned c
 extern int func_001F4868(int);
 extern void func_L00_001FD1D8(void *, void *, int);
 extern int D_L07_0015F6B0 MACRO_ADDR;
-extern char D_L07_00173F60[];
 extern char D_L07_001670D0[];
 
 /* Umbris: sets up the effect vectors from the moby's data at +0x78 and emits the GS packet (retail func_L07_00313800). */
