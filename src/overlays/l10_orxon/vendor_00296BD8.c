@@ -143,7 +143,83 @@ void func_L10_00296DC0(char *m) {
     FastVecSub(v, m + 0x10, prev);
     func_L00_002617B0(d + 0x60, v, m + 0x40, m + 0x40);
 }
-INCLUDE_ASM("asm/overlays", func_L10_00299818);
+typedef struct { f32 x, y, z, w; } Vec4f_00299818;
+typedef struct {
+    Vec4f_00299818 bsphere;
+    Vec4f_00299818 pos;
+    u8 state;
+    u8 pad21[0xB];
+    f32 scale;
+    u8 pad30[4];
+    u16 flags;
+    u8 pad36[0xA];
+    Vec4f_00299818 rot;
+    u8 pad50[0x28];
+    u8 *pvars;
+} Moby_00299818;
+extern float D_0015EE6C_00299818 __asm__("D_0015EE6C") MACRO_ADDR;
+extern unsigned char D_0013D605_00299818[] __asm__("D_0013D605");
+extern char D_0013F450_00299818[] __asm__("D_0013F450");
+extern int D_L10_0015F6A8_00299818 __asm__("D_L10_0015F6A8") MACRO_ADDR;
+extern int D_L10_0015F720_00299818 __asm__("D_L10_0015F720") MACRO_ADDR;
+extern char *D_L10_00160058_00299818 __asm__("D_L10_00160058") MACRO_ADDR;
+extern float addrot_00299818(float, float) __asm__("func_001FA748");
+extern void func_L00_002D80A0_00299818(void *) __asm__("func_L00_002D80A0");
+extern void func_L10_00299AF0_00299818(void *) __asm__("func_L10_00299AF0");
+extern float dist_00299818(void *, void *) __asm__("func_001F9D48");
+extern float fabs_00299818(float) __asm__("func_001F9B88");
+extern void start_scene_00299818(int) __asm__("func_L00_00299B68");
+extern void func_L00_00264DB8_00299818(int, int) __asm__("func_L00_00264DB8");
+extern void func_L00_002618D8_00299818(int, int) __asm__("func_L00_002618D8");
+extern void func_L00_00286128_00299818(void *, void *) __asm__("func_L00_00286128");
+extern int save_00299818(int, int) __asm__("func_0020BFC8");
+extern void remove_00299818(void *) __asm__("func_0020D678");
+
+/* Spinning pickup: waits until the hero is close and level with it, then plays the scene, saves and goes away.
+   Adapted from Lombyte (MIT) for PAL: src/overlays/l10/gameplay/entities/00295a38.c, FUN_L10_00298668. */
+void func_L10_00299818(Moby_00299818 *m) {
+    char *d = (char *)m->pvars;
+    m->rot.z = addrot_00299818(m->rot.z, D_0015EE6C_00299818 * 1.5707964f);
+    switch (m->state) {
+    case 0:
+        func_L00_002D80A0_00299818(m);
+        if (*(D_0013D605_00299818 + 7) != 0) {
+            remove_00299818(m);
+            return;
+        }
+        m->state = 1;
+        m->pos.z = m->pos.z + 0.5f;
+        m->scale = m->scale * 0.667f;
+        break;
+    case 1:
+        func_L10_00299AF0_00299818(m);
+        if (dist_00299818(&m->pos, D_0013F450_00299818 + 0x80) < 5.0f) {
+            char *h = D_0013F450_00299818;
+            if (fabs_00299818(m->pos.z - *(float *)(h + 0x88)) < 2.0f && *(int *)(h + 0x22A8) != 0) {
+                m->flags |= 0x41;
+                start_scene_00299818(2);
+                m->state = 2;
+            }
+        }
+        break;
+    case 2:
+        if (D_L10_0015F6A8_00299818 != 2) {
+            func_L00_00264DB8_00299818(0x271B, -1);
+            D_L10_0015F720_00299818 = 0xB4;
+            func_L00_002618D8_00299818(0x1C, 1);
+            if (*(int *)(d + 4) != -1) {
+                char *o = D_L10_00160058_00299818 + (*(int *)(d + 4) << 8);
+                func_L00_00286128_00299818(o + 0x10, o + 0x40);
+            }
+            save_00299818(0, -1);
+            m->state = 3;
+        }
+        break;
+    case 3:
+        remove_00299818(m);
+        break;
+    }
+}
 INCLUDE_ASM("asm/overlays", func_L10_00299D18);
 INCLUDE_ASM("asm/overlays", func_L10_002BFBB8);
 INCLUDE_ASM("asm/overlays", func_L10_002C0378);
