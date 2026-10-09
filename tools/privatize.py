@@ -15,7 +15,8 @@ SUFFIX is usually the function's address without its leading zeros (2C9820).
 - every extern function prototype becomes
       extern RET name_SUFFIX(ARGS) __asm__("name");
 - every global becomes a private alias:
-      extern T X MACRO_ADDR;        -> extern T X_SUFFIX __asm__("X") MACRO_ADDR;
+      extern T X MACRO_ADDR;        -> extern T X_SUFFIX __asm__("X") MACRO_ADDR;   (NOT_SDA alike)
+      extern T X SDATA(X);          -> extern T X_SUFFIX SDATA(X);
       extern short|char|u8.. X;     -> extern short X_SUFFIX SDATA(X);   ($gp access)
       extern T X;  / extern T X[];  -> extern T X_SUFFIX __asm__("X");
   declarations that already carry __asm__ keep their C name, but a bare
@@ -73,8 +74,22 @@ for l in lines:
     # of X elsewhere in the file changes with it. SDATA has a label of its own.
     m = re.match(r'^extern\s+(.*?[\s\*])([A-Za-z_]\w*)\s*__asm__\("(\w+)"\)\s*;\s*$', l)
     if m and m.group(1).strip() in SMALL and m.group(2) not in keep:
-        out.append(f'extern {m.group(1).strip()} {m.group(2)} SDATA({m.group(3)});')
+        cname = m.group(2)
+        if cname == m.group(3):
+            ren[cname] = cname = cname + S
+        out.append(f'extern {m.group(1).strip()} {cname} SDATA({m.group(3)});')
         small_aliases.append(m.group(3)); continue
+    # Small data under the symbol's own C name: the name becomes private,
+    # the label stays. One that already has a C name of its own is left.
+    m = re.match(r'^extern\s+(.*?[\s\*])([A-Za-z_]\w*)\s*SDATA\((\w+)\)\s*;\s*$', l)
+    if m:
+        if m.group(2) == m.group(3) and m.group(2) not in keep:
+            ren[m.group(2)] = m.group(2) + S
+            sp = "" if m.group(1).endswith("*") else " "
+            out.append(f'extern {m.group(1).strip()}{sp}{m.group(2)}{S} SDATA({m.group(3)});')
+        else:
+            out.append(l)
+        continue
     if "__asm__" in l or not l.rstrip().endswith(";"):
         out.append(l); continue
     # function prototype
@@ -84,14 +99,14 @@ for l in lines:
         if name in keep or name == func: out.append(l); continue
         ren[name] = name + S
         out.append(f'{m.group(1) or ""}{m.group(2)}{name}{S}{m.group(4)} __asm__("{name}");'); continue
-    m = re.match(r"^extern\s+(.*?[\s\*])([A-Za-z_]\w*)\s*((?:\[[^\]]*\])*)\s*(MACRO_ADDR)?\s*;\s*$", l)
+    m = re.match(r"^extern\s+(.*?[\s\*])([A-Za-z_]\w*)\s*((?:\[[^\]]*\])*)\s*(MACRO_ADDR|NOT_SDA)?\s*;\s*$", l)
     if m:
         ty, name, arr, macro = m.group(1).strip(), m.group(2), m.group(3), m.group(4)
         if name in keep: out.append(l); continue
         ren[name] = name + S
         sp = "" if m.group(1).endswith("*") else " "
         if macro:
-            out.append(f'extern {ty}{sp}{name}{S}{arr} __asm__("{name}") MACRO_ADDR;')
+            out.append(f'extern {ty}{sp}{name}{S}{arr} __asm__("{name}") {macro};')
         elif ty in SMALL and not arr:
             out.append(f'extern {ty} {name}{S} SDATA({name});')
         else:
