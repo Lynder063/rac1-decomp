@@ -10,7 +10,190 @@ void func_L09_0030B5E8(float *dst, float a, float b, float scale) {
     *dst = v;
     *dst = FastAddRots(v, a);
 }
-INCLUDE_ASM("asm/overlays", func_L09_0030B648);
+extern char * D_L09_001B0930[];
+extern float D_0015EE6C MACRO_ADDR;
+extern float func_001F9D10(void *, void *);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_001F9BF0(void *out, void *a, void *b);
+typedef u32 u128 __attribute__((mode(TI), aligned(16)));
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 w;
+} Vec4f;
+typedef union {
+    u128 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4;
+struct Manip;
+struct GifEntry;
+struct AnimSeq;
+struct MobyClass {
+    u8 pad_0[0xC];
+    u8 seq_count; /* number of entries in seqs[] (menu previews clamp the sequence to it) */
+    u8 pad_D[3];
+    u32 unk10; /* copied into Moby.unk94 when a moby is (re)classed */
+    u8 pad_14[0x8];
+    void *unk1C; /* word table, indexed id * 4 + 4 (0024eec0) */
+    struct GifEntry *gifs; /* patched by patch_moby_gifs */
+    f32 scale; /* default draw scale: copied into Moby.scale, divides it */
+    s32 unk28;
+    void **callbacks; /* function-pointer table, called with the moby */
+    u8 pad_30[0x14];
+    u16 flags; /* initial Moby.flags */
+    s16 unk46; /* class category; 5 is tested by targeting code */
+    struct AnimSeq *seqs[1]; /* animation sequences, indexed by Moby.seq */
+};
+struct Moby {
+    Vec4f bsphere;
+    Vec4f pos;
+    u8 state; /* >= 0xFE: dead, waiting to respawn */
+    u8 group; /* linked group: index into the level moby-list table D_Lxx_001ABCC0 (0xFF: none) */
+    u8 unk22; /* class slot: pclass = D_L00_00197300[unk22] (FUN_L00_002cf218) */
+    u8 unk23; /* 0x40 for the smoke trail FUN_L09_00307ba8 spawns */
+    struct MobyClass *pclass;
+    struct Moby *next;
+    f32 scale; /* draw scale (FUN_L01_002fa068 halves it, FUN_L00_00215ef8 divides by it) */
+    u8 unk30; /* set to 0xFF (0x7F for beams) by spawners */
+    u8 unk31; /* set to 1 by spawners */
+    s16 unk32; /* set to 0xFF (0x7F for beams) by spawners */
+    u16 flags;
+    u16 unk36; /* set to 0x7F80 by spawners */
+    u64 spawn_frame; /* frame count at which it may respawn */
+    Vec4f rot; /* z: yaw (FUN_L00_00266448 compares it with atan2 to the hero) */
+    u8 frame; /* animation frame */
+    u8 prev_frame; /* frame index in prev_seq */
+    u8 seq; /* animation sequence id */
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    struct Manip *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71; /* set to 0xFF when a moby changes class */
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F; /* set to 0x17 by FUN_L09_002c5990 near D_L09_00166F40 */
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94; /* set from the class header's word 0x10 */
+    s32 unk98; /* set to 1 while a carrier holds the moby (FUN_L00_002c7a58) */
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0; /* 0xB0: index into the level's D_0014C050 row (0xFF: not spawned) */
+    u8 padB1;
+    u16 save_id; /* index into the level collected[]/killed[] tables and save bits D_0014C190[level][id >> 5] */
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8; /* 0xB8: bolt source record; its byte 0xB1 is a per-level id (FUN_L00_002a6b70) */
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f unkC0; /* 0xC0: first row of a matrix built from rot (FUN_001fa030) */
+    Vec4f unkD0;
+    Vec4f unkE0;
+    u8 padF0[0x10];
+};
+void func_L09_0030B5E8(float *dst, float a, float b, float scale);
+typedef struct {
+    s32 count;
+    u8 pad4[0xC];
+    Vec4 node[1];
+} PathNodes;
+typedef struct {
+    u8 pad0[0x70];
+    u8 unk70[0x38];
+    f32 speed; /* 0xA8 */
+    s32 path; /* 0xAC: index into D_L09_001B0630 */
+    u8 padB0[8];
+    s16 dir; /* 0xB8: > 0 runs the path forward, else backward */
+    s16 node; /* 0xBA: node being flown to */
+    f32 yaw_offset; /* 0xBC */
+    f32 spin; /* 0xC0 */
+    u8 padC4[8];
+    f32 lag; /* 0xCC: eases to 0, slowing the turn while high */
+} PathFlyerVars;
+extern short D_L09_00161E78;
+extern f32 D_0015EE70 MACRO_ADDR;
+extern void func_L00_001FF4B0(void *, void *, f32);
+extern float func_L00_001FF860(float, float);
+extern float func_00214D88(float, float, float, float, float *, float *);
+extern void func_L00_001FFED8(void *, int, float);
+extern float func_001F9D48(void *, void *);
+extern int func_002140B0(int);
+extern void func_L00_00260958(void *, f32);
+extern void func_L00_00272488(void *, int, int, float, float);
+
+/* Flies the moby along its path toward the current node, turning and banking toward it, steps the node at each arrival and now and then drops a puff. Returns nonzero once it has run off the end of the path.
+   Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/l09/gameplay/vendor/003033a0.c, FUN_L09_0030a298. */
+int func_L09_0030B648(struct Moby *moby) {
+    PathFlyerVars *vars = (PathFlyerVars *)moby->pvars;
+    PathNodes *path;
+    f32 d;
+    Vec4 target;
+    Vec4 step;
+    Vec4 puff;
+    int done = 0;
+
+    path = (PathNodes *)D_L09_001B0930[vars->path];
+    vars->lag += (0.0f - vars->lag) * 0.005f;
+    qcopy(&target, &path->node[vars->node]);
+    target.f[2] += vars->speed * (*(f32 *)&D_L09_00161E78);
+    FastVecSub(&step, &target, &moby->pos);
+    func_L00_001FF4B0(&step, &step, vars->speed);
+    FastVecAdd(&moby->pos, &moby->pos, &step);
+    func_L09_0030B5E8(&moby->rot.z, moby->rot.z,
+                     FastAddRots(func_L00_001FF860(path->node[vars->node].f[0] - moby->pos.x,
+                                         path->node[vars->node].f[1] - moby->pos.y),
+                                 vars->yaw_offset),
+                     (1.0f - vars->lag) * 0.02f);
+    func_L09_0030B5E8(&moby->rot.x, moby->rot.x, 0.0f, 0.02f);
+    func_L09_0030B5E8(&moby->rot.y, moby->rot.y, 0.0f, 0.02f);
+    if (vars->dir > 0) {
+        f32 v;
+        if (FastVecDist(&target, &moby->pos) < vars->speed + vars->speed) {
+            vars->node++;
+            if (vars->node == path->count)
+                done = 1;
+        }
+        d = FastVecDist(&moby->pos, &path->node[path->count - 1]);
+        v = 0.0f;
+        func_00214D88(d, D_0015EE70 * 3.0f, D_0015EE70 * 3.0f, D_0015EE6C * 10.0f, &v, &vars->speed);
+    } else {
+        f32 v;
+        if (FastVecDist(&target, &moby->pos) < vars->speed + vars->speed) {
+            vars->node--;
+            if (vars->node == -1)
+                done = 1;
+        }
+        d = FastVecDist(&moby->pos, &path->node[0]);
+        v = 0.0f;
+        func_00214D88(d, D_0015EE70 * 3.0f, D_0015EE70 * 3.0f, D_0015EE6C * 10.0f, &v, &vars->speed);
+    }
+    if (path->node[vars->node].f[3] == 42.0f)
+        vars->yaw_offset = 0.0f;
+    vars->spin = FastAddRots(vars->spin, vars->speed);
+    func_L00_001FFED8(vars->unk70, 0, vars->spin);
+    if (func_001F9D48(&moby->pos, &path->node[path->count - 1]) > 8.0f &&
+        func_001F9D48(&moby->pos, &path->node[0]) > 8.0f && !random_integer_below(7)) {
+        qcopy(&puff, &moby->pos);
+        func_L00_00260958(&puff, 0.5f);
+        puff.f[2] = 25.01f;
+        func_L00_00272488(&puff, 0, 0x40103080, vars->speed * 3.0f / (D_0015EE6C * 10.0f), 12600.0f);
+    }
+    return done;
+}
 extern char *func_L00_0025B478(void *, int, int);
 extern void func_0022ED80(int, int, int);
 extern void func_L01_00279790(void *);

@@ -105,4 +105,275 @@ void func_L09_0030C790(void *moby, char *data)
     }
     DeleteMoby(moby);
 }
-INCLUDE_ASM("asm/overlays", func_L09_0030C7F0);
+typedef int OvlQuad __attribute__((mode(TI)));
+typedef u32 u128 __attribute__((mode(TI), aligned(16)));
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 w;
+} Vec4f;
+typedef union {
+    u128 q;
+    f32 f[4];
+    s32 i[4];
+} Vec4;
+struct Manip;
+struct GifEntry;
+struct AnimSeq;
+struct MobyClass {
+    u8 pad_0[0xC];
+    u8 seq_count; /* number of entries in seqs[] (menu previews clamp the sequence to it) */
+    u8 pad_D[3];
+    u32 unk10; /* copied into Moby.unk94 when a moby is (re)classed */
+    u8 pad_14[0x8];
+    void *unk1C; /* word table, indexed id * 4 + 4 (0024eec0) */
+    struct GifEntry *gifs; /* patched by patch_moby_gifs */
+    f32 scale; /* default draw scale: copied into Moby.scale, divides it */
+    s32 unk28;
+    void **callbacks; /* function-pointer table, called with the moby */
+    u8 pad_30[0x14];
+    u16 flags; /* initial Moby.flags */
+    s16 unk46; /* class category; 5 is tested by targeting code */
+    struct AnimSeq *seqs[1]; /* animation sequences, indexed by Moby.seq */
+};
+struct Moby {
+    Vec4f bsphere;
+    Vec4f pos;
+    u8 state; /* >= 0xFE: dead, waiting to respawn */
+    u8 group; /* linked group: index into the level moby-list table D_Lxx_001ABCC0 (0xFF: none) */
+    u8 unk22; /* class slot: pclass = D_L00_00197300[unk22] (FUN_L00_002cf218) */
+    u8 unk23; /* 0x40 for the smoke trail FUN_L09_00307ba8 spawns */
+    struct MobyClass *pclass;
+    struct Moby *next;
+    f32 scale; /* draw scale (FUN_L01_002fa068 halves it, FUN_L00_00215ef8 divides by it) */
+    u8 unk30; /* set to 0xFF (0x7F for beams) by spawners */
+    u8 unk31; /* set to 1 by spawners */
+    s16 unk32; /* set to 0xFF (0x7F for beams) by spawners */
+    u16 flags;
+    u16 unk36; /* set to 0x7F80 by spawners */
+    u64 spawn_frame; /* frame count at which it may respawn */
+    Vec4f rot; /* z: yaw (FUN_L00_00266448 compares it with atan2 to the hero) */
+    u8 frame; /* animation frame */
+    u8 prev_frame; /* frame index in prev_seq */
+    u8 seq; /* animation sequence id */
+    u8 prev_seq;
+    f32 unk54;
+    f32 unk58;
+    u8 pad5C[8];
+    struct Manip *manips;
+    void *cur_frame_data;
+    void *prev_frame_data;
+    u8 unk70;
+    u8 unk71; /* set to 0xFF when a moby changes class */
+    u8 unk72;
+    u8 unk73;
+    void (*update)(struct Moby *moby);
+    u8 *pvars;
+    u8 unk7C;
+    u8 pad7D;
+    u8 unk7E;
+    u8 unk7F; /* set to 0x17 by FUN_L09_002c5990 near D_L09_00166F40 */
+    u8 pad80[0x10];
+    s32 unk90;
+    u32 unk94; /* set from the class header's word 0x10 */
+    s32 unk98; /* set to 1 while a carrier holds the moby (FUN_L00_002c7a58) */
+    u8 pad9C[8];
+    u8 unkA4;
+    u8 padA5;
+    s16 oclass;
+    u8 padA8[8];
+    u8 unkB0; /* 0xB0: index into the level's D_0014C050 row (0xFF: not spawned) */
+    u8 padB1;
+    u16 save_id; /* index into the level collected[]/killed[] tables and save bits D_0014C190[level][id >> 5] */
+    s16 unkB4;
+    u8 padB6[2];
+    void *unkB8; /* 0xB8: bolt source record; its byte 0xB1 is a per-level id (FUN_L00_002a6b70) */
+    u8 unkBC;
+    u8 padBD[3];
+    Vec4f unkC0; /* 0xC0: first row of a matrix built from rot (FUN_001fa030) */
+    Vec4f unkD0;
+    Vec4f unkE0;
+    u8 padF0[0x10];
+};
+extern f32 func_L00_001FF860(f32, f32);
+void func_L09_0030C790(void *moby, char *data);
+typedef struct {
+    u8 pad0[0x18];
+    s32 moby; /* 0x18: passed to FUN_002141f8 (reads moby+0x34, moby+0x78); 0 when no moby was hit */
+    s32 unk1C; /* 0x1C: > 0 gates copying point and the normal into the hero (shared/ui/help/00226f10.c) */
+    union {
+        OvlQuad q;
+        f32 f[4];
+    } point; /* 0x20: f[2] is read as the ground height */
+    u8 pad30[0x10]; /* 0x30: position after push-out (copied into hero.motion.pos) */
+    f32 normal_x; /* 0x40: start of the surface normal; its angle is tested against 50 degrees (0.87266463) */
+    f32 normal_y; /* 0x44: FUN_001f9e90 (atan2) of normal_x, normal_y is stored in the hero */
+    f32 normal_z; /* 0x48: ledge probes compare atan2(normal_z, xy length) with 20 degrees */
+} CollisionHit;
+typedef struct {
+    Vec4 vel; /* 0x00 */
+    struct Moby *owner; /* 0x10: class 0x75D spawner; its pvars hold the bubble list at 0xB0 */
+    struct Moby *held; /* 0x14: from FUN_L09_0030a778 when the bubble settles */
+    s16 life; /* 0x18 */
+    u8 unk1A;
+    u8 sound_delay; /* 0x1B */
+    u8 slot; /* 0x1C: index in the owner's bubble list */
+} BubbleVars;
+typedef struct {
+    u8 pad0[0xB0];
+    struct Moby *bubbles[20];
+} BubbleOwnerVars;
+extern f32 D_0015EE60 MACRO_ADDR;
+extern f32 D_0015EE70 MACRO_ADDR;
+extern CollisionHit D_L09_00174040;
+extern s32 func_L00_001EFFF0(void *, void *, s32, struct Moby *, s32);
+extern s32 func_L00_001F3958(void);
+extern s32 func_001F9938(void *);
+extern void func_001F9BD8(void *, void *, void *);
+extern void func_001F9BF0(void *, void *, void *);
+extern void func_001F9C30(void *, void *, f32);
+extern f32 func_001F9CB8(void *);
+extern f32 func_001F9CE8(void *);
+extern void func_L00_001FF4B0(void *, void *, f32);
+extern f32 func_002140F8(f32, f32);
+extern f32 func_00214358(void *, s32, f32);
+extern s32 func_0022ED80(s32, s32, struct Moby *);
+extern s32 func_L00_001F10E0(f32, void *, s32, struct Moby *);
+extern void func_L00_001FEF78(void *);
+extern void func_L00_001FF610(void *, void *, void *);
+extern void func_L00_0025B040(struct Moby *, f32);
+extern f32 func_L00_0025F368(f32);
+extern struct Moby *func_L09_0030BB28(struct Moby *, Vec4 *);
+static inline void bubble_bounce(struct Moby *moby, BubbleVars *vars) {
+    CollisionHit *hit = &D_L09_00174040;
+
+    if (hit->moby == 0) {
+        func_L00_001FF610(&vars->vel, &vars->vel, &hit->normal_x);
+        if (func_L00_001FF860(hit->normal_z, func_001F9CE8(&hit->normal_x)) < 0.6981317f && CollType() == -1) {
+            FastVecScale(&vars->vel, &vars->vel, 0.5f);
+            if (FastVecLength(&vars->vel) < 0.025f) {
+                moby->state = 1;
+            }
+        }
+    } else if (((struct Moby *)hit->moby)->oclass != 0x75E) {
+        func_L00_001FF610(&vars->vel, &vars->vel, &hit->normal_x);
+        if (func_L00_001FF860(hit->normal_z, func_001F9CE8(&hit->normal_x)) < 0.6981317f && CollType() == -1) {
+            FastVecScale(&vars->vel, &vars->vel, 1.2f);
+        }
+    } else {
+        vars->vel.f[2] *= random_float_between(0.9f, 1.1f);
+    }
+    if (vars->sound_delay == 0) {
+        func_0022ED80(0, 0, moby);
+        vars->sound_delay = 12;
+    }
+}
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/vendor/00307ba8.c, FUN_L09_0030b3b0. */
+void func_L09_0030C7F0(struct Moby *moby) {
+    BubbleVars *vars = (BubbleVars *)moby->pvars;
+    Vec4 prev;
+    Vec4 step;
+    Vec4 away;
+    BubbleOwnerVars *owner;
+    struct Moby *other;
+    struct Moby *held;
+    s32 i;
+    f32 dist;
+    f32 rate;
+
+    func_L00_001FEF78(&vars->sound_delay);
+    qcopy(&prev, &moby->pos);
+    switch (moby->state) {
+    case 0:
+        moby->scale += (moby->pclass->scale - moby->scale) * (D_0015EE60 * 0.05f);
+        FastVecAdd(&moby->pos, &moby->pos, &vars->vel);
+        func_L00_001FF4B0(&step, &vars->vel, 0.2f);
+        FastVecAdd(&step, &step, &moby->pos);
+        moby->unk94 = 0;
+        vars->owner->unk94 = 0;
+        if (func_L00_001EFFF0(&prev, &step, 4, moby, 0) != 0) {
+            FastVecSub(&step, &D_L09_00174040.point, &step);
+            func_L00_001FF4B0(&step, &step, 0.215f);
+            FastVecAdd(&moby->pos, &moby->pos, &step);
+            bubble_bounce(moby, vars);
+        }
+        if (coll_sphere(0.2f, &moby->pos, 4, moby) != 0) {
+            FastVecSub(&step, &D_L09_00174040.point, D_L09_00174040.pad30);
+            func_L00_001FF4B0(&step, &step, 0.015f);
+            FastVecAdd(&moby->pos, D_L09_00174040.pad30, &step);
+            bubble_bounce(moby, vars);
+        }
+        owner = (BubbleOwnerVars *)vars->owner->pvars;
+        for (i = 0; i < 20; i++) {
+            other = owner->bubbles[i];
+            if (other != moby && other != 0 && other->oclass == 0x75E && other->state != 0xFE &&
+                other->state != 0xFD) {
+                FastVecSub(&away, &moby->pos, &other->pos);
+                away.f[2] = 0.0f;
+                dist = FastVecLength(&away);
+                if (dist < 1.8f) {
+                    FastVecScale(&away, &away, (1.8f - dist) * (D_0015EE60 * -0.5f + 1.0f));
+                    FastVecAdd(&moby->pos, &moby->pos, &away);
+                }
+            }
+        }
+        if (FastDecTimer(&vars->life) != 0) {
+            moby->state = 2;
+        }
+        moby->rot.x = func_L00_0025F368(vars->vel.f[0]);
+        moby->rot.y = func_L00_0025F368(vars->vel.f[1]);
+        moby->unk94 = moby->pclass->unk10;
+        vars->owner->unk94 = vars->owner->pclass->unk10;
+        vars->vel.f[2] -= D_0015EE70 * 9.8f;
+        moby->rot.x += D_0015EE60 * 0.01f;
+        moby->rot.y += D_0015EE60 * 0.02f;
+        break;
+    case 1:
+        moby->pos.z = func_00214358(&moby->pos, 0, 0.5f) + 0.2f;
+        moby->pos.w = 0.0f;
+        step.q = ((Vec4 *)&moby->pos)->q;
+        vars->held = func_L09_0030BB28(vars->owner, &step);
+        moby->state = 2;
+        break;
+    case 2:
+        rate = D_0015EE60 * 0.05f;
+        moby->scale -= moby->scale * rate;
+        if (vars->held != 0 && vars->unk1A != 0) {
+            vars->held->scale += (vars->held->pclass->scale - vars->held->scale) * rate;
+        }
+        if (moby->scale < moby->pclass->scale * (D_0015EE60 * 0.05f)) {
+            moby->scale = 0.0001f;
+            held = vars->held;
+            if (held == 0 || held->state == 0xFE || held->state == 0xFD || vars->unk1A == 0 ||
+                held->pclass->scale - 0.01f <= held->scale) {
+                func_L09_0030C790(moby, (char *)vars);
+            }
+        }
+        break;
+    }
+    func_L00_0025B040(moby, moby->scale * 0.3f / moby->pclass->scale);
+    if (moby->pos.z < 5.0f || moby->pos.z > 500.0f) {
+        func_L09_0030C790(moby, (char *)vars);
+        return;
+    }
+    if (moby->pos.x < 5.0f) {
+        moby->pos.x = 5.0f;
+    }
+    if (moby->pos.x > 1018.0f) {
+        moby->pos.x = 1018.0f;
+    }
+    if (moby->pos.y < 5.0f) {
+        moby->pos.y = 5.0f;
+    }
+    if (moby->pos.y > 1018.0f) {
+        moby->pos.y = 1018.0f;
+    }
+    if (moby->pos.z < 5.0f) {
+        moby->pos.z = 5.0f;
+    }
+    if (moby->pos.z > 1018.0f) {
+        moby->pos.z = 1018.0f;
+    }
+}

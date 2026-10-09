@@ -2,7 +2,31 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L05_00263490);
+typedef struct {
+    u8 pad[0x48];
+    s16 unk48;
+    s16 unk4A;
+    u8 pad2[0x7C - 0x4C];
+    s32 unk7C;
+} HudElemX;
+extern s32 func_001F9850(s32);
+extern void func_L00_00236610(void *);
+extern s32 D_L05_0015FBB4 MACRO_ADDR;
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/ui/text/00262ae8.c, FUN_L05_00262ae8. */
+void func_L05_00263490(HudElemX *e) {
+    s32 i;
+    s32 *p;
+    e->unk7C = scale_ticks(0xB4) + 0x1E;
+    e->unk48 = 0;
+    e->unk4A = 0;
+    i = 3;
+    p = &D_L05_0015FBB4;
+    for (; i >= 0; i--) {
+        *p-- = -1;
+    }
+    func_L00_00236610(e);
+}
 INCLUDE_ASM("asm/overlays", func_L05_00263500);
 INCLUDE_ASM("asm/overlays", func_L05_002638F8);
 extern void func_001FFDA0(int arg0, int arg1);

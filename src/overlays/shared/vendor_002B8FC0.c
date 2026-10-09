@@ -2,7 +2,70 @@
 #include "common.h"
 #include "include_asm.h"
 
-INCLUDE_ASM("asm/overlays", func_L13_002B8FC0);
+typedef unsigned int u128_7d50 __attribute__((mode(TI)));
+extern int D_L13_00161240 MACRO_ADDR;
+extern u128_7d50 D_L13_00160960;
+extern u128_7d50 D_L13_00160970;
+extern int D_0013E600[];
+extern float func_001FA888(int);
+extern int func_001FA898(float);
+extern void func_001FA218(void *, void *);
+extern void func_001F9EE8(void *, void *, void *);
+extern void func_001F9C30(void *, void *, float);
+
+/* Adapted from Lombyte (MIT) for PAL by OpenRAC's tools/port.py: src/overlays/shared/gameplay/entities/002b7d50.c, FUN_L13_002b7d50. */
+void func_L13_002B8FC0(short *pts, int n, float x0, float y0, unsigned int col, unsigned long prim, float scale, float ang) {
+    float mat[4][4];
+    float rot[4];
+    float w[4];
+    float v[4];
+    int q = (n + 1) / 2 + 3;
+    char *t;
+    unsigned long *o;
+    int x, y;
+    int i;
+    *(int *)(D_L13_00161240 + 0) = q | 0x10000000;
+    *(int *)(D_L13_00161240 + 4) = 0;
+    *(int *)(D_L13_00161240 + 8) = 0;
+    *(int *)(D_L13_00161240 + 12) = q | 0x50000000;
+    {
+        char *t1 = (char *)D_L13_00161240;
+        D_L13_00161240 = (int)(t1 + 0x10);
+        qcopy((void *)D_L13_00161240, &D_L13_00160960);
+        *(short *)(t1 + 0x10) = -0x7FFF;
+    }
+    {
+        unsigned long *t2 = (unsigned long *)((char *)D_L13_00161240 + 0x10);
+        D_L13_00161240 = (int)t2;
+        t2[0] = 0x144;
+        t2[1] = prim;
+    }
+    {
+        char *t3 = (char *)D_L13_00161240;
+        D_L13_00161240 = (int)(t3 + 0x10);
+        qcopy((void *)D_L13_00161240, &D_L13_00160970);
+        *(short *)(t3 + 0x10) = n - 0x8000;
+    }
+    *(u128_7d50 *)rot = 0;
+    rot[2] = ang;
+    D_L13_00161240 += 0x10;
+    o = (unsigned long *)D_L13_00161240;
+    func_001FA218(mat, rot);
+    for (i = 0; i < n; i++) {
+        *(u128_7d50 *)v = 0;
+        v[0] = func_001FA888(pts[i * 2]);
+        v[1] = func_001FA888(pts[i * 2 + 1]);
+        *(u128_7d50 *)w = *(u128_7d50 *)v;
+        func_001F9EE8(w, w, mat);
+        FastVecScale(w, w, scale);
+        w[0] += x0;
+        w[1] += y0;
+        x = truncate_float_to_s32(w[0] * 16.0f);
+        y = truncate_float_to_s32(w[1] * 16.0f);
+        o[i] = (unsigned long)(x + D_0013E600[4] - 8) | ((unsigned long)(y + D_0013E600[5] - 8) << 16) | ((unsigned long)col << 32);
+    }
+    D_L13_00161240 += ((n + 1) / 2) * 16;
+}
 extern float func_001FA790(float, float);
 extern float func_001FA748(float, float);
 
@@ -63,7 +126,7 @@ extern char *func_L00_0026E940(char *, int, int, int, float);
 
 // Spawns an effect moby attached to a target and positioned from a source.
 unsigned char *func_L13_002E7E90(char *src, char *pos, char *target, char *vec, int arg, float scale) {
-    unsigned char *moby = func_0020D348(0x127);
+    unsigned char *moby = CreateMoby(0x127);
     if (moby != 0) {
         char *data = *(char **)(moby + 0x78);
         moby[0x30] = 0xFF;
@@ -90,7 +153,7 @@ unsigned char *func_L13_002E7E90(char *src, char *pos, char *target, char *vec, 
         if (moby[0x53] != 1) {
             func_00213DE0(moby, 1, 0, 10);
         }
-        func_001F9BD8(moby + 0x10, moby + 0x10, data);
+        FastVecAdd(moby + 0x10, moby + 0x10, data);
         if (*(char **)(data + 0x24) != 0) {
             qcopy(data + 0x10, *(char **)(data + 0x24) + 0x10);
         }
