@@ -128,6 +128,7 @@ def build(name: str, candidate: Path, out: Path) -> None:
         if rel is None:
             return
         pending = []
+        orig = bytes(buf)
         for r in sorted(rel.iter_relocations(), key=lambda r: r["r_offset"]):
             o, t = r["r_offset"], r["r_info_type"]
             if not (lo_bound <= o < hi_bound):
@@ -162,8 +163,19 @@ def build(name: str, candidate: Path, out: Path) -> None:
                 buf[o:o + 4] = ((ins & 0xFFFF0000) | (v & 0xFFFF)).to_bytes(4, "little")
             else:
                 raise SystemExit(f"LINK relocation type {t} not handled")
-        if pending:
-            raise SystemExit("LINK a %hi without its %lo")
+        # A %hi whose %lo came earlier (the scheduler moved the %lo up, or one %lo serves a loop):
+        # paired with the nearest %lo of the same symbol.
+        for ho, hs, hins in pending:
+            los = [r for r in rel.iter_relocations() if r["r_info_type"] == 6 and r["r_info_sym"] == hs
+                   and lo_bound <= r["r_offset"] < hi_bound]
+            if not los:
+                raise SystemExit("LINK a %hi without its %lo")
+            lo_r = min(los, key=lambda r: abs(r["r_offset"] - ho))
+            lo_ins = int.from_bytes(orig[lo_r["r_offset"]:lo_r["r_offset"] + 4], "little")
+            addr, is_text = symbol(syms[hs])
+            full = ((hins & 0xFFFF) << 16) + sext(lo_ins & 0xFFFF)
+            full = text_address(full) if is_text else addr + full
+            buf[ho:ho + 4] = ((hins & 0xFFFF0000) | (((full + 0x8000) >> 16) & 0xFFFF)).to_bytes(4, "little")
 
     apply(text_idx, text, off, off + size, lambda o: BASE + o - off)
     for blob in blobs:
@@ -286,7 +298,10 @@ def check(name: str, candidate: Path, ulps: int = 0) -> int:
     text = r.stdout.replace(str(STATES) + "/", "")
     print(text.strip() or r.stderr.strip())
     if r.returncode == 0:
-        print(f"{name}: SAME on {len(states)} real calls")
+        m = re.search(r"compared (\d+) of", r.stdout)
+        print(f"{name}: SAME on {m.group(1) if m else '?'} real calls")
+    elif r.returncode == 4:
+        print(f"{name}: NOTHING COMPARED (every state skipped); check it statically with tools/equiv.py")
     return r.returncode
 
 
