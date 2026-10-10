@@ -286,9 +286,9 @@ extern void func_0012EC30(void);
    its own temporary, and the loop's copy goes to $s1 with the result in
    $s0, as in retail. */
 /* Load */
-int func_002176C8(void) {
+int func_002176C8(int arg0, int arg1, int arg2) {
     char *d;
-    int r = func_00217628_v();
+    int r = func_00217628(arg0, arg1, arg2);
     if (r != 0) {
         while (d = (char *)D_001517D0, *(short *)(d + 0x8) != 0) {
             func_00122598(0);
