@@ -1779,7 +1779,76 @@ void func_L08_002E9B60(char *moby) {
         e += 0x10;
     } while (i < 8);
 }
-INCLUDE_ASM("asm/overlays", func_L08_002E9CB0);
+extern void *func_L00_0025B478(void *, int, int);
+extern void func_L00_00260108(void *, void *, int, float, float);
+extern float func_002140F8(float, float);
+extern void func_0022ED80_2E9CB0(int, int, int) __asm__("func_0022ED80");
+extern float D_0015EE6C MACRO_ADDR;
+
+/* Checks the 13 object slots at data + 0x60 (stride 16) with func_L00_0025B478(slot, 0x10000, 0). Each hit adds to a
+ * counter by slot index (1, 2, or 4 for slots 5 and up) and sets the slot's byte at +0xA4 to 0xFF. The counter is added
+ * to the short at data + 0x13C; when that reaches 8 it is taken mod 8 and one slot object is released (its state byte
+ * set to 1, the slot cleared), or the moby's state becomes 0x63 if none is left. */
+void func_L08_002E9CB0(char *m) {
+    char *data = *(char **)(m + 0x78);
+    char *base = data + 0x60;
+    char **p = (char **)base;
+    char **sq;
+    int n = 0;
+    int idx = 0;
+    int r = -1;
+    int i;
+    for (i = 0; i < 13; i++, p += 4) {
+        if (*p != 0) {
+            if (func_L00_0025B478(*p, 0x10000, 0) != 0) {
+                if (i < 3) {
+                    if (n <= 0) { n = 1; r = 1; }
+                } else if (i < 5) {
+                    if (n < 2) { n = 2; r = 1; }
+                } else {
+                    if (n < 4) { n += 4; idx = i; r = 2; }
+                }
+                ((unsigned char *)*p)[0xA4] = 0xFF;
+            }
+        }
+    }
+    *(unsigned short *)(data + 0x13C) += n;
+    if (*(short *)(data + 0x13C) >= 8) {
+        *(short *)(data + 0x13C) = *(short *)(data + 0x13C) % 8;
+        if (idx != 0) {
+            int o1 = idx * 16;
+            char **q = (char **)(base + o1);
+            char *t = *q;
+            char *d2;
+            d2 = *(char **)(t + 0x78);
+            func_L00_00260108(m, t + 0x10, -1, 2.0f, 13.0f);
+            func_001F9BF0(d2, *q + 0x10, *(char **)(o1 + data + 0x64) + 0x10);
+            func_L00_001FF4B0(d2, d2, D_0015EE6C * 10.0f);
+            (*q)[0x20] = 1;
+            *q = 0;
+            return;
+        } else {
+            int s = func_001FA898(func_002140F8(0.0f, 23.0f));
+                        char *b2 = base;
+            for (i = 0; i < 8; i++) {
+                int k = (i + s) % 8 + 5;
+                int off = k * 16;
+                base = b2 + off; sq = (char **)base;
+                if (*sq != 0) {
+                    char *d2 = *(char **)(*sq + 0x78);
+                    func_L00_00260108(m, *sq + 0x10, -1, 2.0f, 13.0f);
+                    func_001F9BF0(d2, *sq + 0x10, *(char **)(data + off + 0x64) + 0x10);
+                    func_L00_001FF4B0(d2, d2, D_0015EE6C * 10.0f);
+                    (*sq)[0x20] = 1;
+                    *sq = 0;
+                    return;
+                }
+            }
+            m[0x20] = 0x63;
+        }
+    }
+    if (r >= 0) func_0022ED80_2E9CB0(r, 0, (int)m);
+}
 extern void func_L00_00250800(void *, int, void *);
 extern void func_001F9BF0(void *, void *, void *);
 extern void func_001F9BD8(void *, void *, void *);

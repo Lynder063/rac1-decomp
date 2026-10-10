@@ -1841,7 +1841,91 @@ void func_L12_002ED028(char *m, int flag) {
         *(unsigned short *)(m + 0x34) = (*(unsigned short *)(m + 0x34) | 0x41) & 0xEFFF;
     }
 }
-INCLUDE_ASM("asm/overlays", func_L12_002ED228);
+extern float func_001FA888(int);
+extern int func_L01_00276680_i(char *vec, float scale) __asm__("func_L01_00276680");
+extern void func_L12_002ED028(char *m, int flag);
+extern void func_L01_0028C1D8(char *p);
+extern float func_001F9CB8(void *a);
+extern float func_001FA748(float, float);
+extern short D_L12_00161A28;
+extern short D_L12_00161A2C;
+extern short D_L12_00161A30;
+
+/* UpdateMoby_336: does nothing without a data block. State 0 picks a table from D_L12_001B0C30[data + 0x74] and
+ * places the moby at one of its points; state 1 walks the table's points (index at data + 0x60), easing the angles at
+ * +0x40 and +0x48 toward the next point and setting +0x44 to 0.5236. */
+void func_L12_002ED228(char *m) {
+    char *d = *(char **)(m + 0x78);
+    float A[4];
+    float B[4];
+    float C[4];
+    float E[4];
+    if (d != 0) {
+        int r = func_L01_00276680_i(m, func_001FA888(*(short *)(m + 0x32)));
+        func_L12_002ED028(m, r == -1);
+        switch ((unsigned char)m[0x20]) {
+        case 0:
+            if (*(int *)(d + 0x74) != -1) {
+                char *tbl;
+                int idx;
+                int cnt;
+                func_L01_0028C1D8(d + 0x60);
+                tbl = D_L12_001B0C30[*(int *)(d + 0x74)];
+                *(char **)(d + 0x70) = tbl;
+                idx = *(int *)(d + 0xA0);
+                cnt = *(int *)tbl - 1;
+                if (cnt < idx) idx = cnt;
+                qcopy((m + 0x10), tbl + idx * 16 + 0x10);
+                d[0x2A] = 0x10;
+                d[0x28] = 2;
+                d[0x2C] = 0x2C;
+                *(float *)(d + 0x30) = 1.4f;
+                d[0x2B] = 1;
+                *(int *)(d + 0x60) = idx;
+                m[0x20] = 1;
+                *(short *)(m + 0x32) = 0xAA;
+                *(unsigned short *)(m + 0x34) |= 0x1000;
+            }
+            break;
+        case 1: {
+            char *p = d + 0x60;
+            int cur = *(int *)p;
+            char *tbl = *(char **)(p + 0x10);
+            int step = *(char *)(p + 4);
+            int n = *(int *)tbl;
+            int prev = (cur + n - step) % n;
+            int next = (cur + n + step) % n;
+            float h;
+            float ang;
+            qcopy(A, tbl + prev * 16 + 0x10);
+            qcopy(B, tbl + cur * 16 + 0x10);
+            qcopy(C, tbl + next * 16 + 0x10);
+            func_001F9BF0(A, B, A);
+            func_001F9BF0(B, C, B);
+            h = func_L00_001FF860(A[0], A[1]);
+            h = func_001FA790(h, func_L00_001FF860(B[0], B[1]));
+            ang = h / func_001F9CB8(A);
+            *(float *)(m + 0x40) = func_001FA748(*(float *)(m + 0x40),
+                func_001FA790(ang * *(float *)&D_L12_00161A2C, *(float *)(m + 0x40)) / *(float *)&D_L12_00161A30);
+            if (func_001F9D10(m + 0x10, C) < *(float *)&D_L12_00161A28 * D_0015EE6C) {
+                char *t3;
+                *(int *)(d + 0x60) = next;
+                t3 = *(char **)(p + 0x10);
+                if (next == *(int *)t3 - 1) {
+                    qcopy((m + 0x10), t3 + 0x10);
+                }
+            }
+            func_001F9BF0(E, C, m + 0x10);
+            func_L00_001FF4B0(E, E, *(float *)&D_L12_00161A28 * D_0015EE6C);
+            func_001F9BD8(m + 0x10, m + 0x10, E);
+            *(float *)(m + 0x48) = func_001FA748(*(float *)(m + 0x48),
+                func_001FA790(func_L00_001FF860(E[0], E[1]), *(float *)(m + 0x48)) / *(float *)&D_L12_00161A30);
+            *(float *)(m + 0x44) = 0.52359879f;
+            break;
+        }
+        }
+    }
+}
 extern float func_001F9D48(void *, void *);
 extern int func_L00_001FEF78(void *);
 
