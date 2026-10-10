@@ -7,10 +7,16 @@
  */
 extern s32 D_001CE100_218A80[] __asm__("D_001CE100");
 
-#define PT_BASE_218A80 (*(s32 *)0x001601AC)
-#define PT_COUNT_218A80 (*(s32 *)0x001601B4)
-#define PT_ITER_218A80 (*(s32 *)0x001601D0)
-#define PT_END_218A80 (*(s32 *)0x001601D4)
+/* Named, not literal addresses: in a level these small-data words are the level program's copies
+   (the port relocates named globals of executable code, not integer addresses). */
+extern s32 D_001601AC_218A80[] __asm__("D_001601AC");
+extern s32 D_001601B4_218A80[] __asm__("D_001601B4");
+extern s32 D_001601D0_218A80[] __asm__("D_001601D0");
+extern s32 D_001601D4_218A80[] __asm__("D_001601D4");
+#define PT_BASE_218A80 (D_001601AC_218A80[0])
+#define PT_COUNT_218A80 (D_001601B4_218A80[0])
+#define PT_ITER_218A80 (D_001601D0_218A80[0])
+#define PT_END_218A80 (D_001601D4_218A80[0])
 
 void func_00218A80(void) {
     char *p;
