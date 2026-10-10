@@ -24,12 +24,12 @@ void func_L15_0025F0A0(int a0, void *a1, char *a2) {
     if (p != 0) {
         u128 *dp = &scratch.d;
         float *q = owner->pos;
-        func_001F9BF0(dp, &scratch.pos, q);
+        FastVecSub(dp, &scratch.pos, q);
         scratch.s = scratch.d;
         {
         u128 *sp = &scratch.s;
-        func_001F9C30(sp, sp, 0.25f);
-        func_001F9BD8(dp, q, sp);
+        FastVecScale(sp, sp, 0.25f);
+        FastVecAdd(dp, q, sp);
         p->pos.bits = scratch.d;
         p->velocity.bits = scratch.pos;
         p->color = a0;
@@ -38,7 +38,7 @@ void func_L15_0025F0A0(int a0, void *a1, char *a2) {
         p->type = 0x44;
         p->flags = 2;
         {
-            p->life = func_001F9850(D_L15_0016027C);
+            p->life = scale_ticks(D_L15_0016027C);
             p->owner = owner;
         }
         }

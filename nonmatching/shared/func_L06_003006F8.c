@@ -2,13 +2,13 @@
  * Best so far: SIZE ours 936 / retail 952, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Shared moby update (vendor_002FF000.c): steps the timer at data+0x21C, spaces 16 entries at data+0x230 against
  *   Where it differs: gcc hoists the flag address (lui/addiu of D_0013E633+0xE1D) above the x==20 block, where ret
  *   Unblock: a source shape that keeps the flag address inside the loop and the counter ascending (perhaps the loo
  */
 extern int func_001FA898_r(float) __asm__("func_001FA898");
-extern void func_001F9908(int *arg0);
 extern void func_001F9BF0(void *dst, void *a, void *b);
 extern void func_L00_001FF4B0(void *, void *, float);
 extern void func_001F9BD8(float *, float *, float *);
@@ -17,7 +17,6 @@ extern int func_L00_001EFFF0(void *, void *, int, void *, void *);
 extern float func_00214D28(float *, float, float);
 extern float func_001F9F90(float);
 extern float func_001F9FA8(float);
-extern void func_L00_0025A8C0(void *, void *, int, float, void *);
 extern void func_001F49B0(void *, void *);
 extern void func_L06_00300AB0(char *moby);
 extern void func_L06_00300DA8(char *moby);

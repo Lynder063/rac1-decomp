@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L00_002CC3C0 -- src/overlays/shared/vendor_002C96D0.c
- * Best so far: SIZE ours 1180 / retail 1188, checked 2026-10-08.
+ * Best so far: SIZE ours 1180 / retail 1188, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -42,7 +42,6 @@ extern short D_L00_00161958;
 extern short D_L00_00161940;
 extern short D_L00_00161944;
 extern short D_L00_00161948;
-extern char D_0013E15A[];
 
 // Builds a moby's data block from its source moby and a position vector; returns the new moby or 0.
 char *func_L00_002CC3C0(char *a, char *vec, char *b, float f12, float f13, float f14, float f15) {

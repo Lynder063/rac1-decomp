@@ -1,11 +1,16 @@
 /* NON_MATCHING func_L00_0026ABC0 -- src/overlays/shared/partupd_0026A130.c
- * Best so far: SIZE ours 1776 / retail 1780, checked 2026-10-08.
+ * Best so far: BYTES 26/1780 (98.5% of the bytes match), checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
- *   PartType06Update (particle type 6 update, 1780 bytes): moves the particle from its velocity and an offset vect
- *   Left: (1) the true path of the 25D308 branch: retail sets the output pointer (sp+0x10) in the beqz delay slot 
- *   Note: tmp[3] is never assigned but the 16-byte copy to m+0x10 reads it, as retail's lq/sq does; the 1EFFF0 cal
+ *   Budget run 1: p0.c (= a2.c): BYTES 26/1780.
+ *   More free builds after that, none better:
+ *   v1/v2: a pos pointer local set before the first test (BYTES 46, 48; the slot unchanged). v5: `goto` out of the
+ *   w0: the repack as one nested expression (same bytes as a2). w1: byte casts on the three channels (SIZE 1768).
+ *   diag/dw1.c (diagnostic only, banned construct): with three of the four 255 uses given double reference weight,
+ *   diag/live0.c (diagnostic only): making the normal's address a function-level pointer used after the join chang
+ *   What (1) needs, worked out from reorg (fill_slots_from_thread): for the fall-through thread a candidate must n
+ *   What I could not find: which pseudo that ends in $s0 was live into the else block in retail's flow information
  */
 extern s32 func_L00_001EFFF0_70DB0(void *, void *, s32, void *, void *) __asm__("func_L00_001EFFF0");
 extern void func_L00_0025D308(void *, void *, void *, float);
@@ -30,7 +35,7 @@ void func_L00_0026ABC0(unsigned char *m) {
     float o[4];
     float v2[4];
     float v3[4];
-    float v4[4];
+    float v4[16];
     float k;
     float f22, f23, f24;
     int fl;
@@ -70,16 +75,12 @@ void func_L00_0026ABC0(unsigned char *m) {
             f24 = f24 + *(float *)(t + 0x4C) * D_0015EE60;
             k = D_0015EE60;
         }
-        {
-            unsigned char fb = e[0x1B];
-            bb = fb;
-            if (fb & 0x20) {
-                f23 = f23 - *(float *)(t + 0x50) * k;
-            } else {
-                f23 = f23 + *(float *)(t + 0x50) * k;
-            }
+        if (e[0x1B] & 0x20) {
+            f23 = f23 - *(float *)(t + 0x50) * k;
+        } else {
+            f23 = f23 + *(float *)(t + 0x50) * k;
         }
-        if (bb & 0x40) {
+        if (e[0x1B] & 0x40) {
             f22 = f22 - *(float *)(t + 0x54) * D_0015EE60;
         } else {
             f22 = f22 + *(float *)(t + 0x54) * D_0015EE60;
@@ -87,7 +88,7 @@ void func_L00_0026ABC0(unsigned char *m) {
 
         if (*(float *)(t + 0x64) < f24) {
             f24 = *(float *)(t + 0x64);
-            if (*(int *)(t + 0x70) & 0x100) e[0x1B] = bb ^ 0x10;
+            if (*(int *)(t + 0x70) & 0x100) e[0x1B] ^= 0x10;
         }
         if (f24 < *(float *)(t + 0x58)) {
             f24 = *(float *)(t + 0x58);
@@ -131,7 +132,7 @@ dtest:
         } else {
             *(float *)(e + 0x10) = *(float *)(e + 0x10) + *(float *)(t + 0x38) * k;
         }
-        if (*(float *)(t + 0x48) < *(float *)(e + 0x10)) {
+        if (*(float *)(e + 0x10) > *(float *)(t + 0x48)) {
             *(float *)(e + 0x10) = *(float *)(t + 0x48);
             if (*(int *)(t + 0x70) & 0x800) e[0x1B] ^= 0x80;
         }
@@ -162,7 +163,7 @@ b0b0:
 
     *(float *)(m + 0xC) = *(float *)(m + 0xC) + *(float *)(t + 0x30) * D_0015EE60;
     if (*(float *)(m + 0xC) < *(float *)(t + 0x74)) *(float *)(m + 0xC) = *(float *)(t + 0x74);
-    if (*(float *)(t + 0x78) < *(float *)(m + 0xC)) *(float *)(m + 0xC) = *(float *)(t + 0x78);
+    if (*(float *)(m + 0xC) > *(float *)(t + 0x78)) *(float *)(m + 0xC) = *(float *)(t + 0x78);
 
     *(float *)(e + 0x14) = *(float *)(e + 0x14) + *(float *)(t + 0x34) * D_0015EE60;
     if (*(float *)(e + 0x10) <= 0.0f || func_001F9938_26bca8(m + 0xA) || *(float *)(m + 0x10) < *(float *)(t + 0x10) || *(float *)(m + 0x14) < *(float *)(t + 0x14) || *(float *)(m + 0x18) < *(float *)(t + 0x18) || *(float *)(t + 0x20) < *(float *)(m + 0x10) || *(float *)(t + 0x24) < *(float *)(m + 0x14) || *(float *)(t + 0x28) < *(float *)(m + 0x18)) {

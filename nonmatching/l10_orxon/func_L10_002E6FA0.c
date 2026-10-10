@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L10_002E6FA0 -- src/overlays/l10_orxon/vendor_002E30F8.c
- * Best so far: SIZE ours 736 / retail 732, checked 2026-10-08.
+ * Best so far: SIZE ours 736 / retail 732, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

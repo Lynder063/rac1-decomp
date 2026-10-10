@@ -19,16 +19,16 @@ int func_0023C9C0(void *unused, char *entry, char *buffer) {
     int remaining;
     if (total < first) first = total;
     remaining = total - first;
-    func_0023DFC0(D_0016130C + 0xD9048, &spans.p1, &spans.n1, &spans.p2, &spans.n2);
-    copied = func_0023CBE0((char *)(((unsigned int)spans.p1 & 0xFFFFFFF) | 0x20000000), spans.n1,
+    videoDecBeginPut(D_0016130C + 0xD9048, &spans.p1, &spans.n1, &spans.p2, &spans.n2);
+    copied = cpy2area((char *)(((unsigned int)spans.p1 & 0xFFFFFFF) | 0x20000000), spans.n1,
                           (char *)(((unsigned int)spans.p2 & 0xFFFFFFF) | 0x20000000), spans.n2,
                           source, first, buffer, remaining);
     if (copied > 0) {
-        if (!func_0023E068(D_0016130C + 0xD9048, *(long *)(entry + 0x10), *(long *)(entry + 0x18), spans.p1, copied)) {
-            func_0023BF48(D_001E8E38);
+        if (!videoDecPutTs(D_0016130C + 0xD9048, *(long *)(entry + 0x10), *(long *)(entry + 0x18), spans.p1, copied)) {
+            ErrMessage(D_001E8E38);
         }
     }
-    func_0023DFE0(D_0016130C + 0xD9048, copied);
+    videoDecEndPut(D_0016130C + 0xD9048, copied);
     return copied > 0;
 }
 INCLUDE_ASM("asm/nonmatchings/text", func_0023CAF8); /* pcmCallback(sceMpeg *, sceMpegCbDataStr *, void *) */

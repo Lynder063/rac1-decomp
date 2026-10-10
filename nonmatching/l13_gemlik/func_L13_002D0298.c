@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L13_002D0298 -- src/overlays/l13_gemlik/vendor_002C2638.c
- * Best so far: SIZE ours 1320 / retail 1328, checked 2026-10-08.
+ * Best so far: SIZE ours 1320 / retail 1328, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -7,7 +7,7 @@
  *   Differences left: the state-1 "v != 0" block gets a movz (`run448` flag) and an extra `addiu $s1,1` where reta
  *   Unblock: a way to get the zero store and the 16-byte copy through `por`/`sq $v0` without a typedef clash (the 
  */
-typedef int u128z __attribute__((mode(TI)));
+typedef int u128z_2D0298 __attribute__((mode(TI)));
 extern int D_0015EE84 MACRO_ADDR;
 extern float D_0015EE6C MACRO_ADDR;
 extern int D_L13_00184828[];
@@ -29,7 +29,6 @@ extern void func_L00_0025F4A8_s(void *, void *, void *, float, float, int, int, 
 extern void func_001F9BF0(void *, void *, void *);
 extern void func_001F9C30(void *, void *, float);
 extern void func_001F9BD8(void *, void *, void *);
-extern void func_L13_002CF960(char *, void *, int);
 
 /* Forcefield tower update (moby class 170): state machine over its pieces. */
 void func_L13_002D0298(char *moby) {
@@ -106,12 +105,12 @@ void func_L13_002D0298(char *moby) {
         float s;
         int c;
         int k;
-        *(u128z *)blk = 0;
+        *(u128z_2D0298 *)blk = 0;
         f = f * 8.0f;
         s = 1000.0f;
         c = *(unsigned char *)(moby + 0xBC);
         blk[2] = f;
-        *(u128z *)vec = *(u128z *)blk;
+        *(u128z_2D0298 *)vec = *(u128z_2D0298 *)blk;
         if (c == 1) s = 17.0f;
         else if (c < 2) {
             if (c == 0) s = 8.5f;

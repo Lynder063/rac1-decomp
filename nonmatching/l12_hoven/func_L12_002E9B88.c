@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L12_002E9B88 -- src/overlays/l12_hoven/vendor_002C0310.c
- * Best so far: BYTES 39/1032 (96.2% of the bytes match), checked 2026-10-08.
+ * Best so far: BYTES 39/1032 (96.2% of the bytes match), checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

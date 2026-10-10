@@ -59,18 +59,18 @@ EE29_INC = "-Itoolchain/sn-prodg-24/local/sce/ee/gcc/lib/gcc-lib/ee/2.9-ee-99111
 EE29_SOURCES = ee29_sources()
 CFLAGS = ["-O2", "-G2", "-Iinclude", "-Wa,-I,."] + os.environ.get("TRY_CFLAGS", "").split()  # extra flags for experiments
 BASEROM = "baserom/SCES_509.16"
-STUB = re.compile(r'^\s*INCLUDE_ASM\([^)]*\b(func_[0-9A-Fa-f]{8})\)')
+STUB = re.compile(r'^\s*(?:INCLUDE_ASM|ASM_FUNC)\([^)]*\b(func_[0-9A-Fa-f]{8})\)')
 SIZE = re.compile(r"nonmatching\s+(func_[0-9A-Fa-f]{8}),\s*(0x[0-9A-Fa-f]+)")
 
 
-DEF = re.compile(r"^(?!extern\b)[A-Za-z_].*?\b(func_[0-9A-Fa-f]{8})\s*\(")
+DEF = re.compile(r"^(?!extern\b)[A-Za-z_].*?\b(func_[0-9A-Fa-f]{8})(?:_r)?\s*\(")
 
 # Overlay functions (docs/OVERLAYS.md): func_LNN_XXXXXXXX, checked through
 # overlay_check instead of the masked compare() below. Their sources live
 # under src/overlays/ (any subdirectory), not in SEGMENT_SOURCES.
 OVERLAY_NAME = re.compile(r"^func_L\d{2}_[0-9A-Fa-f]{8}$")
 OVERLAY_STUB = re.compile(r"^\s*INCLUDE_ASM\([^)]*\b(func_L\d{2}_[0-9A-Fa-f]{8})\)")
-OVERLAY_DEF = re.compile(r"^(?!extern\b)[A-Za-z_].*?\b(func_L\d{2}_[0-9A-Fa-f]{8})\s*\(")
+OVERLAY_DEF = re.compile(r"^(?!extern\b)[A-Za-z_].*?\b(func_L\d{2}_[0-9A-Fa-f]{8})(?:_r)?\s*\(")
 
 
 def find_overlay_stub(name):

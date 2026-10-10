@@ -26,7 +26,7 @@ unsigned char *func_L05_0029CA28(void *pos, void *vel, int a2, int a3, int a4, f
         p[1] = 0;
         p[2] = *D_L05_001B2940;
         *(float *)(p + 0xC) = a * 210000.0f;
-        p[8] = func_002140B0(0x100);
+        p[8] = random_integer_below(0x100);
         qcopy(q, vel);
         *(float *)(q + 0x10) = two / func_001FA888(a2);
         *(short *)(p + 0xA) = a2;

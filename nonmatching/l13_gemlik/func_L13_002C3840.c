@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 1900 / retail 1912, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Blarg space fighter moby update (class 101, level 13): state machine on moby+0x20 (9 cases, jtbl_L13_001F4920)
  *   Still differs: retail rematerialises -1 for the D4 compare and the store (ours keeps one li $16,-1), and case 
@@ -17,8 +18,6 @@ extern float func_00214D88(float *, float *, float, float, float, float);
 extern void func_L00_001FF4B0(void *, void *, float);
 extern void func_001F9BD8(void *, void *, void *);
 extern float func_L00_001FF860(float, float);
-extern float func_L00_0025CE58(void *, float, void *, float, float, float);
-extern int func_001F9908(int *);
 extern int func_001F9850(int);
 extern void func_L00_00250800(void *, int, void *);
 extern void func_0022ED80(int, int, int);

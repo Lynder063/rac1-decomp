@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L12_003061E0 -- src/overlays/l12_hoven/vendor_002EDAA0.c
- * Best so far: SIZE ours 1752 / retail 1708, checked 2026-10-08.
+ * Best so far: SIZE ours 1752 / retail 1708, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -27,7 +27,6 @@ extern int func_L00_001F2BE8(float, void *, int, void *, void *);
 extern int func_L00_001F10E0(float, void *, int, void *);
 extern void func_0020D678(void *);
 extern void func_L00_0025B040(unsigned char *, float);
-extern char D_L12_0015F660[] MACRO_ADDR;
 extern int D_L12_00174358 MACRO_ADDR;
 extern float D_0015EE6C MACRO_ADDR;
 extern float D_0015EE70 MACRO_ADDR;

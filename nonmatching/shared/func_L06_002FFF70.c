@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 1480 / retail 1472, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Shared level-06 update: a switch on a 0..11 result of func_L00_0025B4D0 (cases 1-2 and 3-10 each run a timed e
  *   Differences left: the switch as a jump table (merging case 0 and 11 into default makes it bigger, 1496), the p
@@ -11,7 +12,6 @@ extern void func_L06_003006F8(void *);
 extern float func_002140F8(float, float);
 extern float func_001F9878(float);
 extern int func_001FA898_r(float) __asm__("func_001FA898");
-extern void func_001F9908(int *arg0);
 extern char *func_L00_0025B478(void *, int, int);
 extern int func_L00_0025B4D0(void *, void *, void *, int, int *, float *, int, int);
 extern int func_001F9850(int);

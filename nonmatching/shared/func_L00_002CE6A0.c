@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L00_002CE6A0 -- src/overlays/shared/vendor_002C96D0.c
- * Best so far: SIZE ours 2796 / retail 2764, checked 2026-10-08.
+ * Best so far: SIZE ours 2796 / retail 2764, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -10,7 +10,6 @@
 typedef struct { float a; float b; char *p; int c; unsigned char b10; unsigned char b11; unsigned short s; float e; int i; } Ev;
 
 extern char D_0013E633[];
-extern char D_L00_00173F40[];
 extern float D_0015EE60 MACRO_ADDR;
 extern float D_0015EE64 MACRO_ADDR;
 extern float D_0015EE6C MACRO_ADDR;

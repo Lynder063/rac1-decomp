@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L14_002B3B78 -- src/overlays/shared/vendor_002B2A28.c
- * Best so far: SIZE ours 1412 / retail 1452, checked 2026-10-08.
+ * Best so far: SIZE ours 1412 / retail 1452, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -10,7 +10,6 @@ typedef int u128 __attribute__((mode(TI)));
 extern void func_001F9BF0(void *, void *, void *);
 extern void func_L00_001FF4B0(void *, void *, float);
 extern void func_001F9CA0(void *, void *, void *);
-extern int func_001F4868(int);
 extern void func_001F9C30(void *, void *, float);
 extern void func_001F9EE8(void *, void *, void *);
 extern void func_L00_001FD1D8(void *, void *, int);

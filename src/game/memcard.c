@@ -215,17 +215,17 @@ void func_00209CE8(int arg0) {
     int b;
     int i;
 
-    a = memcard_GetDataSize(D_001A05C0);
-    b = memcard_GetDataSize(D_001A08C0);
+    a = memcard_GetDataSize(gGameSaveData);
+    b = memcard_GetDataSize(gLevelSaveData);
     if (*(int *)p != a || *(int *)(p + 4) != b) {
         STUB_printf(D_001E8500);
         return;
     }
     p += 8;
-    memcard_RestoreData(p, 0, D_001A05C0);
+    memcard_RestoreData(p, 0, gGameSaveData);
     p += a;
     for (i = 0; i < 0x14; i++) {
-        memcard_RestoreData(p, i, D_001A08C0);
+        memcard_RestoreData(p, i, gLevelSaveData);
         p += b;
     }
 }
@@ -1403,12 +1403,12 @@ extern int func_0020BBC8(void *dst, int i, int *table);
 void func_0020BA00(char *out) {
     int i;
 
-    *(int *)out = memcard_GetDataSize(D_001A05C0);
-    *(int *)(out + 4) = memcard_GetDataSize(D_001A08C0);
+    *(int *)out = memcard_GetDataSize(gGameSaveData);
+    *(int *)(out + 4) = memcard_GetDataSize(gLevelSaveData);
     out += 8;
-    out += memcard_PrepData(out, 0, D_001A05C0);
+    out += memcard_PrepData(out, 0, gGameSaveData);
     for (i = 0; i < 0x14; i++) {
-        out += memcard_PrepData(out, i, D_001A08C0);
+        out += memcard_PrepData(out, i, gLevelSaveData);
     }
 }
 
@@ -1762,8 +1762,8 @@ int func_0020BFC8(int slot, int flags) {
         *(int *)(q + *(int *)(q + 0x14) * 0x1C + 0x2C) = D_0015EF24;
         memcpy(names + *(int *)(q + 0x14) * 0x1C, D_0015EF98, 8);
         *(int *)(q + *(int *)(q + 0x14) * 0x1C + 0x28) = D_0015EF20;
-        memcard_PrepData(D_0014EFD0, 0, D_001A05C0);
-        memcard_PrepData(D_001507D0, *(int *)(q + 0xD0), D_001A08C0);
+        memcard_PrepData(D_0014EFD0, 0, gGameSaveData);
+        memcard_PrepData(D_001507D0, *(int *)(q + 0xD0), gLevelSaveData);
         if (flags >= 0) {
             D_0013DE60[D_0015EE84_m] = saved;
             D_0015EE84_m = *(int *)(q + 0xD0);

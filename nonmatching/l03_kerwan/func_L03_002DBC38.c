@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 1956 / retail 1968, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Helga (class 890) update on level 03: state dispatch on m[0x20] (pause help via func_L01_0029C2A0, moby spawns
  *   Best so far p4.c: 1956 bytes against 1968. Prologue saves more registers than retail (s0, s2, s3, s4, s6, s7 a
@@ -21,7 +22,6 @@ typedef struct {
     Entry e[1];
 } Table;
 
-extern void func_L03_002DBAD8(void *);
 extern int func_L00_002676E8(void *, void *);
 extern int func_L00_00267290(void *, void *);
 extern void func_L01_00279398(float, void *);
@@ -31,7 +31,6 @@ extern void func_L00_002618D8(int, int);
 extern void func_L00_00264DB8(int, int);
 extern void func_0020D678(void *);
 extern int func_0020BFC8(int, int);
-extern float func_001F9D48(float *, float *);
 extern float func_L00_001FF860(float, float);
 extern float func_001FA850(float, float);
 extern float func_001F9CB8(void *);
@@ -50,7 +49,6 @@ extern void func_L00_00263950(void *, void *, int, float, float);
 extern void func_L02_0025D750(void *);
 extern void func_L01_0029C2A0(char *a0, int a1, char *p, int mode, Table *t);
 
-extern char D_0013D5CA[];
 extern unsigned char D_0014171B[];
 extern int D_0015EE84 MACRO_ADDR;
 extern char D_0013E633[];
@@ -59,7 +57,6 @@ extern Table D_L03_001BAA30;
 extern char D_L03_00161C38[];
 extern char D_L03_001BA9E0[];
 extern unsigned char D_L03_0015FD08[];
-extern char D_L03_001BB640[];
 extern unsigned char D_0015EEB0[] MACRO_ADDR;
 extern float D_0015EE64 MACRO_ADDR;
 extern int D_L03_0015F6A8 MACRO_ADDR;

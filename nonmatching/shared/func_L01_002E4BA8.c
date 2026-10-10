@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 1756 / retail 1772, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Run 1-11 (hq9/s22): dispatch on the 0xBC byte (bltz / slti chain), C58 block first, 523C as a shared `sb 0` th
  *   Still differs: the first try_func call's `$4 = $16` is repeated in each arm of the selector in retail (we set 
@@ -9,7 +10,6 @@
  */
 extern char D_0013E633[];
 extern char D_L01_001DEE1C[];
-extern char D_L01_001DEE08[];
 extern float D_0015EE70 MACRO_ADDR;
 extern float D_0015EE6C MACRO_ADDR;
 extern float D_0015EE60 MACRO_ADDR;

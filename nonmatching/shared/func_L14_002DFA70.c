@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L14_002DFA70 -- src/overlays/shared/vendor_002B2A28.c
- * Best so far: SIZE ours 1052 / retail 1064, checked 2026-10-08.
+ * Best so far: SIZE ours 1108 / retail 1064, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -28,7 +28,6 @@ extern int func_001F9850(int);
 extern int func_L00_00258BC8(int, int);
 extern void func_L00_0026DA50(void *, void *, int, int, int, int, float);
 extern float func_002140F8(float, float);
-extern char *func_L00_0026DEA0(void *, int, void *, int, float, float, float, float);
 
 /* Class 325 moby update (levels 14 and 15): clamps the data block's vectors, moves the moby's three coordinates, and spawns effect objects when it is in range. */
 void func_L14_002DFA70(char *moby)

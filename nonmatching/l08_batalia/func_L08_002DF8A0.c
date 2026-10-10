@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 784 / retail 800, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Spawns n effect mobys: func_L00_0025F4A8 with 18 args (two variants by flag), three func_002140F8 samples into
  *   Difference: retail spills the batch offset (a << 7) to sp+0x50, so its frame is 0x110 with the saves at 0x60..
@@ -17,7 +18,6 @@ extern void func_001F9BC0(void *);
 extern void func_001F9BF0(void *, void *, void *);
 extern void func_L00_001FF500(void *, void *, float);
 extern int func_001FA898_r(float) __asm__("func_001FA898");
-extern void func_L05_00319B58(char *m, int b, void *v1, void *v2, int a);
 extern char *D_L08_0016016C MACRO_ADDR;
 extern float D_0015EE6C MACRO_ADDR;
 

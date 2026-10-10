@@ -1,11 +1,14 @@
 /* NON_MATCHING func_L14_002AEC58 -- src/overlays/l14_oltanis/vendor_002ACCC0.c
- * Best so far: BYTES 22/816 (97.3% of the bytes match), checked 2026-10-08.
+ * Best so far: BYTES 4/816 (99.5% of the bytes match), checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
  *   Level-14 moby update: calls func_L14_002AF2E8, copies two vectors, runs two loops that fill a 3-float table an
  *   Left: the two loops' induction pointers (retail keeps the index array in $17 and the table in $23 with separat
  *   Unblock: a tie in the scheduler's order of the induction-pointer increments; rewording did not move it within 
+ *   hq12/s08 (5 runs, fresh budget): p7 (int *ip = ind inside the first loop, used for the index store) closes the
+ *   Tried on top of p7: per-iteration pointer for the second loop's stores (p8), a block-scoped pointer for it (p9
+ *   Unblock: a form that makes the compiler recompute sp+0x40 for loop two instead of reusing the base it CSEs acr
  */
 extern void func_L14_002AF2E8(char *moby);
 extern void func_001F9BF0(void *, void *, void *);
@@ -53,16 +56,18 @@ void func_L14_002AEC58(char *moby) {
     func_001F7868();
 
     for (i = 0; i < *(int *)&D_L14_001614E0; i++) {
+        int *ip = ind;
+        float *cp1 = c;
         t[0] = D_L14_001D7D60[i * 3 + 0];
         t[1] = D_L14_001D7D60[i * 3 + 1];
         t[2] = D_L14_001D7D60[i * 3 + 2];
         t[3] = 1.0f;
         func_001F9EE8(t, t, v);
-        c[i * 3 + 0] = t[0];
-        c[i * 3 + 1] = t[1];
-        c[i * 3 + 2] = t[2];
+        cp1[i * 3 + 0] = t[0];
+        cp1[i * 3 + 1] = t[1];
+        cp1[i * 3 + 2] = t[2];
         if (*(short *)(data + 0x202) != 0) {
-            ind[i] = D_L14_001D83C8[i] & 0xFF0000FF;
+            ip[i] = D_L14_001D83C8[i] & 0xFF0000FF;
         }
     }
 

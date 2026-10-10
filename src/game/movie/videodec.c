@@ -14,13 +14,13 @@ extern int func_0023D018(void *, void *, void *, int, void *, int);
 /* videoDecCreate(VideoDec *, unsigned char *, int, unsigned long long *, unsigned long long *, int, TimeStamp *, int) */
 int func_0023DE98(char *dec, unsigned char *data, int size, void *input, void *tags, int count, void *stamps, int stampCount) {
     func_0012B918(dec, data, size);
-    func_0012BC50(dec, 0, (int)func_0023E450, 0);
-    func_0012BC50(dec, 1, (int)func_0023E478, 0);
+    func_0012BC50(dec, 0, (int)mpegError, 0);
+    func_0012BC50(dec, 1, (int)mpegNodata, 0);
     func_0012BC50(dec, 2, (int)func_0023E4B0, 0);
-    func_0012BC50(dec, 3, (int)func_0023E4E0, 0);
+    func_0012BC50(dec, 3, (int)mpegRestartVideoDMA, 0);
     func_0012BC50(dec, 5, (int)func_0023E510, 0);
     movie_reset(dec);
-    func_0023D018(dec + 0x48, input, tags, count, stamps, stampCount);
+    viBufCreate(dec + 0x48, input, tags, count, stamps, stampCount);
     return 1;
 }
 LINKER_REMNANT("asm/remnants/text", func_0023DF98);
@@ -48,12 +48,12 @@ int func_0023DFA0(VideoDec *dec, int a1, int a2, int (*cb)(void *, void *, void 
 /* videoDecBeginPut(VideoDec *, unsigned char **, int *, unsigned char **, int *)
  * -- viBufBeginPut on the decoder's input buffer. */
 void func_0023DFC0(VideoDec *dec, unsigned char **p1, int *n1, unsigned char **p2, int *n2) {
-    func_0023D1F0(dec->viBuf, p1, n1, p2, n2);
+    viBufBeginPut(dec->viBuf, p1, n1, p2, n2);
 }
 /* videoDecEndPut(VideoDec *) -- viBufEndPut on the decoder's input buffer.
  * The symbol table gives viBufEndPut a second int argument; retail sets none up here. */
 void func_0023DFE0(VideoDec *dec) {
-    func_0023D2E8(dec->viBuf);
+    viBufEndPut(dec->viBuf);
 }
 /* videoDecReset(VideoDec *) -- clears the decoder state. */
 void func_0023E000(VideoDec *dec) {
@@ -64,7 +64,7 @@ extern int func_0012BB20(void *);
 
 /* videoDecDelete(VideoDec *) */
 int func_0023E008(VideoDec *dec) {
-    func_0023D988(dec->viBuf);
+    viBufDelete(dec->viBuf);
     func_0012BB20(dec);
     return 1;
 }
@@ -97,11 +97,11 @@ void func_0023E068(VideoDec *dec, long pts, long dts, int pos, int len) {
     ts.dts = dts;
     ts.diff = pos - *(int *)dec->viBuf;
     ts.len = len;
-    func_0023DBE0(D_0016130C + 0xD9090, &ts);
+    viBufPutTs(D_0016130C + 0xD9090, &ts);
 }
 /* videoDecInputCount(VideoDec *) -- viBufCount of the input buffer. */
 int func_0023E0B0(VideoDec *dec) {
-    return func_0023D9E0(dec->viBuf);
+    return viBufCount(dec->viBuf);
 }
 LINKER_REMNANT("asm/remnants/text", func_0023E0D0);
 /* Decoder control reconstructed from retail disassembly. */
@@ -115,15 +115,15 @@ extern void func_0023DA30(void *);
 int func_0023E0D8(VideoDec *dec) {
     MovieFourBytes marker = D_00161320;
     MoviePutSpans spans;
-    func_0023DFC0(dec, &spans.first, &spans.firstSize, &spans.second, &spans.secondSize);
+    videoDecBeginPut(dec, &spans.first, &spans.firstSize, &spans.second, &spans.secondSize);
     if (spans.firstSize + spans.secondSize < 4) return 0;
     {
         unsigned char *first = (unsigned char *)(((unsigned int)spans.first & 0x0FFFFFFF) | 0x20000000);
         unsigned char *second = (unsigned char *)(((unsigned int)spans.second & 0x0FFFFFFF) | 0x20000000);
-        int copied = func_0023CBE0(first, spans.firstSize, second, spans.secondSize, &marker, 4, 0, 0);
+        int copied = cpy2area(first, spans.firstSize, second, spans.secondSize, &marker, 4, 0, 0);
         movie_end_put(D_0016130C + 0xD9048, copied);
     }
-    func_0023DA30(dec->viBuf);
+    viBufFlush(dec->viBuf);
     if (dec->state == 0) dec->state = 2;
     return 1;
 }
@@ -133,7 +133,7 @@ extern unsigned int func_0012BB98(void *);
 /* videoDecIsFlushed(VideoDec *) */
 int func_0023E1B0(VideoDec *dec) {
     int res = 0;
-    if (func_0023E0B0(dec) == 0) {
+    if (videoDecInputCount(dec) == 0) {
         res = func_0012BB98(dec) > 0;
     }
     return res;
@@ -144,12 +144,12 @@ extern void func_0023E5B8(void *);
 extern int func_0023E298(VideoDec *);
 /* videoDecMain(void *) */
 void func_0023E1F8(VideoDec *dec) {
-    func_0023D090(dec->viBuf);
-    func_0023E5B8(D_0016130C + 0xD9168);
-    func_0023E298(dec);
-    while (*(int *)(D_0016130C + 0xD9174) != 0 && func_0023E050(dec) != 1) {
+    viBufReset(dec->viBuf);
+    voBufReset(D_0016130C + 0xD9168);
+    sceMpegGetPicture(dec);
+    while (*(int *)(D_0016130C + 0xD9174) != 0 && videoDecGetState(dec) != 1) {
     }
-    func_0023E058(dec, 3);
+    videoDecSetState(dec, 3);
 }
 /* Decoder control reconstructed from retail disassembly. */
 extern char *movie_state_gp SDATA(D_0016130C);
@@ -177,13 +177,13 @@ int func_0023E298(VideoDec *dec) {
     int result = 1;
     while (!func_0012BB88(dec)) {
         char *frame;
-        if (func_0023E050(dec) == 1) {
+        if (videoDecGetState(dec) == 1) {
             result = -1;
-            func_001E9730(D_001E8E68);
+            STUB_printf(D_001E8E68);
             break;
         }
-        while ((frame = func_0023E658(D_0016130C + 0xD9168)) == 0) func_0023BB40();
-        if (func_0012BB30(dec, frame, 0x340) < 0) func_0023BF48(D_001E8E80);
+        while ((frame = voBufGetData(D_0016130C + 0xD9168)) == 0) switchThread();
+        if (func_0012BB30(dec, frame, 0x340) < 0) ErrMessage(D_001E8E80);
         {
             char *ringState;
             if (dec->f08 == 0) {
@@ -192,7 +192,7 @@ int func_0023E298(VideoDec *dec) {
                 int height = dec->height;
                 int index = 0;
                 for (index = 0; index < ((MovieFrameState *)(state + 0xD8000))->count; index++) {
-                    func_0023C5E0(((MovieFrameState *)(state + 0xD8000))->entries + index * 0x138C0 + 0x40,
+                    setImageTag(((MovieFrameState *)(state + 0xD8000))->entries + index * 0x138C0 + 0x40,
                                  ((MovieFrameState *)(state + 0xD8000))->frames + index * 0xD0000, width, height);
                     state = D_0016130C;
                 }
@@ -200,9 +200,9 @@ int func_0023E298(VideoDec *dec) {
             } else {
                 ringState = movie_state_gp;
             }
-            func_0023E5E0(ringState + 0xD9168);
+            voBufIncCount(ringState + 0xD9168);
         }
-        func_0023BB40();
+        switchThread();
     }
     func_0012BBA8(dec);
     return result;
@@ -211,7 +211,7 @@ extern void func_001E9730(char *, ...);
 extern char D_00161328[];
 /* mpegError(sceMpeg *, sceMpegCbDataError *, void *) */
 int func_0023E450(void *mpeg, int *cbdata, void *arg) {
-    func_001E9730(D_00161328, cbdata[1]);
+    STUB_printf(D_00161328, cbdata[1]);
     return 1;
 }
 extern void func_0023BB40(void);
@@ -221,8 +221,8 @@ extern char *D_0016130C MACRO_ADDR;
 /* mpegNodata(sceMpeg *, sceMpegCbData *, void *) -- switchThread, then viBufAddDMA on the
  * buffer at offset 0xD9090 of the movie state. Returns 1. */
 int func_0023E478(void *mpeg, void *cbdata, void *arg) {
-    func_0023BB40();
-    func_0023D340(D_0016130C + 0xD9090);
+    switchThread();
+    viBufAddDMA(D_0016130C + 0xD9090);
     return 1;
 }
 extern int func_0023D540(char *);   /* viBufStopDMA */
@@ -230,7 +230,7 @@ extern int func_0023D540(char *);   /* viBufStopDMA */
 /* No recovered name. viBufStopDMA on the
  * ViBuf at offset 0xD9090 of the movie state. Returns 1. */
 int func_0023E4B0(void) {
-    func_0023D540(D_0016130C + 0xD9090);
+    viBufStopDMA(D_0016130C + 0xD9090);
     return 1;
 }
 extern int func_0023D650(char *);   /* viBufRestartDMA */
@@ -238,7 +238,7 @@ extern int func_0023D650(char *);   /* viBufRestartDMA */
 /* No recovered name. viBufRestartDMA on the ViBuf at
  * offset 0xD9090 of the movie state. Returns 1. */
 int func_0023E4E0(void) {
-    func_0023D650(D_0016130C + 0xD9090);
+    viBufRestartDMA(D_0016130C + 0xD9090);
     return 1;
 }
 typedef struct { long first, second; long pad[2]; } TimeStamp;   /* 0x20 bytes: retail reserves that much */
@@ -249,7 +249,7 @@ extern void func_0023DCF0(char *, TimeStamp *);   /* viBufGetTs */
  * at out+8. Returns 1. */
 int func_0023E510(int unused, char *out) {
     TimeStamp ts;
-    func_0023DCF0(D_0016130C + 0xD9090, &ts);
+    viBufGetTs(D_0016130C + 0xD9090, &ts);
     *(long *)(out + 8) = ts.first;
     *(long *)(out + 0x10) = ts.second;
     return 1;

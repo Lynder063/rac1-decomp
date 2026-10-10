@@ -58,7 +58,7 @@ the tool and not without it.
 
 | Tool | What it reproduces | Evidence | Functions that depend |
 |---|---|---|---|
-| `tools/ps2eeas_nops.py` | `ps2eeas` pads every loop shorter than six instructions before its backward branch (the R5900 short-loop erratum), separates an FP compare from a directly following `bc1`, and a `mtc1` from the instruction reading its register | measured on `ps2eeas` itself; retail text has 309 backward branches spanning exactly six instructions and 191 of 191 compare/branch pairs separated | 781 (1,592,084 bytes, 42.9% of the code) |
+| `tools/ps2eeas_nops.py` | `ps2eeas` pads every loop shorter than six instructions before its backward branch (the R5900 short-loop erratum), separates an FP compare from a directly following `bc1`, and a `mtc1` from the instruction reading its register. The other way round, it leaves an `mfc1` next to the branch that reads its register, where GNU `as` puts a nop | measured on `ps2eeas` itself; retail text has 309 backward branches spanning exactly six instructions and 191 of 191 compare/branch pairs separated; a compiled `mfc1` then branch occurs four times, adjacent each time (func_L00_00269BE8, func_L00_002761C0) | 781 (1,592,084 bytes, 42.9% of the code) |
 | `tools/ps2eeas_dli.py` | `ps2eeas`'s instruction sequence for each 64-bit constant (`dli`); GNU `as` picks other sequences for many values | the algorithm reproduces `ps2eeas`'s output on 871 constants | 113 (395,716 bytes, 10.7%) |
 | `tools/check_macro_slots.py` | a one-instruction global access the compiler put in a branch delay slot comes out `$gp`-relative, as retail's toolchain assembled it; anything else in a slot fails the build | of 524 `$gp` accesses in compiled retail code to globals also reached through `lui`, 505 sit in a delay slot | 460 (1,398,252 bytes, 37.7%) |
 | `tools/fix_orphan_hi.py` | the high half of a `%hi` whose `%lo` the optimiser removed, which retail's linker filled and ours resolves wrongly | retail has the right high half in such `lui`s (func_001E9808) | none by the per-function check, which masks relocated fields; the linked image needs it |
@@ -71,7 +71,8 @@ Together the assembler steps carry 1,078 functions, 1,710,356 bytes (46.1%
 of the code); a function usually needs more than one of them. That is most
 of the level code's long functions: almost every long function has at least one
 short loop or FP compare. The padding changes no instruction the compiler
-wrote; it adds the nops the real assembler adds, and SN's real assembler,
+wrote; it adds the nops the real assembler adds (and keeps GNU `as` from
+adding the one after `mfc1` that the real assembler does not), and SN's real assembler,
 run on the same compiler output, gives the same code for 98.4% of the C
 functions (below). Replacing these tools with it is the goal.
 

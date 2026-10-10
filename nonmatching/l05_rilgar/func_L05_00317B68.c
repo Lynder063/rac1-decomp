@@ -2,6 +2,7 @@
  * Best so far: BYTES 7/368 (98.1% of the bytes match), checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   UpdateMoby_895: state machine (0 init: set flag, rotate angle via func_001FA790/748 by p[0]; 1 wait on level t
  *   Best p1.c (49 diff words, same size 368): all logic matches; only scheduling differs: retail loads p[2] before
@@ -12,7 +13,6 @@
 extern float func_001FA790(float, float);
 extern float func_001FA748(float, float);
 
-extern float func_L00_0025CE58(float *p, float a, float *v, float b, float c, float d);
 typedef struct { char pad[0xBC]; unsigned char flag; char pad2[0x43]; } RotorPoolMoby17B68;
 extern unsigned char *D_L05_00160098_pool __asm__("D_L05_00160098") NOT_SDA;
 extern float D_0015EE70 MACRO_ADDR;

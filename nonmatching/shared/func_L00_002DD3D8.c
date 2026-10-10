@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L00_002DD3D8 -- src/overlays/shared/vendor_002D9438.c
- * Best so far: SIZE ours 2528 / retail 2576, checked 2026-10-08.
+ * Best so far: SIZE ours 2596 / retail 2576, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -29,7 +29,6 @@ extern int func_001FA898_r(float) __asm__("func_001FA898");
 extern int func_002140B0(int);
 extern unsigned func_L00_0025D140(unsigned, int);
 extern void func_L00_0026B890(void *, void *, int, int, float, int, int, int, int, float);
-extern char *func_L00_002E0CB8(void *, void *, void *, float, int, unsigned char, unsigned char, unsigned char, int);
 extern void func_L00_0025D0E0(int *, int *, int *, int);
 extern void func_L00_002D4CE8(void *, void *, int, int);
 extern int func_L00_001F2BE8_2FB898(float, void *, int, void *, void *) __asm__("func_L00_001F2BE8");

@@ -1,9 +1,11 @@
 /* NON_MATCHING func_L05_0024C558 -- src/overlays/shared/help_00237B00.c
- * Best so far: SIZE ours 892 / retail 900, checked 2026-10-08.
+ * Best so far: BYTES 28/900 (96.9% of the bytes match), checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
  *   Swing probe on the effect block at g = D_0013E633 + 0xE1D: two calls to 00233EE0 on local vectors, a 4-way flo
+ *   hq13/n04: p8.c is BYTES 28/900 (size equal, only register numbers differ; budget spent). What closed the gap, 
+ *   Left: x/D load is $v1 where retail uses $a0 (div operand and the lui/lw pair); FP regs: ours f22=load,f24=0.5,
  */
 extern void func_L05_00241AA0(void);
 extern float func_001F9CE8(void *);
@@ -32,13 +34,14 @@ typedef int u128 __attribute__((mode(TI)));
 void func_L05_0024C558(void) {
     char *g = (char *)D_0013E633 + 0xE1D;
     char *h;
+    char *g3;
     char *p;
     float A[4];
     float B[4];
     float C[4];
-    float D[4];
-    float E[4];
-    float F[4];
+    float D[16];
+    float E[16];
+    float F[16];
     float f20;
     float f21;
     float f22;
@@ -52,6 +55,7 @@ void func_L05_0024C558(void) {
     int r;
     int s18;
     int v300;
+    int one;
 
     if (((unsigned char *)g)[0x20AD] == 0) func_L05_00241AA0();
     x = D_L05_0015F6B0_m;
@@ -68,21 +72,22 @@ void func_L05_0024C558(void) {
                 if (func_L00_0025F410(*(int *)(h + 0x18))) g[0x254] = 1;
             }
         }
-        x = D_L05_0015F6B0_m;
     }
+    x = D_L05_0015F6B0_m;
     if (x % 5 == 0) {
-        v300 = *(int *)(g + 0x300);
-        *(int *)(g + 0x260) = 0;
-        *(int *)(g + 0x258) = 0;
+        char *g2 = (char *)D_0013E633 + 0xE1D;
+        v300 = *(int *)(g2 + 0x300);
+        *(int *)(g2 + 0x260) = 0;
+        *(int *)(g2 + 0x258) = 0;
         if (v300 != 0) {
-            f24 = *(float *)(g + 0x258);
+            f24 = *(float *)(g2 + 0x258);
             f21 = 1.1f;
             f23 = 0.5f;
             func_L00_00233EE0(A, f21, f24, 1.0f);
             func_L00_00233EE0(B, f21, f24, -20.0f);
             if (B[2] < f23) B[2] = f23;
             f22 = 20.0f;
-            r = func_L00_001EFFF0(A, B, 2, *(int *)(g + 0x2080), 0);
+            r = func_L00_001EFFF0(A, B, 2, *(int *)(g2 + 0x2080), 0);
             s18 = r;
             if (s18 == 0 || (f22 = func_001F9D10_1edff8(A, D_L05_00174360)) > 3.0f) {
                 f25 = f21;
@@ -90,37 +95,39 @@ void func_L05_0024C558(void) {
                 f21 = f24;
                 f26 = 20.0f;
                 f24 = 0.1f;
-                fa = f20 + f25;
-                for (;;) {
-                    func_L00_00233EE0(C, fa, f21, f21);
-                    if (func_L00_001F10E0(*(float *)(g + 0x234), C, 2, 0) == 0) {
-                        *(int *)(g + 0x260) = 1;
-                        if (s18 != 0) *(float *)(g + 0x258) = f22;
-                        else *(float *)(g + 0x258) = f26;
-                        t = *(float *)(g + 0x234) + f20;
-                        *(float *)(g + 0x25C) = t;
-                        if (!(t >= f21)) *(int *)(g + 0x25C) = 0;
+                one = 1;
+                do {
+                    func_L00_00233EE0(C, f20 + f25, f21, f21);
+                    if (func_L00_001F10E0(*(float *)(g2 + 0x234), C, 2, 0) == 0) {
+                        *(int *)(g2 + 0x260) = one;
+                        if (s18 == 0) *(float *)(g2 + 0x258) = f26;
+                        else *(float *)(g2 + 0x258) = f22;
+                        {
+                            char *g4 = (char *)D_0013E633 + 0xE1D;
+                            t = *(float *)(g4 + 0x234) + f20;
+                            *(float *)(g4 + 0x25C) = t;
+                            if (t < f21) *(int *)(g4 + 0x25C) = 0;
+                        }
                         break;
                     }
                     f20 = f20 + f24;
-                    if (!(f20 < f23)) break;
-                    fa = f20 + f25;
-                }
+                } while (f20 < f23);
             }
         }
     }
-    if ((unsigned int)(*(int *)(g + 0x208C) - 0x15) < 2) {
-        if (*(char **)(g + 0x86C) != 0) {
-            qcopy(*(char **)(g + 0x86C) + 0x10, g + 0x80);
+    g3 = (char *)D_0013E633 + 0xE1D;
+    if ((unsigned int)(*(int *)(g3 + 0x208C) - 0x15) < 2) {
+        if (*(char **)(g3 + 0x86C) != 0) {
+            qcopy(*(char **)(g3 + 0x86C) + 0x10, g3 + 0x80);
             *(u128 *)A = 0;
             A[2] = 0.21f;
-            func_001F9EC0(A, A, (void *)(*(int *)(g + 0x2080) + 0xC0));
+            func_001F9EC0(A, A, (void *)(*(int *)(g3 + 0x2080) + 0xC0));
             func_001FA218(E, D_L05_0017AC20);
             func_001F9EE8(A, A, E);
-            func_001F9BD8(*(char **)(g + 0x86C) + 0x10, *(char **)(g + 0x86C) + 0x10, A);
-            func_001FA460_2(D, (void *)(*(int *)(g + 0x2080) + 0xC0));
+            func_001F9BD8(*(char **)(g3 + 0x86C) + 0x10, *(char **)(g3 + 0x86C) + 0x10, A);
+            func_001FA460_2(D, (void *)(*(int *)(g3 + 0x2080) + 0xC0));
             func_001FA540(F, D, E);
-            func_001FA480(*(char **)(g + 0x86C) + 0xC0, F);
+            func_001FA480(*(char **)(g3 + 0x86C) + 0xC0, F);
         }
     }
 }

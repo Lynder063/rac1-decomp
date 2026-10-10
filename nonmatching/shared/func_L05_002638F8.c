@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L05_002638F8 -- src/overlays/shared/hud_00263490.c
- * Best so far: SIZE ours 1668 / retail 1700, checked 2026-10-08.
+ * Best so far: SIZE ours 1668 / retail 1700, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:

@@ -21,7 +21,7 @@ extern float func_001FA748(float, float);
  * Adapted from Lombyte (MIT), FUN_L00_001eb0c8. The catalogue splits the delay slot of the final
  * jr off as func_001EC030, so this function is joined to it (config/overlays/joined.tsv). */
 void func_L00_001EB448(float *d, float *s, float x) {
-    d[0] = func_001FA748(s[0], x);
+    d[0] = FastAddRots(s[0], x);
     d[1] = s[1];
     d[2] = s[2];
     d[3] = s[3];

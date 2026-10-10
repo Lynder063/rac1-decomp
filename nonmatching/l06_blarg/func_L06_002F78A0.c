@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 2336 / retail 2396, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Moby class 1035 update on level 06 (2396 B). Dispatch on the moby state byte: 0 init, 1 update (two vector pas
  *   State 2 passes the sp+0x50 vector to func_L00_001FF4B0, which the assembly never writes (stale stack); the can
@@ -9,7 +10,6 @@
  */
 typedef int u128 __attribute__((mode(TI)));
 
-extern void func_L06_002F8430(void *);
 extern void func_L06_002F8200(void *);
 extern int func_001F9938(void *);
 extern int func_L00_0028EB98(void *, int);
@@ -44,7 +44,6 @@ extern int func_002140B0(int);
 extern unsigned char *func_L00_00273F80(float *, char *, int, unsigned char, unsigned char, int, float);
 extern void func_0020D678(void *);
 
-extern int D_L06_00161ED0;
 extern int D_L06_00161ED4;
 extern int D_L06_00161ED8;
 extern int D_L06_00161EDC;

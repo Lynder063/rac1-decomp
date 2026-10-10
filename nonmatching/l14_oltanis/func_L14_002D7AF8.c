@@ -2,6 +2,7 @@
  * Best so far: SIZE ours 2468 / retail 2476, checked 2026-10-08.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
+ * No longer builds in its file (COMPILE failed, 2026-10-09): match its declarations to the file's first.
  * What the last attempts found:
  *   Level 14 moby update: eases the keyframe position (sample loop over the tab at 0x60), then steps the state byt
  *   Differences left: retail copies n into a register before the loop (daddu $3,$6) and loads the loop base early;

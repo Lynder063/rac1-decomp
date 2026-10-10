@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L06_003010E0 -- src/overlays/l06_blarg/vendor_002FE5D0.c
- * Best so far: SIZE ours 1488 / retail 1492, checked 2026-10-08.
+ * Best so far: SIZE ours 1540 / retail 1492, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -25,7 +25,6 @@ extern void func_L00_002EC0C8(int);
 extern void func_L00_001FF4B0(void *, void *, float);
 extern void func_001F9BD8(void *, void *, void *);
 extern void func_001F9C08(void *, void *, void *, float);
-extern void func_00214D88(float *, float *, float, float, float, float);
 extern void func_001F49B0(void (*)(void), void *);
 extern void func_L06_00301B78(void);
 extern void func_L06_00301848(void);

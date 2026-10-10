@@ -1,5 +1,5 @@
 /* NON_MATCHING func_L00_002C6720 -- src/overlays/shared/vendor_002C12B0.c
- * Best so far: SIZE ours 2044 / retail 2076, checked 2026-10-08.
+ * Best so far: SIZE ours 2060 / retail 2076, checked 2026-10-09.
  * Not built into anything: the retail assembly stays in the source file
  * until a candidate is EXACT (docs/NONMATCHING.md). Start from this one.
  * What the last attempts found:
@@ -17,14 +17,12 @@ extern float D_0015EE60 MACRO_ADDR;
 extern float D_0015EE6C MACRO_ADDR;
 extern int D_L00_0015F6B0 MACRO_ADDR;
 extern int D_L00_00161908 MACRO_ADDR;
-extern void func_001F9908(int *arg0);
 extern float func_001F9CB8(void *);
 extern int func_L00_001F10E0(float, void *, int, void *);
 extern void func_001F9BD8(void *, void *, void *);
 extern int func_L00_001EFFF0(void *, void *, int, int, int);
 extern void func_001F9BC0(void *);
 extern int func_001F9850(int);
-extern float func_00214D28(float *, float, float);
 extern int func_001FA898_r(float) __asm__("func_001FA898");
 extern float func_001F9B88(float);
 extern float func_001F9D48(void *, void *);
