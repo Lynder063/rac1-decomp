@@ -161,7 +161,7 @@ func_L00_00257E18	nonmatching/game/func_L00_00257E18.c
 func_L00_00257F4C	nonmatching/game/func_L00_00257F4C.c
 func_00224728	nonmatching/game/func_00224728.c
 func_00221380	nonmatching/game/func_00221380.c
-func_L00_00232EF0	nonmatching/game/func_L00_00232EF0.c
+func_L00_00232EF0	nonmatching/functional/func_L00_00232EF0.c
 func_L00_00205FF0	nonmatching/game/func_L00_00205FF0.c
 func_L00_0020FC18	nonmatching/game/func_L00_0020FC18.c
 func_0020EEE8	nonmatching/game/func_0020EEE8.c
