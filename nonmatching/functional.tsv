@@ -1,5 +1,6 @@
 # C for functions this decompilation still has as assembly, for the native port only (OpenRAC port/game/rac1-pal, hostgen.json "candidates").
 # Each does what the retail function does without matching its bytes; the matching build never reads it.
+# Files under nonmatching/functional/ are C written for the port only (no matching attempt behind them).
 # name	file
 func_001F3890	nonmatching/game/func_001F3890.c
 func_001FAB40	nonmatching/game/func_001FAB40.c
@@ -244,3 +245,14 @@ func_L18_002D9C90	nonmatching/l18_veldin2/func_L18_002D9C90.c
 func_L18_002F1420	nonmatching/l18_veldin2/func_L18_002F1420.c
 func_L18_002FB318	nonmatching/l18_veldin2/func_L18_002FB318.c
 func_L18_002FDCA0	nonmatching/l18_veldin2/func_L18_002FDCA0.c
+func_L05_002F62E8	nonmatching/shared/func_L05_002F62E8.c
+func_L00_00277208	nonmatching/functional/func_L00_00277208.c
+func_L00_002A62D0	nonmatching/functional/func_L00_002A62D0.c
+func_L14_00300AC8	nonmatching/functional/func_L14_00300AC8.c
+func_L11_0031A738	nonmatching/functional/func_L11_0031A738.c
+func_L15_002BEFF8	nonmatching/functional/func_L15_002BEFF8.c
+func_L10_002EA578	nonmatching/functional/func_L10_002EA578.c
+func_L05_002F9BA0	nonmatching/functional/func_L05_002F9BA0.c
+func_L15_002E6D48	nonmatching/functional/func_L15_002E6D48.c
+func_L05_0030DA08	nonmatching/functional/func_L05_0030DA08.c
+func_L15_002D7C00	nonmatching/functional/func_L15_002D7C00.c
