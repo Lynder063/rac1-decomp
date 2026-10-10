@@ -6,7 +6,7 @@ extern int D_L00_001CA7C0[];
 extern unsigned char D_L00_00197F4C NOT_SDA;
 extern char *D_L00_00197680[] NOT_SDA;
 extern void func_00118D80(int);
-extern void func_0020C468(int, int);
+extern int func_0020C468(int, int);
 extern void func_00203B18(char *arg0, int idx);
 
 // load a table of 16 offsets relative to the base pointer and register each entry

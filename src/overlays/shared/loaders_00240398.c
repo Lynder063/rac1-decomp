@@ -426,7 +426,7 @@ typedef struct {
 
 extern void func_002176C8_422D8(void *, int, int) __asm__("func_002176C8");
 extern void func_00118D80(int);
-extern void func_0020C468(void *, void *);
+extern int func_0020C468(void *, void *);
 extern void func_001F99B0(void *, int, int);
 extern void func_001160C8(int);
 extern void func_L00_002623D0(int);
