@@ -1,0 +1,4 @@
+# C for functions this decompilation still has as assembly, for the native port only (OpenRAC port/game/rac1-pal, hostgen.json "candidates").
+# Each does what the retail function does without matching its bytes; the matching build never reads it.
+# name	file
+func_001F3890	nonmatching/game/func_001F3890.c
