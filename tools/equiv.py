@@ -109,7 +109,16 @@ def tokens(code: bytes, base: int, level: int = -1) -> list[str]:
     for i in ins:
         if i.isBranch():
             targets.add(i.getBranchVramGeneric())
+    # A call's delay slot runs before the call: read it first.
+    k = 0
+    while k < len(ins) - 1:
+        if ins[k].getOpcodeName() in ("jal", "jalr") and ins[k + 1].vram not in targets:
+            ins[k], ins[k + 1] = ins[k + 1], ins[k]
+            k += 2
+        else:
+            k += 1
     out: list[list[str]] = []           # each token as [text, tags...]
+    fresh: set[int] = set()             # registers given a known value since the last call
     known: dict[int, int] = {}          # gpr -> constant it holds
     writer: dict[str, int] = {}         # "r4" / "f12" -> index in out of the op that made the value
     slots: dict[int, tuple] = {}        # stack offset -> (writer index, known constant) stored there
@@ -143,7 +152,12 @@ def tokens(code: bytes, base: int, level: int = -1) -> list[str]:
 
     for i in ins:
         if i.vram in targets:
+            # A label joins paths. What a callee-saved register holds is kept: the
+            # compiler keeps long-lived values (a table's address) there and
+            # rebuilds them seldom; scratch registers are forgotten.
+            saved = {r: v for r, v in known.items() if r in SAVED}
             reset(False)
+            known.update(saved)
         name = i.getOpcodeName()
         if name == "nop":
             continue
@@ -155,6 +169,7 @@ def tokens(code: bytes, base: int, level: int = -1) -> list[str]:
         # Constants and addresses: tracked, not emitted.
         if name == "lui":
             known[rd] = (int(ops[1], 0) & 0xFFFF) << 16
+            fresh.add(rd)
             writer.pop(f"r{rd}", None)
             continue
         if name in ("addiu", "daddiu", "ori") and len(ops) == 3:
@@ -163,12 +178,14 @@ def tokens(code: bytes, base: int, level: int = -1) -> list[str]:
             if src == 0 or src == 28 or src in known:
                 b = 0 if src == 0 else oc.GP if src == 28 else known[src]
                 known[rd] = ((b | (imm & 0xFFFF)) if name == "ori" else (b + imm)) & 0xFFFFFFFF
+                fresh.add(rd)
                 writer.pop(f"r{rd}", None)
                 continue
         if name in MOVES and len(ops) == 3 and regnum(ops[2]) == 0:
             src = regnum(ops[1])
             if src in known:
                 known[rd] = known[src]
+                fresh.add(rd)
             else:
                 known.pop(rd, None)
             if f"r{src}" in writer:
@@ -229,12 +246,13 @@ def tokens(code: bytes, base: int, level: int = -1) -> list[str]:
             for r in ARGS:
                 if f"r{r}" in writer:
                     out[writer[f"r{r}"]].append(f"arg{GPR[r]}")
-                elif r in known:
+                elif r in known and r in fresh:
                     out[-1].append(f"{GPR[r]}=#{known[r]:x}")
             for r in FARGS:
                 if f"f{r}" in writer:
                     out[writer[f"f{r}"]].append(f"argf{r}")
             reset(True)
+            fresh.clear()
             writer["r2"] = len(out) - 1
             writer["f0"] = len(out) - 1
             continue
@@ -255,6 +273,8 @@ def tokens(code: bytes, base: int, level: int = -1) -> list[str]:
             emit(f"fconst #{known[regnum(ops[0])]:x}", f"f{fregnum(ops[1])}")
             continue
 
+        if name in ("addiu", "daddiu") and rd == 29:
+            continue            # the frame's size: the allocator's
         # Everything else: the operation and its non-register operands.
         dest = None
         if i.isBranch():
@@ -275,7 +295,11 @@ def executable_code(name: str, obj_path: Path) -> tuple[bytes, bytes, int]:
     """Ours relocated as tools/try_func.py relocates it, retail's from the
     executable: an executable function's two codes and its address."""
     import try_func
-    rsize = int(try_func.SIZE.search(Path(f"asm/nonmatchings/text/{name}.s").read_text()).group(2), 16)
+    asm = next(iter(sorted(Path("asm/nonmatchings").glob(f"*/{name}.s"))), None) \
+        or next(iter(sorted(Path("asm/handwritten").glob(f"*/{name}.s"))), None)
+    if asm is None:
+        raise FileNotFoundError(f"no assembly for {name} under asm/nonmatchings or asm/handwritten")
+    rsize = int(try_func.SIZE.search(asm.read_text()).group(2), 16)
     raw = Path(try_func.BASEROM).read_bytes()
     relf = ELFFile(open(try_func.BASEROM, "rb"))
     load = next(s for s in relf.iter_segments() if s["p_type"] == "PT_LOAD")
@@ -340,6 +364,9 @@ def run(name: str, candidate: Path, work: Path) -> str:
         return "EXACT"
     try:
         verdict, missing, extra = compare(name, obj)
+    except (ValueError, TypeError) as e:
+        # VU0 macro instructions (lqc2, vmul, vcallms...) and some MMI ones are not modelled.
+        return f"NOT COMPARABLE (instructions this tool does not model: {e}); check by behaviour or by hand"
     except Exception as e:      # an unresolved symbol, an unknown relocation
         return f"LINK {e}"
     if "--show" in sys.argv:
