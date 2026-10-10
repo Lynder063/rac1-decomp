@@ -2,3 +2,4 @@
 # Each does what the retail function does without matching its bytes; the matching build never reads it.
 # name	file
 func_001F3890	nonmatching/game/func_001F3890.c
+func_001FAB40	nonmatching/game/func_001FAB40.c
